@@ -46,7 +46,7 @@ junit5 = "6.0.3"
 mockk = "1.14.9"
 webkit = "1.15.0"
 newpipe-extractor = "v0.26.0"
-koin = "4.1.0"
+koin = "4.2.0"
 kermit = "2.0.8"
 kotlinx-serialization = "1.10.0"
 
