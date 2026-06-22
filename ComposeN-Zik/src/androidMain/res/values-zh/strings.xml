@@ -45,8 +45,8 @@
     <string name="edit_lyrics">编辑歌词</string>
     <string name="search_lyrics_online">在线搜索歌词</string>
     <string name="fetch_lyrics_again">再次获取歌词</string>
-    <string name="id">ID</string>
-    <string name="itag">iTag</string>
+    <string name="id">Id</string>
+    <string name="itag">Itag</string>
     <string name="bitrate">位速率</string>
     <string name="size">大小</string>
     <string name="cached">缓存的</string>
@@ -66,15 +66,15 @@
     <string name="thumbnail_roundness">缩略图圆角</string>
     <string name="use_system_font">使用系统字体</string>
     <string name="use_font_by_the_system">使用系统应用的字体</string>
-    <string name="apply_font_padding">应用字体填充</string>
+    <string name="apply_font_padding">Apply font padding</string>
     <string name="add_spacing_around_texts">在文本周围添加间距</string>
     <string name="lockscreen">锁屏界面</string>
     <string name="show_song_cover">显示歌曲封面</string>
     <string name="use_song_cover_on_lockscreen">设置当前播放的歌曲封面为锁屏壁纸</string>
     <string name="cache">缓存</string>
     <string name="cache_cleared">当缓存超出空格时，最长未访问的资源将被清除</string>
-    <string name="image_cache">图像缓存</string>
-    <string name="max_size">最大容量</string>
+    <string name="image_cache">IMAGE CACHE</string>
+    <string name="max_size">Max size</string>
     <string name="database">数据库</string>
     <string name="reset_quick_picks">重置快速选择</string>
     <string name="quick_picks_are_cleared">快速选择已清除</string>
@@ -146,7 +146,7 @@
     <string name="tips">为你</string>
     <string name="is_min_list_time_for_tips_or_quick_pics">在Quick Picks中建议的歌曲最小播放时间</string>
     <string name="min_listening_time">最小播放持续时间</string>
-    <string name="player_thumbnail_size">缩略图大小</string>
+    <string name="player_thumbnail_size">Thumbnail Size</string>
     <string name="restarting_rimusic_is_required">需要重启</string>
     <string name="small">小的</string>
     <string name="medium">中</string>
@@ -597,7 +597,7 @@
     <string name="cache_location_private">非公开的</string>
     <string name="cache_location_system">系统</string>
     <string name="info_cannot_rename_a_monthly_or_piped_playlist">无法重命名每月或在线或管道播放列表</string>
-    <string name="debug">DEBUG</string>
+    <string name="debug">Debug</string>
     <string name="enable_log_debug">启用调试日志</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">如果启用，创建日志文件以突出显示错误</string>
     <string name="copy_log_to_clipboard">复制日志到剪贴板</string>
@@ -677,7 +677,7 @@
     <string name="past_month">本月</string>
     <string name="past_year">今年：</string>
     <string name="all_time">全部时间</string>
-    <string name="header_view_top_of">Top %1$s of …</string>
+    <string name="header_view_top_of">Top %22$s of …</string>
     <string name="podcast_episodes">剧集</string>
     <string name="podcasts">播客</string>
     <string name="playlistindicator">播放列表指示器</string>
@@ -993,7 +993,7 @@
     <string name="removed_from_dislikes">已从不喜欢的 %30$s 删除</string>
     <string name="artist_featured_on">精选开启</string>
     <string name="artist_fans_might_also_like">风扇可能也喜欢的</string>
-    <string name="update_changelogs">%1$s changelogs</string>
+    <string name="update_changelogs">%31$s changelogs</string>
     <string name="rotating_cover_title">旋转专辑封面</string>
     <string name="title_playback_speed">播放速度</string>
     <string name="description_playback_speed">调整歌曲速度/速度</string>
@@ -1265,6 +1265,6 @@
     <string name="cd_back">后退</string>
     <string name="cd_cover">封面</string>
     <string name="import_playlist_riplay">RiPlay CSV</string>
-    <string name="import_playlist_exportify_net">Exportify CSV (Spotify)</string>
+    <string name="import_playlist_exportify_net">导出 CSV (首页)</string>
     <string name="import_playlist_nzik">N-Zik CSV</string>
 </resources>
