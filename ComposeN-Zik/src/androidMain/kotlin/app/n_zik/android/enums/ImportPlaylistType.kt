@@ -1,7 +1,10 @@
 package app.n_zik.android.enums
 
-enum class ImportPlaylistType(val title: String) {
-    RiMusic("RiMusic CSV"),
-    Exportify("Exportify CSV (Spotify)"),
-    RiPlay("RiPlay CSV")
+import androidx.annotation.StringRes
+import app.n_zik.android.R
+
+enum class ImportPlaylistType(@StringRes val titleId: Int) {
+    RiMusic(R.string.import_playlist_nzik),
+    Exportify(R.string.import_playlist_exportify_net),
+    RiPlay(R.string.import_playlist_riplay)
 }
