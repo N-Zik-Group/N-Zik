@@ -6,7 +6,7 @@
 
   <path
       android:fillColor="#58cc86"
-      android:pathData="M256,256m-256,0a256,256 0,1 1,512 0a256,256 0,1 1,-512 0"/>
+      android:pathData="M256,256m-192,0a192,192 0,1 1,384 0a192,192 0,1 1,-384 0"/>
 
   <group android:scaleX="0.52"
       android:scaleY="0.52"
