@@ -193,6 +193,12 @@ fun LocalPlaylistSongs(
     val isPipedEnabled by rememberPreference( isPipedEnabledKey, false )
     val disableScrollingText by rememberPreference( disableScrollingTextKey, false )
     var isRecommendationEnabled by remember { mutableStateOf(false) }
+    var getAlbumVersion by remember { mutableStateOf(false) }
+    var showGetAlbumVersionDialogue by remember { mutableStateOf(false) }
+    var showGetAlbumVersionDialogueExt by remember { mutableStateOf(false) }
+    var showConfirmMatchAllDialog by remember { mutableStateOf(false) }
+    var totalSongsToMatch by remember { mutableIntStateOf(0) }
+    var songsMatched by remember { mutableIntStateOf(0) }
 
     // Non-vital
     val pipedSession = getPipedSession()
@@ -218,6 +224,96 @@ fun LocalPlaylistSongs(
     fun getMediaItems() = getSongs().map( Song::asMediaItem )
 
     val search = Search(lazyListState)
+
+    if (showGetAlbumVersionDialogue){
+        app.it.fast4x.rimusic.ui.components.themed.InProgressDialog(
+            total = totalSongsToMatch,
+            done = songsMatched,
+            text = "Matching songs..."
+        )
+    }
+
+    if (showGetAlbumVersionDialogueExt){
+        app.it.fast4x.rimusic.ui.components.themed.InProgressDialog(
+            total = totalSongsToMatch,
+            done = songsMatched,
+            text = "Matching songs...",
+            onDismiss = {showGetAlbumVersionDialogueExt = false}
+        )
+    }
+
+    if (showConfirmMatchAllDialog) {
+        app.it.fast4x.rimusic.ui.components.themed.ConfirmationDialog(
+            text = "Do you really want to match all songs to their Album/Audio version?",
+            onDismiss = { showConfirmMatchAllDialog = false },
+            onConfirm = {
+                getAlbumVersion = true
+                showGetAlbumVersionDialogue = true
+                showConfirmMatchAllDialog = false
+            }
+        )
+    }
+
+    val unmatchedExt = remember(items) { items.any { song -> song.id == (app.it.fast4x.rimusic.cleanPrefix(song.title ?: "")+(song.artistsText ?: "")).filter{it.isLetterOrDigit()} } }
+    if (unmatchedExt){
+        showGetAlbumVersionDialogueExt = true
+        LaunchedEffect(unmatchedExt) {
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                val matchedItems = items.filter{song -> song.id == (app.it.fast4x.rimusic.cleanPrefix(song.title ?: "")+(song.artistsText ?: "")).filter{it.isLetterOrDigit()}}
+                totalSongsToMatch = matchedItems.size
+                songsMatched = 0
+
+                val jobs = mutableListOf<kotlinx.coroutines.Job>()
+                matchedItems.forEachIndexed { index, song ->
+                    jobs.add(coroutineScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                        app.n_zik.android.utils.getAlbumVersionFromVideo(
+                            song = song,
+                            playlistId = playlistId,
+                            position = index,
+                            playlist = playlist
+                        )
+                    })
+                }
+                while(jobs.isNotEmpty()){
+                    val oldSize = jobs.size
+                    jobs.removeIf{it.isCompleted}
+                    songsMatched += oldSize - jobs.size
+                    kotlinx.coroutines.delay(10)
+                }
+                showGetAlbumVersionDialogueExt = false
+                getAlbumVersion = false
+            }
+        }
+    }
+
+    LaunchedEffect(getAlbumVersion) {
+        if (!getAlbumVersion) return@LaunchedEffect
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            val matchedItems = items.filter { (it.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com") == false) && !(it.id.startsWith(app.it.fast4x.rimusic.LOCAL_KEY_PREFIX)) }
+            totalSongsToMatch = matchedItems.size
+            songsMatched = 0
+
+            val jobs = mutableListOf<kotlinx.coroutines.Job>()
+            matchedItems.forEachIndexed { index, song ->
+                jobs.add(coroutineScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                    app.n_zik.android.utils.getAlbumVersionFromVideo(
+                        song = song,
+                        playlistId = playlistId,
+                        position = index,
+                        playlist = playlist
+                    )
+                })
+            }
+            while(jobs.isNotEmpty()){
+                val oldSize = jobs.size
+                jobs.removeIf{it.isCompleted}
+                songsMatched += oldSize - jobs.size
+                kotlinx.coroutines.delay(10)
+            }
+            showGetAlbumVersionDialogue = false
+            getAlbumVersion = false
+        }
+    }
     val shuffle = SongShuffler ( ::getSongs )
     val renameDialog = RenamePlaylistDialog { playlist }
     val exportDialog = ExportSongsToCSVDialog(
@@ -708,6 +804,22 @@ fun LocalPlaylistSongs(
                             modifier = Modifier.size(48.dp), // Standard IconButton size
                             contentAlignment = Alignment.Center
                         ) {
+                            val unmatchedSongsCount = items.filter { (it.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com") == false) && !(it.id.startsWith(app.it.fast4x.rimusic.LOCAL_KEY_PREFIX)) }.size
+                            if (unmatchedSongsCount > 0) {
+                                HeaderIconButton(
+                                    icon = app.n_zik.android.R.drawable.alert,
+                                    enabled = true,
+                                    color = colorPalette().text,
+                                    modifier = Modifier.clip(uiRoundnessShape()),
+                                    onClick = {
+                                        showConfirmMatchAllDialog = true
+                                    },
+                                    onLongClick = {
+                                        Toaster.i("Match songs to album versions")
+                                    }
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                            }
                             if (isRecommendationsLoading) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(24.dp),

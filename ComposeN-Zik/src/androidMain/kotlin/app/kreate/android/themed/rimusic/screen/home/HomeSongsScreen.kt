@@ -105,6 +105,11 @@ fun HomeSongsScreen(navController: NavController ) {
     val search = Search(lazyListState)
     val locator = Locator( lazyListState, ::getSongs )
     val import = ImportSongsFromCSV()
+    val importSpotify = app.n_zik.android.components.tab.ImportSongsFromSpotifyCSV.init()
+    val importMenu = remember { app.n_zik.android.components.tab.ImportPlaylistsMenu(
+        onImportNzik = { import.onShortClick() },
+        onImportSpotify = { importSpotify.onShortClick() }
+    ) }
     val shuffle = SongShuffler(::getSongs)
     val smartShuffle = SmartShuffle(
         isRecommendationEnabled = { isRecommendationEnabled },
@@ -153,7 +158,7 @@ fun HomeSongsScreen(navController: NavController ) {
             this.add( enqueue )
             this.add( addToFavorite )
             this.add( addToPlaylist )
-            this.add( import )
+            this.add( importMenu )
             if( builtInPlaylist != BuiltInPlaylist.OnDevice )
                 this.add( resetCache )
         }
@@ -205,6 +210,8 @@ fun HomeSongsScreen(navController: NavController ) {
                     }
                 }
             }
+
+            importMenu.Render()
 
             // Sticky tab's tool bar
             TabToolBar.Buttons( buttons )

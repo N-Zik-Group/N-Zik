@@ -161,6 +161,11 @@ fun HomeLibrary(
     val newPlaylistDialog = NewPlaylistDialog()
     //</editor-fold>
     val importPlaylistDialog = ImportSongsFromCSV()
+    val importSpotifyDialog = app.n_zik.android.components.tab.ImportSongsFromSpotifyCSV.init()
+    val importMenu = remember { app.n_zik.android.components.tab.ImportPlaylistsMenu(
+        onImportNzik = { importPlaylistDialog.onShortClick() },
+        onImportSpotify = { importSpotifyDialog.onShortClick() }
+    ) }
     val sync = autoSyncToolbutton(R.string.autosync)
 
     LaunchedEffect( sort.sortBy, sort.sortOrder ) {
@@ -200,6 +205,10 @@ fun HomeLibrary(
     // START - New playlist
     newPlaylistDialog.Render()
     // END - New playlist
+    
+    // START - Import menu
+    importMenu.Render()
+    // END - Import menu
 
     // START - Monthly playlist
     val enableCreateMonthlyPlaylists by rememberPreference(enableCreateMonthlyPlaylistsKey, true)
@@ -252,7 +261,7 @@ fun HomeLibrary(
                     toolbarButtons.add(search)
                     toolbarButtons.add(shuffle)
                     toolbarButtons.add(newPlaylistDialog)
-                    toolbarButtons.add(importPlaylistDialog)
+                    toolbarButtons.add(importMenu)
                     toolbarButtons.add(itemSize)
                 }
 

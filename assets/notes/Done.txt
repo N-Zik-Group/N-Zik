@@ -2,3 +2,5 @@
 - Fix carousel view background not changing when swiping to new music
 - Fix color system palette not updating when swiping to new music in carousel view
 - Set default lyrics color to White
+- Port Match Album logic from RiPlay to LocalPlaylist (replaces video version with audio/album version)
+- Add RiPlay & Exportify CSV Import option with automatic Match Album
