@@ -1264,7 +1264,4 @@
 <string name="cd_play_pause">play/pause</string>
 <string name="cd_back">back</string>
 <string name="cd_cover">cover</string>
-    <string name="import_playlist_riplay">RiPlay CSV</string>
-    <string name="import_playlist_exportify_net">Exportify CSV (Spotify)</string>
-    <string name="import_playlist_nzik">N-Zik CSV</string>
 </resources>
