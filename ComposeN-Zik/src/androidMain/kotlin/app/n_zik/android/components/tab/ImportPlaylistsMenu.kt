@@ -70,6 +70,7 @@ class ImportPlaylistsMenu(
                         override val iconId: Int = R.drawable.ic_launcher
                         override val messageId: Int = R.string.import_playlist_nzik
                         @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
+                        @get:Composable override val color: androidx.compose.ui.graphics.Color get() = androidx.compose.ui.graphics.Color.Unspecified
                         override fun onShortClick() { menuState.hide(); onImportNzik() }
                         override fun onLongClick() {}
                     },
