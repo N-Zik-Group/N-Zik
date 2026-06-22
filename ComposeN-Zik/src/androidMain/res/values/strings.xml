@@ -1264,7 +1264,11 @@
 <string name="cd_play_pause">play/pause</string>
 <string name="cd_back">back</string>
 <string name="cd_cover">cover</string>
-    <string name="import_playlist_riplay">RiPlay CSV</string>
-    <string name="import_playlist_exportify_net">Exportify CSV (Spotify)</string>
-    <string name="import_playlist_nzik">N-Zik CSV</string>
+<string name="import_playlist_riplay">RiPlay CSV</string>
+<string name="import_playlist_exportify_net">Exportify CSV (Spotify)</string>
+<string name="import_playlist_nzik">N-Zik CSV</string>
+<string name="match_album_audio_version">Match Album/Audio version</string>
+<string name="match_all_songs_confirmation">Do you really want to match all songs to their Album/Audio version?</string>
+<string name="unmatched_song">Unmatched song</string>
+<string name="imported_playlist">Imported Playlist</string>
 </resources>
