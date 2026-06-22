@@ -197,8 +197,8 @@ fun LocalPlaylistSongs(
     var showGetAlbumVersionDialogue by remember { mutableStateOf(false) }
     var showGetAlbumVersionDialogueExt by remember { mutableStateOf(false) }
     var showConfirmMatchAllDialog by remember { mutableStateOf(false) }
-    var totalSongsToMatch by remember { mutableIntStateOf(0) }
-    var songsMatched by remember { mutableIntStateOf(0) }
+    var totalSongsToMatch by remember { mutableStateOf(0) }
+    var songsMatched by remember { mutableStateOf(0) }
 
     // Non-vital
     val pipedSession = getPipedSession()
@@ -277,7 +277,7 @@ fun LocalPlaylistSongs(
                 while(jobs.isNotEmpty()){
                     val oldSize = jobs.size
                     jobs.removeIf{it.isCompleted}
-                    songsMatched += oldSize - jobs.size
+                    songsMatched = songsMatched + (oldSize - jobs.size)
                     kotlinx.coroutines.delay(10)
                 }
                 showGetAlbumVersionDialogueExt = false
@@ -307,7 +307,7 @@ fun LocalPlaylistSongs(
             while(jobs.isNotEmpty()){
                 val oldSize = jobs.size
                 jobs.removeIf{it.isCompleted}
-                songsMatched += oldSize - jobs.size
+                songsMatched = songsMatched + (oldSize - jobs.size)
                 kotlinx.coroutines.delay(10)
             }
             showGetAlbumVersionDialogue = false

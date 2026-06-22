@@ -10,6 +10,7 @@ import app.n_zik.android.core.database.Database
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.bodies.SearchBody
 import it.fast4x.innertube.requests.searchPage
+import it.fast4x.innertube.utils.from
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.math.absoluteValue
@@ -34,12 +35,12 @@ suspend fun getAlbumVersionFromVideo(song: Song, playlistId: Long, position: Int
         return filteredText
     }
 
-    val searchQuery = Innertube.searchPage(
+    val searchQuery = Innertube.searchPage<Innertube.SongItem>(
         body = SearchBody(
             query = filteredText("${song.cleanTitle()} ${song.artistsText}"),
             params = Innertube.SearchFilter.Song.value
         ),
-        fromMusicShelfRendererContent = Innertube.SongItem::from
+        fromMusicShelfRendererContent = { content -> Innertube.SongItem.from(content) }
     )
 
     val searchResults = searchQuery?.getOrNull()?.items
@@ -73,7 +74,7 @@ suspend fun getAlbumVersionFromVideo(song: Song, playlistId: Long, position: Int
             val requiredSong = searchResults?.getOrNull(i) as? Innertube.SongItem ?: continue
             val requiredSongWords = filteredText(song.cleanTitle()) // Actually in RiPlay it was filteredText(cleanPrefix(requiredSong?.title ?: ""))
             // Wait, I should implement exactly like RiPlay
-            val reqWords = filteredText(requiredSong.title).split(" ").filter { it.isNotEmpty() }
+            val reqWords = filteredText(requiredSong.title ?: "").split(" ").filter { it.isNotEmpty() }
 
             val songMatched = (reqWords.any { it in sourceSongWords })
                     && (if (lofi) (reqWords.any { it == "lofi" }) else reqWords.all { it != "lofi" })
@@ -88,7 +89,7 @@ suspend fun getAlbumVersionFromVideo(song: Song, playlistId: Long, position: Int
                     && (if (concert) (reqWords.any { it == "concert" }) else reqWords.all { it != "concert" })
                     && (if (tour) (reqWords.any { it == "tour" }) else reqWords.all { it != "tour" })
                     && (if (redux) (reqWords.any { it == "redux" }) else reqWords.all { it != "redux" })
-                    && (if (song.asMediaItem.mediaMetadata.isPlayable == true) { requiredSong.isExplicit } else { true }) // isExplicit isn't easily accessible without mapping? N-Zik asMediaItem might not have isExplicit. Let's ignore it for now or just check requiredSong.isExplicit
+                    && (if (song.asMediaItem.mediaMetadata.isPlayable == true) { requiredSong.explicit } else { true }) // isExplicit isn't easily accessible without mapping? N-Zik asMediaItem might not have isExplicit. Let's ignore it for now or just check requiredSong.isExplicit
                     && (if (isExtPlaylist) {
                 (durationTextToMillis(requiredSong.durationText ?: "") - durationTextToMillis(song.durationText ?: "")).absoluteValue <= 2000
             } else {
@@ -112,7 +113,7 @@ suspend fun getAlbumVersionFromVideo(song: Song, playlistId: Long, position: Int
             Database.upsert(matchedSong) // This handles Song, Album, Artist insertion in N-Zik
 
             // Map new song to playlist
-            songPlaylistMapTable.map(matchedSong.info.endpoint?.videoId ?: "", playlistId)
+            songPlaylistMapTable.map(matchedSong.info?.endpoint?.videoId ?: "", playlistId)
 
             // If we want to replace the old position, we could do:
             // songPlaylistMapTable.updatePosition(playlistId, matchedSong.info.endpoint?.videoId ?: "", position)
