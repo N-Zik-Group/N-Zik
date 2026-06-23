@@ -1271,6 +1271,7 @@
   <string name="match_album_audio_version">Версия альбома/аудио матча</string>
   <string name="match_all_songs_confirmation">Вы действительно хотите сопоставить %d песен с их версией альбома/аудио?</string>
   <string name="unmatched_song">Несовпадающая песня</string>
+  <string name="playback_blocked_match_first">Воспроизведение заблокировано, пожалуйста совпадайте</string>
   <string name="imported_playlist">Импортированный плейлист</string>
   <string name="smart_trash">Умная корзина</string>
   <string name="smart_trash_all_clear">⚠️ ВНИМАНИЕ: НЕОБХОДИМО УДАЛИТЬ все %d песни и удалить их из всех плейлистов. Это действие не может быть отменено!</string>
