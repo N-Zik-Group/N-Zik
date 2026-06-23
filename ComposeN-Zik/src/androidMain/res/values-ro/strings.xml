@@ -1271,6 +1271,7 @@
   <string name="match_album_audio_version">Potrivire versiune Album/Audio</string>
   <string name="match_all_songs_confirmation">Sigur doriți să potriviți piesele %d la versiunea lor Album/Audio?</string>
   <string name="unmatched_song">Melodie neadecvată</string>
+  <string name="playback_blocked_match_first">Redare blocată, vă rugăm să potriviți mai întâi</string>
   <string name="imported_playlist">Playlist importat</string>
   <string name="smart_trash">Gunoi inteligent</string>
   <string name="smart_trash_all_clear">⚠️ ATENŢIE: Aceasta va şterge definitiv toate melodiile %d şi le va şterge din toate listele de redare. Această acţiune nu poate fi anulată!</string>
