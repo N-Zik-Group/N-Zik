@@ -1271,6 +1271,7 @@
   <string name="match_album_audio_version">Corrispondenza versione Album/Audio</string>
   <string name="match_all_songs_confirmation">Vuoi davvero abbinare le canzoni di %d alla loro versione Album/Audio?</string>
   <string name="unmatched_song">Brano ineguagliato</string>
+  <string name="playback_blocked_match_first">Riproduzione bloccata, per favore corrisponde prima</string>
   <string name="imported_playlist">Scaletta Importata</string>
   <string name="smart_trash">Smart cestino</string>
   <string name="smart_trash_all_clear">⚠️ ATTENZIONE: Questo eliminerà PERMANENTE tutte le canzoni di %d e li rimuoverà da TUTTE le playlist. Questa azione non può essere annullata!</string>
