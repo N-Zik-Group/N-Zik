@@ -1271,6 +1271,7 @@
   <string name="match_album_audio_version">Match Album/Audio version</string>
   <string name="match_all_songs_confirmation">Do you really want to match %d songs to their Album/Audio version?</string>
   <string name="unmatched_song">Unmatched song</string>
+  <string name="playback_blocked_match_first">Playback blocked, please match first</string>
   <string name="imported_playlist">Imported Playlist</string>
   <string name="smart_trash">Smart trash</string>
   <string name="smart_trash_all_clear">⚠️ WARNING: This will PERMANENTLY DELETE all %d songs AND remove them from ALL playlists. This action cannot be undone!</string>
