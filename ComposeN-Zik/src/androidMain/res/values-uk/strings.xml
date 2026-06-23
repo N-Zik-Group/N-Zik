@@ -1271,6 +1271,7 @@
   <string name="match_album_audio_version">Версія камери та звуку в альбомі</string>
   <string name="match_all_songs_confirmation">Ви дійсно бажаєте знайти пісні %d з їх альбомом/аудіо-версією?</string>
   <string name="unmatched_song">Невідповідна пісня</string>
+  <string name="playback_blocked_match_first">Грати заблоковано, спочатку співпадайте</string>
   <string name="imported_playlist">Імпортовано список відтворення</string>
   <string name="smart_trash">Розумний смітник</string>
   <string name="smart_trash_all_clear">⚠️ УВАГА: Буде ОСТАТОЧНА ВИДАЛИТИ всі %d пісні і видалити їх з ВСІХ списків відтворення. Цю дію неможливо скасувати!</string>
