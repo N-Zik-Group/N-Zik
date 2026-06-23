@@ -1271,6 +1271,7 @@
   <string name="match_album_audio_version">アルバム/オーディオバージョンに一致</string>
   <string name="match_all_songs_confirmation">%d 曲を Album/Audio のバージョンに合わせてもよろしいですか？</string>
   <string name="unmatched_song">比類のない曲</string>
+  <string name="playback_blocked_match_first">再生がブロックされています。最初に一致してください</string>
   <string name="imported_playlist">インポートされたプレイリスト</string>
   <string name="smart_trash">スマートなゴミ箱の数</string>
   <string name="smart_trash_all_clear">⚠️ 警告: これはすべての %d 曲を削除し、すべてのプレイリストから削除します。この操作は元に戻すことはできません！</string>
