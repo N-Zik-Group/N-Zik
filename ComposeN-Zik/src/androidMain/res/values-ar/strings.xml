@@ -1271,6 +1271,7 @@
   <string name="match_album_audio_version">تطابق إصدار الألبوم/الصوت</string>
   <string name="match_all_songs_confirmation">هل تريد حقاً مطابقة أغاني %d مع إصدارات الألبوم/الصوت؟</string>
   <string name="unmatched_song">أغنية غير متطابقة</string>
+  <string name="playback_blocked_match_first">تم حظر التشغيل، يرجى التطابق أولاً</string>
   <string name="imported_playlist">قائمة التشغيل المستوردة</string>
   <string name="smart_trash">سلة المهملات الذكية</string>
   <string name="smart_trash_all_clear">⚠️ تحذير: سيؤدي هذا إلى حذف جميع الأغاني %d وإزالتها من جميع قوائم التشغيل. لا يمكن التراجع عن هذا الإجراء!</string>
