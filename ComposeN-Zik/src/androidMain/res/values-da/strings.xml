@@ -1271,6 +1271,7 @@
   <string name="match_album_audio_version">Match album/lyd version</string>
   <string name="match_all_songs_confirmation">Vil du virkelig matche %d sange til deres Album/Audio-version?</string>
   <string name="unmatched_song">Uovertruffen sang</string>
+  <string name="playback_blocked_match_first">Afspilning blokeret, matcher først</string>
   <string name="imported_playlist">Importeret Spilleliste</string>
   <string name="smart_trash">Smart affald</string>
   <string name="smart_trash_all_clear">⚠️ ADVARSEL: Dette vil PERMANENTLIG SLET alle %d sange og fjerne dem fra ALLE spillelister. Denne handling kan ikke fortrydes!</string>
