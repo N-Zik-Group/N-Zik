@@ -1271,6 +1271,7 @@
   <string name="match_album_audio_version">Match Album/Lyd versjon</string>
   <string name="match_all_songs_confirmation">Vil du virkelig ha samme navn som %d sanger til deres Album/Lydversjon?</string>
   <string name="unmatched_song">Umatchet sang</string>
+  <string name="playback_blocked_match_first">Avspilling blokkert, vennligst match først</string>
   <string name="imported_playlist">Importert Spilleliste</string>
   <string name="smart_trash">Smart papirkurv</string>
   <string name="smart_trash_all_clear">⚠️ ADVARSEL: Dette vil PERMANENT SLETTE alle %d sanger OG fjern dem fra ALLE spillelister. Denne handlingen kan ikke angres!</string>
