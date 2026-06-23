@@ -1271,6 +1271,7 @@
   <string name="match_album_audio_version">Ταίριασμα λευκώματος/ηχητικής έκδοσης</string>
   <string name="match_all_songs_confirmation">Θέλετε πραγματικά να ταιριάξετε %d τραγούδια στην έκδοση Άλμπουμ / Ήχος?</string>
   <string name="unmatched_song">Αντιστοιχισμένο τραγούδι</string>
+  <string name="playback_blocked_match_first">Η αναπαραγωγή αποκλείστηκε, παρακαλώ ταιριάξτε πρώτα</string>
   <string name="imported_playlist">Λίστα Αναπαραγωγής</string>
   <string name="smart_trash">Έξυπνα σκουπίδια</string>
   <string name="smart_trash_all_clear">⚠️ ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Αυτό θα διαγράψει όλα τα %d τραγούδια και θα τα αφαιρέσει από όλες τις λίστες αναπαραγωγής. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί!</string>
