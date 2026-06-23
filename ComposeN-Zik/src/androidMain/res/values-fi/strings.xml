@@ -1271,6 +1271,7 @@
   <string name="match_album_audio_version">Sovita albumi/Audio versio</string>
   <string name="match_all_songs_confirmation">Haluatko varmasti sovittaa %d kappaletta niiden Albumi/Audio versioon?</string>
   <string name="unmatched_song">Vastaamaton kappale</string>
+  <string name="playback_blocked_match_first">Toisto estetty, ole hyvä ja vastaa ensin</string>
   <string name="imported_playlist">Tuotu Soittolista</string>
   <string name="smart_trash">Älykäs roskakori</string>
   <string name="smart_trash_all_clear">⚠️ VAROITUS: Tämä poistaa kaikki %d kappaleet ja poistaa ne kaikista soittolistoista. Tätä toimintoa ei voi peruuttaa!</string>
