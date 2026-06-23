@@ -1271,6 +1271,7 @@
   <string name="match_album_audio_version">Dopasuj wersję Album/Audio</string>
   <string name="match_all_songs_confirmation">Czy na pewno chcesz dopasować utwory %d do ich wersji Album/Audio?</string>
   <string name="unmatched_song">Niedopasowana piosenka</string>
+  <string name="playback_blocked_match_first">Odtwarzanie zablokowane, proszę najpierw dopasować</string>
   <string name="imported_playlist">Zaimportowano playlistę</string>
   <string name="smart_trash">Inteligentny kosz</string>
   <string name="smart_trash_all_clear">⚠️ OSTRZEŻENIE: OSTRZEŻENIEJ wszystkie utwory %d ORAZ usuń je z WSZYSTKICH list odtwarzania. Tej akcji nie można cofnąć!</string>
