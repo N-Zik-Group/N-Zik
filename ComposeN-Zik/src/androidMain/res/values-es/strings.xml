@@ -1271,6 +1271,7 @@
   <string name="match_album_audio_version">Coincidir versión de álbum/audio</string>
   <string name="match_all_songs_confirmation">¿Estás seguro de que quieres hacer coincidir las canciones %d con su versión de álbum/audio?</string>
   <string name="unmatched_song">Canción inigualable</string>
+  <string name="playback_blocked_match_first">Reproducción bloqueada, por favor coincide primero</string>
   <string name="imported_playlist">Lista de reproducción importada</string>
   <string name="smart_trash">Papelera inteligente</string>
   <string name="smart_trash_all_clear">⚠️ ADVERTENCIA: Esto eliminará todas las canciones %d y las eliminará de TODAS las listas de reproducción. ¡Esta acción no se puede deshacer!</string>
