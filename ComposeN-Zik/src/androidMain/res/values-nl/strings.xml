@@ -1271,6 +1271,7 @@
   <string name="match_album_audio_version">Album/Audio versie vergelijken</string>
   <string name="match_all_songs_confirmation">Wil je echt overeenkomen met %d nummers met hun Album/Audio versie?</string>
   <string name="unmatched_song">Ongeëvenaard nummer</string>
+  <string name="playback_blocked_match_first">Afspelen geblokkeerd, probeer het eerst eens</string>
   <string name="imported_playlist">Geïmporteerde afspeellijst</string>
   <string name="smart_trash">Slimme prullenbak</string>
   <string name="smart_trash_all_clear">⚠️ WAARSCHUWING: Dit zal alle %d nummers VERWIJDEREN en ze verwijderen uit ALLE afspeellijsten. Deze actie kan niet ongedaan worden gemaakt!</string>
