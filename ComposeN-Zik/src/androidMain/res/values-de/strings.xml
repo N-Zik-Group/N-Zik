@@ -1271,6 +1271,7 @@
   <string name="match_album_audio_version">Album/Audio-Version anpassen</string>
   <string name="match_all_songs_confirmation">Willst du wirklich %d Songs auf ihre Album/Audio-Version übertragen?</string>
   <string name="unmatched_song">Unübertroffener Titel</string>
+  <string name="playback_blocked_match_first">Wiedergabe blockiert, bitte zuerst übereinstimmen</string>
   <string name="imported_playlist">Importierte Playlist</string>
   <string name="smart_trash">Intelligenter Papierkorb</string>
   <string name="smart_trash_all_clear">:Warnung: WARNUNG: Dies löscht alle %d Songs UND entfernt sie von allen Playlisten. Diese Aktion kann nicht rückgängig gemacht werden!</string>
