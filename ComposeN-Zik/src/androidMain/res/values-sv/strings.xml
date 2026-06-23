@@ -1271,6 +1271,7 @@
   <string name="match_album_audio_version">Matcha Album/Ljudversion</string>
   <string name="match_all_songs_confirmation">Vill du verkligen matcha %d låtar till deras Album/Ljudversion?</string>
   <string name="unmatched_song">Oöverträffad låt</string>
+  <string name="playback_blocked_match_first">Uppspelning blockerad, vänligen matcha först</string>
   <string name="imported_playlist">Importerad spellista</string>
   <string name="smart_trash">Smart papperskorgen</string>
   <string name="smart_trash_all_clear">⚠️ VARNING: Detta kommer PERMANENTLY RADERA alla %d låtar och ta bort dem från ALLA spellistor. Denna åtgärd kan inte ångras!</string>
