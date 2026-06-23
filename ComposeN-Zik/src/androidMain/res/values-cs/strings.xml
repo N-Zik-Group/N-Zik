@@ -1271,6 +1271,7 @@
   <string name="match_album_audio_version">Odpovídat verzi alba/zvuku</string>
   <string name="match_all_songs_confirmation">Opravdu chcete propojit %d skladeb s jejich verzí alba/zvuku?</string>
   <string name="unmatched_song">Neporovnaná skladba</string>
+  <string name="playback_blocked_match_first">Přehrávání zablokováno, nejprve se prosím shodujte.</string>
   <string name="imported_playlist">Importovaný playlist</string>
   <string name="smart_trash">Chytrý koš</string>
   <string name="smart_trash_all_clear">⚠️ VAROVÁNÍ: Toto bude POVOLIT všechny %d skladeb A odebrat je ze VŠECH playlistů. Tuto akci nelze vrátit zpět!</string>
