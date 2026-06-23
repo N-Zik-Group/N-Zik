@@ -1272,6 +1272,7 @@ Volume BAS : titre précédent</string>
   <string name="match_album_audio_version">Version de l\'album/de l\'audio</string>
   <string name="match_all_songs_confirmation">Voulez-vous vraiment associer les chansons %d à leur version Album/Audio ?</string>
   <string name="unmatched_song">Chanson sans correspondance</string>
+  <string name="playback_blocked_match_first">Lecture bloquée, veuillez d\'abord faire correspondre</string>
   <string name="imported_playlist">Playlist importée</string>
   <string name="smart_trash">Corbeille intelligente</string>
   <string name="smart_trash_all_clear">⚠️ AVERTISSEMENT : Ceci SUPPRIMER PERMANENTEMENT toutes les chansons %d et les retirera de TOUTES les playlists. Cette action ne peut pas être annulée !</string>
