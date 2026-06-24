@@ -1353,4 +1353,5 @@
   <string name="source_lrclib_unsynced">LrcLib.net (usynkronisert)</string>
   <string name="source_kugou_synced">KuGou.com (synkronisert)</string>
   <string name="source_youtube_unsynced">YouTube (usynkronisert)</string>
+  <string name="clipboard_contains_non_text_content">Utklippstavlen inneholder ikke-tekstinnhold (bilde eller andre medier)</string>
 </resources>
