@@ -1353,4 +1353,5 @@
   <string name="source_lrclib_unsynced">LrcLib.net (غير متزامن)</string>
   <string name="source_kugou_synced">COGou.com (مزامنة)</string>
   <string name="source_youtube_unsynced">يوتيوب (غير متزامن)</string>
+  <string name="clipboard_contains_non_text_content">الحافظة تحتوي على محتوى غير نصي (صورة أو وسائط أخرى)</string>
 </resources>
