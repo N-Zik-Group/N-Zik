@@ -1353,4 +1353,5 @@
   <string name="source_lrclib_unsynced">LrcLib.net (osynkad)</string>
   <string name="source_kugou_synced">KuGou.com (synkroniserad)</string>
   <string name="source_youtube_unsynced">YouTube (osynkad)</string>
+  <string name="clipboard_contains_non_text_content">Urklipp innehåller icke-textinnehåll (bild eller andra medier)</string>
 </resources>
