@@ -1353,4 +1353,5 @@
   <string name="source_lrclib_unsynced">LrcLib.net (nicht synchronisiert)</string>
   <string name="source_kugou_synced">KuGou.com (synchronisiert)</string>
   <string name="source_youtube_unsynced">YouTube (nicht synchronisiert)</string>
+  <string name="clipboard_contains_non_text_content">Zwischenablage enthält nicht-text-Inhalte (Bild oder andere Medien)</string>
 </resources>
