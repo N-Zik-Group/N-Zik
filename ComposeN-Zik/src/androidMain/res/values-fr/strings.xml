@@ -1354,4 +1354,5 @@ Volume BAS : titre précédent</string>
   <string name="source_lrclib_unsynced">LrcLib.net (non synchronisé)</string>
   <string name="source_kugou_synced">KuGou.com (synchronisé)</string>
   <string name="source_youtube_unsynced">YouTube (non synchronisé)</string>
+  <string name="clipboard_contains_non_text_content">Le presse-papier contient du contenu non textuel (image ou autre média)</string>
 </resources>
