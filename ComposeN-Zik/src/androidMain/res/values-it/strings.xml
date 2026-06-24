@@ -1353,4 +1353,5 @@
   <string name="source_lrclib_unsynced">LrcLib.net (non sincronizzato)</string>
   <string name="source_kugou_synced">KuGou.com (sincronizzato)</string>
   <string name="source_youtube_unsynced">YouTube (non sincronizzato)</string>
+  <string name="clipboard_contains_non_text_content">Gli appunti contengono contenuti non testuali (immagine o altri supporti)</string>
 </resources>
