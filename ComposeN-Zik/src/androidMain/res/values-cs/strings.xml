@@ -1353,4 +1353,5 @@
   <string name="source_lrclib_unsynced">LrcLib.net (nesynchronizovaný)</string>
   <string name="source_kugou_synced">KuGou.com (synchronizovaný)</string>
   <string name="source_youtube_unsynced">YouTube (nesynchronizovaný)</string>
+  <string name="clipboard_contains_non_text_content">Schránka obsahuje netextový obsah (obrázek nebo jiná média)</string>
 </resources>
