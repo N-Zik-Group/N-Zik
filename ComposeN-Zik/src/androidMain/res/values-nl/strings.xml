@@ -1353,4 +1353,5 @@
   <string name="source_lrclib_unsynced">LrcLib.net (niet gesynchroniseerd)</string>
   <string name="source_kugou_synced">KuGou.com (gesynchroniseerd)</string>
   <string name="source_youtube_unsynced">YouTube (niet gesynchroniseerd)</string>
+  <string name="clipboard_contains_non_text_content">Klembord bevat niet-tekstinhoud (afbeelding of andere media)</string>
 </resources>
