@@ -1353,4 +1353,5 @@
   <string name="source_lrclib_unsynced">LrcLib.net (μη συγχρονισμένο)</string>
   <string name="source_kugou_synced">KuGou.com (συγχρονισμένο)</string>
   <string name="source_youtube_unsynced">YouTube (μη συγχρονισμένο)</string>
+  <string name="clipboard_contains_non_text_content">Το πρόχειρο περιέχει περιεχόμενο χωρίς κείμενο (εικόνα ή άλλα πολυμέσα)</string>
 </resources>
