@@ -54,7 +54,7 @@
     <g class="animated delay-2">
       <text x="245" y="65" class="text-label">LATEST RELEASE</text>
       <text x="245" y="85" class="text-value-2">v7.4.7-dev-20260814</text>
-      <text x="245" y="105" class="text-sub">📥 64 downloads</text>
+      <text x="245" y="105" class="text-sub">📥 67 downloads</text>
     </g>
 
     <line x1="420" y1="45" x2="420" y2="100" class="line" stroke-width="1" />
