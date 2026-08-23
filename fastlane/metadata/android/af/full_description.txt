@@ -1,57 +1,55 @@
-<b>N-Zik</b> is jou uiteindelike, oopbron, meertalige YouTube Music-kliënt vir Android! 🎵🚀
+<b>N-Zik</b> is jou oopbron, meertalige YouTube Music-kliënt vir Android.
 
-'n Meertalige vurk van <a href="https://github.com/knighthat/Kreate">Kreate</a>, gefokus op werkverrigting, UI/UX-polering, foutoplossings en nuwe kenmerke met langtermyn-ondersteuning.
+'n Vurk van <a href="https://github.com/knighthat/Kreate">Kreate</a> gefokus op werkverrigting, UI-polering, foutoplossings en langtermynondersteuning.
 
-<b>Ontwikkeling en Stabiliteit:</b> N-Zik het begin as 'n byprojek vir myself en vriende. Dit is dalk nog nie so stabiel soos Kreate nie — kyk na <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, of <a href="https://github.com/fast4x/RiPlay">RiPlay</a> vir iets meer volwasse.
+<b>Nota:</b> N-Zik het as 'n byprojek begin. Vir meer volwasse alternatiewes, kyk na <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, of <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Deursigtige KI-gebruik:</b> Ek gebruik generatiewe KI om met kode te help (via die <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD-metode</a>), maar alles word hersien en getoets voordat dit gestuur word. Nie jou ding nie? Geen harde gevoelens nie — daar bestaan baie goeie alternatiewe.
+<b>KI-gebruik:</b> Ek gebruik generatiewe KI vir kode (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Metode</a>), hersien en getoets voor versending.
 
-Of jy nou 'n toevallige luisteraar of 'n hardcore ouditief is, N-Zik gee jou absolute beheer oor jou musiek, sonder om jou privaatheid in te boet.
+Of jy nou 'n toevallige luisteraar of 'n ouditief is, N-Zik gee jou volle beheer oor jou musiek sonder om privaatheid prys te gee.
 
-✨ <b>WAAROM N-ZIK KIES?</b> Geen advertensies nie, volledige agtergrondspeel, vanlyn kasberging en 'n volledig aanpasbare koppelvlak — gratis, altyd.
+✨ <b>WAAROM N-ZIK?</b> Geen advertensies nie, agtergrondspeling, vanlyn kasberging en aanpasbare koppelvlak — gratis, altyd.
 
 🎨 <b>Aanpasbare UI</b>
-- Jetpack Compose UI met 'n klassieke ViMusic-modusskakelaar 🌓
-- Pasgemaakte temas: True AMOLED, Deep Dark, Crisp Light + getinte aksente
-- 3D-karrouselspeler 🎠 en aanpasbare tuisskerm-widgets 🪟
-- Gedetailleerde kunstenaarsprofiele, nuusvoer en eksperimentele widgets 🧪
+- Jetpack Compose met klassieke ViMusic-modusskakelaar
+- Temas: True AMOLED, Deep Dark, Crisp Light + getinte aksente
+- 3D Karrouselspeler en aanpasbare tuisskermwidgets
+- Kunstenaarsprofiele, nuusvoer en eksperimentele widgets
 
 🎵 <b>Klankervaring</b>
-- Premium kwaliteit klank via YouTube Music Premium (Web Remix-kliënt) 🔊
-- Gevorderde gesinkroniseerde lirieke met redigering en intydse vertaling 🎤
-- Intydse klankvisualiseerder 🎇 en pro-kontroles: spoed, toonhoogte, normalisering, oorkruisdoof, volumehulp 🎚️
+- Premium kwaliteit via YouTube Music Premium (Web Remix)
+- Gesinkroniseerde lirieke met redigering en intydse vertaling
+- Klankvisualiseerder en pro-kontroles: spoed, toonhoogte, normalisering, oorkruisdoof, volumehulp
 
 💾 <b>Vanlyn, Metadata en Privaatheid</b>
-- Slim vanlyn kasberging en aflaaie vir snitte en speellyste 📡
-- FFmpeg-aangedrewe uitvoer met volledige ingebedde metadata 📤 (slegs 64-bis builds)
-- In-app metadata-redigeerder (AAC/Opus, omslagkuns) ✏️
-- 100% plaaslike luisterstatistieke en geskiedenis 📊
-- Outo-rugsteun met pasgemaakte intervalle en behoud ⚙️
+- Slim vanlyn kasberging en aflaaie vir snitte en speellyste
+- FFmpeg-aangedrewe uitvoer met volledige metadata (slegs 64-bis)
+- In-app metadata-redigeerder (AAC/Opus, omslagkuns)
+- Plaaslike luisterstatistieke en geskiedenis
+- Outomatiese rugsteun met pasgemaakte intervalle en behoud
 
 🔗 <b>Integrasies</b>
-- YouTube-aanmelding vir aanbevelings en klank/video-wisseling 📺
-- Discord Rich Presence 🎮
-- Speellys invoer/uitvoer: RiPlay, Spotify (Exportify), YouTube Music, N-Zik 🔄
+- YouTube-aanmelding vir aanbevelings en klank/video-wisseling
+- Discord Rich Presence
+- Speellys invoer/uitvoer: RiPlay, Spotify, YouTube Music, N-Zik
 
-📱 <b>Speel Enigplek:</b> Android Auto, Automotive, TV en tablette 🚗📺
+📱 <b>Speel Enigplek:</b> Android Auto, Automotive, TV en tablette
 
-🛠️ <b>Kenmerke vir Kraggebruikers</b>
-- Teks- en stemsoektog 🎙️
-- OTA-opdaterings vanaf GitHub ⬇️
-- Slaaptydhouer en agtergrondspeel 💤
+🛠️ <b>Kraggebruiker Kenmerke</b>
+- Teks- en stemsoektog
+- OTA-opdaterings vanaf GitHub
+- Slaaptydhouer en agtergrondspeling
 
-🛡️ N-Zik is 100% oopbron (FOSS). Sleuteltoestemmings: INTERNET (stroom/lirieke/opdaterings), RECORD_AUDIO (slegs visualiseerder, opt-in, luister nooit nie), STORAGE (uitvoere/rugsteun), FOREGROUND_SERVICE/NOTIFICATIONS (speel), REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH (draadlose klank), WAKE_LOCK (hou speel aan die gang).
+🛡️ 100% oopbron (FOSS). Sleuteltoestemmings: INTERNET, RECORD_AUDIO (slegs visualiseerder), STORAGE (uitvoere/rugsteun), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Beskikbare Builds</b>
-- Volledig en Beta: Volledige build met alle komponente (slegs 64-bis)
-- Full32 en Beta32: Volledige build sonder FFmpeg (32-bis en 64-bis)
-- Geminimiseer: Liggewig build, aanbeveel vir laer-end toestelle (slegs 64-bis)
-- Minified32: Liggewig build sonder FFmpeg (32-bis en 64-bis)
-- FOSS: Volledige build sonder outo-opdateerder, vir F-Droid (slegs 64-bis)
-- Dev en Dev32: Ontwikkelingsbuilds van die nuutste commits, slegs vir toetsing
+- Full/Beta: Volledige build (64-bis)
+- Full32/Beta32: Sonder FFmpeg (32/64-bis)
+- Minified: Liggewig, vir laer-end toestelle (64-bis)
+- Minified32: Liggewig sonder FFmpeg (32/64-bis)
+- FOSS: Sonder outo-opdateerder, vir F-Droid (64-bis)
+- Dev/Dev32: Ontwikkelingsbuilds, slegs vir toetsing
 
-Standaard builds is slegs 64-bis omdat hulle FFmpeg bondel; "32" builds laat FFmpeg weg om op beide argitekture te werk. Slegs die FOSS-build is op F-Droid.
+Standaard builds is 64-bis (FFmpeg); "32" builds laat FFmpeg weg vir beide argitekture. Slegs FOSS is op F-Droid.
 
-Vanaf <b>Januarie 2027</b> (<a href="https://keepandroidopen.org/en/faq/">waarom die datum verander het</a>), sal Google identiteitsverifikasie vereis vir alle Android-ontwikkelaars, selfs buite Google Play. As 'n Gratis en Oopbron Sagteware (FOSS) projek, is N-Zik en sy ontwikkelaar teen hierdie vereiste gekant weens die impak daarvan op ontwikkelaar-privaatheid, onafhanklike verspreiding en sagtewarevryheid.
-
-📖 <a href="https://keepandroidopen.org">Leer meer</a> · ✍️ <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Teken die petisie</a>
+Vanaf <b>Januarie 2027</b> vereis Google identiteitsverifikasie vir alle ontwikkelaars. As FOSS projek, is N-Zik teen hierdie vereiste gekant. <a href="https://keepandroidopen.org">Leer meer</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Teken die petisie</a>

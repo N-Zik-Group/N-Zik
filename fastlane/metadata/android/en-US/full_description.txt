@@ -1,57 +1,55 @@
-<b>N-Zik</b> is your ultimate, open-source, multilingual YouTube Music client for Android! 🎵🚀
+<b>N-Zik</b> is your open-source, multilingual YouTube Music client for Android.
 
-A multilingual fork of <a href="https://github.com/knighthat/Kreate">Kreate</a>, focused on performance, UI/UX polish, bug fixes, and new features with long-term support.
+A fork of <a href="https://github.com/knighthat/Kreate">Kreate</a> focused on performance, UI polish, bug fixes, and long-term support.
 
-<b>Development & Stability:</b> N-Zik started as a side project for myself and friends. It may not be as stable as Kreate yet — check out <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a> for something more mature.
+<b>Note:</b> N-Zik started as a side project. For more mature alternatives, check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Transparent AI Usage:</b> I use generative AI to assist with code (via the <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), but everything is reviewed and tested before shipping. Not your thing? No hard feelings — plenty of great alternatives exist.
+<b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), reviewed and tested before shipping.
 
-Whether you're a casual listener or a hardcore audiophile, N-Zik gives you absolute control over your music, without compromising your privacy.
+Whether casual listener or audiophile, N-Zik gives you full control over your music without compromising privacy.
 
-✨ <b>WHY CHOOSE N-ZIK?</b> No ads, full background playback, offline caching, and a fully customizable interface — free, always.
+✨ <b>WHY N-ZIK?</b> No ads, background playback, offline caching, customizable UI — free, always.
 
 🎨 <b>Customizable UI</b>
-- Jetpack Compose UI with a Classic ViMusic mode toggle 🌓
-- Custom themes: True AMOLED, Deep Dark, Crisp Light + tinted accents
-- 3D Carousel Player 🎠 and customizable home screen widgets 🪟
-- Detailed artist profiles, News Feed, and experimental widgets 🧪
+- Jetpack Compose with Classic ViMusic mode toggle
+- Themes: AMOLED, Deep Dark, Crisp Light + tinted accents
+- 3D Carousel Player, customizable home widgets
+- Artist profiles, News Feed, experimental widgets
 
 🎵 <b>Audio Experience</b>
-- Premium quality audio via YouTube Music Premium (Web Remix client) 🔊
-- Advanced synced lyrics with editing & real-time translation 🎤
-- Real-time audio visualizer 🎇 and pro controls: speed, pitch, normalization, crossfade, volume boost 🎚️
+- Premium quality via YouTube Music Premium (Web Remix)
+- Synced lyrics with editing and real-time translation
+- Audio visualizer and pro controls: speed, pitch, normalization, crossfade, volume boost
 
 💾 <b>Offline, Metadata & Privacy</b>
-- Smart offline caching & downloads for tracks and playlists 📡
-- FFmpeg-powered export with full embedded metadata 📤 (64-bit builds only)
-- In-app metadata editor (AAC/Opus, cover art) ✏️
-- 100% local listening stats & history 📊
-- Auto-backup with custom intervals & retention ⚙️
+- Smart caching and downloads for tracks and playlists
+- FFmpeg-powered export with full metadata (64-bit only)
+- In-app metadata editor (AAC/Opus, cover art)
+- Local listening stats and history
+- Auto-backup with custom intervals and retention
 
 🔗 <b>Integrations</b>
-- YouTube sign-in for recommendations & audio/video switching 📺
-- Discord Rich Presence 🎮
-- Playlist import/export: RiPlay, Spotify (Exportify), YouTube Music, N-Zik 🔄
+- YouTube sign-in for recommendations and audio/video switching
+- Discord Rich Presence
+- Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
 
-📱 <b>Play Anywhere:</b> Android Auto, Automotive, TV, and Tablets 🚗📺
+📱 <b>Play Anywhere:</b> Android Auto, Automotive, TV, and Tablets
 
 🛠️ <b>Power User Features</b>
-- Text & voice search 🎙️
-- OTA updates from GitHub ⬇️
-- Sleep timer & background playback 💤
+- Text and voice search
+- OTA updates from GitHub
+- Sleep timer and background playback
 
-🛡️ N-Zik is 100% open-source (FOSS). Key permissions: INTERNET (streaming/lyrics/updates), RECORD_AUDIO (visualizer only, opt-in, never listens), STORAGE (exports/backups), FOREGROUND_SERVICE/NOTIFICATIONS (playback), REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH (wireless audio), WAKE_LOCK (keep playback alive).
+🛡️ 100% open-source (FOSS). Key permissions: INTERNET, RECORD_AUDIO (visualizer only), STORAGE (exports/backups), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Available Builds</b>
-- Full & Beta: Complete build with all components (64-bit only)
-- Full32 & Beta32: Complete build without FFmpeg (32-bit & 64-bit)
-- Minified: Lightweight build, recommended for low-end devices (64-bit only)
-- Minified32: Lightweight build without FFmpeg (32-bit & 64-bit)
-- FOSS: Full build without auto-updater, for F-Droid (64-bit only)
-- Dev & Dev32: Development builds from latest commits, testing only
+- Full/Beta: Complete build (64-bit)
+- Full32/Beta32: Without FFmpeg (32/64-bit)
+- Minified: Lightweight, for low-end devices (64-bit)
+- Minified32: Lightweight without FFmpeg (32/64-bit)
+- FOSS: Without auto-updater, for F-Droid (64-bit)
+- Dev/Dev32: Development builds, testing only
 
-Standard builds are 64-bit only because they bundle FFmpeg; "32" builds drop FFmpeg to work on both architectures. Only the FOSS build is on F-Droid.
+Standard builds are 64-bit (FFmpeg); "32" builds drop FFmpeg for both architectures. Only FOSS is on F-Droid.
 
-Starting <b>January 2027</b> (<a href="https://keepandroidopen.org/en/faq/">why the date changed</a>), Google will require identity verification for all Android developers, even outside Google Play. As a Free and Open Source Software (FOSS) project, N-Zik and its developer oppose this requirement due to its impact on developer privacy, independent distribution, and software freedom.
-
-📖 <a href="https://keepandroidopen.org">Learn more</a> · ✍️ <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Sign the petition</a>
+Starting <b>January 2027</b>, Google requires identity verification for all developers. As FOSS, N-Zik opposes this. <a href="https://keepandroidopen.org">Learn more</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Sign the petition</a>

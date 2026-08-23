@@ -1,57 +1,55 @@
-<b>N-Zik</b> Android üçün mükəmməl, açıq mənbəli və çoxdilli YouTube Music müştərinizdir! 🎵🚀
+<b>N-Zik</b> Android üçün açıq mənbəli, çoxdilli YouTube Music müştərinizdir.
 
-Performans, UI/UX təkmilləşdirilməsi, xəta düzəlişləri və uzunmüddətli dəstəkli yeni funksiyalara yönəlmiş, <a href="https://github.com/knighthat/Kreate">Kreate</a>-in çoxdilli bir qoludur (fork).
+<a href="https://github.com/knighthat/Kreate">Kreate</a>-in performans, UI təkmilləşdirilməsi, xəta düzəlişləri və uzunmüddətli dəstək yönəlmiş bir qoludur.
 
-<b>İnkişaf və Sabitlik:</b> N-Zik özüm və dostlarım üçün bir yan layihə kimi başladı. Hələ Kreate qədər sabit olmaya bilər — daha yetkin bir seçim üçün <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> və ya <a href="https://github.com/fast4x/RiPlay">RiPlay</a>-ə nəzər sala bilərsiniz.
+<b>Qeyd:</b> N-Zik yan layihə kimi başladı. Daha yetkin seçimlər üçün <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> və ya <a href="https://github.com/fast4x/RiPlay">RiPlay</a>-ə baxın.
 
-<b>Şəffaf Süni İntellekt İstifadəsi:</b> Kodlaşdırma ilə bağlı kömək üçün generativ süni intellektdən istifadə edirəm (<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Metodu</a> vasitəsilə), lakin hər şey təqdim edilməzdən əvvəl nəzərdən keçirilir və sınaqdan keçirilir. Sizə uyğun deyil? Narahat olmayın — çox sayda əla alternativ mövcuddur.
+<b>Süni intellekt istifadəsi:</b> Kod üçün generativ süni intellektdən istifadə edirəm (<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Metodu</a> vasitəsilə), hər şey təqdim etməzdən əvvəl nəzərdən keçirilir və yoxlanılır.
 
-İstər sıravi dinləyici, istərsə də ciddi musiqi həvəskarı olun, N-Zik məxfiliyinizə xələl gətirmədən musiqiniz üzərində mütləq nəzarət imkanı verir.
+İstər sadə dinləyici, istərsə də audiofil olun, N-Zik məxfiliyinə xələl gətirmədən musiqiniz üzərində tam nəzarət verir.
 
-✨ <b>NİYƏ N-ZIK-İ SEÇMƏLİSİNİZ?</b> Reklam yoxdur, tam arxa fon oynatma, oflayn keşləmə və tam tənzimlənən interfeys — həmişə pulsuzdur.
+✨ <b>NİYƏ N-ZIK?</b> Reklam yoxdur, arxa fon oynatma, oflayn keşləmə və fərdiləşdirilə bilən interfeys — həmişə pulsuzdur.
 
-🎨 <b>Fərdiləşdirilə bilən İstifadəçi İnterfeysi (UI)</b>
-- Klassik ViMusic rejimi keçidli Jetpack Compose interfeysi 🌓
-- Xüsusi mövzular: Həqiqi AMOLED, Dərin Qaranlıq, Aydın İşıqlı + rəngli vurğular
-- 3D Karusel Pleyeri Carousel 🎠 və fərdiləşdirilə bilən ana ekran vidjetləri 🪟
-- Ətraflı sənətçi profilləri, Xəbər Lenti və eksperimental vidjetlər 🧪
+🎨 <b>Fərdiləşdirilə bilən UI</b>
+- Klassik ViMusic rejimi keçidi ilə Jetpack Compose
+- Temalar: True AMOLED, Deep Dark, Crisp Light və rəngli vurğular
+- 3D Karusel Pleyeri və ana ekran vidjetləri
+- Sənətçi profilləri, Xəbər Lenti və eksperimental vidjetlər
 
 🎵 <b>Audio Təcrübəsi</b>
-- YouTube Music Premium (Web Remix müştərisi) vasitəsilə yüksək keyfiyyətli audio 🔊
-- Redaktə və real vaxt tərcüməsi ilə inkişaf etmiş sinxronlaşdırılmış mahnı sözləri 🎤
-- Real vaxt audio vizuallaşdırıcısı 🎇 və peşəkar idarəetmələr: sürət, ton yüksəkliyi, normallaşdırma, səlis keçid (crossfade), səs artırma 🎚️
+- YouTube Music Premium (Web Remix) vasitəsilə premium keyfiyyətli audio
+- Redaktə və real vaxt tərcüməsi ilə sinxronlaşdırılmış mahnı sözləri
+- Real vaxt audio vizuallaşdırıcısı və peşəkar idarəetmələr: sürət, ton, normallaşdırma, crossfade, səs artırma
 
 💾 <b>Oflayn, Meta Məlumatlar və Məxfilik</b>
-- Treklər və pleylistlər üçün ağıllı oflayn keşləmə və yükləmələr 📡
-- Tam daxili meta məlumatlarla FFmpeg vasitəsilə ixrac 📤 (yalnız 64 bitlik versiyalar)
-- Tətbiqdaxili meta məlumat redaktoru (AAC/Opus, üz qabığı) ✏️
-- 100% yerli dinləmə statistikası və tarixçəsi 📊
-- Xüsusi intervallar və saxlama müddəti ilə avtomatik ehtiyat nüsxələmə ⚙️
+- Treklər və pleylistlər üçün ağıllı oflayn keşləmə və yükləmələr
+- Tam meta məlumatlarla FFmpeg ixracı (yalnız 64 bit)
+- Tətbiqdaxili meta məlumat redaktoru (AAC/Opus, üz qabığı)
+- Yerli dinləmə statistikası və tarixçəsi
+- Xüsusi intervallarla avtomatik ehtiyat nüsxələmə
 
 🔗 <b>İnteqrasiyalar</b>
-- Tövsiyələr və audio/video keçidi üçün YouTube girişi 📺
-- Discord Rich Presence 🎮
-- Pleylistlərin idxalı/ixracı: RiPlay, Spotify (Exportify), YouTube Music, N-Zik 🔄
+- Tövsiyələr və audio/video keçidi üçün YouTube girişi
+- Discord Rich Presence
+- Pleylist idxalı/ixracı: RiPlay, Spotify, YouTube Music, N-Zik
 
-📱 <b>Hər yerdə dinləyin:</b> Android Auto, Automotive, TV və Planşetlər 🚗📺
+📱 <b>Hər yerdə dinləyin:</b> Android Auto, Automotive, TV və Planşetlər
 
-🛠️ <b>Peşəkar İstifadəçi Funksiyaları</b>
-- Mətn və səsli axtarış 🎙️
-- GitHub-dan OTA yeniləmələri ⬇️
-- Yuxu taymeri və arxa fonda oynatma 💤
+🛠️ <b>Peşəkar Funksiyalar</b>
+- Mətn və səsli axtarış
+- GitHub-dan OTA yeniləmələri
+- Yuxu taymeri və arxa fonda oynatma
 
-🛡️ N-Zik 100% açıq mənbəlidir (FOSS). Əsas icazələr: INTERNET (axın/sözlər/yeniləmələr), RECORD_AUDIO (yalnız vizuallaşdırıcı üçün, istəyə bağlı, heç vaxt dinləmir), STORAGE (ixrac/ehtiyat nüsxələmə), FOREGROUND_SERVICE/NOTIFICATIONS (oynatma), REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH (kabelsiz audio), WAKE_LOCK (oynatmanı davam etdirmək üçün).
+🛡️ 100% açıq mənbəli (FOSS). Əsas icazələr: INTERNET, RECORD_AUDIO (yalnız vizuallaşdırıcı), STORAGE, FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Mövcud Versiyalar</b>
-- Full & Beta: Bütün komponentləri ehtiva edən tam versiya (yalnız 64 bit)
-- Full32 & Beta32: FFmpeg olmayan tam versiya (32 bit və 64 bit)
-- Minified: Aşağı performanslı cihazlar üçün tövsiyə olunan yüngül versiya (yalnız 64 bit)
-- Minified32: FFmpeg olmayan yüngül versiya (32 bit və 64 bit)
-- FOSS: F-Droid üçün avtomatik yeniləyicisi olmayan tam versiya (yalnız 64 bit)
-- Dev & Dev32: Ən son commitlərdən hazırlanan inkişaf versiyaları, yalnız sınaq üçündür
+- Full/Beta: Tam versiya (yalnız 64 bit)
+- Full32/Beta32: FFmpeg olmadan (32 və 64 bit)
+- Minified: Yüngül, aşağı səviyyəli cihazlar üçün (yalnız 64 bit)
+- Minified32: FFmpeg olmadan yüngül (32 və 64 bit)
+- FOSS: Avtomatik yeniləyicisiz, F-Droid üçün (yalnız 64 bit)
+- Dev/Dev32: İnkişaf versiyaları, yalnız sınaq üçün
 
-Standart versiyalar FFmpeg ehtiva etdiyi üçün yalnız 64 bitlikdir; "32" versiyalar hər iki arxitekturada işləməsi üçün FFmpeg-i ehtiva etmir. Yalnız FOSS versiyası F-Droid-dədir.
+Standart versiyalar 64 bitdir (FFmpeg daxil); "32" versiyalar hər iki arxitekturada işləmək üçün FFmpeg-i çıxarır. Yalnız FOSS F-Droid-dədir.
 
-<b>2027-ci ilin yanvarından</b> başlayaraq (<a href="https://keepandroidopen.org/en/faq/">tarixin niyə dəyişdiyi</a>), Google hətta Google Play-dən kənar bütün Android tərtibatçılarından şəxsiyyətin təsdiqlənməsini tələb edəcək. Azad və Açıq Mənbəli Proqram Təminatı (FOSS) layihəsi olaraq N-Zik və onun tərtibatçısı tərtibatçı məxfiliyinə, müstəqil paylanmaya və proqram təminatı azadlığına təsiri səbəbindən bu tələbə qarşı çıxır.
-
-📖 <a href="https://keepandroidopen.org">Daha çox məlumat əldə edin</a> · ✍️ <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Petisiyanı imzalayın</a>
+<b>2027-ci ilin yanvarından</b> Google bütün tərtibatçılar üçün şəxsiyyət təsdiqi tələb edəcək. FOSS layihəsi olaraq N-Zik bu tələbə qarşıdır. <a href="https://keepandroidopen.org">Daha çox məlumat</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Petisiyanı imzalayın</a>

@@ -1,1 +1,1 @@
-Një klient modern dhe shumëgjuhësh i YouTube Music për Android me mbështetje jashtë linje.
+Klient modern YouTube Music për Android.

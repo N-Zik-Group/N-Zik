@@ -1,1 +1,1 @@
-Moodne mitmekeelne YouTube Musicu klient Androidile koos võrguühenduseta toega.
+Mitmekeelne YouTube Music klient Androidile.

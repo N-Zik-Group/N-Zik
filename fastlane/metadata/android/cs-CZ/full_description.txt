@@ -1,57 +1,55 @@
-<b>N-Zik</b> je váš dokonalý, open-source, vícejazyčný YouTube Music klient pro Android! 🎵🚀
+<b>N-Zik</b> je váš open-source, vícejazyčný YouTube Music klient pro Android.
 
-Vícejazyčný fork projektu <a href="https://github.com/knighthat/Kreate">Kreate</a>, zaměřený na výkon, vyladění UI/UX, opravy chyb a nové funkce s dlouhodobou podporou.
+Fork projektu <a href="https://github.com/knighthat/Kreate">Kreate</a> zaměřený na výkon, vyladění UI, opravy chyb a dlouhodobou podporu.
 
-<b>Vývoj a stabilita:</b> N-Zik začal jako vedlejší projekt pro mě a mé přátele. Možná ještě není tak stabilní jako Kreate – pro něco vyspělejšího se podívejte na <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> nebo <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Poznámka:</b> N-Zik začal jako vedlejší projekt. Pro vyspělejší alternativy navštivte <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> nebo <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Transparentní využívání AI:</b> K pomoci s kódem používám generativní AI (prostřednictvím <a href="https://github.com/bmad-code-org/BMAD-METHOD">metody BMAD</a>), ale vše je před vydáním zkontrolováno a otestováno. Není to pro vás? Nic se neděje – existuje spousta skvělých alternativ.
+<b>Využití AI:</b> Používám generativní AI pro kód (prostřednictvím <a href="https://github.com/bmad-code-org/BMAD-METHOD">metody BMAD</a>), vše je před vydáním zkontrolováno a otestováno.
 
-Ať už jste příležitostný posluchač nebo zapálený audiofil, N-Zik vám dává absolutní kontrolu nad vaší hudbou, aniž byste museli obětovat své soukromí.
+Ať už jste příležitostný posluchač nebo audiofil, N-Zik vám dává plnou kontrolu nad hudbou bez kompromisu v soukromí.
 
-✨ <b>PROČ SI VYBRAT N-ZIK?</b> Žádné reklamy, plné přehrávání na pozadí, offline ukládání do mezipaměti a plně přizpůsobitelné rozhraní – vždy zdarma.
+✨ <b>PROČ N-ZIK?</b> Žádné reklamy, přehrávání na pozadí, offline ukládání a přizpůsobitelné rozhraní — vždy zdarma.
 
-🎨 <b>Přizpůsobitelné uživatelské rozhraní</b>
-- Jetpack Compose UI s přepínačem klasického režimu ViMusic 🌓
-- Vlastní témata: True AMOLED, Deep Dark, Crisp Light + barevné akcenty
-- 3D Carousel přehrávač 🎠 a přizpůsobitelné widgety na domovskou obrazovku 🪟
-- Podrobné profily umělců, News Feed a experimentální widgety 🧪
+🎨 <b>Přizpůsobitelné UI</b>
+- Jetpack Compose s přepínačem klasického režimu ViMusic
+- Témata: True AMOLED, Deep Dark, Crisp Light + barevné akcenty
+- 3D Carousel přehrávač a přizpůsobitelné widgety na domovskou obrazovku
+- Profily umělců, News Feed a experimentální widgety
 
 🎵 <b>Audio zážitek</b>
-- Prvotřídní kvalita zvuku přes YouTube Music Premium (klient Web Remix) 🔊
-- Pokročilé synchronizované texty s úpravami a překladem v reálném čase 🎤
-- Audio vizualizér v reálném čase 🎇 a profesionální ovládací prvky: rychlost, výška tónu, normalizace, prolínání, zesílení hlasitosti 🎚️
+- Prvotřídní kvalita zvuku přes YouTube Music Premium (Web Remix)
+- Synchronizované texty s úpravami a překladem v reálném čase
+- Audio vizualizér v reálném čase a profesionální ovládání: rychlost, výška tónu, normalizace, prolínání, zesílení
 
 💾 <b>Offline, metadata a soukromí</b>
-- Inteligentní offline ukládání do mezipaměti a stahování skladeb a seznamů skladeb 📡
-- Export pomocí FFmpeg s úplnými vloženými metadaty 📤 (pouze 64bitové sestavy)
-- Editor metadat v aplikaci (AAC/Opus, obal alba) ✏️
-- 100% místní statistiky poslechu a historie 📊
-- Automatické zálohování s vlastními intervaly a uchováváním ⚙️
+- Inteligentní offline ukládání a stahování skladeb a seznamů
+- Export pomocí FFmpeg s úplnými metadaty (pouze 64bitové)
+- Editor metadat v aplikaci (AAC/Opus, obal alba)
+- 100% místní statistiky poslechu a historie
+- Automatické zálohování s vlastními intervaly a uchováváním
 
 🔗 <b>Integrace</b>
-- Přihlášení k YouTube pro doporučení a přepínání zvuku/videa 📺
-- Discord Rich Presence 🎮
-- Import/export seznamů skladeb: RiPlay, Spotify (Exportify), YouTube Music, N-Zik 🔄
+- Přihlášení k YouTube pro doporučení a přepínání zvuku/videa
+- Discord Rich Presence
+- Import/export seznamů: RiPlay, Spotify, YouTube Music, N-Zik
 
-📱 <b>Přehrávejte kdekoli:</b> Android Auto, Automotive, TV a tablety 🚗📺
+📱 <b>Přehrávejte kdekoli:</b> Android Auto, Automotive, TV a tablety
 
-🛠️ <b>Funkce pro pokročilé uživatele</b>
-- Textové a hlasové vyhledávání 🎙️
-- OTA aktualizace z GitHubu ⬇️
-- Časovač spánku a přehrávání na pozadí 💤
+🛠️ <b>Funkce pro pokročilé</b>
+- Textové a hlasové vyhledávání
+- OTA aktualizace z GitHubu
+- Časovač spánku a přehrávání na pozadí
 
-🛡️ N-Zik je 100% open-source (FOSS). Klíčová oprávnění: INTERNET (streamování/texty/aktualizace), RECORD_AUDIO (pouze vizualizér, volitelně, nikdy neposlouchá), STORAGE (exporty/zálohy), FOREGROUND_SERVICE/NOTIFICATIONS (přehrávání), REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH (bezdrátový zvuk), WAKE_LOCK (udržení přehrávání).
+🛡️ 100% open-source (FOSS). Klíčová oprávnění: INTERNET, RECORD_AUDIO (pouze vizualizér), STORAGE, FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Dostupné sestavy</b>
-- Full & Beta: Kompletní sestava se všemi komponentami (pouze 64bitová)
-- Full32 & Beta32: Kompletní sestava bez FFmpeg (32bitová a 64bitová)
-- Minified: Odlehčená sestava, doporučená pro slabší zařízení (pouze 64bitová)
-- Minified32: Odlehčená sestava bez FFmpeg (32bitová a 64bitová)
-- FOSS: Kompletní sestava bez automatického aktualizátoru, pro F-Droid (pouze 64bitová)
-- Dev & Dev32: Vývojářské sestavy z nejnovějších commitů, pouze pro testování
+- Full/Beta: Kompletní sestava (pouze 64bitová)
+- Full32/Beta32: Bez FFmpeg (32 a 64bitová)
+- Minified: Odlehčená, pro slabší zařízení (pouze 64bitová)
+- Minified32: Odlehčená bez FFmpeg (32 a 64bitová)
+- FOSS: Bez automatického aktualizátoru, pro F-Droid (pouze 64bitová)
+- Dev/Dev32: Vývojářské sestavy, pouze pro testování
 
-Standardní sestavy jsou pouze 64bitové, protože obsahují FFmpeg; sestavy „32“ neobsahují FFmpeg, aby fungovaly na obou architekturách. V obchodě F-Droid se nachází pouze sestava FOSS.
+Standardní sestavy jsou 64bitové (s FFmpeg); sestavy „32" neobsahují FFmpeg pro obě architektury. Pouze FOSS je na F-Droid.
 
-Od <b>ledna 2027</b> (<a href="https://keepandroidopen.org/en/faq/">proč se datum změnilo</a>) bude Google vyžadovat ověření identity od všech vývojářů pro Android, a to i mimo Google Play. Jako projekt svobodného softwaru s otevřeným zdrojovým kódem (FOSS) se N-Zik a jeho vývojář staví proti tomuto požadavku z důvodu jeho dopadu na soukromí vývojářů, nezávislou distribuci a svobodu softwaru.
-
-📖 <a href="https://keepandroidopen.org">Dozvědět se více</a> · ✍️ <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Podepište petici</a>
+Od <b>ledna 2027</b> bude Google vyžadovat ověření identity od všech vývojářů. Jako projekt FOSS se N-Zik tomuto požadavku staví proti. <a href="https://keepandroidopen.org">Dozvědět se více</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Podepište petici</a>

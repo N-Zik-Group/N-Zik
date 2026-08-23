@@ -1,1 +1,1 @@
-Модерен, многоезичен YouTube Music клиент за Android с офлайн поддръжка.
+Съвременен YouTube Music клиент за Android.

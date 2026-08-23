@@ -1,1 +1,1 @@
-Android için çevrimdışı destekli, modern ve çok dilli bir YouTube Music istemcisi.
+Android için modern, çok dilli YouTube Music istemcisi.

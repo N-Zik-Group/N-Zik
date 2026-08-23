@@ -1,57 +1,55 @@
-<b>N-Zik</b> és el teu client de YouTube Music definitiu, de codi obert i multilingüe per a Android! 🎵🚀
+<b>N-Zik</b> és el teu client de YouTube Music de codi obert i multilingüe per a Android.
 
-Una bifurcació (fork) multilingüe de <a href="https://github.com/knighthat/Kreate">Kreate</a>, centrada en el rendiment, el poliment de la interfície d'usuari (UI/UX), la correcció d'errors i noves funcions amb suport a llarg termini.
+Una bifurcació de <a href="https://github.com/knighthat/Kreate">Kreate</a> centrada en el rendiment, la poliment de la interfície, la correcció d'errors i el suport a llarg termini.
 
-<b>Desenvolupament i estabilitat:</b> N-Zik va començar com un projecte personal per a mi i els meus amics. Potser encara no és tan estable com Kreate; pots donar un cop d'ull a <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> o <a href="https://github.com/fast4x/RiPlay">RiPlay</a> per a opcions més madures.
+<b>Nota:</b> N-Zik va començar com un projecte personal. Per a opcions més madures, consulta <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> o <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Ús transparent de la IA:</b> Utilitzo IA generativa per ajudar amb el codi (mitjançant el <a href="https://github.com/bmad-code-org/BMAD-METHOD">mètode BMAD</a>), però tot es revisa i es prova abans de publicar-ho. No és el que busques? Cap problema, hi ha moltes alternatives excel·lents.
+<b>Ús de la IA:</b> Utilitzo IA generativa per al codi (mitjançant el <a href="https://github.com/bmad-code-org/BMAD-METHOD">mètode BMAD</a>), tot es revisa i prova abans de publicar.
 
-Tant si ets un oient ocasional com un audiòfil exigent, N-Zik et dona el control absolut de la teva música, sense comprometre la teva privadesa.
+Tant si ets un oient ocasional com un audiòfil, N-Zik et dóna el control absolut de la teva música sense comprometre la privadesa.
 
-✨ <b>PER QUÈ TRIAR N-ZIK?</b> Sense anuncis, reproducció completa en segon pla, memòria cau fora de línia i una interfície totalment personalitzable; gratuït, sempre.
+✨ <b>PER QUÈ N-ZIK?</b> Sense anuncis, reproducció en segon pla, memòria cau fora de línia i interfície personalitzable — gratuït, sempre.
 
 🎨 <b>Interfície personalitzable</b>
-- UI amb Jetpack Compose i commutador per al mode clàssic de ViMusic 🌓
-- Temes personalitzats: AMOLED real, fosc profund, clar nítid + colors d'accent
-- Reproductor en carrusel 3D 🎠 i ginys (widgets) de pantalla d'inici personalitzables 🪟
-- Perfils detallats d'artistes, fil de notícies i ginys experimentals 🧪
+- Jetpack Compose amb commutador per al mode clàssic ViMusic
+- Temes: True AMOLED, Deep Dark, Crisp Light + colors d'accent
+- Reproductor en carrusel 3D i widgets de pantalla d'inici personalitzables
+- Perfils d'artistes, fil de notícies i widgets experimentals
 
 🎵 <b>Experiència d'àudio</b>
-- Àudio de qualitat superior mitjançant YouTube Music Premium (client Web Remix) 🔊
-- Lletres sincronitzades avançades amb edició i traducció en temps real 🎤
-- Visualitzador d'àudio en temps real 🎇 i controls professionals: velocitat, to, normalització, crossfade i reforç de volum 🎚️
+- Àudio de qualitat superior mitjançant YouTube Music Premium (Web Remix)
+- Lletres sincronitzades amb edició i traducció en temps real
+- Visualitzador d'àudio en temps real i controls professionals: velocitat, to, normalització, crossfade, reforç de volum
 
 💾 <b>Fora de línia, metadades i privadesa</b>
-- Memòria cau intel·ligent i descàrregues de cançons i llistes de reproducció 📡
-- Exportació amb FFmpeg i metadades incrustades completes 📤 (només versions de 64 bits)
-- Editor de metadades integrat (AAC/Opus, portada) ✏️
-- Estadístiques d'escolta i historial 100% locals 📊
-- Còpia de seguretat automàtica amb intervals i retenció personalitzables ⚙️
+- Memòria cau intel·ligent i descàrregues de cançons i llistes de reproducció
+- Exportació amb FFmpeg i metadades incrustades completes (només 64 bits)
+- Editor de metadades integrat (AAC/Opus, portada)
+- Estadístiques d'escolta i historial 100% locals
+- Còpia de seguretat automàtica amb intervals i retenció personalitzables
 
 🔗 <b>Integracions</b>
-- Inici de sessió a YouTube per a recomanacions i canvi d'àudio/vídeo 📺
-- Discord Rich Presence 🎮
-- Importació/exportació de llistes de reproducció: RiPlay, Spotify (Exportify), YouTube Music, N-Zik 🔄
+- Inici de sessió a YouTube per a recomanacions i canvi d'àudio/vídeo
+- Discord Rich Presence
+- Importació/exportació de llistes: RiPlay, Spotify, YouTube Music, N-Zik
 
-📱 <b>Reprodueix a tot arreu:</b> Android Auto, Automotive, TV i tauletes 🚗📺
+📱 <b>Reprodueix a tot arreu:</b> Android Auto, Automotive, TV i tauletes
 
-🛠️ <b>Funcions per a usuaris avançats</b>
-- Cerca per text i veu 🎙️
-- Actualitzacions OTA des de GitHub ⬇️
-- Temporitzador de desconnexió i reproducció en segon pla 💤
+🛠️ <b>Funcions avançades</b>
+- Cerca per text i veu
+- Actualitzacions OTA des de GitHub
+- Temporitzador de desconnexió i reproducció en segon pla
 
-🛡️ N-Zik és 100% de codi obert (FOSS). Permisos clau: INTERNET (streaming/lletres/actualitzacions), RECORD_AUDIO (només visualitzador, opcional, mai escolta), STORAGE (exportacions/còpies de seguretat), FOREGROUND_SERVICE/NOTIFICATIONS (reproducció), REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH (àudio sense fils), WAKE_LOCK (mantenir la reproducció activa).
+🛡️ 100% de codi obert (FOSS). Permisos clau: INTERNET, RECORD_AUDIO (només visualitzador), STORAGE, FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Versions disponibles</b>
-- Full i Beta: Versió completa amb tots els components (només 64 bits)
-- Full32 i Beta32: Versió completa sense FFmpeg (32 i 64 bits)
-- Minified: Versió lleugera, recomanada per a dispositius de gamma baixa (només 64 bits)
-- Minified32: Versió lleugera sense FFmpeg (32 i 64 bits)
-- FOSS: Versió completa sense actualitzador automàtic, per a F-Droid (només 64 bits)
-- Dev i Dev32: Versions de desenvolupament dels últims commits, només per a proves
+- Full/Beta: Versió completa (només 64 bits)
+- Full32/Beta32: Sense FFmpeg (32 i 64 bits)
+- Minified: Lleugera, per a dispositius de gamma baixa (només 64 bits)
+- Minified32: Lleugera sense FFmpeg (32 i 64 bits)
+- FOSS: Sense actualitzador automàtic, per a F-Droid (només 64 bits)
+- Dev/Dev32: Versions de desenvolupament, només per a proves
 
-Les versions estàndard són només de 64 bits perquè inclouen FFmpeg; les versions "32" no inclouen FFmpeg per funcionar en ambdues arquitectures. Només la versió FOSS és a F-Droid.
+Les versions estàndard són de 64 bits (amb FFmpeg); les versions "32" exclouen FFmpeg per a totes dues arquitectures. Només FOSS és a F-Droid.
 
-A partir del <b>gener de 2027</b> (<a href="https://keepandroidopen.org/en/faq/">per què ha canviat la data</a>), Google exigirà la verificació d'identitat a tots els desenvolupadors d'Android, fins i tot fora de Google Play. Com a projecte de programari lliure i de codi obert (FOSS), N-Zik i el seu desenvolupador s'oposen a aquest requisit a causa del seu impacte en la privadesa dels desenvolupadors, la distribució independent i la llibertat del programari.
-
-📖 <a href="https://keepandroidopen.org">Més informació</a> · ✍️ <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Signa la petició</a>
+A partir del <b>gener de 2027</b>, Google exigirà la verificació d'identitat per a tots els desenvolupadors. Com a projecte FOSS, N-Zik s'oposa a aquest requisit. <a href="https://keepandroidopen.org">Més informació</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Signa la petició</a>

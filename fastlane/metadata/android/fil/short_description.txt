@@ -1,1 +1,1 @@
-Isang modernong, multilingguwal na YouTube Music client para sa Android na may offline support.
+Modernong YouTube Music client para sa Android na may offline.

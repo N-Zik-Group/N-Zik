@@ -1,57 +1,55 @@
-<b>N-Zik</b> là trình phát YouTube Music mã nguồn mở, đa ngôn ngữ tối ưu cho Android của bạn! 🎵🚀
+<b>N-Zik</b> là trình phát YouTube Music mã nguồn mở, đa ngôn ngữ cho Android.
 
-Một bản fork đa ngôn ngữ của <a href="https://github.com/knighthat/Kreate">Kreate</a>, tập trung vào hiệu suất, tinh chỉnh giao diện người dùng (UI/UX), sửa lỗi và các tính năng mới với sự hỗ trợ lâu dài.
+Bản fork của <a href="https://github.com/knighthat/Kreate">Kreate</a>, tập trung vào hiệu suất, tinh chỉnh giao diện, sửa lỗi và hỗ trợ lâu dài.
 
-<b>Phát triển & Độ ổn định:</b> N-Zik bắt đầu như một dự án cá nhân cho bản thân tôi và bạn bè. Nó có thể chưa ổn định bằng Kreate — hãy xem qua <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, hoặc <a href="https://github.com/fast4x/RiPlay">RiPlay</a> để có lựa chọn hoàn thiện hơn.
+<b>Lưu ý:</b> N-Zik bắt đầu như một dự án cá nhân. Cho các lựa chọn hoàn thiện hơn, xem <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> hoặc <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Sử dụng AI minh bạch:</b> Tôi sử dụng AI tạo sinh để hỗ trợ viết mã (thông qua <a href="https://github.com/bmad-code-org/BMAD-METHOD">Phương pháp BMAD</a>), nhưng mọi thứ đều được xem xét và kiểm tra trước khi phát hành. Không phải sở thích của bạn? Không sao cả — có rất nhiều lựa chọn thay thế tuyệt vời khác.
+<b>Sử dụng AI:</b> Tôi sử dụng AI tạo sinh để hỗ trợ viết mã (thông qua <a href="https://github.com/bmad-code-org/BMAD-METHOD">Phương pháp BMAD</a>), mọi thứ đều được xem xét và kiểm tra trước khi phát hành.
 
-Cho dù bạn là người nghe nhạc bình thường hay một tín đồ âm thanh thực thụ, N-Zik mang đến cho bạn quyền kiểm soát tuyệt đối đối với âm nhạc của mình mà không ảnh hưởng đến quyền riêng tư.
+Cho dù bạn là người nghe nhạc bình thường hay tín đồ âm thanh, N-Zik mang đến quyền kiểm soát tuyệt đối đối với âm nhạc mà không ảnh hưởng đến quyền riêng tư.
 
-✨ <b>TẠI SAO CHỌN N-ZIK?</b> Không quảng cáo, phát nền hoàn toàn, lưu bộ nhớ đệm ngoại tuyến và giao diện có thể tùy chỉnh hoàn toàn — luôn miễn phí.
+✨ <b>TẠI SAO N-ZIK?</b> Không quảng cáo, phát nền, lưu bộ nhớ đệm ngoại tuyến và giao diện có thể tùy chỉnh hoàn toàn — luôn miễn phí.
 
-🎨 <b>Giao diện người dùng tùy chỉnh</b>
-- Giao diện Jetpack Compose với nút chuyển chế độ ViMusic cổ điển 🌓
-- Chủ đề tùy chỉnh: AMOLED thực thụ, Tối sâu, Sáng rõ + điểm nhấn màu sắc
-- Trình phát vòng quay 3D Carousel 🎠 và các tiện ích màn hình chính có thể tùy chỉnh 🪟
-- Hồ sơ nghệ sĩ chi tiết, Bảng tin và các tiện ích thử nghiệm 🧪
+🎨 <b>Giao diện tùy chỉnh</b>
+- Jetpack Compose với nút chuyển chế độ ViMusic cổ điển
+- Chủ đề: AMOLED, Deep Dark, Crisp Light + điểm nhấn màu sắc
+- Trình phát vòng quay 3D và các tiện ích màn hình chính có thể tùy chỉnh
+- Hồ sơ nghệ sĩ, Bảng tin và các tiện ích thử nghiệm
 
 🎵 <b>Trải nghiệm âm thanh</b>
-- Âm thanh chất lượng cao thông qua YouTube Music Premium (máy khách Web Remix) 🔊
-- Lời bài hát đồng bộ nâng cao với khả năng chỉnh sửa & dịch thời gian thực 🎤
-- Trình trực quan hóa âm thanh thời gian thực 🎇 và các điều khiển chuyên nghiệp: tốc độ, cao độ, chuẩn hóa, chuyển âm mượt mà (crossfade), tăng âm lượng 🎚️
+- Âm thanh chất lượng cao qua YouTube Music Premium (Web Remix)
+- Lời bài hát đồng bộ với chỉnh sửa & dịch thời gian thực
+- Trình trực quan hóa âm thanh và các điều khiển chuyên nghiệp: tốc độ, cao độ, chuẩn hóa, crossfade, tăng âm lượng
 
 💾 <b>Ngoại tuyến, Siêu dữ liệu & Quyền riêng tư</b>
-- Lưu bộ nhớ đệm ngoại tuyến thông minh & tải xuống cho các bài hát và danh sách phát 📡
-- Xuất tệp hỗ trợ FFmpeg với siêu dữ liệu được nhúng đầy đủ 📤 (chỉ dành cho bản dựng 64-bit)
-- Trình chỉnh sửa siêu dữ liệu trong ứng dụng (AAC/Opus, ảnh bìa) ✏️
-- 100% thống kê nghe nhạc và lịch sử cục bộ 📊
-- Tự động sao lưu với khoảng thời gian & thời gian lưu trữ tùy chỉnh ⚙️
+- Lưu bộ nhớ đệm ngoại tuyến thông minh & tải xuống bài hát và danh sách phát
+- Xuất tệp hỗ trợ FFmpeg với siêu dữ liệu đầy đủ (chỉ 64-bit)
+- Trình chỉnh sửa siêu dữ liệu trong ứng dụng (AAC/Opus, ảnh bìa)
+- 100% thống kê nghe nhạc và lịch sử cục bộ
+- Tự động sao lưu với khoảng thời gian tùy chỉnh
 
 🔗 <b>Tích hợp</b>
-- Đăng nhập YouTube để nhận đề xuất & chuyển đổi âm thanh/video 📺
-- Discord Rich Presence 🎮
-- Nhập/xuất danh sách phát: RiPlay, Spotify (Exportify), YouTube Music, N-Zik 🔄
+- Đăng nhập YouTube để nhận đề xuất & chuyển đổi âm thanh/video
+- Discord Rich Presence
+- Nhập/xuất danh sách phát: RiPlay, Spotify, YouTube Music, N-Zik
 
-📱 <b>Phát ở mọi nơi:</b> Android Auto, Automotive, TV và Máy tính bảng 🚗📺
+📱 <b>Phát ở mọi nơi:</b> Android Auto, Automotive, TV và Máy tính bảng
 
-🛠️ <b>Tính năng cho người dùng nâng cao</b>
-- Tìm kiếm bằng văn bản & giọng nói 🎙️
-- Cập nhật OTA từ GitHub ⬇️
-- Hẹn giờ ngủ & phát nền 💤
+🛠️ <b>Tính năng nâng cao</b>
+- Tìm kiếm bằng văn bản & giọng nói
+- Cập nhật OTA từ GitHub
+- Hẹn giờ ngủ & phát nền
 
-🛡️ N-Zik mã nguồn mở 100% (FOSS). Các quyền chính: INTERNET (truyền phát/lời bài hát/cập nhật), RECORD_AUDIO (chỉ dành cho trình trực quan hóa, tùy chọn, không bao giờ nghe lén), STORAGE (xuất/sao lưu), FOREGROUND_SERVICE/NOTIFICATIONS (phát nhạc), REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH (âm thanh không dây), WAKE_LOCK (duy trì phát nhạc).
+🛡️ N-Zik mã nguồn mở 100% (FOSS). Các quyền chính: INTERNET, RECORD_AUDIO (chỉ cho trình trực quan hóa), STORAGE (xuất/sao lưu), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Các bản dựng hiện có</b>
-- Full & Beta: Bản dựng đầy đủ với tất cả các thành phần (chỉ 64-bit)
-- Full32 & Beta32: Bản dựng đầy đủ không có FFmpeg (32-bit & 64-bit)
-- Minified: Bản dựng nhẹ, khuyên dùng cho thiết bị cấu hình thấp (chỉ 64-bit)
-- Minified32: Bản dựng nhẹ không có FFmpeg (32-bit & 64-bit)
-- FOSS: Bản dựng đầy đủ không có trình tự động cập nhật, dành cho F-Droid (chỉ 64-bit)
-- Dev & Dev32: Các bản dựng phát triển từ các commit mới nhất, chỉ để thử nghiệm
+- Full/Beta: Đầy đủ (64-bit)
+- Full32/Beta32: Không có FFmpeg (32/64-bit)
+- Minified: Nhẹ, cho thiết bị cấu hình thấp (64-bit)
+- Minified32: Nhẹ không có FFmpeg (32/64-bit)
+- FOSS: Không có trình tự động cập nhật, cho F-Droid (64-bit)
+- Dev/Dev32: Bản dựng phát triển, chỉ để thử nghiệm
 
-Các bản dựng tiêu chuẩn chỉ là 64-bit vì chúng bao gồm FFmpeg; các bản dựng "32" loại bỏ FFmpeg để hoạt động trên cả hai kiến trúc. Chỉ bản dựng FOSS có trên F-Droid.
+Các bản dựng tiêu chuẩn là 64-bit (có FFmpeg); bản dựng "32" loại bỏ FFmpeg. Chỉ FOSS có trên F-Droid.
 
-Bắt đầu từ <b>tháng 1 năm 2027</b> (<a href="https://keepandroidopen.org/en/faq/">tại sao ngày này thay đổi</a>), Google sẽ yêu cầu xác minh danh tính đối với tất cả các nhà phát triển Android, ngay cả bên ngoài Google Play. Là một dự án Phần mềm Tự do và Mã nguồn Mở (FOSS), N-Zik và nhà phát triển của nó phản đối yêu cầu này do tác động của nó đối với quyền riêng tư của nhà phát triển, phân phối độc lập và tự do phần mềm.
-
-📖 <a href="https://keepandroidopen.org">Tìm hiểu thêm</a> · ✍️ <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Ký tên vào đơn kiến nghị</a>
+Bắt đầu từ <b>tháng 1 năm 2027</b>, Google sẽ yêu cầu xác minh danh tính đối với tất cả nhà phát triển. Là dự án FOSS, N-Zik phản đối yêu cầu này. <a href="https://keepandroidopen.org">Tìm hiểu thêm</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Ký tên vào đơn kiến nghị</a>

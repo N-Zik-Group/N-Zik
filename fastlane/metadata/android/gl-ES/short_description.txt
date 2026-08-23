@@ -1,1 +1,1 @@
-Un cliente de YouTube Music moderno e multilingue para Android con soporte fóra de liña.
+Cliente de YouTube Music moderno para Android con soporte offline.
