@@ -1,57 +1,55 @@
-<b>N-Zik</b>은 Android를 위한 최고의 오픈 소스 다국어 YouTube Music 클라이언트입니다! 🎵🚀
+<b>N-Zik</b>은 Android를 위한 오픈 소스 다국어 YouTube Music 클라이언트입니다.
 
-<a href="https://github.com/knighthat/Kreate">Kreate</a>의 다국어 포크(fork)로, 성능, UI/UX 개선, 버그 수정 및 장기 지원을 포함한 새로운 기능에 중점을 두고 있습니다.
+<a href="https://github.com/knighthat/Kreate">Kreate</a>의 포크로, 성능, UI 개선, 버그 수정 및 장기 지원에 중점을 두고 있습니다.
 
-<b>개발 및 안정성:</b> N-Zik은 저 자신과 친구들을 위한 사이드 프로젝트로 시작되었습니다. 아직 Kreate만큼 안정적이지 않을 수 있습니다. 더 성숙한 옵션을 원하시면 <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> 또는 <a href="https://github.com/fast4x/RiPlay">RiPlay</a>를 확인해 보세요.
+<b>참고:</b> N-Zik은 사이드 프로젝트로 시작되었습니다. 더 성숙한 옵션은 <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, <a href="https://github.com/fast4x/RiPlay">RiPlay</a>를 확인해 보세요.
 
-<b>투명한 AI 사용:</b> 코드 작성을 돕기 위해 생성형 AI를 사용하지만(<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD 방법</a> 사용), 모든 코드는 배포 전 검토 및 테스트를 거칩니다. 마음에 들지 않으신가요? 괜찮습니다. 훌륭한 대안이 많이 있습니다.
+<b>AI 사용:</b> 코드 작성을 위해 생성형 AI를 사용합니다(<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>). 모든 코드는 배포 전 검토 및 테스트를 거칩니다.
 
-가벼운 리스너든 열성적인 오디오필이든 관계없이 N-Zik은 개인 정보를 침해하지 않으면서 음악에 대한 절대적인 제어권을 제공합니다.
+가벼운 리스너든 오디오필이든, N-Zik은 개인 정보를 침해하지 않으면서 음악에 대한 완전한 제어권을 제공합니다.
 
-✨ <b>왜 N-ZIK을 선택해야 할까요?</b> 광고 없음, 전체 백그라운드 재생, 오프라인 캐싱, 완전히 맞춤 설정 가능한 인터페이스를 항상 무료로 제공합니다.
+✨ <b>왜 N-ZIK?</b> 광고 없음, 백그라운드 재생, 오프라인 캐싱, 완전히 맞춤 설정 가능한 UI — 항상 무료.
 
 🎨 <b>맞춤 설정 가능한 UI</b>
-- 클래식 ViMusic 모드 토글이 있는 Jetpack Compose UI 🌓
-- 맞춤 테마: 트루 AMOLED, 딥 다크, 크리스프 라이트 + 강조 색상
-- 3D 캐러셀 플레이어 🎠 및 맞춤 설정 가능한 홈 화면 위젯 🪟
-- 상세한 아티스트 프로필, 뉴스 피드 및 실험용 위젯 🧪
+- 클래식 ViMusic 모드 토글이 있는 Jetpack Compose
+- 테마: AMOLED, Deep Dark, Crisp Light + 강조 색상
+- 3D 캐러셀 플레이어, 맞춤 설정 가능한 홈 위젯
+- 아티스트 프로필, 뉴스 피드, 실험용 위젯
 
 🎵 <b>오디오 경험</b>
-- YouTube Music Premium(웹 리믹스 클라이언트)을 통한 프리미엄 품질 오디오 🔊
-- 편집 및 실시간 번역 기능이 있는 고급 동기화 가사 🎤
-- 실시간 오디오 시각화 장치 🎇 및 프로 컨트롤: 속도, 피치, 정규화, 크로스페이드, 볼륨 부스트 🎚️
+- YouTube Music Premium(Web Remix)을 통한 프리미엄 품질 오디오
+- 편집 및 실시간 번역 기능이 있는 동기화 가사
+- 실시간 오디오 시각화 및 프로 컨트롤: 속도, 피치, 정규화, 크로스페이드, 볼륨 부스트
 
 💾 <b>오프라인, 메타데이터 및 개인 정보 보호</b>
-- 트랙 및 재생 목록을 위한 스마트 오프라인 캐싱 및 다운로드 📡
-- 전체 임베디드 메타데이터를 포함한 FFmpeg 기반 내보내기 📤 (64비트 빌드 전용)
-- 앱 내 메타데이터 편집기(AAC/Opus, 커버 아트) ✏️
-- 100% 로컬 청취 통계 및 기록 📊
-- 맞춤 간격 및 보존 기간을 설정할 수 있는 자동 백업 ⚙️
+- 트랙 및 재생 목록을 위한 스마트 오프라인 캐싱 및 다운로드
+- 전체 메타데이터가 포함된 FFmpeg 기반 내보내기 (64비트 전용)
+- 앱 내 메타데이터 편집기 (AAC/Opus, 커버 아트)
+- 100% 로컬 청취 통계 및 기록
+- 맞춤 간격 및 보존 기간의 자동 백업
 
 🔗 <b>통합</b>
-- 추천 및 오디오/비디오 전환을 위한 YouTube 로그인 📺
-- Discord Rich Presence 🎮
-- 재생 목록 가져오기/내보내기: RiPlay, Spotify(Exportify), YouTube Music, N-Zik 🔄
+- 추천 및 오디오/비디오 전환을 위한 YouTube 로그인
+- Discord Rich Presence
+- 재생 목록 가져오기/내보내기: RiPlay, Spotify, YouTube Music, N-Zik
 
-📱 <b>어디서나 재생:</b> Android Auto, Automotive, TV 및 태블릿 🚗📺
+📱 <b>어디서나 재생:</b> Android Auto, Automotive, TV 및 태블릿
 
 🛠️ <b>파워 유저 기능</b>
-- 텍스트 및 음성 검색 🎙️
-- GitHub을 통한 OTA 업데이트 ⬇️
-- 취침 타이머 및 백그라운드 재생 💤
+- 텍스트 및 음성 검색
+- GitHub을 통한 OTA 업데이트
+- 취침 타이머 및 백그라운드 재생
 
-🛡️ N-Zik은 100% 오픈 소스(FOSS)입니다. 주요 권한: INTERNET(스트리밍/가사/업데이트), RECORD_AUDIO(시각화 장치 전용, 선택 사항, 절대 도청하지 않음), STORAGE(내보내기/백업), FOREGROUND_SERVICE/NOTIFICATIONS(재생), REQUEST_INSTALL_PACKAGES(OTA), BLUETOOTH(무선 오디오), WAKE_LOCK(재생 유지).
+🛡️ 100% 오픈 소스 (FOSS). 주요 권한: INTERNET, RECORD_AUDIO (시각화 전용), STORAGE (내보내기/백업), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>사용 가능한 빌드</b>
-- Full 및 Beta: 모든 구성 요소를 포함한 전체 빌드(64비트 전용)
-- Full32 및 Beta32: FFmpeg가 없는 전체 빌드(32비트 및 64비트)
-- Minified: 저사양 기기에 권장되는 경량 빌드(64비트 전용)
-- Minified32: FFmpeg가 없는 경량 빌드(32비트 및 64비트)
-- FOSS: F-Droid용 자동 업데이트 프로그램이 없는 전체 빌드(64비트 전용)
-- Dev 및 Dev32: 최신 커밋의 개발 빌드, 테스트 전용
+- Full/Beta: 전체 빌드 (64비트 전용)
+- Full32/Beta32: FFmpeg 없는 전체 빌드 (32/64비트)
+- Minified: 경량 빌드, 저사양 기기용 (64비트 전용)
+- Minified32: FFmpeg 없는 경량 빌드 (32/64비트)
+- FOSS: 자동 업데이트 없는 빌드, F-Droid용 (64비트 전용)
+- Dev/Dev32: 개발 빌드, 테스트 전용
 
-표준 빌드는 FFmpeg가 포함되어 있어 64비트 전용입니다. "32" 빌드는 두 아키텍처 모두에서 작동하도록 FFmpeg를 제거했습니다. FOSS 빌드만 F-Droid에 있습니다.
+표준 빌드는 FFmpeg 포함 64비트 전용. "32" 빌드는 FFmpeg 제거로 두 아키텍처 지원. FOSS만 F-Droid에 있음.
 
-<b>2027년 1월</b>부터(<a href="https://keepandroidopen.org/en/faq/">날짜가 변경된 이유</a>) Google은 Google Play 외부를 포함한 모든 Android 개발자에게 신원 확인을 요구할 예정입니다. 자유 및 오픈 소스 소프트웨어(FOSS) 프로젝트인 N-Zik과 개발자는 개발자의 개인 정보 보호, 독립적인 배포 및 소프트웨어 자유에 미치는 영향 때문에 이 요구 사항에 반대합니다.
-
-📖 <a href="https://keepandroidopen.org">더 알아보기</a> · ✍️ <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">청원에 서명하기</a>
+<b>2027년 1월</b>부터 Google은 모든 Android 개발자에게 신원 확인을 요구합니다. FOSS 프로젝트로서 N-Zik은 이에 반대합니다. <a href="https://keepandroidopen.org">자세히 알아보기</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">청원 서명하기</a>

@@ -1,57 +1,55 @@
-Ang <b>N-Zik</b> ay ang iyong ultimate, open-source, at multilingguwal na YouTube Music client para sa Android! 🎵🚀
+Ang <b>N-Zik</b> ay ang iyong open-source, multilingual na YouTube Music client para sa Android.
 
-Isang multilingguwal na fork ng <a href="https://github.com/knighthat/Kreate">Kreate</a>, na nakatuon sa performance, pagpapaganda ng UI/UX, pag-aayos ng mga bug, at mga bagong feature na may pangmatagalang suporta.
+Isang fork ng <a href="https://github.com/knighthat/Kreate">Kreate</a> na nakatuon sa performance, pagpapaganda ng UI, pag-aayos ng mga bug, at pangmatagalang suporta.
 
-<b>Development at Stability:</b> Nagsimula ang N-Zik bilang isang side project para sa aking sarili at mga kaibigan. Maaaring hindi pa ito kasing-stable ng Kreate — tingnan ang <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, o <a href="https://github.com/fast4x/RiPlay">RiPlay</a> para sa mas matatag na mga opsyon.
+<b>Tandaan:</b> Nagsimula ang N-Zik bilang isang side project. Para sa mas mature na alternatibo, tingnan ang <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, o <a href="https://github.com/fast4x/RiPlay">RiPlay</a>
 
-<b>Transparent na Paggamit ng AI:</b> Gumagamit ako ng generative AI para tumulong sa code (sa pamamagitan ng <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), ngunit ang lahat ay sinusuri at sinusubok bago ilabas. Hindi mo ba gusto ito? Walang problema — maraming magagandang alternatibo ang umiiral.
+<b>Paggamit ng AI:</b> Gumagamit ako ng generative AI para sa code (sa pamamagitan ng <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), sinusuri at sinusubok bago ilabas.
 
-Maging ikaw ay isang kaswal na tagapakinig o isang hardcore audiophile, binibigyan ka ng N-Zik ng ganap na kontrol sa iyong musika, nang hindi isinasakripisyo ang iyong privacy.
+Maging kaswal na tagapakinig man o audiophile, binibigyan ka ng N-Zik ng ganap na kontrol sa iyong musika nang hindi isinasakripisyo ang privacy.
 
-✨ <b>BAKIT PILIIN ANG N-ZIK?</b> Walang ads, full background playback, offline caching, at isang interface na ganap na nako-customize — libre, palagi.
+✨ <b>BAKIT N-ZIK?</b> Walang ads, background playback, offline caching, at customizable na interface — libre, palagi.
 
-🎨 <b>Nako-customize na UI</b>
-- Jetpack Compose UI na may Classic ViMusic mode toggle 🌓
-- Mga custom na tema: True AMOLED, Deep Dark, Crisp Light + tinted accents
-- 3D Carousel Player Carousel 🎠 at nako-customize na home screen widgets 🪟
-- Detalyadong mga artist profile, News Feed, at mga eksperimental na widget 🧪
+🎨 <b>Customizable na UI</b>
+- Jetpack Compose na may Classic ViMusic mode toggle
+- Mga tema: AMOLED, Deep Dark, Crisp Light + tinted accents
+- 3D Carousel Player at customizable na home widgets
+- Mga artist profile, News Feed, experimental na widget
 
 🎵 <b>Karanasan sa Audio</b>
-- Premium quality audio sa pamamagitan ng YouTube Music Premium (Web Remix client) 🔊
-- Advanced na synced lyrics na may editing at real-time translation 🎤
-- Real-time audio visualizer 🎇 at mga pro control: speed, pitch, normalization, crossfade, volume boost 🎚️
+- Premium quality audio sa YouTube Music Premium (Web Remix)
+- Synced lyrics na may editing at real-time translation
+- Audio visualizer at pro controls: speed, pitch, normalization, crossfade, volume boost
 
 💾 <b>Offline, Metadata at Privacy</b>
-- Matalinong offline caching at downloads para sa mga track at playlist 📡
-- FFmpeg-powered export na may ganap na embedded metadata 📤 (para sa mga 64-bit build lamang)
-- In-app metadata editor (AAC/Opus, cover art) ✏️
-- 100% lokal na listening stats at history 📊
-- Auto-backup na may custom na intervals at retention ⚙️
+- Matalinong caching at downloads para sa mga track at playlist
+- FFmpeg-powered export na may buong metadata (64-bit builds lamang)
+- In-app metadata editor (AAC/Opus, cover art)
+- 100% lokal na listening stats at history
+- Auto-backup na may custom na intervals at retention
 
-🔗 <b>Integrasyon</b>
-- YouTube sign-in para sa mga rekomendasyon at audio/video switching 📺
-- Discord Rich Presence 🎮
-- Import/export ng playlist: RiPlay, Spotify (Exportify), YouTube Music, N-Zik 🔄
+🔗 <b>Mga Integrasyon</b>
+- YouTube sign-in para sa mga rekomendasyon at audio/video switching
+- Discord Rich Presence
+- Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
 
-📱 <b>Mag-play Kahit Saan:</b> Android Auto, Automotive, TV, at Tablets 🚗📺
+📱 <b>Mag-play Kahit Saan:</b> Android Auto, Automotive, TV, at Tablets
 
 🛠️ <b>Mga Feature para sa Power User</b>
-- Text at voice search 🎙️
-- OTA updates mula sa GitHub ⬇️
-- Sleep timer at background playback 💤
+- Text at voice search
+- OTA updates mula sa GitHub
+- Sleep timer at background playback
 
-🛡️ Ang N-Zik ay 100% open-source (FOSS). Pangunahing mga pahintulot: INTERNET (streaming/lyrics/updates), RECORD_AUDIO (visualizer lamang, opt-in, hindi nakikinig), STORAGE (exports/backups), FOREGROUND_SERVICE/NOTIFICATIONS (playback), REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH (wireless audio), WAKE_LOCK (panatilihing buhay ang playback).
+🛡️ 100% open-source (FOSS). Mga pangunahing pahintulot: INTERNET, RECORD_AUDIO (visualizer lamang), STORAGE (exports/backups), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Mga Available na Build</b>
-- Full at Beta: Kumpletong build kasama ang lahat ng bahagi (64-bit lamang)
-- Full32 at Beta32: Kumpletong build nang walang FFmpeg (32-bit at 64-bit)
-- Minified: Lightweight na build, inirerekomenda para sa mga low-end device (64-bit lamang)
-- Minified32: Lightweight na build nang walang FFmpeg (32-bit at 64-bit)
-- FOSS: Kumpletong build nang walang auto-updater, para sa F-Droid (64-bit lamang)
-- Dev at Dev32: Development builds mula sa pinakabagong commits, para sa testing lamang
+- Full/Beta: Kumpletong build (64-bit lamang)
+- Full32/Beta32: Walang FFmpeg (32/64-bit)
+- Minified: Lightweight, para sa mga low-end device (64-bit lamang)
+- Minified32: Lightweight na walang FFmpeg (32/64-bit)
+- FOSS: Walang auto-updater, para sa F-Droid (64-bit lamang)
+- Dev/Dev32: Development builds, para sa testing lamang
 
-Ang mga standard build ay 64-bit lamang dahil kasama ang FFmpeg; ang mga "32" build ay tinanggal ang FFmpeg para gumana sa parehong mga architecture. Ang FOSS build lamang ang nasa F-Droid.
+Ang mga standard build ay 64-bit (FFmpeg); ang mga "32" build ay walang FFmpeg para sa parehong architecture. FOSS lang ang nasa F-Droid.
 
-Simula <b>Enero 2027</b> (<a href="https://keepandroidopen.org/en/faq/">bakit nagbago ang petsa</a>), hihilingin ng Google ang pagpapatunay ng pagkakakilanlan para sa lahat ng Android developer, maging sa labas ng Google Play. Bilang isang Free and Open Source Software (FOSS) project, ang N-Zik at ang developer nito ay tumututol sa kinakailangang ito dahil sa epekto nito sa privacy ng developer, independiyenteng pamamahagi, at kalayaan sa software.
-
-📖 <a href="https://keepandroidopen.org">Matuto pa</a> · ✍️ <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Lagdaan ang petisyon</a>
+Simula <b>Enero 2027</b>, hihilingin ng Google ang pagpapatunay ng pagkakakilanlan para sa lahat ng developer. Bilang FOSS project, tumututol ang N-Zik dito. <a href="https://keepandroidopen.org">Matuto pa</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Lagdaan ang petisyon</a>

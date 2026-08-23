@@ -1,1 +1,1 @@
-Moderný, viacjazyčný klient YouTube Music pre Android s podporou offline režimu.
+Moderný viacjazyčný YouTube Music klient pre Android.

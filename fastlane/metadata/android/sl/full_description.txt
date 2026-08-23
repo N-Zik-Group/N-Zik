@@ -1,57 +1,55 @@
-<b>N-Zik</b> je vaš vrhunski, odprtokodni, večjezični odjemalec YouTube Music za Android! 🎵🚀
+<b>N-Zik</b> je vaš odprtokodni, večjezični odjemalec YouTube Music za Android.
 
-Večjezični fork projekta <a href="https://github.com/knighthat/Kreate">Kreate</a>, osredotočen na zmogljivost, izboljšavo UI/UX, popravke hroščev in nove funkcije z dolgoročno podporo.
+Fork projekta <a href="https://github.com/knighthat/Kreate">Kreate</a>, osredotočen na zmogljivost, izboljšavo vmesnika, popravke hroščev in dolgoročno podporo.
 
-<b>Razvoj in stabilnost:</b> N-Zik se je začel kot stranski projekt zame in moje prijatelje. Morda še ni tako stabilen kot Kreate — preverite <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> ali <a href="https://github.com/fast4x/RiPlay">RiPlay</a> za bolj zrele možnosti.
+<b>Opomba:</b> N-Zik se je začel kot stranski projekt. Za bolj zrele alternative preverite <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> ali <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Pregledna uporaba umetne inteligence:</b> Za pomoč pri kodi uporabljam generativno umetno inteligenco (prek <a href="https://github.com/bmad-code-org/BMAD-METHOD">metode BMAD</a>), vendar je vse pred objavo pregledano in preizkušeno. To ni za vas? Brez zamere — obstaja veliko odličnih alternativ.
+<b>Uporaba UI:</b> Uporabljam generativno UI za pomoč pri kodi (prek <a href="https://github.com/bmad-code-org/BMAD-METHOD">metode BMAD</a>), vse je pred objavo pregledano in preizkušeno.
 
-Ne glede na to, ali ste priložnostni poslušalec ali strasten avdiofil, vam N-Zik omogoča popoln nadzor nad vašo glasbo, ne da bi pri tem ogrozili vašo zasebnost.
+Ne glede na to, ali ste priložnostni poslušalec ali audiofil, vam N-Zik omogoča popoln nadzor nad glasbo brez kompromisov pri zasebnosti.
 
-✨ <b>ZAKAJ IZBRATI N-ZIK?</b> Brez oglasov, popolno predvajanje v ozadju, predpomnjenje brez povezave in popolnoma prilagodljiv vmesnik — vedno brezplačno.
+✨ <b>ZAKAJ N-ZIK?</b> Brez oglasov, predvajanje v ozadju, offline predpomnjenje in popolnoma prilagodljiv vmesnik — vedno brezplačno.
 
-🎨 <b>Prilagodljiv uporabniški vmesnik</b>
-- Uporabniški vmesnik Jetpack Compose s preklopom na klasični način ViMusic 🌓
-- Teme po meri: True AMOLED, Deep Dark, Crisp Light + barvni poudarki
-- 3D vrtiljaku podoben predvajalnik 🎠 in prilagodljivi gradniki za začetni zaslon 🪟
-- Podrobni profili izvajalcev, vir novic in eksperimentalni gradniki 🧪
+🎨 <b>Prilagodljiv vmesnik</b>
+- Jetpack Compose s preklopom na klasični način ViMusic
+- Teme: AMOLED, Deep Dark, Crisp Light + barvni poudarki
+- 3D Carousel Player in prilagodljivi gradniki za začetni zaslon
+- Profili izvajalcev, vir novic in eksperimentalni gradniki
 
 🎵 <b>Zvočna izkušnja</b>
-- Zvok vrhunske kakovosti prek YouTube Music Premium (odjemalec Web Remix) 🔊
-- Napredna sinhronizirana besedila z urejanjem in prevajanjem v realnem času 🎤
-- Vizualizator zvoka v realnem času 🎇 in profesionalne kontrole: hitrost, višina tona, normalizacija, prehajanje (crossfade), ojačitev glasnosti 🎚️
+- Vrhunska kakovost prek YouTube Music Premium (Web Remix)
+- Sinhronizirana besedila z urejanjem in prevajanjem v realnem času
+- Vizualizator zvoka in profesionalne kontrole: hitrost, višina tona, normalizacija, crossfade, ojačitev glasnosti
 
 💾 <b>Brez povezave, metapodatki in zasebnost</b>
-- Pametno predpomnjenje brez povezave in prenosi skladb ter seznamov predvajanja 📡
-- Izvoz s pomočjo FFmpeg s polnimi vgrajenimi metapodatki 📤 (samo 64-bitne različice)
-- Urejevalnik metapodatkov v aplikaciji (AAC/Opus, naslovnica) ✏️
-- 100-odstotna lokalna statistika in zgodovina poslušanja 📊
-- Samodejno varnostno kopiranje s poljubnimi intervali in shranjevanjem ⚙️
+- Pametno predpomnjenje in prenosi skladb ter seznamov predvajanja
+- Izvoz prek FFmpeg s polnimi metapodatki (samo 64-bitni)
+- Urejevalnik metapodatkov v aplikaciji (AAC/Opus, naslovnica)
+- 100% lokalna statistika in zgodovina poslušanja
+- Samodejno varnostno kopiranje s poljubnimi intervali
 
 🔗 <b>Integracije</b>
-- Prijava v YouTube za priporočila in preklapljanje med zvokom/videom 📺
-- Discord Rich Presence 🎮
-- Uvoz/izvoz seznamov predvajanja: RiPlay, Spotify (Exportify), YouTube Music, N-Zik 🔄
+- Prijava v YouTube za priporočila in preklapljanje med zvokom/videom
+- Discord Rich Presence
+- Uvoz/izvoz seznamov predvajanja: RiPlay, Spotify, YouTube Music, N-Zik
 
-📱 <b>Predvajajte kjerkoli:</b> Android Auto, Automotive, TV in tablični računalniki 🚗📺
+📱 <b>Predvajajte kjerkoli:</b> Android Auto, Automotive, TV in tablični računalniki
 
 🛠️ <b>Funkcije za napredne uporabnike</b>
-- Iskanje z besedilom in glasom 🎙️
-- Posodobitve OTA iz GitHuba ⬇️
-- Časovnik za spanje in predvajanje v ozadju 💤
+- Iskanje z besedilom in glasom
+- Posodobitve OTA iz GitHuba
+- Časovnik za spanje in predvajanje v ozadju
 
-🛡️ N-Zik je 100-odstotno odprtokoden (FOSS). Ključna dovoljenja: INTERNET (pretakanje/besedila/posodobitve), RECORD_AUDIO (samo za vizualizator, po izbiri, nikoli ne posluša), STORAGE (izvozi/varnostne kopije), FOREGROUND_SERVICE/NOTIFICATIONS (predvajanje), REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH (brezžični zvok), WAKE_LOCK (ohranjanje predvajanja).
+🛡️ N-Zik je 100% odprtokoden (FOSS). Ključna dovoljenja: INTERNET, RECORD_AUDIO (samo vizualizator), STORAGE (izvozi/varnostne kopije), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Razpoložljive različice</b>
-- Full & Beta: popolna različica z vsemi komponentami (samo 64-bitna)
-- Full32 & Beta32: popolna različica brez FFmpeg (32-bitna in 64-bitna)
-- Minified: lahka različica, priporočljiva za manj zmogljive naprave (samo 64-bitna)
-- Minified32: lahka različica brez FFmpeg (32-bitna in 64-bitna)
-- FOSS: popolna različica brez samodejnega posodabljalnika, za F-Droid (samo 64-bitna)
-- Dev & Dev32: razvojne različice iz najnovejših objav, samo za testiranje
+- Full/Beta: Popolna (64-bit)
+- Full32/Beta32: Brez FFmpeg (32/64-bit)
+- Minified: Lahka za manj zmogljive naprave (64-bit)
+- Minified32: Lahka brez FFmpeg (32/64-bit)
+- FOSS: Brez samodejnega posodabljalnika, za F-Droid (64-bit)
+- Dev/Dev32: Razvojne različice, samo za testiranje
 
-Standardne različice so samo 64-bitne, ker vključujejo FFmpeg; različice "32" izključujejo FFmpeg, da delujejo na obeh arhitekturah. V trgovini F-Droid je le različica FOSS.
+Standardne različice so 64-bit (s FFmpeg); različice „32" izključujejo FFmpeg. V F-Droid je le različica FOSS.
 
-Od <b>januarja 2027</b> (<a href="https://keepandroidopen.org/en/faq/">zakaj se je datum spremenil</a>) bo Google zahteval preverjanje identitete od vseh razvijalcev za Android, tudi zunaj trgovine Google Play. Kot projekt proste in odprtokodne programske opreme (FOSS) N-Zik in njegov razvijalec nasprotujeta tej zahtevi zaradi njenega vpliva na zasebnost razvijalcev, neodvisno distribucijo in svobodo programske opreme.
-
-📖 <a href="https://keepandroidopen.org">Več o tem</a> · ✍️ <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Podpišite peticijo</a>
+Od <b>januarja 2027</b> bo Google zahteval preverjanje identitete od vseh razvijalcev. Kot projekt FOSS se N-Zik temu upira. <a href="https://keepandroidopen.org">Več o tem</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Podpišite peticijo</a>

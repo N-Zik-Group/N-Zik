@@ -1,57 +1,55 @@
-<b>N-Zik</b> é o seu cliente YouTube Music definitivo, de código aberto e multilíngue para Android! 🎵🚀
+<b>N-Zik</b> é o seu cliente YouTube Music open source e multilíngue para Android.
 
-Um fork multilíngue do <a href="https://github.com/knighthat/Kreate">Kreate</a>, focado em desempenho, polimento de UI/UX, correções de bugs e novos recursos com suporte a longo prazo.
+Um fork do <a href="https://github.com/knighthat/Kreate">Kreate</a> focado em desempenho, polimento da interface, correção de bugs e suporte a longo prazo.
 
-<b>Desenvolvimento e Estabilidade:</b> O N-Zik começou como um projeto pessoal para mim e meus amigos. Pode ainda não ser tão estável quanto o Kreate — confira o <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, ou <a href="https://github.com/fast4x/RiPlay">RiPlay</a> para algo mais maduro.
+<b>Nota:</b> N-Zik começou como um projeto pessoal. Para alternativas mais maduras, confira <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> ou <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Uso Transparente de IA:</b> Eu uso IA generativa para auxiliar no código (através do <a href="https://github.com/bmad-code-org/BMAD-METHOD">Método BMAD</a>), mas tudo é revisado e testado antes de ser lançado. Não é a sua praia? Sem problemas — existem muitas alternativas ótimas.
+<b>Uso de IA:</b> Utilizo IA generativa para o código (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), revisado e testado antes do lançamento.
 
-Seja você um ouvinte casual ou um audiófilo inveterado, o N-Zik oferece controle absoluto sobre sua música, sem comprometer sua privacidade.
+Seja um ouvinte casual ou um audiófilo, N-Zik oferece controle total sobre sua música sem comprometer sua privacidade.
 
-✨ <b>POR QUE ESCOLHER O N-ZIK?</b> Sem anúncios, reprodução total em segundo plano, cache offline e uma interface totalmente personalizável — grátis, sempre.
+✨ <b>POR QUE N-ZIK?</b> Sem anúncios, reprodução em segundo plano, cache offline e interface totalmente personalizável — sempre grátis.
 
 🎨 <b>Interface Personalizável</b>
-- UI em Jetpack Compose com alternância para o modo Clássico do ViMusic 🌓
-- Temas personalizados: AMOLED Real, Deep Dark, Crisp Light + detalhes coloridos
-- Player em carrossel 3D 🎠 e widgets de tela inicial personalizáveis 🪟
-- Perfis detalhados de artistas, Feed de Notícias e widgets experimentais 🧪
+- Jetpack Compose com alternância para o modo Clássico ViMusic
+- Temas: AMOLED, Deep Dark, Crisp Light + detalhes coloridos
+- Player em carrossel 3D, widgets de tela inicial personalizáveis
+- Perfis de artistas, Feed de Notícias, widgets experimentais
 
 🎵 <b>Experiência de Áudio</b>
-- Áudio de qualidade premium via YouTube Music Premium (cliente Web Remix) 🔊
-- Letras sincronizadas avançadas com edição e tradução em tempo real 🎤
-- Visualizador de áudio em tempo real 🎇 e controles pro: velocidade, tom, normalização, crossfade, aumento de volume 🎚️
+- Qualidade premium via YouTube Music Premium (Web Remix)
+- Letras sincronizadas com edição e tradução em tempo real
+- Visualizador de áudio e controles pro: velocidade, tom, normalização, crossfade, aumento de volume
 
 💾 <b>Offline, Metadados e Privacidade</b>
-- Cache offline inteligente e downloads de faixas e playlists 📡
-- Exportação via FFmpeg com metadados incorporados completos 📤 (apenas builds de 64 bits)
-- Editor de metadados no app (AAC/Opus, capa) ✏️
-- Estatísticas de audição e histórico 100% locais 📊
-- Backup automático com intervalos e retenção personalizados ⚙️
+- Cache offline inteligente e downloads de faixas e playlists
+- Exportação via FFmpeg com metadados completos (apenas 64 bits)
+- Editor de metadados no app (AAC/Opus, capa)
+- Estatísticas de audição e histórico 100% locais
+- Backup automático com intervalos e retenção personalizados
 
 🔗 <b>Integrações</b>
-- Login do YouTube para recomendações e troca entre áudio/vídeo 📺
-- Discord Rich Presence 🎮
-- Importação/exportação de playlists: RiPlay, Spotify (Exportify), YouTube Music, N-Zik 🔄
+- Login do YouTube para recomendações e troca entre áudio/vídeo
+- Discord Rich Presence
+- Importação/exportação de playlists: RiPlay, Spotify, YouTube Music, N-Zik
 
-📱 <b>Toque em qualquer lugar:</b> Android Auto, Automotive, TV e Tablets 🚗📺
+📱 <b>Toque em Qualquer Lugar:</b> Android Auto, Automotive, TV e Tablets
 
-🛠️ <b>Recursos para Usuários Avançados</b>
-- Busca por texto e voz 🎙️
-- Atualizações OTA via GitHub ⬇️
-- Timer de desligamento e reprodução em segundo plano 💤
+🛠️ <b>Recursos Avançados</b>
+- Busca por texto e voz
+- Atualizações OTA via GitHub
+- Timer de desligamento e reprodução em segundo plano
 
-🛡️ O N-Zik é 100% código aberto (FOSS). Permissões principais: INTERNET (streaming/letras/atualizações), RECORD_AUDIO (apenas visualizador, opcional, nunca ouve), STORAGE (exportações/backups), FOREGROUND_SERVICE/NOTIFICATIONS (reprodução), REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH (áudio sem fio), WAKE_LOCK (manter a reprodução ativa).
+🛡️ 100% código aberto (FOSS). Permissões principais: INTERNET, RECORD_AUDIO (apenas visualizador), STORAGE (exportações/backups), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Builds Disponíveis</b>
-- Full & Beta: Build completa com todos os componentes (apenas 64 bits)
-- Full32 & Beta32: Build completa sem FFmpeg (32 bits e 64 bits)
-- Minified: Build leve, recomendada para dispositivos básicos (apenas 64 bits)
-- Minified32: Build leve sem FFmpeg (32 bits e 64 bits)
-- FOSS: Build completa sem atualizador automático, para F-Droid (apenas 64 bits)
-- Dev & Dev32: Builds de desenvolvimento dos commits mais recentes, apenas para testes
+- Full/Beta: Build completa (64 bits)
+- Full32/Beta32: Sem FFmpeg (32/64 bits)
+- Minified: Leve, para dispositivos básicos (64 bits)
+- Minified32: Leve sem FFmpeg (32/64 bits)
+- FOSS: Sem atualizador automático, para F-Droid (64 bits)
+- Dev/Dev32: Builds de desenvolvimento, apenas para testes
 
-Builds padrão são apenas 64 bits porque incluem o FFmpeg; builds "32" removem o FFmpeg para funcionar em ambas as arquiteturas. Apenas a build FOSS está no F-Droid.
+Builds padrão são 64 bits (com FFmpeg); builds "32" sem FFmpeg para ambas as arquiteturas. Apenas FOSS está no F-Droid.
 
-A partir de <b>janeiro de 2027</b> (<a href="https://keepandroidopen.org/en/faq/">por que a data mudou</a>), o Google exigirá verificação de identidade para todos os desenvolvedores Android, mesmo fora da Google Play. Como um projeto de Software Livre e de Código Aberto (FOSS), o N-Zik e seu desenvolvedor se opõem a essa exigência devido ao seu impacto na privacidade do desenvolvedor, na distribuição independente e na liberdade de software.
-
-📖 <a href="https://keepandroidopen.org">Saiba mais</a> · ✍️ <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Assine a petição</a>
+A partir de <b>janeiro de 2027</b>, o Google exigirá verificação de identidade para todos os desenvolvedores. Como projeto FOSS, N-Zik se opõe a isso. <a href="https://keepandroidopen.org">Saiba mais</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Assine a petição</a>

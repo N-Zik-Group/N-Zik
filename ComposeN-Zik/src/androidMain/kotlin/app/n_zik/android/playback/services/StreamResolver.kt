@@ -144,6 +144,10 @@ private val AGE_RESTRICTED_STATUSES = setOf("AGE_CHECK_REQUIRED", "AGE_VERIFICAT
 private val fetchedFormatIds = Collections.synchronizedSet(mutableSetOf<String>())
 private val webRemixFailedIds = Collections.synchronizedSet(mutableSetOf<String>())
 
+// Per-client failure tracking: clientName → map of videoId → failure timestamp
+private val clientFailedIds = ConcurrentHashMap<String, MutableMap<String, Long>>()
+private const val CLIENT_FAILURE_TTL_MS = 5 * 60 * 1000L // 5 minutes
+
 // Track ongoing background fetches to prevent concurrent duplicate API calls
 private val fetchingSongInfos = Collections.synchronizedSet(mutableSetOf<String>())
 private val fetchingArtists = Collections.synchronizedSet(mutableSetOf<String>())
@@ -179,6 +183,44 @@ fun markWebRemixFailed(videoId: String) {
 fun clearWebRemixFailures() {
     webRemixFailedIds.clear()
     Timber.tag(TAG).d("Cleared WEB_REMIX failures")
+}
+
+/**
+ * Mark a videoId as having failed with a specific client.
+ * Next resolve will skip that client for this videoId for CLIENT_FAILURE_TTL_MS.
+ */
+fun markClientFailed(clientName: String, videoId: String) {
+    clientFailedIds.getOrPut(clientName) { mutableMapOf() }[videoId] = System.currentTimeMillis()
+    Timber.tag(TAG).d("Marked $clientName failed for $videoId")
+}
+
+/**
+ * Check if a client failure has expired (older than CLIENT_FAILURE_TTL_MS).
+ */
+private fun isClientFailureExpired(clientName: String, videoId: String): Boolean {
+    val failureMap = clientFailedIds[clientName] ?: return true
+    val failureTime = failureMap[videoId] ?: return true
+    return System.currentTimeMillis() - failureTime > CLIENT_FAILURE_TTL_MS
+}
+
+/**
+ * Clean up expired failure entries for a client.
+ */
+private fun cleanupExpiredFailures(clientName: String) {
+    val failureMap = clientFailedIds[clientName] ?: return
+    val now = System.currentTimeMillis()
+    failureMap.entries.removeIf { (_, timestamp) -> now - timestamp > CLIENT_FAILURE_TTL_MS }
+    if (failureMap.isEmpty()) {
+        clientFailedIds.remove(clientName)
+    }
+}
+
+/**
+ * Clear all failure markers for a specific client.
+ */
+fun clearClientFailures(clientName: String) {
+    clientFailedIds.remove(clientName)
+    Timber.tag(TAG).d("Cleared failures for $clientName")
 }
 
 /**
@@ -927,6 +969,18 @@ private suspend fun resolveStreamUriInternal(
                 continue
             }
 
+            // Skip clients that have been marked as failed for this videoId (unless TTL expired)
+            val clientFailures = clientFailedIds[ytClient.clientName]
+            if (clientFailures != null && videoId in clientFailures) {
+                if (!isClientFailureExpired(ytClient.clientName, videoId)) {
+                    lastFailureReason = "${ytClient.clientName}: previously failed for $videoId — skipping"
+                    Timber.tag(TAG).d(lastFailureReason)
+                    continue
+                }
+                // TTL expired, clean up this entry
+                cleanupExpiredFailures(ytClient.clientName)
+            }
+
             val context = ytClient.toContext(
                 locale = locale,
                 visitorData = visitorData,
@@ -943,6 +997,19 @@ private suspend fun resolveStreamUriInternal(
                 poToken = pot,
                 context = context
             )
+
+            // Check HTTP status before parsing — with expectSuccess=false, non-2xx responses
+            // are returned as-is and may not be valid PlayerResponse JSON
+            val httpStatus = httpResponse.status.value
+            if (httpStatus !in 200..299) {
+                lastFailureReason = "${ytClient.clientName}: HTTP $httpStatus for $videoId"
+                Timber.tag(TAG).w(lastFailureReason)
+                // Mark non-web clients as failed on HTTP errors
+                if (ytClient.clientName !in WEB_CLIENTS) {
+                    markClientFailed(ytClient.clientName, videoId)
+                }
+                continue
+            }
 
             val playerResponse = runCatching {
                 httpResponse.body<PlayerResponse>()
@@ -1040,11 +1107,12 @@ private suspend fun resolveStreamUriInternal(
 
             // Validate (HEAD request)
             // WEB_REMIX CDN URLs can sometimes 403 on HEAD yet serve fine on byte-range GET.
-            // Validate anyway to detect real 403s early and trigger cipher refresh,
-            // but don't skip the stream on HEAD failure — let ExoPlayer try directly.
+            // For WEB clients: let ExoPlayer try anyway (HEAD can give false 403s).
+            // For non-WEB clients (ANDROID_VR, IOS, etc.): HEAD 403 is real — skip to next client.
             // Also skip for last fallback client to guarantee at least one stream reaches ExoPlayer.
             val streamUrl = uri.toString()
             val isLastClient = index == clientsToTry.size - 1
+            val isWebClient = ytClient.clientName in WEB_CLIENTS
             val shouldSkipValidation = isLastClient
             val isValid = if (shouldSkipValidation) {
                 Timber.tag(TAG).d("Last fallback client ${ytClient.clientName} — skipping HEAD validation, letting ExoPlayer try directly")
@@ -1055,23 +1123,25 @@ private suspend fun resolveStreamUriInternal(
                 NetworkClientFactory.validateStreamUrl(streamUrl, ytClient.userAgent, cookie)
             }
             if (!isValid) {
-                lastFailureReason = "${ytClient.clientName}: HEAD validation failed (403/expired?) for $videoId — letting ExoPlayer try anyway"
+                lastFailureReason = "${ytClient.clientName}: HEAD validation failed (403/expired?) for $videoId"
                 Timber.tag(TAG).w(lastFailureReason)
                 // Track WEB_REMIX failures so next resolve falls through to fallback clients faster
                 if (ytClient.clientName == "WEB_REMIX") {
                     webRemixFailedIds.add(videoId)
                 }
-                // Trigger config refresh for web clients to self-heal stale cipher configs (non-blocking)
-                if (ytClient.clientName in WEB_CLIENTS) {
-                    CoroutineScope(PlaybackDispatchers.STREAM_RESOLVER).launch {
-                        val configChanged = runCatching { CipherDeobfuscator.onStreamRejected() }.getOrNull() ?: false
-                        if (configChanged) {
-                            clearWebRemixFailures()
-                        }
+                // For non-WEB clients: HEAD 403 is real — mark as failed and skip to next client
+                if (!isWebClient) {
+                    markClientFailed(ytClient.clientName, videoId)
+                    continue
+                }
+                // For WEB clients: trigger config refresh and let ExoPlayer try anyway
+                // (HEAD can give false 403s for WEB_REMIX CDN URLs)
+                CoroutineScope(PlaybackDispatchers.STREAM_RESOLVER).launch {
+                    val configChanged = runCatching { CipherDeobfuscator.onStreamRejected() }.getOrNull() ?: false
+                    if (configChanged) {
+                        clearWebRemixFailures()
                     }
                 }
-                // Don't continue — let ExoPlayer try the URL despite HEAD failure
-                // (HEAD can give false 403s for WEB_REMIX CDN URLs)
             }
 
             // Check if metadata is missing. If so, save as fallback and try next client.

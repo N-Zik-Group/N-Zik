@@ -1,1 +1,1 @@
-Sodoben večjezični odjemalec YouTube Music za Android s podporo za delo brez povezave.
+Sodoben večjezični YouTube Music odjemalec za Android.

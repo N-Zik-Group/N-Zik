@@ -1,57 +1,55 @@
-<b>N-Zik</b> se to meyer klian YouTube Music, open-source ek miltiling pou Android! 🎵🚀
+<b>N-Zik</b> se enn klian YouTube Music open-source ek multiling pou Android.
 
-Enn fork miltiling de <a href="https://github.com/knighthat/Kreate">Kreate</a>, ki fokus lor performans, polissage UI/UX, reparasion bann bug ek bann nouvo fonsionnalite avek enn sipor alon-term.
+Enn fork de <a href="https://github.com/knighthat/Kreate">Kreate</a> ki fokus lor performans, polissage UI, reparasion bann bug ek sipor alon-term.
 
-<b>Devlopman ek Stabilite:</b> N-Zik ti koumans kouma enn proze personel pou mwa ek mo bann kamarad. Li kapav pa ankor osi stabil ki Kreate — check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, ouswa <a href="https://github.com/fast4x/RiPlay">RiPlay</a> pou enn opsion plis matir.
+<b>Nouet:</b> N-Zik ti koumans kouma enn proze personel. Pou lezot bon opsyon, ginn <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, ouswa <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Lirilizasion transparant de l'IA:</b> Mo servi l'IA generatif pou ed mwa avek bann kod (atraver <a href="https://github.com/bmad-code-org/BMAD-METHOD">Metod BMAD</a>), me tou bann kod gagne revize ek teste avan nou larg li. Pa to gou? Pa fer narien — ena boukou lezot bon alternativ.
+<b>Lirilizasion IA:</b> Mo servi IA generatif pou ed avek bann kod (atraver <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>). Tou gagne revize ek teste avan larg.
 
-Ki to enn sinp skouter ouswa enn vre fane mizik, N-Zik donn twa enn kontrol absoli lor to mizik, san konpromet to konfidansialite.
+Ki to sinp skouter ouswa vre fane mizik, N-Zik donn twa kontrol absoli lor to mizik san konpromet to konfidansialite.
 
-✨ <b>KIFER SWIZIR N-ZIK?</b> Pa ena piblisite, lekout an backgroud konple, kaching offline ek enn interfass ki to kapav kastomize net — toultan gratis.
+✨ <b>KIFER N-ZIK?</b> Pa piblisite, lekout an background, kaching offline ek interfass kastomize — gratis, toultan.
 
-🎨 <b>Interfass kastomizab</b>
-- Jetpack Compose UI avek enn bouton pou mod ViMusic Klasik 🌓
-- Bann tem kastomize: True AMOLED, Deep Dark, Crisp Light + bann kouler accent
-- Player an karousel 3D 🎠 ek bann widget pou to home screen ki to kapav kastomize 🪟
-- Profil artis an detay, News Feed ek bann widget eksperimantal 🧪
+🎨 <b>Interfass Kastomizab</b>
+- Jetpack Compose avek bouton pou mod ViMusic Klasik
+- Tem kastomize: AMOLED, Deep Dark, Crisp Light + bann kouler accent
+- Player karousel 3D, widget home ki to kapav kastomize
+- Profil artis, News Feed, widget eksperimantal
 
 🎵 <b>Eksperians Audio</b>
-- Audio kalite premium atraver YouTube Music Premium (klian Web Remix) 🔊
-- Parol sanson sinkronize avanse avek opsion pou edite ek tradiksion an tan real 🎤
-- Vizualizater audio an tan real 🎇 ek bann kontrol pro: vitess, pitch, normalizasion, crossfade, ogmantasion volim 🎚️
+- Audio kalite premium atraver YouTube Music Premium (Web Remix)
+- Parol sanson sinkronize avek edite ek tradiksion tan real
+- Vizualizater audio ek bann kontrol pro: vitess, pitch, normalizasion, crossfade, ogmantasion volim
 
 💾 <b>Offline, Metadonne ek Konfidansialite</b>
-- Kaching offline intelizan ek download pou bann morso ek playlist 📡
-- Eksportasion avek FFmpeg avek bann metadonne konple 📤 (pou bann build 64-bit selman)
-- Editer metadonne dan l'app (AAC/Opus, cover art) ✏️
-- Bann statistik lekout ek l'istwar 100% lokal 📊
-- Back-up otomatik avek bann interval ek retansion kastomize ⚙️
+- Kaching offline intelizan ek download pou morso ek playlist
+- Eksportasion FFmpeg avek bann metadonne konple (64-bit selman)
+- Editer metadonne dan l'app (AAC/Opus, cover art)
+- Statistik lekout ek l'istwar 100% lokal
+- Back-up otomatik avek bann interval ek retansion kastomize
 
 🔗 <b>Integrasion</b>
-- Sign-in YouTube pou gagne bann rekomandasion ek sanzman audio/video 📺
-- Discord Rich Presence 🎮
-- Inport/eksport playlist: RiPlay, Spotify (Exportify), YouTube Music, N-Zik 🔄
+- Sign-in YouTube pou rekomandasion ek sanzman audio/video
+- Discord Rich Presence
+- Inport/eksport playlist: RiPlay, Spotify, YouTube Music, N-Zik
 
-📱 <b>Zwe partou:</b> Android Auto, Automotive, TV ek Tablet 🚗📺
+📱 <b>Zwe Partou:</b> Android Auto, Automotive, TV ek Tablet
 
-🛠️ <b>Fonsionnalite pou bann Power User</b>
-- Serch par teks ouswa par lavwa 🎙️
-- Bann update OTA depi GitHub ⬇️
-- Timer pou somer ek lekout an background 💤
+🛠️ <b>Fonsionnalite Power User</b>
+- Serch par teks ouswa lavwa
+- Update OTA depi GitHub
+- Timer pou somer ek lekout an background
 
-🛡️ N-Zik li 100% open-source (FOSS). Bann permision klé: INTERNET (streaming/parol/update), RECORD_AUDIO (pou vizualizater selman, opt-in, zame pa ekoute), STORAGE (eksport/backup), FOREGROUND_SERVICE/NOTIFICATIONS (lekout), REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH (audio san fil), WAKE_LOCK (pou gard lekout aktif).
+🛡️ 100% open-source (FOSS). Bann permision kle: INTERNET, RECORD_AUDIO (pou vizualizater selman), STORAGE (eksport/backup), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
-📦 <b>Bann Build disponib</b>
-- Full ek Beta: Build konple avek tou bann konpozan (selman 64-bit)
-- Full32 ek Beta32: Build konple san FFmpeg (32-bit ek 64-bit)
-- Minified: Build leze, rekomande pou bann masinn ki pa tro for (selman 64-bit)
-- Minified32: Build leze san FFmpeg (32-bit ek 64-bit)
-- FOSS: Build konple san auto-updater, pou F-Droid (selman 64-bit)
-- Dev ek Dev32: Bann build devlopman depi bann dernie commit, pou test selman
+📦 <b>Bann Build Disponib</b>
+- Full/Beta: Build konple (64-bit selman)
+- Full32/Beta32: San FFmpeg (32/64-bit)
+- Minified: Build leze, pou bann masinn ki pa tro for (64-bit selman)
+- Minified32: Build leze san FFmpeg (32/64-bit)
+- FOSS: San auto-updater, pou F-Droid (64-bit selman)
+- Dev/Dev32: Bann build devlopman, pou test selman
 
-Bann build standar se 64-bit selman parski ena FFmpeg ladan; bann build "32" pa ena FFmpeg pou kapav mars lor tou le de arkitektir. Selman build FOSS ki lor F-Droid.
+Bann build standar se 64-bit (avek FFmpeg); bann build "32" pa FFmpeg pou tou le de arkitektir. Selman build FOSS ki lor F-Droid.
 
-Koumans <b>Zanvie 2027</b> (<a href="https://keepandroidopen.org/en/faq/">kifer dat la finn sanzé</a>), Google pou demann enn verifikasion l'idantite pou tou bann devlopper Android, mem andeor Google Play. Kouma enn proze Free and Open Source Software (FOSS), N-Zik ek so devlopper kont sa rekizision-la akoz so impak lor konfidansialite devlopper, distribision independan ek liberte bann lozisyel.
-
-📖 <a href="https://keepandroidopen.org">Aprann plis</a> · ✍️ <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Sign sa petision-la</a>
+Koumans <b>Zanvie 2027</b>, Google pou demann verifikasion l'idantite pou tou bann devlopper. Kouma enn proze FOSS, N-Zik kont sa. <a href="https://keepandroidopen.org">Aprann plis</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Sign sa petision-la</a>

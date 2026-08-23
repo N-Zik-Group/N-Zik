@@ -1,57 +1,55 @@
-<b>N-Zik</b> on sinu ülim avatud lähtekoodiga mitmekeelne YouTube Musicu klient Androidile! 🎵🚀
+<b>N-Zik</b> on sinu avatud lähtekoodiga mitmekeelne YouTube Musicu klient Androidile.
 
-<a href="https://github.com/knighthat/Kreate">Kreate'i</a> mitmekeelne haru, mis on keskendunud jõudlusele, UI/UX-i lihvimisele, veaparandustele ja uutele funktsioonidele koos pikaajalise toega.
+<a href="https://github.com/knighthat/Kreate">Kreate'i</a> haru, mis on keskendunud jõudlusele, liidese lihvimisele, veaparandustele ja pikaajalisele toele.
 
-<b>Arendus ja stabiilsus:</b> N-Zik sai alguse minu ja mu sõprade kõrvalprojektina. See ei pruugi veel olla nii stabiilne kui Kreate – vaata küpsemate valikute saamiseks projekte <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> või <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Märkus:</b> N-Zik sai alguse kõrvalprojektina. Küpsemate alternatiivide vaatamiseks külasta <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> või <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Läbipaistev AI kasutus:</b> Kasutan koodi kirjutamisel abiks generatiivset AI-d (<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD-meetodi</a> kaudu), kuid kõik vaadatakse üle ja testitakse enne väljaandmist. See pole sinu teema? Pole hullu – olemas on palju häid alternatiive.
+<b>AI kasutus:</b> Kasutan genereerivat AI-d koodi jaoks (<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD-meetod</a>), kõik vaadatakse üle ja testitakse enne avaldamist.
 
-Olenemata sellest, kas oled juhuslik kuulaja või suur muusikafänn, annab N-Zik sulle täieliku kontrolli oma muusika üle, ohverdamata sinu privaatsust.
+Olenemata sellest, kas oled juhuslik kuulaja või audiophile, annab N-Zik sulle täieliku kontrolli oma muusika üle, ohverdamata privaatsust.
 
-✨ <b>MIKS VALIDA N-ZIK?</b> Reklaamivaba, täielik taustal esitus, võrguühenduseta vahemälu ja täielikult kohandatav liides – alati tasuta.
+✨ <b>MIKS N-ZIK?</b> Reklaamivaba, taustal esitus, võrguühenduseta vahemälu ja kohandatav liides – alati tasuta.
 
-🎨 <b>Kohandatav kasutajaliides</b>
-- Jetpack Compose'i kasutajaliides klassikalise ViMusicu režiimi lülitiga 🌓
-- Kohandatud teemad: True AMOLED, Deep Dark, Crisp Light + värvilised aktsendid
-- 3D-karussellmängija  carousel player 🎠 ja kohandatavad avakuva vidinad 🪟
-- Üksikasjalikud artistiprofiilid, uudistevoog ja eksperimentaalsed vidinad 🧪
+🎨 <b>Kohandatav liides</b>
+- Jetpack Compose koos klassikalise ViMusic režiimi lülitiga
+- Teemad: AMOLED, Deep Dark, Crisp Light + värvilised aktsendid
+- 3D karussellmängija, kohandatavad avakuva vidinad
+- Artistiprofiilid, uudistevoog, eksperimentaalsed vidinad
 
 🎵 <b>Helielamus</b>
-- Eriti kvaliteetne heli YouTube Music Premiumi kaudu (Web Remixi klient) 🔊
-- Täiustatud sünkroonitud laulusõnad koos muutmise ja reaalajas tõlkega 🎤
-- Reaalajas heliviseerija 🎇 ja profijuhtimine: kiirus, helikõrgus, normaliseerimine, sujuv üleminek, helitugevuse suurendamine 🎚️
+- Premium kvaliteet veeb YouTube Music Premiumi kaudu (Web Remix)
+- Sünkroonitud laulusõnad muutmise ja reaalajas tõlkega
+- Reaalajas helivisualiseerija ja profifunktsioonid: kiirus, helikõrgus, normaliseerimine, sujuv üleminek, helitugevuse suurendamine
 
-💾 <b>Võrguühenduseta režiim, metaandmed ja privaatsus</b>
-- Nutikas võrguühenduseta vahemälu ja lugude ning esitusloendite allalaadimine 📡
-- FFmpeg-toega eksport koos täielike manustatud metaandmetega 📤 (ainult 64-bitised versioonid)
-- Rakendusesisene metaandmete redaktor (AAC/Opus, kaanepilt) ✏️
-- 100% kohalik kuulamisstatistika ja ajalugu 📊
-- Automaatne varundamine kohandatud vahemike ja säilitamisega ⚙️
+💾 <b>Võrguühenduseta, metaandmed ja privaatsus</b>
+- Nutikas vahemälu ja allalaadimised lugude ja esitusloendite jaoks
+- FFmpeg-iga eksport koos täielike metaandmetega (ainult 64-bitine)
+- Rakendusesisene metaandmete redaktor (AAC/Opus, kaanepilt)
+- 100% kohalik kuulamisstatistika ja ajalugu
+- Automaatne varundamine kohandatud vahemike ja säilitamisega
 
 🔗 <b>Integratsioonid</b>
-- YouTube'i sisselogimine soovituste ja heli/video vahetamise jaoks 📺
-- Discord Rich Presence 🎮
-- Esitusloendite import/eksport: RiPlay, Spotify (Exportify), YouTube Music, N-Zik 🔄
+- YouTube'i sisselogimine soovituste ja heli/video vahetamise jaoks
+- Discord Rich Presence
+- Esitusloendite import/eksport: RiPlay, Spotify, YouTube Music, N-Zik
 
-📱 <b>Mängi igal pool:</b> Android Auto, Automotive, TV ja tahvelarvutid 🚗📺
+📱 <b>Mängi igal pool:</b> Android Auto, Automotive, TV ja tahvelarvutid
 
-🛠️ <b>Lisafunktsioonid kogenud kasutajatele</b>
-- Teksti- ja häälotsing 🎙️
-- OTA värskendused GitHubist ⬇️
-- Unetaimer ja taustal esitus 💤
+🛠️ <b>Lisafunktsioonid</b>
+- Teksti- ja häälotsing
+- OTA värskendused GitHubist
+- Unetaimer ja taustal esitus
 
-🛡️ N-Zik on 100% avatud lähtekoodiga (FOSS). Peamised load: INTERNET (striimimine/sõnad/uuendused), RECORD_AUDIO (ainult visualiseerija jaoks, vabatahtlik, ei kuula kunagi pealt), STORAGE (eksport/varundamine), FOREGROUND_SERVICE/NOTIFICATIONS (esitus), REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH (juhtmevaba heli), WAKE_LOCK (esituse jätkamiseks).
+🛡️ 100% avatud lähtekoodiga (FOSS). Peamised load: INTERNET, RECORD_AUDIO (ainult visualiseerija), STORAGE (eksport/varundamine), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
-📦 <b>Saadaval olevad versioonid</b>
-- Full ja Beta: täielik versioon koos kõigi komponentidega (ainult 64-bitine)
-- Full32 ja Beta32: täielik versioon ilma FFmpegita (32- ja 64-bitine)
-- Minified: kerge versioon, soovitatav nõrgematele seadmetele (ainult 64-bitine)
-- Minified32: kerge versioon ilma FFmpegita (32- ja 64-bitine)
-- FOSS: täielik versioon ilma automaatse värskendajata, F-Droidi jaoks (ainult 64-bitine)
-- Dev ja Dev32: arendusversioonid uusimatest muudatustest, ainult testimiseks
+📦 <b>Saadaval versioonid</b>
+- Full/Beta: Täielik versioon (64-bitine)
+- Full32/Beta32: Ilma FFmpegita (32/64-bitine)
+- Minified: Kerge, nõrkadele seadmetele (64-bitine)
+- Minified32: Kerge ilma FFmpegita (32/64-bitine)
+- FOSS: Ilma automaatse värskendajata, F-Droidi jaoks (64-bitine)
+- Dev/Dev32: Arendusversioonid, ainult testimiseks
 
-Standardversioonid on ainult 64-bitised, kuna need sisaldavad FFmpegi; "32" versioonid on ilma FFmpegita, et töötada mõlemal arhitektuuril. Ainult FOSS-versioon on F-Droidis.
+Standardversioonid on 64-bitised (FFmpeg); „32" versioonid on ilma FFmpegita mõlemal arhitektuuril. Ainult FOSS on F-Droidis.
 
-Alates <b>jaanuarist 2027</b> (<a href="https://keepandroidopen.org/en/faq/">miks kuupäev muutus</a>) nõuab Google isiku tuvastamist kõigilt Androidi arendajatelt, isegi väljaspool Google Playd. Vaba ja avatud lähtekoodiga tarkvara (FOSS) projektina on N-Zik ja selle arendaja selle nõude vastu, kuna see mõjutab arendajate privaatsust, sõltumatut levitamist ja tarkvaravabadust.
-
-📖 <a href="https://keepandroidopen.org">Loe lähemalt</a> · ✍️ <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Kirjuta petitsioonile alla</a>
+Alates <b>jaanuarist 2027</b> nõuab Google isiku tuvastamist kõigilt arendajatelt. FOSS projektina on N-Zik selle vastu. <a href="https://keepandroidopen.org">Loe lähemalt</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Kirjuta petitsioonile alla</a>

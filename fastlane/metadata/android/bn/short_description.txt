@@ -1,1 +1,1 @@
-অফলাইন সমর্থন সহ Android-এর জন্য একটি আধুনিক, বহুভাষিক YouTube Music ক্লায়েন্ট।
+Android-এর জন্য YouTube Music ক্লায়েন্ট।

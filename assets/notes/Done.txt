@@ -1,0 +1,4 @@
+[2026-08-23] Fixed android-37 SDK issue
+- Unified compileSdk to 37 across all modules (ComposeN-Zik, betterlyrics, nextvisualizer, discordrpc)
+- Removed corrupted android-35 and android-37.0 SDK platforms (missing android.jar)
+- Reinstalled Android 17.0 (API 37.1) SDK platform

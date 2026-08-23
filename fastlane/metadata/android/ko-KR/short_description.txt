@@ -1,1 +1,1 @@
-오프라인 지원 기능을 갖춘 현대적인 다국어 Android용 YouTube Music 클라이언트입니다.
+Android용 다국어 YouTube Music 클라이언트.

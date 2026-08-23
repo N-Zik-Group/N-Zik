@@ -1,57 +1,55 @@
-<b>N-Zik</b> adalah klien YouTube Music sumber terbuka multibahasa terbaik untuk Android! 🎵🚀
+<b>N-Zik</b> adalah klien YouTube Music sumber terbuka multibahasa untuk Android.
 
-Fork multibahasa dari <a href="https://github.com/knighthat/Kreate">Kreate</a>, yang berfokus pada performa, polesan UI/UX, perbaikan bug, dan fitur baru dengan dukungan jangka panjang.
+Fork dari <a href="https://github.com/knighthat/Kreate">Kreate</a> yang berfokus pada performa, polesan UI, perbaikan bug, dan dukungan jangka panjang.
 
-<b>Pengembangan & Stabilitas:</b> N-Zik dimulai sebagai proyek sampingan untuk saya dan teman-teman. Ini mungkin belum sestabil Kreate — silakan lihat <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, atau <a href="https://github.com/fast4x/RiPlay">RiPlay</a> untuk pilihan yang lebih matang.
+<b>Catatan:</b> N-Zik dimulai sebagai proyek sampingan. Untuk alternatif yang lebih matang, lihat <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, atau <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Penggunaan AI yang Transparan:</b> Saya menggunakan AI generatif untuk membantu pengodean (melalui <a href="https://github.com/bmad-code-org/BMAD-METHOD">Metode BMAD</a>), namun semuanya ditinjau dan diuji sebelum dirilis. Bukan selera Anda? Tidak masalah — banyak alternatif hebat lainnya.
+<b>Penggunaan AI:</b> Saya menggunakan AI generatif untuk kode (melalui <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), ditinjau dan diuji sebelum dirilis.
 
-Apakah Anda pendengar kasual atau audiofil sejati, N-Zik memberi Anda kendali penuh atas musik Anda, tanpa mengorbankan privasi Anda.
+Baik pendengar kasual maupun audiofil, N-Zik memberi Anda kendali penuh atas musik tanpa mengorbankan privasi.
 
-✨ <b>MENGAPA MEMILIH N-ZIK?</b> Tanpa iklan, pemutaran latar belakang penuh, caching offline, dan antarmuka yang sepenuhnya dapat disesuaikan — gratis, selamanya.
+✨ <b>MENGAPA N-ZIK?</b> Tanpa iklan, pemutaran latar belakang, caching offline, dan UI yang sepenuhnya dapat disesuaikan — gratis, selalu.
 
-🎨 <b>Antarmuka (UI) yang Dapat Disesuaikan</b>
-- UI Jetpack Compose dengan sakelar mode ViMusic Klasik 🌓
-- Tema khusus: True AMOLED, Deep Dark, Crisp Light + aksen warna
-- 3D Carousel Player Carousel 🎠 dan widget layar beranda yang dapat disesuaikan 🪟
-- Profil artis yang mendalam, News Feed, dan widget eksperimental 🧪
+🎨 <b>UI yang Dapat Disesuaikan</b>
+- Jetpack Compose dengan toggle mode ViMusic Klasik
+- Tema: AMOLED, Deep Dark, Crisp Light + aksen warna
+- 3D Carousel Player, widget home yang dapat disesuaikan
+- Profil artis, News Feed, widget eksperimental
 
 🎵 <b>Pengalaman Audio</b>
-- Audio kualitas premium melalui YouTube Music Premium (klien Web Remix) 🔊
-- Lirik tersinkronisasi tingkat lanjut dengan pengeditan & terjemahan waktu nyata 🎤
-- Visualisator audio waktu nyata 🎇 dan kontrol pro: kecepatan, nada, normalisasi, crossfade, peningkatan volume 🎚️
+- Kualitas premium via YouTube Music Premium (Web Remix)
+- Lirik sinkron dengan pengeditan & terjemahan real-time
+- Visualisator audio dan kontrol pro: kecepatan, nada, normalisasi, crossfade, peningkatan volume
 
 💾 <b>Offline, Metadata & Privasi</b>
-- Caching offline cerdas & unduhan untuk lagu dan daftar putar 📡
-- Ekspor bertenaga FFmpeg dengan metadata tertanam penuh 📤 (hanya build 64-bit)
-- Editor metadata dalam aplikasi (AAC/Opus, sampul album) ✏️
-- 100% statistik mendengarkan lokal & riwayat 📊
-- Cadangan otomatis dengan interval & retensi khusus ⚙️
+- Caching offline cerdas & unduhan untuk lagu dan daftar putar
+- Ekspor FFmpeg dengan metadata lengkap (hanya 64-bit)
+- Editor metadata dalam app (AAC/Opus, sampul album)
+- Statistik mendengarkan & riwayat 100% lokal
+- Cadangan otomatis dengan interval & retensi khusus
 
 🔗 <b>Integrasi</b>
-- Masuk YouTube untuk rekomendasi & peralihan audio/video 📺
-- Discord Rich Presence 🎮
-- Impor/ekspor daftar putar: RiPlay, Spotify (Exportify), YouTube Music, N-Zik 🔄
+- Login YouTube untuk rekomendasi & peralihan audio/video
+- Discord Rich Presence
+- Impor/ekspor daftar putar: RiPlay, Spotify, YouTube Music, N-Zik
 
-📱 <b>Putar di Mana Saja:</b> Android Auto, Automotive, TV, dan Tablet 🚗📺
+📱 <b>Main di Mana Saja:</b> Android Auto, Automotive, TV, dan Tablet
 
-🛠️ <b>Fitur Pengguna Ahli</b>
-- Pencarian teks & suara 🎙️
-- Pembaruan OTA dari GitHub ⬇️
-- Timer tidur & pemutaran latar belakang 💤
+🛠️ <b>Fitur Power User</b>
+- Pencarian teks & suara
+- Pembaruan OTA dari GitHub
+- Timer tidur & pemutaran latar belakang
 
-🛡️ N-Zik 100% sumber terbuka (FOSS). Izin utama: INTERNET (streaming/lirik/pembaruan), RECORD_AUDIO (hanya visualisator, opsional, tidak pernah mendengarkan), STORAGE (ekspor/cadangan), FOREGROUND_SERVICE/NOTIFICATIONS (pemutaran), REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH (audio nirkabel), WAKE_LOCK (menjaga pemutaran tetap aktif).
+🛡️ 100% sumber terbuka (FOSS). Izin utama: INTERNET, RECORD_AUDIO (visualisator saja), STORAGE (ekspor/cadangan), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Build yang Tersedia</b>
-- Full & Beta: Build lengkap dengan semua komponen (hanya 64-bit)
-- Full32 & Beta32: Build lengkap tanpa FFmpeg (32-bit & 64-bit)
-- Minified: Build ringan, direkomendasikan untuk perangkat kelas bawah (hanya 64-bit)
-- Minified32: Build ringan tanpa FFmpeg (32-bit & 64-bit)
-- FOSS: Build lengkap tanpa pembaru otomatis, untuk F-Droid (hanya 64-bit)
-- Dev & Dev32: Build pengembangan dari commit terbaru, hanya untuk pengujian
+- Full/Beta: Build lengkap (64-bit)
+- Full32/Beta32: Tanpa FFmpeg (32/64-bit)
+- Minified: Ringan, untuk perangkat kelas bawah (64-bit)
+- Minified32: Ringan tanpa FFmpeg (32/64-bit)
+- FOSS: Tanpa auto-updater, untuk F-Droid (64-bit)
+- Dev/Dev32: Build pengembangan, hanya untuk pengujian
 
-Build standar hanya 64-bit karena menyertakan FFmpeg; build "32" tidak menyertakan FFmpeg agar dapat berfungsi di kedua arsitektur. Hanya build FOSS yang ada di F-Droid.
+Build standar 64-bit (FFmpeg); build "32" tanpa FFmpeg untuk kedua arsitektur. Hanya FOSS yang ada di F-Droid.
 
-Mulai <b>Januari 2027</b> (<a href="https://keepandroidopen.org/en/faq/">mengapa tanggalnya berubah</a>), Google akan mewajibkan verifikasi identitas bagi semua pengembang Android, bahkan di luar Google Play. Sebagai proyek Perangkat Lunak Bebas dan Sumber Terbuka (FOSS), N-Zik dan pengembangnya menentang persyaratan ini karena dampaknya terhadap privasi pengembang, distribusi independen, dan kebebasan perangkat lunak.
-
-📖 <a href="https://keepandroidopen.org">Pelajari lebih lanjut</a> · ✍️ <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Tanda tangani petisi</a>
+Mulai <b>Januari 2027</b>, Google mewajibkan verifikasi identitas untuk semua pengembang. Sebagai proyek FOSS, N-Zik menentang ini. <a href="https://keepandroidopen.org">Pelajari lebih lanjut</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Tanda tangani petisi</a>

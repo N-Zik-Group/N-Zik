@@ -1,1 +1,1 @@
-ఆఫ్లైన్ మద్దతుతో Android కోసం ఆధునిక, బహుభాషా YouTube Music క్లయింట్.
+Android కోసం ఆధునిక YouTube Music క్లయింట్.
