@@ -1,4 +1,30 @@
-[2026-08-23] Fixed android-37 SDK issue
+Fixed android-37 SDK issue
 - Unified compileSdk to 37 across all modules (ComposeN-Zik, betterlyrics, nextvisualizer, discordrpc)
 - Removed corrupted android-35 and android-37.0 SDK platforms (missing android.jar)
 - Reinstalled Android 17.0 (API 37.1) SDK platform
+
+Stream Resolution Fixes
+- ANDROID_VR: HEAD 403 now marks client as failed and skips to next (no more infinite retry)
+- Cipher refresh now passes currentPlayerHash to PlayerConfigStore (matches Metrolist)
+- HEAD validation skips for last fallback client to guarantee one stream reaches ExoPlayer
+- isExpiredUrlError() now handles 401/403/410 (was missing 401)
+- HTTP status code check before parsing PlayerResponse (prevents NULL status from bad responses)
+- Non-web clients marked as failed on HTTP errors during player request
+
+Network Fixes
+- expectSuccess = false (Ktor doesn't throw on non-2xx, we handle errors manually)
+- HttpTimeout plugin added: 60s request, 30s connect, 60s socket
+- Chrome User-Agent for WEB/WEB_REMIX (was Firefox)
+
+Client Fixes (previous session)
+- All clients synced with innertubex (versions, flags, userAgent)
+- useMusicPlayerEndpoint flag added to ANDROID_VR, VISIONOS, TVHTML5_SIMPLY
+- includeUserAgentInContext added to ANDROID_VR, MOBILE, TVHTML5, IOS, IPADOS, ANDROID_CREATOR
+- requirePoToken added to TVHTML5_SIMPLY, TVHTML5_SIMPLY_EMBEDDED_PLAYER
+- buildId/cronetVersion/packageName added to ANDROID_VR_1_43_32, ANDROID_VR_1_61_48, ANDROID_CREATOR
+
+Bug Fixes (previous session)
+- PlayerServiceModern: wrong thread crash fixed (Dispatchers.IO -> Dispatchers.Main)
+- PlayerServiceModern: async cipher refresh (no more runBlocking on rejection)
+- StreamResolver: per-client failure tracking with 5min TTL (ConcurrentHashMap)
+- PlayerServiceModern: isExpiredUrlError() detects 410 Gone
