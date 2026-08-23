@@ -165,7 +165,7 @@ object PlayerConfigStore {
         }
     }
 
-    suspend fun refreshAfterStreamRejection(): Boolean = withContext(Dispatchers.IO) {
+    suspend fun refreshAfterStreamRejection(playerHash: String? = null): Boolean = withContext(Dispatchers.IO) {
         refreshMutex.withLock {
             val now = System.currentTimeMillis()
             if (rejectionCooldownActive(now)) {

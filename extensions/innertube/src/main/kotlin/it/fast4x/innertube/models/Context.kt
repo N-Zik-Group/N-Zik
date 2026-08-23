@@ -26,7 +26,6 @@ data class Context(
         val gl: String? = "US",
         val visitorData: String? = null, // = Innertube.DEFAULT_VISITOR_DATA,
         val androidSdkVersion: String? = null,
-        @Transient
         val userAgent: String? = null,
         @Transient
         val referer: String? = null,

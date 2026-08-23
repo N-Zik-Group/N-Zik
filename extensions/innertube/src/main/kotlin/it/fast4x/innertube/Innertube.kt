@@ -75,7 +75,7 @@ object Innertube {
 
     @OptIn(ExperimentalSerializationApi::class)
     private fun createClient() = HttpClient(OkHttp) {
-        expectSuccess = true
+        expectSuccess = false
 
         install(ContentNegotiation) {
             protobuf()
@@ -98,6 +98,12 @@ object Innertube {
             brotli(1.0F)
             gzip(0.9F)
             deflate(0.8F)
+        }
+
+        install(io.ktor.client.plugins.HttpTimeout) {
+            requestTimeoutMillis = 60_000
+            connectTimeoutMillis = 30_000
+            socketTimeoutMillis = 60_000
         }
 
         val p = proxy ?: ProxyPreferences.preference?.let { getProxy(it) }

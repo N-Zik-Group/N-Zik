@@ -128,9 +128,10 @@ object CipherDeobfuscator {
 
     /**
      * Called when a deciphered stream URL was rejected by the CDN (e.g. a WEB_REMIX 403).
+     * Passes the current player hash so the config store can fetch from fallback sources if needed.
      * Returns whether the config table changed.
      */
-    suspend fun onStreamRejected(): Boolean = PlayerConfigStore.refreshAfterStreamRejection()
+    suspend fun onStreamRejected(): Boolean = PlayerConfigStore.refreshAfterStreamRejection(currentPlayerHash)
 
     /**
      * Transform the 'n' parameter in a streaming URL to avoid throttling/403.

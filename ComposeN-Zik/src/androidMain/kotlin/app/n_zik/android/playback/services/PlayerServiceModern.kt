@@ -1067,7 +1067,10 @@ class PlayerServiceModern : MediaLibraryService(),
         return (rootCause as? HttpDataSource.InvalidResponseCodeException)?.responseCode
     }
 
-    private fun isExpiredUrlError(error: PlaybackException): Boolean = getHttpResponseCode(error) == 403
+    private fun isExpiredUrlError(error: PlaybackException): Boolean {
+        val code = getHttpResponseCode(error)
+        return code == 401 || code == 403 || code == 410
+    }
 
     private fun isRangeNotSatisfiableError(error: PlaybackException): Boolean = getHttpResponseCode(error) == 416
 
@@ -1221,16 +1224,15 @@ class PlayerServiceModern : MediaLibraryService(),
                         try {
                             cache.removeResource(currentMediaId)
                         } catch (_: Exception) {}
-                        markWebRemixFailed(currentMediaId)
-                        // Synchronously refresh cipher config — this is the critical fix
-                        val configChanged = runCatching {
-                            kotlinx.coroutines.runBlocking(PlaybackDispatchers.STREAM_RESOLVER) {
-                                CipherDeobfuscator.onStreamRejected()
+                        val streamClient = playbackDataCache[currentMediaId]?.streamClient ?: "WEB_REMIX"
+                        markClientFailed(streamClient, currentMediaId)
+                        // Async refresh cipher config — retry will happen after delay
+                        coroutineScope.launch(PlaybackDispatchers.STREAM_RESOLVER) {
+                            val configChanged = runCatching { CipherDeobfuscator.onStreamRejected() }.getOrNull() ?: false
+                            if (configChanged) {
+                                Timber.tag("PlayerServiceModern").d("Player config changed after stream rejection — restoring WEB_REMIX")
+                                clearWebRemixFailures()
                             }
-                        }.getOrNull() ?: false
-                        if (configChanged) {
-                            Timber.tag("PlayerServiceModern").d("Player config changed after stream rejection — restoring WEB_REMIX")
-                            clearWebRemixFailures()
                         }
                     }
 
@@ -1251,15 +1253,15 @@ class PlayerServiceModern : MediaLibraryService(),
                         Timber.tag("PlayerServiceModern").d("Handling remote playback error for $currentMediaId — treating as expired URL")
                         formatCache.remove(currentMediaId)
                         try { cache.removeResource(currentMediaId) } catch (_: Exception) {}
-                        markWebRemixFailed(currentMediaId)
-                        val configChanged = runCatching {
-                            kotlinx.coroutines.runBlocking(PlaybackDispatchers.STREAM_RESOLVER) {
-                                CipherDeobfuscator.onStreamRejected()
+                        val streamClient = playbackDataCache[currentMediaId]?.streamClient ?: "WEB_REMIX"
+                        markClientFailed(streamClient, currentMediaId)
+                        // Async refresh cipher config — retry will happen after delay
+                        coroutineScope.launch(PlaybackDispatchers.STREAM_RESOLVER) {
+                            val configChanged = runCatching { CipherDeobfuscator.onStreamRejected() }.getOrNull() ?: false
+                            if (configChanged) {
+                                Timber.tag("PlayerServiceModern").d("Player config changed after stream rejection — restoring WEB_REMIX")
+                                clearWebRemixFailures()
                             }
-                        }.getOrNull() ?: false
-                        if (configChanged) {
-                            Timber.tag("PlayerServiceModern").d("Player config changed after stream rejection — restoring WEB_REMIX")
-                            clearWebRemixFailures()
                         }
                     }
 
@@ -1295,7 +1297,7 @@ class PlayerServiceModern : MediaLibraryService(),
                 // Save playWhenReady BEFORE pausing - pause() clears it
                 val wasPlaying = player.playWhenReady
                 player.pause()
-                CoroutineScope(Dispatchers.IO).launch {
+                coroutineScope.launch(Dispatchers.Main) {
                     delay(retryDelay)
                     val currentIndex = player.currentMediaItemIndex
                     if (currentIndex != C.INDEX_UNSET) {
