@@ -1291,8 +1291,14 @@
   <string name="locations">Steder</string>
   <string name="users">Brukere</string>
   <string name="error_youtube_login">Feil YoutubeLogin</string>
+  <string name="error_age_restricted">Age-restricted content: %1$s</string>
+  <string name="error_login_required">Sign in required: %1$s</string>
+  <string name="error_session_expired">YouTube session expired, please sign in again</string>
+  <string name="error_cookie_invalid">YouTube cookie is invalid, please log in again</string>
+  <string name="error_not_logged_in">Not logged in to YouTube</string>
   <string name="stream_error_retrying">Prøv igjen: %1$s</string>
-  <string name="error_playback_failed">Feil: %1$s</string>
+  <string name="error_playback_failed">Playback failed: %1$s</string>
+  <string name="error_playback_failed_with_code">Playback failed: %1$s [%2$s]</string>
   <string name="error_all_stream_attempts_failed">Kan ikke spille: %1$s</string>
   <string name="stream_still_retrying">Laster fortsatt… Forsøk %1$s</string>
   <string name="stream_unexpected_skip">Uventet sporendring oppdaget</string>

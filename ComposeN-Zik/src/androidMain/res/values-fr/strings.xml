@@ -1292,8 +1292,14 @@ Volume BAS : titre précédent</string>
   <string name="locations">Emplacements</string>
   <string name="users">Utilisateurs</string>
   <string name="error_youtube_login">Erreur lors de la connexion à Youtube</string>
+  <string name="error_age_restricted">Age-restricted content: %1$s</string>
+  <string name="error_login_required">Sign in required: %1$s</string>
+  <string name="error_session_expired">YouTube session expired, please sign in again</string>
+  <string name="error_cookie_invalid">YouTube cookie is invalid, please log in again</string>
+  <string name="error_not_logged_in">Not logged in to YouTube</string>
   <string name="stream_error_retrying">Réessayer : %1$s</string>
-  <string name="error_playback_failed">Erreur: %1$s</string>
+  <string name="error_playback_failed">Playback failed: %1$s</string>
+  <string name="error_playback_failed_with_code">Playback failed: %1$s [%2$s]</string>
   <string name="error_all_stream_attempts_failed">Impossible de jouer : %1$s</string>
   <string name="stream_still_retrying">Chargement en cours… Tentative %1$s</string>
   <string name="stream_unexpected_skip">Changement de piste inattendu détecté</string>
