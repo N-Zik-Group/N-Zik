@@ -4,6 +4,7 @@ feat(playback): add pause on headphone disconnect setting (issue https://github.
   - `setHandleAudioBecomingNoisy` now reads from preference instead of hardcoded `true`
   - Toggle added in General Settings with service restart on change
   - Default OFF — no behavior change for existing users
+  - Unit tests in PauseOnHeadphoneDisconnectTest.kt (3 tests)
 
 Fixed android-37 SDK issue
 - Unified compileSdk to 37 across all modules (ComposeN-Zik, betterlyrics, nextvisualizer, discordrpc)
