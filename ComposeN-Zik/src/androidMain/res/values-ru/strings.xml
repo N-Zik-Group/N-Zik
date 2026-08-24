@@ -882,6 +882,8 @@
   <string name="discover_has_been_applied_to_queue">\"Открытия\" были применены к очереди, удаленные песни: %s</string>
   <string name="player_pause_on_volume_zero">Пауза при нулевой громкости</string>
   <string name="info_pauses_player_when_volume_zero">Приостановить песню, когда громкость достигнет 0 и возобновить ее, когда громкость больше 0</string>
+  <string name="pause_on_headphone_disconnect">Pause on headphone disconnect</string>
+  <string name="pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones disconnect</string>
   <string name="quality">Качество</string>
   <string name="value_must_be_ip_address">Значение должно быть IP-адресом</string>
   <string name="swipe_up_to_open_the_queue">Свайп вверх, чтобы открыть очередь</string>
