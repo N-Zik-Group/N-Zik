@@ -44,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -103,6 +104,7 @@ import app.it.fast4x.rimusic.utils.ytAccountEmailKey
 import app.it.fast4x.rimusic.utils.ytAccountNameKey
 import app.it.fast4x.rimusic.utils.ytAccountThumbnailKey
 import app.it.fast4x.rimusic.utils.ytCookieKey
+import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
 import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
 import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import kotlinx.coroutines.launch
@@ -212,6 +214,7 @@ fun AccountsSettings() {
                     var visitorData by rememberEncryptedPreference(key = ytVisitorDataKey, defaultValue = "")
                     var dataSyncId by rememberEncryptedPreference(key = ytDataSyncIdKey, defaultValue = "")
                     var cookie by rememberEncryptedPreference(key = ytCookieKey, defaultValue = "")
+
                     var accountName by rememberEncryptedPreference(key = ytAccountNameKey, defaultValue = "")
                     var accountEmail by rememberEncryptedPreference(key = ytAccountEmailKey, defaultValue = "")
                     var accountChannelHandle by rememberEncryptedPreference(
@@ -237,6 +240,9 @@ fun AccountsSettings() {
                                     Innertube.cookie = null
                                     Innertube.dataSyncId = null
                                     Innertube.visitorData = Innertube.DEFAULT_VISITOR_DATA
+                                    // Reset cookie status
+                                    app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
+                                    appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
 
                                     // Clear cached data
                                     appContext().preferences.edit {
@@ -252,6 +258,9 @@ fun AccountsSettings() {
                                         Innertube.dataSyncId = appContext().encryptedPreferences.getString(ytDataSyncIdKey, null)
                                         Innertube.visitorData = appContext().encryptedPreferences.getString(ytVisitorDataKey, null) ?: Innertube.DEFAULT_VISITOR_DATA
                                     }
+                                    // Reset cookie status — will be revalidated on next playback
+                                    app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
+                                    appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
                                 }
                                 // Clear stream caches and mark restart needed
                                 clearStreamCaches()
@@ -361,6 +370,29 @@ fun AccountsSettings() {
                                 }
                             }
 
+                            // Cookie status warning — show when cookie is invalid/expired
+                            if (isLoggedIn && app.n_zik.android.MainApplication.cookieStatus in listOf(app.n_zik.android.MainApplication.CookieStatus.INVALID, app.n_zik.android.MainApplication.CookieStatus.EXPIRED)) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.information),
+                                        contentDescription = null,
+                                        tint = colorPalette().textSecondary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.error_cookie_invalid),
+                                        color = colorPalette().textSecondary,
+                                        modifier = Modifier.padding(start = 8.dp),
+                                        style = typography().xs
+                                    )
+                                }
+                            }
+
                             if (search.inputValue.isBlank() || true) {
                                 OtherSettingsEntry(
                                     title = if (isLoggedIn) stringResource(R.string.youtube_disconnect) else stringResource(R.string.youtube_connect),
@@ -376,6 +408,12 @@ fun AccountsSettings() {
                                             visitorData = ""
                                             dataSyncId = ""
                                             loginYouTube = false
+                                            // Reset cookie status
+                                            app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
+                                            appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
+                                            // Clear stream caches and restart player
+                                            clearStreamCaches()
+                                            appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, true).apply()
                                             //Delete cookies after logout
                                             val cookieManager = CookieManager.getInstance()
                                             cookieManager.removeAllCookies(null)
@@ -413,6 +451,15 @@ fun AccountsSettings() {
                                         if (cookieRetrieved.contains("SAPISID")) {
                                             isLoggedIn = true
                                             loginYouTube = false
+                                            // Clear expired flag on fresh login
+                                            appContext().preferences.edit().putBoolean(ytCookieExpiredKey, false).apply()
+                                            app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.VALID
+                                            // Force re-read account info from encrypted prefs (YouTubeLogin saved them)
+                                            val ep = appContext().encryptedPreferences
+                                            accountName = ep.getString(ytAccountNameKey, "") ?: ""
+                                            accountEmail = ep.getString(ytAccountEmailKey, "") ?: ""
+                                            accountChannelHandle = ep.getString(ytAccountChannelHandleKey, "") ?: ""
+                                            accountThumbnail = ep.getString(ytAccountThumbnailKey, "") ?: ""
                                             Toaster.i( context.getString(R.string.youtube_login_successful) )
                                         }
                                     }
@@ -420,15 +467,15 @@ fun AccountsSettings() {
                             }
 
                             if (search.inputValue.isBlank() || stringResource(R.string.sync_data_with_ytm_account).contains(search.inputValue, true) || stringResource(R.string.playlists_albums_artists_history_like_etc).contains(search.inputValue, true)) {
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.sync_data_with_ytm_account),
-                                    text = stringResource(R.string.playlists_albums_artists_history_like_etc),
-                                    isChecked = isYouTubeSyncEnabled,
-                                    onCheckedChange = {
-                                        isYouTubeSyncEnabled = it
-                                    },
-                                    icon = R.drawable.sync
-                                )
+                                Box(modifier = Modifier.alpha(0.5f)) {
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.sync_data_with_ytm_account) + " (WIP)",
+                                        text = "",
+                                        isChecked = false,
+                                        onCheckedChange = { },
+                                        icon = R.drawable.sync
+                                    )
+                                }
                             }
                         }
                     }

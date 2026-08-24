@@ -31,6 +31,7 @@ const val ytAccountThumbnailKey = "ytAccountThumbnail"
 const val discordAvatarKey = "discord_avatar"
 const val discordUsernameKey = "discord_username"
 const val ytDataSyncIdKey = "ytDataSyncId"
+const val ytCookieExpiredKey = "ytCookieExpired"
 
 inline fun <reified T : Enum<T>> EncryptedSharedPreferences.getEnum(
     key: String,

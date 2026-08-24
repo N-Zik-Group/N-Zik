@@ -28,3 +28,28 @@ Bug Fixes (previous session)
 - PlayerServiceModern: async cipher refresh (no more runBlocking on rejection)
 - StreamResolver: per-client failure tracking with 5min TTL (ConcurrentHashMap)
 - PlayerServiceModern: isExpiredUrlError() detects 410 Gone
+
+Error Reporting & Diagnostics
+- Crash logs now include full device info: manufacturer, model, device name, Android version (SDK), board, bootloader, fingerprint, hardware, package name
+- Startup banner logs app version + device info at boot (Timber tag "Startup")
+- CaptureCrash accepts Context for package name in crash reports
+- playabilityStatus.reason from YouTube shown in error toasts (detailed message)
+- getErrorCodeName() maps 30+ ExoPlayer error codes to human-readable names
+- Error toasts show "Playback failed: <reason> [<code>]" format
+- LoginRequiredException / age-restricted detection with dedicated error strings
+
+Cookie Expiry Detection
+- MainApplication.CookieStatus enum (NOT_LOGGED_IN, VALID, INVALID, EXPIRED)
+- Startup cookie validation checks SAPISID/LOGIN_INFO + persisted ytCookieExpiredKey flag
+- Toast on app start if cookie is INVALID or EXPIRED
+- 401 detection in PlayerServiceModern & StreamResolver sets cookieStatus=EXPIRED
+- Settings card warning when cookie is INVALID/EXPIRED
+- Disconnect/disable/re-enable/import resets cookie status and clears persisted flag
+
+YouTube Login Refresh
+- Account info (name, email, handle, thumbnail) refreshes immediately after login without restart
+- YouTubeSync switch greyed out with "(WIP)" label
+
+StreamResolver Detailed Reason
+- firstYouTubeReason captures first YouTube playability reason (not HTTP errors)
+- Final throw prefers YouTube reason over generic HTTP error for better user messages

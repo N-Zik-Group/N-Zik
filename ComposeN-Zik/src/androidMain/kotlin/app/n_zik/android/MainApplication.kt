@@ -35,6 +35,7 @@ import app.it.fast4x.rimusic.utils.ytAccountEmailKey
 import app.it.fast4x.rimusic.utils.ytAccountNameKey
 import app.it.fast4x.rimusic.utils.ytAccountThumbnailKey
 import app.it.fast4x.rimusic.utils.ytCookieKey
+import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
 import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
 import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import app.n_zik.android.core.coil.ImageCacheFactory
@@ -43,6 +44,7 @@ import app.n_zik.android.core.network.client.Store
 import app.n_zik.android.core.security.cipher.CipherDeobfuscator
 import app.n_zik.android.core.security.cipher.PlayerConfigStore
 import app.n_zik.android.core.security.cipher.PlayerDatesStore
+import app.n_zik.android.BuildConfig
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
 import it.fast4x.innertube.utils.ProxyPreferenceItem
@@ -114,6 +116,23 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 Innertube.cookie = savedCookie
                 Innertube.visitorData = encryptedPreferences.getString(ytVisitorDataKey, "") ?: ""
                 Innertube.dataSyncId = encryptedPreferences.getString(ytDataSyncIdKey, "")
+
+                // Validate cookie on startup — detect expired/invalid session
+                val hasSAPISID = savedCookie.contains("SAPISID")
+                val hasLoginInfo = savedCookie.contains("LOGIN_INFO")
+                val wasExpired = preferences.getBoolean(ytCookieExpiredKey, false)
+                if (!hasSAPISID && !hasLoginInfo) {
+                    Timber.tag("MainApplication").w("YouTube cookie present but missing SAPISID/LOGIN_INFO — session may be expired")
+                    cookieStatus = CookieStatus.INVALID
+                } else if (wasExpired) {
+                    Timber.tag("MainApplication").w("YouTube cookie was previously marked expired — session is expired")
+                    cookieStatus = CookieStatus.EXPIRED
+                } else {
+                    Timber.tag("MainApplication").d("YouTube cookie loaded (SAPISID=$hasSAPISID, LOGIN_INFO=$hasLoginInfo)")
+                    cookieStatus = CookieStatus.VALID
+                }
+            } else {
+                cookieStatus = CookieStatus.NOT_LOGGED_IN
             }
 
             runCatching {
@@ -139,7 +158,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         }
         
         // Always set up crash handler regardless of debug mode
-        Thread.setDefaultUncaughtExceptionHandler(CaptureCrash(dir.absolutePath))
+        Thread.setDefaultUncaughtExceptionHandler(CaptureCrash(dir.absolutePath, this))
         
         if (logEnabled) {
             Timber.plant(FileLoggingTree(File(dir, "N-Zik_log.txt")))
@@ -148,6 +167,16 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             Timber.uprootAll()
             Timber.plant(Timber.DebugTree())
         }
+
+        // Startup banner: device info + app version
+        Timber.tag("Startup").i("=".repeat(50))
+        Timber.tag("Startup").i("N-Zik v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) [${BuildConfig.APPLICATION_ID}]")
+        Timber.tag("Startup").i("Manufacturer: ${Build.MANUFACTURER}")
+        Timber.tag("Startup").i("Device: ${Build.MODEL} (${Build.DEVICE})")
+        Timber.tag("Startup").i("Android: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})")
+        Timber.tag("Startup").i("Board: ${Build.BOARD} | Hardware: ${Build.HARDWARE}")
+        Timber.tag("Startup").i("Build: ${Build.FINGERPRINT}")
+        Timber.tag("Startup").i("=".repeat(50))
         /**** LOG *********/
     }
 
@@ -249,8 +278,12 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         }
     }
 
+    enum class CookieStatus { NOT_LOGGED_IN, VALID, INVALID, EXPIRED }
 
-
+    companion object {
+        var cookieStatus: CookieStatus = CookieStatus.NOT_LOGGED_IN
+            internal set
+    }
 }
 
 object Dependencies {

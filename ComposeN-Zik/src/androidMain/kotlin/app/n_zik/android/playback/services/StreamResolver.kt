@@ -858,6 +858,8 @@ private suspend fun resolveStreamUriInternal(
 
     // Track the last meaningful failure reason across all clients
     var lastFailureReason: String? = null
+    // Capture the first YouTube playability reason (not HTTP errors) for detailed user message
+    var firstYouTubeReason: String? = null
     var fallbackUri: Uri? = null
     var fallbackFormat: PlayerResponse.StreamingData.Format? = null
 
@@ -1004,6 +1006,12 @@ private suspend fun resolveStreamUriInternal(
             if (httpStatus !in 200..299) {
                 lastFailureReason = "${ytClient.clientName}: HTTP $httpStatus for $videoId"
                 Timber.tag(TAG).w(lastFailureReason)
+                // 401 from any client = cookie expired server-side
+                if (httpStatus == 401) {
+                    app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.EXPIRED
+                    appContext().getSharedPreferences("preferences", android.content.Context.MODE_PRIVATE).edit().putBoolean("ytCookieExpired", true).apply()
+                    Timber.tag(TAG).w("Cookie expired (HTTP 401 from ${ytClient.clientName}) — marking session as EXPIRED")
+                }
                 // Mark non-web clients as failed on HTTP errors
                 if (ytClient.clientName !in WEB_CLIENTS) {
                     markClientFailed(ytClient.clientName, videoId)
@@ -1024,6 +1032,10 @@ private suspend fun resolveStreamUriInternal(
                 val status = playerResponse.playabilityStatus?.status ?: "NULL"
                 val reason = playerResponse.playabilityStatus?.reason ?: "no reason provided"
                 lastFailureReason = "$status: $reason"
+                // Save the first YouTube-specific reason (not HTTP errors)
+                if (firstYouTubeReason == null && reason != "no reason provided") {
+                    firstYouTubeReason = "$status: $reason"
+                }
                 Timber.tag(TAG).w("${ytClient.clientName}: status=$status reason=$reason")
 
                 // Age-restriction handling: only when parental control is enabled
@@ -1249,9 +1261,9 @@ private suspend fun resolveStreamUriInternal(
         return Uri.parse(streamUrl)
     }
 
-    // All clients exhausted - throw with the last meaningful reason
-    val finalReason = lastFailureReason ?: "All ${FALLBACK_CLIENTS.size} clients failed for $videoId"
-    Timber.tag(TAG).e("resolveStreamUri FAILED: $finalReason")
+    // All clients exhausted - prefer YouTube's detailed reason over generic HTTP errors
+    val finalReason = firstYouTubeReason ?: lastFailureReason ?: "All ${FALLBACK_CLIENTS.size} clients failed for $videoId"
+    Timber.tag(TAG).e("resolveStreamUri FAILED: $finalReason (firstYouTubeReason=$firstYouTubeReason, lastFailureReason=$lastFailureReason)")
     throw UnplayableException(finalReason)
 }
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

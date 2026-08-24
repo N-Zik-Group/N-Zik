@@ -54,6 +54,9 @@ class ImportDatabase private constructor(
                                    } ?: Timber.tag("ImportDatabase").w("Failed to open input stream")
 
                             withContext(Dispatchers.Main) {
+                                // Reset cookie status after import — fresh start
+                                app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
+                                context.getSharedPreferences("preferences", Context.MODE_PRIVATE).edit().remove("ytCookieExpired").apply()
                                 if (onImportComplete != null) {
                                     onImportComplete()
                                 } else {

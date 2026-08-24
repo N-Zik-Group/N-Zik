@@ -28,6 +28,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.it.fast4x.compose.persist.persistList
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
+import app.n_zik.android.MainApplication
 import app.it.fast4x.rimusic.MONTHLY_PREFIX
 import app.it.fast4x.rimusic.enums.*
 import app.it.fast4x.rimusic.models.Artist
@@ -534,6 +535,9 @@ fun HomeQuickPicks(
                     if (!isYouTubeLoggedIn()) {
                         Spacer(modifier = Modifier.height(50.dp))
                         BasicText(text = stringResource(R.string.log_in_to_ytm), style = typography().s.secondary.center, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).clickable(onClick = onSettingsClick))
+                    } else if (MainApplication.cookieStatus in listOf(MainApplication.CookieStatus.INVALID, MainApplication.CookieStatus.EXPIRED)) {
+                        Spacer(modifier = Modifier.height(50.dp))
+                        BasicText(text = stringResource(R.string.error_cookie_invalid), style = typography().s.secondary.center, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).clickable(onClick = onSettingsClick))
                     }
                 }
                 Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))

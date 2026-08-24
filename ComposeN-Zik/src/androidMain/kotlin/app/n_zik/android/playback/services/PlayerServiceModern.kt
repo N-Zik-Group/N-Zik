@@ -6,6 +6,7 @@ import app.n_zik.android.core.database.*
 import app.n_zik.android.playback.services.*
 import app.n_zik.android.playback.exceptions.*
 import app.n_zik.android.playback.utils.*
+import app.n_zik.android.MainApplication
 import app.n_zik.android.utils.artistTextOrDb
 import app.n_zik.android.utils.albumTitleOrDb
 import kotlinx.coroutines.isActive
@@ -178,6 +179,7 @@ import app.it.fast4x.rimusic.utils.playbackPitchKey
 import app.it.fast4x.rimusic.utils.playbackSpeedKey
 import app.it.fast4x.rimusic.utils.playbackVolumeKey
 import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
 import app.it.fast4x.rimusic.utils.putEnum
 import app.it.fast4x.rimusic.utils.queueLoopTypeKey
 import app.it.fast4x.rimusic.utils.resumePlaybackOnStartKey
@@ -1192,6 +1194,20 @@ class PlayerServiceModern : MediaLibraryService(),
             if (unmatchedCause != null) {
                 Toaster.w(R.string.playback_blocked_match_first)
             }
+            // LoginRequiredException — show YouTube's reason (e.g. "Sign in to confirm your age")
+            val loginCause = generateSequence<Throwable>(error) { it.cause }.firstOrNull { it is LoginRequiredException }
+            if (loginCause != null) {
+                val loginReason = loginCause.message?.removePrefix("Login required: ") ?: ""
+                val isAgeRestricted = loginReason.contains("age", ignoreCase = true) ||
+                    loginReason.contains("confirm your age", ignoreCase = true)
+                val displayMessage = when {
+                    isAgeRestricted -> getString(R.string.error_age_restricted, loginReason)
+                    loginReason.isNotEmpty() -> getString(R.string.error_login_required, loginReason)
+                    else -> getString(R.string.error_youtube_login)
+                }
+                Toaster.w(displayMessage)
+                Timber.tag("PlayerServiceModern").w("LoginRequired: reason=$loginReason isAgeRestricted=$isAgeRestricted")
+            }
             player.pause()
             return
         }
@@ -1219,7 +1235,15 @@ class PlayerServiceModern : MediaLibraryService(),
                 when {
                     // 403 Forbidden — expired/forbidden stream URL
                     isExpiredUrlError(error) -> {
-                        Timber.tag("PlayerServiceModern").d("Handling 403 expired URL error for $currentMediaId")
+                        val httpCode = getHttpResponseCode(error)
+                        Timber.tag("PlayerServiceModern").d("Handling $httpCode expired URL error for $currentMediaId")
+                        // 401 = cookie expired server-side, not just stream URL
+                        if (httpCode == 401) {
+                            MainApplication.cookieStatus = MainApplication.CookieStatus.EXPIRED
+                            preferences.edit().putBoolean(ytCookieExpiredKey, true).apply()
+                            Timber.tag("PlayerServiceModern").w("Cookie expired (401) — marking session as EXPIRED")
+                            Toaster.w(R.string.error_session_expired)
+                        }
                         formatCache.remove(currentMediaId)
                         try {
                             cache.removeResource(currentMediaId)
@@ -1318,8 +1342,9 @@ class PlayerServiceModern : MediaLibraryService(),
 
         // Non-recoverable, non-network error: only skip if the option is ON
         if (!preferences.getBoolean(skipMediaOnErrorKey, false) || !player.hasNextMediaItem()) {
-            // Show error toast so the user knows something is wrong
-            Toaster.e(R.string.error_playback_failed, formatArgs = arrayOf(errorDetail.take(100)))
+            // Show error toast with code name for debugging
+            val codeName = getErrorCodeName(error.errorCode)
+            Toaster.e(R.string.error_playback_failed_with_code, formatArgs = arrayOf(errorDetail.take(80), codeName))
             return
         }
 
@@ -2803,4 +2828,42 @@ fun Throwable?.isFatalCustomException(): Boolean {
             it is VideoIdMismatchException ||
             it is UnmatchedSongException
         }
+}
+
+fun getErrorCodeName(errorCode: Int): String = when (errorCode) {
+    PlaybackException.ERROR_CODE_UNSPECIFIED -> "UNSPECIFIED"
+    PlaybackException.ERROR_CODE_REMOTE_ERROR -> "REMOTE_ERROR"
+    PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW -> "BEHIND_LIVE_WINDOW"
+    PlaybackException.ERROR_CODE_TIMEOUT -> "TIMEOUT"
+    PlaybackException.ERROR_CODE_FAILED_RUNTIME_CHECK -> "FAILED_RUNTIME_CHECK"
+    PlaybackException.ERROR_CODE_IO_UNSPECIFIED -> "IO_UNSPECIFIED"
+    PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED -> "IO_NETWORK_CONNECTION_FAILED"
+    PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT -> "IO_NETWORK_CONNECTION_TIMEOUT"
+    PlaybackException.ERROR_CODE_IO_INVALID_HTTP_CONTENT_TYPE -> "IO_INVALID_HTTP_CONTENT_TYPE"
+    PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS -> "IO_BAD_HTTP_STATUS"
+    PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND -> "IO_FILE_NOT_FOUND"
+    PlaybackException.ERROR_CODE_IO_NO_PERMISSION -> "IO_NO_PERMISSION"
+    PlaybackException.ERROR_CODE_IO_CLEARTEXT_NOT_PERMITTED -> "IO_CLEARTEXT_NOT_PERMITTED"
+    PlaybackException.ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE -> "IO_READ_POSITION_OUT_OF_RANGE"
+    PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED -> "PARSING_CONTAINER_MALFORMED"
+    PlaybackException.ERROR_CODE_PARSING_MANIFEST_MALFORMED -> "PARSING_MANIFEST_MALFORMED"
+    PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED -> "PARSING_CONTAINER_UNSUPPORTED"
+    PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED -> "PARSING_MANIFEST_UNSUPPORTED"
+    PlaybackException.ERROR_CODE_DECODER_INIT_FAILED -> "DECODER_INIT_FAILED"
+    PlaybackException.ERROR_CODE_DECODER_QUERY_FAILED -> "DECODER_QUERY_FAILED"
+    PlaybackException.ERROR_CODE_DECODING_FAILED -> "DECODING_FAILED"
+    PlaybackException.ERROR_CODE_DECODING_FORMAT_EXCEEDS_CAPABILITIES -> "DECODING_FORMAT_EXCEEDS_CAPABILITIES"
+    PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED -> "DECODING_FORMAT_UNSUPPORTED"
+    PlaybackException.ERROR_CODE_AUDIO_TRACK_INIT_FAILED -> "AUDIO_TRACK_INIT_FAILED"
+    PlaybackException.ERROR_CODE_AUDIO_TRACK_WRITE_FAILED -> "AUDIO_TRACK_WRITE_FAILED"
+    PlaybackException.ERROR_CODE_DRM_UNSPECIFIED -> "DRM_UNSPECIFIED"
+    PlaybackException.ERROR_CODE_DRM_SCHEME_UNSUPPORTED -> "DRM_SCHEME_UNSUPPORTED"
+    PlaybackException.ERROR_CODE_DRM_PROVISIONING_FAILED -> "DRM_PROVISIONING_FAILED"
+    PlaybackException.ERROR_CODE_DRM_CONTENT_ERROR -> "DRM_CONTENT_ERROR"
+    PlaybackException.ERROR_CODE_DRM_LICENSE_ACQUISITION_FAILED -> "DRM_LICENSE_ACQUISITION_FAILED"
+    PlaybackException.ERROR_CODE_DRM_DISALLOWED_OPERATION -> "DRM_DISALLOWED_OPERATION"
+    PlaybackException.ERROR_CODE_DRM_SYSTEM_ERROR -> "DRM_SYSTEM_ERROR"
+    PlaybackException.ERROR_CODE_DRM_DEVICE_REVOKED -> "DRM_DEVICE_REVOKED"
+    PlaybackException.ERROR_CODE_DRM_LICENSE_EXPIRED -> "DRM_LICENSE_EXPIRED"
+    else -> "UNKNOWN_ERROR_$errorCode"
 }
