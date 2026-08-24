@@ -1291,8 +1291,14 @@
   <string name="locations">Konumlar</string>
   <string name="users">Kullanıcılar</string>
   <string name="error_youtube_login">Error YoutubeLogin</string>
+  <string name="error_age_restricted">Age-restricted content: %1$s</string>
+  <string name="error_login_required">Sign in required: %1$s</string>
+  <string name="error_session_expired">YouTube session expired, please sign in again</string>
+  <string name="error_cookie_invalid">YouTube cookie is invalid, please log in again</string>
+  <string name="error_not_logged_in">Not logged in to YouTube</string>
   <string name="stream_error_retrying">Tekrar deniyor: %1$s</string>
-  <string name="error_playback_failed">Hata: %1$s</string>
+  <string name="error_playback_failed">Playback failed: %1$s</string>
+  <string name="error_playback_failed_with_code">Playback failed: %1$s [%2$s]</string>
   <string name="error_all_stream_attempts_failed">Oynatılamıyor: %1$s</string>
   <string name="stream_still_retrying">Tekrar dene</string>
   <string name="stream_unexpected_skip">Beklenmedik bir parça değişikliği tespit edildi</string>
