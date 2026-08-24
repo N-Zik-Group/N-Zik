@@ -412,6 +412,7 @@ const val logDebugEnabledKey = "logDebugEnabled"
 
 const val messageTypeKey = "messageType"
 const val isPauseOnVolumeZeroEnabledKey = "isPauseOnVolumeZeroEnabled"
+const val pauseOnHeadphoneDisconnectKey = "pauseOnHeadphoneDisconnect"
 const val playerInfoShowIconsKey = "playerInfoShowIcons"
 const val minimumSilenceDurationKey = "minimumSilenceDuration"
 const val pauseListenHistoryKey = "pauseListenHistory"

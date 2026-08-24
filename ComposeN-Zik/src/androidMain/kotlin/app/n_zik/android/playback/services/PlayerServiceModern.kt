@@ -121,6 +121,7 @@ import app.it.fast4x.rimusic.extensions.audiovolume.OnAudioVolumeChangedListener
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.extensions.discord.DiscordPresenceManager
 import app.n_zik.android.isHandleAudioFocusEnabled
+import app.n_zik.android.isPauseOnHeadphoneDisconnectEnabled
 import app.it.fast4x.rimusic.models.Event
 import app.it.fast4x.rimusic.models.PersistentQueue
 import app.it.fast4x.rimusic.models.PersistentSong
@@ -478,7 +479,7 @@ class PlayerServiceModern : MediaLibraryService(),
         player = ExoPlayer.Builder(this)
             .setMediaSourceFactory(createMediaSourceFactory())
             .setRenderersFactory(createRendersFactory())
-            .setHandleAudioBecomingNoisy(true)
+            .setHandleAudioBecomingNoisy(isPauseOnHeadphoneDisconnectEnabled())
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .setAudioAttributes(
                 AudioAttributes.Builder()

@@ -80,6 +80,7 @@ import app.it.fast4x.rimusic.utils.handleAudioFocusEnabledKey
 import app.it.fast4x.rimusic.utils.isAtLeastAndroid12
 import app.it.fast4x.rimusic.utils.isAtLeastAndroid6
 import app.it.fast4x.rimusic.utils.isPauseOnVolumeZeroEnabledKey
+import app.it.fast4x.rimusic.utils.pauseOnHeadphoneDisconnectKey
 import app.it.fast4x.rimusic.utils.jumpPreviousKey
 import app.it.fast4x.rimusic.utils.keepPlayerMinimizedKey
 import app.it.fast4x.rimusic.utils.languageAppKey
@@ -174,6 +175,8 @@ fun DefaultGeneralSettings(context: Context) {
     discoverIsEnabled = false
     var isPauseOnVolumeZeroEnabled by rememberPreference(isPauseOnVolumeZeroEnabledKey, false)
     isPauseOnVolumeZeroEnabled = false
+    var pauseOnHeadphoneDisconnect by rememberPreference(pauseOnHeadphoneDisconnectKey, false)
+    pauseOnHeadphoneDisconnect = false
     var minimumSilenceDuration by rememberPreference(minimumSilenceDurationKey, 2_000_000L)
     minimumSilenceDuration = 2_000_000L
     var loudnessBaseGain by rememberPreference(loudnessBaseGainKey, 5.00f)
@@ -247,6 +250,7 @@ fun GeneralSettings(
     var nowPlayingIndicator by rememberPreference(nowPlayingIndicatorKey, MusicAnimationType.Bubbles)
     var discoverIsEnabled by rememberPreference(discoverKey, false)
     var isPauseOnVolumeZeroEnabled by rememberPreference(isPauseOnVolumeZeroEnabledKey, false)
+    var pauseOnHeadphoneDisconnect by rememberPreference(pauseOnHeadphoneDisconnectKey, false)
 
     val launchEqualizer by rememberEqualizerLauncher(audioSessionId = { binder?.player?.audioSessionId })
 
@@ -613,7 +617,7 @@ fun GeneralSettings(
                  icon = R.drawable.player_control,
                  content = {
         if (search.inputValue.isBlank() || stringResource(R.string.player_pause_on_volume_zero).contains(search.inputValue,true))
-                         OtherSwitchSettingEntry(
+                          OtherSwitchSettingEntry(
                 title = stringResource(R.string.player_pause_on_volume_zero),
                 text = stringResource(R.string.info_pauses_player_when_volume_zero),
                 isChecked = isPauseOnVolumeZeroEnabled,
@@ -622,6 +626,19 @@ fun GeneralSettings(
                              },
                              icon = R.drawable.volume_up
                          )
+
+            if (search.inputValue.isBlank() || stringResource(R.string.pause_on_headphone_disconnect).contains(search.inputValue,true))
+                         OtherSwitchSettingEntry(
+                title = stringResource(R.string.pause_on_headphone_disconnect),
+                text = stringResource(R.string.pause_on_headphone_disconnect_description),
+                isChecked = pauseOnHeadphoneDisconnect,
+                onCheckedChange = {
+                    pauseOnHeadphoneDisconnect = it
+                    restartService = true
+                             },
+                             icon = R.drawable.headphones
+                         )
+                         RestartPlayerService(restartService, onRestart = { restartService = false })
 
             if (search.inputValue.isBlank() || stringResource(R.string.player_keep_minimized).contains(search.inputValue,true))
                          OtherSwitchSettingEntry(
