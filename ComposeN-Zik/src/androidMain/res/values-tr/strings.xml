@@ -882,6 +882,8 @@
   <string name="discover_has_been_applied_to_queue">Sıraya Keşfet uygulandı, kaldırılan şarkılar: %s</string>
   <string name="player_pause_on_volume_zero">Ses seviyesi sıfırda duraklat</string>
   <string name="info_pauses_player_when_volume_zero">Ses seviyesi 0 olduğunda oynatıcıyı duraklatır ve ses seviyesi 0\'dan büyük olduğunda devam ettirir</string>
+  <string name="pause_on_headphone_disconnect">Pause on headphone disconnect</string>
+  <string name="pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones disconnect</string>
   <string name="quality">Kalite</string>
   <string name="value_must_be_ip_address">Değer bir IP adresi olmalıdır</string>
   <string name="swipe_up_to_open_the_queue">Kuyruğu açmak için yukarı kaydırın</string>
