@@ -882,6 +882,8 @@
   <string name="discover_has_been_applied_to_queue">Esplora è stato applicato alla coda, canzoni rimosse: %s</string>
   <string name="player_pause_on_volume_zero">Pausa quando il volume è a zero</string>
   <string name="info_pauses_player_when_volume_zero">Metti in pausa il brano quando il volume raggiunge 0 e riprendi quando il volume è maggiore di 0</string>
+  <string name="pause_on_headphone_disconnect">Pause on headphone disconnect</string>
+  <string name="pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones disconnect</string>
   <string name="quality">Qualità</string>
   <string name="value_must_be_ip_address">Il valore deve essere un indirizzo IP</string>
   <string name="swipe_up_to_open_the_queue">Scorri verso l\'alto per aprire la coda</string>
