@@ -882,6 +882,8 @@
   <string name="discover_has_been_applied_to_queue">Löydä uutta -toiminto asetettu jonolle ja poistettu kappaleet: %s</string>
   <string name="player_pause_on_volume_zero">Äänenvoimakkuuden ollessa nolla, laita soitto tauolle</string>
   <string name="info_pauses_player_when_volume_zero">Keskeytä kappale, kun äänenvoimakkuus saavuttaa 0 ja jatka sitä kun äänenvoimakkuus on suurempi kuin 0</string>
+  <string name="pause_on_headphone_disconnect">Pause on headphone disconnect</string>
+  <string name="pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones disconnect</string>
   <string name="quality">Laatu</string>
   <string name="value_must_be_ip_address">Arvon on oltava IP-osoite</string>
   <string name="swipe_up_to_open_the_queue">Avaa jono pyyhkäisemällä ylös</string>
