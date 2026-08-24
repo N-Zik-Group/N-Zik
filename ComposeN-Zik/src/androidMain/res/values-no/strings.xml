@@ -882,6 +882,8 @@
   <string name="discover_has_been_applied_to_queue">Oppdag har blitt brukt i køen, fjernet sanger: %s</string>
   <string name="player_pause_on_volume_zero">Pause når lyden skrus av</string>
   <string name="info_pauses_player_when_volume_zero">Pause sangen når volumet når 0 og gjenoppta det når volumet er større enn 0</string>
+  <string name="pause_on_headphone_disconnect">Pause on headphone disconnect</string>
+  <string name="pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones disconnect</string>
   <string name="quality">Kvalitet</string>
   <string name="value_must_be_ip_address">Verdien må være en IP-adresse</string>
   <string name="swipe_up_to_open_the_queue">Dra opp for å åpne køen</string>
