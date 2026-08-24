@@ -882,6 +882,8 @@
   <string name="discover_has_been_applied_to_queue">S\'ha aplicat Descobreix a la cua, cançons eliminades: %s</string>
   <string name="player_pause_on_volume_zero">Pausa al volum zero</string>
   <string name="info_pauses_player_when_volume_zero">Atura el reproductor quan el volum arriba a 0 i es reprèn quan el volum és superior a 0</string>
+  <string name="pause_on_headphone_disconnect">Pause on headphone disconnect</string>
+  <string name="pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones disconnect</string>
   <string name="quality">Qualitat</string>
   <string name="value_must_be_ip_address">El valor ha de ser una adreça ip</string>
   <string name="swipe_up_to_open_the_queue">Llisca cap amunt per obrir la cua</string>
