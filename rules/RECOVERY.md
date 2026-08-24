@@ -1,6 +1,6 @@
 # Error Recovery & Rollback Rules
 
-**Version:** 1.1.0 | **Last updated:** 2026-07-11
+**Version:** 1.2.0 | **Last updated:** 2026-08-24
 
 ## Build Failure Recovery
 
@@ -20,10 +20,10 @@ Attempt 3 → HALT → Report to user with error log
 
 If a BMAD skill fails or gets stuck:
 
-1. **Skill not found** → Search `_bmad/` and `../_bmad/`
+1. **Skill not found** → Search `{project-root}/.agents/skills/` (or `.claude/skills/` for Claude Code, `.agent/skills/` for Antigravity)
 2. If still not found → HALT, inform user, suggest re-running BMAD installer
 3. **SKILL.md malformed** → HALT, report error, suggest `bmad-module-builder` to rebuild
-4. **Skill execution error** → Fallback to `bmad-quick-dev` for implementation tasks
+4. **Skill execution error** → Fallback to `bmad-build` for implementation tasks
 5. **Agent stuck in loop** → HALT after 5 iterations, ask user
 
 ## Database Migration Failure
@@ -45,10 +45,11 @@ MIGRATION FAILURE:
 
 ## Code Changes Break Existing Features
 
-1. Revert changes using `git stash` or `git checkout`
-2. Identify what broke
-3. Fix incrementally, testing after each change
-4. If unable to fix → HALT, report to user with diagnosis
+1. Revert uncommitted changes: `git checkout -- <file>`
+2. Revert uncommitted work: `git stash`
+3. Identify what broke
+4. Fix incrementally, testing after each change
+5. If unable to fix → HALT, report to user with diagnosis
 
 ## Network / Dependency Errors
 
@@ -57,6 +58,15 @@ MIGRATION FAILURE:
 3. Try `./gradlew --refresh-dependencies`
 4. If proxy issue → HALT, inform user
 5. If repository down → HALT, suggest using cached dependencies
+
+## Gradle Wrapper Issues
+
+If `./gradlew` fails or is corrupted:
+
+1. Check `gradlew` and `gradle/wrapper/gradle-wrapper.jar` exist
+2. Try `./gradlew --version` to verify wrapper works
+3. If corrupted → HALT, suggest re-cloning or re-downloading wrapper
+4. Never modify `gradle-wrapper.properties` without explicit instruction
 
 ## KMP Compilation Issues
 
@@ -82,9 +92,7 @@ If you notice yourself repeating the same action:
 
 ## General Rollback
 
-- Use `git stash` to save uncommitted changes
-- Use `git checkout -- <file>` to discard changes to a file
-- Use `git reset --soft HEAD~1` to undo last commit but keep changes staged
-- Use `git log --oneline -5` to find safe rollback point
+- `git log --oneline -5` — find safe rollback point
+- `git reset --soft HEAD~1` — undo last commit but keep changes staged (only if not pushed)
 - **NEVER** force push without explicit user instruction
 - **NEVER** delete committed history

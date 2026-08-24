@@ -1,6 +1,6 @@
 # Build & Test Rules
 
-**Version:** 1.1.0 | **Last updated:** 2026-07-11
+**Version:** 1.2.0 | **Last updated:** 2026-08-24
 
 ## Gradle Version Catalog
 
@@ -33,24 +33,31 @@ If a needed library isn't in the catalog → HALT and ask user before adding to 
 ALWAYS verify changes compile before reporting. If build fails:
 
 1. Read error messages
-2. Fix issues
-3. Rebuild until successful
-4. Run relevant tests
+2. Fix the first error (often cascading)
+3. Rebuild
+4. **HALT after 3 failed attempts** — report to user with full error log
 
-HALT after 3 failed build attempts — report to user with full error log (see RECOVERY.md).
+```
+BUILD FAILURE ESCALATION:
+Attempt 1 → Fix obvious issue → Rebuild
+Attempt 2 → Research error → Fix → Rebuild
+Attempt 3 → HALT → Report to user with error log
+```
 
 ### Done.txt Format
 
-File: `N-Zik/assets/notes/Done.txt`
+File: `assets/notes/Done.txt`
 
-When committing, update `Done.txt` with:
+When committing, update `Done.txt` using its own template (`Changelog_Template.txt` in same folder):
 
 ```
-## 2026-07-11
-- Modified: app/n_zik/android/components/player/LyricsScreen.kt
-- Modified: app/n_zik/android/core/database/SongDao.kt
-- Issue: https://github.com/user/repo/issues/42
+<keyword>(<scope>): <short summary> (issue ref)
+
+- Technical detail 1
+- Technical detail 2
 ```
+
+Include full issue link (use `issue https://...` to avoid auto-closing).
 
 ## Build Types
 

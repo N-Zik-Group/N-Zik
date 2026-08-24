@@ -1,81 +1,73 @@
-# AI Agent Guidelines — NZik
+# AGENTS.md — NZik
 
-**MANDATORY: Read this file AND rules/\*.md before any task. Compliance for ENTIRE session.**
+**MANDATORY: Read this file + rules/*.md before any task.**
 
 ## Session Startup
 
 1. Read this file entirely
-2. Read ALL rules/\*.md files
+2. Read ALL `rules/*.md` files
 3. Ask user via question tool: "Bug, feature, or something else?"
-
-**CRITICAL: ALL rules files apply at ALL times.** You MUST follow CODE.md (code quality), SECURITY.md (security), RECOVERY.md (error handling), BUILD.md (build rules), WORKFLOW.md (workflow enforcement), BMAD.md (BMAD config), BMAD-TOOLS.md (IDE paths) — not just workflow rules. These are ALL NOT optional. If you skip or forget any rule from any file, HALT and re-read the file.
 
 ---
 
-## Critical Rules (Agents Consistently Miss These)
+## ✅ Always Do
 
-### Code Placement
+- Code → `app.n_zik.android.*` ONLY (legacy packages are READ-ONLY)
+- Use Timber with tags (no println/Log.d)
+- Use version catalog refs (`libs.versions.toml`)
+- Verify build passes after changes (`./gradlew :ComposeN-Zik:assembleDebug`)
+- New features/bug fixes include at least one test
+- Show evidence (diffs, test output) — never just claim "done"
+- Match user's language for communication
+- Code comments & commits in English
 
-- **NEW code** → `app.n_zik.android.*` ONLY
-- **NEVER** create files under `app.it.fast4x.rimusic.*` or `app.kreate.android.*` (legacy, read-only)
-- **NEVER** edit `values-*/strings.xml` — only `values/strings.xml`
+## ⚠️ Ask First
 
-→ See rules/CODE.md for full file placement table
+- Database schema changes (NEVER edit without explicit instruction)
+- Adding new dependencies not in `libs.versions.toml`
+- Committing code (NEVER without human testing + approval)
+- Which IDE/tool to use (ask ONE at a time — see BMAD-TOOLS.md for preferred list)
 
-### Build & Test
+## 🚫 Never Do
 
-- `./gradlew :ComposeN-Zik:assembleDebug` — primary dev build
-- `./gradlew :ComposeN-Zik:testDebugUnitTest --tests "app.n_zik.android.SomeTest"` — single test
-- `./gradlew :ComposeN-Zik:test` — all tests
-- ALWAYS verify build passes after changes
-- HALT after 3 failed build attempts
-- New features/bug fixes should include at least one test
-
-→ See rules/BUILD.md for build types, commit convention, version catalog, testing patterns
-
-### NEVER (Hard Stops)
-
-- Commit without human testing and explicit approval
+- Create files under `app.it.fast4x.rimusic.*` or `app.kreate.android.*`
+- Edit `values-*/strings.xml` (only `values/strings.xml`)
+- Write code before completing full BMAD workflow
 - Skip BMAD workflow steps
-- **Write code before completing full BMAD workflow (even if user suggests a fix)**
-- Edit database schema without explicit instruction
+- Commit without human approval
+- Use `GlobalScope`, `runBlocking`, `collectAsState()` (use `collectAsStateWithLifecycle()`)
+- Use `!!` operator unless justified with comment explaining why
+- Edit `_bmad/` internals manually
+- Force push or delete committed history
 
-→ See rules/WORKFLOW.md for full NEVER/HALT lists, rules/SECURITY.md for security rules
+---
 
-### BMAD Workflow — Mandatory
+## Skill Discovery
 
-**Loading a BMAD skill ≠ Completing the workflow.** You MUST follow the skill's workflow from first step to last step, in order, without skipping.
+**`{project-root}`** = workspace root containing `_bmad/` and `.agents/`. Find it by looking for `_bmad/` or `.git/` going up from current directory.
 
-**Before writing ANY code:** verify you have completed EVERY step of the loaded BMAD skill's workflow. If any step is incomplete → HALT, do NOT write code.
+**Skills location** (depends on your IDE):
 
-User suggestions are input to the workflow, NOT a shortcut to skip it.
+| IDE                  | Skills Path                                           | How to Load                     |
+| -------------------- | ----------------------------------------------------- | ------------------------------- |
+| OpenCode ⭐           | `{project-root}/.agents/skills/{skill-name}/SKILL.md` | `@skills/{skill-name}`          |
+| Google Antigravity ⭐ | `{project-root}/.agent/skills/{skill-name}/SKILL.md`  | Direct read                     |
+| GitHub Copilot ⭐     | `{project-root}/.agents/skills/{skill-name}/SKILL.md` | `LOAD the FULL {path}/SKILL.md` |
+| Claude Code          | `{project-root}/.claude/skills/{skill-name}/SKILL.md` | Direct read                     |
+| Cursor               | `{project-root}/.agents/skills/{skill-name}/SKILL.md` | Direct read                     |
+| Codex                | `{project-root}/.agents/skills/{skill-name}/SKILL.md` | Direct read                     |
 
-**Enforcement — before starting the workflow:**
+**When to use which skill:**
 
-1. Read the skill's SKILL.md file — **EVERY line, NOT just step headers**
-2. Count the total number of steps in the `<workflow>` section
-3. List all steps: "Steps: 1. X, 2. Y, 3. Z, ..."
-4. List all `<template-output>` tags per step (what to produce)
-5. List all `<energy-checkpoint>` tags (when to ask for breaks)
-6. List all checkpoint instructions (what options to present)
-7. Announce: "BMAD workflow has N steps. Starting step 1."
-
-**Enforcement — during the workflow:**
-
-- Before each action, announce: `[BMAD Step X/N: <step name>]`
-- Before moving to next step, ask user: "Step X complete. Proceed to step Y?"
-- Before implementing, verify: "All N steps complete. Ready to implement?"
-- If you cannot name the current step → HALT, you are lost
-
-→ See rules/WORKFLOW.md for full BMAD workflow enforcement
-
-### IDE Selection — One at a Time
-
-When asking which IDE/tool the user is using, **ask ONE option at a time** using the question tool. Skill path depends on the IDE.
-
-**Order of IDE options:** OpenCode first, then Google Antigravity, then other preferred tools (Claude Code, Cursor, GitHub Copilot, Codex).
-
-→ See rules/BMAD-TOOLS.md for IDE skill directories
+| Situation        | Skill                      | Then                 |
+| ---------------- | -------------------------- | -------------------- |
+| Bug fix          | `bmad-cis-problem-solving` | → `bmad-code-review` |
+| New feature      | `bmad-build`               | → `bmad-code-review` |
+| Architecture     | `bmad-architecture`        |                      |
+| PRD/Requirements | `bmad-prd`                 |                      |
+| UX Design        | `bmad-ux`                  |                      |
+| Code Review      | `bmad-code-review`         |                      |
+| Sprint Planning  | `bmad-sprint-planning`     |                      |
 
 ---
 
@@ -84,46 +76,55 @@ When asking which IDE/tool the user is using, **ask ONE option at a time** using
 ```
 N-Zik/
 ├── ComposeN-Zik/src/
-│   ├── androidMain/kotlin/app/
-│   │   ├── n_zik/android/       ★ NEW code here
-│   │   ├── it/fast4x/rimusic/   ⚠ READ-ONLY legacy
-│   │   └── kreate/android/      ⚠ READ-ONLY legacy
-│   ├── commonMain/kotlin/database/
-│   └── test/
-├── extensions/                  API modules (innertube, lrclib, etc.)
-├── modules/                     Feature submodules (betterlyrics, discordrpc, nextvisualizer)
-├── gradle/libs.versions.toml    Version catalog
-└── docs/                        Reference projects (READ-ONLY)
+│   ├── androidMain/kotlin/app/n_zik/android/  ★ NEW code
+│   └── test/                                   Tests
+├── extensions/              API modules (innertube, lrclib)
+├── modules/                 Feature submodules
+├── gradle/libs.versions.toml  Version catalog
+└── docs/                    Reference (READ-ONLY)
 ```
 
-| What              | Where                                      |
-| ----------------- | ------------------------------------------ |
-| Main code         | `app/n_zik/android/`                       |
-| Database          | `app/n_zik/android/core/database/`         |
-| Player service    | `app/n_zik/android/playback/services/`     |
-| UI screens        | `app/n_zik/android/components/ui/screens/` |
-| Strings (English) | `res/values/strings.xml` only              |
-| Tests             | `ComposeN-Zik/src/test/`                   |
+| What      | Where                                      |
+| --------- | ------------------------------------------ |
+| Main code | `app/n_zik/android/`                       |
+| Database  | `app/n_zik/android/core/database/`         |
+| Player    | `app/n_zik/android/playback/services/`     |
+| UI        | `app/n_zik/android/components/ui/screens/` |
+| Tests     | `ComposeN-Zik/src/test/`                   |
 
 ---
 
-## BMAD Method
+## Build Commands
 
-This project uses BMAD for structured AI-assisted development.
+```bash
+./gradlew :ComposeN-Zik:assembleDebug              # Debug build
+./gradlew :ComposeN-Zik:test                       # All tests
+./gradlew :ComposeN-Zik:testDebugUnitTest --tests "app.n_zik.android.SomeTest"  # Single test
+```
 
-- **Bugs** → `bmad-cis-problem-solving`, then `bmad-code-review`
-- **Additions** → `bmad-quick-dev`
-- AGENTS.md wins on: code quality, security, commits, logging, database, build
-- BMAD wins on: workflow ordering, templates, checkpoints
-- BOTH apply in parallel — if conflict, AGENTS.md wins
-
-→ See rules/BMAD.md for installation, config resolution. See rules/WORKFLOW.md for step-by-step workflow.
+HALT after 3 failed build attempts → report with full error log.
 
 ---
 
-## Communication
+## BMAD Workflow
 
-- Code comments & commits: English
-- User communication: match user's language
-- ALL user questions via question tool (never plain text)
-- Show evidence (diffs, test output) — never just claim "done"
+- **AGENTS.md wins:** code quality, security, commits, logging, database, build
+- **BMAD wins:** workflow ordering, templates, checkpoints
+- **Conflict:** AGENTS.md wins
+
+→ See `rules/WORKFLOW.md` for full workflow enforcement.
+→ See `rules/BMAD.md` for installation, config resolution.
+
+---
+
+## Rules Files
+
+| File                  | Purpose                                               |
+| --------------------- | ----------------------------------------------------- |
+| `rules/CODE.md`       | Code quality, Kotlin/Compose patterns, file placement |
+| `rules/SECURITY.md`   | Secrets, input validation, license checks             |
+| `rules/RECOVERY.md`   | Build failures, skill failures, rollback              |
+| `rules/BUILD.md`      | Gradle commands, commit convention, testing           |
+| `rules/WORKFLOW.md`   | BMAD workflow step-by-step enforcement                |
+| `rules/BMAD.md`       | BMAD config, skill customization, scripts             |
+| `rules/BMAD-TOOLS.md` | IDE skill directories reference                       |

@@ -1,6 +1,6 @@
 # Code Quality Rules
 
-**Version:** 1.1.0 | **Last updated:** 2026-07-11
+**Version:** 1.2.0 | **Last updated:** 2026-08-24
 
 ## Naming Conventions
 
@@ -233,7 +233,7 @@ onDismiss = { showSheet = false }
 
 ## Database
 
-NEVER edit schema without explicit instruction. Never add/remove/renaming columns, tables, or constraints.
+NEVER edit schema without explicit instruction. Never add, remove, or rename columns, tables, or constraints.
 
 ### Room Patterns
 

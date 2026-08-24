@@ -1,6 +1,6 @@
 # Workflow Rules
 
-**Version:** 1.1.0 | **Last updated:** 2026-07-11
+**Version:** 1.2.0 | **Last updated:** 2026-08-24
 
 ## Session Startup Sequence
 
@@ -41,7 +41,7 @@ See rules/*.md for full details.
 
 ## Step-by-Step Workflow
 
-**This workflow has 8 steps. NEVER stop before Step 8. Step 4 (Validate Plan) and Step 8 (Post-BMAD Actions) are MANDATORY.**
+**This workflow has 8 steps. NEVER stop before Step 8. Steps 4, 7, and 8 are MANDATORY.**
 
 ### Step 1: Understand
 
@@ -62,21 +62,30 @@ NEVER write code or create implementation plans without completing this step.
 
 **Loading a skill ≠ Completing the workflow.** You MUST complete ALL sub-steps below.
 
-- **ASK FIRST:** Which IDE/tool they are using (before loading any skill) — **ask ONE IDE at a time** (skill path depends on IDE, see BMAD-TOOLS.md). **Order:** OpenCode first, then Google Antigravity, then other preferred tools.
+#### 3a: Select IDE and Skill
+
+- **ASK FIRST:** Which IDE/tool they are using (before loading any skill) — **ask ONE IDE at a time** (skill path depends on IDE, see BMAD-TOOLS.md). **Order:** Claude Code, Cursor, GitHub Copilot, Codex (⭐ preferred), then OpenCode, then others.
 - **ASK FIRST:** Which skill to use (propose recommended, let user choose)
 - Identify appropriate skill (analyze skills directory first)
 - For bugs: `bmad-cis-problem-solving`, then `bmad-code-review`
-- For additions: `bmad-quick-dev` (still requires minimal planning at step-02)
-- Locate skills on disk (check BOTH `_bmad/` AND `../_bmad/`)
+- For additions: `bmad-build` (still requires minimal planning at step-02)
+- Locate skills on disk (`{project-root}/.agents/skills/` for most IDEs)
 
-**BMAD Activation Sequence (MANDATORY for every skill):**
+#### 3b: BMAD Activation Sequence (MANDATORY for every skill)
 
-**In this project:** `_bmad/` is at `../_bmad/` relative to `N-Zik/` (workspace root).
+**`{project-root}`** = the workspace root directory containing `_bmad/` and `.agents/`. Resolve it at runtime by finding the directory that contains `_bmad/` or `.git/`.
+
+**`{skill-root}`** = `{project-root}/{target_dir}/{skill-name}` where `target_dir` depends on your IDE:
+- **Cursor/Copilot/Codex/OpenCode/Windsurf:** `{project-root}/.agents/skills/{skill-name}`
+- **Claude Code:** `{project-root}/.claude/skills/{skill-name}`
+- **Google Antigravity:** `{project-root}/.agent/skills/{skill-name}`
+
+Example for `bmad-build` with OpenCode: `{project-root}/.agents/skills/bmad-build`
 
 1. Run `resolve_customization.py` to get merged config:
 
    ```
-   python3 ../_bmad/scripts/resolve_customization.py --skill {skill-root} --key agent
+   uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key agent
    ```
 
    (or `--key workflow` for workflow skills)
@@ -110,7 +119,7 @@ NEVER write code or create implementation plans without completing this step.
 
 **HALT at every checkpoint.**
 
-**Spec Production (MANDATORY):**
+#### 3c: Spec Production (MANDATORY)
 
 - If the skill has a `template.md` → you MUST produce a spec document using that template
 - **Process:**
@@ -119,27 +128,27 @@ NEVER write code or create implementation plans without completing this step.
   3. **Write/update the spec file on disk AFTER EACH STEP** (use the Write tool, incremental updates)
   4. Display the content in chat for checkpoint
 - **Where to write:** `{output_folder}/{default_output_file}` — read the skill's SKILL.md for the exact path
-- **In this project:** `{output_folder}` = `{project-root}/_bmad-output` = `D:\Autres\Projet Android\NZik-Folder\_bmad-output\`
+- **In this project:** `{output_folder}` = `{project-root}/_bmad-output` (at workspace root, one level above `N-Zik/`)
 - Show checkpoint separator, display generated content, present options `[a] Advanced Elicitation`, `[c] Continue`, `[p] Party-Mode`, `[y] YOLO`
 - Wait for user response before proceeding to next step
 - NEVER skip spec production — the spec IS the workflow output
 - NEVER just display the spec in chat — it MUST be saved to a file
 - NEVER wait until the end to write the spec — write AFTER EACH STEP
 
-**on_complete hook (MANDATORY):**
+#### 3d: on_complete hook (MANDATORY)
 
-- After workflow completes, run: `python3 {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key workflow.on_complete`
+- After workflow completes, run: `uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key workflow.on_complete`
 - If the resolved value is non-empty → follow it as final terminal instruction before exiting
 - NEVER skip this hook — it is the skill's official completion action
 
-**Energy checkpoints (MANDATORY):**
+#### 3e: Energy checkpoints (MANDATORY)
 
 - If the skill has `<energy-checkpoint>` tags → pause and ask the user about their energy level
 - Present the checkpoint message exactly as written in the skill
 - Wait for user response before proceeding
 - NEVER skip energy checkpoints — they prevent burnout during long sessions
 
-**Co/Fast path choice (MANDATORY):**
+#### 3f: Co/Fast path choice (MANDATORY)
 
 - Some skills (bmad-architecture, bmad-prd, bmad-ux, bmad-product-brief) require offering:
   - **Coaching path** — guided, explains each step
@@ -147,18 +156,18 @@ NEVER write code or create implementation plans without completing this step.
 - Ask user which path before any drafting begins
 - NEVER skip this choice — it affects the entire workflow
 
-**external_handoffs (MANDATORY):**
+#### 3g: external_handoffs (MANDATORY)
 
 - If the skill has `{workflow.external_handoffs}` → execute it and surface returned URLs/IDs
 - Skip and flag unavailable tools (don't crash)
 - This routes artifacts to external systems (Confluence, Notion, Jira, etc.)
 
-**doc_standards (MANDATORY):**
+#### 3h: doc_standards (MANDATORY)
 
 - If the skill has `{workflow.doc_standards}` → apply them in order
 - Structural passes before prose — do not polish soon-to-be-cut text
 
-**finalize_reviewers (MANDATORY):**
+#### 3i: finalize_reviewers (MANDATORY)
 
 - If the skill has `{workflow.finalize_reviewers}` → dispatch reviewer lenses as parallel subagents
 - Each reviewer lens evaluates the artifact independently
@@ -189,11 +198,11 @@ NEVER write code or create implementation plans without completing this step.
 
 **If skill not found:**
 
-1. Search both `_bmad/` and `../_bmad/`
+1. Search `{project-root}/.agents/skills/` (or `.claude/skills/` for Claude Code, `.agent/skills/` for Antigravity)
 2. If still not found → HALT, inform user, suggest re-running BMAD installer
 3. If SKILL.md is malformed → HALT, report error, suggest `bmad-module-builder` to rebuild
 
-**IMPORTANT: This workflow has 7 steps. NEVER stop after Step 6. Step 7 (Post-BMAD Actions) is MANDATORY. The workflow is NOT complete until Step 7 is done.**
+**IMPORTANT: This workflow has 8 steps. NEVER stop before Step 8. Step 8 (Post-BMAD Actions) is MANDATORY.**
 
 ## Step-File Architecture
 
@@ -241,13 +250,13 @@ Before implementing, **MUST ask user using question tool:**
 
 After the BMAD workflow completes, **MUST follow this exact flow** — NEVER skip any step:
 
-**Step 7a: Build and Test**
+**Step 8a: Build and Test**
 
 - Run `./gradlew :ComposeN-Zik:assembleDebug`
 - Run relevant tests
 - If FAILS → fix and rebuild until it passes
 
-**Step 7b: Code Review Proposal**
+**Step 8b: Code Review Proposal**
 
 - **MUST ask user using question tool:**
   ```
@@ -258,7 +267,7 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
 - If user says "No" → re-read code, fix issues, rebuild, ask again
 - If user says "Yes" → load and execute `bmad-code-review` skill
 
-**Step 7c: Post-Review Actions**
+**Step 8c: Post-Review Actions**
 
 - After code review completes, **MUST ask user using question tool:**
   ```
@@ -268,7 +277,7 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
   3. Other → ask user
   ```
 
-**Step 7d: Commit (only if user says "Functional")**
+**Step 8d: Commit (only if user says "Functional")**
 
 - Update `assets/notes/Done.txt` using its own template (`Changelog_Template.txt` in same folder) — format: `<keyword>(<scope>): <short summary> (issue ref)` + technical sub-bullets, include full issue link
 - Update `fastlane/metadata/android/en-US/changelogs/{version}.txt` using its own template (`Changelog_Template.txt` in same folder) — **max 500 characters**
@@ -276,7 +285,18 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
 - **MUST ask user for commit approval** (NEVER commit without approval)
 - If approved → `git commit` with conventional format (`type(scope): description`) — include issue link but avoid keywords that auto-close (e.g., use "issue https://..." not "fixes https://..." or "closes https://...")
 
-**Step 7e: Finish Workflow**
+**Step 8e: Push & Version (after commit)**
+
+- **MUST ask user using question tool:**
+  ```
+  Commit done. Push a version?
+  1. Yes → git push + version bump
+  2. No → skip version bump, continue workflow
+  ```
+- If "Yes" → `git push` and bump version
+- If "No" → Skip version bump and changelogs, continue to Step 8f
+
+**Step 8f: Finish Workflow (always runs)**
 
 - Run `on_complete` hook if present
 - Announce: "Workflow complete."

@@ -1,6 +1,6 @@
 # Security Rules
 
-**Version:** 1.1.0 | **Last updated:** 2026-07-11
+**Version:** 1.2.0 | **Last updated:** 2026-08-24
 
 ## Secrets & API Keys
 
@@ -36,11 +36,12 @@
 When using code from external sources (web, GitHub, StackOverflow, AI):
 
 1. Verify the license before using it
-2. Open-source (MIT, Apache, GPL) = acceptable
-3. Closed-source/proprietary = NEVER acceptable
-4. Always cite source and license in a comment
+2. Open-source (MIT, Apache) = acceptable
+3. Copyleft (GPL, AGPL) = check implications before using in Android app
+4. Closed-source/proprietary = NEVER acceptable
+5. Always cite source and license in a comment
 
-## Security Scenarios
+## HALT IMMEDIATELY IF:
 
 | Scenario                   | Action                                                              |
 | -------------------------- | ------------------------------------------------------------------- |
@@ -50,12 +51,3 @@ When using code from external sources (web, GitHub, StackOverflow, AI):
 | Hardcoded credentials      | HALT, remove credentials, use BuildConfig or local.properties       |
 | Insecure network call      | HALT, switch to HTTPS, verify certificate pinning                   |
 | User data leak             | HALT, identify leak source, report to user, fix immediately         |
-
-## HALT IMMEDIATELY IF:
-
-- You discover secrets, API keys, or tokens in code
-- You detect a license violation
-- You find SQL injection or XSS vulnerabilities
-- You find hardcoded credentials
-- You detect insecure network communication
-- You find user data being leaked or logged

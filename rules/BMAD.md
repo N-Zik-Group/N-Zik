@@ -1,6 +1,6 @@
 # BMAD Technical Reference
 
-**Version:** 1.1.0 | **Last updated:** 2026-07-11
+**Version:** 1.2.0 | **Last updated:** 2026-08-24
 
 **MANDATORY: Read this file before executing any BMAD skill.**
 
@@ -8,16 +8,17 @@
 
 ## Installation Location
 
-Before creating/writing to `_bmad/` or `_bmad-output/`, verify where BMAD is installed:
+**`{project-root}`** = the workspace root directory containing `_bmad/` and `.agents/`. This is a literal placeholder — the agent must resolve it at runtime by finding the directory that contains `_bmad/` or `.git/`.
 
-1. Check if `_bmad/` exists in current project root
-2. Check if `_bmad/` exists in parent directory
-3. NEVER create new `_bmad/` folder if one already exists elsewhere
-4. Use existing installation path for all operations
+**Skills are NOT in `_bmad/`** — they are in IDE-specific directories at `{project-root}`:
 
-**In this project:** `_bmad/` is at the workspace root `D:\Autres\Projet Android\NZik-Folder\_bmad` — one directory ABOVE `N-Zik/`. Use `../_bmad/` relative to `N-Zik/`.
+| IDE                                                    | Skills Directory                 |
+| ------------------------------------------------------ | -------------------------------- |
+| Cursor, Copilot, Codex, OpenCode, Windsurf, Gemini CLI | `{project-root}/.agents/skills/` |
+| Claude Code                                            | `{project-root}/.claude/skills/` |
+| Google Antigravity                                     | `{project-root}/.agent/skills/`  |
 
-**`{project-root}` resolves to:** `D:\Autres\Projet Android\NZik-Folder\` (the workspace root, NOT `N-Zik/`).
+**`_bmad/` contains:** config, scripts, modules, rendered outputs — NOT skills.
 
 ---
 
@@ -31,10 +32,10 @@ _bmad/
 ├── custom/                     # Human-authored overrides
 │   ├── config.toml             # Team overrides (committed)
 │   └── config.user.toml        # User overrides (gitignored)
-├── scripts/                    # resolve_config.py, resolve_customization.py
+├── scripts/                    # resolve_config.py, resolve_customization.py, memlog.py
 ├── core/config.yaml            # Core module config
-├── <module>/config.yaml        # Per-module config (bmm, cis, wds, etc.)
-└── memory/                     # Agent runtime state (NOT installer-managed)
+├── <module>/config.yaml        # Per-module config (bmm, cis, bmb, gds, tea, bmad-loop)
+└── render/                     # Rendered skill outputs (runtime)
 ```
 
 ## Config Resolution (4-Layer TOML Merge)
@@ -59,9 +60,14 @@ _bmad/
 **Invocation:**
 
 ```
-python3 {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key agent
-python3 {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key workflow
+uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key agent
+uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key workflow
 ```
+
+**`{skill-root}`** = `{project-root}/{target_dir}/{skill-name}` where `target_dir` depends on your IDE:
+- **Cursor/Copilot/Codex/OpenCode/Windsurf:** `{project-root}/.agents/skills/{skill-name}`
+- **Claude Code:** `{project-root}/.claude/skills/{skill-name}`
+- **Google Antigravity:** `{project-root}/.agent/skills/{skill-name}`
 
 **If script fails** → manually read 3 files in order and merge:
 
@@ -95,9 +101,9 @@ Some skills use `memlog.py` for append-only session memory.
 **Invocation:**
 
 ```
-python3 {project-root}/_bmad/scripts/memlog.py init --workspace {doc_workspace} --field topic="<topic>"
-python3 {project-root}/_bmad/scripts/memlog.py append --workspace {doc_workspace} --type <type> --text "<text>"
-python3 {project-root}/_bmad/scripts/memlog.py set --workspace {doc_workspace} --key status --value complete
+uv run {project-root}/_bmad/scripts/memlog.py init --workspace {doc_workspace} --field topic="<topic>"
+uv run {project-root}/_bmad/scripts/memlog.py append --workspace {doc_workspace} --type <type> --text "<text>"
+uv run {project-root}/_bmad/scripts/memlog.py set --workspace {doc_workspace} --key status --value complete
 ```
 
 **Types:** decision, constraint, capability, assumption, question, direction, note, event
@@ -121,7 +127,7 @@ Some skills (bmad-help, bmad-advanced-elicitation) use `resolve_config.py` for p
 **Invocation:**
 
 ```
-python3 {project-root}/_bmad/scripts/resolve_config.py
+uv run {project-root}/_bmad/scripts/resolve_config.py --project-root {project-root}
 ```
 
 **This is different from `resolve_customization.py`:**
@@ -138,9 +144,9 @@ Copilot: `.github/agents/` with `LOAD the FULL {path}/SKILL.md` format.
 
 To load a skill directly in OpenCode (bypassing command files), use the `@` prefix with the skill path:
 ```
-@skills/bmad-quick-dev
+@skills/bmad-build
 ```
-This triggers the agent to read and follow the SKILL.md from that path.
+This triggers the agent to read and follow the SKILL.md from `.agents/skills/bmad-build/`.
 
 ## Skill Naming
 
