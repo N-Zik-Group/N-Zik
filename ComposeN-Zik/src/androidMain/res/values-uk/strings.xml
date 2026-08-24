@@ -882,6 +882,8 @@
   <string name="discover_has_been_applied_to_queue">\"Відкриття\" були застосовані до черги, видалені пісні: %s</string>
   <string name="player_pause_on_volume_zero">Пауза при нульовій гучності</string>
   <string name="info_pauses_player_when_volume_zero">Призупиняти пісню, коли гучність досягне 0 і відновити її, коли гучність більше 0</string>
+  <string name="pause_on_headphone_disconnect">Pause on headphone disconnect</string>
+  <string name="pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones disconnect</string>
   <string name="quality">Якість</string>
   <string name="value_must_be_ip_address">Значення має бути IP-адресою</string>
   <string name="swipe_up_to_open_the_queue">Проведіть пальцем угору, щоб відкрити чергу</string>
