@@ -882,6 +882,8 @@
   <string name="discover_has_been_applied_to_queue">Descoperirea a fost aplicată la coadă, melodii eliminate: %s</string>
   <string name="player_pause_on_volume_zero">Pauză la volum zero</string>
   <string name="info_pauses_player_when_volume_zero">Pune melodia pe pauză când volumul ajunge la 0 și reia redarea când volumul este mai mare de 0</string>
+  <string name="pause_on_headphone_disconnect">Pause on headphone disconnect</string>
+  <string name="pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones disconnect</string>
   <string name="quality">Calitate</string>
   <string name="value_must_be_ip_address">Valoarea trebuie să fie o adresă Ip</string>
   <string name="swipe_up_to_open_the_queue">Glisează în sus pentru a deschide coada</string>
