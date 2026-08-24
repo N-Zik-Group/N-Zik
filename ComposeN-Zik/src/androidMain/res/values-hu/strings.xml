@@ -882,6 +882,8 @@
   <string name="discover_has_been_applied_to_queue">A Felfedezés alkalmazva lett a várólistára, eltávolította a következő dalokat: %s</string>
   <string name="player_pause_on_volume_zero">Szüneteltetve némítással</string>
   <string name="info_pauses_player_when_volume_zero">Pause the song when the volume reaches 0 and resume it when the volume is greater than 0</string>
+  <string name="pause_on_headphone_disconnect">Pause on headphone disconnect</string>
+  <string name="pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones disconnect</string>
   <string name="quality">Minőség</string>
   <string name="value_must_be_ip_address">Value must be an IP address</string>
   <string name="swipe_up_to_open_the_queue">Swipe up to open queue</string>
