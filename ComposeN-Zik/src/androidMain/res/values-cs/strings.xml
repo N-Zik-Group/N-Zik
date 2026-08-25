@@ -434,6 +434,7 @@
   <string name="sort_songs_number">Číslo skladby</string>
   <string name="sort_relative_listening_time">Relativní doba poslechu</string>
   <string name="sort_play_count">Play Count</string>
+  <string name="sort_downloaded">Stažený</string>
   <string name="follow">Sledovat</string>
   <string name="following">Sledovaní</string>
   <string name="artist_subscribers">%s odběratelů</string>
