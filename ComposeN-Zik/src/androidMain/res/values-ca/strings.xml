@@ -434,6 +434,7 @@
   <string name="sort_songs_number">Número de cançons</string>
   <string name="sort_relative_listening_time">Temps relatiu d\'escolta</string>
   <string name="sort_play_count">Play Count</string>
+  <string name="sort_downloaded">Descarregat</string>
   <string name="follow">Segueix</string>
   <string name="following">Seguint</string>
   <string name="artist_subscribers">%s subscriptors</string>
