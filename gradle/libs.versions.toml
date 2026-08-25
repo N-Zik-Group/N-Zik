@@ -1,11 +1,11 @@
 
 [versions]
 compose-plugin = "1.11.1"
-agp = "9.3.1"
+agp = "9.3.2"
 hilt = "2.60.1"
 composeMarkdownVersion = "0.7.2"
 kotlin = "2.4.10"
-kotlin-ksp = "2.3.5"
+kotlin-ksp = "2.3.6"
 kotlin-datetime = "0.8.0-0.6.x-compat"
 compose = "1.11.4"
 compose-activity = "1.13.0"
