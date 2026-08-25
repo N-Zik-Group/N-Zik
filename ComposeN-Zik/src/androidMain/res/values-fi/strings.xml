@@ -434,6 +434,7 @@
   <string name="sort_songs_number">Kappaleiden määrä</string>
   <string name="sort_relative_listening_time">Suhteellinen kuunteluaika</string>
   <string name="sort_play_count">Play Count</string>
+  <string name="sort_downloaded">Ladatut</string>
   <string name="follow">Seuraa</string>
   <string name="following">Seuraan tätä</string>
   <string name="artist_subscribers">%s Tilaajat</string>
