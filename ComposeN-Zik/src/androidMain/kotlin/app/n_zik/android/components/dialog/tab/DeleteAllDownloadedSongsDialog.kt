@@ -9,6 +9,7 @@ import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.appContext
+import app.n_zik.android.core.database.Database
 import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
@@ -16,6 +17,7 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.utils.asMediaItem
 import app.n_zik.android.components.dialog.media.MediaDownloadDialog
+import timber.log.Timber
 
 @UnstableApi
 class DeleteAllDownloadedSongsDialog(
@@ -46,6 +48,25 @@ class DeleteAllDownloadedSongsDialog(
     // Both [ConfirmDialog] and [Descriptive] require this function,
     // so it must be explicitly stated here to not confuse the compiler
     override fun onShortClick() = super.onShortClick()
+
+    override fun onConfirm() {
+        // Reverse filter: only process already-downloaded songs (for deletion)
+        val downloadedSongs = getSongs().filter { song ->
+            MyDownloadHelper.isSongDownloaded(song.id)
+        }
+
+        if (downloadedSongs.isEmpty()) {
+            Timber.tag("DeleteAllDownloadedSongsDialog").d("No downloaded songs to delete")
+            onDismiss()
+            return
+        }
+
+        downloadedSongs.forEach {
+            MyDownloadHelper.removeDownload( appContext(), it.asMediaItem )
+        }
+
+        onDismiss()
+    }
 
     override fun onAction( media: Song ) =
         MyDownloadHelper.removeDownload( appContext(), media.asMediaItem )

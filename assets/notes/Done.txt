@@ -12,6 +12,14 @@ Fixed android-37 SDK issue
 - Removed corrupted android-35 and android-37.0 SDK platforms (missing android.jar)
 - Reinstalled Android 17.0 (API 37.1) SDK platform
 
+feat(download): skip already-downloaded songs in Download All and fix progress counter (issue https://github.com/N-Zik-Group/N-Zik/issues/588)
+  - `MediaDownloadDialog.onConfirm()` now filters out songs with `STATE_COMPLETED` before deleting cache/Format
+  - `MyDownloadHelper` gains `batchTotal`, `batchCompleted`, `isBatchActive` fields with `@Synchronized` access
+  - `MyDownloadService.getForegroundNotification()` uses batch counters instead of `maxActiveDownloads` for accurate "X / Y" progress
+  - `DeleteAllDownloadedSongsDialog` overrides `onConfirm()` with reversed filter to avoid breaking delete functionality
+  - Skipped songs counted toward progress via `skipBatchCompleted()` to prevent notification stuck below 100%
+  - `resetBatch()` called in `TerminalStateNotificationHelper.onIdle()` to clean up state
+
 Stream Resolution Fixes
 - ANDROID_VR: HEAD 403 now marks client as failed and skips to next (no more infinite retry)
 - Cipher refresh now passes currentPlayerHash to PlayerConfigStore (matches Metrolist)

@@ -49,6 +49,10 @@ class DownloadAllSongsDialog(
     // so it must be explicitly stated here to not confuse the compiler
     override fun onShortClick() = super.onShortClick()
 
+    override fun onBatchStart( count: Int ) {
+        MyDownloadHelper.startBatchDownload( count )
+    }
+
     override fun onAction( media: Song ) {
         // Starts download only when network is available
         if( appContext().isNetworkAvailable )

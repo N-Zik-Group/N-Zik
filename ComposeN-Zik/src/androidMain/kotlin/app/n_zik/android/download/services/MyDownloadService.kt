@@ -16,6 +16,10 @@ import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.exoplayer.scheduler.PlatformScheduler
 import app.n_zik.android.R
 import app.n_zik.android.download.utils.MyDownloadHelper.DOWNLOAD_NOTIFICATION_CHANNEL_ID
+import app.n_zik.android.download.utils.MyDownloadHelper.batchTotal
+import app.n_zik.android.download.utils.MyDownloadHelper.batchCompleted
+import app.n_zik.android.download.utils.MyDownloadHelper.incrementBatchCompleted
+import app.n_zik.android.download.utils.MyDownloadHelper.resetBatch
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
 import app.n_zik.android.playback.exceptions.ExplicitContentException
@@ -63,20 +67,14 @@ class MyDownloadService : DownloadService(
         return if(Util.SDK_INT >= 21) PlatformScheduler(this, JOB_ID) else null
     }
 
-    private var maxActiveDownloads = 0
-
     override fun getForegroundNotification(
         downloads: MutableList<Download>,
         notMetRequirements: Int
     ): Notification {
-        if (downloads.size > maxActiveDownloads) {
-            maxActiveDownloads = downloads.size
-        } else if (downloads.isEmpty()) {
-            maxActiveDownloads = 0
-        }
-        val downloaded = maxActiveDownloads - downloads.size
-        val message = if (maxActiveDownloads > 1) {
-            getString(R.string.download_progress, downloaded, maxActiveDownloads)
+        val total = batchTotal
+        val completed = batchCompleted
+        val message = if (total > 0) {
+            getString(R.string.download_progress, completed, total)
         } else {
             getString(R.string.download_in_progress, downloads.size)
         }
@@ -88,8 +86,8 @@ class MyDownloadService : DownloadService(
             .setSmallIcon(R.drawable.download_progress)
             .setContentTitle(getString(R.string.download))
             .setContentText(currentDownloadName ?: message)
-            .setSubText(message) // Always show the progress like "11 / 20" in subtext
-            .setProgress(maxActiveDownloads, downloaded, maxActiveDownloads == 0)
+            .setSubText(message)
+            .setProgress(total, completed, total == 0)
             .setOngoing(true)
             .setShowWhen(false)
             .build()    }
@@ -116,6 +114,7 @@ class MyDownloadService : DownloadService(
         ) {
             if (download.state == Download.STATE_COMPLETED) {
                 completedCount++
+                incrementBatchCompleted()
                 WaveformExtractor.deleteWaveform(context, download.request.id)
                 lastName = Util.fromUtf8Bytes(download.request.data)
             } else if (download.state == Download.STATE_REMOVING) {
@@ -195,6 +194,7 @@ class MyDownloadService : DownloadService(
             completedCount = 0
             failedCount = 0
             lastName = ""
+            resetBatch()
         }
     }
 

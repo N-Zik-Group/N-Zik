@@ -114,6 +114,48 @@ object MyDownloadHelper {
     private val mutableProgresses = MutableStateFlow<Map<String, Float>>(emptyMap())
     val progresses = mutableProgresses.asStateFlow()
 
+    // Batch download tracking for "download all" progress notification
+    var batchTotal = 0
+        private set
+    var batchCompleted = 0
+        private set
+    var isBatchActive = false
+        private set
+
+    fun isSongDownloaded(songId: String): Boolean {
+        return downloads.value.values.any {
+            it.state == Download.STATE_COMPLETED && it.request.id == songId
+        }
+    }
+
+    @Synchronized
+    fun startBatchDownload(total: Int) {
+        batchTotal = total
+        batchCompleted = 0
+        isBatchActive = true
+        Timber.tag("MyDownloadHelper").d("startBatchDownload: total=$total")
+    }
+
+    @Synchronized
+    fun incrementBatchCompleted() {
+        if (!isBatchActive) return
+        batchCompleted += 1
+    }
+
+    @Synchronized
+    fun skipBatchCompleted(count: Int) {
+        if (!isBatchActive) return
+        batchCompleted += count
+        Timber.tag("MyDownloadHelper").d("skipBatchCompleted: skipped=$count, completed=$batchCompleted")
+    }
+
+    @Synchronized
+    fun resetBatch() {
+        batchTotal = 0
+        batchCompleted = 0
+        isBatchActive = false
+    }
+
     fun getDownload(songId: String): Flow<Download?> {
         return downloads.map { it[songId] }
 
