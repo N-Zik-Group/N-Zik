@@ -362,7 +362,7 @@ fun HomeSongsScreen(navController: NavController ) {
         else -> Sort( Preference.HOME_SONGS_SORT_BY, Preference.HOME_SONGS_SORT_ORDER, homeSongsAllSortMenuOrderKey, "all" )
     }
     val positionLock = remember( songSort.sortOrder ) { PositionLock(songSort.sortOrder) }
-    val topPlaylists = PeriodSelector( Preference.HOME_SONGS_TOP_PLAYLIST_PERIOD )
+    val topPlaylists = PeriodSelector( Preference.HOME_SONGS_TOP_PLAYLIST_PERIOD, homeSongsTopSortMenuOrderKey, "top" )
     val downloadAllDialog = DownloadAllSongsDialog( ::getSongs )
     val deleteDownloadsDialog = DeleteAllDownloadedSongsDialog( ::getSongs )
 

@@ -35,6 +35,8 @@ enum class PlaylistSongSortBy(
 
     AlbumYear( R.string.sort_album_year, R.drawable.calendar ),
 
+    Downloaded( R.string.sort_downloaded, R.drawable.downloaded ),
+
     Custom( R.string.sort_custom_order, R.drawable.position );
 
     override val text: String

@@ -78,3 +78,15 @@ fix(multi-select): actions now respect active selection (issue multi-select bugs
   - Queue.kt (component): ShuffleQueue accepts optional `itemSelector` parameter for selection-aware shuffle
   - Queue.kt (main): passes `itemSelector` to ShuffleQueue
   - Pattern: `getSongs() = itemSelector.ifEmpty { items }` returns selected items or all items
+
+fix(home-songs): correct Top playlist sort settings — use StatisticsType periods instead of SongSortBy
+  - HomeSongsSortSettingsDialog: Top tab now uses `topSortIds` (Today, OneWeek, OneMonth, ThreeMonths, SixMonths, OneYear, All) instead of incorrectly reusing SongSortBy options
+  - Top tab's sort is PeriodSelector (StatisticsType), not SongSortBy — the previous filter on songSortIds was semantically wrong
+  - getSortIcon / getSortLabel updated with entries for all StatisticsType names
+
+feat(home-songs): Top playlist PeriodSelector respects custom order and visibility
+  - PeriodSelector: accepts optional `sortMenuOrderKey` and `sortMenuPrefix` parameters
+  - Added `readSortedEntries()` mirroring Sort.readSortedEnumConstants() — reads saved order + visibility from SharedPreferences
+  - MenuComponent now uses `readSortedEntries()` instead of hardcoded `StatisticsType.entries`
+  - Each entry's own `iconId` is now shown in the menu (was hardcoded `R.drawable.time`)
+  - HomeSongs.kt and HomeSongsScreen.kt pass `homeSongsTopSortMenuOrderKey` + `"top"` prefix to PeriodSelector

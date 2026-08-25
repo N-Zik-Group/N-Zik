@@ -373,6 +373,7 @@ interface SongPlaylistMapTable {
         PlaylistSongSortBy.Duration         -> sortSongsByDuration( playlistId )
         PlaylistSongSortBy.DateLiked        -> sortSongsByLikedAt( playlistId )
         PlaylistSongSortBy.DateAdded        -> allSongsOf( playlistId )     // Already sorted by ROWID
+        PlaylistSongSortBy.Downloaded       -> sortSongsByTitle( playlistId ) // Handled in-memory
     }.map( sortOrder::applyTo ).take( limit )
     //</editor-fold>
 

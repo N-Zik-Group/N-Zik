@@ -23,7 +23,7 @@ object LocalPlaylistSortSettingsDialog : Dialog {
     private val sortIds = listOf(
         "Title", "Artist", "Album", "ArtistAndAlbum", "Duration",
         "PlayCount", "PlayTime", "RelativePlayTime", "DateAdded",
-        "DatePlayed", "DateLiked", "AlbumYear", "Custom"
+        "DatePlayed", "DateLiked", "AlbumYear", "Downloaded", "Custom"
     )
 
     override val dialogTitle: String @Composable get() = stringResource(R.string.playlists) + " - Sort"
@@ -53,6 +53,7 @@ object LocalPlaylistSortSettingsDialog : Dialog {
         "DatePlayed" -> R.drawable.up_right_arrow
         "DateLiked" -> R.drawable.heart
         "AlbumYear" -> R.drawable.calendar
+        "Downloaded" -> R.drawable.downloaded
         "Custom" -> R.drawable.position
         else -> R.drawable.text
     }
@@ -70,6 +71,7 @@ object LocalPlaylistSortSettingsDialog : Dialog {
         "DatePlayed" -> stringResource(R.string.sort_date_played)
         "DateLiked" -> stringResource(R.string.sort_date_liked)
         "AlbumYear" -> stringResource(R.string.sort_album_year)
+        "Downloaded" -> stringResource(R.string.sort_downloaded)
         "Custom" -> stringResource(R.string.sort_custom_order)
         else -> id
     }

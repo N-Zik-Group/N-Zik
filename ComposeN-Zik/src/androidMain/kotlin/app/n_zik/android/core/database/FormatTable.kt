@@ -236,6 +236,7 @@ interface FormatTable {
         SongSortBy.Duration         -> sortAllWithSongsByDuration( limit, excludeHidden )
         SongSortBy.AlbumName        -> sortAllWithSongsByAlbumName( limit, excludeHidden )
         SongSortBy.Custom           -> sortAllWithSongsByPosition( limit, excludeHidden )
+        SongSortBy.Downloaded       -> sortAllWithSongsByTitle( limit, excludeHidden ) // Handled in-memory
     }.map( sortOrder::applyTo )
     //</editor-fold>
 }

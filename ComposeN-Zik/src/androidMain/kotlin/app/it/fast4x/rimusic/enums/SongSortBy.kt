@@ -30,6 +30,8 @@ enum class SongSortBy(
 
     DateLiked( R.string.sort_date_liked, R.drawable.heart ),
 
+    Downloaded( R.string.sort_downloaded, R.drawable.downloaded ),
+
     Custom( R.string.sort_custom_order, R.drawable.position );
 }
 

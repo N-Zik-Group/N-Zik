@@ -149,6 +149,8 @@ import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.localPlaylistToolbarOrderKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.Preference
+import app.n_zik.android.download.utils.MyDownloadHelper
+import androidx.media3.exoplayer.offline.Download
 
 import app.it.fast4x.rimusic.utils.saveImageToInternalStorage
 import app.it.fast4x.rimusic.utils.semiBold
@@ -161,6 +163,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.CancellationException
@@ -260,10 +263,29 @@ fun LocalPlaylistSongs(
     val sort = PlaylistSongsSort(playlistId)
 
     val items by remember( sort.sortBy, sort.sortOrder ) {
-        Database.songPlaylistMapTable
-                .sortSongs( playlistId, sort.sortBy, sort.sortOrder )
-                .flowOn( Dispatchers.IO )
-                .distinctUntilChanged()
+        if (sort.sortBy == PlaylistSongSortBy.Downloaded) {
+            val downloaded: List<String> = MyDownloadHelper.downloads
+                                                           .value
+                                                           .values
+                                                           .filter { it.state == Download.STATE_COMPLETED }
+                                                           .map { it.request.id }
+            Database.songPlaylistMapTable
+                    .sortSongs( playlistId, PlaylistSongSortBy.Title, SortOrder.Ascending )
+                    .map { list ->
+                        if (sort.sortOrder == SortOrder.Ascending) {
+                            list.sortedByDescending { it.id in downloaded }
+                        } else {
+                            list.sortedBy { it.id in downloaded }
+                        }
+                    }
+                    .flowOn( Dispatchers.IO )
+                    .distinctUntilChanged()
+        } else {
+            Database.songPlaylistMapTable
+                    .sortSongs( playlistId, sort.sortBy, sort.sortOrder )
+                    .flowOn( Dispatchers.IO )
+                    .distinctUntilChanged()
+        }
     }.collectAsState( emptyList(), Dispatchers.IO )
     var itemsOnDisplay by persistList<Song>("localPlaylist/$playlistId/songs/on_display")
 
@@ -1340,6 +1362,10 @@ fun LocalPlaylistSongs(
                                 }
                             },
                             onClick = {
+                                if (itemSelector.isActive) {
+                                    search.hideIfEmpty()
+                                    return@SongItem
+                                }
                                 if (song.isUnmatched) {
                                     Toaster.w(R.string.playback_blocked_match_first)
                                 } else {
@@ -1348,11 +1374,6 @@ fun LocalPlaylistSongs(
                                         itemsOnDisplay.map( Song::asMediaItem ),
                                         index
                                     )
-
-                                    /*
-                                        Due to the small size of checkboxes,
-                                        we shouldn't disable [itemSelector]
-                                     */
 
                                     search.hideIfEmpty()
                                 }

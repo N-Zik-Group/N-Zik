@@ -31,17 +31,19 @@ object HomeSongsSortSettingsDialog : Dialog {
 
     private val songSortIds = listOf(
         "Title", "Artist", "AlbumName", "Duration", "PlayCount",
-        "PlayTime", "RelativePlayTime", "DateAdded", "DatePlayed", "DateLiked", "Custom"
+        "PlayTime", "RelativePlayTime", "DateAdded", "DatePlayed", "DateLiked", "Downloaded", "Custom"
     )
 
     private val onDeviceSortIds = listOf("Title", "DateAdded", "Artist", "Duration", "Album")
 
+    private val topSortIds = listOf("Today", "OneWeek", "OneMonth", "ThreeMonths", "SixMonths", "OneYear", "All")
+
     private val tabAvailableIds = mapOf(
         BuiltInPlaylist.All to songSortIds,
         BuiltInPlaylist.Favorites to songSortIds.filter { it != "Custom" },
-        BuiltInPlaylist.Offline to songSortIds.filter { it != "Custom" },
-        BuiltInPlaylist.Downloaded to songSortIds.filter { it != "Custom" },
-        BuiltInPlaylist.Top to songSortIds.filter { it !in setOf("Custom", "DateLiked") },
+        BuiltInPlaylist.Offline to songSortIds.filter { it != "Custom" && it != "Downloaded" },
+        BuiltInPlaylist.Downloaded to songSortIds.filter { it != "Custom" && it != "Downloaded" },
+        BuiltInPlaylist.Top to topSortIds,
         BuiltInPlaylist.OnDevice to onDeviceSortIds
     )
 
@@ -97,8 +99,16 @@ object HomeSongsSortSettingsDialog : Dialog {
         "DateAdded" -> R.drawable.time
         "DatePlayed" -> R.drawable.calendar
         "DateLiked" -> R.drawable.heart
+        "Downloaded" -> R.drawable.downloaded
         "Custom" -> R.drawable.position
         "Album" -> R.drawable.album
+        "Today" -> R.drawable.stat_today
+        "OneWeek" -> R.drawable.stat_week
+        "OneMonth" -> R.drawable.stat_month
+        "ThreeMonths" -> R.drawable.stat_3months
+        "SixMonths" -> R.drawable.stat_6months
+        "OneYear" -> R.drawable.stat_year
+        "All" -> R.drawable.calendar_clear
         else -> R.drawable.text
     }
 
@@ -114,8 +124,16 @@ object HomeSongsSortSettingsDialog : Dialog {
         "DateAdded" -> stringResource(R.string.sort_date_added)
         "DatePlayed" -> stringResource(R.string.sort_date_played)
         "DateLiked" -> stringResource(R.string.sort_date_liked)
+        "Downloaded" -> stringResource(R.string.sort_downloaded)
         "Custom" -> stringResource(R.string.sort_custom_order)
         "Album" -> stringResource(R.string.sort_album)
+        "Today" -> stringResource(R.string.today)
+        "OneWeek" -> stringResource(R.string._1_week)
+        "OneMonth" -> stringResource(R.string._1_month)
+        "ThreeMonths" -> stringResource(R.string._3_month)
+        "SixMonths" -> stringResource(R.string._6_month)
+        "OneYear" -> stringResource(R.string._1_year)
+        "All" -> stringResource(R.string.all)
         else -> id
     }
 
@@ -246,7 +264,13 @@ object HomeSongsSortSettingsDialog : Dialog {
             val key = getSortOrderKey(tab)
             val available = tabAvailableIds[tab] ?: songSortIds
             available.forEach { id ->
-                edit.putBoolean("${tp}_sort_${id}_visible", true)
+                // "Downloaded" sort should not be visible in Downloaded/Offline tabs
+                val isVisible = if (id == "Downloaded" && (tab == BuiltInPlaylist.Downloaded || tab == BuiltInPlaylist.Offline)) {
+                    false
+                } else {
+                    true
+                }
+                edit.putBoolean("${tp}_sort_${id}_visible", isVisible)
             }
             edit.putString(key, serializeOrder(available))
         }

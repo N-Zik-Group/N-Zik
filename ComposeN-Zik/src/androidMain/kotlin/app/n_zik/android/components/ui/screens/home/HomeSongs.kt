@@ -120,10 +120,25 @@ fun HomeSongs(
         else -> Sort( HOME_SONGS_SORT_BY, HOME_SONGS_SORT_ORDER, homeSongsAllSortMenuOrderKey, "all" )
     }
     val positionLock = remember( songSort.sortOrder ) { PositionLock(songSort.sortOrder) }
-    val topPlaylists = PeriodSelector( HOME_SONGS_TOP_PLAYLIST_PERIOD )
+    val topPlaylists = PeriodSelector( HOME_SONGS_TOP_PLAYLIST_PERIOD, homeSongsTopSortMenuOrderKey, "top" )
     val hiddenSongs = HiddenSongs()
 
     var isLoading by remember { mutableStateOf(true) }
+
+    // Ensure "Downloaded" sort is not visible in Downloaded/Offline tabs
+    LaunchedEffect( builtInPlaylist ) {
+        if (builtInPlaylist == BuiltInPlaylist.Downloaded || builtInPlaylist == BuiltInPlaylist.Offline) {
+            val prefix = when (builtInPlaylist) {
+                BuiltInPlaylist.Offline -> "off"
+                BuiltInPlaylist.Downloaded -> "dl"
+                else -> ""
+            }
+            if (prefix.isNotEmpty()) {
+                val prefs = context.getSharedPreferences("preferences", android.content.Context.MODE_PRIVATE)
+                prefs.edit().putBoolean("${prefix}_sort_Downloaded_visible", false).apply()
+            }
+        }
+    }
 
     LaunchedEffect( itemSelector.isActive ) {
         if( itemSelector.isActive )
@@ -144,13 +159,36 @@ fun HomeSongs(
         isLoading = true
 
         val retrievedSongs = when( builtInPlaylist ) {
-            BuiltInPlaylist.All -> Database.songTable
-                                           .sortAll( songSort.sortBy, songSort.sortOrder, excludeHidden = hiddenSongs.isHiddenExcluded() )
-                                           .map { list ->
-                                               list.fastFilter {
-                                                   !includeLocalSongs || !it.id.startsWith( LOCAL_KEY_PREFIX, true )
-                                               }
-                                           }
+            BuiltInPlaylist.All -> {
+                if (songSort.sortBy == SongSortBy.Downloaded) {
+                    val downloaded: List<String> = MyDownloadHelper.downloads
+                                                                   .value
+                                                                   .values
+                                                                   .filter { it.state == Download.STATE_COMPLETED }
+                                                                   .fastMap { it.request.id }
+                    Database.songTable
+                            .sortAll( SongSortBy.Title, SortOrder.Ascending, excludeHidden = hiddenSongs.isHiddenExcluded() )
+                            .map { list ->
+                                list.fastFilter {
+                                    !includeLocalSongs || !it.id.startsWith( LOCAL_KEY_PREFIX, true )
+                                }.let { filtered ->
+                                    if (songSort.sortOrder == SortOrder.Ascending) {
+                                        filtered.sortedByDescending { it.id in downloaded }
+                                    } else {
+                                        filtered.sortedBy { it.id in downloaded }
+                                    }
+                                }
+                            }
+                } else {
+                    Database.songTable
+                            .sortAll( songSort.sortBy, songSort.sortOrder, excludeHidden = hiddenSongs.isHiddenExcluded() )
+                            .map { list ->
+                                list.fastFilter {
+                                    !includeLocalSongs || !it.id.startsWith( LOCAL_KEY_PREFIX, true )
+                                }
+                            }
+                }
+            }
 
             BuiltInPlaylist.Downloaded -> {
                 val downloaded: List<String> = MyDownloadHelper.downloads
@@ -174,20 +212,66 @@ fun HomeSongs(
                                                     }.map( FormatWithSong::song )
                                                }
 
-            BuiltInPlaylist.Favorites -> Database.songTable.sortFavorites( songSort.sortBy, songSort.sortOrder )
+            BuiltInPlaylist.Favorites -> {
+                if (songSort.sortBy == SongSortBy.Downloaded) {
+                    val downloaded: List<String> = MyDownloadHelper.downloads
+                                                                   .value
+                                                                   .values
+                                                                   .filter { it.state == Download.STATE_COMPLETED }
+                                                                   .fastMap { it.request.id }
+                    Database.songTable.sortFavorites( SongSortBy.Title, SortOrder.Ascending )
+                            .map { list ->
+                                if (songSort.sortOrder == SortOrder.Ascending) {
+                                    list.sortedByDescending { it.id in downloaded }
+                                } else {
+                                    list.sortedBy { it.id in downloaded }
+                                }
+                            }
+                } else {
+                    Database.songTable.sortFavorites( songSort.sortBy, songSort.sortOrder )
+                }
+            }
 
-            BuiltInPlaylist.Top -> Database.eventTable
-                                           .findSongsMostPlayedBetween(
-                                               from = topPlaylists.period.timeStampInMillis(),
-                                               limit = maxTopPlaylistItems.toInt()
-                                           )
-                                           .map { list ->
-                                               list.fastFilter { song ->
-                                                   excludeSongWithDurationLimit == DurationInMinutes.Disabled
-                                                           || song.durationText
-                                                                  ?.let { durationTextToMillis(it) < excludeSongWithDurationLimit.asMillis } == true
-                                               }
-                                           }
+            BuiltInPlaylist.Top -> {
+                if (songSort.sortBy == SongSortBy.Downloaded) {
+                    val downloaded: List<String> = MyDownloadHelper.downloads
+                                                                   .value
+                                                                   .values
+                                                                   .filter { it.state == Download.STATE_COMPLETED }
+                                                                   .fastMap { it.request.id }
+                    Database.eventTable
+                            .findSongsMostPlayedBetween(
+                                from = topPlaylists.period.timeStampInMillis(),
+                                limit = maxTopPlaylistItems.toInt()
+                            )
+                            .map { list ->
+                                list.fastFilter { song ->
+                                    excludeSongWithDurationLimit == DurationInMinutes.Disabled
+                                            || song.durationText
+                                                   ?.let { durationTextToMillis(it) < excludeSongWithDurationLimit.asMillis } == true
+                                }.let { filtered ->
+                                    if (songSort.sortOrder == SortOrder.Ascending) {
+                                        filtered.sortedByDescending { it.id in downloaded }
+                                    } else {
+                                        filtered.sortedBy { it.id in downloaded }
+                                    }
+                                }
+                            }
+                } else {
+                    Database.eventTable
+                            .findSongsMostPlayedBetween(
+                                from = topPlaylists.period.timeStampInMillis(),
+                                limit = maxTopPlaylistItems.toInt()
+                            )
+                            .map { list ->
+                                list.fastFilter { song ->
+                                    excludeSongWithDurationLimit == DurationInMinutes.Disabled
+                                            || song.durationText
+                                                   ?.let { durationTextToMillis(it) < excludeSongWithDurationLimit.asMillis } == true
+                                }
+                            }
+                }
+            }
 
             BuiltInPlaylist.OnDevice -> flowOf( emptyList() )
         }

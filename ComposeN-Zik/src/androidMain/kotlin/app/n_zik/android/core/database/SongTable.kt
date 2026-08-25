@@ -504,6 +504,7 @@ interface SongTable {
         SongSortBy.Duration         -> sortAllByDuration( limit, excludeHidden )
         SongSortBy.AlbumName        -> sortAllByAlbumName( limit, excludeHidden )
         SongSortBy.Custom           -> sortAllByPosition( limit, excludeHidden )
+        SongSortBy.Downloaded       -> sortAllByTitle( limit, excludeHidden ) // Handled in-memory
     }.map( sortOrder::applyTo )
     //</editor-fold>
 
@@ -621,6 +622,7 @@ interface SongTable {
         SongSortBy.Duration         -> sortFavoritesByDuration()
         SongSortBy.AlbumName        -> sortFavoritesByAlbumName()
         SongSortBy.Custom           -> sortFavoritesByPosition( limit )
+        SongSortBy.Downloaded       -> sortFavoritesByTitle() // Handled in-memory
     }.map( sortOrder::applyTo ).take( limit )
     //</editor-fold>
 
