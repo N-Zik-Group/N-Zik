@@ -434,6 +434,7 @@
   <string name="sort_songs_number">Liedjie Nommer</string>
   <string name="sort_relative_listening_time">Relative Listening Time</string>
   <string name="sort_play_count">Play Count</string>
+  <string name="sort_downloaded">Afgelaaide</string>
   <string name="follow">Volg</string>
   <string name="following">Word Gevolg</string>
   <string name="artist_subscribers">%s volgelinge</string>
