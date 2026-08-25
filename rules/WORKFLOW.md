@@ -64,7 +64,7 @@ NEVER write code or create implementation plans without completing this step.
 
 #### 3a: Select IDE and Skill
 
-- **ASK FIRST:** Which IDE/tool they are using (before loading any skill) — **ask ONE IDE at a time** (skill path depends on IDE, see BMAD-TOOLS.md). **Order:** Claude Code, Cursor, GitHub Copilot, Codex (⭐ preferred), then OpenCode, then others.
+- **ASK FIRST:** Which IDE/tool they are using (before loading any skill) — **ask ONE IDE at a time** (skill path depends on IDE, see BMAD-TOOLS.md). **Order:** OpenCode ⭐, GitHub Copilot ⭐, Google Antigravity ⭐, then others (Claude Code, Cursor, Codex, etc.).
 - **ASK FIRST:** Which skill to use (propose recommended, let user choose)
 - Identify appropriate skill (analyze skills directory first)
 - For bugs: `bmad-cis-problem-solving`, then `bmad-code-review`
@@ -131,7 +131,7 @@ Example for `bmad-build` with OpenCode: `{project-root}/.agents/skills/bmad-buil
   2. After each step, replace the `{{placeholders}}` with actual values
   3. **Write/update the spec file on disk AFTER EACH STEP** (use the Write tool, incremental updates)
   4. Display the content in chat for checkpoint
-- **Where to write:** `{output_folder}/{default_output_file}` — read the skill's SKILL.md for the exact path
+- **Where to write:** Read the skill's SKILL.md for the exact output path (resolved from config, e.g. `{project-root}/_bmad-output/`)
 - **In this project:** `{output_folder}` = `{project-root}/_bmad-output` (at workspace root, one level above `N-Zik/`)
 - Show checkpoint separator, display generated content, present options `[a] Advanced Elicitation`, `[c] Continue`, `[p] Party-Mode`, `[y] YOLO`
 - Wait for user response before proceeding to next step
@@ -252,7 +252,7 @@ Before implementing, **MUST ask user using question tool:**
 
 ### Step 8: Post-BMAD Actions (MANDATORY)
 
-After the BMAD workflow completes, **MUST follow this exact flow** — NEVER skip any step:
+After the BMAD workflow completes, **MUST follow this exact flow** — NEVER skip any step. Note: Steps 8a-8b may already be covered by the skill's step-04 (review) — verify before re-running.
 
 **Step 8a: Build and Test**
 
