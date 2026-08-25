@@ -882,6 +882,8 @@
   <string name="discover_has_been_applied_to_queue">ディスカバーがキューに適用されました。削除された曲: %s</string>
   <string name="player_pause_on_volume_zero">音量ゼロで停止</string>
   <string name="info_pauses_player_when_volume_zero">ボリュームが0に達したときに曲を一時停止し、ボリュームが0より大きいときに再開します</string>
+  <string name="pause_on_headphone_disconnect">Pause on headphone disconnect</string>
+  <string name="pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones disconnect</string>
   <string name="quality">品質</string>
   <string name="value_must_be_ip_address">値はIPアドレスでなければなりません</string>
   <string name="swipe_up_to_open_the_queue">上にスワイプしてキューを開く</string>

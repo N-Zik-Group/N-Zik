@@ -882,6 +882,8 @@
   <string name="discover_has_been_applied_to_queue">Descobrir foi aplicado à fila, músicas removidas: %s</string>
   <string name="player_pause_on_volume_zero">Pausar no volume zero</string>
   <string name="info_pauses_player_when_volume_zero">Pausar a música quando o volume atingir 0 e retomá-la quando o volume é maior que 0</string>
+  <string name="pause_on_headphone_disconnect">Pause on headphone disconnect</string>
+  <string name="pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones disconnect</string>
   <string name="quality">Qualidade</string>
   <string name="value_must_be_ip_address">Valor deve ser um endereço IP</string>
   <string name="swipe_up_to_open_the_queue">Deslize para cima para abrir a fila</string>

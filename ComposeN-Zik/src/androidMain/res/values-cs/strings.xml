@@ -882,6 +882,8 @@
   <string name="discover_has_been_applied_to_queue">Objevit bylo použito na frontu, odstraněné skladby: %s</string>
   <string name="player_pause_on_volume_zero">Pozastavit při nulové hlasitosti</string>
   <string name="info_pauses_player_when_volume_zero">Pozastaví přehrávač, když hlasitost dosáhne 0, a obnoví přehrávání, když je hlasitost vyšší než 0</string>
+  <string name="pause_on_headphone_disconnect">Pause on headphone disconnect</string>
+  <string name="pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones disconnect</string>
   <string name="quality">Kvalita</string>
   <string name="value_must_be_ip_address">Hodnota musí být IP adresa</string>
   <string name="swipe_up_to_open_the_queue">Přejetím nahoru otevřete frontu</string>

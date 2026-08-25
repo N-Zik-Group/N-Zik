@@ -882,6 +882,8 @@
   <string name="discover_has_been_applied_to_queue">Entdecken wurde auf die Warteschlange angewandt, entfernte Songs: %s</string>
   <string name="player_pause_on_volume_zero">Pausieren bei Lautstärke Null</string>
   <string name="info_pauses_player_when_volume_zero">Die Wiedergabe wird angehalten, wenn die Lautstärke 0 erreicht und bei einem Wert über 0 wieder gestartet</string>
+  <string name="pause_on_headphone_disconnect">Pause on headphone disconnect</string>
+  <string name="pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones disconnect</string>
   <string name="quality">Qualität</string>
   <string name="value_must_be_ip_address">Wert muss eine IP-Adresse sein</string>
   <string name="swipe_up_to_open_the_queue">Zum Öffnen der Warteschlange nach oben wischen</string>

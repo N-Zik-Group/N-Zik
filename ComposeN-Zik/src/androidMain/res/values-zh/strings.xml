@@ -882,6 +882,8 @@
   <string name="discover_has_been_applied_to_queue">发现功能已应用于队列，且已删除歌曲: %s</string>
   <string name="player_pause_on_volume_zero">已静音且暂停</string>
   <string name="info_pauses_player_when_volume_zero">当静音时停止播放，当取消静音时恢复播放</string>
+  <string name="pause_on_headphone_disconnect">Pause on headphone disconnect</string>
+  <string name="pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones disconnect</string>
   <string name="quality">质量</string>
   <string name="value_must_be_ip_address">输入值必须是一个IP地址</string>
   <string name="swipe_up_to_open_the_queue">Swipe up to open the queue</string>

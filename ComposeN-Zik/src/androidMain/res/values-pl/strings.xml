@@ -882,6 +882,8 @@
   <string name="discover_has_been_applied_to_queue">Odkrywanie zostało zastosowane do kolejki, usunięto utwory: %s</string>
   <string name="player_pause_on_volume_zero">Wstrzymaj przy zerowej głośności</string>
   <string name="info_pauses_player_when_volume_zero">Wstrzymaj utwór gdy głośność osiągnie 0 i wznawiaj go, gdy głośność jest większa niż 0</string>
+  <string name="pause_on_headphone_disconnect">Pause on headphone disconnect</string>
+  <string name="pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones disconnect</string>
   <string name="quality">Jakość</string>
   <string name="value_must_be_ip_address">Wartość musi być adresem IP</string>
   <string name="swipe_up_to_open_the_queue">Przesuń w górę, aby otworzyć kolejkę</string>
