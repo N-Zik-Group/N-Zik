@@ -434,6 +434,7 @@
   <string name="sort_songs_number">Number of songs</string>
   <string name="sort_relative_listening_time">상대적 청취 시간</string>
   <string name="sort_play_count">Play Count</string>
+  <string name="sort_downloaded">다운로드됨</string>
   <string name="follow">팔로우</string>
   <string name="following">팔로잉</string>
   <string name="artist_subscribers">%s Subscribers</string>
