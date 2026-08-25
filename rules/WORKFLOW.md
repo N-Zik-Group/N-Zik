@@ -252,7 +252,7 @@ Before implementing, **MUST ask user using question tool:**
 
 ### Step 8: Post-BMAD Actions (MANDATORY)
 
-After the BMAD workflow completes, **MUST follow this exact flow** — NEVER skip any step. Note: Steps 8a-8b may already be covered by the skill's step-04 (review) — verify before re-running.
+After the BMAD workflow completes, **MUST follow this exact flow** — NEVER skip any step:
 
 **Step 8a: Build and Test**
 
