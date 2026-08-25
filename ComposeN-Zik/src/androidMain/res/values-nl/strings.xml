@@ -434,6 +434,7 @@
   <string name="sort_songs_number">Nummers aantal</string>
   <string name="sort_relative_listening_time">Relative Listening Time</string>
   <string name="sort_play_count">Play Count</string>
+  <string name="sort_downloaded">Gedownload</string>
   <string name="follow">Volgen</string>
   <string name="following">Gevolgd</string>
   <string name="artist_subscribers">%s abonnees</string>
