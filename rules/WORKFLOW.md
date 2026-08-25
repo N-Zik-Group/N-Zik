@@ -290,12 +290,11 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
   ```
   Approuvez-vous le commit ?
   1. Oui → commit + push version
-  2. Non → annuler
-  3. Commit sans push
+  2. Oui → commit only (done)
+  3. Non → annuler
   ```
-- If approved → `git commit` with conventional format (`type(scope): description`) — include issue link but avoid keywords that auto-close (e.g., use "issue https://..." not "fixes https://..." or "closes https://...")
-- If "push version" → `git push` and bump version
-- If "commit sans push" → commit only, skip push
+- If "push version" → `git commit` + `git push` + bump version
+- If "commit only" → `git commit` only, no push
 
 **Step 8f: Finish Workflow (always runs)**
 
