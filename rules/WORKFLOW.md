@@ -276,7 +276,7 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
 - After code review completes, **MUST ask user using question tool:**
   ```
   Code review complete. What next ?
-  1. Functional → update Done.txt + git commit
+  1. Functional → proceed to commit
   2. Not functional → re-read and fix
   3. Other → ask user
   ```
@@ -284,7 +284,7 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
 **Step 8d: Commit (only if user says "Functional")**
 
 - Update `assets/notes/Done.txt` using its own template (`Changelog_Template.txt` in same folder) — format: `<keyword>(<scope>): <short summary> (issue ref)` + technical sub-bullets, include full issue link
-- Update `fastlane/metadata/android/en-US/changelogs/{version}.txt` using its own template (`Changelog_Template.txt` in same folder) — **max 500 characters**
+- Update `fastlane/metadata/android/en-US/changelogs/{version}.txt` using its own template (`Changelog_Template.txt` in same folder) — **max 500 characters** (use current version from `build.gradle.kts` or ask user)
 - Update `Updater/changelogs/{version}.txt` using its own template (`Changelog_Template.txt` in same folder) — **no character limit**, include full issue link
 - **MUST ask user for commit approval** (NEVER commit without approval) — ask commit + version bump in ONE prompt, not separately:
   ```
@@ -296,11 +296,11 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
 - If "push version" → `git commit` + `git push` + bump version
 - If "commit only" → `git commit` only, no push
 
-**Step 8f: Finish Workflow (always runs)**
+**Step 8e: Finish Workflow (always runs)**
 
 - Run `on_complete` hook if present
 - Announce: "Workflow complete."
-- **Restart agent**: After announcing completion, start a fresh agent session so the next task begins with clean context. Use the Task tool to launch a new agent, or instruct the user to start a new conversation.
+- **Start a new conversation** — the next task should begin with fresh context. Instruct user: "Tâche terminée. Ouvrez une nouvelle conversation pour la prochaine tâche."
 
 **NEVER skip any of these steps. The BMAD workflow is NOT complete until code is verified, reviewed, and committed (if approved).**
 
