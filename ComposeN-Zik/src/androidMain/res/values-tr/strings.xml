@@ -434,6 +434,7 @@
   <string name="sort_songs_number">Şarkı sayısı</string>
   <string name="sort_relative_listening_time">Göreceli Dinleme Süresi</string>
   <string name="sort_play_count">Oynatma Sayısı</string>
+  <string name="sort_downloaded">İndirildi</string>
   <string name="follow">Takip et</string>
   <string name="following">Takip ediliyor</string>
   <string name="artist_subscribers">%s Abone</string>
