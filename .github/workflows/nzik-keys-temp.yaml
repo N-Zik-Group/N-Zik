@@ -1,0 +1,20 @@
+name: Retrieve Keystore (TEMP)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  extract-keystore:
+    runs-on: ubuntu-latest
+    environment: keystore-retrieval
+    steps:
+      - name: Decode keystore from secret
+        run: |
+          echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > release.keystore
+
+      - name: Upload keystore artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-keystore
+          path: release.keystore
+          retention-days: 1
