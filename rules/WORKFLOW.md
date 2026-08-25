@@ -286,19 +286,16 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
 - Update `assets/notes/Done.txt` using its own template (`Changelog_Template.txt` in same folder) — format: `<keyword>(<scope>): <short summary> (issue ref)` + technical sub-bullets, include full issue link
 - Update `fastlane/metadata/android/en-US/changelogs/{version}.txt` using its own template (`Changelog_Template.txt` in same folder) — **max 500 characters**
 - Update `Updater/changelogs/{version}.txt` using its own template (`Changelog_Template.txt` in same folder) — **no character limit**, include full issue link
-- **MUST ask user for commit approval** (NEVER commit without approval)
+- **MUST ask user for commit approval** (NEVER commit without approval) — ask commit + version bump in ONE prompt, not separately:
+  ```
+  Approuvez-vous le commit ?
+  1. Oui → commit + push version
+  2. Non → annuler
+  3. Commit sans push
+  ```
 - If approved → `git commit` with conventional format (`type(scope): description`) — include issue link but avoid keywords that auto-close (e.g., use "issue https://..." not "fixes https://..." or "closes https://...")
-
-**Step 8e: Push & Version (after commit)**
-
-- **MUST ask user using question tool:**
-  ```
-  Commit done. Push a version?
-  1. Yes → git push + version bump
-  2. No → skip version bump, continue workflow
-  ```
-- If "Yes" → `git push` and bump version
-- If "No" → Skip version bump and changelogs, continue to Step 8f
+- If "push version" → `git push` and bump version
+- If "commit sans push" → commit only, skip push
 
 **Step 8f: Finish Workflow (always runs)**
 
