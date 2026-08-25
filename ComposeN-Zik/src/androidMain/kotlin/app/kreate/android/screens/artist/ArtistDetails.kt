@@ -218,7 +218,7 @@ fun ArtistDetails(
             scope.launch {
                 isGlobalLoading = true
                 try {
-                    val allSongs = fetchAllArtistSongs()
+                    val allSongs = getSongs()
                     if (allSongs.isNotEmpty()) {
                         binder?.let { Shuffler.play(it, allSongs) }
                     } else {
@@ -238,7 +238,7 @@ fun ArtistDetails(
         scope.launch {
             isGlobalLoading = true
             try {
-                val allSongs = fetchAllArtistSongs()
+                val allSongs = getSongs()
                 val mediaItems = allSongs.map(Song::asMediaItem)
                 binder?.player?.addNext(mediaItems, appContext())
                 itemSelector.isActive = false
@@ -251,7 +251,7 @@ fun ArtistDetails(
         scope.launch {
             isGlobalLoading = true
             try {
-                val allSongs = fetchAllArtistSongs()
+                val allSongs = getSongs()
                 val mediaItems = allSongs.map(Song::asMediaItem)
                 binder?.player?.enqueue(mediaItems, appContext())
                 itemSelector.isActive = false

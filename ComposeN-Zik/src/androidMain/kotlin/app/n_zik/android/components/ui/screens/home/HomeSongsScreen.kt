@@ -240,7 +240,7 @@ fun HomeSongsScreen(navController: NavController ) {
                 val unmatched = if (retryMatchMode && retryMatchSongs.isNotEmpty()) {
                     retryMatchSongs
                 } else {
-                    itemsOnDisplayState.filter { (it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L)) && !it.id.startsWith(LOCAL_KEY_PREFIX) }
+                    getSongs().filter { (it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L)) && !it.id.startsWith(LOCAL_KEY_PREFIX) }
                 }
                 totalSongsToMatch = unmatched.size
                 songsMatched = 0
@@ -299,7 +299,7 @@ fun HomeSongsScreen(navController: NavController ) {
                     matchResultsFailed = failedCount
                     matchResultsMerged = mergedCounter.get()
                     val failedOriginalIds = failedEntries.map { it.originalId }.toSet()
-                    val failedSongsList = itemsOnDisplayState.filter { it.id in failedOriginalIds }
+                    val failedSongsList = getSongs().filter { it.id in failedOriginalIds }
                     matchResultsFailedSongs = failedSongsList
                     showMatchResultsDialog = true
                 }

@@ -465,7 +465,7 @@ fun LocalPlaylistSongs(
         val unmatched = if (retryMatchMode && retryMatchSongs.isNotEmpty()) {
             retryMatchSongs
         } else {
-            items.filter { (it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L)) && !it.id.startsWith(LOCAL_KEY_PREFIX) }
+            getSongs().filter { (it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L)) && !it.id.startsWith(LOCAL_KEY_PREFIX) }
         }
         val job = launch(Dispatchers.IO) {
             try {

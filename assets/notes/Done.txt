@@ -70,3 +70,11 @@ YouTube Login Refresh
 StreamResolver Detailed Reason
 - firstYouTubeReason captures first YouTube playability reason (not HTTP errors)
 - Final throw prefers YouTube reason over generic HTTP error for better user messages
+
+fix(multi-select): actions now respect active selection (issue multi-select bugs)
+  - HomeSongsScreen.kt: Match uses `getSongs()` instead of `itemsOnDisplayState` (2 locations)
+  - LocalPlaylistSongs.kt: Match uses `getSongs()` instead of `items`
+  - ArtistDetails.kt: Shuffle/PlayNext/Enqueue use `getSongs()` instead of `fetchAllArtistSongs()` (3 locations)
+  - Queue.kt (component): ShuffleQueue accepts optional `itemSelector` parameter for selection-aware shuffle
+  - Queue.kt (main): passes `itemSelector` to ShuffleQueue
+  - Pattern: `getSongs() = itemSelector.ifEmpty { items }` returns selected items or all items

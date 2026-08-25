@@ -245,7 +245,7 @@ fun Queue(
             playlistName = plistName.value,
             songs = ::getSongs
         )
-        val shuffle = ShuffleQueue( player, lazyListState, coroutineScope )
+        val shuffle = ShuffleQueue( player, lazyListState, coroutineScope, itemSelector )
         val isAutoFillEnabled by rememberPreference(autoLoadSongsInQueueKey, true)
         val isDiscoverClickable = binder.service.nzikRadio.isRadioActive || isAutoFillEnabled
         val discover = Discover( isDiscoverClickable, onDiscoverClick )

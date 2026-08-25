@@ -20,6 +20,8 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.DynamicColor
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Icon
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
+import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.components.tab.ItemSelector
 import app.it.fast4x.rimusic.utils.discoverKey
 import app.it.fast4x.rimusic.utils.queueLoopTypeKey
 import app.it.fast4x.rimusic.utils.rememberPreference
@@ -102,7 +104,8 @@ class Repeat private constructor(
 fun ShuffleQueue(
     player: Player,
     lazyListState: LazyListState,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
+    itemSelector: ItemSelector<Song>? = null
 ): MenuIcon = object: MenuIcon, Descriptive {
     override val iconId: Int = R.drawable.shuffle
     override val messageId: Int = R.string.shuffle
@@ -114,7 +117,29 @@ fun ShuffleQueue(
         coroutineScope.launch {
             lazyListState.smoothScrollToTop()
         }.invokeOnCompletion {
-            player.shuffleQueue()
+            if (itemSelector != null && itemSelector.isNotEmpty()) {
+                val selectedIds = itemSelector.map { it.id }.toSet()
+                val selectedIndices = mutableListOf<Int>()
+                for (i in 0 until player.mediaItemCount) {
+                    val item = player.getMediaItemAt(i)
+                    if (item.mediaId in selectedIds) {
+                        selectedIndices.add(i)
+                    }
+                }
+                selectedIndices.sort()
+                
+                if (selectedIndices.isNotEmpty()) {
+                    val selectedMediaItems = selectedIndices.map { player.getMediaItemAt(it) }
+                    val shuffled = selectedMediaItems.shuffled()
+                    selectedIndices.reversed().forEach { player.removeMediaItem(it) }
+                    val insertAt = selectedIndices.minOrNull() ?: 0
+                    shuffled.forEachIndexed { index, mediaItem ->
+                        player.addMediaItem(insertAt + index, mediaItem)
+                    }
+                }
+            } else {
+                player.shuffleQueue()
+            }
         }
     }
 }
