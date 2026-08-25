@@ -300,6 +300,7 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
 
 - Run `on_complete` hook if present
 - Announce: "Workflow complete."
+- **Restart agent**: After announcing completion, start a fresh agent session so the next task begins with clean context. Use the Task tool to launch a new agent, or instruct the user to start a new conversation.
 
 **NEVER skip any of these steps. The BMAD workflow is NOT complete until code is verified, reviewed, and committed (if approved).**
 
