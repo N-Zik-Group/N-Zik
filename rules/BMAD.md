@@ -8,7 +8,9 @@
 
 ## Installation Location
 
-**`{project-root}`** = the workspace root directory containing `_bmad/` and `.agents/`. This is a literal placeholder — the agent must resolve it at runtime by finding the directory that contains `_bmad/` or `.git/`.
+**`{project-root}`** = the workspace root directory containing `_bmad/` and `.agents/`. This is a literal placeholder — the agent must resolve it at runtime by finding the directory that contains `_bmad/` or `.agents/`.
+
+> **Important for this project:** `_bmad/` and `.agents/` live at the **parent** of `N-Zik/`. If your CWD is `N-Zik/`, go **up one level** to find `{project-root}`. The actual path is `../` relative to `N-Zik/`.
 
 **Skills are NOT in `_bmad/`** — they are in IDE-specific directories at `{project-root}`:
 
@@ -63,6 +65,8 @@ _bmad/
 uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key agent
 uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key workflow
 ```
+
+> **Path tip:** If running from `N-Zik/`, `{project-root}` resolves to the parent directory. Use `..` or resolve the absolute path to `N-Zik-Projet/` before running scripts.
 
 **`{skill-root}`** = `{project-root}/{target_dir}/{skill-name}` where `target_dir` depends on your IDE:
 - **Cursor/Copilot/Codex/OpenCode/Windsurf:** `{project-root}/.agents/skills/{skill-name}`

@@ -73,7 +73,9 @@ NEVER write code or create implementation plans without completing this step.
 
 #### 3b: BMAD Activation Sequence (MANDATORY for every skill)
 
-**`{project-root}`** = the workspace root directory containing `_bmad/` and `.agents/`. Resolve it at runtime by finding the directory that contains `_bmad/` or `.git/`.
+**`{project-root}`** = the workspace root directory containing `_bmad/` and `.agents/`. Resolve it at runtime by finding the directory that contains `_bmad/` or `.agents/`.
+
+> **Important for this project:** `_bmad/` and `.agents/` live at the **parent** of `N-Zik/`. If your CWD is `N-Zik/`, go **up one level** to find `{project-root}`.
 
 **`{skill-root}`** = `{project-root}/{target_dir}/{skill-name}` where `target_dir` depends on your IDE:
 - **Cursor/Copilot/Codex/OpenCode/Windsurf:** `{project-root}/.agents/skills/{skill-name}`
@@ -89,6 +91,8 @@ Example for `bmad-build` with OpenCode: `{project-root}/.agents/skills/bmad-buil
    ```
 
    (or `--key workflow` for workflow skills)
+
+   > **Path tip:** If running from `N-Zik/`, `{project-root}` resolves to the parent directory. Use `..` or resolve the absolute path to `N-Zik-Projet/` before running scripts.
 
 2. If script fails → manually read 3 files in order and merge:
    - `{skill-root}/customize.toml` (defaults)

@@ -44,7 +44,9 @@
 
 ## Skill Discovery
 
-**`{project-root}`** = workspace root containing `_bmad/` and `.agents/`. Find it by looking for `_bmad/` or `.git/` going up from current directory.
+**`{project-root}`** = the directory containing `_bmad/` and `.agents/` folders. This is the **workspace root** (`N-Zik-Projet/`), NOT the `N-Zik/` subdirectory where this AGENTS.md lives. Go **up one level** from `N-Zik/` to find it.
+
+> **OpenCode path resolution:** Scripts are at `{project-root}/_bmad/scripts/`. If you're running from `N-Zik/`, use `../_bmad/scripts/` or resolve to workspace root first.
 
 **Skills location** (depends on your IDE):
 
