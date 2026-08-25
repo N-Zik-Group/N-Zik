@@ -53,8 +53,8 @@
 | IDE                  | Skills Path                                           | How to Load                     |
 | -------------------- | ----------------------------------------------------- | ------------------------------- |
 | OpenCode ⭐           | `{project-root}/.agents/skills/{skill-name}/SKILL.md` | `@skills/{skill-name}`          |
-| Google Antigravity ⭐ | `{project-root}/.agent/skills/{skill-name}/SKILL.md`  | Direct read                     |
 | GitHub Copilot ⭐     | `{project-root}/.agents/skills/{skill-name}/SKILL.md` | `LOAD the FULL {path}/SKILL.md` |
+| Google Antigravity ⭐ | `{project-root}/.agent/skills/{skill-name}/SKILL.md`  | Direct read                     |
 | Claude Code          | `{project-root}/.claude/skills/{skill-name}/SKILL.md` | Direct read                     |
 | Cursor               | `{project-root}/.agents/skills/{skill-name}/SKILL.md` | Direct read                     |
 | Codex                | `{project-root}/.agents/skills/{skill-name}/SKILL.md` | Direct read                     |
