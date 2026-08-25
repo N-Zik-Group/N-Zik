@@ -335,6 +335,15 @@ class PlayerServiceModern : MediaLibraryService(),
 
     private lateinit var notificationActionReceiver: NotificationActionReceiver
 
+    private val audioBecomingNoisyReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY && isPauseOnHeadphoneDisconnectEnabled()) {
+                Timber.tag("PlayerServiceModern").d("Audio becoming noisy: pausing playback per user setting")
+                player.pause()
+            }
+        }
+    }
+
     @kotlin.OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     override fun onCreate() {
         super.onCreate()
@@ -479,7 +488,7 @@ class PlayerServiceModern : MediaLibraryService(),
         player = ExoPlayer.Builder(this)
             .setMediaSourceFactory(createMediaSourceFactory())
             .setRenderersFactory(createRendersFactory())
-            .setHandleAudioBecomingNoisy(isPauseOnHeadphoneDisconnectEnabled())
+            .setHandleAudioBecomingNoisy(false)
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .setAudioAttributes(
                 AudioAttributes.Builder()
@@ -599,6 +608,16 @@ class PlayerServiceModern : MediaLibraryService(),
             filter,
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
+
+        if (isAtLeastAndroid7) {
+            val noisyFilter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
+            ContextCompat.registerReceiver(
+                this,
+                audioBecomingNoisyReceiver,
+                noisyFilter,
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
+        }
 
         // Ensure that song is updated
         coroutineScope.launch {
@@ -749,6 +768,11 @@ class PlayerServiceModern : MediaLibraryService(),
                 unregisterReceiver(notificationActionReceiver)
             } catch (e: Exception){
                 Timber.tag("PlayerServiceModern").e("onDestroy unregisterReceiver notificationActionReceiver "+e.stackTraceToString())
+            }
+            try{
+                unregisterReceiver(audioBecomingNoisyReceiver)
+            } catch (e: Exception){
+                Timber.tag("PlayerServiceModern").e("onDestroy unregisterReceiver audioBecomingNoisyReceiver "+e.stackTraceToString())
             }
             mediaLibrarySessionCallback.release()
             mediaSession.release()

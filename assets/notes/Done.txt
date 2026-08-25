@@ -1,9 +1,10 @@
 feat(playback): add pause on headphone disconnect setting (issue https://github.com/N-Zik-Group/N-Zik/issues/749)
   - New `pauseOnHeadphoneDisconnectKey` preference in Preferences.kt
   - `isPauseOnHeadphoneDisconnectEnabled()` accessor in GlobalVars.kt
-  - `setHandleAudioBecomingNoisy` now reads from preference instead of hardcoded `true`
-  - Toggle added in General Settings with service restart on change
-  - Default OFF — no behavior change for existing users
+  - Custom `audioBecomingNoisyReceiver` in PlayerServiceModern for runtime preference check
+  - ExoPlayer `setHandleAudioBecomingNoisy(false)` — receiver handles it instead
+  - Toggle added in General Settings (instant, no restart needed)
+  - Default ON — pauses on headphone disconnect out of the box
   - Unit tests in PauseOnHeadphoneDisconnectTest.kt (3 tests)
 
 Fixed android-37 SDK issue

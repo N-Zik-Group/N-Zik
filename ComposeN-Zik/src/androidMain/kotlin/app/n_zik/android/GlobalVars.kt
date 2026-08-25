@@ -103,7 +103,7 @@ fun isVideoEnabled() = appContext().preferences.getBoolean(showButtonPlayerVideo
 fun isConnectionMeteredEnabled() = appContext().preferences.getBoolean(isConnectionMeteredEnabledKey, true)
 fun isAutoSyncEnabled() = appContext().preferences.getBoolean(autosyncKey, false)
 fun isHandleAudioFocusEnabled() = appContext().preferences.getBoolean(handleAudioFocusEnabledKey, true)
-fun isPauseOnHeadphoneDisconnectEnabled() = appContext().preferences.getBoolean(pauseOnHeadphoneDisconnectKey, false)
+fun isPauseOnHeadphoneDisconnectEnabled() = appContext().preferences.getBoolean(pauseOnHeadphoneDisconnectKey, true)
 fun isBassBoostEnabled() = appContext().preferences.getBoolean(bassboostEnabledKey, false)
 fun isDebugModeEnabled() = appContext().preferences.getBoolean(logDebugEnabledKey, false)
 

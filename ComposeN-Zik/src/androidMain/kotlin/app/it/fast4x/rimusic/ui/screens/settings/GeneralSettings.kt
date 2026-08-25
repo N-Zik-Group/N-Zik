@@ -175,8 +175,7 @@ fun DefaultGeneralSettings(context: Context) {
     discoverIsEnabled = false
     var isPauseOnVolumeZeroEnabled by rememberPreference(isPauseOnVolumeZeroEnabledKey, false)
     isPauseOnVolumeZeroEnabled = false
-    var pauseOnHeadphoneDisconnect by rememberPreference(pauseOnHeadphoneDisconnectKey, false)
-    pauseOnHeadphoneDisconnect = false
+    var pauseOnHeadphoneDisconnect by rememberPreference(pauseOnHeadphoneDisconnectKey, true)
     var minimumSilenceDuration by rememberPreference(minimumSilenceDurationKey, 2_000_000L)
     minimumSilenceDuration = 2_000_000L
     var loudnessBaseGain by rememberPreference(loudnessBaseGainKey, 5.00f)
@@ -250,7 +249,7 @@ fun GeneralSettings(
     var nowPlayingIndicator by rememberPreference(nowPlayingIndicatorKey, MusicAnimationType.Bubbles)
     var discoverIsEnabled by rememberPreference(discoverKey, false)
     var isPauseOnVolumeZeroEnabled by rememberPreference(isPauseOnVolumeZeroEnabledKey, false)
-    var pauseOnHeadphoneDisconnect by rememberPreference(pauseOnHeadphoneDisconnectKey, false)
+    var pauseOnHeadphoneDisconnect by rememberPreference(pauseOnHeadphoneDisconnectKey, true)
 
     val launchEqualizer by rememberEqualizerLauncher(audioSessionId = { binder?.player?.audioSessionId })
 
@@ -634,11 +633,9 @@ fun GeneralSettings(
                 isChecked = pauseOnHeadphoneDisconnect,
                 onCheckedChange = {
                     pauseOnHeadphoneDisconnect = it
-                    restartService = true
                              },
                              icon = R.drawable.headphones
                          )
-                         RestartPlayerService(restartService, onRestart = { restartService = false })
 
             if (search.inputValue.isBlank() || stringResource(R.string.player_keep_minimized).contains(search.inputValue,true))
                          OtherSwitchSettingEntry(
