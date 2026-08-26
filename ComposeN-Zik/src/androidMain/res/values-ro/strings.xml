@@ -508,6 +508,7 @@
   <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Evită închiderea playerului și curățarea cozii prin glisarea în jos când este minimizat</string>
   <string name="sort_date_liked">Data aprecierii</string>
   <string name="export_playlist">Exportă playlist-ul</string>
+  <string name="export_downloaded_songs">Export downloaded songs</string>
   <string name="lang_afrikaans">Afrikană (Afrikaans)</string>
   <string name="playlist_top">Top Playlisturi</string>
   <string name="my_playlist_top">Topul meu %s</string>
@@ -1487,6 +1488,12 @@
   <string name="notification_play">Redare</string>
   <string name="notification_skip_forward">Sari înainte</string>
   <string name="clean_queue_confirm">Sigur doriți să curățați coada?</string>
+  <string name="clean_queue_confirm_selected">Remove %d songs from queue?</string>
+  <string name="do_you_really_want_to_download_all_count">Download all %d songs?</string>
+  <string name="do_you_really_want_to_download_selected_count">Download %d selected songs?</string>
+  <string name="do_you_really_want_to_delete_download_count">Delete all %d downloads?</string>
+  <string name="do_you_really_want_to_delete_download_selected_count">Delete %d selected downloads?</string>
+  <string name="clear_cache_count">Clear cache for %d songs?</string>
   <string name="no_items_found">Niciun element găsit</string>
   <string name="no_new_releases">Nu există noi lansări pentru artiștii tăi preferați</string>
   <string name="not_selectable">Nu este selectabil</string>
