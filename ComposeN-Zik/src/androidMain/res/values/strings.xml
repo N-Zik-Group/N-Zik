@@ -508,6 +508,7 @@
 <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Avoid closing the player and cleaning the queue by swiping down while it is minimized</string>
 <string name="sort_date_liked">Date Favorited</string>
 <string name="export_playlist">Export playlist</string>
+<string name="export_downloaded_songs">Export downloaded songs</string>
 <string name="lang_afrikaans">Afrikaans (Afrikaans)</string>
 <string name="playlist_top">Top Playlist</string>
 <string name="my_playlist_top">My Top %s</string>
