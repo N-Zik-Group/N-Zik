@@ -508,6 +508,7 @@
   <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Evitar cerrar el reproductor y limpieza de la cola deslizando hacia abajo mientras está minimizado</string>
   <string name="sort_date_liked">Fecha del me gusta</string>
   <string name="export_playlist">Exportar lista de reproducción</string>
+  <string name="export_downloaded_songs">Export downloaded songs</string>
   <string name="lang_afrikaans">Afrikáans</string>
   <string name="playlist_top">Lista de reproducción top</string>
   <string name="my_playlist_top">Mi Top %s</string>
@@ -1487,6 +1488,12 @@
   <string name="notification_play">Jugar</string>
   <string name="notification_skip_forward">Saltar adelante</string>
   <string name="clean_queue_confirm">¿Realmente quieres limpiar la cola?</string>
+  <string name="clean_queue_confirm_selected">Remove %d songs from queue?</string>
+  <string name="do_you_really_want_to_download_all_count">Download all %d songs?</string>
+  <string name="do_you_really_want_to_download_selected_count">Download %d selected songs?</string>
+  <string name="do_you_really_want_to_delete_download_count">Delete all %d downloads?</string>
+  <string name="do_you_really_want_to_delete_download_selected_count">Delete %d selected downloads?</string>
+  <string name="clear_cache_count">Clear cache for %d songs?</string>
   <string name="no_items_found">No hay elementos</string>
   <string name="no_new_releases">No hay nuevas versiones para tus artistas favoritos</string>
   <string name="not_selectable">No seleccionable</string>
