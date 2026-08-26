@@ -508,6 +508,7 @@
   <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Vyhněte se zavírání přehrávače a vyčištění fronty přejetím prstem dolů, když je minimalizovaný</string>
   <string name="sort_date_liked">Datum oblíbení</string>
   <string name="export_playlist">Exportovat playlist</string>
+  <string name="export_downloaded_songs">Export downloaded songs</string>
   <string name="lang_afrikaans">Afrikánština (Afrikaans)</string>
   <string name="playlist_top">Top playlist</string>
   <string name="my_playlist_top">Moje Top %s</string>
@@ -1487,6 +1488,12 @@
   <string name="notification_play">Hrát</string>
   <string name="notification_skip_forward">Přeskočit vpřed</string>
   <string name="clean_queue_confirm">Opravdu chcete vyčistit frontu?</string>
+  <string name="clean_queue_confirm_selected">Remove %d songs from queue?</string>
+  <string name="do_you_really_want_to_download_all_count">Download all %d songs?</string>
+  <string name="do_you_really_want_to_download_selected_count">Download %d selected songs?</string>
+  <string name="do_you_really_want_to_delete_download_count">Delete all %d downloads?</string>
+  <string name="do_you_really_want_to_delete_download_selected_count">Delete %d selected downloads?</string>
+  <string name="clear_cache_count">Clear cache for %d songs?</string>
   <string name="no_items_found">Nebyly nalezeny žádné položky</string>
   <string name="no_new_releases">Neexistují žádné nové verze pro vaše oblíbené umělce</string>
   <string name="not_selectable">Nevybratelné</string>
