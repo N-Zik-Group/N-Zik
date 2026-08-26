@@ -1,3 +1,20 @@
+feat(home): batch export cached/downloaded songs with full metadata from Home toolbar (issue https://github.com/N-Zik-Group/N-Zik/issues/XXX)
+  - Added `batchExport` companion function to `ExportCacheDialog` for batch export with folder picker
+  - Added `showResultToast` parameter to `onExport` to suppress per-song toasts in batch mode
+  - Removed separate `ExportCachedSongsDialog` class — single dialog now handles both single and batch export
+  - `HomeSongsScreen`: batch flow uses confirm dialog → folder picker → `ExportCacheDialog.batchExport` → InProgressDialog
+  - Full metadata parity with single-song export: artwork (JPEG/METADATA_BLOCK_PICTURE for Opus), genre, copyright, composers, description parsing from YouTube
+  - Proper SAF URI handling: `getTreeDocumentId` + `buildDocumentUriUsingTree` for `DocumentsContract.createDocument`
+  - Persistable URI permission taken for folder write access
+
+fix(ui): swap download/delete toolbar button icons (issue https://github.com/N-Zik-Group/N-Zik/issues/587)
+  - `DownloadAllSongsDialog.iconId` changed from `R.drawable.download` to `R.drawable.downloaded`
+  - `DeleteAllDownloadedSongsDialog.iconId` changed from `R.drawable.downloaded` to `R.drawable.download`
+  - `HomeSongsToolbarSettingsDialog` swapped icons for `download_all` and `delete_downloads` ToggleItems
+  - `LocalPlaylistToolbarSettingsDialog` swapped icons for `download_all` and `delete_downloads` ToggleItems
+  - `Dialog.kt` GitHub download button changed from `R.drawable.downloaded` to `R.drawable.download`
+  - Icons now match their actions: download_all shows checkmark (downloaded), delete_downloads shows arrow (not downloaded)
+
 feat(playback): add pause on headphone disconnect setting (issue https://github.com/N-Zik-Group/N-Zik/issues/749)
   - New `pauseOnHeadphoneDisconnectKey` preference in Preferences.kt
   - `isPauseOnHeadphoneDisconnectEnabled()` accessor in GlobalVars.kt
@@ -112,9 +129,12 @@ fix(multiselect): unified dialog titles with item counts
   - SmartTrash: already had count support (no change needed)
   - New string resources: clean_queue_confirm_selected, *_count variants
 
-feat(home-songs): export downloaded songs toolbar button
-  - New "export_downloaded" button ID in HomeSongsToolbarSettingsDialog
-  - Only available in Downloaded tab (not All, Favorites, Offline, Top, OnDevice)
-  - Reuses ExportSongsToCSVDialog with getSongs() (already filters by tab)
-  - ToggleItem registered with export_outline icon
-  - String resource: export_downloaded_songs
+feat(home-songs): export cached/downloaded songs as audio files via FFmpeg
+  - New ExportCachedSongsDialog: batch exports cached/downloaded songs to .m4a/.ogg with metadata (title, artist, album, date, track, copyright)
+  - Uses OpenDocumentTree folder picker for batch destination
+  - FFmpeg transmux with metadata tagging (reuses ExportCacheDialog logic)
+  - Skips non-cached/non-downloaded songs automatically
+  - Fixed duplicate export bug: removed redundant "export_downloaded" (was same as export_dialog CSV)
+  - Button available on both Cached (Offline) and Downloaded tabs
+  - Toolbar settings updated: export_cache replaces export_downloaded in allButtonIds and tabAvailableIds
+  - New string: do_you_really_want_to_export_cached_count

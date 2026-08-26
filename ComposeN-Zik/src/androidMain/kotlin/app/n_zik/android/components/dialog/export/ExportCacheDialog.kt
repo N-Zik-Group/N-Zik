@@ -64,7 +64,8 @@ class ExportCacheDialog(
             uri: Uri,
             binder: PlayerServiceModern.Binder ,
             song: Song,
-            isExporting: MutableState<Boolean>
+            isExporting: MutableState<Boolean>,
+            showResultToast: Boolean = true
         ) = CoroutineScope( Dispatchers.IO ).launch {
             kotlinx.coroutines.withContext(Dispatchers.Main) { isExporting.value = true }
             try {
@@ -246,14 +247,14 @@ class ExportCacheDialog(
                         kotlinx.coroutines.withContext(Dispatchers.Main) {
                             Timber.tag("ExportCache").i("Toaster.done() called")
                             isExporting.value = false
-                            Toaster.done()
+                            if (showResultToast) Toaster.done()
                         }
                     } else {
                         val logs = session.allLogsAsString
                         Timber.tag("ExportCache").e("FFmpeg failed with return code $returnCode. Logs: $logs")
                         kotlinx.coroutines.withContext(Dispatchers.Main) {
                             isExporting.value = false
-                            Toaster.e(R.string.export_failed, "FFmpeg error: $returnCode")
+                            if (showResultToast) Toaster.e(R.string.export_failed, "FFmpeg error: $returnCode")
                         }
                         try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (_: Exception) {}
                     }
@@ -262,7 +263,7 @@ class ExportCacheDialog(
                     Timber.tag("ExportCache").e(e, "Export overall error")
                     kotlinx.coroutines.withContext(Dispatchers.Main) {
                         isExporting.value = false
-                        Toaster.e(R.string.export_failed, e.message)
+                        if (showResultToast) Toaster.e(R.string.export_failed, e.message)
                     }
                     try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (_: Exception) {}
                 } finally {
@@ -275,7 +276,7 @@ class ExportCacheDialog(
                 Timber.tag("ExportCache").e(e, "Export init error")
                 kotlinx.coroutines.withContext(Dispatchers.Main) {
                     isExporting.value = false
-                    Toaster.e(R.string.export_error, e.message)
+                    if (showResultToast) Toaster.e(R.string.export_error, e.message)
                 }
                 try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (_: Exception) {}
             }
@@ -320,6 +321,88 @@ class ExportCacheDialog(
                 isExporting,
                 fileExtension
             )
+        }
+
+        @UnstableApi
+        fun batchExport(
+            folderUri: Uri,
+            songs: List<Song>,
+            binder: PlayerServiceModern.Binder,
+            onProgress: (current: Int, total: Int, songTitle: String) -> Unit,
+            onComplete: (successCount: Int, failCount: Int) -> Unit
+        ) = CoroutineScope(Dispatchers.IO).launch {
+            val cr = appContext().contentResolver
+            var successCount = 0
+            var failCount = 0
+
+            try {
+                val takeFlags = android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                        android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                cr.takePersistableUriPermission(folderUri, takeFlags)
+            } catch (e: Exception) {
+                Timber.tag("ExportCache").w(e, "batchExport: Failed to take persistable URI permission")
+            }
+
+            val treeDocId = DocumentsContract.getTreeDocumentId(folderUri)
+            val parentUri = DocumentsContract.buildDocumentUriUsingTree(folderUri, treeDocId)
+
+            songs.forEachIndexed { index, song ->
+                kotlinx.coroutines.withContext(Dispatchers.Main) {
+                    onProgress(index + 1, songs.size, song.title)
+                }
+                Timber.tag("ExportCache").i("batchExport: [${index + 1}/${songs.size}] ${song.title}")
+                try {
+                    val format = Database.formatTable.findBySongId(song.id).first()
+                    val contentLength = format?.contentLength ?: 0L
+                    val isOpus = format?.mimeType?.contains("webm", ignoreCase = true) == true ||
+                            format?.mimeType?.contains("ogg", ignoreCase = true) == true ||
+                            format?.mimeType?.contains("opus", ignoreCase = true) == true
+                    val isCached = binder.cache.isCached(song.id, 0, contentLength)
+                    val isDownloaded = binder.downloadCache.isCached(song.id, 0, contentLength)
+                    if (!isCached && !isDownloaded) {
+                        Timber.tag("ExportCache").w("batchExport: Song not cached/downloaded: ${song.id}")
+                        failCount++
+                        return@forEachIndexed
+                    }
+                    var actualIsOpus = isOpus
+                    if (!isOpus) {
+                        val cacheDir = appContext().cacheDir
+                        val probeFile = File(cacheDir, "temp_probe_${song.id}_${System.currentTimeMillis()}.m4a")
+                        try {
+                            val spans = binder.cache.getCachedSpans(song.id)
+                            probeFile.outputStream().use { out ->
+                                spans.mapNotNull(CacheSpan::file).forEach { fileSpan ->
+                                    fileSpan.inputStream().use { it.copyTo(out) }
+                                }
+                            }
+                            val probeSession = FFprobeKit.getMediaInformation(probeFile.absolutePath)
+                            val codec = probeSession.mediaInformation?.streams?.firstOrNull()?.codec
+                            if (codec?.contains("opus", ignoreCase = true) == true) {
+                                actualIsOpus = true
+                            }
+                        } catch (_: Exception) {}
+                        finally { probeFile.delete() }
+                    }
+                    val ext = if (actualIsOpus) "ogg" else "m4a"
+                    val mimeType = if (actualIsOpus) "audio/ogg" else "audio/mp4"
+                    val fileName = "${song.title} - ${song.cleanArtistsText()}.$ext"
+                        .replace(Regex("[\\\\/:*?\"<>|]"), "_")
+                    val docUri = DocumentsContract.createDocument(cr, parentUri, mimeType, fileName)
+                    if (docUri == null) {
+                        Timber.tag("ExportCache").e("batchExport: Failed to create doc for ${song.title}")
+                        failCount++
+                        return@forEachIndexed
+                    }
+                    onExport(docUri, binder, song, mutableStateOf(false), showResultToast = false).join()
+                    successCount++
+                } catch (e: Exception) {
+                    Timber.tag("ExportCache").e(e, "batchExport: Failed ${song.title}")
+                    failCount++
+                }
+            }
+            kotlinx.coroutines.withContext(Dispatchers.Main) {
+                onComplete(successCount, failCount)
+            }
         }
 
         private data class ParsedMetadata(

@@ -35,10 +35,12 @@ import org.json.JSONArray
 import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceSong
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
+import app.n_zik.android.BuildConfig
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.tab.*
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
+import app.n_zik.android.components.dialog.export.ExportCacheDialog
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.typography
 import app.n_zik.android.utils.getAlbumVersionFromVideoGlobal
@@ -49,6 +51,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import app.it.fast4x.rimusic.ui.components.themed.InProgressDialog
+import app.it.fast4x.rimusic.ui.components.themed.ConfirmationDialog
 import app.n_zik.android.components.dialog.search.MatchResultsDialog
 import app.n_zik.android.components.dialog.media.YouTubeLinkImportDialog
 import app.n_zik.android.components.tab.ImportPlaylistsMenu
@@ -71,6 +74,10 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.utils.homeSongsTopToolbarOrderKey
 import app.it.fast4x.rimusic.utils.homeSongsOfflineToolbarOrderKey
 import java.util.concurrent.atomic.AtomicInteger
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 
 @RequiresApi(Build.VERSION_CODES.O)
 @UnstableApi
@@ -136,6 +143,46 @@ fun HomeSongsScreen(navController: NavController ) {
         playlistName = builtInPlaylist.name,
         songs = ::getSongs
     )
+
+    var showExportCacheConfirmDialog by remember { mutableStateOf(false) }
+    var isExportingCache by remember { mutableStateOf(false) }
+    var exportCacheProgress by remember { mutableIntStateOf(0) }
+    var exportCacheTotal by remember { mutableIntStateOf(0) }
+
+    val exportCacheFolderLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { folderUri: Uri? ->
+        folderUri ?: return@rememberLauncherForActivityResult
+        val currentBinder = binder ?: return@rememberLauncherForActivityResult
+        val songs = getSongs()
+        if (songs.isEmpty()) return@rememberLauncherForActivityResult
+
+        try {
+            val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            appContext().contentResolver.takePersistableUriPermission(folderUri, takeFlags)
+        } catch (e: Exception) {
+            Timber.tag("HomeSongsScreen").w(e, "Failed to take persistable URI permission")
+        }
+
+        isExportingCache = true
+        exportCacheTotal = songs.size
+        exportCacheProgress = 0
+
+        ExportCacheDialog.batchExport(
+            folderUri = folderUri,
+            songs = songs,
+            binder = currentBinder,
+            onProgress = { current, _, _ ->
+                exportCacheProgress = current
+            },
+            onComplete = { successCount, failCount ->
+                isExportingCache = false
+                if (successCount > 0) Toaster.done()
+                else Toaster.e(R.string.export_failed, "No songs exported")
+            }
+        )
+    }
     val coroutineScope = rememberCoroutineScope()
 
     var showYouTubeLinkDialog by remember { mutableStateOf(false) }
@@ -427,7 +474,18 @@ fun HomeSongsScreen(navController: NavController ) {
                 "add_to_playlist" -> add( addToPlaylist )
                 "import_menu" -> if (builtInPlaylist == BuiltInPlaylist.All || builtInPlaylist == BuiltInPlaylist.Favorites) add( importMenu )
                 "export_dialog" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( exportDialog )
-                "export_downloaded" -> if (builtInPlaylist == BuiltInPlaylist.Downloaded) add( exportDialog )
+                "export_cache" -> if (BuildConfig.ENABLE_FFMPEG && (builtInPlaylist == BuiltInPlaylist.Offline || builtInPlaylist == BuiltInPlaylist.Downloaded)) add(
+                    object : MenuIcon, Descriptive {
+                        override val iconId: Int = R.drawable.export_outline
+                        override val messageId: Int = R.string.export_cached
+                        @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
+                        override fun onShortClick() {
+                            val count = getSongs().size
+                            if (count > 0) showExportCacheConfirmDialog = true
+                        }
+                        override fun onLongClick() {}
+                    }
+                )
                 "smart_trash" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( smartTrash )
                 "match" -> if ( hasUnmatchedSongs && builtInPlaylist != BuiltInPlaylist.OnDevice ) add( localMatchButton )
             }
@@ -484,6 +542,27 @@ fun HomeSongsScreen(navController: NavController ) {
 
                     importMenu.Render()
                     exportDialog.Render()
+
+                    if (showExportCacheConfirmDialog) {
+                        val count = getSongs().size
+                        ConfirmationDialog(
+                            text = stringResource(R.string.do_you_really_want_to_export_cached_count, count),
+                            onDismiss = { showExportCacheConfirmDialog = false },
+                            onConfirm = {
+                                showExportCacheConfirmDialog = false
+                                exportCacheFolderLauncher.launch(null)
+                            }
+                        )
+                    }
+                    if (isExportingCache) {
+                        InProgressDialog(
+                            total = exportCacheTotal,
+                            done = exportCacheProgress,
+                            text = stringResource(R.string.exporting),
+                            onDismiss = null
+                        )
+                    }
+
                     downloadAllDialog.Render()
                     deleteDownloadsDialog.Render()
                     smartTrash.Render()
