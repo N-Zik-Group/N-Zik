@@ -78,6 +78,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import app.n_zik.android.enums.lyrics.LyricsType
 
 @RequiresApi(Build.VERSION_CODES.O)
 @UnstableApi
@@ -145,6 +146,8 @@ fun HomeSongsScreen(navController: NavController ) {
     )
 
     var showExportCacheConfirmDialog by remember { mutableStateOf(false) }
+    var showExportCacheLyricsDialog by remember { mutableStateOf(false) }
+    var exportCacheLyricsType by remember { mutableStateOf<String?>(null) }
     var isExportingCache by remember { mutableStateOf(false) }
     var exportCacheProgress by remember { mutableIntStateOf(0) }
     var exportCacheTotal by remember { mutableIntStateOf(0) }
@@ -173,6 +176,7 @@ fun HomeSongsScreen(navController: NavController ) {
             folderUri = folderUri,
             songs = songs,
             binder = currentBinder,
+            lyricsType = exportCacheLyricsType,
             onProgress = { current, _, _ ->
                 exportCacheProgress = current
             },
@@ -550,8 +554,28 @@ fun HomeSongsScreen(navController: NavController ) {
                             onDismiss = { showExportCacheConfirmDialog = false },
                             onConfirm = {
                                 showExportCacheConfirmDialog = false
-                                exportCacheFolderLauncher.launch(null)
+                                showExportCacheLyricsDialog = true
                             }
+                        )
+                    }
+                    if (showExportCacheLyricsDialog) {
+                        val lyricsOptions = listOf(
+                            null to stringResource(R.string.no_lyrics),
+                            LyricsType.Synced.name to stringResource(R.string.lyrics_synced),
+                            LyricsType.Unsynced.name to stringResource(R.string.lyrics_unsynced),
+                            LyricsType.Karaoke.name to stringResource(R.string.lyrics_karaoke)
+                        )
+                        var selectedLyricsType by remember { mutableStateOf(exportCacheLyricsType) }
+                        ValueSelectorDialog(
+                            onDismiss = { showExportCacheLyricsDialog = false },
+                            title = stringResource(R.string.export_lyrics_choice),
+                            selectedValue = selectedLyricsType,
+                            values = lyricsOptions.map { it.first },
+                            onValueSelected = { type ->
+                                exportCacheLyricsType = type
+                                exportCacheFolderLauncher.launch(null)
+                            },
+                            valueText = { type -> lyricsOptions.find { it.first == type }?.second ?: "" }
                         )
                     }
                     if (isExportingCache) {

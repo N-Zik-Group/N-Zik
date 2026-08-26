@@ -2,10 +2,13 @@ feat(home): batch export cached/downloaded songs with full metadata from Home to
   - Added `batchExport` companion function to `ExportCacheDialog` for batch export with folder picker
   - Added `showResultToast` parameter to `onExport` to suppress per-song toasts in batch mode
   - Removed separate `ExportCachedSongsDialog` class — single dialog now handles both single and batch export
-  - `HomeSongsScreen`: batch flow uses confirm dialog → folder picker → `ExportCacheDialog.batchExport` → InProgressDialog
+  - `HomeSongsScreen`: batch flow uses confirm dialog → ValueSelectorDialog (lyrics type) → folder picker → `ExportCacheDialog.batchExport` → InProgressDialog
   - Full metadata parity with single-song export: artwork (JPEG/METADATA_BLOCK_PICTURE for Opus), genre, copyright, composers, description parsing from YouTube
   - Proper SAF URI handling: `getTreeDocumentId` + `buildDocumentUriUsingTree` for `DocumentsContract.createDocument`
   - Persistable URI permission taken for folder write access
+  - Lyrics export as separate `.lrc` files: Synced (LRC), Karaoke (extended LRC), Unsynced (plain text)
+  - `application/octet-stream` MIME type for .lrc to avoid system appending `.txt` extension
+  - Fixed `export_cache` button visible in all toolbar settings tabs (now only Offline/Downloaded)
 
 fix(ui): swap download/delete toolbar button icons (issue https://github.com/N-Zik-Group/N-Zik/issues/587)
   - `DownloadAllSongsDialog.iconId` changed from `R.drawable.download` to `R.drawable.downloaded`

@@ -1,6 +1,7 @@
 package app.n_zik.android.components.dialog.export
 
 import app.n_zik.android.core.database.*
+import app.n_zik.android.enums.lyrics.LyricsType
 
 import android.net.Uri
 import android.provider.DocumentsContract
@@ -328,6 +329,7 @@ class ExportCacheDialog(
             folderUri: Uri,
             songs: List<Song>,
             binder: PlayerServiceModern.Binder,
+            lyricsType: String? = null,
             onProgress: (current: Int, total: Int, songTitle: String) -> Unit,
             onComplete: (successCount: Int, failCount: Int) -> Unit
         ) = CoroutineScope(Dispatchers.IO).launch {
@@ -385,8 +387,9 @@ class ExportCacheDialog(
                     }
                     val ext = if (actualIsOpus) "ogg" else "m4a"
                     val mimeType = if (actualIsOpus) "audio/ogg" else "audio/mp4"
-                    val fileName = "${song.title} - ${song.cleanArtistsText()}.$ext"
+                    val baseName = "${song.title} - ${song.cleanArtistsText()}"
                         .replace(Regex("[\\\\/:*?\"<>|]"), "_")
+                    val fileName = "$baseName.$ext"
                     val docUri = DocumentsContract.createDocument(cr, parentUri, mimeType, fileName)
                     if (docUri == null) {
                         Timber.tag("ExportCache").e("batchExport: Failed to create doc for ${song.title}")
@@ -394,6 +397,31 @@ class ExportCacheDialog(
                         return@forEachIndexed
                     }
                     onExport(docUri, binder, song, mutableStateOf(false), showResultToast = false).join()
+
+                    if (lyricsType != null) {
+                        try {
+                            val allLyrics = Database.lyricsTable.findAllBySongId(song.id).first()
+                            val lyrics = allLyrics.find { it.type == lyricsType }
+                            if (lyrics?.data != null) {
+                                val lrcData = if (lyricsType == LyricsType.Unsynced.name) {
+                                    lyrics.data!!
+                                } else {
+                                    lyrics.data!!
+                                }
+                                val lrcName = "$baseName.lrc"
+                                val lrcUri = DocumentsContract.createDocument(cr, parentUri, "application/octet-stream", lrcName)
+                                if (lrcUri != null) {
+                                    cr.openOutputStream(lrcUri)?.use { out ->
+                                        out.write(lrcData.toByteArray(Charsets.UTF_8))
+                                    }
+                                    Timber.tag("ExportCache").i("batchExport: Wrote .lrc for ${song.title}")
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Timber.tag("ExportCache").w(e, "batchExport: Failed to write .lrc for ${song.title}")
+                        }
+                    }
+
                     successCount++
                 } catch (e: Exception) {
                     Timber.tag("ExportCache").e(e, "batchExport: Failed ${song.title}")

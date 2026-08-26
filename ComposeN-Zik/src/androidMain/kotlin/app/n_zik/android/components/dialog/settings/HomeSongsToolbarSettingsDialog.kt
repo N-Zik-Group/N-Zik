@@ -30,16 +30,16 @@ object HomeSongsToolbarSettingsDialog : Dialog {
         "download_all", "delete_downloads",
         "shuffle", "smart_shuffle", "item_selector",
         "play_next", "enqueue", "add_to_favorite", "add_to_playlist",
-        "import_menu", "export_dialog", "export_downloaded", "smart_trash"
+        "import_menu", "export_dialog", "export_cache", "smart_trash"
     )
 
     val tabAvailableIds = mapOf(
-        BuiltInPlaylist.All to allButtonIds,
-        BuiltInPlaylist.Favorites to allButtonIds,
-        BuiltInPlaylist.Offline to allButtonIds.filter { it != "import_menu" && it != "export_downloaded" },
+        BuiltInPlaylist.All to allButtonIds.filter { it != "export_cache" },
+        BuiltInPlaylist.Favorites to allButtonIds.filter { it != "export_cache" },
+        BuiltInPlaylist.Offline to allButtonIds.filter { it != "import_menu" },
         BuiltInPlaylist.Downloaded to allButtonIds.filter { it != "import_menu" },
-        BuiltInPlaylist.Top to allButtonIds.filter { it != "import_menu" && it != "position_lock" && it != "export_downloaded" },
-        BuiltInPlaylist.OnDevice to allButtonIds.filter { it !in setOf("import_menu", "export_dialog", "export_downloaded", "smart_trash", "match") }
+        BuiltInPlaylist.Top to allButtonIds.filter { it != "import_menu" && it != "position_lock" && it != "export_cache" },
+        BuiltInPlaylist.OnDevice to allButtonIds.filter { it !in setOf("import_menu", "export_dialog", "export_cache", "smart_trash", "match") }
     )
 
     private val lockedIds = setOf("sort", "position_lock", "match")
@@ -131,7 +131,7 @@ object HomeSongsToolbarSettingsDialog : Dialog {
         val addToPlaylistLabel = stringResource(R.string.add_to_playlist)
         val importMenuLabel = stringResource(R.string.import_playlist)
         val exportDialogLabel = stringResource(R.string.export_playlist)
-        val exportDownloadedLabel = stringResource(R.string.export_downloaded_songs)
+        val exportCacheLabel = stringResource(R.string.export_cached)
         val smartTrashLabel = stringResource(R.string.smart_trash)
         val matchLabel = stringResource(R.string.match_album_audio_version)
 
@@ -159,8 +159,8 @@ object HomeSongsToolbarSettingsDialog : Dialog {
                 "match" -> ToggleItem(uid, R.drawable.alert, matchLabel, pk, true)
                 "search" -> ToggleItem(uid, R.drawable.search_circle, searchLabel, pk, true)
                 "locator" -> ToggleItem(uid, R.drawable.locate, locatorLabel, pk, true)
-                "download_all" -> ToggleItem(uid, R.drawable.download, downloadAllLabel, pk, true)
-                "delete_downloads" -> ToggleItem(uid, R.drawable.downloaded, deleteDownloadsLabel, pk, true)
+                "download_all" -> ToggleItem(uid, R.drawable.downloaded, downloadAllLabel, pk, true)
+                "delete_downloads" -> ToggleItem(uid, R.drawable.download, deleteDownloadsLabel, pk, true)
                 "shuffle" -> ToggleItem(uid, R.drawable.shuffle, shuffleLabel, pk, true)
                 "smart_shuffle" -> ToggleItem(uid, R.drawable.smart_shuffle, smartShuffleLabel, pk, true)
                 "item_selector" -> ToggleItem(uid, R.drawable.checked_filled, itemSelectorLabel, pk, true)
@@ -170,7 +170,7 @@ object HomeSongsToolbarSettingsDialog : Dialog {
                 "add_to_playlist" -> ToggleItem(uid, R.drawable.add_in_playlist, addToPlaylistLabel, pk, true)
                 "import_menu" -> ToggleItem(uid, R.drawable.import_outline, importMenuLabel, pk, true)
                 "export_dialog" -> ToggleItem(uid, R.drawable.export_outline, exportDialogLabel, pk, true)
-                "export_downloaded" -> ToggleItem(uid, R.drawable.export_outline, exportDownloadedLabel, pk, true)
+                "export_cache" -> ToggleItem(uid, R.drawable.export_outline, exportCacheLabel, pk, true)
                 "smart_trash" -> ToggleItem(uid, R.drawable.trash, smartTrashLabel, pk, true)
                 else -> null
             }
