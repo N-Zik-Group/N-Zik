@@ -508,6 +508,7 @@
   <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Avoid closing the player and cleaning the queue by swiping down while it is minimized</string>
   <string name="sort_date_liked">Date Liked</string>
   <string name="export_playlist">Export playlist</string>
+  <string name="export_downloaded_songs">Export downloaded songs</string>
   <string name="lang_afrikaans">Afrikaans</string>
   <string name="playlist_top">Playlist Top</string>
   <string name="my_playlist_top">My Top</string>
@@ -1487,6 +1488,12 @@
   <string name="notification_play">تشغيل</string>
   <string name="notification_skip_forward">تخطي للأمام</string>
   <string name="clean_queue_confirm">هل تريد حقاً تنظيف قائمة الانتظار؟</string>
+  <string name="clean_queue_confirm_selected">Remove %d songs from queue?</string>
+  <string name="do_you_really_want_to_download_all_count">Download all %d songs?</string>
+  <string name="do_you_really_want_to_download_selected_count">Download %d selected songs?</string>
+  <string name="do_you_really_want_to_delete_download_count">Delete all %d downloads?</string>
+  <string name="do_you_really_want_to_delete_download_selected_count">Delete %d selected downloads?</string>
+  <string name="clear_cache_count">Clear cache for %d songs?</string>
   <string name="no_items_found">لم يتم العثور على عناصر</string>
   <string name="no_new_releases">لا توجد إصدارات جديدة للفنانين المفضلين لديك</string>
   <string name="not_selectable">غير قابل للتحديد</string>
