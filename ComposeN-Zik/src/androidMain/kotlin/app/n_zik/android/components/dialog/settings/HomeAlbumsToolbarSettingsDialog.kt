@@ -26,7 +26,8 @@ import android.content.Context
 object HomeAlbumsToolbarSettingsDialog : Dialog {
 
     val allButtonIds = listOf(
-        "sort", "position_lock", "sync", "search", "randomizer", "shuffle", "item_selector", "play_next", "enqueue", "add_to_playlist", "export_dialog", "item_size"
+        "sort", "position_lock", "search", "sync", "randomizer", "shuffle", "item_selector",
+        "play_next", "enqueue", "add_to_playlist", "export_dialog", "item_size"
     )
 
     private val lockedIds = setOf("sort", "sync", "position_lock")
@@ -92,8 +93,8 @@ object HomeAlbumsToolbarSettingsDialog : Dialog {
 
         val sortLabel = stringResource(R.string.sorting_order)
         val positionLockLabel = stringResource(R.string.info_lock_unlock_reorder_songs)
-        val syncLabel = stringResource(R.string.autosync_albums)
         val searchLabel = stringResource(R.string.search)
+        val syncLabel = stringResource(R.string.autosync_albums)
         val randomizerLabel = stringResource(R.string.randomizer)
         val shuffleLabel = stringResource(R.string.info_shuffle)
         val itemSelectorLabel = stringResource(R.string.item_select)
@@ -123,15 +124,15 @@ object HomeAlbumsToolbarSettingsDialog : Dialog {
             when (id) {
                 "sort" -> ToggleItem(uid, R.drawable.arrow_up, sortLabel, pk, true)
                 "position_lock" -> ToggleItem(uid, R.drawable.locked, positionLockLabel, pk, true)
-                "sync" -> ToggleItem(uid, R.drawable.sync, syncLabel, pk, true)
                 "search" -> ToggleItem(uid, R.drawable.search_circle, searchLabel, pk, true)
+                "sync" -> ToggleItem(uid, R.drawable.sync, syncLabel, pk, true)
                 "randomizer" -> ToggleItem(uid, R.drawable.dice, randomizerLabel, pk, true)
                 "shuffle" -> ToggleItem(uid, R.drawable.shuffle, shuffleLabel, pk, true)
                 "item_selector" -> ToggleItem(uid, R.drawable.checked_filled, itemSelectorLabel, pk, true)
                 "play_next" -> ToggleItem(uid, R.drawable.play_skip_forward, playNextLabel, pk, true)
                 "enqueue" -> ToggleItem(uid, R.drawable.enqueue, enqueueLabel, pk, true)
                 "add_to_playlist" -> ToggleItem(uid, R.drawable.add_in_playlist, addToPlaylistLabel, pk, true)
-                "export_dialog" -> ToggleItem(uid, R.drawable.share, exportDialogLabel, pk, true)
+                "export_dialog" -> ToggleItem(uid, R.drawable.export_outline, exportDialogLabel, pk, true)
                 "item_size" -> ToggleItem(uid, R.drawable.resize, itemSizeLabel, pk, true)
                 else -> null
             }
