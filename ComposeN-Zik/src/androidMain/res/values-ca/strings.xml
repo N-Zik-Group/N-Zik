@@ -508,6 +508,7 @@
   <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Eviteu tancar el reproductor i netejar la cua fent lliscar cap avall mentre estigui minimitzat</string>
   <string name="sort_date_liked">Data de quan et va agradar</string>
   <string name="export_playlist">Exporta la llista de reproducció</string>
+  <string name="export_downloaded_songs">Export downloaded songs</string>
   <string name="lang_afrikaans">Afrikaans</string>
   <string name="playlist_top">Llista de reproducció del Top</string>
   <string name="my_playlist_top">El meu Top %s</string>
@@ -1487,6 +1488,12 @@
   <string name="notification_play">Play</string>
   <string name="notification_skip_forward">Skip forward</string>
   <string name="clean_queue_confirm">Do you really want to clean queue?</string>
+  <string name="clean_queue_confirm_selected">Remove %d songs from queue?</string>
+  <string name="do_you_really_want_to_download_all_count">Download all %d songs?</string>
+  <string name="do_you_really_want_to_download_selected_count">Download %d selected songs?</string>
+  <string name="do_you_really_want_to_delete_download_count">Delete all %d downloads?</string>
+  <string name="do_you_really_want_to_delete_download_selected_count">Delete %d selected downloads?</string>
+  <string name="clear_cache_count">Clear cache for %d songs?</string>
   <string name="no_items_found">No items found</string>
   <string name="no_new_releases">There are no new releases for your favorite artists</string>
   <string name="not_selectable">Not selectable</string>
