@@ -2,6 +2,14 @@ package app.n_zik.android.components.dialog.export
 
 import app.n_zik.android.core.database.*
 import app.n_zik.android.enums.lyrics.LyricsType
+import app.n_zik.android.models.Lyrics
+import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
+import com.metrolist.music.betterlyrics.BetterLyrics
+import it.fast4x.lrclib.LrcLib
+import it.fast4x.kugou.KuGou
+import it.fast4x.innertube.requests.lyrics
+import it.fast4x.innertube.models.bodies.NextBody
+import kotlin.time.Duration.Companion.milliseconds
 
 import android.net.Uri
 import android.provider.DocumentsContract
@@ -53,11 +61,12 @@ import android.util.Base64
 class ExportCacheDialog(
     activeState: MutableState<Boolean>,
     valueState: MutableState<TextFieldValue>,
-    launcher: ManagedActivityResultLauncher<String, Uri?>,
+    private val createLauncher: ManagedActivityResultLauncher<String, Uri?>,
     private val getSong: () -> Song,
     val isExporting: MutableState<Boolean> = mutableStateOf(false),
-    override val extension: String = "m4a"
-) : ExportToFileDialog(valueState, activeState, launcher), MenuIcon, Descriptive {
+    override val extension: String = "m4a",
+    val lyricsType: MutableState<String?> = mutableStateOf(null)
+) : ExportToFileDialog(valueState, activeState, createLauncher), MenuIcon, Descriptive {
 
     companion object {
         @UnstableApi
@@ -303,6 +312,8 @@ class ExportCacheDialog(
             val mimeType = if (isOpus) "audio/ogg" else "audio/mp4"
             val fileExtension = if (isOpus) "opus" else "m4a"
 
+            val lyricsTypeState = remember { mutableStateOf<String?>(null) }
+
             return ExportCacheDialog(
                 remember { mutableStateOf(false) },
                 remember( song.title ) {
@@ -311,16 +322,46 @@ class ExportCacheDialog(
                 rememberLauncherForActivityResult(
                     ActivityResultContracts.CreateDocument( mimeType )
                 ) { uri ->
-                    // [uri] must be non-null (meaning path exists) in or
                     uri ?: return@rememberLauncherForActivityResult
-                    // Same thing with binder
                     binder ?: return@rememberLauncherForActivityResult
 
-                    onExport( uri, binder, getSong(), isExporting )
+                    val currentSong = getSong()
+                    onExport( uri, binder, currentSong, isExporting )
+
+                    val selectedType = lyricsTypeState.value
+                    if (selectedType != null) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                val lrcData = getLyricsText(currentSong, selectedType)
+                                if (lrcData != null) {
+                                    val docId = DocumentsContract.getDocumentId(uri)
+                                    val lastSep = docId.lastIndexOf('/')
+                                    if (lastSep > 0) {
+                                        val parentDocId = docId.substring(0, lastSep)
+                                        val parentUri = DocumentsContract.buildDocumentUri(uri.authority, parentDocId)
+                                        val baseName = "${currentSong.title} - ${currentSong.cleanArtistsText()}"
+                                            .replace(Regex("[\\\\/:*?\"<>|]"), "_")
+                                        val lrcUri = DocumentsContract.createDocument(
+                                            appContext().contentResolver, parentUri,
+                                            "application/octet-stream", "$baseName.lrc"
+                                        )
+                                        if (lrcUri != null) {
+                                            appContext().contentResolver.openOutputStream(lrcUri)?.use { out ->
+                                                out.write(lrcData.toByteArray(Charsets.UTF_8))
+                                            }
+                                        }
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                Timber.tag("ExportCache").w(e, "Failed to write .lrc for single export")
+                            }
+                        }
+                    }
                 },
                 getSong,
                 isExporting,
-                fileExtension
+                fileExtension,
+                lyricsTypeState
             )
         }
 
@@ -400,14 +441,8 @@ class ExportCacheDialog(
 
                     if (lyricsType != null) {
                         try {
-                            val allLyrics = Database.lyricsTable.findAllBySongId(song.id).first()
-                            val lyrics = allLyrics.find { it.type == lyricsType }
-                            if (lyrics?.data != null) {
-                                val lrcData = if (lyricsType == LyricsType.Unsynced.name) {
-                                    lyrics.data!!
-                                } else {
-                                    lyrics.data!!
-                                }
+                            val lrcData = getLyricsText(song, lyricsType!!)
+                            if (lrcData != null) {
                                 val lrcName = "$baseName.lrc"
                                 val lrcUri = DocumentsContract.createDocument(cr, parentUri, "application/octet-stream", lrcName)
                                 if (lrcUri != null) {
@@ -508,6 +543,69 @@ class ExportCacheDialog(
             
             return Base64.encodeToString(buffer.array(), Base64.NO_WRAP)
         }
+
+        @UnstableApi
+        internal suspend fun getLyricsText(song: Song, type: String): String? {
+            try {
+                val allLyrics = Database.lyricsTable.findAllBySongId(song.id).first()
+                val matching = allLyrics.find { it.type == type }
+                if (matching?.data != null) return matching.data
+            } catch (_: Exception) {}
+
+            val artist = song.cleanArtistsText()
+            val title = song.title
+            val durationMs = song.durationText?.let {
+                val parts = it.split(":")
+                if (parts.size == 2) (parts[0].toLongOrNull() ?: 0) * 60_000 + (parts[1].toLongOrNull() ?: 0) * 1000 else 0L
+            } ?: 0L
+            val durationSec = (durationMs / 1000).toInt()
+
+            val data = try {
+                when (type) {
+                    LyricsType.Karaoke.name, LyricsType.Synced.name -> {
+                        val blResult = BetterLyrics.getLyrics(title, artist, durationSec)
+                        val blText = blResult.getOrNull()
+                        val hasKaraoke = blText?.lines()?.any {
+                            it.trim().startsWith("<") && it.contains(":") && it.contains(">")
+                        } == true
+                        if (type == LyricsType.Karaoke.name && hasKaraoke) blText
+                        else if (type == LyricsType.Synced.name && !hasKaraoke) blText
+                        else {
+                            val lrcResult = LrcLib.lyrics(artist, title, durationMs.milliseconds)
+                            lrcResult?.getOrNull()?.text
+                                ?: KuGou.lyrics(artist, title, durationSec.toLong())?.getOrNull()?.value
+                        }
+                    }
+                    LyricsType.Unsynced.name -> {
+                        val result = LrcLib.lyricsUnsynced(artist, title, durationMs.milliseconds)
+                        result?.getOrNull()?.plainText
+                            ?: Innertube.lyrics(NextBody(videoId = song.id))?.getOrNull()
+                    }
+                    else -> null
+                }
+            } catch (e: Exception) {
+                Timber.tag("ExportCache").w(e, "Failed to fetch lyrics from network")
+                null
+            }
+
+            if (!data.isNullOrBlank()) {
+                try {
+                    Database.lyricsTable.upsert(Lyrics(song.id, type, data))
+                } catch (_: Exception) {}
+            }
+            return data?.ifBlank { null }
+        }
+    }
+
+    val showLyricsDialog = mutableStateOf(false)
+    private val pendingFileName = mutableStateOf<String?>(null)
+
+    override fun onSet( newValue: String ) {
+        super.onSet( newValue )
+        if( errorMessage.isNotEmpty() ) return
+        val fileName = newValue.ifBlank( ::defaultFileName )
+        pendingFileName.value = "$fileName.$extension"
+        showLyricsDialog.value = true
     }
 
     override val iconId: Int = R.drawable.export_outline
@@ -520,6 +618,34 @@ class ExportCacheDialog(
         get() = stringResource( R.string.export_cached )
 
     override fun onShortClick() = showDialog()
+
+    @Composable
+    fun RenderLyricsDialog(binder: PlayerServiceModern.Binder?) {
+        if (!showLyricsDialog.value) return
+        val fileName = pendingFileName.value ?: return
+        val lyricsOptions = listOf(
+            null to appContext().getString(R.string.no_lyrics),
+            LyricsType.Synced.name to appContext().getString(R.string.lyrics_synced),
+            LyricsType.Unsynced.name to appContext().getString(R.string.lyrics_unsynced),
+            LyricsType.Karaoke.name to appContext().getString(R.string.lyrics_karaoke)
+        )
+        val selectedType = remember { mutableStateOf<String?>(null) }
+        ValueSelectorDialog(
+            onDismiss = { showLyricsDialog.value = false },
+            title = appContext().getString(R.string.export_lyrics_choice),
+            selectedValue = selectedType.value,
+            values = lyricsOptions.map { it.first },
+            onValueSelected = { type ->
+                showLyricsDialog.value = false
+                lyricsType.value = type
+                binder ?: return@ValueSelectorDialog
+                try {
+                    createLauncher.launch(pendingFileName.value ?: return@ValueSelectorDialog)
+                } catch (_: Exception) {}
+            },
+            valueText = { type -> lyricsOptions.find { it.first == type }?.second ?: "" }
+        )
+    }
 
     override fun defaultFileName(): String =
         with( getSong() ) { "$title - ${cleanArtistsText()}" }

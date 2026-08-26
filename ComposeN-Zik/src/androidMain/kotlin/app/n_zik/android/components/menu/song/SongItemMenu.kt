@@ -502,6 +502,7 @@ class SongItemMenu private constructor(
         }
         resetDialog.Render()
         exportCacheDialog.Render()
+        exportCacheDialog.RenderLyricsDialog(binder)
 
         if (exportCacheDialog.isExporting.value) {
             InProgressDialog(
