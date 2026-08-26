@@ -508,6 +508,7 @@
   <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Éviter de fermer le lecteur et de nettoyer la file en glissant vers le bas pendant qu\'il est minimisé</string>
   <string name="sort_date_liked">Date de mise en favoris</string>
   <string name="export_playlist">Exporter la playlist</string>
+  <string name="export_downloaded_songs">Export downloaded songs</string>
   <string name="lang_afrikaans">Africain (Afrikaans)</string>
   <string name="playlist_top">Top de la playlist</string>
   <string name="my_playlist_top">Mon Top %s</string>
@@ -1488,6 +1489,12 @@ Volume BAS : titre précédent</string>
   <string name="notification_play">Jouer</string>
   <string name="notification_skip_forward">Avancer</string>
   <string name="clean_queue_confirm">Voulez-vous vraiment nettoyer la file d\'attente ?</string>
+  <string name="clean_queue_confirm_selected">Remove %d songs from queue?</string>
+  <string name="do_you_really_want_to_download_all_count">Download all %d songs?</string>
+  <string name="do_you_really_want_to_download_selected_count">Download %d selected songs?</string>
+  <string name="do_you_really_want_to_delete_download_count">Delete all %d downloads?</string>
+  <string name="do_you_really_want_to_delete_download_selected_count">Delete %d selected downloads?</string>
+  <string name="clear_cache_count">Clear cache for %d songs?</string>
   <string name="no_items_found">Aucun élément trouvé</string>
   <string name="no_new_releases">Il n\'y a pas de nouvelles versions pour vos artistes préférés</string>
   <string name="not_selectable">Non sélectionnable</string>
