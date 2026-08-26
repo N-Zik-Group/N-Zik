@@ -1201,7 +1201,7 @@ fun NewVersionDialog (
                     modifier = Modifier.fillMaxWidth(0.8f)
                 )
                 Image(
-                    painter = painterResource(R.drawable.downloaded),
+                    painter = painterResource(R.drawable.download),
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(colorPalette().shimmer),
                     modifier = Modifier

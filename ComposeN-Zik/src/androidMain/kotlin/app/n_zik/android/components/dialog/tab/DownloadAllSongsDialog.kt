@@ -37,7 +37,7 @@ class DownloadAllSongsDialog(
     }
 
     override val messageId: Int = R.string.info_download_all_songs
-    override val iconId: Int = R.drawable.download
+    override val iconId: Int = R.drawable.downloaded
     override val dialogTitle: String
         @Composable
         get() {
