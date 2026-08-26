@@ -508,6 +508,7 @@
   <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Impedisci lo scorrimento verso il basso quando il player è minimizzato per chiudere il player e svuotare la coda</string>
   <string name="sort_date_liked">Data Preferita</string>
   <string name="export_playlist">Esporta playlist</string>
+  <string name="export_downloaded_songs">Export downloaded songs</string>
   <string name="lang_afrikaans">Afrikaans (Afrikaans)</string>
   <string name="playlist_top">Scaletta Superiore</string>
   <string name="my_playlist_top">I Miei Top %s</string>
@@ -1487,6 +1488,12 @@
   <string name="notification_play">Gioca</string>
   <string name="notification_skip_forward">Salta avanti</string>
   <string name="clean_queue_confirm">Vuoi davvero pulire la coda?</string>
+  <string name="clean_queue_confirm_selected">Remove %d songs from queue?</string>
+  <string name="do_you_really_want_to_download_all_count">Download all %d songs?</string>
+  <string name="do_you_really_want_to_download_selected_count">Download %d selected songs?</string>
+  <string name="do_you_really_want_to_delete_download_count">Delete all %d downloads?</string>
+  <string name="do_you_really_want_to_delete_download_selected_count">Delete %d selected downloads?</string>
+  <string name="clear_cache_count">Clear cache for %d songs?</string>
   <string name="no_items_found">Nessun elemento trovato</string>
   <string name="no_new_releases">Non ci sono nuove uscite per i tuoi artisti preferiti</string>
   <string name="not_selectable">Non selezionabile</string>
