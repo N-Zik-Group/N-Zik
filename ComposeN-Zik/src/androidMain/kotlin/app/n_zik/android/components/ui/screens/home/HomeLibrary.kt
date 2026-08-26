@@ -320,7 +320,7 @@ fun HomeLibrary(
     val deletePlaylistsButton = remember {
         object : MenuIcon, Descriptive {
             override val iconId: Int = R.drawable.trash
-            override val messageId: Int = R.string.delete
+            override val messageId: Int = R.string.delete_playlists_label
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() { showDeleteConfirmDialog = true }
             override fun onLongClick() {}
@@ -563,10 +563,11 @@ fun HomeLibrary(
                             if (showDeleteConfirmDialog) {
                                 val selected = itemSelector.ifEmpty { itemsOnDisplay }
                                 val hasSelection = itemSelector.size > 0
+                                val itemsToDelete = selected.toList()
                                 val text = if (hasSelection) {
-                                    stringResource(R.string.smart_trash_all_delete, selected.size)
+                                    stringResource(R.string.delete_playlists_confirm_multiple, itemsToDelete.size)
                                 } else {
-                                    stringResource(R.string.smart_trash_all_clear, selected.size)
+                                    stringResource(R.string.delete_playlists_confirm_all, itemsToDelete.size)
                                 }
                                 ConfirmationDialog(
                                     text = text,
@@ -575,11 +576,11 @@ fun HomeLibrary(
                                         showDeleteConfirmDialog = false
                                         coroutineScope.launch(Dispatchers.IO) {
                                             Database.asyncTransaction {
-                                                selected.forEach { preview ->
+                                                itemsToDelete.forEach { preview ->
                                                     playlistTable.delete(preview.playlist)
                                                 }
                                             }
-                                            itemSelector.isActive = false
+                                            withContext(Dispatchers.Main) { itemSelector.isActive = false }
                                         }
                                     }
                                 )

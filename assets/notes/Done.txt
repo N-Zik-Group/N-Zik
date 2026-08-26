@@ -1,3 +1,10 @@
+refactor(library): clarify playlist deletion dialogs and button labels
+  - Differentiated delete playlist dialog strings from songs smart trash (avoid confusing "remove from all playlists permanently")
+  - `HomeLibrary.kt`: Replaced `smart_trash` string with `delete_playlists` for the delete button label
+  - `HomeLibrary.kt`: Added custom dialog text for multi-select delete vs delete all playlists
+  - `LocalPlaylistSongs.kt`: Added clear dialog text for removing songs from playlist when using multi-select
+  - Created and translated new string resources for delete playlist confirmations in `strings.xml` and `values-fr/strings.xml`
+
 refactor(export): remove name edit dialog for single cache export, match batch flow
   - Removed `TextInputDialog` inheritance from `ExportCacheDialog` — now extends `Dialog` directly
   - Removed `valueState`, `keyboardOption`, `allowEmpty`, `onSet`, `onValueChanged` (no longer needed)

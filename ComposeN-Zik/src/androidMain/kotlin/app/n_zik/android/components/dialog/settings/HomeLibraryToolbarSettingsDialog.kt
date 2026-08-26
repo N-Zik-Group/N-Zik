@@ -105,7 +105,7 @@ object HomeLibraryToolbarSettingsDialog : Dialog {
         val addToPlaylistLabel = stringResource(R.string.add_to_playlist)
         val importMenuLabel = stringResource(R.string.import_playlist)
         val exportDialogLabel = stringResource(R.string.export_playlist)
-        val deletePlaylistsLabel = stringResource(R.string.smart_trash)
+        val deletePlaylistsLabel = stringResource(R.string.delete_playlists_label)
         val itemSizeLabel = stringResource(R.string.size)
 
         val currentLockedIds = lockedIds.map { "${tabPrefix}_$it" }.toSet()
