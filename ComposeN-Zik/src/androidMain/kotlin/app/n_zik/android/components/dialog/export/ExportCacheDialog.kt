@@ -60,13 +60,25 @@ import android.util.Base64
 
 class ExportCacheDialog(
     activeState: MutableState<Boolean>,
-    valueState: MutableState<TextFieldValue>,
-    private val createLauncher: ManagedActivityResultLauncher<String, Uri?>,
+    val valueState: MutableState<TextFieldValue>,
+    private val folderLauncher: ManagedActivityResultLauncher<Uri?, Uri?>,
     private val getSong: () -> Song,
     val isExporting: MutableState<Boolean> = mutableStateOf(false),
-    override val extension: String = "m4a",
+    val extension: String = "m4a",
     val lyricsType: MutableState<String?> = mutableStateOf(null)
-) : ExportToFileDialog(valueState, activeState, createLauncher), MenuIcon, Descriptive {
+) : app.n_zik.android.components.dialog.common.TextInputDialog(app.n_zik.android.components.dialog.common.InputDialogConstraints.ALL), MenuIcon, Descriptive {
+
+    override val keyboardOption: androidx.compose.foundation.text.KeyboardOptions = androidx.compose.foundation.text.KeyboardOptions.Default
+    override val allowEmpty: Boolean = true
+
+    override var value: TextFieldValue
+        get() = valueState.value
+        set(v) { valueState.value = v }
+
+    private val _isActiveState = activeState
+    override var isActive: Boolean
+        get() = _isActiveState.value
+        set(v) { _isActiveState.value = v }
 
     companion object {
         @UnstableApi
@@ -300,64 +312,101 @@ class ExportCacheDialog(
         ): ExportCacheDialog {
             val isExporting = remember { mutableStateOf(false) }
             val song = getSong()
-            
-            val format by produceState<Format?>(initialValue = null, song.id) {
-                value = Database.formatTable.findBySongId(song.id).first()
+            val lyricsTypeState = remember { mutableStateOf<String?>(null) }
+
+            val fileExtension = kotlinx.coroutines.runBlocking {
+                val format = Database.formatTable.findBySongId(song.id).first()
+                if (format?.mimeType?.contains("webm", ignoreCase = true) == true || 
+                    format?.mimeType?.contains("ogg", ignoreCase = true) == true ||
+                    format?.mimeType?.contains("opus", ignoreCase = true) == true) "ogg" else "m4a"
+            }
+
+            val pendingFileName = remember( song.title ) {
+                mutableStateOf( TextFieldValue("${song.title} - ${song.cleanArtistsText()}") )
             }
             
-            val isOpus = format?.mimeType?.contains("webm", ignoreCase = true) == true ||
-                         format?.mimeType?.contains("ogg", ignoreCase = true) == true ||
-                         format?.mimeType?.contains("opus", ignoreCase = true) == true
+            val folderLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.OpenDocumentTree()
+            ) { folderUri: Uri? ->
+                folderUri ?: return@rememberLauncherForActivityResult
+                val currentBinder = binder ?: return@rememberLauncherForActivityResult
+                val currentSong = getSong()
 
-            val mimeType = if (isOpus) "audio/ogg" else "audio/mp4"
-            val fileExtension = if (isOpus) "opus" else "m4a"
+                try {
+                    val takeFlags = android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                            android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    appContext().contentResolver.takePersistableUriPermission(folderUri, takeFlags)
+                } catch (_: Exception) {}
 
-            val lyricsTypeState = remember { mutableStateOf<String?>(null) }
+                val treeDocId = DocumentsContract.getTreeDocumentId(folderUri)
+                val parentUri = DocumentsContract.buildDocumentUriUsingTree(folderUri, treeDocId)
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    kotlinx.coroutines.withContext(Dispatchers.Main) { isExporting.value = true }
+                    try {
+                        val format = Database.formatTable.findBySongId(currentSong.id).first()
+                        val contentLength = format?.contentLength ?: 0L
+                        val isOpus = format?.mimeType?.contains("webm", ignoreCase = true) == true ||
+                                format?.mimeType?.contains("ogg", ignoreCase = true) == true ||
+                                format?.mimeType?.contains("opus", ignoreCase = true) == true
+                        val isCached = currentBinder.cache.isCached(currentSong.id, 0, contentLength)
+                        val isDownloaded = currentBinder.downloadCache.isCached(currentSong.id, 0, contentLength)
+                        if (!isCached && !isDownloaded) {
+                            kotlinx.coroutines.withContext(Dispatchers.Main) {
+                                isExporting.value = false
+                                Toaster.i(R.string.song_must_be_cached_or_downloaded_to_export)
+                            }
+                            return@launch
+                        }
+
+                        val ext = if (isOpus) "ogg" else "m4a"
+                        val mimeType = if (isOpus) "audio/ogg" else "audio/mp4"
+                        val textValue = pendingFileName.value.text
+                        val baseName = textValue.substringBeforeLast(".")
+                            .ifBlank { "${currentSong.title} - ${currentSong.cleanArtistsText()}" }
+                            .replace(Regex("[\\\\/:*?\"<>|]"), "_")
+
+                        val audioUri = DocumentsContract.createDocument(
+                            appContext().contentResolver, parentUri, mimeType, "$baseName.$ext"
+                        )
+                        if (audioUri != null) {
+                            onExport(audioUri, currentBinder, currentSong, isExporting, showResultToast = false).join()
+                        }
+
+                        val selectedType = lyricsTypeState.value
+                        if (selectedType != null) {
+                            val lrcData = getLyricsText(currentSong, selectedType)
+                            if (lrcData != null) {
+                                val lrcUri = DocumentsContract.createDocument(
+                                    appContext().contentResolver, parentUri,
+                                    "application/octet-stream", "$baseName.lrc"
+                                )
+                                if (lrcUri != null) {
+                                    appContext().contentResolver.openOutputStream(lrcUri)?.use { out ->
+                                        out.write(lrcData.toByteArray(Charsets.UTF_8))
+                                    }
+                                }
+                            }
+                        }
+
+                        kotlinx.coroutines.withContext(Dispatchers.Main) {
+                            isExporting.value = false
+                            Toaster.done()
+                        }
+                    } catch (e: Exception) {
+                        Timber.tag("ExportCache").e(e, "Single export failed")
+                        kotlinx.coroutines.withContext(Dispatchers.Main) {
+                            isExporting.value = false
+                            Toaster.e(R.string.export_failed, e.message)
+                        }
+                    }
+                }
+            }
 
             return ExportCacheDialog(
                 remember { mutableStateOf(false) },
-                remember( song.title ) {
-                    mutableStateOf( TextFieldValue("${song.title} - ${song.cleanArtistsText()}") )
-                },
-                rememberLauncherForActivityResult(
-                    ActivityResultContracts.CreateDocument( mimeType )
-                ) { uri ->
-                    uri ?: return@rememberLauncherForActivityResult
-                    binder ?: return@rememberLauncherForActivityResult
-
-                    val currentSong = getSong()
-                    onExport( uri, binder, currentSong, isExporting )
-
-                    val selectedType = lyricsTypeState.value
-                    if (selectedType != null) {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            try {
-                                val lrcData = getLyricsText(currentSong, selectedType)
-                                if (lrcData != null) {
-                                    val docId = DocumentsContract.getDocumentId(uri)
-                                    val lastSep = docId.lastIndexOf('/')
-                                    if (lastSep > 0) {
-                                        val parentDocId = docId.substring(0, lastSep)
-                                        val parentUri = DocumentsContract.buildDocumentUri(uri.authority, parentDocId)
-                                        val baseName = "${currentSong.title} - ${currentSong.cleanArtistsText()}"
-                                            .replace(Regex("[\\\\/:*?\"<>|]"), "_")
-                                        val lrcUri = DocumentsContract.createDocument(
-                                            appContext().contentResolver, parentUri,
-                                            "application/octet-stream", "$baseName.lrc"
-                                        )
-                                        if (lrcUri != null) {
-                                            appContext().contentResolver.openOutputStream(lrcUri)?.use { out ->
-                                                out.write(lrcData.toByteArray(Charsets.UTF_8))
-                                            }
-                                        }
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                Timber.tag("ExportCache").w(e, "Failed to write .lrc for single export")
-                            }
-                        }
-                    }
-                },
+                pendingFileName,
+                folderLauncher,
                 getSong,
                 isExporting,
                 fileExtension,
@@ -634,11 +683,16 @@ class ExportCacheDialog(
     }
 
     val showLyricsDialog = mutableStateOf(false)
-    private val pendingFileName = mutableStateOf<String?>(null)
 
     override fun onSet( newValue: String ) {
-        super.onSet( newValue )
-        if( errorMessage.isNotEmpty() ) return
+        if( !allowEmpty && newValue.isEmpty() ) {
+            errorMessage = appContext().getString(R.string.value_cannot_be_empty)
+            return
+        }
+        val fileName = newValue.ifBlank( ::defaultFileName )
+        valueState.value = TextFieldValue(fileName)
+        hideDialog()
+        showLyricsDialog.value = true
     }
 
     override val iconId: Int = R.drawable.export_outline
@@ -655,7 +709,6 @@ class ExportCacheDialog(
     @Composable
     fun RenderLyricsDialog(binder: PlayerServiceModern.Binder?) {
         if (!showLyricsDialog.value) return
-        val fileName = pendingFileName.value ?: return
         val lyricsOptions = listOf(
             null to appContext().getString(R.string.no_lyrics),
             LyricsType.Synced.name to appContext().getString(R.string.lyrics_synced),
@@ -673,14 +726,14 @@ class ExportCacheDialog(
                 lyricsType.value = type
                 binder ?: return@ValueSelectorDialog
                 try {
-                    createLauncher.launch(pendingFileName.value ?: return@ValueSelectorDialog)
+                    folderLauncher.launch(null)
                 } catch (_: Exception) {}
             },
             valueText = { type -> lyricsOptions.find { it.first == type }?.second ?: "" }
         )
     }
 
-    override fun defaultFileName(): String =
+    fun defaultFileName(): String =
         with( getSong() ) { "$title - ${cleanArtistsText()}" }
 }
 
