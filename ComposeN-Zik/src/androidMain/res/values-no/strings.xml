@@ -434,6 +434,7 @@
   <string name="sort_songs_number">Antall sanger</string>
   <string name="sort_relative_listening_time">Relative Listening Time</string>
   <string name="sort_play_count">Play Count</string>
+  <string name="sort_downloaded">Nedlastet</string>
   <string name="follow">Følg</string>
   <string name="following">Følger</string>
   <string name="artist_subscribers">%s Abonnenter</string>

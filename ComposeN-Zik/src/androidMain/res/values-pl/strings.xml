@@ -434,6 +434,7 @@
   <string name="sort_songs_number">Liczba utworów</string>
   <string name="sort_relative_listening_time">Względny czas słuchania</string>
   <string name="sort_play_count">Play Count</string>
+  <string name="sort_downloaded">Pobrane</string>
   <string name="follow">Subskrybuj</string>
   <string name="following">Subskrybujesz</string>
   <string name="artist_subscribers">%s subskrybentów</string>

@@ -434,6 +434,7 @@
   <string name="sort_songs_number">Anzahl der Songs</string>
   <string name="sort_relative_listening_time">Relative Wiedergabedauer</string>
   <string name="sort_play_count">Wiedergabeanzahl</string>
+  <string name="sort_downloaded">Offline-Songs</string>
   <string name="follow">Folgen</string>
   <string name="following">Gefolgt</string>
   <string name="artist_subscribers">%s Abonnenten</string>

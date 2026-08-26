@@ -434,6 +434,7 @@
   <string name="sort_songs_number">Número de canciones</string>
   <string name="sort_relative_listening_time">Tiempo de reproducción relativo</string>
   <string name="sort_play_count">Play Count</string>
+  <string name="sort_downloaded">Descargado</string>
   <string name="follow">Seguir</string>
   <string name="following">Siguiendo</string>
   <string name="artist_subscribers">%s suscriptores</string>

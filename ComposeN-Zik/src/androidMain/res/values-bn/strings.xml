@@ -434,6 +434,7 @@
   <string name="sort_songs_number">গানের ক্রম</string>
   <string name="sort_relative_listening_time">Relative Listening Time</string>
   <string name="sort_play_count">Play Count</string>
+  <string name="sort_downloaded">ডাউনলোড</string>
   <string name="follow">অনুসরণ করুন</string>
   <string name="following">অনুসরণ করা হচ্ছে</string>
   <string name="artist_subscribers">%s জন সাবস্ক্রাইবার</string>

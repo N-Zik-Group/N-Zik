@@ -434,6 +434,7 @@
   <string name="sort_songs_number">曲数</string>
   <string name="sort_relative_listening_time">聴取時間</string>
   <string name="sort_play_count">Play Count</string>
+  <string name="sort_downloaded">ダウンロード済み</string>
   <string name="follow">フォロー</string>
   <string name="following">フォロー中</string>
   <string name="artist_subscribers">%s 購読</string>

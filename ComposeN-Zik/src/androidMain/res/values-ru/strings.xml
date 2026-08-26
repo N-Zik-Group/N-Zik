@@ -434,6 +434,7 @@
   <string name="sort_songs_number">Количество песен</string>
   <string name="sort_relative_listening_time">Относительное время прослушивания</string>
   <string name="sort_play_count">Play Count</string>
+  <string name="sort_downloaded">Загружено</string>
   <string name="follow">Подписаться</string>
   <string name="following">Подписан</string>
   <string name="artist_subscribers">%s подписчиков</string>

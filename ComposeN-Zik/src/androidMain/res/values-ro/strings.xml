@@ -434,6 +434,7 @@
   <string name="sort_songs_number">Număr de melodii</string>
   <string name="sort_relative_listening_time">Timp de ascultare relativă</string>
   <string name="sort_play_count">Play Count</string>
+  <string name="sort_downloaded">Descărcate</string>
   <string name="follow">Urmărește</string>
   <string name="following">Urmărit</string>
   <string name="artist_subscribers">%s Abonați</string>
