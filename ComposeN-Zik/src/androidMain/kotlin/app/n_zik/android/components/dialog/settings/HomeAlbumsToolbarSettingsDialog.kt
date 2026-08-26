@@ -99,6 +99,8 @@ object HomeAlbumsToolbarSettingsDialog : Dialog {
         val itemSelectorLabel = stringResource(R.string.item_select)
         val playNextLabel = stringResource(R.string.play_next)
         val enqueueLabel = stringResource(R.string.enqueue)
+        val addToPlaylistLabel = stringResource(R.string.add_to_playlist)
+        val exportDialogLabel = stringResource(R.string.export_playlist)
         val itemSizeLabel = stringResource(R.string.size)
 
         val currentLockedIds = lockedIds.map { "${tabPrefix}_$it" }.toSet()
@@ -128,6 +130,8 @@ object HomeAlbumsToolbarSettingsDialog : Dialog {
                 "item_selector" -> ToggleItem(uid, R.drawable.checked_filled, itemSelectorLabel, pk, true)
                 "play_next" -> ToggleItem(uid, R.drawable.play_skip_forward, playNextLabel, pk, true)
                 "enqueue" -> ToggleItem(uid, R.drawable.enqueue, enqueueLabel, pk, true)
+                "add_to_playlist" -> ToggleItem(uid, R.drawable.add_in_playlist, addToPlaylistLabel, pk, true)
+                "export_dialog" -> ToggleItem(uid, R.drawable.share, exportDialogLabel, pk, true)
                 "item_size" -> ToggleItem(uid, R.drawable.resize, itemSizeLabel, pk, true)
                 else -> null
             }
