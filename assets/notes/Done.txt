@@ -1,3 +1,12 @@
+refactor(export): remove name edit dialog for single cache export, match batch flow
+  - Removed `TextInputDialog` inheritance from `ExportCacheDialog` — now extends `Dialog` directly
+  - Removed `valueState`, `keyboardOption`, `allowEmpty`, `onSet`, `onValueChanged` (no longer needed)
+  - `onShortClick()` calls `showDialog()` → `Render()` shows `ValueSelectorDialog` (lyrics type) → folder picker → auto-generated filename
+  - Filename auto-generated as `title - artists` (same as batch), illegal characters replaced
+  - Lyrics type selection now uses `ValueSelectorDialog` matching the batch export flow in `HomeSongsScreen`
+  - Fixed `isExporting` access in `SongItemMenu` and `PlayerItemMenu` (`MutableState<Boolean>` → `.value`)
+  - Fixed pre-existing `LocalPlaylistSongs.kt` missing `dialogTitle` implementation in anonymous `Dialog` object
+
 feat(ui): migrate Material 3 Checkbox to custom Icon system globally
   - Replaced `Checkbox` with custom `checked_filled` and `unchecked_outline` icons in `RenameSongDialog`, `ExportBackupDialog`, `CheckboxDialog`, `ToggleListDialog`, etc.
   - Set `unchecked_outline.xml` intrinsic width/height to 24dp (was 48dp) to match `checked_filled.xml` and prevent huge sizing in places like `SongItem`

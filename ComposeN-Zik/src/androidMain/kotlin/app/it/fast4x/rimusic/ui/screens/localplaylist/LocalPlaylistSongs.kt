@@ -110,6 +110,7 @@ import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
 import app.it.fast4x.rimusic.ui.components.themed.ResetThumbnail
 import app.it.fast4x.rimusic.ui.components.themed.Synchronize
 import app.it.fast4x.rimusic.ui.components.themed.ThumbnailPicker
+import app.it.fast4x.rimusic.ui.components.themed.RemoveFromPlaylist
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.onOverlay
 import app.it.fast4x.rimusic.ui.styling.overlay
@@ -671,16 +672,62 @@ fun LocalPlaylistSongs(
             override fun onLongClick() {}
         }
     }
-    val deleteDialog = DeletePlaylist {
-        Database.asyncTransaction {
-            playlist?.let( playlistTable::delete )
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    val deleteDialog = remember {
+        object : MenuIcon, Descriptive, Dialog {
+            override val iconId: Int = R.drawable.trash
+            override val messageId: Int = R.string.delete
+            @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
+            @get:Composable override val dialogTitle: String get() = stringResource(messageId)
+            override fun onShortClick() { showDeleteConfirmDialog = true }
+            override fun onLongClick() {}
+            override var isActive: Boolean
+                get() = showDeleteConfirmDialog
+                set(value) { showDeleteConfirmDialog = value }
+
+            @Composable
+            override fun Render() {
+                if (showDeleteConfirmDialog) {
+                    val selectedSongs = itemSelector.toList()
+                    val hasSelection = itemSelector.isActive && selectedSongs.isNotEmpty()
+                    val text = if (hasSelection) {
+                        stringResource(R.string.remove_songs_from_playlist_confirm, selectedSongs.size)
+                    } else {
+                        stringResource(R.string.delete_playlist)
+                    }
+                    ConfirmationDialog(
+                        text = text,
+                        onDismiss = { showDeleteConfirmDialog = false },
+                        onConfirm = {
+                            showDeleteConfirmDialog = false
+                            if (hasSelection) {
+                                coroutineScope.launch(Dispatchers.IO) {
+                                    Database.asyncTransaction {
+                                        selectedSongs.forEach { song ->
+                                            songPlaylistMapTable.deleteBySongId(song.id, playlistId)
+                                        }
+                                    }
+                                    withContext(Dispatchers.Main) {
+                                        Toaster.s("${context.resources.getString(R.string.deleted)} ${selectedSongs.size}")
+                                        itemSelector.isActive = false
+                                    }
+                                }
+                            } else {
+                                coroutineScope.launch(Dispatchers.IO) {
+                                    Database.asyncTransaction {
+                                        playlist?.let(playlistTable::delete)
+                                    }
+                                    withContext(Dispatchers.Main) {
+                                        if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED)
+                                            navController.popBackStack()
+                                    }
+                                }
+                            }
+                        }
+                    )
+                }
+            }
         }
-
-
-        onDismiss()
-
-        if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED)
-            navController.popBackStack()
     }
     val renumberDialog = Reposition(playlistId)
     val downloadAllDialog = DownloadAllSongsDialog ( ::getSongs )
@@ -742,6 +789,22 @@ fun LocalPlaylistSongs(
         {
             // Turn of selector clears the selected list
             itemSelector.isActive = false
+        }
+    )
+    val removeFromPlaylist = RemoveFromPlaylist(
+        onConfirmAction = {
+            val songsToRemove = getSongs()
+            if (songsToRemove.isNotEmpty()) {
+                Database.asyncTransaction {
+                    songsToRemove.forEach { song ->
+                        songPlaylistMapTable.deleteBySongId(song.id, playlistId)
+                    }
+                }
+                Toaster.s(
+                    "${context.resources.getString( R.string.deleted )} ${songsToRemove.size} songs"
+                )
+                itemSelector.isActive = false
+            }
         }
     )
 
