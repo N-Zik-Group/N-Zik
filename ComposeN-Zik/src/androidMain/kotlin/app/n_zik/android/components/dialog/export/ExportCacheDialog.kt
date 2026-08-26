@@ -685,14 +685,8 @@ class ExportCacheDialog(
     val showLyricsDialog = mutableStateOf(false)
 
     override fun onSet( newValue: String ) {
-        if( !allowEmpty && newValue.isEmpty() ) {
-            errorMessage = appContext().getString(R.string.value_cannot_be_empty)
-            return
-        }
-        val fileName = newValue.ifBlank( ::defaultFileName )
-        valueState.value = TextFieldValue(fileName)
-        hideDialog()
-        showLyricsDialog.value = true
+        super.onSet( newValue )
+        if( errorMessage.isNotEmpty() ) return
     }
 
     override val iconId: Int = R.drawable.export_outline
