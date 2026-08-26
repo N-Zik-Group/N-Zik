@@ -40,7 +40,13 @@ class DownloadAllSongsDialog(
     override val iconId: Int = R.drawable.download
     override val dialogTitle: String
         @Composable
-        get() = stringResource( R.string.do_you_really_want_to_download_all )
+        get() {
+            val count = getSongs().size
+            return if( count > 0 )
+                stringResource( R.string.do_you_really_want_to_download_all_count, count )
+            else
+                stringResource( R.string.do_you_really_want_to_download_all )
+        }
     override val menuIconTitle: String
         @Composable
         get() = stringResource( R.string.download )

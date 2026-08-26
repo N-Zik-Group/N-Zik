@@ -40,7 +40,13 @@ class DeleteAllDownloadedSongsDialog(
     override val iconId: Int = R.drawable.downloaded
     override val dialogTitle: String
         @Composable
-        get() = stringResource( R.string.do_you_really_want_to_delete_download)
+        get() {
+            val count = getSongs().size
+            return if( count > 0 )
+                stringResource( R.string.do_you_really_want_to_delete_download_count, count )
+            else
+                stringResource( R.string.do_you_really_want_to_delete_download )
+        }
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )

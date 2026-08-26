@@ -103,3 +103,11 @@ fix(queue): shuffle and delete actions no longer crash or close player
   - DeleteFromQueue: uses reverse removeMediaItem instead of setMediaItems
   - Both wrapped in try-catch with Timber logging
   - Added toaster feedback for shuffle success and delete success
+
+fix(multiselect): unified dialog titles with item counts
+  - DeleteFromQueue: shows "Remove X songs from queue?" when items selected
+  - DownloadAllSongsDialog: shows "Download all X songs?" with count
+  - DeleteAllDownloadedSongsDialog: shows "Delete all X downloads?" with count
+  - ResetCache: shows "Clear cache for X songs?" with count
+  - SmartTrash: already had count support (no change needed)
+  - New string resources: clean_queue_confirm_selected, *_count variants

@@ -46,7 +46,13 @@ class ResetCache private constructor(
         get() = stringResource( R.string.title_reset_cache )
     override val dialogTitle: String
         @Composable
-        get() = stringResource( R.string.are_you_sure )
+        get() {
+            val count = getSongs().size
+            return if( count > 0 )
+                stringResource( R.string.clear_cache_count, count )
+            else
+                stringResource( R.string.are_you_sure )
+        }
 
     override var isActive: Boolean by activeState
 

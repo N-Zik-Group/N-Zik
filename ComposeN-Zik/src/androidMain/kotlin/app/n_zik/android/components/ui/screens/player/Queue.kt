@@ -148,6 +148,7 @@ fun ShuffleQueue(
 @SuppressLint("ComposableNaming")
 @Composable
 fun DeleteFromQueue(
+    itemSelector: ItemSelector<Song>,
     onDeleteConfirm: ConfirmDialog.() -> Unit
 ): MenuIcon = object: MenuIcon, Descriptive, ConfirmDialog {
     override val iconId: Int = R.drawable.trash
@@ -157,7 +158,13 @@ fun DeleteFromQueue(
         get() = stringResource( messageId )
     override val dialogTitle: String
         @Composable
-        get() = stringResource(R.string.clean_queue_confirm)
+        get() {
+            val count = itemSelector.size
+            return if( count > 0 )
+                stringResource( R.string.clean_queue_confirm_selected, count )
+            else
+                stringResource( R.string.clean_queue_confirm )
+        }
 
     override var isActive: Boolean by rememberSaveable { mutableStateOf(false) }
 

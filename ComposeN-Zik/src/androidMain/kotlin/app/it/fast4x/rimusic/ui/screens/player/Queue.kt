@@ -250,7 +250,7 @@ fun Queue(
         val isDiscoverClickable = binder.service.nzikRadio.isRadioActive || isAutoFillEnabled
         val discover = Discover( isDiscoverClickable, onDiscoverClick )
         val repeat = Repeat.init()
-        val deleteDialog = DeleteFromQueue {
+        val deleteDialog = DeleteFromQueue( itemSelector ) {
             try {
                 if( itemSelector.isEmpty() ) {
                     player.stop()
