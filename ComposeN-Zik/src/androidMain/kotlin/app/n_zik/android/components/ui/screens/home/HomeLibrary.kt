@@ -562,8 +562,14 @@ fun HomeLibrary(
                             
                             if (showDeleteConfirmDialog) {
                                 val selected = itemSelector.ifEmpty { itemsOnDisplay }
+                                val hasSelection = itemSelector.size > 0
+                                val text = if (hasSelection) {
+                                    stringResource(R.string.smart_trash_all_delete, selected.size)
+                                } else {
+                                    stringResource(R.string.smart_trash_all_clear, selected.size)
+                                }
                                 ConfirmationDialog(
-                                    text = stringResource(R.string.delete_playlist),
+                                    text = text,
                                     onDismiss = { showDeleteConfirmDialog = false },
                                     onConfirm = {
                                         showDeleteConfirmDialog = false
