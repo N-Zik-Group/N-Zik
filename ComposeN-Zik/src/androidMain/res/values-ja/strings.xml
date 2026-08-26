@@ -1493,6 +1493,12 @@
   <string name="do_you_really_want_to_download_selected_count">Download %d selected songs?</string>
   <string name="do_you_really_want_to_delete_download_count">Delete all %d downloads?</string>
   <string name="do_you_really_want_to_delete_download_selected_count">Delete %d selected downloads?</string>
+  <string name="do_you_really_want_to_export_cached_count">Export %d cached/downloaded songs?</string>
+  <string name="export_lyrics_choice">Export lyrics?</string>
+  <string name="lyrics_synced">Synced (with timestamps)</string>
+  <string name="lyrics_unsynced">Plain text</string>
+  <string name="lyrics_karaoke">Karaoke (word-level)</string>
+  <string name="no_lyrics">No lyrics</string>
   <string name="clear_cache_count">Clear cache for %d songs?</string>
   <string name="no_items_found">アイテムが見つかりません</string>
   <string name="no_new_releases">お気に入りのアーティストの新しいリリースはありません。</string>
