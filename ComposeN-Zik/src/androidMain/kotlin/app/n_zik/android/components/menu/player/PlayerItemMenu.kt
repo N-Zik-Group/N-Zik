@@ -616,7 +616,6 @@ class PlayerItemMenu private constructor(
         if (song.isLocal) {
             editMetadata.Render()
             exportCacheDialog.Render()
-            exportCacheDialog.RenderLyricsDialog(binder)
 
             if (exportCacheDialog.isExporting.value) {
                 InProgressDialog(

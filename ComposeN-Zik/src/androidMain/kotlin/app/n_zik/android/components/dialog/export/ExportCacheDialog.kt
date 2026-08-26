@@ -3,13 +3,20 @@ package app.n_zik.android.components.dialog.export
 import app.n_zik.android.core.database.*
 import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.models.Lyrics
-import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
 import com.metrolist.music.betterlyrics.BetterLyrics
 import it.fast4x.lrclib.LrcLib
 import it.fast4x.kugou.KuGou
 import it.fast4x.innertube.requests.lyrics
 import it.fast4x.innertube.models.bodies.NextBody
 import kotlin.time.Duration.Companion.milliseconds
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.RadioButton
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import app.it.fast4x.rimusic.utils.semiBold
 
 import android.net.Uri
 import android.provider.DocumentsContract
@@ -682,11 +689,97 @@ class ExportCacheDialog(
         }
     }
 
-    val showLyricsDialog = mutableStateOf(false)
-
     override fun onSet( newValue: String ) {
-        super.onSet( newValue )
-        if( errorMessage.isNotEmpty() ) return
+        if( !allowEmpty && newValue.isEmpty() ) {
+            errorMessage = appContext().getString(R.string.value_cannot_be_empty)
+            return
+        }
+        val fileName = newValue.ifBlank( ::defaultFileName )
+        valueState.value = TextFieldValue(fileName)
+        hideDialog()
+        try { folderLauncher.launch(null) } catch (_: Exception) {}
+    }
+
+    @Composable
+    override fun DialogBody() {
+        androidx.compose.material3.TextField(
+            value = value,
+            onValueChange = {
+                if( onValueChanged( it.text ) )
+                    value = it
+            },
+            placeholder = { TextPlaceholder() },
+            maxLines = 3,
+            singleLine = false,
+            keyboardOptions = keyboardOption,
+            leadingIcon = { LeadingIcon() },
+            trailingIcon = { TrailingIcon() },
+            modifier = Modifier.fillMaxWidth(),
+            colors = app.n_zik.android.components.dialog.common.InputDialog.defaultTextFieldColors()
+                .copy(
+                    errorTextColor = app.n_zik.android.colorPalette().text,
+                    errorContainerColor = app.n_zik.android.colorPalette().background1,
+                    errorIndicatorColor = androidx.compose.ui.graphics.Color.Red
+                ),
+            isError = errorMessage.isNotEmpty()
+        )
+
+        if (errorMessage.isNotEmpty()) {
+            androidx.compose.animation.AnimatedVisibility(
+                visible = true,
+                enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.slideInHorizontally() + androidx.compose.animation.expandIn(),
+            ) {
+                androidx.compose.foundation.text.BasicText(
+                    text = errorMessage,
+                    style = app.n_zik.android.typography().xs.copy( color = androidx.compose.ui.graphics.Color(android.graphics.Color.RED) ),
+                    modifier = Modifier.fillMaxWidth( .7f ).padding( top = app.n_zik.android.components.dialog.common.Dialog.VERTICAL_PADDING.dp )
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        val colorPalette = app.n_zik.android.colorPalette()
+        val currentLabel = when (lyricsType.value) {
+            LyricsType.Synced.name -> appContext().getString(R.string.lyrics_synced)
+            LyricsType.Unsynced.name -> appContext().getString(R.string.lyrics_unsynced)
+            LyricsType.Karaoke.name -> appContext().getString(R.string.lyrics_karaoke)
+            else -> appContext().getString(R.string.no_lyrics)
+        }
+        BasicText(
+            text = appContext().getString(R.string.export_lyrics_choice),
+            style = app.n_zik.android.typography().xs.semiBold.copy( color = colorPalette.textSecondary ),
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        listOf(
+            null to appContext().getString(R.string.no_lyrics),
+            LyricsType.Synced.name to appContext().getString(R.string.lyrics_synced),
+            LyricsType.Unsynced.name to appContext().getString(R.string.lyrics_unsynced),
+            LyricsType.Karaoke.name to appContext().getString(R.string.lyrics_karaoke)
+        ).forEach { (type, label) ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { lyricsType.value = type }
+                    .padding(vertical = 4.dp)
+            ) {
+                androidx.compose.material3.RadioButton(
+                    selected = lyricsType.value == type,
+                    onClick = { lyricsType.value = type },
+                    colors = androidx.compose.material3.RadioButtonDefaults.colors(
+                        selectedColor = colorPalette.text,
+                        unselectedColor = colorPalette.textSecondary
+                    ),
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                BasicText(
+                    text = label,
+                    style = app.n_zik.android.typography().xs.copy( color = colorPalette.text )
+                )
+            }
+        }
     }
 
     override val iconId: Int = R.drawable.export_outline
@@ -699,33 +792,6 @@ class ExportCacheDialog(
         get() = stringResource( R.string.export_cached )
 
     override fun onShortClick() = showDialog()
-
-    @Composable
-    fun RenderLyricsDialog(binder: PlayerServiceModern.Binder?) {
-        if (!showLyricsDialog.value) return
-        val lyricsOptions = listOf(
-            null to appContext().getString(R.string.no_lyrics),
-            LyricsType.Synced.name to appContext().getString(R.string.lyrics_synced),
-            LyricsType.Unsynced.name to appContext().getString(R.string.lyrics_unsynced),
-            LyricsType.Karaoke.name to appContext().getString(R.string.lyrics_karaoke)
-        )
-        val selectedType = remember { mutableStateOf<String?>(null) }
-        ValueSelectorDialog(
-            onDismiss = { showLyricsDialog.value = false },
-            title = appContext().getString(R.string.export_lyrics_choice),
-            selectedValue = selectedType.value,
-            values = lyricsOptions.map { it.first },
-            onValueSelected = { type ->
-                showLyricsDialog.value = false
-                lyricsType.value = type
-                binder ?: return@ValueSelectorDialog
-                try {
-                    folderLauncher.launch(null)
-                } catch (_: Exception) {}
-            },
-            valueText = { type -> lyricsOptions.find { it.first == type }?.second ?: "" }
-        )
-    }
 
     fun defaultFileName(): String =
         with( getSong() ) { "$title - ${cleanArtistsText()}" }
