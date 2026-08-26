@@ -20,6 +20,7 @@ import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
 class ItemSelector<E> private constructor(
     private val menuState: MenuState,
     private val activeState: MutableState<Boolean>,
+    private val selectedState: MutableState<ArrayList<E>>,
 ): AbstractMutableList<E>(), MenuIcon, Descriptive {
 
     companion object {
@@ -28,11 +29,16 @@ class ItemSelector<E> private constructor(
         operator fun <T> invoke() = ItemSelector<T>(
             LocalMenuState.current,
             // Use remember to let list cleared when screen rotates
-            remember { mutableStateOf(false) }
+            remember { mutableStateOf(false) },
+            // Use remember so selected items survive recomposition
+            // This ensures toolbar buttons (even stale ones) read the same list
+            // that SongItem checkboxes write to
+            remember { mutableStateOf(ArrayList()) }
         )
     }
 
-    private val selected: ArrayList<E> = ArrayList()
+    private val selected: ArrayList<E>
+        get() = selectedState.value
 
     var isActive: Boolean
         get() = activeState.value

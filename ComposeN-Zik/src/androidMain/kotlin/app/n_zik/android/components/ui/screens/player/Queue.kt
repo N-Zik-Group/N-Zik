@@ -30,6 +30,8 @@ import app.it.fast4x.rimusic.utils.shuffleQueue
 import app.it.fast4x.rimusic.utils.smoothScrollToTop
 import kotlinx.coroutines.launch
 import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
+import timber.log.Timber
+import app.kreate.android.me.knighthat.utils.Toaster
 
 @SuppressLint("ComposableNaming")
 @Composable
@@ -117,28 +119,27 @@ fun ShuffleQueue(
         coroutineScope.launch {
             lazyListState.smoothScrollToTop()
         }.invokeOnCompletion {
-            if (itemSelector != null && itemSelector.isNotEmpty()) {
-                val selectedIds = itemSelector.map { it.id }.toSet()
-                val selectedIndices = mutableListOf<Int>()
-                for (i in 0 until player.mediaItemCount) {
-                    val item = player.getMediaItemAt(i)
-                    if (item.mediaId in selectedIds) {
-                        selectedIndices.add(i)
+            try {
+                if (itemSelector != null && itemSelector.isNotEmpty()) {
+                    val selectedIds = itemSelector.map { it.id }.toSet()
+                    val allItems = (0 until player.mediaItemCount).map { player.getMediaItemAt(it) }
+                    val selectedIndex = allItems.indices.filter { allItems[it].mediaId in selectedIds }
+                    
+                    if (selectedIndex.isNotEmpty()) {
+                        val selected = selectedIndex.map { allItems[it] }.shuffled()
+                        // Remove from end to avoid index shift
+                        selectedIndex.sortedDescending().forEach { player.removeMediaItem(it) }
+                        // Insert shuffled items at the first selected position
+                        val insertAt = selectedIndex.min()
+                        selected.forEachIndexed { i, item -> player.addMediaItem(insertAt + i, item) }
+                        Toaster.s(R.string.queue_shuffled, formatArgs = *arrayOf(selectedIndex.size))
                     }
+                } else {
+                    player.shuffleQueue()
                 }
-                selectedIndices.sort()
-                
-                if (selectedIndices.isNotEmpty()) {
-                    val selectedMediaItems = selectedIndices.map { player.getMediaItemAt(it) }
-                    val shuffled = selectedMediaItems.shuffled()
-                    selectedIndices.reversed().forEach { player.removeMediaItem(it) }
-                    val insertAt = selectedIndices.minOrNull() ?: 0
-                    shuffled.forEachIndexed { index, mediaItem ->
-                        player.addMediaItem(insertAt + index, mediaItem)
-                    }
-                }
-            } else {
-                player.shuffleQueue()
+            } catch (e: Exception) {
+                Timber.tag("ShuffleQueue").e(e, "Failed to shuffle queue")
+                Toaster.e(R.string.no_song_found)
             }
         }
     }

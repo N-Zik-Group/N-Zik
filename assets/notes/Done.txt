@@ -90,3 +90,16 @@ feat(home-songs): Top playlist PeriodSelector respects custom order and visibili
   - MenuComponent now uses `readSortedEntries()` instead of hardcoded `StatisticsType.entries`
   - Each entry's own `iconId` is now shown in the menu (was hardcoded `R.drawable.time`)
   - HomeSongs.kt and HomeSongsScreen.kt pass `homeSongsTopSortMenuOrderKey` + `"top"` prefix to PeriodSelector
+
+fix(multiselect): shared selection state across all screens
+  - ItemSelector.kt: `selected` backed by `MutableState<ArrayList>` (remembered) — fixes stale selection across recompositions
+  - Queue.kt (component): removed `remember` from toolbar buttons list
+  - HomeSongsScreen.kt: removed `remember` + `mutableStateListOf` from toolbar buttons
+  - LocalPlaylistSongs.kt: removed `remember` + `LaunchedEffect` sync pattern from toolbar buttons
+  - All screens now use ItemSelector's shared state correctly
+
+fix(queue): shuffle and delete actions no longer crash or close player
+  - ShuffleQueue: uses reverse remove + add instead of setMediaItems (preserves player state)
+  - DeleteFromQueue: uses reverse removeMediaItem instead of setMediaItems
+  - Both wrapped in try-catch with Timber logging
+  - Added toaster feedback for shuffle success and delete success

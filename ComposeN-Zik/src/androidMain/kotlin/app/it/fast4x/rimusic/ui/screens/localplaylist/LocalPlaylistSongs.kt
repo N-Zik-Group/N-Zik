@@ -41,9 +41,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -1149,58 +1147,41 @@ fun LocalPlaylistSongs(
 
                 val toolbarOrderPref by rememberPreference(localPlaylistToolbarOrderKey, "")
 
-                val toolbarButtons = remember {
-                    mutableStateListOf<Button>()
-                }
-
                 val hasUnmatchedSongs = remember(items) { items.any { (it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L)) && !it.id.startsWith(LOCAL_KEY_PREFIX) } }
 
-                val toolbarButtonList = remember(
-                    toolbarOrderPref,
-                    playlist,
-                    sort.sortBy,
-                    sort.sortOrder,
-                    hasUnmatchedSongs
-                ) {
-                    val defaultOrder = LocalPlaylistToolbarSettingsDialog.allButtonIds
-                    val order = try {
-                        if (toolbarOrderPref.isBlank()) defaultOrder else {
-                            val arr = JSONArray(toolbarOrderPref)
-                            (0 until arr.length()).map { arr.getString(it) }.distinct()
-                        }
-                    } catch (_: Exception) { defaultOrder }
+                val defaultOrder = LocalPlaylistToolbarSettingsDialog.allButtonIds
+                val order = try {
+                    if (toolbarOrderPref.isBlank()) defaultOrder else {
+                        val arr = JSONArray(toolbarOrderPref)
+                        (0 until arr.length()).map { arr.getString(it) }.distinct()
+                    }
+                } catch (_: Exception) { defaultOrder }
 
-                    val list = mutableStateListOf<Button>()
+                val toolbarButtons = buildList {
                     order.forEach { id ->
                         when (id) {
-                            "pin" -> if (playlistNotMonthlyType) list.add( pin )
-                            "position_lock" -> if ( sort.sortBy == PlaylistSongSortBy.Custom ) list.add( positionLock )
-                            "match" -> if ( hasUnmatchedSongs ) list.add( matchAlbumButton )
-                            "renumber" -> if ( sort.sortBy == PlaylistSongSortBy.Custom ) list.add( renumberDialog )
-                            "download_all" -> list.add( downloadAllDialog )
-                            "delete_downloads" -> list.add( deleteDownloadsDialog )
-                            "item_selector" -> list.add( itemSelector )
-                            "play_next" -> list.add( playNext )
-                            "enqueue" -> list.add( enqueue )
-                            "add_to_favorite" -> list.add( addToFavorite )
-                            "add_to_playlist" -> list.add( addToPlaylist )
-                            "sync" -> if ( !playlist?.browseId.isNullOrBlank() ) list.add( syncComponent )
-                            "listen_on_yt" -> if ( !playlist?.browseId.isNullOrBlank() ) list.add( listenOnYT )
-                            "import_menu" -> list.add( importMenu )
-                            "rename" -> list.add( renameDialog )
-                            "delete" -> list.add( deleteDialog )
-                            "export" -> list.add( exportDialog )
-                            "thumbnail_picker" -> list.add( thumbnailPicker )
-                            "reset_thumbnail" -> list.add( resetThumbnail )
-                            "reset_cache" -> list.add( resetCache )
+                            "pin" -> if (playlistNotMonthlyType) add( pin )
+                            "position_lock" -> if ( sort.sortBy == PlaylistSongSortBy.Custom ) add( positionLock )
+                            "match" -> if ( hasUnmatchedSongs ) add( matchAlbumButton )
+                            "renumber" -> if ( sort.sortBy == PlaylistSongSortBy.Custom ) add( renumberDialog )
+                            "download_all" -> add( downloadAllDialog )
+                            "delete_downloads" -> add( deleteDownloadsDialog )
+                            "item_selector" -> add( itemSelector )
+                            "play_next" -> add( playNext )
+                            "enqueue" -> add( enqueue )
+                            "add_to_favorite" -> add( addToFavorite )
+                            "add_to_playlist" -> add( addToPlaylist )
+                            "sync" -> if ( !playlist?.browseId.isNullOrBlank() ) add( syncComponent )
+                            "listen_on_yt" -> if ( !playlist?.browseId.isNullOrBlank() ) add( listenOnYT )
+                            "import_menu" -> add( importMenu )
+                            "rename" -> add( renameDialog )
+                            "delete" -> add( deleteDialog )
+                            "export" -> add( exportDialog )
+                            "thumbnail_picker" -> add( thumbnailPicker )
+                            "reset_thumbnail" -> add( resetThumbnail )
+                            "reset_cache" -> add( resetCache )
                         }
                     }
-                    list
-                }
-
-                LaunchedEffect(toolbarButtonList) {
-                    toolbarButtons.clear()
-                    toolbarButtons.addAll(toolbarButtonList)
                 }
 
                 TabToolBar.Buttons( toolbarButtons )

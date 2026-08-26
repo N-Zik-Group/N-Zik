@@ -398,42 +398,39 @@ fun HomeSongsScreen(navController: NavController ) {
         BuiltInPlaylist.OnDevice -> homeSongsToolbarOrderPrefOnDevice
     }
 
-    val buttons = remember( builtInPlaylist, currentToolbarOrderPref, songSort.sortBy, songSort.sortOrder, hasUnmatchedSongs ) {
-        itemSelector.isActive = false
-        val defaultToolbarOrder = HomeSongsToolbarSettingsDialog.tabAvailableIds[builtInPlaylist] ?: HomeSongsToolbarSettingsDialog.allButtonIds
-        val order = try {
-            if (currentToolbarOrderPref.isBlank()) defaultToolbarOrder else {
-                val arr = JSONArray(currentToolbarOrderPref)
-                (0 until arr.length()).map { arr.getString(it) }.distinct()
-            }
-        } catch (_: Exception) { defaultToolbarOrder }
+    val defaultToolbarOrder = HomeSongsToolbarSettingsDialog.tabAvailableIds[builtInPlaylist] ?: HomeSongsToolbarSettingsDialog.allButtonIds
+    val order = try {
+        if (currentToolbarOrderPref.isBlank()) defaultToolbarOrder else {
+            val arr = JSONArray(currentToolbarOrderPref)
+            (0 until arr.length()).map { arr.getString(it) }.distinct()
+        }
+    } catch (_: Exception) { defaultToolbarOrder }
 
-        val list = mutableStateListOf<Button>()
+    val buttons = mutableListOf<Button>().apply {
         order.forEach { id ->
             when (id) {
-                "sort" -> list.add( if( builtInPlaylist == BuiltInPlaylist.Top ) topPlaylists else songSort )
-                "position_lock" -> if ( builtInPlaylist != BuiltInPlaylist.Top && songSort.sortBy == SongSortBy.Custom ) list.add( positionLock )
+                "sort" -> add( if( builtInPlaylist == BuiltInPlaylist.Top ) topPlaylists else songSort )
+                "position_lock" -> if ( builtInPlaylist != BuiltInPlaylist.Top && songSort.sortBy == SongSortBy.Custom ) add( positionLock )
                 "search" -> {
-                    if ( hasUnmatchedSongs && builtInPlaylist != BuiltInPlaylist.OnDevice ) list.add( localMatchButton )
-                    list.add( search )
+                    if ( hasUnmatchedSongs && builtInPlaylist != BuiltInPlaylist.OnDevice ) add( localMatchButton )
+                    add( search )
                 }
-                "locator" -> list.add( locator )
-                "download_all" -> list.add( downloadAllDialog )
-                "delete_downloads" -> list.add( deleteDownloadsDialog )
-                "shuffle" -> list.add( shuffle )
-                "smart_shuffle" -> list.add( smartShuffle )
-                "item_selector" -> list.add( itemSelector )
-                "play_next" -> list.add( playNext )
-                "enqueue" -> list.add( enqueue )
-                "add_to_favorite" -> list.add( addToFavorite )
-                "add_to_playlist" -> list.add( addToPlaylist )
-                "import_menu" -> if (builtInPlaylist == BuiltInPlaylist.All || builtInPlaylist == BuiltInPlaylist.Favorites) list.add( importMenu )
-                "export_dialog" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) list.add( exportDialog )
-                "smart_trash" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) list.add( smartTrash )
-                "match" -> if ( hasUnmatchedSongs && builtInPlaylist != BuiltInPlaylist.OnDevice ) list.add( localMatchButton )
+                "locator" -> add( locator )
+                "download_all" -> add( downloadAllDialog )
+                "delete_downloads" -> add( deleteDownloadsDialog )
+                "shuffle" -> add( shuffle )
+                "smart_shuffle" -> add( smartShuffle )
+                "item_selector" -> add( itemSelector )
+                "play_next" -> add( playNext )
+                "enqueue" -> add( enqueue )
+                "add_to_favorite" -> add( addToFavorite )
+                "add_to_playlist" -> add( addToPlaylist )
+                "import_menu" -> if (builtInPlaylist == BuiltInPlaylist.All || builtInPlaylist == BuiltInPlaylist.Favorites) add( importMenu )
+                "export_dialog" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( exportDialog )
+                "smart_trash" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( smartTrash )
+                "match" -> if ( hasUnmatchedSongs && builtInPlaylist != BuiltInPlaylist.OnDevice ) add( localMatchButton )
             }
         }
-        list
     }
 
     Box(

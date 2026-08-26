@@ -251,17 +251,23 @@ fun Queue(
         val discover = Discover( isDiscoverClickable, onDiscoverClick )
         val repeat = Repeat.init()
         val deleteDialog = DeleteFromQueue {
-            if( itemSelector.isEmpty() ) {
-                player.stop()
-                player.clearMediaItems()
-            } else
-                itemSelector.map( items::indexOf )
-                            .sorted()
-                            // Goes backward to prevent item from being skipped
-                            // due to the previous element is removed and the indices
-                            // are updated.
-                            .reversed()
-                            .forEach( player::removeMediaItem )
+            try {
+                if( itemSelector.isEmpty() ) {
+                    player.stop()
+                    player.clearMediaItems()
+                    Toaster.s( R.string.deleted )
+                } else {
+                    val count = itemSelector.size
+                    val selectedIds = itemSelector.map { it.id }.toSet()
+                    // Remove from end to avoid index shift
+                    (player.mediaItemCount - 1 downTo 0)
+                        .filter { player.getMediaItemAt(it).mediaId in selectedIds }
+                        .forEach( player::removeMediaItem )
+                    Toaster.s( R.string.deleted_item, formatArgs = *arrayOf( "$count" ) )
+                }
+            } catch( e: Exception ) {
+                Timber.tag( "Queue" ).e( e, "Failed to delete from queue" )
+            }
 
             itemSelector.isActive = false
 
@@ -286,20 +292,18 @@ fun Queue(
         (deleteDialog as Dialog).Render()
 
         val showDiscover = rememberPreference( showButtonPlayerDiscoverKey, false ).value
-        val buttonsList = remember(showDiscover) {
-            mutableListOf<Button>().apply {
-                add( locator )
-                add( search )
-                if( showDiscover )
-                    add( discover )
-                add( positionLock )
-                add( repeat )
-                add( shuffle )
-                add( itemSelector )
-                add( deleteDialog )
-                add( addToPlaylist )
-                add( exportDialog )
-            }
+        val buttonsList = buildList {
+            add( locator )
+            add( search )
+            if( showDiscover )
+                add( discover )
+            add( positionLock )
+            add( repeat )
+            add( shuffle )
+            add( itemSelector )
+            add( deleteDialog )
+            add( addToPlaylist )
+            add( exportDialog )
         }
 
         QueueToolBarState.mediaItemCount = player.mediaItemCount
