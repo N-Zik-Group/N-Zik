@@ -546,11 +546,17 @@ class ExportCacheDialog(
 
         @UnstableApi
         internal suspend fun getLyricsText(song: Song, type: String): String? {
+            Timber.tag("ExportCache").i("getLyricsText: song=${song.title}, type=$type")
             try {
                 val allLyrics = Database.lyricsTable.findAllBySongId(song.id).first()
                 val matching = allLyrics.find { it.type == type }
-                if (matching?.data != null) return matching.data
-            } catch (_: Exception) {}
+                if (matching?.data != null) {
+                    Timber.tag("ExportCache").i("getLyricsText: found in DB")
+                    return matching.data
+                }
+            } catch (e: Exception) {
+                Timber.tag("ExportCache").w(e, "getLyricsText: DB lookup failed")
+            }
 
             val artist = song.cleanArtistsText()
             val title = song.title
@@ -559,39 +565,69 @@ class ExportCacheDialog(
                 if (parts.size == 2) (parts[0].toLongOrNull() ?: 0) * 60_000 + (parts[1].toLongOrNull() ?: 0) * 1000 else 0L
             } ?: 0L
             val durationSec = (durationMs / 1000).toInt()
+            Timber.tag("ExportCache").i("getLyricsText: artist=$artist, title=$title, durMs=$durationMs")
 
             val data = try {
                 when (type) {
-                    LyricsType.Karaoke.name, LyricsType.Synced.name -> {
-                        val blResult = BetterLyrics.getLyrics(title, artist, durationSec)
-                        val blText = blResult.getOrNull()
+                    LyricsType.Karaoke.name -> {
+                        val blResult = runCatching { BetterLyrics.getLyrics(title, artist, durationSec) }.getOrNull()
+                        val blText = blResult?.getOrNull()
                         val hasKaraoke = blText?.lines()?.any {
                             it.trim().startsWith("<") && it.contains(":") && it.contains(">")
                         } == true
-                        if (type == LyricsType.Karaoke.name && hasKaraoke) blText
-                        else if (type == LyricsType.Synced.name && !hasKaraoke) blText
-                        else {
-                            val lrcResult = LrcLib.lyrics(artist, title, durationMs.milliseconds)
-                            lrcResult?.getOrNull()?.text
-                                ?: KuGou.lyrics(artist, title, durationSec.toLong())?.getOrNull()?.value
+                        Timber.tag("ExportCache").i("getLyricsText: BetterLyrics karaoke=$hasKaraoke")
+                        if (hasKaraoke) blText else null
+                    }
+                    LyricsType.Synced.name -> {
+                        val blResult = runCatching { BetterLyrics.getLyrics(title, artist, durationSec) }.getOrNull()
+                        val blText = blResult?.getOrNull()
+                        val hasKaraoke = blText?.lines()?.any {
+                            it.trim().startsWith("<") && it.contains(":") && it.contains(">")
+                        } == true
+                        if (!hasKaraoke && blText != null) {
+                            Timber.tag("ExportCache").i("getLyricsText: BetterLyrics synced")
+                            blText
+                        } else {
+                            val lrcResult = runCatching { LrcLib.lyrics(artist, title, durationMs.milliseconds) }.getOrNull()
+                            val lrcText = lrcResult?.getOrNull()?.text
+                            if (lrcText != null) {
+                                Timber.tag("ExportCache").i("getLyricsText: LrcLib synced")
+                                lrcText
+                            } else {
+                                Timber.tag("ExportCache").i("getLyricsText: trying KuGou synced")
+                                KuGou.lyrics(artist, title, durationSec.toLong())?.getOrNull()?.value
+                            }
                         }
                     }
                     LyricsType.Unsynced.name -> {
-                        val result = LrcLib.lyricsUnsynced(artist, title, durationMs.milliseconds)
-                        result?.getOrNull()?.plainText
-                            ?: Innertube.lyrics(NextBody(videoId = song.id))?.getOrNull()
+                        val lrcResult = runCatching { LrcLib.lyricsUnsynced(artist, title, durationMs.milliseconds) }.getOrNull()
+                        val plainText = lrcResult?.getOrNull()?.plainText
+                        if (!plainText.isNullOrBlank()) {
+                            Timber.tag("ExportCache").i("getLyricsText: LrcLib unsynced OK")
+                            plainText
+                        } else {
+                            Timber.tag("ExportCache").i("getLyricsText: trying Innertube unsynced")
+                            val ytResult = runCatching { Innertube.lyrics(NextBody(videoId = song.id)) }.getOrNull()
+                            val ytText = ytResult?.getOrNull()
+                            Timber.tag("ExportCache").i("getLyricsText: Innertube result=${ytText?.take(50)}")
+                            ytText
+                        }
                     }
                     else -> null
                 }
             } catch (e: Exception) {
-                Timber.tag("ExportCache").w(e, "Failed to fetch lyrics from network")
+                Timber.tag("ExportCache").e(e, "getLyricsText: network fetch failed")
                 null
             }
 
+            Timber.tag("ExportCache").i("getLyricsText: final result=${data?.take(50)}")
             if (!data.isNullOrBlank()) {
                 try {
                     Database.lyricsTable.upsert(Lyrics(song.id, type, data))
-                } catch (_: Exception) {}
+                    Timber.tag("ExportCache").i("getLyricsText: saved to DB")
+                } catch (e: Exception) {
+                    Timber.tag("ExportCache").w(e, "getLyricsText: failed to save to DB")
+                }
             }
             return data?.ifBlank { null }
         }
@@ -601,10 +637,13 @@ class ExportCacheDialog(
     private val pendingFileName = mutableStateOf<String?>(null)
 
     override fun onSet( newValue: String ) {
-        super.onSet( newValue )
-        if( errorMessage.isNotEmpty() ) return
+        if( !allowEmpty && newValue.isEmpty() ) {
+            errorMessage = appContext().getString(R.string.value_cannot_be_empty)
+            return
+        }
         val fileName = newValue.ifBlank( ::defaultFileName )
         pendingFileName.value = "$fileName.$extension"
+        hideDialog()
         showLyricsDialog.value = true
     }
 
