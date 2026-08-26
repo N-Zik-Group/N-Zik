@@ -462,10 +462,7 @@ fun HomeSongsScreen(navController: NavController ) {
             when (id) {
                 "sort" -> add( if( builtInPlaylist == BuiltInPlaylist.Top ) topPlaylists else songSort )
                 "position_lock" -> if ( builtInPlaylist != BuiltInPlaylist.Top && songSort.sortBy == SongSortBy.Custom ) add( positionLock )
-                "search" -> {
-                    if ( hasUnmatchedSongs && builtInPlaylist != BuiltInPlaylist.OnDevice ) add( localMatchButton )
-                    add( search )
-                }
+                "search" -> add( search )
                 "locator" -> add( locator )
                 "download_all" -> add( downloadAllDialog )
                 "delete_downloads" -> add( deleteDownloadsDialog )

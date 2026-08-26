@@ -80,6 +80,7 @@ object LocalPlaylistToolbarSettingsDialog : Dialog {
         val enqueueLabel = stringResource(R.string.enqueue)
         val addToFavoriteLabel = stringResource(R.string.add_to_favorites)
         val addToPlaylistLabel = stringResource(R.string.add_to_playlist)
+        val removeFromPlaylistLabel = stringResource(R.string.remove_from_playlist)
         val importMenuLabel = stringResource(R.string.import_playlist)
         val exportDialogLabel = stringResource(R.string.export_playlist)
         val matchLabel = stringResource(R.string.match_album_audio_version)

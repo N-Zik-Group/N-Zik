@@ -199,7 +199,7 @@ object HomeAlbumsToolbarSettingsDialog : Dialog {
         val edit = prefs.edit()
         val tabs = listOf(
             "favs" to homeAlbumsFavoritesToolbarOrderKey,
-            "all" to homeAlbumsToolbarOrderKey
+            "lib" to homeAlbumsLibraryToolbarOrderKey
         )
         tabs.forEach { (tab, key) ->
             val tp = getTabPrefix(tab)

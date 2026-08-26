@@ -1,3 +1,9 @@
+fix(home-songs): correct album toolbar order key and simplify search button
+  - `HomeAlbumsToolbarSettingsDialog.kt`: Changed tab key from `"all"` to `"lib"` and preference key from `homeAlbumsToolbarOrderKey` to `homeAlbumsLibraryToolbarOrderKey`
+  - `HomeSongsScreen.kt`: Removed conditional match button from search toolbar — now shows only search icon
+  - `LocalPlaylistToolbarSettingsDialog.kt`: Added `removeFromPlaylistLabel` string resource for future use
+  - Created `RemoveFromPlaylist.kt` dialog component in legacy package for playlist song removal
+
 refactor(library): clarify playlist deletion dialogs and button labels
   - Differentiated delete playlist dialog strings from songs smart trash (avoid confusing "remove from all playlists permanently")
   - `HomeLibrary.kt`: Replaced `smart_trash` string with `delete_playlists` for the delete button label
