@@ -204,6 +204,7 @@ fun HomeScreen(
                 "songs" -> HomeSongsScreen( navController )
 
                 "artists" -> HomeArtists(
+                    navController = navController,
                     onArtistClick = {
                         navController.navigate(route = "${NavRoutes.artist.name}/${it.id}")
                     },

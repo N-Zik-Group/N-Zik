@@ -37,8 +37,8 @@ import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.components.dialog.export.ExportDatabaseDialog
 import app.n_zik.android.components.dialog.export.ExportSettingsDialog
 import app.n_zik.android.components.dialog.common.Dialog
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
 import androidx.compose.animation.AnimatedVisibility
 
 object ExportBackupDialog : Dialog {
@@ -119,19 +119,31 @@ object ExportBackupDialog : Dialog {
                     
                     AnimatedVisibility(visible = selectedOption == index && (index == 1 || index == 2)) {
                         Column(modifier = Modifier.padding(start = 44.dp, bottom = 8.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(
-                                    checked = includeYtbCredentials,
-                                    onCheckedChange = { includeYtbCredentials = it },
-                                    colors = CheckboxDefaults.colors(checkedColor = colorPalette().text, uncheckedColor = colorPalette().textSecondary)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .clickable { includeYtbCredentials = !includeYtbCredentials }
+                                    .padding(vertical = 4.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(if (includeYtbCredentials) R.drawable.checked_filled else R.drawable.unchecked_outline),
+                                    contentDescription = null,
+                                    tint = if (includeYtbCredentials) colorPalette().text else colorPalette().textSecondary,
+                                    modifier = Modifier.padding(end = 8.dp)
                                 )
                                 Text(stringResource(R.string.include_youtube_credentials), style = typography().xxs, color = colorPalette().text)
                             }
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(
-                                    checked = includeDiscordCredentials,
-                                    onCheckedChange = { includeDiscordCredentials = it },
-                                    colors = CheckboxDefaults.colors(checkedColor = colorPalette().text, uncheckedColor = colorPalette().textSecondary)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .clickable { includeDiscordCredentials = !includeDiscordCredentials }
+                                    .padding(vertical = 4.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(if (includeDiscordCredentials) R.drawable.checked_filled else R.drawable.unchecked_outline),
+                                    contentDescription = null,
+                                    tint = if (includeDiscordCredentials) colorPalette().text else colorPalette().textSecondary,
+                                    modifier = Modifier.padding(end = 8.dp)
                                 )
                                 Text(stringResource(R.string.include_discord_credentials), style = typography().xxs, color = colorPalette().text)
                             }

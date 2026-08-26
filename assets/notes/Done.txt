@@ -1,3 +1,13 @@
+feat(ui): migrate Material 3 Checkbox to custom Icon system globally
+  - Replaced `Checkbox` with custom `checked_filled` and `unchecked_outline` icons in `RenameSongDialog`, `ExportBackupDialog`, `CheckboxDialog`, `ToggleListDialog`, etc.
+  - Set `unchecked_outline.xml` intrinsic width/height to 24dp (was 48dp) to match `checked_filled.xml` and prevent huge sizing in places like `SongItem`
+  - Ensured rows wrapping the icons use `Modifier.clickable` properly for better UX
+  - Fixed `basicMarquee` text truncation in `CheckboxDialog` (used by `ResetSongDialog`) by adding `fillMaxWidth()` to Row and `weight(1f)` to BasicText
+
+feat(library): smart trash and new playlist adjustments
+  - Added Trash icon to Library tab for easier playlist deletion
+  - Removed "New Playlist" button from Home Library since "Add to Playlist" is already present
+
 feat(home): batch export cached/downloaded songs with full metadata from Home toolbar (issue https://github.com/N-Zik-Group/N-Zik/issues/XXX)
   - Added `batchExport` companion function to `ExportCacheDialog` for batch export with folder picker
   - Added `showResultToast` parameter to `onExport` to suppress per-song toasts in batch mode

@@ -418,20 +418,21 @@ fun SongItem(
             }
 
             if( itemSelector.isActive )
-                Checkbox(
-                    checked = checkedState.value,
-                    onCheckedChange = {
-                        checkedState.value = it
-                        if ( it )
-                            itemSelector.add( song )
-                        else
-                            itemSelector.remove( song )
-                    },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = colorPalette().accent,
-                        uncheckedColor = colorPalette().text
-                    ),
-                    modifier = Modifier.scale( 0.7f )
+                Icon(
+                    painter = painterResource(if (checkedState.value) R.drawable.checked_filled else R.drawable.unchecked_outline),
+                    contentDescription = null,
+                    tint = if (checkedState.value) colorPalette().accent else colorPalette().text,
+                    modifier = Modifier
+                        .scale( 0.8f )
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() }
+                        ) {
+                            val newValue = !checkedState.value
+                            checkedState.value = newValue
+                            if (newValue) itemSelector.add(song) else itemSelector.remove(song)
+                        }
+                        .padding(8.dp)
                 )
         }
 

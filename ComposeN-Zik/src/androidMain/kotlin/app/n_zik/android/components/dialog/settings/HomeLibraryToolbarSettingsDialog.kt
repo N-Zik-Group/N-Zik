@@ -25,8 +25,8 @@ import android.content.Context
 
 object HomeLibraryToolbarSettingsDialog : Dialog {
     val allButtonIds = listOf(
-        "sort", "position_lock", "sync", "search", "shuffle",
-        "new_playlist_dialog", "import_menu", "item_size"
+        "sort", "position_lock", "sync", "search", "shuffle", "item_selector",
+        "play_next", "enqueue", "add_to_playlist", "export_dialog", "delete_playlists", "import_menu", "item_size"
     )
 
     private val lockedIds = setOf("sort", "sync", "position_lock")
@@ -99,6 +99,9 @@ object HomeLibraryToolbarSettingsDialog : Dialog {
         val syncLabel = stringResource(R.string.autosync)
         val searchLabel = stringResource(R.string.search)
         val shuffleLabel = stringResource(R.string.info_shuffle)
+        val itemSelectorLabel = stringResource(R.string.item_select)
+        val playNextLabel = stringResource(R.string.play_next)
+        val enqueueLabel = stringResource(R.string.enqueue)
         val newPlaylistLabel = stringResource(R.string.create_new_playlist)
         val importMenuLabel = stringResource(R.string.import_playlist)
         val itemSizeLabel = stringResource(R.string.size)
@@ -126,6 +129,9 @@ object HomeLibraryToolbarSettingsDialog : Dialog {
                 "sync" -> ToggleItem(uid, R.drawable.sync, syncLabel, pk, true)
                 "search" -> ToggleItem(uid, R.drawable.search_circle, searchLabel, pk, true)
                 "shuffle" -> ToggleItem(uid, R.drawable.shuffle, shuffleLabel, pk, true)
+                "item_selector" -> ToggleItem(uid, R.drawable.checked_filled, itemSelectorLabel, pk, true)
+                "play_next" -> ToggleItem(uid, R.drawable.play_skip_forward, playNextLabel, pk, true)
+                "enqueue" -> ToggleItem(uid, R.drawable.enqueue, enqueueLabel, pk, true)
                 "new_playlist_dialog" -> ToggleItem(uid, R.drawable.add_in_playlist, newPlaylistLabel, pk, true)
                 "import_menu" -> ToggleItem(uid, R.drawable.import_outline, importMenuLabel, pk, true)
                 "item_size" -> ToggleItem(uid, R.drawable.resize, itemSizeLabel, pk, true)

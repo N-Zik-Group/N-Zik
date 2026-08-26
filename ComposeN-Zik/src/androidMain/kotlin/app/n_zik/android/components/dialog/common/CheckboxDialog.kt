@@ -15,8 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -89,23 +89,19 @@ abstract class CheckboxDialog(activeState: MutableState<Boolean>): ConfirmDialog
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding( vertical = 3.dp )
+                modifier = Modifier.fillMaxWidth()
+                                   .padding( vertical = 3.dp )
                                    .clickable(
                                        interactionSource = remember { MutableInteractionSource() },
                                        indication = null,
                                        onClick = ::onShortClick
                                    )
             ) {
-                Checkbox(
-                    checked = selected,
-                    onCheckedChange = null,
-                    modifier = Modifier.size( 20.dp ),
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = colorPalette().accent,
-                        uncheckedColor = colorPalette().textDisabled,
-                        checkmarkColor = colorPalette().onAccent,
-                        disabledIndeterminateColor = Color.Transparent
-                    )
+                Icon(
+                    painter = painterResource(if (selected) R.drawable.checked_filled else R.drawable.unchecked_outline),
+                    contentDescription = null,
+                    tint = if (selected) colorPalette().accent else colorPalette().textDisabled,
+                    modifier = Modifier.size( 20.dp )
                 )
 
                 Spacer( Modifier.width( 5.dp ) )
@@ -113,7 +109,7 @@ abstract class CheckboxDialog(activeState: MutableState<Boolean>): ConfirmDialog
                 BasicText(
                     text = menuIconTitle,
                     maxLines = 1,
-                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
+                    modifier = Modifier.weight(1f).basicMarquee(iterations = Int.MAX_VALUE),
                     style = typography().xs.copy( color = colorPalette().text )
                 )
             }

@@ -31,6 +31,9 @@ import androidx.compose.ui.zIndex
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.ui.draw.scale
 import sh.calvin.reorderable.rememberReorderableLazyGridState
 import sh.calvin.reorderable.ReorderableItem
 import app.kreate.android.themed.rimusic.component.playlist.PositionLock
@@ -43,6 +46,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
@@ -81,6 +85,7 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Randomizer
 import app.n_zik.android.components.menu.album.AlbumItemMenu
 import app.n_zik.android.components.menu.FilterMenu
+import app.n_zik.android.components.tab.ItemSelector
 import app.it.fast4x.rimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
 import app.it.fast4x.rimusic.ui.components.themed.HeaderInfo
@@ -135,18 +140,24 @@ import app.it.fast4x.rimusic.models.SongAlbumMap
 import app.it.fast4x.rimusic.ui.styling.onOverlay
 import app.it.fast4x.rimusic.ui.styling.overlay
 import app.it.fast4x.rimusic.utils.asMediaItem
+import app.it.fast4x.rimusic.utils.addNext
+import app.it.fast4x.rimusic.utils.enqueue
 import kotlinx.coroutines.CoroutineScope
 import app.n_zik.android.appContext
 import kotlinx.coroutines.withContext
-import timber.log.Timber
+import app.it.fast4x.rimusic.ui.components.themed.Enqueue
+import app.it.fast4x.rimusic.ui.components.themed.PlayNext
+import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.components.dialog.common.RetrySyncDialog
+import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import app.n_zik.android.components.dialog.settings.HomeAlbumsToolbarSettingsDialog
 import androidx.compose.material3.LinearWavyProgressIndicator
 import app.n_zik.android.components.AppPullToRefreshBox
 import androidx.core.content.ContextCompat
 import java.util.ArrayList
 import android.content.Intent
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalTextApi
@@ -178,6 +189,7 @@ fun HomeAlbums(
     var itemsOnDisplay by persistList<Album>( "home/albums/on_display" )
 
     val search = Search(lazyGridState)
+    val itemSelector = ItemSelector<Album>()
 
     val sort = when( albumType ) {
         AlbumsType.Favorites -> Sort( HOME_ALBUMS_FAVORITES_SORT_BY, HOME_ALBUMS_FAVORITES_SORT_ORDER, homeAlbumsFavoritesSortMenuOrderKey, "alb_fav" )
@@ -188,15 +200,56 @@ fun HomeAlbums(
     val itemSize = ItemSize.init( HOME_ALBUM_ITEM_SIZE )
 
     val randomizer = object: Randomizer<Album> {
-        override fun getItems(): List<Album> = itemsOnDisplay
-        override fun onClick(index: Int) = onAlbumClick( itemsOnDisplay[index] )
+        override fun getItems(): List<Album> = itemSelector.ifEmpty { itemsOnDisplay }
+        override fun onClick(index: Int) {
+            val items = itemSelector.ifEmpty { itemsOnDisplay }
+            onAlbumClick( items[index] )
+        }
     }
-    val shuffle = SongShuffler(
-        databaseCall = when( albumType ) {
-            AlbumsType.Favorites -> Database.albumTable::allSongsInBookmarked
-            AlbumsType.Library -> Database.albumTable::allSongsInLibrary
+
+    val scope = rememberCoroutineScope()
+    suspend fun getSelectedSongs(): List<Song> = withContext(Dispatchers.IO) {
+        val selected = itemSelector.ifEmpty { itemsOnDisplay }
+        val seen = HashSet<String>()
+        val result = ArrayList<Song>()
+        for( album in selected ) {
+            for( song in Database.songAlbumMapTable.allSongsOfDirect( album.id ) ) {
+                if( seen.add( song.id ) ) result.add( song )
+            }
+        }
+        result
+    }
+    fun getSelectedMediaItems(): List<androidx.media3.common.MediaItem> =
+        runBlocking(Dispatchers.IO) { getSelectedSongs().map { it.asMediaItem } }
+
+    val shuffle = SongShuffler {
+        runBlocking(Dispatchers.IO) { getSelectedSongs() }
+    }
+    val playNext = PlayNext {
+        scope.launch {
+            val mediaItems = withContext(Dispatchers.IO) { getSelectedSongs().map { it.asMediaItem } }
+            binder?.player?.addNext( mediaItems, appContext() )
+            itemSelector.isActive = false
+        }
+    }
+    val enqueue = Enqueue {
+        scope.launch {
+            val mediaItems = withContext(Dispatchers.IO) { getSelectedSongs().map { it.asMediaItem } }
+            binder?.player?.enqueue( mediaItems, appContext() )
+            itemSelector.isActive = false
+        }
+    }
+    val addToPlaylist = PlaylistsMenu.init(
+        navController = navController,
+        mediaItems = { _ -> getSelectedMediaItems() },
+        onFailure = { throwable, preview ->
+            Timber.tag("HomeAlbum").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
         },
-        key = arrayOf( albumType )
+        finalAction = { itemSelector.isActive = false }
+    )
+    val exportDialog = ExportSongsToCSVDialog(
+        playlistName = "Albums",
+        songs = { runBlocking(Dispatchers.IO) { getSelectedSongs() } }
     )
 
     val showFavoritesAlbum by rememberPreference(showFavoritesAlbumKey, true)
@@ -376,6 +429,11 @@ fun HomeAlbums(
                             "search" -> toolbarButtons.add(search)
                             "randomizer" -> toolbarButtons.add(randomizer)
                             "shuffle" -> toolbarButtons.add(shuffle)
+                            "item_selector" -> toolbarButtons.add(itemSelector)
+                            "play_next" -> toolbarButtons.add(playNext)
+                            "enqueue" -> toolbarButtons.add(enqueue)
+                            "add_to_playlist" -> toolbarButtons.add(addToPlaylist)
+                            "export_dialog" -> toolbarButtons.add(exportDialog)
                             "item_size" -> toolbarButtons.add(itemSize)
                         }
                     }
@@ -415,6 +473,7 @@ fun HomeAlbums(
                             TabHeader(R.string.albums) {
                                 HeaderInfo(items.size.toString(), R.drawable.album)
                             }
+                            exportDialog.Render()
                             TabToolBar.Buttons( toolbarButtons )
                             search.SearchBar( this )
                         }
@@ -533,7 +592,7 @@ fun HomeAlbums(
                                     Box(
                                         modifier = Modifier
                                             .padding(4.dp)
-                                            .size(24.dp)
+                                            .size(32.dp)
                                             .align(Alignment.TopEnd)
                                             .zIndex(2f)
                                             .draggableHandle(
@@ -591,15 +650,33 @@ fun HomeAlbums(
                                         }
                                     },
                                     onClick = {
-                                        search.hideIfEmpty()
-                                        onAlbumClick( album )
+                                        if( itemSelector.isActive ) {
+                                            if( album in itemSelector ) itemSelector.remove( album )
+                                            else itemSelector.add( album )
+                                        } else {
+                                            search.hideIfEmpty()
+                                            onAlbumClick( album )
+                                        }
                                     }
                                 )
                                 .clip(thumbnailShape()),
                             disableScrollingText = disableScrollingText,
                             isYoutubeAlbum = album.isYoutubeAlbum,
                             thumbnailOverlay = {
-                                if (sort.sortBy == AlbumSortBy.PlayCount) {
+                                if( itemSelector.isActive ) {
+                                    key(itemSelector.size) {
+                                        Icon(
+                                            painter = painterResource(if (album in itemSelector) R.drawable.checked_filled else R.drawable.unchecked_outline),
+                                            contentDescription = null,
+                                            tint = if (album in itemSelector) colorPalette().accent else colorPalette().text,
+                                            modifier = Modifier
+                                                .padding(4.dp)
+                                                .size(24.dp)
+                                                .align(Alignment.TopStart)
+                                                .zIndex(2f)
+                                        )
+                                    }
+                                } else if (sort.sortBy == AlbumSortBy.PlayCount) {
                                     val playCount by Database.eventTable.getAlbumPlayCount(album.id).collectAsState(0, Dispatchers.IO)
                                     Box(
                                         modifier = Modifier

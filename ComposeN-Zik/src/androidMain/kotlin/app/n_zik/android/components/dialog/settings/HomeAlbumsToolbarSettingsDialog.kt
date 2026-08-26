@@ -26,7 +26,7 @@ import android.content.Context
 object HomeAlbumsToolbarSettingsDialog : Dialog {
 
     val allButtonIds = listOf(
-        "sort", "position_lock", "sync", "search", "randomizer", "shuffle", "item_size"
+        "sort", "position_lock", "sync", "search", "randomizer", "shuffle", "item_selector", "play_next", "enqueue", "add_to_playlist", "export_dialog", "item_size"
     )
 
     private val lockedIds = setOf("sort", "sync", "position_lock")
@@ -96,6 +96,9 @@ object HomeAlbumsToolbarSettingsDialog : Dialog {
         val searchLabel = stringResource(R.string.search)
         val randomizerLabel = stringResource(R.string.randomizer)
         val shuffleLabel = stringResource(R.string.info_shuffle)
+        val itemSelectorLabel = stringResource(R.string.item_select)
+        val playNextLabel = stringResource(R.string.play_next)
+        val enqueueLabel = stringResource(R.string.enqueue)
         val itemSizeLabel = stringResource(R.string.size)
 
         val currentLockedIds = lockedIds.map { "${tabPrefix}_$it" }.toSet()
@@ -122,6 +125,9 @@ object HomeAlbumsToolbarSettingsDialog : Dialog {
                 "search" -> ToggleItem(uid, R.drawable.search_circle, searchLabel, pk, true)
                 "randomizer" -> ToggleItem(uid, R.drawable.dice, randomizerLabel, pk, true)
                 "shuffle" -> ToggleItem(uid, R.drawable.shuffle, shuffleLabel, pk, true)
+                "item_selector" -> ToggleItem(uid, R.drawable.checked_filled, itemSelectorLabel, pk, true)
+                "play_next" -> ToggleItem(uid, R.drawable.play_skip_forward, playNextLabel, pk, true)
+                "enqueue" -> ToggleItem(uid, R.drawable.enqueue, enqueueLabel, pk, true)
                 "item_size" -> ToggleItem(uid, R.drawable.resize, itemSizeLabel, pk, true)
                 else -> null
             }

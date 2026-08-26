@@ -19,7 +19,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -97,9 +98,11 @@ class RenameSongDialog private constructor(
                     .padding(top = 8.dp)
                     .clickable { isExplicit = !isExplicit }
             ) {
-                Checkbox(
-                    checked = isExplicit,
-                    onCheckedChange = { isExplicit = it }
+                Icon(
+                    painter = painterResource(if (isExplicit) R.drawable.checked_filled else R.drawable.unchecked_outline),
+                    contentDescription = null,
+                    tint = if (isExplicit) colorPalette().text else colorPalette().textSecondary,
+                    modifier = Modifier.padding(end = 8.dp)
                 )
                 Text(
                     text = stringResource(R.string.explicit),

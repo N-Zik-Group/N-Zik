@@ -46,7 +46,7 @@ class ItemSelector<E> private constructor(
             activeState.value = value
 
             if( !value )
-                selected.clear()
+                selectedState.value = ArrayList()
         }
 
     override val iconId: Int
@@ -79,10 +79,24 @@ class ItemSelector<E> private constructor(
 
     override fun get(index: Int): E = selected[index]
 
-    override fun removeAt(index: Int): E = selected.removeAt( index )
+    override fun removeAt(index: Int): E {
+        val newList = ArrayList( selected )
+        val removed = newList.removeAt( index )
+        selectedState.value = newList
+        return removed
+    }
 
-    override fun add(index: Int, element: E) = selected.add( index, element )
+    override fun add(index: Int, element: E) {
+        val newList = ArrayList( selected )
+        newList.add( index, element )
+        selectedState.value = newList
+    }
 
-    override fun set(index: Int, element: E): E = selected.set( index, element )
+    override fun set(index: Int, element: E): E {
+        val newList = ArrayList( selected )
+        val old = newList.set( index, element )
+        selectedState.value = newList
+        return old
+    }
 }
 

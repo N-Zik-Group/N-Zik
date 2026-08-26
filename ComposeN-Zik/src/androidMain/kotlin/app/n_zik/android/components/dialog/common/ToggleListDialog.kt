@@ -284,19 +284,11 @@ private fun ToggleRow(
                 }
             }
 
-            Checkbox(
-                checked = isChecked,
-                onCheckedChange = null,
-                enabled = enabled,
-                modifier = Modifier.size(20.dp),
-                colors = CheckboxDefaults.colors(
-                    checkedColor = colorPalette().accent,
-                    uncheckedColor = colorPalette().textDisabled,
-                    checkmarkColor = colorPalette().onAccent,
-                    disabledIndeterminateColor = Color.Transparent,
-                    disabledCheckedColor = colorPalette().textDisabled,
-                    disabledUncheckedColor = colorPalette().textDisabled
-                )
+            Icon(
+                painter = painterResource(if (isChecked) R.drawable.checked_filled else R.drawable.unchecked_outline),
+                contentDescription = null,
+                tint = if (!enabled) colorPalette().textDisabled else if (isChecked) colorPalette().accent else colorPalette().textDisabled,
+                modifier = Modifier.size(20.dp)
             )
         }
 

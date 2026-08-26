@@ -39,6 +39,7 @@ import app.it.fast4x.rimusic.utils.semiBold
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
@@ -47,9 +48,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import app.it.fast4x.rimusic.ui.components.themed.ConfirmationDialog
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -65,6 +72,8 @@ import app.n_zik.android.core.database.Database
 import app.it.fast4x.rimusic.MONTHLY_PREFIX
 import app.it.fast4x.rimusic.PINNED_PREFIX
 import app.n_zik.android.R
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
@@ -85,6 +94,7 @@ import app.it.fast4x.rimusic.ui.components.themed.FloatingActionsContainerWithSc
 import app.it.fast4x.rimusic.ui.components.themed.HeaderInfo
 import app.it.fast4x.rimusic.ui.components.themed.MultiFloatingActionsContainer
 import app.it.fast4x.rimusic.ui.items.PlaylistItem
+import app.n_zik.android.components.tab.ItemSelector
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.CheckMonthlyPlaylist
 import app.it.fast4x.rimusic.utils.Preference.HOME_LIBRARY_ITEM_SIZE
@@ -125,7 +135,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import app.kreate.android.me.knighthat.utils.PropUtils
 import app.n_zik.android.components.Sort
-import app.n_zik.android.components.dialog.playlist.NewPlaylistDialog
+import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
+import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.components.tab.ImportSongsFromCSV
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.tab.SongShuffler
@@ -139,6 +150,14 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
 import it.fast4x.innertube.Innertube
 import app.it.fast4x.rimusic.utils.asSong
 import app.n_zik.android.appContext
+import app.n_zik.android.LocalPlayerServiceBinder
+import kotlinx.coroutines.flow.first
+import app.it.fast4x.rimusic.ui.components.themed.Enqueue
+import app.it.fast4x.rimusic.ui.components.themed.PlayNext
+import app.it.fast4x.rimusic.utils.asMediaItem
+import app.it.fast4x.rimusic.models.Song
+import app.it.fast4x.rimusic.utils.addNext
+import app.it.fast4x.rimusic.utils.enqueue
 import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.components.dialog.media.YouTubeLinkImportDialog
 import app.n_zik.android.components.tab.ImportPlaylistsMenu
@@ -153,9 +172,12 @@ import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
 import app.n_zik.android.thumbnailShape
 import app.it.fast4x.rimusic.utils.formatAsTime
 import app.n_zik.android.components.AppPullToRefreshBox
+import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
+import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import androidx.core.content.ContextCompat
 import java.util.ArrayList
 import android.content.Intent
+import kotlinx.coroutines.runBlocking
 
 @ExperimentalMaterial3Api
 @UnstableApi
@@ -170,6 +192,7 @@ fun HomeLibrary(
     onSettingsClick: () -> Unit
 ) {
     val menuState = LocalMenuState.current
+    val binder = LocalPlayerServiceBinder.current
     
     // Essentials
     val lazyGridState = rememberLazyGridState()
@@ -183,6 +206,7 @@ fun HomeLibrary(
     var itemsOnDisplay by persistList<PlaylistPreview>("home/playlists/on_display")
 
     val search = Search(lazyGridState)
+    val itemSelector = ItemSelector<PlaylistPreview>()
 
     val sort = when( playlistType ) {
         PlaylistsType.Playlist -> Sort( HOME_LIBRARY_PLAYLIST_SORT_BY, HOME_LIBRARY_PLAYLIST_SORT_ORDER, homeLibraryPlaylistSortMenuOrderKey, "lib_pl" )
@@ -194,30 +218,26 @@ fun HomeLibrary(
     val positionLock = remember( sort.sortOrder ) { PositionLock(sort.sortOrder) }
     val itemSize = ItemSize.init( HOME_LIBRARY_ITEM_SIZE )
 
-    //<editor-fold desc="Songs shuffler">
-    /**
-     * Previous implementation calls this every time shuffle button is clicked.
-     * It is extremely slow since the database needs some time to look for and
-     * sort songs before it can go through and start playing.
-     *
-     * This implementation will make sure that new list is fetched when [PlaylistsType]
-     * is changed, but this process happens in the background, therefore, there's no
-     * visible penalty. Furthermore, this will reduce load time significantly.
-     */
-    val shuffle = SongShuffler(
-        databaseCall = when( playlistType ) {
-            PlaylistsType.Playlist          -> Database.playlistTable::allSongs
-            PlaylistsType.PinnedPlaylist    -> Database.playlistTable::allPinnedSongs
-            PlaylistsType.MonthlyPlaylist   -> Database.playlistTable::allMonthlySongs
+    suspend fun getSelectedSongs(): List<Song> = withContext(Dispatchers.IO) {
+        val selected = itemSelector.ifEmpty { itemsOnDisplay }
+        val seen = HashSet<String>()
+        val result = ArrayList<Song>()
+        for( preview in selected ) {
+            val songs = Database.songPlaylistMapTable.allSongsOf( preview.playlist.id ).first()
+            for( song in songs ) {
+                if( seen.add( song.id ) ) result.add( song )
+            }
+        }
+        result
+    }
+    fun getSelectedMediaItems(): List<androidx.media3.common.MediaItem> =
+        runBlocking(Dispatchers.IO) { getSelectedSongs().map { it.asMediaItem } }
 
-            PlaylistsType.YTPlaylist        -> Database.playlistTable::allYTPlaylistSongs
-        },
-        key = arrayOf( playlistType )
-    )
+    val shuffle = SongShuffler {
+        runBlocking(Dispatchers.IO) { getSelectedSongs() }
+    }
     //</editor-fold>
-    //<editor-fold desc="New playlist dialog">
-    val newPlaylistDialog = NewPlaylistDialog()
-    //</editor-fold>
+
     val importPlaylistDialog = ImportSongsFromCSV(onImportComplete = {
         appContext().preferences.edit().putString(HOME_LIBRARY_PLAYLIST_SORT_BY.key, PlaylistSortBy.Custom.name).apply()
     })
@@ -268,6 +288,44 @@ fun HomeLibrary(
         )
     }
     val sync = autoSyncToolbutton(R.string.autosync)
+
+    val playNext = PlayNext {
+        coroutineScope.launch {
+            val mediaItems = withContext(Dispatchers.IO) { getSelectedSongs().map { it.asMediaItem } }
+            binder?.player?.addNext( mediaItems, appContext() )
+            itemSelector.isActive = false
+        }
+    }
+    val enqueue = Enqueue {
+        coroutineScope.launch {
+            val mediaItems = withContext(Dispatchers.IO) { getSelectedSongs().map { it.asMediaItem } }
+            binder?.player?.enqueue( mediaItems, appContext() )
+            itemSelector.isActive = false
+        }
+    }
+    val addToPlaylist = PlaylistsMenu.init(
+        navController = navController,
+        mediaItems = { _ -> getSelectedMediaItems() },
+        onFailure = { throwable, preview ->
+            Timber.tag("HomeLibrary").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
+        },
+        finalAction = { itemSelector.isActive = false }
+    )
+    val exportDialog = ExportSongsToCSVDialog(
+        playlistName = "Library",
+        songs = { runBlocking(Dispatchers.IO) { getSelectedSongs() } }
+    )
+
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    val deletePlaylistsButton = remember {
+        object : MenuIcon, Descriptive {
+            override val iconId: Int = R.drawable.trash
+            override val messageId: Int = R.string.delete
+            @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
+            override fun onShortClick() { showDeleteConfirmDialog = true }
+            override fun onLongClick() {}
+        }
+    }
 
     LaunchedEffect( sort.sortBy, sort.sortOrder ) {
         Database.playlistTable
@@ -337,9 +395,7 @@ fun HomeLibrary(
     }
 
 
-    // START - New playlist
-    newPlaylistDialog.Render()
-    // END - New playlist
+
     
     // START - Import menu
     importMenu.Render()
@@ -435,7 +491,12 @@ fun HomeLibrary(
                             "sync" -> { if (isYouTubeSyncEnabled()) toolbarButtons.add(sync) }
                             "search" -> toolbarButtons.add(search)
                             "shuffle" -> toolbarButtons.add(shuffle)
-                            "new_playlist_dialog" -> toolbarButtons.add(newPlaylistDialog)
+                            "item_selector" -> toolbarButtons.add(itemSelector)
+                            "play_next" -> toolbarButtons.add(playNext)
+                            "enqueue" -> toolbarButtons.add(enqueue)
+                            "add_to_playlist" -> toolbarButtons.add(addToPlaylist)
+                            "export_dialog" -> toolbarButtons.add(exportDialog)
+                            "delete_playlists" -> toolbarButtons.add(deletePlaylistsButton)
                             "import_menu" -> toolbarButtons.add(importMenu)
                             "item_size" -> toolbarButtons.add(itemSize)
                         }
@@ -497,6 +558,27 @@ fun HomeLibrary(
                             TabHeader( R.string.playlists ) {
                                 HeaderInfo( items.size.toString(), R.drawable.playlist )
                             }
+                            exportDialog.Render()
+                            
+                            if (showDeleteConfirmDialog) {
+                                val selected = itemSelector.ifEmpty { itemsOnDisplay }
+                                ConfirmationDialog(
+                                    text = stringResource(R.string.delete_playlist),
+                                    onDismiss = { showDeleteConfirmDialog = false },
+                                    onConfirm = {
+                                        showDeleteConfirmDialog = false
+                                        coroutineScope.launch(Dispatchers.IO) {
+                                            Database.asyncTransaction {
+                                                selected.forEach { preview ->
+                                                    playlistTable.delete(preview.playlist)
+                                                }
+                                            }
+                                            itemSelector.isActive = false
+                                        }
+                                    }
+                                )
+                            }
+                            
                             TabToolBar.Buttons( toolbarButtons )
                             search.SearchBar( this )
                         }
@@ -570,7 +652,7 @@ fun HomeLibrary(
                                     Box(
                                         modifier = Modifier
                                             .padding(4.dp)
-                                            .size(24.dp)
+                                            .size(32.dp)
                                             .align(Alignment.TopEnd)
                                             .zIndex(2f)
                                             .draggableHandle(
@@ -607,8 +689,13 @@ fun HomeLibrary(
                                         .clip(uiRoundnessShape())
                                         .combinedClickable(
                                             onClick = {
-                                                search.hideIfEmpty()
-                                                onPlaylistClick(preview.playlist)
+                                                if( itemSelector.isActive ) {
+                                                    if( preview in itemSelector ) itemSelector.remove( preview )
+                                                    else itemSelector.add( preview )
+                                                } else {
+                                                    search.hideIfEmpty()
+                                                    onPlaylistClick(preview.playlist)
+                                                }
                                             },
                                             onLongClick = {
                                                 menuState.display {
@@ -623,7 +710,20 @@ fun HomeLibrary(
                                     isYoutubePlaylist = preview.playlist.isYoutubePlaylist,
                                     isEditable = preview.playlist.isEditable,
                                     thumbnailOverlay = {
-                                        if (sort.sortBy == PlaylistSortBy.SongCount) {
+                                        if( itemSelector.isActive ) {
+                                            key(itemSelector.size) {
+                                                Icon(
+                                                    painter = painterResource(if (preview in itemSelector) R.drawable.checked_filled else R.drawable.unchecked_outline),
+                                                    contentDescription = null,
+                                                    tint = if (preview in itemSelector) colorPalette().accent else colorPalette().text,
+                                                    modifier = Modifier
+                                                        .padding(4.dp)
+                                                        .size(24.dp)
+                                                        .align(Alignment.TopStart)
+                                                        .zIndex(2f)
+                                                )
+                                            }
+                                        } else if (sort.sortBy == PlaylistSortBy.SongCount) {
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize()

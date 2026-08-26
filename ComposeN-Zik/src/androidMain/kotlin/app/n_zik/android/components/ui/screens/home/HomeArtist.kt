@@ -11,6 +11,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -33,6 +34,9 @@ import androidx.compose.ui.zIndex
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.ui.draw.scale
 import sh.calvin.reorderable.rememberReorderableLazyGridState
 import sh.calvin.reorderable.ReorderableItem
 import app.kreate.android.themed.rimusic.component.playlist.PositionLock
@@ -44,6 +48,7 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
@@ -54,6 +59,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -69,6 +75,14 @@ import it.fast4x.innertube.YtMusic
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.colorPalette
 import app.n_zik.android.appContext
+import app.n_zik.android.LocalPlayerServiceBinder
+import kotlinx.coroutines.flow.first
+import app.it.fast4x.rimusic.ui.components.themed.Enqueue
+import app.it.fast4x.rimusic.ui.components.themed.PlayNext
+import app.it.fast4x.rimusic.utils.asMediaItem
+import app.it.fast4x.rimusic.models.Song
+import app.it.fast4x.rimusic.utils.addNext
+import app.it.fast4x.rimusic.utils.enqueue
 import app.it.fast4x.rimusic.enums.ArtistsType
 import app.it.fast4x.rimusic.enums.FilterBy
 import app.it.fast4x.rimusic.enums.SortOrder
@@ -82,6 +96,7 @@ import app.it.fast4x.rimusic.ui.components.tab.TabHeader
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Randomizer
 import app.n_zik.android.components.menu.FilterMenu
+import app.n_zik.android.components.tab.ItemSelector
 import app.it.fast4x.rimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
 import app.it.fast4x.rimusic.ui.components.themed.HeaderInfo
@@ -128,17 +143,21 @@ import app.n_zik.android.components.tab.SongShuffler
 import app.kreate.android.me.knighthat.utils.PropUtils
 import app.n_zik.android.components.menu.artist.LocalArtistItemMenu
 import kotlinx.coroutines.CoroutineScope
-import timber.log.Timber
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.components.dialog.common.RetrySyncDialog
+import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import app.n_zik.android.components.dialog.settings.HomeArtistsToolbarSettingsDialog
 import androidx.compose.material3.LinearWavyProgressIndicator
 import app.n_zik.android.thumbnailShape
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.n_zik.android.components.AppPullToRefreshBox
+import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavController
 import java.util.ArrayList
 import android.content.Intent
+import kotlinx.coroutines.runBlocking
+import timber.log.Timber
 
 @ExperimentalMaterial3Api
 @UnstableApi
@@ -148,6 +167,7 @@ import android.content.Intent
 @ExperimentalComposeUiApi
 @Composable
 fun HomeArtists(
+    navController: NavController,
     onArtistClick: (Artist) -> Unit,
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit
@@ -156,6 +176,7 @@ fun HomeArtists(
     val lazyGridState = rememberLazyGridState()
     val (colorPalette, typography) = LocalAppearance.current
     val menuState = LocalMenuState.current
+    val binder = LocalPlayerServiceBinder.current
     val coroutineScope = rememberCoroutineScope()
 
     // Settings
@@ -171,6 +192,7 @@ fun HomeArtists(
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
     val search = Search(lazyGridState)
+    val itemSelector = ItemSelector<Artist>()
 
     val sort = when( artistType ) {
         ArtistsType.Favorites -> Sort( HOME_ARTISTS_FAVORITES_SORT_BY, HOME_ARTISTS_FAVORITES_SORT_ORDER, homeArtistsFavoritesSortMenuOrderKey, "art_fav" )
@@ -181,16 +203,56 @@ fun HomeArtists(
     val itemSize = ItemSize.init( HOME_ARTIST_ITEM_SIZE )
 
     val randomizer = object: Randomizer<Artist> {
-        override fun getItems(): List<Artist> = itemsOnDisplay
-        override fun onClick(index: Int) = onArtistClick(itemsOnDisplay[index])
-
+        override fun getItems(): List<Artist> = itemSelector.ifEmpty { itemsOnDisplay }
+        override fun onClick(index: Int) {
+            val items = itemSelector.ifEmpty { itemsOnDisplay }
+            onArtistClick( items[index] )
+        }
     }
-    val shuffle = SongShuffler(
-        databaseCall = when( artistType ) {
-            ArtistsType.Favorites -> Database.artistTable::allSongsInFollowing
-            ArtistsType.Library -> Database.artistTable::allSongsInLibrary
+
+    suspend fun getSelectedSongs(): List<Song> = withContext(Dispatchers.IO) {
+        val selected = itemSelector.ifEmpty { itemsOnDisplay }
+        val seen = HashSet<String>()
+        val result = ArrayList<Song>()
+        for( artist in selected ) {
+            val songs = Database.songArtistMapTable.allSongsBy( artist.id ).first()
+            for( song in songs ) {
+                if( seen.add( song.id ) ) result.add( song )
+            }
+        }
+        result
+    }
+    fun getSelectedMediaItems(): List<androidx.media3.common.MediaItem> =
+        runBlocking(Dispatchers.IO) { getSelectedSongs().map { it.asMediaItem } }
+
+    val shuffle = SongShuffler {
+        runBlocking(Dispatchers.IO) { getSelectedSongs() }
+    }
+    val playNext = PlayNext {
+        coroutineScope.launch {
+            val mediaItems = withContext(Dispatchers.IO) { getSelectedSongs().map { it.asMediaItem } }
+            binder?.player?.addNext( mediaItems, appContext() )
+            itemSelector.isActive = false
+        }
+    }
+    val enqueue = Enqueue {
+        coroutineScope.launch {
+            val mediaItems = withContext(Dispatchers.IO) { getSelectedSongs().map { it.asMediaItem } }
+            binder?.player?.enqueue( mediaItems, appContext() )
+            itemSelector.isActive = false
+        }
+    }
+    val addToPlaylist = PlaylistsMenu.init(
+        navController = navController,
+        mediaItems = { _ -> getSelectedMediaItems() },
+        onFailure = { throwable, preview ->
+            Timber.tag("HomeArtist").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
         },
-        key = arrayOf( artistType )
+        finalAction = { itemSelector.isActive = false }
+    )
+    val exportDialog = ExportSongsToCSVDialog(
+        playlistName = "Artists",
+        songs = { runBlocking(Dispatchers.IO) { getSelectedSongs() } }
     )
 
     val showFavoritesArtist by rememberPreference(showFavoritesArtistKey, true)
@@ -351,6 +413,11 @@ fun HomeArtists(
                             "search" -> toolbarButtons.add(search)
                             "randomizer" -> toolbarButtons.add(randomizer)
                             "shuffle" -> toolbarButtons.add(shuffle)
+                            "item_selector" -> toolbarButtons.add(itemSelector)
+                            "play_next" -> toolbarButtons.add(playNext)
+                            "enqueue" -> toolbarButtons.add(enqueue)
+                            "add_to_playlist" -> toolbarButtons.add(addToPlaylist)
+                            "export_dialog" -> toolbarButtons.add(exportDialog)
                             "item_size" -> toolbarButtons.add(itemSize)
                         }
                     }
@@ -390,6 +457,7 @@ fun HomeArtists(
                             TabHeader( R.string.artists ) {
                                 HeaderInfo(items.size.toString(), R.drawable.people)
                             }
+                            exportDialog.Render()
                             TabToolBar.Buttons( toolbarButtons )
                             search.SearchBar( this )
                         }
@@ -506,7 +574,7 @@ fun HomeArtists(
                                     Box(
                                         modifier = Modifier
                                             .padding(4.dp)
-                                            .size(24.dp)
+                                            .size(32.dp)
                                             .align(Alignment.TopEnd)
                                             .zIndex(2f)
                                             .draggableHandle(
@@ -540,8 +608,13 @@ fun HomeArtists(
                                     alternative = true,
                                     modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                         onClick = {
-                                            search.hideIfEmpty()
-                                            onArtistClick( artist )
+                                            if( itemSelector.isActive ) {
+                                                if( artist in itemSelector ) itemSelector.remove( artist )
+                                                else itemSelector.add( artist )
+                                            } else {
+                                                search.hideIfEmpty()
+                                                onArtistClick( artist )
+                                            }
                                         },
                                         onLongClick = {
                                             menuState.display { LocalArtistItemMenu(artist = artist).MenuComponent() }
@@ -550,7 +623,20 @@ fun HomeArtists(
                                     disableScrollingText = disableScrollingText,
                                     isYoutubeArtist = artist.isYoutubeArtist,
                                     thumbnailOverlay = {
-                                        if (sort.sortBy == ArtistSortBy.PlayCount) {
+                                        if( itemSelector.isActive ) {
+                                            key(itemSelector.size) {
+                                                Icon(
+                                                    painter = painterResource(if (artist in itemSelector) R.drawable.checked_filled else R.drawable.unchecked_outline),
+                                                    contentDescription = null,
+                                                    tint = if (artist in itemSelector) colorPalette().accent else colorPalette().text,
+                                                    modifier = Modifier
+                                                        .padding(4.dp)
+                                                        .size(24.dp)
+                                                        .align(Alignment.TopStart)
+                                                        .zIndex(2f)
+                                                )
+                                            }
+                                        } else if (sort.sortBy == ArtistSortBy.PlayCount) {
                                             val playCount by Database.eventTable.getArtistPlayCount(artist.id).collectAsState(0, Dispatchers.IO)
                                             Box(
                                                 modifier = Modifier
