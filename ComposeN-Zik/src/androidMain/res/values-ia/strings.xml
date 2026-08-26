@@ -1686,4 +1686,8 @@
   <string name="widget_description">N-Zik Music player</string>
   <string name="widget_playlists_description">N-Zik Playlists</string>
   <string name="turntable_widget_description">N-Zik Turntable</string>
+  <string name="delete_playlists_confirm_multiple">Are you sure you want to delete these %d playlists?</string>
+  <string name="delete_playlists_confirm_all">Are you sure you want to delete ALL %d playlists?</string>
+  <string name="remove_songs_from_playlist_confirm">Are you sure you want to remove these %d songs from the playlist?</string>
+  <string name="delete_playlists_label">Delete playlists</string>
 </resources>
