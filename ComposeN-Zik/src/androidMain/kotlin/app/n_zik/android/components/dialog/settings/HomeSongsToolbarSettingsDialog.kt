@@ -30,16 +30,16 @@ object HomeSongsToolbarSettingsDialog : Dialog {
         "download_all", "delete_downloads",
         "shuffle", "smart_shuffle", "item_selector",
         "play_next", "enqueue", "add_to_favorite", "add_to_playlist",
-        "import_menu", "export_dialog", "smart_trash"
+        "import_menu", "export_dialog", "export_downloaded", "smart_trash"
     )
 
     val tabAvailableIds = mapOf(
         BuiltInPlaylist.All to allButtonIds,
         BuiltInPlaylist.Favorites to allButtonIds,
-        BuiltInPlaylist.Offline to allButtonIds.filter { it != "import_menu" },
+        BuiltInPlaylist.Offline to allButtonIds.filter { it != "import_menu" && it != "export_downloaded" },
         BuiltInPlaylist.Downloaded to allButtonIds.filter { it != "import_menu" },
-        BuiltInPlaylist.Top to allButtonIds.filter { it != "import_menu" && it != "position_lock" },
-        BuiltInPlaylist.OnDevice to allButtonIds.filter { it !in setOf("import_menu", "export_dialog", "smart_trash", "match") }
+        BuiltInPlaylist.Top to allButtonIds.filter { it != "import_menu" && it != "position_lock" && it != "export_downloaded" },
+        BuiltInPlaylist.OnDevice to allButtonIds.filter { it !in setOf("import_menu", "export_dialog", "export_downloaded", "smart_trash", "match") }
     )
 
     private val lockedIds = setOf("sort", "position_lock", "match")
@@ -131,6 +131,7 @@ object HomeSongsToolbarSettingsDialog : Dialog {
         val addToPlaylistLabel = stringResource(R.string.add_to_playlist)
         val importMenuLabel = stringResource(R.string.import_playlist)
         val exportDialogLabel = stringResource(R.string.export_playlist)
+        val exportDownloadedLabel = stringResource(R.string.export_downloaded_songs)
         val smartTrashLabel = stringResource(R.string.smart_trash)
         val matchLabel = stringResource(R.string.match_album_audio_version)
 
@@ -169,6 +170,7 @@ object HomeSongsToolbarSettingsDialog : Dialog {
                 "add_to_playlist" -> ToggleItem(uid, R.drawable.add_in_playlist, addToPlaylistLabel, pk, true)
                 "import_menu" -> ToggleItem(uid, R.drawable.import_outline, importMenuLabel, pk, true)
                 "export_dialog" -> ToggleItem(uid, R.drawable.export_outline, exportDialogLabel, pk, true)
+                "export_downloaded" -> ToggleItem(uid, R.drawable.export_outline, exportDownloadedLabel, pk, true)
                 "smart_trash" -> ToggleItem(uid, R.drawable.trash, smartTrashLabel, pk, true)
                 else -> null
             }

@@ -111,3 +111,10 @@ fix(multiselect): unified dialog titles with item counts
   - ResetCache: shows "Clear cache for X songs?" with count
   - SmartTrash: already had count support (no change needed)
   - New string resources: clean_queue_confirm_selected, *_count variants
+
+feat(home-songs): export downloaded songs toolbar button
+  - New "export_downloaded" button ID in HomeSongsToolbarSettingsDialog
+  - Only available in Downloaded tab (not All, Favorites, Offline, Top, OnDevice)
+  - Reuses ExportSongsToCSVDialog with getSongs() (already filters by tab)
+  - ToggleItem registered with export_outline icon
+  - String resource: export_downloaded_songs

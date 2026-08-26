@@ -427,6 +427,7 @@ fun HomeSongsScreen(navController: NavController ) {
                 "add_to_playlist" -> add( addToPlaylist )
                 "import_menu" -> if (builtInPlaylist == BuiltInPlaylist.All || builtInPlaylist == BuiltInPlaylist.Favorites) add( importMenu )
                 "export_dialog" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( exportDialog )
+                "export_downloaded" -> if (builtInPlaylist == BuiltInPlaylist.Downloaded) add( exportDialog )
                 "smart_trash" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( smartTrash )
                 "match" -> if ( hasUnmatchedSongs && builtInPlaylist != BuiltInPlaylist.OnDevice ) add( localMatchButton )
             }
