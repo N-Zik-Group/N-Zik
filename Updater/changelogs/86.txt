@@ -1,0 +1,35 @@
+Added:
+- Batch export cached/downloaded songs as audio files with full metadata (artwork, genre, lyrics as .lrc files).
+- Pause on headphone disconnect setting — toggle in General Settings, ON by default.
+- Top playlist PeriodSelector now respects custom order and visibility per entry.
+- Smart trash icon added to Library tab for easier playlist deletion.
+
+Changed:
+- Replaced Material 3 Checkbox with custom icon system globally for consistent sizing.
+- Single cache export no longer shows a name edit dialog — auto-generates filename like batch flow.
+- Removed "New Playlist" button from Home Library (Add to Playlist already covers it).
+
+Improved:
+- Stream resolution: HEAD 403 marks client as failed and skips to next (no more infinite retry), cipher refresh passes current hash, non-web clients marked as failed on HTTP errors.
+- Network: HTTP timeouts added (60s request, 30s connect, 60s socket), Chrome User-Agent for WEB/WEB_REMIX.
+- All YouTube clients synced with innertubex (versions, flags, userAgent).
+- Cookie expiry detection on startup with toast warning and settings card indicator.
+- YouTube account info (name, email, handle, thumbnail) refreshes immediately after login.
+- Error toasts now show "Playback failed: <reason> [<code>]" with 30+ human-readable error codes.
+- Crash logs include full device info (manufacturer, model, Android version, board, etc.).
+- Download All now skips already-downloaded songs and shows accurate "X / Y" progress in notifications.
+
+Fixed:
+- Album toolbar order key and search button in Home Songs.
+- Playlist deletion dialog strings no longer confuse "smart trash" with "delete playlists".
+- Download/delete toolbar button icons were swapped (issue #587).
+- Multi-select actions now respect active selection across Home Songs, Local Playlist, Artist Details and Queue.
+- Top playlist sort settings now use correct StatisticsType periods instead of SongSortBy.
+- Shared selection state across all screens — no more stale selections after recomposition.
+- Queue shuffle and delete actions no longer crash or close the player.
+- Multi-select dialogs now show item counts ("Remove X songs from queue?", "Download all X songs?", etc.).
+- Android 37 SDK compilation fixed across all modules.
+- StreamResolver prefers YouTube playability reason over generic HTTP error for better messages.
+
+Other:
+- This is a beta release — please report any issues on GitHub
