@@ -1494,12 +1494,12 @@ Volume BAS : titre précédent</string>
   <string name="do_you_really_want_to_download_selected_count">Télécharger les %d titres sélectionnés ?</string>
   <string name="do_you_really_want_to_delete_download_count">Supprimer les %d téléchargements ?</string>
   <string name="do_you_really_want_to_delete_download_selected_count">Souhaitez-vous supprimer les %d téléchargements sélectionnés ?</string>
-  <string name="do_you_really_want_to_export_cached_count">Export %d cached/downloaded songs?</string>
-  <string name="export_lyrics_choice">Export lyrics?</string>
-  <string name="lyrics_synced">Synced (with timestamps)</string>
-  <string name="lyrics_unsynced">Plain text</string>
-  <string name="lyrics_karaoke">Karaoke (word-level)</string>
-  <string name="no_lyrics">No lyrics</string>
+  <string name="do_you_really_want_to_export_cached_count">Exporter %d titres mis en cache/téléchargés ?</string>
+  <string name="export_lyrics_choice">Exporter les paroles ?</string>
+  <string name="lyrics_synced">Synchronisé (avec horodatage)</string>
+  <string name="lyrics_unsynced">Texte brut</string>
+  <string name="lyrics_karaoke">Karaoké (au niveau des mots)</string>
+  <string name="no_lyrics">Pas de paroles</string>
   <string name="clear_cache_count">Vider le cache pour %d titres ?</string>
   <string name="no_items_found">Aucun élément trouvé</string>
   <string name="no_new_releases">Il n\'y a pas de nouvelles versions pour vos artistes préférés</string>
@@ -1687,8 +1687,8 @@ Volume BAS : titre précédent</string>
   <string name="widget_description">Lecteur de musique N-Zik</string>
   <string name="widget_playlists_description">Playlists N-Zik</string>
   <string name="turntable_widget_description">Platine vinyle N-Zik</string>
-  <string name="delete_playlists_confirm_multiple">Are you sure you want to delete these %d playlists?</string>
-  <string name="delete_playlists_confirm_all">Are you sure you want to delete ALL %d playlists?</string>
-  <string name="remove_songs_from_playlist_confirm">Are you sure you want to remove these %d songs from the playlist?</string>
-  <string name="delete_playlists_label">Delete playlists</string>
+  <string name="delete_playlists_confirm_multiple">Êtes-vous sûr de vouloir supprimer ces %d playlists ?</string>
+  <string name="delete_playlists_confirm_all">Êtes-vous sûr de vouloir supprimer TOUTES les %d playlists ?</string>
+  <string name="remove_songs_from_playlist_confirm">Êtes-vous sûr de vouloir supprimer ces %d titres de la playlist ?</string>
+  <string name="delete_playlists_label">Supprimer des playlists</string>
 </resources>
