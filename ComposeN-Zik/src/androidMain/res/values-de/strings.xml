@@ -508,6 +508,7 @@
   <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Das Schließen des Players und das Löschen der Warteschlange durch Wischen nach unten auf dem minimierten Player verhindern</string>
   <string name="sort_date_liked">Like-Datum</string>
   <string name="export_playlist">Playlist exportieren</string>
+  <string name="export_downloaded_songs">Export downloaded songs</string>
   <string name="lang_afrikaans">Afrikanisch (Afrikaans)</string>
   <string name="playlist_top">Top-Playlist</string>
   <string name="my_playlist_top">Meine Top %s</string>
@@ -1487,6 +1488,18 @@
   <string name="notification_play">Abspielen</string>
   <string name="notification_skip_forward">Vorwärts springen</string>
   <string name="clean_queue_confirm">Wollen Sie die Warteschlange wirklich bereinigen?</string>
+  <string name="clean_queue_confirm_selected">Remove %d songs from queue?</string>
+  <string name="do_you_really_want_to_download_all_count">Download all %d songs?</string>
+  <string name="do_you_really_want_to_download_selected_count">Download %d selected songs?</string>
+  <string name="do_you_really_want_to_delete_download_count">Delete all %d downloads?</string>
+  <string name="do_you_really_want_to_delete_download_selected_count">Delete %d selected downloads?</string>
+  <string name="do_you_really_want_to_export_cached_count">Export %d cached/downloaded songs?</string>
+  <string name="export_lyrics_choice">Export lyrics?</string>
+  <string name="lyrics_synced">Synced (with timestamps)</string>
+  <string name="lyrics_unsynced">Plain text</string>
+  <string name="lyrics_karaoke">Karaoke (word-level)</string>
+  <string name="no_lyrics">No lyrics</string>
+  <string name="clear_cache_count">Clear cache for %d songs?</string>
   <string name="no_items_found">Keine Elemente gefunden</string>
   <string name="no_new_releases">Es gibt keine neuen Veröffentlichungen für Ihre Lieblingskünstler</string>
   <string name="not_selectable">Nicht wählbar</string>
@@ -1673,4 +1686,8 @@
   <string name="widget_description">N-Zik Music player</string>
   <string name="widget_playlists_description">N-Zik Playlists</string>
   <string name="turntable_widget_description">N-Zik Turntable</string>
+  <string name="delete_playlists_confirm_multiple">Are you sure you want to delete these %d playlists?</string>
+  <string name="delete_playlists_confirm_all">Are you sure you want to delete ALL %d playlists?</string>
+  <string name="remove_songs_from_playlist_confirm">Are you sure you want to remove these %d songs from the playlist?</string>
+  <string name="delete_playlists_label">Delete playlists</string>
 </resources>

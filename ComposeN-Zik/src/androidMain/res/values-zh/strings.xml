@@ -508,6 +508,7 @@
   <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">避免在最小化状态下通过向下滑动来终止播放器和清理队列</string>
   <string name="sort_date_liked">点赞日期</string>
   <string name="export_playlist">导出播放列表</string>
+  <string name="export_downloaded_songs">Export downloaded songs</string>
   <string name="lang_afrikaans">南非荷兰语</string>
   <string name="playlist_top">播放列表顶部</string>
   <string name="my_playlist_top">我最喜欢的 %s</string>
@@ -1487,6 +1488,18 @@
   <string name="notification_play">播放</string>
   <string name="notification_skip_forward">向前跳过</string>
   <string name="clean_queue_confirm">您真的想要清理队列吗？</string>
+  <string name="clean_queue_confirm_selected">Remove %d songs from queue?</string>
+  <string name="do_you_really_want_to_download_all_count">Download all %d songs?</string>
+  <string name="do_you_really_want_to_download_selected_count">Download %d selected songs?</string>
+  <string name="do_you_really_want_to_delete_download_count">Delete all %d downloads?</string>
+  <string name="do_you_really_want_to_delete_download_selected_count">Delete %d selected downloads?</string>
+  <string name="do_you_really_want_to_export_cached_count">Export %d cached/downloaded songs?</string>
+  <string name="export_lyrics_choice">Export lyrics?</string>
+  <string name="lyrics_synced">Synced (with timestamps)</string>
+  <string name="lyrics_unsynced">Plain text</string>
+  <string name="lyrics_karaoke">Karaoke (word-level)</string>
+  <string name="no_lyrics">No lyrics</string>
+  <string name="clear_cache_count">Clear cache for %d songs?</string>
   <string name="no_items_found">未找到项目</string>
   <string name="no_new_releases">您最喜欢的艺术家没有新的发布</string>
   <string name="not_selectable">不可选择</string>
@@ -1673,4 +1686,8 @@
   <string name="widget_description">N-Zik Music player</string>
   <string name="widget_playlists_description">N-Zik Playlists</string>
   <string name="turntable_widget_description">N-Zik Turntable</string>
+  <string name="delete_playlists_confirm_multiple">Are you sure you want to delete these %d playlists?</string>
+  <string name="delete_playlists_confirm_all">Are you sure you want to delete ALL %d playlists?</string>
+  <string name="remove_songs_from_playlist_confirm">Are you sure you want to remove these %d songs from the playlist?</string>
+  <string name="delete_playlists_label">Delete playlists</string>
 </resources>
