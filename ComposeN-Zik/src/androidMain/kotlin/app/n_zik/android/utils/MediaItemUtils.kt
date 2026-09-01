@@ -1,7 +1,7 @@
 package app.n_zik.android.utils
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.media3.common.MediaItem
@@ -22,7 +22,7 @@ fun MediaItem.artistTextWithFallback(): String {
     if (artist.isNotBlank() && artist != "null") return artist
     val dbSong by remember(mediaId) {
         Database.songTable.findById(mediaId)
-    }.collectAsState(null, Dispatchers.IO)
+    }.collectAsStateWithLifecycle(initialValue = null)
     val dbText = dbSong?.artistsText
     if (!dbText.isNullOrBlank() && dbText != "null") return cleanPrefix(dbText)
     return stringResource(R.string.unknown_artist)
@@ -34,7 +34,7 @@ fun MediaItem.titleWithFallback(): String {
     if (title.isNotBlank() && title != "null") return title
     val dbSong by remember(mediaId) {
         Database.songTable.findById(mediaId)
-    }.collectAsState(null, Dispatchers.IO)
+    }.collectAsStateWithLifecycle(initialValue = null)
     val dbTitle = dbSong?.title
     if (!dbTitle.isNullOrBlank() && dbTitle != "null") return dbTitle
     return stringResource(R.string.unknown_title)
@@ -49,7 +49,7 @@ fun MediaItem.artistIdsWithFallback(): List<Info> {
     }
     val dbArtists by remember(mediaId) {
         Database.artistTable.findBySongId(mediaId)
-    }.collectAsState(emptyList(), Dispatchers.IO)
+    }.collectAsStateWithLifecycle(initialValue = emptyList())
     return dbArtists.map { Info(it.id, it.name) }
 }
 
@@ -59,7 +59,7 @@ fun MediaItem.albumIdWithFallback(): String? {
     if (!albumId.isNullOrBlank()) return albumId
     val dbAlbum by remember(mediaId) {
         Database.albumTable.findBySongId(mediaId)
-    }.collectAsState(null, Dispatchers.IO)
+    }.collectAsStateWithLifecycle(initialValue = null)
     return dbAlbum?.id
 }
 

@@ -336,7 +336,7 @@ fun DataSettings() {
                             )
                         }
 
-                        CacheSpaceIndicator(cacheType = CacheType.Images, horizontalPadding = 20.dp)
+                        CacheSpaceIndicator(cacheType = CacheType.Images, horizontalPadding = 20.dp, showCacheInfo = false)
                         
                         SettingsDescription(text = "${Formatter.formatShortFileSize(context, diskCacheSize)} ${stringResource(R.string.used)} (${if (coilDiskCacheMaxSize.bytes > 0) "${diskCacheSize * 100 / coilDiskCacheMaxSize.bytes}%" else stringResource(R.string.unlimited)})")
 
@@ -397,7 +397,7 @@ fun DataSettings() {
                             )
                         }
 
-                        CacheSpaceIndicator(cacheType = CacheType.CachedSongs, horizontalPadding = 20.dp)
+                        CacheSpaceIndicator(cacheType = CacheType.CachedSongs, horizontalPadding = 20.dp, showCacheInfo = false)
                         
                         SettingsDescription(text = "${Formatter.formatShortFileSize(context, diskCacheSize)} ${stringResource(R.string.used)} (${if (exoPlayerDiskCacheMaxSize.bytes > 0) "${diskCacheSize * 100 / exoPlayerDiskCacheMaxSize.bytes}%" else stringResource(R.string.unlimited)})")
                         }
@@ -435,7 +435,7 @@ fun DataSettings() {
                             )
                         }
 
-                        CacheSpaceIndicator(cacheType = CacheType.DownloadedSongs, horizontalPadding = 20.dp)
+                        CacheSpaceIndicator(cacheType = CacheType.DownloadedSongs, horizontalPadding = 20.dp, showCacheInfo = false)
                         
                         SettingsDescription(text = "${Formatter.formatShortFileSize(context, diskDownloadCacheSize)} ${stringResource(R.string.used)} (${if (exoPlayerDiskDownloadCacheMaxSize.bytes > 0) "${diskDownloadCacheSize * 100 / exoPlayerDiskDownloadCacheMaxSize.bytes}%" else stringResource(R.string.unlimited)})")
                         }

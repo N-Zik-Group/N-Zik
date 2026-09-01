@@ -30,7 +30,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.it.fast4x.rimusic.ui.styling.overlay
 import app.it.fast4x.rimusic.ui.styling.onOverlay
 import app.it.fast4x.rimusic.utils.center
@@ -746,7 +746,7 @@ fun HomeLibrary(
                                                 )
                                             }
                                         } else if (sort.sortBy == PlaylistSortBy.PlayCount) {
-                                            val playCount by Database.eventTable.getPlaylistPlayCount(preview.playlist.id).collectAsState(0, Dispatchers.IO)
+                                            val playCount by Database.eventTable.getPlaylistPlayCount(preview.playlist.id).collectAsStateWithLifecycle(initialValue = 0)
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize()
@@ -762,7 +762,7 @@ fun HomeLibrary(
                                                 )
                                             }
                                         } else if (sort.sortBy == PlaylistSortBy.ListeningTime) {
-                                            val playTime by Database.eventTable.getPlaylistTotalPlayTime(preview.playlist.id).collectAsState(0L, Dispatchers.IO)
+                                            val playTime by Database.eventTable.getPlaylistTotalPlayTime(preview.playlist.id).collectAsStateWithLifecycle(initialValue = 0L)
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize()

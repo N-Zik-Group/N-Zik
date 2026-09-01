@@ -1592,3 +1592,4 @@ val LocalIsShowingLyrics = staticCompositionLocalOf<MutableState<Boolean>> { err
 val LocalIsShowingVisualizer = staticCompositionLocalOf<MutableState<Boolean>> { error("No LocalIsShowingVisualizer provided") }
 val LocalTopBarOffset = staticCompositionLocalOf<State<Float>> { mutableStateOf(0f) }
 val LocalBottomBarOffset = staticCompositionLocalOf<State<Float>> { mutableStateOf(0f) }
+val LocalDownloadStatesMap = staticCompositionLocalOf<Map<String, app.it.fast4x.rimusic.enums.DownloadedStateMedia>> { emptyMap() }

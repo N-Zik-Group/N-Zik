@@ -173,3 +173,30 @@ feat(home-songs): export cached/downloaded songs as audio files via FFmpeg
   - Button available on both Cached (Offline) and Downloaded tabs
   - Toolbar settings updated: export_cache replaces export_downloaded in allButtonIds and tabAvailableIds
   - New string: do_you_really_want_to_export_cached_count
+
+perf(home-songs): optimize Home lists performance — eliminate lag on Downloads/Cached tabs
+  - `HomeSongs.kt`: Pre-compute `downloadedIds` as `Set<String>` via `derivedStateOf` — O(1) lookup instead of O(n) per item with `List<String>`
+  - `HomeSongs.kt`: Pre-compute `cachedSongIds` in `LaunchedEffect` — `binder.cache.isCached()` called once at load instead of N times per item
+  - `HomeSongs.kt`: Pre-compute `downloadStatesMap` (`Map<String, DownloadedStateMedia>`) — eliminates per-item Flow subscriptions for cache state
+  - `HomeSongs.kt`: Replace `collectAsState()` with `collectAsStateWithLifecycle()` across all tabs (All, Favorites, Top, Downloaded, Cached)
+  - `HomeSongs.kt`: Wrap `itemsOnDisplay.clear() + addAll()` in `Snapshot.withMutableSnapshot` for atomic diffing — fixes LazyColumn recomposition dance
+  - `HomeSongs.kt`: Remove `distinctBy { it.id }` from `itemsIndexed` — now computed once in `LaunchedEffect` instead of every recomposition
+  - `OnDeviceSongs.kt`: Same `Snapshot.withMutableSnapshot` + `distinctBy` removal as HomeSongs
+  - `SongItem.kt`: Add optional `precomputedCacheState` and `precomputedDownloadState` params — bypasses 3-4 Flow subscriptions per item when provided
+  - `DownloadUtils.kt`: Replace 5 `collectAsState()` calls with `collectAsStateWithLifecycle()` — Flows suspend when app is in background
+  - `MediaItemUtils.kt`: Replace 4 `collectAsState()` calls with `collectAsStateWithLifecycle()`
+  - Impact: ~300-400 Flow subscriptions eliminated for 100+ visible items, scroll FPS target ≥55
+
+Improved:
+- improve(ui): stabilize Home tab headers and cache indicator animations
+  - `HomeSongsScreen.kt`: Hoisted `Header()` out of `LazyColumn` into the parent `Column` to prevent full subtree destruction and layout jumps when switching tabs
+  - `HomeSongsScreen.kt`: Wrapped `CacheSpaceIndicator` in `AnimatedVisibility` to prevent it from instantly popping when switching to Downloaded/Offline tabs
+  - `HomeSongs.kt` & `OnDeviceSongs.kt`: Added `animateItem()` to `SongItemPlaceholder` and `isLoading` states for smooth shimmer-to-content transitions
+  - `CacheSpaceIndicator.kt`: Wrapped progress bar in `animateFloatAsState` so the bar fills smoothly from zero
+  - `CacheSpaceIndicator.kt`: Replaced `Formatter.formatShortFileSize` for max size with enum `.text` property to correctly display "8GB" instead of "8.2 GB" (bypassing base-1000 formatting)
+  - `DataSettings.kt`: Passed `showCacheInfo = false` to `CacheSpaceIndicator` to remove duplicate sizing text that was already present in Settings
+
+Removed:
+- remove(home-songs): hide download buttons from On Device tab (issue on-device-downloads)
+  - `HomeSongsScreen.kt`: Prevented `download_all` and `delete_downloads` buttons from rendering in the toolbar for `BuiltInPlaylist.OnDevice`
+  - `HomeSongsToolbarSettingsDialog.kt`: Removed `download_all` and `delete_downloads` from `tabAvailableIds` for `OnDevice`, so they no longer appear in the settings modal for this tab

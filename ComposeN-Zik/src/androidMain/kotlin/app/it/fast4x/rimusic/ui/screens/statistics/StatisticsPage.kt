@@ -418,12 +418,6 @@ fun StatisticsPage(
                         if (albums[it].thumbnailUrl.toString() == "null")
                             UpdateYoutubeAlbum(albums[it].id)
 
-                        val songs by remember(albums[it].id) {
-                            Database.songAlbumMapTable
-                                      .allSongsOf( albums[it].id )
-                                      .distinctUntilChanged()
-                          }.collectAsState( emptyList(), Dispatchers.IO )
-
                         AlbumItem(
                             thumbnailUrl = albums[it].thumbnailUrl,
                             title = albums[it].title,
@@ -443,7 +437,6 @@ fun StatisticsPage(
                                             AlbumItemMenu(
                                                 navController = navController,
                                                 album = albums[it],
-                                                songs = songs,
                                                 binder = binder
                                             ).MenuComponent()
                                         }

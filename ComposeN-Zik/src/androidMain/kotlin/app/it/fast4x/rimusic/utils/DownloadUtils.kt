@@ -7,7 +7,7 @@ import app.n_zik.android.core.database.*
 import app.n_zik.android.core.network.utils.isNetworkAvailable
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -52,12 +52,12 @@ fun downloadedStateMedia(mediaId: String): DownloadedStateMedia {
         MyDownloadHelper.getDownload(mediaId).map { download ->
             download?.state == Download.STATE_COMPLETED
         }
-    }.collectAsState(initial = false, context = Dispatchers.IO)
+    }.collectAsStateWithLifecycle(initialValue = false)
     val isCached by remember {
         Database.formatTable.findBySongId( mediaId ).map {
             it?.contentLength == cachedBytes
         }
-    }.collectAsState( false, Dispatchers.IO )
+    }.collectAsStateWithLifecycle(initialValue = false)
 
     return when {
         isDownloaded && isCached -> DownloadedStateMedia.CACHED_AND_DOWNLOADED
@@ -79,7 +79,7 @@ fun getDownloadStateMedia(
     val isDownloaded by remember(songId) {
         MyDownloadHelper.getDownload(songId)
             .map { download -> download?.state == Download.STATE_COMPLETED }
-    }.collectAsState(initial = false, context = Dispatchers.IO)
+    }.collectAsStateWithLifecycle(initialValue = false)
     val isCached by remember {
         Database.formatTable
             .findBySongId( songId )
@@ -88,7 +88,7 @@ fun getDownloadStateMedia(
                     return@map false
                 binder.cache.isCached( it.songId, 0, it.contentLength )
             }
-    }.collectAsState( false, Dispatchers.IO )
+    }.collectAsStateWithLifecycle(initialValue = false)
 
     return when {
         isDownloaded && isCached  -> DownloadedStateMedia.CACHED_AND_DOWNLOADED
@@ -128,7 +128,7 @@ fun getDownloadState(mediaId: String): Int {
     if (!isNetworkAvailableComposable()) return 3
 
     val downloadFlow = remember(mediaId) { downloader.getDownload(mediaId) }
-    return downloadFlow.collectAsState(initial = null as Download?).value?.state
+    return downloadFlow.collectAsStateWithLifecycle(initialValue = null as Download?).value?.state
         ?: 3
 }
 
@@ -136,7 +136,7 @@ fun getDownloadState(mediaId: String): Int {
 @Composable
 fun getDownloadProgress(mediaId: String): Float {
     val downloader = LocalDownloadHelper.current
-    return downloader.progresses.collectAsState().value[mediaId] ?: 0f
+    return downloader.progresses.collectAsStateWithLifecycle().value[mediaId] ?: 0f
 }
 
 @OptIn(UnstableApi::class)

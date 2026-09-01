@@ -35,7 +35,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,6 +60,7 @@ import app.n_zik.android.core.database.Database
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.it.fast4x.rimusic.hasExplicitPrefix
 import app.n_zik.android.LocalPlayerServiceBinder
+import app.n_zik.android.LocalDownloadStatesMap
 import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.DownloadedStateMedia
@@ -201,10 +202,7 @@ fun SongItem(
     val currentMediaId by (binder?.player?.currentMediaItemIdAsState() ?: remember { mutableStateOf<String?>(null) })
     val isPlaying = currentMediaId == song.id
 
-    val dbSong by remember(song.id) {
-        Database.songTable.findById(song.id)
-    }.collectAsState(initial = null, context = Dispatchers.IO)
-    val displaySong = dbSong ?: song
+    val displaySong = song
 
     val menu = if( navController != null && onLongClick == null ) SongItemMenu( navController, displaySong ) else null
     Row(
@@ -294,7 +292,7 @@ fun SongItem(
 
                     val isExistedInAPlaylist by remember( showInPlaylistIndicator ) {
                         Database.songPlaylistMapTable.isMapped( displaySong.id )
-                    }.collectAsState( initial = false, context = Dispatchers.IO )
+                    }.collectAsStateWithLifecycle(initialValue = false)
 
                     if( isExistedInAPlaylist )
                         object: SongIndicator {
@@ -347,7 +345,8 @@ fun SongItem(
 
                 // Show download icon when song is NOT local
                 if( !song.isLocal ) {
-                    val cacheState = downloadedStateMedia( song.id )
+                    val downloadStatesMap = LocalDownloadStatesMap.current
+                    val cacheState = downloadStatesMap[song.id] ?: downloadedStateMedia( song.id )
                     val downloadState = getDownloadState( song.id )
 
                     val color = when( cacheState ) {

@@ -101,7 +101,6 @@ import app.n_zik.android.components.tab.SongShuffler
 class AlbumItemMenu private constructor(
     private val navController: NavController,
     private val album: Album,
-    private val songs: List<Song>,
     private val binder: PlayerServiceModern.Binder?,
     override val menuState: MenuState,
     styleState: MutableState<MenuStyle>
@@ -112,13 +111,11 @@ class AlbumItemMenu private constructor(
         operator fun invoke(
             navController: NavController,
             album: Album,
-            songs: List<Song>,
             binder: PlayerServiceModern.Binder?
         ): AlbumItemMenu =
             AlbumItemMenu(
                 navController = navController,
                 album = album,
-                songs = songs,
                 binder = binder,
                 menuState = LocalMenuState.current,
                 styleState = rememberPreference(menuStyleKey, MenuStyle.List)
@@ -324,6 +321,13 @@ class AlbumItemMenu private constructor(
         val changeAuthors = ChangeAlbumAuthorsDialog { album }
         val changeCover = ChangeAlbumCoverDialog { album }
         val changeId = ChangeAlbumBrowseIdDialog(menuState = menuState) { album }
+
+        // Fetch songs lazily when menu opens
+        val songs by remember(album.id) {
+            Database.songAlbumMapTable
+                    .allSongsOf( album.id )
+                    .distinctUntilChanged()
+        }.collectAsState( emptyList(), Dispatchers.IO )
 
         // Collect artists from the first song if available
         // We observe the songs list to react to its population

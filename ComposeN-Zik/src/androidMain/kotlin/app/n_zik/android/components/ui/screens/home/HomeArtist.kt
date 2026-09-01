@@ -50,7 +50,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -637,7 +637,7 @@ fun HomeArtists(
                                                 )
                                             }
                                         } else if (sort.sortBy == ArtistSortBy.PlayCount) {
-                                            val playCount by Database.eventTable.getArtistPlayCount(artist.id).collectAsState(0, Dispatchers.IO)
+                                            val playCount by Database.eventTable.getArtistPlayCount(artist.id).collectAsStateWithLifecycle(initialValue = 0)
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize()
@@ -653,7 +653,7 @@ fun HomeArtists(
                                                 )
                                             }
                                         } else if (sort.sortBy == ArtistSortBy.ListeningTime) {
-                                            val playTime by Database.eventTable.getArtistTotalPlayTime(artist.id).collectAsState(0L, Dispatchers.IO)
+                                            val playTime by Database.eventTable.getArtistTotalPlayTime(artist.id).collectAsStateWithLifecycle(initialValue = 0L)
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize()

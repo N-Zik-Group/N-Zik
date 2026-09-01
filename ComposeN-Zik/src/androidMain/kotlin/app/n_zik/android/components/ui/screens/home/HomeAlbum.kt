@@ -43,7 +43,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.key
@@ -619,13 +619,7 @@ fun HomeAlbums(
                                     }
                                 }
 
-                                val songs by remember {
-                                    Database.songAlbumMapTable
-                                            .allSongsOf( album.id )
-                                            .distinctUntilChanged()
-                                }.collectAsState( emptyList(), Dispatchers.IO )
-
-                        var position by remember {
+                                var position by remember {
                             mutableIntStateOf(0)
                         }
                         val context = LocalContext.current
@@ -644,7 +638,6 @@ fun HomeAlbums(
                                             AlbumItemMenu(
                                                 navController = navController,
                                                 album = album,
-                                                songs = songs,
                                                 binder = binder
                                             ).MenuComponent()
                                         }
@@ -677,7 +670,7 @@ fun HomeAlbums(
                                         )
                                     }
                                 } else if (sort.sortBy == AlbumSortBy.PlayCount) {
-                                    val playCount by Database.eventTable.getAlbumPlayCount(album.id).collectAsState(0, Dispatchers.IO)
+                                    val playCount by Database.eventTable.getAlbumPlayCount(album.id).collectAsStateWithLifecycle(initialValue = 0)
                                     Box(
                                         modifier = Modifier
                                             .fillMaxSize()
@@ -693,7 +686,7 @@ fun HomeAlbums(
                                         )
                                     }
                                 } else if (sort.sortBy == AlbumSortBy.ListeningTime) {
-                                    val playTime by Database.eventTable.getAlbumTotalPlayTime(album.id).collectAsState(0L, Dispatchers.IO)
+                                    val playTime by Database.eventTable.getAlbumTotalPlayTime(album.id).collectAsStateWithLifecycle(initialValue = 0L)
                                     Box(
                                         modifier = Modifier
                                             .fillMaxSize()

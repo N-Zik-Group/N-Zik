@@ -87,8 +87,7 @@ fun OnDeviceSong(
     search: Search,
     buttons: MutableList<Button>,
     itemsOnDisplay: MutableList<Song>,
-    getSongs: () -> List<Song>,
-    header: @Composable () -> Unit = {}
+    getSongs: () -> List<Song>
 ) {
     // Essentials
     val context = LocalContext.current
@@ -102,10 +101,11 @@ fun OnDeviceSong(
     var songsOnDevice by remember {
         mutableStateOf( emptyMap<Song, String>() )
     }
-    var currentPath by remember( songsOnDevice.values ) {
-        mutableStateOf( PathUtils.findCommonPath( songsOnDevice.values ) )
+    var currentPath by remember {
+        mutableStateOf("")
     }
     var refreshKey by remember { mutableStateOf(0) }
+    var isLoading by remember { mutableStateOf(true) }
 
     //<editor-fold defaultstate="collapsed" desc="Permission handler">
     val permission = rememberSaveable {
@@ -144,6 +144,8 @@ fun OnDeviceSong(
                .onEach { lazyListState.scrollToItem( 0, 0 ) }
                .collect {
                    songsOnDevice = it
+                   currentPath = PathUtils.findCommonPath( it.values )
+                   isLoading = false
                }
     }
     LaunchedEffect( songsOnDevice, search.inputValue, currentPath ) {
@@ -163,9 +165,11 @@ fun OnDeviceSong(
 
                               containsTitle || containsArtist
                           }
-                          .let {
-                              itemsOnDisplay.clear()
-                              itemsOnDisplay.addAll( it )
+                          .let { newItems ->
+                              androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
+                                  itemsOnDisplay.clear()
+                                  itemsOnDisplay.addAll( newItems )
+                              }
                           }
     }
     LaunchedEffect( Unit ) {
@@ -177,50 +181,7 @@ fun OnDeviceSong(
             }
     }
 
-    if( !isPermissionGranted )
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Column(
-                verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Lock,
-                    tint = colorPalette().textDisabled,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize( .4f )
-                )
 
-                BasicText(
-                    text = stringResource( R.string.media_permission_required_please_grant ),
-                    style = typography().m.copy( color = colorPalette().textDisabled )
-                )
-
-                Spacer( Modifier.height( 20.dp ) )
-
-                Button(
-                    border = BorderStroke( 2.dp, colorPalette().accent ),
-                    colors = ButtonDefaults.buttonColors().copy( containerColor = Color.Transparent ),
-                    onClick = {
-                        try {
-                            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                data = Uri.fromParts("package", context.packageName, null )
-                            }
-                            settingsLauncher.launch( intent )
-                        } catch ( e: Exception ) {
-                            e.message?.let( Toaster::e )
-                        }
-                    }
-                ) {
-                    BasicText(
-                        text = stringResource( R.string.open_permission_settings ),
-                        style = typography().l.bold.copy( color = colorPalette().accent )
-                    )
-                }
-            }
-        }
 
     AppPullToRefreshBox(
         isRefreshing = false,
@@ -232,16 +193,63 @@ fun OnDeviceSong(
         userScrollEnabled = songsOnDevice.isNotEmpty(),
         contentPadding = PaddingValues( bottom = Dimensions.bottomSpacer )
     ) {
-        item { header() }
 
-        if( showFolder4LocalSongs && songsOnDevice.isNotEmpty() ) {
-            item( "folder_paths" ) {
-                PathUtils.AddressBar(
-                    paths = songsOnDevice.values,
-                    currentPath = currentPath,
-                    onSpecificAddressClick = { currentPath = it }
-                )
+
+        if( !isPermissionGranted ) {
+            item {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillParentMaxSize()
+                ) {
+                    Column(
+                        verticalArrangement = Arrangement.SpaceBetween,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Lock,
+                            tint = colorPalette().textDisabled,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize( .4f )
+                        )
+
+                        BasicText(
+                            text = stringResource( R.string.media_permission_required_please_grant ),
+                            style = typography().m.copy( color = colorPalette().textDisabled )
+                        )
+
+                        Spacer( Modifier.height( 20.dp ) )
+
+                        Button(
+                            border = BorderStroke( 2.dp, colorPalette().accent ),
+                            colors = ButtonDefaults.buttonColors().copy( containerColor = Color.Transparent ),
+                            onClick = {
+                                try {
+                                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                        data = Uri.fromParts("package", context.packageName, null )
+                                    }
+                                    settingsLauncher.launch( intent )
+                                } catch ( e: Exception ) {
+                                    e.message?.let( Toaster::e )
+                                }
+                            }
+                        ) {
+                            BasicText(
+                                text = stringResource( R.string.open_permission_settings ),
+                                style = typography().l.bold.copy( color = colorPalette().accent )
+                            )
+                        }
+                    }
+                }
             }
+        } else {
+            if( showFolder4LocalSongs && songsOnDevice.isNotEmpty() ) {
+                item( "folder_paths" ) {
+                    PathUtils.AddressBar(
+                        paths = songsOnDevice.values,
+                        currentPath = currentPath,
+                        onSpecificAddressClick = { currentPath = it }
+                    )
+                }
 
             items(
                 items = PathUtils.getAvailablePaths( songsOnDevice.values, currentPath ),
@@ -255,7 +263,14 @@ fun OnDeviceSong(
             PathUtils.getAvailablePaths( songsOnDevice.values, currentPath )
         } else emptyList()
 
-        if (isPermissionGranted && itemsOnDisplay.isEmpty() && folders.isEmpty()) {
+        if( isLoading ) {
+            items(
+                count = 20,
+                key = { "placeholder_$it" }
+            ) { app.it.fast4x.rimusic.ui.items.SongItemPlaceholder( modifier = Modifier.animateItem() ) }
+        }
+
+        if (isPermissionGranted && !isLoading && itemsOnDisplay.isEmpty() && folders.isEmpty()) {
             item {
                 Box(
                     modifier = Modifier.fillParentMaxSize(),
@@ -272,7 +287,7 @@ fun OnDeviceSong(
         }
 
         itemsIndexed(
-            items = itemsOnDisplay.distinctBy { it.id },
+            items = itemsOnDisplay,
             key = { _, song -> song.id }
         ) { index, song ->
             val mediaItem = song.asMediaItem
@@ -293,10 +308,11 @@ fun OnDeviceSong(
                     onClick = {
                         search.hideIfEmpty()
 
-                        val mediaItems = getSongs().fastMap( Song::asMediaItem )
-                        binder?.player?.forcePlayAtIndex( mediaItems, index )
-                    }
-                )
+                            val mediaItems = getSongs().fastMap( Song::asMediaItem )
+                            binder?.player?.forcePlayAtIndex( mediaItems, index )
+                        }
+                    )
+                }
             }
         }
     }

@@ -47,16 +47,9 @@ fun AlbumsItemMenu(
 ) {
     val binder = LocalPlayerServiceBinder.current
 
-    val songs by remember(album.id) {
-        Database.songAlbumMapTable
-            .allSongsOf(album.id)
-            .distinctUntilChanged()
-    }.collectAsState(emptyList(), Dispatchers.IO)
-
     AlbumItemMenu(
         navController = navController,
         album = album,
-        songs = songs,
         binder = binder
     ).MenuComponent()
 }

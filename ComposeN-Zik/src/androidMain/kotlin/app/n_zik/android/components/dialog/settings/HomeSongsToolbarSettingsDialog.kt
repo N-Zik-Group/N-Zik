@@ -39,7 +39,7 @@ object HomeSongsToolbarSettingsDialog : Dialog {
         BuiltInPlaylist.Offline to allButtonIds.filter { it != "import_menu" },
         BuiltInPlaylist.Downloaded to allButtonIds.filter { it != "import_menu" },
         BuiltInPlaylist.Top to allButtonIds.filter { it != "import_menu" && it != "position_lock" && it != "export_cache" },
-        BuiltInPlaylist.OnDevice to allButtonIds.filter { it !in setOf("import_menu", "export_dialog", "export_cache", "smart_trash", "match") }
+        BuiltInPlaylist.OnDevice to allButtonIds.filter { it !in setOf("import_menu", "export_dialog", "export_cache", "smart_trash", "match", "download_all", "delete_downloads") }
     )
 
     private val lockedIds = setOf("sort", "position_lock", "match")
