@@ -29,7 +29,7 @@ androidTargetSdk = "37"
 
 
 compose-plugin = "1.11.1"
-agp = "9.3.2"
+agp = "9.4.0"
 hilt = "2.60.1"
 composeMarkdownVersion = "0.7.2"
 kotlin = "2.4.10"
