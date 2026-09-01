@@ -195,6 +195,7 @@ Improved:
   - `CacheSpaceIndicator.kt`: Wrapped progress bar in `animateFloatAsState` so the bar fills smoothly from zero
   - `CacheSpaceIndicator.kt`: Replaced `Formatter.formatShortFileSize` for max size with enum `.text` property to correctly display "8GB" instead of "8.2 GB" (bypassing base-1000 formatting)
   - `DataSettings.kt`: Passed `showCacheInfo = false` to `CacheSpaceIndicator` to remove duplicate sizing text that was already present in Settings
+  - `HomeSongsScreen.kt`: Hoisted `maxCacheSize` preferences to prevent `AnimatedVisibility` from executing a flash animation when the cache size is set to `Unlimited`
 
 Removed:
 - remove(home-songs): hide download buttons from On Device tab (issue on-device-downloads)

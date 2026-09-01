@@ -645,8 +645,17 @@ fun HomeSongsScreen(navController: NavController ) {
                             modifier = Modifier.padding(end = 12.dp)
                         )
 
+                        val exoPlayerDiskCacheMaxSize by rememberPreference(app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey, app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize.`512MB`)
+                        val exoPlayerDiskDownloadCacheMaxSize by rememberPreference(app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey, app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize.`2GB`)
+
+                        val showCacheIndicator = when (builtInPlaylist) {
+                            BuiltInPlaylist.Offline -> exoPlayerDiskCacheMaxSize != app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize.Unlimited
+                            BuiltInPlaylist.Downloaded -> exoPlayerDiskDownloadCacheMaxSize != app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize.Unlimited
+                            else -> false
+                        }
+
                         androidx.compose.animation.AnimatedVisibility(
-                            visible = builtInPlaylist == BuiltInPlaylist.Downloaded || builtInPlaylist == BuiltInPlaylist.Offline
+                            visible = showCacheIndicator
                         ) {
                             CacheSpaceIndicator(
                                 cacheType = when (builtInPlaylist) {
