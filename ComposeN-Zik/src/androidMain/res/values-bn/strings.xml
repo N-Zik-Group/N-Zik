@@ -84,6 +84,7 @@
   <string name="theme">থিম</string>
   <string name="theme_mode">থিমের ধরন</string>
   <string name="thumbnail_roundness">থাম্বনেইলের গোলাকার অবস্থা</string>
+  <string name="artist_roundness">Artist roundness</string>
   <string name="use_system_font">সিস্টেমের ফন্ট ব্যাবহার করুন</string>
   <string name="use_font_by_the_system">সিস্টেমের ফন্ট ব্যাবহার করুন</string>
   <string name="apply_font_padding">ফন্ট প্যাডিং দিন</string>
