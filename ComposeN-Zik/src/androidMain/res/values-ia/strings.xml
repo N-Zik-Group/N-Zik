@@ -84,6 +84,7 @@
   <string name="theme">Thema</string>
   <string name="theme_mode">Modo de thema</string>
   <string name="thumbnail_roundness">Thumbnail roundness</string>
+  <string name="artist_roundness">Artist roundness</string>
   <string name="use_system_font">Usar le typo de litteras del systema</string>
   <string name="use_font_by_the_system">Usa le typo de littera applicate per le systema</string>
   <string name="apply_font_padding">Apply font padding</string>
