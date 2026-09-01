@@ -457,128 +457,118 @@ fun HomeAlbums(
 
 
 
+                Column {
+                    TabHeader(R.string.albums) {
+                        HeaderInfo(items.size.toString(), R.drawable.album)
+                    }
+                    exportDialog.Render()
+                    TabToolBar.Buttons( toolbarButtons )
+                    search.SearchBar( this@Column )
+                }
+
+                Column {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 8.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Box {
+                            ButtonsRow(
+                                chips = buttonsList,
+                                currentValue = albumType,
+                                onValueUpdate = { albumType = it },
+                                modifier = Modifier.padding(end = 12.dp)
+                            )
+                            if (isYouTubeSyncEnabled()) {
+                                Row(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterEnd)
+                                ) {
+                                    BasicText(
+                                        text = when (filterBy) {
+                                            FilterBy.All -> stringResource(R.string.all)
+                                            FilterBy.Local -> stringResource(R.string.on_device)
+                                            FilterBy.YoutubeLibrary -> stringResource(R.string.ytm_library)
+                                        },
+                                        style = typography.xs.semiBold,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier
+                                            .align(Alignment.CenterVertically)
+                                            .padding(end = 5.dp)
+                                            .clip(uiRoundnessShape()).clickable {
+                                                menuState.display {
+                                                    FilterMenu(
+                                                        title = stringResource(R.string.filter_by),
+                                                        onDismiss = menuState::hide,
+                                                        onAll = { filterBy = FilterBy.All },
+                                                        onYoutubeLibrary = {
+                                                            filterBy = FilterBy.YoutubeLibrary
+                                                        },
+                                                        onLocal = { filterBy = FilterBy.Local }
+                                                    )
+                                                }
+
+                                            }
+                                    )
+                                    HeaderIconButton(
+                                        icon = R.drawable.playlist,
+                                        color = colorPalette.text,
+                                        onClick = {},
+                                        modifier = Modifier
+                                            .offset(0.dp, 2.5.dp)
+                                            .clip(uiRoundnessShape()).clickable(
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                indication = null,
+                                                onClick = {}
+                                            )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    if (HomeSyncState.isSyncingAlbums) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                BasicText(
+                                    text = stringResource(R.string.syncing_item, HomeSyncState.albumSyncCurrentName),
+                                    style = typography.xxs.semiBold.copy(color = colorPalette.textSecondary),
+                                    maxLines = 1,
+                                    modifier = Modifier.weight(1f).padding(end = 8.dp).basicMarquee(iterations = Int.MAX_VALUE)
+                                )
+                                Row {
+                                    BasicText(
+                                        text = stringResource(R.string.syncing_progress, HomeSyncState.albumSyncCurrentIndex, HomeSyncState.albumSyncTotal),
+                                        style = typography.xxs.semiBold.copy(color = colorPalette.textSecondary)
+                                    )
+                                    if (HomeSyncState.albumSyncFailed > 0) {
+                                        BasicText(
+                                            text = " " + stringResource(R.string.syncing_failed, HomeSyncState.albumSyncFailed),
+                                            style = typography.xxs.semiBold.copy(color = colorPalette.red)
+                                        )
+                                    }
+                                }
+                            }
+                            LinearWavyProgressIndicator(
+                                progress = { HomeSyncState.albumSyncProgress },
+                                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                                color = colorPalette.accent,
+                                trackColor = colorPalette.background2
+                            )
+                        }
+                    }
+                }
+
                 Box(modifier = Modifier.fillMaxSize()) {
                     LazyVerticalGrid(
                         state = lazyGridState,
                         columns = GridCells.Adaptive( itemSize.size.dp ),
-                    modifier = Modifier.background( colorPalette().background0 )
-                                       .fillMaxSize(),
-                    contentPadding = PaddingValues( bottom = Dimensions.bottomSpacer )
-                ) {
-                    item(
-                        key = "header",
-                        span = { GridItemSpan(maxLineSpan) }
+                        modifier = Modifier.background( colorPalette().background0 ).fillMaxSize(),
+                        contentPadding = PaddingValues( bottom = Dimensions.bottomSpacer )
                     ) {
-                        Column {
-                            TabHeader(R.string.albums) {
-                                HeaderInfo(items.size.toString(), R.drawable.album)
-                            }
-                            exportDialog.Render()
-                            TabToolBar.Buttons( toolbarButtons )
-                            search.SearchBar( this )
-                        }
-                    }
-
-                    item(
-                        key = "separator",
-                        span = { GridItemSpan(maxLineSpan) }
-                    ) {
-                        Column {
-                            Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .padding(bottom = 8.dp)
-                                .fillMaxWidth()
-                        ) {
-                            Box {
-                                ButtonsRow(
-                                    chips = buttonsList,
-                                    currentValue = albumType,
-                                    onValueUpdate = { albumType = it },
-                                    modifier = Modifier.padding(end = 12.dp)
-                                )
-                                if (isYouTubeSyncEnabled()) {
-                                    Row(
-                                        modifier = Modifier
-                                            .align(Alignment.CenterEnd)
-                                    ) {
-                                        BasicText(
-                                            text = when (filterBy) {
-                                                FilterBy.All -> stringResource(R.string.all)
-                                                FilterBy.Local -> stringResource(R.string.on_device)
-                                                FilterBy.YoutubeLibrary -> stringResource(R.string.ytm_library)
-                                            },
-                                            style = typography.xs.semiBold,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            modifier = Modifier
-                                                .align(Alignment.CenterVertically)
-                                                .padding(end = 5.dp)
-                                                .clip(uiRoundnessShape()).clickable {
-                                                    menuState.display {
-                                                        FilterMenu(
-                                                            title = stringResource(R.string.filter_by),
-                                                            onDismiss = menuState::hide,
-                                                            onAll = { filterBy = FilterBy.All },
-                                                            onYoutubeLibrary = {
-                                                                filterBy = FilterBy.YoutubeLibrary
-                                                            },
-                                                            onLocal = { filterBy = FilterBy.Local }
-                                                        )
-                                                    }
-
-                                                }
-                                        )
-                                        HeaderIconButton(
-                                            icon = R.drawable.playlist,
-                                            color = colorPalette.text,
-                                            onClick = {},
-                                            modifier = Modifier
-                                                .offset(0.dp, 2.5.dp)
-                                                .clip(uiRoundnessShape()).clickable(
-                                                    interactionSource = remember { MutableInteractionSource() },
-                                                    indication = null,
-                                                    onClick = {}
-                                                )
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                        if (HomeSyncState.isSyncingAlbums) {
-                            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
-                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    BasicText(
-                                        text = stringResource(R.string.syncing_item, HomeSyncState.albumSyncCurrentName),
-                                        style = typography.xxs.semiBold.copy(color = colorPalette.textSecondary),
-                                        maxLines = 1,
-                                        modifier = Modifier.weight(1f).padding(end = 8.dp).basicMarquee(iterations = Int.MAX_VALUE)
-                                    )
-                                    Row {
-                                        BasicText(
-                                            text = stringResource(R.string.syncing_progress, HomeSyncState.albumSyncCurrentIndex, HomeSyncState.albumSyncTotal),
-                                            style = typography.xxs.semiBold.copy(color = colorPalette.textSecondary)
-                                        )
-                                        if (HomeSyncState.albumSyncFailed > 0) {
-                                            BasicText(
-                                                text = " " + stringResource(R.string.syncing_failed, HomeSyncState.albumSyncFailed),
-                                                style = typography.xxs.semiBold.copy(color = colorPalette.red)
-                                            )
-                                        }
-                                    }
-                                }
-                                LinearWavyProgressIndicator(
-                                    progress = { HomeSyncState.albumSyncProgress },
-                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                                    color = colorPalette.accent,
-                                    trackColor = colorPalette.background2
-                                )
-                            }
-                        }
-                        }
-                    }
                     items(
                         items = itemsOnDisplay.distinctBy { it.id },
                         key = { it.id }

@@ -541,111 +541,101 @@ fun HomeLibrary(
                     }
                 }
 
+                Column {
+                    TabHeader( R.string.playlists ) {
+                        HeaderInfo( items.size.toString(), R.drawable.playlist )
+                    }
+                    exportDialog.Render()
+                    
+                    if (showDeleteConfirmDialog) {
+                        val selected = itemSelector.ifEmpty { itemsOnDisplay }
+                        val hasSelection = itemSelector.size > 0
+                        val itemsToDelete = selected.toList()
+                        val text = if (hasSelection) {
+                            stringResource(R.string.delete_playlists_confirm_multiple, itemsToDelete.size)
+                        } else {
+                            stringResource(R.string.delete_playlists_confirm_all, itemsToDelete.size)
+                        }
+                        ConfirmationDialog(
+                            text = text,
+                            onDismiss = { showDeleteConfirmDialog = false },
+                            onConfirm = {
+                                showDeleteConfirmDialog = false
+                                coroutineScope.launch(Dispatchers.IO) {
+                                    Database.asyncTransaction {
+                                        itemsToDelete.forEach { preview ->
+                                            playlistTable.delete(preview.playlist)
+                                        }
+                                    }
+                                    withContext(Dispatchers.Main) { itemSelector.isActive = false }
+                                }
+                            }
+                        )
+                    }
+                    
+                    TabToolBar.Buttons( toolbarButtons )
+                    search.SearchBar( this@Column )
+                }
+
+                Column {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 8.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Box {
+                            ButtonsRow(
+                                chips = buttonsList,
+                                currentValue = playlistType,
+                                onValueUpdate = { playlistType = it },
+                                modifier = Modifier.padding(end = 12.dp)
+                            )
+                        }
+                    }
+                    if (HomeSyncState.isSyncingPlaylists) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                BasicText(
+                                    text = stringResource(R.string.syncing_item, HomeSyncState.playlistSyncCurrentName),
+                                    style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
+                                    maxLines = 1,
+                                    modifier = Modifier.weight(1f).padding(end = 8.dp).basicMarquee(iterations = Int.MAX_VALUE)
+                                )
+                                Row {
+                                    BasicText(
+                                        text = stringResource(R.string.syncing_progress, HomeSyncState.playlistSyncCurrentIndex, HomeSyncState.playlistSyncTotal),
+                                        style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary)
+                                    )
+                                    if (HomeSyncState.playlistSyncFailed > 0) {
+                                        BasicText(
+                                            text = " " + stringResource(R.string.syncing_failed, HomeSyncState.playlistSyncFailed),
+                                            style = typography().xxs.semiBold.copy(color = colorPalette().red)
+                                        )
+                                    }
+                                }
+                            }
+                            LinearWavyProgressIndicator(
+                                progress = { HomeSyncState.playlistSyncProgress },
+                                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                                color = colorPalette().accent,
+                                trackColor = colorPalette().background2
+                            )
+                        }
+                    }
+                }
+
                 Box(modifier = Modifier.fillMaxSize()) {
                     LazyVerticalGrid(
                         state = lazyGridState,
                         columns = GridCells.Adaptive( itemSize.size.dp ),
-                    modifier = Modifier
-                        .background(colorPalette().background0)
-                        .fillMaxSize(),
-                    contentPadding = PaddingValues( bottom = Dimensions.bottomSpacer )
-                ) {
-                    item(
-                        key = "header",
-                        span = { GridItemSpan(maxLineSpan) }
+                        modifier = Modifier
+                            .background(colorPalette().background0)
+                            .fillMaxSize(),
+                        contentPadding = PaddingValues( bottom = Dimensions.bottomSpacer )
                     ) {
-                        Column {
-                            TabHeader( R.string.playlists ) {
-                                HeaderInfo( items.size.toString(), R.drawable.playlist )
-                            }
-                            exportDialog.Render()
-                            
-                            if (showDeleteConfirmDialog) {
-                                val selected = itemSelector.ifEmpty { itemsOnDisplay }
-                                val hasSelection = itemSelector.size > 0
-                                val itemsToDelete = selected.toList()
-                                val text = if (hasSelection) {
-                                    stringResource(R.string.delete_playlists_confirm_multiple, itemsToDelete.size)
-                                } else {
-                                    stringResource(R.string.delete_playlists_confirm_all, itemsToDelete.size)
-                                }
-                                ConfirmationDialog(
-                                    text = text,
-                                    onDismiss = { showDeleteConfirmDialog = false },
-                                    onConfirm = {
-                                        showDeleteConfirmDialog = false
-                                        coroutineScope.launch(Dispatchers.IO) {
-                                            Database.asyncTransaction {
-                                                itemsToDelete.forEach { preview ->
-                                                    playlistTable.delete(preview.playlist)
-                                                }
-                                            }
-                                            withContext(Dispatchers.Main) { itemSelector.isActive = false }
-                                        }
-                                    }
-                                )
-                            }
-                            
-                            TabToolBar.Buttons( toolbarButtons )
-                            search.SearchBar( this )
-                        }
-                    }
-
-                    item(
-                        key = "separator",
-                        contentType = 0,
-                        span = { GridItemSpan(maxLineSpan) }) {
-                        Column {
-                            Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .padding(bottom = 8.dp)
-                                .fillMaxWidth()
-                        ) {
-                            Box {
-                                ButtonsRow(
-                                    chips = buttonsList,
-                                    currentValue = playlistType,
-                                    onValueUpdate = { playlistType = it },
-                                    modifier = Modifier.padding(end = 12.dp)
-                                )
-                            }
-                        }
-                        if (HomeSyncState.isSyncingPlaylists) {
-                            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
-                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    BasicText(
-                                        text = stringResource(R.string.syncing_item, HomeSyncState.playlistSyncCurrentName),
-                                        style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
-                                        maxLines = 1,
-                                        modifier = Modifier.weight(1f).padding(end = 8.dp).basicMarquee(iterations = Int.MAX_VALUE)
-                                    )
-                                    Row {
-                                        BasicText(
-                                            text = stringResource(R.string.syncing_progress, HomeSyncState.playlistSyncCurrentIndex, HomeSyncState.playlistSyncTotal),
-                                            style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary)
-                                        )
-                                        if (HomeSyncState.playlistSyncFailed > 0) {
-                                            BasicText(
-                                                text = " " + stringResource(R.string.syncing_failed, HomeSyncState.playlistSyncFailed),
-                                                style = typography().xxs.semiBold.copy(color = colorPalette().red)
-                                            )
-                                        }
-                                    }
-                                }
-                                LinearWavyProgressIndicator(
-                                    progress = { HomeSyncState.playlistSyncProgress },
-                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                                    color = colorPalette().accent,
-                                    trackColor = colorPalette().background2
-                                )
-                            }
-                        }
-                        }
-                    }
-
                     items(
                         items = filteredItems,
                         key = { it.playlist.id }

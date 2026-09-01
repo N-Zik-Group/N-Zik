@@ -203,3 +203,7 @@ Removed:
   - `HomeSongsToolbarSettingsDialog.kt`: Removed `download_all` and `delete_downloads` from `tabAvailableIds` for `OnDevice`, so they no longer appear in the settings modal for this tab
 - remove(home-songs): remove loading placeholders to enable reorder animation
   - `HomeSongs.kt`: Removed `SongItemPlaceholder` rendering during `isLoading` so that loaded items slide in with a fluid insertion animation, matching `HomeAlbum` and `HomeArtist`.
+- fix(home): prevent grid items from animating over headers on load
+  - `HomeAlbum.kt`: Hoisted TabHeader and ButtonsRow out of `LazyVerticalGrid` so that insertion animations start below the chips.
+  - `HomeArtist.kt`: Hoisted TabHeader and ButtonsRow out of `LazyVerticalGrid` for the same reason.
+  - `HomeLibrary.kt`: Hoisted TabHeader and ButtonsRow out of `LazyVerticalGrid` for consistency.
