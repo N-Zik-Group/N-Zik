@@ -37,8 +37,8 @@ jobs:
       - name: Get downstream (local) version
         id: downstream
         run: |
-          echo "version=$(grep -E '^\s*versionName\s*=' ComposeN-Zik/build.gradle.kts | awk -F '\"' '{print $2}')" >> $GITHUB_OUTPUT
-          echo "code=$(grep -E '^\s*versionCode\s*=' ComposeN-Zik/build.gradle.kts | awk -F '= ' '{print $2}')" >> $GITHUB_OUTPUT
+          echo "version=$(grep -E '^\s*nzikVersionName\s*=' gradle/libs.versions.toml | awk -F '\"' '{print $2}')" >> $GITHUB_OUTPUT
+          echo "code=$(grep -E '^\s*nzikVersionCode\s*=' gradle/libs.versions.toml | awk -F '\"' '{print $2}')" >> $GITHUB_OUTPUT
       - name: Get upstream version
         id: upstream
         run: |

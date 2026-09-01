@@ -41,8 +41,8 @@ jobs:
           echo "Contents of build.gradle.kts:"
           cat ComposeN-Zik/build.gradle.kts
 
-          versionCode=$(grep -E '^\s*versionCode\s*=' ComposeN-Zik/build.gradle.kts | sed 's/[^0-9]*//g')
-          versionName=$(grep -E '^\s*versionName\s*=' ComposeN-Zik/build.gradle.kts | sed -E 's/.*"(.+)".*/\1/')
+          versionCode=$(grep -E '^\s*nzikVersionCode\s*=' gradle/libs.versions.toml | sed 's/[^0-9]*//g')
+          versionName=$(grep -E '^\s*nzikVersionName\s*=' gradle/libs.versions.toml | sed -E 's/.*"(.+)".*/\1/')
 
           echo "version=$versionName" >> $GITHUB_OUTPUT
           echo "code=$versionCode" >> $GITHUB_OUTPUT
