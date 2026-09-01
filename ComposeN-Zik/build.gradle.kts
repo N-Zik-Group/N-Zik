@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.text.SimpleDateFormat
 import java.util.Date
 
-val APP_NAME = "N-Zik"
+val APP_NAME = libs.versions.nzikAppName.get()
 
 plugins {
     // Multiplatform
@@ -110,14 +110,14 @@ android {
         compose = true
     }
 
-    compileSdk = 37
+    compileSdk = libs.versions.androidCompileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.nevar.nzik"
-        minSdk = 24
-        targetSdk = 37
-        versionCode = 86
-        versionName = "7.5.0"
+        applicationId = libs.versions.nzikApplicationId.get()
+        minSdk = libs.versions.androidMinSdk.get().toInt()
+        targetSdk = libs.versions.androidTargetSdk.get().toInt()
+        versionCode = libs.versions.nzikVersionCode.get().toInt()
+        versionName = libs.versions.nzikVersionName.get()
 
         /*
                 UNIVERSAL VARIABLES
@@ -139,13 +139,13 @@ android {
         }
     }
 
-    namespace = "app.n_zik.android"
+    namespace = libs.versions.nzikNamespace.get()
 
     buildTypes {
         debug {
-            manifestPlaceholders += mapOf("appName" to "$APP_NAME-debug")
-            versionNameSuffix = "-debug"
-            applicationIdSuffix = ".debug"
+            manifestPlaceholders += mapOf("appName" to "$APP_NAME${libs.versions.nzikSuffixAppNameDebug.get()}")
+            versionNameSuffix = libs.versions.nzikSuffixVersionDebug.get()
+            applicationIdSuffix = libs.versions.nzikSuffixAppIdDebug.get()
 
             buildConfigField( "Boolean", "IS_AUTOUPDATE", "false" )
             signingConfig = signingConfigs.getByName("debug")
@@ -153,14 +153,14 @@ android {
 
         create( "full" ) {
             // App's properties
-            versionNameSuffix = "-f"
+            versionNameSuffix = libs.versions.nzikSuffixVersionFull.get()
             // Fallback for modules that don't have a 'full' build type (like :discordrpc)
             matchingFallbacks += listOf("release")
         }
 
         create( "minified" ) {
             // App's properties
-            versionNameSuffix = "-m"
+            versionNameSuffix = libs.versions.nzikSuffixVersionMinified.get()
             // Fallback for modules that don't have a 'minified' build type (like :discordrpc)
             matchingFallbacks += listOf("release")
 
@@ -176,7 +176,7 @@ android {
         create( "full32" ) {
             // App's properties
             initWith( maybeCreate("full") )
-            versionNameSuffix = "-f32"
+            versionNameSuffix = libs.versions.nzikSuffixVersionFull32.get()
             // Fallback for modules that don't have a 'full32' build type
             matchingFallbacks += listOf("release")
         }
@@ -184,21 +184,21 @@ android {
         create( "minified32" ) {
             // App's properties
             initWith( maybeCreate("minified") )
-            versionNameSuffix = "-m32"
+            versionNameSuffix = libs.versions.nzikSuffixVersionMinified32.get()
             // Fallback for modules that don't have a 'minified32' build type
             matchingFallbacks += listOf("release")
         }
 
         create( "beta" ) {
             initWith( maybeCreate("full") )
-            versionNameSuffix = "-beta"
+            versionNameSuffix = libs.versions.nzikSuffixVersionBeta.get()
             // Fallback for modules that don't have a 'beta' build type (like :discordrpc)
             matchingFallbacks += listOf("release")
         }
 
         create( "beta32" ) {
             initWith( maybeCreate("beta") )
-            versionNameSuffix = "-beta32"
+            versionNameSuffix = libs.versions.nzikSuffixVersionBeta32.get()
             // Fallback for modules that don't have a 'beta32' build type
             matchingFallbacks += listOf("release")
         }
@@ -206,8 +206,8 @@ android {
         create( "foss" ) {
             // App's properties
             initWith( maybeCreate("full") )
-            manifestPlaceholders += mapOf("appName" to "$APP_NAME-Foss")
-            applicationIdSuffix = ".foss"
+            manifestPlaceholders += mapOf("appName" to "$APP_NAME${libs.versions.nzikSuffixAppNameFoss.get()}")
+            applicationIdSuffix = libs.versions.nzikSuffixAppIdFoss.get()
             buildConfigField( "Boolean", "IS_AUTOUPDATE", "false" )
 
             // Fallback for modules that don't have a 'foss' build type
@@ -218,9 +218,9 @@ android {
             ?: SimpleDateFormat("yyyyMMdd").format(Date())
 
         create( "dev" ) {
-            manifestPlaceholders += mapOf("appName" to "$APP_NAME-dev")
-            applicationIdSuffix = ".dev"
-            versionNameSuffix = "-dev-$devDate"
+            manifestPlaceholders += mapOf("appName" to "$APP_NAME${libs.versions.nzikSuffixAppNameDev.get()}")
+            applicationIdSuffix = libs.versions.nzikSuffixAppIdDev.get()
+            versionNameSuffix = "${libs.versions.nzikSuffixVersionDev.get()}$devDate"
             buildConfigField( "Boolean", "IS_AUTOUPDATE", "true" )
 
             // Fallback for modules that don't have a 'dev' build type (like :discordrpc)
@@ -229,10 +229,10 @@ android {
 
         create( "dev32" ) {
             // App's properties
-            manifestPlaceholders += mapOf("appName" to "$APP_NAME-dev32")
-            applicationIdSuffix = ".dev"
+            manifestPlaceholders += mapOf("appName" to "$APP_NAME${libs.versions.nzikSuffixAppNameDev32.get()}")
+            applicationIdSuffix = libs.versions.nzikSuffixAppIdDev.get()
             initWith( maybeCreate("dev") )
-            versionNameSuffix = "-dev32-$devDate"
+            versionNameSuffix = "${libs.versions.nzikSuffixVersionDev32.get()}$devDate"
             buildConfigField( "Boolean", "IS_AUTOUPDATE", "true" )
 
             // Fallback for modules that don't have a 'dev32' build type
@@ -286,7 +286,7 @@ java {
 compose.resources {
     publicResClass = true
     generateResClass = always
-    packageOfResClass = "rimusic.composeapp.generated.resources"
+    packageOfResClass = libs.versions.nzikResClassPackage.get()
 }
 
 room {

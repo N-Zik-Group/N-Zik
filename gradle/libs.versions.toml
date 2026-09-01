@@ -1,5 +1,33 @@
-
 [versions]
+nzikSuffixAppNameDebug = "-debug"
+nzikSuffixAppIdDebug = ".debug"
+nzikSuffixVersionDebug = "-debug"
+nzikSuffixVersionFull = "-f"
+nzikSuffixVersionFull32 = "-f32"
+nzikSuffixVersionMinified = "-m"
+nzikSuffixVersionMinified32 = "-m32"
+nzikSuffixVersionBeta = "-beta"
+nzikSuffixVersionBeta32 = "-beta32"
+nzikSuffixAppNameFoss = "-Foss"
+nzikSuffixAppIdFoss = ".foss"
+nzikSuffixAppNameDev = "-dev"
+nzikSuffixAppIdDev = ".dev"
+nzikSuffixVersionDev = "-dev-"
+nzikSuffixAppNameDev32 = "-dev32"
+nzikSuffixVersionDev32 = "-dev32-"
+nzikNamespace = "app.n_zik.android"
+nzikResClassPackage = "rimusic.composeapp.generated.resources"
+nzikAppName = "N-Zik"
+nzikApplicationId = "com.nevar.nzik"
+nzikVersionCode = "87"
+nzikVersionName = "7.5.1"
+androidCompileSdk = "37"
+androidMinSdk = "24"
+androidTargetSdk = "37"
+
+
+
+
 compose-plugin = "1.11.1"
 agp = "9.3.2"
 hilt = "2.60.1"
