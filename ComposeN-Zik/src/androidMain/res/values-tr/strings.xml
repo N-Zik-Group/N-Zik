@@ -84,6 +84,7 @@
   <string name="theme">Tema</string>
   <string name="theme_mode">Tema modu</string>
   <string name="thumbnail_roundness">Küçük resim yuvarlaklığı</string>
+  <string name="artist_roundness">Artist roundness</string>
   <string name="use_system_font">Sistem yazı tipini kullan</string>
   <string name="use_font_by_the_system">Sistem tarafından uygulanan yazı tipini kullanın</string>
   <string name="apply_font_padding">Yazı tipi dolgusu uygula</string>
