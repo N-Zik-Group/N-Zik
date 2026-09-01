@@ -441,12 +441,6 @@ fun HomeArtists(
 
 
 
-                Box(modifier = Modifier.fillMaxSize()) {
-                    LazyVerticalGrid(
-                        state = lazyGridState,
-                        columns = GridCells.Adaptive( itemSize.size.dp ),
-                    modifier = Modifier.background( colorPalette().background0 )
-                                       .fillMaxSize(),
                 Column {
                     TabHeader( R.string.artists ) {
                         HeaderInfo(items.size.toString(), R.drawable.people)
