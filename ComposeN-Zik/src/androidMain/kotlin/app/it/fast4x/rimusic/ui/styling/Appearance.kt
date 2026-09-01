@@ -26,18 +26,21 @@ data class Appearance(
     val colorPalette: ColorPalette,
     val typography: Typography,
     val thumbnailShape: Shape,
-    val uiRoundnessShape: Shape
+    val uiRoundnessShape: Shape,
+    val artistThumbnailShape: Shape
 ) {
     companion object : Saver<Appearance, List<Any>> {
         @Suppress("UNCHECKED_CAST")
         override fun restore(value: List<Any>): Appearance {
             val thumbRadius = (value[2] as? Float) ?: (value[2] as? Int)?.toFloat() ?: 12f
             val uiRadius = (value[3] as? Float) ?: (value[3] as? Int)?.toFloat() ?: 20f
+            val artistThumbRadius = (value.getOrNull(4) as? Float) ?: (value.getOrNull(4) as? Int)?.toFloat() ?: 48f
             return Appearance(
                 colorPalette = ColorPalette.restore(value[0] as List<Any>),
                 typography = Typography.restore(value[1] as List<Any>),
                 thumbnailShape = if (thumbRadius >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(thumbRadius.dp, 0.25f)),
-                uiRoundnessShape = RoundedCornerShape(BoundedCornerSize(uiRadius.dp, 0.4f))
+                uiRoundnessShape = RoundedCornerShape(BoundedCornerSize(uiRadius.dp, 0.4f)),
+                artistThumbnailShape = if (artistThumbRadius >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(artistThumbRadius.dp, 0.25f))
             )
         }
 
@@ -58,11 +61,20 @@ data class Appearance(
                 else -> 20f
             }
 
+            val artistThumbRadius = when (val shape = value.artistThumbnailShape) {
+                is RoundedCornerShape -> {
+                    val size = shape.topStart
+                    if (size is BoundedCornerSize) size.dp.value else 12f
+                }
+                else -> 48f // For CircleShape
+            }
+
             return listOf(
                 with(ColorPalette.Companion) { save(value.colorPalette) },
                 with(Typography.Companion) { save(value.typography) },
                 thumbRadius,
-                uiRadius
+                uiRadius,
+                artistThumbRadius
             )
         }
     }

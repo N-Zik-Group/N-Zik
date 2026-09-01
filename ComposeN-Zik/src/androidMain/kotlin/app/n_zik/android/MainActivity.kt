@@ -233,6 +233,7 @@ import app.it.fast4x.rimusic.utils.showTotalTimeQueueKey
 import app.it.fast4x.rimusic.utils.textCopyToClipboard
 import app.n_zik.android.core.coil.*
 import app.it.fast4x.rimusic.utils.thumbnailRoundnessDpKey
+import app.it.fast4x.rimusic.utils.artistThumbnailRoundnessDpKey
 import app.it.fast4x.rimusic.utils.transitionEffectKey
 import app.it.fast4x.rimusic.utils.useSystemFontKey
 import kotlinx.coroutines.Dispatchers
@@ -577,6 +578,7 @@ class MainActivity :
                         getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
                     val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
                     val thumbnailRoundnessDp = getFloat(thumbnailRoundnessDpKey, 12f)
+                    val artistThumbnailRoundnessDp = getFloat(artistThumbnailRoundnessDpKey, 48f)
                     val uiRoundnessDp = getFloat("uiRoundnessDpKey", 25f)
                     val useSystemFont = getBoolean(useSystemFontKey, false)
                     val applyFontPadding = getBoolean(applyFontPaddingKey, false)
@@ -611,7 +613,8 @@ class MainActivity :
                                 fontType
                             ),
                             thumbnailShape = if (thumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(thumbnailRoundnessDp.dp, 0.25f)),
-                            uiRoundnessShape = RoundedCornerShape(BoundedCornerSize(uiRoundnessDp.dp, 0.4f))
+                            uiRoundnessShape = RoundedCornerShape(BoundedCornerSize(uiRoundnessDp.dp, 0.4f)),
+                            artistThumbnailShape = if (artistThumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(artistThumbnailRoundnessDp.dp, 0.25f))
                         )
                     )
                 }
@@ -932,6 +935,15 @@ class MainActivity :
 
                                 appearance = appearance.copy(
                                     thumbnailShape = if (thumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(thumbnailRoundnessDp.dp, 0.25f))
+                                )
+                            }
+                            
+                            artistThumbnailRoundnessDpKey -> {
+                                val artistThumbnailRoundnessDp =
+                                    sharedPreferences.getFloat(artistThumbnailRoundnessDpKey, 48f)
+
+                                appearance = appearance.copy(
+                                    artistThumbnailShape = if (artistThumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(artistThumbnailRoundnessDp.dp, 0.25f))
                                 )
                             }
 

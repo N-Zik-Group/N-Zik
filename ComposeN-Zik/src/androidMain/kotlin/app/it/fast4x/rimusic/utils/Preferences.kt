@@ -500,51 +500,11 @@ const val handleAudioFocusEnabledKey = "handleAudioFocusEnabled"
 const val thumbnailSizeDpKey = "thumbnailSizeDpKey"
 const val thumbnailSizeLDpKey = "thumbnailSizeLDpKey"
 const val thumbnailRoundnessDpKey = "thumbnailRoundnessDpKey"
+const val artistThumbnailRoundnessDpKey = "artistThumbnailRoundnessDpKey"
 const val uiRoundnessDpKey = "uiRoundnessDpKey"
 const val hideStatusBarKey = "hideStatusBarKey"
 
 const val visualizerLineThicknessKey = "visualizerLineThickness"
-
-
-/*
-@PublishedApi
-internal val defaultJson = Json {
-    isLenient = true
-    prettyPrint = false
-    ignoreUnknownKeys = true
-    encodeDefaults = true
-}
-
-@OptIn(InternalSerializationApi::class)
-inline fun <reified T : Json> SharedPreferences.Editor.putJson(
-    key: String,
-    defaultValue: T,
-    json: Json = defaultJson
-): SharedPreferences.Editor =
-    putString(
-        key,
-        try {
-            json.encodeToString(T::class.serializer(), defaultValue)
-        } catch (e: IllegalArgumentException) {
-            null
-        }
-
-    )
-
-@OptIn(InternalSerializationApi::class)
-inline fun <reified T : Json> SharedPreferences.getJson(
-    key: String,
-    defaultValue: T,
-    json: Json = defaultJson
-): T =
-    getString(key, null)?.let {
-        try {
-            json.decodeFromString(T::class.serializer(), it)
-        } catch (e: IllegalArgumentException) {
-            null
-        }
-    } ?: defaultValue
-*/
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,
@@ -567,17 +527,6 @@ inline fun <reified T : Enum<T>> SharedPreferences.Editor.putEnum(
 val Context.preferences: SharedPreferences
     get() = getSharedPreferences("preferences", Context.MODE_PRIVATE)
 
-/*
-@Composable
-inline fun <reified T : Json> rememberPreference(key: String, defaultValue: T, json: Json = defaultJson): MutableState<T> {
-    val context = LocalContext.current
-    return remember {
-        mutableStatePreferenceOf(context.preferences.getJson(key, defaultValue)) {
-            context.preferences.edit { putJson(key, it) }
-        }
-    }
-}
-*/
 
 @Composable
 fun rememberPreference(key: String, defaultValue: List<Song>): MutableState<List<Song>> {

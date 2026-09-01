@@ -49,6 +49,7 @@ import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.thumbnailShape
+import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.secondary
 import kotlinx.coroutines.CoroutineScope
@@ -159,7 +160,7 @@ class LocalArtistItemMenu private constructor(
                         thumbnailUrl = thumbnailUrl,
                         modifier = Modifier
                             .size(Dimensions.thumbnails.album / 2)
-                            .clip(thumbnailShape())
+                            .clip(artistThumbnailShape())
                     )
                 }
 

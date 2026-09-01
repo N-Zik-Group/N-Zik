@@ -36,6 +36,7 @@ import it.fast4x.innertube.utils.from
 import app.it.fast4x.rimusic.enums.ContentType
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.n_zik.android.thumbnailShape
+import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.items.AlbumItemListPlaceholder
 import app.it.fast4x.rimusic.ui.styling.Dimensions
@@ -211,7 +212,7 @@ fun OnlineSearchList(
                             contentScale = if (tabIndex == 1 || tabIndex == 5 || tabIndex == 6) ContentScale.FillWidth else ContentScale.Crop,
                             modifier = Modifier
                                 .size(thumbnailSizeDp - 8.dp)
-                                .clip(thumbnailShape())
+                                .clip(if (item is Innertube.ArtistItem) artistThumbnailShape() else thumbnailShape())
                         )
                     }
 

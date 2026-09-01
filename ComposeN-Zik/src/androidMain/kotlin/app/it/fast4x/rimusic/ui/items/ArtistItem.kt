@@ -39,7 +39,7 @@ import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.uiRoundnessShape
 
 import app.it.fast4x.rimusic.models.Artist
-import app.n_zik.android.thumbnailShape
+import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 
@@ -132,7 +132,7 @@ fun ArtistItem(
             modifier = Modifier
                 .conditional(alternative) { fillMaxWidth().aspectRatio(1f) }
                 .conditional(!alternative) { size(thumbnailSizeDp) }
-                .clip(thumbnailShape())
+                .clip(artistThumbnailShape())
         ) {
             ImageCacheFactory.Thumbnail(
                 thumbnailUrl = thumbnailUrl,
@@ -197,7 +197,7 @@ fun ArtistItemPlaceholder(
     ) {
         Box(
             Modifier.size(thumbnailSizeDp)
-                .clip(thumbnailShape())
+                .clip(artistThumbnailShape())
                 .shimmerEffect()
         )
         Column(

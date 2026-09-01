@@ -192,6 +192,7 @@ import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import androidx.compose.material3.CircularWavyProgressIndicator
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.n_zik.android.thumbnailShape
+import app.n_zik.android.artistThumbnailShape
 
 
 @Composable
@@ -669,7 +670,7 @@ inline fun SelectorArtistsDialog(
         Box(
             modifier = modifier
                 .requiredSize(if (isLandscape) (0.85 * screenHeight) else (0.85 * screenWidth))
-                .clip(thumbnailShape())
+                .clip(artistThumbnailShape())
                 .background(color = colorPalette().background1)
         ) {
             if (values != null) {

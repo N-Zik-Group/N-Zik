@@ -197,6 +197,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ButtonDefaults
 import app.it.fast4x.rimusic.utils.lyricsColorKey
 import app.it.fast4x.rimusic.utils.thumbnailRoundnessDpKey
+import app.it.fast4x.rimusic.utils.artistThumbnailRoundnessDpKey
 import androidx.compose.ui.text.font.FontWeight
 import app.it.fast4x.rimusic.utils.lyricsCustomColorKey
 import androidx.compose.runtime.LaunchedEffect
@@ -388,6 +389,9 @@ fun DefaultAppearanceSettings() {
 
     var thumbnailRoundnessDp by rememberPreference(thumbnailRoundnessDpKey, 12f)
     thumbnailRoundnessDp = 12f
+
+    var artistThumbnailRoundnessDp by rememberPreference(artistThumbnailRoundnessDpKey, 48f)
+    artistThumbnailRoundnessDp = 48f
 
     var uiRoundnessDp by rememberPreference(uiRoundnessDpKey, 25f)
     uiRoundnessDp = 25f
@@ -700,6 +704,7 @@ fun AppearanceSettings(
     val search = Search()
 
     var thumbnailRoundnessDp by rememberPreference(thumbnailRoundnessDpKey, 12f)
+    var artistThumbnailRoundnessDp by rememberPreference(artistThumbnailRoundnessDpKey, 48f)
     var uiRoundnessDp by rememberPreference(uiRoundnessDpKey, 25f)
 
     var miniPlayerType by rememberPreference(
@@ -1555,6 +1560,48 @@ fun AppearanceSettings(
                                 val isSelected = thumbnailRoundnessDp.toInt() == v.toInt()
                                 TextButton(
                                     onClick = { thumbnailRoundnessDp = v },
+                                    shape = uiRoundnessShape(),
+                                    colors = ButtonDefaults.textButtonColors(containerColor = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else androidx.compose.ui.graphics.Color.Transparent)
+                                ) {
+                                    Text(
+                                        text = label,
+                                        fontSize = 12.sp,
+                                        color = if (isSelected) colorPalette().accent else colorPalette().text,
+                                        fontWeight = if (isSelected) FontWeight.Bold else null
+                                    )
+                                }
+                            }
+                        }
+                        }
+                    }
+
+                if (search.inputValue.isBlank() || "artist ui roundness".contains(
+                        search.inputValue,
+                        true
+                    )
+                )
+                    if (search.inputValue.isBlank() || "artist ui roundness".contains(search.inputValue, true)) {
+                        Column(modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)) {
+                            SliderSettingsEntry(
+                                icon = R.drawable.image,
+                                title = stringResource(R.string.artist_roundness),
+                                text = "",
+                                state = artistThumbnailRoundnessDp,
+                                range = 0f..48f,
+                                stepSize = 0f,
+                                defaultValue = 48f,
+                                drawValuePoints = true,
+                                isIntegerOnly = true,
+                                onSlide = { artistThumbnailRoundnessDp = kotlin.math.round(it) },
+                                toDisplay = { it.toInt().toString() },
+                                trailingContent = @Composable { Row(verticalAlignment = Alignment.CenterVertically) { Spacer(modifier = Modifier.size(36.dp).background(color = colorPalette().accent.copy(alpha = 0.5f), shape = if (artistThumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(artistThumbnailRoundnessDp.dp, 0.25f))).border(width = 1.dp, color = colorPalette().accent, shape = if (artistThumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(artistThumbnailRoundnessDp.dp, 0.25f)))) } }
+                            )
+
+                            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 4.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
+                            listOf(0f to "0", 12f to "12", 24f to "24", 36f to "36", 48f to "Max").forEach { (v, label) ->
+                                val isSelected = artistThumbnailRoundnessDp.toInt() == v.toInt()
+                                TextButton(
+                                    onClick = { artistThumbnailRoundnessDp = v },
                                     shape = uiRoundnessShape(),
                                     colors = ButtonDefaults.textButtonColors(containerColor = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else androidx.compose.ui.graphics.Color.Transparent)
                                 ) {

@@ -109,6 +109,7 @@ import app.n_zik.android.core.coil.ImageCacheFactory
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.n_zik.android.components.menu.playlist.LocalPlaylistItemMenu
 import app.n_zik.android.thumbnailShape
+import app.n_zik.android.artistThumbnailShape
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
 
 
@@ -394,7 +395,7 @@ fun StatisticsPage(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .clip(thumbnailShape())
+                                        .clip(artistThumbnailShape())
                                         .background(colorPalette().overlay)
                                 ) {
                                     BasicText(

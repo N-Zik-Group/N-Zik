@@ -148,7 +148,7 @@ import app.n_zik.android.components.dialog.common.RetrySyncDialog
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import app.n_zik.android.components.dialog.settings.HomeArtistsToolbarSettingsDialog
 import androidx.compose.material3.LinearWavyProgressIndicator
-import app.n_zik.android.thumbnailShape
+import app.n_zik.android.artistThumbnailShape
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.n_zik.android.components.AppPullToRefreshBox
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
@@ -631,7 +631,7 @@ fun HomeArtists(
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize()
-                                                    .clip(thumbnailShape())
+                                                    .clip(artistThumbnailShape())
                                                     .background(colorPalette().overlay)
                                             ) {
                                                 BasicText(
@@ -647,7 +647,7 @@ fun HomeArtists(
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize()
-                                                    .clip(thumbnailShape())
+                                                    .clip(artistThumbnailShape())
                                                     .background(colorPalette().overlay)
                                             ) {
                                                 BasicText(

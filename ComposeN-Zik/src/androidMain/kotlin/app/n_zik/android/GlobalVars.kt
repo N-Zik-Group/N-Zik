@@ -34,6 +34,9 @@ fun colorPalette() = LocalAppearance.current.colorPalette
 fun thumbnailShape() = LocalAppearance.current.thumbnailShape
 
 @Composable
+fun artistThumbnailShape() = LocalAppearance.current.artistThumbnailShape
+
+@Composable
 fun uiRoundnessShape() = LocalAppearance.current.uiRoundnessShape
 
 @Composable

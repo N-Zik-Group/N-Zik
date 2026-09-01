@@ -31,3 +31,11 @@ Removed:
   - `HomeAlbum.kt`: Hoisted TabHeader and ButtonsRow out of `LazyVerticalGrid` so that insertion animations start below the chips.
   - `HomeArtist.kt`: Hoisted TabHeader and ButtonsRow out of `LazyVerticalGrid` for the same reason.
   - `HomeLibrary.kt`: Hoisted TabHeader and ButtonsRow out of `LazyVerticalGrid` for consistency.
+
+- feat(artist-ui): apply artist ui roundness setting globally across the app
+  - `AppearanceSettings.kt`: Added a new slider for "Artist roundness"
+  - `ArtistItem.kt`, `Dialog.kt` (SelectorArtistsDialog): Applied `artistThumbnailShape()`
+  - `LocalArtistItemMenu.kt`, `OnlineArtistItemMenu.kt`: Applied `artistThumbnailShape()` to the header thumbnails
+  - `OnlineSearchList.kt`: Applied `artistThumbnailShape()` for ArtistItems in search results
+  - `StatisticsPage.kt`: Applied `artistThumbnailShape()` to the artist top ranking overlay
+  - `ChangeArtistBrowseIdDialog.kt`: Applied `artistThumbnailShape()` to the artist search results
