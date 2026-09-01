@@ -39,3 +39,5 @@ Removed:
   - `OnlineSearchList.kt`: Applied `artistThumbnailShape()` for ArtistItems in search results
   - `StatisticsPage.kt`: Applied `artistThumbnailShape()` to the artist top ranking overlay
   - `ChangeArtistBrowseIdDialog.kt`: Applied `artistThumbnailShape()` to the artist search results
+  - `Dialog.kt` (`SelectorArtistsDialog`): Fixed clipping issue where inner image lacked `artistThumbnailShape()` and dialog was incorrectly shaped
+  - `ArtistDetails.kt` & `LayoutWithAdaptiveThumbnail.kt`: Passed `artistThumbnailShape()` into `DynamicOrientationLayout` for landscape artist layout

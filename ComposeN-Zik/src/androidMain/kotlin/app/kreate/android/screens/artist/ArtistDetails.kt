@@ -3,6 +3,7 @@ package app.kreate.android.screens.artist
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.artistThumbnailShape
 
 import android.content.Intent
 import androidx.compose.animation.animateContentSize
@@ -279,7 +280,7 @@ fun ArtistDetails(
     deleteAllDownloadsDialog.Render()
     //</editor-fold>
 
-    DynamicOrientationLayout( thumbnailPainter ) {
+    DynamicOrientationLayout( thumbnailPainter, artistThumbnailShape() ) {
         LazyColumn(
             state = lazyListState,
             userScrollEnabled = artistPage.sections.isNotEmpty(),

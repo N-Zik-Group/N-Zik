@@ -34,6 +34,7 @@ import app.n_zik.android.thumbnailShape
 @Composable
 fun DynamicOrientationLayout(
     thumbnail: Painter,
+    shape: androidx.compose.ui.graphics.Shape? = null,
     content: @Composable () -> Unit
 ) {
 
@@ -50,7 +51,7 @@ fun DynamicOrientationLayout(
                     contentScale = ContentScale.FillBounds,
                     modifier = Modifier.fillMaxSize( .5f )
                         .aspectRatio( 1f )
-                        .clip( thumbnailShape() )
+                        .clip( shape ?: thumbnailShape() )
                 )
             }
             content()
