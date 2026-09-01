@@ -458,13 +458,6 @@ fun HomeSongs(
                     .fillMaxSize()
             ) {
 
-                if( isLoading ) {
-                    items(
-                        count = 20,
-                        key = { "placeholder_$it" }
-                    ) { SongItemPlaceholder( modifier = Modifier.animateItem() ) }
-                }
-
                 itemsIndexed(
                     items = itemsOnDisplay.distinctBy { it.id },
                     key = { _, song -> song.id }

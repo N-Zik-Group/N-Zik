@@ -201,3 +201,5 @@ Removed:
 - remove(home-songs): hide download buttons from On Device tab (issue on-device-downloads)
   - `HomeSongsScreen.kt`: Prevented `download_all` and `delete_downloads` buttons from rendering in the toolbar for `BuiltInPlaylist.OnDevice`
   - `HomeSongsToolbarSettingsDialog.kt`: Removed `download_all` and `delete_downloads` from `tabAvailableIds` for `OnDevice`, so they no longer appear in the settings modal for this tab
+- remove(home-songs): remove loading placeholders to enable reorder animation
+  - `HomeSongs.kt`: Removed `SongItemPlaceholder` rendering during `isLoading` so that loaded items slide in with a fluid insertion animation, matching `HomeAlbum` and `HomeArtist`.
