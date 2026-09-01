@@ -670,7 +670,8 @@ inline fun SelectorArtistsDialog(
         Box(
             modifier = modifier
                 .requiredSize(if (isLandscape) (0.85 * screenHeight) else (0.85 * screenWidth))
-                .background(androidx.compose.ui.graphics.Color.Transparent)
+                .clip(artistThumbnailShape())
+                .background(color = colorPalette().background1)
         ) {
             if (values != null) {
                 val pagerState = rememberPagerState(pageCount = { values.size })
