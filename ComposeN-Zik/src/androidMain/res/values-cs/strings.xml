@@ -84,6 +84,7 @@
   <string name="theme">Motiv</string>
   <string name="theme_mode">Režim motivu</string>
   <string name="thumbnail_roundness">Zaoblení miniatur</string>
+  <string name="artist_roundness">Artist roundness</string>
   <string name="use_system_font">Použít systémový font</string>
   <string name="use_font_by_the_system">Použít font použivaný systémem</string>
   <string name="apply_font_padding">Použít font padding</string>
