@@ -562,6 +562,7 @@
   <string name="direction_bottom">En bas</string>
   <string name="direction_bottom_floating">Bas flottant</string>
   <string name="shake_sensitivity_theme">Thème de la Sensibilité aux Secousses</string>
+  <string name="shake_sensitivity_theme_disabled">Désactivé</string>
   <string name="shake_sensitivity_theme_very_high">Très élevée (1,0 G)</string>
   <string name="shake_sensitivity_theme_high">Élevée (2,2 G)</string>
   <string name="shake_sensitivity_theme_medium">Moyenne (3,5G)</string>
