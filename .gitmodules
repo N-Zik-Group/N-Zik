@@ -1,9 +1,12 @@
 [submodule "modules/discordrpc"]
 	path = modules/discordrpc
 	url = https://github.com/N-Zik-Group/DiscordRPC.git
+	branch = main
 [submodule "modules/nextvisualizer"]
 	path = modules/nextvisualizer
 	url = https://github.com/N-Zik-Group/Next-Visualizer.git
+	branch = main
 [submodule "modules/betterlyrics"]
 	path = modules/betterlyrics
 	url = https://github.com/N-Zik-Group/Better-Lyrics
+	branch = main
