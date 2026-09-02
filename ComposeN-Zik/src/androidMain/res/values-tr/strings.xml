@@ -1692,4 +1692,5 @@
   <string name="delete_playlists_confirm_all">%d adet çalma listesinin TÜMÜNÜ silmek istediğinizden emin misiniz?</string>
   <string name="remove_songs_from_playlist_confirm">Bu %d şarkıyı çalma listesinden silmek istediğinizden emin misiniz?</string>
   <string name="delete_playlists_label">Çalma listelerini sil</string>
+  <string name="nothing_to_download">Nothing to download</string>
 </resources>
