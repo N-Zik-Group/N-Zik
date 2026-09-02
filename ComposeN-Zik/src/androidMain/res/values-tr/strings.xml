@@ -562,6 +562,7 @@
   <string name="direction_bottom">Alt</string>
   <string name="direction_bottom_floating">Alt Yüzer</string>
   <string name="shake_sensitivity_theme">Tema Sallama Hassasiyeti</string>
+  <string name="shake_sensitivity_theme_disabled">Devre dışı</string>
   <string name="shake_sensitivity_theme_very_high">Çok Yüksek (1,0G)</string>
   <string name="shake_sensitivity_theme_high">Yüksek (2,2G)</string>
   <string name="shake_sensitivity_theme_medium">Orta (3,5G)</string>
@@ -1691,4 +1692,5 @@
   <string name="delete_playlists_confirm_all">%d adet çalma listesinin TÜMÜNÜ silmek istediğinizden emin misiniz?</string>
   <string name="remove_songs_from_playlist_confirm">Bu %d şarkıyı çalma listesinden silmek istediğinizden emin misiniz?</string>
   <string name="delete_playlists_label">Çalma listelerini sil</string>
+  <string name="nothing_to_download">Nothing to download</string>
 </resources>

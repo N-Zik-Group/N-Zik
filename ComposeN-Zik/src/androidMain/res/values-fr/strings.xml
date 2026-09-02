@@ -562,6 +562,7 @@
   <string name="direction_bottom">En bas</string>
   <string name="direction_bottom_floating">Bas flottant</string>
   <string name="shake_sensitivity_theme">Thème de la Sensibilité aux Secousses</string>
+  <string name="shake_sensitivity_theme_disabled">Désactivé</string>
   <string name="shake_sensitivity_theme_very_high">Très élevée (1,0 G)</string>
   <string name="shake_sensitivity_theme_high">Élevée (2,2 G)</string>
   <string name="shake_sensitivity_theme_medium">Moyenne (3,5G)</string>
@@ -1692,4 +1693,5 @@ Volume BAS : titre précédent</string>
   <string name="delete_playlists_confirm_all">Êtes-vous sûr de vouloir supprimer TOUTES les %d playlists ?</string>
   <string name="remove_songs_from_playlist_confirm">Êtes-vous sûr de vouloir supprimer ces %d titres de la playlist ?</string>
   <string name="delete_playlists_label">Supprimer des playlists</string>
+  <string name="nothing_to_download">Nothing to download</string>
 </resources>
