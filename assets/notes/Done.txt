@@ -1,3 +1,9 @@
+fix(player-ui): fix queue lag and stretching, fix miniplayer like icon, update submodules
+  - `Player.kt`: Replace `fillMaxHeight` + `translationY` with `Modifier.layout` to fix queue panel stretching and lag. Restore `QueueToolBar` slide down animation.
+  - `MiniPlayer.kt`: Fix "like" icon overlay position on the 48dp cover art.
+  - `SwipeableContent.kt`, `Queue.kt`, `SongItem.kt`: Related UI tweaks for queue performance.
+  - `.gitmodules`: Update `betterlyrics` and `nextvisualizer` to track `main` branch.
+
 perf(home-songs): optimize Home lists performance — eliminate lag on Downloads/Cached tabs
   - `HomeSongs.kt`: Pre-compute `downloadedIds` as `Set<String>` via `derivedStateOf` — O(1) lookup instead of O(n) per item with `List<String>`
   - `HomeSongs.kt`: Pre-compute `cachedSongIds` in `LaunchedEffect` — `binder.cache.isCached()` called once at load instead of N times per item

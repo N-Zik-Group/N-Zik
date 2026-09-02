@@ -62,6 +62,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.glance.layout.Box
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
@@ -76,6 +77,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.binder
 import app.n_zik.android.colorPalette
+import app.n_zik.android.core.database.Database
 import app.it.fast4x.rimusic.enums.QueueLoopType
 import app.it.fast4x.rimusic.enums.QueueType
 import app.it.fast4x.rimusic.models.Song
@@ -341,6 +343,11 @@ fun Queue(
                     val isLocal by remember { derivedStateOf { song.isLocal } }
                     val isDownloaded = isLocal || isDownloadedSong(song.id)
 
+                    // Query like state from DB (MediaItem.asSong doesn't populate likedAt)
+                    val isLiked by remember(song.id) {
+                        Database.songTable.isLiked(song.id)
+                    }.collectAsStateWithLifecycle(initialValue = false)
+
                     ReorderableItem(
                         reorderableLazyListState,
                         key = window.uid.toString()
@@ -380,6 +387,7 @@ fun Queue(
                             SwipeableQueueItem(
                                 mediaItem = mediaItem,
                                 backgroundColor = itemBackground,
+                                skipLikeQuery = true,
                                 onPlayNext = {
                                     val currentIndex = binder.player.currentMediaItemIndex
                                     val targetIndex = currentIndex + 1
@@ -436,9 +444,11 @@ fun Queue(
                             ) {
                                 SongItem(
                                     song = song,
-                                    itemSelector = itemSelector,
                                     navController = navController,
+                                    itemSelector = itemSelector,
+                                    isLiked = isLiked,
                                     backgroundColor = itemBackground,
+                                    onLongClick = {},
                                     trailingContent = {
                                         if( !positionLock.isLocked() )
                                         // Create a fake box to store drag anchor and checkbox

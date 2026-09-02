@@ -291,6 +291,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import android.app.Activity
 import android.view.Window
 import android.content.ContextWrapper
+import androidx.compose.ui.layout.layout
 import kotlinx.coroutines.CoroutineScope
 import app.kreate.android.me.knighthat.sync.YouTubeSync
 
@@ -2311,7 +2312,7 @@ fun Player(
         }
 
         // Inline resizable queue panel
-        val queuePanelHeightFraction = remember { Animatable(0.65f) }
+        val queuePanelHeightFraction = remember { Animatable(0f) }
         var isQueuePanelVisible by remember { mutableStateOf(false) }
         val queuePanelCoroutineScope = rememberCoroutineScope()
 
@@ -2346,38 +2347,46 @@ fun Player(
             }
             val maxFraction = ((screenHeightPx - statusBarTopPx).toFloat() / screenHeightPx).coerceAtMost(1f)
 
-            val toolbarProgress = ((queuePanelHeightFraction.value - 0.55f) / 0.1f).coerceIn(0f, 1f)
-            val slideDistance = with(density) { 60.dp + Dimensions.miniPlayerHeight }
-            val toolbarOffsetY = with(density) { (1f - toolbarProgress) * slideDistance }
-
-            // Scrim
-            val scrimAlpha = (queuePanelHeightFraction.value / 0.65f).coerceIn(0f, 1f) * 0.5f
+            // Scrim — read fraction inside graphicsLayer to avoid recomposition
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = scrimAlpha))
+                    .graphicsLayer {
+                        alpha = (queuePanelHeightFraction.value / 0.65f).coerceIn(0f, 1f) * 0.5f
+                    }
+                    .background(Color.Black)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
                     ) { showQueue = false }
             )
 
-            // Queue panel
+            // Queue panel — height controlled via Modifier.layout to avoid recomposition
             val queuePanelBackground = if (queueType == QueueType.Modern) Color.Transparent else colorPalette().background2
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(queuePanelHeightFraction.value)
+                    .align(Alignment.BottomCenter)
+                    .layout { measurable, constraints ->
+                        // Read fraction in LAYOUT phase (not composition) → no recomposition
+                        val f = queuePanelHeightFraction.value.coerceIn(0.01f, 1f)
+                        val panelHeight = (constraints.maxHeight * f).toInt().coerceAtLeast(1)
+                        val placeable = measurable.measure(
+                            constraints.copy(minHeight = panelHeight, maxHeight = panelHeight)
+                        )
+                        layout(placeable.width, panelHeight) {
+                            placeable.placeRelative(0, 0)
+                        }
+                    }
+                    .clip(topUiRoundnessShape())
                     .background(queuePanelBackground)
                     .padding(
                         WindowInsets.navigationBars.union(
                             WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)
                         ).asPaddingValues()
                     )
-                    .align(Alignment.BottomCenter)
-                    .clip(topUiRoundnessShape())
             ) {
-                // Queue content - padding top for drag handle, overscroll to close
+                // Queue content - padding top for drag handle
                 Box(
                     modifier = Modifier
                         .padding(top = 48.dp)
@@ -2407,13 +2416,13 @@ fun Player(
                                 detectVerticalDragGestures(
                                     onDragEnd = {
                                         queuePanelCoroutineScope.launch {
-                                            val fraction = queuePanelHeightFraction.value
+                                            val currentFraction = queuePanelHeightFraction.value
                                             when {
-                                                fraction > 0.85f -> queuePanelHeightFraction.animateTo(
+                                                currentFraction > 0.85f -> queuePanelHeightFraction.animateTo(
                                                     maxFraction,
                                                     spring(dampingRatio = 0.8f, stiffness = 300f)
                                                 )
-                                                fraction < 0.4f -> showQueue = false
+                                                currentFraction < 0.4f -> showQueue = false
                                                 else -> queuePanelHeightFraction.animateTo(
                                                     0.65f,
                                                     spring(dampingRatio = 0.8f, stiffness = 300f)
@@ -2441,16 +2450,23 @@ fun Player(
                         )
                     }
 
-                    // QueueToolBar at bottom of panel, slides in when panel reaches 65%
+                    // QueueToolBar at bottom of panel — slides down and fades out when closing
                     QueueToolBar(
                         modifier = Modifier
                             .fillMaxWidth()
                             .align(Alignment.BottomCenter)
-                            .offset(y = toolbarOffsetY)
+                            .graphicsLayer {
+                                val toolbarProgress = ((queuePanelHeightFraction.value - 0.55f) / 0.1f).coerceIn(0f, 1f)
+                                translationY = with(density) { (1f - toolbarProgress) * 100.dp.toPx() }
+                                alpha = toolbarProgress
+                            }
                     )
                 }
 
         }
+
+
+
 
         // Nav bar background for queue
         if (isQueuePanelVisible) {

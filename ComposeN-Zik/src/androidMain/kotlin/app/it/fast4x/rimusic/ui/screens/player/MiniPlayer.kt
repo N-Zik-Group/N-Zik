@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -552,14 +553,30 @@ fun MiniPlayer(
                     it.startsWith("file://") || it.contains("app_covers") || it.startsWith("modified:")
                 } == true
 
-                ImageCacheFactory.Thumbnail(
-                    thumbnailUrl = artworkUrl,
-                    contentScale = if (isCustomImage) ContentScale.Crop else ContentScale.FillHeight,
-                    modifier = Modifier.clip( thumbnailShape() )
-                                       .size( 48.dp )
-                )
-                NowPlayingSongIndicator(mediaItem.mediaId, binder.player)
+                Box(
+                    modifier = Modifier.size( 48.dp )
+                ) {
+                    ImageCacheFactory.Thumbnail(
+                        thumbnailUrl = artworkUrl,
+                        contentScale = if (isCustomImage) ContentScale.Crop else ContentScale.FillHeight,
+                        modifier = Modifier.clip( thumbnailShape() )
+                                           .fillMaxSize()
+                    )
+
+                    NowPlayingSongIndicator(mediaItem.mediaId, binder.player)
+
+                    if (isSongLiked)
+                        app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton(
+                            onClick = {},
+                            icon = getLikedIcon(),
+                            color = colorPalette().favoritesIcon,
+                            iconSize = 10.dp,
+                            modifier = Modifier.align( Alignment.BottomStart )
+                                               .absoluteOffset( x = (-5).dp )
+                        )
+                }
             }
+
 
             Column(
                 verticalArrangement = Arrangement.Center,

@@ -184,6 +184,7 @@ fun SongItem(
     itemSelector: ItemSelector<Song>? = null,
     navController: NavController? = null,
     isRecommended: Boolean = false,
+    isLiked: Boolean? = null,
     modifier: Modifier = Modifier,
     backgroundColor: Color = colorPalette().background0,
     showThumbnail: Boolean = true,
@@ -260,7 +261,8 @@ fun SongItem(
 
             thumbnailOverlay()
 
-            if( displaySong.likedAt != null )
+            val showLiked = isLiked ?: (displaySong.likedAt != null)
+            if( showLiked )
                 HeaderIconButton(
                     onClick = {},
                     icon = getLikedIcon(),
@@ -390,6 +392,8 @@ fun SongItem(
                     } else {
                         val icon = when( downloadState ) {
                             Download.STATE_REMOVING     -> R.drawable.download
+                            Download.STATE_QUEUED       -> R.drawable.download_progress
+                            Download.STATE_RESTARTING   -> R.drawable.download_progress
                             else                        -> cacheState.iconId
                         }
                         IconButton(

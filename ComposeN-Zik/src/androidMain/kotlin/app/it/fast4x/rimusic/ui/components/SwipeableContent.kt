@@ -67,6 +67,7 @@ import app.it.fast4x.rimusic.utils.rememberPreference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import app.kreate.android.me.knighthat.sync.YouTubeSync
 import app.n_zik.android.uiRoundnessShape
@@ -158,6 +159,7 @@ fun SwipeableQueueItem(
     onEnqueue: (() -> Unit) = {},
     modifier: Modifier = Modifier,
     backgroundColor: Color = colorPalette().background0,
+    skipLikeQuery: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
@@ -192,9 +194,13 @@ fun SwipeableQueueItem(
     }
 
     val songLikeState by remember {
-        Database.songTable
-                .likeState( mediaItem.mediaId )
-                .distinctUntilChanged()
+        if (skipLikeQuery) {
+            kotlinx.coroutines.flow.flowOf(null)
+        } else {
+            Database.songTable
+                    .likeState( mediaItem.mediaId )
+                    .distinctUntilChanged()
+        }
     }.collectAsState( null, Dispatchers.IO )
 
     val onFavourite: () -> Unit = {
