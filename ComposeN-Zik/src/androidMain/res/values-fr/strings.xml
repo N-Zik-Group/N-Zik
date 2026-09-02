@@ -1693,5 +1693,5 @@ Volume BAS : titre précédent</string>
   <string name="delete_playlists_confirm_all">Êtes-vous sûr de vouloir supprimer TOUTES les %d playlists ?</string>
   <string name="remove_songs_from_playlist_confirm">Êtes-vous sûr de vouloir supprimer ces %d titres de la playlist ?</string>
   <string name="delete_playlists_label">Supprimer des playlists</string>
-  <string name="nothing_to_download">Nothing to download</string>
+  <string name="nothing_to_download">Rien à télécharger</string>
 </resources>
