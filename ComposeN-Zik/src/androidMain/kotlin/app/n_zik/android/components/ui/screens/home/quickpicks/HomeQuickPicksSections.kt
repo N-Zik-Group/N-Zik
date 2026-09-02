@@ -608,7 +608,7 @@ fun MoodsSection(
     displayedSectionTitles: MutableSet<String>
 ) {
     if (homePageInit?.chips != null) {
-        val chips = homePageInit.chips!!
+        val chips = homePageInit.chips ?: return
         if (chips.isNotEmpty()) {
             displayedSectionTitles.add("Moods")
             Title(

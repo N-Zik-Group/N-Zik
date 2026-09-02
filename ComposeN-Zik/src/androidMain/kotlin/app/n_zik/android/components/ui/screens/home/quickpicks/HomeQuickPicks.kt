@@ -149,7 +149,7 @@ fun HomeQuickPicks(
                     val durationsMap = queueItems?.associate { it.key to it.durationText }.orEmpty()
                     if (durationsMap.isNotEmpty()) {
                         state.homePageInit.value = state.homePageInit.value?.copy(
-                            sections = state.homePageInit.value!!.sections.map { section ->
+                            sections = state.homePageInit.value?.sections?.map { section ->
                                 section.copy(
                                     items = section.items.map { item ->
                                         when (item) {
@@ -167,7 +167,7 @@ fun HomeQuickPicks(
                                         }
                                     }
                                 )
-                            }
+                            } ?: emptyList()
                         )
                     }
                 }

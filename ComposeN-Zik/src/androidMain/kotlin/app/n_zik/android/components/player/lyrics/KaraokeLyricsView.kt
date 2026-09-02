@@ -468,7 +468,7 @@ fun KaraokeLyricsView(
     val primaryActiveIndex = remember(activeLineIndices, currentPositionMs) {
         val nonBgActive = activeLineIndices.filter { !karaokeLines[it].isBackground }
         val currentIndex = if (nonBgActive.isNotEmpty()) {
-            nonBgActive.maxOrNull()!!
+            nonBgActive.maxOrNull() ?: 0
         } else {
             // No non-background active - find last passed non-background line
             var lastNonBg = 0

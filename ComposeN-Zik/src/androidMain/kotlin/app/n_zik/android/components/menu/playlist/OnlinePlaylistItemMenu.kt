@@ -373,7 +373,7 @@ class OnlinePlaylistItemMenu private constructor(
             override fun onShortClick() {
                 if (songs == null) {
                     Toaster.w(R.string.opening_url)
-                } else if (songs!!.isNotEmpty()) {
+                } else if (songs?.isNotEmpty() == true) {
                     importDialog.onShortClick()
                 } else {
                     Toaster.e(R.string.no_song_found)

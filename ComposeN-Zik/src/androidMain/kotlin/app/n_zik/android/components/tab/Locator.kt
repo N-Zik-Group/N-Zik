@@ -8,6 +8,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
@@ -18,8 +19,9 @@ import app.n_zik.android.playback.services.PlayerServiceModern
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.DynamicColor
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import kotlinx.coroutines.runBlocking
 import app.kreate.android.me.knighthat.utils.Toaster
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @UnstableApi
@@ -27,7 +29,8 @@ class Locator private constructor(
     firstColorState: MutableState<Boolean>,
     private val binder: PlayerServiceModern.Binder?,
     private val scrollableState: ScrollableState,
-    private val getSongs: () -> List<Song>
+    private val getSongs: () -> List<Song>,
+    private val coroutineScope: CoroutineScope
 ): MenuIcon, DynamicColor, Descriptive {
 
     companion object {
@@ -38,6 +41,7 @@ class Locator private constructor(
         ): Locator {
             val binder = LocalPlayerServiceBinder.current
             val mediaItem = binder?.player?.currentMediaItem
+            val coroutineScope = rememberCoroutineScope()
 
             return Locator(
                 firstColorState = remember( mediaItem ) {
@@ -45,7 +49,8 @@ class Locator private constructor(
                 },
                 binder = binder,
                 scrollableState = scrollableState,
-                getSongs = getSongs
+                getSongs = getSongs,
+                coroutineScope = coroutineScope
             )
         }
     }
@@ -73,7 +78,7 @@ class Locator private constructor(
             if( position == -1 )      // Playing song isn't inside [songs()]
                 Toaster.i( R.string.playing_song_not_found_on_current_list )
             else
-                runBlocking {
+                coroutineScope.launch {
                     when( scrollableState ) {
                         is LazyListState -> scrollableState.scrollToItem( position )
                         is LazyGridState -> scrollableState.scrollToItem( position )
@@ -83,4 +88,3 @@ class Locator private constructor(
             Toaster.i( R.string.no_songs_playing )
     }
 }
-

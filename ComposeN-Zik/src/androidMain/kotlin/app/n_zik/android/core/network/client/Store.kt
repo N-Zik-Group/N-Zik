@@ -118,6 +118,7 @@ object Store {
     fun getCookie(): String {
         cookie?.let { return it }
 
+        // runBlocking justified: getCookie() is @Blocking and called from non-suspend contexts
         runBlocking(Dispatchers.IO) { fetchIfNeeded() }
 
         val headers = ghostResponseHeaders

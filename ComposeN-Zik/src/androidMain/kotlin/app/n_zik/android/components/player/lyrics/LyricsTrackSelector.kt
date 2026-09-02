@@ -271,7 +271,7 @@ fun LyricsTrackSelector(
                                         Lyrics(
                                             songId = mediaId,
                                             type = if (isSynced) LyricsType.Synced.name else LyricsType.Unsynced.name,
-                                            data = if (isSynced) it.syncedLyrics!! else it.plainLyrics.orEmpty()
+                                            data = if (isSynced) it.syncedLyrics.orEmpty() else it.plainLyrics.orEmpty()
                                         )
                                     )
                                 }

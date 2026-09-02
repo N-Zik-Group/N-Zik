@@ -141,12 +141,12 @@ open class Sort<T: Enum<T>> (
 
         for (id in savedIds) {
             if (id in visibleIds && id in enumMap && added.add(id)) {
-                result.add(enumMap[id]!!)
+                result.add(enumMap[id] ?: continue)
             }
         }
         for (id in allConstants.map { it.name }) {
             if (id in visibleIds && added.add(id)) {
-                result.add(enumMap[id]!!)
+                result.add(enumMap[id] ?: continue)
             }
         }
 

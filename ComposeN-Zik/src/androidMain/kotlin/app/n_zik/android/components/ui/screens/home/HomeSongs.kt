@@ -346,7 +346,7 @@ fun HomeSongs(
                                 val prefix = if (songItem.explicit) EXPLICIT_PREFIX else ""
                                 val song = Song(
                                     id = "$prefix$videoId",
-                                    title = info.name!!,
+                                    title = info.name ?: "",
                                     artistsText = songItem.authors.parseArtists().joinToString(", "),
                                     durationText = songItem.durationText,
                                     thumbnailUrl = songItem.thumbnail?.url

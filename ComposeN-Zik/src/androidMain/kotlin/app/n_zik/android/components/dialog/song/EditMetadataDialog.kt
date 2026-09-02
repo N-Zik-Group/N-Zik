@@ -596,7 +596,7 @@ class EditMetadataDialog private constructor(
                     retriever.setDataSource(path)
                     cover = retriever.embeddedPicture
                 }
-                Timber.tag("EditMetadata").i("Cover art: ${if (cover != null) "${cover!!.size} bytes" else "none"}")
+                Timber.tag("EditMetadata").i("Cover art: ${cover?.size?.let { "$it bytes" } ?: "none"}")
             } catch (e: Exception) {
                 Timber.tag("EditMetadata").w(e, "Failed to read cover via MediaMetadataRetriever")
             }

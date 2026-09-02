@@ -56,6 +56,7 @@ object SessionMediaItemMapper {
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 85, stream)
                 return stream.toByteArray()
             }
+            // runBlocking justified: loadArtworkBytes is private non-suspend called from 5 non-suspend public mappers
             val bitmap = kotlinx.coroutines.runBlocking {
                 ImageCacheFactory.loadBitmap(url, allowHardware = false)
             } ?: return null
