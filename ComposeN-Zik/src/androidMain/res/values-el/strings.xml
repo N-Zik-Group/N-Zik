@@ -1692,4 +1692,5 @@
   <string name="delete_playlists_confirm_all">Are you sure you want to delete ALL %d playlists?</string>
   <string name="remove_songs_from_playlist_confirm">Are you sure you want to remove these %d songs from the playlist?</string>
   <string name="delete_playlists_label">Delete playlists</string>
+  <string name="nothing_to_download">Nothing to download</string>
 </resources>
