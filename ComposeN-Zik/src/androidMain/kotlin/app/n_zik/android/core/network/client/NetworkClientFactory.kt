@@ -1,9 +1,5 @@
 package app.n_zik.android.core.network.client
 
-import app.n_zik.android.core.network.client.*
-import app.n_zik.android.core.network.models.*
-import app.n_zik.android.core.network.utils.*
- 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import okhttp3.Cache

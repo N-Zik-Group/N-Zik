@@ -6,6 +6,7 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.util.fastForEach
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import kotlinx.coroutines.CoroutineScope
@@ -84,15 +85,16 @@ class ImportSettings private constructor(
         }
 
         @Composable
-        operator fun invoke( context: Context, onImportComplete: (() -> Unit)? = null ): ImportSettings =
-            ImportSettings(
+        operator fun invoke( context: Context, onImportComplete: (() -> Unit)? = null ): ImportSettings {
+            val coroutineScope = rememberCoroutineScope()
+            return ImportSettings(
                 rememberLauncherForActivityResult(
                     ActivityResultContracts.OpenDocument()
                 ) { uri ->
                     Timber.tag("ImportSettings").d("File picker callback received, uri: $uri")
                     uri ?: return@rememberLauncherForActivityResult
 
-                    CoroutineScope(Dispatchers.IO).launch {
+                    coroutineScope.launch(Dispatchers.IO) {
                         runCatching {
                             context.contentResolver
                                    .openInputStream( uri )
@@ -116,6 +118,7 @@ class ImportSettings private constructor(
                     }
                 }
             )
+        }
     }
 
     override val supportedMimes: Array<String> = arrayOf(

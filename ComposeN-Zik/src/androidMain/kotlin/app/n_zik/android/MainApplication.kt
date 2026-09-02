@@ -100,9 +100,13 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 if (isValidIP(hostName)) {
                     hostName?.let { hName ->
                         ProxyPreferences.preference = ProxyPreferenceItem(hName, proxyPort, proxyMode)
-                        proxy = it.fast4x.innertube.utils.getProxy(ProxyPreferences.preference!!)
+                        proxy = ProxyPreferences.preference?.let { pref -> it.fast4x.innertube.utils.getProxy(pref) }
                     }
+                } else {
+                    Timber.w("Proxy preference is null or invalid, running without proxy")
                 }
+            } else {
+                Timber.w("Proxy preference is null, running without proxy")
             }
             NetworkClientFactory.configure(
                 proxy = proxy,

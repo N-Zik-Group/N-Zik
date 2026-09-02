@@ -244,6 +244,7 @@ class OnlinePlaylistItemMenu private constructor(
     override fun MenuComponent() {
         val binder = LocalPlayerServiceBinder.current
         val context = LocalContext.current
+        val coroutineScope = rememberCoroutineScope()
 
         var songs by remember { mutableStateOf<List<Song>?>(null) }
         
@@ -272,10 +273,11 @@ class OnlinePlaylistItemMenu private constructor(
         }
 
         val playNext = PlayNext {
-            if (songs == null) {
+            val currentSongs = songs
+            if (currentSongs == null) {
                 Toaster.w(R.string.opening_url)
-            } else if (songs!!.isNotEmpty()) {
-                binder?.player?.addNext(songs!!.map { it.asMediaItem }, appContext())
+            } else if (currentSongs.isNotEmpty()) {
+                binder?.player?.addNext(currentSongs.map { it.asMediaItem }, appContext())
                 menuState.hide()
             } else {
                 Toaster.e(R.string.no_song_found)
@@ -283,10 +285,11 @@ class OnlinePlaylistItemMenu private constructor(
         }
 
         val enqueue = Enqueue {
-            if (songs == null) {
+            val currentSongs = songs
+            if (currentSongs == null) {
                 Toaster.w(R.string.opening_url)
-            } else if (songs!!.isNotEmpty()) {
-                binder?.player?.enqueue(songs!!.map { it.asMediaItem }, appContext())
+            } else if (currentSongs.isNotEmpty()) {
+                binder?.player?.enqueue(currentSongs.map { it.asMediaItem }, appContext())
                 menuState.hide()
             } else {
                 Toaster.e(R.string.no_song_found)
@@ -303,9 +306,10 @@ class OnlinePlaylistItemMenu private constructor(
 
         val addToPlaylist = object : MenuIcon by playlistsMenu, Descriptive by playlistsMenu, Clickable {
             override fun onShortClick() {
-                if (songs == null) {
+                val currentSongs = songs
+                if (currentSongs == null) {
                     Toaster.w(R.string.opening_url)
-                } else if (songs!!.isNotEmpty()) {
+                } else if (currentSongs.isNotEmpty()) {
                     playlistsMenu.onShortClick()
                 } else {
                     Toaster.e(R.string.no_song_found)
@@ -317,9 +321,10 @@ class OnlinePlaylistItemMenu private constructor(
         val downloadAllDialog = DownloadAllSongsDialog { songs ?: emptyList() }
         val downloadAll = object : MenuIcon by downloadAllDialog, Descriptive by downloadAllDialog, Clickable {
             override fun onShortClick() {
-                if (songs == null) {
+                val currentSongs = songs
+                if (currentSongs == null) {
                     Toaster.w(R.string.opening_url)
-                } else if (songs!!.isNotEmpty()) {
+                } else if (currentSongs.isNotEmpty()) {
                     downloadAllDialog.onShortClick()
                 } else {
                     Toaster.e(R.string.no_song_found)
@@ -331,9 +336,10 @@ class OnlinePlaylistItemMenu private constructor(
         val deleteAllDialog = DeleteAllDownloadedSongsDialog { songs ?: emptyList() }
         val deleteAll = object : MenuIcon by deleteAllDialog, Descriptive by deleteAllDialog, Clickable {
             override fun onShortClick() {
-                if (songs == null) {
+                val currentSongs = songs
+                if (currentSongs == null) {
                     Toaster.w(R.string.opening_url)
-                } else if (songs!!.isNotEmpty()) {
+                } else if (currentSongs.isNotEmpty()) {
                     deleteAllDialog.onShortClick()
                 } else {
                     Toaster.e(R.string.no_song_found)
@@ -345,8 +351,7 @@ class OnlinePlaylistItemMenu private constructor(
         val importDialog = ImportPlaylistDialog(
             initialValue = cleanPrefix(playlist.title ?: "")
         ) { text ->
-            val scope = CoroutineScope(Dispatchers.IO)
-            scope.launch {
+            coroutineScope.launch(Dispatchers.IO) {
                 Database.asyncTransaction {
                     val newPlaylist = Playlist(name = text, browseId = playlist.key)
                     val playlistId = Database.playlistTable.insert(newPlaylist)

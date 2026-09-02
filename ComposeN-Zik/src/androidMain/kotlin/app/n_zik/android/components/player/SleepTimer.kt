@@ -162,7 +162,7 @@ class SleepTimer private constructor(
                                         halvedNumbersColumnHeightPx
                                     )
                                     val coercedPoint =
-                                        coercedAnchors.minByOrNull { abs(it - coercedTarget) }!!
+                                        coercedAnchors.minByOrNull { abs(it - coercedTarget) } ?: return@fling target
                                     val base =
                                         halvedNumbersColumnHeightPx * (target / halvedNumbersColumnHeightPx).toInt()
                                     coercedPoint + base

@@ -1,7 +1,7 @@
 package app.n_zik.android.components.tab
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
@@ -38,7 +38,7 @@ class SongShuffler private constructor(
         ): SongShuffler {
             val songsToShuffle by remember( key ) {
                 databaseCall( Int.MAX_VALUE )
-            }.collectAsState( emptyList(), Dispatchers.IO )
+            }.collectAsStateWithLifecycle( initialValue = emptyList(), context = Dispatchers.IO )
 
             return SongShuffler( LocalPlayerServiceBinder.current, LocalMenuState.current ) { songsToShuffle }
         }

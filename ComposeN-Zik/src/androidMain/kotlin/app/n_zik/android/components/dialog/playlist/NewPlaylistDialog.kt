@@ -11,6 +11,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -35,21 +36,23 @@ import timber.log.Timber
 class NewPlaylistDialog private constructor(
     activeState: MutableState<Boolean>,
     valueState: MutableState<TextFieldValue>,
-
+    private val coroutineScope: kotlinx.coroutines.CoroutineScope,
     private val onPlaylistCreated: (Playlist) -> Unit = {}
 ): TextInputDialog(InputDialogConstraints.ALL), MenuIcon, Descriptive {
 
     companion object {
         @Composable
-        operator fun invoke(onPlaylistCreated: (Playlist) -> Unit = {}): NewPlaylistDialog =
-            NewPlaylistDialog(
+        operator fun invoke(onPlaylistCreated: (Playlist) -> Unit = {}): NewPlaylistDialog {
+            val coroutineScope = rememberCoroutineScope()
+            return NewPlaylistDialog(
                 remember { mutableStateOf(false) },
                 remember {
                     mutableStateOf( TextFieldValue() )
                 },
-
+                coroutineScope,
                 onPlaylistCreated
             )
+        }
     }
 
     override val keyboardOption: KeyboardOptions = KeyboardOptions.Default
@@ -87,7 +90,7 @@ class NewPlaylistDialog private constructor(
         var playlist: Playlist? = null
 
         if (isYouTubeSyncEnabled()) {
-            CoroutineScope(Dispatchers.IO).launch {
+            coroutineScope.launch(Dispatchers.IO) {
                 YtMusic.createPlaylist(newValue)
                        .getOrNull()
                        .also {

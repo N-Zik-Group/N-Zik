@@ -1,9 +1,5 @@
 package app.n_zik.android.updater.models
 
-import app.n_zik.android.updater.services.*
-import app.n_zik.android.updater.models.*
-import app.n_zik.android.updater.ui.*
-
 import app.n_zik.android.BuildConfig
 
 object MajorUpdateConfig {

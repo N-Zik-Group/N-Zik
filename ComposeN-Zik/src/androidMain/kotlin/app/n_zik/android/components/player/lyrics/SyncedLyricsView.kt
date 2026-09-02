@@ -428,7 +428,9 @@ if (showBackgroundLyrics && showlyricsthumbnail) modifierBG =
             }
 
             itemsIndexed(
-                items = syncedSentences
+                items = syncedSentences,
+                key = { index, _ -> index },
+                contentType = { _, _ -> "lyric_line" }
             ) { index, sentence ->
                 val trimmedSentence = sentence.text.trim()
 

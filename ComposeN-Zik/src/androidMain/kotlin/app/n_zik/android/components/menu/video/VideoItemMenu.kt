@@ -22,6 +22,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,7 +78,6 @@ import app.it.fast4x.rimusic.utils.forcePlay
 import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -199,6 +199,7 @@ class VideoItemMenu private constructor(
         val context = LocalContext.current
         val uriHandler = LocalUriHandler.current
         val binder = LocalPlayerServiceBinder.current
+        val coroutineScope = rememberCoroutineScope()
 
         val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
         val downloadStateMediaState = rememberUpdatedState(
@@ -223,7 +224,7 @@ class VideoItemMenu private constructor(
                             Toaster.w(R.string.error_music_not_fully_cached)
                         } else {
                             Toaster.i(R.string.updating_waveform_in_progress)
-                            CoroutineScope(Dispatchers.Main).launch {
+                            coroutineScope.launch(Dispatchers.Main) {
                                 WaveformExtractor.deleteWaveform(context, song.id)
                                 val caches = listOfNotNull(binder?.cache, binder?.downloadCache)
                                 val result = WaveformExtractor.getOrExtractWaveform(context, song.id, caches)
@@ -350,7 +351,7 @@ class VideoItemMenu private constructor(
                             override val menuIconTitle: String get() = stringResource(R.string.more_of) + " $artistName"
                             override fun onShortClick() {
                                 menuState.hide()
-                                CoroutineScope(Dispatchers.IO).launch {
+                                coroutineScope.launch(Dispatchers.IO) {
                                     // Try DB by name first (works after search online populated it)
                                     val dbArtist = try {
                                         Database.artistTable.findByName(artistName).first()
@@ -454,7 +455,7 @@ class VideoItemMenu private constructor(
                                 icon = if ( isLiked ) R.drawable.heart else R.drawable.heart_outline,
                                 color = colorPalette().favoritesIcon,
                                 onClick = {
-                                    CoroutineScope( Dispatchers.IO ).launch {
+                                    coroutineScope.launch( Dispatchers.IO ) {
                                         YouTubeSync.toggleSongLike( context, song.asMediaItem )
                                     }
                                 },

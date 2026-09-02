@@ -1,3 +1,19 @@
+Refactor:
+- refactor(code-quality): comply with CODE.md rules — anti-patterns, null-safety, imports, LazyColumn (71 files, ~324 violations)
+  - Phase 1 — Anti-patterns critiques: replaced `runBlocking(Dispatchers.IO)` with `LaunchedEffect` + state async in HomeAlbum.kt, HomeArtist.kt, HomeLibrary.kt; replaced `collectAsState()` with `collectAsStateWithLifecycle()` in ImageCacheFactory.kt, SeekBarStaticAudioWaves.kt, HomeSongs.kt; replaced `e.printStackTrace()` with Timber in UpdateScreen.kt
+  - Phase 2 — CoroutineScope structuré: replaced `CoroutineScope(Dispatchers.X).launch` with `rememberCoroutineScope()` in 14 menus/dialogs (OnlineAlbumItemMenu, PlayerMenu, VideoItemMenu, PlayerItemMenu, SongItemMenu, etc.); structured scope in StreamResolver.kt (12 occurrences) and PlayerServiceModern.kt (6 occurrences)
+  - Phase 3 — Imports wildcard: resolved ~100 wildcard imports in 21 files (LyricsScreen.kt, PlayerServiceModern.kt, StreamResolver.kt, MyDownloadHelper.kt, PlaybackDispatchers.kt, BitmapProvider.kt, AutoSessionConstants.kt, AutoSessionCallback.kt, NetworkQualityHelper.kt, NetworkExtensions.kt, OkHttpRequest.kt, GlobalNetworkLogger.kt, NetworkClientFactory.kt, Store.kt, UpdateScreen.kt, Updater.kt, UpdateDownloadManager.kt, UpdaterConstants.kt, MajorUpdateConfig.kt, GithubRelease.kt, PlaybackExceptions.kt)
+  - Phase 4 — Null-safety: replaced ~90+ `!!` operator with safe calls (`?.`, `?: return`, `?: emptyList()`) in settings dialogs (8 files), menus (OnlineAlbumItemMenu, LocalPlaylistItemMenu, OnlinePlaylistItemMenu), ImageCacheFactory.kt, PoTokenGenerator.kt, GoToArtist.kt, GoToAlbum.kt, SleepTimer.kt, AudioDeviceMenu.kt, PlaybackSettingsMenu.kt, MyDownloadHelper.kt, PlaylistWidgetManager.kt, EditMetadataDialog.kt, ExportCacheDialog.kt, SeekBarVisualizer.kt, MainActivity.kt, MainApplication.kt; added Timber.w logging for null cases
+  - Phase 5 — LazyColumn key + contentType: added `key` + `contentType` to ~25+ `items()`/`itemsIndexed()` calls in HomeQuickPicksComponents.kt, HomeQuickPicksSections.kt, HomeDiscovery.kt, KaraokeLyricsView.kt, SyncedLyricsView.kt, ChangeAlbumBrowseIdDialog.kt, ChangeArtistBrowseIdDialog.kt, ChangePlaylistBrowseIdDialog.kt
+  - Review patches: added error handling with runCatching + Timber.e in HomeAlbum/Artist/Library LaunchedEffect; replaced remaining runBlocking in ExportCacheDialog.kt; added Timber.w for null cases in settings dialogs, ImageCacheFactory, MainActivity/MainApplication
+  - Build verified: `./gradlew :ComposeN-Zik:assembleDebug` BUILD SUCCESSFUL
+
+Removed:
+- remove(home-songs): remove OnDevice loading placeholders
+  - `OnDeviceSongs.kt`: Removed `isLoading` variable and placeholder items block (20 `SongItemPlaceholder` rendered during load)
+  - `HomeSongs.kt`: Removed unused `SongItemPlaceholder` import
+  - Note: Placeholders no longer used by any home songs screen
+
 fix(download): resolve notification, pause state, and progress bar bugs during active/paused downloads
   - MyDownloadService.kt: Reordered onIdle to always show the 'Paused' notification when DownloadManager is paused, preventing it from being swallowed if other downloads had just completed.
   - MyDownloadService.kt: Removed 

@@ -190,7 +190,7 @@ fun HomeDiscovery(
                     )
 
                     LazyRow(contentPadding = endPaddingValues) {
-                        items(items = newReleaseAlbumsFiltered.distinctBy { it.key }, key = { it.key }) {
+                        items(items = newReleaseAlbumsFiltered.distinctBy { it.key }, key = { it.key }, contentType = { "album" }) {
                               //preferitesArtists.forEach { artist ->
                               //      if (artist.name == it.authors?.first()?.name)
                                         AlbumItem(
@@ -229,7 +229,7 @@ fun HomeDiscovery(
                     )
 
                     LazyRow(contentPadding = endPaddingValues) {
-                        items(items = page.newReleaseAlbums.distinctBy { it.key }, key = { it.key }) {
+                        items(items = page.newReleaseAlbums.distinctBy { it.key }, key = { it.key }, contentType = { "album" }) {
                             AlbumItem(
                                 album = it,
                                 thumbnailSizePx = thumbnailPx,
@@ -276,7 +276,8 @@ fun HomeDiscovery(
                     ) {
                         items(
                             items = page.moods.sortedBy { it.title },
-                            key = { it.endpoint.params ?: it.title }
+                            key = { it.endpoint.params ?: it.title },
+                            contentType = { "mood" }
                         ) {
                             MoodItem(
                                 mood = it,
@@ -317,7 +318,7 @@ fun HomeDiscovery(
                         .fillMaxWidth()
                         .height((4 * (64 + 4)).dp)
                 ) {
-                    items(16) {
+                    items(16, key = { it }, contentType = { "placeholder" }) {
                         MoodItemPlaceholder(
                             //width = 92.dp, //itemWidth,
                             width = itemWidth,

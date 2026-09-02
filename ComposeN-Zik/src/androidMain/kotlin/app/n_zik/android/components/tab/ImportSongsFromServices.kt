@@ -5,6 +5,7 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringResource
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import app.n_zik.android.core.database.Database
@@ -223,24 +224,27 @@ class ImportSongsFromServices private constructor(
             source: String? = null,
             likeImported: Boolean = false,
             onImportComplete: ((Long) -> Unit)? = null
-        ) = ImportSongsFromServices(
-            rememberLauncherForActivityResult(
-                ActivityResultContracts.OpenDocument()
-            ) { uri ->
-                if( uri == null ) return@rememberLauncherForActivityResult
-                
-                CoroutineScope(Dispatchers.IO).launch {
-                    val importedSongs = mutableListOf<Song>()
-                    val finalPlaylistId = openFile( uri, playlistIdForMatch, source, likeImported, beforeTransaction ) { index, song, album, artists ->
-                        afterTransaction(index, song, album, artists)
-                        importedSongs.add(song)
-                    }
+        ): ImportSongsFromServices {
+            val coroutineScope = rememberCoroutineScope()
+            return ImportSongsFromServices(
+                rememberLauncherForActivityResult(
+                    ActivityResultContracts.OpenDocument()
+                ) { uri ->
+                    if( uri == null ) return@rememberLauncherForActivityResult
                     
-                    onImportComplete?.invoke(finalPlaylistId)
-                    Toaster.done()
+                    coroutineScope.launch(Dispatchers.IO) {
+                        val importedSongs = mutableListOf<Song>()
+                        val finalPlaylistId = openFile( uri, playlistIdForMatch, source, likeImported, beforeTransaction ) { index, song, album, artists ->
+                            afterTransaction(index, song, album, artists)
+                            importedSongs.add(song)
+                        }
+                        
+                        onImportComplete?.invoke(finalPlaylistId)
+                        Toaster.done()
+                    }
                 }
-            }
-        )
+            )
+        }
     }
 
     override val supportedMimes: Array<String> = arrayOf("text/csv", "text/comma-separated-values")

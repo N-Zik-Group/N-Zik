@@ -21,6 +21,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -273,6 +274,7 @@ class SongItemMenu private constructor(
     override fun MenuComponent() {
         val context = LocalContext.current
         val binder = LocalPlayerServiceBinder.current
+        val coroutineScope = rememberCoroutineScope()
 
         val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
         val downloadStateMediaState = rememberUpdatedState(
@@ -297,7 +299,7 @@ class SongItemMenu private constructor(
                             Toaster.w(R.string.error_music_not_fully_cached)
                         } else {
                             Toaster.i(R.string.updating_waveform_in_progress)
-                            CoroutineScope(Dispatchers.Main).launch {
+                            coroutineScope.launch(Dispatchers.Main) {
                                 WaveformExtractor.deleteWaveform(context, song.id)
                                 val caches = listOfNotNull(binder?.cache, binder?.downloadCache)
                                 val result = WaveformExtractor.getOrExtractWaveform(context, song.id, caches)
@@ -434,7 +436,7 @@ class SongItemMenu private constructor(
                                 override val menuIconTitle: String get() = stringResource(R.string.more_of) + " $artistName"
                                 override fun onShortClick() {
                                     menuState.hide()
-                                    CoroutineScope(Dispatchers.IO).launch {
+                                    coroutineScope.launch(Dispatchers.IO) {
                                         // Try DB by name first (works after the search online populated it)
                                         val dbArtist = try {
                                             Database.artistTable.findByName(artistName).first()

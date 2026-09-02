@@ -170,7 +170,7 @@ fun AddToPlaylistPlayerMenu(
                     mapIgnore( playlist, mediaItem.asSong )
                 }
             } else {
-                CoroutineScope(Dispatchers.IO).launch {
+                coroutineScope.launch(Dispatchers.IO) {
                     addSongToYtPlaylist(playlist.id, position, playlist.browseId ?: "", mediaItem)
                 }
             }
@@ -185,7 +185,7 @@ fun AddToPlaylistPlayerMenu(
             }
             if(isYouTubeSyncEnabled() && playlist.isYoutubePlaylist && playlist.isEditable) {
                 Database.asyncTransaction {
-                    CoroutineScope(Dispatchers.IO).launch {
+                    coroutineScope.launch(Dispatchers.IO) {
                         if (removeYTSongFromPlaylist(
                                 mediaItem.mediaId,
                                 playlist.browseId ?: "",
@@ -233,7 +233,7 @@ fun AddToPlaylistArtistSongs(
                 if ( !isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist )
                     mapIgnore( playlistPreview.playlist, *mediaItems.toTypedArray() )
                 else
-                    CoroutineScope(Dispatchers.IO).launch {
+                    coroutineScope.launch(Dispatchers.IO) {
                         addToYtPlaylist(playlistPreview.playlist.id, position, playlistPreview.playlist.browseId ?: "", mediaItems)
                     }
 

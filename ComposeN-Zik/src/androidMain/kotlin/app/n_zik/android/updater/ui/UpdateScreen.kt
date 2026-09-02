@@ -1,9 +1,6 @@
 @file:kotlin.OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.n_zik.android.updater.ui
 
-import app.n_zik.android.updater.services.*
-import app.n_zik.android.updater.models.*
-import app.n_zik.android.updater.ui.*
 import app.n_zik.android.uiRoundnessShape
 
 import app.n_zik.android.updater.services.Updater
@@ -777,19 +774,12 @@ fun UpdateScreen(navController: NavController) {
                     } catch (e: Exception) { "" }
                 }
                 val changelogTextToDisplay = if (isReinstalling || !hasUpdate) {
-                    if (!Updater.currentChangelog.isNullOrBlank()) {
-                        Updater.currentChangelog!!
-                    } else {
-                        currentChangelog
-                    }
+                    Updater.currentChangelog?.takeIf { it.isNotBlank() }
+                        ?: currentChangelog
                 } else {
-                    if (!Updater.latestChangelog.isNullOrBlank()) {
-                        Updater.latestChangelog!!
-                    } else if (!Updater.githubRelease?.body.isNullOrBlank()) {
-                        Updater.githubRelease!!.body
-                    } else {
-                        currentChangelog
-                    }
+                    Updater.latestChangelog?.takeIf { it.isNotBlank() }
+                        ?: Updater.githubRelease?.body?.takeIf { it.isNotBlank() }
+                        ?: currentChangelog
                 }
 
                 val translator = remember { Translator(NetworkClientFactory.getTranslatorClient()) }
@@ -805,7 +795,7 @@ fun UpdateScreen(navController: NavController) {
                                 }
                                 translatedText = res
                             } catch (e: Exception) {
-                                e.printStackTrace()
+                                Timber.tag("UpdateScreen").e(e, "Translation failed")
                             }
                         } else {
                             translatedText = changelogTextToDisplay
@@ -954,8 +944,9 @@ fun parseChangelogText(text: String): List<Pair<String, List<String>>> {
     val currentChanges = mutableListOf<String>()
 
     fun packSection() {
-        if (currentTitle != null) {
-            sections.add(currentTitle!! to currentChanges.toList())
+        val title = currentTitle
+        if (title != null) {
+            sections.add(title to currentChanges.toList())
             currentChanges.clear()
         }
     }

@@ -2,9 +2,6 @@ package app.n_zik.android.playback.services.automotive.session
 
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
-import app.n_zik.android.playback.services.*
-import app.n_zik.android.playback.exceptions.*
-import app.n_zik.android.playback.utils.*
 
 import android.content.Context
 import android.os.Bundle

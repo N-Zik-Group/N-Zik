@@ -144,7 +144,8 @@ fun SeekBarVisualizer(
         }
 
         if (hasPermission && audioSessionId != null && localIsPlaying) {
-            val currentSessionId = audioSessionId!!
+            @Suppress("SENSELESS_COMPARISON")
+            val currentSessionId = audioSessionId ?: return@BoxWithConstraints
             LaunchedEffect(currentSessionId, localIsPlaying) {
                 val helper = VisualizerHelper(currentSessionId)
                 

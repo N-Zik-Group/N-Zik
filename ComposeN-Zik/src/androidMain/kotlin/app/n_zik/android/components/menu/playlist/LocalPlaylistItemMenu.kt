@@ -285,9 +285,10 @@ class LocalPlaylistItemMenu private constructor(
         val downloadAllDialog = DownloadAllSongsDialog { songs ?: emptyList() }
         val downloadAll = object : MenuIcon by downloadAllDialog, Descriptive by downloadAllDialog, Clickable {
             override fun onShortClick() {
-                if (songs == null) {
+                val currentSongs = songs
+                if (currentSongs == null) {
                     Toaster.w(R.string.opening_url)
-                } else if (songs!!.isNotEmpty()) {
+                } else if (currentSongs.isNotEmpty()) {
                     downloadAllDialog.onShortClick()
                 } else {
                     Toaster.e(R.string.no_song_found)
@@ -299,9 +300,10 @@ class LocalPlaylistItemMenu private constructor(
         val deleteAllDialog = DeleteAllDownloadedSongsDialog { songs ?: emptyList() }
         val deleteAll = object : MenuIcon by deleteAllDialog, Descriptive by deleteAllDialog, Clickable {
             override fun onShortClick() {
-                if (songs == null) {
+                val currentSongs = songs
+                if (currentSongs == null) {
                     Toaster.w(R.string.opening_url)
-                } else if (songs!!.isNotEmpty()) {
+                } else if (currentSongs.isNotEmpty()) {
                     deleteAllDialog.onShortClick()
                 } else {
                     Toaster.e(R.string.no_song_found)
@@ -327,10 +329,11 @@ class LocalPlaylistItemMenu private constructor(
         deleteAllDialog.Render()
 
         val playNext = PlayNext {
-            if (songs == null) {
+            val currentSongs = songs
+            if (currentSongs == null) {
                 Toaster.w(R.string.opening_url)
-            } else if (songs!!.isNotEmpty()) {
-                binder?.player?.addNext(songs!!.map { it.asMediaItem }, context)
+            } else if (currentSongs.isNotEmpty()) {
+                binder?.player?.addNext(currentSongs.map { it.asMediaItem }, context)
                 menuState.hide()
             } else {
                 Toaster.e(R.string.no_song_found)
@@ -338,10 +341,11 @@ class LocalPlaylistItemMenu private constructor(
         }
 
         val enqueue = Enqueue {
-            if (songs == null) {
+            val currentSongs = songs
+            if (currentSongs == null) {
                 Toaster.w(R.string.opening_url)
-            } else if (songs!!.isNotEmpty()) {
-                binder?.player?.enqueue(songs!!.map { it.asMediaItem }, context)
+            } else if (currentSongs.isNotEmpty()) {
+                binder?.player?.enqueue(currentSongs.map { it.asMediaItem }, context)
                 menuState.hide()
             } else {
                 Toaster.e(R.string.no_song_found)

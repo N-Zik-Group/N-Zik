@@ -55,7 +55,6 @@ import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.secondary
 import it.fast4x.innertube.Innertube
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -134,6 +133,7 @@ class OnlineArtistItemMenu private constructor(
         modifier: Modifier = Modifier
     ) {
         val context = LocalContext.current
+        val coroutineScope = rememberCoroutineScope()
         val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
         Column(
@@ -219,7 +219,7 @@ class OnlineArtistItemMenu private constructor(
                         icon = if (isFollowing) R.drawable.bookmark else R.drawable.bookmark_outline,
                         color = colorPalette().favoritesIcon,
                         onClick = {
-                            CoroutineScope(Dispatchers.IO).launch {
+                            coroutineScope.launch(Dispatchers.IO) {
                                 Database.artistTable.toggleFollow(artist.key)
                             }
                         },

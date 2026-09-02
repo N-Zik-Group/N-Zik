@@ -175,8 +175,8 @@ object HomeSongsSortSettingsDialog : Dialog {
         }
 
         val currentTab = tabs[selectedTabIndex]
-        val currentWorkingOrder = workingOrders[currentTab]!!
-        val currentWorkingToggles = workingToggles[currentTab]!!
+        val currentWorkingOrder = workingOrders[currentTab] ?: emptyList()
+        val currentWorkingToggles = workingToggles[currentTab] ?: emptyMap()
         val tabPrefix = getTabPrefix(currentTab)
 
         val lazyListState = rememberLazyListState()
@@ -219,7 +219,7 @@ object HomeSongsSortSettingsDialog : Dialog {
                 checkedStatesOverride = items.map { currentWorkingToggles[it.id.removePrefix("${tabPrefix}_")] ?: true },
                 onCheckedChange = { index, newValue ->
                     val id = items[index].id.removePrefix("${tabPrefix}_")
-                    val m = workingToggles[currentTab]!!.toMutableMap()
+                    val m = (workingToggles[currentTab] ?: emptyMap()).toMutableMap()
                     m[id] = newValue
                     workingToggles = workingToggles.toMutableMap().apply { this[currentTab] = m }
                 },
@@ -235,8 +235,8 @@ object HomeSongsSortSettingsDialog : Dialog {
                     tabs.forEach { tab ->
                         val tp = getTabPrefix(tab)
                         val key = getSortOrderKey(tab)
-                        val order = workingOrders[tab]!!
-                        val toggles = workingToggles[tab]!!
+                        val order = workingOrders[tab] ?: emptyList()
+                        val toggles = workingToggles[tab] ?: emptyMap()
 
                         toggles.forEach { (id, isChecked) ->
                             edit.putBoolean("${tp}_sort_${id}_visible", isChecked)

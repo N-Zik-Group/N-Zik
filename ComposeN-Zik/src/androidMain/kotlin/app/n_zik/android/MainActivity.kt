@@ -503,8 +503,14 @@ class MainActivity :
                 val proxyMode = getEnum(proxyModeKey, Proxy.Type.HTTP)
                 if (isValidIP(hostName) && hostName != null) {
                     it.fast4x.innertube.utils.getProxy(ProxyPreferenceItem(hostName, proxyPort, proxyMode))
-                } else null
-            } else null
+                } else {
+                    Timber.w("Proxy preference is null or invalid, running without proxy")
+                    null
+                }
+            } else {
+                Timber.w("Proxy preference is null, running without proxy")
+                null
+            }
 
             NetworkClientFactory.configure(
                 proxy = proxy,
@@ -827,7 +833,7 @@ class MainActivity :
                                     if (isValidIP(hostName)) {
                                         hostName?.let { hName ->
                                             ProxyPreferences.preference = ProxyPreferenceItem(hName, proxyPort, proxyMode)
-                                            proxy = it.fast4x.innertube.utils.getProxy(ProxyPreferences.preference!!)
+                                            proxy = ProxyPreferences.preference?.let { pref -> it.fast4x.innertube.utils.getProxy(pref) }
                                         }
                                     } else {
                                         Toaster.e(R.string.invalid_proxy_hostname)

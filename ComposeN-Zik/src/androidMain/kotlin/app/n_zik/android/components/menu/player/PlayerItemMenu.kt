@@ -78,7 +78,6 @@ import app.it.fast4x.rimusic.utils.forcePlay
 import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import app.n_zik.android.components.SongItem
@@ -384,7 +383,7 @@ class PlayerItemMenu private constructor(
                         // Toast info refresh in progress
                         Toaster.i(R.string.updating_waveform_in_progress)
                         
-                        CoroutineScope(Dispatchers.Main).launch {
+                        coroutineScope.launch(Dispatchers.Main) {
                             WaveformExtractor.deleteWaveform(mContext, mediaItem.mediaId)
                             val caches = listOfNotNull(binder.cache, binder.downloadCache)
                             val result = WaveformExtractor.getOrExtractWaveform(mContext, mediaItem.mediaId, caches)
@@ -570,7 +569,7 @@ class PlayerItemMenu private constructor(
                                     override fun onShortClick() {
                                         menuState.hide()
                                         onClosePlayer()
-                                        CoroutineScope(Dispatchers.IO).launch {
+                                        coroutineScope.launch(Dispatchers.IO) {
                                             Innertube.nextPage(NextBody(videoId = song.id))
                                                 ?.getOrNull()
                                                 ?.itemsPage?.items?.firstOrNull()
@@ -645,7 +644,7 @@ class PlayerItemMenu private constructor(
                     binder.cache.removeResource(mediaItem.mediaId)
                     binder.downloadCache.removeResource(mediaItem.mediaId)
                     val videoId = mediaItem.mediaId.split("/").lastOrNull() ?: mediaItem.mediaId
-                    CoroutineScope(Dispatchers.IO).launch {
+                    coroutineScope.launch(Dispatchers.IO) {
                         Database.asyncTransaction {
                             Database.songTable.updateTotalPlayTime(mediaItem.mediaId, 0)
                         }

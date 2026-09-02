@@ -1,11 +1,8 @@
 package app.n_zik.android.playback.services
 
 import app.n_zik.android.playback.services.automotive.session.AutoSessionCallback
-import app.n_zik.android.core.database.*
+import app.n_zik.android.core.database.Database
 
-import app.n_zik.android.playback.services.*
-import app.n_zik.android.playback.exceptions.*
-import app.n_zik.android.playback.utils.*
 import app.n_zik.android.MainApplication
 import app.n_zik.android.utils.artistTextOrDb
 import app.n_zik.android.utils.albumTitleOrDb
@@ -101,7 +98,6 @@ import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.NavigationEndpoint
 import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.requests.nextPage
-import app.n_zik.android.core.database.Database
 import app.n_zik.android.MainActivity
 import app.n_zik.android.appContext
 import app.it.fast4x.rimusic.cleanPrefix
@@ -129,6 +125,9 @@ import app.it.fast4x.rimusic.models.QueuedMediaItem
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.models.asMediaItem
 import app.n_zik.android.playback.utils.BitmapProvider
+import app.n_zik.android.playback.utils.PlaybackDispatchers
+import app.n_zik.android.playback.utils.SleepTimer
+import app.n_zik.android.playback.utils.NZikRadio
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.download.services.MyDownloadService
 import app.it.fast4x.rimusic.utils.CoilBitmapLoader
@@ -239,7 +238,6 @@ import app.n_zik.android.playback.exceptions.UnmatchedSongException
 import app.n_zik.android.playback.exceptions.UnplayableException
 import app.n_zik.android.playback.exceptions.VideoIdMismatchException
 import app.n_zik.android.core.security.cipher.CipherDeobfuscator
-import app.n_zik.android.playback.utils.PlaybackDispatchers
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
 import androidx.media3.datasource.HttpDataSource
@@ -1927,7 +1925,7 @@ class PlayerServiceModern : MediaLibraryService(),
     fun updateWidgets() {
         val currentMediaId = binder.player.currentMediaItem?.mediaId
         if (currentMediaId == null) {
-            CoroutineScope(Dispatchers.IO).launch {
+            coroutineScope.launch(Dispatchers.IO) {
                 NZikWidgetManager.updateIdleWidgets(applicationContext)
             }
             return
@@ -1949,7 +1947,7 @@ class PlayerServiceModern : MediaLibraryService(),
         val playerPosition = binder.player.currentPosition.coerceAtLeast(0)
         val currentBitmap = bitmapProvider.bitmap
 
-        CoroutineScope( Dispatchers.IO ).launch {
+        coroutineScope.launch(Dispatchers.IO) {
             // Save bitmap to file for backward compatibility or other widgets
             val file = File( cacheDir, "widget_thumbnail.png" )
             FileOutputStream(file).use { outStream ->
@@ -2049,7 +2047,7 @@ class PlayerServiceModern : MediaLibraryService(),
         if (!isPersistentQueueEnabled) return
         Timber.tag("PlayerServiceModern").d("onCreate savePersistentQueue is enabled")
 
-        CoroutineScope(Dispatchers.Main).launch {
+        coroutineScope.launch(Dispatchers.Main) {
             val mediaItems = player.currentTimeline.mediaItems
             val mediaItemIndex = player.currentMediaItemIndex
             val mediaItemPosition = player.currentPosition
@@ -2103,7 +2101,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
             val index = filteredQueuedSong.indexOfFirst { it.position != null }.coerceAtLeast(0)
 
-            CoroutineScope(Dispatchers.Main).launch {
+            coroutineScope.launch(Dispatchers.Main) {
                 player.setMediaItems(
                     filteredQueuedSong.map { mediaItem ->
                         mediaItem.mediaItem.buildUpon()
@@ -2148,7 +2146,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
             if (filteredItems.isEmpty()) return@onSuccess
 
-            CoroutineScope(Dispatchers.Main).launch {
+            coroutineScope.launch(Dispatchers.Main) {
                 player.setMediaItems(
                     filteredItems.map { song ->
                         song.asMediaItem.buildUpon()
@@ -2210,8 +2208,7 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     fun updateDownloadedState() {
-        if (currentSong.value == null) return
-        val mediaId = currentSong.value!!.id
+        val mediaId = currentSong.value?.id ?: return
         val downloads = MyDownloadHelper.downloads.value
         currentSongStateDownload.value = downloads[mediaId]?.state ?: Download.STATE_STOPPED
         /*
@@ -2674,7 +2671,7 @@ class PlayerServiceModern : MediaLibraryService(),
         if (currentIndex == C.INDEX_UNSET) return
 
         secondaryPlayer = createCrossfadeExoPlayer()
-        val secPlayer = secondaryPlayer!!
+        val secPlayer = secondaryPlayer ?: return
         secPlayer.addListener(secondaryPlayerListener)
         secPlayer.addAnalyticsListener(PlaybackStatsListener(false, this@PlayerServiceModern))
 

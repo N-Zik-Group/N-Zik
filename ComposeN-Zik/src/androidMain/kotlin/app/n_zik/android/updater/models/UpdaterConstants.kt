@@ -1,9 +1,5 @@
 package app.n_zik.android.updater.models
 
-import app.n_zik.android.updater.services.*
-import app.n_zik.android.updater.models.*
-import app.n_zik.android.updater.ui.*
-
 object UpdaterConstants {
     const val SUFFIX_FULL = "-f"
     const val SUFFIX_BETA = "-beta"

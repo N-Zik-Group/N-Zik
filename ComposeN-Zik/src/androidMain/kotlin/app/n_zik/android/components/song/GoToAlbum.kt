@@ -55,8 +55,8 @@ class GoToAlbum(
             val isValid = id != null && id.removePrefix(MODIFIED_PREFIX).let { it.length > 11 && it.matches("^[A-Za-z0-9_-]+\$".toRegex()) }
             
             kotlinx.coroutines.withContext(Dispatchers.Main) {
-                if (isValid) {
-                    NavRoutes.album.navigateHere( navController, id!! )
+                if (isValid && id != null) {
+                    NavRoutes.album.navigateHere( navController, id )
                 } else {
                     Toaster.i( R.string.looking_up_album_from_the_internet )
                     

@@ -1,10 +1,8 @@
 package app.n_zik.android.playback.services
 
-import app.n_zik.android.core.database.*
+import app.n_zik.android.core.database.Database
 
-import app.n_zik.android.playback.services.*
-import app.n_zik.android.playback.exceptions.*
-import app.n_zik.android.playback.utils.*
+import app.n_zik.android.playback.utils.PlaybackDispatchers
 
 import android.content.ContentResolver
 import android.net.Uri
@@ -34,7 +32,6 @@ import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.requests.albumPage
 import it.fast4x.innertube.requests.nextPage
 import it.fast4x.innertube.requests.artistPage
-import app.n_zik.android.core.database.Database
 import app.n_zik.android.appContext
 import app.it.fast4x.rimusic.enums.AudioQualityFormat
 import app.n_zik.android.isConnectionMeteredEnabled
@@ -71,6 +68,7 @@ import app.it.fast4x.rimusic.utils.parseArtists
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
@@ -108,6 +106,9 @@ private const val TAG = "StreamResolver"
 private const val CHUNK_LENGTH = 512 * 1024L
 private const val MAX_RESOLVE_RETRIES = 7
 private const val INITIAL_RETRY_DELAY_MS = 1500L
+
+// Structured scope for background tasks (caching, metadata upsert)
+private val scope = CoroutineScope(PlaybackDispatchers.STREAM_RESOLVER + Job())
 
 // Singleton PoTokenGenerator to reuse across resolve calls (avoids recreating WebView each time)
 private val poTokenGenerator = PoTokenGenerator()
@@ -279,7 +280,7 @@ suspend fun upsertSongInfo(videoId: String) {
                         Timber.tag(TAG).d("[Artist Cache] $artistId was fetched $daysAgo days ago ($msAgo ms), skipping.")
                     } else if (fetchingArtists.add(artistId)) {
                         Timber.tag(TAG).d("[Artist Cache] $artistId outdated, fetching in background.")
-                        CoroutineScope(PlaybackDispatchers.STREAM_RESOLVER).launch {
+                        scope.launch(PlaybackDispatchers.STREAM_RESOLVER) {
                             try {
                                 val artistPage = Innertube.artistPage(BrowseBody(browseId = artistId))?.getOrNull()
                                 if (artistPage != null) {
@@ -319,7 +320,7 @@ suspend fun upsertSongInfo(videoId: String) {
                     Timber.tag(TAG).d("[Album Cache] $albumId fetched $daysAgo days ago ($msAgo ms), skipping.")
                 } else if (fetchingAlbums.add(albumId)) {
                     Timber.tag(TAG).d("[Album Cache] $albumId outdated, fetching songs.")
-                    CoroutineScope(PlaybackDispatchers.STREAM_RESOLVER).launch {
+                    scope.launch(PlaybackDispatchers.STREAM_RESOLVER) {
                         try {
                             val savedCount = fetchAndSaveAlbumSongs(albumId)
                             if (savedCount < 2) {
@@ -394,7 +395,7 @@ private suspend fun fetchAndSaveAlbumSongs(albumId: String): Int {
                 Database.songAlbumMapTable.upsert(songAlbumMaps)
             } catch (e: SQLiteConstraintException) {
                 Timber.tag(TAG).w("Foreign key constraint failed for album $albumId. Retrying in 5s...")
-                CoroutineScope(Dispatchers.IO).launch {
+                scope.launch(Dispatchers.IO) {
                     kotlinx.coroutines.delay(5000)
                     try {
                         Database.asyncTransaction {
@@ -438,7 +439,7 @@ private fun saveFormatSafe(format: Format) {
             formatTable.upsert(format)
         } catch (e: SQLiteConstraintException) {
             Timber.tag(TAG).w("Foreign key constraint failed for songId ${format.songId}. Retrying in 5 s...")
-            CoroutineScope(PlaybackDispatchers.STREAM_RESOLVER).launch {
+            scope.launch(PlaybackDispatchers.STREAM_RESOLVER) {
                 delay(5000)
                 try {
                     Database.asyncTransaction {
@@ -467,7 +468,7 @@ private fun fetchFormatIfMissing(videoId: String) {
     if (videoId in fetchedFormatIds) return
     if (videoId.startsWith(LOCAL_KEY_PREFIX)) return
     if (videoId.length != 11) return
-    CoroutineScope(PlaybackDispatchers.STREAM_RESOLVER).launch {
+    scope.launch(PlaybackDispatchers.STREAM_RESOLVER) {
         try {
             val existing = Database.formatTable.findBySongIdDirect(videoId)
             if (existing != null) {
@@ -579,7 +580,7 @@ private fun upsertSongFormat(
                     songTable.insertIgnore(Song.makePlaceholder(videoId))
                 } catch (e: SQLiteConstraintException) {
                     Timber.tag(TAG).w("Foreign key constraint failed for song placeholder $videoId. Retrying in 5s...")
-                    CoroutineScope(Dispatchers.IO).launch {
+                    scope.launch(Dispatchers.IO) {
                         kotlinx.coroutines.delay(5000)
                         try {
                             Database.asyncTransaction {
@@ -1100,7 +1101,7 @@ private suspend fun resolveStreamUriInternal(
                         s += (f.bitrate ?: 0)
                         return s
                     }
-                    val isBetter = bestFallbackFormat == null || scoreFallback(format) > scoreFallback(bestFallbackFormat!!)
+                    val isBetter = bestFallbackFormat == null || scoreFallback(format) > scoreFallback(bestFallbackFormat ?: format)
                     if (isBetter) {
                         bestFallbackFormat = format
                         bestFallbackUri = uri
@@ -1148,7 +1149,7 @@ private suspend fun resolveStreamUriInternal(
                 }
                 // For WEB clients: trigger config refresh and let ExoPlayer try anyway
                 // (HEAD can give false 403s for WEB_REMIX CDN URLs)
-                CoroutineScope(PlaybackDispatchers.STREAM_RESOLVER).launch {
+                scope.launch(PlaybackDispatchers.STREAM_RESOLVER) {
                     val configChanged = runCatching { CipherDeobfuscator.onStreamRejected() }.getOrNull() ?: false
                     if (configChanged) {
                         clearWebRemixFailures()
@@ -1180,7 +1181,7 @@ private suspend fun resolveStreamUriInternal(
             val audioLoudnessDb = responseToUse.playerConfig?.audioConfig?.loudnessDb
             val perceptualLoudness = responseToUse.playerConfig?.audioConfig?.perceptualLoudnessDb
             val playbackUrl = responseToUse.playbackTracking?.videostatsPlaybackUrl?.baseUrl
-            CoroutineScope(PlaybackDispatchers.STREAM_RESOLVER).launch { upsertSongFormat(videoId, format, perceptualLoudness, playbackUrl, audioLoudnessDb) }
+            scope.launch(PlaybackDispatchers.STREAM_RESOLVER) { upsertSongFormat(videoId, format, perceptualLoudness, playbackUrl, audioLoudnessDb) }
 
             // Cache PlaybackData for metadata access (loudness, videoDetails, tracking)
             playbackDataCache[videoId] = PlaybackData(
@@ -1228,20 +1229,24 @@ private suspend fun resolveStreamUriInternal(
 
     // HIGH-quality best-fallback: if we tracked a fallback and no HIGH was found, use it
     if (wantsHighQuality && bestFallbackFormat != null && bestFallbackUri != null) {
-        Timber.tag(TAG).w("No HIGH quality found, using best fallback: ${bestFallbackFormat!!.mimeType}, bitrate=${bestFallbackFormat!!.bitrate}")
-        CoroutineScope(PlaybackDispatchers.STREAM_RESOLVER).launch { upsertSongFormat(videoId, bestFallbackFormat!!) }
-        return bestFallbackUri!!
+        val fallback = bestFallbackFormat!!
+        val fallbackUriValue = bestFallbackUri!!
+        Timber.tag(TAG).w("No HIGH quality found, using best fallback: ${fallback.mimeType}, bitrate=${fallback.bitrate}")
+        scope.launch { upsertSongFormat(videoId, fallback) }
+        return fallbackUriValue
             .buildUpon()
-            .appendQueryParameter("range", "0-${bestFallbackFormat?.contentLength ?: 1_000_000}")
+            .appendQueryParameter("range", "0-${fallback.contentLength ?: 1_000_000}")
             .build()
     }
 
     if (fallbackUri != null && fallbackFormat != null) {
+        val format = fallbackFormat!!
+        val uri = fallbackUri!!
         Timber.tag(TAG).w("All clients failed to provide metadata. Using fallback stream for $videoId")
-        CoroutineScope(PlaybackDispatchers.STREAM_RESOLVER).launch { upsertSongFormat(videoId, fallbackFormat!!) }
-        return fallbackUri!!
+        scope.launch { upsertSongFormat(videoId, format) }
+        return uri
             .buildUpon()
-            .appendQueryParameter("range", "0-${fallbackFormat?.contentLength ?: 1_000_000}")
+            .appendQueryParameter("range", "0-${format.contentLength ?: 1_000_000}")
             .build()
     }
 
@@ -1424,7 +1429,7 @@ fun PlayerServiceModern.createDataSourceFactory(): DataSource.Factory {
 
         if (isLocal) return@Factory dataSpec
 
-        CoroutineScope(PlaybackDispatchers.STREAM_RESOLVER).launch { upsertSongInfo(videoId) }
+        scope.launch(PlaybackDispatchers.STREAM_RESOLVER) { upsertSongInfo(videoId) }
 
         dataSpec.process(videoId, audioQualityFormat, applicationContext.isConnectionMetered())
             .buildUpon()
@@ -1471,7 +1476,7 @@ fun MyDownloadHelper.createDataSourceFactory(): DataSource.Factory {
 
         fun resolveFresh(): DataSpec {
             fetchFormatIfMissing(videoId)
-            CoroutineScope(PlaybackDispatchers.STREAM_RESOLVER).launch { upsertSongInfo(videoId) }
+            scope.launch(PlaybackDispatchers.STREAM_RESOLVER) { upsertSongInfo(videoId) }
             val resolvedSpec = dataSpec.process(videoId, audioQualityFormat, appContext().isConnectionMetered())
             val resolvedUrl = resolvedSpec.uri.toString()
             val expireSeconds = resolvedUrl.substringAfter("expire=").substringBefore("&").toLongOrNull()

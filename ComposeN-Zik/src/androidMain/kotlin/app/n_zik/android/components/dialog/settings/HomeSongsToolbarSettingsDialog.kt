@@ -20,6 +20,7 @@ import app.it.fast4x.rimusic.enums.BuiltInPlaylist
 import app.it.fast4x.rimusic.utils.*
 import app.kreate.android.me.knighthat.utils.Toaster
 import org.json.JSONArray
+import timber.log.Timber
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import androidx.compose.ui.unit.dp
 import android.content.Context
@@ -110,8 +111,14 @@ object HomeSongsToolbarSettingsDialog : Dialog {
         }
 
         val currentTab = tabs[selectedTabIndex].first
-        val currentWorkingOrder = workingOrders[currentTab]!!
-        val currentWorkingToggles = workingToggles[currentTab]!!
+        val currentWorkingOrder = workingOrders[currentTab] ?: run {
+            Timber.w("Missing workingOrders for tab $currentTab")
+            return
+        }
+        val currentWorkingToggles = workingToggles[currentTab] ?: run {
+            Timber.w("Missing workingToggles for tab $currentTab")
+            return
+        }
         val isTopTab = currentTab == BuiltInPlaylist.Top
         val tabPrefix = getTabPrefix(currentTab)
 
@@ -199,7 +206,7 @@ object HomeSongsToolbarSettingsDialog : Dialog {
                 checkedStatesOverride = items.map { currentWorkingToggles[it.id.removePrefix("${tabPrefix}_")] ?: true },
                 onCheckedChange = { index, newValue ->
                     val id = items[index].id.removePrefix("${tabPrefix}_")
-                    val m = workingToggles[currentTab]!!.toMutableMap()
+                    val m = workingToggles[currentTab]?.toMutableMap() ?: return@ToggleListDialog
                     m[id] = newValue
                     workingToggles = workingToggles.toMutableMap().apply { this[currentTab] = m }
                 },
@@ -214,8 +221,8 @@ object HomeSongsToolbarSettingsDialog : Dialog {
                     val edit = prefs.edit()
                     tabs.forEach { (tab, key) ->
                         val tp = getTabPrefix(tab)
-                        val order = workingOrders[tab]!!
-                        val toggles = workingToggles[tab]!!
+                        val order = workingOrders[tab] ?: return@forEach
+                        val toggles = workingToggles[tab] ?: return@forEach
                         
                         toggles.forEach { (id, isChecked) ->
                             edit.putBoolean("${tp}_ts_$id", isChecked)

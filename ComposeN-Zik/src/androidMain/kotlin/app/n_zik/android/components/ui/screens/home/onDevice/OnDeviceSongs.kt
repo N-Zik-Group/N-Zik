@@ -105,7 +105,6 @@ fun OnDeviceSong(
         mutableStateOf("")
     }
     var refreshKey by remember { mutableStateOf(0) }
-    var isLoading by remember { mutableStateOf(true) }
 
     //<editor-fold defaultstate="collapsed" desc="Permission handler">
     val permission = rememberSaveable {
@@ -145,7 +144,6 @@ fun OnDeviceSong(
                .collect {
                    songsOnDevice = it
                    currentPath = PathUtils.findCommonPath( it.values )
-                   isLoading = false
                }
     }
     LaunchedEffect( songsOnDevice, search.inputValue, currentPath ) {
@@ -263,14 +261,7 @@ fun OnDeviceSong(
             PathUtils.getAvailablePaths( songsOnDevice.values, currentPath )
         } else emptyList()
 
-        if( isLoading ) {
-            items(
-                count = 20,
-                key = { "placeholder_$it" }
-            ) { app.it.fast4x.rimusic.ui.items.SongItemPlaceholder( modifier = Modifier.animateItem() ) }
-        }
-
-        if (isPermissionGranted && !isLoading && itemsOnDisplay.isEmpty() && folders.isEmpty()) {
+        if (isPermissionGranted && itemsOnDisplay.isEmpty() && folders.isEmpty()) {
             item {
                 Box(
                     modifier = Modifier.fillParentMaxSize(),

@@ -3,11 +3,10 @@ package app.n_zik.android.playback.services.automotive.session
 import app.n_zik.android.playback.services.automotive.models.AutoSearchState
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
-import app.n_zik.android.core.database.*
+import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.ext.FormatWithSong
 
-import app.n_zik.android.playback.services.*
-import app.n_zik.android.playback.exceptions.*
-import app.n_zik.android.playback.utils.*
+import app.n_zik.android.playback.services.PlayerServiceModern
 
 import android.content.Context
 import android.net.Uri
@@ -54,7 +53,6 @@ import it.fast4x.innertube.requests.ArtistSection
 import it.fast4x.innertube.utils.from
 import io.ktor.client.call.body
 import androidx.core.net.toUri
-import app.n_zik.android.core.database.Database
 import app.it.fast4x.rimusic.enums.MaxTopPlaylistItems
 import app.it.fast4x.rimusic.enums.SongSortBy
 import app.it.fast4x.rimusic.enums.SortOrder
@@ -98,7 +96,6 @@ import app.it.fast4x.rimusic.utils.Preference
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.guava.future
-import app.n_zik.android.core.database.ext.FormatWithSong
 import it.fast4x.innertube.models.NavigationEndpoint
 import kotlinx.coroutines.flow.Flow
 import app.n_zik.android.playback.services.automotive.browse.AutoBrowseTree

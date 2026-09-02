@@ -1,9 +1,5 @@
 package app.n_zik.android.updater.models
 
-import app.n_zik.android.updater.services.*
-import app.n_zik.android.updater.models.*
-import app.n_zik.android.updater.ui.*
-
 import android.text.format.Formatter
 import app.n_zik.android.appContext
 import kotlinx.serialization.SerialName

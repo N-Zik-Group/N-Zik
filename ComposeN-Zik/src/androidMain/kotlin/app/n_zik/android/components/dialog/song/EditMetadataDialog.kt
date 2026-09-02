@@ -31,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -82,7 +83,8 @@ import android.util.Base64
 
 class EditMetadataDialog private constructor(
     activeState: MutableState<Boolean>,
-    private val getSong: () -> Song?
+    private val getSong: () -> Song?,
+    private val coroutineScope: kotlinx.coroutines.CoroutineScope
 ) : InteractiveDialog, InputDialog, MenuIcon, Descriptive {
 
     override var isActive: Boolean by activeState
@@ -182,8 +184,10 @@ class EditMetadataDialog private constructor(
         }
 
         @Composable
-        operator fun invoke(getSong: () -> Song?): EditMetadataDialog =
-            EditMetadataDialog(remember { mutableStateOf(false) }, getSong)
+        operator fun invoke(getSong: () -> Song?): EditMetadataDialog {
+            val coroutineScope = rememberCoroutineScope()
+            return EditMetadataDialog(remember { mutableStateOf(false) }, getSong, coroutineScope)
+        }
     }
 
     private fun resolveFilePath(context: Context, songId: String): String? {
@@ -386,7 +390,7 @@ class EditMetadataDialog private constructor(
         val path = filePath ?: run { Toaster.e("Cannot resolve file path"); return }
         val song = getSong() ?: return
 
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch(Dispatchers.IO) {
             val context = appContext()
             val cacheDir = context.cacheDir
             val originalFile = File(path)
@@ -426,16 +430,17 @@ class EditMetadataDialog private constructor(
                 commandBuilder.append("-y -nostdin -i \"${originalFile.absolutePath}\" ")
                 
                 if (coverArtBytes != null && !isOpus) {
+                    val bytes = coverArtBytes ?: return@launch
                     val imgOpts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                    BitmapFactory.decodeByteArray(coverArtBytes!!, 0, coverArtBytes!!.size, imgOpts)
+                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size, imgOpts)
                     val imgCodec = when {
                         imgOpts.outMimeType?.contains("png") == true -> "png"
                         imgOpts.outMimeType?.contains("webp") == true -> "webp"
                         else -> "mjpeg"
                     }
                     coverFile = File(cacheDir, "temp_cover_${System.currentTimeMillis()}.jpg")
-                    coverFile.writeBytes(coverArtBytes!!)
-                    Timber.tag("EditMetadata").i("Cover file created: ${coverFile.absolutePath} (${coverArtBytes!!.size} bytes, codec=$imgCodec)")
+                    coverFile.writeBytes(bytes)
+                    Timber.tag("EditMetadata").i("Cover file created: ${coverFile.absolutePath} (${bytes.size} bytes, codec=$imgCodec)")
                     commandBuilder.append("-i \"${coverFile.absolutePath}\" -map 0:a -map 1:v ")
                     commandBuilder.append("-c:v $imgCodec -disposition:v attached_pic ")
                 } else {
@@ -464,7 +469,8 @@ class EditMetadataDialog private constructor(
 
                 if (isOpus && coverArtBytes != null) {
                     try {
-                        val flacPicBase64 = ExportCacheDialog.generateFlacPictureBase64(coverArtBytes!!)
+                        val bytes = coverArtBytes ?: return@launch
+                        val flacPicBase64 = ExportCacheDialog.generateFlacPictureBase64(bytes)
                         commandBuilder.append("-metadata METADATA_BLOCK_PICTURE=\"$flacPicBase64\" ")
                     } catch (e: Exception) {
                         Timber.tag("EditMetadata").e(e, "Failed to build FlacPicture for Opus")
@@ -533,7 +539,7 @@ class EditMetadataDialog private constructor(
         val uri = pendingMediaStoreUri ?: return
         val song = pendingSong ?: return
 
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch(Dispatchers.IO) {
             try {
                 context.contentResolver.openOutputStream(uri)?.use { out ->
                     tempFile.inputStream().use { inp -> inp.copyTo(out) }

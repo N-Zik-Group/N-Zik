@@ -59,7 +59,6 @@ import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -163,6 +162,7 @@ class OnlineAlbumItemMenu private constructor(
         modifier: Modifier = Modifier
     ) {
         val context = LocalContext.current
+        val coroutineScope = rememberCoroutineScope()
         val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
         Column(
@@ -261,7 +261,7 @@ class OnlineAlbumItemMenu private constructor(
                         icon = if (isBookmarked) R.drawable.bookmark else R.drawable.bookmark_outline,
                         color = colorPalette().favoritesIcon,
                         onClick = {
-                            CoroutineScope(Dispatchers.IO).launch {
+                            coroutineScope.launch(Dispatchers.IO) {
                                 Database.albumTable.toggleBookmark(album.key)
                             }
                         },
@@ -357,10 +357,11 @@ class OnlineAlbumItemMenu private constructor(
         }
 
         val playNext = PlayNext {
-            if (songs == null) {
+            val currentSongs = songs
+            if (currentSongs == null) {
                 Toaster.w(R.string.opening_url)
-            } else if (songs!!.isNotEmpty()) {
-                binder?.player?.addNext(songs!!.map { it.asMediaItem }, appContext())
+            } else if (currentSongs.isNotEmpty()) {
+                binder?.player?.addNext(currentSongs.map { it.asMediaItem }, appContext())
                 menuState.hide()
             } else {
                 Toaster.e(R.string.no_song_found)
@@ -368,10 +369,11 @@ class OnlineAlbumItemMenu private constructor(
         }
 
         val enqueue = Enqueue {
-            if (songs == null) {
+            val currentSongs = songs
+            if (currentSongs == null) {
                 Toaster.w(R.string.opening_url)
-            } else if (songs!!.isNotEmpty()) {
-                binder?.player?.enqueue(songs!!.map { it.asMediaItem }, appContext())
+            } else if (currentSongs.isNotEmpty()) {
+                binder?.player?.enqueue(currentSongs.map { it.asMediaItem }, appContext())
                 menuState.hide()
             } else {
                 Toaster.e(R.string.no_song_found)
@@ -388,9 +390,10 @@ class OnlineAlbumItemMenu private constructor(
 
         val addToPlaylist = object : MenuIcon by playlistsMenu, Descriptive by playlistsMenu, Clickable {
             override fun onShortClick() {
-                if (songs == null) {
+                val currentSongs = songs
+                if (currentSongs == null) {
                     Toaster.w(R.string.opening_url)
-                } else if (songs!!.isNotEmpty()) {
+                } else if (currentSongs.isNotEmpty()) {
                     playlistsMenu.onShortClick()
                 } else {
                     Toaster.e(R.string.no_song_found)
@@ -402,9 +405,10 @@ class OnlineAlbumItemMenu private constructor(
         val downloadAllDialog = DownloadAllSongsDialog { songs ?: emptyList() }
         val downloadAll = object : MenuIcon by downloadAllDialog, Descriptive by downloadAllDialog, Clickable {
             override fun onShortClick() {
-                if (songs == null) {
+                val currentSongs = songs
+                if (currentSongs == null) {
                     Toaster.w(R.string.opening_url)
-                } else if (songs!!.isNotEmpty()) {
+                } else if (currentSongs.isNotEmpty()) {
                     downloadAllDialog.onShortClick()
                 } else {
                     Toaster.e(R.string.no_song_found)
@@ -416,9 +420,10 @@ class OnlineAlbumItemMenu private constructor(
         val deleteAllDialog = DeleteAllDownloadedSongsDialog { songs ?: emptyList() }
         val deleteAll = object : MenuIcon by deleteAllDialog, Descriptive by deleteAllDialog, Clickable {
             override fun onShortClick() {
-                if (songs == null) {
+                val currentSongs = songs
+                if (currentSongs == null) {
                     Toaster.w(R.string.opening_url)
-                } else if (songs!!.isNotEmpty()) {
+                } else if (currentSongs.isNotEmpty()) {
                     deleteAllDialog.onShortClick()
                 } else {
                     Toaster.e(R.string.no_song_found)
@@ -435,10 +440,11 @@ class OnlineAlbumItemMenu private constructor(
             override val messageId: Int = R.string.shuffle
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() {
-                if (songs == null) {
+                val currentSongs = songs
+                if (currentSongs == null) {
                     Toaster.w(R.string.opening_url)
-                } else if (songs!!.isNotEmpty()) {
-                    SongShuffler.playShuffled(binder ?: return, songs!!)
+                } else if (currentSongs.isNotEmpty()) {
+                    SongShuffler.playShuffled(binder ?: return, currentSongs)
                     menuState.hide()
                 } else {
                     Toaster.e(R.string.no_song_found)

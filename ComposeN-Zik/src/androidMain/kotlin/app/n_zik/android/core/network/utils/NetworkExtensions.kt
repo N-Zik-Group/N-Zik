@@ -1,13 +1,10 @@
 package app.n_zik.android.core.network.utils
 
-import app.n_zik.android.core.network.client.*
-import app.n_zik.android.core.network.models.*
-import app.n_zik.android.core.network.utils.*
+import app.n_zik.android.core.network.models.NetworkQuality
 
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
-import app.n_zik.android.core.network.models.NetworkQuality
 
 /**
  * Checks if the network is currently connected (Internet and validated).

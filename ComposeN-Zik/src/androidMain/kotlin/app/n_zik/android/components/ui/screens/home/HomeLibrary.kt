@@ -177,7 +177,7 @@ import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import androidx.core.content.ContextCompat
 import java.util.ArrayList
 import android.content.Intent
-import kotlinx.coroutines.runBlocking
+
 
 @ExperimentalMaterial3Api
 @UnstableApi
@@ -230,12 +230,18 @@ fun HomeLibrary(
         }
         result
     }
-    fun getSelectedMediaItems(): List<androidx.media3.common.MediaItem> =
-        runBlocking(Dispatchers.IO) { getSelectedSongs().map { it.asMediaItem } }
-
-    val shuffle = SongShuffler {
-        runBlocking(Dispatchers.IO) { getSelectedSongs() }
+    var selectedSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
+    LaunchedEffect(itemSelector.size, itemsOnDisplay) {
+        runCatching {
+            selectedSongs = getSelectedSongs()
+        }.onFailure { e ->
+            Timber.tag("HomeLibrary").e(e, "Failed to load selected songs")
+        }
     }
+    fun getSelectedMediaItems(): List<androidx.media3.common.MediaItem> =
+        selectedSongs.map { it.asMediaItem }
+
+    val shuffle = SongShuffler { selectedSongs }
     //</editor-fold>
 
     val importPlaylistDialog = ImportSongsFromCSV(onImportComplete = {
@@ -313,7 +319,7 @@ fun HomeLibrary(
     )
     val exportDialog = ExportSongsToCSVDialog(
         playlistName = "Library",
-        songs = { runBlocking(Dispatchers.IO) { getSelectedSongs() } }
+        songs = { selectedSongs }
     )
 
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }

@@ -57,7 +57,7 @@ object PlaylistWidgetManager {
     private suspend fun getQuickPicks(context: Context, accentArgb: Int): List<QuickPick> {
         val now = System.currentTimeMillis()
         if (cachedQuickPicks != null && now - lastQuickPicksUpdateTime < 60_000) {
-            val picks = cachedQuickPicks!!.toMutableList()
+            val picks = cachedQuickPicks?.toMutableList() ?: return emptyList()
             if (picks.isNotEmpty() && picks[0].title == context.getString(R.string.favorites)) {
                 picks[0] = picks[0].copy(artworkBitmap = getLikedBitmap(context, accentArgb))
             }

@@ -15,11 +15,14 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.CacheSpan
@@ -222,8 +225,10 @@ class ExportCacheDialog(
 
                     if (actualIsOpus && artworkData != null) {
                         try {
-                            val flacPicBase64 = generateFlacPictureBase64(artworkData!!)
-                            commandBuilder.append("-metadata METADATA_BLOCK_PICTURE=\"$flacPicBase64\" ")
+                            artworkData?.let { data ->
+                                val flacPicBase64 = generateFlacPictureBase64(data)
+                                commandBuilder.append("-metadata METADATA_BLOCK_PICTURE=\"$flacPicBase64\" ")
+                            }
                         } catch (e: Exception) {
                             Timber.tag("ExportCache").e(e, "Failed to build FlacPicture for Opus")
                         }
@@ -301,13 +306,17 @@ class ExportCacheDialog(
         ): ExportCacheDialog {
             val isExporting = remember { mutableStateOf(false) }
             val song = getSong()
+            val coroutineScope = rememberCoroutineScope()
             val lyricsTypeState = remember { mutableStateOf<String?>(null) }
 
-            val fileExtension = kotlinx.coroutines.runBlocking {
-                val format = Database.formatTable.findBySongId(song.id).first()
-                if (format?.mimeType?.contains("webm", ignoreCase = true) == true || 
-                    format?.mimeType?.contains("ogg", ignoreCase = true) == true ||
-                    format?.mimeType?.contains("opus", ignoreCase = true) == true) "ogg" else "m4a"
+            var fileExtension by remember { mutableStateOf("m4a") }
+            LaunchedEffect(song.id) {
+                fileExtension = withContext(Dispatchers.IO) {
+                    val format = Database.formatTable.findBySongId(song.id).first()
+                    if (format?.mimeType?.contains("webm", ignoreCase = true) == true || 
+                        format?.mimeType?.contains("ogg", ignoreCase = true) == true ||
+                        format?.mimeType?.contains("opus", ignoreCase = true) == true) "ogg" else "m4a"
+                }
             }
             
             val folderLauncher = rememberLauncherForActivityResult(
@@ -326,7 +335,7 @@ class ExportCacheDialog(
                 val treeDocId = DocumentsContract.getTreeDocumentId(folderUri)
                 val parentUri = DocumentsContract.buildDocumentUriUsingTree(folderUri, treeDocId)
 
-                CoroutineScope(Dispatchers.IO).launch {
+                coroutineScope.launch(Dispatchers.IO) {
                     kotlinx.coroutines.withContext(Dispatchers.Main) { isExporting.value = true }
                     try {
                         val format = Database.formatTable.findBySongId(currentSong.id).first()
@@ -472,7 +481,8 @@ class ExportCacheDialog(
 
                     if (lyricsType != null) {
                         try {
-                            val lrcData = getLyricsText(song, lyricsType!!)
+                            val type = lyricsType ?: return@forEachIndexed
+                            val lrcData = getLyricsText(song, type)
                             if (lrcData != null) {
                                 val lrcName = "$baseName.lrc"
                                 val lrcUri = DocumentsContract.createDocument(cr, parentUri, "application/octet-stream", lrcName)

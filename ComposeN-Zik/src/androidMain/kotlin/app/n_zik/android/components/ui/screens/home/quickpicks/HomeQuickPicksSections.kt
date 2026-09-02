@@ -271,7 +271,7 @@ fun YtmSectionByTitle(
                 verticalPadding = 16.dp
             )
             LazyRow(contentPadding = endPaddingValues) {
-                items(5) {
+                items(5, key = { it }, contentType = { "placeholder" }) {
                     ShimmerHost {
                         AlbumItemPlaceholder(
                             thumbnailSizeDp = albumThumbnailSizeDp,
@@ -343,7 +343,8 @@ fun NewAlbumsOfYourArtistsSection(
             LazyRow(contentPadding = endPaddingValues) {
                 items(
                     items = newReleaseAlbumsFiltered.distinctBy { it.key },
-                    key = { it.key }) {
+                    key = { it.key },
+                    contentType = { "album" }) {
                     AlbumItem(
                         album = it,
                         thumbnailSizePx = albumThumbnailSizePx,
@@ -390,7 +391,8 @@ fun NewAlbumsSection(
                 LazyRow(contentPadding = endPaddingValues) {
                     items(
                         items = albums.distinctBy { it.key },
-                        key = { it.key }) {
+                        key = { it.key },
+                        contentType = { "album" }) {
                         AlbumItem(
                             album = it,
                             thumbnailSizePx = albumThumbnailSizePx,
@@ -439,7 +441,8 @@ fun RelatedAlbumsSection(
             LazyRow(contentPadding = endPaddingValues) {
                 items(
                     items = albums.distinctBy { it.key },
-                    key = Innertube.AlbumItem::key
+                    key = Innertube.AlbumItem::key,
+                    contentType = { "album" }
                 ) { album ->
                     AlbumItem(
                         album = album,
@@ -490,6 +493,7 @@ fun SimilarArtistsSection(
                 items(
                     items = artists.distinctBy { it.key },
                     key = Innertube.ArtistItem::key,
+                    contentType = { "artist" }
                 ) { artist ->
                     ArtistItem(
                         artist = artist,
@@ -535,7 +539,8 @@ fun MonthlyPlaylistsSection(
             LazyRow(contentPadding = endPaddingValues) {
                 items(
                     items = monthlyPlaylists.distinctBy { it.playlist.id },
-                    key = { it.playlist.id }
+                    key = { it.playlist.id },
+                    contentType = { "playlist" }
                 ) { playlist ->
                     PlaylistItem(
                         playlist = playlist,
@@ -579,7 +584,8 @@ fun MyTopSection(
             LazyRow(contentPadding = endPaddingValues) {
                 items(
                     items = myTopSongs.distinctBy { it.id },
-                    key = { it.id }
+                    key = { it.id },
+                    contentType = { "song" }
                 ) { song ->
                     SongItem(
                         song = song,
@@ -618,7 +624,7 @@ fun MoodsSection(
                     .fillMaxWidth()
                     .height(Dimensions.itemsVerticalPadding * 4 * 8)
             ) {
-                items(chips) { chip ->
+                items(chips, key = { it.hashCode() }, contentType = { "chip" }) { chip ->
                     ChipItemColored(chip = chip, onClick = { onChipClick(chip) })
                 }
             }
@@ -659,7 +665,8 @@ fun MoodsAndGenresSection(
             ) {
                 items(
                     items = moods.sortedBy { it.title },
-                    key = { it.endpoint.params ?: it.title }
+                    key = { it.endpoint.params ?: it.title },
+                    contentType = { "mood" }
                 ) {
                     MoodItemColored(
                         mood = it,
@@ -746,6 +753,7 @@ fun ChartsSection(
                             items(
                                 items = playlists.distinctBy { it.key },
                                 key = Innertube.PlaylistItem::key,
+                                contentType = { "playlist" }
                             ) { playlist ->
                                 PlaylistItem(
                                     playlist = playlist,
@@ -959,7 +967,7 @@ fun GenericYtmSections(
                 contentPadding = endPaddingValues,
                 modifier = Modifier.fillMaxWidth().height(Dimensions.itemsVerticalPadding * 3 * 9)
             ) {
-                items(songItems) { item ->
+                items(songItems, key = { it.key ?: it.hashCode() }, contentType = { "song" }) { item ->
                     SongItem(
                         song = item.asSong ?: Song.makePlaceholder(""),
                         navController = navController,
@@ -974,7 +982,7 @@ fun GenericYtmSections(
                 }
                 
                 if (isLoading) {
-                    items(3) {
+                    items(3, key = { "shimmer_$it" }, contentType = { "placeholder" }) {
                         ShimmerHost {
                             AlbumItemPlaceholder(
                                 thumbnailSizeDp = albumThumbnailSizeDp,
@@ -986,7 +994,7 @@ fun GenericYtmSections(
             }
         } else {
             LazyRow(contentPadding = endPaddingValues) {
-                items(section.items) { item ->
+                items(section.items, key = { it?.hashCode() ?: 0 }, contentType = { "item" }) { item ->
                     when (item) {
                         is Innertube.SongItem -> {
                             SongItem(
@@ -1061,7 +1069,7 @@ fun GenericYtmSections(
                 }
                 
                 if (isLoading) {
-                    items(3) {
+                    items(3, key = { "shimmer_$it" }, contentType = { "placeholder" }) {
                         ShimmerHost {
                             AlbumItemPlaceholder(
                                 thumbnailSizeDp = albumThumbnailSizeDp,

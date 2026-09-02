@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -31,7 +32,6 @@ import app.it.fast4x.rimusic.enums.*
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.ui.components.SwipeablePlaylistItem
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
-import app.it.fast4x.rimusic.ui.items.SongItemPlaceholder
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.onOverlay
 import app.it.fast4x.rimusic.ui.styling.overlay
@@ -115,7 +115,7 @@ fun HomeSongs(
 
     var items by remember { mutableStateOf(emptyList<Song>()) }
 
-    val downloadsMapState by MyDownloadHelper.downloads.collectAsState()
+    val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle()
     val downloadedIds by remember {
         derivedStateOf {
             downloadsMapState.values

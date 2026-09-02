@@ -136,7 +136,7 @@ class ChangeAlbumBrowseIdDialog private constructor(
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp)
                 ) {
-                    items(results!!) { item ->
+                    items(results ?: return@LazyColumn, key = { it.key }, contentType = { "album" }) { item ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()

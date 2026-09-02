@@ -8,9 +8,9 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.core.database.Database
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -23,14 +23,15 @@ class ExportDatabaseDialog private constructor(
 ) {
     companion object {
         @Composable
-        operator fun invoke(context: Context): ExportDatabaseDialog =
-            ExportDatabaseDialog(
+        operator fun invoke(context: Context): ExportDatabaseDialog {
+            val coroutineScope = rememberCoroutineScope()
+            return ExportDatabaseDialog(
                 rememberLauncherForActivityResult(
                     ActivityResultContracts.CreateDocument("application/vnd.sqlite3")
                 ) { uri ->
                     Timber.tag("ExportDatabaseDialog").d("File picker callback received, uri: $uri")
                     uri ?: return@rememberLauncherForActivityResult
-                    CoroutineScope(Dispatchers.IO).launch {
+                    coroutineScope.launch(Dispatchers.IO) {
                         try {
                             Timber.tag("ExportDatabaseDialog").d("Starting database export...")
                             Database.checkpoint()
@@ -52,6 +53,7 @@ class ExportDatabaseDialog private constructor(
                     }
                 }
             )
+        }
     }
 
     fun export() {

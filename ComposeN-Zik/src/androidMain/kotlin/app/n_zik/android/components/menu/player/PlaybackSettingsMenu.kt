@@ -119,7 +119,7 @@ class PlaybackSettingsMenu private constructor(
             val receiver = object : BroadcastReceiver() {
                 override fun onReceive(context: Context?, intent: Intent?) {
                     if (intent?.action == "android.media.VOLUME_CHANGED_ACTION") {
-                        playbackDeviceVolume = getDeviceVolume(context!!)
+                        context?.let { playbackDeviceVolume = getDeviceVolume(it) }
                     }
                 }
             }
@@ -340,7 +340,7 @@ class PlaybackSettingsMenu private constructor(
             val receiver = object : BroadcastReceiver() {
                 override fun onReceive(context: Context?, intent: Intent?) {
                     if (intent?.action == "android.media.VOLUME_CHANGED_ACTION") {
-                        playbackDeviceVolume = getDeviceVolume(context!!)
+                        context?.let { playbackDeviceVolume = getDeviceVolume(it) }
                     }
                 }
             }

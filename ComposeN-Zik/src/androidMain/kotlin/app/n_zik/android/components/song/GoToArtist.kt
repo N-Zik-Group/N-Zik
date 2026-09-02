@@ -57,8 +57,8 @@ class GoToArtist(
             val isValid = id != null && id.removePrefix(MODIFIED_PREFIX).let { it.length > 11 && it.matches("^[A-Za-z0-9_-]+\$".toRegex()) }
             
             kotlinx.coroutines.withContext(Dispatchers.Main) {
-                if (isValid) {
-                    NavRoutes.artist.navigateHere( navController, id!! )
+                if (isValid && id != null) {
+                    NavRoutes.artist.navigateHere( navController, id )
                 } else {
                     Toaster.i( R.string.looking_up_artist_online, song.cleanArtistsText() )
                     

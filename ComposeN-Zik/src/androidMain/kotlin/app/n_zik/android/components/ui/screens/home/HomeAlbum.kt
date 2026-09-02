@@ -123,7 +123,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+
 import app.n_zik.android.components.Sort
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.tab.SongShuffler
@@ -219,12 +219,18 @@ fun HomeAlbums(
         }
         result
     }
-    fun getSelectedMediaItems(): List<androidx.media3.common.MediaItem> =
-        runBlocking(Dispatchers.IO) { getSelectedSongs().map { it.asMediaItem } }
-
-    val shuffle = SongShuffler {
-        runBlocking(Dispatchers.IO) { getSelectedSongs() }
+    var selectedSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
+    LaunchedEffect(itemSelector.size, itemsOnDisplay) {
+        runCatching {
+            selectedSongs = getSelectedSongs()
+        }.onFailure { e ->
+            Timber.tag("HomeAlbum").e(e, "Failed to load selected songs")
+        }
     }
+    fun getSelectedMediaItems(): List<androidx.media3.common.MediaItem> =
+        selectedSongs.map { it.asMediaItem }
+
+    val shuffle = SongShuffler { selectedSongs }
     val playNext = PlayNext {
         scope.launch {
             val mediaItems = withContext(Dispatchers.IO) { getSelectedSongs().map { it.asMediaItem } }
@@ -249,7 +255,7 @@ fun HomeAlbums(
     )
     val exportDialog = ExportSongsToCSVDialog(
         playlistName = "Albums",
-        songs = { runBlocking(Dispatchers.IO) { getSelectedSongs() } }
+        songs = { selectedSongs }
     )
 
     val showFavoritesAlbum by rememberPreference(showFavoritesAlbumKey, true)

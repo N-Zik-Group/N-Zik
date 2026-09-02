@@ -75,7 +75,7 @@ fun HomeBottomShimmer(
                         .padding(top = 16.dp, bottom = 8.dp)
                 )
                 LazyRow(contentPadding = endPaddingValues) {
-                    items(5) {
+                    items(5, key = { it }, contentType = { "placeholder" }) {
                         AlbumItemPlaceholder(
                             thumbnailSizeDp = albumThumbnailSizeDp,
                             modifier = Modifier.padding(horizontal = 4.dp)
@@ -90,7 +90,7 @@ fun HomeBottomShimmer(
                         .padding(top = 16.dp, bottom = 8.dp)
                 )
                 LazyRow(contentPadding = endPaddingValues) {
-                    items(5) {
+                    items(5, key = { it }, contentType = { "placeholder" }) {
                         ArtistItemPlaceholder(
                             thumbnailSizeDp = artistThumbnailSizeDp,
                             modifier = Modifier.padding(horizontal = 4.dp)
@@ -143,7 +143,7 @@ fun YtmSectionItems(
                     .fillMaxWidth()
                     .height(Dimensions.itemsVerticalPadding * 3 * 9)
             ) {
-                items(songItems) { item ->
+                items(songItems, key = { it.key ?: it.hashCode() }, contentType = { "song" }) { item ->
                     val binder = LocalPlayerServiceBinder.current
                     SongItem(
                         song = item.asSong ?: Song.makePlaceholder(""),
@@ -159,7 +159,7 @@ fun YtmSectionItems(
                 }
                 
                 if (isLoading) {
-                    items(3) {
+                    items(3, key = { "shimmer_$it" }, contentType = { "placeholder" }) {
                         ShimmerHost {
                             AlbumItemPlaceholder(
                                 thumbnailSizeDp = albumThumbnailSizeDp,
@@ -171,7 +171,7 @@ fun YtmSectionItems(
             }
         } else {
             LazyRow(contentPadding = endPaddingValues) {
-                items(section.items) { item ->
+                items(section.items, key = { it?.key ?: it.hashCode() }, contentType = { "item" }) { item ->
                     when (item) {
                         is Innertube.SongItem -> {
                             val binder = LocalPlayerServiceBinder.current
@@ -286,7 +286,7 @@ fun YtmSectionItems(
                 }
                 
                 if (isLoading) {
-                    items(3) {
+                    items(3, key = { "shimmer_$it" }, contentType = { "placeholder" }) {
                         ShimmerHost {
                             AlbumItemPlaceholder(
                                 thumbnailSizeDp = albumThumbnailSizeDp,

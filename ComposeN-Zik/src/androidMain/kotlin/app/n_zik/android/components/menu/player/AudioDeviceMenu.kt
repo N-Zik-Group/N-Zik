@@ -364,7 +364,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = error!!,
+                            text = error ?: "",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface,
                             textAlign = TextAlign.Center

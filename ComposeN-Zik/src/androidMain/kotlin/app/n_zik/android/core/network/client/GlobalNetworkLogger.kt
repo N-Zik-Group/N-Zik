@@ -1,9 +1,5 @@
 package app.n_zik.android.core.network.client
 
-import app.n_zik.android.core.network.client.*
-import app.n_zik.android.core.network.models.*
-import app.n_zik.android.core.network.utils.*
-
 import timber.log.Timber
 
 object GlobalNetworkLogger {

@@ -1,9 +1,7 @@
 package app.n_zik.android.updater.services
 
-import app.n_zik.android.updater.services.*
-import app.n_zik.android.updater.models.*
-import app.n_zik.android.updater.ui.*
-
+import app.n_zik.android.updater.models.GithubRelease
+import app.n_zik.android.updater.models.UpdaterConstants
 import android.os.Looper
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn

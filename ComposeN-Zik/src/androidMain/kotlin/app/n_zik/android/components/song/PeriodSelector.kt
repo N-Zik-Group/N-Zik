@@ -131,7 +131,7 @@ class PeriodSelector private constructor(
 
         for (id in savedIds) {
             if (id in visibleIds && id in enumMap && added.add(id)) {
-                result.add(enumMap[id]!!)
+                result.add(enumMap[id] ?: continue)
             }
         }
         for (entry in allEntries) {

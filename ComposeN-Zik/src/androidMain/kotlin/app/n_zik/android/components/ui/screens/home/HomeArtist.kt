@@ -156,7 +156,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import java.util.ArrayList
 import android.content.Intent
-import kotlinx.coroutines.runBlocking
+
 import timber.log.Timber
 
 @ExperimentalMaterial3Api
@@ -222,12 +222,18 @@ fun HomeArtists(
         }
         result
     }
-    fun getSelectedMediaItems(): List<androidx.media3.common.MediaItem> =
-        runBlocking(Dispatchers.IO) { getSelectedSongs().map { it.asMediaItem } }
-
-    val shuffle = SongShuffler {
-        runBlocking(Dispatchers.IO) { getSelectedSongs() }
+    var selectedSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
+    LaunchedEffect(itemSelector.size, itemsOnDisplay) {
+        runCatching {
+            selectedSongs = getSelectedSongs()
+        }.onFailure { e ->
+            Timber.tag("HomeArtist").e(e, "Failed to load selected songs")
+        }
     }
+    fun getSelectedMediaItems(): List<androidx.media3.common.MediaItem> =
+        selectedSongs.map { it.asMediaItem }
+
+    val shuffle = SongShuffler { selectedSongs }
     val playNext = PlayNext {
         coroutineScope.launch {
             val mediaItems = withContext(Dispatchers.IO) { getSelectedSongs().map { it.asMediaItem } }
@@ -252,7 +258,7 @@ fun HomeArtists(
     )
     val exportDialog = ExportSongsToCSVDialog(
         playlistName = "Artists",
-        songs = { runBlocking(Dispatchers.IO) { getSelectedSongs() } }
+        songs = { selectedSongs }
     )
 
     val showFavoritesArtist by rememberPreference(showFavoritesArtistKey, true)

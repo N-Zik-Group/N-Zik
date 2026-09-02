@@ -95,11 +95,11 @@ object HomeArtistsSortSettingsDialog : Dialog {
         val prefix = if (currentTab == ArtistTab.Library) "art_lib" else "art_fav"
         val lazyListState = rememberLazyListState()
         val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
-            val o = workingOrders[currentTab]!!.toMutableList()
+            val o = (workingOrders[currentTab] ?: return@rememberReorderableLazyListState).toMutableList()
             val fi = o.indexOfFirst { "${prefix}_$it" == from.key }; val ti = o.indexOfFirst { "${prefix}_$it" == to.key }
             if (fi != -1 && ti != -1) { val item = o.removeAt(fi); o.add(ti, item); workingOrders = workingOrders.toMutableMap().apply { this[currentTab] = o } }
         }
-        val items = workingOrders[currentTab]!!.distinct().map { id ->
+        val items = (workingOrders[currentTab] ?: emptyList()).distinct().map { id ->
             ToggleItem("${prefix}_$id", getSortIcon(id), getSortLabel(id), "${prefix}_sort_${id}_visible", true)
         }
 
@@ -109,10 +109,10 @@ object HomeArtistsSortSettingsDialog : Dialog {
             }
             ToggleListDialog(
                 items = items, lazyListState = lazyListState, reorderableState = reorderableState, enforceMinOneChecked = true,
-                checkedStatesOverride = items.map { workingToggles[currentTab]!![it.id.removePrefix("${prefix}_")] ?: true },
+                checkedStatesOverride = items.map { (workingToggles[currentTab] ?: emptyMap())[it.id.removePrefix("${prefix}_")] ?: true },
                 onCheckedChange = { index, newValue ->
                     val id = items[index].id.removePrefix("${prefix}_")
-                    val m = workingToggles[currentTab]!!.toMutableMap(); m[id] = newValue
+                    val m = (workingToggles[currentTab] ?: emptyMap()).toMutableMap(); m[id] = newValue
                     workingToggles = workingToggles.toMutableMap().apply { this[currentTab] = m }
                 },
                 onReset = {
@@ -125,8 +125,8 @@ object HomeArtistsSortSettingsDialog : Dialog {
                     tabs.forEach { tab ->
                         val prefix2 = if (tab == ArtistTab.Library) "art_lib" else "art_fav"
                         val key = if (tab == ArtistTab.Library) homeArtistsLibrarySortMenuOrderKey else homeArtistsFavoritesSortMenuOrderKey
-                        workingToggles[tab]!!.forEach { (id, isChecked) -> edit.putBoolean("${prefix2}_sort_${id}_visible", isChecked) }
-                        edit.putString(key, serializeOrder(workingOrders[tab]!!.filter { id -> workingToggles[tab]!![id] == true }))
+                        (workingToggles[tab] ?: emptyMap()).forEach { (id, isChecked) -> edit.putBoolean("${prefix2}_sort_${id}_visible", isChecked) }
+                        edit.putString(key, serializeOrder((workingOrders[tab] ?: emptyList()).filter { id -> (workingToggles[tab] ?: emptyMap())[id] == true }))
                     }
                     edit.apply(); Toaster.s(R.string.toast_preference_saved); hideDialog()
                 }

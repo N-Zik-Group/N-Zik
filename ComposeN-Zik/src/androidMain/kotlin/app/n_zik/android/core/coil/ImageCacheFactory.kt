@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -306,7 +306,7 @@ object ImageCacheFactory {
         val cleanedUrl = thumbnailUrl?.let { cleanPrefix(it) }
         val validUrl = if (cleanedUrl.isNullOrBlank() || cleanedUrl == "null") null else cleanedUrl
         val decision = getDownloadDecision(validUrl)
-        val version by storeVersion.collectAsState()
+        val version by storeVersion.collectAsStateWithLifecycle()
         var currentUrl by remember(validUrl, version) { 
             mutableStateOf(validUrl?.thumbnail(decision.quality.size).also { modUrl ->
                 // if (validUrl != null) Timber.tag("ImageCache").d("URL: original=%s, modified=%s", validUrl, modUrl)
@@ -338,7 +338,7 @@ object ImageCacheFactory {
                     if (dataSource != DataSource.MEMORY_CACHE) {
                         val id = currentUrl?.getYouTubeId()
                         if (id != null) {
-                            PlaylistThumbnailStore.save(id, currentUrl!!, currentUrl!!.isYouTubeHighRes())
+                            currentUrl?.let { url -> PlaylistThumbnailStore.save(id, url, url.isYouTubeHighRes()) }
                         }
                     }
                     if (validUrl != null && decision.useNetwork) {
@@ -398,7 +398,7 @@ object ImageCacheFactory {
         val cleanedUrl = thumbnailUrl?.let { cleanPrefix(it) }
         val validUrl = if (cleanedUrl.isNullOrBlank() || cleanedUrl == "null") null else cleanedUrl
         val decision = getDownloadDecision(validUrl)
-        val version by storeVersion.collectAsState()
+        val version by storeVersion.collectAsStateWithLifecycle()
         var currentUrl by remember(validUrl, version) { 
             mutableStateOf(validUrl?.thumbnail(decision.quality.size).also { modUrl ->
                 // if (validUrl != null) Timber.tag("ImageCache").d("URL: original=%s, modified=%s", validUrl, modUrl)
@@ -416,7 +416,7 @@ object ImageCacheFactory {
                     if (dataSource != DataSource.MEMORY_CACHE) {
                         val id = currentUrl?.getYouTubeId()
                         if (id != null) {
-                            PlaylistThumbnailStore.save(id, currentUrl!!, currentUrl!!.isYouTubeHighRes())
+                            currentUrl?.let { url -> PlaylistThumbnailStore.save(id, url, url.isYouTubeHighRes()) }
                         }
                     }
                     if (validUrl != null && decision.useNetwork) {
@@ -482,7 +482,7 @@ object ImageCacheFactory {
         val cleanedUrl = thumbnailUrl?.let { cleanPrefix(it) }
         val validUrl = if (cleanedUrl.isNullOrBlank() || cleanedUrl == "null") null else cleanedUrl
         val decision = getDownloadDecision(validUrl)
-        val version by storeVersion.collectAsState()
+        val version by storeVersion.collectAsStateWithLifecycle()
         var currentUrl by remember(validUrl, version) {
             mutableStateOf(validUrl?.thumbnail(decision.quality.size))
         }
@@ -512,7 +512,7 @@ object ImageCacheFactory {
                     if (dataSource != DataSource.MEMORY_CACHE) {
                         val id = currentUrl?.getYouTubeId()
                         if (id != null) {
-                            PlaylistThumbnailStore.save(id, currentUrl!!, currentUrl!!.isYouTubeHighRes())
+                            currentUrl?.let { url -> PlaylistThumbnailStore.save(id, url, url.isYouTubeHighRes()) }
                         }
                     }
                     if (validUrl != null && decision.useNetwork) {
@@ -570,7 +570,7 @@ object ImageCacheFactory {
         val cleanedUrl = thumbnailUrl?.let { cleanPrefix(it) }
         val validUrl = if (cleanedUrl.isNullOrBlank() || cleanedUrl == "null") null else cleanedUrl
         val decision = getDownloadDecision(validUrl)
-        val version by storeVersion.collectAsState()
+        val version by storeVersion.collectAsStateWithLifecycle()
         var currentUrl by remember(validUrl, version) { 
             mutableStateOf(validUrl?.thumbnail(decision.quality.size).also { modUrl ->
                 //if (validUrl != null) Timber.tag("ImageCache").d("URL: original=%s, modified=%s", validUrl, modUrl)
@@ -602,7 +602,7 @@ object ImageCacheFactory {
                     if (dataSource != DataSource.MEMORY_CACHE) {
                         val id = currentUrl?.getYouTubeId()
                         if (id != null) {
-                            PlaylistThumbnailStore.save(id, currentUrl!!, currentUrl!!.isYouTubeHighRes())
+                            currentUrl?.let { url -> PlaylistThumbnailStore.save(id, url, url.isYouTubeHighRes()) }
                         }
                     }
                     if (validUrl != null && decision.useNetwork) {
@@ -698,7 +698,10 @@ object ImageCacheFactory {
                 if (decision.useNetwork) {
                     CacheMetadataStore.save(url, decision.quality)
                 }
-                return result.image!!.toBitmap()
+                return result.image?.toBitmap() ?: run {
+                    Timber.w("Null bitmap for image result")
+                    return null
+                }
             }
             
             lastError = (result as? ErrorResult)?.throwable?.message ?: appContext().resources.getString(R.string.unknown_error)

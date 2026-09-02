@@ -1,8 +1,6 @@
 package app.n_zik.android.core.network.models
 
-import app.n_zik.android.core.network.client.*
-import app.n_zik.android.core.network.models.*
-import app.n_zik.android.core.network.utils.*
+import app.n_zik.android.core.network.client.NetworkClientFactory
 
 import okhttp3.Call
 import okhttp3.Callback

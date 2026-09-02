@@ -24,6 +24,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -191,6 +192,7 @@ class AlbumItemMenu private constructor(
         modifier: Modifier = Modifier
     ) {
         val context = LocalContext.current
+        val coroutineScope = rememberCoroutineScope()
         val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
         Column(
@@ -285,7 +287,7 @@ class AlbumItemMenu private constructor(
                         icon = if (isBookmarked) R.drawable.bookmark else R.drawable.bookmark_outline,
                         color = colorPalette().favoritesIcon,
                         onClick = {
-                            CoroutineScope(Dispatchers.IO).launch {
+                            coroutineScope.launch(Dispatchers.IO) {
                                 Database.albumTable.toggleBookmark(album.id)
                             }
                         },
@@ -317,6 +319,7 @@ class AlbumItemMenu private constructor(
 
     @Composable
     override fun MenuComponent() {
+        val coroutineScope = rememberCoroutineScope()
         val changeTitle = ChangeAlbumTitleDialog { album }
         val changeAuthors = ChangeAlbumAuthorsDialog { album }
         val changeCover = ChangeAlbumCoverDialog { album }
@@ -393,7 +396,7 @@ class AlbumItemMenu private constructor(
                                 override val menuIconTitle: String get() = stringResource(R.string.more_of) + " $artistName"
                                 override fun onShortClick() {
                                     menuState.hide()
-                                    CoroutineScope(Dispatchers.IO).launch {
+                                    coroutineScope.launch(Dispatchers.IO) {
                                         Innertube.nextPage(NextBody(videoId = firstSong.id))
                                             ?.getOrNull()
                                             ?.itemsPage?.items?.firstOrNull()

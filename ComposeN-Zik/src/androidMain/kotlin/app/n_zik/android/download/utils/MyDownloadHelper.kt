@@ -1,9 +1,8 @@
 package app.n_zik.android.download.utils
 
-import app.n_zik.android.core.database.*
+import app.n_zik.android.core.database.Database
 
-import app.n_zik.android.download.services.*
-import app.n_zik.android.download.utils.*
+import app.n_zik.android.download.services.MyDownloadService
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -24,7 +23,6 @@ import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.exoplayer.scheduler.Requirements
 import app.n_zik.android.utils.artistTextOrDb
 import app.n_zik.android.playback.services.createDataSourceFactory
-import app.n_zik.android.core.database.Database
 
 import app.it.fast4x.rimusic.enums.AudioQualityFormat
 import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
@@ -178,7 +176,7 @@ object MyDownloadHelper {
     fun getDownloadNotificationHelper(context: Context?): DownloadNotificationHelper {
         if (!MyDownloadHelper::downloadNotificationHelper.isInitialized) {
             downloadNotificationHelper =
-                DownloadNotificationHelper(context!!, DOWNLOAD_NOTIFICATION_CHANNEL_ID)
+                DownloadNotificationHelper(context ?: return downloadNotificationHelper, DOWNLOAD_NOTIFICATION_CHANNEL_ID)
         }
         return downloadNotificationHelper
     }

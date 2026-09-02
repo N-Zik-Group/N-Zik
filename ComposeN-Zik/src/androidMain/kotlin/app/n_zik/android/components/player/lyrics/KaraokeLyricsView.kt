@@ -646,7 +646,7 @@ fun KaraokeLyricsView(
             }
         }
 
-        itemsIndexed(karaokeLines) { index, line ->
+        itemsIndexed(karaokeLines, key = { index, _ -> index }, contentType = { _, _ -> "lyric_line" }) { index, line ->
             val isActiveLine = index in activeLineIndices
 
             // Agent-based alignment: v1=Left, v2=Right, bg/v1000=Center
