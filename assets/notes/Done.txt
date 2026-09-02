@@ -8,6 +8,11 @@ Refactor:
   - Review patches: added error handling with runCatching + Timber.e in HomeAlbum/Artist/Library LaunchedEffect; replaced remaining runBlocking in ExportCacheDialog.kt; added Timber.w for null cases in settings dialogs, ImageCacheFactory, MainActivity/MainApplication
   - Build verified: `./gradlew :ComposeN-Zik:assembleDebug` BUILD SUCCESSFUL
 
+- refactor(code-quality): fix remaining 12 CODE.md violations (9f75661dd1)
+  - Replaced 9 `!!` operator with safe calls in OnlinePlaylistItemMenu.kt, HomeQuickPicksSections.kt, HomeQuickPicks.kt, HomeSongs.kt, Sort.kt, EditMetadataDialog.kt, KaraokeLyricsView.kt, LyricsTrackSelector.kt
+  - Fixed 3 `runBlocking`: added justification comments in Store.kt (@Blocking), SessionMediaItemMapper.kt (private non-suspend); replaced with `rememberCoroutineScope()` in Locator.kt
+  - Build verified: `./gradlew :ComposeN-Zik:assembleDebug` BUILD SUCCESSFUL
+
 Removed:
 - remove(home-songs): remove OnDevice loading placeholders
   - `OnDeviceSongs.kt`: Removed `isLoading` variable and placeholder items block (20 `SongItemPlaceholder` rendered during load)
