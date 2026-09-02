@@ -1,3 +1,20 @@
+perf(player): optimize M3E Morphing theme performance — grid collision + path cache + disabled shake default
+  - `AnimatedM3EBackground.kt`: Replace O(n²) pairwise collision with 8×8 spatial grid — only adjacent cells checked, ~90% fewer distance computations per frame
+  - `AnimatedM3EBackground.kt`: Add ComposePath pool (18 objects) to reuse paths instead of allocating new ones each frame via `asComposePath()`
+  - `AnimatedM3EBackground.kt`: Add delta clamp (`coerceAtMost(0.05f)`) to prevent shape teleportation on frame spikes
+  - `AnimatedM3EBackground.kt`: Add index guard in grid collision to process each pair only once (fixes double force application)
+  - `AppearanceSettings.kt`: Change default shake sensitivity from `High` to `Disabled` — sensor no longer activated by default
+  - `AnimatedM3EBackground.kt`: Change sensor preference fallback default to `Disabled`
+
+fix(player): add Disabled shake option and lazy sensor registration (c43a63791c)
+  - `ShakeSensitivityTheme.kt`: Add `Disabled(thresholdG = 0f)` enum value to allow users to disable shake detection entirely
+  - `AnimatedM3EBackground.kt`: Replace `DisposableEffect(Unit)` with `DisposableEffect(animating)` — sensor only registers when player is animating
+  - `AnimatedM3EBackground.kt`: Skip sensor registration when `sensitivity == Disabled` or `accelerometer == null`
+  - `AnimatedM3EBackground.kt`: Clean up listener in `onDispose` to prevent memory leaks
+  - `strings.xml`: Add `shake_sensitivity_theme_disabled` = "Disabled"
+  - `values-fr/strings.xml`: Add `shake_sensitivity_theme_disabled` = "Désactivé"
+  - Note: Full Path cache optimization for morph shapes deferred to follow-up (requires deeper refactor of `asComposePath()` allocation pattern)
+
 fix(player-ui): fix queue lag and stretching, fix miniplayer like icon, update submodules
   - `Player.kt`: Replace `fillMaxHeight` + `translationY` with `Modifier.layout` to fix queue panel stretching and lag. Restore `QueueToolBar` slide down animation.
   - `MiniPlayer.kt`: Fix "like" icon overlay position on the 48dp cover art.

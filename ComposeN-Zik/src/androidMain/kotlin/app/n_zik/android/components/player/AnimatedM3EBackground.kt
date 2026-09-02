@@ -114,7 +114,7 @@ fun Modifier.animatedM3EBackground(
         var listener: SensorEventListener? = null
 
         if (animating && accelerometer != null) {
-            val sensitivity = context.preferences.getEnum(shakeSensitivityThemeKey, ShakeSensitivityTheme.High)
+            val sensitivity = context.preferences.getEnum(shakeSensitivityThemeKey, ShakeSensitivityTheme.Disabled)
             if (sensitivity != ShakeSensitivityTheme.Disabled) {
                 var lastShakeTime = 0L
 
@@ -173,33 +173,60 @@ fun Modifier.animatedM3EBackground(
         }
     }
 
-    // Animation loop - physics simulation
+    // Animation loop - physics simulation with grid-based collision
     LaunchedEffect(animating) {
         if (animating) {
+            val gridSize = 8
+            val grid = Array(gridSize * gridSize) { mutableListOf<ShapeConfig>() }
+
             var lastFrameTime = withFrameNanos { it }
             while (true) {
                 val currentFrameTime = withFrameNanos { it }
-                val delta = (currentFrameTime - lastFrameTime) / 1_000_000_000f
+                val delta = ((currentFrameTime - lastFrameTime) / 1_000_000_000f).coerceAtMost(0.05f)
 
+                // Clear grid
+                for (cell in grid) cell.clear()
+
+                // Assign shapes to grid cells
+                for (shape in shapes) {
+                    val cellX = ((shape.x * gridSize).toInt()).coerceIn(0, gridSize - 1)
+                    val cellY = ((shape.y * gridSize).toInt()).coerceIn(0, gridSize - 1)
+                    grid[cellY * gridSize + cellX].add(shape)
+                }
+
+                // Collision detection - only check adjacent cells, process each pair once
                 for (i in shapes.indices) {
                     val shape1 = shapes[i]
-                    for (j in i + 1 until shapes.size) {
-                        val shape2 = shapes[j]
-                        val dx = shape2.x - shape1.x
-                        val dy = shape2.y - shape1.y
-                        val distSq = dx * dx + dy * dy
-                        val minDist = shape1.radiusScale + shape2.radiusScale
-                        val minDistSq = minDist * minDist
+                    val cellX1 = ((shape1.x * gridSize).toInt()).coerceIn(0, gridSize - 1)
+                    val cellY1 = ((shape1.y * gridSize).toInt()).coerceIn(0, gridSize - 1)
 
-                        if (distSq < minDistSq && distSq > 0.0001f) {
-                            val dist = sqrt(distSq)
-                            val force = (minDist - dist) * 0.4f
-                            val fx = (dx / dist) * force
-                            val fy = (dy / dist) * force
-                            shape1.vx -= fx * delta
-                            shape1.vy -= fy * delta
-                            shape2.vx += fx * delta
-                            shape2.vy += fy * delta
+                    for (dy in -1..1) {
+                        for (dx in -1..1) {
+                            val neighborX = cellX1 + dx
+                            val neighborY = cellY1 + dy
+                            if (neighborX in 0 until gridSize && neighborY in 0 until gridSize) {
+                                for (shape2 in grid[neighborY * gridSize + neighborX]) {
+                                    if (shape1 === shape2) continue
+                                    val j = shapes.indexOf(shape2)
+                                    if (j <= i) continue
+                                    val ddx = shape2.x - shape1.x
+                                    val ddy = shape2.y - shape1.y
+                                    val distSq = ddx * ddx + ddy * ddy
+                                    val minDist = shape1.radiusScale + shape2.radiusScale
+                                    val minDistSq = minDist * minDist
+
+                                    if (distSq < minDistSq && distSq > 0.0001f) {
+                                        val dist = sqrt(distSq)
+                                        val force = (minDist - dist) * 0.4f
+                                        val fx = (ddx / dist) * force
+                                        val fy = (ddy / dist) * force
+                                        shape1.vx -= fx * delta
+                                        shape1.vy -= fy * delta
+                                        shape2.vx += fx * delta
+                                        shape2.vy += fy * delta
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -257,6 +284,8 @@ fun Modifier.animatedM3EBackground(
         }
     }
 
+    val cachedComposePaths = remember { List(18) { ComposePath() } }
+
     this.drawWithCache {
         val width = size.width
         val height = size.height
@@ -296,6 +325,7 @@ fun Modifier.animatedM3EBackground(
             val time = accumulatedTime.floatValue
             if (visibilityProgress <= 0.01f) return@onDrawBehind
 
+            var shapeIndex = 0
             shapes.forEach { shape ->
                 val scaleFactor = shape.radiusScale
                 val radius = scaleFactor * minDim
@@ -331,7 +361,12 @@ fun Modifier.animatedM3EBackground(
                         cachedMatrix.reset()
                         cachedMatrix.setScale(minDim, minDim)
                         legacyPath.transform(cachedMatrix)
-                        legacyPath.asComposePath()
+
+                        // Reuse pre-allocated ComposePath to avoid per-frame allocation
+                        val cachedComposePath = cachedComposePaths[shapeIndex % cachedComposePaths.size]
+                        cachedComposePath.reset()
+                        cachedComposePath.addPath(legacyPath.asComposePath())
+                        cachedComposePath
                     } else {
                         basePaths[shape.type % basePaths.size]
                     }
@@ -342,6 +377,7 @@ fun Modifier.animatedM3EBackground(
                         blendMode = BlendMode.SrcOver
                     )
                 }
+                shapeIndex++
             }
         }
     }

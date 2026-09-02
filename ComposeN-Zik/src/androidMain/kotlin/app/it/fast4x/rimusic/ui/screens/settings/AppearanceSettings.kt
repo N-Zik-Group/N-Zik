@@ -561,8 +561,8 @@ fun DefaultAppearanceSettings() {
     )
     animatedGradient = AnimatedGradient.M3EMorphingCover
 
-    var shakeSensitivityTheme by rememberPreference(shakeSensitivityThemeKey, ShakeSensitivityTheme.High)
-    shakeSensitivityTheme = ShakeSensitivityTheme.High
+    var shakeSensitivityTheme by rememberPreference(shakeSensitivityThemeKey, ShakeSensitivityTheme.Disabled)
+    shakeSensitivityTheme = ShakeSensitivityTheme.Disabled
 
     var albumCoverRotation by rememberPreference(albumCoverRotationKey, false)
     albumCoverRotation = false
@@ -778,7 +778,7 @@ fun AppearanceSettings(
         animatedGradientKey,
         AnimatedGradient.M3EMorphingCover
     )
-    var shakeSensitivityTheme by rememberPreference(shakeSensitivityThemeKey, ShakeSensitivityTheme.High)
+    var shakeSensitivityTheme by rememberPreference(shakeSensitivityThemeKey, ShakeSensitivityTheme.Disabled)
     var appearanceChooser by remember{ mutableStateOf(false)}
     var albumCoverRotation by rememberPreference(albumCoverRotationKey, false)
 
