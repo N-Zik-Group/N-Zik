@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithCache
@@ -106,38 +107,45 @@ fun Modifier.animatedM3EBackground(
 
     val context = LocalContext.current
 
-    // Shake detection for explosion effect
-    DisposableEffect(Unit) {
+    // Lazy shake detection - only active when animating and not disabled
+    DisposableEffect(animating) {
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        var listener: SensorEventListener? = null
 
-        var lastShakeTime = 0L
+        if (animating && accelerometer != null) {
+            val sensitivity = context.preferences.getEnum(shakeSensitivityThemeKey, ShakeSensitivityTheme.High)
+            if (sensitivity != ShakeSensitivityTheme.Disabled) {
+                var lastShakeTime = 0L
 
-        val listener = object : SensorEventListener {
-            override fun onSensorChanged(event: SensorEvent?) {
-                event?.let {
-                    val x = it.values[0]
+                listener = object : SensorEventListener {
+                    override fun onSensorChanged(event: SensorEvent?) {
+                        event?.let {
+                            val x = it.values[0]
+                            val gX = x / SensorManager.GRAVITY_EARTH
 
-                    val gX = x / SensorManager.GRAVITY_EARTH
-                    val sensitivity = context.preferences.getEnum(shakeSensitivityThemeKey, ShakeSensitivityTheme.High)
-
-                    if (abs(gX) > sensitivity.thresholdG) {
-                        val now = System.currentTimeMillis()
-                        if (now - lastShakeTime > 1000) {
-                            lastShakeTime = now
-                            shapes.forEach { shape ->
-                                shape.vx += (Random.nextFloat() - 0.5f) * 1.2f
-                                shape.vy += (Random.nextFloat() - 0.5f) * 1.2f
+                            if (abs(gX) > sensitivity.thresholdG) {
+                                val now = System.currentTimeMillis()
+                                if (now - lastShakeTime > 1000) {
+                                    lastShakeTime = now
+                                    shapes.forEach { shape ->
+                                        shape.vx += (Random.nextFloat() - 0.5f) * 1.2f
+                                        shape.vy += (Random.nextFloat() - 0.5f) * 1.2f
+                                    }
+                                }
                             }
                         }
                     }
+                    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
                 }
+
+                sensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
             }
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
         }
 
-        sensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
-        onDispose { sensorManager.unregisterListener(listener) }
+        onDispose {
+            listener?.let { sensorManager.unregisterListener(it) }
+        }
     }
 
     val lastLocalColor = remember { mutableStateOf(V.value) }

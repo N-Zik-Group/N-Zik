@@ -9,6 +9,7 @@ enum class ShakeSensitivityTheme(
     val thresholdG: Float
 ): TextView {
 
+    Disabled(R.string.shake_sensitivity_theme_disabled, 0f),
     VeryHigh(R.string.shake_sensitivity_theme_very_high, 1.0f),
     High(R.string.shake_sensitivity_theme_high, 2.2f),
     Medium(R.string.shake_sensitivity_theme_medium, 3.5f),
