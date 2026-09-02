@@ -84,6 +84,7 @@
   <string name="theme">Tema</string>
   <string name="theme_mode">Tema-modus</string>
   <string name="thumbnail_roundness">Duimnaelskets bolligheid</string>
+  <string name="artist_roundness">Artist roundness</string>
   <string name="use_system_font">Gebruik sisteem se lettertipe</string>
   <string name="use_font_by_the_system">Gebruik die lettertipe wat deur die sisteem toegepas word</string>
   <string name="apply_font_padding">Pas lettertipe vulling toe</string>

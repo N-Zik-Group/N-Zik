@@ -84,6 +84,7 @@
   <string name="theme">Thème</string>
   <string name="theme_mode">Thème Système</string>
   <string name="thumbnail_roundness">Aspect</string>
+  <string name="artist_roundness">Polyvalence de l\'artiste</string>
   <string name="use_system_font">Utiliser la police du système</string>
   <string name="use_font_by_the_system">Utiliser la police appliquée par le système</string>
   <string name="apply_font_padding">Appliquer un remplissage</string>

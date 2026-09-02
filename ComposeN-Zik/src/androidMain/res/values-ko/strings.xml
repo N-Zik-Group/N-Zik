@@ -84,6 +84,7 @@
   <string name="theme">테마</string>
   <string name="theme_mode">테마 모드</string>
   <string name="thumbnail_roundness">썸네일 둥글게</string>
+  <string name="artist_roundness">Artist roundness</string>
   <string name="use_system_font">시스템 폰트 사용</string>
   <string name="use_font_by_the_system">시스템에 적용된 폰트 사용</string>
   <string name="apply_font_padding">폰트 간격 적용</string>

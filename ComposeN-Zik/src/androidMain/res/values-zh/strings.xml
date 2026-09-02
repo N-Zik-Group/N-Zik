@@ -84,6 +84,7 @@
   <string name="theme">主题</string>
   <string name="theme_mode">主题模式</string>
   <string name="thumbnail_roundness">缩略图圆角</string>
+  <string name="artist_roundness">Artist roundness</string>
   <string name="use_system_font">使用系统字体</string>
   <string name="use_font_by_the_system">使用系统应用的字体</string>
   <string name="apply_font_padding">应用字体填充</string>
