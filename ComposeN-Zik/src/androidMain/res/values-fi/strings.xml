@@ -562,6 +562,7 @@
   <string name="direction_bottom">Alhaalla</string>
   <string name="direction_bottom_floating">Alhaalla Kelluva</string>
   <string name="shake_sensitivity_theme">Theme Shake Sensitivity</string>
+  <string name="shake_sensitivity_theme_disabled">Pois</string>
   <string name="shake_sensitivity_theme_very_high">Very High (1.0G)</string>
   <string name="shake_sensitivity_theme_high">High (2.2G)</string>
   <string name="shake_sensitivity_theme_medium">Medium (3.5G)</string>
