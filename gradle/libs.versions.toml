@@ -28,7 +28,7 @@ androidTargetSdk = "37"
 
 
 
-compose-plugin = "1.11.1"
+compose-plugin = "1.12.0"
 agp = "9.4.0"
 hilt = "2.60.1"
 composeMarkdownVersion = "0.7.2"
