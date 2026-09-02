@@ -1,3 +1,12 @@
+fix(download): resolve notification, pause state, and progress bar bugs during active/paused downloads
+  - MyDownloadService.kt: Reordered onIdle to always show the 'Paused' notification when DownloadManager is paused, preventing it from being swallowed if other downloads had just completed.
+  - MyDownloadService.kt: Removed 
+esetBatch() from the 'completed' block in onIdle so batch progress (total/completed count) is preserved when pausing, fixing the missing progress bar and the 'infinite loading' bug upon resume.
+  - MyDownloadService.kt: Intercepted ACTION_PAUSE_DOWNLOADS and ACTION_RESUME_DOWNLOADS in onStartCommand to persist downloads_paused_state to SharedPreferences.
+  - MyDownloadService.kt: Removed the redundant 'Download cancelled' notification in onIdle when the queue becomes empty to prevent the illusion of a new download starting when clicking 'Delete All'.
+  - MyDownloadService.kt: Reset downloads_paused_state to False in onIdle when the queue becomes empty so that new downloads don't silently fail to start.
+  - MyDownloadHelper.kt: Restored downloads_paused_state upon DownloadManager initialization and applied pauseDownloads() if true, ensuring the pause state survives app restarts.
+  - MyDownloadHelper.kt: Restored BatchTotal to downloads.size upon initialization if there are active downloads so the progress bar works after a restart.
 perf(player): optimize M3E Morphing theme performance — grid collision + path cache + disabled shake default
   - `AnimatedM3EBackground.kt`: Replace O(n²) pairwise collision with 8×8 spatial grid — only adjacent cells checked, ~90% fewer distance computations per frame
   - `AnimatedM3EBackground.kt`: Add ComposePath pool (18 objects) to reuse paths instead of allocating new ones each frame via `asComposePath()`
@@ -64,3 +73,4 @@ Removed:
   - `ChangeArtistBrowseIdDialog.kt`: Applied `artistThumbnailShape()` to the artist search results
   - `Dialog.kt` (`SelectorArtistsDialog`): Fixed clipping issue where inner image lacked `artistThumbnailShape()` and dialog was incorrectly shaped
   - `ArtistDetails.kt` & `LayoutWithAdaptiveThumbnail.kt`: Passed `artistThumbnailShape()` into `DynamicOrientationLayout` for landscape artist layout
+

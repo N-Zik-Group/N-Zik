@@ -41,7 +41,7 @@ class DeleteAllDownloadedSongsDialog(
     override val dialogTitle: String
         @Composable
         get() {
-            val count = getSongs().size
+            val count = getSongs().count { song -> MyDownloadHelper.downloads.value.containsKey(song.id) }
             return if( count > 0 )
                 stringResource( R.string.do_you_really_want_to_delete_download_count, count )
             else
@@ -51,14 +51,22 @@ class DeleteAllDownloadedSongsDialog(
         @Composable
         get() = stringResource( messageId )
 
-    // Both [ConfirmDialog] and [Descriptive] require this function,
-    // so it must be explicitly stated here to not confuse the compiler
-    override fun onShortClick() = super.onShortClick()
+    override fun onShortClick() {
+        val count = getSongs().count { song -> MyDownloadHelper.downloads.value.containsKey(song.id) }
+        if (count > 0) {
+            super.onShortClick()
+        } else {
+            app.kreate.android.me.knighthat.utils.Toaster.toast(
+                appContext().getString(R.string.nothing_to_delete),
+                type = app.kreate.android.me.knighthat.utils.Toaster.Type.INFO
+            )
+        }
+    }
 
     override fun onConfirm() {
-        // Reverse filter: only process already-downloaded songs (for deletion)
+        // Reverse filter: process both completed and ongoing downloads for deletion
         val downloadedSongs = getSongs().filter { song ->
-            MyDownloadHelper.isSongDownloaded(song.id)
+            MyDownloadHelper.downloads.value.containsKey(song.id)
         }
 
         if (downloadedSongs.isEmpty()) {

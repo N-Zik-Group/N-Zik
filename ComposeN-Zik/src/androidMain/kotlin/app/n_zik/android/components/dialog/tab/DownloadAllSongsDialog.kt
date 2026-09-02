@@ -41,7 +41,7 @@ class DownloadAllSongsDialog(
     override val dialogTitle: String
         @Composable
         get() {
-            val count = getSongs().size
+            val count = getSongs().count { song -> !MyDownloadHelper.downloads.value.containsKey(song.id) }
             return if( count > 0 )
                 stringResource( R.string.do_you_really_want_to_download_all_count, count )
             else
@@ -51,9 +51,17 @@ class DownloadAllSongsDialog(
         @Composable
         get() = stringResource( R.string.download )
 
-    // Both [Confirm] and [Descriptive] require this function,
-    // so it must be explicitly stated here to not confuse the compiler
-    override fun onShortClick() = super.onShortClick()
+    override fun onShortClick() {
+        val count = getSongs().count { song -> !MyDownloadHelper.downloads.value.containsKey(song.id) }
+        if (count > 0) {
+            super.onShortClick()
+        } else {
+            app.kreate.android.me.knighthat.utils.Toaster.toast(
+                appContext().getString(R.string.nothing_to_download),
+                type = app.kreate.android.me.knighthat.utils.Toaster.Type.INFO
+            )
+        }
+    }
 
     override fun onBatchStart( count: Int ) {
         MyDownloadHelper.startBatchDownload( count )

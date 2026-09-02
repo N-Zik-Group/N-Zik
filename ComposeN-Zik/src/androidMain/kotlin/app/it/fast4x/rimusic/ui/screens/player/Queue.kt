@@ -289,9 +289,14 @@ fun Queue(
         val queueArrow = QueueArrow { onDismiss( repeat.type ) }
         val locator = Locator( lazyListState, ::getSongs )
 
+        val downloadAllDialog = app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog(::getSongs)
+        val deleteAllDownloadedDialog = app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog(::getSongs)
+
         // Dialog renders
         exportDialog.Render()
         (deleteDialog as Dialog).Render()
+        (downloadAllDialog as Dialog).Render()
+        (deleteAllDownloadedDialog as Dialog).Render()
 
         val showDiscover = rememberPreference( showButtonPlayerDiscoverKey, false ).value
         val buttonsList = buildList {
@@ -299,6 +304,8 @@ fun Queue(
             add( search )
             if( showDiscover )
                 add( discover )
+            add( downloadAllDialog )
+            add( deleteAllDownloadedDialog )
             add( positionLock )
             add( repeat )
             add( shuffle )
