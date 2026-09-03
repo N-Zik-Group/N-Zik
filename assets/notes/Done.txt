@@ -1,3 +1,25 @@
+improve(ui): search bar icon sizing and text alignment refinements
+  - `SearchScreen.kt`: Resized search, microphone, sound_effect, and close icons to 25dp for consistent sizing
+  - `SearchScreen.kt`: Adjusted text field padding (`start = 30.dp, end = 100.dp`) to prevent text overlapping with right-side icons
+  - `SearchScreen.kt`: Set `contentAlignment = Alignment.CenterStart` on text box so typed text aligns left
+  - `MusicAudioSearchOverlay.kt`: Added `verticalAlignment = Alignment.CenterVertically` to the play/more-details button Row in `RecognizedTrackCard`
+
+Removed:
+- remove(audio-search): remove system audio (MediaProjection) mode from audio search
+  - `MusicAudioSearchOverlay.kt`: Removed `useSystemAudio`, `mediaProjection` state variables and `projectionLauncher` — eliminates Android 14+ FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION crash
+  - `MusicAudioSearchOverlay.kt`: Removed Microphone/System toggle UI (was gated behind `Build.VERSION.SDK_INT >= Q`)
+  - `MusicAudioSearchOverlay.kt`: Simplified `startListening()` to always use microphone — removed system audio branch and `MediaProjectionManager` dependency
+  - `AudioRecorder.kt`: Removed `useSystemAudio` and `mediaProjection` parameters from `start()` — always creates mic recorder
+  - `AudioRecorder.kt`: Removed `createSystemAudioRecorder()` method and unused imports (`AudioPlaybackCaptureConfiguration`, `MediaProjection`, `Build`)
+  - `strings.xml`: Removed unused string resources `find_source_mic`, `find_source_system`, `find_error_system_audio`
+
+feat(audio-search): add direct play button on recognition results
+  - `MusicAudioSearchOverlay.kt`: Added `playRecognizedTrack()` — searches Innertube for the recognized song via `Innertube.searchPage` with `SearchFilter.Song` and plays the first result via `binder?.startRadio()`
+  - `MusicAudioSearchOverlay.kt`: Added `isPlaying` state and `LocalPlayerServiceBinder` reference
+  - `RecognizedTrackCard`: Added circular play button (accent background, `play.xml` icon) with `CircularProgressIndicator` loading state
+  - `RecognizedTrackCard`: Play button sits alongside the existing "More details" button — play for direct playback, details for search results screen
+  - Flow: recognition → card → [Play] starts radio or [More details] → search results
+
 feat(innertubex): add proxy auth, region override, and login-for-browse settings
   - `Innertube.kt`: Added `proxyAuth` property — enables OkHttp `proxyAuthenticator` for authenticated proxies
   - `Innertube.kt`: Added `regionOverrideActive` + `regionOverride` properties — allows overriding country code for API requests

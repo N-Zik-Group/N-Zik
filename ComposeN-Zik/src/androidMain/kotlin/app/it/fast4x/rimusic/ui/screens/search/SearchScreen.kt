@@ -15,6 +15,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -55,6 +56,7 @@ import app.it.fast4x.rimusic.utils.VoiceSearchState
 import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.ui.components.Skeleton
 import app.n_zik.android.components.VoiceSearchOverlay
+import app.n_zik.android.components.ui.screens.find.MusicAudioSearchOverlay
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
@@ -96,6 +98,7 @@ fun SearchScreen(
     var isSpeaking by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isCancelling by remember { mutableStateOf(false) }
+    var isFindActive by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -154,7 +157,7 @@ fun SearchScreen(
 
     PersistMapCleanup(tagPrefix = "search/")
 
-    VoiceSearchState.isActive = !isCancelling && (isListening || errorMessage != null)
+    VoiceSearchState.isActive = (!isCancelling && (isListening || errorMessage != null)) || isFindActive
 
     Box(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -169,12 +172,13 @@ fun SearchScreen(
                         icon = R.drawable.search,
                         color = colorPalette().favoritesIcon,
                         modifier = Modifier
-                            .size(26.dp)
+                            .size(25.dp)
                     )
                 }
                 Box(
+                    contentAlignment = Alignment.CenterStart,
                     modifier = Modifier
-                        .padding(start = 44.dp, end = 65.dp)
+                        .padding(start = 30.dp, end = 100.dp)
                 ) {
                     AnimatedVisibility(
                         visible = textFieldValue.text.isEmpty(),
@@ -221,8 +225,19 @@ fun SearchScreen(
                             icon = R.drawable.microphone,
                             color = if (isListening) colorPalette().text else colorPalette().favoritesIcon,
                             modifier = Modifier
-                                .size(26.dp)
+                                .size(25.dp)
                         )
+                        IconButton(
+                            onClick = {
+                                keyboardController?.hide()
+                                isFindActive = true
+                            },
+                            icon = R.drawable.sound_effect,
+                            color = if (isFindActive) colorPalette().text else colorPalette().favoritesIcon,
+                            modifier = Modifier
+                                .size(25.dp)
+                        )
+
                         AnimatedVisibility(
                             visible = textFieldValue.text.isNotEmpty(),
                             enter = fadeIn(tween(220)) +
@@ -235,7 +250,7 @@ fun SearchScreen(
                                 icon = R.drawable.close,
                                 color = colorPalette().favoritesIcon,
                                 modifier = Modifier
-                                    .size(26.dp)
+                                    .size(25.dp)
                             )
                         }
                     }
@@ -251,6 +266,7 @@ fun SearchScreen(
                     item(0, stringResource(R.string.online), R.drawable.globe)
                     item(1, stringResource(R.string.library), R.drawable.library)
                     item(2, stringResource(R.string.go_to_link), R.drawable.link)
+
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(currentTabIndex) {
@@ -290,6 +306,8 @@ fun SearchScreen(
                                 //pop()
                             },
                         )
+
+
                     }
                 }
             }
@@ -315,6 +333,30 @@ fun SearchScreen(
             },
             modifier = Modifier.zIndex(1000f)
         )
+
+        AnimatedVisibility(
+            visible = isFindActive,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.zIndex(1000f)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.85f))
+            ) {
+                app.n_zik.android.components.ui.screens.find.MusicAudioSearchOverlay(
+                    onDismiss = { isFindActive = false },
+                    onOpenSearch = { query ->
+                        onTextFieldValueChanged(TextFieldValue(query))
+                        onSearch(query)
+                        isFindActive = false
+                    }
+                )
+            }
+        }
+
+
     }
     }
 
