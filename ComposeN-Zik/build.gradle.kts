@@ -3,6 +3,8 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Properties
+import java.io.FileInputStream
 
 val APP_NAME = libs.versions.nzikAppName.get()
 
@@ -124,6 +126,14 @@ android {
          */
         buildConfigField( "Boolean", "IS_AUTOUPDATE", "true" )
         buildConfigField( "String", "APP_NAME", "\"$APP_NAME\"" )
+
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localProperties.load(FileInputStream(localPropertiesFile))
+        }
+        val shazamKey = localProperties.getProperty("shazam_proxy_api_key", "")
+        buildConfigField("String", "SHAZAM_PROXY_API_KEY", "\"$shazamKey\"")
     }
 
     packaging {
