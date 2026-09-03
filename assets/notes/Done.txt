@@ -1,3 +1,18 @@
+fix(player-ui): fix StatsForNerds layout and remove unused fields
+  - `StatsForNerds.kt`: Removed Artist + Title row (Row 1.5) — data from InnerTubeX videoDetails, not useful for debug
+  - `StatsForNerds.kt`: Removed audio channels display — always shows "Unknown" since InnerTubeX doesn't provide this field
+  - `StatsForNerds.kt`: Fixed row nesting — Row 4 (Stream Client) and Row 5 (Volume) were incorrectly nested inside Row 3 (Container/Codec/Sample Rate), causing layout offset
+  - Build verified: `./gradlew :ComposeN-Zik:assembleDebug` BUILD SUCCESSFUL
+
+fix(innertubex): fix session sync, proxy handling, and expired stream detection
+  - `Innertube.kt`: Session properties (`locale`, `visitorData`, `dataSyncId`, `cookie`) now delegate to `innerTubeX` instead of being stored locally — ensures InnerTubeX always has current session state
+  - `Innertube.kt`: Added `recreateTransport()` with `sessionSnapshot()`/`replaceSession()` — preserves full session (cookie, visitorData, dataSyncId, authUser, useLoginForBrowse) across proxy changes
+  - `Innertube.kt`: Added `init` block that initializes session from `YoutubePreferences` in one `replaceSession()` call — avoids multiple session change events that cause `CancellationException`
+  - `Innertube.kt`: `ensureVisitorData()` now handles nullable `visitorData` and uses local variable to avoid smart cast issues
+  - `MyDownloadHelper.kt`: Replaced fragile string matching in `isExpiredStreamError()` with type-safe `HttpDataSource.InvalidResponseCodeException` cause-chain walk — checks for HTTP 403/410/416 response codes
+  - `PlayerServiceModern.kt`: Fixed `MyDownloadHelper.songUrlCache.remove()` → `.invalidate()` — `songUrlCache` type changed from `LinkedHashMap` to `StreamUrlCache` which uses `invalidate()` instead of `remove()`
+  - Build verified: `./gradlew :ComposeN-Zik:assembleDebug` BUILD SUCCESSFUL
+
 Refactor:
 - refactor(code-quality): comply with CODE.md rules — anti-patterns, null-safety, imports, LazyColumn (71 files, ~324 violations)
   - Phase 1 — Anti-patterns critiques: replaced `runBlocking(Dispatchers.IO)` with `LaunchedEffect` + state async in HomeAlbum.kt, HomeArtist.kt, HomeLibrary.kt; replaced `collectAsState()` with `collectAsStateWithLifecycle()` in ImageCacheFactory.kt, SeekBarStaticAudioWaves.kt, HomeSongs.kt; replaced `e.printStackTrace()` with Timber in UpdateScreen.kt

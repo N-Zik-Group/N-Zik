@@ -24,6 +24,7 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.xml)
     implementation(libs.ktor.serialization.kotlinx.protobuf)
     implementation(libs.extractor)
+    api(libs.innertubex)
     implementation(libs.ksoup.html)
     implementation(libs.ksoup.entities)
 }

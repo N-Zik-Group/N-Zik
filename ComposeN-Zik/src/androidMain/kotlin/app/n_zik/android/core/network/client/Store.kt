@@ -8,15 +8,12 @@ import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.Context as InnerContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.jetbrains.annotations.Blocking
-import org.schabi.newpipe.extractor.localization.ContentCountry
-import org.schabi.newpipe.extractor.localization.Localization
-import org.schabi.newpipe.extractor.services.youtube.InnertubeClientRequestInfo
-import org.schabi.newpipe.extractor.services.youtube.YoutubeParsingHelper
 import timber.log.Timber
 import java.io.IOException
 import java.util.Locale
@@ -73,6 +70,7 @@ object Store {
 
     /**
      * Retrieves visitor data for iOS client.
+     * Uses InnerTubeX's fetchFreshVisitorData() instead of NewPipe.
      * Returns null if the network request fails (e.g., no connectivity, DNS failure).
      */
     suspend fun getIosVisitorData(): String? {
@@ -82,26 +80,23 @@ object Store {
             visitorMutex.withLock {
                 iosVisitorData?.let { return@withLock it }
 
-                val currentLocale = Locale.getDefault()
-                val localization = Localization(currentLocale.language)
-                val contentCountry = ContentCountry(currentLocale.country)
-
-                val headers: MutableMap<String, List<String>> = mutableMapOf()
-                headers["User-Agent"] = listOf(YoutubeParsingHelper.getIosUserAgent(localization))
-                headers.putAll(YoutubeParsingHelper.getOriginReferrerHeaders("https://www.youtube.com"))
-
-                val data = YoutubeParsingHelper.getVisitorDataFromInnertube(
-                    InnertubeClientRequestInfo.ofIosClient(),
-                    localization,
-                    contentCountry,
-                    headers,
-                    YoutubeParsingHelper.YOUTUBEI_V1_URL,
-                    null,
-                    false
-                )
+                // Use InnerTubeX to fetch visitor data (replaces NewPipe)
+                // Catch CancellationException separately — InnerTubeX cancels stale
+                // session requests during fetchFreshVisitorData(), which is normal
+                // behavior but must not propagate to ExoPlayer's LoadTask.
+                val data = try {
+                    Innertube.extractionTransport().innerTube.fetchFreshVisitorData()
+                } catch (e: CancellationException) {
+                    Timber.tag("Store").d("Visitor data fetch cancelled (session changed), retrying...")
+                    // Retry once after session change
+                    Innertube.extractionTransport().innerTube.fetchFreshVisitorData()
+                }
                 iosVisitorData = data
                 data
             }
+        } catch (e: CancellationException) {
+            Timber.tag("Store").w("Visitor data fetch cancelled after retry")
+            null
         } catch (e: IOException) {
             Timber.tag("Store").w(e, "Failed to fetch iOS visitor data (network error)")
             null

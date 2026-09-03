@@ -311,7 +311,9 @@ fun NetworkSettings(
 
         /* Removed Spacer */
 
-        // Stream Clients Section
+        // Stream Clients Section — DISABLED: InnerTubeX handles client selection automatically
+        // Settings below are kept for reference but have no effect on playback
+        /*
         SettingsSectionCard(
             title = stringResource(R.string.stream_clients),
             icon = R.drawable.musical_notes,
@@ -349,6 +351,7 @@ fun NetworkSettings(
             PreferredStreamClientDialog.Render()
         }
         StreamClientsSettingsDialog.Render()
+        */
 
         /* Removed Spacer */
 

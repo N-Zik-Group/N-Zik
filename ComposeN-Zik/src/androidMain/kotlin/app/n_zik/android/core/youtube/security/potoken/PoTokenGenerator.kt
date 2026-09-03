@@ -1,7 +1,7 @@
 package app.n_zik.android.core.security.potoken
 
 import android.webkit.CookieManager
-import app.n_zik.android.core.security.cipher.CipherDeobfuscator
+import app.n_zik.android.appContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.runBlocking
@@ -104,7 +104,7 @@ class PoTokenGenerator {
                     webPoTokenGenerator = null
 
                     // create a new webPoTokenGenerator
-                    webPoTokenGenerator = PoTokenWebView.getNewPoTokenGenerator(CipherDeobfuscator.appContext)
+                    webPoTokenGenerator = PoTokenWebView.getNewPoTokenGenerator(appContext())
 
                     // The streaming poToken needs to be generated exactly once before generating
                     // any other (player) tokens.

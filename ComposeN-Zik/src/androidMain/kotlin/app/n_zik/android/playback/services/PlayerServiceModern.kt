@@ -89,8 +89,9 @@ import androidx.media3.session.SessionToken
 import app.it.fast4x.rimusic.repository.QuickPicksRepository
 import app.n_zik.android.R
 import app.n_zik.android.playback.services.createDataSourceFactory
-import app.n_zik.android.playback.services.formatCache
+import app.n_zik.android.playback.services.streamUrlCache
 import app.n_zik.android.playback.services.markWebRemixFailed
+import app.n_zik.android.playback.services.clearWebRemixFailures
 
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.MoreExecutors
@@ -237,7 +238,6 @@ import app.n_zik.android.playback.exceptions.PlayableFormatNonSupported
 import app.n_zik.android.playback.exceptions.UnmatchedSongException
 import app.n_zik.android.playback.exceptions.UnplayableException
 import app.n_zik.android.playback.exceptions.VideoIdMismatchException
-import app.n_zik.android.core.security.cipher.CipherDeobfuscator
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
 import androidx.media3.datasource.HttpDataSource
@@ -1147,7 +1147,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
     private fun performAggressiveCacheClear(mediaId: String) {
         Timber.tag("PlayerServiceModern").d("Performing aggressive cache clear for $mediaId")
-        formatCache.remove(mediaId)
+        streamUrlCache.invalidate(mediaId)
         try {
             cache.removeResource(mediaId)
             Timber.tag("PlayerServiceModern").d("Cleared player cache for $mediaId")
@@ -1155,7 +1155,7 @@ class PlayerServiceModern : MediaLibraryService(),
             Timber.tag("PlayerServiceModern").w(e, "Failed to clear player cache for $mediaId")
         }
         try {
-            MyDownloadHelper.songUrlCache.remove(mediaId)
+            MyDownloadHelper.songUrlCache.invalidate(mediaId)
             Timber.tag("PlayerServiceModern").d("Cleared download URL cache for $mediaId")
         } catch (e: Exception) {
             Timber.tag("PlayerServiceModern").w(e, "Failed to clear download URL cache for $mediaId")
@@ -1267,20 +1267,18 @@ class PlayerServiceModern : MediaLibraryService(),
                             Timber.tag("PlayerServiceModern").w("Cookie expired (401) — marking session as EXPIRED")
                             Toaster.w(R.string.error_session_expired)
                         }
-                        formatCache.remove(currentMediaId)
+                        streamUrlCache.invalidate(currentMediaId)
                         try {
                             cache.removeResource(currentMediaId)
                         } catch (_: Exception) {}
                         val streamClient = playbackDataCache[currentMediaId]?.streamClient ?: "WEB_REMIX"
                         markClientFailed(streamClient, currentMediaId)
-                        // Async refresh cipher config — retry will happen after delay
-                        coroutineScope.launch(PlaybackDispatchers.STREAM_RESOLVER) {
-                            val configChanged = runCatching { CipherDeobfuscator.onStreamRejected() }.getOrNull() ?: false
-                            if (configChanged) {
-                                Timber.tag("PlayerServiceModern").d("Player config changed after stream rejection — restoring WEB_REMIX")
+                        coroutineScope.launch {
+                            if (InnerTubeXPlayer.refreshAfterStreamRejection()) {
                                 clearWebRemixFailures()
                             }
                         }
+                        markWebRemixFailed(currentMediaId)
                     }
 
                     // 416 Range Not Satisfiable — cached data doesn't match stream size
@@ -1298,24 +1296,22 @@ class PlayerServiceModern : MediaLibraryService(),
                     // Remote playback error — treat as expired URL
                     isRemotePlaybackError(error) -> {
                         Timber.tag("PlayerServiceModern").d("Handling remote playback error for $currentMediaId — treating as expired URL")
-                        formatCache.remove(currentMediaId)
+                        streamUrlCache.invalidate(currentMediaId)
                         try { cache.removeResource(currentMediaId) } catch (_: Exception) {}
                         val streamClient = playbackDataCache[currentMediaId]?.streamClient ?: "WEB_REMIX"
                         markClientFailed(streamClient, currentMediaId)
-                        // Async refresh cipher config — retry will happen after delay
-                        coroutineScope.launch(PlaybackDispatchers.STREAM_RESOLVER) {
-                            val configChanged = runCatching { CipherDeobfuscator.onStreamRejected() }.getOrNull() ?: false
-                            if (configChanged) {
-                                Timber.tag("PlayerServiceModern").d("Player config changed after stream rejection — restoring WEB_REMIX")
+                        coroutineScope.launch {
+                            if (InnerTubeXPlayer.refreshAfterStreamRejection()) {
                                 clearWebRemixFailures()
                             }
                         }
+                        markWebRemixFailed(currentMediaId)
                     }
 
                     // Audio renderer error — corrupted audio track state
                     isAudioRendererError(error) -> {
                         Timber.tag("PlayerServiceModern").d("Handling audio renderer error for $currentMediaId — extra delay")
-                        formatCache.remove(currentMediaId)
+                        streamUrlCache.invalidate(currentMediaId)
                         try { cache.removeResource(currentMediaId) } catch (_: Exception) {}
                     }
 
@@ -1619,7 +1615,7 @@ class PlayerServiceModern : MediaLibraryService(),
                         ?: loadErrorInfo.loadEventInfo.dataSpec.uri.toString().substringAfter("watch?v=", "").takeIf { it.isNotEmpty() }
                 }.getOrNull()
                 if (mediaId != null) {
-                    formatCache.remove(mediaId)
+                    streamUrlCache.invalidate(mediaId)
                 }
 
                 val skipOnError = preferences.getBoolean(skipMediaOnErrorKey, false)

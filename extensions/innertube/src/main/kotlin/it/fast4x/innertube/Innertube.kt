@@ -124,26 +124,102 @@ object Innertube {
     var client = createClient()
         private set
 
+    private var innerTubeX = com.metrolist.innertubex.InnerTube(client)
+    private var transportGeneration = 0L
+
     var proxy: Proxy? = null
         set(value) {
+            if (field == value) return
             field = value
-            client.close()
-            client = createClient()
+            recreateTransport()
         }
 
-    var locale = YouTubeLocale(
-        gl = Locale.getDefault().country,
-        hl = Locale.getDefault().toLanguageTag()
-    )
-    var visitorData: String = YoutubePreferences.preference?.visitordata.takeIf { !it.isNullOrBlank() } ?: DEFAULT_VISITOR_DATA
-    var dataSyncId: String? = YoutubePreferences.preference?.dataSyncId
+    @Synchronized
+    private fun recreateTransport() {
+        val session = innerTubeX.sessionSnapshot()
+        innerTubeX.close()
+        client.close()
+        client = createClient()
+        innerTubeX = com.metrolist.innertubex.InnerTube(client).also { replacement ->
+            replacement.locale = session.locale
+            replacement.replaceSession(
+                cookie = session.cookie,
+                visitorData = session.visitorData,
+                dataSyncId = session.dataSyncId,
+                authUser = session.authUser,
+                useLoginForBrowse = session.useLoginForBrowse,
+            )
+        }
+        transportGeneration++
+    }
 
-    var cookieMap = emptyMap<String, String>()
-    var cookie: String? = YoutubePreferences.preference?.cookie
+    class ExtractionTransport internal constructor(
+        val innerTube: com.metrolist.innertubex.InnerTube,
+        val httpClient: HttpClient,
+        val generation: Long,
+    )
+
+    @Synchronized
+    fun extractionTransport(): ExtractionTransport =
+        ExtractionTransport(
+            innerTube = innerTubeX,
+            httpClient = client,
+            generation = transportGeneration,
+        )
+
+    var locale: YouTubeLocale
+        get() = YouTubeLocale(
+            gl = innerTubeX.locale.gl,
+            hl = innerTubeX.locale.hl
+        )
         set(value) {
-            field = value
+            innerTubeX.locale = com.metrolist.innertubex.models.YouTubeLocale(
+                gl = value.gl,
+                hl = value.hl
+            )
+        }
+
+    var visitorData: String?
+        get() = innerTubeX.visitorData
+        set(value) { innerTubeX.visitorData = value }
+
+    var dataSyncId: String?
+        get() = innerTubeX.dataSyncId
+        set(value) { innerTubeX.dataSyncId = value }
+
+    var cookie: String?
+        get() = innerTubeX.cookie
+        set(value) {
+            innerTubeX.cookie = value
             cookieMap = if (value == null) emptyMap() else parseCookieString(value)
         }
+
+    var cookieMap = emptyMap<String, String>()
+
+    init {
+        // Initialize session from preferences in one batch to avoid multiple session changes
+        YoutubePreferences.preference?.let { prefs ->
+            val cookieValue = prefs.cookie
+            val visitorDataValue = prefs.visitordata.takeIf { !it.isNullOrBlank() }
+            val dataSyncIdValue = prefs.dataSyncId
+            
+            // Set cookieMap locally
+            cookieMap = if (cookieValue == null) emptyMap() else parseCookieString(cookieValue)
+            
+            // Set all session properties at once via replaceSession
+            innerTubeX.replaceSession(
+                cookie = cookieValue,
+                visitorData = visitorDataValue,
+                dataSyncId = dataSyncIdValue,
+                authUser = "",
+                useLoginForBrowse = false,
+            )
+        }
+        innerTubeX.locale = YouTubeLocale(
+            gl = Locale.getDefault().country,
+            hl = Locale.getDefault().toLanguageTag()
+        ).let { com.metrolist.innertubex.models.YouTubeLocale(gl = it.gl, hl = it.hl) }
+    }
 
     private var poTokenChallengeRequestKey = "O43z0dpjhgX20SCx4KAo"
 
@@ -170,17 +246,22 @@ object Innertube {
         header("X-Goog-FieldMask", value)
 
     suspend fun ensureVisitorData() {
-        if (visitorData == DEFAULT_VISITOR_DATA || visitorData.isBlank()) {
+        if (visitorData.isNullOrBlank() || visitorData == DEFAULT_VISITOR_DATA) {
             runCatching {
-                val response = io.ktor.client.HttpClient(io.ktor.client.engine.okhttp.OkHttp).get("https://music.youtube.com/sw.js_data")
-                val content = response.bodyAsText().substring(5)
-                val json = Json.parseToJsonElement(content)
-                val newVisitorData = json.jsonArray[0].jsonArray[2].jsonArray.first {
-                    (it as? JsonPrimitive)?.contentOrNull?.let { candidate ->
-                        candidate.startsWith("Cg")
-                    } ?: false
-                }.jsonPrimitive.content
-                visitorData = newVisitorData
+                val disposableClient = io.ktor.client.HttpClient(io.ktor.client.engine.okhttp.OkHttp)
+                try {
+                    val response = disposableClient.get("https://music.youtube.com/sw.js_data")
+                    val content = response.bodyAsText().substring(5)
+                    val json = Json.parseToJsonElement(content)
+                    val newVisitorData = json.jsonArray[0].jsonArray[2].jsonArray.first {
+                        (it as? JsonPrimitive)?.contentOrNull?.let { candidate ->
+                            candidate.startsWith("Cg")
+                        } ?: false
+                    }.jsonPrimitive.content
+                    visitorData = newVisitorData
+                } finally {
+                    disposableClient.close()
+                }
             }.onFailure {
                 println("Innertube: ensureVisitorData error: ${it.stackTraceToString()}")
             }
@@ -563,8 +644,9 @@ object Innertube {
                     append("X-Youtube-Bootstrap-Logged-In", "true")
                 }
 
-                if (!visitorData.isNullOrBlank()) {
-                    append("X-Goog-Visitor-Id", visitorData)
+                val currentVisitorData = visitorData
+                if (!currentVisitorData.isNullOrBlank()) {
+                    append("X-Goog-Visitor-Id", currentVisitorData)
                 }
 
                 clientType.api_key?.let {
@@ -940,10 +1022,6 @@ object Innertube {
                     PlayerBody.ServiceIntegrityDimensions(poToken)
                 } else null,
             )
-            
-            val jsonString = kotlinx.serialization.json.Json { encodeDefaults = true; explicitNulls = false }.encodeToString(PlayerBody.serializer(), bodyObj)
-            println("NZIK_DEBUG_PAYLOAD TargetHost: $targetHost, Client: ${context.client.clientName}")
-            println("NZIK_DEBUG_PAYLOAD Body: $jsonString")
 
             setBody(bodyObj)
         }

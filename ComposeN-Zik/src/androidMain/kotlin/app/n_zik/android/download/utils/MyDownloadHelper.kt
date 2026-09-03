@@ -60,6 +60,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import app.it.fast4x.rimusic.utils.ExternalUris
 import app.n_zik.android.core.coil.ImageCacheFactory
 
@@ -71,7 +73,6 @@ import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.n_zik.android.R
 import kotlinx.coroutines.cancel
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
-import java.util.Collections
 
 @UnstableApi
 object MyDownloadHelper {
@@ -81,6 +82,9 @@ object MyDownloadHelper {
                 SupervisorJob() +
                 CoroutineName("MyDownloadService-Executor-Scope")
     )
+
+    // Semaphore to limit concurrent download preparation (avoids overwhelming the API)
+    private val downloadPreparationSemaphore = Semaphore(3)
 
     // While the class is not a singleton (lifecycle), there should only be one download state at a time
 //    private val mutableDownloadState = MutableStateFlow(false)
@@ -98,14 +102,26 @@ object MyDownloadHelper {
     private lateinit var downloadManager: DownloadManager
     lateinit var audioQualityFormat: AudioQualityFormat
 
-    // URL cache with LRU eviction (max 500 entries): videoId -> (url, expiryTimestamp)
-    internal val songUrlCache = Collections.synchronizedMap(
-        object : LinkedHashMap<String, Pair<String, Long>>(0, 0.75f, true) {
-            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Pair<String, Long>>): Boolean {
-                return size > 500
+    // URL cache with LRU eviction (max 500 entries): uses StreamUrlCache for headers/client tracking
+    internal val songUrlCache = app.n_zik.android.playback.services.StreamUrlCache()
+
+    /**
+     * Checks if a download failure was caused by an expired/forbidden stream URL (403/410/416).
+     * Used to trigger URL cache invalidation and retry.
+     */
+    fun isExpiredStreamError(exception: Exception?): Boolean {
+        if (exception == null) return false
+        // Walk the cause chain looking for HTTP response code errors
+        var current: Throwable? = exception
+        while (current != null) {
+            if (current is androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException) {
+                val code = current.responseCode
+                if (code == 403 || code == 410 || code == 416) return true
             }
+            current = current.cause
         }
-    )
+        return false
+    }
 
 
     var downloads = MutableStateFlow<Map<String, Download>>(emptyMap())
@@ -296,6 +312,24 @@ object MyDownloadHelper {
                             finalException: Exception?
                         ) = run {
                             syncDownloads(download)
+
+                            // Handle expired stream errors: invalidate URL cache and retry
+                            if (download.state == Download.STATE_FAILED && isExpiredStreamError(finalException)) {
+                                Timber.tag("MyDownloadHelper").w("Download failed due to expired stream for ${download.request.id}, invalidating caches")
+                                songUrlCache.invalidate(download.request.id)
+                                app.n_zik.android.playback.services.streamUrlCache.invalidate(download.request.id)
+                            }
+
+                            // Remove player cache after successful download to avoid stale cached streams
+                            if (download.state == Download.STATE_COMPLETED) {
+                                try {
+                                    val playerCache = app.n_zik.android.playback.services.streamUrlCache
+                                    playerCache.invalidate(download.request.id)
+                                    Timber.tag("MyDownloadHelper").d("Invalidated player URL cache for completed download: ${download.request.id}")
+                                } catch (e: Exception) {
+                                    Timber.tag("MyDownloadHelper").w(e, "Failed to invalidate player cache for ${download.request.id}")
+                                }
+                            }
                         }
 
                         override fun onDownloadRemoved(
@@ -394,33 +428,34 @@ object MyDownloadHelper {
         }
 
         coroutineScope.launch {
-            val artistTextRaw = mediaItem.artistTextOrDb()
-            val artistText = if (artistTextRaw == "null" || artistTextRaw.isBlank()) context.getString(R.string.unknown_artist) else artistTextRaw
-            val titleTextRaw = mediaItem.mediaMetadata.title?.toString() ?: ""
-            val titleText = if (titleTextRaw == "null" || titleTextRaw.isBlank()) context.getString(R.string.unknown_title) else titleTextRaw
-            val notificationTitle = "$artistText - $titleText"
+            downloadPreparationSemaphore.withPermit {
+                val artistTextRaw = mediaItem.artistTextOrDb()
+                val artistText = if (artistTextRaw == "null" || artistTextRaw.isBlank()) context.getString(R.string.unknown_artist) else artistTextRaw
+                val titleTextRaw = mediaItem.mediaMetadata.title?.toString() ?: ""
+                val titleText = if (titleTextRaw == "null" || titleTextRaw.isBlank()) context.getString(R.string.unknown_title) else titleTextRaw
+                val notificationTitle = "$artistText - $titleText"
 
-            val downloadRequest = DownloadRequest
-                .Builder(
-                    /* id      = */ mediaItem.mediaId,
-                    /* uri     = */ mediaItem.requestMetadata.mediaUri
-                        ?: Uri.parse(ExternalUris.youtubeMusic(mediaItem.mediaId))
-                )
-                .setCustomCacheKey(mediaItem.mediaId)
-                .setData(notificationTitle.encodeToByteArray()) // Title in notification
-                .build()
+                val downloadRequest = DownloadRequest
+                    .Builder(
+                        /* id      = */ mediaItem.mediaId,
+                        /* uri     = */ mediaItem.requestMetadata.mediaUri
+                            ?: Uri.parse(ExternalUris.youtubeMusic(mediaItem.mediaId))
+                    )
+                    .setCustomCacheKey(mediaItem.mediaId)
+                    .setData(notificationTitle.encodeToByteArray()) // Title in notification
+                    .build()
 
-            val imageUrl = mediaItem.mediaMetadata.artworkUri.thumbnail(1000)
+                val imageUrl = mediaItem.mediaMetadata.artworkUri.thumbnail(1000)
 
-            context.download<MyDownloadService>(downloadRequest).exceptionOrNull()?.let {
-                if (it is CancellationException) throw it
+                context.download<MyDownloadService>(downloadRequest).exceptionOrNull()?.let {
+                    if (it is CancellationException) throw it
 
-                Timber.tag("MyDownloadHelper").e("scheduleDownload exception ${it.stackTraceToString()}")
-                Timber.tag("MyDownloadHelper").e("scheduleDownload exception ${it.stackTraceToString()}")
-                Toaster.e(R.string.error_playback_failed)
+                    Timber.tag("MyDownloadHelper").e("scheduleDownload exception ${it.stackTraceToString()}")
+                    Toaster.e(R.string.error_playback_failed)
+                }
+                downloadSyncedLyrics( mediaItem.asSong )
+                ImageCacheFactory.preloadImage(mediaItem.mediaMetadata.artworkUri.toString())
             }
-            downloadSyncedLyrics( mediaItem.asSong )
-            ImageCacheFactory.preloadImage(mediaItem.mediaMetadata.artworkUri.toString())
         }
 
 

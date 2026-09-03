@@ -83,6 +83,7 @@ composeReorderable = "3.1.0"
 freedroidwarn = "V1.13"
 work = "2.11.2"
 carapp = "1.4.0"
+innertubex = "v0.5.2"
 
 [libraries]
 # Kotlinx
@@ -162,6 +163,7 @@ koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin" }
 koin-core = { module = "io.insert-koin:koin-core" }
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 extractor = { group = "com.github.MetrolistGroup", name = "MetrolistExtractor", version = "f0a00f5" }
+innertubex = { module = "com.github.MetrolistGroup.innertubex:innertubex", version.ref = "innertubex" }
 nanojson = { group = "com.github.TeamNewPipe", name = "nanojson", version = "1d9e1aea9049fc9f85e68b43ba39fe7be1c1f751" }
 
 # Annotations

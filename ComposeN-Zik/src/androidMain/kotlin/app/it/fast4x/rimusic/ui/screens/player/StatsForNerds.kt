@@ -59,8 +59,6 @@ import app.it.fast4x.rimusic.enums.PlayerType
 import app.it.fast4x.rimusic.models.Format
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.playback.services.playbackDataCache
-import app.n_zik.android.core.security.cipher.CipherDeobfuscator
-import app.n_zik.android.core.security.cipher.PlayerDatesStore
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.it.fast4x.rimusic.ui.styling.onOverlay
@@ -299,13 +297,6 @@ fun StatsForNerds(
                         style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                     )
                     BasicText(
-                        text = stringResource(R.string.channels),
-                        maxLines = 1,
-                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
-                        overflow = TextOverflow.Visible,
-                        style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
-                    )
-                    BasicText(
                         text = stringResource(R.string.stream_client),
                         maxLines = 1,
                         modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
@@ -313,20 +304,6 @@ fun StatsForNerds(
                         style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                     )
                     if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
-                        BasicText(
-                            text = stringResource(R.string.player_hash),
-                            maxLines = 1,
-                            modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
-                            overflow = TextOverflow.Visible,
-                            style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
-                        )
-                        BasicText(
-                            text = stringResource(R.string.cipher_since),
-                            maxLines = 1,
-                            modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
-                            overflow = TextOverflow.Visible,
-                            style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
-                        )
                         BasicText(
                             text = stringResource(R.string.volume),
                             maxLines = 1,
@@ -448,19 +425,6 @@ fun StatsForNerds(
                         style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                     )
                     BasicText(
-                        text = format?.audioChannels?.let {
-                            when (it) {
-                                1 -> "Mono"
-                                2 -> "Stereo"
-                                else -> "$it ch"
-                            }
-                        } ?: stringResource(R.string.audio_quality_format_unknown),
-                        maxLines = 1,
-                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
-                        overflow = TextOverflow.Visible,
-                        style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
-                    )
-                    BasicText(
                         text = if (downloadCachedBytes != 0L) {
                             stringResource(R.string.downloaded)
                         } else if (cachedBytes > 0) {
@@ -474,20 +438,6 @@ fun StatsForNerds(
                         style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
                     )
                     if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
-                        BasicText(
-                            text = CipherDeobfuscator.lastUsedPlayerHash ?: stringResource(R.string.audio_quality_format_unknown),
-                            maxLines = 1,
-                            modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
-                            overflow = TextOverflow.Visible,
-                            style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
-                        )
-                        BasicText(
-                            text = CipherDeobfuscator.lastUsedPlayerHash?.let { PlayerDatesStore.get(it) } ?: stringResource(R.string.audio_quality_format_unknown),
-                            maxLines = 1,
-                            modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
-                            overflow = TextOverflow.Visible,
-                            style = typography().xs.medium.color(colorPalette().onOverlay).copy(textAlign = TextAlign.Start)
-                        )
                         BasicText(
                             text = "${(binder.player.volume * 100).roundToInt()}%",
                             maxLines = 1,
@@ -707,24 +657,6 @@ fun StatsForNerds(
                                         style = typography().xs.medium.color(colorPalette().text)
                                     )
                                }
-                               Box(
-                                   contentAlignment = Alignment.Center,
-                                   modifier = modifier.weight(1f)
-                               ) {
-                                    BasicText(
-                                        text = stringResource(R.string.channels) + " : " + (format?.audioChannels?.let {
-                                            when (it) {
-                                                1 -> "Mono"
-                                                2 -> "Stereo"
-                                                else -> "$it ch"
-                                            }
-                                        } ?: stringResource(R.string.audio_quality_format_unknown)),
-                                        maxLines = 1,
-                                        modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
-                                        overflow = TextOverflow.Visible,
-                                        style = typography().xs.medium.color(colorPalette().text)
-                                    )
-                               }
                                if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
                                Box(
                                    contentAlignment = Alignment.Center,
@@ -738,84 +670,60 @@ fun StatsForNerds(
                                         style = typography().xs.medium.color(colorPalette().text)
                                     )
                                }
-                               }
-                           // Row 4: Stream Client
-                           Row(
-                               verticalAlignment = Alignment.CenterVertically,
-                               horizontalArrangement = Arrangement.Center,
-                               modifier = modifier
-                                   .background(colorPalette().background2.copy(alpha = if ((transparentBackgroundActionBarPlayer) || ((playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient) || (playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient)) && blackgradient) 0.0f else 0.7f))
-                                   .padding(vertical = 5.dp)
-                                   .fillMaxWidth(if (isLandscape) 0.8f else 1f)
-                           ) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = modifier.weight(1f)
-                                ) {
-                                     BasicText(
-                                         text = stringResource(R.string.stream_client) + " : " + if (downloadCachedBytes != 0L) {
-                                             stringResource(R.string.downloaded)
-                                         } else if (cachedBytes > 0) {
-                                             stringResource(R.string.cached) + " : " + (playbackData?.streamClient ?: stringResource(R.string.audio_quality_format_unknown))
-                                         } else {
-                                             playbackData?.streamClient ?: stringResource(R.string.audio_quality_format_unknown)
-                                         },
-                                         maxLines = 1,
-                                         modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
-                                         overflow = TextOverflow.Visible,
-                                         style = typography().xs.medium.color(colorPalette().text)
-                                     )
                                 }
-                           }
-                           // Row 5: Player Hash + Cipher Since + Volume
-                           if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
-                           Row(
-                               verticalAlignment = Alignment.CenterVertically,
-                               horizontalArrangement = Arrangement.Center,
-                               modifier = modifier
-                                   .background(colorPalette().background2.copy(alpha = if ((transparentBackgroundActionBarPlayer) || ((playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient) || (playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient)) && blackgradient) 0.0f else 0.7f))
-                                   .padding(vertical = 5.dp)
-                                   .fillMaxWidth(if (isLandscape) 0.8f else 1f)
-                           ) {
-                               Box(
-                                   contentAlignment = Alignment.Center,
-                                   modifier = modifier.weight(1f)
-                               ) {
-                                    BasicText(
-                                        text = stringResource(R.string.player_hash) + " : " + (CipherDeobfuscator.lastUsedPlayerHash ?: stringResource(R.string.audio_quality_format_unknown)),
-                                        maxLines = 1,
-                                        modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
-                                        overflow = TextOverflow.Visible,
-                                        style = typography().xs.medium.color(colorPalette().text)
-                                    )
-                               }
-                               Box(
-                                   contentAlignment = Alignment.Center,
-                                   modifier = modifier.weight(1f)
-                               ) {
-                                    BasicText(
-                                        text = stringResource(R.string.cipher_since) + " : " + (CipherDeobfuscator.lastUsedPlayerHash?.let { PlayerDatesStore.get(it) } ?: stringResource(R.string.audio_quality_format_unknown)),
-                                        maxLines = 1,
-                                        modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
-                                        overflow = TextOverflow.Visible,
-                                        style = typography().xs.medium.color(colorPalette().text)
-                                    )
-                               }
-                               Box(
-                                   contentAlignment = Alignment.Center,
-                                   modifier = modifier.weight(1f)
-                               ) {
-                                    BasicText(
-                                        text = stringResource(R.string.volume) + " : " + "${(binder.player.volume * 100).roundToInt()}%",
-                                        maxLines = 1,
-                                        modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
-                                        overflow = TextOverflow.Visible,
-                                        style = typography().xs.medium.color(colorPalette().text)
-                                    )
-                               }
-                           }
                        }
-                      }
+                       // Row 4: Stream Client
+                       Row(
+                           verticalAlignment = Alignment.CenterVertically,
+                           horizontalArrangement = Arrangement.Center,
+                           modifier = modifier
+                               .background(colorPalette().background2.copy(alpha = if ((transparentBackgroundActionBarPlayer) || ((playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient) || (playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient)) && blackgradient) 0.0f else 0.7f))
+                               .padding(vertical = 5.dp)
+                               .fillMaxWidth(if (isLandscape) 0.8f else 1f)
+                       ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = modifier.weight(1f)
+                            ) {
+                                 BasicText(
+                                     text = stringResource(R.string.stream_client) + " : " + if (downloadCachedBytes != 0L) {
+                                         stringResource(R.string.downloaded)
+                                     } else if (cachedBytes > 0) {
+                                         stringResource(R.string.cached) + " : " + (playbackData?.streamClient ?: stringResource(R.string.audio_quality_format_unknown))
+                                     } else {
+                                         playbackData?.streamClient ?: stringResource(R.string.audio_quality_format_unknown)
+                                     },
+                                     maxLines = 1,
+                                     modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
+                                     overflow = TextOverflow.Visible,
+                                     style = typography().xs.medium.color(colorPalette().text)
+                                 )
+                            }
+                       }
+                       // Row 5: Volume only (Player Hash and Cipher Since removed — InnerTubeX handles cipher internally)
+                       if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = modifier
+                                .background(colorPalette().background2.copy(alpha = if ((transparentBackgroundActionBarPlayer) || ((playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient) || (playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient)) && blackgradient) 0.0f else 0.7f))
+                                .padding(vertical = 5.dp)
+                                .fillMaxWidth(if (isLandscape) 0.8f else 1f)
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = modifier.weight(1f)
+                            ) {
+                                 BasicText(
+                                     text = stringResource(R.string.volume) + " : " + "${(binder.player.volume * 100).roundToInt()}%",
+                                     maxLines = 1,
+                                     modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
+                                     overflow = TextOverflow.Visible,
+                                     style = typography().xs.medium.color(colorPalette().text)
+                                 )
+                             }
+                        }
+                    }
                   }
                 }
             }

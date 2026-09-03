@@ -124,7 +124,6 @@ import app.it.fast4x.compose.persist.PersistMap
 import app.it.fast4x.compose.persist.PersistMapOwner
 import app.it.fast4x.compose.persist.LocalPersistMap
 import it.fast4x.innertube.utils.LocalePreferences
-import it.fast4x.innertube.utils.NewPipeDownloaderImpl
 import it.fast4x.innertube.utils.ProxyPreferenceItem
 import it.fast4x.innertube.utils.ProxyPreferences
 import app.it.fast4x.rimusic.enums.AnimatedGradient
@@ -247,7 +246,6 @@ import me.knighthat.invidious.Invidious
 import app.kreate.android.me.knighthat.utils.Toaster
 import it.fast4x.innertube.Innertube.proxy
 import okhttp3.OkHttpClient
-import org.schabi.newpipe.extractor.NewPipe
 import timber.log.Timber
 import java.net.Proxy
 import java.util.Locale

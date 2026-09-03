@@ -41,23 +41,19 @@ import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.network.client.Store
-import app.n_zik.android.core.security.cipher.CipherDeobfuscator
-import app.n_zik.android.core.security.cipher.PlayerConfigStore
-import app.n_zik.android.core.security.cipher.PlayerDatesStore
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.playback.services.InnerTubeXPlayer
 import it.fast4x.innertube.utils.ProxyPreferenceItem
 import it.fast4x.innertube.utils.ProxyPreferences
 import java.net.Proxy
 import app.n_zik.android.playback.services.prewarmPoToken
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.utils.NewPipeDownloaderImpl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import org.schabi.newpipe.extractor.NewPipe
 
 class MainApplication : Application(), SingletonImageLoader.Factory {
 
@@ -65,29 +61,13 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         super.onCreate()
         Dependencies.init(this)
         migrateCredentialsToEncrypted()
-        CipherDeobfuscator.initialize(this)
-        PlayerConfigStore.initialize(this)
-        PlayerConfigStore.scheduleStartupRefresh()
-        PlayerDatesStore.initialize(this)
+        InnerTubeXPlayer.initialize(this)
 
-        // Prewarm cipher and PoToken in background to reduce first-play latency
-        // Matches Metrolist's approach: staggered delays + wait for visitorData
+        // Prewarm InnerTubeX in background to reduce first-play latency
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-            // Warm cipher WebView after 1.5s (no session needed)
             kotlinx.coroutines.delay(1500)
-            runCatching { CipherDeobfuscator.prewarm() }
-                .onFailure { Timber.tag("MainApplication").w(it, "Cipher prewarm skipped") }
-        }
-        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-            // Warm PoToken after 2.5s, but wait for visitorData first (max 12s)
-            kotlinx.coroutines.delay(2500)
-            var waitedMs = 0
-            while (Store.getIosVisitorData().isNullOrBlank() && waitedMs < 12_000) {
-                kotlinx.coroutines.delay(500)
-                waitedMs += 500
-            }
-            runCatching { prewarmPoToken() }
-                .onFailure { Timber.tag("MainApplication").w(it, "PoToken prewarm skipped") }
+            runCatching { InnerTubeXPlayer.prewarm() }
+                .onFailure { Timber.tag("MainApplication").w(it, "InnerTubeX prewarm skipped") }
         }
 
         val oldPolicy = StrictMode.allowThreadDiskReads()
@@ -139,13 +119,6 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 cookieStatus = CookieStatus.NOT_LOGGED_IN
             }
 
-            runCatching {
-                NewPipe.init(
-                    NewPipeDownloaderImpl {
-                        NetworkClientFactory.getClient()
-                    }
-                )
-            }
         } finally {
             StrictMode.setThreadPolicy(oldPolicy)
         }
