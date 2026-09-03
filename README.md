@@ -159,9 +159,6 @@ Join the N-Zik Discord:
 - ⚙️ **Settings & Database Auto-Backup** – Save, restore, and automatically back up your complete app configuration and database with customizable intervals, retention limits, and optional YouTube/Discord credential inclusion.
 - 📡 **Offline First** – Enjoy your music library even without an internet connection.
 - ▶️ **YouTube Integration (Early Access)** – Recommendations and profile-related content are already synchronized from your YouTube account. Full synchronization is currently in development.
-
-### ⚡ Power User Features
-
 - 🔄 **Auto-Resume on Device Connect** – Automatically resume playback when Bluetooth headphones or speakers connect.
 - 💾 **Persistent Queue** – Your queue is saved and restored across app sessions.
 - 🔀 **Auto-fill Queue** – Automatically adds more songs when the queue is nearly empty.
@@ -169,7 +166,7 @@ Join the N-Zik Discord:
 - 🔇 **Hidden Songs** – Hide or unhide songs from your library view.
 - 👨‍👩‍👧‍👦 **Parental Control** – Block explicit content based on your settings.
 - 🖼️ **Wallpaper from Album Art** – Set your device wallpaper directly from the currently playing track's cover art.
-- 🔗 **Invidious & Piped Integration** – Use alternative YouTube frontends for streaming.
+- 🔗 **Invidious Integration** – Use an alternative YouTube frontend for streaming.
 - 🌐 **Proxy Support** – Configurable proxy for YouTube API requests.
 - 📶 **Network Quality Adaptation** – Adaptive streaming based on your connection quality.
 - 📋 **Copy Logs** – Copy app logs to clipboard for easy debugging and reporting.
