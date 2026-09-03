@@ -175,7 +175,7 @@ fun VoiceSearchOverlay(
 }
 
 @Composable
-private fun FmWaveformVisualizer(
+fun FmWaveformVisualizer(
     isSpeaking: Boolean,
     modifier: Modifier = Modifier
 ) {
