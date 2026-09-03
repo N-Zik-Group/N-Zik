@@ -114,6 +114,7 @@ Join the N-Zik Discord:
 - 💾 **Smart Offline Caching** – Automatically cache songs for offline playback with customizable cache limits.
 - 📥 **Downloads** – Download individual tracks or entire playlists for permanent offline access.
 - ▶️ **Background Playback** – Keep your music playing while using other apps.
+- 🎵 **NZik Radio** – Algorithmic radio mode that auto-queues related songs based on the current track.
 - 📊 **Listening Statistics** – Track your habits, favorite artists, and playback trends.
 - ⬇️ **OTA Updates** – Receive automatic in-app updates without needing to reinstall manually.
 - 🌈 **Audio Visualizer** – Enjoy real-time visual effects synchronized with your music.
@@ -131,12 +132,15 @@ Join the N-Zik Discord:
 
 - 📰 **News Feed** – Explore moods, genres, releases, and albums from your favorite artists.
 - 🔄 **Playlist Import & Export** – Easily back up, share, and restore playlists, you can import from Riplay, Spotify ([Exportify](https://exportify.net/)), Youtube Music and N-Zik
-- ✍️ **Advanced Lyrics Support** – Fetch, display word by word, sync and unsync lyrics with smart fallback mechanisms, edit, and translate them.
+- ✍️ **Advanced Lyrics Support** – Fetch, display word by word, sync and unsync lyrics with smart fallback mechanisms, edit, and translate them in real-time via Google Translate with source language detection.
 - 🎭 **Custom Themes** – Personalize the app with multiple theme options.
 - ⏲️ **Sleep Timer** – Automatically stop playback after a configurable duration.
-- 🎚️ **Advanced Audio Controls** – Adjust volume, playback speed, pitch, normalization, silence skipping, crossfade, volume boost and silence skipping.
+- 🎚️ **Advanced Audio Controls** – Adjust volume, playback speed, pitch, normalization, silence skipping, crossfade, volume boost, bass boost, and reverb.
+- 🔍 **Song Recognition** – Identify songs playing around you via audio fingerprinting (Shazam-like).
+- 🎤 **Voice Search** – Search for music using your voice with animated overlay.
+- 📱 **On-Device Music** – Play local music files stored directly on your device.
 - 📺 **Wide Platform Support** – Compatible with Android Auto, Android Automotive, Android TV, and YouTube video playback.
-- 🪟 **Widgets** – New widgets for your home screen.
+- 🪟 **Widgets** – New widgets for your home screen (Compact, Turntable, and Playlist).
 
 <p align="left">
   <!-- Compact Widgets -->
@@ -155,6 +159,20 @@ Join the N-Zik Discord:
 - ⚙️ **Settings & Database Auto-Backup** – Save, restore, and automatically back up your complete app configuration and database with customizable intervals, retention limits, and optional YouTube/Discord credential inclusion.
 - 📡 **Offline First** – Enjoy your music library even without an internet connection.
 - ▶️ **YouTube Integration (Early Access)** – Recommendations and profile-related content are already synchronized from your YouTube account. Full synchronization is currently in development.
+
+### ⚡ Power User Features
+
+- 🔄 **Auto-Resume on Device Connect** – Automatically resume playback when Bluetooth headphones or speakers connect.
+- 💾 **Persistent Queue** – Your queue is saved and restored across app sessions.
+- 🔀 **Auto-fill Queue** – Automatically adds more songs when the queue is nearly empty.
+- 🗑️ **Smart Trash** – Intelligent cleanup of songs based on listen count thresholds.
+- 🔇 **Hidden Songs** – Hide or unhide songs from your library view.
+- 👨‍👩‍👧‍👦 **Parental Control** – Block explicit content based on your settings.
+- 🖼️ **Wallpaper from Album Art** – Set your device wallpaper directly from the currently playing track's cover art.
+- 🔗 **Invidious & Piped Integration** – Use alternative YouTube frontends for streaming.
+- 🌐 **Proxy Support** – Configurable proxy for YouTube API requests.
+- 📶 **Network Quality Adaptation** – Adaptive streaming based on your connection quality.
+- 📋 **Copy Logs** – Copy app logs to clipboard for easy debugging and reporting.
 
 # 📷 Screenshots & Videos
 
