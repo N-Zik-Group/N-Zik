@@ -1,3 +1,25 @@
+feat(innertubex): add proxy auth, region override, and login-for-browse settings
+  - `Innertube.kt`: Added `proxyAuth` property — enables OkHttp `proxyAuthenticator` for authenticated proxies
+  - `Innertube.kt`: Added `regionOverrideActive` + `regionOverride` properties — allows overriding country code for API requests
+  - `Innertube.kt`: Added `useLoginForBrowse` property — enables login state for browse requests (disabled by default)
+  - `Innertube.kt`: Added `applyLocale()` — checks `regionOverrideActive` before falling back to `Locale.getDefault().country`
+  - `Innertube.kt`: Updated `recreateTransport()` to preserve `regionOverrideActive` across proxy changes
+  - `Preferences.kt`: Added `proxyUsernameKey`, `proxyPasswordKey`, `regionOverrideKey`, `useLoginForBrowseKey`
+  - `OtherSettings.kt`: Added Proxy Username, Proxy Password, and Region Override UI in the Proxy section
+  - `AccountsSettings.kt`: Added "Login for Browse" toggle switch in the YouTube section (disabled by default)
+  - `MainApplication.kt`: Added startup wiring for proxy auth, region override, and login-for-browse preferences
+  - Build verified: `./gradlew :ComposeN-Zik:assembleDebug` BUILD SUCCESSFUL
+
+feat(innertubex): complete InnerTubeX migration verification — Metrolist comparison
+  - Full comparison of InnerTubeXPlayer, StreamResolver, StreamUrlCache, DownloadUtil, Innertube facade
+  - InnerTubeXPlayer: 85% identical, core extraction logic correct
+  - StreamUrlCache: Identical + N-Zik adds `clear()` method
+  - StreamResolver: N-Zik-only, InnerTubeX integration correct
+  - Download pipeline: N-Zik more feature-rich, core logic equivalent
+  - Innertube facade: Different architecture (hybrid vs pure facade) but InnerTubeX integration points correct
+  - All cross-component references verified correct
+  - Streaming confirmed working via device logs (VISIONOS client, no 403 errors)
+
 fix(player-ui): fix StatsForNerds layout and remove unused fields
   - `StatsForNerds.kt`: Removed Artist + Title row (Row 1.5) — data from InnerTubeX videoDetails, not useful for debug
   - `StatsForNerds.kt`: Removed audio channels display — always shows "Unknown" since InnerTubeX doesn't provide this field

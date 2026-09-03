@@ -110,6 +110,22 @@ object Innertube {
         if (p != null) {
             engine {
                 proxy = p
+                // Add proxy authentication if credentials are provided
+                proxyAuth?.let { auth ->
+                    if (auth.isNotBlank()) {
+                        config {
+                            proxyAuthenticator(okhttp3.Authenticator { _, response ->
+                                val credential = okhttp3.Credentials.basic(
+                                    auth.substringBefore(":"),
+                                    auth.substringAfter(":")
+                                )
+                                response.request.newBuilder()
+                                    .header("Proxy-Authorization", credential)
+                                    .build()
+                            })
+                        }
+                    }
+                }
             }
         }
 
@@ -134,6 +150,36 @@ object Innertube {
             recreateTransport()
         }
 
+    var proxyAuth: String? = null
+        set(value) {
+            if (field == value) return
+            field = value
+            if (proxy != null) recreateTransport()
+        }
+
+    var regionOverrideActive: Boolean = false
+        set(value) {
+            if (field == value) return
+            field = value
+            innerTubeX.regionOverrideActive = value
+            // Re-apply locale with override if active
+            if (value) applyLocale()
+        }
+
+    var regionOverride: String = ""
+        set(value) {
+            if (field == value) return
+            field = value
+            if (regionOverrideActive) applyLocale()
+        }
+
+    var useLoginForBrowse: Boolean = false
+        set(value) {
+            if (field == value) return
+            field = value
+            innerTubeX.useLoginForBrowse = value
+        }
+
     @Synchronized
     private fun recreateTransport() {
         val session = innerTubeX.sessionSnapshot()
@@ -149,6 +195,7 @@ object Innertube {
                 authUser = session.authUser,
                 useLoginForBrowse = session.useLoginForBrowse,
             )
+            replacement.regionOverrideActive = session.regionOverrideActive
         }
         transportGeneration++
     }
@@ -219,6 +266,18 @@ object Innertube {
             gl = Locale.getDefault().country,
             hl = Locale.getDefault().toLanguageTag()
         ).let { com.metrolist.innertubex.models.YouTubeLocale(gl = it.gl, hl = it.hl) }
+    }
+
+    private fun applyLocale() {
+        val gl = if (regionOverrideActive && regionOverride.isNotBlank()) {
+            regionOverride.uppercase()
+        } else {
+            Locale.getDefault().country
+        }
+        innerTubeX.locale = com.metrolist.innertubex.models.YouTubeLocale(
+            gl = gl,
+            hl = Locale.getDefault().toLanguageTag()
+        )
     }
 
     private var poTokenChallengeRequestKey = "O43z0dpjhgX20SCx4KAo"

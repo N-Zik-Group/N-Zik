@@ -29,6 +29,10 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.proxyHostnameKey
 import app.it.fast4x.rimusic.utils.proxyModeKey
 import app.it.fast4x.rimusic.utils.proxyPortKey
+import app.it.fast4x.rimusic.utils.proxyUsernameKey
+import app.it.fast4x.rimusic.utils.proxyPasswordKey
+import app.it.fast4x.rimusic.utils.regionOverrideKey
+import app.it.fast4x.rimusic.utils.useLoginForBrowseKey
 import app.it.fast4x.rimusic.utils.useYtLoginOnlyForBrowseKey
 import app.it.fast4x.rimusic.utils.ytAccountChannelHandleKey
 import app.it.fast4x.rimusic.utils.ytAccountEmailKey
@@ -77,10 +81,16 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 val hostName = preferences.getString(proxyHostnameKey, null)
                 val proxyPort = preferences.getInt(proxyPortKey, 8080)
                 val proxyMode = preferences.getEnum(proxyModeKey, Proxy.Type.HTTP)
+                val proxyUsername = preferences.getString(proxyUsernameKey, "")
+                val proxyPassword = preferences.getString(proxyPasswordKey, "")
                 if (isValidIP(hostName)) {
                     hostName?.let { hName ->
                         ProxyPreferences.preference = ProxyPreferenceItem(hName, proxyPort, proxyMode)
                         proxy = ProxyPreferences.preference?.let { pref -> it.fast4x.innertube.utils.getProxy(pref) }
+                        // Set proxy auth if credentials provided
+                        if (!proxyUsername.isNullOrBlank() && !proxyPassword.isNullOrBlank()) {
+                            Innertube.proxyAuth = "$proxyUsername:$proxyPassword"
+                        }
                     }
                 } else {
                     Timber.w("Proxy preference is null or invalid, running without proxy")
@@ -88,6 +98,16 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             } else {
                 Timber.w("Proxy preference is null, running without proxy")
             }
+            // Region override
+            val regionOverride = preferences.getString(regionOverrideKey, "")
+            if (!regionOverride.isNullOrBlank()) {
+                Innertube.regionOverrideActive = true
+                Innertube.regionOverride = regionOverride
+            }
+            // Login for browse
+            val useLoginForBrowse = preferences.getBoolean(useLoginForBrowseKey, false)
+            Innertube.useLoginForBrowse = useLoginForBrowse
+            
             NetworkClientFactory.configure(
                 proxy = proxy,
                 cacheDir = externalCacheDir ?: cacheDir

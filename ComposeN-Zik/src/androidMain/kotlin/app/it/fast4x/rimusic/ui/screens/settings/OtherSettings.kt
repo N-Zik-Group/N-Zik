@@ -65,11 +65,15 @@ import app.it.fast4x.rimusic.utils.disabledStreamClientsKey
 import app.it.fast4x.rimusic.utils.proxyHostnameKey
 import app.it.fast4x.rimusic.utils.proxyModeKey
 import app.it.fast4x.rimusic.utils.proxyPortKey
+import app.it.fast4x.rimusic.utils.proxyUsernameKey
+import app.it.fast4x.rimusic.utils.proxyPasswordKey
+import app.it.fast4x.rimusic.utils.regionOverrideKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.showFoldersOnDeviceKey
 import app.it.fast4x.rimusic.utils.textCopyToClipboard
 import app.kreate.android.me.knighthat.utils.Toaster
+import it.fast4x.innertube.Innertube
 import java.io.File
 import java.net.Proxy
 import androidx.compose.runtime.remember
@@ -136,6 +140,9 @@ fun OtherSettings() {
     var proxyHost by rememberPreference(proxyHostnameKey, "")
     var proxyPort by rememberPreference(proxyPortKey, 1080)
     var proxyMode by rememberPreference(proxyModeKey, Proxy.Type.HTTP)
+    var proxyUsername by rememberPreference(proxyUsernameKey, "")
+    var proxyPassword by rememberPreference(proxyPasswordKey, "")
+    var regionOverride by rememberPreference(regionOverrideKey, "")
 
     var defaultFolder by rememberPreference(defaultFolderKey, "/")
     var isKeepScreenOnEnabled by rememberPreference(isKeepScreenOnEnabledKey, false)
@@ -460,6 +467,76 @@ fun OtherSettings() {
                                     placeholder = stringResource(R.string.proxy_port),
                                     onDismiss = { showProxyPortDialog = false },
                                     onSetValue = { proxyPort = it.toIntOrNull() ?: 1080 }
+                                ).apply {
+                                    showDialog()
+                                    Render()
+                                }
+                            }
+                            // Proxy Username
+                            var showProxyUsernameDialog by remember { mutableStateOf(false) }
+                            if (search.inputValue.isBlank() || "proxy username".contains(search.inputValue, true)) {
+                                OtherSettingsEntry(
+                                    title = "Proxy Username",
+                                    text = if (proxyUsername.isBlank()) "None" else proxyUsername,
+                                    icon = R.drawable.server,
+                                    onClick = { showProxyUsernameDialog = true }
+                                )
+                            }
+                            if (showProxyUsernameDialog) {
+                                SettingsInputDialog(
+                                    title = "Proxy Username",
+                                    initialValue = proxyUsername,
+                                    placeholder = "Username (optional)",
+                                    onDismiss = { showProxyUsernameDialog = false },
+                                    onSetValue = { proxyUsername = it }
+                                ).apply {
+                                    showDialog()
+                                    Render()
+                                }
+                            }
+                            // Proxy Password
+                            var showProxyPasswordDialog by remember { mutableStateOf(false) }
+                            if (search.inputValue.isBlank() || "proxy password".contains(search.inputValue, true)) {
+                                OtherSettingsEntry(
+                                    title = "Proxy Password",
+                                    text = if (proxyPassword.isBlank()) "None" else "••••••",
+                                    icon = R.drawable.server,
+                                    onClick = { showProxyPasswordDialog = true }
+                                )
+                            }
+                            if (showProxyPasswordDialog) {
+                                SettingsInputDialog(
+                                    title = "Proxy Password",
+                                    initialValue = proxyPassword,
+                                    placeholder = "Password (optional)",
+                                    onDismiss = { showProxyPasswordDialog = false },
+                                    onSetValue = { proxyPassword = it }
+                                ).apply {
+                                    showDialog()
+                                    Render()
+                                }
+                            }
+                            // Region Override
+                            var showRegionOverrideDialog by remember { mutableStateOf(false) }
+                            if (search.inputValue.isBlank() || "region override".contains(search.inputValue, true)) {
+                                OtherSettingsEntry(
+                                    title = "Region Override",
+                                    text = if (regionOverride.isBlank()) "Auto (from phone)" else regionOverride,
+                                    icon = R.drawable.server,
+                                    onClick = { showRegionOverrideDialog = true }
+                                )
+                            }
+                            if (showRegionOverrideDialog) {
+                                SettingsInputDialog(
+                                    title = "Region Override",
+                                    initialValue = regionOverride,
+                                    placeholder = "e.g. US, FR, DE (empty = auto)",
+                                    onDismiss = { showRegionOverrideDialog = false },
+                                    onSetValue = { 
+                                        regionOverride = it
+                                        Innertube.regionOverride = it
+                                        Innertube.regionOverrideActive = it.isNotBlank()
+                                    }
                                 ).apply {
                                     showDialog()
                                     Render()

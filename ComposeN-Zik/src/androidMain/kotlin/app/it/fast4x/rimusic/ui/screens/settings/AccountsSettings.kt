@@ -59,9 +59,7 @@ import app.n_zik.android.R
 import io.ktor.http.Url
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.it.fast4x.compose.persist.persistList
-import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.utils.parseCookieString
-
 import app.n_zik.android.appContext
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.colorPalette
@@ -90,6 +88,8 @@ import app.it.fast4x.rimusic.utils.isDiscordBrowsingEnabledKey
 import app.it.fast4x.rimusic.utils.discordAvatarKey
 import app.it.fast4x.rimusic.utils.discordUsernameKey
 import app.it.fast4x.rimusic.utils.isDiscordPresenceEnabledKey
+import app.it.fast4x.rimusic.utils.useLoginForBrowseKey
+import it.fast4x.innertube.Innertube
 
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.quickPicsDiscoverPageKey
@@ -476,6 +476,20 @@ fun AccountsSettings() {
                                         icon = R.drawable.sync
                                     )
                                 }
+                            }
+                            // Login for Browse option
+                            var useLoginForBrowse by rememberPreference(useLoginForBrowseKey, false)
+                            if (search.inputValue.isBlank() || "login for browse".contains(search.inputValue, true)) {
+                                OtherSwitchSettingEntry(
+                                    title = "Login for Browse",
+                                    text = "Use login for browse requests (disabled by default)",
+                                    isChecked = useLoginForBrowse,
+                                    onCheckedChange = { 
+                                        useLoginForBrowse = it
+                                        Innertube.useLoginForBrowse = it
+                                    },
+                                    icon = R.drawable.person
+                                )
                             }
                         }
                     }
