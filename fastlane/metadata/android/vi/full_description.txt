@@ -19,7 +19,7 @@ Cho dù bạn là người nghe nhạc bình thường hay tín đồ âm thanh,
 🎵 <b>Trải nghiệm âm thanh</b>
 - Âm thanh chất lượng cao qua YouTube Music Premium 
 - Lời bài hát đồng bộ với chỉnh sửa & dịch thời gian thực
-- Trình trực quan hóa âm thanh và các điều khiển chuyên nghiệp: tốc độ, cao độ, chuẩn hóa, crossfade, tăng âm lượng
+- Trình trực quan hóa âm thanh và các điều khiển chuyên nghiệp: tốc độ, cao độ, chuẩn hóa, crossfade, tăng âm lượng, nhận diện âm nhạc (tương tự Shazam), tìm kiếm bằng giọng nói, tăng âm trầm, tiếng vang
 
 💾 <b>Ngoại tuyến, Siêu dữ liệu & Quyền riêng tư</b>
 - Lưu bộ nhớ đệm ngoại tuyến thông minh & tải xuống bài hát và danh sách phát
@@ -30,6 +30,7 @@ Cho dù bạn là người nghe nhạc bình thường hay tín đồ âm thanh,
 
 🔗 <b>Tích hợp</b>
 - Đăng nhập YouTube để nhận đề xuất & chuyển đổi âm thanh/video
+- Tích hợp Invidious
 - Discord Rich Presence
 - Nhập/xuất danh sách phát: RiPlay, Spotify, YouTube Music, N-Zik
 
@@ -39,6 +40,16 @@ Cho dù bạn là người nghe nhạc bình thường hay tín đồ âm thanh,
 - Tìm kiếm bằng văn bản & giọng nói
 - Cập nhật OTA từ GitHub
 - Hẹn giờ ngủ & phát nền
+- Tự động tiếp tục khi kết nối Bluetooth
+- Hàng đợi liên tục
+- Tự động điền
+- Thùng rác thông minh
+- Bài hát ẩn
+- Kiểm soát của phụ huynh
+- Hình nền từ ảnh bìa album
+- Tích hợp Invidious
+- Proxy
+- Thích ứng mạng
 
 🛡️ N-Zik mã nguồn mở 100% (FOSS). Các quyền chính: INTERNET, RECORD_AUDIO (chỉ cho trình trực quan hóa), STORAGE (xuất/sao lưu), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

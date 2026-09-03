@@ -19,7 +19,7 @@ Of jy nou 'n toevallige luisteraar of 'n ouditief is, N-Zik gee jou volle beheer
 🎵 <b>Klankervaring</b>
 - Premium kwaliteit via YouTube Music Premium 
 - Gesinkroniseerde lirieke met redigering en intydse vertaling
-- Klankvisualiseerder en pro-kontroles: spoed, toonhoogte, normalisering, oorkruisdoof, volumehulp
+- Klankvisualiseerder en pro-kontroles: spoed, toonhoogte, normalisering, oorkruisdoof, volumehulp, weerkaatsing, basversterking, musiekherkenning (Shazam-agtig), stemsoektog
 
 💾 <b>Vanlyn, Metadata en Privaatheid</b>
 - Slim vanlyn kasberging en aflaaie vir snitte en speellyste
@@ -30,6 +30,7 @@ Of jy nou 'n toevallige luisteraar of 'n ouditief is, N-Zik gee jou volle beheer
 
 🔗 <b>Integrasies</b>
 - YouTube-aanmelding vir aanbevelings en klank/video-wisseling
+- Invidious vir oopbroninhoud
 - Discord Rich Presence
 - Speellys invoer/uitvoer: RiPlay, Spotify, YouTube Music, N-Zik
 
@@ -39,6 +40,7 @@ Of jy nou 'n toevallige luisteraar of 'n ouditief is, N-Zik gee jou volle beheer
 - Teks- en stemsoektog
 - OTA-opdaterings vanaf GitHub
 - Slaaptydhouer en agtergrondspeling
+- Outomatiese hervatting op Bluetooth, volgehoue tou, outovul, slim asb, verskuilde liedjies, Ouerbeheer, agtergrondfoto van albumkuns, Invidious, volmag, netwerkaanpassing
 
 🛡️ 100% oopbron (FOSS). Sleuteltoestemmings: INTERNET, RECORD_AUDIO (slegs visualiseerder), STORAGE (uitvoere/rugsteun), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

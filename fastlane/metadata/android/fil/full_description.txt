@@ -19,7 +19,7 @@ Maging kaswal na tagapakinig man o audiophile, binibigyan ka ng N-Zik ng ganap n
 🎵 <b>Karanasan sa Audio</b>
 - Premium quality audio sa YouTube Music Premium 
 - Synced lyrics na may editing at real-time translation
-- Audio visualizer at pro controls: speed, pitch, normalization, crossfade, volume boost
+- Audio visualizer at pro controls: speed, pitch, normalization, crossfade, volume boost, music recognition (Shazam-like), voice search, bass boost, reverb
 
 💾 <b>Offline, Metadata at Privacy</b>
 - Matalinong caching at downloads para sa mga track at playlist
@@ -30,6 +30,7 @@ Maging kaswal na tagapakinig man o audiophile, binibigyan ka ng N-Zik ng ganap n
 
 🔗 <b>Mga Integrasyon</b>
 - YouTube sign-in para sa mga rekomendasyon at audio/video switching
+- Invidious integration
 - Discord Rich Presence
 - Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
 
@@ -39,6 +40,16 @@ Maging kaswal na tagapakinig man o audiophile, binibigyan ka ng N-Zik ng ganap n
 - Text at voice search
 - OTA updates mula sa GitHub
 - Sleep timer at background playback
+- Auto-resume sa BT
+- Persistent queue
+- Auto-fill
+- Smart trash
+- Hidden songs
+- Parental control
+- Wallpaper mula sa album art
+- Invidious integration
+- Proxy
+- Network adaptation
 
 🛡️ 100% open-source (FOSS). Mga pangunahing pahintulot: INTERNET, RECORD_AUDIO (visualizer lamang), STORAGE (exports/backups), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

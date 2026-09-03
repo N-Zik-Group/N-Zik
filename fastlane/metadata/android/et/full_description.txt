@@ -19,7 +19,7 @@ Olenemata sellest, kas oled juhuslik kuulaja või audiophile, annab N-Zik sulle 
 🎵 <b>Helielamus</b>
 - Premium kvaliteet veeb YouTube Music Premiumi kaudu 
 - Sünkroonitud laulusõnad muutmise ja reaalajas tõlkega
-- Reaalajas helivisualiseerija ja profifunktsioonid: kiirus, helikõrgus, normaliseerimine, sujuv üleminek, helitugevuse suurendamine
+- Reaalajas helivisualiseerija ja profifunktsioonid: kiirus, helikõrgus, normaliseerimine, sujuv üleminek, helitugevuse suurendamine, heliruum, bassivõimendus, muusikatuvastus (Shazam-laadne), häälotsing
 
 💾 <b>Võrguühenduseta, metaandmed ja privaatsus</b>
 - Nutikas vahemälu ja allalaadimised lugude ja esitusloendite jaoks
@@ -30,6 +30,7 @@ Olenemata sellest, kas oled juhuslik kuulaja või audiophile, annab N-Zik sulle 
 
 🔗 <b>Integratsioonid</b>
 - YouTube'i sisselogimine soovituste ja heli/video vahetamise jaoks
+- Invidious avatud lähtekoodiga sisu jaoks
 - Discord Rich Presence
 - Esitusloendite import/eksport: RiPlay, Spotify, YouTube Music, N-Zik
 
@@ -39,6 +40,7 @@ Olenemata sellest, kas oled juhuslik kuulaja või audiophile, annab N-Zik sulle 
 - Teksti- ja häälotsing
 - OTA värskendused GitHubist
 - Unetaimer ja taustal esitus
+- Automaatne taaskäivitamine Bluetoothiga, püsiv järjekord, automaatttäitmine, nutikas prügikast, peidetud laulud, vanemliku kontroll, taustapilt albumikaanelt, Invidious, proxy, võrgu kohandamine
 
 🛡️ 100% avatud lähtekoodiga (FOSS). Peamised load: INTERNET, RECORD_AUDIO (ainult visualiseerija), STORAGE (eksport/varundamine), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

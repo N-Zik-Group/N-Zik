@@ -19,7 +19,8 @@ Sıradan bir dinleyici ya da odyofil olun, N-Zik gizliliğinizden ödün vermede
 🎵 <b>Ses Deneyimi</b>
 - YouTube Music Premium  aracılığıyla birinci sınıf ses
 - Düzenleme ve gerçek zamanlı çeviri ile senkronize şarkı sözleri
-- Gerçek zamanlı ses görselleştirici ve profesyonel kontroller: hız, perde, normalleştirme, crossfade, ses artırma
+- Şarkı tanıma (Shazam benzeri), sesli arama ve ses görselleştirici
+- Profesyonel kontroller: hız, perde, normalleştirme, crossfade, ses artırma, bas geliştirme, yankı
 
 💾 <b>Çevrimdışı, Meta Veriler ve Gizlilik</b>
 - Parçalar ve çalma listeleri için akıllı çevrimdışı önbellekleme ve indirme
@@ -30,15 +31,17 @@ Sıradan bir dinleyici ya da odyofil olun, N-Zik gizliliğinizden ödün vermede
 
 🔗 <b>Entegrasyonlar</b>
 - YouTube girişi ile öneriler ve ses/video geçişi
+- Alternatif YouTube akışı için Invidious entegrasyonu
 - Discord Rich Presence
 - Çalma listesi içe/dışa aktarma: RiPlay, Spotify, YouTube Music, N-Zik
 
 📱 <b>Her Yerde Oynatın:</b> Android Auto, Automotive, TV ve Tabletler
 
 🛠️ <b>Gelişmiş Özellikler</b>
-- Metin ve sesli arama
-- GitHub üzerinden OTA güncellemeleri
-- Uyku zamanlayıcısı ve arka planda oynatma
+- BT bağlantısında otomatik devam, kalıcı kuyruk, otomatik doldurma
+- Akıllı çöp, gizli şarkılar, ebeveyn denetimi, kapaktan duvar kağıdı
+- Invidious entegrasyonu, proxy desteği, ağ kalitesi uyarlama
+- OTA güncellemeleri, uyku zamanlayıcısı, arka planda oynatma
 
 🛡️ N-Zik %100 açık kaynaklıdır (FOSS). Temel izinler: İNTERNET, RECORD_AUDIO (yalnızca görselleştirici), STORAGE (dışa aktarma/yedekleme), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

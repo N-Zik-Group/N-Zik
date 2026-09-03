@@ -19,7 +19,7 @@ Ki to sinp skouter ouswa vre fane mizik, N-Zik donn twa kontrol absoli lor to mi
 🎵 <b>Eksperians Audio</b>
 - Audio kalite premium atraver YouTube Music Premium 
 - Parol sanson sinkronize avek edite ek tradiksion tan real
-- Vizualizater audio ek bann kontrol pro: vitess, pitch, normalizasion, crossfade, ogmantasion volim
+- Vizualizater audio ek bann kontrol pro: vitess, pitch, normalizasion, crossfade, ogmantasion volim, reverb, ogmantasion bass, rekonesans mizik (kom Shazam), recherc lavwa
 
 💾 <b>Offline, Metadonne ek Konfidansialite</b>
 - Kaching offline intelizan ek download pou morso ek playlist
@@ -30,6 +30,7 @@ Ki to sinp skouter ouswa vre fane mizik, N-Zik donn twa kontrol absoli lor to mi
 
 🔗 <b>Integrasion</b>
 - Sign-in YouTube pou rekomandasion ek sanzman audio/video
+- Invidious pou kontnou open-source
 - Discord Rich Presence
 - Inport/eksport playlist: RiPlay, Spotify, YouTube Music, N-Zik
 
@@ -39,6 +40,7 @@ Ki to sinp skouter ouswa vre fane mizik, N-Zik donn twa kontrol absoli lor to mi
 - Serch par teks ouswa lavwa
 - Update OTA depi GitHub
 - Timer pou somer ek lekout an background
+- Rekomans otomatik lor Bluetooth, file rezistan, otomatik ranpli, poubel inteligant, morso kipi, kontrol paranol, tapiser depi kouvretir album, Invidious, prokse, adapter rezo
 
 🛡️ 100% open-source (FOSS). Bann permision kle: INTERNET, RECORD_AUDIO (pou vizualizater selman), STORAGE (eksport/backup), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

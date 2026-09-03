@@ -19,7 +19,7 @@
 🎵 <b>Audio Təcrübəsi</b>
 - YouTube Music Premium  vasitəsilə premium keyfiyyətli audio
 - Redaktə və real vaxt tərcüməsi ilə sinxronlaşdırılmış mahnı sözləri
-- Real vaxt audio vizuallaşdırıcısı və peşəkar idarəetmələr: sürət, ton, normallaşdırma, crossfade, səs artırma
+- Real vaxt audio vizuallaşdırıcısı və peşəkar idarəetmələr: sürət, ton, normallaşdırma, crossfade, səs artırma, reverberasiya, bas gücləndirmə, musiqi tanıma (Shazam tipli), səsli axtarış
 
 💾 <b>Oflayn, Meta Məlumatlar və Məxfilik</b>
 - Treklər və pleylistlər üçün ağıllı oflayn keşləmə və yükləmələr
@@ -30,6 +30,7 @@
 
 🔗 <b>İnteqrasiyalar</b>
 - Tövsiyələr və audio/video keçidi üçün YouTube girişi
+- Açıq mənbəli məzmun üçün Invidious
 - Discord Rich Presence
 - Pleylist idxalı/ixracı: RiPlay, Spotify, YouTube Music, N-Zik
 
@@ -39,6 +40,7 @@
 - Mətn və səsli axtarış
 - GitHub-dan OTA yeniləmələri
 - Yuxu taymeri və arxa fonda oynatma
+- Bluetooth ilə avtomatik bərpa, davamlı növbə, avtomatik doldurma, ağıllı zibil, gizli mahnılar, valideyn nəzarəti, albom qapağından divar kağızı, Invidious, proksi, şəbəkə uyğunlaşması
 
 🛡️ 100% açıq mənbəli (FOSS). Əsas icazələr: INTERNET, RECORD_AUDIO (yalnız vizuallaşdırıcı), STORAGE, FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

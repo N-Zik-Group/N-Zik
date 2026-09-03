@@ -19,7 +19,8 @@
 🎵 <b>오디오 경험</b>
 - YouTube Music Premium을 통한 프리미엄 품질 오디오
 - 편집 및 실시간 번역 기능이 있는 동기화 가사
-- 실시간 오디오 시각화 및 프로 컨트롤: 속도, 피치, 정규화, 크로스페이드, 볼륨 부스트
+- 음악 인식 (Shazam 유사), 음성 검색 및 오디오 시각화
+- 프로 컨트롤: 속도, 피치, 정규화, 크로스페이드, 볼륨 부스트, 베이스 부스트, 리버브
 
 💾 <b>오프라인, 메타데이터 및 개인 정보 보호</b>
 - 트랙 및 재생 목록을 위한 스마트 오프라인 캐싱 및 다운로드
@@ -30,15 +31,17 @@
 
 🔗 <b>통합</b>
 - 추천 및 오디오/비디오 전환을 위한 YouTube 로그인
+- 대체 YouTube 스트리밍을 위한 Invidious 통합
 - Discord Rich Presence
 - 재생 목록 가져오기/내보내기: RiPlay, Spotify, YouTube Music, N-Zik
 
 📱 <b>어디서나 재생:</b> Android Auto, Automotive, TV 및 태블릿
 
 🛠️ <b>파워 유저 기능</b>
-- 텍스트 및 음성 검색
-- GitHub을 통한 OTA 업데이트
-- 취침 타이머 및 백그라운드 재생
+- BT 연결 시 자동 재개, 지속 큐, 자동 채우기
+- 스마트 휴지통, 숨겨진 노래, 부모 제어, 커버 아트에서 배경화면
+- Invidious 통합, 프록시 지원, 네트워크 품질 적응
+- OTA 업데이트, 취침 타이머, 백그라운드 재생
 
 🛡️ 100% 오픈 소스 (FOSS). 주요 권한: INTERNET, RECORD_AUDIO (시각화 전용), STORAGE (내보내기/백업), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

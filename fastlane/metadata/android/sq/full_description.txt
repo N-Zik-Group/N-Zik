@@ -19,7 +19,7 @@ Pavarësisht nëse jeni dëgjues i rastësishëm apo audiofil, N-Zik ju jep kont
 🎵 <b>Përvoja e Audios</b>
 - Audio me cilësi premium përmes YouTube Music Premium 
 - Tekste këngësh të sinkronizuara me redaktim dhe përkthim në kohë reale
-- Vizualizues audio dhe kontrolle pro: shpejtësia, lartësia e zërit, normalizimi, crossfade, rritja e volumit
+- Vizualizues audio dhe kontrolle pro: shpejtësia, lartësia e zërit, normalizimi, crossfade, rritja e volumit, njohja e muzikës (si Shazam), kërkim me zë, rritja e basit, reverb
 
 💾 <b>Jashtë linje, Metadatat dhe Privatësia</b>
 - Ruajtje jashtë linje inteligjente dhe shkarkime për këngët dhe listat
@@ -30,6 +30,7 @@ Pavarësisht nëse jeni dëgjues i rastësishëm apo audiofil, N-Zik ju jep kont
 
 🔗 <b>Integrimet</b>
 - Identifikimi në YouTube për rekomandime dhe kalimin audio/video
+- Integrimi Invidious
 - Discord Rich Presence
 - Import/eksport i listave të dëgjimit: RiPlay, Spotify, YouTube Music, N-Zik
 
@@ -39,6 +40,16 @@ Pavarësisht nëse jeni dëgjues i rastësishëm apo audiofil, N-Zik ju jep kont
 - Kërkim me tekst dhe zë
 - Përditësime OTA nga GitHub
 - Kohëmatësi i gjumit dhe luajtja në sfond
+- Vazhdimi automatik në BT
+- Radhë e përhershme
+- Plotësim automatik
+- Hedhurinë e mençur
+- Këngë të fshehura
+- Kontroll prindëror
+- Imazh fondi nga kopertina e albumit
+- Integrimi Invidious
+- Proxy
+- Përshtatje rrjeti
 
 🛡️ N-Zik është 100% me burim të hapur (FOSS). Lejet kryesore: INTERNET, RECORD_AUDIO (vetëm vizualizuesi), STORAGE (eksporte/rezervime), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

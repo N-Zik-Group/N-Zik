@@ -19,7 +19,7 @@ Baik pendengar kasual maupun audiofil, N-Zik memberi Anda kendali penuh atas mus
 🎵 <b>Pengalaman Audio</b>
 - Kualitas premium via YouTube Music Premium 
 - Lirik sinkron dengan pengeditan & terjemahan real-time
-- Visualisator audio dan kontrol pro: kecepatan, nada, normalisasi, crossfade, peningkatan volume
+- Visualisator audio dan kontrol pro: kecepatan, nada, normalisasi, crossfade, peningkatan volume, pengenalan musik (seperti Shazam), pencarian suara, penguat bass, gema
 
 💾 <b>Offline, Metadata & Privasi</b>
 - Caching offline cerdas & unduhan untuk lagu dan daftar putar
@@ -30,6 +30,7 @@ Baik pendengar kasual maupun audiofil, N-Zik memberi Anda kendali penuh atas mus
 
 🔗 <b>Integrasi</b>
 - Login YouTube untuk rekomendasi & peralihan audio/video
+- Integrasi Invidious
 - Discord Rich Presence
 - Impor/ekspor daftar putar: RiPlay, Spotify, YouTube Music, N-Zik
 
@@ -39,6 +40,16 @@ Baik pendengar kasual maupun audiofil, N-Zik memberi Anda kendali penuh atas mus
 - Pencarian teks & suara
 - Pembaruan OTA dari GitHub
 - Timer tidur & pemutaran latar belakang
+- Lanjutkan otomatis di BT
+- Antrian persisten
+- Isi otomatis
+- Sampah cerdas
+- Lagu tersembunyi
+- Kontrol orang tua
+- Wallpaper dari sampul album
+- Integrasi Invidious
+- Proxy
+- Adaptasi jaringan
 
 🛡️ 100% sumber terbuka (FOSS). Izin utama: INTERNET, RECORD_AUDIO (visualisator saja), STORAGE (ekspor/cadangan), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

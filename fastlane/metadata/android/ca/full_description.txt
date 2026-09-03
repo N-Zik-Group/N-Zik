@@ -19,7 +19,8 @@ Tant si ets un oient ocasional com un audiòfil, N-Zik et dóna el control absol
 🎵 <b>Experiència d'àudio</b>
 - Àudio de qualitat superior mitjançant YouTube Music Premium 
 - Lletres sincronitzades amb edició i traducció en temps real
-- Visualitzador d'àudio en temps real i controls professionals: velocitat, to, normalització, crossfade, reforç de volum
+- Reconeixement musical (tipus Shazam), cerca per veu i visualitzador d'àudio
+- Controls professionals: velocitat, to, normalització, crossfade, reforç de volum, reforç de greus, reverberació
 
 💾 <b>Fora de línia, metadades i privadesa</b>
 - Memòria cau intel·ligent i descàrregues de cançons i llistes de reproducció
@@ -30,15 +31,17 @@ Tant si ets un oient ocasional com un audiòfil, N-Zik et dóna el control absol
 
 🔗 <b>Integracions</b>
 - Inici de sessió a YouTube per a recomanacions i canvi d'àudio/vídeo
+- Integració Invidious per a streaming alternatiu de YouTube
 - Discord Rich Presence
 - Importació/exportació de llistes: RiPlay, Spotify, YouTube Music, N-Zik
 
 📱 <b>Reprodueix a tot arreu:</b> Android Auto, Automotive, TV i tauletes
 
 🛠️ <b>Funcions avançades</b>
-- Cerca per text i veu
-- Actualitzacions OTA des de GitHub
-- Temporitzador de desconnexió i reproducció en segon pla
+- Represa automàtica en connectar BT, cua persistent, auto-fill
+- Smart Trash, cançons ocultes, control parental, fons de pantalla des de la portada
+- Integració Invidious, suport proxy, adaptació de qualitat de xarxa
+- Actualitzacions OTA, temporitzador, reproducció en segon pla
 
 🛡️ 100% de codi obert (FOSS). Permisos clau: INTERNET, RECORD_AUDIO (només visualitzador), STORAGE, FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

@@ -19,7 +19,7 @@ Ne glede na to, ali ste priložnostni poslušalec ali audiofil, vam N-Zik omogo�
 🎵 <b>Zvočna izkušnja</b>
 - Vrhunska kakovost prek YouTube Music Premium 
 - Sinhronizirana besedila z urejanjem in prevajanjem v realnem času
-- Vizualizator zvoka in profesionalne kontrole: hitrost, višina tona, normalizacija, crossfade, ojačitev glasnosti
+- Vizualizator zvoka in profesionalne kontrole: hitrost, višina tona, normalizacija, crossfade, ojačitev glasnosti, prepoznavanje glasbe (podobno Shazam), glasovno iskanje, ojačitev basov, reverberacija
 
 💾 <b>Brez povezave, metapodatki in zasebnost</b>
 - Pametno predpomnjenje in prenosi skladb ter seznamov predvajanja
@@ -30,6 +30,7 @@ Ne glede na to, ali ste priložnostni poslušalec ali audiofil, vam N-Zik omogo�
 
 🔗 <b>Integracije</b>
 - Prijava v YouTube za priporočila in preklapljanje med zvokom/videom
+- Invidious integracija
 - Discord Rich Presence
 - Uvoz/izvoz seznamov predvajanja: RiPlay, Spotify, YouTube Music, N-Zik
 
@@ -39,6 +40,16 @@ Ne glede na to, ali ste priložnostni poslušalec ali audiofil, vam N-Zik omogo�
 - Iskanje z besedilom in glasom
 - Posodobitve OTA iz GitHuba
 - Časovnik za spanje in predvajanje v ozadju
+- Samodejno nadaljevanje na BT
+- Vzdržna vrsta
+- Samodejno izpolnjevanje
+- Pametna koš
+- Skrite pesmi
+- Starševski nadzor
+- Ozadje iz naslovnice albuma
+- Invidious integracija
+- Proxy
+- Prilagoditev omrežja
 
 🛡️ N-Zik je 100% odprtokoden (FOSS). Ključna dovoljenja: INTERNET, RECORD_AUDIO (samo vizualizator), STORAGE (izvozi/varnostne kopije), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

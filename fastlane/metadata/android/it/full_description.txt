@@ -19,7 +19,8 @@ Che tu sia un ascoltatore occasionale o un audiofilo, N-Zik ti offre il controll
 🎵 <b>Esperienza Audio</b>
 - Qualità premium tramite YouTube Music Premium 
 - Testi sincronizzati con modifica e traduzione in tempo reale
-- Visualizzatore audio e controlli pro: velocità, intonazione, normalizzazione, crossfade, aumento volume
+- Riconoscimento musicale (Shazam-like), ricerca vocale e visualizzatore audio
+- Controlli pro: velocità, intonazione, normalizzazione, crossfade, aumento volume, bass boost, riverbero
 
 💾 <b>Offline, Metadati e Privacy</b>
 - Caching offline intelligente e download per brani e playlist
@@ -30,15 +31,17 @@ Che tu sia un ascoltatore occasionale o un audiofilo, N-Zik ti offre il controll
 
 🔗 <b>Integrazioni</b>
 - Accesso a YouTube per consigli e passaggio audio/video
+- Integrazione Invidious per lo streaming YouTube alternativo
 - Discord Rich Presence
 - Importazione/esportazione playlist: RiPlay, Spotify, YouTube Music, N-Zik
 
 📱 <b>Riproduci Ovunque:</b> Android Auto, Automotive, TV e tablet
 
 🛠️ <b>Funzionalità Avanzate</b>
-- Ricerca testuale e vocale
-- Aggiornamenti OTA da GitHub
-- Timer di spegnimento e riproduzione in background
+- Ripresa automatica su connessione BT, coda persistente, auto-fill
+- Smart trash, brani nascosti, controllo parentale, sfondo da copertina
+- Integrazione Invidious, supporto proxy, adattamento qualità rete
+- Aggiornamenti OTA, timer, riproduzione in background
 
 🛡️ 100% open source (FOSS). Autorizzazioni principali: INTERNET, RECORD_AUDIO (solo visualizzatore), STORAGE (esportazioni/backup), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

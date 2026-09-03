@@ -19,7 +19,7 @@ Nesvarbu, ar klausote retai, ar esate melomanas, N-Zik suteikia visišką muziko
 🎵 <b>Garso patirtis</b>
 - Aukščiausios kokybės garsas per „YouTube Music Premium“
 - Pažangūs sinchronizuoti dainų žodžiai su redagavimu ir vertimu realiuoju laiku
-- Realiojo laiko garso vizualizatorius ir profesionalūs valdikliai: greitis, tonas, normalizavimas, „crossfade“, garso sustiprinimas
+- Realiojo laiko garso vizualizatorius ir profesionalūs valdikliai: greitis, tonas, normalizavimas, „crossfade“, garso sustiprinimas, muzikos atpažinimas (panašu į „Shazam“), balso paieška, bosų stiprinimas, regeneracija
 
 💾 <b>Neprisijungus, metaduomenys ir privatumas</b>
 - Išmanusis podėlis ir dainų bei grojaraščių atsisiuntimai
@@ -30,6 +30,7 @@ Nesvarbu, ar klausote retai, ar esate melomanas, N-Zik suteikia visišką muziko
 
 🔗 <b>Integracijos</b>
 - Prisijungimas prie „YouTube“ rekomendacijoms ir garso / vaizdo perjungimui
+- „Invidious“ integracija
 - „Discord Rich Presence“
 - Grojaraščių importas / eksportas: „RiPlay“, „Spotify“, „YouTube Music“, „N-Zik“
 
@@ -37,8 +38,18 @@ Nesvarbu, ar klausote retai, ar esate melomanas, N-Zik suteikia visišką muziko
 
 🛠️ <b>Pažengusiems vartotojams</b>
 - Tekstinė ir balso paieška
-- OTA atnaujinimai iš „GitHub“
+- OTA atnaujinimai iš „GitHub"
 - Miego laikmatis ir atkūrimas fone
+- Automatinis atnaujinimas „Bluetooth"
+- Nuolatinė eilė
+- Automatinis pildymas
+- Išmanusis šiukšlinas
+- Paslėptos dainos
+- Tėvų kontrolė
+- Fono paveikslėlis iš albumo viršelio
+- „Invidious" integracija
+- Proxy
+- Tinklo pritaikymas
 
 🛡️ 100% atvirojo kodo (FOSS). Pagrindiniai leidimai: INTERNET, RECORD_AUDIO (tik vizualizatoriui), STORAGE (eksportas / atsarginės kopijos), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

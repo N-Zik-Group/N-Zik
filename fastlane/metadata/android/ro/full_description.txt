@@ -19,7 +19,8 @@ Fie că ești ascultător ocazional sau audiofil, N-Zik îți oferă control abs
 🎵 <b>Experiență audio</b>
 - Calitate premium prin YouTube Music Premium 
 - Versuri sincronizate cu editare și traducere în timp real
-- Vizualizator audio și comenzi profesionale: viteză, înălțime, normalizare, crossfade, amplificare volum
+- Recunoaștere muzicală (tip Shazam), căutare vocală și vizualizator audio
+- Comenzi profesionale: viteză, înălțime, normalizare, crossfade, amplificare volum, boost bas, reverberație
 
 💾 <b>Offline, Metadate și Confidențialitate</b>
 - Cache offline inteligent și descărcări pentru piese și liste de redare
@@ -30,15 +31,17 @@ Fie că ești ascultător ocazional sau audiofil, N-Zik îți oferă control abs
 
 🔗 <b>Integrări</b>
 - Conectare YouTube pentru recomandări și comutare audio/video
+- Integrație Invidious pentru streaming YouTube alternativ
 - Discord Rich Presence
 - Import/export liste de redare: RiPlay, Spotify, YouTube Music, N-Zik
 
 📱 <b>Redă oriunde:</b> Android Auto, Automotive, TV și tablete
 
 🛠️ <b>Funcții pentru utilizatori avansați</b>
-- Căutare text și vocală
-- Actualizări OTA de pe GitHub
-- Temporizator de oprire și redare în fundal
+- Repornire automată la conectare BT, coadă persistență, auto-fill
+- Smart Trash, piese ascunse, control parental, fundal din copertă
+- Integrație Invidious, suport proxy, adaptare calitate rețea
+- Actualizări OTA, temporizator, redare în fundal
 
 🛡️ N-Zik este 100% open-source (FOSS). Permisiuni cheie: INTERNET, RECORD_AUDIO (doar vizualizator), STORAGE (exporturi/backup), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

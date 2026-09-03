@@ -19,7 +19,7 @@ Entzule arrunta edo audiofiloa izan, N-Zik-ek zure musikaren gaineko kontrol oso
 🎵 <b>Audio esperientzia</b>
 - Kalitate handiko audioa YouTube Music Premium bidez 
 - Letra sinkronizatuak edizioarekin eta denbora errealeko itzulpenarekin
-- Denbora errealeko audio bisualizatzailea eta kontrol profesionalak: abiadura, tonua, normalizazioa, crossfade-a, bolumen indartzea
+- Denbora errealeko audio bisualizatzailea eta kontrol profesionalak: abiadura, tonua, normalizazioa, crossfade-a, bolumen indartzea, erreburbu, baxu indartzea, musika ezagutzea (Shazam antzekoa), ahots-bilaketa
 
 💾 <b>Lineaz kanpo, metadatuak eta pribatutasuna</b>
 - Lineaz kanpoko cache adimentsua eta deskargak abesti eta erreprodukzio-zerrendentzat
@@ -30,6 +30,7 @@ Entzule arrunta edo audiofiloa izan, N-Zik-ek zure musikaren gaineko kontrol oso
 
 🔗 <b>Integrazioak</b>
 - YouTube saio-hasiera gomendioak eta audio/bideo aldaketarako
+- Invidious irekikoko edukientzat
 - Discord Rich Presence
 - Erreprodukzio-zerrenden inportazioa/esportazioa: RiPlay, Spotify, YouTube Music, N-Zik
 
@@ -39,6 +40,7 @@ Entzule arrunta edo audiofiloa izan, N-Zik-ek zure musikaren gaineko kontrol oso
 - Testu eta ahots bidezko bilaketa
 - GitHub bidezko OTA eguneratzeak
 - Lo-tenporizadorea eta atzeko planoko erreprodukzioa
+- Bluetooth bidezko berrekin automatikoa, ilara iraunkorra, aut betetzea, zakarrontzi adimentsua, ezkutuko abestiak, gurasoen kontrolea, albumeko azaleko horma-papera, Invidious, proxy, sare egokitu
 
 🛡️ %100 kode irekikoa (FOSS). Baimen nagusiak: INTERNET, RECORD_AUDIO (bisualizatzailerako soilik), STORAGE (esportazioak/babeskopiak), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

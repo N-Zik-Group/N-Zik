@@ -19,7 +19,7 @@ Xa sexas ointe ocasional ou audiófilo, N-Zik dáche control total sobre a túa 
 🎵 <b>Experiencia de audio</b>
 - Calidade superior vía YouTube Music Premium 
 - Letras sincronizadas con edición e tradución en tempo real
-- Visualizador de audio e controis profesionais: velocidade, ton, normalización, crossfade, reforzo de volume
+- Visualizador de audio e controis profesionais: velocidade, ton, normalización, crossfade, reforzo de volume, reverb, reforzo de graves, recoñecemento de música (tipo Shazam), busca por voz
 
 💾 <b>Fóra de liña, metadatos e privacidade</b>
 - Caché intelixente e descargas de cancións e listas de reprodución
@@ -30,6 +30,7 @@ Xa sexas ointe ocasional ou audiófilo, N-Zik dáche control total sobre a túa 
 
 🔗 <b>Integracións</b>
 - Inicio de sesión en YouTube para recomendacións e cambio de audio/vídeo
+- Invidious para contidos de código aberto
 - Discord Rich Presence
 - Importación/exportación de listas de reprodución: RiPlay, Spotify, YouTube Music, N-Zik
 
@@ -39,6 +40,7 @@ Xa sexas ointe ocasional ou audiófilo, N-Zik dáche control total sobre a túa 
 - Busca por texto e voz
 - Actualizacións OTA desde GitHub
 - Temporizador de apagado e reprodución en segundo plano
+- Retomada automática por Bluetooth, cola persistente, autocompletar, papeleira intelixente, cancións ocultas, control parental, fondo de pantalla desde portada de álbum, Invidious, proxy, adaptación de rede
 
 🛡️ 100% código aberto (FOSS). Permisos clave: INTERNET, RECORD_AUDIO (só visualizador), STORAGE (exportacións/copias de seguridade), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

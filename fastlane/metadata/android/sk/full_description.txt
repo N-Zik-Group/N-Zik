@@ -19,7 +19,7 @@ Fork projektu <a href="https://github.com/knighthat/Kreate">Kreate</a> zameraný
 🎵 <b>Audio zážitok</b>
 - Prvotriedna kvalita cez YouTube Music Premium 
 - Synchronizované texty s úpravami a prekladom v reálnom čase
-- Audio vizualizér a profesionálne ovládanie: rýchlosť, výška tónu, normalizácia, crossfade, zosilnenie hlasitosti
+- Audio vizualizér a profesionálne ovládanie: rýchlosť, výška tónu, normalizácia, crossfade, zosilnenie hlasitosti, rozpoznávanie hudby (ako Shazam), hlasové vyhľadávanie, zosilnenie basov, ozvena
 
 💾 <b>Offline, metadáta a súkromie</b>
 - Inteligentné offline ukladanie a sťahovanie skladieb a zoznamov
@@ -30,6 +30,7 @@ Fork projektu <a href="https://github.com/knighthat/Kreate">Kreate</a> zameraný
 
 🔗 <b>Integrácie</b>
 - Prihlásenie do YouTube pre odporúčania a prepínanie zvoku/videa
+- Invidious integrácia
 - Discord Rich Presence
 - Import/export zoznamov skladieb: RiPlay, Spotify, YouTube Music, N-Zik
 
@@ -39,6 +40,16 @@ Fork projektu <a href="https://github.com/knighthat/Kreate">Kreate</a> zameraný
 - Textové a hlasové vyhľadávanie
 - OTA aktualizácie z GitHubu
 - Časovač spánku a prehrávanie na pozadí
+- Automatické obnovenie na BT
+- Trvalá fronta
+- Automatické vyplnenie
+- Inteligentný kôš
+- Skryté skladby
+- Rodičovská kontrola
+- Tapeta z obalu albumu
+- Invidious integrácia
+- Proxy
+- Prispôsobenie siete
 
 🛡️ N-Zik je 100% open-source (FOSS). Kľúčové povolenia: INTERNET, RECORD_AUDIO (iba vizualizér), STORAGE (exporty/zálohy), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
