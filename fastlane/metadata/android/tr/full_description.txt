@@ -1,4 +1,4 @@
-<b>N-Zik</b>, Android için açık kaynaklı ve çok dilli YouTube Music istemcinizdir.
+﻿<b>N-Zik</b>, Android için açık kaynaklı ve çok dilli YouTube Music istemcinizdir.
 
 <a href="https://github.com/knighthat/Kreate">Kreate</a>'in performansa, arayüz iyileştirmelerine, hata düzeltmelerine ve uzun süreli destekli yeni özelliklere odaklanan bir çatalıdır.
 
@@ -17,7 +17,7 @@ Sıradan bir dinleyici ya da odyofil olun, N-Zik gizliliğinizden ödün vermede
 - Sanatçı profilleri, Haber Akışı ve deneysel widget'lar
 
 🎵 <b>Ses Deneyimi</b>
-- YouTube Music Premium (Web Remix) aracılığıyla birinci sınıf ses
+- YouTube Music Premium  aracılığıyla birinci sınıf ses
 - Düzenleme ve gerçek zamanlı çeviri ile senkronize şarkı sözleri
 - Gerçek zamanlı ses görselleştirici ve profesyonel kontroller: hız, perde, normalleştirme, crossfade, ses artırma
 

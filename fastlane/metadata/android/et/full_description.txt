@@ -1,4 +1,4 @@
-<b>N-Zik</b> on sinu avatud lähtekoodiga mitmekeelne YouTube Musicu klient Androidile.
+﻿<b>N-Zik</b> on sinu avatud lähtekoodiga mitmekeelne YouTube Musicu klient Androidile.
 
 <a href="https://github.com/knighthat/Kreate">Kreate'i</a> haru, mis on keskendunud jõudlusele, liidese lihvimisele, veaparandustele ja pikaajalisele toele.
 
@@ -17,7 +17,7 @@ Olenemata sellest, kas oled juhuslik kuulaja või audiophile, annab N-Zik sulle 
 - Artistiprofiilid, uudistevoog, eksperimentaalsed vidinad
 
 🎵 <b>Helielamus</b>
-- Premium kvaliteet veeb YouTube Music Premiumi kaudu (Web Remix)
+- Premium kvaliteet veeb YouTube Music Premiumi kaudu 
 - Sünkroonitud laulusõnad muutmise ja reaalajas tõlkega
 - Reaalajas helivisualiseerija ja profifunktsioonid: kiirus, helikõrgus, normaliseerimine, sujuv üleminek, helitugevuse suurendamine
 

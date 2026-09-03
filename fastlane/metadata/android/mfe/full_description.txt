@@ -1,4 +1,4 @@
-<b>N-Zik</b> se enn klian YouTube Music open-source ek multiling pou Android.
+﻿<b>N-Zik</b> se enn klian YouTube Music open-source ek multiling pou Android.
 
 Enn fork de <a href="https://github.com/knighthat/Kreate">Kreate</a> ki fokus lor performans, polissage UI, reparasion bann bug ek sipor alon-term.
 
@@ -17,7 +17,7 @@ Ki to sinp skouter ouswa vre fane mizik, N-Zik donn twa kontrol absoli lor to mi
 - Profil artis, News Feed, widget eksperimantal
 
 🎵 <b>Eksperians Audio</b>
-- Audio kalite premium atraver YouTube Music Premium (Web Remix)
+- Audio kalite premium atraver YouTube Music Premium 
 - Parol sanson sinkronize avek edite ek tradiksion tan real
 - Vizualizater audio ek bann kontrol pro: vitess, pitch, normalizasion, crossfade, ogmantasion volim
 

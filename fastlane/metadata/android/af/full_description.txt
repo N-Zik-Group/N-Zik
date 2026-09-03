@@ -1,4 +1,4 @@
-<b>N-Zik</b> is jou oopbron, meertalige YouTube Music-kliënt vir Android.
+﻿<b>N-Zik</b> is jou oopbron, meertalige YouTube Music-kliënt vir Android.
 
 'n Vurk van <a href="https://github.com/knighthat/Kreate">Kreate</a> gefokus op werkverrigting, UI-polering, foutoplossings en langtermynondersteuning.
 
@@ -17,7 +17,7 @@ Of jy nou 'n toevallige luisteraar of 'n ouditief is, N-Zik gee jou volle beheer
 - Kunstenaarsprofiele, nuusvoer en eksperimentele widgets
 
 🎵 <b>Klankervaring</b>
-- Premium kwaliteit via YouTube Music Premium (Web Remix)
+- Premium kwaliteit via YouTube Music Premium 
 - Gesinkroniseerde lirieke met redigering en intydse vertaling
 - Klankvisualiseerder en pro-kontroles: spoed, toonhoogte, normalisering, oorkruisdoof, volumehulp
 

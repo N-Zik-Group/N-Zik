@@ -1,4 +1,4 @@
-<b>N-Zik</b> je vaš odprtokodni, večjezični odjemalec YouTube Music za Android.
+﻿<b>N-Zik</b> je vaš odprtokodni, večjezični odjemalec YouTube Music za Android.
 
 Fork projekta <a href="https://github.com/knighthat/Kreate">Kreate</a>, osredotočen na zmogljivost, izboljšavo vmesnika, popravke hroščev in dolgoročno podporo.
 
@@ -17,7 +17,7 @@ Ne glede na to, ali ste priložnostni poslušalec ali audiofil, vam N-Zik omogo�
 - Profili izvajalcev, vir novic in eksperimentalni gradniki
 
 🎵 <b>Zvočna izkušnja</b>
-- Vrhunska kakovost prek YouTube Music Premium (Web Remix)
+- Vrhunska kakovost prek YouTube Music Premium 
 - Sinhronizirana besedila z urejanjem in prevajanjem v realnem času
 - Vizualizator zvoka in profesionalne kontrole: hitrost, višina tona, normalizacija, crossfade, ojačitev glasnosti
 

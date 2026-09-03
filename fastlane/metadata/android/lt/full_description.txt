@@ -17,7 +17,7 @@ Nesvarbu, ar klausote retai, ar esate melomanas, N-Zik suteikia visišką muziko
 - Atlikėjų profiliai, naujienų srautas, eksperimentiniai valdikliai
 
 🎵 <b>Garso patirtis</b>
-- Aukščiausios kokybės garsas per „YouTube Music Premium“ („Web Remix“ klientas)
+- Aukščiausios kokybės garsas per „YouTube Music Premium“
 - Pažangūs sinchronizuoti dainų žodžiai su redagavimu ir vertimu realiuoju laiku
 - Realiojo laiko garso vizualizatorius ir profesionalūs valdikliai: greitis, tonas, normalizavimas, „crossfade“, garso sustiprinimas
 

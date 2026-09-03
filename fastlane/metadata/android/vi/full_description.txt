@@ -1,4 +1,4 @@
-<b>N-Zik</b> là trình phát YouTube Music mã nguồn mở, đa ngôn ngữ cho Android.
+﻿<b>N-Zik</b> là trình phát YouTube Music mã nguồn mở, đa ngôn ngữ cho Android.
 
 Bản fork của <a href="https://github.com/knighthat/Kreate">Kreate</a>, tập trung vào hiệu suất, tinh chỉnh giao diện, sửa lỗi và hỗ trợ lâu dài.
 
@@ -17,7 +17,7 @@ Cho dù bạn là người nghe nhạc bình thường hay tín đồ âm thanh,
 - Hồ sơ nghệ sĩ, Bảng tin và các tiện ích thử nghiệm
 
 🎵 <b>Trải nghiệm âm thanh</b>
-- Âm thanh chất lượng cao qua YouTube Music Premium (Web Remix)
+- Âm thanh chất lượng cao qua YouTube Music Premium 
 - Lời bài hát đồng bộ với chỉnh sửa & dịch thời gian thực
 - Trình trực quan hóa âm thanh và các điều khiển chuyên nghiệp: tốc độ, cao độ, chuẩn hóa, crossfade, tăng âm lượng
 

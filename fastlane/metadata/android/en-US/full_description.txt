@@ -17,7 +17,7 @@ Whether casual listener or audiophile, N-Zik gives you full control over your mu
 - Artist profiles, News Feed, experimental widgets
 
 🎵 <b>Audio Experience</b>
-- Premium quality via YouTube Music Premium (Web Remix)
+- Premium quality via YouTube Music Premium
 - Synced lyrics with editing and real-time translation
 - Audio visualizer and pro controls: speed, pitch, normalization, crossfade, volume boost
 

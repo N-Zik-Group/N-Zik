@@ -1,4 +1,4 @@
-<b>N-Zik</b>은 Android를 위한 오픈 소스 다국어 YouTube Music 클라이언트입니다.
+﻿<b>N-Zik</b>은 Android를 위한 오픈 소스 다국어 YouTube Music 클라이언트입니다.
 
 <a href="https://github.com/knighthat/Kreate">Kreate</a>의 포크로, 성능, UI 개선, 버그 수정 및 장기 지원에 중점을 두고 있습니다.
 
@@ -17,7 +17,7 @@
 - 아티스트 프로필, 뉴스 피드, 실험용 위젯
 
 🎵 <b>오디오 경험</b>
-- YouTube Music Premium(Web Remix)을 통한 프리미엄 품질 오디오
+- YouTube Music Premium을 통한 프리미엄 품질 오디오
 - 편집 및 실시간 번역 기능이 있는 동기화 가사
 - 실시간 오디오 시각화 및 프로 컨트롤: 속도, 피치, 정규화, 크로스페이드, 볼륨 부스트
 

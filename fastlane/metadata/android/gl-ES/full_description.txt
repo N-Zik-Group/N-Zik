@@ -1,4 +1,4 @@
-<b>N-Zik</b> é o teu cliente de YouTube Music de código aberto e multilingüe para Android.
+﻿<b>N-Zik</b> é o teu cliente de YouTube Music de código aberto e multilingüe para Android.
 
 Un fork de <a href="https://github.com/knighthat/Kreate">Kreate</a> centrado no rendemento, o puído da interface, a corrección de erros e o soporte a longo prazo.
 
@@ -17,7 +17,7 @@ Xa sexas ointe ocasional ou audiófilo, N-Zik dáche control total sobre a túa 
 - Perfís de artistas, feed de noticias, widgets experimentais
 
 🎵 <b>Experiencia de audio</b>
-- Calidade superior vía YouTube Music Premium (Web Remix)
+- Calidade superior vía YouTube Music Premium 
 - Letras sincronizadas con edición e tradución en tempo real
 - Visualizador de audio e controis profesionais: velocidade, ton, normalización, crossfade, reforzo de volume
 

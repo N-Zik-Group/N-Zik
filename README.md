@@ -108,7 +108,7 @@ Join the N-Zik Discord:
 # 🎧 Features
 
 - 🌍 **Multilingual Support** – Available in English, Italian, German, Russian, French, Spanish, Czech, Turkish, Romanian, and more. Contributions are always welcome!
-- 🔊 **High Quality Audio** — Connect a YouTube Music Premium account and select Web Remix as your preferred client to unlock Premium streaming quality on N-Zik.
+- 🔊 **High Quality Audio** — Connect a YouTube Music Premium account to unlock Premium streaming quality on N-Zik.
 - 🎨 **Modern and Intuitive UI**
 - 🌓 **UI Mode Toggle** – Switch between the **N-Zik** experience and the classic **ViMusic** interface.
 - 💾 **Smart Offline Caching** – Automatically cache songs for offline playback with customizable cache limits.

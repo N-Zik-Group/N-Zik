@@ -1,4 +1,4 @@
-<b>N-Zik</b> Android üçün açıq mənbəli, çoxdilli YouTube Music müştərinizdir.
+﻿<b>N-Zik</b> Android üçün açıq mənbəli, çoxdilli YouTube Music müştərinizdir.
 
 <a href="https://github.com/knighthat/Kreate">Kreate</a>-in performans, UI təkmilləşdirilməsi, xəta düzəlişləri və uzunmüddətli dəstək yönəlmiş bir qoludur.
 
@@ -17,7 +17,7 @@
 - Sənətçi profilləri, Xəbər Lenti və eksperimental vidjetlər
 
 🎵 <b>Audio Təcrübəsi</b>
-- YouTube Music Premium (Web Remix) vasitəsilə premium keyfiyyətli audio
+- YouTube Music Premium  vasitəsilə premium keyfiyyətli audio
 - Redaktə və real vaxt tərcüməsi ilə sinxronlaşdırılmış mahnı sözləri
 - Real vaxt audio vizuallaşdırıcısı və peşəkar idarəetmələr: sürət, ton, normallaşdırma, crossfade, səs artırma
 

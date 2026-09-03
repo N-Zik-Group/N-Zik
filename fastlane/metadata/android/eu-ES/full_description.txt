@@ -1,4 +1,4 @@
-<b>N-Zik</b> zure YouTube Music bezero eleaniztun eta kode irekiko Androiderako.
+﻿<b>N-Zik</b> zure YouTube Music bezero eleaniztun eta kode irekiko Androiderako.
 
 <a href="https://github.com/knighthat/Kreate">Kreate</a>-ren fork bat, errendimenduan, interfazearen hobekuntzan, akatsen konponketan eta epe luzerako laguntzan zentratua.
 
@@ -17,7 +17,7 @@ Entzule arrunta edo audiofiloa izan, N-Zik-ek zure musikaren gaineko kontrol oso
 - Artisten profilak, albisteen jarioa, widget esperimentalak
 
 🎵 <b>Audio esperientzia</b>
-- Kalitate handiko audioa YouTube Music Premium bidez (Web Remix)
+- Kalitate handiko audioa YouTube Music Premium bidez 
 - Letra sinkronizatuak edizioarekin eta denbora errealeko itzulpenarekin
 - Denbora errealeko audio bisualizatzailea eta kontrol profesionalak: abiadura, tonua, normalizazioa, crossfade-a, bolumen indartzea
 
