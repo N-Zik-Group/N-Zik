@@ -1,7 +1,7 @@
 ## 📋 Description
 <!-- Describe your changes in detail. What is the problem? How does this PR solve it? -->
 <!-- Include relevant context, technical decisions, and any alternative approaches you considered. -->
-<!-- Before submitting, check the open issues and pull requests for related work. If another contributor has already implemented the same or a similar fix, mention it here and explain how this PR differs, if applicable. -->
+<!-- Before submitting, check the open issues and pull requests for related work https://github.com/N-Zik-Group/N-Zik/issues/views. If another contributor has already implemented the same or a similar fix, mention it here and explain how this PR differs, if applicable. -->
 
 ## 🔗 Related Issues
 <!-- Link to the issue here. Use "issue https://..." format as per BUILD.md rules to prevent auto-closing if necessary, or follow project conventions. -->
