@@ -247,7 +247,7 @@
   <string name="listen_on_youtube_music">Écouter sur YouTube Music</string>
   <string name="on_device">Sur l\'appareil</string>
   <string name="wavy_timeline">Ondulée</string>
-  <string name="play">Jouer</string>
+  <string name="play">Lire</string>
   <string name="play_next">Musique suivante</string>
   <string name="toggle_lyrics">Afficher/masquer les paroles</string>
   <string name="by_tapping_on_the_thumbnail">En appuyant sur la pochette d\'album</string>
@@ -1707,20 +1707,20 @@ Volume BAS : titre précédent</string>
   <string name="find_status_ready_title">Prêt à écouter</string>
   <string name="find_status_ready_subtitle">Approchez votre téléphone de la musique</string>
   <string name="find_status_listening_title">Écoute...</string>
-  <string name="find_status_listening_subtitle">Analysing %1$ds of audio</string>
-  <string name="find_status_success_title">Song Identified</string>
+  <string name="find_status_listening_subtitle">Analyse de %1$ds de données audio</string>
+  <string name="find_status_success_title">Titre identifié</string>
   <string name="find_status_success_subtitle">Trouver les correspondances les plus pertinentes</string>
-  <string name="find_status_error_title">No Match Yet</string>
+  <string name="find_status_error_title">Aucun résultat pour l\'instant</string>
   <string name="find_more_details">Plus d\'informations</string>
   <string name="find_loading_matches">Recherche de correspondances...</string>
   <string name="find_saved_offline">Enregistré hors ligne</string>
-  <string name="find_download_percent">%1$d%% downloaded</string>
+  <string name="find_download_percent">%1$d%% téléchargés</string>
   <string name="find_preparing_download">Préparation du téléchargement...</string>
   <string name="find_tap_to_download">Appuyez pour télécharger</string>
   <string name="find_downloading">Téléchargement</string>
   <string name="find_start_listening">Commencez à écouter</string>
-  <string name="find_stop_early_hint">Tap the button to stop early</string>
-  <string name="find_try_again_hint">Tap the button to try again</string>
-  <string name="find_identify_another_hint">Tap the button to identify another song</string>
+  <string name="find_stop_early_hint">Appuyez sur le bouton pour arrêter plus tôt</string>
+  <string name="find_try_again_hint">Appuyez sur le bouton pour réessayer</string>
+  <string name="find_identify_another_hint">Appuyez sur le bouton pour identifier un autre morceau</string>
   <string name="find_music_hint">Lancez un morceau de musique pour que l\'analyse fonctionne</string>
 </resources>
