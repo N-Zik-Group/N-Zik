@@ -104,3 +104,6 @@
 - [ ] **Build Success**: Verified that `./gradlew :ComposeN-Zik:assembleDebug` builds successfully.
 - [ ] **Unit Tests**: Added at least one test (JUnit 5 + MockK or `createComposeRule()`) for new features/bug fixes.
 - [ ] **Tests Pass**: Ran `./gradlew :ComposeN-Zik:test` and all tests pass locally.
+
+### 🗒️ 9. Additional notes
+- Notes: 
