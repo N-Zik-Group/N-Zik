@@ -1,1 +1,11 @@
 blank_issues_enabled: false
+contact_links:
+  - name: 💬 Join the Community (Discord)
+    url: https://discord.gg/bneHC7QRje
+    about: Ask questions, chat with developers, or share your setups.
+  - name: ❓ GitHub Discussions
+    url: https://github.com/N-Zik-Group/N-Zik/discussions
+    about: Use this for Q&A and general ideas that are not yet feature requests.
+  - name: 🔒 Security Vulnerability
+    url: https://github.com/N-Zik-Group/N-Zik/security
+    about: Please strictly report security issues here.
