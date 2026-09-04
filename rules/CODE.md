@@ -101,6 +101,8 @@ New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app
 | Domain-specific dialogs        | `components.{domain}/`                             |
 | Domain menus                   | `components/menu.{domain}/`                        |
 | Page-level screens             | `components.ui.screens.{screen}/`                  |
+| ViewModels                     | co-located with their screen, in `components.ui.screens.{screen}/` |
+| Repositories                   | `core/data/` (one repository per domain, e.g. `SongRepository`) |
 | Player UI + lyrics             | `components/player/` + `components/player/lyrics/` |
 | Settings components            | `components/settings/`                             |
 | Enums                          | `enums/`                                           |
@@ -108,6 +110,8 @@ New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app
 | Database tables & migrations   | `core/database/`                                   |
 | Network layer                  | `core/network/`                                    |
 | Services (player, download)    | `playback/services/`, `download/services/`         |
+| Dependency injection modules   | `core/di/`                                         |
+| Navigation (sealed route defs) | `core/navigation/`                                 |
 | Utilities                      | `utils/`                                           |
 
 ## Imports
@@ -294,6 +298,15 @@ class LyricsScreenTest {
 
 - Use sealed class for routes
 - No deep links without validation
+
+## Translations (Crowdin)
+
+- Source strings live ONLY in `values/strings.xml` — this is the single source of truth for translators
+- NEVER hand-edit any `values-*/strings.xml` file — these are managed exclusively by the Crowdin sync (automated PR/commit); manual edits get overwritten and cause merge conflicts with translator work
+- If a Crowdin sync commit/PR appears (bot-authored, touches only `values-*/strings.xml`), it is exempt from the full BMAD workflow and from code review — merge as-is after a diff sanity check
+- Adding a NEW string key: add it to `values/strings.xml` only; Crowdin will propagate it to other locales automatically
+- Removing or renaming a string key: check for usages across the codebase first (a stale key breaks translator context, not just compilation)
+- Never assume a `values-*` string is wrong because it "reads oddly" in English — flag it to the user/translation team instead of editing it directly
 
 ## Dependency Injection
 

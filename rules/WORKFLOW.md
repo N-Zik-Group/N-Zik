@@ -43,6 +43,16 @@ See rules/*.md for full details.
 
 **This workflow has 8 steps. NEVER stop before Step 8. Steps 4, 7, and 8 are MANDATORY.**
 
+### Doc-Only Exception (Scope Gate)
+
+Before triggering the full BMAD workflow, check if the request is **doc-only and trivial**:
+
+- Applies ONLY to: typo fixes, comment wording, `Done.txt`/changelog wording, README/markdown prose — **zero changes to `.kt`, `.xml`, `.toml`, `.gradle.kts`, or any build/schema file**
+- If it qualifies → SKIP the BMAD workflow, make the edit directly, show the diff, ask for approval before committing (commit approval rule from AGENTS.md still applies)
+- If there is ANY doubt whether a change is "trivial" (e.g. it touches a string resource key, not just prose) → treat it as a normal change and run the full workflow
+- This exception does NOT apply to code, schema, dependency, or config changes, however small
+- Announce when using this exception: `[Doc-only exception — BMAD workflow skipped]`
+
 ### Step 1: Understand
 
 - Read request carefully
@@ -262,7 +272,7 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
 
 **Step 8b: Code Review Proposal**
 
-- **MUST ask user using question tool:**
+- **MUST ask user using question tool, translated into `{communication_language}`:**
   ```
   Code is functional. Proceed to code review ?
   1. Yes → launch bmad-code-review
@@ -273,7 +283,7 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
 
 **Step 8c: Post-Review Actions**
 
-- After code review completes, **MUST ask user using question tool:**
+- After code review completes, **MUST ask user using question tool, translated into `{communication_language}`:**
   ```
   Code review complete. What next ?
   1. Functional → proceed to commit
@@ -286,13 +296,15 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
 - Update `assets/notes/Done.txt` using its own template (`Changelog_Template.txt` in same folder) — format: `<keyword>(<scope>): <short summary> (issue ref)` + technical sub-bullets, include full issue link
 - Update `fastlane/metadata/android/en-US/changelogs/{version}.txt` using its own template (`Changelog_Template.txt` in same folder) — **max 500 characters** (use current version from `build.gradle.kts` or ask user)
 - Update `Updater/changelogs/{version}.txt` using its own template (`Changelog_Template.txt` in same folder) — **no character limit**, include full issue link
-- **MUST ask user for commit approval** (NEVER commit without approval) — ask commit + version bump in ONE prompt, not separately:
+- **MUST ask user for commit approval** (NEVER commit without approval) — ask commit + version bump in ONE prompt, not separately, **translated into `{communication_language}`**:
   ```
-  Approuvez-vous le commit ?
-  1. Oui → commit + push version
-  2. Oui → commit only (done)
-  3. Non → annuler
+  Do you approve this commit ?
+  1. Yes → commit + push version
+  2. Yes → commit only (done)
+  3. No → cancel
   ```
+
+> **Rule:** every user-facing prompt template in this file is written in English as a reference — agents MUST present it translated into `{communication_language}` (resolved from BMAD config), never mix languages within the same session.
 - If "push version" → `git commit` + `git push` + bump version
 - If "commit only" → `git commit` only, no push
 

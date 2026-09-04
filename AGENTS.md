@@ -50,6 +50,8 @@
 
 **Skills location** (depends on your IDE):
 
+> This table lists only the 3 preferred tools plus common alternatives. It is NOT the authoritative full list — if the user's IDE isn't shown here, **BMAD-TOOLS.md is the source of truth** for all ~40 supported tools and their skills/global/commands directories. Never assume a tool is unsupported just because it's absent from this shorter table.
+
 | IDE                  | Skills Path                                           | How to Load                     |
 | -------------------- | ----------------------------------------------------- | ------------------------------- |
 | OpenCode ⭐           | `{project-root}/.agents/skills/{skill-name}/SKILL.md` | `@skills/{skill-name}`          |
@@ -58,6 +60,7 @@
 | Claude Code          | `{project-root}/.claude/skills/{skill-name}/SKILL.md` | Direct read                     |
 | Cursor               | `{project-root}/.agents/skills/{skill-name}/SKILL.md` | Direct read                     |
 | Codex                | `{project-root}/.agents/skills/{skill-name}/SKILL.md` | Direct read                     |
+| Other tools (~40 total) | See `rules/BMAD-TOOLS.md`                          | See `rules/BMAD-TOOLS.md`       |
 
 **When to use which skill:**
 
@@ -86,13 +89,16 @@ N-Zik/
 └── docs/                    Reference (READ-ONLY)
 ```
 
-| What      | Where                                      |
-| --------- | ------------------------------------------ |
-| Main code | `app/n_zik/android/`                       |
-| Database  | `app/n_zik/android/core/database/`         |
-| Player    | `app/n_zik/android/playback/services/`     |
-| UI        | `app/n_zik/android/components/ui/screens/` |
-| Tests     | `ComposeN-Zik/src/test/`                   |
+| What         | Where                                      |
+| ------------ | ------------------------------------------ |
+| Main code    | `app/n_zik/android/`                       |
+| Database     | `app/n_zik/android/core/database/`         |
+| Repositories | `app/n_zik/android/core/data/`             |
+| DI modules   | `app/n_zik/android/core/di/`               |
+| Navigation   | `app/n_zik/android/core/navigation/`       |
+| Player       | `app/n_zik/android/playback/services/`     |
+| UI           | `app/n_zik/android/components/ui/screens/` |
+| Tests        | `ComposeN-Zik/src/test/`                   |
 
 ---
 
