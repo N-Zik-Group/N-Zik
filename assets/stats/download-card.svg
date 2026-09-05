@@ -45,7 +45,7 @@
     <!-- Column 1 -->
     <g class="animated delay-1">
       <text x="35" y="65" class="text-label">TOTAL DOWNLOADS</text>
-      <text x="35" y="95" class="text-value-1">33.9k</text>
+      <text x="35" y="95" class="text-value-1">34.0k</text>
     </g>
 
     <line x1="220" y1="45" x2="220" y2="100" class="line" stroke-width="1" />
@@ -54,7 +54,7 @@
     <g class="animated delay-2">
       <text x="245" y="65" class="text-label">LATEST RELEASE</text>
       <text x="245" y="85" class="text-value-2">v7.5.1-dev-20260905</text>
-      <text x="245" y="105" class="text-sub">📥 12 downloads</text>
+      <text x="245" y="105" class="text-sub">📥 15 downloads</text>
     </g>
 
     <line x1="420" y1="45" x2="420" y2="100" class="line" stroke-width="1" />
