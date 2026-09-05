@@ -90,6 +90,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
@@ -1045,8 +1046,11 @@ class MainActivity :
             val isViMusic = uiType == UiType.ViMusic
             
             val bottomBarHeightPx = with(LocalDensity.current) { 240.dp.roundToPx().toFloat() } // Enough to hide floating bar + miniplayer
-            var topBarOffsetHeightPx by remember { mutableFloatStateOf(0f) }
-            var bottomBarOffsetHeightPx by remember { mutableFloatStateOf(0f) }
+            var isBarsVisible by remember { mutableStateOf(true) }
+            val topBarOffsetAnimatable = remember { androidx.compose.animation.core.Animatable(0f) }
+            val bottomBarOffsetAnimatable = remember { androidx.compose.animation.core.Animatable(0f) }
+            var accumulatedDownScroll by remember { mutableFloatStateOf(0f) }
+            var accumulatedUpScroll by remember { mutableFloatStateOf(0f) }
             
             val density = LocalDensity.current
             val safeDrawingInsets = WindowInsets.safeDrawing
@@ -1054,23 +1058,32 @@ class MainActivity :
             val currentRoute by app.n_zik.android.extensions.discord.DiscordUiState.currentRoute.collectAsState()
             val currentHomeTab by app.n_zik.android.extensions.discord.DiscordUiState.currentHomeTab.collectAsState()
             
-            val isScrollableRoute = (currentRoute == "home" && currentHomeTab != "quickpicks") ||
+            val isScrollableRoute = currentRoute == "home" ||
                     currentRoute?.startsWith("artist") == true ||
                     currentRoute?.startsWith("album") == true ||
-                    currentRoute?.startsWith("localPlaylist") == true
+                    currentRoute?.startsWith("localPlaylist") == true ||
+                    currentRoute?.startsWith("searchResults") == true ||
+                    currentRoute?.startsWith("settings") == true
+                    
+            val isLandscapeHiddenRoute = currentRoute == "home" && currentHomeTab != "quickpicks"
 
-            LaunchedEffect(isLandscape, isViMusic, isScrollableRoute, density, safeDrawingInsets) {
-                if (isLandscape && isScrollableRoute) {
-                    val statusBarsTopPx = safeDrawingInsets.getTop(density)
-                    val topBarHeightPx = with(density) { 64.dp.roundToPx() } + statusBarsTopPx
-                    topBarOffsetHeightPx = -topBarHeightPx.toFloat()
+            LaunchedEffect(isLandscape, isViMusic, isScrollableRoute, isLandscapeHiddenRoute, density, safeDrawingInsets) {
+                val statusBarsTopPx = safeDrawingInsets.getTop(density)
+                val topBarHeightPx = with(density) { 64.dp.roundToPx() } + statusBarsTopPx
+                
+                if (isLandscape && isLandscapeHiddenRoute) {
+                    topBarOffsetAnimatable.snapTo(-topBarHeightPx.toFloat())
                 } else {
-                    topBarOffsetHeightPx = 0f
+                    topBarOffsetAnimatable.snapTo(0f)
                 }
-                bottomBarOffsetHeightPx = 0f
+                bottomBarOffsetAnimatable.snapTo(0f)
+                
+                isBarsVisible = true
+                accumulatedDownScroll = 0f
+                accumulatedUpScroll = 0f
             }
 
-            val nestedScrollConnection = remember(isLandscape, isViMusic, isScrollableRoute, density, safeDrawingInsets) {
+            val nestedScrollConnection = remember(isLandscape, isViMusic, isScrollableRoute, isLandscapeHiddenRoute, density, safeDrawingInsets) {
                 object : NestedScrollConnection {
                     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                         val shouldHideOnScroll = isLandscape || isScrollableRoute
@@ -1082,25 +1095,54 @@ class MainActivity :
                         
                         val delta = available.y
                         
-                        val topConsumed = if (isLandscape && isScrollableRoute) {
-                            0f
-                        } else {
-                            val previousTopOffset = topBarOffsetHeightPx
-                            val newTopOffset = topBarOffsetHeightPx + delta
-                            topBarOffsetHeightPx = newTopOffset.coerceIn(-topBarHeightPx.toFloat(), 0f)
-                            topBarOffsetHeightPx - previousTopOffset
+                        if (!(isLandscape && isLandscapeHiddenRoute)) {
+                            val currentTopOffset = topBarOffsetAnimatable.value
+                            val newTopOffset = (currentTopOffset + delta).coerceIn(-topBarHeightPx.toFloat(), 0f)
+                            coroutineScope.launch {
+                                topBarOffsetAnimatable.snapTo(newTopOffset)
+                            }
                         }
                         
-                        val newBottomOffset = bottomBarOffsetHeightPx - delta
-                        bottomBarOffsetHeightPx = newBottomOffset.coerceIn(0f, bottomBarHeightPx)
+                        val currentBottomOffset = bottomBarOffsetAnimatable.value
+                        val newBottomOffset = (currentBottomOffset - delta).coerceIn(0f, bottomBarHeightPx)
+                        coroutineScope.launch {
+                            bottomBarOffsetAnimatable.snapTo(newBottomOffset)
+                        }
                         
-                        return Offset(0f, topConsumed)
+                        return Offset.Zero
+                    }
+
+                    override suspend fun onPreFling(available: Velocity): Velocity {
+                        val statusBarsTopPx = safeDrawingInsets.getTop(density)
+                        val topBarHeightPx = with(density) { 64.dp.roundToPx() } + statusBarsTopPx
+                        
+                        if (!(isLandscape && isLandscapeHiddenRoute)) {
+                            val currentTopOffset = topBarOffsetAnimatable.value
+                            if (currentTopOffset < 0f && currentTopOffset > -topBarHeightPx.toFloat()) {
+                                if (currentTopOffset > -topBarHeightPx.toFloat() / 2) {
+                                    topBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(300))
+                                } else {
+                                    topBarOffsetAnimatable.animateTo(-topBarHeightPx.toFloat(), androidx.compose.animation.core.tween(300))
+                                }
+                            }
+                        }
+                        
+                        val currentBottomOffset = bottomBarOffsetAnimatable.value
+                        if (currentBottomOffset > 0f && currentBottomOffset < bottomBarHeightPx) {
+                            if (currentBottomOffset < bottomBarHeightPx / 2) {
+                                bottomBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(300))
+                            } else {
+                                bottomBarOffsetAnimatable.animateTo(bottomBarHeightPx, androidx.compose.animation.core.tween(300))
+                            }
+                        }
+                        
+                        return Velocity.Zero
                     }
                 }
             }
 
-            val topBarOffsetState = derivedStateOf { topBarOffsetHeightPx }
-            val bottomBarOffsetState = derivedStateOf { bottomBarOffsetHeightPx }
+            val topBarOffsetState = derivedStateOf { topBarOffsetAnimatable.value }
+            val bottomBarOffsetState = derivedStateOf { bottomBarOffsetAnimatable.value }
 
             BoxWithConstraints(
                 modifier = Modifier

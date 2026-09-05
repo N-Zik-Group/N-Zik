@@ -1,3 +1,8 @@
+improve(ui): global smart hide/show of App Header and NavBar on scroll
+  - `MainActivity.kt`: Replaced linear pixel tracking in `NestedScrollConnection` with intelligent threshold-based hiding (-150px down to hide, +15px up to show).
+  - `MainActivity.kt`: Removed restrictions to enable scroll-hide behavior on Quick Picks, Search Results, and Settings screens.
+  - `MainActivity.kt`: Animated transitions using `Animatable` for smooth sliding in/out regardless of list size.
+
 feat(ui): smooth hide/show of TabToolBar on scroll up/down
   - `HomeSongsScreen.kt`, `HomeArtist.kt`, `HomeAlbum.kt`, `HomeLibrary.kt`: Added `snapshotFlow` to track scroll direction and `firstVisibleItemIndex`.
   - Hides the toolbar when scrolling down past index 10, and instantly reappears when scrolling up.
