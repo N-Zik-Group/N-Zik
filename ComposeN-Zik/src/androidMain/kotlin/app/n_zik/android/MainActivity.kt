@@ -90,7 +90,6 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
@@ -1095,24 +1094,48 @@ class MainActivity :
                         
                         val delta = available.y
                         
-                        if (!(isLandscape && isLandscapeHiddenRoute)) {
-                            val currentTopOffset = topBarOffsetAnimatable.value
-                            val newTopOffset = (currentTopOffset + delta).coerceIn(-topBarHeightPx.toFloat(), 0f)
-                            coroutineScope.launch {
-                                topBarOffsetAnimatable.snapTo(newTopOffset)
+                        if (delta > 0) {
+                            // Scrolling UP
+                            accumulatedDownScroll = 0f
+                            accumulatedUpScroll += delta
+                            if (accumulatedUpScroll > 100f) {
+                                if (!(isLandscape && isLandscapeHiddenRoute)) {
+                                    val currentTopOffset = topBarOffsetAnimatable.value
+                                    val newTopOffset = (currentTopOffset + delta).coerceIn(-topBarHeightPx.toFloat(), 0f)
+                                    coroutineScope.launch {
+                                        topBarOffsetAnimatable.snapTo(newTopOffset)
+                                    }
+                                }
+                                val currentBottomOffset = bottomBarOffsetAnimatable.value
+                                val newBottomOffset = (currentBottomOffset - delta).coerceIn(0f, bottomBarHeightPx)
+                                coroutineScope.launch {
+                                    bottomBarOffsetAnimatable.snapTo(newBottomOffset)
+                                }
                             }
-                        }
-                        
-                        val currentBottomOffset = bottomBarOffsetAnimatable.value
-                        val newBottomOffset = (currentBottomOffset - delta).coerceIn(0f, bottomBarHeightPx)
-                        coroutineScope.launch {
-                            bottomBarOffsetAnimatable.snapTo(newBottomOffset)
+                        } else if (delta < 0) {
+                            // Scrolling DOWN
+                            accumulatedUpScroll = 0f
+                            accumulatedDownScroll += delta
+                            if (accumulatedDownScroll < -300f) {
+                                if (!(isLandscape && isLandscapeHiddenRoute)) {
+                                    val currentTopOffset = topBarOffsetAnimatable.value
+                                    val newTopOffset = (currentTopOffset + delta).coerceIn(-topBarHeightPx.toFloat(), 0f)
+                                    coroutineScope.launch {
+                                        topBarOffsetAnimatable.snapTo(newTopOffset)
+                                    }
+                                }
+                                val currentBottomOffset = bottomBarOffsetAnimatable.value
+                                val newBottomOffset = (currentBottomOffset - delta).coerceIn(0f, bottomBarHeightPx)
+                                coroutineScope.launch {
+                                    bottomBarOffsetAnimatable.snapTo(newBottomOffset)
+                                }
+                            }
                         }
                         
                         return Offset.Zero
                     }
-
-                    override suspend fun onPreFling(available: Velocity): Velocity {
+                    
+                    override suspend fun onPreFling(available: androidx.compose.ui.unit.Velocity): androidx.compose.ui.unit.Velocity {
                         val statusBarsTopPx = safeDrawingInsets.getTop(density)
                         val topBarHeightPx = with(density) { 64.dp.roundToPx() } + statusBarsTopPx
                         
@@ -1136,7 +1159,7 @@ class MainActivity :
                             }
                         }
                         
-                        return Velocity.Zero
+                        return androidx.compose.ui.unit.Velocity.Zero
                     }
                 }
             }
