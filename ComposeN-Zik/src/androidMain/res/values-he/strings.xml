@@ -1147,6 +1147,8 @@
   <string name="sync_show_details">Show sync details</string>
   <string name="sync_show_details_description">Show a toast for each import during Sync Now</string>
   <string name="sync_per_playlist_auto">Per-Playlist Auto-Sync</string>
+  <string name="sync_per_playlist_auto_on">Auto-Sync: ON</string>
+  <string name="sync_per_playlist_auto_off">Auto-Sync: OFF</string>
   <string name="sync_per_playlist_auto_description">Allow individual playlists to be auto-synced</string>
   <string name="sync_now">Sync Now</string>
   <string name="sync_now_description">Force a full sync with YouTube Music</string>
