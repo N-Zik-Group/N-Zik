@@ -1148,6 +1148,8 @@ Volume BAS : titre précédent</string>
   <string name="sync_show_details">Afficher les détails de la synchronisation</string>
   <string name="sync_show_details_description">Show a toast for each import during Sync Now</string>
   <string name="sync_per_playlist_auto">Synchronisation automatique par playlist</string>
+  <string name="sync_per_playlist_auto_on">Auto-Sync: ON</string>
+  <string name="sync_per_playlist_auto_off">Auto-Sync: OFF</string>
   <string name="sync_per_playlist_auto_description">Allow individual playlists to be auto-synced</string>
   <string name="sync_now">Synchroniser maintenant</string>
   <string name="sync_now_description">Autoriser la synchronisation automatique des playlists individuelles</string>
