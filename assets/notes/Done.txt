@@ -1,3 +1,17 @@
+feat(ui): smooth hide/show of TabToolBar on scroll up/down
+  - `HomeSongsScreen.kt`, `HomeArtist.kt`, `HomeAlbum.kt`, `HomeLibrary.kt`: Added `snapshotFlow` to track scroll direction and `firstVisibleItemIndex`.
+  - Hides the toolbar when scrolling down past index 10, and instantly reappears when scrolling up.
+
+feat(sync): add detailed status messages and expandable UI for sync operations
+  - `SyncYTMusicUtils.kt`: Added `SyncItemStatus` holding state and `detailMessage`.
+  - `SyncYTMusicUtils.kt`: Track exact counts (e.g., "15 playlists synced") or errors for 13 operations using `latestSyncDetail`.
+  - `SyncStatusDialog.kt`: Transformed rows into expandable columns; click to reveal details below.
+  - `SyncStatusDialog.kt`: Added chevron arrow with 180deg animated rotation and `AnimatedVisibility` for the detail text.
+  - `SyncStatusDialog.kt`: Used `uiRoundnessShape()` clipping and ripple effect for the clickable expandable area.
+  - `AccountsSettings.kt`, `HomeSongsScreen.kt`, `HomeAlbum.kt`, `HomeArtist.kt`, `LocalPlaylistItemMenu.kt`, `OnlinePlaylistItemMenu.kt`: Handled updated `SyncStatus` properties and minor UI tweaks.
+  - `PlayerServiceModern.kt`: Added `isYouTubeSyncEnabled()` gate and explicit `pushHistoryEnabled` preference toggle to YTM history pushing.
+  - `strings.xml`: Added string resources for "Auto-Sync: ON/OFF".
+
 improve(ui): search bar icon sizing and text alignment refinements
   - `SearchScreen.kt`: Resized search, microphone, sound_effect, and close icons to 25dp for consistent sizing
   - `SearchScreen.kt`: Adjusted text field padding (`start = 30.dp, end = 100.dp`) to prevent text overlapping with right-side icons

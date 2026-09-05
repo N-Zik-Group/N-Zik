@@ -7,7 +7,12 @@ import app.n_zik.android.uiRoundnessShape
 
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -42,7 +47,10 @@ import sh.calvin.reorderable.ReorderableItem
 import app.kreate.android.themed.rimusic.component.playlist.PositionLock
 import app.it.fast4x.rimusic.enums.ArtistSortBy
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
@@ -430,6 +438,37 @@ fun HomeArtists(
 
 
                 val hapticFeedback = LocalHapticFeedback.current
+                
+                var isToolbarVisible by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(true) }
+                var previousIndex by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(lazyGridState.firstVisibleItemIndex) }
+                var previousScrollOffset by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(lazyGridState.firstVisibleItemScrollOffset) }
+            
+                androidx.compose.runtime.LaunchedEffect(lazyGridState) {
+                    androidx.compose.runtime.snapshotFlow { lazyGridState.firstVisibleItemIndex to lazyGridState.firstVisibleItemScrollOffset }
+                        .collect { (index, offset) ->
+                            if (index < 10) {
+                                isToolbarVisible = true
+                            } else {
+                                if (index < previousIndex) {
+                                    isToolbarVisible = true
+                                } else if (index > previousIndex) {
+                                    isToolbarVisible = false
+                                } else {
+                                    if (offset < previousScrollOffset - 15) {
+                                        isToolbarVisible = true
+                                    } else if (offset > previousScrollOffset + 15) {
+                                        isToolbarVisible = false
+                                    }
+                                }
+                            }
+                            
+                            if (kotlin.math.abs(offset - previousScrollOffset) > 15 || index != previousIndex) {
+                                previousIndex = index
+                                previousScrollOffset = offset
+                            }
+                        }
+                }
+
                 val reorderableLazyGridState = rememberReorderableLazyGridState(
                     lazyGridState = lazyGridState
                 ) { from, to ->
@@ -446,12 +485,18 @@ fun HomeArtists(
 
 
 
-                Column {
-                    TabHeader( R.string.artists ) {
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = isToolbarVisible,
+                    enter = androidx.compose.animation.expandVertically() + androidx.compose.animation.fadeIn(),
+                    exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
+                ) {
+                    Column {
+                        Column {
+                            TabHeader( R.string.artists ) {
                         HeaderInfo(items.size.toString(), R.drawable.people)
                     }
                     exportDialog.Render()
-                    TabToolBar.Buttons( toolbarButtons )
+                        TabToolBar.Buttons( toolbarButtons, disableAnimation = true )
                     search.SearchBar( this@Column )
                 }
 
@@ -471,38 +516,48 @@ fun HomeArtists(
                             modifier = Modifier.weight(1f)
                         )
                     }
-                    if (isYouTubeSyncEnabled()) {
+                    AnimatedVisibility(
+                        visible = isYouTubeSyncEnabled(),
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
+                    ) {
                         Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .padding(bottom = 8.dp)
+                                .fillMaxWidth()
                         ) {
-                            BasicText(
-                                text = when (filterBy) {
-                                    FilterBy.All -> stringResource(R.string.all)
-                                    FilterBy.Local -> stringResource(R.string.on_device)
-                                    FilterBy.YoutubeLibrary -> stringResource(R.string.ytm_library)
-                                },
-                                style = typography.xs.semiBold,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier
-                                    .clip(uiRoundnessShape())
-                                    .background(colorPalette().background2)
-                                    .clickable {
-                                        menuState.display {
-                                            FilterMenu(
-                                                title = stringResource(R.string.filter_by),
-                                                onDismiss = menuState::hide,
-                                                onAll = { filterBy = FilterBy.All },
-                                                onYoutubeLibrary = {
-                                                    filterBy = FilterBy.YoutubeLibrary
-                                                },
-                                                onLocal = { filterBy = FilterBy.Local }
-                                            )
+                            FilterChip(
+                                label = {
+                                    Text(
+                                        text = when (filterBy) {
+                                            FilterBy.All -> stringResource(R.string.all)
+                                            FilterBy.Local -> stringResource(R.string.on_device)
+                                            FilterBy.YoutubeLibrary -> stringResource(R.string.ytm_library)
                                         }
+                                    )
+                                },
+                                selected = true,
+                                shape = uiRoundnessShape(),
+                                colors = FilterChipDefaults.filterChipColors(
+                                    containerColor = colorPalette().background1,
+                                    labelColor = colorPalette().text,
+                                    selectedContainerColor = colorPalette().accent,
+                                    selectedLabelColor = colorPalette().onAccent,
+                                ),
+                                onClick = {
+                                    menuState.display {
+                                        FilterMenu(
+                                            title = stringResource(R.string.filter_by),
+                                            onDismiss = menuState::hide,
+                                            onAll = { filterBy = FilterBy.All },
+                                            onYoutubeLibrary = { filterBy = FilterBy.YoutubeLibrary },
+                                            onLocal = { filterBy = FilterBy.Local }
+                                        )
                                     }
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                }
                             )
                         }
                     }
@@ -537,8 +592,10 @@ fun HomeArtists(
                         }
                     }
                 }
+            }
+        }
 
-                Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize()) {
                     LazyVerticalGrid(
                         state = lazyGridState,
                         columns = GridCells.Adaptive( itemSize.size.dp ),

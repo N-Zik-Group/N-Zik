@@ -33,6 +33,8 @@ import androidx.compose.ui.draw.clip
 import app.n_zik.android.thumbnailShape
 import app.it.fast4x.rimusic.utils.ytAccountThumbnailKey
 import app.it.fast4x.rimusic.utils.ytCookieKey
+import app.it.fast4x.rimusic.utils.enableYouTubeLoginKey
+import app.it.fast4x.rimusic.utils.encryptedPreferences
 import app.it.fast4x.rimusic.utils.rememberEncryptedPreference
 import it.fast4x.innertube.utils.parseCookieString
 
@@ -90,11 +92,15 @@ fun ActionBar(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    val cookie by rememberEncryptedPreference(key = ytCookieKey, defaultValue = "")
-    val isLoggedIn = remember(cookie) {
-        "SAPISID" in parseCookieString(cookie)
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val trigger = app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger
+    val prefs = context.encryptedPreferences
+    val cookie = remember(trigger) { prefs.getString(app.it.fast4x.rimusic.utils.ytCookieKey, "") ?: "" }
+    val isLoginEnabled = remember(trigger) { prefs.getBoolean(app.it.fast4x.rimusic.utils.enableYouTubeLoginKey, false) }
+    val isLoggedIn = remember(cookie, isLoginEnabled) {
+        isLoginEnabled && ("SAPISID" in parseCookieString(cookie))
     }
-    val accountThumbnail by rememberEncryptedPreference(key = ytAccountThumbnailKey, defaultValue = "")
+    val accountThumbnail = remember(trigger) { prefs.getString(app.it.fast4x.rimusic.utils.ytAccountThumbnailKey, "") ?: "" }
 
     // Search Icon
     HeaderIcon( R.drawable.search) { navController.navigate(NavRoutes.search.name) }

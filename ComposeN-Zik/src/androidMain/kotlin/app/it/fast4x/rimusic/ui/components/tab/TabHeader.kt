@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -90,6 +92,13 @@ fun TabHeader(
     titleId: Int,
     additionalContent: @Composable () -> Unit
 ) {
+    val topBarOffset = app.n_zik.android.LocalTopBarOffset.current.value
+    val isToolbarHidden = topBarOffset < -10f
+    val alpha by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = if (isToolbarHidden) 0f else 1f,
+        animationSpec = androidx.compose.animation.core.tween(durationMillis = 300)
+    )
+
     // Align left if RiMusic, right if ViMusic
     val arrangement =
         if( UiType.ViMusic.isCurrent() )
@@ -101,9 +110,10 @@ fun TabHeader(
         horizontalArrangement = arrangement,
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
+            .alpha(alpha)
+            .fillMaxWidth()
             .padding(horizontal = 12.dp)
             .padding(top = 10.dp, bottom = 4.dp)
-            .fillMaxWidth()
     ) {
         when( UiType.current() ) {
             UiType.RiMusic -> RiMusicHeader( titleId, additionalContent )

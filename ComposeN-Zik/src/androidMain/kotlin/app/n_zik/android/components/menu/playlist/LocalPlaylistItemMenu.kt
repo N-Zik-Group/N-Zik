@@ -494,7 +494,8 @@ class LocalPlaylistItemMenu private constructor(
                     override var isFirstColor: Boolean = playlistPreview.playlist.isAutoSync
                     override val iconId: Int = R.drawable.sync
                     override val messageId: Int = R.string.sync_per_playlist_auto
-                    @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
+                    @get:Composable override val menuIconTitle: String
+                        get() = if (playlistPreview.playlist.isAutoSync) stringResource(R.string.sync_per_playlist_auto_on) else stringResource(R.string.sync_per_playlist_auto_off)
                     override fun onShortClick() {
                         menuState.hide()
                         coroutineScope.launch(Dispatchers.IO) {

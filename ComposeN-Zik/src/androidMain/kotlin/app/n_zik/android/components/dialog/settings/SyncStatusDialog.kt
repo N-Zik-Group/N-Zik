@@ -1,7 +1,11 @@
 package app.n_zik.android.components.dialog.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -14,6 +18,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
@@ -34,6 +40,7 @@ object SyncStatusDialog : InteractiveDialog {
     @Composable
     override fun DialogBody() {
         val status by syncStatus.collectAsState()
+        var expandedItem by androidx.compose.runtime.remember { mutableStateOf<String?>(null) }
 
         val statusItems = listOf(
             stringResource(R.string.autosync_likes) to status.likedSongs,
@@ -51,27 +58,71 @@ object SyncStatusDialog : InteractiveDialog {
             stringResource(R.string.sync_push_episode) to status.pushEpisodes,
         )
 
-        statusItems.forEach { (name, syncStatusValue) ->
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                BasicText(
-                    text = name,
-                    style = typography().xs,
-                    modifier = Modifier.weight(1f)
-                )
-                val (iconRes, tintColor) = when (syncStatusValue) {
-                    "syncing" -> R.drawable.sync to colorPalette().accent
-                    "idle" -> R.drawable.checkmark to colorPalette().textDisabled
-                    else -> R.drawable.information to colorPalette().textDisabled
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState())
+        ) {
+            statusItems.forEach { (name, syncItemStatus) ->
+                val isExpanded = expandedItem == name
+                val hasDetail = !syncItemStatus.detailMessage.isNullOrBlank()
+                val rotation by androidx.compose.animation.core.animateFloatAsState(if (isExpanded) 180f else 0f)
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .clip(uiRoundnessShape())
+                        .clickable(enabled = hasDetail) {
+                            expandedItem = if (isExpanded) null else name
+                        }
+                        .padding(horizontal = 8.dp, vertical = 8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        BasicText(
+                            text = name,
+                            style = typography().xs,
+                            modifier = Modifier.weight(1f)
+                        )
+                        
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                            val (iconRes, tintColor) = when (syncItemStatus.state) {
+                                "syncing" -> R.drawable.sync to colorPalette().accent
+                                "idle" -> R.drawable.checkmark to colorPalette().textDisabled
+                                "error" -> R.drawable.close to colorPalette().red
+                                else -> R.drawable.information to colorPalette().textDisabled
+                            }
+                            androidx.compose.material3.Icon(
+                                painter = androidx.compose.ui.res.painterResource(iconRes),
+                                contentDescription = null,
+                                tint = tintColor,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            
+                            if (hasDetail) {
+                                androidx.compose.material3.Icon(
+                                    painter = androidx.compose.ui.res.painterResource(R.drawable.chevron_down),
+                                    contentDescription = null,
+                                    tint = colorPalette().textDisabled,
+                                    modifier = Modifier
+                                        .padding(start = 8.dp)
+                                        .size(16.dp)
+                                        .graphicsLayer { rotationZ = rotation }
+                                )
+                            }
+                        }
+                    }
+
+                    androidx.compose.animation.AnimatedVisibility(visible = isExpanded && hasDetail) {
+                        BasicText(
+                            text = syncItemStatus.detailMessage ?: "",
+                            style = typography().xxs.copy(color = if (syncItemStatus.state == "error") colorPalette().red else colorPalette().textDisabled),
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
                 }
-                androidx.compose.material3.Icon(
-                    painter = androidx.compose.ui.res.painterResource(iconRes),
-                    contentDescription = null,
-                    tint = tintColor,
-                    modifier = Modifier.size(16.dp)
-                )
             }
         }
     }

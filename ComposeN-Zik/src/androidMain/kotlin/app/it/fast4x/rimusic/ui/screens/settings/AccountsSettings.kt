@@ -21,17 +21,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.WindowInsets
+
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
+
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
+
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,22 +42,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.alpha
+
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.password
-import androidx.compose.ui.semantics.semantics
+
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
 import app.n_zik.android.R
-import io.ktor.http.Url
+
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.components.dialog.settings.SyncStatusDialog
-import app.it.fast4x.compose.persist.persistList
+
 import it.fast4x.innertube.utils.parseCookieString
 import app.n_zik.android.appContext
 import app.n_zik.android.core.coil.ImageCacheFactory
@@ -70,22 +67,17 @@ import app.n_zik.android.extensions.discord.DiscordPresenceManager
 import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
 import app.n_zik.android.thumbnailShape
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
-import app.it.fast4x.rimusic.ui.components.LocalMenuState
+
 import app.it.fast4x.rimusic.ui.components.themed.DefaultDialog
 import androidx.compose.material3.Button
-import app.n_zik.android.components.dialog.common.InteractiveDialog
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
-import app.n_zik.android.uiRoundnessShape
+
 import androidx.compose.foundation.text.BasicText
-import app.it.fast4x.rimusic.ui.components.themed.SettingsListDialog
+
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
-import app.n_zik.android.components.menu.ListMenu
-import androidx.compose.material3.Icon
+
 import androidx.compose.ui.res.painterResource
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
@@ -114,24 +106,10 @@ import app.it.fast4x.rimusic.utils.syncImportEpisodesKey
 import app.it.fast4x.rimusic.utils.syncCooldownKey
 import app.it.fast4x.rimusic.utils.syncShowDetailsKey
 import app.it.fast4x.rimusic.utils.syncBackgroundGuardKey
-import app.it.fast4x.rimusic.utils.importYTMSubscribedChannels
-import app.it.fast4x.rimusic.utils.importYTMLikedAlbums
-import app.it.fast4x.rimusic.utils.importYTMPlaylists
-import app.it.fast4x.rimusic.utils.importYTMLikedSongs
-import app.it.fast4x.rimusic.utils.importYTMLibrarySongs
-import app.it.fast4x.rimusic.utils.importYTMUploadedSongs
-import app.it.fast4x.rimusic.utils.importYTMUploadedAlbums
-import app.it.fast4x.rimusic.utils.importYTMEpisodesForLater
-import app.it.fast4x.rimusic.utils.pushYTMLikedSongs
-import app.it.fast4x.rimusic.utils.pushYTMAlbumBookmarks
-import app.it.fast4x.rimusic.utils.pushYTMArtistFollows
-import app.it.fast4x.rimusic.utils.pushYTMPlaylists
-import app.it.fast4x.rimusic.utils.pushYTMSavedEpisodes
-import app.it.fast4x.rimusic.utils.queueSync
+
 import app.it.fast4x.rimusic.utils.SyncOperation
 import app.it.fast4x.rimusic.utils.syncStatus
 import app.it.fast4x.rimusic.utils.getLastSyncTime
-import app.it.fast4x.rimusic.utils.clearAllSyncedData
 import androidx.compose.runtime.collectAsState
 import app.it.fast4x.rimusic.utils.isAtLeastAndroid7
 import app.it.fast4x.rimusic.utils.isDiscordBrowsingEnabledKey
@@ -142,7 +120,7 @@ import app.it.fast4x.rimusic.utils.useLoginForBrowseKey
 import it.fast4x.innertube.Innertube
 
 import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.semiBold
+
 import app.it.fast4x.rimusic.utils.quickPicsDiscoverPageKey
 import app.it.fast4x.rimusic.utils.quickPicsHomePageKey
 import app.it.fast4x.rimusic.utils.quickPicsYtmQuickPicksKey
@@ -161,15 +139,16 @@ import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import android.widget.Toast
+
 import app.kreate.android.me.knighthat.utils.Toaster
-import timber.log.Timber
-import androidx.compose.material3.Text
-import androidx.compose.ui.res.painterResource
+
+import app.it.fast4x.rimusic.utils.clearAllSyncedData
 import app.it.fast4x.rimusic.utils.encryptedPreferences
+import app.it.fast4x.rimusic.utils.queueSync
 import app.it.fast4x.rimusic.utils.syncPushHistoryKey
 import app.n_zik.android.typography
-import app.n_zik.android.components.dialog.settings.SettingsInputDialog
+import it.fast4x.innertube.Innertube.cookie
+
 
 @Composable
 fun SettingIcon(@DrawableRes icon: Int) {
@@ -223,6 +202,22 @@ fun AccountsSettings() {
     var restartService by rememberSaveable { mutableStateOf(false) }
     var showClearSyncDialog by remember { mutableStateOf(false) }
 
+    var visitorData by rememberEncryptedPreference(key = ytVisitorDataKey, defaultValue = "")
+    var dataSyncId by rememberEncryptedPreference(key = ytDataSyncIdKey, defaultValue = "")
+    var cookie by rememberEncryptedPreference(key = ytCookieKey, defaultValue = "")
+
+    var accountName by rememberEncryptedPreference(key = ytAccountNameKey, defaultValue = "")
+    var accountEmail by rememberEncryptedPreference(key = ytAccountEmailKey, defaultValue = "")
+    var accountChannelHandle by rememberEncryptedPreference(key = ytAccountChannelHandleKey, defaultValue = "")
+    var accountThumbnail by rememberEncryptedPreference(key = ytAccountThumbnailKey, defaultValue = "")
+    var isLoggedIn = remember(cookie, app.n_zik.android.MainApplication.cookieStatus) {
+        "SAPISID" in parseCookieString(cookie) || app.n_zik.android.MainApplication.cookieStatus in listOf(
+            app.n_zik.android.MainApplication.CookieStatus.VALID,
+            app.n_zik.android.MainApplication.CookieStatus.INVALID,
+            app.n_zik.android.MainApplication.CookieStatus.EXPIRED
+        )
+    }
+
     Column(
         modifier = Modifier
             .background(colorPalette().background0)
@@ -267,20 +262,6 @@ fun AccountsSettings() {
                     var isYouTubeLoginEnabled by rememberEncryptedPreference(enableYouTubeLoginKey, false)
                     var isYouTubeSyncEnabled by rememberEncryptedPreference(enableYouTubeSyncKey, false)
                     var loginYouTube by remember { mutableStateOf(false) }
-                    var visitorData by rememberEncryptedPreference(key = ytVisitorDataKey, defaultValue = "")
-                    var dataSyncId by rememberEncryptedPreference(key = ytDataSyncIdKey, defaultValue = "")
-                    var cookie by rememberEncryptedPreference(key = ytCookieKey, defaultValue = "")
-
-                    var accountName by rememberEncryptedPreference(key = ytAccountNameKey, defaultValue = "")
-                    var accountEmail by rememberEncryptedPreference(key = ytAccountEmailKey, defaultValue = "")
-                    var accountChannelHandle by rememberEncryptedPreference(
-                        key = ytAccountChannelHandleKey,
-                        defaultValue = ""
-                    )
-                    var accountThumbnail by rememberEncryptedPreference(key = ytAccountThumbnailKey, defaultValue = "")
-                    var isLoggedIn = remember(cookie) {
-                        "SAPISID" in parseCookieString(cookie)
-                    }
                     val binder = LocalPlayerServiceBinder.current
 
                     if (search.inputValue.isBlank() || stringResource(R.string.enable_youtube_music_login).contains(search.inputValue, true)) {
@@ -290,6 +271,7 @@ fun AccountsSettings() {
                             isChecked = isYouTubeLoginEnabled,
                             onCheckedChange = {
                                 isYouTubeLoginEnabled = it
+                                app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger++
                                 if (!it) {
                                     // Only clear Innertube singleton (stop using account)
                                     // Keep account info so user doesn't have to reconnect
@@ -849,74 +831,6 @@ fun AccountsSettings() {
                 }
             }
 
-            // Clear synced data confirmation dialog
-            if (showClearSyncDialog) {
-                DefaultDialog(
-                    onDismiss = { showClearSyncDialog = false }
-                ) {
-                    BasicText(
-                        text = stringResource(R.string.clear_synced_data_confirm),
-                        style = typography().s.copy(color = colorPalette().text)
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Button(
-                            onClick = { showClearSyncDialog = false },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorPalette().background2,
-                                contentColor = colorPalette().text
-                            ),
-                            shape = uiRoundnessShape()
-                        ) {
-                            Text(stringResource(R.string.cancel))
-                        }
-                        Button(
-                            onClick = {
-                                showClearSyncDialog = false
-                                coroutineScope.launch(Dispatchers.IO) {
-                                    val cleared = runCatching { clearAllSyncedData() }.getOrElse { false }
-                                    withContext(Dispatchers.Main) {
-                                        val ep = appContext().encryptedPreferences
-                                        ep.edit().putString(ytCookieKey, "").apply()
-                                        ep.edit().putString(ytAccountNameKey, "").apply()
-                                        ep.edit().putString(ytAccountChannelHandleKey, "").apply()
-                                        ep.edit().putString(ytAccountEmailKey, "").apply()
-                                        ep.edit().putString(ytAccountThumbnailKey, "").apply()
-                                        ep.edit().putString(ytVisitorDataKey, "").apply()
-                                        ep.edit().putString(ytDataSyncIdKey, "").apply()
-                                        appContext().preferences.edit().putBoolean(enableYouTubeSyncKey, false).apply()
-                                        app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
-                                        appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
-                                        clearStreamCaches()
-                                        appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, true).apply()
-                                        val cookieManager = CookieManager.getInstance()
-                                        cookieManager.removeAllCookies(null)
-                                        cookieManager.flush()
-                                        WebStorage.getInstance().deleteAllData()
-                                        if (cleared) {
-                                            Toaster.s(R.string.youtube_disconnect)
-                                        } else {
-                                            Toaster.w(R.string.youtube_disconnect)
-                                        }
-                                    }
-                                }
-                            },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorPalette().accent,
-                                contentColor = colorPalette().textSecondary
-                            ),
-                            shape = uiRoundnessShape()
-                        ) {
-                            Text(stringResource(R.string.confirm))
-                        }
-                    }
-                }
-            }
         }
 
         /* Removed Spacer */
@@ -1171,6 +1085,88 @@ fun AccountsSettings() {
             )
         }
         
+        // Clear synced data confirmation dialog
+        val dialogCoroutineScope = rememberCoroutineScope()
+        if (showClearSyncDialog) {
+            DefaultDialog(
+                onDismiss = { showClearSyncDialog = false }
+            ) {
+                BasicText(
+                    text = stringResource(R.string.clear_synced_data_confirm),
+                    style = typography().s.copy(color = colorPalette().text)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Button(
+                        onClick = { showClearSyncDialog = false },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorPalette().background2,
+                            contentColor = colorPalette().text
+                        ),
+                        shape = uiRoundnessShape()
+                    ) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                    Button(
+                        onClick = {
+                            showClearSyncDialog = false
+                            dialogCoroutineScope.launch(Dispatchers.IO) {
+                                val cleared = runCatching { clearAllSyncedData() }.getOrElse { false }
+                                withContext(Dispatchers.Main) {
+                                    val ep = appContext().encryptedPreferences
+                                    ep.edit().putString(ytCookieKey, "").apply()
+                                    ep.edit().putString(ytAccountNameKey, "").apply()
+                                    ep.edit().putString(ytAccountChannelHandleKey, "").apply()
+                                    ep.edit().putString(ytAccountEmailKey, "").apply()
+                                    ep.edit().putString(ytAccountThumbnailKey, "").apply()
+                                    ep.edit().putString(ytVisitorDataKey, "").apply()
+                                    ep.edit().putString(ytDataSyncIdKey, "").apply()
+                                    
+                                    // Manually update states to force UI recomposition
+                                    cookie = ""
+                                    accountName = ""
+                                    accountEmail = ""
+                                    accountChannelHandle = ""
+                                    accountThumbnail = ""
+                                    visitorData = ""
+                                    dataSyncId = ""
+                                    
+                                    app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger++
+                                    
+                                    appContext().preferences.edit().putBoolean(enableYouTubeSyncKey, false).apply()
+                                    app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
+                                    appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
+                                    clearStreamCaches()
+                                    appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, true).apply()
+                                    val cookieManager = CookieManager.getInstance()
+                                    cookieManager.removeAllCookies(null)
+                                    cookieManager.flush()
+                                    WebStorage.getInstance().deleteAllData()
+                                    if (cleared) {
+                                        Toaster.s(R.string.youtube_disconnect)
+                                    } else {
+                                        Toaster.w(R.string.youtube_disconnect)
+                                    }
+                                }
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorPalette().accent,
+                            contentColor = colorPalette().textSecondary
+                        ),
+                        shape = uiRoundnessShape()
+                    ) {
+                        Text(stringResource(R.string.confirm))
+                    }
+                }
+            }
+        }
+
         SettingsGroupSpacer(
             modifier = Modifier.height(Dimensions.bottomSpacer)
         )

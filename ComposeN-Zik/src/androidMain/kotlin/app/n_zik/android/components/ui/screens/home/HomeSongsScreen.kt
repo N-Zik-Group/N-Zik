@@ -2,15 +2,24 @@ package app.n_zik.android.components.ui.screens.home
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -90,6 +99,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.draw.alpha
 import app.n_zik.android.enums.lyrics.LyricsType
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -539,6 +549,36 @@ fun HomeSongsScreen(navController: NavController ) {
         }
     }
 
+    var isToolbarVisible by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(true) }
+    var previousIndex by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(lazyListState.firstVisibleItemIndex) }
+    var previousScrollOffset by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(lazyListState.firstVisibleItemScrollOffset) }
+
+    androidx.compose.runtime.LaunchedEffect(lazyListState) {
+        androidx.compose.runtime.snapshotFlow { lazyListState.firstVisibleItemIndex to lazyListState.firstVisibleItemScrollOffset }
+            .collect { (index, offset) ->
+                if (index < 10) {
+                    isToolbarVisible = true
+                } else {
+                    if (index < previousIndex) {
+                        isToolbarVisible = true
+                    } else if (index > previousIndex) {
+                        isToolbarVisible = false
+                    } else {
+                        if (offset < previousScrollOffset - 15) {
+                            isToolbarVisible = true
+                        } else if (offset > previousScrollOffset + 15) {
+                            isToolbarVisible = false
+                        }
+                    }
+                }
+                
+                if (kotlin.math.abs(offset - previousScrollOffset) > 15 || index != previousIndex) {
+                    previousIndex = index
+                    previousScrollOffset = offset
+                }
+            }
+    }
+
     Box(
         modifier = Modifier.background( colorPalette().background0 )
             .fillMaxHeight()
@@ -547,167 +587,184 @@ fun HomeSongsScreen(navController: NavController ) {
         Column( Modifier.fillMaxSize() ) {
             // Header is rendered directly in the Column (not inside LazyColumn)
             // so it stays stable when switching between HomeSongs and OnDeviceSong
-            Column {
-                TabHeader( R.string.songs ) {
-                    Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            HeaderInfo( itemsOnDisplayState.size.toString(), R.drawable.musical_notes )
-                        }
-                        if (isRecommendationEnabled) {
+            androidx.compose.animation.AnimatedVisibility(
+                visible = isToolbarVisible,
+                enter = androidx.compose.animation.expandVertically() + androidx.compose.animation.fadeIn(),
+                exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
+            ) {
+                Column {
+                    TabHeader( R.string.songs ) {
+                        Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    painter = painterResource(R.drawable.smart_shuffle),
-                                    contentDescription = null,
-                                    tint = colorPalette().textSecondary,
-                                    modifier = Modifier.size(12.dp)
-                                )
-                                if (isRecommendationsLoading) {
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(12.dp),
-                                        strokeWidth = 1.5.dp,
-                                        color = colorPalette().textSecondary
+                                HeaderInfo( itemsOnDisplayState.size.toString(), R.drawable.musical_notes )
+                            }
+                            if (isRecommendationEnabled) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.smart_shuffle),
+                                        contentDescription = null,
+                                        tint = colorPalette().textSecondary,
+                                        modifier = Modifier.size(12.dp)
                                     )
-                                } else if (recommendationCount > 0) {
-                                    BasicText(
-                                        text = recommendationCount.toString(),
-                                        style = TextStyle(
-                                            color = colorPalette().textSecondary,
-                                            fontStyle = typography().xxxs.semiBold.fontStyle,
-                                            fontWeight = typography().xxxs.semiBold.fontWeight,
-                                            fontSize = typography().xxxs.semiBold.fontSize
-                                        ),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier.padding( start = 4.dp )
-                                    )
+                                    if (isRecommendationsLoading) {
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(12.dp),
+                                            strokeWidth = 1.5.dp,
+                                            color = colorPalette().textSecondary
+                                        )
+                                    } else if (recommendationCount > 0) {
+                                        BasicText(
+                                            text = recommendationCount.toString(),
+                                            style = TextStyle(
+                                                color = colorPalette().textSecondary,
+                                                fontStyle = typography().xxxs.semiBold.fontStyle,
+                                                fontWeight = typography().xxxs.semiBold.fontWeight,
+                                                fontSize = typography().xxxs.semiBold.fontSize
+                                            ),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = Modifier.padding( start = 4.dp )
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(5.dp))
                                 }
-                                Spacer(modifier = Modifier.width(5.dp))
                             }
                         }
                     }
-                }
 
-                importMenu.Render()
-                exportDialog.Render()
+                    importMenu.Render()
+                    exportDialog.Render()
 
-                if (showExportCacheConfirmDialog) {
-                    val count = getSongs().size
-                    ConfirmationDialog(
-                        text = stringResource(R.string.do_you_really_want_to_export_cached_count, count),
-                        onDismiss = { showExportCacheConfirmDialog = false },
-                        onConfirm = {
-                            showExportCacheConfirmDialog = false
-                            showExportCacheLyricsDialog = true
-                        }
-                    )
-                }
-                if (showExportCacheLyricsDialog) {
-                    val lyricsOptions = listOf(
-                        null to stringResource(R.string.no_lyrics),
-                        LyricsType.Synced.name to stringResource(R.string.lyrics_synced),
-                        LyricsType.Unsynced.name to stringResource(R.string.lyrics_unsynced),
-                        LyricsType.Karaoke.name to stringResource(R.string.lyrics_karaoke)
-                    )
-                    var selectedLyricsType by remember { mutableStateOf(exportCacheLyricsType) }
-                    ValueSelectorDialog(
-                        onDismiss = { showExportCacheLyricsDialog = false },
-                        title = stringResource(R.string.export_lyrics_choice),
-                        selectedValue = selectedLyricsType,
-                        values = lyricsOptions.map { it.first },
-                        onValueSelected = { type ->
-                            exportCacheLyricsType = type
-                            exportCacheFolderLauncher.launch(null)
-                        },
-                        valueText = { type -> lyricsOptions.find { it.first == type }?.second ?: "" }
-                    )
-                }
-                if (isExportingCache) {
-                    InProgressDialog(
-                        total = exportCacheTotal,
-                        done = exportCacheProgress,
-                        text = stringResource(R.string.exporting),
-                        onDismiss = null
-                    )
-                }
+                    if (showExportCacheConfirmDialog) {
+                        val count = getSongs().size
+                        ConfirmationDialog(
+                            text = stringResource(R.string.do_you_really_want_to_export_cached_count, count),
+                            onDismiss = { showExportCacheConfirmDialog = false },
+                            onConfirm = {
+                                showExportCacheConfirmDialog = false
+                                showExportCacheLyricsDialog = true
+                            }
+                        )
+                    }
+                    if (showExportCacheLyricsDialog) {
+                        val lyricsOptions = listOf(
+                            null to stringResource(R.string.no_lyrics),
+                            LyricsType.Synced.name to stringResource(R.string.lyrics_synced),
+                            LyricsType.Unsynced.name to stringResource(R.string.lyrics_unsynced),
+                            LyricsType.Karaoke.name to stringResource(R.string.lyrics_karaoke)
+                        )
+                        var selectedLyricsType by remember { mutableStateOf(exportCacheLyricsType) }
+                        ValueSelectorDialog(
+                            onDismiss = { showExportCacheLyricsDialog = false },
+                            title = stringResource(R.string.export_lyrics_choice),
+                            selectedValue = selectedLyricsType,
+                            values = lyricsOptions.map { it.first },
+                            onValueSelected = { type ->
+                                exportCacheLyricsType = type
+                                exportCacheFolderLauncher.launch(null)
+                            },
+                            valueText = { type -> lyricsOptions.find { it.first == type }?.second ?: "" }
+                        )
+                    }
+                    if (isExportingCache) {
+                        InProgressDialog(
+                            total = exportCacheTotal,
+                            done = exportCacheProgress,
+                            text = stringResource(R.string.exporting),
+                            onDismiss = null
+                        )
+                    }
 
-                downloadAllDialog.Render()
-                deleteDownloadsDialog.Render()
-                smartTrash.Render()
+                    downloadAllDialog.Render()
+                    deleteDownloadsDialog.Render()
+                    smartTrash.Render()
 
-                TabToolBar.Buttons( buttons )
+                    TabToolBar.Buttons( buttons, disableAnimation = true )
 
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding( horizontal = 16.dp )
-                        .padding( bottom = 8.dp )
-                        .fillMaxWidth()
-                ) {
-                    Column {
-                        val showFavoritesPlaylist by rememberPreference( showFavoritesPlaylistKey, true )
-                        val showCachedPlaylist by rememberPreference( showCachedPlaylistKey, true )
-                        val showMyTopPlaylist by rememberPreference( showMyTopPlaylistKey, true )
-                        val showDownloadedPlaylist by rememberPreference( showDownloadedPlaylistKey, true )
-                        val showOnDeviceChip by rememberPreference( showOnDevicePlaylistKey, true )
-                        val showDislikedChip by rememberPreference( showDislikedPlaylistKey, true )
-                        val homeSongsOrderPref by rememberPreference( homeSongsOrderKey, "" )
-                        val chips = remember( showFavoritesPlaylist, showCachedPlaylist, showMyTopPlaylist, showDownloadedPlaylist, showOnDeviceChip, showDislikedChip, homeSongsOrderPref ) {
-                            val songsDefaultOrder = listOf("all", "favorites", "disliked", "cached", "downloaded", "top", "on_device")
-                            val toggleMap = mapOf(
-                                "favorites" to showFavoritesPlaylist,
-                                "cached" to showCachedPlaylist,
-                                "downloaded" to showDownloadedPlaylist,
-                                "top" to showMyTopPlaylist,
-                                "on_device" to showOnDeviceChip,
-                                "disliked" to showDislikedChip
-                            )
-                            val builtinMap = mapOf(
-                                "all" to BuiltInPlaylist.All,
-                                "favorites" to BuiltInPlaylist.Favorites,
-                                "cached" to BuiltInPlaylist.Offline,
-                                "downloaded" to BuiltInPlaylist.Downloaded,
-                                "top" to BuiltInPlaylist.Top,
-                                "on_device" to BuiltInPlaylist.OnDevice,
-                                "disliked" to BuiltInPlaylist.Disliked
-                            )
-                            val order = try {
-                                val arr = JSONArray(homeSongsOrderPref)
-                                val parsed = (0 until arr.length()).map { arr.getString(it) }
-                                val valid = parsed.filter { it in songsDefaultOrder }.toMutableList()
-                                for (id in songsDefaultOrder) { if (id !in valid) valid.add(id) }
-                                valid
-                            } catch (_: Exception) { songsDefaultOrder }
-                            buildList {
-                                for (id in order) {
-                                    if (id == "all" || toggleMap[id] == true) {
-                                        builtinMap[id]?.let { add(it) }
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding( horizontal = 16.dp )
+                            .padding( bottom = 8.dp )
+                            .fillMaxWidth()
+                    ) {
+                        Column {
+                            val showFavoritesPlaylist by rememberPreference( showFavoritesPlaylistKey, true )
+                            val showCachedPlaylist by rememberPreference( showCachedPlaylistKey, true )
+                            val showMyTopPlaylist by rememberPreference( showMyTopPlaylistKey, true )
+                            val showDownloadedPlaylist by rememberPreference( showDownloadedPlaylistKey, true )
+                            val showOnDeviceChip by rememberPreference( showOnDevicePlaylistKey, true )
+                            val showDislikedChip by rememberPreference( showDislikedPlaylistKey, true )
+                            val homeSongsOrderPref by rememberPreference( homeSongsOrderKey, "" )
+                            val chips = remember( showFavoritesPlaylist, showCachedPlaylist, showMyTopPlaylist, showDownloadedPlaylist, showOnDeviceChip, showDislikedChip, homeSongsOrderPref ) {
+                                val songsDefaultOrder = listOf("all", "favorites", "disliked", "cached", "downloaded", "top", "on_device")
+                                val toggleMap = mapOf(
+                                    "favorites" to showFavoritesPlaylist,
+                                    "cached" to showCachedPlaylist,
+                                    "downloaded" to showDownloadedPlaylist,
+                                    "top" to showMyTopPlaylist,
+                                    "on_device" to showOnDeviceChip,
+                                    "disliked" to showDislikedChip
+                                )
+                                val builtinMap = mapOf(
+                                    "all" to BuiltInPlaylist.All,
+                                    "favorites" to BuiltInPlaylist.Favorites,
+                                    "cached" to BuiltInPlaylist.Offline,
+                                    "downloaded" to BuiltInPlaylist.Downloaded,
+                                    "top" to BuiltInPlaylist.Top,
+                                    "on_device" to BuiltInPlaylist.OnDevice,
+                                    "disliked" to BuiltInPlaylist.Disliked
+                                )
+                                val order = try {
+                                    val arr = JSONArray(homeSongsOrderPref)
+                                    val parsed = (0 until arr.length()).map { arr.getString(it) }
+                                    val valid = parsed.filter { it in songsDefaultOrder }.toMutableList()
+                                    for (id in songsDefaultOrder) { if (id !in valid) valid.add(id) }
+                                    valid
+                                } catch (_: Exception) { songsDefaultOrder }
+                                buildList {
+                                    for (id in order) {
+                                        if (id == "all" || toggleMap[id] == true) {
+                                            builtinMap[id]?.let { add(it) }
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        ButtonsRow(
-                            chips = chips,
-                            currentValue = builtInPlaylist,
-                            onValueUpdate = { builtInPlaylist = it },
-                            modifier = Modifier.padding(end = 12.dp)
-                        )
+                            ButtonsRow(
+                                chips = chips,
+                                currentValue = builtInPlaylist,
+                                onValueUpdate = { builtInPlaylist = it },
+                                modifier = Modifier.padding(end = 12.dp)
+                            )
 
-                        if (isYouTubeSyncEnabled() && (builtInPlaylist == BuiltInPlaylist.Favorites || builtInPlaylist == BuiltInPlaylist.Disliked)) {
-                            val menuState = LocalMenuState.current
-                            var filterBy by rememberPreference(filterByKey, FilterBy.All)
-                            BasicText(
-                                text = when (filterBy) {
-                                    FilterBy.All -> stringResource(R.string.all)
-                                    FilterBy.Local -> stringResource(R.string.on_device)
-                                    FilterBy.YoutubeLibrary -> stringResource(R.string.ytm_library)
-                                },
-                                style = typography().xs.semiBold,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier
-                                    .clip(uiRoundnessShape()).clickable {
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = isYouTubeSyncEnabled() && (builtInPlaylist == BuiltInPlaylist.Favorites || builtInPlaylist == BuiltInPlaylist.Disliked),
+                                enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.expandVertically(),
+                                exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.shrinkVertically()
+                            ) {
+                                val menuState = LocalMenuState.current
+                                var filterBy by rememberPreference(filterByKey, FilterBy.All)
+                                FilterChip(
+                                    label = {
+                                        Text(
+                                            text = when (filterBy) {
+                                                FilterBy.All -> stringResource(R.string.all)
+                                                FilterBy.Local -> stringResource(R.string.on_device)
+                                                FilterBy.YoutubeLibrary -> stringResource(R.string.ytm_library)
+                                            }
+                                        )
+                                    },
+                                    selected = true,
+                                    shape = uiRoundnessShape(),
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        containerColor = colorPalette().background1,
+                                        labelColor = colorPalette().text,
+                                        selectedContainerColor = colorPalette().accent,
+                                        selectedLabelColor = colorPalette().onAccent,
+                                    ),
+                                    onClick = {
                                         menuState.display {
                                             FilterMenu(
                                                 title = stringResource(R.string.filter_by),
@@ -718,35 +775,33 @@ fun HomeSongsScreen(navController: NavController ) {
                                             )
                                         }
                                     }
-                                    .background(colorPalette().background2)
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
-                            )
-                        }
+                                )
+                            }
 
-                        val exoPlayerDiskCacheMaxSize by rememberPreference(app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey, app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize.`512MB`)
-                        val exoPlayerDiskDownloadCacheMaxSize by rememberPreference(app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey, app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize.`2GB`)
+                            val exoPlayerDiskCacheMaxSize by rememberPreference(app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey, app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize.`512MB`)
+                            val exoPlayerDiskDownloadCacheMaxSize by rememberPreference(app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey, app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize.`2GB`)
 
-                        val showCacheIndicator = when (builtInPlaylist) {
-                            BuiltInPlaylist.Offline -> exoPlayerDiskCacheMaxSize != app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize.Unlimited
-                            BuiltInPlaylist.Downloaded -> exoPlayerDiskDownloadCacheMaxSize != app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize.Unlimited
-                            else -> false
-                        }
+                            val showCacheIndicator = when (builtInPlaylist) {
+                                BuiltInPlaylist.Offline -> exoPlayerDiskCacheMaxSize != app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize.Unlimited
+                                BuiltInPlaylist.Downloaded -> exoPlayerDiskDownloadCacheMaxSize != app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize.Unlimited
+                                else -> false
+                            }
 
-                        androidx.compose.animation.AnimatedVisibility(
-                            visible = showCacheIndicator
-                        ) {
-                            CacheSpaceIndicator(
-                                cacheType = when (builtInPlaylist) {
-                                    BuiltInPlaylist.Downloaded -> CacheType.DownloadedSongs
-                                    BuiltInPlaylist.Offline -> CacheType.CachedSongs
-                                    else -> CacheType.CachedSongs
-                                }
-                            )
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = showCacheIndicator
+                            ) {
+                                CacheSpaceIndicator(
+                                    cacheType = when (builtInPlaylist) {
+                                        BuiltInPlaylist.Downloaded -> CacheType.DownloadedSongs
+                                        BuiltInPlaylist.Offline -> CacheType.CachedSongs
+                                        else -> CacheType.CachedSongs
+                                    }
+                                )
+                            }
                         }
                     }
+                    search.SearchBar( columnScope = this@Column )
                 }
-
-                search.SearchBar( columnScope = this@Column )
             }
 
             when( builtInPlaylist ) {
@@ -754,7 +809,6 @@ fun HomeSongsScreen(navController: NavController ) {
                 else                     -> HomeSongs( navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, matchButton = null, onRecommendationCountChange = { count -> recommendationCount = count }, onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading }, isRecommendationEnabled = isRecommendationEnabled, refreshKey = matchRefreshKey, onMatchClick = { showConfirmMatchAllDialog = true } )
             }
         }
-
         FloatingActionsContainerWithScrollToTop(lazyListState = lazyListState)
 
         val showFloatingIcon by rememberPreference( showFloatingIconKey, false )

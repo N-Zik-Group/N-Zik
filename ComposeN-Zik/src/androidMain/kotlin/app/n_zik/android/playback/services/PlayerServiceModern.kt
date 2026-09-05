@@ -738,8 +738,9 @@ class PlayerServiceModern : MediaLibraryService(),
                 }
             }
 
-            // YTM history push (always runs, like Metrolist — NOT gated by pauseListenHistoryKey)
-            if (totalPlayTimeMs > minTimeForEvent.asMillis) {
+            // YTM history push (gated by sync enabled + push toggle + network)
+            val pushHistoryEnabled = preferences.getBoolean(syncPushHistoryKey, false)
+            if (totalPlayTimeMs > minTimeForEvent.asMillis && isYouTubeSyncEnabled() && pushHistoryEnabled && isNetworkConnected(this@PlayerServiceModern)) {
                 coroutineScope.launch(Dispatchers.IO) {
                     val playbackData = playbackDataCache[songId]
                     val streamClient = playbackData?.streamClient

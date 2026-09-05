@@ -621,6 +621,10 @@ suspend fun downloadSyncedLyrics( song: Song ) {
 }
 
 suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: String, mediaItems: List<MediaItem>){
+    if( !isYouTubeSyncEnabled() ) return
+    if( !canPushToYTM() ) return
+    if( !isNetworkConnected(appContext()) ) return
+
     val mediaItemsChunks = mediaItems.chunked(50)
     mediaItemsChunks.forEachIndexed { index, items ->
         if (mediaItems.size <= 50) {}
@@ -695,6 +699,8 @@ suspend fun addSongToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylist
 @OptIn(UnstableApi::class)
 suspend fun addToYtLikedSongs(mediaItems: List<MediaItem>){
     if( !isYouTubeSyncEnabled() ) return
+    if( !canPushToYTM() ) return
+    if( !isNetworkConnected(appContext()) ) return
 
     mediaItems.forEachIndexed { index, item ->
         delay(1000)

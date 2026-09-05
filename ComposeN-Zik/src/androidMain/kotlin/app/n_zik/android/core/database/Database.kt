@@ -648,7 +648,7 @@ object Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 35,
+    version = 36,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -713,6 +713,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                     From34To35Migration(),
                     From35To36Migration
                 )
+                .fallbackToDestructiveMigration()
                 .build()
             
             db.invalidationTracker.addObserver(object : InvalidationTracker.Observer(

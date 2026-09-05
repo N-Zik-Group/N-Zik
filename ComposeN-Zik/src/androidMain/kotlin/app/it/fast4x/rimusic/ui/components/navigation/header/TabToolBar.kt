@@ -39,22 +39,11 @@ object TabToolBar {
         buttons: List<Button>,
         horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceEvenly,
         verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
-        modifier: Modifier = Modifier
+        modifier: Modifier = Modifier,
+        disableAnimation: Boolean = false
     ) {
         val density = LocalDensity.current.density
         var availableWidth by remember { mutableStateOf(0.dp) }
-
-        /*
-            `15.dp` is a magic number used to approximate the spacing
-            between each item displayed inside `Row` composable.
-
-            Why?
-            A 660.dp screen can display up to 10 items without spacing.
-            But since [Arrangement.SpaceEvenly] is set, only 7 items
-            can be displayed, any other item will be hidden.
-
-            TODO: Implement a more accurate/efficient mathematical equation to calculate spacing
-        */
         val sizeWithSpacing = TOOLBAR_ICON_SIZE + 15.dp
         var canDisplay by remember { mutableIntStateOf(0) }
 
@@ -62,52 +51,49 @@ object TabToolBar {
             canDisplay = (availableWidth / sizeWithSpacing).toInt()
         }
 
-        AnimatedContent(
-            targetState = buttons,
-            label = "ToolbarButtonsAnimation",
-            modifier = modifier.fillMaxWidth()
-                               .padding( HORIZONTAL_PADDING, VERTICAL_PADDING )
-                               .onGloballyPositioned {
-                                   // [it.size.width] returns size in px
-                                   val widthDp = it.size.width / density
-                                   availableWidth = widthDp.dp - (HORIZONTAL_PADDING * 2)
-                               }
-        ) { targetButtons ->
+        val baseModifier = modifier.fillMaxWidth()
+            .padding( HORIZONTAL_PADDING, VERTICAL_PADDING )
+            .onGloballyPositioned {
+                val widthDp = it.size.width / density
+                availableWidth = widthDp.dp - (HORIZONTAL_PADDING * 2)
+            }
+
+        val content = @Composable { targetButtons: List<Button> ->
             if( canDisplay == 0 ) {
                 Spacer(modifier = Modifier.fillMaxWidth())
-                return@AnimatedContent
+            } else {
+                val isClustered = targetButtons.size > canDisplay
+                val ellipsisMenu = EllipsisMenuComponent.init {
+                    targetButtons.takeLast(
+                        (targetButtons.size - canDisplay + 1).coerceAtLeast( 0 )
+                    )
+                }
+
+                Row(
+                    horizontalArrangement = horizontalArrangement,
+                    verticalAlignment = verticalAlignment,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    targetButtons.take(
+                        if( isClustered ) canDisplay - 1 else targetButtons.size
+                    ).forEach { it.ToolBarButton() }
+
+                    if( isClustered ) ellipsisMenu.ToolBarButton()
+                }
             }
+        }
 
-            val isClustered = targetButtons.size > canDisplay
-            val ellipsisMenu = EllipsisMenuComponent.init {
-                targetButtons.takeLast(
-                    /*
-                     * Take what isn't displayed, or 0 if [canDisplay]
-                     * is equal or larger than [button]'s size.
-                     *
-                     * Ellipsis menu will replaces last icon with its icon,
-                     * therefore, `1` is added to include that last icon
-                     * back to the menu
-                     */
-                    (targetButtons.size - canDisplay + 1).coerceAtLeast( 0 )
-                )
+        if (disableAnimation) {
+            Box(modifier = baseModifier) {
+                content(buttons)
             }
-
-            Row(
-                horizontalArrangement = horizontalArrangement,
-                verticalAlignment = verticalAlignment,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                targetButtons.take(
-                    if( isClustered )
-                    // Last item is reserved for ellipsis menu's icon
-                        canDisplay - 1
-                    else
-                        targetButtons.size
-                ).forEach { it.ToolBarButton() }
-
-                if( isClustered )
-                    ellipsisMenu.ToolBarButton()
+        } else {
+            AnimatedContent(
+                targetState = buttons,
+                label = "ToolbarButtonsAnimation",
+                modifier = baseModifier
+            ) { targetButtons ->
+                content(targetButtons)
             }
         }
     }
@@ -117,8 +103,9 @@ object TabToolBar {
         vararg buttons: Button,
         horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceEvenly,
         verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
-        modifier: Modifier = Modifier
-    ) = Buttons( listOf( *buttons ), horizontalArrangement, verticalAlignment, modifier )
+        modifier: Modifier = Modifier,
+        disableAnimation: Boolean = false
+    ) = Buttons( listOf( *buttons ), horizontalArrangement, verticalAlignment, modifier, disableAnimation )
 
     @Composable
     fun Icon(

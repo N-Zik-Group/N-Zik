@@ -103,11 +103,13 @@ class OnlinePlaylistItemMenu private constructor(
         buttons.getOrNull(3)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
+        buttons.getOrNull(6)?.let { if (it is MenuIcon) it.ListMenuItem() }
+        buttons.getOrNull(7)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         // Section: Navigation
-        if (buttons.size > 6) {
+        if (buttons.size > 8) {
             SectionTitle(stringResource(R.string.navigation))
-            for (i in 6 until buttons.size) {
+            for (i in 8 until buttons.size) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
         }
@@ -130,13 +132,15 @@ class OnlinePlaylistItemMenu private constructor(
         buttons.getOrNull(3)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(5)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+        buttons.getOrNull(6)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+        buttons.getOrNull(7)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
         // Section: Navigation
-        if (buttons.size > 6) {
+        if (buttons.size > 8) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SectionTitle(stringResource(R.string.navigation))
             }
-            for (i in 6 until buttons.size) {
+            for (i in 8 until buttons.size) {
                 buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
         }

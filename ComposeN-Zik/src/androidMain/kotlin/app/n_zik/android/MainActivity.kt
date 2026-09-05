@@ -1048,26 +1048,48 @@ class MainActivity :
             var topBarOffsetHeightPx by remember { mutableFloatStateOf(0f) }
             var bottomBarOffsetHeightPx by remember { mutableFloatStateOf(0f) }
             
-            LaunchedEffect(isLandscape, isViMusic) {
-                topBarOffsetHeightPx = 0f
+            val density = LocalDensity.current
+            val safeDrawingInsets = WindowInsets.safeDrawing
+
+            val currentRoute by app.n_zik.android.extensions.discord.DiscordUiState.currentRoute.collectAsState()
+            val currentHomeTab by app.n_zik.android.extensions.discord.DiscordUiState.currentHomeTab.collectAsState()
+            
+            val isScrollableRoute = (currentRoute == "home" && currentHomeTab != "quickpicks") ||
+                    currentRoute?.startsWith("artist") == true ||
+                    currentRoute?.startsWith("album") == true ||
+                    currentRoute?.startsWith("localPlaylist") == true
+
+            LaunchedEffect(isLandscape, isViMusic, isScrollableRoute, density, safeDrawingInsets) {
+                if (isLandscape && isScrollableRoute) {
+                    val statusBarsTopPx = safeDrawingInsets.getTop(density)
+                    val topBarHeightPx = with(density) { 64.dp.roundToPx() } + statusBarsTopPx
+                    topBarOffsetHeightPx = -topBarHeightPx.toFloat()
+                } else {
+                    topBarOffsetHeightPx = 0f
+                }
                 bottomBarOffsetHeightPx = 0f
             }
 
-            val density = LocalDensity.current
-            val safeDrawingInsets = WindowInsets.safeDrawing
-            val nestedScrollConnection = remember(isLandscape, isViMusic, density, safeDrawingInsets) {
+            val nestedScrollConnection = remember(isLandscape, isViMusic, isScrollableRoute, density, safeDrawingInsets) {
                 object : NestedScrollConnection {
                     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                        if (!isLandscape || isViMusic) return Offset.Zero
+                        val shouldHideOnScroll = isLandscape || isScrollableRoute
+
+                        if (!shouldHideOnScroll || isViMusic) return Offset.Zero
                         
                         val statusBarsTopPx = safeDrawingInsets.getTop(density)
                         val topBarHeightPx = with(density) { 64.dp.roundToPx() } + statusBarsTopPx
                         
                         val delta = available.y
-                        val previousTopOffset = topBarOffsetHeightPx
-                        val newTopOffset = topBarOffsetHeightPx + delta
-                        topBarOffsetHeightPx = newTopOffset.coerceIn(-topBarHeightPx.toFloat(), 0f)
-                        val topConsumed = topBarOffsetHeightPx - previousTopOffset
+                        
+                        val topConsumed = if (isLandscape && isScrollableRoute) {
+                            0f
+                        } else {
+                            val previousTopOffset = topBarOffsetHeightPx
+                            val newTopOffset = topBarOffsetHeightPx + delta
+                            topBarOffsetHeightPx = newTopOffset.coerceIn(-topBarHeightPx.toFloat(), 0f)
+                            topBarOffsetHeightPx - previousTopOffset
+                        }
                         
                         val newBottomOffset = bottomBarOffsetHeightPx - delta
                         bottomBarOffsetHeightPx = newBottomOffset.coerceIn(0f, bottomBarHeightPx)

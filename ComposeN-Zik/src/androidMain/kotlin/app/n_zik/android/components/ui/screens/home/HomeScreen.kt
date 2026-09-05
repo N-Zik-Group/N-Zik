@@ -166,6 +166,11 @@ fun HomeScreen(
     ) { currentTabIndex ->
         saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
             val currentTabId = activeTabs.getOrNull(currentTabIndex)
+            
+            LaunchedEffect(currentTabId) {
+                app.n_zik.android.extensions.discord.DiscordUiState.currentHomeTab.value = currentTabId
+            }
+            
             when (currentTabId) {
                 "quickpicks" -> HomeQuickPicks(
                     onAlbumClick = {

@@ -564,9 +564,45 @@ fun HomeLibrary(
                         itemsOnDisplay = mutableItemsOnDisplay
                     }
                 }
+                
+                var isToolbarVisible by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(true) }
+                var previousIndex by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(lazyGridState.firstVisibleItemIndex) }
+                var previousScrollOffset by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(lazyGridState.firstVisibleItemScrollOffset) }
+            
+                androidx.compose.runtime.LaunchedEffect(lazyGridState) {
+                    androidx.compose.runtime.snapshotFlow { lazyGridState.firstVisibleItemIndex to lazyGridState.firstVisibleItemScrollOffset }
+                        .collect { (index, offset) ->
+                            if (index < 10) {
+                                isToolbarVisible = true
+                            } else {
+                                if (index < previousIndex) {
+                                    isToolbarVisible = true
+                                } else if (index > previousIndex) {
+                                    isToolbarVisible = false
+                                } else {
+                                    if (offset < previousScrollOffset - 15) {
+                                        isToolbarVisible = true
+                                    } else if (offset > previousScrollOffset + 15) {
+                                        isToolbarVisible = false
+                                    }
+                                }
+                            }
+                            
+                            if (kotlin.math.abs(offset - previousScrollOffset) > 15 || index != previousIndex) {
+                                previousIndex = index
+                                previousScrollOffset = offset
+                            }
+                        }
+                }
 
-                Column {
-                    TabHeader( R.string.playlists ) {
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = isToolbarVisible,
+                    enter = androidx.compose.animation.expandVertically() + androidx.compose.animation.fadeIn(),
+                    exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
+                ) {
+                    Column {
+                        Column {
+                            TabHeader( R.string.playlists ) {
                         HeaderInfo( items.size.toString(), R.drawable.playlist )
                     }
                     exportDialog.Render()
@@ -597,7 +633,7 @@ fun HomeLibrary(
                         )
                     }
                     
-                    TabToolBar.Buttons( toolbarButtons )
+                    TabToolBar.Buttons( toolbarButtons, disableAnimation = true )
                     search.SearchBar( this@Column )
                 }
 
@@ -648,10 +684,12 @@ fun HomeLibrary(
                                 trackColor = colorPalette().background2
                             )
                         }
+                        }
                     }
                 }
+            }
 
-                Box(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize()) {
                     LazyVerticalGrid(
                         state = lazyGridState,
                         columns = GridCells.Adaptive( itemSize.size.dp ),

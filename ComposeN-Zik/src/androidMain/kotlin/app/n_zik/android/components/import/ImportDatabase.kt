@@ -41,6 +41,19 @@ class ImportDatabase private constructor(
                             Database.close()
                             Timber.tag("ImportDatabase").d("Database closed")
 
+                            // Delete WAL and SHM files to prevent conflicts with imported database
+                            val dbPath = context.getDatabasePath( Database.FILE_NAME )
+                            val walFile = java.io.File(dbPath.path + "-wal")
+                            val shmFile = java.io.File(dbPath.path + "-shm")
+                            if (walFile.exists()) {
+                                walFile.delete()
+                                Timber.tag("ImportDatabase").d("Deleted WAL file")
+                            }
+                            if (shmFile.exists()) {
+                                shmFile.delete()
+                                Timber.tag("ImportDatabase").d("Deleted SHM file")
+                            }
+
                             context.applicationContext
                                    .contentResolver
                                    .openInputStream(uri)

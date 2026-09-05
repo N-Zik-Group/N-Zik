@@ -28,6 +28,7 @@ import app.it.fast4x.rimusic.utils.syncImportUploadedAlbumsKey
 import app.it.fast4x.rimusic.utils.syncImportEpisodesKey
 import app.it.fast4x.rimusic.utils.syncPushEpisodeKey
 import app.it.fast4x.rimusic.utils.syncCooldownKey
+import app.it.fast4x.rimusic.utils.syncShowDetailsKey
 import app.it.fast4x.rimusic.utils.syncDirectionKey
 import app.it.fast4x.rimusic.utils.autosyncLikesKey
 import app.it.fast4x.rimusic.utils.autosyncPlaylistsKey
@@ -129,124 +130,122 @@ suspend fun importYTMSubscribedChannels(force: Boolean = false, showDetails: Boo
     Timber.tag("SyncYTMusicUtils").d("importYTMSubscribedChannels isYouTubeSyncEnabled() = ${isYouTubeSyncEnabled()}")
     if (!isYouTubeSyncEnabled()) return@withContext false
     if (!canImportFromYTM()) return@withContext false
-    if (!force && !isSyncCooldownElapsed()) return@withContext false
+    if (!force && !isSyncCooldownElapsedFor("artists")) return@withContext false
     val autosyncArtists = appContext().preferences.getBoolean(autosyncArtistsKey, false)
     if (!autosyncArtists && !force) return@withContext false
     if (!force && isBackgroundGuardActive()) return@withContext false
 
         if (showDetails) Toaster.i( R.string.syncing, Toast.LENGTH_LONG )
 
-        val result = Innertube.library("FEmusic_library_corpus_artists").completed().onSuccess { page ->
+        val page = Innertube.library("FEmusic_library_corpus_artists").completed().getOrThrowRetriable()
+        if (page == null) {
+            latestSyncDetail = "Failed to fetch subscribed channels"
+            if (showDetails) Toaster.e(R.string.sync_failed)
+            return@withContext false
+        }
 
-            val ytmArtists = page.items.filterIsInstance<Innertube.ArtistItem>()
-            val remoteKeys = ytmArtists.map { it.key }.toSet()
+        val ytmArtists = page.items.filterIsInstance<Innertube.ArtistItem>()
+        val remoteKeys = ytmArtists.map { it.key }.toSet()
 
-            Timber.tag("SyncYTMusicUtils").d("YTM artists: $ytmArtists")
+        Timber.tag("SyncYTMusicUtils").d("YTM artists: $ytmArtists")
 
-            ytmArtists.forEach { remoteArtist ->
-                var localArtist = Database.artistTable.findById( remoteArtist.key ).first()
-                Timber.tag("SyncYTMusicUtils").d("Local artist: $localArtist")
-                Timber.tag("SyncYTMusicUtils").d("Remote artist: $remoteArtist")
+        ytmArtists.forEach { remoteArtist ->
+            var localArtist = Database.artistTable.findById( remoteArtist.key ).first()
+            Timber.tag("SyncYTMusicUtils").d("Local artist: $localArtist")
+            Timber.tag("SyncYTMusicUtils").d("Remote artist: $remoteArtist")
 
-                if (localArtist == null) {
-                    localArtist = Artist(
-                        id = remoteArtist.key,
-                        name = remoteArtist.title,
-                        thumbnailUrl = remoteArtist.thumbnail?.url,
-                        bookmarkedAt = System.currentTimeMillis(),
-                        isYoutubeArtist = true
-                    )
-                    Database.artistTable.upsert( localArtist )
-                } else {
-                    localArtist.copy(
-                        bookmarkedAt = localArtist.bookmarkedAt ?: System.currentTimeMillis(),
-                        thumbnailUrl = PropUtils.retainIfModified(localArtist.thumbnailUrl, remoteArtist.thumbnail?.url) ?: localArtist.thumbnailUrl,
-                        isYoutubeArtist = true
-                    ).let( Database.artistTable::update )
-                }
+            if (localArtist == null) {
+                localArtist = Artist(
+                    id = remoteArtist.key,
+                    name = remoteArtist.title,
+                    thumbnailUrl = remoteArtist.thumbnail?.url,
+                    bookmarkedAt = System.currentTimeMillis(),
+                    isYoutubeArtist = true
+                )
+                Database.artistTable.upsert( localArtist )
+            } else {
+                localArtist.copy(
+                    bookmarkedAt = localArtist.bookmarkedAt ?: System.currentTimeMillis(),
+                    thumbnailUrl = PropUtils.retainIfModified(localArtist.thumbnailUrl, remoteArtist.thumbnail?.url) ?: localArtist.thumbnailUrl,
+                    isYoutubeArtist = true
+                ).let( Database.artistTable::update )
             }
+        }
 
-            Database.artistTable
-                    .allFollowing()
-                    .first()
-                    .filter { artist ->
-                        artist.isYoutubeArtist && artist.id !in remoteKeys
-                    }
-                    .map { it.copy( isYoutubeArtist = false, bookmarkedAt = null ) }
-                    .forEach( Database.artistTable::update )
-        }
-        result.onFailure {
-            Timber.tag("SyncYTMusicUtils").e("Error importing YTM subscribed artists channels: ${it.stackTraceToString()}")
-            if (showDetails) Toaster.e(R.string.syncing_failed)
-        }
-        if (result.isSuccess) {
-            if (showDetails) Toaster.done()
-            setLastSyncTime()
-        }
-        result.isSuccess
+        Database.artistTable
+                .allFollowing()
+                .first()
+                .filter { artist ->
+                    artist.isYoutubeArtist && artist.id !in remoteKeys
+                }
+                .map { it.copy( isYoutubeArtist = false, bookmarkedAt = null ) }
+                .forEach( Database.artistTable::update )
+
+        if (showDetails) Toaster.done()
+        setLastSyncTimeFor("artists")
+        true
 }
 
 suspend fun importYTMLikedAlbums(force: Boolean = false, showDetails: Boolean = true): Boolean = withContext(Dispatchers.IO) {
     Timber.tag("SyncYTMusicUtils").d("importYTMLikedAlbums isYouTubeSyncEnabled() = ${isYouTubeSyncEnabled()}")
     if (!isYouTubeSyncEnabled()) return@withContext false
     if (!canImportFromYTM()) return@withContext false
-    if (!force && !isSyncCooldownElapsed()) return@withContext false
+    if (!force && !isSyncCooldownElapsedFor("albums")) return@withContext false
     val autosyncAlbums = appContext().preferences.getBoolean(autosyncAlbumsKey, false)
     if (!autosyncAlbums && !force) return@withContext false
     if (!force && isBackgroundGuardActive()) return@withContext false
 
         if (showDetails) Toaster.i( R.string.syncing, Toast.LENGTH_LONG )
 
-        val result = Innertube.library("FEmusic_liked_albums").completed().onSuccess { page ->
+        val page = Innertube.library("FEmusic_liked_albums").completed().getOrThrowRetriable()
+        if (page == null) {
+            latestSyncDetail = "Failed to fetch liked albums"
+            if (showDetails) Toaster.e(R.string.sync_failed)
+            return@withContext false
+        }
 
-            val ytmAlbums = page.items.filterIsInstance<Innertube.AlbumItem>()
-            val remoteKeys = ytmAlbums.map { it.key }.toSet()
+        val ytmAlbums = page.items.filterIsInstance<Innertube.AlbumItem>()
+        val remoteKeys = ytmAlbums.map { it.key }.toSet()
 
-            Timber.tag("SyncYTMusicUtils").d("YTM albums: $ytmAlbums")
+        Timber.tag("SyncYTMusicUtils").d("YTM albums: $ytmAlbums")
 
-            ytmAlbums.forEach { remoteAlbum ->
-                var localAlbum = Database.albumTable.findById( remoteAlbum.key ).first()
-                Timber.tag("SyncYTMusicUtils").d("Local album: $localAlbum")
-                Timber.tag("SyncYTMusicUtils").d("Remote album: $remoteAlbum")
+        ytmAlbums.forEach { remoteAlbum ->
+            var localAlbum = Database.albumTable.findById( remoteAlbum.key ).first()
+            Timber.tag("SyncYTMusicUtils").d("Local album: $localAlbum")
+            Timber.tag("SyncYTMusicUtils").d("Remote album: $remoteAlbum")
 
-                if (localAlbum == null) {
-                    localAlbum = Album(
-                        id = remoteAlbum.key,
-                        title = remoteAlbum.title,
-                        thumbnailUrl = remoteAlbum.thumbnail?.url,
-                        bookmarkedAt = System.currentTimeMillis(),
-                        year = remoteAlbum.year,
-                        authorsText = remoteAlbum.authors?.joinToString(", ") { it.name.orEmpty() }.takeIf { !it.isNullOrBlank() },
-                        isYoutubeAlbum = true
-                    )
-                    Database.albumTable.upsert( localAlbum )
-                } else {
-                    localAlbum.copy(
-                        isYoutubeAlbum = true,
-                        bookmarkedAt = localAlbum.bookmarkedAt ?: System.currentTimeMillis(),
-                        thumbnailUrl = PropUtils.retainIfModified(localAlbum.thumbnailUrl, remoteAlbum.thumbnail?.url) ?: localAlbum.thumbnailUrl)
-                        .let( Database.albumTable::updateReplace )
-                }
+            if (localAlbum == null) {
+                localAlbum = Album(
+                    id = remoteAlbum.key,
+                    title = remoteAlbum.title,
+                    thumbnailUrl = remoteAlbum.thumbnail?.url,
+                    bookmarkedAt = System.currentTimeMillis(),
+                    year = remoteAlbum.year,
+                    authorsText = remoteAlbum.authors?.joinToString(", ") { it.name.orEmpty() }.takeIf { !it.isNullOrBlank() },
+                    isYoutubeAlbum = true
+                )
+                Database.albumTable.upsert( localAlbum )
+            } else {
+                localAlbum.copy(
+                    isYoutubeAlbum = true,
+                    bookmarkedAt = localAlbum.bookmarkedAt ?: System.currentTimeMillis(),
+                    thumbnailUrl = PropUtils.retainIfModified(localAlbum.thumbnailUrl, remoteAlbum.thumbnail?.url) ?: localAlbum.thumbnailUrl)
+                    .let( Database.albumTable::updateReplace )
             }
+        }
 
-            Database.albumTable
-                    .all()
-                    .first()
-                    .filter { album ->
-                        album.isYoutubeAlbum && album.id !in remoteKeys
-                    }
-                    .map { it.copy( isYoutubeAlbum = false, bookmarkedAt = null ) }
-                    .also( Database.albumTable::updateReplace )
-        }
-        result.onFailure {
-            Timber.tag("SyncYTMusicUtils").e("Error importing YTM liked albums: ${it.stackTraceToString()}")
-            if (showDetails) Toaster.e(R.string.syncing_failed)
-        }
-        if (result.isSuccess) {
-            if (showDetails) Toaster.done()
-            setLastSyncTime()
-        }
-        result.isSuccess
+        Database.albumTable
+                .all()
+                .first()
+                .filter { album ->
+                    album.isYoutubeAlbum && album.id !in remoteKeys
+                }
+                .map { it.copy( isYoutubeAlbum = false, bookmarkedAt = null ) }
+                .also( Database.albumTable::updateReplace )
+
+        if (showDetails) Toaster.done()
+        setLastSyncTimeFor("albums")
+        true
 }
 
 suspend fun removeYTSongFromPlaylist(
@@ -266,45 +265,51 @@ suspend fun removeYTSongFromPlaylist(
     Timber.tag("SyncYTMusicUtils").d("removeYTSongFromPlaylist removeSongFromPlaylist songSetVideoId = $setVideoId")
 
     PlaylistEditThrottle.throttle(playlistBrowseId)
-    YtMusic.removeFromPlaylist( playlistBrowseId, songId, setVideoId )
-    return true
+    return YtMusic.removeFromPlaylist( playlistBrowseId, songId, setVideoId )
+        .onFailure { e ->
+            Timber.tag("SyncYTMusicUtils").e(e, "removeYTSongFromPlaylist failed for $songId in $playlistBrowseId")
+        }
+        .isSuccess
 }
 
 suspend fun importYTMLikedSongs(force: Boolean = false, showDetails: Boolean = true): Boolean = withContext(Dispatchers.IO) {
     Timber.tag("SyncYTMusicUtils").d("importYTMLikedSongs isYouTubeSyncEnabled() = ${isYouTubeSyncEnabled()}")
     if (!isYouTubeSyncEnabled()) return@withContext false
     if (!canImportFromYTM()) return@withContext false
-    if (!force && !isSyncCooldownElapsed()) return@withContext false
+    if (!force && !isSyncCooldownElapsedFor("likedSongs")) return@withContext false
     val autosyncLikes = appContext().preferences.getBoolean(autosyncLikesKey, false)
     if (!autosyncLikes && !force) return@withContext false
     if (!force && isBackgroundGuardActive()) return@withContext false
 
     if (showDetails) Toaster.i( R.string.syncing, Toast.LENGTH_LONG )
 
-    val result = YtMusic.getPlaylist(playlistId = "LM").completed().onSuccess { page ->
-        val ytmLikedSongs = page.songs
-        Timber.tag("SyncYTMusicUtils").d("YTM liked songs: ${ytmLikedSongs.size}")
-
-        // Use a base timestamp and decrement for each song to preserve order
-        // YouTube returns most recent first, so index0 = newest = largest timestamp
-        val baseTimestamp = System.currentTimeMillis()
-        ytmLikedSongs.forEachIndexed { index, song ->
-            Database.insertIgnore( song.asMediaItem )
-            // First song (most recent) gets largest timestamp
-            val likedAt = baseTimestamp - index * 1000L
-            Database.songTable.likeState(song.key, likedAt)
-            Timber.tag("SyncYTMusicUtils").d("Liked song: ${song.title}")
-        }
-
-        Timber.tag("SyncYTMusicUtils").d("importYTMLikedSongs completed: ${ytmLikedSongs.size} songs liked")
-        if (showDetails) Toaster.done()
-        setLastSyncTime()
+    val page = YtMusic.getPlaylist(playlistId = "LM").completed().getOrThrowRetriable()
+    if (page == null) {
+        latestSyncDetail = "Failed to fetch liked songs"
+        if (showDetails) Toaster.e(R.string.sync_failed)
+        return@withContext false
     }
-    result.onFailure {
-        Timber.tag("SyncYTMusicUtils").e(it, "importYTMLikedSongs failed")
-        if (showDetails) Toaster.e(R.string.syncing_failed)
+
+    val ytmLikedSongs = page.songs
+    Timber.tag("SyncYTMusicUtils").d("YTM liked songs: ${ytmLikedSongs.size}")
+
+    // Use a base timestamp and decrement for each song to preserve order
+    // YouTube returns most recent first, so index0 = newest = largest timestamp
+    val baseTimestamp = System.currentTimeMillis()
+    ytmLikedSongs.forEachIndexed { index, song ->
+        Database.insertIgnore( song.asMediaItem )
+        // First song (most recent) gets largest timestamp
+        val likedAt = baseTimestamp - index * 1000L
+        Database.songTable.likeState(song.key, likedAt)
+        Timber.tag("SyncYTMusicUtils").d("Liked song: ${song.title}")
     }
-    result.isSuccess
+
+    latestSyncDetail = "${ytmLikedSongs.size} songs liked"
+
+    Timber.tag("SyncYTMusicUtils").d("importYTMLikedSongs completed: ${ytmLikedSongs.size} songs liked")
+    if (showDetails) Toaster.done()
+    setLastSyncTimeFor("likedSongs")
+    true
 }
 
 suspend fun removeYTMLikedSongs(): Boolean = withContext(Dispatchers.IO) {
@@ -329,8 +334,9 @@ suspend fun removeYTMLikedSongs(): Boolean = withContext(Dispatchers.IO) {
             Toaster.done()
         }
         result.onFailure {
+            latestSyncDetail = it.localizedMessage ?: "Unknown error"
             Timber.tag("SyncYTMusicUtils").e(it, "removeYTMLikedSongs failed")
-            Toaster.e(R.string.syncing_failed)
+            Toaster.e(R.string.sync_failed)
         }
         result.isSuccess
     }.getOrDefault(false)
@@ -340,67 +346,70 @@ suspend fun importYTMPlaylists(force: Boolean = false, showDetails: Boolean = tr
     Timber.tag("SyncYTMusicUtils").d("importYTMPlaylists isYouTubeSyncEnabled() = ${isYouTubeSyncEnabled()}")
     if (!isYouTubeSyncEnabled()) return@withContext false
     if (!canImportFromYTM()) return@withContext false
-    if (!force && !isSyncCooldownElapsed()) return@withContext false
+    if (!force && !isSyncCooldownElapsedFor("playlists")) return@withContext false
     val autosyncPlaylists = appContext().preferences.getBoolean(autosyncPlaylistsKey, false)
     if (!autosyncPlaylists && !force) return@withContext false
     if (!force && isBackgroundGuardActive()) return@withContext false
 
     if (showDetails) Toaster.i( R.string.syncing, Toast.LENGTH_LONG )
 
-    val result = Innertube.library("FEmusic_liked_playlists").completed().onSuccess { page ->
-        val ytmPlaylists = page.items.filterIsInstance<Innertube.PlaylistItem>()
-            .filterNot { it.key == "LM" || it.key == "SE" }
-            .distinctBy { it.key }
+    val page = Innertube.library("FEmusic_liked_playlists").completed().getOrThrowRetriable()
+    if (page == null) {
+        latestSyncDetail = "Failed to fetch playlists"
+        if (showDetails) Toaster.e(R.string.sync_failed)
+        return@withContext false
+    }
 
-        Timber.tag("SyncYTMusicUtils").d("YTM playlists: ${ytmPlaylists.size}")
+    val ytmPlaylists = page.items.filterIsInstance<Innertube.PlaylistItem>()
+        .filterNot { it.key == "LM" || it.key == "SE" }
+        .distinctBy { it.key }
 
-        ytmPlaylists.forEach { remotePlaylist ->
-            val browseIdWithVL = if (remotePlaylist.key.startsWith("VL")) remotePlaylist.key else "VL${remotePlaylist.key}"
+    Timber.tag("SyncYTMusicUtils").d("YTM playlists: ${ytmPlaylists.size}")
 
-            val existingPlaylist = Database.playlistTable
-                .findByBrowseId(browseIdWithVL)
+    ytmPlaylists.forEach { remotePlaylist ->
+        val browseIdWithVL = if (remotePlaylist.key.startsWith("VL")) remotePlaylist.key else "VL${remotePlaylist.key}"
+
+        val existingPlaylist = Database.playlistTable
+            .findByBrowseId(browseIdWithVL)
+            .first()
+            ?: Database.playlistTable
+                .findByBrowseId(remotePlaylist.key)
                 .first()
-                ?: Database.playlistTable
-                    .findByBrowseId(remotePlaylist.key)
-                    .first()
 
-            val playlistId: Long
-            if (existingPlaylist == null) {
-                val newPlaylist = Playlist(
-                    name = remotePlaylist.title ?: "Unknown Playlist",
+        val playlistId: Long
+        if (existingPlaylist == null) {
+            val newPlaylist = Playlist(
+                name = remotePlaylist.title ?: "Unknown Playlist",
+                browseId = browseIdWithVL,
+                isYoutubePlaylist = true,
+                isEditable = remotePlaylist.isEditable ?: false
+            )
+            playlistId = Database.playlistTable.insert(newPlaylist)
+            Timber.tag("SyncYTMusicUtils").d("Created playlist: ${remotePlaylist.title}")
+        } else {
+            playlistId = existingPlaylist.id
+            Database.playlistTable.update(
+                existingPlaylist.copy(
+                    name = remotePlaylist.title ?: existingPlaylist.name,
                     browseId = browseIdWithVL,
-                    isYoutubePlaylist = true,
-                    isEditable = remotePlaylist.isEditable ?: false
+                    isEditable = remotePlaylist.isEditable ?: existingPlaylist.isEditable
                 )
-                playlistId = Database.playlistTable.insert(newPlaylist)
-                Timber.tag("SyncYTMusicUtils").d("Created playlist: ${remotePlaylist.title}")
-            } else {
-                playlistId = existingPlaylist.id
-                Database.playlistTable.update(
-                    existingPlaylist.copy(
-                        name = remotePlaylist.title ?: existingPlaylist.name,
-                        browseId = browseIdWithVL,
-                        isEditable = remotePlaylist.isEditable ?: existingPlaylist.isEditable
-                    )
-                )
-                Timber.tag("SyncYTMusicUtils").d("Updated playlist: ${remotePlaylist.title}")
-            }
-
-            val playlist = Database.playlistTable.findById(playlistId).first()
-            if (playlist != null) {
-                ytmPrivatePlaylistSync(playlist, playlistId)
-            }
+            )
+            Timber.tag("SyncYTMusicUtils").d("Updated playlist: ${remotePlaylist.title}")
         }
 
-        Timber.tag("SyncYTMusicUtils").d("importYTMPlaylists completed: ${ytmPlaylists.size} playlists synced")
-        if (showDetails) Toaster.done()
-        setLastSyncTime()
+        val playlist = Database.playlistTable.findById(playlistId).first()
+        if (playlist != null) {
+            ytmPrivatePlaylistSync(playlist, playlistId)
+        }
     }
-    result.onFailure {
-        Timber.tag("SyncYTMusicUtils").e(it, "importYTMPlaylists failed")
-        if (showDetails) Toaster.e(R.string.syncing_failed)
-    }
-    result.isSuccess
+
+    latestSyncDetail = "${ytmPlaylists.size} playlists synced"
+
+    Timber.tag("SyncYTMusicUtils").d("importYTMPlaylists completed: ${ytmPlaylists.size} playlists synced")
+    if (showDetails) Toaster.done()
+    setLastSyncTimeFor("playlists")
+    true
 }
 
 
@@ -424,119 +433,128 @@ suspend fun importYTMLibrarySongs(force: Boolean = false, showDetails: Boolean =
     Timber.tag("SyncYTMusicUtils").d("importYTMLibrarySongs isYouTubeSyncEnabled() = ${isYouTubeSyncEnabled()}")
     if (!isYouTubeSyncEnabled()) return@withContext false
     if (!canImportFromYTM()) return@withContext false
-    if (!force && !isSyncCooldownElapsed()) return@withContext false
+    if (!force && !isSyncCooldownElapsedFor("librarySongs")) return@withContext false
     val syncLibrarySongs = appContext().preferences.getBoolean(syncImportLibrarySongsKey, false)
     if (!syncLibrarySongs && !force) return@withContext false
     if (!force && isBackgroundGuardActive()) return@withContext false
 
     if (showDetails) Toaster.i( R.string.syncing, Toast.LENGTH_LONG )
 
-    val result = Innertube.library("FEmusic_liked_videos").completed().onSuccess { page ->
-        val ytmSongs = page.items.filterIsInstance<Innertube.SongItem>()
-        Timber.tag("SyncYTMusicUtils").d("YTM library songs: ${ytmSongs.size}")
-
-        ytmSongs.forEach { song ->
-            Database.insertIgnore( song.asMediaItem )
-            Timber.tag("SyncYTMusicUtils").d("Library song: ${song.title}")
-        }
-
-        Timber.tag("SyncYTMusicUtils").d("importYTMLibrarySongs completed: ${ytmSongs.size} songs imported")
-        if (showDetails) Toaster.done()
-        setLastSyncTime()
+    val page = Innertube.library("FEmusic_liked_videos").completed().getOrThrowRetriable()
+    if (page == null) {
+        latestSyncDetail = "Failed to fetch library songs"
+        if (showDetails) Toaster.e(R.string.sync_failed)
+        return@withContext false
     }
-    result.onFailure {
-        Timber.tag("SyncYTMusicUtils").e(it, "importYTMLibrarySongs failed")
-        if (showDetails) Toaster.e(R.string.syncing_failed)
+
+    val ytmSongs = page.items.filterIsInstance<Innertube.SongItem>()
+    Timber.tag("SyncYTMusicUtils").d("YTM library songs: ${ytmSongs.size}")
+
+    ytmSongs.forEach { song ->
+        Database.insertIgnore( song.asMediaItem )
+        Timber.tag("SyncYTMusicUtils").d("Library song: ${song.title}")
     }
-    result.isSuccess
+
+    latestSyncDetail = "${ytmSongs.size} songs imported"
+
+    Timber.tag("SyncYTMusicUtils").d("importYTMLibrarySongs completed: ${ytmSongs.size} songs imported")
+    if (showDetails) Toaster.done()
+    setLastSyncTimeFor("librarySongs")
+    true
 }
 
 suspend fun importYTMUploadedSongs(force: Boolean = false, showDetails: Boolean = true): Boolean = withContext(Dispatchers.IO) {
     Timber.tag("SyncYTMusicUtils").d("importYTMUploadedSongs isYouTubeSyncEnabled() = ${isYouTubeSyncEnabled()}")
     if (!isYouTubeSyncEnabled()) return@withContext false
     if (!canImportFromYTM()) return@withContext false
-    if (!force && !isSyncCooldownElapsed()) return@withContext false
+    if (!force && !isSyncCooldownElapsedFor("uploadedSongs")) return@withContext false
     val syncUploadedSongs = appContext().preferences.getBoolean(syncImportUploadedSongsKey, false)
     if (!syncUploadedSongs && !force) return@withContext false
     if (!force && isBackgroundGuardActive()) return@withContext false
 
     if (showDetails) Toaster.i( R.string.syncing, Toast.LENGTH_LONG )
 
-    val result = Innertube.library("FEmusic_library_privately_owned_tracks").completed().onSuccess { page ->
-        val ytmSongs = page.items.filterIsInstance<Innertube.SongItem>()
-        Timber.tag("SyncYTMusicUtils").d("YTM uploaded songs: ${ytmSongs.size}")
-
-        ytmSongs.forEach { song ->
-            Database.insertIgnore( song.asMediaItem )
-            Timber.tag("SyncYTMusicUtils").d("Uploaded song: ${song.title}")
-        }
-
-        Timber.tag("SyncYTMusicUtils").d("importYTMUploadedSongs completed: ${ytmSongs.size} songs imported")
-        if (showDetails) Toaster.done()
-        setLastSyncTime()
+    val page = Innertube.library("FEmusic_library_privately_owned_tracks").completed().getOrThrowRetriable()
+    if (page == null) {
+        latestSyncDetail = "Failed to fetch uploaded songs"
+        if (showDetails) Toaster.e(R.string.sync_failed)
+        return@withContext false
     }
-    result.onFailure {
-        Timber.tag("SyncYTMusicUtils").e(it, "importYTMUploadedSongs failed")
-        if (showDetails) Toaster.e(R.string.syncing_failed)
+
+    val ytmSongs = page.items.filterIsInstance<Innertube.SongItem>()
+    Timber.tag("SyncYTMusicUtils").d("YTM uploaded songs: ${ytmSongs.size}")
+
+    ytmSongs.forEach { song ->
+        Database.insertIgnore( song.asMediaItem )
+        Timber.tag("SyncYTMusicUtils").d("Uploaded song: ${song.title}")
     }
-    result.isSuccess
+
+    latestSyncDetail = "${ytmSongs.size} songs imported"
+
+    Timber.tag("SyncYTMusicUtils").d("importYTMUploadedSongs completed: ${ytmSongs.size} songs imported")
+    if (showDetails) Toaster.done()
+    setLastSyncTimeFor("uploadedSongs")
+    true
 }
 
 suspend fun importYTMUploadedAlbums(force: Boolean = false, showDetails: Boolean = true): Boolean = withContext(Dispatchers.IO) {
     Timber.tag("SyncYTMusicUtils").d("importYTMUploadedAlbums isYouTubeSyncEnabled() = ${isYouTubeSyncEnabled()}")
     if (!isYouTubeSyncEnabled()) return@withContext false
     if (!canImportFromYTM()) return@withContext false
-    if (!force && !isSyncCooldownElapsed()) return@withContext false
+    if (!force && !isSyncCooldownElapsedFor("uploadedAlbums")) return@withContext false
     val syncUploadedAlbums = appContext().preferences.getBoolean(syncImportUploadedAlbumsKey, false)
     if (!syncUploadedAlbums && !force) return@withContext false
     if (!force && isBackgroundGuardActive()) return@withContext false
 
     if (showDetails) Toaster.i( R.string.syncing, Toast.LENGTH_LONG )
 
-    val result = Innertube.library("FEmusic_library_privately_owned_releases").completed().onSuccess { page ->
-        val ytmAlbums = page.items.filterIsInstance<Innertube.AlbumItem>()
-        val remoteKeys = ytmAlbums.map { it.key }.toSet()
-        Timber.tag("SyncYTMusicUtils").d("YTM uploaded albums: ${ytmAlbums.size}")
+    val page = Innertube.library("FEmusic_library_privately_owned_releases").completed().getOrThrowRetriable()
+    if (page == null) {
+        latestSyncDetail = "Failed to fetch uploaded albums"
+        if (showDetails) Toaster.e(R.string.sync_failed)
+        return@withContext false
+    }
 
-        ytmAlbums.forEach { remoteAlbum ->
-            var localAlbum = Database.albumTable.findById( remoteAlbum.key ).first()
+    val ytmAlbums = page.items.filterIsInstance<Innertube.AlbumItem>()
+    val remoteKeys = ytmAlbums.map { it.key }.toSet()
+    Timber.tag("SyncYTMusicUtils").d("YTM uploaded albums: ${ytmAlbums.size}")
 
-            if (localAlbum == null) {
-                localAlbum = Album(
-                    id = remoteAlbum.key,
-                    title = remoteAlbum.title,
-                    thumbnailUrl = remoteAlbum.thumbnail?.url,
-                    year = remoteAlbum.year,
-                    authorsText = remoteAlbum.authors?.joinToString(", ") { it.name.orEmpty() }.takeIf { !it.isNullOrBlank() },
-                    isYoutubeAlbum = true
-                )
-                Database.albumTable.upsert( localAlbum )
-            } else {
-                localAlbum.copy(
-                    isYoutubeAlbum = true,
-                    thumbnailUrl = PropUtils.retainIfModified(localAlbum.thumbnailUrl, remoteAlbum.thumbnail?.url) ?: localAlbum.thumbnailUrl
-                ).let( Database.albumTable::updateReplace )
-            }
+    ytmAlbums.forEach { remoteAlbum ->
+        var localAlbum = Database.albumTable.findById( remoteAlbum.key ).first()
+
+        if (localAlbum == null) {
+            localAlbum = Album(
+                id = remoteAlbum.key,
+                title = remoteAlbum.title,
+                thumbnailUrl = remoteAlbum.thumbnail?.url,
+                year = remoteAlbum.year,
+                authorsText = remoteAlbum.authors?.joinToString(", ") { it.name.orEmpty() }.takeIf { !it.isNullOrBlank() },
+                isYoutubeAlbum = true
+            )
+            Database.albumTable.upsert( localAlbum )
+        } else {
+            localAlbum.copy(
+                isYoutubeAlbum = true,
+                thumbnailUrl = PropUtils.retainIfModified(localAlbum.thumbnailUrl, remoteAlbum.thumbnail?.url) ?: localAlbum.thumbnailUrl
+            ).let( Database.albumTable::updateReplace )
         }
-
-        Database.albumTable
-                .all()
-                .first()
-                .filter { album ->
-                    album.isYoutubeAlbum && album.id !in remoteKeys
-                }
-                .map { it.copy( isYoutubeAlbum = false ) }
-                .also( Database.albumTable::updateReplace )
-
-        Timber.tag("SyncYTMusicUtils").d("importYTMUploadedAlbums completed: ${ytmAlbums.size} albums imported")
-        if (showDetails) Toaster.done()
-        setLastSyncTime()
     }
-    result.onFailure {
-        Timber.tag("SyncYTMusicUtils").e(it, "importYTMUploadedAlbums failed")
-        if (showDetails) Toaster.e(R.string.syncing_failed)
-    }
-    result.isSuccess
+
+    Database.albumTable
+            .all()
+            .first()
+            .filter { album ->
+                album.isYoutubeAlbum && album.id !in remoteKeys
+            }
+            .map { it.copy( isYoutubeAlbum = false ) }
+            .also( Database.albumTable::updateReplace )
+
+    latestSyncDetail = "${ytmAlbums.size} albums imported"
+
+    Timber.tag("SyncYTMusicUtils").d("importYTMUploadedAlbums completed: ${ytmAlbums.size} albums imported")
+    if (showDetails) Toaster.done()
+    setLastSyncTimeFor("uploadedAlbums")
+    true
 }
 
 // ============ EPISODES FOR LATER (VLSE) ============
@@ -545,32 +563,37 @@ suspend fun importYTMEpisodesForLater(force: Boolean = false, showDetails: Boole
     Timber.tag("SyncYTMusicUtils").d("importYTMEpisodesForLater isYouTubeSyncEnabled() = ${isYouTubeSyncEnabled()}")
     if (!isYouTubeSyncEnabled()) return@withContext false
     if (!canImportFromYTM()) return@withContext false
-    if (!force && !isSyncCooldownElapsed()) return@withContext false
+    if (!force && !isSyncCooldownElapsedFor("episodes")) return@withContext false
     val syncEpisodes = appContext().preferences.getBoolean(syncImportEpisodesKey, false)
     if (!syncEpisodes && !force) return@withContext false
     if (!force && isBackgroundGuardActive()) return@withContext false
 
     if (showDetails) Toaster.i( R.string.syncing, Toast.LENGTH_LONG )
 
-    val result = YtMusic.getPlaylist(playlistId = "SE").completed().onSuccess { page ->
-        val episodes = page.songs
-        Timber.tag("SyncYTMusicUtils").d("YTM episodes for later: ${episodes.size}")
-
-        episodes.forEach { episode ->
-            Database.insertIgnore( episode.asMediaItem )
-            Timber.tag("SyncYTMusicUtils").d("Episode: ${episode.title}")
-        }
-
-        Timber.tag("SyncYTMusicUtils").d("importYTMEpisodesForLater completed: ${episodes.size} episodes")
-        if (showDetails) Toaster.done()
-        setLastSyncTime()
+    val page = YtMusic.getPlaylist(playlistId = "SE").completed().getOrThrowRetriable()
+    if (page == null) {
+        latestSyncDetail = "Failed to fetch episodes"
+        if (showDetails) Toaster.e(R.string.sync_failed)
+        return@withContext false
     }
-    result.onFailure {
-        Timber.tag("SyncYTMusicUtils").e(it, "importYTMEpisodesForLater failed")
-        if (showDetails) Toaster.e(R.string.syncing_failed)
+
+    val episodes = page.songs
+    Timber.tag("SyncYTMusicUtils").d("YTM episodes for later: ${episodes.size}")
+
+    episodes.forEach { episode ->
+        Database.insertIgnore( episode.asMediaItem )
+        Timber.tag("SyncYTMusicUtils").d("Episode: ${episode.title}")
     }
-    result.isSuccess
+
+    latestSyncDetail = "${episodes.size} episodes"
+
+    Timber.tag("SyncYTMusicUtils").d("importYTMEpisodesForLater completed: ${episodes.size} episodes")
+    if (showDetails) Toaster.done()
+    setLastSyncTimeFor("episodes")
+    true
 }
+
+private val lastSyncTimePerFeature = java.util.concurrent.ConcurrentHashMap<String, Long>()
 
 fun getLastSyncTime(): Long {
     return appContext().preferences.getLong("lastSyncTime", 0)
@@ -578,6 +601,18 @@ fun getLastSyncTime(): Long {
 
 fun setLastSyncTime() {
     appContext().preferences.edit().putLong("lastSyncTime", System.currentTimeMillis()).apply()
+}
+
+fun setLastSyncTimeFor(featureKey: String) {
+    lastSyncTimePerFeature[featureKey] = System.currentTimeMillis()
+    setLastSyncTime() // also update the global timestamp for UI display
+}
+
+fun isSyncCooldownElapsedFor(featureKey: String): Boolean {
+    val cooldownMinutes = appContext().preferences.getInt(syncCooldownKey, 30)
+    val cooldownMs = cooldownMinutes * 60 * 1000L
+    val lastSync = lastSyncTimePerFeature[featureKey] ?: 0L
+    return System.currentTimeMillis() - lastSync > cooldownMs
 }
 
 fun isSyncCooldownElapsed(): Boolean {
@@ -590,16 +625,7 @@ fun isSyncCooldownElapsed(): Boolean {
 // ============ SYNC QUEUE ============
 
 sealed class SyncOperation {
-    // Imports (YTM → App)
     data object FullSync : SyncOperation()
-    data object LikedSongs : SyncOperation()
-    data object LibrarySongs : SyncOperation()
-    data object UploadedSongs : SyncOperation()
-    data object LikedAlbums : SyncOperation()
-    data object UploadedAlbums : SyncOperation()
-    data object ArtistSubscriptions : SyncOperation()
-    data object SavedPlaylists : SyncOperation()
-    data object EpisodesForLater : SyncOperation()
     data class SinglePlaylist(val browseId: String, val playlistId: Long) : SyncOperation()
     data object CleanupDuplicates : SyncOperation()
 
@@ -611,22 +637,27 @@ sealed class SyncOperation {
     data class PushEpisodes(val force: Boolean = false) : SyncOperation()
 }
 
+data class SyncItemStatus(
+    val state: String = "idle",
+    val detailMessage: String? = null
+)
+
 data class SyncStatus(
     val isRunning: Boolean = false,
     val currentOperation: String = "",
-    val likedSongs: String = "idle",
-    val librarySongs: String = "idle",
-    val uploadedSongs: String = "idle",
-    val likedAlbums: String = "idle",
-    val uploadedAlbums: String = "idle",
-    val artists: String = "idle",
-    val playlists: String = "idle",
-    val episodes: String = "idle",
-    val pushLikedSongs: String = "idle",
-    val pushAlbumBookmarks: String = "idle",
-    val pushArtistFollows: String = "idle",
-    val pushPlaylists: String = "idle",
-    val pushEpisodes: String = "idle"
+    val likedSongs: SyncItemStatus = SyncItemStatus(),
+    val librarySongs: SyncItemStatus = SyncItemStatus(),
+    val uploadedSongs: SyncItemStatus = SyncItemStatus(),
+    val likedAlbums: SyncItemStatus = SyncItemStatus(),
+    val uploadedAlbums: SyncItemStatus = SyncItemStatus(),
+    val artists: SyncItemStatus = SyncItemStatus(),
+    val playlists: SyncItemStatus = SyncItemStatus(),
+    val episodes: SyncItemStatus = SyncItemStatus(),
+    val pushLikedSongs: SyncItemStatus = SyncItemStatus(),
+    val pushAlbumBookmarks: SyncItemStatus = SyncItemStatus(),
+    val pushArtistFollows: SyncItemStatus = SyncItemStatus(),
+    val pushPlaylists: SyncItemStatus = SyncItemStatus(),
+    val pushEpisodes: SyncItemStatus = SyncItemStatus()
 )
 
 private val _syncStatus = MutableStateFlow(SyncStatus())
@@ -635,22 +666,16 @@ val syncStatus: StateFlow<SyncStatus> = _syncStatus
 private var syncChannel = Channel<SyncOperation>(Channel.BUFFERED)
 private val syncJob = kotlinx.coroutines.SupervisorJob()
 private val syncScope = CoroutineScope(Dispatchers.IO + syncJob)
-private var processingJob: kotlinx.coroutines.Job? = null
+@Volatile private var processingJob: kotlinx.coroutines.Job? = null
 private val syncMutex = Mutex()
+private val startLock = Any()
+private var latestSyncDetail: String? = null
 
 // Coalescing: track queued operation keys to prevent duplicates
 private val queuedOperationKeys = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
 private fun SyncOperation.coalescingKey(): String? = when (this) {
     is SyncOperation.FullSync -> "full"
-    is SyncOperation.LikedSongs -> "import:likedSongs"
-    is SyncOperation.LibrarySongs -> "import:librarySongs"
-    is SyncOperation.UploadedSongs -> "import:uploadedSongs"
-    is SyncOperation.LikedAlbums -> "import:likedAlbums"
-    is SyncOperation.UploadedAlbums -> "import:uploadedAlbums"
-    is SyncOperation.ArtistSubscriptions -> "import:artists"
-    is SyncOperation.SavedPlaylists -> "import:playlists"
-    is SyncOperation.EpisodesForLater -> "import:episodes"
     is SyncOperation.SinglePlaylist -> "playlist:${browseId}"
     is SyncOperation.CleanupDuplicates -> "cleanup"
     is SyncOperation.PushLikedSongs -> "push:likedSongs"
@@ -658,6 +683,26 @@ private fun SyncOperation.coalescingKey(): String? = when (this) {
     is SyncOperation.PushArtistFollows -> "push:artistFollows"
     is SyncOperation.PushPlaylists -> "push:playlists"
     is SyncOperation.PushEpisodes -> "push:episodes"
+}
+
+/**
+ * Extracts the value from a Result, throwing if the failure is a retriable error
+ * (network timeout, DNS failure, connection refused, etc.) so that [withRetry] can catch it.
+ * Non-retriable errors return null.
+ */
+private fun <T> Result<T>.getOrThrowRetriable(): T? {
+    return fold(
+        onSuccess = { it },
+        onFailure = { e ->
+            when (e) {
+                is java.net.UnknownHostException,
+                is java.net.SocketTimeoutException,
+                is java.net.ConnectException,
+                is java.io.IOException -> throw e
+                else -> null
+            }
+        }
+    )
 }
 
 private suspend fun <T> withRetry(
@@ -681,17 +726,15 @@ private suspend fun <T> withRetry(
 
 private fun isCoveredByFullSync(operation: SyncOperation): Boolean = when (operation) {
     is SyncOperation.FullSync, is SyncOperation.CleanupDuplicates -> false
-    is SyncOperation.LikedSongs, is SyncOperation.LibrarySongs, is SyncOperation.UploadedSongs,
-    is SyncOperation.LikedAlbums, is SyncOperation.UploadedAlbums,
-    is SyncOperation.ArtistSubscriptions, is SyncOperation.SavedPlaylists,
-    is SyncOperation.EpisodesForLater, is SyncOperation.SinglePlaylist -> "full" in queuedOperationKeys
+    is SyncOperation.SinglePlaylist -> "full" in queuedOperationKeys
     else -> false
 }
 
 private fun startSyncQueue() {
-    if (processingJob?.isActive == true) return
-    processingJob = syncScope.launch {
-        for (operation in syncChannel) {
+    synchronized(startLock) {
+        if (processingJob?.isActive == true) return
+        processingJob = syncScope.launch {
+            for (operation in syncChannel) {
             // Remove from coalescing set
             operation.coalescingKey()?.let(queuedOperationKeys::remove)
 
@@ -714,6 +757,7 @@ private fun startSyncQueue() {
         }
     }
 }
+}
 
 fun queueSync(operation: SyncOperation) {
     val key = operation.coalescingKey()
@@ -722,7 +766,11 @@ fun queueSync(operation: SyncOperation) {
         return // Already queued
     }
     startSyncQueue()
-    syncChannel.trySend(operation)
+    val result = syncChannel.trySend(operation)
+    if (result.isFailure) {
+        key?.let(queuedOperationKeys::remove)
+        Timber.tag("SyncYTMusicUtils").w("Failed to enqueue sync operation: $operation")
+    }
 }
 
 fun cancelAllSyncs() {
@@ -738,65 +786,33 @@ fun cancelAllSyncs() {
 private suspend fun executeOperation(operation: SyncOperation) {
     when (operation) {
         is SyncOperation.FullSync -> {
-            _syncStatus.value = _syncStatus.value.copy(likedSongs = "syncing")
-            withRetry { importYTMLikedSongs(force = true) }
-            _syncStatus.value = _syncStatus.value.copy(likedSongs = "idle", librarySongs = "syncing")
-            withRetry { importYTMLibrarySongs(force = true) }
-            _syncStatus.value = _syncStatus.value.copy(librarySongs = "idle", uploadedSongs = "syncing")
-            withRetry { importYTMUploadedSongs(force = true) }
-            _syncStatus.value = _syncStatus.value.copy(uploadedSongs = "idle", likedAlbums = "syncing")
-            withRetry { importYTMLikedAlbums(force = true) }
-            _syncStatus.value = _syncStatus.value.copy(likedAlbums = "idle", uploadedAlbums = "syncing")
-            withRetry { importYTMUploadedAlbums(force = true) }
-            _syncStatus.value = _syncStatus.value.copy(uploadedAlbums = "idle", artists = "syncing")
-            withRetry { importYTMSubscribedChannels(force = true) }
-            _syncStatus.value = _syncStatus.value.copy(artists = "idle", playlists = "syncing")
-            withRetry { importYTMPlaylists(force = true) }
-            _syncStatus.value = _syncStatus.value.copy(playlists = "idle", episodes = "syncing")
-            withRetry { importYTMEpisodesForLater(force = true) }
-            _syncStatus.value = _syncStatus.value.copy(episodes = "idle")
+            _syncStatus.value = _syncStatus.value.copy(likedSongs = SyncItemStatus("syncing"))
+            latestSyncDetail = null
+            val s1 = withRetry { importYTMLikedSongs(force = true) }
+            _syncStatus.value = _syncStatus.value.copy(likedSongs = if (s1) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail), librarySongs = SyncItemStatus("syncing"))
+            latestSyncDetail = null
+            val s2 = withRetry { importYTMLibrarySongs(force = true) }
+            _syncStatus.value = _syncStatus.value.copy(librarySongs = if (s2) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail), uploadedSongs = SyncItemStatus("syncing"))
+            latestSyncDetail = null
+            val s3 = withRetry { importYTMUploadedSongs(force = true) }
+            _syncStatus.value = _syncStatus.value.copy(uploadedSongs = if (s3) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail), likedAlbums = SyncItemStatus("syncing"))
+            latestSyncDetail = null
+            val s4 = withRetry { importYTMLikedAlbums(force = true) }
+            _syncStatus.value = _syncStatus.value.copy(likedAlbums = if (s4) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail), uploadedAlbums = SyncItemStatus("syncing"))
+            latestSyncDetail = null
+            val s5 = withRetry { importYTMUploadedAlbums(force = true) }
+            _syncStatus.value = _syncStatus.value.copy(uploadedAlbums = if (s5) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail), artists = SyncItemStatus("syncing"))
+            latestSyncDetail = null
+            val s6 = withRetry { importYTMSubscribedChannels(force = true) }
+            _syncStatus.value = _syncStatus.value.copy(artists = if (s6) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail), playlists = SyncItemStatus("syncing"))
+            latestSyncDetail = null
+            val s7 = withRetry { importYTMPlaylists(force = true) }
+            _syncStatus.value = _syncStatus.value.copy(playlists = if (s7) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail), episodes = SyncItemStatus("syncing"))
+            latestSyncDetail = null
+            val s8 = withRetry { importYTMEpisodesForLater(force = true) }
+            _syncStatus.value = _syncStatus.value.copy(episodes = if (s8) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail))
             withRetry { cleanupDuplicatePlaylists() }
             setLastSyncTime()
-        }
-        is SyncOperation.LikedSongs -> {
-            _syncStatus.value = _syncStatus.value.copy(likedSongs = "syncing")
-            withRetry { importYTMLikedSongs() }
-            _syncStatus.value = _syncStatus.value.copy(likedSongs = "idle")
-        }
-        is SyncOperation.LibrarySongs -> {
-            _syncStatus.value = _syncStatus.value.copy(librarySongs = "syncing")
-            withRetry { importYTMLibrarySongs() }
-            _syncStatus.value = _syncStatus.value.copy(librarySongs = "idle")
-        }
-        is SyncOperation.UploadedSongs -> {
-            _syncStatus.value = _syncStatus.value.copy(uploadedSongs = "syncing")
-            withRetry { importYTMUploadedSongs() }
-            _syncStatus.value = _syncStatus.value.copy(uploadedSongs = "idle")
-        }
-        is SyncOperation.LikedAlbums -> {
-            _syncStatus.value = _syncStatus.value.copy(likedAlbums = "syncing")
-            withRetry { importYTMLikedAlbums() }
-            _syncStatus.value = _syncStatus.value.copy(likedAlbums = "idle")
-        }
-        is SyncOperation.UploadedAlbums -> {
-            _syncStatus.value = _syncStatus.value.copy(uploadedAlbums = "syncing")
-            withRetry { importYTMUploadedAlbums() }
-            _syncStatus.value = _syncStatus.value.copy(uploadedAlbums = "idle")
-        }
-        is SyncOperation.ArtistSubscriptions -> {
-            _syncStatus.value = _syncStatus.value.copy(artists = "syncing")
-            withRetry { importYTMSubscribedChannels() }
-            _syncStatus.value = _syncStatus.value.copy(artists = "idle")
-        }
-        is SyncOperation.SavedPlaylists -> {
-            _syncStatus.value = _syncStatus.value.copy(playlists = "syncing")
-            withRetry { importYTMPlaylists() }
-            _syncStatus.value = _syncStatus.value.copy(playlists = "idle")
-        }
-        is SyncOperation.EpisodesForLater -> {
-            _syncStatus.value = _syncStatus.value.copy(episodes = "syncing")
-            withRetry { importYTMEpisodesForLater() }
-            _syncStatus.value = _syncStatus.value.copy(episodes = "idle")
         }
         is SyncOperation.SinglePlaylist -> {
             val playlist = Database.playlistTable.findById(operation.playlistId).first()
@@ -810,29 +826,34 @@ private suspend fun executeOperation(operation: SyncOperation) {
 
         // Push operations (App → YTM) — respect direction + individual toggles
         is SyncOperation.PushLikedSongs -> {
-            _syncStatus.value = _syncStatus.value.copy(pushLikedSongs = "syncing")
-            withRetry { pushYTMLikedSongs(force = operation.force) }
-            _syncStatus.value = _syncStatus.value.copy(pushLikedSongs = "idle")
+            _syncStatus.value = _syncStatus.value.copy(pushLikedSongs = SyncItemStatus("syncing"))
+            latestSyncDetail = null
+            val s = withRetry { pushYTMLikedSongs(force = operation.force) }
+            _syncStatus.value = _syncStatus.value.copy(pushLikedSongs = if (s) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail))
         }
         is SyncOperation.PushAlbumBookmarks -> {
-            _syncStatus.value = _syncStatus.value.copy(pushAlbumBookmarks = "syncing")
-            withRetry { pushYTMAlbumBookmarks(force = operation.force) }
-            _syncStatus.value = _syncStatus.value.copy(pushAlbumBookmarks = "idle")
+            _syncStatus.value = _syncStatus.value.copy(pushAlbumBookmarks = SyncItemStatus("syncing"))
+            latestSyncDetail = null
+            val s = withRetry { pushYTMAlbumBookmarks(force = operation.force) }
+            _syncStatus.value = _syncStatus.value.copy(pushAlbumBookmarks = if (s) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail))
         }
         is SyncOperation.PushArtistFollows -> {
-            _syncStatus.value = _syncStatus.value.copy(pushArtistFollows = "syncing")
-            withRetry { pushYTMArtistFollows(force = operation.force) }
-            _syncStatus.value = _syncStatus.value.copy(pushArtistFollows = "idle")
+            _syncStatus.value = _syncStatus.value.copy(pushArtistFollows = SyncItemStatus("syncing"))
+            latestSyncDetail = null
+            val s = withRetry { pushYTMArtistFollows(force = operation.force) }
+            _syncStatus.value = _syncStatus.value.copy(pushArtistFollows = if (s) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail))
         }
         is SyncOperation.PushPlaylists -> {
-            _syncStatus.value = _syncStatus.value.copy(pushPlaylists = "syncing")
-            withRetry { pushYTMPlaylists(force = operation.force) }
-            _syncStatus.value = _syncStatus.value.copy(pushPlaylists = "idle")
+            _syncStatus.value = _syncStatus.value.copy(pushPlaylists = SyncItemStatus("syncing"))
+            latestSyncDetail = null
+            val s = withRetry { pushYTMPlaylists(force = operation.force) }
+            _syncStatus.value = _syncStatus.value.copy(pushPlaylists = if (s) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail))
         }
         is SyncOperation.PushEpisodes -> {
-            _syncStatus.value = _syncStatus.value.copy(pushEpisodes = "syncing")
-            withRetry { pushYTMSavedEpisodes(force = operation.force) }
-            _syncStatus.value = _syncStatus.value.copy(pushEpisodes = "idle")
+            _syncStatus.value = _syncStatus.value.copy(pushEpisodes = SyncItemStatus("syncing"))
+            latestSyncDetail = null
+            val s = withRetry { pushYTMSavedEpisodes(force = operation.force) }
+            _syncStatus.value = _syncStatus.value.copy(pushEpisodes = if (s) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail))
         }
     }
 }
@@ -866,7 +887,7 @@ suspend fun savePodcast(podcastId: String): Boolean = withContext(Dispatchers.IO
         YtMusic.likePlaylistOrAlbum(podcastId)
     }
     if (result.isSuccess) Toaster.s( R.string.added_to_favorites )
-    else Toaster.e( R.string.syncing_failed )
+    else Toaster.e( R.string.sync_failed )
     result.isSuccess
 }
 
@@ -876,7 +897,7 @@ suspend fun unsavePodcast(podcastId: String): Boolean = withContext(Dispatchers.
         YtMusic.removelikePlaylistOrAlbum(podcastId)
     }
     if (result.isSuccess) Toaster.s( R.string.removed_from_favorites )
-    else Toaster.e( R.string.syncing_failed )
+    else Toaster.e( R.string.sync_failed )
     result.isSuccess
 }
 
@@ -889,7 +910,7 @@ suspend fun addEpisodeToSavedEpisodes(videoId: String): Boolean = withContext(Di
         YtMusic.addToPlaylist("SE", videoId)
     }
     if (result.isSuccess) Toaster.s( R.string.added_to_favorites )
-    else Toaster.e( R.string.syncing_failed )
+    else Toaster.e( R.string.sync_failed )
     result.isSuccess
 }
 
@@ -900,7 +921,7 @@ suspend fun removeEpisodeFromSavedEpisodes(videoId: String, setVideoId: String? 
         YtMusic.removeFromPlaylist("SE", videoId, setVideoId)
     }
     if (result.isSuccess) Toaster.s( R.string.removed_from_favorites )
-    else Toaster.e( R.string.syncing_failed )
+    else Toaster.e( R.string.sync_failed )
     result.isSuccess
 }
 
@@ -930,6 +951,8 @@ suspend fun pushYTMLikedSongs(force: Boolean = false): Boolean = withContext(Dis
         }
         kotlinx.coroutines.delay(50L)
     }
+    latestSyncDetail = "$success success, $failed failed"
+
     Timber.tag("SyncYTMusicUtils").d("pushYTMLikedSongs completed: $success success, $failed failed")
     failed == 0
 }
@@ -962,6 +985,8 @@ suspend fun pushYTMAlbumBookmarks(force: Boolean = false): Boolean = withContext
         }
         kotlinx.coroutines.delay(50L)
     }
+    latestSyncDetail = "$success success, $failed failed"
+
     Timber.tag("SyncYTMusicUtils").d("pushYTMAlbumBookmarks completed: $success success, $failed failed")
     failed == 0
 }
@@ -974,8 +999,8 @@ suspend fun pushYTMArtistFollows(force: Boolean = false): Boolean = withContext(
     if (!pushArtistFollow && !force) return@withContext false
     if (!isNetworkConnected(appContext())) return@withContext false
 
-    val followedArtists = Database.artistTable.allFollowing().first()
-    Timber.tag("SyncYTMusicUtils").d("pushYTMArtistFollows: ${followedArtists.size} followed artists to push")
+    val followedArtists = Database.artistTable.allFollowing().first().filter { it.isYoutubeArtist }
+    Timber.tag("SyncYTMusicUtils").d("pushYTMArtistFollows: ${followedArtists.size} YouTube followed artists to push")
 
     var success = 0
     var failed = 0
@@ -990,6 +1015,8 @@ suspend fun pushYTMArtistFollows(force: Boolean = false): Boolean = withContext(
         }
         kotlinx.coroutines.delay(50L)
     }
+    latestSyncDetail = "$success success, $failed failed"
+
     Timber.tag("SyncYTMusicUtils").d("pushYTMArtistFollows completed: $success success, $failed failed")
     failed == 0
 }
@@ -1030,6 +1057,8 @@ suspend fun pushYTMPlaylists(force: Boolean = false): Boolean = withContext(Disp
             Timber.tag("SyncYTMusicUtils").e(e, "pushYTMPlaylists failed for playlist: ${playlist.name}")
         }
     }
+    latestSyncDetail = "$success success, $failed failed"
+
     Timber.tag("SyncYTMusicUtils").d("pushYTMPlaylists completed: $success success, $failed failed")
     failed == 0
 }
@@ -1064,6 +1093,8 @@ suspend fun pushYTMSavedEpisodes(force: Boolean = false): Boolean = withContext(
             Timber.tag("SyncYTMusicUtils").e(e, "pushYTMSavedEpisodes failed for episode: ${episode.title}")
         }
     }
+    latestSyncDetail = "$success success, $failed failed"
+
     Timber.tag("SyncYTMusicUtils").d("pushYTMSavedEpisodes completed: $success success, $failed failed")
     failed == 0
 }

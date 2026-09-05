@@ -7,4 +7,5 @@ import kotlinx.coroutines.flow.MutableStateFlow
  */
 object DiscordUiState {
     val currentRoute = MutableStateFlow<String?>(null)
+    val currentHomeTab = MutableStateFlow<String?>(null)
 }
