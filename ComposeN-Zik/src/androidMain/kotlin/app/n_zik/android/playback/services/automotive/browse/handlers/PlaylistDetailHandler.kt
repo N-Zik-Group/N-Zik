@@ -82,7 +82,7 @@ class PlaylistDetailHandler : BrowseHandler {
                     database.songPlaylistMapTable.sortSongs(playlistId.toLong(), sortBy, sortOrder)
                 } else {
                     val playlistPage = Innertube.playlistPage(browseId = playlistId.removePrefix(MODIFIED_PREFIX))?.getOrNull()
-                    val songs = playlistPage?.songs?.toList()?.map { item -> item.asSong } ?: emptyList()
+                    val songs = playlistPage?.songsPage?.items?.map { item -> item.asSong } ?: emptyList()
                     AutoSearchState.searchedSongs = (AutoSearchState.searchedSongs + songs).distinctBy { s -> s.id }
                     kotlinx.coroutines.flow.flowOf(songs)
                 }

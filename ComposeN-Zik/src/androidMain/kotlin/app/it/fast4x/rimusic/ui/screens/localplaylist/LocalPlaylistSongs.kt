@@ -680,7 +680,7 @@ fun LocalPlaylistSongs(
                         if (urlPlaylistId != null) {
                             val browseId = if (urlPlaylistId.startsWith("VL")) urlPlaylistId else "VL$urlPlaylistId"
                             Innertube.playlistPage(browseId = browseId)?.getOrNull()?.let { playlistPage ->
-                                val songs = playlistPage.songs.map { it.asSong.copy(totalPlayTimeMs = 1L) }
+                                val songs = playlistPage.songsPage?.items?.map { it.asSong.copy(totalPlayTimeMs = 1L) }.orEmpty()
                                 if (songs.isNotEmpty()) {
                                     Database.asyncTransaction {
                                         songTable.upsert(songs)
@@ -853,18 +853,24 @@ fun LocalPlaylistSongs(
     fun sync() {
         playlist?.let {
             CoroutineScope(Dispatchers.IO).launch {
-                val remotePlaylist = Innertube.playlistPage(
-                    browseId = it.browseId?.removePrefix(MODIFIED_PREFIX) ?: ""
-                )?.completed()?.getOrNull()
-                remotePlaylist?.let { rp ->
-                    val mediaItems = rp.songs
-                        .map(Innertube.SongItem::asMediaItem)
-
-                    if (mediaItems.isNotEmpty()) {
-                        Database.asyncTransaction {
-                            songPlaylistMapTable.clear( playlistId )
-                            mapIgnore( it, *mediaItems.toTypedArray() )
-                        }
+                val browseId = it.browseId?.removePrefix(MODIFIED_PREFIX) ?: return@launch
+                val rp = YtMusic.getPlaylist(playlistId = browseId).getOrNull() ?: return@launch
+                val allSongs = rp.songs.toMutableList()
+                var continuation = rp.songsContinuation
+                while (continuation != null) {
+                    val contPage = YtMusic.getPlaylistContinuation(continuation).getOrNull()
+                    if (contPage != null) {
+                        allSongs.addAll(contPage.songs)
+                        continuation = contPage.continuation
+                    } else {
+                        break
+                    }
+                }
+                val mediaItems = allSongs.map(Innertube.SongItem::asMediaItem)
+                if (mediaItems.isNotEmpty()) {
+                    Database.asyncTransaction {
+                        songPlaylistMapTable.clear(playlistId)
+                        mapIgnore(it, *mediaItems.toTypedArray())
                     }
                 }
             }
