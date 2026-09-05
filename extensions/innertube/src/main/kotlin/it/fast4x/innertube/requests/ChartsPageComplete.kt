@@ -1,27 +1,16 @@
 package it.fast4x.innertube.requests
 
 import io.ktor.client.call.body
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.Innertube.getBestQuality
 import it.fast4x.innertube.models.BrowseResponse
 import it.fast4x.innertube.models.MusicCarouselShelfRenderer
 import it.fast4x.innertube.models.NavigationEndpoint
 import it.fast4x.innertube.models.SectionListRenderer
-import it.fast4x.innertube.models.bodies.BrowseBodyWithLocale
-import it.fast4x.innertube.models.bodies.FormData
 
 
 suspend fun Innertube.chartsPageComplete(countryCode: String = "") = runCatching {
-    val response = client.post(browse) {
-        setBody(
-            BrowseBodyWithLocale(
-                browseId = "FEmusic_charts",
-                formData = FormData(listOf(countryCode))
-            )
-        )
-    }.body<BrowseResponse>()
+    val response = browse(browseId = "FEmusic_charts").body<BrowseResponse>()
 
     val musicDetailRenderer =
         response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()

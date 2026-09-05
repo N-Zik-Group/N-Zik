@@ -25,12 +25,19 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.models.Artist
+import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.utils.isNetworkConnected
+import app.it.fast4x.rimusic.utils.syncPushArtistFollowKey
+import app.it.fast4x.rimusic.utils.syncDirectionKey
+import app.it.fast4x.rimusic.utils.getSyncDirection
+import app.it.fast4x.rimusic.utils.isNetworkConnected
+import app.it.fast4x.rimusic.enums.SyncDirection
+import app.n_zik.android.appContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -54,15 +61,25 @@ class FollowButton private constructor(
             Toaster.noInternet()
         } else {
             val artist = getArtist()
+            val wasFollowed = artist.bookmarkedAt != null
 
             Database.asyncTransaction {
                 artistTable.toggleFollow( artist.id )
             }
 
+            Toaster.s( if (wasFollowed) R.string.removed_from_favorites else R.string.added_to_favorites )
+
             CoroutineScope( Dispatchers.IO ).launch {
                 if( !isYouTubeSyncEnabled() ) return@launch
 
-                if ( artist.bookmarkedAt != null )
+                val pushArtistFollow = appContext().preferences.getBoolean(syncPushArtistFollowKey, false)
+                if( !pushArtistFollow ) return@launch
+
+                val syncDirection = getSyncDirection()
+                if( syncDirection == SyncDirection.YT_TO_APP ) return@launch
+                if( !isNetworkConnected(appContext()) ) return@launch
+
+                if ( wasFollowed )
                     YtMusic.unsubscribeChannel( artist.id )
                 else
                     YtMusic.subscribeChannel( artist.id )

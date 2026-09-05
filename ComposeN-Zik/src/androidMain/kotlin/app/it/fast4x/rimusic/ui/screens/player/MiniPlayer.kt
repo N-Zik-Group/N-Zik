@@ -113,6 +113,7 @@ import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.effectRotationKey
 import app.it.fast4x.rimusic.utils.getLikedIcon
 import app.it.fast4x.rimusic.utils.getUnlikedIcon
+import app.it.fast4x.rimusic.utils.getDislikedIcon
 import app.it.fast4x.rimusic.utils.intent
 import app.it.fast4x.rimusic.utils.isExplicit
 import app.it.fast4x.rimusic.utils.miniPlayerTypeKey
@@ -151,6 +152,7 @@ import app.it.fast4x.rimusic.utils.manageDownload
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.kreate.android.me.knighthat.sync.YouTubeSync
@@ -244,11 +246,11 @@ fun MiniPlayer(
 
     val mediaItem = nullableMediaItem ?: return
 
-    val isSongLiked by remember( mediaItem.mediaId ) {
+    val likeState by remember( mediaItem.mediaId ) {
         Database.songTable
-                .isLiked( mediaItem.mediaId )
+                .likeState( mediaItem.mediaId )
                 .distinctUntilChanged()
-    }.collectAsState( false, Dispatchers.IO )
+    }.collectAsState( null, Dispatchers.IO )
 
     var miniPlayerType by rememberPreference(
         miniPlayerTypeKey,
@@ -383,7 +385,9 @@ fun MiniPlayer(
 
     fun toggleLike() {
         CoroutineScope( Dispatchers.IO ).launch {
-            YouTubeSync.toggleSongLike( context, mediaItem )
+            mediaItem?.let {
+                YouTubeSync.rotateSongLikeState( context, it )
+            }
         }
     }
 
@@ -466,10 +470,11 @@ fun MiniPlayer(
                     offset > 0 -> {
                         if (miniPlayerType == MiniPlayerType.Modern)
                             ImageVector.vectorResource(R.drawable.play_skip_back)
-                        else if (isSongLiked)
-                            ImageVector.vectorResource(R.drawable.heart)
-                        else
-                            ImageVector.vectorResource(R.drawable.heart_outline)
+                        else when(likeState) {
+                            false -> ImageVector.vectorResource(R.drawable.heart_dislike)
+                            null -> ImageVector.vectorResource(R.drawable.heart_outline)
+                            else -> ImageVector.vectorResource(R.drawable.heart)
+                        }
                     }
 
                     offset < 0 -> ImageVector.vectorResource(R.drawable.play_skip_forward)
@@ -565,10 +570,10 @@ fun MiniPlayer(
 
                     NowPlayingSongIndicator(mediaItem.mediaId, binder.player)
 
-                    if (isSongLiked)
+                    if (likeState != null)
                         app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton(
                             onClick = {},
-                            icon = getLikedIcon(),
+                            icon = if (likeState == true) getLikedIcon() else getDislikedIcon(),
                             color = colorPalette().favoritesIcon,
                             iconSize = 10.dp,
                             modifier = Modifier.align( Alignment.BottomStart )
@@ -670,7 +675,7 @@ fun MiniPlayer(
                     } else {
                         MiniPlayerSlotButton(
                             button = button,
-                            isLiked = isSongLiked,
+                            likeState = likeState,
                             controlsColorText = controlsColorText,
                             rotationAngle = rotationAngle,
                             onLikeClick = ::toggleLike,
@@ -740,7 +745,7 @@ fun MiniPlayer(
 @Composable
 private fun MiniPlayerSlotButton(
     button: MiniPlayerButton?,
-    isLiked: Boolean,
+    likeState: Boolean?,
     controlsColorText: androidx.compose.ui.graphics.Color,
     rotationAngle: Float,
     onLikeClick: () -> Unit,
@@ -815,7 +820,11 @@ private fun MiniPlayerSlotButton(
         }
         MiniPlayerButton.Like -> {
             IconButton(
-                icon = if (isLiked) getLikedIcon() else getUnlikedIcon(),
+                icon = when(likeState) {
+                    false -> getDislikedIcon()
+                    null -> getUnlikedIcon()
+                    else -> getLikedIcon()
+                },
                 color = colorPalette().favoritesIcon,
                 onClick = onLikeClick,
                 modifier = modifier

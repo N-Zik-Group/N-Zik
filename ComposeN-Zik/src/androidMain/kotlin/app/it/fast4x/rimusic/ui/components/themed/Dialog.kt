@@ -117,7 +117,6 @@ import app.n_zik.android.core.coil.resize
 import app.n_zik.android.core.coil.thumbnail
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic
-import it.fast4x.innertube.models.bodies.SearchBody
 import it.fast4x.innertube.requests.searchPage
 import it.fast4x.innertube.utils.from
 import app.n_zik.android.core.database.Database
@@ -134,6 +133,10 @@ import app.it.fast4x.rimusic.models.Playlist
 import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.it.fast4x.rimusic.utils.canPushToYTM
+import app.it.fast4x.rimusic.utils.isNetworkConnected
+import app.it.fast4x.rimusic.utils.PlaylistEditThrottle
+import app.n_zik.android.appContext
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
@@ -1754,10 +1757,8 @@ fun SongMatchingDialog(
             LaunchedEffect(Unit,startSearch) {
                 runBlocking(Dispatchers.IO) {
                     val searchQuery = Innertube.searchPage(
-                        body = SearchBody(
-                            query = searchText,
-                            params = Innertube.SearchFilter.Song.value
-                        ),
+                        query = searchText,
+                        params = Innertube.SearchFilter.Song.value,
                         fromMusicShelfRendererContent = Innertube.SongItem.Companion::from
                     )
 
@@ -1930,7 +1931,8 @@ fun SongMatchingDialog(
                                             songTable.updateArtists( song.asMediaItem.mediaId, artistNameString )
 
                                             CoroutineScope(Dispatchers.IO).launch {
-                                                if (isYouTubeSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable){
+                                                if (isYouTubeSyncEnabled() && canPushToYTM() && isNetworkConnected(appContext()) && playlist?.isYoutubePlaylist == true && playlist.isEditable){
+                                                    PlaylistEditThrottle.throttle(playlist.browseId ?: "")
                                                     YtMusic.addToPlaylist(playlist.browseId ?: "", song.asMediaItem.mediaId)
                                                 }
                                             }
@@ -2101,6 +2103,68 @@ fun <T> ValueSelectorDialogBody(
             text = stringResource(R.string.cancel),
             onClick = onDismiss
         )
+    }
+}
+
+@Composable
+fun SettingsListDialog(
+    title: String,
+    list: List<String>,
+    onDismiss: () -> Unit,
+    onItemSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = uiRoundnessShape(),
+            colors = CardDefaults.cardColors(
+                containerColor = colorPalette().background1
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = typography().m.bold,
+                    color = colorPalette().text,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+
+                list.forEachIndexed { index, item ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onItemSelected(index) }
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = item,
+                            style = typography().s,
+                            color = colorPalette().text
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Text(
+                        text = stringResource(R.string.cancel),
+                        style = typography().s.bold,
+                        color = colorPalette().accent,
+                        modifier = Modifier
+                            .clickable { onDismiss() }
+                            .padding(top = 8.dp)
+                    )
+                }
+            }
+        }
     }
 }
 

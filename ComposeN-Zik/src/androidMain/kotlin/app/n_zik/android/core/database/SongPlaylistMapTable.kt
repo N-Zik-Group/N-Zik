@@ -299,7 +299,7 @@ interface SongPlaylistMapTable {
         }
 
     @Query("""
-        SELECT S.id, S.title, S.artistsText, S.durationText, S.thumbnailUrl, S.likedAt, S.totalPlayTimeMs, S.position, COUNT(E.songId) as playCount
+        SELECT S.id, S.title, S.artistsText, S.durationText, S.thumbnailUrl, S.likedAt, S.totalPlayTimeMs, S.position, S.isYoutubeSong, COUNT(E.songId) as playCount
         FROM SongPlaylistMap spm
         LEFT JOIN Song S ON S.id = spm.songId
         LEFT JOIN Event E ON E.songId = S.id

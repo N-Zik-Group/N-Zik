@@ -33,6 +33,10 @@ const val discordUsernameKey = "discord_username"
 const val ytDataSyncIdKey = "ytDataSyncId"
 const val ytCookieExpiredKey = "ytCookieExpired"
 
+// Proxy password encrypted key (migrated from regular preferences)
+const val proxyPasswordEncryptedKey = "proxyPasswordEncrypted"
+const val proxyPasswordMigratedKey = "proxyPasswordMigrated"
+
 inline fun <reified T : Enum<T>> EncryptedSharedPreferences.getEnum(
     key: String,
     defaultValue: T

@@ -15,4 +15,5 @@ data class PlaybackData(
     val playbackTracking: PlayerResponse.PlaybackTracking?,
     val streamExpiresInSeconds: Long?,
     val streamClient: String,
+    val clientPlaybackNonce: String = "",
 )

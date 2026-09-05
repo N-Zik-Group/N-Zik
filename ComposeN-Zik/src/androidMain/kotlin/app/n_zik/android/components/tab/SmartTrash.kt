@@ -95,6 +95,12 @@ class SmartTrash private constructor(
                         stringResource( R.string.smart_trash_top_clear, count )
                 }
                 BuiltInPlaylist.OnDevice -> ""
+                BuiltInPlaylist.Disliked -> {
+                    if( hasSelection )
+                        stringResource( R.string.smart_trash_all_delete, count )
+                    else
+                        stringResource( R.string.smart_trash_all_clear, count )
+                }
             }
         }
 
@@ -112,6 +118,7 @@ class SmartTrash private constructor(
             BuiltInPlaylist.Downloaded -> deleteDownloads( songs )
             BuiltInPlaylist.Top -> resetPlayHistory( songs )
             BuiltInPlaylist.OnDevice -> {}
+            BuiltInPlaylist.Disliked -> removeFromFavorites( songs )
         }
 
         Toaster.done()

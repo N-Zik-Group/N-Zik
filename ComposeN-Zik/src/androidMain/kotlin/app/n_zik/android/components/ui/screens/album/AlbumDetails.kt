@@ -22,7 +22,20 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.DynamicColor
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Icon
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.ui.components.themed.IDialog
+import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.it.fast4x.rimusic.utils.syncPushAlbumBookmarkKey
+import app.it.fast4x.rimusic.utils.syncDirectionKey
+import app.it.fast4x.rimusic.utils.getSyncDirection
+import app.it.fast4x.rimusic.utils.isNetworkConnected
+import app.it.fast4x.rimusic.enums.SyncDirection
+import app.n_zik.android.appContext
+import app.it.fast4x.rimusic.utils.preferences
+import app.kreate.android.me.knighthat.utils.Toaster
+import it.fast4x.innertube.YtMusic
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 
 class AlbumModifier private constructor(
     private val activeState: MutableState<Boolean>,
@@ -73,9 +86,15 @@ class AlbumModifier private constructor(
 fun AlbumBookmark(
     albumId: String
 ): MenuIcon = object : MenuIcon, Descriptive, DualIcon {
-    val isBookmarked by remember {
+    val isBookmarked by remember(albumId) {
         Database.albumTable.isBookmarked( albumId )
+            .distinctUntilChanged()
     }.collectAsState( false, Dispatchers.IO )
+
+    val album by remember(albumId) {
+        Database.albumTable.findById( albumId )
+            .distinctUntilChanged()
+    }.collectAsState( null, Dispatchers.IO )
 
     override val iconId: Int = R.drawable.bookmark
     override val secondIconId: Int = R.drawable.bookmark_outline
@@ -88,8 +107,22 @@ fun AlbumBookmark(
         @Composable
         get() = stringResource( messageId )
 
-    override fun onShortClick() = Database.asyncTransaction {
-        albumTable.toggleBookmark( albumId )
+    override fun onShortClick() {
+        CoroutineScope( Dispatchers.IO ).launch {
+            val pushAlbumBookmark = appContext().preferences.getBoolean(syncPushAlbumBookmarkKey, false)
+            val syncDir = getSyncDirection()
+            if (isYouTubeSyncEnabled() && pushAlbumBookmark && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
+                val playlistId = album?.shareUrl
+                    ?.substringAfter("list=")
+                    ?.takeIf { it.isNotBlank() }
+                if (playlistId != null) {
+                    if (isBookmarked) YtMusic.removelikePlaylistOrAlbum(playlistId)
+                    else YtMusic.likePlaylistOrAlbum(playlistId)
+                }
+            }
+            Database.albumTable.toggleBookmark( albumId )
+            Toaster.s( if (isBookmarked) R.string.removed_from_favorites else R.string.added_to_favorites )
+        }
     }
 }
 

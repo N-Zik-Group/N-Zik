@@ -70,7 +70,6 @@ import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.forcePlay
 import coil3.compose.AsyncImage
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.SearchBody
 import it.fast4x.innertube.requests.searchPage
 import it.fast4x.innertube.utils.from
 import kotlinx.coroutines.Dispatchers
@@ -148,10 +147,8 @@ fun MusicAudioSearchOverlay(
             try {
                 val searchResult = withContext(Dispatchers.IO) {
                     Innertube.searchPage(
-                        body = SearchBody(
-                            query = query,
-                            params = Innertube.SearchFilter.Song.value
-                        ),
+                        query = query,
+                        params = Innertube.SearchFilter.Song.value,
                         fromMusicShelfRendererContent = Innertube.SongItem.Companion::from
                     )?.getOrNull()
                 }

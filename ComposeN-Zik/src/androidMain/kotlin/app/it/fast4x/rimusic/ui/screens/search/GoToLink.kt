@@ -35,7 +35,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.BrowseBody
 import it.fast4x.innertube.requests.playlistPage
 import it.fast4x.innertube.requests.song
 import app.n_zik.android.LocalPlayerAwareWindowInsets
@@ -193,7 +192,7 @@ fun GoToLink(
                                     val browseId = "VL$playlistId"
 
                                     if (playlistId.startsWith("OLAK5uy_")) {
-                                        Innertube.playlistPage(BrowseBody(browseId = browseId))
+                                        Innertube.playlistPage(browseId = browseId)
                                             ?.getOrNull()?.let {
                                                 it.songsPage?.items?.firstOrNull()?.album?.endpoint?.browseId?.let { browseId ->
                                                     //albumRoute.ensureGlobal(browseId)

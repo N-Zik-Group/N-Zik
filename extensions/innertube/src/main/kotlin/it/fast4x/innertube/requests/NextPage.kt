@@ -1,23 +1,21 @@
 package it.fast4x.innertube.requests
 
 import io.ktor.client.call.body
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.ContinuationResponse
 import it.fast4x.innertube.models.NextResponse
-import it.fast4x.innertube.models.bodies.ContinuationBody
-import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.utils.runCatchingNonCancellable
 
 
-suspend fun Innertube.nextPage(body: NextBody): Result<Innertube.NextPage>? =
+suspend fun Innertube.nextPage(videoId: String?, playlistId: String? = null, playlistSetVideoId: String? = null, index: Int? = null, params: String? = null): Result<Innertube.NextPage>? =
     runCatchingNonCancellable {
-        val response = client.post(next) {
-            setLogin(clientType = body.context.client, setLogin = true)
-            setBody(body)
-            mask("contents.singleColumnMusicWatchNextResultsRenderer.tabbedRenderer.watchNextTabbedResultsRenderer.tabs.tabRenderer.content.musicQueueRenderer.content.playlistPanelRenderer(continuations,contents(automixPreviewVideoRenderer,$playlistPanelVideoRendererMask))")
-        }.body<NextResponse>()
+        val response = next(
+            videoId = videoId,
+            playlistId = playlistId,
+            playlistSetVideoId = playlistSetVideoId,
+            index = index,
+            params = params,
+        ).body<NextResponse>()
 
         val tabs = response
             .contents
@@ -34,7 +32,7 @@ suspend fun Innertube.nextPage(body: NextBody): Result<Innertube.NextPage>? =
             ?.content
             ?.playlistPanelRenderer
 
-        if (body.playlistId == null) {
+        if (playlistId == null) {
             val endpoint = playlistPanelRenderer
                 ?.contents
                 ?.lastOrNull()
@@ -46,29 +44,27 @@ suspend fun Innertube.nextPage(body: NextBody): Result<Innertube.NextPage>? =
 
             if (endpoint != null) {
                 return nextPage(
-                    body.copy(
-                        playlistId = endpoint.playlistId,
-                        params = endpoint.params
-                    )
+                    videoId = videoId,
+                    playlistId = endpoint.playlistId,
+                    params = endpoint.params,
                 )
             }
         }
 
         Innertube.NextPage(
-            playlistId = body.playlistId,
-            playlistSetVideoId = body.playlistSetVideoId,
-            params = body.params,
+            playlistId = playlistId,
+            playlistSetVideoId = playlistSetVideoId,
+            params = params,
             itemsPage = playlistPanelRenderer
                 ?.toSongsPage()
         )
     }
 
-suspend fun Innertube.nextPage(body: ContinuationBody) = runCatchingNonCancellable {
-    val response = client.post(next) {
-        setLogin(clientType = body.context.client, setLogin = true)
-        setBody(body)
-        mask("continuationContents.playlistPanelContinuation(continuations,contents.$playlistPanelVideoRendererMask)")
-    }.body<ContinuationResponse>()
+suspend fun Innertube.nextPageContinuation(continuation: String) = runCatchingNonCancellable {
+    val response = next(
+        videoId = null,
+        continuation = continuation,
+    ).body<ContinuationResponse>()
 
     response
         .continuationContents

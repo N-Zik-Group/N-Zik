@@ -122,7 +122,6 @@ data class Context(
         private const val USER_AGENT_ANDROID_MUSIC = "com.google.android.youtube/19.29.1  (Linux; U; Android 11) gzip"
         private const val USER_AGENT_PLAYSTATION = "Mozilla/5.0 (PlayStation; PlayStation 4/12.00) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15"
         private const val USER_AGENT_DESKTOP = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.157 Safari/537.36"
-        private const val USER_AGENT_IOS = "com.google.ios.youtube/20.03.02 (iPhone16,2; U; CPU iOS 18_2_1 like Mac OS X;)"
 
         private const val REFERER_YOUTUBE_MUSIC = "https://music.youtube.com/"
         private const val REFERER_YOUTUBE = "https://www.youtube.com/"
@@ -145,21 +144,6 @@ data class Context(
 
         val DefaultWebWithLocale = DefaultWeb.copy(
             client = DefaultWeb.client.copy(hl = hl)
-        )
-
-        val DefaultIOS = Context(
-            client = Client(
-                clientName = "IOS",
-                clientVersion = "20.03.02",
-                deviceMake = "Apple",
-                deviceModel = "iPhone16,2",
-                osName = "iOS",
-                osVersion = "18.2.1.22C161",
-                acceptHeader = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-                userAgent = USER_AGENT_IOS,
-                api_key = "AIzaSyB-63vPrdThhKuerbB2N_l7Kwwcxj6yUAc",
-                xClientName = 5
-            )
         )
     }
 }

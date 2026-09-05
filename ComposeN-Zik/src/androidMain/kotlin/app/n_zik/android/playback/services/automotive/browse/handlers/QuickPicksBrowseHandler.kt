@@ -13,7 +13,6 @@ import app.n_zik.android.playback.services.automotive.session.AutoSessionConstan
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.requests.relatedPage
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
@@ -45,7 +44,7 @@ class QuickPicksBrowseHandler : BrowseHandler {
             
         val trending = database.eventTable.findSongsMostPlayedBetween(from = 0, limit = 500).first()
         val relatedSongs = if (trending.isNotEmpty()) {
-            Innertube.relatedPage(NextBody(videoId = trending.first().id))?.getOrNull()?.songs?.map { it.asSong } ?: emptyList()
+            Innertube.relatedPage(videoId = trending.first().id)?.getOrNull()?.songs?.map { it.asSong } ?: emptyList()
         } else emptyList()
         val ytmQuickPicks = if (isYouTubeLoggedIn()) {
             YtMusic.getQuickPicks(setLogin = true).getOrNull()?.map { it.asSong } ?: emptyList()

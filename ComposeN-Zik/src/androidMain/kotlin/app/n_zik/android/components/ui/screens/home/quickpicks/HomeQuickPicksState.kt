@@ -12,7 +12,6 @@ import app.it.fast4x.rimusic.utils.*
 import app.n_zik.android.core.database.Database
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic
-import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.requests.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -69,7 +68,7 @@ class HomeQuickPicksState(
                                                         .take(localCount)
                                     trending.value = trendingList.value.firstOrNull()
                                     if (relatedPageResult.value == null || trending.value?.id != trendingList.value.firstOrNull()?.id) {
-                                        relatedPageResult.value = Innertube.relatedPage(NextBody(videoId = (trending.value?.id ?: "4NRXx6U8ABQ")))
+                                        relatedPageResult.value = Innertube.relatedPage(videoId = trending.value?.id ?: "4NRXx6U8ABQ")
                                     }
                                     loadedQuickPicks.value = true
                                     Timber.tag("HomeQuickPicksState").d("Local data loaded (Trending: ${songs.size})")
@@ -84,7 +83,7 @@ class HomeQuickPicksState(
                                                         .take(localCount)
                                     trending.value = trendingList.value.firstOrNull()
                                     if (relatedPageResult.value == null || trending.value?.id != trendingList.value.firstOrNull()?.id) {
-                                        relatedPageResult.value = Innertube.relatedPage(NextBody(videoId = (trending.value?.id ?: "4NRXx6U8ABQ")))
+                                        relatedPageResult.value = Innertube.relatedPage(videoId = trending.value?.id ?: "4NRXx6U8ABQ")
                                     }
                                     loadedQuickPicks.value = true
                                     Timber.tag("HomeQuickPicksState").d("Local data loaded (Trending: ${songs.size})")
@@ -101,7 +100,7 @@ class HomeQuickPicksState(
                                     trendingList.value = shuffled
                                     trending.value = shuffled.firstOrNull()
                                     if (relatedPageResult.value == null || trending.value?.id != shuffled.firstOrNull()?.id) {
-                                        relatedPageResult.value = Innertube.relatedPage(NextBody(videoId = (trending.value?.id ?: "4NRXx6U8ABQ")))
+                                        relatedPageResult.value = Innertube.relatedPage(videoId = trending.value?.id ?: "4NRXx6U8ABQ")
                                     }
                                     loadedQuickPicks.value = true
                                 }
@@ -114,7 +113,7 @@ class HomeQuickPicksState(
             Timber.tag("HomeQuickPicksState").d("YouTube Discovery data loaded")
 
             if (!loadedData.value) {
-                if (isYouTubeLoggedIn()) {
+                if (isYouTubeLoggedIn() && Innertube.useLoginForBrowse) {
                     YtMusic.getQuickPicks(setLogin = true).onSuccess { items ->
                         if (items.isNotEmpty()) {
                             ytmQuickPicks.value = items.map { it.asSong }
@@ -126,7 +125,7 @@ class HomeQuickPicksState(
                 var cumulativeSections = homePageInit.value?.sections.orEmpty()
                 var cumulativeChips = homePageInit.value?.chips.orEmpty()
                 repeat(3) { attempt ->
-                    val result = YtMusic.getHomePage(setLogin = isYouTubeLoggedIn())
+                    val result = YtMusic.getHomePage(setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)
                     result.getOrNull()?.let { page ->
                         val newSections = mutableListOf<HomePage.Section>()
                         val existingSections = cumulativeSections.toMutableList()

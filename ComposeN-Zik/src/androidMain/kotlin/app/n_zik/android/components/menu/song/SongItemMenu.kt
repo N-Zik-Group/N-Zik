@@ -35,7 +35,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.requests.nextPage
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
@@ -446,7 +445,7 @@ class SongItemMenu private constructor(
                                             return@launch
                                         }
                                         // Fallback: try Innertube nextPage
-                                        Innertube.nextPage(NextBody(videoId = song.id))
+                                        Innertube.nextPage(videoId = song.id)
                                             ?.getOrNull()
                                             ?.itemsPage?.items?.firstOrNull()
                                             ?.authors
@@ -541,21 +540,25 @@ class SongItemMenu private constructor(
                         bottom = 10.dp
                     ),
                     trailingContent = {
-                        val isLiked by remember {
+                        val likeState by remember(song.id) {
                             Database.songTable
-                                    .isLiked( song.id )
+                                    .likeState( song.id )
                                     .distinctUntilChanged()
-                        }.collectAsState( false, Dispatchers.IO )
+                        }.collectAsState( null, Dispatchers.IO )
 
                         Column(
                             Modifier.width( TabToolBar.TOOLBAR_ICON_SIZE )
                         ) {
                             IconButton(
-                                icon = if ( isLiked ) R.drawable.heart else R.drawable.heart_outline,
+                                icon = when(likeState) {
+                                    false -> R.drawable.heart_dislike
+                                    null -> R.drawable.heart_outline
+                                    else -> R.drawable.heart
+                                },
                                 color = colorPalette().favoritesIcon,
                                 onClick = {
                                     CoroutineScope( Dispatchers.IO ).launch {
-                                        YouTubeSync.toggleSongLike( context, song.asMediaItem )
+                                        YouTubeSync.rotateSongLikeState( context, song.asMediaItem )
                                     }
                                 },
                                 modifier = Modifier.padding( all = 4.dp ).size( 20.dp )

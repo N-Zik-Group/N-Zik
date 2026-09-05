@@ -47,6 +47,7 @@ import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadService
 import it.fast4x.innertube.Innertube
 import app.n_zik.android.core.database.Database
+import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.AlbumSwipeAction
 import app.it.fast4x.rimusic.enums.DownloadedStateMedia
@@ -67,6 +68,7 @@ import app.it.fast4x.rimusic.utils.rememberPreference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import app.kreate.android.me.knighthat.sync.YouTubeSync
@@ -205,7 +207,7 @@ fun SwipeableQueueItem(
 
     val onFavourite: () -> Unit = {
         CoroutineScope( Dispatchers.IO ).launch {
-            YouTubeSync.toggleSongLike( context, mediaItem )
+            YouTubeSync.rotateSongLikeState( context, mediaItem )
         }
     }
 
@@ -269,7 +271,7 @@ fun SwipeablePlaylistItem(
 
     val onFavourite: () -> Unit = {
         CoroutineScope( Dispatchers.IO ).launch {
-            YouTubeSync.toggleSongLike( context, mediaItem )
+            YouTubeSync.rotateSongLikeState( context, mediaItem )
         }
     }
 

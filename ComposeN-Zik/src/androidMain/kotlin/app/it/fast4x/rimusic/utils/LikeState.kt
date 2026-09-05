@@ -41,6 +41,14 @@ fun setLikeState(likedAt: Long?): Long? {
 
 }
 
+fun setDisLikeState(likedAt: Long?): Long? {
+    return when (likedAt) {
+        -1L -> null        // dislike -> neutral
+        null -> -1L        // neutral -> dislike
+        else -> -1L        // like -> dislike
+    }
+}
+
 
 
 

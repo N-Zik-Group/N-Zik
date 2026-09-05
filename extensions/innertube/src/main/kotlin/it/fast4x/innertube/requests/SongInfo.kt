@@ -13,7 +13,6 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.VideoOrSongInfo
-import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.utils.runCatchingNonCancellable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

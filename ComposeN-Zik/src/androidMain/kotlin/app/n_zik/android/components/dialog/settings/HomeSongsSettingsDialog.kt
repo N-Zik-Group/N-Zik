@@ -17,13 +17,14 @@ import app.it.fast4x.rimusic.utils.showCachedPlaylistKey
 import app.it.fast4x.rimusic.utils.showMyTopPlaylistKey
 import app.it.fast4x.rimusic.utils.showDownloadedPlaylistKey
 import app.it.fast4x.rimusic.utils.showOnDevicePlaylistKey
+import app.it.fast4x.rimusic.utils.showDislikedPlaylistKey
 import app.it.fast4x.rimusic.utils.homeSongsOrderKey
 import app.kreate.android.me.knighthat.utils.Toaster
 import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import android.content.Context
 
-private val songsDefaultOrder = listOf("all", "favorites", "cached", "downloaded", "top", "on_device")
+private val songsDefaultOrder = listOf("all", "favorites", "disliked", "cached", "downloaded", "top", "on_device")
 
 object HomeSongsSettingsDialog : Dialog {
     override val dialogTitle: String @Composable get() = stringResource(R.string.home_songs_settings)
@@ -46,7 +47,8 @@ object HomeSongsSettingsDialog : Dialog {
             "cached" to showCachedPlaylistKey,
             "downloaded" to showDownloadedPlaylistKey,
             "top" to showMyTopPlaylistKey,
-            "on_device" to showOnDevicePlaylistKey
+            "on_device" to showOnDevicePlaylistKey,
+            "disliked" to showDislikedPlaylistKey
         )
 
         var workingToggles by remember {
@@ -64,6 +66,7 @@ object HomeSongsSettingsDialog : Dialog {
         val downloadedLabel = stringResource(R.string.downloaded)
         val topLabel = stringResource(R.string.playlist_top)
         val onDeviceLabel = stringResource(R.string.on_device)
+        val dislikedLabel = stringResource(R.string.disliked)
 
         val lazyListState = rememberLazyListState()
         val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
@@ -79,6 +82,7 @@ object HomeSongsSettingsDialog : Dialog {
                 "downloaded" -> ToggleItem(id, R.drawable.downloaded, downloadedLabel, showDownloadedPlaylistKey, true)
                 "top" -> ToggleItem(id, R.drawable.trending, topLabel, showMyTopPlaylistKey, true)
                 "on_device" -> ToggleItem(id, R.drawable.folder, onDeviceLabel, showOnDevicePlaylistKey, true)
+                "disliked" -> ToggleItem(id, R.drawable.heart_dislike, dislikedLabel, showDislikedPlaylistKey, true)
                 else -> null
             }
         }.filterNotNull()
@@ -121,6 +125,7 @@ object HomeSongsSettingsDialog : Dialog {
             .putBoolean(showDownloadedPlaylistKey, true)
             .putBoolean(showMyTopPlaylistKey, true)
             .putBoolean(showOnDevicePlaylistKey, true)
+            .putBoolean(showDislikedPlaylistKey, true)
             .apply()
     }
 }

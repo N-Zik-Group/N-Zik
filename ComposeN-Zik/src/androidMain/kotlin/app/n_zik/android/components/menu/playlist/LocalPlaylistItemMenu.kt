@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,12 +25,22 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.it.fast4x.rimusic.cleanPrefix
+import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.it.fast4x.rimusic.utils.syncPushPlaylistKey
+import app.it.fast4x.rimusic.utils.syncDirectionKey
+import app.it.fast4x.rimusic.utils.getSyncDirection
+import app.it.fast4x.rimusic.utils.isNetworkConnected
+import app.it.fast4x.rimusic.enums.SyncDirection
+import app.n_zik.android.appContext
+import it.fast4x.innertube.YtMusic
+import timber.log.Timber
 import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.MenuState
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Clickable
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
+import app.it.fast4x.rimusic.ui.components.tab.toolbar.DynamicColor
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Menu
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
@@ -45,8 +56,10 @@ import app.n_zik.android.components.dialog.playlist.RenamePlaylistDialog
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
+import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -142,6 +155,8 @@ class LocalPlaylistItemMenu private constructor(
     @Composable
     private fun PlaylistItemDisplay(
         playlistPreview: PlaylistPreview,
+        isBookmarked: Boolean,
+        onBookmarkToggle: () -> Unit,
         modifier: Modifier = Modifier
     ) {
         val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
@@ -187,7 +202,7 @@ class LocalPlaylistItemMenu private constructor(
                                     .map { list: List<Song> ->
                                         list.mapNotNull( Song::thumbnailUrl ).takeLast( 4 )
                                     }
-                    }.collectAsState( emptyList(), Dispatchers.IO )
+                    }.collectAsStateWithLifecycle( emptyList() )
 
                     if (thumbnails.isEmpty()) {
                         Image(
@@ -248,17 +263,38 @@ class LocalPlaylistItemMenu private constructor(
                     )
                 }
 
-                // Trailing content
-                IconButton(
-                    icon = R.drawable.open,
-                    color = colorPalette().text,
-                    onClick = {
-                        menuState.hide()
-                        navController.navigate(route = "${app.it.fast4x.rimusic.enums.NavRoutes.localPlaylist.name}/${playlistPreview.playlist.id}")
-                    },
-                    modifier = Modifier
-                        .size(24.dp)
-                )
+                // Trailing content (Bookmark & Open)
+                val coroutineScope = rememberCoroutineScope()
+                Column(
+                    Modifier.width(48.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    IconButton(
+                        icon = if (isBookmarked) R.drawable.bookmark else R.drawable.bookmark_outline,
+                        color = colorPalette().favoritesIcon,
+                        onClick = { onBookmarkToggle() },
+                        modifier = Modifier
+                            .padding(all = 4.dp)
+                            .size(20.dp)
+                    )
+
+                    IconButton(
+                        icon = R.drawable.open,
+                        color = colorPalette().text,
+                        onClick = {
+                            menuState.hide()
+                            val browseId = playlistPreview.playlist.browseId
+                            if (!browseId.isNullOrBlank()) {
+                                navController.navigate(route = "${NavRoutes.playlist.name}/$browseId")
+                            } else {
+                                navController.navigate(route = "${NavRoutes.localPlaylist.name}/${playlistPreview.playlist.id}")
+                            }
+                        },
+                        modifier = Modifier
+                            .padding(all = 4.dp)
+                            .size(20.dp)
+                    )
+                }
             }
 
             HorizontalDivider(Modifier.height(1.dp))
@@ -354,8 +390,49 @@ class LocalPlaylistItemMenu private constructor(
 
         val shuffle = SongShuffler { songs ?: emptyList() }
 
+        val isSpecialPlaylist = playlistPreview.playlist.browseId?.removePrefix("VL") in listOf("LM", "SE")
+        
+        var isBookmarked by remember(playlistPreview.playlist.id) { mutableStateOf(playlistPreview.playlist.isYoutubePlaylist) }
+
+        val bookmark = object : MenuIcon, Descriptive, Clickable {
+            override val iconId: Int = if (isBookmarked) R.drawable.bookmark else R.drawable.bookmark_outline
+            override val messageId: Int = R.string.bookmark
+            @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
+            override fun onShortClick() {
+                if (isSpecialPlaylist) {
+                    Toaster.e(R.string.cannot_bookmark_special_playlist)
+                    return
+                }
+                val wasBookmarked = isBookmarked
+                coroutineScope.launch(Dispatchers.IO) {
+                    val browseId = playlistPreview.playlist.browseId
+                    val pushPlaylist = appContext().preferences.getBoolean(syncPushPlaylistKey, false)
+                    val syncDir = getSyncDirection()
+                    if (browseId != null && isYouTubeSyncEnabled() && pushPlaylist && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
+                        runCatching {
+                            if (wasBookmarked) {
+                                YtMusic.removelikePlaylistOrAlbum(browseId.removePrefix("VL"))
+                            } else {
+                                YtMusic.likePlaylistOrAlbum(browseId.removePrefix("VL"))
+                            }
+                        }.onFailure { e ->
+                            Timber.tag("LocalPlaylistItemMenu").e(e, "Failed to toggle YTM bookmark")
+                        }
+                    }
+                    Database.playlistTable.update(
+                        playlistPreview.playlist.copy(isYoutubePlaylist = !wasBookmarked)
+                    )
+                    withContext(Dispatchers.Main) {
+                        isBookmarked = !wasBookmarked
+                    }
+                    Toaster.s( if (!wasBookmarked) R.string.added_to_favorites else R.string.removed_from_favorites )
+                }
+            }
+            override fun onLongClick() {}
+        }
+
         // Define buttons
-        buttons = remember(playlistPreview) {
+        buttons = remember(playlistPreview, isBookmarked) {
             val list = mutableListOf<Button>()
             
             list.add(shuffle)
@@ -378,6 +455,14 @@ class LocalPlaylistItemMenu private constructor(
                     override fun onShortClick() {
                         menuState.hide()
                         coroutineScope.launch(Dispatchers.IO) {
+                            val pushPlaylist = appContext().preferences.getBoolean(syncPushPlaylistKey, false)
+                            val syncDirection = getSyncDirection()
+                            if (playlistPreview.playlist.isYoutubePlaylist && isYouTubeSyncEnabled() && pushPlaylist && syncDirection != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
+                                val browseId = playlistPreview.playlist.browseId
+                                if (browseId != null) {
+                                    YtMusic.deletePlaylist(browseId.removePrefix("VL"))
+                                }
+                            }
                             Database.playlistTable.delete(playlistPreview.playlist)
                         }
                         Toaster.done()
@@ -403,6 +488,24 @@ class LocalPlaylistItemMenu private constructor(
                 })
             }
 
+            // Auto-sync toggle for this playlist
+            if (playlistPreview.playlist.isYoutubePlaylist && isYouTubeSyncEnabled()) {
+                list.add(object : MenuIcon, Descriptive, DynamicColor {
+                    override var isFirstColor: Boolean = playlistPreview.playlist.isAutoSync
+                    override val iconId: Int = R.drawable.sync
+                    override val messageId: Int = R.string.sync_per_playlist_auto
+                    @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
+                    override fun onShortClick() {
+                        menuState.hide()
+                        coroutineScope.launch(Dispatchers.IO) {
+                            Database.playlistTable.toggleAutoSync(playlistPreview.playlist.id)
+                            Toaster.done()
+                        }
+                    }
+                    override fun onLongClick() {}
+                })
+            }
+
             list
         }
 
@@ -413,7 +516,32 @@ class LocalPlaylistItemMenu private constructor(
         ) {
             downloadAllDialog.Render()
             deleteAllDialog.Render()
-            PlaylistItemDisplay(playlistPreview)
+            PlaylistItemDisplay(playlistPreview, isBookmarked, onBookmarkToggle = {
+                val wasBookmarked = isBookmarked
+                coroutineScope.launch(Dispatchers.IO) {
+                    val browseId = playlistPreview.playlist.browseId
+                    val pushPlaylist = appContext().preferences.getBoolean(syncPushPlaylistKey, false)
+                    val syncDir = getSyncDirection()
+                    if (browseId != null && isYouTubeSyncEnabled() && pushPlaylist && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
+                        runCatching {
+                            if (wasBookmarked) {
+                                YtMusic.removelikePlaylistOrAlbum(browseId.removePrefix("VL"))
+                            } else {
+                                YtMusic.likePlaylistOrAlbum(browseId.removePrefix("VL"))
+                            }
+                        }.onFailure { e ->
+                            Timber.tag("LocalPlaylistItemMenu").e(e, "Failed to toggle YTM bookmark from header")
+                        }
+                    }
+                    Database.playlistTable.update(
+                        playlistPreview.playlist.copy(isYoutubePlaylist = !wasBookmarked)
+                    )
+                    withContext(Dispatchers.Main) {
+                        isBookmarked = !wasBookmarked
+                    }
+                    Toaster.s( if (!wasBookmarked) R.string.added_to_favorites else R.string.removed_from_favorites )
+                }
+            })
 
             if (menuStyle == MenuStyle.List)
                 ListMenu()

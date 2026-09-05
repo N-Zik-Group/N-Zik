@@ -21,7 +21,7 @@ import android.content.Context
 object LocalPlaylistToolbarSettingsDialog : Dialog {
 
     val allButtonIds = listOf(
-        "pin", "position_lock", "match", "renumber",
+        "pin", "search", "position_lock", "match", "renumber",
         "download_all", "delete_downloads",
         "item_selector",
         "play_next", "enqueue", "add_to_favorite", "add_to_playlist",
@@ -92,6 +92,7 @@ object LocalPlaylistToolbarSettingsDialog : Dialog {
         val resetThumbnailLabel = stringResource(R.string.reset_thumbnail)
         val resetCacheLabel = stringResource(R.string.title_reset_cache)
         val pinLabel = stringResource(R.string.info_pin_unpin_playlist)
+        val searchLabel = stringResource(R.string.search)
         val renumberLabel = stringResource(R.string.renumber_songs_positions)
 
         val lockedIds = setOf("pl_pin", "pl_position_lock", "pl_match")
@@ -101,6 +102,7 @@ object LocalPlaylistToolbarSettingsDialog : Dialog {
             val uid = "pl_$id"
             when (id) {
                 "pin" -> ToggleItem(uid, R.drawable.pin_filled, pinLabel, pk, true)
+                "search" -> ToggleItem(uid, R.drawable.search_circle, searchLabel, pk, true)
                 "position_lock" -> ToggleItem(uid, R.drawable.locked, positionLockLabel, pk, true)
                 "match" -> ToggleItem(uid, R.drawable.alert, matchLabel, pk, true)
                 "renumber" -> ToggleItem(uid, R.drawable.position, renumberLabel, pk, true)
@@ -141,8 +143,8 @@ object LocalPlaylistToolbarSettingsDialog : Dialog {
             onConfirm = {
                 val edit = prefs.edit()
                 workingToggles.forEach { (id, isChecked) -> edit.putBoolean("pl_ts_$id", isChecked) }
-                val finalOrder = workingOrder.filter { id -> workingToggles[id] == true }
-                edit.putString(localPlaylistToolbarOrderKey, serializeOrder(finalOrder))
+                // Always save the full order (all IDs) to preserve user ordering
+                edit.putString(localPlaylistToolbarOrderKey, serializeOrder(workingOrder))
                 edit.apply(); Toaster.s(R.string.toast_preference_saved); hideDialog()
             }
         )

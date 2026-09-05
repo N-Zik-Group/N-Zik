@@ -122,7 +122,7 @@ interface FormatTable {
         }
 
     @Query("""
-        SELECT DISTINCT F.*, S.id, S.title, S.artistsText, S.durationText, S.thumbnailUrl, S.likedAt, S.totalPlayTimeMs, S.position, COUNT(E.songId) as playCount
+        SELECT DISTINCT F.*, S.id, S.title, S.artistsText, S.durationText, S.thumbnailUrl, S.likedAt, S.totalPlayTimeMs, S.position, S.isYoutubeSong, COUNT(E.songId) as playCount
         FROM Format F
         JOIN Song S ON S.id = F.songId
         LEFT JOIN Event E ON E.songId = F.songId

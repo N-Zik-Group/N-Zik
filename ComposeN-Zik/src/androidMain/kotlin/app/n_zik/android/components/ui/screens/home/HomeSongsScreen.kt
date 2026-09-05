@@ -30,6 +30,19 @@ import app.it.fast4x.rimusic.ui.components.tab.TabHeader
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
 import app.it.fast4x.rimusic.ui.components.themed.*
 import app.it.fast4x.rimusic.utils.*
+import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.it.fast4x.rimusic.enums.FilterBy
+import app.n_zik.android.components.menu.FilterMenu
+import app.it.fast4x.rimusic.utils.filterByKey
+import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.components.ui.screens.home.HomeSongs
+import app.it.fast4x.rimusic.ui.components.LocalMenuState
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.clickable
+import app.it.fast4x.rimusic.utils.importYTMLikedSongs
+import app.it.fast4x.rimusic.utils.autoSyncToolbutton
+import app.it.fast4x.rimusic.utils.autosyncLikesKey
+import app.it.fast4x.rimusic.utils.removeYTMLikedSongs
 import app.kreate.android.me.knighthat.utils.Toaster
 import org.json.JSONArray
 import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceSong
@@ -45,7 +58,6 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.typography
 import app.n_zik.android.utils.getAlbumVersionFromVideoGlobal
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.BrowseBody
 import it.fast4x.innertube.requests.playlistPage
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
@@ -195,7 +207,7 @@ fun HomeSongsScreen(navController: NavController ) {
             onImport = { urlPlaylistId ->
                 coroutineScope.launch(Dispatchers.IO) {
                     val browseId = if (urlPlaylistId.startsWith("VL")) urlPlaylistId else "VL$urlPlaylistId"
-                    Innertube.playlistPage(BrowseBody(browseId = browseId))?.getOrNull()?.let { playlistPage ->
+                    Innertube.playlistPage(browseId = browseId)?.getOrNull()?.let { playlistPage ->
                         val playlistName = playlistPage.title ?: appContext().getString(R.string.youtube_playlist)
                         val playlist = Playlist(name = playlistName, browseId = browseId)
                         val playlistRowId = Database.playlistTable.insert(playlist)
@@ -410,6 +422,7 @@ fun HomeSongsScreen(navController: NavController ) {
         BuiltInPlaylist.Downloaded -> Sort( Preference.HOME_SONGS_DOWNLOADED_SORT_BY, Preference.HOME_SONGS_DOWNLOADED_SORT_ORDER, homeSongsDownloadedSortMenuOrderKey, "dl" )
         BuiltInPlaylist.Top -> Sort( Preference.HOME_SONGS_TOP_SORT_BY, Preference.HOME_SONGS_TOP_SORT_ORDER, homeSongsTopSortMenuOrderKey, "top" )
         BuiltInPlaylist.OnDevice -> Sort( Preference.HOME_ON_DEVICE_SONGS_SORT_BY, Preference.HOME_ON_DEVICE_SONGS_SORT_ORDER, homeSongsOnDeviceSortMenuOrderKey, "dev" )
+        BuiltInPlaylist.Disliked -> Sort( Preference.HOME_SONGS_DISLIKED_SORT_BY, Preference.HOME_SONGS_DISLIKED_SORT_ORDER, homeSongsDislikedSortMenuOrderKey, "disliked" )
         else -> Sort( Preference.HOME_SONGS_SORT_BY, Preference.HOME_SONGS_SORT_ORDER, homeSongsAllSortMenuOrderKey, "all" )
     }
     val positionLock = remember( songSort.sortOrder ) { PositionLock(songSort.sortOrder) }
@@ -420,6 +433,18 @@ fun HomeSongsScreen(navController: NavController ) {
     val hasUnmatchedSongs by remember {
         derivedStateOf {
             itemsOnDisplayState.any { (it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L)) && !it.id.startsWith(LOCAL_KEY_PREFIX) }
+        }
+    }
+
+    val sync = object : MenuIcon, Descriptive {
+        override val iconId: Int = R.drawable.sync
+        override val messageId: Int = R.string.autosync_likes
+        @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
+        override fun onShortClick() {
+            coroutineScope.launch(Dispatchers.IO) { importYTMLikedSongs(force = true) }
+        }
+        override fun onLongClick() {
+            coroutineScope.launch(Dispatchers.IO) { removeYTMLikedSongs() }
         }
     }
 
@@ -439,6 +464,7 @@ fun HomeSongsScreen(navController: NavController ) {
     val homeSongsToolbarOrderPrefDownloaded by rememberPreference( homeSongsDownloadedToolbarOrderKey, "" )
     val homeSongsToolbarOrderPrefTop by rememberPreference( homeSongsTopToolbarOrderKey, "" )
     val homeSongsToolbarOrderPrefOnDevice by rememberPreference( homeSongsOnDeviceToolbarOrderKey, "" )
+    val homeSongsToolbarOrderPrefDisliked by rememberPreference( homeSongsDislikedToolbarOrderKey, "" )
 
     val currentToolbarOrderPref = when(builtInPlaylist) {
         BuiltInPlaylist.All -> homeSongsToolbarOrderPrefAll
@@ -447,18 +473,37 @@ fun HomeSongsScreen(navController: NavController ) {
         BuiltInPlaylist.Downloaded -> homeSongsToolbarOrderPrefDownloaded
         BuiltInPlaylist.Top -> homeSongsToolbarOrderPrefTop
         BuiltInPlaylist.OnDevice -> homeSongsToolbarOrderPrefOnDevice
+        BuiltInPlaylist.Disliked -> homeSongsToolbarOrderPrefDisliked
     }
 
     val defaultToolbarOrder = HomeSongsToolbarSettingsDialog.tabAvailableIds[builtInPlaylist] ?: HomeSongsToolbarSettingsDialog.allButtonIds
     val order = try {
         if (currentToolbarOrderPref.isBlank()) defaultToolbarOrder else {
             val arr = JSONArray(currentToolbarOrderPref)
-            (0 until arr.length()).map { arr.getString(it) }.distinct()
+            val savedIds = (0 until arr.length()).map { arr.getString(it) }.distinct()
+            val available = defaultToolbarOrder.toSet()
+            val filtered = savedIds.filter { it in available }
+            val missing = defaultToolbarOrder.filter { it !in filtered }
+            filtered + missing
         }
     } catch (_: Exception) { defaultToolbarOrder }
 
     val buttons = mutableListOf<Button>().apply {
         order.forEach { id ->
+            // Check toggle state - if disabled, skip this button
+            val toggleKey = "${when (builtInPlaylist) {
+                BuiltInPlaylist.All -> "all"
+                BuiltInPlaylist.Favorites -> "favs"
+                BuiltInPlaylist.Offline -> "off"
+                BuiltInPlaylist.Downloaded -> "dl"
+                BuiltInPlaylist.Top -> "top"
+                BuiltInPlaylist.OnDevice -> "dev"
+                BuiltInPlaylist.Disliked -> "disliked"
+                else -> "x"
+            }}_ts_$id"
+            val isEnabled = appContext().preferences.getBoolean(toggleKey, true)
+            if (!isEnabled) return@forEach
+
             when (id) {
                 "sort" -> add( if( builtInPlaylist == BuiltInPlaylist.Top ) topPlaylists else songSort )
                 "position_lock" -> if ( builtInPlaylist != BuiltInPlaylist.Top && songSort.sortBy == SongSortBy.Custom ) add( positionLock )
@@ -474,6 +519,7 @@ fun HomeSongsScreen(navController: NavController ) {
                 "add_to_favorite" -> add( addToFavorite )
                 "add_to_playlist" -> add( addToPlaylist )
                 "import_menu" -> if (builtInPlaylist == BuiltInPlaylist.All || builtInPlaylist == BuiltInPlaylist.Favorites) add( importMenu )
+                "sync_ytm_likes" -> if (builtInPlaylist == BuiltInPlaylist.Favorites && isYouTubeSyncEnabled()) add( sync )
                 "export_dialog" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( exportDialog )
                 "export_cache" -> if (BuildConfig.ENABLE_FFMPEG && (builtInPlaylist == BuiltInPlaylist.Offline || builtInPlaylist == BuiltInPlaylist.Downloaded)) add(
                     object : MenuIcon, Descriptive {
@@ -604,15 +650,17 @@ fun HomeSongsScreen(navController: NavController ) {
                         val showMyTopPlaylist by rememberPreference( showMyTopPlaylistKey, true )
                         val showDownloadedPlaylist by rememberPreference( showDownloadedPlaylistKey, true )
                         val showOnDeviceChip by rememberPreference( showOnDevicePlaylistKey, true )
+                        val showDislikedChip by rememberPreference( showDislikedPlaylistKey, true )
                         val homeSongsOrderPref by rememberPreference( homeSongsOrderKey, "" )
-                        val chips = remember( showFavoritesPlaylist, showCachedPlaylist, showMyTopPlaylist, showDownloadedPlaylist, showOnDeviceChip, homeSongsOrderPref ) {
-                            val songsDefaultOrder = listOf("all", "favorites", "cached", "downloaded", "top", "on_device")
+                        val chips = remember( showFavoritesPlaylist, showCachedPlaylist, showMyTopPlaylist, showDownloadedPlaylist, showOnDeviceChip, showDislikedChip, homeSongsOrderPref ) {
+                            val songsDefaultOrder = listOf("all", "favorites", "disliked", "cached", "downloaded", "top", "on_device")
                             val toggleMap = mapOf(
                                 "favorites" to showFavoritesPlaylist,
                                 "cached" to showCachedPlaylist,
                                 "downloaded" to showDownloadedPlaylist,
                                 "top" to showMyTopPlaylist,
-                                "on_device" to showOnDeviceChip
+                                "on_device" to showOnDeviceChip,
+                                "disliked" to showDislikedChip
                             )
                             val builtinMap = mapOf(
                                 "all" to BuiltInPlaylist.All,
@@ -620,7 +668,8 @@ fun HomeSongsScreen(navController: NavController ) {
                                 "cached" to BuiltInPlaylist.Offline,
                                 "downloaded" to BuiltInPlaylist.Downloaded,
                                 "top" to BuiltInPlaylist.Top,
-                                "on_device" to BuiltInPlaylist.OnDevice
+                                "on_device" to BuiltInPlaylist.OnDevice,
+                                "disliked" to BuiltInPlaylist.Disliked
                             )
                             val order = try {
                                 val arr = JSONArray(homeSongsOrderPref)
@@ -644,6 +693,35 @@ fun HomeSongsScreen(navController: NavController ) {
                             onValueUpdate = { builtInPlaylist = it },
                             modifier = Modifier.padding(end = 12.dp)
                         )
+
+                        if (isYouTubeSyncEnabled() && (builtInPlaylist == BuiltInPlaylist.Favorites || builtInPlaylist == BuiltInPlaylist.Disliked)) {
+                            val menuState = LocalMenuState.current
+                            var filterBy by rememberPreference(filterByKey, FilterBy.All)
+                            BasicText(
+                                text = when (filterBy) {
+                                    FilterBy.All -> stringResource(R.string.all)
+                                    FilterBy.Local -> stringResource(R.string.on_device)
+                                    FilterBy.YoutubeLibrary -> stringResource(R.string.ytm_library)
+                                },
+                                style = typography().xs.semiBold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier
+                                    .clip(uiRoundnessShape()).clickable {
+                                        menuState.display {
+                                            FilterMenu(
+                                                title = stringResource(R.string.filter_by),
+                                                onDismiss = menuState::hide,
+                                                onAll = { filterBy = FilterBy.All },
+                                                onYoutubeLibrary = { filterBy = FilterBy.YoutubeLibrary },
+                                                onLocal = { filterBy = FilterBy.Local }
+                                            )
+                                        }
+                                    }
+                                    .background(colorPalette().background2)
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            )
+                        }
 
                         val exoPlayerDiskCacheMaxSize by rememberPreference(app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey, app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize.`512MB`)
                         val exoPlayerDiskDownloadCacheMaxSize by rememberPreference(app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey, app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize.`2GB`)

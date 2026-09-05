@@ -37,7 +37,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -72,8 +72,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.BrowseBody
-import it.fast4x.innertube.models.bodies.NextBody
+import it.fast4x.innertube.YtMusic
 import it.fast4x.innertube.requests.playlistPage
 import it.fast4x.innertube.requests.relatedSongs
 import app.n_zik.android.core.database.Database
@@ -109,6 +108,7 @@ import app.it.fast4x.rimusic.ui.components.themed.Playlist
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
 import app.it.fast4x.rimusic.ui.components.themed.ResetThumbnail
 import app.it.fast4x.rimusic.ui.components.themed.Synchronize
+import app.it.fast4x.rimusic.ui.components.themed.Bookmark
 import app.it.fast4x.rimusic.ui.components.themed.ThumbnailPicker
 import app.it.fast4x.rimusic.ui.components.themed.RemoveFromPlaylist
 import app.it.fast4x.rimusic.ui.styling.Dimensions
@@ -121,6 +121,7 @@ import app.it.fast4x.rimusic.utils.addNext
 
 import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.autosyncKey
+import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.utils.center
 import app.it.fast4x.rimusic.utils.checkFileExists
 import app.it.fast4x.rimusic.utils.color
@@ -151,9 +152,14 @@ import app.it.fast4x.rimusic.utils.Preference
 import app.n_zik.android.download.utils.MyDownloadHelper
 import androidx.media3.exoplayer.offline.Download
 
+import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.saveImageToInternalStorage
 import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.showFloatingIconKey
+import app.it.fast4x.rimusic.utils.syncPushPlaylistKey
+import app.it.fast4x.rimusic.utils.getSyncDirection
+import app.it.fast4x.rimusic.utils.isNetworkConnected
+import app.it.fast4x.rimusic.enums.SyncDirection
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -257,7 +263,7 @@ fun LocalPlaylistSongs(
     val playlist by remember {
         Database.playlistTable
                 .findById( playlistId )
-    }.collectAsState( null, Dispatchers.IO )
+    }.collectAsStateWithLifecycle( null )
 
     val sort = PlaylistSongsSort(playlistId)
 
@@ -285,7 +291,7 @@ fun LocalPlaylistSongs(
                     .flowOn( Dispatchers.IO )
                     .distinctUntilChanged()
         }
-    }.collectAsState( emptyList(), Dispatchers.IO )
+    }.collectAsStateWithLifecycle( emptyList() )
     var itemsOnDisplay by persistList<Song>("localPlaylist/$playlistId/songs/on_display")
 
     val importedBrowseIds = remember {
@@ -311,6 +317,42 @@ fun LocalPlaylistSongs(
     fun getMediaItems() = getSongs().map( Song::asMediaItem )
 
     val search = Search(lazyListState)
+
+    val isSpecialPlaylist = playlist?.browseId?.removePrefix("VL") in listOf("LM", "SE")
+    
+    var isBookmarked by remember(playlist?.id) { mutableStateOf(playlist?.isYoutubePlaylist == true) }
+
+    val bookmark = Bookmark(isBookmarked = isBookmarked) {
+        if (isSpecialPlaylist) {
+            Toaster.e(R.string.cannot_bookmark_special_playlist)
+            return@Bookmark
+        }
+        val wasBookmarked = isBookmarked
+        coroutineScope.launch(Dispatchers.IO) {
+            val p = playlist ?: return@launch
+            val browseId = p.browseId
+            val pushPlaylist = appContext().preferences.getBoolean(syncPushPlaylistKey, false)
+            val syncDir = getSyncDirection()
+            if (browseId != null && isYouTubeSyncEnabled() && pushPlaylist && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
+                runCatching {
+                    if (wasBookmarked) {
+                        YtMusic.removelikePlaylistOrAlbum(browseId.removePrefix("VL"))
+                    } else {
+                        YtMusic.likePlaylistOrAlbum(browseId.removePrefix("VL"))
+                    }
+                }.onFailure { e ->
+                    Timber.tag("LocalPlaylistSongs").e(e, "Failed to toggle YTM bookmark")
+                }
+            }
+            Database.playlistTable.update(
+                p.copy(isYoutubePlaylist = !wasBookmarked)
+            )
+            withContext(Dispatchers.Main) {
+                isBookmarked = !wasBookmarked
+            }
+            Toaster.s( if (!wasBookmarked) R.string.added_to_favorites else R.string.removed_from_favorites )
+        }
+    }
 
     if (showGetAlbumVersionDialogue){
         InProgressDialog(
@@ -637,9 +679,9 @@ fun LocalPlaylistSongs(
 
                         if (urlPlaylistId != null) {
                             val browseId = if (urlPlaylistId.startsWith("VL")) urlPlaylistId else "VL$urlPlaylistId"
-                            Innertube.playlistPage(BrowseBody(browseId = browseId))?.getOrNull()?.let { playlistPage ->
-                                val songs = playlistPage.songsPage?.items?.mapNotNull { it.asSong.copy(totalPlayTimeMs = 1L) }
-                                if (songs != null) {
+                            Innertube.playlistPage(browseId = browseId)?.getOrNull()?.let { playlistPage ->
+                                val songs = playlistPage.songs.map { it.asSong.copy(totalPlayTimeMs = 1L) }
+                                if (songs.isNotEmpty()) {
                                     Database.asyncTransaction {
                                         songTable.upsert(songs)
                                         songs.forEach { song ->
@@ -812,14 +854,13 @@ fun LocalPlaylistSongs(
         playlist?.let {
             CoroutineScope(Dispatchers.IO).launch {
                 val remotePlaylist = Innertube.playlistPage(
-                    BrowseBody(browseId = it.browseId?.removePrefix(MODIFIED_PREFIX) ?: "")
+                    browseId = it.browseId?.removePrefix(MODIFIED_PREFIX) ?: ""
                 )?.completed()?.getOrNull()
                 remotePlaylist?.let { rp ->
-                    val mediaItems = rp.songsPage
-                        ?.items
-                        ?.map(Innertube.SongItem::asMediaItem)
+                    val mediaItems = rp.songs
+                        .map(Innertube.SongItem::asMediaItem)
 
-                    if (mediaItems != null && mediaItems.isNotEmpty()) {
+                    if (mediaItems.isNotEmpty()) {
                         Database.asyncTransaction {
                             songPlaylistMapTable.clear( playlistId )
                             mapIgnore( it, *mediaItems.toTypedArray() )
@@ -906,8 +947,7 @@ fun LocalPlaylistSongs(
         
         for (seedSong in seedSongs) {
             try {
-                val requestBody = NextBody(videoId = seedSong.id)
-                val relatedSongsResult = Innertube.relatedSongs(requestBody)?.getOrNull()
+                val relatedSongsResult = Innertube.relatedSongs(videoId = seedSong.id)?.getOrNull()
                 
                 relatedSongsResult?.songs?.forEach { songItem ->
                     // Filter out songs that are already in the playlist
@@ -1202,7 +1242,7 @@ fun LocalPlaylistSongs(
                         Spacer(modifier = Modifier.height(10.dp))
                         shuffle.ToolBarButton()
                         Spacer(modifier = Modifier.height(10.dp))
-                        search.ToolBarButton()
+                        bookmark.ToolBarButton()
                     }
                 }
 
@@ -1216,14 +1256,24 @@ fun LocalPlaylistSongs(
                 val order = try {
                     if (toolbarOrderPref.isBlank()) defaultOrder else {
                         val arr = JSONArray(toolbarOrderPref)
-                        (0 until arr.length()).map { arr.getString(it) }.distinct()
+                        val savedIds = (0 until arr.length()).map { arr.getString(it) }.distinct()
+                        // Filter to valid IDs and append any missing defaults
+                        val filtered = savedIds.filter { it in defaultOrder }
+                        val missing = defaultOrder.filter { it !in filtered }
+                        filtered + missing
                     }
                 } catch (_: Exception) { defaultOrder }
 
                 val toolbarButtons = buildList {
                     order.forEach { id ->
+                        // Check toggle state - if disabled, skip this button
+                        val toggleKey = "pl_ts_$id"
+                        val isEnabled = appContext().preferences.getBoolean(toggleKey, true)
+                        if (!isEnabled) return@forEach
+
                         when (id) {
                             "pin" -> if (playlistNotMonthlyType) add( pin )
+                            "search" -> add( search )
                             "position_lock" -> if ( sort.sortBy == PlaylistSongSortBy.Custom ) add( positionLock )
                             "match" -> if ( hasUnmatchedSongs ) add( matchAlbumButton )
                             "renumber" -> if ( sort.sortBy == PlaylistSongSortBy.Custom ) add( renumberDialog )
@@ -1249,8 +1299,10 @@ fun LocalPlaylistSongs(
 
                 TabToolBar.Buttons( toolbarButtons )
 
-                if ( autosync && playlist?.browseId.isNullOrBlank() ) {
-                    sync()
+                LaunchedEffect(autosync, playlist?.browseId) {
+                    if ( autosync && isYouTubeSyncEnabled() && !playlist?.browseId.isNullOrBlank() ) {
+                        sync()
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))

@@ -270,14 +270,35 @@ interface SongTable {
         UPDATE Song  
         SET likedAt = 
             CASE  
-                WHEN likedAt = -1 THEN NULL
-                WHEN likedAt IS NULL THEN 1  
-                WHEN likedAt = 1 THEN -1  
-                ELSE likedAt  
+                WHEN likedAt < 0 THEN NULL
+                WHEN likedAt IS NULL THEN strftime('%s', 'now') * 1000
+                ELSE -1
             END  
         WHERE id = :songId
     """)
     fun rotateLikeState( songId: String ): Int
+
+    /**
+     * Toggle dislike state for a song.
+     *
+     * - If neutral (null) -> set to disliked (-1)
+     * - If disliked (-1) -> set to neutral (null)
+     * - If liked (timestamp) -> set to disliked (-1)
+     *
+     * @param songId of song to be updated
+     * @return number of rows affected
+     */
+    @Query("""
+        UPDATE Song
+        SET likedAt = 
+            CASE
+                WHEN likedAt = -1 THEN NULL
+                WHEN likedAt IS NULL THEN -1
+                ELSE -1
+            END
+        WHERE id = :songId
+    """)
+    fun toggleDislike( songId: String ): Int
 
     /**
      * ### If song **IS NOT** liked
@@ -322,6 +343,25 @@ interface SongTable {
         WHERE id = :songId
     """)
     fun likeState( songId: String, likeState: Boolean? ): Int
+
+    /**
+     * Set [Song.likedAt] to a specific timestamp value.
+     *
+     * @param songId of song to be updated
+     * @param likedAt timestamp to set (in milliseconds)
+     * @return number of rows affected
+     */
+    @Query("UPDATE Song SET likedAt = :likedAt WHERE id = :songId")
+    fun likeState( songId: String, likedAt: Long ): Int
+
+    /**
+     * Get the raw [Song.likedAt] value for a song.
+     *
+     * @param songId of song to query
+     * @return the raw likedAt value (Long?)
+     */
+    @Query("SELECT likedAt FROM Song WHERE id = :songId")
+    suspend fun getLikedAt(songId: String): Long?
 
     /**
      * @param songId identifier of [Song]
@@ -405,7 +445,7 @@ interface SongTable {
         }
 
     @Query("""
-        SELECT DISTINCT S.id, S.title, S.artistsText, S.durationText, S.thumbnailUrl, S.likedAt, S.totalPlayTimeMs, S.position, COUNT(E.songId) as playCount
+        SELECT DISTINCT S.id, S.title, S.artistsText, S.durationText, S.thumbnailUrl, S.likedAt, S.totalPlayTimeMs, S.position, S.isYoutubeSong, COUNT(E.songId) as playCount
         FROM Song S
         LEFT JOIN Event E ON E.songId = S.id
         WHERE S.totalPlayTimeMs >= :excludeHidden
@@ -536,7 +576,7 @@ interface SongTable {
         }
 
     @Query("""
-        SELECT DISTINCT S.id, S.title, S.artistsText, S.durationText, S.thumbnailUrl, S.likedAt, S.totalPlayTimeMs, S.position, COUNT(E.songId) as playCount
+        SELECT DISTINCT S.id, S.title, S.artistsText, S.durationText, S.thumbnailUrl, S.likedAt, S.totalPlayTimeMs, S.position, S.isYoutubeSong, COUNT(E.songId) as playCount
         FROM Song S
         LEFT JOIN Event E ON E.songId = S.id
         WHERE S.likedAt IS NOT NULL AND S.likedAt > 0

@@ -44,7 +44,8 @@ object HomeSongsSortSettingsDialog : Dialog {
         BuiltInPlaylist.Offline to songSortIds.filter { it != "Custom" && it != "Downloaded" },
         BuiltInPlaylist.Downloaded to songSortIds.filter { it != "Custom" && it != "Downloaded" },
         BuiltInPlaylist.Top to topSortIds,
-        BuiltInPlaylist.OnDevice to onDeviceSortIds
+        BuiltInPlaylist.OnDevice to onDeviceSortIds,
+        BuiltInPlaylist.Disliked to songSortIds.filter { it != "Custom" }
     )
 
     private fun getTabPrefix(tab: BuiltInPlaylist): String = when (tab) {
@@ -54,6 +55,7 @@ object HomeSongsSortSettingsDialog : Dialog {
         BuiltInPlaylist.Downloaded -> "dl"
         BuiltInPlaylist.Top -> "top"
         BuiltInPlaylist.OnDevice -> "dev"
+        BuiltInPlaylist.Disliked -> "disliked"
         else -> "x"
     }
 
@@ -64,6 +66,7 @@ object HomeSongsSortSettingsDialog : Dialog {
         BuiltInPlaylist.Downloaded -> homeSongsDownloadedSortMenuOrderKey
         BuiltInPlaylist.Top -> homeSongsTopSortMenuOrderKey
         BuiltInPlaylist.OnDevice -> homeSongsOnDeviceSortMenuOrderKey
+        BuiltInPlaylist.Disliked -> homeSongsDislikedSortMenuOrderKey
         else -> homeSongsAllSortMenuOrderKey
     }
 
@@ -145,6 +148,7 @@ object HomeSongsSortSettingsDialog : Dialog {
         val tabs = listOf(
             BuiltInPlaylist.All,
             BuiltInPlaylist.Favorites,
+            BuiltInPlaylist.Disliked,
             BuiltInPlaylist.Offline,
             BuiltInPlaylist.Downloaded,
             BuiltInPlaylist.Top,
@@ -256,8 +260,9 @@ object HomeSongsSortSettingsDialog : Dialog {
         val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         val edit = prefs.edit()
         val tabs = listOf(
-            BuiltInPlaylist.All, BuiltInPlaylist.Favorites, BuiltInPlaylist.Offline,
-            BuiltInPlaylist.Downloaded, BuiltInPlaylist.Top, BuiltInPlaylist.OnDevice
+            BuiltInPlaylist.All, BuiltInPlaylist.Favorites, BuiltInPlaylist.Disliked,
+            BuiltInPlaylist.Offline, BuiltInPlaylist.Downloaded, BuiltInPlaylist.Top,
+            BuiltInPlaylist.OnDevice
         )
         tabs.forEach { tab ->
             val tp = getTabPrefix(tab)

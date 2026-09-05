@@ -29,9 +29,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.ContinuationBody
-import it.fast4x.innertube.models.bodies.SearchBody
 import it.fast4x.innertube.requests.searchPage
+import it.fast4x.innertube.requests.searchPageContinuation
 import it.fast4x.innertube.utils.from
 import app.it.fast4x.rimusic.enums.ContentType
 import app.it.fast4x.rimusic.enums.NavRoutes
@@ -214,6 +213,18 @@ fun OnlineSearchList(
                                 .size(thumbnailSizeDp - 8.dp)
                                 .clip(if (item is Innertube.ArtistItem) artistThumbnailShape() else thumbnailShape())
                         )
+                        if (item is Innertube.PlaylistItem) {
+                            androidx.compose.foundation.Image(
+                                painter = androidx.compose.ui.res.painterResource(R.drawable.ytmusic),
+                                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(Color.Red),
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .padding(all = 5.dp)
+                                    .size(30.dp),
+                                contentDescription = androidx.compose.ui.res.stringResource(R.string.cd_youtube_playlist),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
                     }
 
                     Column(
@@ -331,15 +342,13 @@ fun OnlineSearchList(
         itemsPageProvider = { continuation ->
             if (continuation == null) {
                 Innertube.searchPage(
-                    body = SearchBody(
-                        query = query,
-                        params = getSearchParams(tabIndex)
-                    ),
+                    query = query,
+                    params = getSearchParams(tabIndex),
                     fromMusicShelfRendererContent = getItemFrom(tabIndex)
                 )
             } else {
-                Innertube.searchPage(
-                    body = ContinuationBody(continuation = continuation),
+                Innertube.searchPageContinuation(
+                    continuation = continuation,
                     fromMusicShelfRendererContent = getItemFrom(tabIndex)
                 )
             }

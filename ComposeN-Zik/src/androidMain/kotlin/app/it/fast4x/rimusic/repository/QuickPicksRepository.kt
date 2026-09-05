@@ -13,7 +13,6 @@ import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
 import app.it.fast4x.rimusic.utils.*
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic
-import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.requests.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -172,9 +171,7 @@ object QuickPicksRepository {
     private suspend fun refreshRelatedIfNeeded() {
         val currentTrending = _trending.value
         if (currentTrending != null && (_relatedPage.value == null || _relatedPage.value?.songs?.firstOrNull()?.key != currentTrending.id)) {
-            _relatedPage.value = Innertube.relatedPage(
-                NextBody(videoId = currentTrending.id)
-            )?.getOrNull()
+            _relatedPage.value = Innertube.relatedPage(videoId = currentTrending.id)?.getOrNull()
         }
     }
 }

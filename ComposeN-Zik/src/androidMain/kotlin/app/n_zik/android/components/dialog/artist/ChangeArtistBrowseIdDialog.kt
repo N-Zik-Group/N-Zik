@@ -21,7 +21,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.SearchBody
 import it.fast4x.innertube.requests.searchPage
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.it.fast4x.rimusic.models.Artist
@@ -93,7 +92,7 @@ class ChangeArtistBrowseIdDialog private constructor(
                 coroutineScope.launch {
                     val searchResult = withContext(Dispatchers.IO) {
                         Innertube.searchPage<Innertube.ArtistItem>(
-                            SearchBody(query = query, params = Innertube.SearchFilter.Artist.value),
+                            query = query, params = Innertube.SearchFilter.Artist.value,
                             fromMusicShelfRendererContent = { Innertube.ArtistItem.from(it) }
                         )?.getOrNull()
                     }

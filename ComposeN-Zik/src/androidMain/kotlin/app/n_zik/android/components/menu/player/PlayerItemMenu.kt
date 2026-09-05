@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.distinctUntilChanged
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,7 +48,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.requests.nextPage
 import it.fast4x.innertube.requests.song
 import app.n_zik.android.core.database.Database
@@ -570,7 +570,7 @@ class PlayerItemMenu private constructor(
                                         menuState.hide()
                                         onClosePlayer()
                                         coroutineScope.launch(Dispatchers.IO) {
-                                            Innertube.nextPage(NextBody(videoId = song.id))
+                                            Innertube.nextPage(videoId = song.id)
                                                 ?.getOrNull()
                                                 ?.itemsPage?.items?.firstOrNull()
                                                 ?.authors
@@ -711,17 +711,23 @@ class PlayerItemMenu private constructor(
                         bottom = 10.dp
                     ),
                     trailingContent = {
-                        val isLiked = Database.songTable
-                                .isLiked(song.id)
-                                .collectAsState(initial = false, context = Dispatchers.IO)
+                        val likeState by remember(song.id) {
+                            Database.songTable
+                                    .likeState(song.id)
+                                    .distinctUntilChanged()
+                        }.collectAsState(null, Dispatchers.IO)
 
                         Column {
                             IconButton(
-                                icon = if (isLiked.value) R.drawable.heart else R.drawable.heart_outline,
+                                icon = when(likeState) {
+                                    false -> R.drawable.heart_dislike
+                                    null -> R.drawable.heart_outline
+                                    else -> R.drawable.heart
+                                },
                                 color = colorPalette().favoritesIcon,
                             onClick = {
                                 coroutineScope.launch(Dispatchers.IO) {
-                                    YouTubeSync.toggleSongLike(mContext, song.asMediaItem)
+                                    YouTubeSync.rotateSongLikeState( mContext, song.asMediaItem )
                                 }
                             },
                                 modifier = Modifier.padding(all = 4.dp).size(20.dp)

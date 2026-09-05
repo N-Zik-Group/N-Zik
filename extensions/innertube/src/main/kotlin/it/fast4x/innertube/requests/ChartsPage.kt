@@ -1,11 +1,7 @@
 package it.fast4x.innertube.requests
 
 import io.ktor.client.call.body
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.BrowseBodyWithLocale
-import it.fast4x.innertube.models.bodies.FormData
 import it.fast4x.innertube.models.v0624.charts.BrowseChartsResponse0624
 import it.fast4x.innertube.models.v0624.charts.MusicCarouselShelfRenderer
 import it.fast4x.innertube.models.v0624.charts.MusicCarouselShelfRendererContent
@@ -13,47 +9,17 @@ import it.fast4x.innertube.models.NavigationEndpoint
 
 
 suspend fun Innertube.chartsPage(countryCode: String = "") = runCatching {
-    val response = client.post(browse) {
-        setBody(BrowseBodyWithLocale(browseId = "FEmusic_charts", formData = FormData(listOf(countryCode))))
-    }.body<BrowseChartsResponse0624>()
+    val response = browse(browseId = "FEmusic_charts").body<BrowseChartsResponse0624>()
 
     val musicDetailRenderer =
         response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
             ?.tabRenderer?.content?.sectionListRenderer?.contents
-
-    /*
-    println("mediaItem chartsPage playists ${musicDetailRenderer
-        ?.mapNotNull { it.musicCarouselShelfRenderer }
-        ?.mapNotNull(Innertube.PlaylistItem::from)?.size}")
-     */
-
-/*
-    println("mediaItem chartsPage artists ${musicDetailRenderer
-        ?.mapNotNull { 
-            it.musicCarouselShelfRenderer?.contents
-        }
-        //?.mapNotNull { it.musicCarouselShelfRenderer }
-        ?.map(Innertube.ArtistItem::from)}")
-
- */
-
-    /*
-    println("mediaItem chartsPage Language ${
-        musicDetailRenderer
-            ?.musicShelfRenderer?.subheaders?.firstOrNull()
-            ?.musicSideAlignedItemRenderer?.startItems?.firstOrNull()
-            ?.musicSortFilterButtonRenderer
-            ?.title?.runs?.firstOrNull()?.text}")
-     */
 
     Innertube.ChartsPage(
         playlists = musicDetailRenderer
             ?.mapNotNull { it.musicCarouselShelfRenderer }
             ?.mapNotNull(Innertube.PlaylistItem::from)
     )
-
-}.onFailure {
-    println("Innertube: chartsPage error: ${it.stackTraceToString()}")
 }
 
 fun Innertube.PlaylistItem.Companion.from(renderer: MusicCarouselShelfRenderer): Innertube.PlaylistItem? {
@@ -80,11 +46,6 @@ fun Innertube.PlaylistItem.Companion.from(renderer: MusicCarouselShelfRenderer):
             endpoint = NavigationEndpoint.Endpoint.Browse(
                 browseId = renderer
                     .header?.musicCarouselShelfBasicHeaderRenderer?.title?.runs?.firstOrNull()?.navigationEndpoint?.browseEndpoint?.browseID,
-               /*
-                params = renderer
-                    .contents?.firstOrNull()?.musicTwoRowItemRenderer
-                    ?.navigationEndpoint?.watchEndpoint?.params.toString(),
-                */
                 browseEndpointContextSupportedConfigs = null
             )
         ),
@@ -124,5 +85,4 @@ fun Innertube.ArtistItem.Companion.from(renderer: List<MusicCarouselShelfRendere
             ?.text,
         thumbnail = thumbnail
     ))
-
 }

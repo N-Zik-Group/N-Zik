@@ -1,21 +1,15 @@
 package it.fast4x.innertube.requests
 
 import io.ktor.client.call.body
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.Thumbnail
-import it.fast4x.innertube.models.bodies.BrowseBody
 import it.fast4x.innertube.models.v0624.podcasts.BrowsePodcastsResponse0624
 import it.fast4x.innertube.models.v0624.podcasts.MusicShelfContinuation
 import it.fast4x.innertube.models.v0624.podcasts.MusicShelfRendererContent
 
 
-suspend fun Innertube.podcastPage(body: BrowseBody) = runCatching {
-    val response = client.post(browse) {
-        setBody(body)
-        body.context.apply()
-    }.body<BrowsePodcastsResponse0624>()
+suspend fun Innertube.podcastPage(browseId: String) = runCatching {
+    val response = browse(browseId = browseId).body<BrowsePodcastsResponse0624>()
 
     val listEpisode = arrayListOf<Innertube.Podcast.EpisodeItem>()
     val thumbnail =
@@ -36,24 +30,6 @@ suspend fun Innertube.podcastPage(body: BrowseBody) = runCatching {
             ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
             ?.musicResponsiveHeaderRenderer?.let {
                 it.straplineTextOne?.runs?.firstOrNull()?.text ?: ""
-                /*
-                Innertube.ArtistItem(
-                    Innertube.Info(
-                        name = it.straplineTextOne?.runs?.firstOrNull()?.text ?: "",
-                        endpoint = NavigationEndpoint.Endpoint.Browse(
-                            browseId = it.straplineTextOne?.runs?.firstOrNull()?.navigationEndpoint?.browseEndpoint?.browseID
-                        )
-                ),
-                    subscribersCountText = null,
-                    thumbnail = it.straplineThumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.lastOrNull()?.url?.let { it1 ->
-                        Thumbnail(
-                            url = it1,
-                            width = it.straplineThumbnail.musicThumbnailRenderer.thumbnail.thumbnails.lastOrNull()?.width?.toInt(),
-                            height = it.straplineThumbnail.musicThumbnailRenderer.thumbnail.thumbnails.lastOrNull()?.height?.toInt()
-                        )
-                    }
-                )
-                */
             }
     val authorThumbnail =
         response.contents?.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()
@@ -72,7 +48,6 @@ suspend fun Innertube.podcastPage(body: BrowseBody) = runCatching {
     val data =
         response.contents?.twoColumnBrowseResultsRenderer?.secondaryContents?.sectionListRenderer?.contents?.firstOrNull()
             ?.musicShelfRenderer?.contents
-    println("PodcastPage: contents count ${data?.size}")
     parsePodcastData(data, author).let {
         listEpisode.addAll(it)
     }
@@ -89,8 +64,6 @@ suspend fun Innertube.podcastPage(body: BrowseBody) = runCatching {
             ?.firstOrNull()
             ?.nextContinuationData
             ?.continuation
-
-    println("PodcastPage: first continueParam $continueParam")
 
     while (continueParam != null) {
         val continueData = browse(
@@ -113,39 +86,28 @@ suspend fun Innertube.podcastPage(body: BrowseBody) = runCatching {
                 ?.firstOrNull()
                 ?.nextContinuationData
                 ?.continuation
-
-        println("PodcastPage: other continueParam $continueParam")
     }
 
     Innertube.Podcast(
         title = title ?: "",
-        //author = author ?: Innertube.ArtistItem(info = Innertube.Info(name = "", endpoint = null), thumbnail = null, subscribersCountText = null),
         author = author,
         authorThumbnail = authorThumbnail,
         thumbnail = thumbnail ?: emptyList(),
         description = description ?: "",
         listEpisode = listEpisode
     )
-
-
-}.onFailure {
-    println("Innertube: podcastsPage error: ${it.stackTraceToString()}")
 }
 
 fun parsePodcastData(
     listContent: List<MusicShelfRendererContent>?,
-    //author: Innertube.ArtistItem?
     author: String?
 ): List<Innertube.Podcast.EpisodeItem> {
-    //if (listContent == null) return emptyList()
-    //else {
         val listEpisode: ArrayList<Innertube.Podcast.EpisodeItem> = arrayListOf()
         listContent?.forEach { content ->
             listEpisode.add(
                 Innertube.Podcast.EpisodeItem(
                     title = content.musicMultiRowListItemRenderer?.title?.runs?.firstOrNull()?.text
                         ?: "",
-                    //author = author ?: Innertube.ArtistItem(info = Innertube.Info(name = "", endpoint = null), thumbnail = null, subscribersCountText = null),
                     author = author,
                     description = content.musicMultiRowListItemRenderer?.description?.runs?.joinToString(
                         separator = ""
@@ -166,19 +128,12 @@ fun parsePodcastData(
                             ?.musicPlaybackProgressRenderer?.durationText?.runs
                             ?.getOrNull(1)?.text ?: ""
                     ),
-                    //videoId = content.musicMultiRowListItemRenderer?.title?.runs?.firstOrNull()?.navigationEndpoint?.browseEndpoint?.browseID ?: "",
                     videoId = content.musicMultiRowListItemRenderer?.onTap?.watchEndpoint?.videoID ?: ""
-                    //    ?: "",
-                    //endpoint = NavigationEndpoint.Endpoint.Browse(
-                    //    browseId = content.musicMultiRowListItemRenderer?.onTap?.watchEndpoint?.videoID
-                    //        ?: ""
-                    //)
                 )
             )
         }
 
         return listEpisode
-    //}
 }
 
 fun List<Thumbnail>.toListThumbnail(): List<Thumbnail> {
@@ -265,10 +220,6 @@ fun parseContinuationPodcastEpisodes(
     }
 }
 
-/**
- * Parse YouTube podcast duration format to standard format.
- * Examples: "52 min" -> "52:00", "1 hr 1 min" -> "1:01:00", "1 hr" -> "1:00:00"
- */
 fun parsePodcastDuration(ytDuration: String): String {
     val hours = Regex("(\\d+)\\s*hr").find(ytDuration)?.groupValues?.get(1)?.toIntOrNull() ?: 0
     val minutes = Regex("(\\d+)\\s*min").find(ytDuration)?.groupValues?.get(1)?.toIntOrNull() ?: 0

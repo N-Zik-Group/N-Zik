@@ -22,12 +22,7 @@ import app.n_zik.android.core.network.client.Store
 
 import app.n_zik.android.core.security.potoken.PoTokenGenerator
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.clients.YouTubeClient
-import it.fast4x.innertube.clients.YouTubeLocale
-import it.fast4x.innertube.models.Context
 import it.fast4x.innertube.models.PlayerResponse
-import it.fast4x.innertube.models.bodies.BrowseBody
-import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.requests.nextPage
 import it.fast4x.innertube.requests.artistPage
 import app.n_zik.android.appContext
@@ -70,7 +65,6 @@ import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import java.util.concurrent.ConcurrentHashMap
 import app.kreate.android.me.knighthat.utils.PropUtils
 import it.fast4x.innertube.YtMusic
-import java.util.Locale
 import android.database.sqlite.SQLiteConstraintException
 
 import okhttp3.Request
@@ -104,6 +98,9 @@ private val fetchingAlbums = Collections.synchronizedSet(mutableSetOf<String>())
 
 // Warmup video ID for PoToken pre-generation (first YouTube video)
 private const val POTOKEN_WARMUP_VIDEO_ID = "jNQXAC9IVRw"
+
+// Delay before retrying stream resolution after an InnerTube session change
+private const val SESSION_CHANGE_RETRY_DELAY_MS = 200L
 
 /**
  * Pre-warm the PoToken BotGuard generator to avoid cold-start latency on first playback.
@@ -186,7 +183,7 @@ suspend fun upsertSongInfo(videoId: String) {
     }
 
     try {
-        Innertube.nextPage(NextBody(videoId = videoId))?.fold(
+        Innertube.nextPage(videoId = videoId)?.fold(
             onSuccess = { nextPage ->
             val songItem = nextPage.itemsPage?.items?.firstOrNull() ?: return@fold
             Database.upsert(songItem)
@@ -223,7 +220,7 @@ suspend fun upsertSongInfo(videoId: String) {
                         Timber.tag(TAG).d("[Artist Cache] $artistId outdated, fetching in background.")
                         scope.launch(PlaybackDispatchers.STREAM_RESOLVER) {
                             try {
-                                val artistPage = Innertube.artistPage(BrowseBody(browseId = artistId))?.getOrNull()
+                                val artistPage = Innertube.artistPage(browseId = artistId)?.getOrNull()
                                 if (artistPage != null) {
                                     Database.asyncTransaction {
                                         val existing = Database.artistTable.findByIdDirect(artistId)
@@ -590,8 +587,21 @@ private suspend fun resolveFormatUrl(
 }
 
 /**
+ * Returns true if [e] was thrown by InnerTubeX because the session generation changed
+ * (i.e. [com.metrolist.innertubex.InnerTube.cancelStaleSessionRequests] cancelled the
+ * in-flight request). Such cancellations are safe to retry once with the new session;
+ * any other cancellation (caller scope cancelled, timeout) must propagate as-is.
+ */
+internal fun isInnerTubeSessionChangeCancellation(e: CancellationException): Boolean =
+    e.message?.contains("InnerTube session changed", ignoreCase = true) == true
+
+/**
  * Try to resolve stream via InnerTubeX (new pipeline).
  * Returns null if InnerTubeX fails, allowing fallback to legacy cipher pipeline.
+ *
+ * Retries once on [CancellationException] caused by InnerTubeX session changes
+ * (e.g. when PoTokenWebView creation triggers fetchFreshVisitorData, which
+ * increments the session generation and cancels in-flight requests).
  */
 @UnstableApi
 private suspend fun resolveStreamUriViaInnerTubeX(
@@ -602,119 +612,147 @@ private suspend fun resolveStreamUriViaInnerTubeX(
     allowBoundedRange: Boolean = true
 ): CachedStreamUrl? {
     val expectedGeneration = streamUrlCache.generation(videoId)
-    return try {
-        val connectivityManager = appContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
-        val audioQuality = when (audioQualityFormat) {
-            AudioQualityFormat.High -> InnerTubeXAudioQuality.HIGH
-            AudioQualityFormat.Low -> InnerTubeXAudioQuality.LOW
-            else -> if (connectionMetered) InnerTubeXAudioQuality.LOW else InnerTubeXAudioQuality.AUTO
-        }
 
-        Timber.tag(TAG).d("Trying InnerTubeX for $videoId (quality=$audioQuality)")
-        val result = InnerTubeXPlayer.playerResponseForPlayback(
-            videoId = videoId,
-            audioQuality = audioQuality,
-            connectivityManager = connectivityManager,
-            contentHints = contentHints,
-            allowBoundedRange = allowBoundedRange,
-        )
-
-        result.fold(
-            onSuccess = { playbackData ->
-                Timber.tag(TAG).d("InnerTubeX success for $videoId (client=${playbackData.streamClient})")
-
-                // Cache PlaybackData for metadata access
-                playbackDataCache[videoId] = PlaybackData(
-                    streamUrl = playbackData.streamUrl,
-                    format = playbackData.format,
-                    loudnessDb = playbackData.audioConfig?.loudnessDb,
-                    videoDetails = playbackData.videoDetails,
-                    playbackTracking = playbackData.playbackTracking,
-                    streamExpiresInSeconds = playbackData.streamExpiresInSeconds.toLong(),
-                    streamClient = playbackData.streamClient,
-                )
-                PlaybackDataStore.saveStreamClient(appContext(), videoId, playbackData.streamClient)
-
-                // Upsert song format in background
-                scope.launch(PlaybackDispatchers.STREAM_RESOLVER) {
-                    upsertSongFormat(
-                        videoId,
-                        playbackData.format,
-                        playbackData.audioConfig?.perceptualLoudnessDb,
-                        playbackData.playbackTracking?.videostatsPlaybackUrl?.baseUrl,
-                        playbackData.audioConfig?.loudnessDb
-                    )
-                }
-
-                val contentLength = playbackData.format.contentLength ?: 1_000_000L
-                val streamUrl = "${playbackData.streamUrl}&range=0-$contentLength"
-
-                // Store in StreamUrlCache with headers from InnerTubeX
-                streamUrlCache.put(
-                    mediaId = videoId,
-                    url = streamUrl,
-                    requestHeaders = playbackData.streamHeaders,
-                    clientName = playbackData.streamClient,
-                    expiresInSeconds = playbackData.streamExpiresInSeconds,
-                    requireBoundedRange = playbackData.requireBoundedRange,
-                    rangeChunkSizeBytes = playbackData.rangeChunkSizeBytes,
-                    useRangeChunks = playbackData.useRangeChunks,
-                    expectedGeneration = expectedGeneration,
-                )
-
-                CachedStreamUrl(
-                    url = streamUrl,
-                    requestHeaders = playbackData.streamHeaders,
-                    clientName = playbackData.streamClient,
-                    requireBoundedRange = playbackData.requireBoundedRange,
-                    rangeChunkSizeBytes = playbackData.rangeChunkSizeBytes,
-                    useRangeChunks = playbackData.useRangeChunks,
-                )
-            },
-            onFailure = { error ->
-                Timber.tag(TAG).w(error, "InnerTubeX failed for $videoId")
-                val playbackError = when {
-                    error is IOException -> PlaybackException(
-                        "Stream resolution IO error for $videoId: ${error.message}",
-                        error,
-                        PlaybackException.ERROR_CODE_IO_UNSPECIFIED
-                    )
-                    error.message?.contains("403") == true || error.message?.contains("forbidden", ignoreCase = true) == true -> PlaybackException(
-                        "Stream forbidden (403) for $videoId: ${error.message}",
-                        error,
-                        PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS
-                    )
-                    error.message?.contains("410") == true || error.message?.contains("expired", ignoreCase = true) == true -> PlaybackException(
-                        "Stream expired (410) for $videoId: ${error.message}",
-                        error,
-                        PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS
-                    )
-                    error.message?.contains("unplayable", ignoreCase = true) == true -> PlaybackException(
-                        "Stream unplayable for $videoId: ${error.message}",
-                        error,
-                        PlaybackException.ERROR_CODE_REMOTE_ERROR
-                    )
-                    else -> PlaybackException(
-                        "Stream resolution failed for $videoId: ${error.message}",
-                        error,
-                        PlaybackException.ERROR_CODE_IO_UNSPECIFIED
-                    )
-                }
-                throw playbackError
+    // Retry loop: catches CancellationException from session changes and retries once.
+    // InnerTubeX's fetchFreshVisitorData() can cancel in-flight player requests when
+    // it publishes a new session — this is expected and recoverable.
+    var lastCancellation: CancellationException? = null
+    for (attempt in 0..1) {
+        try {
+            val connectivityManager = appContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+            val audioQuality = when (audioQualityFormat) {
+                AudioQualityFormat.High -> InnerTubeXAudioQuality.HIGH
+                AudioQualityFormat.Low -> InnerTubeXAudioQuality.LOW
+                else -> if (connectionMetered) InnerTubeXAudioQuality.LOW else InnerTubeXAudioQuality.AUTO
             }
-        )
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: PlaybackException) {
-        throw e
-    } catch (e: Exception) {
-        Timber.tag(TAG).w(e, "InnerTubeX exception for $videoId")
-        throw PlaybackException(
-            "Unexpected stream resolution error for $videoId: ${e.message}",
-            e,
-            PlaybackException.ERROR_CODE_IO_UNSPECIFIED
-        )
+
+            if (attempt > 0) {
+                Timber.tag(TAG).d("Retrying InnerTubeX for $videoId after session change (attempt ${attempt + 1})")
+            } else {
+                Timber.tag(TAG).d("Trying InnerTubeX for $videoId (quality=$audioQuality)")
+            }
+            val result = InnerTubeXPlayer.playerResponseForPlayback(
+                videoId = videoId,
+                audioQuality = audioQuality,
+                connectivityManager = connectivityManager,
+                contentHints = contentHints,
+                allowBoundedRange = allowBoundedRange,
+            )
+
+            return result.fold(
+                onSuccess = { playbackData ->
+                    Timber.tag(TAG).d("InnerTubeX success for $videoId (client=${playbackData.streamClient})")
+
+                    // Cache PlaybackData for metadata access
+                    playbackDataCache[videoId] = PlaybackData(
+                        streamUrl = playbackData.streamUrl,
+                        format = playbackData.format,
+                        loudnessDb = playbackData.audioConfig?.loudnessDb,
+                        videoDetails = playbackData.videoDetails,
+                        playbackTracking = playbackData.playbackTracking,
+                        streamExpiresInSeconds = playbackData.streamExpiresInSeconds.toLong(),
+                        streamClient = playbackData.streamClient,
+                        clientPlaybackNonce = playbackData.clientPlaybackNonce,
+                    )
+                    PlaybackDataStore.saveStreamClient(appContext(), videoId, playbackData.streamClient)
+
+                    // Upsert song format in background
+                    scope.launch(PlaybackDispatchers.STREAM_RESOLVER) {
+                        upsertSongFormat(
+                            videoId,
+                            playbackData.format,
+                            playbackData.audioConfig?.perceptualLoudnessDb,
+                            playbackData.playbackTracking?.videostatsPlaybackUrl?.baseUrl,
+                            playbackData.audioConfig?.loudnessDb
+                        )
+                    }
+
+                    val contentLength = playbackData.format.contentLength ?: 1_000_000L
+                    val streamUrl = "${playbackData.streamUrl}&range=0-$contentLength"
+
+                    // Store in StreamUrlCache with headers from InnerTubeX
+                    streamUrlCache.put(
+                        mediaId = videoId,
+                        url = streamUrl,
+                        requestHeaders = playbackData.streamHeaders,
+                        clientName = playbackData.streamClient,
+                        expiresInSeconds = playbackData.streamExpiresInSeconds,
+                        requireBoundedRange = playbackData.requireBoundedRange,
+                        rangeChunkSizeBytes = playbackData.rangeChunkSizeBytes,
+                        useRangeChunks = playbackData.useRangeChunks,
+                        expectedGeneration = expectedGeneration,
+                    )
+
+                    CachedStreamUrl(
+                        url = streamUrl,
+                        requestHeaders = playbackData.streamHeaders,
+                        clientName = playbackData.streamClient,
+                        requireBoundedRange = playbackData.requireBoundedRange,
+                        rangeChunkSizeBytes = playbackData.rangeChunkSizeBytes,
+                        useRangeChunks = playbackData.useRangeChunks,
+                    )
+                },
+                onFailure = { error ->
+                    Timber.tag(TAG).w(error, "InnerTubeX failed for $videoId")
+                    val playbackError = when {
+                        error is IOException -> PlaybackException(
+                            "Stream resolution IO error for $videoId: ${error.message}",
+                            error,
+                            PlaybackException.ERROR_CODE_IO_UNSPECIFIED
+                        )
+                        error.message?.contains("403") == true || error.message?.contains("forbidden", ignoreCase = true) == true -> PlaybackException(
+                            "Stream forbidden (403) for $videoId: ${error.message}",
+                            error,
+                            PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS
+                        )
+                        error.message?.contains("410") == true || error.message?.contains("expired", ignoreCase = true) == true -> PlaybackException(
+                            "Stream expired (410) for $videoId: ${error.message}",
+                            error,
+                            PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS
+                        )
+                        error.message?.contains("unplayable", ignoreCase = true) == true -> PlaybackException(
+                            "Stream unplayable for $videoId: ${error.message}",
+                            error,
+                            PlaybackException.ERROR_CODE_REMOTE_ERROR
+                        )
+                        else -> PlaybackException(
+                            "Stream resolution failed for $videoId: ${error.message}",
+                            error,
+                            PlaybackException.ERROR_CODE_IO_UNSPECIFIED
+                        )
+                    }
+                    throw playbackError
+                }
+            )
+        } catch (e: CancellationException) {
+            // InnerTubeX cancels in-flight session-bound requests whenever a new session is
+            // published (e.g. fetchFreshVisitorData during first-time PoToken generation).
+            // Retry once with the stable session instead of letting ExoPlayer re-drive the
+            // whole load from scratch. The message is specific to
+            // InnerTube.cancelStaleSessionRequests; any other cancellation (caller scope
+            // cancelled, ExoPlayer interrupt) propagates as-is. If our own job is being
+            // cancelled, delay() below throws immediately and aborts the retry.
+            if (isInnerTubeSessionChangeCancellation(e) && attempt == 0) {
+                lastCancellation = e
+                Timber.tag(TAG).d("Stream resolution cancelled by InnerTube session change for $videoId, retrying once")
+                // Brief pause so concurrent session publishers (visitor-data fetch, PoToken
+                // generation) settle before the retry reads the new session.
+                delay(SESSION_CHANGE_RETRY_DELAY_MS)
+                continue
+            }
+            throw e
+        } catch (e: PlaybackException) {
+            throw e
+        } catch (e: Exception) {
+            Timber.tag(TAG).w(e, "InnerTubeX exception for $videoId")
+            throw PlaybackException(
+                "Unexpected stream resolution error for $videoId: ${e.message}",
+                e,
+                PlaybackException.ERROR_CODE_IO_UNSPECIFIED
+            )
+        }
     }
+    throw lastCancellation ?: CancellationException("InnerTubeX stream resolution cancelled")
 }
 
 /**
@@ -787,18 +825,11 @@ suspend fun playerResponseForMetadata(
         poTokenGenerator.getWebClientPoToken(videoId, sessionId)
     }.getOrNull()
 
-    return Innertube.playerRequest(
+    return Innertube.player(
         videoId = videoId,
         playlistId = playlistId,
         signatureTimestamp = signatureTimestamp,
         poToken = poToken?.playerRequestPoToken,
-        context = YouTubeClient.WEB_REMIX.toContext(
-            locale = YouTubeLocale(
-                gl = Locale.getDefault().country.takeIf { it.isNotEmpty() } ?: "US",
-                hl = Locale.getDefault().language.takeIf { it.isNotEmpty() } ?: "en"
-            ),
-            visitorData = sessionId,
-        )
     ).let { httpResponse ->
         runCatching {
             httpResponse.body<PlayerResponse>()

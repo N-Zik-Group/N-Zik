@@ -36,7 +36,6 @@ import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import coil3.compose.AsyncImage
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.SearchBody
 import it.fast4x.innertube.requests.searchPage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -92,7 +91,7 @@ class ChangePlaylistBrowseIdDialog private constructor(
                 coroutineScope.launch {
                     val searchResult = withContext(Dispatchers.IO) {
                         Innertube.searchPage<Innertube.PlaylistItem>(
-                            SearchBody(query = query, params = Innertube.SearchFilter.CommunityPlaylist.value),
+                            query = query, params = Innertube.SearchFilter.CommunityPlaylist.value,
                             fromMusicShelfRendererContent = { Innertube.PlaylistItem.from(it) }
                         )?.getOrNull()
                     }

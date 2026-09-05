@@ -45,8 +45,10 @@ import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
+import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic
+import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -214,11 +216,50 @@ class OnlinePlaylistItemMenu private constructor(
                     )
                 }
 
-                // Trailing content (Share / Open)
+                // Trailing content (Bookmark & Share)
+                val localPlaylistFlow = remember(playlist.key) { Database.playlistTable.findByBrowseId(playlist.key) }
+                val localPlaylist by localPlaylistFlow.collectAsState(null, Dispatchers.IO)
+                val isBookmarked = localPlaylist?.isYoutubePlaylist == true
+                val coroutineScope = rememberCoroutineScope()
+
                 Column(
                     Modifier.width(48.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    IconButton(
+                        icon = if (isBookmarked) R.drawable.bookmark else R.drawable.bookmark_outline,
+                        color = colorPalette().favoritesIcon,
+                        onClick = {
+                            coroutineScope.launch(Dispatchers.IO) {
+                                val browseId = playlist.key
+                                if (isYouTubeSyncEnabled()) {
+                                    if (isBookmarked) {
+                                        YtMusic.removelikePlaylistOrAlbum(browseId)
+                                    } else {
+                                        YtMusic.likePlaylistOrAlbum(browseId)
+                                    }
+                                }
+                                val existing = localPlaylist
+                                if (existing != null) {
+                                    Database.playlistTable.update(existing.copy(isYoutubePlaylist = !isBookmarked))
+                                } else {
+                                    Database.playlistTable.insert(
+                                        Playlist(
+                                            name = playlist.title ?: "",
+                                            browseId = browseId,
+                                            isYoutubePlaylist = true,
+                                            isEditable = false
+                                        )
+                                    )
+                                }
+                                Toaster.s( if (isBookmarked) R.string.removed_from_favorites else R.string.added_to_favorites )
+                            }
+                        },
+                        modifier = Modifier
+                            .padding(all = 4.dp)
+                            .size(20.dp)
+                    )
+
                     IconButton(
                         icon = R.drawable.share_social,
                         color = colorPalette().text,
@@ -396,9 +437,11 @@ class OnlinePlaylistItemMenu private constructor(
         
         buttons = list.apply {
             val artistName = playlist.channel?.name
+
             val browseId = playlist.channel?.endpoint?.browseId
             if (!artistName.isNullOrBlank() && !browseId.isNullOrBlank()) {
-                add(object : MenuIcon, Descriptive, Clickable {
+
+            add(object : MenuIcon, Descriptive, Clickable {
                     override val iconId: Int = R.drawable.people
                     override val messageId: Int = R.string.artists
                     @get:Composable override val menuIconTitle: String get() = stringResource(R.string.more_of) + " $artistName"

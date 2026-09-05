@@ -54,10 +54,12 @@ import it.fast4x.innertube.utils.ProxyPreferences
 import java.net.Proxy
 import app.n_zik.android.playback.services.prewarmPoToken
 import it.fast4x.innertube.Innertube
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 
 class MainApplication : Application(), SingletonImageLoader.Factory {
 
@@ -67,13 +69,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         migrateCredentialsToEncrypted()
         InnerTubeXPlayer.initialize(this)
 
-        // Prewarm InnerTubeX in background to reduce first-play latency
-        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-            kotlinx.coroutines.delay(1500)
-            runCatching { InnerTubeXPlayer.prewarm() }
-                .onFailure { Timber.tag("MainApplication").w(it, "InnerTubeX prewarm skipped") }
-        }
-
+        // Setup session BEFORE prewarm — ensures session is stable when IO thread starts
         val oldPolicy = StrictMode.allowThreadDiskReads()
         try {
             var proxy: Proxy? = null
@@ -87,7 +83,6 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                     hostName?.let { hName ->
                         ProxyPreferences.preference = ProxyPreferenceItem(hName, proxyPort, proxyMode)
                         proxy = ProxyPreferences.preference?.let { pref -> it.fast4x.innertube.utils.getProxy(pref) }
-                        // Set proxy auth if credentials provided
                         if (!proxyUsername.isNullOrBlank() && !proxyPassword.isNullOrBlank()) {
                             Innertube.proxyAuth = "$proxyUsername:$proxyPassword"
                         }
@@ -98,14 +93,12 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             } else {
                 Timber.w("Proxy preference is null, running without proxy")
             }
-            // Region override
             val regionOverride = preferences.getString(regionOverrideKey, "")
             if (!regionOverride.isNullOrBlank()) {
                 Innertube.regionOverrideActive = true
                 Innertube.regionOverride = regionOverride
             }
-            // Login for browse
-            val useLoginForBrowse = preferences.getBoolean(useLoginForBrowseKey, false)
+            val useLoginForBrowse = preferences.getBoolean(useLoginForBrowseKey, true)
             Innertube.useLoginForBrowse = useLoginForBrowse
             
             NetworkClientFactory.configure(
@@ -114,14 +107,12 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             )
             Innertube.proxy = proxy
             
-            // Initialize YouTube session identifiers from Datastore
             val savedCookie = encryptedPreferences.getString(ytCookieKey, "")
             if (!savedCookie.isNullOrBlank()) {
                 Innertube.cookie = savedCookie
                 Innertube.visitorData = encryptedPreferences.getString(ytVisitorDataKey, "") ?: ""
                 Innertube.dataSyncId = encryptedPreferences.getString(ytDataSyncIdKey, "")
 
-                // Validate cookie on startup — detect expired/invalid session
                 val hasSAPISID = savedCookie.contains("SAPISID")
                 val hasLoginInfo = savedCookie.contains("LOGIN_INFO")
                 val wasExpired = preferences.getBoolean(ytCookieExpiredKey, false)
@@ -141,6 +132,18 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 
         } finally {
             StrictMode.setThreadPolicy(oldPolicy)
+        }
+
+        // Prewarm InnerTubeX in background — the library handles visitor data internally
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            try {
+                InnerTubeXPlayer.prewarm()
+                Timber.tag("MainApplication").d("InnerTubeX prewarm completed")
+            } catch (e: CancellationException) {
+                Timber.tag("MainApplication").w("InnerTubeX prewarm cancelled (session changed)")
+            } catch (e: Exception) {
+                Timber.tag("MainApplication").w(e, "InnerTubeX prewarm failed")
+            }
         }
 
         createNotificationChannels()

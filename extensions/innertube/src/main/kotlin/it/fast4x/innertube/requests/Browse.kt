@@ -1,19 +1,14 @@
 package it.fast4x.innertube.requests
 
 import io.ktor.client.call.body
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.BrowseResponse
 import it.fast4x.innertube.models.MusicTwoRowItemRenderer
-import it.fast4x.innertube.models.bodies.BrowseBodyWithLocale
 import it.fast4x.innertube.utils.from
 import it.fast4x.innertube.utils.runCatchingNonCancellable
 
-suspend fun Innertube.browse(body: BrowseBodyWithLocale) = runCatchingNonCancellable {
-    val response = client.post(browse) {
-        setBody(body)
-    }.body<BrowseResponse>()
+suspend fun Innertube.browseCategory(browseId: String, params: String? = null) = runCatchingNonCancellable {
+    val response = browse(browseId = browseId, params = params).body<BrowseResponse>()
 
     BrowseResult(
         title = response.header?.musicImmersiveHeaderRenderer?.title?.text ?: response.header

@@ -27,9 +27,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.ContinuationBody
-import it.fast4x.innertube.models.bodies.SearchBody
 import it.fast4x.innertube.requests.searchPage
+import it.fast4x.innertube.requests.searchPageContinuation
 import it.fast4x.innertube.utils.from
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
@@ -87,15 +86,13 @@ fun SearchYoutubeEntity (
                 itemsPageProvider = { continuation ->
                     if (continuation == null) {
                         Innertube.searchPage(
-                            body = SearchBody(
-                                query = query,
-                                params = Innertube.SearchFilter.Video.value
-                            ),
+                            query = query,
+                            params = Innertube.SearchFilter.Video.value,
                             fromMusicShelfRendererContent = Innertube.VideoItem::from
                         )
                     } else {
-                        Innertube.searchPage(
-                            body = ContinuationBody(continuation = continuation),
+                        Innertube.searchPageContinuation(
+                            continuation = continuation,
                             fromMusicShelfRendererContent = Innertube.VideoItem::from
                         )
                     }

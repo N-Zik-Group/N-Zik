@@ -7,7 +7,6 @@ import com.metrolist.music.betterlyrics.BetterLyrics
 import it.fast4x.lrclib.LrcLib
 import it.fast4x.kugou.KuGou
 import it.fast4x.innertube.requests.lyrics
-import it.fast4x.innertube.models.bodies.NextBody
 import kotlin.time.Duration.Companion.milliseconds
 import android.net.Uri
 import android.provider.DocumentsContract
@@ -648,7 +647,7 @@ class ExportCacheDialog(
                             plainText
                         } else {
                             Timber.tag("ExportCache").i("getLyricsText: trying Innertube unsynced")
-                            val ytResult = runCatching { Innertube.lyrics(NextBody(videoId = song.id)) }.getOrNull()
+                            val ytResult = runCatching { Innertube.lyrics(videoId = song.id) }.getOrNull()
                             val ytText = ytResult?.getOrNull()
                             Timber.tag("ExportCache").i("getLyricsText: Innertube result=${ytText?.take(50)}")
                             ytText

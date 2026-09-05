@@ -58,6 +58,7 @@ import androidx.navigation.compose.rememberNavController
 import app.n_zik.android.R
 import io.ktor.http.Url
 import app.n_zik.android.components.dialog.common.RestartAppDialog
+import app.n_zik.android.components.dialog.settings.SyncStatusDialog
 import app.it.fast4x.compose.persist.persistList
 import it.fast4x.innertube.utils.parseCookieString
 import app.n_zik.android.appContext
@@ -71,6 +72,17 @@ import app.n_zik.android.thumbnailShape
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.themed.DefaultDialog
+import androidx.compose.material3.Button
+import app.n_zik.android.components.dialog.common.InteractiveDialog
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
+import app.n_zik.android.uiRoundnessShape
+import androidx.compose.foundation.text.BasicText
+import app.it.fast4x.rimusic.ui.components.themed.SettingsListDialog
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.components.menu.ListMenu
 import androidx.compose.material3.Icon
@@ -83,6 +95,44 @@ import app.it.fast4x.rimusic.utils.RestartPlayerService
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.playback.services.clearStreamCaches
 import app.it.fast4x.rimusic.utils.enableYouTubeSyncKey
+import app.it.fast4x.rimusic.enums.SyncDirection
+import app.it.fast4x.rimusic.utils.syncDirectionKey
+import app.it.fast4x.rimusic.utils.autosyncArtistsKey
+import app.it.fast4x.rimusic.utils.autosyncAlbumsKey
+import app.it.fast4x.rimusic.utils.autosyncPlaylistsKey
+import app.it.fast4x.rimusic.utils.autosyncLikesKey
+import app.it.fast4x.rimusic.utils.syncPushSongLikeKey
+import app.it.fast4x.rimusic.utils.syncPushAlbumBookmarkKey
+import app.it.fast4x.rimusic.utils.syncPushArtistFollowKey
+import app.it.fast4x.rimusic.utils.syncPushPlaylistKey
+import app.it.fast4x.rimusic.utils.syncPushEpisodeKey
+import app.it.fast4x.rimusic.utils.syncImportHistoryKey
+import app.it.fast4x.rimusic.utils.syncImportLibrarySongsKey
+import app.it.fast4x.rimusic.utils.syncImportUploadedSongsKey
+import app.it.fast4x.rimusic.utils.syncImportUploadedAlbumsKey
+import app.it.fast4x.rimusic.utils.syncImportEpisodesKey
+import app.it.fast4x.rimusic.utils.syncCooldownKey
+import app.it.fast4x.rimusic.utils.syncShowDetailsKey
+import app.it.fast4x.rimusic.utils.syncBackgroundGuardKey
+import app.it.fast4x.rimusic.utils.importYTMSubscribedChannels
+import app.it.fast4x.rimusic.utils.importYTMLikedAlbums
+import app.it.fast4x.rimusic.utils.importYTMPlaylists
+import app.it.fast4x.rimusic.utils.importYTMLikedSongs
+import app.it.fast4x.rimusic.utils.importYTMLibrarySongs
+import app.it.fast4x.rimusic.utils.importYTMUploadedSongs
+import app.it.fast4x.rimusic.utils.importYTMUploadedAlbums
+import app.it.fast4x.rimusic.utils.importYTMEpisodesForLater
+import app.it.fast4x.rimusic.utils.pushYTMLikedSongs
+import app.it.fast4x.rimusic.utils.pushYTMAlbumBookmarks
+import app.it.fast4x.rimusic.utils.pushYTMArtistFollows
+import app.it.fast4x.rimusic.utils.pushYTMPlaylists
+import app.it.fast4x.rimusic.utils.pushYTMSavedEpisodes
+import app.it.fast4x.rimusic.utils.queueSync
+import app.it.fast4x.rimusic.utils.SyncOperation
+import app.it.fast4x.rimusic.utils.syncStatus
+import app.it.fast4x.rimusic.utils.getLastSyncTime
+import app.it.fast4x.rimusic.utils.clearAllSyncedData
+import androidx.compose.runtime.collectAsState
 import app.it.fast4x.rimusic.utils.isAtLeastAndroid7
 import app.it.fast4x.rimusic.utils.isDiscordBrowsingEnabledKey
 import app.it.fast4x.rimusic.utils.discordAvatarKey
@@ -92,6 +142,7 @@ import app.it.fast4x.rimusic.utils.useLoginForBrowseKey
 import it.fast4x.innertube.Innertube
 
 import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.quickPicsDiscoverPageKey
 import app.it.fast4x.rimusic.utils.quickPicsHomePageKey
 import app.it.fast4x.rimusic.utils.quickPicsYtmQuickPicksKey
@@ -107,12 +158,16 @@ import app.it.fast4x.rimusic.utils.ytCookieKey
 import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
 import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
 import app.it.fast4x.rimusic.utils.ytVisitorDataKey
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import android.widget.Toast
 import app.kreate.android.me.knighthat.utils.Toaster
 import timber.log.Timber
 import androidx.compose.material3.Text
 import androidx.compose.ui.res.painterResource
 import app.it.fast4x.rimusic.utils.encryptedPreferences
+import app.it.fast4x.rimusic.utils.syncPushHistoryKey
 import app.n_zik.android.typography
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 
@@ -166,6 +221,7 @@ fun AccountsSettings() {
     
     var restartActivity by rememberPreference(restartActivityKey, false)
     var restartService by rememberSaveable { mutableStateOf(false) }
+    var showClearSyncDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -400,25 +456,7 @@ fun AccountsSettings() {
                                     icon = if (isLoggedIn) R.drawable.logout else R.drawable.person,
                                     onClick = {
                                         if (isLoggedIn) {
-                                            cookie = ""
-                                            accountName = ""
-                                            accountChannelHandle = ""
-                                            accountEmail = ""
-                                            accountThumbnail = ""
-                                            visitorData = ""
-                                            dataSyncId = ""
-                                            loginYouTube = false
-                                            // Reset cookie status
-                                            app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
-                                            appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
-                                            // Clear stream caches and restart player
-                                            clearStreamCaches()
-                                            appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, true).apply()
-                                            //Delete cookies after logout
-                                            val cookieManager = CookieManager.getInstance()
-                                            cookieManager.removeAllCookies(null)
-                                            cookieManager.flush()
-                                            WebStorage.getInstance().deleteAllData()
+                                            showClearSyncDialog = true
                                         } else {
                                             loginYouTube = true
                                         }
@@ -466,35 +504,419 @@ fun AccountsSettings() {
                                 )
                             }
 
-                            if (search.inputValue.isBlank() || stringResource(R.string.sync_data_with_ytm_account).contains(search.inputValue, true) || stringResource(R.string.playlists_albums_artists_history_like_etc).contains(search.inputValue, true)) {
-                                Box(modifier = Modifier.alpha(0.5f)) {
-                                    OtherSwitchSettingEntry(
-                                        title = stringResource(R.string.sync_data_with_ytm_account) + " (WIP)",
-                                        text = "",
-                                        isChecked = false,
-                                        onCheckedChange = { },
-                                        icon = R.drawable.sync
-                                    )
-                                }
-                            }
-                            // Login for Browse option
-                            var useLoginForBrowse by rememberPreference(useLoginForBrowseKey, false)
-                            if (search.inputValue.isBlank() || "login for browse".contains(search.inputValue, true)) {
+                            // Login for Browse option (must be enabled for sync to work)
+                            var useLoginForBrowse by rememberPreference(useLoginForBrowseKey, true)
+                            if (search.inputValue.isBlank() || stringResource(R.string.login_for_browse).contains(search.inputValue, true)) {
                                 OtherSwitchSettingEntry(
-                                    title = "Login for Browse",
-                                    text = "Use login for browse requests (disabled by default)",
+                                    title = stringResource(R.string.login_for_browse),
+                                    text = stringResource(R.string.login_for_browse_description),
                                     isChecked = useLoginForBrowse,
                                     onCheckedChange = { 
                                         useLoginForBrowse = it
                                         Innertube.useLoginForBrowse = it
+                                        if (!it) {
+                                            // Reset sync and all sub-toggles when Login for Browse is disabled
+                                            appContext().encryptedPreferences.edit {
+                                                putBoolean(enableYouTubeSyncKey, false)
+                                            }
+                                            appContext().preferences.edit {
+                                                putBoolean(autosyncArtistsKey, false)
+                                                putBoolean(autosyncAlbumsKey, false)
+                                                putBoolean(autosyncPlaylistsKey, false)
+                                                putBoolean(autosyncLikesKey, false)
+                                                putBoolean(syncImportHistoryKey, false)
+                                                putBoolean(syncImportLibrarySongsKey, false)
+                                                putBoolean(syncImportUploadedSongsKey, false)
+                                                putBoolean(syncImportUploadedAlbumsKey, false)
+                                                putBoolean(syncImportEpisodesKey, false)
+                                                putBoolean(syncPushHistoryKey, false)
+                                                putBoolean(syncPushSongLikeKey, false)
+                                                putBoolean(syncPushAlbumBookmarkKey, false)
+                                                putBoolean(syncPushArtistFollowKey, false)
+                                                putBoolean(syncPushPlaylistKey, false)
+                                                putBoolean(syncPushEpisodeKey, false)
+                                            }
+                                        }
                                     },
                                     icon = R.drawable.person
                                 )
                             }
+
+
                         }
                     }
                 }
             )
+        }
+
+        // ========== SYNC SETTINGS ==========
+        val useLoginForBrowseSync by rememberPreference(useLoginForBrowseKey, true)
+
+        AnimatedVisibility(
+            visible = useLoginForBrowseSync,
+            enter = fadeIn(animationSpec = tween(600)) + scaleIn(
+                animationSpec = tween(600),
+                initialScale = 0.9f
+            )
+        ) {
+            var isYouTubeSyncEnabled by rememberEncryptedPreference(enableYouTubeSyncKey, false)
+            val isSyncEnabled = isYouTubeSyncEnabled && useLoginForBrowseSync
+            var syncDirection by rememberPreference(syncDirectionKey, SyncDirection.TWO_WAY)
+            val coroutineScope = rememberCoroutineScope()
+            val syncStatusState by syncStatus.collectAsState()
+            val lastSyncTime = remember { getLastSyncTime() }
+
+            // Re-sync state when Login for Browse changes (prefs reset externally)
+            LaunchedEffect(useLoginForBrowseSync) {
+                if (!useLoginForBrowseSync) {
+                    isYouTubeSyncEnabled = false
+                }
+            }
+
+            Column {
+                // Sync data toggle + Sync Now + Direction
+                SettingsSectionCard(
+                    title = stringResource(R.string.sync_data_with_ytm_account),
+                    icon = R.drawable.sync,
+                    content = {
+                        OtherSwitchSettingEntry(
+                            title = stringResource(R.string.sync_data_with_ytm_account),
+                            text = stringResource(R.string.playlists_albums_artists_history_like_etc),
+                            isChecked = isYouTubeSyncEnabled,
+                            onCheckedChange = {
+                                isYouTubeSyncEnabled = it
+                                if (!it) {
+                                    // Reset all sub-toggles when sync is disabled
+                                    appContext().preferences.edit {
+                                        putBoolean(autosyncArtistsKey, false)
+                                        putBoolean(autosyncAlbumsKey, false)
+                                        putBoolean(autosyncPlaylistsKey, false)
+                                        putBoolean(autosyncLikesKey, false)
+                                        putBoolean(syncImportHistoryKey, false)
+                                        putBoolean(syncImportLibrarySongsKey, false)
+                                        putBoolean(syncImportUploadedSongsKey, false)
+                                        putBoolean(syncImportUploadedAlbumsKey, false)
+                                        putBoolean(syncImportEpisodesKey, false)
+                                        putBoolean(syncPushHistoryKey, false)
+                                        putBoolean(syncPushSongLikeKey, false)
+                                        putBoolean(syncPushAlbumBookmarkKey, false)
+                                        putBoolean(syncPushArtistFollowKey, false)
+                                        putBoolean(syncPushPlaylistKey, false)
+                                        putBoolean(syncPushEpisodeKey, false)
+                                    }
+                                }
+                            },
+                            icon = R.drawable.sync
+                        )
+
+                        AnimatedVisibility(visible = isSyncEnabled) {
+                            Column {
+                                // Sync status overview
+                                val statusText = when {
+                                    syncStatusState.isRunning -> stringResource(R.string.sync_status_running, syncStatusState.currentOperation)
+                                    else -> {
+                                        val lastSync = getLastSyncTime()
+                                        if (lastSync > 0) {
+                                            val elapsed = ((System.currentTimeMillis() - lastSync) / 60000).toInt()
+                                            stringResource(R.string.sync_status_last, elapsed)
+                                        } else stringResource(R.string.sync_status_never)
+                                    }
+                                }
+                                val statusColor = when {
+                                    syncStatusState.isRunning -> colorPalette().accent
+                                    else -> colorPalette().textDisabled
+                                }
+                                OtherInfoSettingsEntry(
+                                    title = statusText,
+                                    text = "",
+                                    icon = R.drawable.sync
+                                )
+
+                                // Sync status detail
+                                OtherSettingsEntry(
+                                    title = stringResource(R.string.sync_status_detail),
+                                    text = stringResource(R.string.sync_status_detail_description),
+                                    icon = R.drawable.information,
+                                    onClick = { SyncStatusDialog.showDialog() }
+                                )
+                                SyncStatusDialog.Render()
+
+                                OtherSettingsEntry(
+                                    title = stringResource(R.string.sync_now),
+                                    text = stringResource(R.string.sync_now_description),
+                                    icon = R.drawable.sync,
+                                    onClick = {
+                                        // Queue all imports + pushes via sync queue (forced)
+                                        queueSync(SyncOperation.FullSync)
+                                        queueSync(SyncOperation.PushLikedSongs(force = true))
+                                        queueSync(SyncOperation.PushAlbumBookmarks(force = true))
+                                        queueSync(SyncOperation.PushArtistFollows(force = true))
+                                        queueSync(SyncOperation.PushPlaylists(force = true))
+                                        queueSync(SyncOperation.PushEpisodes(force = true))
+                                    }
+                                )
+                                OtherEnumValueSelectorSettingsEntry(
+                                    icon = R.drawable.sync,
+                                    title = stringResource(R.string.sync_direction),
+                                    selectedValue = syncDirection,
+                                    onValueSelected = { syncDirection = it },
+                                    valueText = { stringResource(it.stringResource) }
+                                )
+
+                                var syncCooldown by rememberPreference(syncCooldownKey, 30)
+                                SliderSettingsEntry(
+                                    title = stringResource(R.string.sync_cooldown),
+                                    text = stringResource(R.string.sync_cooldown_description),
+                                    state = syncCooldown.toFloat(),
+                                    range = 5f..120f,
+                                    stepSize = 15f,
+                                    onSlide = { syncCooldown = it.toInt() },
+                                    toDisplay = { "${it.toInt()} min" },
+                                    isIntegerOnly = true,
+                                    icon = R.drawable.time
+                                )
+                                var syncShowDetails by rememberPreference(syncShowDetailsKey, true)
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.sync_show_details),
+                                    text = stringResource(R.string.sync_show_details_description),
+                                    isChecked = syncShowDetails,
+                                    onCheckedChange = { syncShowDetails = it },
+                                    icon = R.drawable.information
+                                )
+                                var syncBackgroundGuard by rememberPreference(syncBackgroundGuardKey, true)
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.sync_background_guard),
+                                    text = stringResource(R.string.sync_background_guard_description),
+                                    isChecked = syncBackgroundGuard,
+                                    onCheckedChange = { syncBackgroundGuard = it },
+                                    icon = R.drawable.pause
+                                )
+                            }
+                        }
+                    }
+                )
+
+                // Auto-Sync, Import, Push (only when sync is enabled)
+                AnimatedVisibility(visible = isSyncEnabled) {
+                    Column {
+                        // Auto-Sync (per feature)
+                        SettingsSectionCard(
+                            title = stringResource(R.string.autosync),
+                            icon = R.drawable.sync,
+                            content = {
+                                var autosyncArtists by rememberPreference(autosyncArtistsKey, false)
+                                var autosyncAlbums by rememberPreference(autosyncAlbumsKey, false)
+                                var autosyncPlaylists by rememberPreference(autosyncPlaylistsKey, false)
+                                var autosyncLikes by rememberPreference(autosyncLikesKey, false)
+
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.autosync_channels),
+                                    text = stringResource(R.string.autosync_channels_description),
+                                    isChecked = autosyncArtists,
+                                    onCheckedChange = { autosyncArtists = it },
+                                    icon = R.drawable.people
+                                )
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.autosync_albums),
+                                    text = stringResource(R.string.autosync_albums_description),
+                                    isChecked = autosyncAlbums,
+                                    onCheckedChange = { autosyncAlbums = it },
+                                    icon = R.drawable.album
+                                )
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.autosync),
+                                    text = stringResource(R.string.autosync_playlists_description),
+                                    isChecked = autosyncPlaylists,
+                                    onCheckedChange = { autosyncPlaylists = it },
+                                    icon = R.drawable.playlist
+                                )
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.autosync_likes),
+                                    text = stringResource(R.string.autosync_likes_description),
+                                    isChecked = autosyncLikes,
+                                    onCheckedChange = { autosyncLikes = it },
+                                    icon = R.drawable.heart
+                                )
+                            }
+                        )
+
+                        // Import from YouTube
+                        SettingsSectionCard(
+                            title = stringResource(R.string.sync_import_from_youtube),
+                            icon = R.drawable.download,
+                            content = {
+                                var syncImportHistory by rememberPreference(syncImportHistoryKey, false)
+                                var syncImportLibrarySongs by rememberPreference(syncImportLibrarySongsKey, false)
+                                var syncImportUploadedSongs by rememberPreference(syncImportUploadedSongsKey, false)
+                                var syncImportUploadedAlbums by rememberPreference(syncImportUploadedAlbumsKey, false)
+                                var syncImportEpisodes by rememberPreference(syncImportEpisodesKey, false)
+
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.sync_import_history),
+                                    text = stringResource(R.string.sync_import_history_description),
+                                    isChecked = syncImportHistory,
+                                    onCheckedChange = { syncImportHistory = it },
+                                    icon = R.drawable.history
+                                )
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.sync_import_library_songs),
+                                    text = stringResource(R.string.sync_import_library_songs_description),
+                                    isChecked = syncImportLibrarySongs,
+                                    onCheckedChange = { syncImportLibrarySongs = it },
+                                    icon = R.drawable.heart
+                                )
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.sync_import_uploaded_songs),
+                                    text = stringResource(R.string.sync_import_uploaded_songs_description),
+                                    isChecked = syncImportUploadedSongs,
+                                    onCheckedChange = { syncImportUploadedSongs = it },
+                                    icon = R.drawable.download
+                                )
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.sync_import_uploaded_albums),
+                                    text = stringResource(R.string.sync_import_uploaded_albums_description),
+                                    isChecked = syncImportUploadedAlbums,
+                                    onCheckedChange = { syncImportUploadedAlbums = it },
+                                    icon = R.drawable.album
+                                )
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.sync_import_episodes),
+                                    text = stringResource(R.string.sync_import_episodes_description),
+                                    isChecked = syncImportEpisodes,
+                                    onCheckedChange = { syncImportEpisodes = it },
+                                    icon = R.drawable.podcast
+                                )
+                            }
+                        )
+
+                        // Push to YouTube
+                        SettingsSectionCard(
+                            title = stringResource(R.string.sync_push_to_youtube),
+                            icon = R.drawable.arrow_up,
+                            content = {
+                                var syncPushSongLike by rememberPreference(syncPushSongLikeKey, false)
+                                var syncPushAlbumBookmark by rememberPreference(syncPushAlbumBookmarkKey, false)
+                                var syncPushArtistFollow by rememberPreference(syncPushArtistFollowKey, false)
+                                var syncPushPlaylist by rememberPreference(syncPushPlaylistKey, false)
+                                var syncPushHistory by rememberPreference(syncPushHistoryKey, false)
+
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.sync_push_history),
+                                    text = stringResource(R.string.sync_push_history_description),
+                                    isChecked = syncPushHistory,
+                                    onCheckedChange = { syncPushHistory = it },
+                                    icon = R.drawable.history
+                                )
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.sync_push_song_like),
+                                    text = stringResource(R.string.sync_push_song_like_description),
+                                    isChecked = syncPushSongLike,
+                                    onCheckedChange = { syncPushSongLike = it },
+                                    icon = R.drawable.heart
+                                )
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.sync_push_album_bookmark),
+                                    text = stringResource(R.string.sync_push_album_bookmark_description),
+                                    isChecked = syncPushAlbumBookmark,
+                                    onCheckedChange = { syncPushAlbumBookmark = it },
+                                    icon = R.drawable.album
+                                )
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.sync_push_artist_follow),
+                                    text = stringResource(R.string.sync_push_artist_follow_description),
+                                    isChecked = syncPushArtistFollow,
+                                    onCheckedChange = { syncPushArtistFollow = it },
+                                    icon = R.drawable.people
+                                )
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.sync_push_playlist),
+                                    text = stringResource(R.string.sync_push_playlist_description),
+                                    isChecked = syncPushPlaylist,
+                                    onCheckedChange = { syncPushPlaylist = it },
+                                    icon = R.drawable.playlist
+                                )
+                                var syncPushEpisode by rememberPreference(syncPushEpisodeKey, false)
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.sync_push_episode),
+                                    text = stringResource(R.string.sync_push_episode_description),
+                                    isChecked = syncPushEpisode,
+                                    onCheckedChange = { syncPushEpisode = it },
+                                    icon = R.drawable.podcast
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+
+            // Clear synced data confirmation dialog
+            if (showClearSyncDialog) {
+                DefaultDialog(
+                    onDismiss = { showClearSyncDialog = false }
+                ) {
+                    BasicText(
+                        text = stringResource(R.string.clear_synced_data_confirm),
+                        style = typography().s.copy(color = colorPalette().text)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Button(
+                            onClick = { showClearSyncDialog = false },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorPalette().background2,
+                                contentColor = colorPalette().text
+                            ),
+                            shape = uiRoundnessShape()
+                        ) {
+                            Text(stringResource(R.string.cancel))
+                        }
+                        Button(
+                            onClick = {
+                                showClearSyncDialog = false
+                                coroutineScope.launch(Dispatchers.IO) {
+                                    val cleared = runCatching { clearAllSyncedData() }.getOrElse { false }
+                                    withContext(Dispatchers.Main) {
+                                        val ep = appContext().encryptedPreferences
+                                        ep.edit().putString(ytCookieKey, "").apply()
+                                        ep.edit().putString(ytAccountNameKey, "").apply()
+                                        ep.edit().putString(ytAccountChannelHandleKey, "").apply()
+                                        ep.edit().putString(ytAccountEmailKey, "").apply()
+                                        ep.edit().putString(ytAccountThumbnailKey, "").apply()
+                                        ep.edit().putString(ytVisitorDataKey, "").apply()
+                                        ep.edit().putString(ytDataSyncIdKey, "").apply()
+                                        appContext().preferences.edit().putBoolean(enableYouTubeSyncKey, false).apply()
+                                        app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
+                                        appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
+                                        clearStreamCaches()
+                                        appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, true).apply()
+                                        val cookieManager = CookieManager.getInstance()
+                                        cookieManager.removeAllCookies(null)
+                                        cookieManager.flush()
+                                        WebStorage.getInstance().deleteAllData()
+                                        if (cleared) {
+                                            Toaster.s(R.string.youtube_disconnect)
+                                        } else {
+                                            Toaster.w(R.string.youtube_disconnect)
+                                        }
+                                    }
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorPalette().accent,
+                                contentColor = colorPalette().textSecondary
+                            ),
+                            shape = uiRoundnessShape()
+                        ) {
+                            Text(stringResource(R.string.confirm))
+                        }
+                    }
+                }
+            }
         }
 
         /* Removed Spacer */
@@ -763,7 +1185,8 @@ fun isYouTubeLoginEnabled(): Boolean {
 
 fun isYouTubeSyncEnabled(): Boolean {
     val isYouTubeSyncEnabled = appContext().encryptedPreferences.getBoolean(enableYouTubeSyncKey, false)
-    return isYouTubeSyncEnabled && isYouTubeLoggedIn() && isYouTubeLoginEnabled()
+    val useLoginForBrowse = appContext().preferences.getBoolean(useLoginForBrowseKey, true)
+    return isYouTubeSyncEnabled && isYouTubeLoggedIn() && isYouTubeLoginEnabled() && useLoginForBrowse
 }
 
 fun isYouTubeLoggedIn(): Boolean {

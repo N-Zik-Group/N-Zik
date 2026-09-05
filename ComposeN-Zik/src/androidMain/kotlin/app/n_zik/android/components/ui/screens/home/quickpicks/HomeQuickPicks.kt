@@ -49,7 +49,6 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.typography
 import app.n_zik.android.playback.utils.Shuffler
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.QueueBody
 import it.fast4x.innertube.requests.queue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -145,7 +144,7 @@ fun HomeQuickPicks(
                 ?.distinct()
                 ?: emptyList()
             if (itemsToFetch.isNotEmpty()) {
-                Innertube.queue(QueueBody(videoIds = itemsToFetch))?.onSuccess { queueItems ->
+                Innertube.queue(videoIds = itemsToFetch)?.onSuccess { queueItems ->
                     val durationsMap = queueItems?.associate { it.key to it.durationText }.orEmpty()
                     if (durationsMap.isNotEmpty()) {
                         state.homePageInit.value = state.homePageInit.value?.copy(

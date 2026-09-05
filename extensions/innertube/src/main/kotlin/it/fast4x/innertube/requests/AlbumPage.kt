@@ -3,13 +3,12 @@ package it.fast4x.innertube.requests
 import io.ktor.http.Url
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.Innertube.Info
-import it.fast4x.innertube.Innertube.SearchFilter.Companion.Artist
 import it.fast4x.innertube.Innertube.getBestQuality
 import it.fast4x.innertube.models.BrowseResponse
 import it.fast4x.innertube.models.MusicResponsiveHeaderRenderer
 import it.fast4x.innertube.models.MusicResponsiveListItemRenderer
 import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.models.bodies.BrowseBody
+import it.fast4x.innertube.requests.playlistPage
 import it.fast4x.innertube.models.oddElements
 import it.fast4x.innertube.models.splitBySeparator
 import it.fast4x.innertube.utils.PageHelper
@@ -135,10 +134,9 @@ data class AlbumPage(
     }
 }
 
-suspend fun Innertube.albumPage(body: BrowseBody) = playlistPage(body)?.map { album ->
+suspend fun Innertube.albumPage(browseId: String, params: String? = null) = playlistPage(browseId = browseId, params = params)?.map { album ->
     album.url?.let { Url(it).parameters["list"] }?.let { playlistId ->
-        playlistPage(BrowseBody(browseId = "VL$playlistId"))?.getOrNull()?.let { playlist ->
-            println("AlbumPage: albumPage pre songsPage ${playlist.songsPage?.items?.size}")
+        playlistPage(browseId = "VL$playlistId")?.getOrNull()?.let { playlist ->
             album.copy(songsPage = playlist.songsPage)
         }
     } ?: album
@@ -149,8 +147,8 @@ suspend fun Innertube.albumPage(body: BrowseBody) = playlistPage(body)?.map { al
         val albumInfo = Innertube.Info(
             name = album.title,
             endpoint = NavigationEndpoint.Endpoint.Browse(
-                browseId = body.browseId,
-                params = body.params
+                browseId = browseId,
+                params = params
             )
         )
 
@@ -166,6 +164,4 @@ suspend fun Innertube.albumPage(body: BrowseBody) = playlistPage(body)?.map { al
             )
         )
 
-    }?.onFailure {
-        println("Innertube: albumPage error: ${it.stackTraceToString()}")
     }

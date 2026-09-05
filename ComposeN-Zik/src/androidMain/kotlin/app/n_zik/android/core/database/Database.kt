@@ -15,8 +15,6 @@ import androidx.room.TypeConverters
 import androidx.room.withTransaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.SearchBody
-import it.fast4x.innertube.models.bodies.BrowseBody
 import it.fast4x.innertube.requests.searchPage
 import it.fast4x.innertube.requests.albumPage
 import it.fast4x.innertube.utils.from
@@ -72,6 +70,8 @@ import app.n_zik.android.core.database.migration.From30To31Migration
 import app.n_zik.android.core.database.migration.From31To32Migration
 import app.n_zik.android.core.database.migration.From32To33Migration
 import app.n_zik.android.core.database.migration.From33To34Migration
+import app.n_zik.android.core.database.migration.From34To35Migration
+import app.n_zik.android.core.database.migration.From35To36Migration
 import app.kreate.android.me.knighthat.utils.PropUtils
 import app.n_zik.android.core.backup.BackupManager
 import androidx.room.InvalidationTracker
@@ -167,10 +167,8 @@ object Database {
                 try {
                     val searchResult: Innertube.ItemsPage<Innertube.ArtistItem>? =
                         Innertube.searchPage<Innertube.ArtistItem>(
-                            SearchBody(
-                                query = artistName,
-                                params = Innertube.SearchFilter.Artist.value
-                            )
+                            query = artistName,
+                            params = Innertube.SearchFilter.Artist.value
                         ) { content -> Innertube.ArtistItem.from(content) }?.getOrNull()
 
                     val foundArtist = searchResult?.items?.firstOrNull { item ->
@@ -242,7 +240,7 @@ object Database {
                 if (fetchedAlbum.year.isNullOrBlank()) {
                     CoroutineScope(Dispatchers.IO).launch {
                         try {
-                            Innertube.albumPage(BrowseBody(browseId = browseId))
+                            Innertube.albumPage(browseId = browseId)
                                 ?.getOrNull()
                                 ?.let { albumPage ->
                                     if (!albumPage.year.isNullOrBlank()) {
@@ -352,7 +350,7 @@ object Database {
             if (autoFix && mergedAlbum.year.isNullOrBlank()) {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        Innertube.albumPage(BrowseBody(browseId = albumId))
+                        Innertube.albumPage(browseId = albumId)
                             ?.getOrNull()
                             ?.let { albumPage ->
                                 if (!albumPage.year.isNullOrBlank()) {
@@ -406,10 +404,8 @@ object Database {
                         try {
                             val searchResult: Innertube.ItemsPage<Innertube.ArtistItem>? =
                                 Innertube.searchPage<Innertube.ArtistItem>(
-                                    SearchBody(
-                                        query = name,
-                                        params = Innertube.SearchFilter.Artist.value
-                                    )
+                                    query = name,
+                                    params = Innertube.SearchFilter.Artist.value
                                 ) { content -> Innertube.ArtistItem.from(content) }?.getOrNull()
 
                             val foundArtist = searchResult?.items?.firstOrNull { item ->
@@ -652,7 +648,7 @@ object Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 34,
+    version = 35,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -713,7 +709,9 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                     From30To31Migration(),
                     From31To32Migration(),
                     From32To33Migration(),
-                    From33To34Migration()
+                    From33To34Migration(),
+                    From34To35Migration(),
+                    From35To36Migration
                 )
                 .build()
             

@@ -95,9 +95,12 @@ import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.showthumbnailKey
 import app.it.fast4x.rimusic.utils.textCopyToClipboard
+import app.n_zik.android.core.database.Database
+import app.kreate.android.me.knighthat.utils.Toaster
 import app.it.fast4x.rimusic.utils.textoutlineKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import app.kreate.android.me.knighthat.sync.YouTubeSync
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
@@ -262,7 +265,9 @@ fun InfoAlbumAndArtistEssential(
                         icon = getLikeState(mediaId),
                         onClick = {
                             CoroutineScope( Dispatchers.IO ).launch {
-                                YouTubeSync.toggleSongLike( appContext(), currentMediaItem ?: return@launch )
+                                currentMediaItem?.let {
+                                    YouTubeSync.rotateSongLikeState( appContext(), it )
+                                }
                             }
 
                             if (effectRotationEnabled) isRotated = !isRotated
@@ -428,7 +433,9 @@ fun ControlsEssential(
             icon = getLikeState(mediaId),
             onClick = {
                 CoroutineScope( Dispatchers.IO ).launch {
-                    YouTubeSync.toggleSongLike( appContext(), currentMediaItem ?: return@launch )
+                    currentMediaItem?.let {
+                        YouTubeSync.rotateSongLikeState( appContext(), it )
+                    }
                 }
 
                 if (effectRotationEnabled) isRotated = !isRotated

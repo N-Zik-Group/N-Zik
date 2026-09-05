@@ -15,8 +15,6 @@ import app.it.fast4x.rimusic.utils.autoLoadSongsInQueueKey
 import app.it.fast4x.rimusic.utils.preferences
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.models.bodies.NextBody
-import it.fast4x.innertube.models.bodies.ContinuationBody
 import it.fast4x.innertube.requests.nextPage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -167,19 +165,19 @@ class NZikRadio(
             // Dynamic Seed: Always fetch based on videoId rather than continuation
             if (playlistId == null) {
                 // Try to get playlistId from next endpoint
-                playlistId = Innertube.nextPage(NextBody(videoId = videoId))
+                playlistId = Innertube.nextPage(videoId = videoId)
                     ?.getOrNull()?.itemsPage?.items?.firstOrNull()
                     ?.info?.endpoint?.playlistId
             }
                 
             if (!playlistId.isNullOrBlank()) {
-                Innertube.nextPage(NextBody(videoId = videoId, playlistId = playlistId))?.getOrNull()?.let { page ->
+                Innertube.nextPage(videoId = videoId, playlistId = playlistId)?.getOrNull()?.let { page ->
                     mediaItems = page.itemsPage?.items?.map { it.asMediaItem } ?: emptyList()
                     // Fallback: If there's a continuation, we can grab it, but usually the first request just sets up the queue
                 }
             } else {
                 // FALLBACK: If YouTube doesn't return a playlistId, use related songs directly!
-                Innertube.nextPage(NextBody(videoId = videoId))?.getOrNull()?.let { page ->
+                Innertube.nextPage(videoId = videoId)?.getOrNull()?.let { page ->
                     mediaItems = page.itemsPage?.items?.map { it.asMediaItem } ?: emptyList()
                 }
             }

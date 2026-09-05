@@ -8,9 +8,7 @@ import androidx.navigation.NavController
 import app.n_zik.android.R
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.requests.nextPage
-import it.fast4x.innertube.models.bodies.SearchBody
 import it.fast4x.innertube.requests.searchPage
 import it.fast4x.innertube.utils.from
 import app.n_zik.android.core.database.Database
@@ -69,7 +67,7 @@ class GoToArtist(
                             var artistEndpoint: NavigationEndpoint.Endpoint.Browse? = null
                             
                             if (hasValidId) {
-                                artistEndpoint = Innertube.nextPage(NextBody(videoId = song.id))
+                                artistEndpoint = Innertube.nextPage(videoId = song.id)
                                     ?.onFailure {
                                         Timber.tag("go_to_artist").e( it, "nextPage failed" )
                                     }
@@ -98,8 +96,8 @@ class GoToArtist(
                                 
                                 // 1. First, search for the song (more accurate for finding exact artists of a track)
                                 val songSearchResult = Innertube.searchPage<Innertube.SongItem>(
-                                    SearchBody(query = songQuery, params = Innertube.SearchFilter.Song.value),
-                                    { content -> Innertube.SongItem.from(content) }
+                                    query = songQuery, params = Innertube.SearchFilter.Song.value,
+                                    fromMusicShelfRendererContent = { content -> Innertube.SongItem.from(content) }
                                 )?.getOrNull()
                                 
                                 val foundSong = songSearchResult?.items?.firstOrNull { it.key == song.id }
@@ -112,8 +110,8 @@ class GoToArtist(
                                 if (fallbackEndpoint == null || fallbackEndpoint.browseId.isNullOrBlank()) {
                                     Timber.tag("go_to_artist").d("No artist found from song search, falling back to direct artist search")
                                     val artistSearchResult = Innertube.searchPage<Innertube.ArtistItem>(
-                                        SearchBody(query = query, params = Innertube.SearchFilter.Artist.value),
-                                        { content -> Innertube.ArtistItem.from(content) }
+                                        query = query, params = Innertube.SearchFilter.Artist.value,
+                                        fromMusicShelfRendererContent = { content -> Innertube.ArtistItem.from(content) }
                                     )?.getOrNull()
                                     fallbackEndpoint = artistSearchResult?.items?.firstOrNull()?.info?.endpoint
                                 }

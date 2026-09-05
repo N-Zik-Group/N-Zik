@@ -154,3 +154,30 @@ Removed:
   - `Dialog.kt` (`SelectorArtistsDialog`): Fixed clipping issue where inner image lacked `artistThumbnailShape()` and dialog was incorrectly shaped
   - `ArtistDetails.kt` & `LayoutWithAdaptiveThumbnail.kt`: Passed `artistThumbnailShape()` into `DynamicOrientationLayout` for landscape artist layout
 
+feat(sync): new YouTube sync engine — 3-state like rotation, sync direction, auto-sync options and status UI
+  - ⚠️ KNOWN ISSUE: the new sync is very buggy — expect failures/inconsistencies until follow-up fixes land; treat as experimental for now
+  - `YouTubeSync.kt`: `toggleSongLike` → `rotateSongLikeState` — cycles likes neutral → liked → disliked; pushes to YouTube only when `isYouTubeSyncEnabled` + `syncPushSongLike` + direction ≠ `YT_TO_APP` + network connected; disliked = local blacklist only (never pushed to YT)
+  - `SyncDirection.kt` (new): `TWO_WAY` / `APP_TO_YT` / `YT_TO_APP` enum, consumed by `YouTubeSync`, `FollowButton`, `AlbumDetails`, album/playlist menus and `NewPlaylistDialog`
+  - `Preferences.kt`: new keys — `syncDirectionKey`, `syncPushSongLikeKey`, `syncPushAlbumBookmarkKey`, `syncPushArtistFollowKey`, `syncPushPlaylistKey`, `syncImportHistoryKey`, `syncPushHistoryKey`, import/clear keys, `syncCooldownKey`, `syncShowDetailsKey`, `syncBackgroundGuardKey`
+  - `AccountsSettings.kt`: new sync section — direction picker, per-target push toggles, auto-sync options (channels/albums/playlists/likes), cooldown slider (default 30 min), background guard (default on), per-playlist auto-sync, "Show sync details", "Sync Now", "Clear synced data"
+  - `SyncStatusDialog.kt` (new): per-operation status (running / last sync Xmin ago / never) opened from settings
+  - `SyncResultDialog.kt` (new): per-operation ✓/✗ result list with elapsed time after "Sync Now"
+  - `SongTable.kt`: added `toggleDislike()`, `likeState(songId, likedAt)`, `getLikedAt()`; rewrote `rotateLikeState()` CASE logic (neutral → now-ms → -1); `isYoutubeSong` added to song queries
+  - `Song.kt` (model + Room entity): new `isYoutubeSong` field — `From34To35Migration` (ALTER TABLE Song ADD COLUMN)
+  - `Playlist.kt` / `PlaylistTable.kt`: new `isAutoSync` field + `toggleAutoSync()` / `isAutoSync()` Flow — `From35To36Migration` (ALTER TABLE Playlist ADD COLUMN)
+  - `Database.kt`: Room version 34 → 35, both migrations registered, schema `35.json` exported
+  - `HomeSyncService.kt`: fixed boolean classification (`isYoutubeX && id.startsWith(...)` → `||`) for artist/album sync — local items no longer misclassified as YouTube; migrated calls to new Innertube API
+  - `LikeState.kt`: added `setDisLikeState()`; `Preference.kt`: new Disliked tab sort keys
+  - `strings.xml`: ~45 new sync strings (direction, push toggles, auto-sync, cooldown, background guard, status, clear synced data)
+
+Refactor:
+- refactor(innertube): remove request body objects — direct named parameters everywhere
+  - Deleted `models/bodies/*.kt` (13 body classes: `SearchBody`, `BrowseBody`, `PlayerBody`, `QueueBody`, ...) + `YouTubeClient.kt` + `YouTubeContext.kt`
+  - All `it.fast4x.innertube.requests.*` functions now take named args (`query =`, `browseId =`, ...) instead of body objects
+  - Call sites updated across `extensions/innertube` + `ComposeN-Zik` (`Database.kt`, `HomeSyncService.kt`, settings, menus, ...)
+
+Other:
+- test(playback): add stream cache + session change tests
+  - `StreamUrlCacheTest.kt` (new): cache put / invalidate / expiry behavior
+  - `StreamResolverSessionChangeTest.kt` (new): resolver behavior across Innertube session changes
+

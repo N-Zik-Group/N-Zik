@@ -2,6 +2,7 @@ package app.n_zik.android.playback.services
 
 import app.n_zik.android.playback.services.automotive.session.AutoSessionCallback
 import app.n_zik.android.core.database.Database
+import app.kreate.android.me.knighthat.sync.YouTubeSync
 
 import app.n_zik.android.MainApplication
 import app.n_zik.android.utils.artistTextOrDb
@@ -96,8 +97,8 @@ import app.n_zik.android.playback.services.clearWebRemixFailures
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.MoreExecutors
 import it.fast4x.innertube.Innertube
+import io.ktor.client.call.body
 import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.requests.nextPage
 import app.n_zik.android.MainActivity
 import app.n_zik.android.appContext
@@ -145,7 +146,6 @@ import app.it.fast4x.rimusic.utils.broadCastPendingIntent
 import app.it.fast4x.rimusic.utils.closebackgroundPlayerKey
 import app.it.fast4x.rimusic.utils.collect
 import it.fast4x.innertube.requests.searchPage
-import it.fast4x.innertube.models.bodies.SearchBody
 import it.fast4x.innertube.utils.from
 import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
 import app.it.fast4x.rimusic.utils.enableWallpaperKey
@@ -180,6 +180,12 @@ import app.it.fast4x.rimusic.utils.playbackPitchKey
 import app.it.fast4x.rimusic.utils.playbackSpeedKey
 import app.it.fast4x.rimusic.utils.playbackVolumeKey
 import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.syncImportHistoryKey
+import app.it.fast4x.rimusic.utils.syncPushHistoryKey
+import app.it.fast4x.rimusic.utils.getSyncDirection
+import app.it.fast4x.rimusic.utils.isNetworkConnected
+import app.it.fast4x.rimusic.enums.SyncDirection
+import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
 import app.it.fast4x.rimusic.utils.putEnum
 import app.it.fast4x.rimusic.utils.queueLoopTypeKey
@@ -215,6 +221,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.first
 import app.kreate.android.me.knighthat.utils.Toaster
 import timber.log.Timber
 import java.io.File
@@ -698,8 +705,6 @@ class PlayerServiceModern : MediaLibraryService(),
         eventTime: AnalyticsListener.EventTime,
         playbackStats: PlaybackStats
     ) {
-        if (preferences.getBoolean(pauseListenHistoryKey, false)) return
-
         try {
             val mediaItem =
                 eventTime.timeline.getWindow(eventTime.windowIndex, Timeline.Window()).mediaItem
@@ -710,21 +715,74 @@ class PlayerServiceModern : MediaLibraryService(),
             val minTimeForEvent =
                 preferences.getEnum(exoPlayerMinTimeForEventKey, ExoPlayerMinTimeForEvent.`20s`)
 
-            Database.asyncTransaction {
-                if ( totalPlayTimeMs > 5000 ) {
-                    songTable.updateTotalPlayTime( songId, totalPlayTimeMs, true )
-                }
+            val pauseHistory = preferences.getBoolean(pauseListenHistoryKey, false)
 
-                if ( totalPlayTimeMs > minTimeForEvent.asMillis ) {
-                    insertIgnore(mediaItem)
+            // Local DB history (gated by pauseListenHistoryKey)
+            if (!pauseHistory) {
+                Database.asyncTransaction {
+                    if ( totalPlayTimeMs > 5000 ) {
+                        songTable.updateTotalPlayTime( songId, totalPlayTimeMs, true )
+                    }
 
-                    eventTable.insertIgnore(
-                        Event(
-                            songId = songId,
-                            timestamp = System.currentTimeMillis(),
-                            playTime = totalPlayTimeMs
+                    if ( totalPlayTimeMs > minTimeForEvent.asMillis ) {
+                        insertIgnore(mediaItem)
+
+                        eventTable.insertIgnore(
+                            Event(
+                                songId = songId,
+                                timestamp = System.currentTimeMillis(),
+                                playTime = totalPlayTimeMs
+                            )
                         )
-                    )
+                    }
+                }
+            }
+
+            // YTM history push (always runs, like Metrolist — NOT gated by pauseListenHistoryKey)
+            if (totalPlayTimeMs > minTimeForEvent.asMillis) {
+                coroutineScope.launch(Dispatchers.IO) {
+                    val playbackData = playbackDataCache[songId]
+                    val streamClient = playbackData?.streamClient
+                    val originalUrl = playbackData?.playbackTracking?.videostatsPlaybackUrl?.baseUrl
+
+                    if (originalUrl == null) {
+                        Timber.tag("PlayerServiceModern").w("No playback tracking URL for $songId (streamClient=$streamClient); skipping YouTube history registration")
+                        return@launch
+                    }
+
+                    var playbackUrl = originalUrl
+
+                    // VISIONOS playback tracking URL is not compatible with WEB_REMIX registerPlayback.
+                    // When stream was resolved by non-WEB_REMIX client, re-fetch via WEB_REMIX player request.
+                    if (streamClient != "WEB_REMIX") {
+                        Timber.tag("PlayerServiceModern").d("Stream client is $streamClient for $songId, re-fetching playback URL via WEB_REMIX")
+                        runCatching {
+                            val httpResponse = Innertube.player(videoId = songId)
+                            val playerResponse = httpResponse.body<it.fast4x.innertube.models.PlayerResponse>()
+                            val remixUrl = playerResponse.playbackTracking?.videostatsPlaybackUrl?.baseUrl
+                            if (remixUrl != null) {
+                                playbackUrl = remixUrl
+                                Timber.tag("PlayerServiceModern").d("Got WEB_REMIX playback URL for $songId")
+                            } else {
+                                Timber.tag("PlayerServiceModern").w("WEB_REMIX player response has no playbackTracking for $songId, using original URL")
+                            }
+                        }.onFailure { e ->
+                            Timber.tag("PlayerServiceModern").w(e, "Failed to fetch WEB_REMIX player response for $songId, using original URL")
+                        }
+                    }
+
+                    Timber.tag("PlayerServiceModern").d("registerPlayback for $songId: streamClient=$streamClient, url=${playbackUrl?.take(120)}...")
+                    runCatching {
+                        val response = Innertube.registerPlayback(url = playbackUrl!!, cpn = "")
+                        val statusCode = response.status.value
+                        if (statusCode !in 200..299) {
+                            Timber.tag("PlayerServiceModern").w("registerPlayback failed for $songId: HTTP $statusCode")
+                        } else {
+                            Timber.tag("PlayerServiceModern").d("History pushed to YTM: $songId (status=$statusCode)")
+                        }
+                    }.onFailure { e ->
+                        Timber.tag("PlayerServiceModern").e(e, "registerPlayback failed for $songId")
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -915,7 +973,7 @@ class PlayerServiceModern : MediaLibraryService(),
                         Timber.tag("auto_fix").d("Song '%s' has no album, attempting background fix...", dbSong.title)
                         
                         // First try the official nextPage API (most reliable)
-                        val nextPageResult = Innertube.nextPage(NextBody(videoId = songId))
+                        val nextPageResult = Innertube.nextPage(videoId = songId)
                             ?.getOrNull()
                             ?.itemsPage
                             ?.items
@@ -932,8 +990,8 @@ class PlayerServiceModern : MediaLibraryService(),
                         Timber.tag("auto_fix").d("Falling back to search: %s", query)
                         
                         val searchResult = Innertube.searchPage<Innertube.SongItem>(
-                            SearchBody(query = query, params = Innertube.SearchFilter.Song.value),
-                            { content -> Innertube.SongItem.from(content) }
+                            query = query, params = Innertube.SearchFilter.Song.value,
+                            fromMusicShelfRendererContent = { content -> Innertube.SongItem.from(content) }
                         )?.getOrNull()
                         
                         // ONLY use exact ID match to avoid false positives
@@ -2444,16 +2502,11 @@ class PlayerServiceModern : MediaLibraryService(),
         }
 
         fun toggleLike() {
-            val song = currentSong.value ?: return
+            val mediaItem = currentMediaItem.value ?: return
 
-            Database.asyncTransaction {
-                songTable.toggleLike( song.id )
-                updateDefaultNotification()
-                updateWidgets()
+            coroutineScope.launch(Dispatchers.IO) {
+                YouTubeSync.rotateSongLikeState( this@PlayerServiceModern, mediaItem )
             }
-
-            val newLikeState = song.likedAt == null
-            MyDownloadHelper.downloadOnLike(song.asMediaItem, newLikeState, this@PlayerServiceModern)
         }
 
         fun toggleDownload() {
@@ -2832,6 +2885,20 @@ class PlayerServiceModern : MediaLibraryService(),
         const val SEARCHED = "searched"
 
         const val CACHE_DIRNAME = "exoplayer"
+
+        private val STATS_HOSTS = setOf("s.youtube.com", "www.youtube.com", "music.youtube.com")
+        private val STATS_PATHS = setOf("/api/stats/playback", "/api/stats/watchtime")
+
+        fun isValidStatsUrl(url: String): Boolean {
+            return try {
+                val parsed = io.ktor.http.Url(url)
+                parsed.protocol.name == "https" &&
+                    parsed.port == 443 &&
+                    parsed.host in STATS_HOSTS &&
+                    parsed.encodedPath in STATS_PATHS &&
+                    parsed.user == null
+            } catch (_: Exception) { false }
+        }
     }
 
 }

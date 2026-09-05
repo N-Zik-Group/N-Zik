@@ -4,7 +4,6 @@ import io.ktor.client.call.body
 import it.fast4x.innertube.Innertube.getBestQuality
 import it.fast4x.innertube.models.BrowseEndpoint
 import it.fast4x.innertube.models.BrowseResponse
-import it.fast4x.innertube.models.Context
 import it.fast4x.innertube.models.CreatePlaylistResponse
 import it.fast4x.innertube.models.NavigationEndpoint
 import it.fast4x.innertube.models.MusicShelfRenderer
@@ -26,25 +25,25 @@ object YtMusic {
     const val PLAYLIST_SIZE_LIMIT = 5000
 
     suspend fun createPlaylist(title: String) = runCatching {
-        Innertube.createPlaylist(Context.DefaultWeb.client, title).body<CreatePlaylistResponse>().playlistId
+        Innertube.createPlaylist(title = title).body<CreatePlaylistResponse>().playlistId
     }.onFailure {
         println("YtMusic: createPlaylist error: ${it.stackTraceToString()}")
     }
 
     suspend fun deletePlaylist(playlistId: String) = runCatching {
-        Innertube.deletePlaylist(Context.DefaultWeb.client, playlistId)
+        Innertube.deletePlaylist(playlistId = playlistId)
     }.onFailure {
         println("YtMusic: deletePlaylist error: ${it.stackTraceToString()}")
     }
 
     suspend fun renamePlaylist(playlistId: String, name: String) = runCatching {
-        Innertube.renamePlaylist(Context.DefaultWeb.client, playlistId, name)
+        Innertube.renamePlaylist(playlistId = playlistId, name = name)
     }.onFailure {
         println("YtMusic: renamePlaylist error: ${it.stackTraceToString()}")
     }
 
     suspend fun addToPlaylist(playlistId: String, videoId: String) = runCatching {
-        Innertube.addToPlaylist(Context.DefaultWeb.client, playlistId, videoId)
+        Innertube.addToPlaylist(playlistId = playlistId, videoId = videoId)
     }.onFailure {
         println("YtMusic: addToPlaylist(single) error: ${it.stackTraceToString()}")
     }
@@ -55,26 +54,26 @@ object YtMusic {
         if (difference > 0) {
             println("YtMusic: addToPlaylist warning: only adding (at most) $PLAYLIST_SIZE_LIMIT ids, (surpassed limit by $difference)")
         }
-        Innertube.addToPlaylist(Context.DefaultWeb.client, playlistId, requestedVideoIds)
+        Innertube.addToPlaylist(playlistId = playlistId, videoIds = requestedVideoIds)
     }.onFailure {
         println("YtMusic: addToPlaylist (list of size ${videoIds.size}) error: ${it.stackTraceToString()}")
     }
 
     suspend fun removeFromPlaylist(playlistId: String, videoId: String, setVideoId: String? = null) = runCatching {
         println("YtMusic: removeFromPlaylist params: playlistId: $playlistId, videoId: $videoId, setVideoId: $setVideoId")
-            Innertube.removeFromPlaylist(Context.DefaultWeb.client, playlistId, videoId, setVideoId)
+            Innertube.removeFromPlaylist(playlistId = playlistId, videoId = videoId, setVideoId = setVideoId)
         }.onFailure {
             println("YtMusic: removeFromPlaylist error: ${it.stackTraceToString()}")
         }
 
     suspend fun addPlaylistToPlaylist(playlistId: String, videoId: String) = runCatching {
-        Innertube.addPlaylistToPlaylist(Context.DefaultWeb.client, playlistId, videoId)
+        Innertube.addPlaylistToPlaylist(playlistId = playlistId, addPlaylistId = videoId)
     }.onFailure {
         println("YtMusic: addPlaylistToPlaylist error: ${it.stackTraceToString()}")
     }
 
     suspend fun removeFromPlaylist(playlistId: String, videoId: String, setVideoIds: List<String?>) = runCatching {
-        Innertube.removeFromPlaylist(Context.DefaultWeb.client, playlistId, videoId, setVideoIds)
+        Innertube.removeFromPlaylist(playlistId = playlistId, videoId = videoId, setVideoIds = setVideoIds)
     }.onFailure {
         println("YtMusic: removeFromPlaylist (list of size ${setVideoIds.size}) error: ${it.stackTraceToString()}")
     }
@@ -193,14 +192,18 @@ object YtMusic {
         val response = Innertube.browse(browseId = browseId, setLogin = setLogin).body<BrowseResponse>()
         val sections = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
             ?.tabRenderer?.content?.sectionListRenderer?.contents
-            ?.mapNotNull(ArtistPage::fromSectionListRendererContent)!!
+            ?.mapNotNull(ArtistPage::fromSectionListRendererContent)
+            ?: throw IllegalStateException("ArtistPage: sections not found for browseId=$browseId")
+
+        val artistName = response.header?.musicImmersiveHeaderRenderer?.title?.runs?.firstOrNull()?.text
+            ?: response.header?.musicVisualHeaderRenderer?.title?.runs?.firstOrNull()?.text
+            ?: response.header?.musicHeaderRenderer?.title?.runs?.firstOrNull()?.text
+            ?: throw IllegalStateException("ArtistPage: artist name not found for browseId=$browseId")
 
         ArtistPage(
             artist = Innertube.ArtistItem(
                 info = Innertube.Info(
-                    name = response.header?.musicImmersiveHeaderRenderer?.title?.runs?.firstOrNull()?.text
-                        ?: response.header?.musicVisualHeaderRenderer?.title?.runs?.firstOrNull()?.text
-                        ?: response.header?.musicHeaderRenderer?.title?.runs?.firstOrNull()?.text!!,
+                    name = artistName,
                     endpoint = NavigationEndpoint.Endpoint.Browse(
                         browseId = browseId,
                         params = response.header?.musicImmersiveHeaderRenderer?.title?.runs?.firstOrNull()?.navigationEndpoint?.browseEndpoint?.params
@@ -521,37 +524,44 @@ object YtMusic {
 
     suspend fun getAlbum(browseId: String, withSongs: Boolean = true, onProgress: ((loaded: Int) -> Unit)? = null): Result<AlbumPage> = runCatching {
         val response = Innertube.browse(browseId = browseId).body<BrowseResponse>()
-        val playlistId = response.microformat?.microformatDataRenderer?.urlCanonical?.substringAfterLast('=')!!
+        val playlistId = response.microformat?.microformatDataRenderer?.urlCanonical?.substringAfterLast('=')
+            ?: throw IllegalStateException("AlbumPage: playlistId not found for browseId=$browseId")
+
+        val headerContent = response.contents?.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()
+            ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
+            ?.musicResponsiveHeaderRenderer
+            ?: throw IllegalStateException("AlbumPage: header not found for browseId=$browseId")
 
         AlbumPage(
             album = Innertube.AlbumItem(
                 playlistId = playlistId,
                 info = Innertube.Info(
-                    name = response.contents?.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()?.musicResponsiveHeaderRenderer?.title?.runs?.firstOrNull()?.text!!,
+                    name = headerContent.title?.runs?.firstOrNull()?.text
+                        ?: throw IllegalStateException("AlbumPage: album title not found for browseId=$browseId"),
                     endpoint = NavigationEndpoint.Endpoint.Browse(
                         browseId = browseId,
                     )
                 ),
-                authors = response.contents.twoColumnBrowseResultsRenderer.tabs.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()?.musicResponsiveHeaderRenderer?.straplineTextOne?.runs?.oddElements()
+                authors = headerContent.straplineTextOne?.runs?.oddElements()
                     ?.map {
                         Innertube.Info(
                             name = it.text,
                             endpoint = it.navigationEndpoint?.browseEndpoint,
                         )
-                    }!!,
-                year = response.contents.twoColumnBrowseResultsRenderer.tabs.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()?.musicResponsiveHeaderRenderer?.subtitle?.runs?.lastOrNull()?.text,
-                thumbnail = response.contents.twoColumnBrowseResultsRenderer.tabs.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()?.musicResponsiveHeaderRenderer?.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.lastOrNull(),
+                    }.orEmpty(),
+                year = headerContent.subtitle?.runs?.lastOrNull()?.text,
+                thumbnail = headerContent.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.lastOrNull(),
             ),
             songs = if (withSongs) getAlbumSongs(playlistId, onProgress).getOrThrow() else emptyList(),
-            otherVersions = response.contents.twoColumnBrowseResultsRenderer.secondaryContents?.sectionListRenderer?.contents?.getOrNull(
+            otherVersions = response.contents?.twoColumnBrowseResultsRenderer?.secondaryContents?.sectionListRenderer?.contents?.getOrNull(
                 1
             )?.musicCarouselShelfRenderer?.contents
                 ?.mapNotNull { it.musicTwoRowItemRenderer }
                 ?.map(NewReleaseAlbumPage::fromMusicTwoRowItemRenderer)
                 .orEmpty(),
-            url = response.microformat.microformatDataRenderer.urlCanonical,
-            description = response.contents.twoColumnBrowseResultsRenderer.tabs
-                .firstOrNull()
+            url = response.microformat?.microformatDataRenderer?.urlCanonical,
+            description = response.contents?.twoColumnBrowseResultsRenderer?.tabs
+                ?.firstOrNull()
                 ?.tabRenderer
                 ?.content
                 ?.sectionListRenderer

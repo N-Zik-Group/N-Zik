@@ -24,6 +24,7 @@ import org.intellij.lang.annotations.MagicConstant
 import androidx.compose.ui.semantics.password
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import app.it.fast4x.rimusic.utils.conditional
 
 abstract class TextInputDialog(
@@ -38,6 +39,12 @@ abstract class TextInputDialog(
      * when [onSet] is called.
      */
     open val allowEmpty: Boolean = false
+
+    /**
+     * Visual transformation for the text field.
+     * Use [VisualTransformation.Password] for password fields.
+     */
+    open val visualTransformation: VisualTransformation = VisualTransformation.None
 
     var errorMessage: String by mutableStateOf("")
 
@@ -69,6 +76,7 @@ abstract class TextInputDialog(
             maxLines = 3,
             singleLine = false,
             keyboardOptions = keyboardOption,
+            visualTransformation = visualTransformation,
             leadingIcon = { LeadingIcon() },
             trailingIcon = { TrailingIcon() },
             modifier = Modifier.fillMaxWidth()

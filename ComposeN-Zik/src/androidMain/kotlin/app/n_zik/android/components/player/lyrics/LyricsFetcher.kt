@@ -16,7 +16,6 @@ import app.n_zik.android.models.Lyrics
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.requests.lyrics
 import it.fast4x.kugou.KuGou
 import it.fast4x.lrclib.LrcLib
@@ -510,7 +509,7 @@ fun LyricsFetcher(
 
                     if (!foundUnsynced) {
                         kotlin.runCatching {
-                            Innertube.lyrics(NextBody(videoId = mediaId))
+                            Innertube.lyrics(videoId = mediaId)
                                 ?.onSuccess { fixedLyrics ->
                                     if (fixedLyrics?.isNotEmpty() == true && playerEnableLyricsPopupMessage) {
                                         coroutineScope.launch {
@@ -563,7 +562,7 @@ private fun tryYouTubeUnsynced(
 ) {
     coroutineScope.launch {
         kotlin.runCatching {
-            Innertube.lyrics(NextBody(videoId = mediaId))
+            Innertube.lyrics(videoId = mediaId)
                 ?.onSuccess { fixedLyrics ->
                     if (fixedLyrics?.isNotEmpty() == true && playerEnableLyricsPopupMessage) {
                         kotlinx.coroutines.withContext(Dispatchers.Main) {

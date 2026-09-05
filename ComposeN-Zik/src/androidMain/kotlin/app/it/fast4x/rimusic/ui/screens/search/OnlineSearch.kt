@@ -63,7 +63,6 @@ import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.SearchSuggestionsBody
 import it.fast4x.innertube.requests.searchSuggestionsWithItems
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerAwareWindowInsets
@@ -146,10 +145,8 @@ fun OnlineSearch(
     LaunchedEffect(textFieldValue.text) {
         if (textFieldValue.text.isNotEmpty()) {
             delay(200)
-            //suggestionsResult =
-            //    Innertube.searchSuggestions(SearchSuggestionsBody(input = textFieldValue.text))
             suggestionsResult =
-                Innertube.searchSuggestionsWithItems(SearchSuggestionsBody(input = textFieldValue.text))
+                Innertube.searchSuggestionsWithItems(input = textFieldValue.text)
         }
     }
 

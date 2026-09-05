@@ -1,8 +1,6 @@
 package it.fast4x.innertube.requests
 
 import io.ktor.client.call.body
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.BrowseResponse
 import it.fast4x.innertube.models.ContinuationResponse
@@ -10,19 +8,15 @@ import it.fast4x.innertube.models.GridRenderer
 import it.fast4x.innertube.models.MusicResponsiveListItemRenderer
 import it.fast4x.innertube.models.MusicShelfRenderer
 import it.fast4x.innertube.models.MusicTwoRowItemRenderer
-import it.fast4x.innertube.models.bodies.BrowseBody
-import it.fast4x.innertube.models.bodies.ContinuationBody
 import it.fast4x.innertube.utils.runCatchingNonCancellable
 
 suspend fun <T : Innertube.Item> Innertube.itemsPage(
-    body: BrowseBody,
+    browseId: String,
+    params: String? = null,
     fromMusicResponsiveListItemRenderer: (MusicResponsiveListItemRenderer) -> T? = { null },
     fromMusicTwoRowItemRenderer: (MusicTwoRowItemRenderer) -> T? = { null },
 ) = runCatchingNonCancellable {
-    val response = client.post(browse) {
-        setBody(body)
-//        mask("contents.singleColumnBrowseResultsRenderer.tabs.tabRenderer.content.sectionListRenderer.contents(musicPlaylistShelfRenderer(continuations,contents.$musicResponsiveListItemRendererMask),gridRenderer(continuations,items.$musicTwoRowItemRendererMask))")
-    }.body<BrowseResponse>()
+    val response = browse(browseId = browseId, params = params).body<BrowseResponse>()
 
     val sectionListRendererContent = response
         .contents
@@ -45,15 +39,12 @@ suspend fun <T : Innertube.Item> Innertube.itemsPage(
     )
 }
 
-suspend fun <T : Innertube.Item> Innertube.itemsPage(
-    body: ContinuationBody,
+suspend fun <T : Innertube.Item> Innertube.itemsPageContinuation(
+    continuation: String,
     fromMusicResponsiveListItemRenderer: (MusicResponsiveListItemRenderer) -> T? = { null },
     fromMusicTwoRowItemRenderer: (MusicTwoRowItemRenderer) -> T? = { null },
 ) = runCatchingNonCancellable {
-    val response = client.post(browse) {
-        setBody(body)
-        mask("contents.singleColumnBrowseResultsRenderer.tabs.tabRenderer.content.sectionListRenderer.contents(musicPlaylistShelfRenderer(continuations,contents.$musicResponsiveListItemRendererMask),gridRenderer(continuations,items.$musicTwoRowItemRendererMask))")
-    }.body<ContinuationResponse>()
+    val response = browse(continuation = continuation).body<ContinuationResponse>()
 
     itemsPageFromMusicShelRendererOrGridRenderer(
         musicShelfRenderer = response

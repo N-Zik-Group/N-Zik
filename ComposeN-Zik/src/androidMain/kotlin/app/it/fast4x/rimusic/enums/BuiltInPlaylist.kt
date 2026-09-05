@@ -20,7 +20,9 @@ enum class BuiltInPlaylist(
 
     Top( R.drawable.trending, R.string.playlist_top ),
 
-    OnDevice( R.drawable.musical_notes, R.string.on_device )
+    OnDevice( R.drawable.musical_notes, R.string.on_device ),
+
+    Disliked( R.drawable.heart_dislike, R.string.disliked )
 }
 
 

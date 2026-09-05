@@ -2,28 +2,18 @@ package it.fast4x.innertube.requests
 
 
 import io.ktor.client.call.body
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.Context
 import it.fast4x.innertube.models.BrowseResponse
 import it.fast4x.innertube.models.MusicCarouselShelfRenderer
 import it.fast4x.innertube.models.NextResponse
-import it.fast4x.innertube.models.bodies.BrowseBody
-import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.utils.findSectionByStrapline
 import it.fast4x.innertube.utils.findSectionByTitle
 import it.fast4x.innertube.utils.from
 import it.fast4x.innertube.utils.runCatchingNonCancellable
 
 
-
-
-suspend fun Innertube.relatedPage(body: NextBody) = runCatchingNonCancellable {
-    val nextResponse = client.post(next) {
-        setBody(body)
-        mask("contents.singleColumnMusicWatchNextResultsRenderer.tabbedRenderer.watchNextTabbedResultsRenderer.tabs.tabRenderer(endpoint,title)")
-    }.body<NextResponse>()
+suspend fun Innertube.relatedPage(videoId: String) = runCatchingNonCancellable {
+    val nextResponse = next(videoId = videoId).body<NextResponse>()
 
     val tabs = nextResponse
         .contents
@@ -41,13 +31,7 @@ suspend fun Innertube.relatedPage(body: NextBody) = runCatchingNonCancellable {
         ?.browseId
         ?: return@runCatchingNonCancellable null
 
-    val response = client.post(browse) {
-        setBody(BrowseBody(
-            context = Context.DefaultWeb.copy(client = Context.DefaultWeb.client.copy(hl = "en")),
-            browseId = browseId
-        ))
-        mask("contents.sectionListRenderer.contents.musicCarouselShelfRenderer(header.musicCarouselShelfBasicHeaderRenderer(title,strapline),contents($musicResponsiveListItemRendererMask,$musicTwoRowItemRendererMask))")
-    }.body<BrowseResponse>()
+    val response = browse(browseId = browseId).body<BrowseResponse>()
 
     val sectionListRenderer = response
         .contents
@@ -80,6 +64,4 @@ suspend fun Innertube.relatedPage(body: NextBody) = runCatchingNonCancellable {
             ?.mapNotNull(MusicCarouselShelfRenderer.Content::musicTwoRowItemRenderer)
             ?.mapNotNull(Innertube.ArtistItem::from),
     )
-}?.onFailure {
-    println("Innertube: Failed relatedPage: ${it.stackTraceToString()}")
 }

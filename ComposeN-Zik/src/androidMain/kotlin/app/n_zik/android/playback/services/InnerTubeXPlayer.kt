@@ -241,6 +241,7 @@ object InnerTubeXPlayer {
         val requireBoundedRange: Boolean,
         val rangeChunkSizeBytes: Long,
         val useRangeChunks: Boolean,
+        val clientPlaybackNonce: String = "",
     )
 
     private data class ExtractionBundle(
@@ -354,6 +355,7 @@ object InnerTubeXPlayer {
             requireBoundedRange = this.requireBoundedRange,
             rangeChunkSizeBytes = this.rangeChunkSizeBytes,
             useRangeChunks = this.useRangeChunks,
+            clientPlaybackNonce = tracking?.clientPlaybackNonce ?: "",
         )
     }
 }

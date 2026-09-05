@@ -26,9 +26,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.ContinuationBody
-import it.fast4x.innertube.models.bodies.SearchBody
 import it.fast4x.innertube.requests.searchPage
+import it.fast4x.innertube.requests.searchPageContinuation
 import it.fast4x.innertube.utils.from
 import app.it.fast4x.rimusic.enums.ContentType
 import app.n_zik.android.core.database.Database
@@ -347,15 +346,13 @@ fun OnlineSearchGrid(
         itemsPageProvider = { continuation ->
             if (continuation == null) {
                 Innertube.searchPage(
-                    body = SearchBody(
-                        query = query,
-                        params = getSearchParams(tabIndex)
-                    ),
+                    query = query,
+                    params = getSearchParams(tabIndex),
                     fromMusicShelfRendererContent = getItemFrom(tabIndex)
                 )
             } else {
-                Innertube.searchPage(
-                    body = ContinuationBody(continuation = continuation),
+                Innertube.searchPageContinuation(
+                    continuation = continuation,
                     fromMusicShelfRendererContent = getItemFrom(tabIndex)
                 )
             }

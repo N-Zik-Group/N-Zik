@@ -10,84 +10,86 @@ import app.n_zik.android.R
 import it.fast4x.innertube.YtMusic.likeVideoOrSong
 import it.fast4x.innertube.YtMusic.removelikeVideoOrSong
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.appContext
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.utils.isNetworkConnected
+import app.it.fast4x.rimusic.utils.syncPushSongLikeKey
+import app.it.fast4x.rimusic.utils.syncDirectionKey
+import app.it.fast4x.rimusic.enums.SyncDirection
+import app.it.fast4x.rimusic.utils.preferences
 import kotlinx.coroutines.flow.first
 import app.kreate.android.me.knighthat.utils.Toaster
 
 /**
- * Handles YouTube syncing
+ * Handles YouTube syncing for song likes.
  */
 object YouTubeSync {
 
     /**
-     * Handles toggling like state of a song both locally and remotely.
+     * Rotates like state through 3 states: neutral → liked → disliked → neutral.
      *
-     * ***Toggle*** only handles 2 out of 3 states of like state:
-     * `like` and `neutral`.
+     * - **Liked** → pushed to YouTube as "like"
+     * - **Neutral** → pushed to YouTube as "unlike"
+     * - **Disliked** → local blacklist only, NO YouTube push
      *
-     * This function handles these:
-     * - Toggle song like state inside database
-     * - Download song when liked (if enabled in settings)
-     * - Sync like state with YouTube (if applicable)
+     * Also triggers auto-download when liked (if enabled in settings).
      *
-     * This function must not be called on **main thread**
+     * This function must not be called on **main thread**.
      */
     @UnstableApi
-    suspend fun toggleSongLike( context: Context, mediaItem: MediaItem ) {
+    suspend fun rotateSongLikeState( context: Context, mediaItem: MediaItem ) {
         assert( Looper.myLooper() != Looper.getMainLooper() ) {
-            "Cannot run YouTubeSync.toggleSongLike on main thread"
+            "Cannot run YouTubeSync.rotateSongLikeState on main thread"
         }
 
-        // TODO: Encapsulate this block in a transaction
-        // Always ensure song in database before proceed
         Database.insertIgnore( mediaItem )
-        Database.songTable.toggleLike( mediaItem.mediaId )
+        Database.songTable.rotateLikeState( mediaItem.mediaId )
 
         val likeState = Database.songTable.likeState( mediaItem.mediaId ).first()
         MyDownloadHelper.downloadOnLike( mediaItem, likeState, context )
 
+        // Check if we should push to YouTube
+        val shouldPushToYt = likeState != false  // Disliked = local only
+            && isYouTubeSyncEnabled()
+            && appContext().preferences.getBoolean(syncPushSongLikeKey, false)
+            && appContext().preferences.getString(syncDirectionKey, SyncDirection.TWO_WAY.name)?.let {
+                runCatching { SyncDirection.valueOf(it) }.getOrNull()
+            } != SyncDirection.YT_TO_APP
+            && isNetworkConnected( context )
 
-        // Stop here if it's not enabled
-        if( !isYouTubeSyncEnabled() ) {
-            with( mediaItem.mediaMetadata ) {
-                // Skip message if title is not present
-                if( title == null ) return@with
+        if( shouldPushToYt ) {
+            // Try YouTube sync
+            val response =
+                if( likeState == true )
+                    likeVideoOrSong( mediaItem.mediaId )
+                else
+                    removelikeVideoOrSong( mediaItem.mediaId )
 
-                val messageId = when( likeState ) {
-                    false -> R.string.added_to_dislikes
-                    true -> R.string.added_to_favorites
-                    null -> R.string.removed_from_dislikes
-                }
-
-                Toaster.s( messageId, "\"$title - $artist\"" )
+            val ytMessageId = when {
+                likeState == true && response.isSuccess -> R.string.songs_liked_yt
+                likeState == true && response.isFailure -> R.string.songs_liked_yt_failed
+                likeState == null && response.isSuccess -> R.string.song_unliked_yt
+                else                                    -> R.string.songs_unliked_yt_failed
             }
-
-            return
-        }
-
-        if( !isNetworkConnected( context ) ) {
-            Toaster.noInternet()
-            return
-        }
-
-        val response =
-            if( likeState == true )
-                likeVideoOrSong( mediaItem.mediaId )
+            if( response.isSuccess )
+                Toaster.s( ytMessageId )
             else
-                removelikeVideoOrSong( mediaItem.mediaId )
-        val messageId = when {
-            likeState == true && response.isSuccess -> R.string.songs_liked_yt
-            likeState == true && response.isFailure -> R.string.songs_liked_yt_failed
-            likeState == null && response.isSuccess -> R.string.song_unliked_yt
-            // likeState == true && response.isFailure
-            else                                    -> R.string.songs_unliked_yt_failed
+                Toaster.e( ytMessageId )
+        } else {
+            // Local only toast
+            val messageId = when( likeState ) {
+                true -> R.string.added_to_favorites
+                false -> R.string.added_to_dislikes
+                null -> R.string.removed_from_dislikes
+            }
+            with( mediaItem.mediaMetadata ) {
+                if( title != null )
+                    Toaster.s( messageId, "\"$title - $artist\"" )
+                else
+                    Toaster.s( messageId )
+            }
         }
-        if( response.isSuccess )
-            Toaster.s( messageId )
-        else
-            Toaster.e( messageId )
     }
 }
 

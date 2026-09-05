@@ -18,7 +18,6 @@ import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import it.fast4x.innertube.YtMusic
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.SearchBody
 import it.fast4x.innertube.requests.searchPage
 import it.fast4x.innertube.requests.playlistPage
 import it.fast4x.innertube.utils.from
@@ -27,7 +26,6 @@ import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.models.PlaylistPreview
 import app.it.fast4x.rimusic.models.SongAlbumMap
-import it.fast4x.innertube.models.bodies.BrowseBody
 import app.it.fast4x.rimusic.utils.asSong
 import app.it.fast4x.rimusic.utils.asMediaItem
 import kotlinx.coroutines.flow.first
@@ -137,8 +135,8 @@ class HomeSyncService : Service() {
         val allArtists = (Database.artistTable.allFollowing().first() + Database.artistTable.allInLibrary().first()).distinctBy { it.id }
         val targetItems = if (ids.isNullOrEmpty()) allArtists else allArtists.filter { it.id in ids }
 
-        val ytArtists = targetItems.filter { it.isYoutubeArtist && it.id.startsWith("UC") }
-        val localArtists = targetItems.filterNot { it.isYoutubeArtist && it.id.startsWith("UC") }
+        val ytArtists = targetItems.filter { it.isYoutubeArtist || it.id.startsWith("UC") }
+        val localArtists = targetItems.filterNot { it.isYoutubeArtist || it.id.startsWith("UC") }
         val totalArtists = ytArtists.size + localArtists.size
 
         Timber.tag("HomeSyncService").d("══════ ARTIST SYNC START ══════ Total: $totalArtists (YT: ${ytArtists.size}, Local/Fallback: ${localArtists.size})")
@@ -256,7 +254,7 @@ class HomeSyncService : Service() {
                     try {
                         Timber.tag("HomeSyncService").d("[ARTIST|FALLBACK_SEARCH] Searching YouTube: query='$query'")
                         val searchResult = Innertube.searchPage<Innertube.ArtistItem>(
-                            body = SearchBody(query = query, params = Innertube.SearchFilter.Artist.value),
+                            query = query, params = Innertube.SearchFilter.Artist.value,
                             fromMusicShelfRendererContent = { Innertube.ArtistItem.from(it) }
                         )?.getOrNull()
                         val remoteId = searchResult?.items?.firstOrNull()?.info?.endpoint?.browseId
@@ -337,8 +335,8 @@ class HomeSyncService : Service() {
         val allAlbums = Database.albumTable.all().first()
         val targetItems = if (ids.isNullOrEmpty()) allAlbums else allAlbums.filter { it.id in ids }
 
-        val ytAlbums = targetItems.filter { it.isYoutubeAlbum && (it.id.startsWith("MPRE") || it.id.startsWith("OLAK")) }
-        val localAlbums = targetItems.filterNot { it.isYoutubeAlbum && (it.id.startsWith("MPRE") || it.id.startsWith("OLAK")) }
+        val ytAlbums = targetItems.filter { it.isYoutubeAlbum || (it.id.startsWith("MPRE") || it.id.startsWith("OLAK")) }
+        val localAlbums = targetItems.filterNot { it.isYoutubeAlbum || (it.id.startsWith("MPRE") || it.id.startsWith("OLAK")) }
         val totalAlbums = ytAlbums.size + localAlbums.size
 
         Timber.tag("HomeSyncService").d("══════ ALBUM SYNC START ══════ Total: $totalAlbums (YT: ${ytAlbums.size}, Local/Fallback: ${localAlbums.size})")
@@ -478,7 +476,7 @@ class HomeSyncService : Service() {
                     try {
                         Timber.tag("HomeSyncService").d("[ALBUM|FALLBACK_SEARCH] Searching YouTube: query='$query'")
                         val searchResult = Innertube.searchPage<Innertube.AlbumItem>(
-                            body = SearchBody(query = query, params = Innertube.SearchFilter.Album.value),
+                            query = query, params = Innertube.SearchFilter.Album.value,
                             fromMusicShelfRendererContent = { Innertube.AlbumItem.from(it) }
                         )?.getOrNull()
                         val remoteId = searchResult?.items?.firstOrNull()?.info?.endpoint?.browseId
@@ -622,7 +620,7 @@ class HomeSyncService : Service() {
 
             var status = 0
             for (attempt in 1..3) {
-                val request = Innertube.playlistPage(BrowseBody(browseId = browseId))
+                val request = Innertube.playlistPage(browseId = browseId)
                 if (request == null) {
                     Timber.tag("HomeSyncService").d("[PLAYLIST|YT_DIRECT] ✗ Request null for '${p.name}'")
                     status = 2

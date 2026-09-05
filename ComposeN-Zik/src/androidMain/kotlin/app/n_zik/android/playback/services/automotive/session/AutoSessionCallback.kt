@@ -31,16 +31,11 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.BrowseBody
-import it.fast4x.innertube.models.bodies.SearchBody
-import it.fast4x.innertube.models.bodies.ContinuationBody
-import it.fast4x.innertube.requests.searchPage
 import it.fast4x.innertube.requests.artistPage
 import it.fast4x.innertube.requests.albumPage
 import it.fast4x.innertube.requests.playlistPage
 import it.fast4x.innertube.requests.relatedPage
 import it.fast4x.innertube.YtMusic
-import it.fast4x.innertube.models.bodies.NextBody
 import timber.log.Timber
 import it.fast4x.innertube.models.BrowseEndpoint
 import it.fast4x.innertube.models.BrowseResponse
@@ -383,7 +378,7 @@ val allSongs = database.formatTable.sortAllWithSongs(sortBy, sortOrder).first().
                     songId = paths[1]
                     val trending = database.eventTable.findSongsMostPlayedBetween(from = 0, limit = 500).first()
                     val relatedSongs = if (trending.isNotEmpty()) {
-                        Innertube.relatedPage(NextBody(videoId = trending.first().id))?.getOrNull()?.songs?.map { it.asSong } ?: emptyList()
+                        Innertube.relatedPage(videoId = trending.first().id)?.getOrNull()?.songs?.map { it.asSong } ?: emptyList()
                     } else emptyList()
                     val ytmQuickPicks = if (isYouTubeLoggedIn()) {
                         YtMusic.getQuickPicks(setLogin = true).getOrNull()?.map { it.asSong } ?: emptyList()

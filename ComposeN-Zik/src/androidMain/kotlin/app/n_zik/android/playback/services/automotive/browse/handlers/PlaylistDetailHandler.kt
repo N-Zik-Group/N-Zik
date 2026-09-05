@@ -18,7 +18,6 @@ import app.n_zik.android.playback.services.automotive.session.AutoSessionConstan
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.models.AutoSearchState
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.BrowseBody
 import it.fast4x.innertube.requests.playlistPage
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -82,8 +81,8 @@ class PlaylistDetailHandler : BrowseHandler {
                     val sortOrder = context.preferences.getEnum("PlaylistSongsSortOrder_$playlistId", SortOrder.Ascending)
                     database.songPlaylistMapTable.sortSongs(playlistId.toLong(), sortBy, sortOrder)
                 } else {
-                    val playlistPage = Innertube.playlistPage(BrowseBody(browseId = playlistId.removePrefix(MODIFIED_PREFIX)))?.getOrNull()
-                    val songs = playlistPage?.songsPage?.items?.toList()?.map { item -> item.asSong } ?: emptyList()
+                    val playlistPage = Innertube.playlistPage(browseId = playlistId.removePrefix(MODIFIED_PREFIX))?.getOrNull()
+                    val songs = playlistPage?.songs?.toList()?.map { item -> item.asSong } ?: emptyList()
                     AutoSearchState.searchedSongs = (AutoSearchState.searchedSongs + songs).distinctBy { s -> s.id }
                     kotlinx.coroutines.flow.flowOf(songs)
                 }

@@ -1,24 +1,18 @@
 package it.fast4x.innertube.requests
 
 import io.ktor.client.call.body
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.BrowseResponse
 import it.fast4x.innertube.models.MusicCarouselShelfRenderer
 import it.fast4x.innertube.models.MusicShelfRenderer
 import it.fast4x.innertube.models.SectionListRenderer
-import it.fast4x.innertube.models.bodies.BrowseBody
 import it.fast4x.innertube.utils.findSectionByTitle
 import it.fast4x.innertube.utils.from
 import it.fast4x.innertube.utils.runCatchingNonCancellable
 
-suspend fun Innertube.artistPage(body: BrowseBody): Result<Innertube.ArtistInfoPage>? =
+suspend fun Innertube.artistPage(browseId: String): Result<Innertube.ArtistInfoPage>? =
     runCatchingNonCancellable {
-        val response = client.post(browse) {
-            setBody(body)
-            mask("contents,header")
-        }.body<BrowseResponse>()
+        val response = browse(browseId = browseId).body<BrowseResponse>()
 
         fun findSectionByTitle(text: String): SectionListRenderer.Content? {
             return response
@@ -67,7 +61,6 @@ suspend fun Innertube.artistPage(body: BrowseBody): Result<Innertube.ArtistInfoP
                 ?.thumbnail
                 ?.thumbnails
                 ?.getBestQuality(),
-                //?.getOrNull(0),
             shuffleEndpoint = response
                 .header
                 ?.musicImmersiveHeaderRenderer

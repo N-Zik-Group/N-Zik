@@ -270,6 +270,7 @@ import app.it.fast4x.rimusic.utils.topPaddingKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -1065,7 +1066,7 @@ fun Player(
                         ?.takeIf { it.mediaId == mediaItem.mediaId }
                         ?.let { item ->
                             CoroutineScope(Dispatchers.IO).launch {
-                                YouTubeSync.toggleSongLike(context, item)
+                                YouTubeSync.rotateSongLikeState( context, item )
                             }
                         }
                     if (effectRotationEnabled) isRotated = !isRotated

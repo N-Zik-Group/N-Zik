@@ -39,6 +39,8 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.ui.draw.clip
 import app.it.fast4x.rimusic.utils.Preference.HOME_SONGS_SORT_BY
 import app.it.fast4x.rimusic.utils.Preference.HOME_SONGS_SORT_ORDER
+import app.it.fast4x.rimusic.utils.Preference.HOME_SONGS_DISLIKED_SORT_BY
+import app.it.fast4x.rimusic.utils.Preference.HOME_SONGS_DISLIKED_SORT_ORDER
 import app.it.fast4x.rimusic.utils.Preference.HOME_SONGS_FAVORITES_SORT_BY
 import app.it.fast4x.rimusic.utils.Preference.HOME_SONGS_FAVORITES_SORT_ORDER
 import app.it.fast4x.rimusic.utils.Preference.HOME_SONGS_OFFLINE_SORT_BY
@@ -62,6 +64,10 @@ import app.n_zik.android.components.tab.*
 
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.ext.FormatWithSong
+import app.it.fast4x.rimusic.utils.autosyncLikesKey
+import app.it.fast4x.rimusic.utils.importYTMLikedSongs
+import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import androidx.compose.runtime.saveable.rememberSaveable
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.playback.services.isLocal
@@ -70,7 +76,6 @@ import app.it.fast4x.rimusic.enums.DownloadedStateMedia
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.requests.relatedSongs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -112,6 +117,7 @@ fun HomeSongs(
     val maxTopPlaylistItems by rememberPreference( MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10` )
     val includeLocalSongs by rememberPreference( includeLocalSongsKey, true )
     val excludeSongWithDurationLimit by rememberPreference( excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled )
+    var filterBy by rememberPreference(filterByKey, FilterBy.All)
 
     var items by remember { mutableStateOf(emptyList<Song>()) }
 
@@ -157,11 +163,21 @@ fun HomeSongs(
         BuiltInPlaylist.Offline -> Sort( HOME_SONGS_OFFLINE_SORT_BY, HOME_SONGS_OFFLINE_SORT_ORDER, homeSongsCachedSortMenuOrderKey, "off" )
         BuiltInPlaylist.Downloaded -> Sort( HOME_SONGS_DOWNLOADED_SORT_BY, HOME_SONGS_DOWNLOADED_SORT_ORDER, homeSongsDownloadedSortMenuOrderKey, "dl" )
         BuiltInPlaylist.Top -> Sort( HOME_SONGS_TOP_SORT_BY, HOME_SONGS_TOP_SORT_ORDER, homeSongsTopSortMenuOrderKey, "top" )
+        BuiltInPlaylist.Disliked -> Sort( HOME_SONGS_DISLIKED_SORT_BY, HOME_SONGS_DISLIKED_SORT_ORDER, homeSongsDislikedSortMenuOrderKey, "disliked" )
         else -> Sort( HOME_SONGS_SORT_BY, HOME_SONGS_SORT_ORDER, homeSongsAllSortMenuOrderKey, "all" )
     }
     val positionLock = remember( songSort.sortOrder ) { PositionLock(songSort.sortOrder) }
     val topPlaylists = PeriodSelector( HOME_SONGS_TOP_PLAYLIST_PERIOD, homeSongsTopSortMenuOrderKey, "top" )
     val hiddenSongs = HiddenSongs()
+
+    // Auto-sync YTM liked songs when Favorites tab is displayed
+    val doAutoSync by rememberPreference(autosyncLikesKey, false)
+    var justSynced by rememberSaveable { mutableStateOf(!doAutoSync) }
+    LaunchedEffect(justSynced, doAutoSync, builtInPlaylist) {
+        if (builtInPlaylist == BuiltInPlaylist.Favorites && !justSynced && isYouTubeSyncEnabled()) {
+            if (importYTMLikedSongs()) justSynced = true
+        }
+    }
 
     var isLoading by remember { mutableStateOf(true) }
 
@@ -293,12 +309,20 @@ fun HomeSongs(
             }
 
             BuiltInPlaylist.OnDevice -> flowOf( emptyList() )
+
+            BuiltInPlaylist.Disliked -> {
+                Database.songTable.allDisliked()
+            }
         }
 
         retrievedSongs.flowOn( Dispatchers.IO )
             .distinctUntilChanged()
             .collect {
-                items = it
+                items = when(filterBy) {
+                    FilterBy.All -> it
+                    FilterBy.YoutubeLibrary -> it.filter { song -> song.isYoutubeSong }
+                    FilterBy.Local -> it.filterNot { song -> song.isYoutubeSong }
+                }
                 isLoading = false
             }
     }
@@ -335,8 +359,7 @@ fun HomeSongs(
 
         for (seedSong in seedSongs) {
             try {
-                val requestBody = NextBody(videoId = seedSong.id)
-                val relatedSongsResult = Innertube.relatedSongs(requestBody)?.getOrNull()
+                val relatedSongsResult = Innertube.relatedSongs(videoId = seedSong.id)?.getOrNull()
 
                 relatedSongsResult?.songs?.forEach { songItem ->
                     songItem.info?.let { info ->

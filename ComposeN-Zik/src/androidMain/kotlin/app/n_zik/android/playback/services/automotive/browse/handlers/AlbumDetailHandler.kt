@@ -14,7 +14,6 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.models.AutoSearchState
-import it.fast4x.innertube.models.bodies.BrowseBody
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import app.it.fast4x.rimusic.models.Album
@@ -98,7 +97,7 @@ class AlbumDetailHandler : BrowseHandler {
                 }
             }
         } else {
-            val albumPage = Innertube.albumPage(BrowseBody(browseId = cleanAlbumId))?.getOrNull()
+            val albumPage = Innertube.albumPage(browseId = cleanAlbumId)?.getOrNull()
             onlineSongs = albumPage?.songsPage?.items?.toList()?.map { item -> item.asSong }
         }
         

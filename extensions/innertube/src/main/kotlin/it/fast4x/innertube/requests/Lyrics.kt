@@ -1,20 +1,13 @@
 package it.fast4x.innertube.requests
 
 import io.ktor.client.call.body
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.BrowseResponse
 import it.fast4x.innertube.models.NextResponse
-import it.fast4x.innertube.models.bodies.BrowseBody
-import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.utils.runCatchingNonCancellable
 
-suspend fun Innertube.lyrics(body: NextBody): Result<String?>? = runCatchingNonCancellable {
-    val nextResponse = client.post(next) {
-        setBody(body)
-        mask("contents.singleColumnMusicWatchNextResultsRenderer.tabbedRenderer.watchNextTabbedResultsRenderer.tabs.tabRenderer(endpoint,title)")
-    }.body<NextResponse>()
+suspend fun Innertube.lyrics(videoId: String): Result<String?>? = runCatchingNonCancellable {
+    val nextResponse = next(videoId = videoId).body<NextResponse>()
 
     val browseId = nextResponse
         .contents
@@ -29,10 +22,7 @@ suspend fun Innertube.lyrics(body: NextBody): Result<String?>? = runCatchingNonC
         ?.browseId
         ?: return@runCatchingNonCancellable null
 
-    val response = client.post(browse) {
-        setBody(BrowseBody(browseId = browseId))
-        mask("contents.sectionListRenderer.contents.musicDescriptionShelfRenderer.description")
-    }.body<BrowseResponse>()
+    val response = browse(browseId = browseId).body<BrowseResponse>()
 
     response.contents
         ?.sectionListRenderer

@@ -13,6 +13,8 @@ import android.os.Build
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.core.network.utils.isNetworkAvailable
 import app.n_zik.android.core.network.utils.isNetworkConnected
+import app.it.fast4x.rimusic.utils.canPushToYTM
+import app.it.fast4x.rimusic.utils.PlaylistEditThrottle
 import app.n_zik.android.core.network.utils.isNetworkAvailableComposable
 import android.provider.MediaStore
 import android.text.format.DateUtils
@@ -35,8 +37,8 @@ import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic.addToPlaylist
 import it.fast4x.innertube.YtMusic.likeVideoOrSong
 import it.fast4x.innertube.YtMusic.removelikeVideoOrSong
-import it.fast4x.innertube.models.bodies.ContinuationBody
 import it.fast4x.innertube.requests.playlistPage
+import it.fast4x.innertube.requests.playlistPageContinuation
 import it.fast4x.kugou.KuGou
 import it.fast4x.lrclib.LrcLib
 import androidx.media3.session.MediaConstants.EXTRAS_KEY_IS_EXPLICIT
@@ -410,9 +412,7 @@ suspend fun Result<Innertube.ItemsPage<Innertube.SongItem>?>.completed(
 
     while (continuation != null && depth++ < maxDepth) {
         val newSongs = Innertube
-            .playlistPage(
-                body = ContinuationBody(continuation = continuation)
-            )
+            .playlistPageContinuation(continuation = continuation)
             ?.getOrNull()
             ?.takeUnless { it.items.isNullOrEmpty() } ?: break
 
@@ -631,6 +631,7 @@ suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: 
         } else {
             delay(2000)
         }
+        PlaylistEditThrottle.throttle(ytplaylistId)
         addToPlaylist(ytplaylistId, items.map { it.mediaId })
             .onSuccess {
                 Database.playlistTable
@@ -648,6 +649,7 @@ suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: 
                     Toaster.w( R.string.adding_yt_to_pl_failed )
                     items.forEach { item ->
                         delay(500)
+                        PlaylistEditThrottle.throttle(ytplaylistId)
                         addToPlaylist(ytplaylistId, item.mediaId).onFailure {
                             Timber.tag("Utils").e("YtMusic addToPlaylist (list insert backup) error: ${it.stackTraceToString()}")
                                 Toaster.e(
@@ -673,7 +675,8 @@ suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: 
 }
 
 suspend fun addSongToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: String, mediaItem: MediaItem){
-    if (isYouTubeSyncEnabled()) {
+    if (isYouTubeSyncEnabled() && canPushToYTM() && isNetworkConnected(appContext())) {
+        PlaylistEditThrottle.throttle(ytplaylistId)
         addToPlaylist(ytplaylistId,mediaItem.mediaId)
             .onSuccess {
                 Database.playlistTable.findById( localPlaylistId ).first()?.let {
@@ -688,34 +691,6 @@ suspend fun addSongToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylist
     }
 }
 
-
-@OptIn(UnstableApi::class)
-suspend fun addToYtLikedSong(mediaItem: MediaItem) {
-    if( !isYouTubeSyncEnabled() ) return
-
-    Database.asyncTransaction {
-        insertIgnore( mediaItem )
-    }
-
-    val isSongLiked = Database.songTable.isLiked( mediaItem.mediaId ).first()
-
-    val isSuccess: Boolean =
-        (if( isSongLiked ) likeVideoOrSong( mediaItem.mediaId ) else removelikeVideoOrSong( mediaItem.mediaId )).isSuccess
-
-    val messageId = when {
-        isSongLiked && isSuccess -> R.string.songs_liked_yt
-        isSongLiked && !isSuccess -> R.string.songs_liked_yt_failed
-        !isSongLiked && isSuccess -> R.string.song_unliked_yt
-        !isSongLiked && !isSuccess -> R.string.songs_unliked_yt_failed
-        else -> throw RuntimeException()
-    }
-
-    if( isSuccess ) {
-        Database.songTable.toggleLike(mediaItem.mediaId)
-        Toaster.s( messageId )
-    } else
-        Toaster.e( messageId)
-}
 
 @OptIn(UnstableApi::class)
 suspend fun addToYtLikedSongs(mediaItems: List<MediaItem>){

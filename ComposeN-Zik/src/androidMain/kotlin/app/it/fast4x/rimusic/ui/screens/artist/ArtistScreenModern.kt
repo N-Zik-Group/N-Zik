@@ -43,7 +43,6 @@ import androidx.compose.ui.Modifier
 import app.n_zik.android.core.coil.ImageCacheFactory
 
 
-import it.fast4x.innertube.models.bodies.QueueBody
 import it.fast4x.innertube.requests.queue
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 
@@ -110,7 +109,7 @@ fun ArtistScreenModern(
                        .distinct()
 
                    if (itemsToFetch.isNotEmpty()) {
-                       Innertube.queue(QueueBody(videoIds = itemsToFetch))?.onSuccess { queueItems ->
+                                               Innertube.queue(videoIds = itemsToFetch)?.onSuccess { queueItems ->
                            val durationsMap = queueItems?.associate { it.key to it.durationText } ?: emptyMap()
                            artistPage = artistPage?.withUpdatedVideoDurations(durationsMap)
                        }

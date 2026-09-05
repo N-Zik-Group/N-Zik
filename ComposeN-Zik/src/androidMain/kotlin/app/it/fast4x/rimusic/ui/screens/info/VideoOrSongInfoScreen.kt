@@ -27,7 +27,6 @@ import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.VideoOrSongInfo
-import it.fast4x.innertube.models.bodies.SearchBody
 import it.fast4x.innertube.requests.searchPage
 import it.fast4x.innertube.requests.songInfo
 import it.fast4x.innertube.utils.from
@@ -91,8 +90,8 @@ fun VideoOrSongInfoScreen(
                     if (artistId == null) {
                         try {
                             val searchResult = Innertube.searchPage<Innertube.ArtistItem>(
-                                SearchBody(query = name, params = Innertube.SearchFilter.Artist.value),
-                                { content -> Innertube.ArtistItem.from(content) }
+                                query = name, params = Innertube.SearchFilter.Artist.value,
+                                fromMusicShelfRendererContent = { content -> Innertube.ArtistItem.from(content) }
                             )?.getOrNull()
                             val foundArtist = searchResult?.items?.firstOrNull()
                             if (foundArtist != null) {

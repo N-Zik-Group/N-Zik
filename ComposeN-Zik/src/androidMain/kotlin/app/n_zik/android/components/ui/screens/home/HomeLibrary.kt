@@ -108,7 +108,11 @@ import app.it.fast4x.rimusic.utils.Preference.HOME_LIBRARY_PINNED_PLAYLIST_SORT_
 import app.it.fast4x.rimusic.utils.Preference.HOME_LIBRARY_MONTHLY_PLAYLIST_SORT_BY
 import app.it.fast4x.rimusic.utils.Preference.HOME_LIBRARY_MONTHLY_PLAYLIST_SORT_ORDER
 import app.it.fast4x.rimusic.utils.autoSyncToolbutton
-import app.it.fast4x.rimusic.utils.autosyncKey
+import app.it.fast4x.rimusic.utils.autosyncPlaylistsKey
+import app.it.fast4x.rimusic.utils.importYTMPlaylists
+import app.it.fast4x.rimusic.utils.importYTMLibrarySongs
+import app.it.fast4x.rimusic.utils.importYTMUploadedSongs
+import app.it.fast4x.rimusic.utils.importYTMUploadedAlbums
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.enableCreateMonthlyPlaylistsKey
 import app.it.fast4x.rimusic.utils.playlistTypeKey
@@ -143,7 +147,6 @@ import app.n_zik.android.components.tab.SongShuffler
 import timber.log.Timber
 import it.fast4x.innertube.requests.playlistPage
 import app.kreate.android.me.knighthat.utils.Toaster
-import it.fast4x.innertube.models.bodies.BrowseBody
 import app.it.fast4x.rimusic.enums.SortOrder
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
@@ -262,7 +265,7 @@ fun HomeLibrary(
             onImport = { playlistId ->
                 coroutineScope.launch(Dispatchers.IO) {
                     val browseId = if (playlistId.startsWith("VL")) playlistId else "VL$playlistId"
-                    Innertube.playlistPage(BrowseBody(browseId = browseId))?.getOrNull()?.let { playlistPage ->
+                    Innertube.playlistPage(browseId = browseId)?.getOrNull()?.let { playlistPage ->
                         val playlistName = playlistPage.title ?: "YouTube Playlist"
                         val playlist = Playlist(name = playlistName, browseId = browseId)
                         val playlistRowId = Database.playlistTable.insert(playlist)
@@ -293,7 +296,14 @@ fun HomeLibrary(
             onImportYoutubeLink = { showYouTubeLinkDialog = true }
         )
     }
-    val sync = autoSyncToolbutton(R.string.autosync)
+    val sync = autoSyncToolbutton(R.string.autosync, autosyncPlaylistsKey) {
+        CoroutineScope(Dispatchers.IO).launch {
+            importYTMPlaylists(force = true)
+            importYTMLibrarySongs(force = true)
+            importYTMUploadedSongs(force = true)
+            importYTMUploadedAlbums(force = true)
+        }
+    }
 
     val playNext = PlayNext {
         coroutineScope.launch {
@@ -349,11 +359,12 @@ fun HomeLibrary(
     val showPinnedPlaylists by rememberPreference(showPinnedPlaylistsKey, true)
     val showMonthlyPlaylists by rememberPreference(showMonthlyPlaylistsKey, true)
     val showYtPlaylists by rememberPreference(showYtPlaylistsKey, true)
+    val isSyncEnabled = isYouTubeSyncEnabled()
     val homePlaylistsOrderPref by rememberPreference(homePlaylistsOrderKey, "")
 
     val playlistsDefaultOrder = listOf("all", "pinned_playlists", "monthly_playlists", "yt_playlists")
     val toggleMap = mapOf(
-        "yt_playlists" to showYtPlaylists,
+        "yt_playlists" to (showYtPlaylists && isSyncEnabled),
         "pinned_playlists" to showPinnedPlaylists,
         "monthly_playlists" to showMonthlyPlaylists
     )
@@ -413,8 +424,15 @@ fun HomeLibrary(
         CheckMonthlyPlaylist()
     // END - Monthly playlist
 
-    val doAutoSync by rememberPreference(autosyncKey, false)
+    val doAutoSync by rememberPreference(autosyncPlaylistsKey, false)
     var justSynced by rememberSaveable { mutableStateOf(!doAutoSync) }
+
+    // START: Import YTM playlists
+    LaunchedEffect(justSynced, doAutoSync) {
+        if (!justSynced && importYTMPlaylists())
+            justSynced = true
+    }
+    // END: Import YTM playlists
 
 
     var refreshing by remember { mutableStateOf(false) }

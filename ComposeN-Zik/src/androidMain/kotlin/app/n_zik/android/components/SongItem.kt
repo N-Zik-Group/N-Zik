@@ -82,7 +82,7 @@ import app.it.fast4x.rimusic.utils.conditional
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.downloadedStateMedia
 import app.it.fast4x.rimusic.utils.getDownloadState
-import app.it.fast4x.rimusic.utils.getLikedIcon
+import app.it.fast4x.rimusic.utils.getLikeState
 import app.it.fast4x.rimusic.utils.currentMediaItemIdAsState
 import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.playlistindicatorKey
@@ -262,10 +262,11 @@ fun SongItem(
             thumbnailOverlay()
 
             val showLiked = isLiked ?: (displaySong.likedAt != null)
-            if( showLiked )
+            val showDisliked = displaySong.likedAt == -1L
+            if( showLiked || showDisliked )
                 HeaderIconButton(
                     onClick = {},
-                    icon = getLikedIcon(),
+                    icon = getLikeState( displaySong.id ),
                     color = colorPalette().favoritesIcon,
                     iconSize = 12.dp,
                     modifier = Modifier.align( Alignment.BottomStart )

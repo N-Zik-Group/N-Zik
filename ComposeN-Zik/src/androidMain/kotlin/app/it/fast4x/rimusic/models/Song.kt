@@ -21,7 +21,8 @@ data class Song(
     val thumbnailUrl: String?,
     val likedAt: Long? = null,
     val totalPlayTimeMs: Long = 0,
-    val position: Int = -1
+    val position: Int = -1,
+    val isYoutubeSong: Boolean = false
 ) {
     @ColumnInfo(name = "playCount", defaultValue = "0")
     var playCount: Int = 0

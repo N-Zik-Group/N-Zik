@@ -59,6 +59,12 @@ import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic
+import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.it.fast4x.rimusic.utils.syncPushAlbumBookmarkKey
+import app.it.fast4x.rimusic.utils.syncDirectionKey
+import app.it.fast4x.rimusic.utils.getSyncDirection
+import app.it.fast4x.rimusic.utils.isNetworkConnected
+import app.it.fast4x.rimusic.enums.SyncDirection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -66,7 +72,6 @@ import kotlinx.coroutines.withContext
 import app.it.fast4x.rimusic.models.SongAlbumMap
 import app.it.fast4x.rimusic.ui.components.themed.Enqueue
 import app.it.fast4x.rimusic.ui.components.themed.PlayNext
-import it.fast4x.innertube.models.bodies.BrowseBody
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.n_zik.android.components.tab.SongShuffler
 
@@ -262,7 +267,17 @@ class OnlineAlbumItemMenu private constructor(
                         color = colorPalette().favoritesIcon,
                         onClick = {
                             coroutineScope.launch(Dispatchers.IO) {
+                                val pushAlbumBookmark = appContext().preferences.getBoolean(syncPushAlbumBookmarkKey, false)
+                                val syncDir = getSyncDirection()
+                                if (isYouTubeSyncEnabled() && pushAlbumBookmark && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
+                                    val playlistId = album.playlistId
+                                    if (playlistId != null) {
+                                        if (isBookmarked) YtMusic.removelikePlaylistOrAlbum(playlistId)
+                                        else YtMusic.likePlaylistOrAlbum(playlistId)
+                                    }
+                                }
                                 Database.albumTable.toggleBookmark(album.key)
+                                Toaster.s( if (isBookmarked) R.string.removed_from_favorites else R.string.added_to_favorites )
                             }
                         },
                         modifier = Modifier
@@ -326,7 +341,7 @@ class OnlineAlbumItemMenu private constructor(
                     return@withContext
                 }
                 
-                val result = Innertube.albumPage(BrowseBody(browseId = album.key.removePrefix(MODIFIED_PREFIX)))?.getOrNull()
+                val result = Innertube.albumPage(browseId = album.key.removePrefix(MODIFIED_PREFIX))?.getOrNull()
                 if (result != null) {
                     displayTitle = result.title.takeIf { !it.isNullOrBlank() } ?: displayTitle
                     displayAuthors = result.authors.parseArtists().joinToString(", ").takeIf { it.isNotBlank() } ?: displayAuthors

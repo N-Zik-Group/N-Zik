@@ -94,8 +94,7 @@ fun adaptiveThumbnailContent(
                 Image(
                     painter = painterResource(R.drawable.ytmusic),
                     colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(
-                        androidx.compose.ui.graphics.Color.Red.copy(0.75f)
-                            .compositeOver(androidx.compose.ui.graphics.Color.White)
+                        androidx.compose.ui.graphics.Color.Red
                     ),
                     modifier = Modifier
                         .align(Alignment.TopStart)

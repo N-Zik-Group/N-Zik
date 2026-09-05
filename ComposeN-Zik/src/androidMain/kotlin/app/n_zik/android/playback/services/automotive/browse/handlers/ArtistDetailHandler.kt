@@ -21,7 +21,6 @@ import it.fast4x.innertube.YtMusic
 import it.fast4x.innertube.models.BrowseResponse
 import it.fast4x.innertube.models.GridRenderer
 import it.fast4x.innertube.requests.ArtistItemsPage
-import it.fast4x.innertube.requests.browse
 import it.fast4x.innertube.utils.from
 import io.ktor.client.call.body
 import kotlinx.coroutines.flow.first

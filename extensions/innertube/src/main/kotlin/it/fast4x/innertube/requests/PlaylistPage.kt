@@ -1,20 +1,13 @@
 package it.fast4x.innertube.requests
 
 import io.ktor.client.call.body
-import io.ktor.client.request.parameter
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.Innertube.getBestQuality
 import it.fast4x.innertube.models.BrowseResponse
-import it.fast4x.innertube.models.ContinuationResponse
 import it.fast4x.innertube.models.MusicCarouselShelfRenderer
 import it.fast4x.innertube.models.MusicResponsiveListItemRenderer
 import it.fast4x.innertube.models.MusicShelfRenderer
 import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.models.bodies.BrowseBody
-import it.fast4x.innertube.models.bodies.ContinuationBody
 import it.fast4x.innertube.models.oddElements
 import it.fast4x.innertube.utils.from
 import it.fast4x.innertube.utils.runCatchingCancellable
@@ -67,12 +60,8 @@ data class PlaylistPage(
     }
 }
 
-suspend fun Innertube.playlistPage(body: BrowseBody) = runCatchingCancellable {
-    val response = client.post(browse) {
-        setLogin(setLogin = true)
-        setBody(body)
-        //body.context.apply()
-    }.body<BrowseResponse>()
+suspend fun Innertube.playlistPage(browseId: String, params: String? = null) = runCatchingCancellable {
+    val response = browse(browseId = browseId, params = params, setLogin = true).body<BrowseResponse>()
 
 
     if (response.contents?.twoColumnBrowseResultsRenderer == null) {
@@ -222,16 +211,11 @@ suspend fun Innertube.playlistPage(body: BrowseBody) = runCatchingCancellable {
         )
     }
 
-}?.onFailure {
-    println("Innertube: playlistPage error: ${it.stackTraceToString()}")
 }
 
-suspend fun Innertube.playlistPage(body: ContinuationBody) = runCatchingNonCancellable {
-    val call = Innertube.browse(continuation = body.continuation)
-    val callResponse = call.bodyAsText()
-    val response = call.body<BrowseResponse>()
+suspend fun Innertube.playlistPageContinuation(continuation: String) = runCatchingNonCancellable {
+    val response = browse(continuation = continuation).body<BrowseResponse>()
 
-    println("PlaylistPage: continuation response musicShelfContinuation: ${response.continuationContents?.musicShelfContinuation}")
     response
         .continuationContents
         ?.musicShelfContinuation

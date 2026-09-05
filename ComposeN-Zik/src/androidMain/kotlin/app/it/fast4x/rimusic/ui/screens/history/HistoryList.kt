@@ -43,6 +43,7 @@ import androidx.compose.ui.util.fastDistinctBy
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
+import app.n_zik.android.appContext
 import app.it.fast4x.compose.persist.persist
 import it.fast4x.innertube.YtMusic
 import it.fast4x.innertube.requests.HistoryPage
@@ -62,6 +63,9 @@ import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.it.fast4x.rimusic.ui.components.themed.Title
 import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
+import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.it.fast4x.rimusic.utils.enableYouTubeSyncKey
+import app.it.fast4x.rimusic.utils.syncImportHistoryKey
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.addNext
@@ -87,6 +91,7 @@ import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.song.SongItemMenu
 import app.it.fast4x.rimusic.utils.historySortMenuOrderKey
 import androidx.compose.foundation.text.BasicText
+import app.it.fast4x.rimusic.utils.encryptedPreferences
 import app.n_zik.android.typography
 import java.time.ZoneId
 import java.time.Instant
@@ -155,7 +160,11 @@ fun HistoryList(
     }.collectAsState( emptyMap(), Dispatchers.IO )
 
     val buttonsList = mutableListOf(HistoryType.History to stringResource(R.string.history))
-    buttonsList += HistoryType.YTMHistory to stringResource(R.string.yt_history)
+    val syncImportHistory by rememberPreference(syncImportHistoryKey, false)
+    val isCoreSyncEnabled = appContext().encryptedPreferences.getBoolean(enableYouTubeSyncKey, false)
+    if (isCoreSyncEnabled && syncImportHistory) {
+        buttonsList += HistoryType.YTMHistory to stringResource(R.string.yt_history)
+    }
 
     var historyType by rememberPreference(historyTypeKey, HistoryType.History)
 
@@ -175,9 +184,9 @@ fun HistoryList(
 
     var historyPage by persist<Result<HistoryPage>>("home/history/pageResult")
     LaunchedEffect(historyType) {
-        if (historyType == HistoryType.YTMHistory && isYouTubeLoggedIn()) {
+        if (historyType == HistoryType.YTMHistory && isYouTubeSyncEnabled()) {
             isYTMLoading = true
-            historyPage = YtMusic.getHistory()
+            historyPage = YtMusic.getHistory(setLogin = true)
             isYTMLoading = false
         }
     }
@@ -235,7 +244,7 @@ fun HistoryList(
 
         val isLoading = when (historyType) {
             HistoryType.History -> isLocalLoading && events.isEmpty()
-            HistoryType.YTMHistory -> isYTMLoading || (historyPage == null && isYouTubeLoggedIn())
+            HistoryType.YTMHistory -> isYTMLoading || (historyPage == null && isYouTubeSyncEnabled())
         }
 
         if (isLoading) {

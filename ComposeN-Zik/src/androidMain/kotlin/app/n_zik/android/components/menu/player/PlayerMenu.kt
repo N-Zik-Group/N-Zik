@@ -43,7 +43,6 @@ import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.utils.addSongToYtPlaylist
 import app.it.fast4x.rimusic.utils.addToYtPlaylist
-import app.it.fast4x.rimusic.utils.addToYtLikedSong
 import app.it.fast4x.rimusic.utils.asSong
 import app.it.fast4x.rimusic.utils.isNetworkConnected
 import app.it.fast4x.rimusic.utils.menuStyleKey

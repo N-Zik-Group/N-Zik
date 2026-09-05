@@ -39,12 +39,13 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.requests.nextPage
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.MenuStyle
+import app.it.fast4x.rimusic.utils.preferences
+import app.kreate.android.me.knighthat.utils.Toaster
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.models.Song
@@ -58,6 +59,14 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Clickable
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Menu
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
+import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.it.fast4x.rimusic.utils.syncPushAlbumBookmarkKey
+import app.it.fast4x.rimusic.utils.syncDirectionKey
+import app.it.fast4x.rimusic.utils.getSyncDirection
+import app.it.fast4x.rimusic.utils.isNetworkConnected
+import app.it.fast4x.rimusic.enums.SyncDirection
+import app.n_zik.android.appContext
+import it.fast4x.innertube.YtMusic
 import app.it.fast4x.rimusic.ui.components.themed.Enqueue
 
 import app.it.fast4x.rimusic.ui.components.themed.PlayNext
@@ -288,7 +297,19 @@ class AlbumItemMenu private constructor(
                         color = colorPalette().favoritesIcon,
                         onClick = {
                             coroutineScope.launch(Dispatchers.IO) {
+                                val pushAlbumBookmark = appContext().preferences.getBoolean(syncPushAlbumBookmarkKey, false)
+                                val syncDir = getSyncDirection()
+                                if (isYouTubeSyncEnabled() && pushAlbumBookmark && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
+                                    val playlistId = album.shareUrl
+                                        ?.substringAfter("list=")
+                                        ?.takeIf { it.isNotBlank() }
+                                    if (playlistId != null) {
+                                        if (isBookmarked) YtMusic.removelikePlaylistOrAlbum(playlistId)
+                                        else YtMusic.likePlaylistOrAlbum(playlistId)
+                                    }
+                                }
                                 Database.albumTable.toggleBookmark(album.id)
+                                Toaster.s( if (isBookmarked) R.string.removed_from_favorites else R.string.added_to_favorites )
                             }
                         },
                         modifier = Modifier
@@ -397,7 +418,7 @@ class AlbumItemMenu private constructor(
                                 override fun onShortClick() {
                                     menuState.hide()
                                     coroutineScope.launch(Dispatchers.IO) {
-                                        Innertube.nextPage(NextBody(videoId = firstSong.id))
+                                        Innertube.nextPage(videoId = firstSong.id)
                                             ?.getOrNull()
                                             ?.itemsPage?.items?.firstOrNull()
                                             ?.authors

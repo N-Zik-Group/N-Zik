@@ -244,6 +244,12 @@ interface PlaylistTable {
     """)
     fun togglePin( playlistId: Long ): Int
 
+    @Query("UPDATE Playlist SET isAutoSync = NOT isAutoSync WHERE id = :playlistId")
+    fun toggleAutoSync( playlistId: Long ): Int
+
+    @Query("SELECT isAutoSync FROM Playlist WHERE id = :playlistId")
+    fun isAutoSync( playlistId: Long ): Flow<Boolean>
+
     @Query("UPDATE Playlist SET position = :position WHERE id = :playlistId")
     fun updatePosition( playlistId: Long, position: Int ): Int
 

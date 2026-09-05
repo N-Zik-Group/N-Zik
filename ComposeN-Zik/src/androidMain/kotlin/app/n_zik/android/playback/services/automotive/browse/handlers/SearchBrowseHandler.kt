@@ -16,9 +16,8 @@ import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
 import app.n_zik.android.playback.services.automotive.models.AutoSearchState
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.ContinuationBody
-import it.fast4x.innertube.models.bodies.SearchBody
 import it.fast4x.innertube.requests.searchPage
+import it.fast4x.innertube.requests.searchPageContinuation
 
 class SearchBrowseHandler : BrowseHandler {
     override fun handles(parentId: String): Boolean = parentId.startsWith("SEARCH_") ||
@@ -40,9 +39,9 @@ class SearchBrowseHandler : BrowseHandler {
                 var cont: String? = null
                 do {
                     val resultPage = if (cont == null) {
-                        Innertube.searchPage<Innertube.SongItem>(SearchBody(query = parts[1], params = Innertube.SearchFilter.Song.value), { content -> Innertube.SongItem.from(content) })?.getOrNull()
+                        Innertube.searchPage<Innertube.SongItem>(query = parts[1], params = Innertube.SearchFilter.Song.value, fromMusicShelfRendererContent = { content -> Innertube.SongItem.from(content) })?.getOrNull()
                     } else {
-                        Innertube.searchPage<Innertube.SongItem>(ContinuationBody(continuation = cont), { content -> Innertube.SongItem.from(content) })?.getOrNull()
+                        Innertube.searchPageContinuation<Innertube.SongItem>(continuation = cont, fromMusicShelfRendererContent = { content -> Innertube.SongItem.from(content) })?.getOrNull()
                     }
                     val songs = resultPage?.items?.map { s -> s.asSong } ?: emptyList()
                     AutoSearchState.searchedSongs = (AutoSearchState.searchedSongs + songs).distinctBy { s -> s.id }
@@ -56,9 +55,9 @@ class SearchBrowseHandler : BrowseHandler {
                 var cont: String? = null
                 do {
                     val resultPage = if (cont == null) {
-                        Innertube.searchPage<Innertube.ArtistItem>(SearchBody(query = parts[1], params = Innertube.SearchFilter.Artist.value), { content -> Innertube.ArtistItem.from(content) })?.getOrNull()
+                        Innertube.searchPage<Innertube.ArtistItem>(query = parts[1], params = Innertube.SearchFilter.Artist.value, fromMusicShelfRendererContent = { content -> Innertube.ArtistItem.from(content) })?.getOrNull()
                     } else {
-                        Innertube.searchPage<Innertube.ArtistItem>(ContinuationBody(continuation = cont), { content -> Innertube.ArtistItem.from(content) })?.getOrNull()
+                        Innertube.searchPageContinuation<Innertube.ArtistItem>(continuation = cont, fromMusicShelfRendererContent = { content -> Innertube.ArtistItem.from(content) })?.getOrNull()
                     }
                     val items = resultPage?.items ?: emptyList()
                     AutoSearchState.searchedArtists = (AutoSearchState.searchedArtists + items).distinctBy { it.key }
@@ -72,9 +71,9 @@ class SearchBrowseHandler : BrowseHandler {
                 var cont: String? = null
                 do {
                     val resultPage = if (cont == null) {
-                        Innertube.searchPage<Innertube.AlbumItem>(SearchBody(query = parts[1], params = Innertube.SearchFilter.Album.value), { content -> Innertube.AlbumItem.from(content) })?.getOrNull()
+                        Innertube.searchPage<Innertube.AlbumItem>(query = parts[1], params = Innertube.SearchFilter.Album.value, fromMusicShelfRendererContent = { content -> Innertube.AlbumItem.from(content) })?.getOrNull()
                     } else {
-                        Innertube.searchPage<Innertube.AlbumItem>(ContinuationBody(continuation = cont), { content -> Innertube.AlbumItem.from(content) })?.getOrNull()
+                        Innertube.searchPageContinuation<Innertube.AlbumItem>(continuation = cont, fromMusicShelfRendererContent = { content -> Innertube.AlbumItem.from(content) })?.getOrNull()
                     }
                     val items = resultPage?.items ?: emptyList()
                     AutoSearchState.searchedAlbums = (AutoSearchState.searchedAlbums + items).distinctBy { it.key }
@@ -88,9 +87,9 @@ class SearchBrowseHandler : BrowseHandler {
                 var cont: String? = null
                 do {
                     val resultPage = if (cont == null) {
-                        Innertube.searchPage<Innertube.VideoItem>(SearchBody(query = parts[1], params = Innertube.SearchFilter.Video.value), { content -> Innertube.VideoItem.from(content) })?.getOrNull()
+                        Innertube.searchPage<Innertube.VideoItem>(query = parts[1], params = Innertube.SearchFilter.Video.value, fromMusicShelfRendererContent = { content -> Innertube.VideoItem.from(content) })?.getOrNull()
                     } else {
-                        Innertube.searchPage<Innertube.VideoItem>(ContinuationBody(continuation = cont), { content -> Innertube.VideoItem.from(content) })?.getOrNull()
+                        Innertube.searchPageContinuation<Innertube.VideoItem>(continuation = cont, fromMusicShelfRendererContent = { content -> Innertube.VideoItem.from(content) })?.getOrNull()
                     }
                     val items = resultPage?.items ?: emptyList()
                     val songs = items.map { it.asSong }
@@ -105,9 +104,9 @@ class SearchBrowseHandler : BrowseHandler {
                 var cont: String? = null
                 do {
                     val resultPage = if (cont == null) {
-                        Innertube.searchPage<Innertube.PlaylistItem>(SearchBody(query = parts[1], params = Innertube.SearchFilter.CommunityPlaylist.value), { content -> Innertube.PlaylistItem.from(content) })?.getOrNull()
+                        Innertube.searchPage<Innertube.PlaylistItem>(query = parts[1], params = Innertube.SearchFilter.CommunityPlaylist.value, fromMusicShelfRendererContent = { content -> Innertube.PlaylistItem.from(content) })?.getOrNull()
                     } else {
-                        Innertube.searchPage<Innertube.PlaylistItem>(ContinuationBody(continuation = cont), { content -> Innertube.PlaylistItem.from(content) })?.getOrNull()
+                        Innertube.searchPageContinuation<Innertube.PlaylistItem>(continuation = cont, fromMusicShelfRendererContent = { content -> Innertube.PlaylistItem.from(content) })?.getOrNull()
                     }
                     val items = resultPage?.items ?: emptyList()
                     allMapped.addAll(items.map { pi -> browsableMediaItem("${PlayerServiceModern.PLAYLIST}/${pi.key}", pi.info?.name ?: "", null, pi.thumbnail?.url?.toUri(), MediaMetadata.MEDIA_TYPE_PLAYLIST, actualParentId) })
@@ -120,9 +119,9 @@ class SearchBrowseHandler : BrowseHandler {
                 var cont: String? = null
                 do {
                     val resultPage = if (cont == null) {
-                        Innertube.searchPage<Innertube.PlaylistItem>(SearchBody(query = parts[1], params = Innertube.SearchFilter.FeaturedPlaylist.value), { content -> Innertube.PlaylistItem.from(content) })?.getOrNull()
+                        Innertube.searchPage<Innertube.PlaylistItem>(query = parts[1], params = Innertube.SearchFilter.FeaturedPlaylist.value, fromMusicShelfRendererContent = { content -> Innertube.PlaylistItem.from(content) })?.getOrNull()
                     } else {
-                        Innertube.searchPage<Innertube.PlaylistItem>(ContinuationBody(continuation = cont), { content -> Innertube.PlaylistItem.from(content) })?.getOrNull()
+                        Innertube.searchPageContinuation<Innertube.PlaylistItem>(continuation = cont, fromMusicShelfRendererContent = { content -> Innertube.PlaylistItem.from(content) })?.getOrNull()
                     }
                     val items = resultPage?.items ?: emptyList()
                     allMapped.addAll(items.map { pi -> browsableMediaItem("${PlayerServiceModern.PLAYLIST}/${pi.key}", pi.info?.name ?: "", null, pi.thumbnail?.url?.toUri(), MediaMetadata.MEDIA_TYPE_PLAYLIST, actualParentId) })
@@ -135,9 +134,9 @@ class SearchBrowseHandler : BrowseHandler {
                 var cont: String? = null
                 do {
                     val resultPage = if (cont == null) {
-                        Innertube.searchPage<Innertube.AlbumItem>(SearchBody(query = parts[1], params = Innertube.SearchFilter.Podcast.value), { content -> Innertube.AlbumItem.from(content) })?.getOrNull()
+                        Innertube.searchPage<Innertube.AlbumItem>(query = parts[1], params = Innertube.SearchFilter.Podcast.value, fromMusicShelfRendererContent = { content -> Innertube.AlbumItem.from(content) })?.getOrNull()
                     } else {
-                        Innertube.searchPage<Innertube.AlbumItem>(ContinuationBody(continuation = cont), { content -> Innertube.AlbumItem.from(content) })?.getOrNull()
+                        Innertube.searchPageContinuation<Innertube.AlbumItem>(continuation = cont, fromMusicShelfRendererContent = { content -> Innertube.AlbumItem.from(content) })?.getOrNull()
                     }
                     val items = resultPage?.items ?: emptyList()
                     AutoSearchState.searchedAlbums = (AutoSearchState.searchedAlbums + items).distinctBy { it.key }

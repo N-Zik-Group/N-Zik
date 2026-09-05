@@ -22,13 +22,21 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.models.Playlist
+import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.utils.rememberPreference
+import app.it.fast4x.rimusic.utils.syncPushPlaylistKey
+import app.it.fast4x.rimusic.utils.syncDirectionKey
+import app.it.fast4x.rimusic.utils.getSyncDirection
+import app.it.fast4x.rimusic.utils.isNetworkConnected
+import app.it.fast4x.rimusic.enums.SyncDirection
+import app.n_zik.android.appContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.components.dialog.common.InputDialogConstraints
 import app.n_zik.android.components.dialog.common.TextInputDialog
 import timber.log.Timber
@@ -87,33 +95,49 @@ class NewPlaylistDialog private constructor(
         super.onSet( newValue )
         if( errorMessage.isNotEmpty() ) return
 
-        var playlist: Playlist? = null
-
         if (isYouTubeSyncEnabled()) {
-            coroutineScope.launch(Dispatchers.IO) {
-                YtMusic.createPlaylist(newValue)
-                       .getOrNull()
-                       .also {
-                           playlist = Playlist(
-                               name = newValue,
-                               browseId = it,
-                               isYoutubePlaylist = true,
-                               isEditable = true
-                           )
-                            Timber.tag("NewPlaylistDialog").d("Innertube YtMusic createPlaylist: $it")
-                       }
+            val pushPlaylist = appContext().preferences.getBoolean(syncPushPlaylistKey, false)
+            val syncDirection = getSyncDirection()
+            if (pushPlaylist && syncDirection != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
+                hideDialog()
+                coroutineScope.launch(Dispatchers.IO) {
+                    val playlist = runCatching {
+                        YtMusic.createPlaylist(newValue).getOrNull()?.let { browseId ->
+                            Playlist(
+                                name = newValue,
+                                browseId = browseId,
+                                isYoutubePlaylist = true,
+                                isEditable = true
+                            )
+                        }
+                    }.onFailure { e ->
+                        Timber.tag("NewPlaylistDialog").e(e, "Failed to create playlist on YouTube")
+                        Toaster.e( R.string.error )
+                    }.getOrNull() ?: Playlist(name = newValue)
+
+                    Database.asyncTransaction {
+                        val newId = playlistTable.insert( playlist )
+                        onPlaylistCreated(playlist.copy(id = newId))
+                    }
+                    Toaster.s( R.string.added_to_favorites )
+                    Timber.tag("NewPlaylistDialog").d("Playlist created: ${playlist.name}, browseId=${playlist.browseId}")
+                }
+            } else {
+                hideDialog()
+                createLocalPlaylist(newValue)
             }
         } else {
-            playlist = Playlist(name = newValue)
+            hideDialog()
+            createLocalPlaylist(newValue)
         }
+    }
 
-        playlist?.let {
-            Database.asyncTransaction {
-                val newId = playlistTable.insert( it )
-                onPlaylistCreated(it.copy(id = newId))
-            }
+    private fun createLocalPlaylist(name: String) {
+        val playlist = Playlist(name = name)
+        Database.asyncTransaction {
+            val newId = playlistTable.insert( playlist )
+            onPlaylistCreated(playlist.copy(id = newId))
         }
-
-        hideDialog()
+        Toaster.s( R.string.added_to_favorites )
     }
 }

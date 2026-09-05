@@ -13,6 +13,7 @@ data class Playlist(
     val browseId: String? = null,
     val isEditable: Boolean = true,
     val isYoutubePlaylist: Boolean = false,
+    val isAutoSync: Boolean = false,
     val position: Int = -1
 ) {
     fun cleanName() = cleanPrefix( this.name )

@@ -27,7 +27,7 @@ import android.content.Context
 object HomeSongsToolbarSettingsDialog : Dialog {
 
     val allButtonIds = listOf(
-        "sort", "position_lock", "match", "search", "locator",
+        "sort", "position_lock", "match", "search", "sync_ytm_likes", "locator",
         "download_all", "delete_downloads",
         "shuffle", "smart_shuffle", "item_selector",
         "play_next", "enqueue", "add_to_favorite", "add_to_playlist",
@@ -37,21 +37,23 @@ object HomeSongsToolbarSettingsDialog : Dialog {
     val tabAvailableIds = mapOf(
         BuiltInPlaylist.All to allButtonIds.filter { it != "export_cache" },
         BuiltInPlaylist.Favorites to allButtonIds.filter { it != "export_cache" },
-        BuiltInPlaylist.Offline to allButtonIds.filter { it != "import_menu" },
-        BuiltInPlaylist.Downloaded to allButtonIds.filter { it != "import_menu" },
-        BuiltInPlaylist.Top to allButtonIds.filter { it != "import_menu" && it != "position_lock" && it != "export_cache" },
-        BuiltInPlaylist.OnDevice to allButtonIds.filter { it !in setOf("import_menu", "export_dialog", "export_cache", "smart_trash", "match", "download_all", "delete_downloads") }
+        BuiltInPlaylist.Offline to allButtonIds.filter { it != "import_menu" && it != "sync_ytm_likes" },
+        BuiltInPlaylist.Downloaded to allButtonIds.filter { it != "import_menu" && it != "sync_ytm_likes" },
+        BuiltInPlaylist.Top to allButtonIds.filter { it != "import_menu" && it != "position_lock" && it != "export_cache" && it != "sync_ytm_likes" },
+        BuiltInPlaylist.OnDevice to allButtonIds.filter { it !in setOf("import_menu", "export_dialog", "export_cache", "smart_trash", "match", "download_all", "delete_downloads", "sync_ytm_likes") },
+        BuiltInPlaylist.Disliked to allButtonIds.filter { it != "export_cache" && it != "sync_ytm_likes" && it != "import_menu" }
     )
 
-    private val lockedIds = setOf("sort", "position_lock", "match")
+    private val lockedIds = setOf("sort", "position_lock", "match", "sync_ytm_likes")
 
-    private fun getTabPrefix(tab: BuiltInPlaylist): String = when (tab) {
+    fun getTabPrefix(tab: BuiltInPlaylist): String = when (tab) {
         BuiltInPlaylist.All -> "all"
         BuiltInPlaylist.Favorites -> "favs"
         BuiltInPlaylist.Offline -> "off"
         BuiltInPlaylist.Downloaded -> "dl"
         BuiltInPlaylist.Top -> "top"
         BuiltInPlaylist.OnDevice -> "dev"
+        BuiltInPlaylist.Disliked -> "disliked"
         else -> "x"
     }
 
@@ -84,6 +86,7 @@ object HomeSongsToolbarSettingsDialog : Dialog {
         val tabs = listOf(
             BuiltInPlaylist.All to homeSongsToolbarOrderKey,
             BuiltInPlaylist.Favorites to homeSongsFavoritesToolbarOrderKey,
+            BuiltInPlaylist.Disliked to homeSongsDislikedToolbarOrderKey,
             BuiltInPlaylist.Offline to homeSongsOfflineToolbarOrderKey,
             BuiltInPlaylist.Downloaded to homeSongsDownloadedToolbarOrderKey,
             BuiltInPlaylist.Top to homeSongsTopToolbarOrderKey,
@@ -141,6 +144,7 @@ object HomeSongsToolbarSettingsDialog : Dialog {
         val exportCacheLabel = stringResource(R.string.export_cached)
         val smartTrashLabel = stringResource(R.string.smart_trash)
         val matchLabel = stringResource(R.string.match_album_audio_version)
+        val syncLabel = stringResource(R.string.autosync_likes)
 
         val currentLockedIds = lockedIds.map { "${tabPrefix}_$it" }.toSet()
 
@@ -179,6 +183,7 @@ object HomeSongsToolbarSettingsDialog : Dialog {
                 "export_dialog" -> ToggleItem(uid, R.drawable.export_outline, exportDialogLabel, pk, true)
                 "export_cache" -> ToggleItem(uid, R.drawable.export_outline, exportCacheLabel, pk, true)
                 "smart_trash" -> ToggleItem(uid, R.drawable.trash, smartTrashLabel, pk, true)
+                "sync_ytm_likes" -> ToggleItem(uid, R.drawable.sync, syncLabel, pk, true)
                 else -> null
             }
         }.filterNotNull()
@@ -228,10 +233,8 @@ object HomeSongsToolbarSettingsDialog : Dialog {
                             edit.putBoolean("${tp}_ts_$id", isChecked)
                         }
                         
-                        val finalOrder = order.filter { id ->
-                            toggles[id] == true || id in lockedIds
-                        }
-                        edit.putString(key, serializeOrder(finalOrder))
+                        // Always save the full order to preserve user ordering
+                        edit.putString(key, serializeOrder(order))
                     }
                     edit.apply()
                     Toaster.s(R.string.toast_preference_saved); hideDialog()
@@ -246,6 +249,7 @@ object HomeSongsToolbarSettingsDialog : Dialog {
         val tabs = listOf(
             BuiltInPlaylist.All to homeSongsToolbarOrderKey,
             BuiltInPlaylist.Favorites to homeSongsFavoritesToolbarOrderKey,
+            BuiltInPlaylist.Disliked to homeSongsDislikedToolbarOrderKey,
             BuiltInPlaylist.Offline to homeSongsOfflineToolbarOrderKey,
             BuiltInPlaylist.Downloaded to homeSongsDownloadedToolbarOrderKey,
             BuiltInPlaylist.Top to homeSongsTopToolbarOrderKey,

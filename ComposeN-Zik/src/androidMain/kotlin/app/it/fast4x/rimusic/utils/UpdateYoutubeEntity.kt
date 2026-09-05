@@ -12,7 +12,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.media3.common.util.UnstableApi
 import app.it.fast4x.compose.persist.persist
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.BrowseBody
 import it.fast4x.innertube.requests.albumPage
 import it.fast4x.innertube.requests.artistPage
 import app.n_zik.android.core.database.Database
@@ -46,7 +45,7 @@ fun UpdateYoutubeArtist(browseId: String) {
 
                     if (artistPage == null && (currentArtist?.timestamp == null || mustFetch)) {
                         withContext(Dispatchers.IO) {
-                            Innertube.artistPage(BrowseBody(browseId = browseId.removePrefix(MODIFIED_PREFIX)))
+                            Innertube.artistPage(browseId = browseId.removePrefix(MODIFIED_PREFIX))
                                 ?.onSuccess { currentArtistPage ->
                                     artistPage = currentArtistPage
 
@@ -85,7 +84,7 @@ fun UpdateYoutubeAlbum (browseId: String) {
 
                     if (albumPage == null && (currentAlbum?.timestamp == null || tabIndex == 1)) {
                         withContext(Dispatchers.IO) {
-                            Innertube.albumPage(BrowseBody(browseId = browseId.removePrefix(MODIFIED_PREFIX)))
+                            Innertube.albumPage(browseId = browseId.removePrefix(MODIFIED_PREFIX))
                                 ?.onSuccess { currentAlbumPage ->
                                     albumPage = currentAlbumPage
 

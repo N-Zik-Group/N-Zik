@@ -222,6 +222,7 @@ class OnlineArtistItemMenu private constructor(
                             coroutineScope.launch(Dispatchers.IO) {
                                 Database.artistTable.toggleFollow(artist.key)
                             }
+                            Toaster.s( if (isFollowing) R.string.removed_from_favorites else R.string.added_to_favorites )
                         },
                         modifier = Modifier
                             .padding(all = 4.dp)

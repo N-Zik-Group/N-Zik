@@ -78,7 +78,6 @@ import app.n_zik.android.core.coil.resize
 import app.n_zik.android.colorPalette
 import it.fast4x.innertube.Innertube
 import app.it.fast4x.compose.persist.persist
-import it.fast4x.innertube.models.bodies.BrowseBody
 import it.fast4x.innertube.requests.podcastPage
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
@@ -163,7 +162,7 @@ fun Podcast(
     LaunchedEffect(Unit) {
         if (podcastPage == null) {
             podcastPage = withContext(Dispatchers.IO) {
-                Innertube.podcastPage(BrowseBody(browseId = browseId.removePrefix(MODIFIED_PREFIX))).getOrNull()
+                Innertube.podcastPage(browseId = browseId.removePrefix(MODIFIED_PREFIX)).getOrNull()
             }
         }
     }

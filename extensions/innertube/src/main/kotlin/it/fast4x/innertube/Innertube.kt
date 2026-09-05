@@ -1,5 +1,4 @@
 package it.fast4x.innertube
-import it.fast4x.innertube.models.bodies.PlayerBody
 
 import com.zionhuang.innertube.pages.LibraryContinuationPage
 import com.zionhuang.innertube.pages.LibraryPage
@@ -10,18 +9,15 @@ import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.compression.brotli
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.header
 import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
-import io.ktor.client.request.get
-import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import io.ktor.http.userAgent
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.serialization.kotlinx.protobuf.protobuf
@@ -31,7 +27,6 @@ import it.fast4x.innertube.models.AccountInfo
 import it.fast4x.innertube.models.AccountMenuResponse
 import it.fast4x.innertube.models.BrowseResponse
 import it.fast4x.innertube.models.Context
-import it.fast4x.innertube.models.Context.Client
 import it.fast4x.innertube.models.Context.Companion.DefaultWeb
 import it.fast4x.innertube.models.GridRenderer
 import it.fast4x.innertube.models.MusicNavigationButtonRenderer
@@ -40,26 +35,13 @@ import it.fast4x.innertube.models.NavigationEndpoint
 import it.fast4x.innertube.models.PlaylistPanelVideoRenderer
 import it.fast4x.innertube.models.Runs
 import it.fast4x.innertube.models.Thumbnail
-import it.fast4x.innertube.models.bodies.AccountMenuBody
-import it.fast4x.innertube.models.bodies.Action
-import it.fast4x.innertube.models.bodies.BrowseBody
-import it.fast4x.innertube.models.bodies.CreatePlaylistBody
-import it.fast4x.innertube.models.bodies.EditPlaylistBody
-import it.fast4x.innertube.models.bodies.LikeBody
-import it.fast4x.innertube.models.bodies.PlaylistDeleteBody
-import it.fast4x.innertube.models.bodies.SubscribeBody
 import it.fast4x.innertube.utils.ProxyPreferences
 import it.fast4x.innertube.utils.YoutubePreferences
 import it.fast4x.innertube.utils.getProxy
 import it.fast4x.innertube.utils.parseCookieString
-import it.fast4x.innertube.utils.sha1
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonPrimitive
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.serialization.XML
 import java.net.Proxy
@@ -107,20 +89,42 @@ object Innertube {
         }
 
         val p = proxy ?: ProxyPreferences.preference?.let { getProxy(it) }
-        if (p != null) {
-            engine {
+        engine {
+            // Prioritize IPv4 to fix home Wi-Fi IPv6 routing blackholes
+            config {
+                dns(object : okhttp3.Dns {
+                    override fun lookup(hostname: String): List<java.net.InetAddress> {
+                        val addresses = okhttp3.Dns.SYSTEM.lookup(hostname)
+                        val ipv4 = addresses.filterIsInstance<java.net.Inet4Address>()
+                        val ipv6 = addresses.filterIsInstance<java.net.Inet6Address>()
+                        return ipv4 + ipv6
+                    }
+                })
+            }
+            if (p != null) {
                 proxy = p
                 // Add proxy authentication if credentials are provided
                 proxyAuth?.let { auth ->
                     if (auth.isNotBlank()) {
                         config {
                             proxyAuthenticator(okhttp3.Authenticator { _, response ->
+                                // Track failed attempts to prevent infinite retries
+                                val request = response.request
+                                val retryCount = request.header("X-Proxy-Retry-Count")?.toIntOrNull() ?: 0
+
+                                if (retryCount >= 3) {
+                                    println("Innertube: Proxy auth failed after $retryCount attempts, clearing credentials")
+                                    proxyAuth = null
+                                    return@Authenticator null
+                                }
+
                                 val credential = okhttp3.Credentials.basic(
                                     auth.substringBefore(":"),
                                     auth.substringAfter(":")
                                 )
-                                response.request.newBuilder()
+                                request.newBuilder()
                                     .header("Proxy-Authorization", credential)
+                                    .header("X-Proxy-Retry-Count", (retryCount + 1).toString())
                                     .build()
                             })
                         }
@@ -132,6 +136,9 @@ object Innertube {
         defaultRequest {
             url( "https", YOUTUBE_MUSIC_HOST ) {
                 headers.append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                headers.append("sec-ch-ua", "\"Chromium\";v=\"137\", \"Not/A)Brand\";v=\"24\"")
+                headers.append("sec-ch-ua-mobile", "?0")
+                headers.append("sec-ch-ua-platform", "\"Windows\"")
                 parameters.append("prettyPrint", "false")
             }
         }
@@ -173,7 +180,7 @@ object Innertube {
             if (regionOverrideActive) applyLocale()
         }
 
-    var useLoginForBrowse: Boolean = false
+    var useLoginForBrowse: Boolean = true
         set(value) {
             if (field == value) return
             field = value
@@ -259,7 +266,7 @@ object Innertube {
                 visitorData = visitorDataValue,
                 dataSyncId = dataSyncIdValue,
                 authUser = "",
-                useLoginForBrowse = false,
+                useLoginForBrowse = true,
             )
         }
         innerTubeX.locale = YouTubeLocale(
@@ -280,49 +287,10 @@ object Innertube {
         )
     }
 
-    private var poTokenChallengeRequestKey = "O43z0dpjhgX20SCx4KAo"
-
-    internal const val browse = "/youtubei/v1/browse"
-    internal const val next = "/youtubei/v1/next"
-    internal const val player = "/youtubei/v1/player"
-    internal const val queue = "/youtubei/v1/music/get_queue"
-    internal const val search = "/youtubei/v1/search"
-    internal const val searchSuggestions = "/youtubei/v1/music/get_search_suggestions"
-    internal const val accountMenu = "/youtubei/v1/account/account_menu"
-    internal const val playlistCreate = "/youtubei/v1/playlist/create"
-    internal const val playlistDelete = "/youtubei/v1/playlist/delete"
-    internal const val playlistEdit = "/youtubei/v1/browse/edit_playlist"
-    internal const val subscribe = "/youtubei/v1/subscription/subscribe"
-    internal const val unsubscribe = "/youtubei/v1/subscription/unsubscribe"
-    internal const val like = "/youtubei/v1/like/like"
-    internal const val removelike = "/youtubei/v1/like/removelike"
-
-    internal const val musicResponsiveListItemRendererMask = "musicResponsiveListItemRenderer(flexColumns,fixedColumns,thumbnail,navigationEndpoint,badges)"
-    internal const val musicTwoRowItemRendererMask = "musicTwoRowItemRenderer(thumbnailRenderer,title,subtitle,navigationEndpoint)"
-    const val playlistPanelVideoRendererMask = "playlistPanelVideoRenderer(title,navigationEndpoint,longBylineText,shortBylineText,thumbnail,lengthText,badges)"
-
-    internal fun HttpRequestBuilder.mask(value: String = "*") =
-        header("X-Goog-FieldMask", value)
-
     suspend fun ensureVisitorData() {
         if (visitorData.isNullOrBlank() || visitorData == DEFAULT_VISITOR_DATA) {
             runCatching {
-                val disposableClient = io.ktor.client.HttpClient(io.ktor.client.engine.okhttp.OkHttp)
-                try {
-                    val response = disposableClient.get("https://music.youtube.com/sw.js_data")
-                    val content = response.bodyAsText().substring(5)
-                    val json = Json.parseToJsonElement(content)
-                    val newVisitorData = json.jsonArray[0].jsonArray[2].jsonArray.first {
-                        (it as? JsonPrimitive)?.contentOrNull?.let { candidate ->
-                            candidate.startsWith("Cg")
-                        } ?: false
-                    }.jsonPrimitive.content
-                    visitorData = newVisitorData
-                } finally {
-                    disposableClient.close()
-                }
-            }.onFailure {
-                println("Innertube: ensureVisitorData error: ${it.stackTraceToString()}")
+                visitorData = innerTubeX.fetchFreshVisitorData()
             }
         }
     }
@@ -660,66 +628,58 @@ object Innertube {
     }
 
     suspend fun accountMenu(): HttpResponse {
-        return client.post(accountMenu) {
-            setLogin(setLogin = true)
-            setBody(AccountMenuBody())
-        }
+        return innerTubeX.accountMenu(com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX).requireSuccess("accountMenu")
     }
 
-    fun HttpRequestBuilder.setLogin(clientType: Client = DefaultWeb.client, setLogin: Boolean = false, targetHost: String = YOUTUBE_MUSIC_HOST) {
-        contentType(ContentType.Application.Json)
-        var isLoggedIn = false
-        var validCookie = ""
-        if (setLogin && clientType.loginSupported) {
-            cookie?.let { cookieStr ->
-                if (cookieStr.isNotBlank()) {
-                    val cookieMap = parseCookieString(cookieStr)
-                    if ("SAPISID" in cookieMap || "__Secure-3PAPISID" in cookieMap) {
-                        isLoggedIn = true
-                        validCookie = cookieStr
-                    }
-                }
-            }
+    suspend fun next(
+        videoId: String?,
+        playlistId: String? = null,
+        playlistSetVideoId: String? = null,
+        index: Int? = null,
+        params: String? = null,
+        continuation: String? = null,
+    ) = innerTubeX.next(
+        client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+        videoId = videoId,
+        playlistId = playlistId,
+        playlistSetVideoId = playlistSetVideoId,
+        index = index,
+        params = params,
+        continuation = continuation,
+    )
+
+    suspend fun search(
+        query: String? = null,
+        params: String? = null,
+        continuation: String? = null,
+    ) = innerTubeX.search(
+        client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+        query = query,
+        params = params,
+        continuation = continuation,
+    )
+
+    suspend fun getQueue(
+        videoIds: List<String>? = null,
+        playlistId: String? = null,
+    ) = innerTubeX.getQueue(
+        client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+        videoIds = videoIds,
+        playlistId = playlistId,
+    )
+
+    suspend fun getSearchSuggestions(
+        input: String,
+    ) = innerTubeX.getSearchSuggestions(
+        client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+        input = input,
+    )
+
+    private suspend fun HttpResponse.requireSuccess(operation: String): HttpResponse {
+        if (!status.isSuccess()) {
+            throw IllegalStateException("$operation failed with status ${status.value}")
         }
-
-        if (clientType.loginSupported || isLoggedIn) {
-            headers {
-                append("X-Goog-Api-Format-Version", "1")
-                append("X-YouTube-Client-Name", "${clientType.xClientName ?: 1}")
-                append("X-YouTube-Client-Version", clientType.clientVersion)
-                append("X-Origin", "https://$targetHost")
-                if (clientType.referer != null) {
-                    append("Referer", clientType.referer)
-                }
-
-                if (isLoggedIn) {
-                    val cookieMap = parseCookieString(validCookie)
-                    val currentTime = System.currentTimeMillis() / 1000
-                    val sapisidCookie = cookieMap["SAPISID"] ?: cookieMap["__Secure-3PAPISID"]
-                    val sapisidHash = sha1("$currentTime $sapisidCookie https://$targetHost")
-                    append("Authorization", "SAPISIDHASH ${currentTime}_$sapisidHash")
-                    append("Cookie", validCookie)
-                    append("X-Goog-Authuser", "0")
-                    append("X-Youtube-Bootstrap-Logged-In", "true")
-                }
-
-                val currentVisitorData = visitorData
-                if (!currentVisitorData.isNullOrBlank()) {
-                    append("X-Goog-Visitor-Id", currentVisitorData)
-                }
-
-                clientType.api_key?.let {
-                    append("X-Goog-Api-Key", it)
-                }
-            }
-        }
-
-        clientType.api_key?.let {
-            parameter("key", it)
-        }
-
-        clientType.userAgent?.let { userAgent(it) }
-        parameter("prettyPrint", false)
+        return this
     }
 
     /*******************************************
@@ -727,192 +687,84 @@ object Innertube {
      */
 
     suspend fun createPlaylist(
-        ytClient: Client,
+        client: com.metrolist.innertubex.models.YouTubeClient = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
         title: String,
-    ) = client.post(playlistCreate) {
-        setLogin(ytClient, true)
-        setBody(
-            CreatePlaylistBody(
-                context = Context.DefaultWebWithLocale,
-                title = title
-            )
-        )
-    }
+    ) = innerTubeX.createPlaylist(client, title).requireSuccess("createPlaylist")
 
     suspend fun deletePlaylist(
-        ytClient: Client,
+        client: com.metrolist.innertubex.models.YouTubeClient = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
         playlistId: String,
-    ) = client.post(playlistDelete) {
-        println("deleting $playlistId")
-        setLogin(ytClient, setLogin = true)
-        setBody(
-            PlaylistDeleteBody(
-                context = Context.DefaultWebWithLocale,
-                playlistId = playlistId
-            )
-        )
-    }
+    ) = innerTubeX.deletePlaylist(client, playlistId).requireSuccess("deletePlaylist")
 
     suspend fun renamePlaylist(
-        ytClient: Client,
+        client: com.metrolist.innertubex.models.YouTubeClient = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
         playlistId: String,
         name: String,
-    ) = client.post(playlistEdit) {
-        setLogin(ytClient, setLogin = true)
-        setBody(
-            EditPlaylistBody(
-                context = Context.DefaultWebWithLocale,
-                playlistId = playlistId,
-                actions = listOf(
-                    Action.RenamePlaylistAction(
-                        playlistName = name
-                    )
-                )
-            )
-        )
-    }
+    ) = innerTubeX.renamePlaylist(client, playlistId, name).requireSuccess("renamePlaylist")
 
     suspend fun addToPlaylist(
-        ytClient: Client,
+        client: com.metrolist.innertubex.models.YouTubeClient = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
         playlistId: String,
         videoId: String,
-    ) = addToPlaylist(ytClient, playlistId, listOf(videoId))
+    ) = addToPlaylist(client, playlistId, listOf(videoId))
 
     suspend fun addToPlaylist(
-        ytClient: Client,
+        client: com.metrolist.innertubex.models.YouTubeClient = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
         playlistId: String,
         videoIds: List<String>,
-    ) = client.post(playlistEdit) {
-        setLogin(ytClient, setLogin = true)
-        setBody(
-            EditPlaylistBody(
-                context = Context.DefaultWebWithLocale,
-                playlistId = playlistId.removePrefix("VL"),
-                actions = videoIds.map{ Action.AddVideoAction(addedVideoId = it)}
-            )
-        )
-    }
+    ) = videoIds.map { videoId ->
+        innerTubeX.addToPlaylist(client, playlistId, videoId).requireSuccess("addToPlaylist")
+    }.last()
 
     suspend fun removeFromPlaylist(
-        ytClient: Client,
+        client: com.metrolist.innertubex.models.YouTubeClient = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
         playlistId: String,
         videoId: String,
         setVideoId: String? = null,
-    ) = removeFromPlaylist(ytClient, playlistId, videoId, listOf(setVideoId))
+    ) = removeFromPlaylist(client, playlistId, videoId, listOf(setVideoId))
 
     suspend fun removeFromPlaylist(
-        ytClient: Client,
+        client: com.metrolist.innertubex.models.YouTubeClient = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
         playlistId: String,
         videoId: String,
         setVideoIds: List<String?>,
-    ) = client.post(playlistEdit) {
-        setLogin(ytClient, setLogin = true)
-        setBody(
-            EditPlaylistBody(
-                context = Context.DefaultWebWithLocale,
-                playlistId = playlistId.removePrefix("VL"),
-                actions = setVideoIds.map {
-                    Action.RemoveVideoAction(
-                        removedVideoId = videoId,
-                        setVideoId = it,
-                    )
-                }
-            )
-        )
-    }
+    ) = setVideoIds.filterNotNull().map { setVideoId ->
+        innerTubeX.removePlaylistSong(client, playlistId, setVideoId, videoId).requireSuccess("removeFromPlaylist")
+    }.last()
 
     suspend fun addPlaylistToPlaylist(
-        ytClient: Client,
+        client: com.metrolist.innertubex.models.YouTubeClient = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
         playlistId: String,
         addPlaylistId: String,
-    ) = client.post(playlistEdit) {
-        setLogin(ytClient, setLogin = true)
-        setBody(
-            EditPlaylistBody(
-                context = Context.DefaultWebWithLocale,
-                playlistId = playlistId.removePrefix("VL"),
-                actions = listOf(
-                    Action.AddPlaylistAction(addedFullListId = addPlaylistId)
-                )
-            )
-        )
-    }
+    ) = innerTubeX.addPlaylistToPlaylist(client, playlistId, addPlaylistId).requireSuccess("addPlaylistToPlaylist")
 
     suspend fun subscribeChannel(
         channelId: String,
-    ) = client.post(subscribe) {
-        setLogin(setLogin = true)
-        setBody(
-            SubscribeBody(
-                context = DefaultWeb,
-                channelIds = listOf(channelId)
-            )
-        )
-    }
+    ) = innerTubeX.subscribeChannel(com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX, channelId).requireSuccess("subscribeChannel")
 
     suspend fun unsubscribeChannel(
         channelId: String,
-    ) = client.post(unsubscribe) {
-        setLogin(setLogin = true)
-        setBody(
-            SubscribeBody(
-                context = DefaultWeb,
-                channelIds = listOf(channelId)
-            )
-        )
-    }
+    ) = innerTubeX.unsubscribeChannel(com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX, channelId).requireSuccess("unsubscribeChannel")
 
 
     suspend fun likePlaylistOrAlbum(
         playlistId: String,
-    ) = client.post(like) {
-        setLogin(setLogin = true)
-        setBody(
-            LikeBody(
-                context = DefaultWeb,
-                target = LikeBody.Target.PlaylistTarget(playlistId = playlistId)
-            )
-        )
-    }
+    ) = innerTubeX.likePlaylist(com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX, playlistId).requireSuccess("likePlaylist")
 
     suspend fun removelikePlaylistOrAlbum(
         playlistId: String,
-    ) = client.post(removelike) {
-        setLogin(setLogin = true)
-        setBody(
-            LikeBody(
-                context = DefaultWeb,
-                target = LikeBody.Target.PlaylistTarget(playlistId = playlistId)
-            )
-        )
-    }
+    ) = innerTubeX.unlikePlaylist(com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX, playlistId).requireSuccess("unlikePlaylist")
 
     suspend fun likeVideoOrSong(
         videoId: String,
-    ) = client.post(like) {
-        setLogin(setLogin = true)
-        setBody(
-            LikeBody(
-                context = DefaultWeb,
-                target = LikeBody.Target.VideoTarget(videoId = videoId)
-            )
-        )
-    }
+    ) = innerTubeX.likeVideo(com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX, videoId).requireSuccess("likeVideo")
 
     suspend fun removelikeVideoOrSong(
         videoId: String,
-    ) = client.post(removelike) {
-        setLogin(setLogin = true)
-        setBody(
-            LikeBody(
-                context = DefaultWeb,
-                target = LikeBody.Target.VideoTarget(videoId = videoId)
-            )
-        )
-    }
+    ) = innerTubeX.unlikeVideo(com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX, videoId).requireSuccess("unlikeVideo")
 
     suspend fun browse(
-        ytClient: Client = DefaultWeb.client,
+        client: com.metrolist.innertubex.models.YouTubeClient = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
         browseId: String? = null,
         params: String? = null,
         continuation: String? = null,
@@ -920,60 +772,21 @@ object Innertube {
         hl: String? = null,
     ): HttpResponse {
         ensureVisitorData()
-        return client.post(browse) {
-            setLogin(ytClient, setLogin)
-            setBody(
-                BrowseBody(
-                    context = if (hl != null) Context.DefaultWeb.copy(client = Context.DefaultWeb.client.copy(hl = hl)) else Context.DefaultWebWithLocale,
-                    browseId = browseId,
-                    params = params,
-                )
+        if (hl != null) {
+            // Use isolated session to avoid changing the shared session locale,
+            // which would cancel all in-flight requests via publishSession()
+            val isolated = innerTubeX.createIsolatedSession(includeAccount = setLogin)
+            isolated.locale = com.metrolist.innertubex.models.YouTubeLocale(
+                gl = innerTubeX.locale.gl, hl = hl
             )
-            parameter("continuation", continuation)
-            parameter("ctoken", continuation)
-            if (continuation != null) {
-                parameter("type", "next")
+            return try {
+                isolated.browse(client, browseId, params, continuation, setLogin)
+            } finally {
+                isolated.close()
             }
         }
+        return innerTubeX.browse(client, browseId, params, continuation, setLogin)
     }
-
-    private fun HttpRequestBuilder.poHeader() {
-        headers {
-            header("accept", "*/*")
-            header("origin", "https://www.youtube.com")
-            header("content-type", "application/json+protobuf")
-            header("priority", "u=1, i")
-            header("referer", "https://www.youtube.com/")
-            header("sec-ch-ua", "\"Microsoft Edge\";v=\"131\", \"Chromium\";v=\"131\", \"Not_A Brand\";v=\"24\"")
-            header("sec-ch-ua-mobile", "?0")
-            header("sec-ch-ua-platform", "\"macOS\"")
-            header("sec-fetch-dest", "empty")
-            header("sec-fetch-mode", "cors")
-            header("sec-fetch-site", "cross-site")
-            header(
-                "user-agent",
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
-            )
-            header("x-goog-api-key", "AIzaSyDyT5W0Jh49F30Pqqtyfdf7pDLFKLJoAnw")
-            header("x-user-agent", "grpc-web-javascript/0.1")
-        }
-    }
-
-    suspend fun createPoTokenChallenge() =
-        client.post(
-            "https://jnn-pa.googleapis.com/\$rpc/google.internal.waa.v1.Waa/Create",
-        ) {
-            poHeader()
-            setBody("[\"$poTokenChallengeRequestKey\"]")
-        }
-
-    suspend fun generatePoToken(challenge: String) =
-        client.post(
-            "https://jnn-pa.googleapis.com/\$rpc/google.internal.waa.v1.Waa/GenerateIT",
-        ) {
-            poHeader()
-            setBody("[\"$poTokenChallengeRequestKey\", \"$challenge\"]")
-        }
 
     suspend fun library(browseId: String, tabIndex: Int = 0) = runCatching {
         val response = browse(
@@ -1003,11 +816,13 @@ object Innertube {
             }
 
             else -> {
+                val shelfItems = contents?.musicShelfRenderer?.contents
+                    ?.mapNotNull (MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
+                    ?.mapNotNull { LibraryPage.fromMusicResponsiveListItemRenderer(it) }
+                    ?: emptyList()
                 LibraryPage(
-                    items = contents?.musicShelfRenderer?.contents!!
-                        .mapNotNull (MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
-                        .mapNotNull { LibraryPage.fromMusicResponsiveListItemRenderer(it) },
-                    continuation = contents.musicShelfRenderer.continuations?.firstOrNull()?.
+                    items = shelfItems,
+                    continuation = contents?.musicShelfRenderer?.continuations?.firstOrNull()?.
                     nextContinuationData?.continuation
                 )
             }
@@ -1047,43 +862,82 @@ object Innertube {
     }
 
 
-    suspend fun playerRequest(
+    suspend fun registerPlayback(
+        url: String,
+        cpn: String,
+        playlistId: String? = null,
+        clientName: String = "WEB_REMIX",
+    ): io.ktor.client.statement.HttpResponse {
+        val freshCpn = (1..16).map {
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_".random()
+        }.joinToString("")
+        
+        return innerTubeX.registerPlayback(
+            client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+            url = url,
+            cpn = freshCpn,
+            playlistId = playlistId,
+        )
+    }
+
+    suspend fun feedback(
+        tokens: List<String>,
+    ) = innerTubeX.feedback(
+        client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+        tokens = tokens,
+    )
+
+    suspend fun getTranscript(
+        videoId: String,
+    ) = innerTubeX.getTranscript(
+        client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+        videoId = videoId,
+    )
+
+    suspend fun accountsList() = innerTubeX.accountsList(
+        client = com.metrolist.innertubex.models.YouTubeClient.WEB,
+    )
+
+    suspend fun moveSongPlaylist(
+        playlistId: String,
+        setVideoId: String,
+        successorSetVideoId: String,
+    ) = innerTubeX.movePlaylistSong(
+        client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+        playlistId = playlistId,
+        setVideoId = setVideoId,
+        successorSetVideoId = successorSetVideoId,
+    )
+
+    suspend fun setPlaylistThumbnail(
+        playlistId: String,
+        image: ByteArray,
+    ) = innerTubeX.setPlaylistThumbnail(
+        client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+        playlistId = playlistId,
+        image = image,
+    )
+
+    suspend fun removePlaylistThumbnail(
+        playlistId: String,
+    ) = innerTubeX.removePlaylistThumbnail(
+        client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+        playlistId = playlistId,
+    )
+
+    suspend fun deletePrivatelyOwnedEntity(
+        entityId: String,
+    ) = innerTubeX.deletePrivatelyOwnedEntity(
+        client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+        entityId = entityId,
+    )
+
+    suspend fun player(
+        client: com.metrolist.innertubex.models.YouTubeClient = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
         videoId: String,
         playlistId: String? = null,
         signatureTimestamp: Int? = null,
         poToken: String? = null,
-        context: Context = Context.DefaultWebWithLocale,
-    ): HttpResponse {
-        return client.post(player) {
-            // Always use music.youtube.com like Metrolist-sc does
-            val targetHost = YOUTUBE_MUSIC_HOST
-
-            setLogin(clientType = context.client, setLogin = true, targetHost = targetHost)
-                
-            val playerContext = if (context.client.isEmbedded) {
-                context.copy(thirdParty = Context.ThirdParty(embedUrl = "https://www.youtube.com/watch?v=$videoId"))
-            } else {
-                context
-            }
-
-            val bodyObj = PlayerBody(
-                context = playerContext,
-                videoId = videoId,
-                playlistId = playlistId,
-                playbackContext = if (context.client.useSignatureTimestamp && signatureTimestamp != null) {
-                    PlayerBody.PlaybackContext(
-                        PlayerBody.PlaybackContext.ContentPlaybackContext(
-                            signatureTimestamp = signatureTimestamp
-                        )
-                    )
-                } else null,
-                serviceIntegrityDimensions = if (context.client.useWebPoTokens && poToken != null) {
-                    PlayerBody.ServiceIntegrityDimensions(poToken)
-                } else null,
-            )
-
-            setBody(bodyObj)
-        }
-    }
+    ) = innerTubeX.player(client, videoId, playlistId, signatureTimestamp, poToken)
 }
 

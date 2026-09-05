@@ -281,7 +281,7 @@ fun PlaylistSongList(
 
     val localPlaylist by remember( saveCheck ) {
         Database.playlistTable
-                .findByBrowseId( browseId.substringAfter("VL") )
+                .findByBrowseId( browseId )
     }.collectAsState( null, Dispatchers.IO )
 
     var filterCharSequence: CharSequence
@@ -757,56 +757,45 @@ fun PlaylistSongList(
                                             Toaster.i( R.string.add_to_favorites )
                                         }
                             )
-                            if (isYouTubeSyncEnabled()) {
-                                HeaderIconButton(
-                                    icon = if (localPlaylist?.isYoutubePlaylist == true) R.drawable.bookmark else R.drawable.bookmark_outline,
-                                    color = colorPalette().text,
-                                    modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                            onClick = {
-                                                if (isNetworkConnected(context)) {
-                                                    if (localPlaylist?.isYoutubePlaylist == true) {
-                                                        CoroutineScope(Dispatchers.IO).launch {
-                                                            YtMusic.removelikePlaylistOrAlbum(
-                                                                browseId.substringAfter("VL")
-                                                            )
-
-                                                            Database.playlistTable
-                                                                    .findByBrowseId( browseId.substringAfter("VL") )
-                                                                    .first()
-                                                                    ?.let( Database.playlistTable::delete )
-                                                        }
-                                                    } else {
-                                                        CoroutineScope(Dispatchers.IO).launch {
-                                                            YtMusic.likePlaylistOrAlbum(
-                                                                browseId.substringAfter(
-                                                                    "VL"
-                                                                )
-                                                            )
-                                                        }
-
-                                                        Database.asyncTransaction {
-                                                            val playlist = Playlist(
-                                                                name = (playlistPage?.playlist?.title ?: ""),
-                                                                browseId = browseId.substringAfter("VL"),
-                                                                isYoutubePlaylist = true,
-                                                                isEditable = false
-                                                            )
-
-                                                            playlistPage?.songs
-                                                                        ?.map( Innertube.SongItem::asMediaItem )
-                                                                        ?.let { mapIgnore( playlist, *it.toTypedArray() ) }
-                                                        }
-                                                    }
-                                                    Toaster.done()
-                                                    saveCheck = !saveCheck
-                                                } else
-                                                    Toaster.noInternet()
-                                            },
-                                            onLongClick = {
-                                                Toaster.i( R.string.save_youtube_library )
+                            HeaderIconButton(
+                                icon = if (localPlaylist?.isYoutubePlaylist == true) R.drawable.bookmark else R.drawable.bookmark_outline,
+                                color = colorPalette().text,
+                                modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
+                                onClick = {
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        if (localPlaylist?.isYoutubePlaylist == true) {
+                                            if (isYouTubeSyncEnabled() && isNetworkConnected(context)) {
+                                                YtMusic.removelikePlaylistOrAlbum(browseId.substringAfter("VL"))
                                             }
-                                )
-                            }
+                                            Database.playlistTable
+                                                .findByBrowseId(browseId)
+                                                .first()
+                                                ?.let( Database.playlistTable::delete )
+                                        } else {
+                                            if (isYouTubeSyncEnabled() && isNetworkConnected(context)) {
+                                                YtMusic.likePlaylistOrAlbum(browseId.substringAfter("VL"))
+                                            }
+                                            Database.asyncTransaction {
+                                                val normalizedBrowseId = if (browseId.startsWith("VL")) browseId else "VL$browseId"
+                                                val playlist = Playlist(
+                                                    name = (playlistPage?.playlist?.title ?: ""),
+                                                    browseId = normalizedBrowseId,
+                                                    isYoutubePlaylist = true,
+                                                    isEditable = false
+                                                )
+                                                playlistPage?.songs
+                                                    ?.map( Innertube.SongItem::asMediaItem )
+                                                    ?.let { mapIgnore( playlist, *it.toTypedArray() ) }
+                                            }
+                                        }
+                                        Toaster.done()
+                                        saveCheck = !saveCheck
+                                    }
+                                },
+                                onLongClick = {
+                                    Toaster.i( R.string.save_youtube_library )
+                                }
+                            )
 
 
 

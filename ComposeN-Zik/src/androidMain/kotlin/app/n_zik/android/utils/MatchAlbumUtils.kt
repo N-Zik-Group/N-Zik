@@ -15,7 +15,6 @@ import app.it.fast4x.rimusic.utils.durationTextToMillis
 import app.n_zik.android.core.database.Database
 import app.kreate.android.me.knighthat.utils.PropUtils
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.bodies.SearchBody
 import it.fast4x.innertube.requests.searchPage
 import it.fast4x.innertube.utils.from
 import kotlinx.coroutines.delay
@@ -54,10 +53,8 @@ suspend fun getAlbumVersionFromVideoGlobal(song: Song, mergedCounter: AtomicInte
 
     val searchQuery = runCatching {
         Innertube.searchPage<Innertube.SongItem>(
-            body = SearchBody(
-                query = filteredText("${song.cleanTitle()} ${song.artistsText}"),
-                params = Innertube.SearchFilter.Song.value
-            ),
+            query = filteredText("${song.cleanTitle()} ${song.artistsText}"),
+            params = Innertube.SearchFilter.Song.value,
             fromMusicShelfRendererContent = { content -> Innertube.SongItem.from(content) }
         )
     }.onFailure { Timber.tag("MatchAlbumUtils").e(it, "MatchGlobal: search failed") }.getOrNull()
@@ -71,10 +68,8 @@ suspend fun getAlbumVersionFromVideoGlobal(song: Song, mergedCounter: AtomicInte
         delay(Random.nextLong(2000, 8000))
         val fallbackQuery = runCatching {
             Innertube.searchPage<Innertube.SongItem>(
-                body = SearchBody(
-                    query = simpleQuery,
-                    params = Innertube.SearchFilter.Song.value
-                ),
+                query = simpleQuery,
+                params = Innertube.SearchFilter.Song.value,
                 fromMusicShelfRendererContent = { content -> Innertube.SongItem.from(content) }
             )
         }.onFailure { Timber.tag("MatchAlbumUtils").e(it, "MatchGlobal: fallback search failed") }.getOrNull()
@@ -213,10 +208,8 @@ suspend fun getAlbumVersionFromVideo(song: Song, playlistId: Long, position: Int
 
     val searchQuery = runCatching {
         Innertube.searchPage<Innertube.SongItem>(
-            body = SearchBody(
-                query = filteredText("${song.cleanTitle()} ${song.artistsText}"),
-                params = Innertube.SearchFilter.Song.value
-            ),
+            query = filteredText("${song.cleanTitle()} ${song.artistsText}"),
+            params = Innertube.SearchFilter.Song.value,
             fromMusicShelfRendererContent = { content -> Innertube.SongItem.from(content) }
         )
     }.onFailure { Timber.tag("MatchAlbumUtils").e(it, "MatchPlaylist: search failed") }.getOrNull()
@@ -229,10 +222,8 @@ suspend fun getAlbumVersionFromVideo(song: Song, playlistId: Long, position: Int
         delay(Random.nextLong(2000, 8000))
         val fallbackQuery = runCatching {
             Innertube.searchPage<Innertube.SongItem>(
-                body = SearchBody(
-                    query = simpleQuery,
-                    params = Innertube.SearchFilter.Song.value
-                ),
+                query = simpleQuery,
+                params = Innertube.SearchFilter.Song.value,
                 fromMusicShelfRendererContent = { content -> Innertube.SongItem.from(content) }
             )
         }.onFailure { Timber.tag("MatchAlbumUtils").e(it, "MatchPlaylist: fallback search failed") }.getOrNull()

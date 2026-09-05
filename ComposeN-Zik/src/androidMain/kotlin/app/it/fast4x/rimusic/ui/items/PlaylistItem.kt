@@ -288,7 +288,7 @@ fun PlaylistItem(
                     painterResource( R.drawable.riplay ) to Color.Unspecified
 
                 isYoutubePlaylist || browseId?.startsWith("VL") == true ->
-                    painterResource( R.drawable.ytmusic ) to colorPalette().text
+                    painterResource( R.drawable.ytmusic ) to Color.Red
 
                 browseId.isNullOrEmpty() ->
                     painterResource( R.drawable.ic_launcher ) to Color.Unspecified

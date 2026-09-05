@@ -8,9 +8,7 @@ import androidx.navigation.NavController
 import app.n_zik.android.R
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.NavigationEndpoint
-import it.fast4x.innertube.models.bodies.NextBody
 import it.fast4x.innertube.requests.nextPage
-import it.fast4x.innertube.models.bodies.SearchBody
 import it.fast4x.innertube.requests.searchPage
 import it.fast4x.innertube.utils.from
 import app.n_zik.android.core.database.Database
@@ -67,7 +65,7 @@ class GoToAlbum(
                             var albumEndpoint: NavigationEndpoint.Endpoint.Browse? = null
                             
                             if (hasValidId) {
-                                albumEndpoint = Innertube.nextPage(NextBody(videoId = song.id))
+                                albumEndpoint = Innertube.nextPage(videoId = song.id)
                                     ?.onFailure {
                                         Timber.tag("go_to_album").e( it, "nextPage failed" )
                                     }
@@ -92,8 +90,8 @@ class GoToAlbum(
                                 val query = "${song.cleanTitle()} ${song.cleanArtistsText()}".trim()
                                 Timber.tag("go_to_album").d("Search query: %s", query)
                                 val searchResult = Innertube.searchPage<Innertube.SongItem>(
-                                    SearchBody(query = query, params = Innertube.SearchFilter.Song.value),
-                                    { content -> Innertube.SongItem.from(content) }
+                                    query = query, params = Innertube.SearchFilter.Song.value,
+                                    fromMusicShelfRendererContent = { content -> Innertube.SongItem.from(content) }
                                 )?.getOrNull()
                                 
                                 Timber.tag("go_to_album").d("Search result items count: %s", searchResult?.items?.size)

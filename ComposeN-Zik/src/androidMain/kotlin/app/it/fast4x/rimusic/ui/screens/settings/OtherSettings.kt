@@ -67,6 +67,9 @@ import app.it.fast4x.rimusic.utils.proxyModeKey
 import app.it.fast4x.rimusic.utils.proxyPortKey
 import app.it.fast4x.rimusic.utils.proxyUsernameKey
 import app.it.fast4x.rimusic.utils.proxyPasswordKey
+import app.it.fast4x.rimusic.utils.proxyPasswordEncryptedKey
+import app.it.fast4x.rimusic.utils.proxyPasswordMigratedKey
+import app.it.fast4x.rimusic.utils.rememberEncryptedPreference
 import app.it.fast4x.rimusic.utils.regionOverrideKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
@@ -141,7 +144,25 @@ fun OtherSettings() {
     var proxyPort by rememberPreference(proxyPortKey, 1080)
     var proxyMode by rememberPreference(proxyModeKey, Proxy.Type.HTTP)
     var proxyUsername by rememberPreference(proxyUsernameKey, "")
-    var proxyPassword by rememberPreference(proxyPasswordKey, "")
+    
+    // Migrate proxy password to encrypted preferences
+    var isPasswordMigrated by rememberPreference(proxyPasswordMigratedKey, false)
+    val oldPassword by rememberPreference(proxyPasswordKey, "")
+    var proxyPassword by rememberEncryptedPreference(proxyPasswordEncryptedKey, "")
+    
+    // One-time migration from regular to encrypted preferences
+    LaunchedEffect(Unit) {
+        if (!isPasswordMigrated && oldPassword.isNotEmpty()) {
+            proxyPassword = oldPassword
+            isPasswordMigrated = true
+            // Clear old unencrypted value
+            context.getSharedPreferences("settings", android.content.Context.MODE_PRIVATE)
+                .edit()
+                .remove(proxyPasswordKey)
+                .apply()
+        }
+    }
+    
     var regionOverride by rememberPreference(regionOverrideKey, "")
 
     var defaultFolder by rememberPreference(defaultFolderKey, "/")
@@ -395,7 +416,15 @@ fun OtherSettings() {
                             title = stringResource(R.string.enable_proxy),
                             text = "",
                             isChecked = isProxyEnabled,
-                            onCheckedChange = { isProxyEnabled = it },
+                            onCheckedChange = { 
+                                isProxyEnabled = it
+                                // Cascade: disable region override when proxy is disabled
+                                if (!it) {
+                                    regionOverride = ""
+                                    Innertube.regionOverride = ""
+                                    Innertube.regionOverrideActive = false
+                                }
+                            },
                             icon = R.drawable.server
                         )
                     }
@@ -487,6 +516,7 @@ fun OtherSettings() {
                                     title = "Proxy Username",
                                     initialValue = proxyUsername,
                                     placeholder = "Username (optional)",
+                                    allowEmpty = true,
                                     onDismiss = { showProxyUsernameDialog = false },
                                     onSetValue = { proxyUsername = it }
                                 ).apply {
@@ -509,6 +539,8 @@ fun OtherSettings() {
                                     title = "Proxy Password",
                                     initialValue = proxyPassword,
                                     placeholder = "Password (optional)",
+                                    allowEmpty = true,
+                                    isPassword = true,
                                     onDismiss = { showProxyPasswordDialog = false },
                                     onSetValue = { proxyPassword = it }
                                 ).apply {
@@ -531,6 +563,7 @@ fun OtherSettings() {
                                     title = "Region Override",
                                     initialValue = regionOverride,
                                     placeholder = "e.g. US, FR, DE (empty = auto)",
+                                    allowEmpty = true,
                                     onDismiss = { showRegionOverrideDialog = false },
                                     onSetValue = { 
                                         regionOverride = it

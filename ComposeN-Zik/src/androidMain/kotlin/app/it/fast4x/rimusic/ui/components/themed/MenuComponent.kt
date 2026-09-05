@@ -6,6 +6,7 @@ import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.MenuState
+import app.it.fast4x.rimusic.ui.components.tab.toolbar.Clickable
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.kreate.android.me.knighthat.utils.Toaster
@@ -104,6 +105,27 @@ fun ThumbnailPicker(
         onClick()
         menuState.hide()
     }
+}
+
+@SuppressLint("ComposableNaming")
+@Composable
+fun Bookmark(
+    isBookmarked: Boolean = true,
+    onClick: () -> Unit
+): MenuIcon = object : MenuIcon, Descriptive, Clickable {
+
+    val menuState: MenuState = LocalMenuState.current
+    override val iconId: Int = if (isBookmarked) R.drawable.bookmark else R.drawable.bookmark_outline
+    override val messageId: Int = R.string.bookmark
+    override val menuIconTitle: String
+        @Composable
+        get() = stringResource( messageId )
+
+    override fun onShortClick() {
+        onClick()
+        menuState.hide()
+    }
+    override fun onLongClick() {}
 }
 
 @SuppressLint("ComposableNaming")
