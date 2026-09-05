@@ -1147,6 +1147,8 @@
   <string name="sync_show_details">Senkronizasyon ayrıntılarını göster</string>
   <string name="sync_show_details_description">Şimdi Senkronize Et işlemi sırasında her bir içe aktarma için bir bildirim mesajı göster</string>
   <string name="sync_per_playlist_auto">Çalma Listesi Başına Otomatik Senkronizasyon</string>
+  <string name="sync_per_playlist_auto_on">Auto-Sync: ON</string>
+  <string name="sync_per_playlist_auto_off">Auto-Sync: OFF</string>
   <string name="sync_per_playlist_auto_description">Tek tek çalma listelerinin otomatik olarak senkronize edilmesine izin ver</string>
   <string name="sync_now">Şimdi Senkronize Et</string>
   <string name="sync_now_description">YouTube Music ile tam senkronizasyonu zorla</string>
