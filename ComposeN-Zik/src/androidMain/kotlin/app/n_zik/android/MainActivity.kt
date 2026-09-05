@@ -1098,68 +1098,35 @@ class MainActivity :
                             // Scrolling UP
                             accumulatedDownScroll = 0f
                             accumulatedUpScroll += delta
-                            if (accumulatedUpScroll > 100f) {
+                            if (accumulatedUpScroll > 100f && !isBarsVisible) {
+                                isBarsVisible = true
                                 if (!(isLandscape && isLandscapeHiddenRoute)) {
-                                    val currentTopOffset = topBarOffsetAnimatable.value
-                                    val newTopOffset = (currentTopOffset + delta).coerceIn(-topBarHeightPx.toFloat(), 0f)
                                     coroutineScope.launch {
-                                        topBarOffsetAnimatable.snapTo(newTopOffset)
+                                        topBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(400))
                                     }
                                 }
-                                val currentBottomOffset = bottomBarOffsetAnimatable.value
-                                val newBottomOffset = (currentBottomOffset - delta).coerceIn(0f, bottomBarHeightPx)
                                 coroutineScope.launch {
-                                    bottomBarOffsetAnimatable.snapTo(newBottomOffset)
+                                    bottomBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(400))
                                 }
                             }
                         } else if (delta < 0) {
                             // Scrolling DOWN
                             accumulatedUpScroll = 0f
                             accumulatedDownScroll += delta
-                            if (accumulatedDownScroll < -300f) {
+                            if (accumulatedDownScroll < -300f && isBarsVisible) {
+                                isBarsVisible = false
                                 if (!(isLandscape && isLandscapeHiddenRoute)) {
-                                    val currentTopOffset = topBarOffsetAnimatable.value
-                                    val newTopOffset = (currentTopOffset + delta).coerceIn(-topBarHeightPx.toFloat(), 0f)
                                     coroutineScope.launch {
-                                        topBarOffsetAnimatable.snapTo(newTopOffset)
+                                        topBarOffsetAnimatable.animateTo(-topBarHeightPx.toFloat(), androidx.compose.animation.core.tween(400))
                                     }
                                 }
-                                val currentBottomOffset = bottomBarOffsetAnimatable.value
-                                val newBottomOffset = (currentBottomOffset - delta).coerceIn(0f, bottomBarHeightPx)
                                 coroutineScope.launch {
-                                    bottomBarOffsetAnimatable.snapTo(newBottomOffset)
+                                    bottomBarOffsetAnimatable.animateTo(bottomBarHeightPx, androidx.compose.animation.core.tween(400))
                                 }
                             }
                         }
                         
                         return Offset.Zero
-                    }
-                    
-                    override suspend fun onPreFling(available: androidx.compose.ui.unit.Velocity): androidx.compose.ui.unit.Velocity {
-                        val statusBarsTopPx = safeDrawingInsets.getTop(density)
-                        val topBarHeightPx = with(density) { 64.dp.roundToPx() } + statusBarsTopPx
-                        
-                        if (!(isLandscape && isLandscapeHiddenRoute)) {
-                            val currentTopOffset = topBarOffsetAnimatable.value
-                            if (currentTopOffset < 0f && currentTopOffset > -topBarHeightPx.toFloat()) {
-                                if (currentTopOffset > -topBarHeightPx.toFloat() / 2) {
-                                    topBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(300))
-                                } else {
-                                    topBarOffsetAnimatable.animateTo(-topBarHeightPx.toFloat(), androidx.compose.animation.core.tween(300))
-                                }
-                            }
-                        }
-                        
-                        val currentBottomOffset = bottomBarOffsetAnimatable.value
-                        if (currentBottomOffset > 0f && currentBottomOffset < bottomBarHeightPx) {
-                            if (currentBottomOffset < bottomBarHeightPx / 2) {
-                                bottomBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(300))
-                            } else {
-                                bottomBarOffsetAnimatable.animateTo(bottomBarHeightPx, androidx.compose.animation.core.tween(300))
-                            }
-                        }
-                        
-                        return androidx.compose.ui.unit.Velocity.Zero
                     }
                 }
             }
