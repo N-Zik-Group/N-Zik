@@ -118,8 +118,8 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             val savedCookie = encryptedPreferences.getString(ytCookieKey, "")
             if (!savedCookie.isNullOrBlank()) {
                 Innertube.cookie = savedCookie
-                Innertube.visitorData = encryptedPreferences.getString(ytVisitorDataKey, "") ?: ""
-                Innertube.dataSyncId = encryptedPreferences.getString(ytDataSyncIdKey, "")
+                Innertube.visitorData = encryptedPreferences.getString(ytVisitorDataKey, null)?.takeIf { it.isNotBlank() }
+                Innertube.dataSyncId = encryptedPreferences.getString(ytDataSyncIdKey, null)?.takeIf { it.isNotBlank() }
 
                 val hasSAPISID = savedCookie.contains("SAPISID")
                 val hasLoginInfo = savedCookie.contains("LOGIN_INFO")

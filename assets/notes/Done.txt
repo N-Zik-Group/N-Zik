@@ -1,3 +1,8 @@
+fix(player): remove brotli compression from InnerTube HTTP client — YouTube doesn't accept brotli-compressed POST bodies
+  - `Innertube.kt`: Removed `brotli(1.0F)` from `ContentEncoding` plugin — YouTube's InnerTube API servers accept `gzip` and `deflate` but not `br` for incoming request bodies; brotli compression caused ALL player clients to return `streamingPresent=false, formatCount=0` and the `next` endpoint to return HTTP 400
+  - `MainApplication.kt`: Changed `visitorData` and `dataSyncId` fallback from empty string `""` to `null` — empty string passes null-checks and sends `X-Goog-Visitor-Id: ` (empty header), which YouTube rejects; Metrolist uses `takeIf { it != "null" }` pattern
+  - Root cause: Ktor's `ContentEncoding` plugin compressed POST bodies with brotli (highest quality 1.0), but YouTube's servers cannot decompress brotli request bodies — gzip/deflate work correctly
+
 fix(player): align InnerTube network layer with Metrolist to fix YouTube stream blocking
   - `Innertube.kt`: Removed suspicious `sec-ch-ua`, `sec-ch-ua-mobile`, `sec-ch-ua-platform`, `Content-Type`, and `prettyPrint=false` headers from defaultRequest — these Client Hints headers allowed YouTube to fingerprint the app as a bot, causing all player clients to return `streamingPresent=false, formatCount=0`
   - `Innertube.kt`: Added defensive `dataSyncId` parsing with `||` split logic (matches Metrolist) — prevents invalid DataSyncId values from breaking authenticated sessions
