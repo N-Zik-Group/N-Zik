@@ -15,6 +15,9 @@ import it.fast4x.innertube.YtMusic
 import it.fast4x.innertube.requests.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -52,10 +55,55 @@ class HomeQuickPicksState(
         if (loadedData.value && homePageInit.value != null) return
 
         Timber.tag("HomeQuickPicksState").d("Starting loadData...")
-        chartsPageResult.value = Innertube.chartsPageComplete(countryCode = selectedCountryCode.name)
-        chartsPageInit.value = chartsPageResult.value?.getOrNull()
 
         runCatching {
+            // Phase 1: Parallel network calls for charts, discover, quick picks
+            coroutineScope {
+                val chartsDeferred = async(Dispatchers.IO) {
+                    Innertube.chartsPageComplete(countryCode = selectedCountryCode.name)
+                }
+                val discoverDeferred = async(Dispatchers.IO) {
+                    Innertube.discoverPage()
+                }
+                val quickPicksDeferred = async(Dispatchers.IO) {
+                    if (isYouTubeLoggedIn() && Innertube.useLoginForBrowse) {
+                        YtMusic.getQuickPicks(setLogin = true).getOrNull()
+                    } else null
+                }
+
+                runCatching { chartsDeferred.await() }
+                    .onSuccess { result ->
+                        chartsPageResult.value = result
+                        chartsPageInit.value = result?.getOrNull()
+                        Timber.tag("HomeQuickPicksState").d("Charts loaded")
+                    }
+                    .onFailure { e ->
+                        Timber.tag("HomeQuickPicksState").w(e, "Charts load failed")
+                    }
+
+                runCatching { discoverDeferred.await() }
+                    .onSuccess { result ->
+                        discoverPageResult.value = result
+                        discoverPageInit.value = result?.getOrNull()
+                        Timber.tag("HomeQuickPicksState").d("YouTube Discovery data loaded")
+                    }
+                    .onFailure { e ->
+                        Timber.tag("HomeQuickPicksState").w(e, "Discover load failed")
+                    }
+
+                runCatching { quickPicksDeferred.await() }
+                    .onSuccess { items ->
+                        if (items != null && items.isNotEmpty()) {
+                            ytmQuickPicks.value = items.map { it.asSong }
+                            Timber.tag("HomeQuickPicksState").d("Lightweight Quick Picks loaded (${items.size} items)")
+                        }
+                    }
+                    .onFailure { e ->
+                        Timber.tag("HomeQuickPicksState").w(e, "Quick picks load failed")
+                    }
+            }
+
+            // Phase 2: Database observation with related page fetch (coupled as before)
             scope.launch(Dispatchers.IO) {
                 when (playEventType) {
                     PlayEventsType.MostPlayed ->
@@ -108,20 +156,8 @@ class HomeQuickPicksState(
                 }
             }
 
-            discoverPageResult.value = Innertube.discoverPage()
-            discoverPageInit.value = discoverPageResult.value?.getOrNull()
-            Timber.tag("HomeQuickPicksState").d("YouTube Discovery data loaded")
-
+            // Phase 3: Home page sections (sequential but with early exit)
             if (!loadedData.value) {
-                if (isYouTubeLoggedIn() && Innertube.useLoginForBrowse) {
-                    YtMusic.getQuickPicks(setLogin = true).onSuccess { items ->
-                        if (items.isNotEmpty()) {
-                            ytmQuickPicks.value = items.map { it.asSong }
-                            Timber.tag("HomeQuickPicksState").d("Lightweight Quick Picks loaded (${items.size} items)")
-                        }
-                    }
-                }
-
                 var cumulativeSections = homePageInit.value?.sections.orEmpty()
                 var cumulativeChips = homePageInit.value?.chips.orEmpty()
                 repeat(3) { attempt ->

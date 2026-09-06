@@ -41,6 +41,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -170,15 +171,11 @@ fun HomeDiscovery(
                     Database.artistTable
                             .sortFollowingByName()
                             .distinctUntilChanged()
-                }.collectAsState( emptyList(), Dispatchers.IO )
+                }.collectAsStateWithLifecycle( emptyList(), context = Dispatchers.IO )
 
-                var newReleaseAlbumsFiltered by persistList<Innertube.AlbumItem>("home/shared/newalbumsartist")
-                page.newReleaseAlbums.forEach { album ->
-                    artists.forEach { artist ->
-                        if (artist.name == album.authors?.first()?.name) {
-                            newReleaseAlbumsFiltered += album
-                            //Log.d("mediaItem","artst ok")
-                        }
+                val newReleaseAlbumsFiltered = remember(page.newReleaseAlbums, artists) {
+                    page.newReleaseAlbums.filter { album ->
+                        artists.any { it.name == album.authors?.firstOrNull()?.name }
                     }
                 }
 

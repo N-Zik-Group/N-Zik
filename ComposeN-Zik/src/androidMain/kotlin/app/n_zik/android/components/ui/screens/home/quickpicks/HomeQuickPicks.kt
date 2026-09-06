@@ -16,6 +16,7 @@ import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -321,7 +322,7 @@ fun HomeQuickPicks(
                 val ytmSections = state.homePageInit.value?.sections.orEmpty()
 
                 val artistsState = persistList<Artist>("home/quickpicks/local/artists")
-                val artists by remember { Database.artistTable.sortFollowingByName().distinctUntilChanged() }.collectAsState(artistsState.value, Dispatchers.IO)
+                val artists by remember { Database.artistTable.sortFollowingByName().distinctUntilChanged() }.collectAsStateWithLifecycle(artistsState.value, context = Dispatchers.IO)
                 LaunchedEffect(artists) { artistsState.value = artists }
 
                 val newReleaseAlbumsFiltered = remember(state.discoverPageInit.value, artists) {
@@ -333,12 +334,12 @@ fun HomeQuickPicks(
                 val monthlyPlaylistsState = persistList<PlaylistPreview>("home/quickpicks/local/monthlyPlaylists")
                 val monthlyPlaylists by remember {
                     Database.playlistTable.allAsPreview().distinctUntilChanged().map { list -> list.filter { it.playlist.name.startsWith(MONTHLY_PREFIX, true) } }
-                }.collectAsState(monthlyPlaylistsState.value, Dispatchers.IO)
+                }.collectAsStateWithLifecycle(monthlyPlaylistsState.value, context = Dispatchers.IO)
                 LaunchedEffect(monthlyPlaylists) { monthlyPlaylistsState.value = monthlyPlaylists }
 
                 val maxTopPlaylistItems by rememberPreference(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`)
                 val myTopSongsState = persistList<Song>("home/quickpicks/local/myTopSongs")
-                val myTopSongs by remember { Database.eventTable.findSongsMostPlayedBetween(from = 0L, limit = maxTopPlaylistItems.toInt()) }.collectAsState(myTopSongsState.value, Dispatchers.IO)
+                val myTopSongs by remember { Database.eventTable.findSongsMostPlayedBetween(from = 0L, limit = maxTopPlaylistItems.toInt()) }.collectAsStateWithLifecycle(myTopSongsState.value, context = Dispatchers.IO)
                 LaunchedEffect(myTopSongs) { myTopSongsState.value = myTopSongs }
 
                 // Read section order and toggles from preferences
