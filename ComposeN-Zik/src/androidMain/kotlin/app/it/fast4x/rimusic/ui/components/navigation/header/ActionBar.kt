@@ -11,10 +11,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -95,12 +98,21 @@ fun ActionBar(
     val context = androidx.compose.ui.platform.LocalContext.current
     val trigger = app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger
     val prefs = context.encryptedPreferences
-    val cookie = remember(trigger) { prefs.getString(app.it.fast4x.rimusic.utils.ytCookieKey, "") ?: "" }
-    val isLoginEnabled = remember(trigger) { prefs.getBoolean(app.it.fast4x.rimusic.utils.enableYouTubeLoginKey, false) }
+    var cookie by remember { mutableStateOf("") }
+    var isLoginEnabled by remember { mutableStateOf(false) }
+    var accountThumbnail by remember { mutableStateOf("") }
+
+    LaunchedEffect(trigger) {
+        withContext(Dispatchers.IO) {
+            cookie = prefs.getString(app.it.fast4x.rimusic.utils.ytCookieKey, "") ?: ""
+            isLoginEnabled = prefs.getBoolean(app.it.fast4x.rimusic.utils.enableYouTubeLoginKey, false)
+            accountThumbnail = prefs.getString(app.it.fast4x.rimusic.utils.ytAccountThumbnailKey, "") ?: ""
+        }
+    }
+
     val isLoggedIn = remember(cookie, isLoginEnabled) {
         isLoginEnabled && ("SAPISID" in parseCookieString(cookie))
     }
-    val accountThumbnail = remember(trigger) { prefs.getString(app.it.fast4x.rimusic.utils.ytAccountThumbnailKey, "") ?: "" }
 
     // Search Icon
     HeaderIcon( R.drawable.search) { navController.navigate(NavRoutes.search.name) }

@@ -1,6 +1,14 @@
 package app.n_zik.android.components.ui.screens.home.quickpicks
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -33,10 +42,13 @@ import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
 import app.n_zik.android.components.menu.artist.OnlineArtistItemMenu
 import app.n_zik.android.components.menu.playlist.OnlinePlaylistItemMenu
+import app.n_zik.android.components.menu.song.SongItemMenu
 import app.n_zik.android.components.menu.video.VideoItemMenu
 import app.n_zik.android.isVideoEnabled
+import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.core.coil.ImageCacheFactory
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.it.fast4x.rimusic.enums.Countries
 import app.it.fast4x.rimusic.enums.NavRoutes
@@ -50,6 +62,8 @@ import app.it.fast4x.rimusic.ui.items.ArtistItem
 import app.it.fast4x.rimusic.ui.items.PlaylistItem
 import app.it.fast4x.rimusic.ui.items.VideoItem
 import app.it.fast4x.rimusic.ui.styling.Dimensions
+import app.it.fast4x.rimusic.ui.styling.onOverlay
+import app.it.fast4x.rimusic.ui.styling.overlay
 import app.it.fast4x.rimusic.utils.*
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.HomePage
@@ -196,9 +210,17 @@ fun QuickPicksGrid(
     itemInHorizontalGridWidth: Dp,
     navController: NavController,
     endPaddingValues: PaddingValues,
-    onSongClick: (Song) -> Unit
+    onSongClick: (Song) -> Unit,
+    scrollToStartTrigger: Int = 0
 ) {
     val quickPicksLazyGridState = rememberLazyGridState()
+
+    LaunchedEffect(scrollToStartTrigger) {
+        if (scrollToStartTrigger > 0) {
+            quickPicksLazyGridState.animateScrollToItem(0)
+        }
+    }
+
     LazyHorizontalGrid(
         state = quickPicksLazyGridState,
         rows = GridCells.Fixed(if (recommendations.isNotEmpty()) 3 else 1),
@@ -217,7 +239,7 @@ fun QuickPicksGrid(
                 song = song,
                 navController = navController,
                 onClick = { onSongClick(song) },
-                modifier = Modifier.width(itemInHorizontalGridWidth),
+                modifier = Modifier.width(itemInHorizontalGridWidth).animateItem(),
                 thumbnailOverlay = {
                     if (playEventType != PlayEventsType.CasualPlayed &&
                         trendingList.any { it.id == song.id }) {
@@ -259,59 +281,85 @@ fun YtmSectionByTitle(
     onArtistClick: (String) -> Unit,
     onPlaylistClick: (String) -> Unit,
     displayedSectionTitles: MutableSet<String>,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
+    showTitle: Boolean = true
 ) {
     val matching = ytmSections.filter { titlePredicate(it.title) }
-    if (matching.isEmpty()) {
-        if (isLoading && titleOverride != null) {
-            Title(
-                title = titleOverride,
-                enableClick = false,
-                onClick = null,
-                verticalPadding = 16.dp
-            )
+    val items = matching.flatMap { it.items }.filterNotNull().distinctBy { it.key }
+
+    // Shimmer: shown while loading and no items yet
+    AnimatedVisibility(
+        visible = isLoading && items.isEmpty() && titleOverride != null,
+        enter = EnterTransition.None,
+        exit = fadeOut(animationSpec = tween(200))
+    ) {
+        Column {
+            if (titleOverride != null) {
+                Title(
+                    title = titleOverride,
+                    enableClick = false,
+                    onClick = null,
+                    verticalPadding = 16.dp
+                )
+            }
             LazyRow(contentPadding = endPaddingValues) {
                 items(5, key = { it }, contentType = { "placeholder" }) {
-                    ShimmerHost {
-                        AlbumItemPlaceholder(
-                            thumbnailSizeDp = albumThumbnailSizeDp,
-                            modifier = Modifier.padding(horizontal = 4.dp)
-                        )
+                    AnimatedVisibility(
+                        visible = isLoading,
+                        enter = slideInVertically(
+                            initialOffsetY = { it / 2 },
+                            animationSpec = tween(300, delayMillis = it * 50, easing = FastOutSlowInEasing)
+                        ) + fadeIn(animationSpec = tween(250, delayMillis = it * 50)),
+                        exit = slideOutVertically(
+                            targetOffsetY = { -it / 3 },
+                            animationSpec = tween(250, easing = FastOutSlowInEasing)
+                        ) + fadeOut(animationSpec = tween(200))
+                    ) {
+                        ShimmerHost {
+                            AlbumItemPlaceholder(
+                                thumbnailSizeDp = albumThumbnailSizeDp,
+                                modifier = Modifier.padding(horizontal = 4.dp)
+                            )
+                        }
                     }
                 }
             }
         }
-        return
     }
-    
-    val items = matching.flatMap { it.items }.filterNotNull().distinctBy { it.key }
-    if (items.isEmpty()) {
-        return
-    }
+
+    if (items.isEmpty()) return
 
     matching.forEach { displayedSectionTitles.add(it.title) }
     val section = matching.first().copy(
         items = items
     )
     Timber.tag("HomeQuickPicksSections").d("YTM Section found: $titleOverride (${items.size} items)")
-    YtmSectionItems(
-        section = section,
-        titleOverride = titleOverride,
-        itemInHorizontalGridWidth = itemInHorizontalGridWidth,
-        albumThumbnailSizePx = albumThumbnailSizePx,
-        albumThumbnailSizeDp = albumThumbnailSizeDp,
-        songThumbnailSizePx = songThumbnailSizePx,
-        songThumbnailSizeDp = songThumbnailSizeDp,
-        playlistThumbnailSizePx = playlistThumbnailSizePx,
-        playlistThumbnailSizeDp = playlistThumbnailSizeDp,
-        disableScrollingText = disableScrollingText,
-        endPaddingValues = endPaddingValues,
-        navController = navController,
-        onAlbumClick = onAlbumClick,
-        onArtistClick = onArtistClick,
-        onPlaylistClick = onPlaylistClick,
-        isLoading = isLoading
-    )
+    // Content: fades in when items arrive
+    AnimatedVisibility(
+        visible = items.isNotEmpty(),
+        enter = fadeIn(animationSpec = tween(300)),
+        exit = fadeOut(animationSpec = tween(200))
+    ) {
+        YtmSectionItems(
+            section = section,
+            titleOverride = titleOverride,
+            itemInHorizontalGridWidth = itemInHorizontalGridWidth,
+            albumThumbnailSizePx = albumThumbnailSizePx,
+            albumThumbnailSizeDp = albumThumbnailSizeDp,
+            songThumbnailSizePx = songThumbnailSizePx,
+            songThumbnailSizeDp = songThumbnailSizeDp,
+            playlistThumbnailSizePx = playlistThumbnailSizePx,
+            playlistThumbnailSizeDp = playlistThumbnailSizeDp,
+            disableScrollingText = disableScrollingText,
+            endPaddingValues = endPaddingValues,
+            navController = navController,
+            onAlbumClick = onAlbumClick,
+            onArtistClick = onArtistClick,
+            onPlaylistClick = onPlaylistClick,
+            isLoading = isLoading,
+            showTitle = showTitle
+        )
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -328,34 +376,39 @@ fun NewAlbumsOfYourArtistsSection(
     albumThumbnailSizeDp: Dp,
     disableScrollingText: Boolean,
     endPaddingValues: PaddingValues,
-    sectionTextModifier: Modifier
+    sectionTextModifier: Modifier,
+    showTitle: Boolean = true
 ) {
     val menuState = LocalMenuState.current
     if (showNewAlbumsArtists && discoverPageInit != null) {
         if (newReleaseAlbumsFiltered.isNotEmpty() && artists.isNotEmpty()) {
             Timber.tag("HomeQuickPicksSections").d("Local New Albums of your Artists found (${newReleaseAlbumsFiltered.size} items)")
-            BasicText(
-                text = stringResource(R.string.new_albums_of_your_artists),
-                style = typography().l.semiBold,
-                modifier = sectionTextModifier
-            )
-
-            LazyRow(contentPadding = endPaddingValues) {
-                items(
-                    items = newReleaseAlbumsFiltered.distinctBy { it.key },
-                    key = { it.key },
-                    contentType = { "album" }) {
-                    AlbumItem(
-                        album = it,
-                        thumbnailSizePx = albumThumbnailSizePx,
-                        thumbnailSizeDp = albumThumbnailSizeDp,
-                        alternative = true,
-                        modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
-                            onClick = { onAlbumClick(it.key) },
-                            onLongClick = { menuState.display { OnlineAlbumItemMenu(navController = navController, album = it).MenuComponent() } }
-                        ),
-                        disableScrollingText = disableScrollingText
+            Column {
+                if (showTitle) {
+                    BasicText(
+                        text = stringResource(R.string.new_albums_of_your_artists),
+                        style = typography().l.semiBold,
+                        modifier = sectionTextModifier
                     )
+                }
+
+                LazyRow(contentPadding = endPaddingValues) {
+                    items(
+                        items = newReleaseAlbumsFiltered.distinctBy { it.key },
+                        key = { it.key },
+                        contentType = { "album" }) {
+                        AlbumItem(
+                            album = it,
+                            thumbnailSizePx = albumThumbnailSizePx,
+                            thumbnailSizeDp = albumThumbnailSizeDp,
+                            alternative = true,
+                            modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
+                                onClick = { onAlbumClick(it.key) },
+                                onLongClick = { menuState.display { OnlineAlbumItemMenu(navController = navController, album = it).MenuComponent() } }
+                            ).animateItem(),
+                            disableScrollingText = disableScrollingText
+                        )
+                    }
                 }
             }
         }
@@ -374,7 +427,8 @@ fun NewAlbumsSection(
     albumThumbnailSizeDp: Dp,
     disableScrollingText: Boolean,
     endPaddingValues: PaddingValues,
-    displayedSectionTitles: MutableSet<String>
+    displayedSectionTitles: MutableSet<String>,
+    showTitle: Boolean = true
 ) {
     val menuState = LocalMenuState.current
     if (showNewAlbums) {
@@ -382,28 +436,32 @@ fun NewAlbumsSection(
             val albums = discoverPageInit.newReleaseAlbums
             if (albums.isNotEmpty()) {
                 displayedSectionTitles.add("New albums")
-                Title(
-                    title = stringResource(R.string.new_albums),
-                    onClick = { navController.navigate(NavRoutes.newAlbums.name) },
-                    verticalPadding = 16.dp,
-                )
-
-                LazyRow(contentPadding = endPaddingValues) {
-                    items(
-                        items = albums.distinctBy { it.key },
-                        key = { it.key },
-                        contentType = { "album" }) {
-                        AlbumItem(
-                            album = it,
-                            thumbnailSizePx = albumThumbnailSizePx,
-                            thumbnailSizeDp = albumThumbnailSizeDp,
-                            alternative = true,
-                            modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
-                                onClick = { onAlbumClick(it.key) },
-                                onLongClick = { menuState.display { OnlineAlbumItemMenu(navController = navController, album = it).MenuComponent() } }
-                            ),
-                            disableScrollingText = disableScrollingText
+                Column {
+                    if (showTitle) {
+                        Title(
+                            title = stringResource(R.string.new_albums),
+                            onClick = { navController.navigate(NavRoutes.newAlbums.name) },
+                            verticalPadding = 16.dp,
                         )
+                    }
+
+                    LazyRow(contentPadding = endPaddingValues) {
+                        items(
+                            items = albums.distinctBy { it.key },
+                            key = { it.key },
+                            contentType = { "album" }) {
+                            AlbumItem(
+                                album = it,
+                                thumbnailSizePx = albumThumbnailSizePx,
+                                thumbnailSizeDp = albumThumbnailSizeDp,
+                                alternative = true,
+                                modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
+                                    onClick = { onAlbumClick(it.key) },
+                                    onLongClick = { menuState.display { OnlineAlbumItemMenu(navController = navController, album = it).MenuComponent() } }
+                                ).animateItem(),
+                                disableScrollingText = disableScrollingText
+                            )
+                        }
                     }
                 }
             }
@@ -430,32 +488,34 @@ fun RelatedAlbumsSection(
     if (showRelatedAlbums) {
         val albums = relatedInit?.albums
         if (albums != null) {
-            Timber.tag("HomeQuickPicksSections").d("Related Section found: Albums (${albums.size} items)")
-            displayedSectionTitles.add("Related albums")
-            BasicText(
-                text = stringResource(R.string.related_albums),
-                style = typography().l.semiBold,
-                modifier = sectionTextModifier
-            )
+            Column {
+                Timber.tag("HomeQuickPicksSections").d("Related Section found: Albums (${albums.size} items)")
+                displayedSectionTitles.add("Related albums")
+                BasicText(
+                    text = stringResource(R.string.related_albums),
+                    style = typography().l.semiBold,
+                    modifier = sectionTextModifier
+                )
 
-            LazyRow(contentPadding = endPaddingValues) {
-                items(
-                    items = albums.distinctBy { it.key },
-                    key = Innertube.AlbumItem::key,
-                    contentType = { "album" }
-                ) { album ->
-                    AlbumItem(
-                        album = album,
-                        thumbnailSizePx = albumThumbnailSizePx,
-                        thumbnailSizeDp = albumThumbnailSizeDp,
-                        alternative = true,
-                        modifier = Modifier
-                            .clip(uiRoundnessShape()).combinedClickable(
-                                onClick = { onAlbumClick(album.key) },
-                                onLongClick = { menuState.display { OnlineAlbumItemMenu(navController = navController, album = album).MenuComponent() } }
-                            ),
-                        disableScrollingText = disableScrollingText
-                    )
+                LazyRow(contentPadding = endPaddingValues) {
+                    items(
+                        items = albums.distinctBy { it.key },
+                        key = Innertube.AlbumItem::key,
+                        contentType = { "album" }
+                    ) { album ->
+                        AlbumItem(
+                            album = album,
+                            thumbnailSizePx = albumThumbnailSizePx,
+                            thumbnailSizeDp = albumThumbnailSizeDp,
+                            alternative = true,
+                            modifier = Modifier
+                                .clip(uiRoundnessShape()).combinedClickable(
+                                    onClick = { onAlbumClick(album.key) },
+                                    onLongClick = { menuState.display { OnlineAlbumItemMenu(navController = navController, album = album).MenuComponent() } }
+                                ).animateItem(),
+                            disableScrollingText = disableScrollingText
+                        )
+                    }
                 }
             }
         }
@@ -481,32 +541,34 @@ fun SimilarArtistsSection(
     if (showSimilarArtists) {
         val artists = relatedInit?.artists
         if (artists != null) {
-            Timber.tag("HomeQuickPicksSections").d("Related Section found: Similar Artists (${artists.size} items)")
-            displayedSectionTitles.add("Similar artists")
-            BasicText(
-                text = stringResource(R.string.similar_artists),
-                style = typography().l.semiBold,
-                modifier = sectionTextModifier
-            )
+            Column {
+                Timber.tag("HomeQuickPicksSections").d("Related Section found: Similar Artists (${artists.size} items)")
+                displayedSectionTitles.add("Similar artists")
+                BasicText(
+                    text = stringResource(R.string.similar_artists),
+                    style = typography().l.semiBold,
+                    modifier = sectionTextModifier
+                )
 
-            LazyRow(contentPadding = endPaddingValues) {
-                items(
-                    items = artists.distinctBy { it.key },
-                    key = Innertube.ArtistItem::key,
-                    contentType = { "artist" }
-                ) { artist ->
-                    ArtistItem(
-                        artist = artist,
-                        thumbnailSizePx = artistThumbnailSizePx,
-                        thumbnailSizeDp = artistThumbnailSizeDp,
-                        alternative = true,
-                        modifier = Modifier
-                            .clip(uiRoundnessShape()).combinedClickable(
-                                onClick = { onArtistClick(artist.key) },
-                                onLongClick = { menuState.display { OnlineArtistItemMenu(navController = navController, artist = artist).MenuComponent() } }
-                            ),
-                        disableScrollingText = disableScrollingText
-                    )
+                LazyRow(contentPadding = endPaddingValues) {
+                    items(
+                        items = artists.distinctBy { it.key },
+                        key = Innertube.ArtistItem::key,
+                        contentType = { "artist" }
+                    ) { artist ->
+                        ArtistItem(
+                            artist = artist,
+                            thumbnailSizePx = artistThumbnailSizePx,
+                            thumbnailSizeDp = artistThumbnailSizeDp,
+                            alternative = true,
+                            modifier = Modifier
+                                .clip(uiRoundnessShape()).combinedClickable(
+                                    onClick = { onArtistClick(artist.key) },
+                                    onLongClick = { menuState.display { OnlineArtistItemMenu(navController = navController, artist = artist).MenuComponent() } }
+                                ).animateItem(),
+                            disableScrollingText = disableScrollingText
+                        )
+                    }
                 }
             }
         }
@@ -528,32 +590,34 @@ fun MonthlyPlaylistsSection(
     if (showMonthlyPlaylistInQuickPicks) {
         if (monthlyPlaylists.isNotEmpty()) {
             Timber.tag("HomeQuickPicksSections").d("Local Section found: Monthly Playlists (${monthlyPlaylists.size} items)")
-            BasicText(
-                text = stringResource(R.string.monthly_playlists),
-                style = typography().l.semiBold,
-                modifier = Modifier
-                    .padding(horizontal = 12.dp)
-                    .padding(top = 16.dp, bottom = 8.dp)
-            )
+            Column {
+                BasicText(
+                    text = stringResource(R.string.monthly_playlists),
+                    style = typography().l.semiBold,
+                    modifier = Modifier
+                        .padding(horizontal = 12.dp)
+                        .padding(top = 16.dp, bottom = 8.dp)
+                )
 
-            LazyRow(contentPadding = endPaddingValues) {
-                items(
-                    items = monthlyPlaylists.distinctBy { it.playlist.id },
-                    key = { it.playlist.id },
-                    contentType = { "playlist" }
-                ) { playlist ->
-                    PlaylistItem(
-                        playlist = playlist,
-                        thumbnailSizeDp = playlistThumbnailSizeDp,
-                        thumbnailSizePx = playlistThumbnailSizePx,
-                        alternative = true,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(uiRoundnessShape()).clickable(onClick = { navController.navigate(route = "${NavRoutes.localPlaylist.name}/${playlist.playlist.id}") }),
-                        disableScrollingText = disableScrollingText,
-                        isYoutubePlaylist = playlist.playlist.isYoutubePlaylist,
-                        isEditable = playlist.playlist.isEditable
-                    )
+                LazyRow(contentPadding = endPaddingValues) {
+                    items(
+                        items = monthlyPlaylists.distinctBy { it.playlist.id },
+                        key = { it.playlist.id },
+                        contentType = { "playlist" }
+                    ) { playlist ->
+                        PlaylistItem(
+                            playlist = playlist,
+                            thumbnailSizeDp = playlistThumbnailSizeDp,
+                            thumbnailSizePx = playlistThumbnailSizePx,
+                            alternative = true,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(uiRoundnessShape()).clickable(onClick = { navController.navigate(route = "${NavRoutes.localPlaylist.name}/${playlist.playlist.id}") }).animateItem(),
+                            disableScrollingText = disableScrollingText,
+                            isYoutubePlaylist = playlist.playlist.isYoutubePlaylist,
+                            isEditable = playlist.playlist.isEditable
+                        )
+                    }
                 }
             }
         }
@@ -575,26 +639,28 @@ fun MyTopSection(
     if (showMyTopPlaylist) {
         if (myTopSongs.isNotEmpty()) {
             Timber.tag("HomeQuickPicksSections").d("Local Section found: My Top (${myTopSongs.size} items)")
-            BasicText(
-                text = stringResource(R.string.my_playlist_top1),
-                style = typography().l.semiBold,
-                modifier = sectionTextModifier
-            )
+            Column {
+                BasicText(
+                    text = stringResource(R.string.my_playlist_top1),
+                    style = typography().l.semiBold,
+                    modifier = sectionTextModifier
+                )
 
-            LazyRow(contentPadding = endPaddingValues) {
-                items(
-                    items = myTopSongs.distinctBy { it.id },
-                    key = { it.id },
-                    contentType = { "song" }
-                ) { song ->
-                    SongItem(
-                        song = song,
-                        navController = navController,
-                        onClick = { binder?.startRadio(song, true) },
-                        modifier = Modifier.width(itemInHorizontalGridWidth),
-                    )
+                LazyRow(contentPadding = endPaddingValues) {
+                    items(
+                        items = myTopSongs.distinctBy { it.id },
+                        key = { it.id },
+                        contentType = { "song" }
+                    ) { song ->
+                        SongItem(
+                            song = song,
+                            navController = navController,
+                            onClick = { binder?.startRadio(song, true) },
+                    modifier = Modifier.width(itemInHorizontalGridWidth).animateItem(),
+                        )
                 }
-            }
+                }
+            } // Column
         }
     }
 }
@@ -611,21 +677,23 @@ fun MoodsSection(
         val chips = homePageInit.chips ?: return
         if (chips.isNotEmpty()) {
             displayedSectionTitles.add("Moods")
-            Title(
-                title = stringResource(R.string.moods),
-                verticalPadding = 16.dp,
-            )
+            Column {
+                Title(
+                    title = stringResource(R.string.moods),
+                    verticalPadding = 16.dp,
+                )
 
-            LazyHorizontalGrid(
-                rows = GridCells.Fixed(4),
-                flingBehavior = ScrollableDefaults.flingBehavior(),
-                contentPadding = gridsContentPadding,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(Dimensions.itemsVerticalPadding * 4 * 8)
-            ) {
-                items(chips, key = { it.hashCode() }, contentType = { "chip" }) { chip ->
-                    ChipItemColored(chip = chip, onClick = { onChipClick(chip) })
+                LazyHorizontalGrid(
+                    rows = GridCells.Fixed(4),
+                    flingBehavior = ScrollableDefaults.flingBehavior(),
+                    contentPadding = gridsContentPadding,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(Dimensions.itemsVerticalPadding * 4 * 8)
+                ) {
+                    items(chips, key = { it.hashCode() }, contentType = { "chip" }) { chip ->
+                        ChipItemColored(chip = chip, onClick = { onChipClick(chip) }, modifier = Modifier.animateItem())
+                    }
                 }
             }
         }
@@ -647,31 +715,34 @@ fun MoodsAndGenresSection(
         if (moods != null && moods.isNotEmpty()) {
             displayedSectionTitles.add("Moods and genres")
             displayedSectionTitles.add("Moods & genres")
-            Title(
-                title = stringResource(R.string.moods_and_genres),
-                onClick = { navController.navigate(NavRoutes.moodsPage.name) },
-                verticalPadding = 16.dp,
-            )
+            Column {
+                Title(
+                    title = stringResource(R.string.moods_and_genres),
+                    onClick = { navController.navigate(NavRoutes.moodsPage.name) },
+                    verticalPadding = 16.dp,
+                )
 
-            val moodAngGenresLazyGridState = rememberLazyGridState()
-            LazyHorizontalGrid(
-                state = moodAngGenresLazyGridState,
-                rows = GridCells.Fixed(4),
-                flingBehavior = ScrollableDefaults.flingBehavior(),
-                contentPadding = gridsContentPadding,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(Dimensions.itemsVerticalPadding * 4 * 8)
-            ) {
-                items(
-                    items = moods.sortedBy { it.title },
-                    key = { it.endpoint.params ?: it.title },
-                    contentType = { "mood" }
+                val moodAngGenresLazyGridState = rememberLazyGridState()
+                LazyHorizontalGrid(
+                    state = moodAngGenresLazyGridState,
+                    rows = GridCells.Fixed(4),
+                    flingBehavior = ScrollableDefaults.flingBehavior(),
+                    contentPadding = gridsContentPadding,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(Dimensions.itemsVerticalPadding * 4 * 8)
                 ) {
-                    MoodItemColored(
-                        mood = it,
-                        onClick = { it.endpoint.browseId?.let { _ -> onMoodClick(it) } }
-                    )
+                    items(
+                        items = moods.sortedBy { it.title },
+                        key = { it.endpoint.params ?: it.title },
+                        contentType = { "mood" }
+                    ) {
+                        MoodItemColored(
+                            mood = it,
+                            onClick = { it.endpoint.browseId?.let { _ -> onMoodClick(it) } },
+                            modifier = Modifier.animateItem()
+                        )
+                    }
                 }
             }
         }
@@ -709,69 +780,70 @@ fun ChartsSection(
             
             if (hasPlaylists || hasSongs || hasArtists) {
                 displayedSectionTitles.add("Charts")
-                Title(
-                    title = "${stringResource(R.string.charts)} (${selectedCountryCode.countryName})",
-                    onClick = {
-                        menuState.display {
-                            ListMenu.Menu(title = stringResource(R.string.charts)) {
-                                Countries.entries.forEach { country ->
-                                    ListMenu.Entry(
-                                        icon = {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(32.dp)
-                                                    .background(
-                                                        color = colorPalette().accent.copy(alpha = 0.1f),
-                                                        shape = uiRoundnessShape()
-                                                    ),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Icon(
-                                                    painter = painterResource(R.drawable.arrow_right),
-                                                    tint = colorPalette().accent,
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(18.dp)
-                                                )
+                Column {
+                    Title(
+                        title = "${stringResource(R.string.charts)} (${selectedCountryCode.countryName})",
+                        onClick = {
+                            menuState.display {
+                                ListMenu.Menu(title = stringResource(R.string.charts)) {
+                                    Countries.entries.forEach { country ->
+                                        ListMenu.Entry(
+                                            icon = {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(32.dp)
+                                                        .background(
+                                                            color = colorPalette().accent.copy(alpha = 0.1f),
+                                                            shape = uiRoundnessShape()
+                                                        ),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Icon(
+                                                        painter = painterResource(R.drawable.arrow_right),
+                                                        tint = colorPalette().accent,
+                                                        contentDescription = null,
+                                                        modifier = Modifier.size(18.dp)
+                                                    )
+                                                }
+                                            },
+                                            text = country.countryName,
+                                            onClick = {
+                                                onCountryChange(country)
+                                                menuState.hide()
                                             }
-                                        },
-                                        text = country.countryName,
-                                        onClick = {
-                                            onCountryChange(country)
-                                            menuState.hide()
-                                        }
+                                        )
+                                    }
+                                }
+                            }
+                        },
+                        verticalPadding = 16.dp,
+                    )
+
+                    chartsPageInit.playlists?.let { playlists ->
+                        if (playlists.isNotEmpty()) {
+                            LazyRow(contentPadding = endPaddingValues) {
+                                items(
+                                    items = playlists.distinctBy { it.key },
+                                    key = Innertube.PlaylistItem::key,
+                                    contentType = { "playlist" }
+                                ) { playlist ->
+                                    PlaylistItem(
+                                        playlist = playlist,
+                                        thumbnailSizePx = playlistThumbnailSizePx,
+                                        thumbnailSizeDp = playlistThumbnailSizeDp,
+                                        alternative = true,
+                                        showSongsCount = false,
+                                        modifier = Modifier
+                                            .clip(uiRoundnessShape()).combinedClickable(
+                                                onClick = { onPlaylistClick(playlist.key) },
+                                                onLongClick = { menuState.display { OnlinePlaylistItemMenu(navController = navController, playlist = playlist).MenuComponent() } }
+                                            ).animateItem(),
+                                        disableScrollingText = disableScrollingText
                                     )
                                 }
                             }
                         }
-                    },
-                    verticalPadding = 16.dp,
-                )
-
-                chartsPageInit.playlists?.let { playlists ->
-                    if (playlists.isNotEmpty()) {
-                        LazyRow(contentPadding = endPaddingValues) {
-                            items(
-                                items = playlists.distinctBy { it.key },
-                                key = Innertube.PlaylistItem::key,
-                                contentType = { "playlist" }
-                            ) { playlist ->
-                                PlaylistItem(
-                                    playlist = playlist,
-                                    thumbnailSizePx = playlistThumbnailSizePx,
-                                    thumbnailSizeDp = playlistThumbnailSizeDp,
-                                    alternative = true,
-                                    showSongsCount = false,
-                                    modifier = Modifier
-                                        .clip(uiRoundnessShape()).combinedClickable(
-                                            onClick = { onPlaylistClick(playlist.key) },
-                                            onLongClick = { menuState.display { OnlinePlaylistItemMenu(navController = navController, playlist = playlist).MenuComponent() } }
-                                        ),
-                                    disableScrollingText = disableScrollingText
-                                )
-                            }
-                        }
-                    }
-                } ?: {}
+                    } // end playlists let
 
                 chartsPageInit.songs?.let { songs ->
                     if (songs.isNotEmpty()) {
@@ -784,9 +856,9 @@ fun ChartsSection(
                         )
 
                         LazyHorizontalGrid(
-                            rows = GridCells.Fixed(2),
+                            rows = GridCells.Fixed(3),
                             modifier = Modifier
-                                .height(130.dp)
+                                .height(Dimensions.itemsVerticalPadding * 3 * 9)
                                 .fillMaxWidth(),
                             flingBehavior = ScrollableDefaults.flingBehavior(),
                         ) {
@@ -796,7 +868,8 @@ fun ChartsSection(
                                         !it.asSong.title.startsWith(EXPLICIT_PREFIX)
                                     }.distinctBy { it.key }
                                 else songs.distinctBy { it.key },
-                                key = { _, song -> song.key }
+                                key = { _, song -> song.key },
+                                contentType = { _, _ -> "song" }
                             ) { index, song ->
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -823,7 +896,7 @@ fun ChartsSection(
                             }
                         }
                     }
-                } ?: {}
+                }
 
                 chartsPageInit.artists?.let { artists ->
                     if (artists.isNotEmpty()) {
@@ -836,15 +909,16 @@ fun ChartsSection(
                         )
 
                         LazyHorizontalGrid(
-                            rows = GridCells.Fixed(2),
+                            rows = GridCells.Fixed(3),
                             modifier = Modifier
-                                .height(130.dp)
+                                .height(Dimensions.itemsVerticalPadding * 3 * 9)
                                 .fillMaxWidth(),
                             flingBehavior = ScrollableDefaults.flingBehavior(),
                         ) {
                             itemsIndexed(
                                 items = artists.distinctBy { it.key },
-                                key = { _, artist -> artist.key }
+                                key = { _, artist -> artist.key },
+                                contentType = { _, _ -> "artist" }
                             ) { index, artist ->
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -869,14 +943,15 @@ fun ChartsSection(
                                                 onLongClick = {
                                                     menuState.display { OnlineArtistItemMenu(navController = navController, artist = artist).MenuComponent() }
                                                 }
-                                            ),
+                                            ).animateItem(),
                                         disableScrollingText = disableScrollingText
                                     )
                                 }
                             }
                         }
                     }
-                } ?: {}
+                }
+                } // end Column
             }
         }
     }
@@ -901,7 +976,8 @@ fun GenericYtmSections(
     onAlbumClick: (String) -> Unit,
     onArtistClick: (String) -> Unit,
     onPlaylistClick: (String) -> Unit,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
+    showTitle: Boolean = true
 ) {
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
@@ -947,21 +1023,22 @@ fun GenericYtmSections(
         if (title.contains("Moods", ignoreCase = true)) return@forEach
         if (title.contains("Genre", ignoreCase = true)) return@forEach
 
-        displayedSectionTitles.add(title)
-
-        TitleMiniSection(section.label ?: "", modifier = Modifier.padding(horizontal = 12.dp).padding(top = 16.dp, bottom = 4.dp))
-
-        BasicText(
-            text = section.title,
-            style = typography().l.semiBold.color(colorPalette().text),
-            modifier = Modifier.padding(horizontal = 12.dp).padding(vertical = 4.dp)
-        )
-
         val isSongOnly = section.items.all { item -> item is Innertube.SongItem }
 
-        if (isSongOnly) {
-            val songItems = section.items.filterIsInstance<Innertube.SongItem>()
-            LazyHorizontalGrid(
+        Column {
+            if (showTitle) {
+                TitleMiniSection(section.label ?: "", modifier = Modifier.padding(horizontal = 12.dp).padding(top = 16.dp, bottom = 4.dp))
+
+                BasicText(
+                    text = section.title,
+                    style = typography().l.semiBold.color(colorPalette().text),
+                    modifier = Modifier.padding(horizontal = 12.dp).padding(vertical = 4.dp)
+                )
+            }
+
+            if (isSongOnly) {
+                val songItems = section.items.filterIsInstance<Innertube.SongItem>()
+                LazyHorizontalGrid(
                 rows = GridCells.Fixed(3),
                 flingBehavior = ScrollableDefaults.flingBehavior(),
                 contentPadding = endPaddingValues,
@@ -977,17 +1054,29 @@ fun GenericYtmSections(
                             binder?.player?.forcePlay(mediaItem)
                             binder?.player?.addMediaItems(songItems.map { s -> s.asMediaItem })
                         },
-                        modifier = Modifier.width(itemInHorizontalGridWidth)
+                        modifier = Modifier.width(itemInHorizontalGridWidth).animateItem()
                     )
                 }
                 
                 if (isLoading) {
                     items(3, key = { "shimmer_$it" }, contentType = { "placeholder" }) {
-                        ShimmerHost {
-                            AlbumItemPlaceholder(
-                                thumbnailSizeDp = albumThumbnailSizeDp,
-                                modifier = Modifier.padding(horizontal = 4.dp)
-                            )
+                        AnimatedVisibility(
+                            visible = isLoading,
+                            enter = slideInVertically(
+                                initialOffsetY = { it / 2 },
+                                animationSpec = tween(300, delayMillis = it * 50, easing = FastOutSlowInEasing)
+                            ) + fadeIn(animationSpec = tween(250, delayMillis = it * 50)),
+                            exit = slideOutVertically(
+                                targetOffsetY = { -it / 3 },
+                                animationSpec = tween(250, easing = FastOutSlowInEasing)
+                            ) + fadeOut(animationSpec = tween(200))
+                        ) {
+                            ShimmerHost {
+                                AlbumItemPlaceholder(
+                                    thumbnailSizeDp = albumThumbnailSizeDp,
+                                    modifier = Modifier.padding(horizontal = 4.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -997,14 +1086,29 @@ fun GenericYtmSections(
                 items(section.items, key = { it?.hashCode() ?: 0 }, contentType = { "item" }) { item ->
                     when (item) {
                         is Innertube.SongItem -> {
-                            SongItem(
-                                song = item.asSong ?: Song.makePlaceholder(""),
-                                navController = navController,
-                                onClick = {
-                                    val mediaItem = item.asMediaItem
-                                    binder?.stopRadio()
-                                    binder?.player?.forcePlay(mediaItem)
-                                }
+                            val song = item.asSong ?: Song.makePlaceholder("")
+                            AlbumItem(
+                                thumbnailUrl = item.thumbnail?.url,
+                                title = item.info?.name,
+                                authors = item.authors.parseArtists().joinToString(", "),
+                                year = null,
+                                thumbnailSizePx = albumThumbnailSizePx,
+                                thumbnailSizeDp = albumThumbnailSizeDp,
+                                alternative = true,
+                                showAuthors = true,
+                                modifier = Modifier
+                                    .clip(uiRoundnessShape())
+                                    .combinedClickable(
+                                        onClick = {
+                                            val mediaItem = item.asMediaItem
+                                            binder?.stopRadio()
+                                            binder?.player?.forcePlay(mediaItem)
+                                        },
+                                        onLongClick = {
+                                            menuState.display { SongItemMenu(navController = navController, song = song).MenuComponent() }
+                                        }
+                                    ).animateItem(),
+                                disableScrollingText = disableScrollingText
                             )
                         }
                         is Innertube.AlbumItem -> {
@@ -1017,7 +1121,7 @@ fun GenericYtmSections(
                                 modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                     onClick = { navController.navigate("${NavRoutes.album.name}/${item.key}") },
                                     onLongClick = { menuState.display { OnlineAlbumItemMenu(navController = navController, album = item).MenuComponent() } }
-                                )
+                                ).animateItem()
                             )
                         }
                         is Innertube.ArtistItem -> {
@@ -1029,7 +1133,7 @@ fun GenericYtmSections(
                                 modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                     onClick = { navController.navigate("${NavRoutes.artist.name}/${item.key}") },
                                     onLongClick = { menuState.display { OnlineArtistItemMenu(navController = navController, artist = item).MenuComponent() } }
-                                )
+                                ).animateItem()
                             )
                         }
                         is Innertube.PlaylistItem -> {
@@ -1042,7 +1146,7 @@ fun GenericYtmSections(
                                 modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                     onClick = { navController.navigate("${NavRoutes.playlist.name}/${item.key}") },
                                     onLongClick = { menuState.display { OnlinePlaylistItemMenu(navController = navController, playlist = item).MenuComponent() } }
-                                )
+                                ).animateItem()
                             )
                         }
                         is Innertube.VideoItem -> {
@@ -1061,7 +1165,7 @@ fun GenericYtmSections(
                                             binder?.player?.forcePlay(item.asMediaItem)
                                     },
                                     onLongClick = { menuState.display { VideoItemMenu(navController = navController, song = item.asSong).MenuComponent() } }
-                                )
+                                ).animateItem()
                             )
                         }
                         null -> {}
@@ -1070,15 +1174,48 @@ fun GenericYtmSections(
                 
                 if (isLoading) {
                     items(3, key = { "shimmer_$it" }, contentType = { "placeholder" }) {
-                        ShimmerHost {
-                            AlbumItemPlaceholder(
-                                thumbnailSizeDp = albumThumbnailSizeDp,
-                                modifier = Modifier.padding(horizontal = 4.dp)
-                            )
+                        AnimatedVisibility(
+                            visible = isLoading,
+                            enter = slideInVertically(
+                                initialOffsetY = { it / 2 },
+                                animationSpec = tween(300, delayMillis = it * 50, easing = FastOutSlowInEasing)
+                            ) + fadeIn(animationSpec = tween(250, delayMillis = it * 50)),
+                            exit = slideOutVertically(
+                                targetOffsetY = { -it / 3 },
+                                animationSpec = tween(250, easing = FastOutSlowInEasing)
+                            ) + fadeOut(animationSpec = tween(200))
+                        ) {
+                            ShimmerHost {
+                                AlbumItemPlaceholder(
+                                    thumbnailSizeDp = albumThumbnailSizeDp,
+                                    modifier = Modifier.padding(horizontal = 4.dp)
+                                )
+                            }
                         }
+                    }
+                }
+            } // LazyRow
+        } // Column
+    } // forEach
+
+    if (isLoading && homePageInit?.sections.isNullOrEmpty()) {
+        repeat(4) {
+            Column {
+                TextPlaceholder(
+                    modifier = Modifier
+                        .padding(horizontal = 12.dp)
+                        .padding(top = 16.dp, bottom = 8.dp)
+                )
+                LazyRow(contentPadding = endPaddingValues) {
+                    items(4, key = { "generic_shimmer_${it}" }, contentType = { "placeholder" }) {
+                        AlbumItemPlaceholder(
+                            thumbnailSizeDp = albumThumbnailSizeDp,
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        )
                     }
                 }
             }
         }
     }
+} // GenericYtmSections
 }

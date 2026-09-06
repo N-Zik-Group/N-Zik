@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -589,8 +590,8 @@ fun HomeSongsScreen(navController: NavController ) {
             // so it stays stable when switching between HomeSongs and OnDeviceSong
             androidx.compose.animation.AnimatedVisibility(
                 visible = isToolbarVisible,
-                enter = androidx.compose.animation.expandVertically() + androidx.compose.animation.fadeIn(),
-                exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
+                enter = androidx.compose.animation.expandVertically(animationSpec = tween(200)) + androidx.compose.animation.fadeIn(animationSpec = tween(200)),
+                exit = androidx.compose.animation.shrinkVertically(animationSpec = tween(200)) + androidx.compose.animation.fadeOut(animationSpec = tween(200))
             ) {
                 Column {
                     TabHeader( R.string.songs ) {
@@ -741,8 +742,8 @@ fun HomeSongsScreen(navController: NavController ) {
 
                             androidx.compose.animation.AnimatedVisibility(
                                 visible = isYouTubeSyncEnabled() && (builtInPlaylist == BuiltInPlaylist.Favorites || builtInPlaylist == BuiltInPlaylist.Disliked),
-                                enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.expandVertically(),
-                                exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.shrinkVertically()
+                                enter = androidx.compose.animation.fadeIn(animationSpec = tween(200)) + androidx.compose.animation.expandVertically(animationSpec = tween(200)),
+                                exit = androidx.compose.animation.fadeOut(animationSpec = tween(200)) + androidx.compose.animation.shrinkVertically(animationSpec = tween(200))
                             ) {
                                 val menuState = LocalMenuState.current
                                 var filterBy by rememberPreference(filterByKey, FilterBy.All)

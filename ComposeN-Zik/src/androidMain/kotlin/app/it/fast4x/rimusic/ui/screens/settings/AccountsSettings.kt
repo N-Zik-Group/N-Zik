@@ -264,6 +264,12 @@ fun AccountsSettings() {
                     var loginYouTube by remember { mutableStateOf(false) }
                     val binder = LocalPlayerServiceBinder.current
 
+                    LaunchedEffect(isYouTubeLoginEnabled) {
+                        if (!isYouTubeLoginEnabled && isYouTubeSyncEnabled) {
+                            isYouTubeSyncEnabled = false
+                        }
+                    }
+
                     if (search.inputValue.isBlank() || stringResource(R.string.enable_youtube_music_login).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
                             title = stringResource(R.string.enable_youtube_music_login),
@@ -278,9 +284,33 @@ fun AccountsSettings() {
                                     Innertube.cookie = null
                                     Innertube.dataSyncId = null
                                     Innertube.visitorData = Innertube.DEFAULT_VISITOR_DATA
+                                    Innertube.useLoginForBrowse = false
                                     // Reset cookie status
                                     app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
                                     appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
+
+                                    // Disable sync and all sub-toggles
+                                    appContext().encryptedPreferences.edit {
+                                        putBoolean(enableYouTubeSyncKey, false)
+                                    }
+                                    appContext().preferences.edit {
+                                        putBoolean(useLoginForBrowseKey, false)
+                                        putBoolean(autosyncArtistsKey, false)
+                                        putBoolean(autosyncAlbumsKey, false)
+                                        putBoolean(autosyncPlaylistsKey, false)
+                                        putBoolean(autosyncLikesKey, false)
+                                        putBoolean(syncImportHistoryKey, false)
+                                        putBoolean(syncImportLibrarySongsKey, false)
+                                        putBoolean(syncImportUploadedSongsKey, false)
+                                        putBoolean(syncImportUploadedAlbumsKey, false)
+                                        putBoolean(syncImportEpisodesKey, false)
+                                        putBoolean(syncPushHistoryKey, false)
+                                        putBoolean(syncPushSongLikeKey, false)
+                                        putBoolean(syncPushAlbumBookmarkKey, false)
+                                        putBoolean(syncPushArtistFollowKey, false)
+                                        putBoolean(syncPushPlaylistKey, false)
+                                        putBoolean(syncPushEpisodeKey, false)
+                                    }
 
                                     // Clear cached data
                                     appContext().preferences.edit {
@@ -295,6 +325,11 @@ fun AccountsSettings() {
                                         Innertube.cookie = savedCookie
                                         Innertube.dataSyncId = appContext().encryptedPreferences.getString(ytDataSyncIdKey, null)
                                         Innertube.visitorData = appContext().encryptedPreferences.getString(ytVisitorDataKey, null) ?: Innertube.DEFAULT_VISITOR_DATA
+                                        // Only activate browse if we have real credentials
+                                        if ("SAPISID" in parseCookieString(savedCookie)) {
+                                            appContext().preferences.edit().putBoolean(useLoginForBrowseKey, true).apply()
+                                            Innertube.useLoginForBrowse = true
+                                        }
                                     }
                                     // Reset cookie status — will be revalidated on next playback
                                     app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
@@ -487,6 +522,7 @@ fun AccountsSettings() {
                             }
 
                             // Login for Browse option (must be enabled for sync to work)
+                            if (isLoggedIn) {
                             var useLoginForBrowse by rememberPreference(useLoginForBrowseKey, true)
                             if (search.inputValue.isBlank() || stringResource(R.string.login_for_browse).contains(search.inputValue, true)) {
                                 OtherSwitchSettingEntry(
@@ -523,6 +559,7 @@ fun AccountsSettings() {
                                     icon = R.drawable.person
                                 )
                             }
+                            }
 
 
                         }
@@ -533,9 +570,10 @@ fun AccountsSettings() {
 
         // ========== SYNC SETTINGS ==========
         val useLoginForBrowseSync by rememberPreference(useLoginForBrowseKey, true)
+        val isYouTubeLoginActive by rememberEncryptedPreference(enableYouTubeLoginKey, false)
 
         AnimatedVisibility(
-            visible = useLoginForBrowseSync,
+            visible = useLoginForBrowseSync && isYouTubeLoginActive,
             enter = fadeIn(animationSpec = tween(600)) + scaleIn(
                 animationSpec = tween(600),
                 initialScale = 0.9f

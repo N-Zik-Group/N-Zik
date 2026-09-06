@@ -1,5 +1,14 @@
 package app.n_zik.android.components.ui.screens.home.quickpicks
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -121,177 +130,194 @@ fun YtmSectionItems(
     onAlbumClick: (String) -> Unit,
     onArtistClick: (String) -> Unit,
     onPlaylistClick: (String) -> Unit,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
+    showTitle: Boolean = true
 ) {
     if (section.items.isNotEmpty() && section.items.firstOrNull()?.key != null) {
         val isSongOnly = section.items.all { item -> item is Innertube.SongItem }
 
-        Title(
-            title = titleOverride ?: section.title,
-            enableClick = false,
-            onClick = null,
-            verticalPadding = 16.dp
-        )
-
-        if (isSongOnly) {
-            val songItems = section.items.filterIsInstance<Innertube.SongItem>()
-            LazyHorizontalGrid(
-                rows = GridCells.Fixed(3),
-                flingBehavior = ScrollableDefaults.flingBehavior(),
-                contentPadding = endPaddingValues,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(Dimensions.itemsVerticalPadding * 3 * 9)
-            ) {
-                items(songItems, key = { it.key ?: it.hashCode() }, contentType = { "song" }) { item ->
-                    val binder = LocalPlayerServiceBinder.current
-                    SongItem(
-                        song = item.asSong ?: Song.makePlaceholder(""),
-                        navController = navController,
-                        onClick = {
-                            val mediaItem = item.asMediaItem
-                            binder?.stopRadio()
-                            binder?.player?.forcePlay(mediaItem)
-                            binder?.player?.addMediaItems(songItems.map { s -> s.asMediaItem })
-                        },
-                        modifier = Modifier.width(itemInHorizontalGridWidth)
-                    )
-                }
-                
-                if (isLoading) {
-                    items(3, key = { "shimmer_$it" }, contentType = { "placeholder" }) {
-                        ShimmerHost {
-                            AlbumItemPlaceholder(
-                                thumbnailSizeDp = albumThumbnailSizeDp,
-                                modifier = Modifier.padding(horizontal = 4.dp)
-                            )
-                        }
-                    }
-                }
+        Column {
+            if (showTitle) {
+                Title(
+                    title = titleOverride ?: section.title,
+                    enableClick = false,
+                    onClick = null,
+                    verticalPadding = 16.dp
+                )
             }
-        } else {
-            LazyRow(contentPadding = endPaddingValues) {
-                items(section.items, key = { it?.key ?: it.hashCode() }, contentType = { "item" }) { item ->
-                    when (item) {
-                        is Innertube.SongItem -> {
-                            val binder = LocalPlayerServiceBinder.current
-                            val menuState = LocalMenuState.current
-                            val song = item.asSong ?: Song.makePlaceholder("")
-                            AlbumItem(
-                                thumbnailUrl = item.thumbnail?.url,
-                                title = item.info?.name,
-                                authors = item.authors?.parseArtists()?.joinToString(", "),
-                                year = null,
-                                thumbnailSizePx = albumThumbnailSizePx,
-                                thumbnailSizeDp = albumThumbnailSizeDp,
-                                alternative = true,
-                                showAuthors = true,
-                                modifier = Modifier
-                                    .clip(uiRoundnessShape())
-                                    .combinedClickable(
-                                        onClick = {
-                                            val mediaItem = item.asMediaItem
-                                            binder?.stopRadio()
-                                            binder?.player?.forcePlay(mediaItem)
-                                        },
-                                        onLongClick = {
-                                            menuState.display { SongItemMenu(navController = navController, song = song).MenuComponent() }
-                                        }
-                                    ),
-                                disableScrollingText = disableScrollingText
-                            )
-                        }
-                        is Innertube.AlbumItem -> {
-                            val menuState = LocalMenuState.current
-                            AlbumItem(
-                                album = item,
-                                thumbnailSizePx = albumThumbnailSizePx,
-                                thumbnailSizeDp = albumThumbnailSizeDp,
-                                alternative = true,
-                                modifier = Modifier
-                                    .clip(uiRoundnessShape())
-                                    .combinedClickable(
-                                        onClick = { onAlbumClick(item.key) },
-                                        onLongClick = {
-                                            menuState.display { OnlineAlbumItemMenu(navController = navController, album = item).MenuComponent() }
-                                        }
-                                    ),
-                                disableScrollingText = disableScrollingText
-                            )
-                        }
-                        is Innertube.ArtistItem -> {
-                            val menuState = LocalMenuState.current
-                            ArtistItem(
-                                artist = item,
-                                thumbnailSizePx = songThumbnailSizePx,
-                                thumbnailSizeDp = songThumbnailSizeDp,
-                                alternative = false,
-                                modifier = Modifier
-                                    .width(200.dp)
-                                    .clip(uiRoundnessShape())
-                                    .combinedClickable(
-                                        onClick = { onArtistClick(item.key) },
-                                        onLongClick = {
-                                            menuState.display { OnlineArtistItemMenu(navController = navController, artist = item).MenuComponent() }
-                                        }
-                                    ),
-                                disableScrollingText = disableScrollingText
-                            )
-                        }
-                        is Innertube.PlaylistItem -> {
-                            val menuState = LocalMenuState.current
-                            PlaylistItem(
-                                playlist = item,
-                                thumbnailSizePx = playlistThumbnailSizePx,
-                                thumbnailSizeDp = playlistThumbnailSizeDp,
-                                alternative = true,
-                                showSongsCount = false,
-                                isYoutubePlaylist = true,
-                                modifier = Modifier
-                                    .clip(uiRoundnessShape())
-                                    .combinedClickable(
-                                        onClick = { onPlaylistClick(item.key) },
-                                        onLongClick = {
-                                            menuState.display { OnlinePlaylistItemMenu(navController = navController, playlist = item).MenuComponent() }
-                                        }
-                                    ),
-                                disableScrollingText = disableScrollingText
-                            )
-                        }
-                        is Innertube.VideoItem -> {
-                            val binder = LocalPlayerServiceBinder.current
-                            val menuState = LocalMenuState.current
-                            VideoItem(
-                                video = item,
-                                thumbnailHeightDp = albumThumbnailSizeDp,
-                                thumbnailWidthDp = (albumThumbnailSizeDp * 16 / 9),
-                                disableScrollingText = disableScrollingText,
-                                alternative = true,
-                                modifier = Modifier
-                                    .clip(uiRoundnessShape())
-                                    .combinedClickable(
-                                        onClick = {
-                                            binder?.stopRadio()
-                                            if (isVideoEnabled())
-                                                binder?.player?.playVideo(item.asMediaItem)
-                                            else
-                                                binder?.player?.forcePlay(item.asMediaItem)
-                                        },
-                                        onLongClick = { menuState.display { VideoItemMenu(navController = navController, song = item.asSong).MenuComponent() } }
+
+            if (isSongOnly) {
+                val songItems = section.items.filterIsInstance<Innertube.SongItem>()
+                LazyHorizontalGrid(
+                    rows = GridCells.Fixed(3),
+                    flingBehavior = ScrollableDefaults.flingBehavior(),
+                    contentPadding = endPaddingValues,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(Dimensions.itemsVerticalPadding * 3 * 9)
+                ) {
+                    items(songItems, key = { it.key ?: it.hashCode() }, contentType = { "song" }) { item ->
+                        val binder = LocalPlayerServiceBinder.current
+                        SongItem(
+                            song = item.asSong ?: Song.makePlaceholder(""),
+                            navController = navController,
+                            onClick = {
+                                val mediaItem = item.asMediaItem
+                                binder?.stopRadio()
+                                binder?.player?.forcePlay(mediaItem)
+                                binder?.player?.addMediaItems(songItems.map { s -> s.asMediaItem })
+                            },
+                            modifier = Modifier.width(itemInHorizontalGridWidth).animateItem()
+                        )
+                    }
+                    
+                    if (isLoading) {
+                        items(3, key = { "shimmer_$it" }, contentType = { "placeholder" }) {
+                            AnimatedVisibility(
+                                visible = isLoading,
+                                enter = slideInVertically(
+                                    initialOffsetY = { it / 2 },
+                                    animationSpec = tween(300, delayMillis = it * 50, easing = FastOutSlowInEasing)
+                                ) + fadeIn(animationSpec = tween(250, delayMillis = it * 50)),
+                                exit = slideOutVertically(
+                                    targetOffsetY = { -it / 3 },
+                                    animationSpec = tween(250, easing = FastOutSlowInEasing)
+                                ) + fadeOut(animationSpec = tween(200))
+                            ) {
+                                ShimmerHost {
+                                    AlbumItemPlaceholder(
+                                        thumbnailSizeDp = albumThumbnailSizeDp,
+                                        modifier = Modifier.padding(horizontal = 4.dp).animateItem()
                                     )
-                            )
+                                }
+                            }
                         }
-                        null -> {}
                     }
                 }
-                
-                if (isLoading) {
-                    items(3, key = { "shimmer_$it" }, contentType = { "placeholder" }) {
-                        ShimmerHost {
-                            AlbumItemPlaceholder(
-                                thumbnailSizeDp = albumThumbnailSizeDp,
-                                modifier = Modifier.padding(horizontal = 4.dp)
-                            )
+            } else {
+                LazyRow(contentPadding = endPaddingValues) {
+                    items(section.items, key = { it?.key ?: it.hashCode() }, contentType = { "item" }) { item ->
+                        when (item) {
+                            is Innertube.SongItem -> {
+                                val binder = LocalPlayerServiceBinder.current
+                                val menuState = LocalMenuState.current
+                                val song = item.asSong ?: Song.makePlaceholder("")
+                                AlbumItem(
+                                    thumbnailUrl = item.thumbnail?.url,
+                                    title = item.info?.name,
+                                    authors = item.authors?.parseArtists()?.joinToString(", "),
+                                    year = null,
+                                    thumbnailSizePx = albumThumbnailSizePx,
+                                    thumbnailSizeDp = albumThumbnailSizeDp,
+                                    alternative = true,
+                                    showAuthors = true,
+                                    modifier = Modifier
+                                        .clip(uiRoundnessShape())
+                                        .combinedClickable(
+                                            onClick = {
+                                                val mediaItem = item.asMediaItem
+                                                binder?.stopRadio()
+                                                binder?.player?.forcePlay(mediaItem)
+                                            },
+                                            onLongClick = {
+                                                menuState.display { SongItemMenu(navController = navController, song = song).MenuComponent() }
+                                            }
+                                        ).animateItem(),
+                                    disableScrollingText = disableScrollingText
+                                )
+                            }
+                            is Innertube.AlbumItem -> {
+                                val menuState = LocalMenuState.current
+                                AlbumItem(
+                                    album = item,
+                                    thumbnailSizePx = albumThumbnailSizePx,
+                                    thumbnailSizeDp = albumThumbnailSizeDp,
+                                    alternative = true,
+                                    modifier = Modifier
+                                        .clip(uiRoundnessShape())
+                                        .combinedClickable(
+                                            onClick = { onAlbumClick(item.key) },
+                                            onLongClick = {
+                                                menuState.display { OnlineAlbumItemMenu(navController = navController, album = item).MenuComponent() }
+                                            }
+                                        ).animateItem(),
+                                    disableScrollingText = disableScrollingText
+                                )
+                            }
+                            is Innertube.ArtistItem -> {
+                                val menuState = LocalMenuState.current
+                                ArtistItem(
+                                    artist = item,
+                                    thumbnailSizePx = songThumbnailSizePx,
+                                    thumbnailSizeDp = songThumbnailSizeDp,
+                                    alternative = false,
+                                    modifier = Modifier
+                                        .width(200.dp)
+                                        .clip(uiRoundnessShape())
+                                        .combinedClickable(
+                                            onClick = { onArtistClick(item.key) },
+                                            onLongClick = {
+                                                menuState.display { OnlineArtistItemMenu(navController = navController, artist = item).MenuComponent() }
+                                            }
+                                        ).animateItem(),
+                                    disableScrollingText = disableScrollingText
+                                )
+                            }
+                            is Innertube.PlaylistItem -> {
+                                val menuState = LocalMenuState.current
+                                PlaylistItem(
+                                    playlist = item,
+                                    thumbnailSizePx = playlistThumbnailSizePx,
+                                    thumbnailSizeDp = playlistThumbnailSizeDp,
+                                    alternative = true,
+                                    showSongsCount = false,
+                                    isYoutubePlaylist = true,
+                                    modifier = Modifier
+                                        .clip(uiRoundnessShape())
+                                        .combinedClickable(
+                                            onClick = { onPlaylistClick(item.key) },
+                                            onLongClick = {
+                                                menuState.display { OnlinePlaylistItemMenu(navController = navController, playlist = item).MenuComponent() }
+                                            }
+                                        ).animateItem(),
+                                    disableScrollingText = disableScrollingText
+                                )
+                            }
+                            is Innertube.VideoItem -> {
+                                val binder = LocalPlayerServiceBinder.current
+                                val menuState = LocalMenuState.current
+                                VideoItem(
+                                    video = item,
+                                    thumbnailHeightDp = albumThumbnailSizeDp,
+                                    thumbnailWidthDp = (albumThumbnailSizeDp * 16 / 9),
+                                    disableScrollingText = disableScrollingText,
+                                    alternative = true,
+                                    modifier = Modifier
+                                        .clip(uiRoundnessShape())
+                                        .combinedClickable(
+                                            onClick = {
+                                                binder?.stopRadio()
+                                                if (isVideoEnabled())
+                                                    binder?.player?.playVideo(item.asMediaItem)
+                                                else
+                                                    binder?.player?.forcePlay(item.asMediaItem)
+                                            },
+                                            onLongClick = { menuState.display { VideoItemMenu(navController = navController, song = item.asSong).MenuComponent() } }
+                                        ).animateItem()
+                                )
+                            }
+                            null -> {}
+                        }
+                    }
+                    
+                    if (isLoading) {
+                        items(3, key = { "shimmer_$it" }, contentType = { "placeholder" }) {
+                            ShimmerHost {
+                                AlbumItemPlaceholder(
+                                    thumbnailSizeDp = albumThumbnailSizeDp,
+                                    modifier = Modifier.padding(horizontal = 4.dp).animateItem()
+                                )
+                            }
                         }
                     }
                 }
@@ -360,5 +386,72 @@ private fun BaseChipItemColored(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(horizontal = 10.dp)
         )
+    }
+}
+
+@Composable
+fun AnimatedSection(
+    visible: Boolean,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = slideInVertically(
+            initialOffsetY = { it / 3 },
+            animationSpec = tween(300, easing = FastOutSlowInEasing)
+        ) + fadeIn(animationSpec = tween(250)),
+        exit = slideOutVertically(
+            targetOffsetY = { -it / 3 },
+            animationSpec = tween(300, easing = FastOutSlowInEasing)
+        ) + fadeOut(animationSpec = tween(250)),
+        modifier = modifier
+    ) {
+        content()
+    }
+}
+
+@Composable
+fun AnimatedSectionStaggered(
+    visible: Boolean,
+    modifier: Modifier = Modifier,
+    title: @Composable () -> Unit,
+    content: @Composable () -> Unit
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(animationSpec = tween(200)),
+        exit = fadeOut(animationSpec = tween(200)),
+        modifier = modifier
+    ) {
+        Column {
+            AnimatedVisibility(
+                visible = visible,
+                enter = slideInVertically(
+                    initialOffsetY = { -it / 2 },
+                    animationSpec = tween(250, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(200)),
+                exit = slideOutVertically(
+                    targetOffsetY = { -it / 2 },
+                    animationSpec = tween(200, easing = FastOutSlowInEasing)
+                ) + fadeOut(animationSpec = tween(150))
+            ) {
+                title()
+            }
+
+            AnimatedVisibility(
+                visible = visible,
+                enter = slideInVertically(
+                    initialOffsetY = { it / 3 },
+                    animationSpec = tween(300, delayMillis = 80, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(250, delayMillis = 80)),
+                exit = slideOutVertically(
+                    targetOffsetY = { -it / 3 },
+                    animationSpec = tween(250, easing = FastOutSlowInEasing)
+                ) + fadeOut(animationSpec = tween(200))
+            ) {
+                content()
+            }
+        }
     }
 }

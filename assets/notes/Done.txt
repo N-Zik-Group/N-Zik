@@ -1,3 +1,63 @@
+improve(ui): Quick Picks section animations and empty-state handling — complete overhaul
+  - `HomeQuickPicks.kt`: Wrapped every section (charts, related albums, similar artists, new albums, playlists, moods, generic YTM sections, etc.) in `AnimatedVisibility` with `expandVertically()` + `fadeIn()` enter and `shrinkVertically()` + `fadeOut()` exit — sections now smoothly slide in instead of popping
+  - `HomeQuickPicks.kt`: Each section now checks `hasXxxContent` (e.g. `hasChartsContent`, `hasRelatedAlbums`, `hasMoods`) before rendering — empty sections are hidden entirely instead of showing blank space
+  - `HomeQuickPicks.kt`: All `item()` blocks use `key` for stable LazyColumn identity and `Modifier.animateItem()` for smooth reorder animations
+  - `HomeQuickPicks.kt`: `GenericYtmSections` moved outside the `sectionOrder.forEach` loop into its own `item(key = "generic_ytm_sections")` — prevents recomposition issues when section list changes
+  - `HomeQuickPicks.kt`: Error/login/cookie messages moved into `item()` blocks with keys for stable positioning
+  - `HomeQuickPicksComponents.kt`: Added `AnimatedSection` and `AnimatedSectionStaggered` composables — reusable animation wrappers with staggered title/content entry (title slides from top, content slides from bottom with 80ms delay)
+  - `HomeQuickPicksComponents.kt`: `YtmSectionByTitle` now uses `AnimatedVisibility` for shimmer loading state — shimmers slide in with staggered `slideInVertically` + `fadeIn` (each placeholder delayed by `it * 50ms`) and fade out when items arrive
+  - `HomeQuickPicksComponents.kt`: `YtmSectionItems` now wraps content in `Column` with `showTitle` parameter — allows hiding title when section is the primary content
+  - `HomeQuickPicksComponents.kt`: Added `contentType` to all `items()` / `itemsIndexed()` calls in `YtmSectionItems`, `GenericYtmSections` for LazyRow/LazyHorizontalGrid performance
+  - `HomeQuickPicksSections.kt`: All section composables (`NewAlbumsOfYourArtistsSection`, `NewAlbumsSection`, `RelatedAlbumsSection`, `SimilarArtistsSection`, `MonthlyPlaylistsSection`, `MyTopSection`, `MoodsSection`, `MoodsAndGenresSection`, `ChartsSection`, `GenericYtmSections`) wrapped in `Column` with `showTitle` parameter for conditional title rendering
+  - `HomeQuickPicksSections.kt`: All `LazyRow` / `LazyHorizontalGrid` items now use `.animateItem()` for smooth insertion/removal animations
+  - `HomeQuickPicksSections.kt`: `ChartsSection` songs and artists grids changed from `GridCells.Fixed(2)` to `GridCells.Fixed(3)` with dynamic height (`Dimensions.itemsVerticalPadding * 3 * 9`) for better density
+  - `HomeQuickPicksSections.kt`: Removed redundant `?: {}` empty-block fallbacks after `?.let {}` — cleaner null handling
+  - `HomeQuickPicksSections.kt`: `GenericYtmSections` song items now render as `AlbumItem` (thumbnail + title + authors) instead of `SongItem` — consistent visual style with other YTM sections
+  - `HomeQuickPicksSections.kt`: `GenericYtmSections` now shows full-page shimmer (`TextPlaceholder` + 4 `LazyRow` rows) when `isLoading && sections.isNullOrEmpty()` — previously showed nothing during initial load
+  - `QuickPicksGrid`: Added `scrollToStartTrigger` param — `LaunchedEffect` calls `animateScrollToItem(0)` on refresh so grid resets to top
+  - `QuickPicksGrid`: Added `.animateItem()` to `SongItem` for smooth reorder on recommendation changes
+
+improve(state): Quick Picks data loading resilience and refresh behavior
+  - `HomeQuickPicksState.kt`: Replaced `coroutineScope` with `supervisorScope` in Phase 1 network calls — one failed API (charts, discover, quick picks) no longer cancels the others; partial data still loads
+  - `HomeQuickPicksState.kt`: Added `dbJob: Job?` tracking — `dbJob?.cancel()` before launching new DB observation prevents duplicate Flow collectors accumulating on refresh
+  - `HomeQuickPicksState.kt`: Added `refreshKey: MutableState<Int>` — incremented on `refresh()` to trigger `QuickPicksGrid` scroll-to-start
+  - `HomeQuickPicksState.kt`: `refresh()` now clears `recommendations.value = emptyList()` in addition to `trendingList` and `ytmQuickPicks` — stale recommendations no longer flash before new ones load
+  - `HomeQuickPicksState.kt`: `homePageInit` changed from `persist<HomePage?>` to `rememberPreference` — proper reactive state instead of manual persistence for YTM section data
+
+improve(perf): EncryptedSharedPreferences caching — eliminate repeated create calls
+  - `EncryptedPreferences.kt`: Added `cachedEncryptedPreferences: SharedPreferences?` with `@Volatile` + `@Synchronized` singleton pattern — `EncryptedSharedPreferences.create()` is expensive (~50-100ms), now called once per process lifetime instead of on every preference read
+  - `EncryptedPreferences.kt`: Added `clearEncryptedPreferencesCache()` — allows invalidation when master key changes (e.g. after `deleteSharedPreferences` on API 24+)
+  - `EncryptedPreferences.kt`: Error recovery unchanged — `deleteSharedPreferences("secure_preferences")` on API 24+ when master key mismatch, but now also clears the cache to force re-creation
+
+fix(sync): YouTube login state read on IO thread — prevent ANR on slow storage
+  - `ActionBar.kt`: Moved `cookie`, `isLoginEnabled`, `accountThumbnail` reads from synchronous `remember(trigger)` to `LaunchedEffect(trigger)` + `withContext(Dispatchers.IO)` — `EncryptedSharedPreferences` can block on first access
+  - `HistoryList.kt`: Moved `isCoreSyncEnabled` read from direct `appContext().encryptedPreferences.getBoolean()` to `LaunchedEffect(Unit)` + `withContext(Dispatchers.IO)` — prevents main-thread freeze on history screen entry
+  - `WelcomeMessage.kt`: Moved `isYouTubeLoggedIn()` and `ytAccountName()` calls to `LaunchedEffect(baseMessage)` + `withContext(Dispatchers.IO)` — welcome greeting no longer blocks composition
+  - `SettingsScreen.kt`: Added `ytLoggedIn` state read via `LaunchedEffect(trigger)` + `withContext(Dispatchers.IO)` — settings tab icon/title updates without blocking; passed as param to `AIRecommendationSettings`
+  - `AIRecommendationSettings.kt`: Added `ytLoggedIn: Boolean` parameter — replaces direct `isYouTubeLoggedIn()` call for consistent state from parent
+
+fix(sync): Logout cleanup — disable all sync sub-toggles and useLoginForBrowse
+  - `AccountsSettings.kt`: On YouTube logout: now disables `enableYouTubeSync`, `useLoginForBrowse`, and all 14 sync sub-toggles (`autosyncArtists`, `autosyncAlbums`, `autosyncPlaylists`, `autosyncLikes`, `syncImportHistory`, `syncImportLibrarySongs`, `syncImportUploadedSongs`, `syncImportUploadedAlbums`, `syncImportEpisodes`, `syncPushHistory`, `syncPushSongLike`, `syncPushAlbumBookmark`, `syncPushArtistFollow`, `syncPushPlaylist`, `syncPushEpisode`) — previously sync toggles persisted after logout causing silent failures
+  - `AccountsSettings.kt`: On YouTube logout: resets `Innertube.useLoginForBrowse = false` — prevents stale login state for browse requests
+  - `AccountsSettings.kt`: On YouTube login restore: auto-enables `useLoginForBrowse` only if real credentials exist (`"SAPISID" in parseCookieString(savedCookie)`) — prevents enabling browse with empty/expired cookies
+  - `AccountsSettings.kt`: Added `LaunchedEffect(isYouTubeLoginEnabled)` — auto-disables `isYouTubeSyncEnabled` when login is turned off, prevents sync running without credentials
+  - `AccountsSettings.kt`: "Login for Browse" toggle now only visible when `isLoggedIn` — hides irrelevant option when not logged in
+  - `AccountsSettings.kt`: Sync section visibility changed from `useLoginForBrowseSync` to `useLoginForBrowseSync && isYouTubeLoginActive` — sync settings hidden when YouTube login is disabled
+
+fix(ui): Home tabs animation timing — consistent snappy transitions
+  - `HomeAlbum.kt`: All `AnimatedVisibility` animations now use explicit `tween(200)` animationSpec — toolbar show/hide and sync button visibility transitions are consistent 200ms instead of default duration
+  - `HomeArtist.kt`: Same `tween(200)` fix across all `AnimatedVisibility` blocks
+  - `HomeLibrary.kt`: Same `tween(200)` fix across all `AnimatedVisibility` blocks
+  - `HomeSongsScreen.kt`: Same `tween(200)` fix across all `AnimatedVisibility` blocks
+
+fix(coroutine): Replace unstructured CoroutineScope with structured scopes
+  - `HomeAlbum.kt`: Replaced `CoroutineScope(Dispatchers.IO).launch { importYTMLikedAlbums(force = true) }` with `scope.launch { ... }` — uses the composable's lifecycle-aware scope, prevents leak on navigation
+  - `HomeArtist.kt`: Replaced `CoroutineScope(Dispatchers.IO).launch { importYTMSubscribedChannels(force = true) }` with `coroutineScope.launch { ... }` — structured concurrency
+  - `HomeLibrary.kt`: Replaced `CoroutineScope(Dispatchers.IO).launch { ... }` with `coroutineScope.launch { ... }` — structured concurrency for import operations
+
+fix(parsing): skip duration patterns in artist name parsing
+  - `Utils.kt`: `parseArtists()` now skips strings matching duration patterns (`45:38`, `1:23:45`) via regex `^\d{1,2}:\d{2}(:\d{2})?$` — prevents duration strings from being treated as artist names in album/playlist metadata
+
 improve(ui): global smart hide/show of App Header and NavBar on scroll
   - `MainActivity.kt`: Replaced linear pixel tracking in `NestedScrollConnection` with intelligent threshold-based hiding (-150px down to hide, +15px up to show).
   - `MainActivity.kt`: Removed restrictions to enable scroll-hide behavior on Quick Picks, Search Results, and Settings screens.

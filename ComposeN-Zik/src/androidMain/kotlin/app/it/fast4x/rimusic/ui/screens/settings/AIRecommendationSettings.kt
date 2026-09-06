@@ -126,7 +126,8 @@ fun DefaultAIRecommendationSettings() {
 @UnstableApi
 @Composable
 fun AIRecommendationSettings(
-    navController: NavController
+    navController: NavController,
+    ytLoggedIn: Boolean = false
 ) {
     var playEventType by rememberPreference(
         playEventsTypeKey,
@@ -197,8 +198,8 @@ fun AIRecommendationSettings(
         QuickPicksContentSettingsDialog.Render()
 
         HeaderWithIcon(
-            title = if (!isYouTubeLoggedIn()) stringResource(R.string.ai_recommendations) else stringResource(R.string.home),
-            iconId = if (!isYouTubeLoggedIn()) R.drawable.sparkles else R.drawable.ytmusic,
+            title = if (!ytLoggedIn) stringResource(R.string.ai_recommendations) else stringResource(R.string.home),
+            iconId = if (!ytLoggedIn) R.drawable.sparkles else R.drawable.ytmusic,
             enabled = false,
             showIcon = true,
             modifier = Modifier,

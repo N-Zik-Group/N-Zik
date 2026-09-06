@@ -80,6 +80,7 @@ import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import app.n_zik.android.components.tab.Search
@@ -117,6 +118,13 @@ fun HistoryList(
     val search = Search(lazyListState)
 
     val sort = Sort<HistorySortOrder>(Preference.HISTORY_SORT_BY, Preference.HISTORY_SORT_ORDER, historySortMenuOrderKey, "hist")
+
+    var isCoreSyncEnabled by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        isCoreSyncEnabled = withContext(Dispatchers.IO) {
+            appContext().encryptedPreferences.getBoolean(enableYouTubeSyncKey, false)
+        }
+    }
 
     val events by remember(sort.sortBy, sort.sortOrder, parentalControlEnabled) {
         Database.eventTable
@@ -161,7 +169,6 @@ fun HistoryList(
 
     val buttonsList = mutableListOf(HistoryType.History to stringResource(R.string.history))
     val syncImportHistory by rememberPreference(syncImportHistoryKey, false)
-    val isCoreSyncEnabled = appContext().encryptedPreferences.getBoolean(enableYouTubeSyncKey, false)
     if (isCoreSyncEnabled && syncImportHistory) {
         buttonsList += HistoryType.YTMHistory to stringResource(R.string.yt_history)
     }

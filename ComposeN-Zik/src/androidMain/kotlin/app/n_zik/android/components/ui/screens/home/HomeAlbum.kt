@@ -6,6 +6,7 @@ import app.n_zik.android.uiRoundnessShape
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -148,7 +149,6 @@ import app.it.fast4x.rimusic.ui.styling.overlay
 import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.addNext
 import app.it.fast4x.rimusic.utils.enqueue
-import kotlinx.coroutines.CoroutineScope
 import app.n_zik.android.appContext
 import kotlinx.coroutines.withContext
 import app.it.fast4x.rimusic.ui.components.themed.Enqueue
@@ -352,7 +352,7 @@ fun HomeAlbums(
         }
     }
 
-    val sync = autoSyncToolbutton(R.string.autosync_albums, autosyncAlbumsKey) { CoroutineScope(Dispatchers.IO).launch { importYTMLikedAlbums(force = true) } }
+    val sync = autoSyncToolbutton(R.string.autosync_albums, autosyncAlbumsKey) { scope.launch { importYTMLikedAlbums(force = true) } }
 
     val doAutoSync by rememberPreference(autosyncAlbumsKey, false)
     var justSynced by rememberSaveable { mutableStateOf(!doAutoSync) }
@@ -502,8 +502,8 @@ fun HomeAlbums(
 
                 androidx.compose.animation.AnimatedVisibility(
                     visible = isToolbarVisible,
-                    enter = androidx.compose.animation.expandVertically() + androidx.compose.animation.fadeIn(),
-                    exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
+                    enter = androidx.compose.animation.expandVertically(animationSpec = tween(200)) + androidx.compose.animation.fadeIn(animationSpec = tween(200)),
+                    exit = androidx.compose.animation.shrinkVertically(animationSpec = tween(200)) + androidx.compose.animation.fadeOut(animationSpec = tween(200))
                 ) {
                     Column {
                         Column {
@@ -533,8 +533,8 @@ fun HomeAlbums(
                     }
                     AnimatedVisibility(
                         visible = isYouTubeSyncEnabled(),
-                        enter = fadeIn() + expandVertically(),
-                        exit = fadeOut() + shrinkVertically()
+                        enter = fadeIn(animationSpec = tween(200)) + expandVertically(animationSpec = tween(200)),
+                        exit = fadeOut(animationSpec = tween(200)) + shrinkVertically(animationSpec = tween(200))
                     ) {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,

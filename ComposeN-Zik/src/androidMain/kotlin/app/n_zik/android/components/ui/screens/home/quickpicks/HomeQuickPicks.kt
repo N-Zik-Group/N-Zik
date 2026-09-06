@@ -2,14 +2,20 @@
 package app.n_zik.android.components.ui.screens.home.quickpicks
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LoadingIndicator
@@ -56,6 +62,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import kotlin.random.Random
 import app.n_zik.android.components.AppPullToRefreshBox
@@ -102,7 +109,13 @@ fun HomeQuickPicks(
 
     var lastPlayEventType by rememberSaveable { mutableStateOf(playEventType) }
     var lastSelectedCountry by rememberSaveable { mutableStateOf(selectedCountryCode) }
-    var lastYouTubeLoggedIn by rememberSaveable { mutableStateOf(isYouTubeLoggedIn()) }
+    var currentYouTubeLoggedIn by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        currentYouTubeLoggedIn = withContext(Dispatchers.IO) { isYouTubeLoggedIn() }
+    }
+
+    var lastYouTubeLoggedIn by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(playEventType, selectedCountryCode) {
         if (playEventType != lastPlayEventType || selectedCountryCode != lastSelectedCountry) {
@@ -118,10 +131,11 @@ fun HomeQuickPicks(
         state.loadData()
     }
 
-    val currentYouTubeLoggedIn = isYouTubeLoggedIn()
-    LaunchedEffect(currentYouTubeLoggedIn) {
-        if (currentYouTubeLoggedIn != lastYouTubeLoggedIn) {
-            lastYouTubeLoggedIn = currentYouTubeLoggedIn
+    LaunchedEffect(Unit) {
+        val loggedIn = withContext(Dispatchers.IO) { isYouTubeLoggedIn() }
+        if (loggedIn != lastYouTubeLoggedIn) {
+            lastYouTubeLoggedIn = loggedIn
+            currentYouTubeLoggedIn = loggedIn
             state.homePageResult.value = null
             state.homePageInit.value = null
             state.discoverPageResult.value = null
@@ -212,7 +226,14 @@ fun HomeQuickPicks(
         }
     }
 
-    val scrollState = rememberScrollState()
+    val scrollState = rememberLazyListState()
+
+    LaunchedEffect(state.refreshKey.value) {
+        if (state.refreshKey.value > 0) {
+            scrollState.animateScrollToItem(0)
+        }
+    }
+
     val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
     val gridsContentPadding = PaddingValues(start = 12.dp, end = endPaddingValues.calculateEndPadding(LocalLayoutDirection.current))
     val sectionTextModifier = Modifier.padding(horizontal = 12.dp).padding(top = 16.dp, bottom = 8.dp).padding(endPaddingValues)
@@ -247,300 +268,399 @@ fun HomeQuickPicks(
             val songThumbnailSizeDp = Dimensions.thumbnails.song
             val songThumbnailSizePx = songThumbnailSizeDp.px
 
-            Column(
+            val showTips by rememberPreference(showTipsKey, true)
+            val displayedSectionTitles = remember { mutableSetOf<String>() }
+            val ytmSections = state.homePageInit.value?.sections.orEmpty()
+
+            var stableHomePageInit by remember { mutableStateOf(state.homePageInit.value) }
+            if (state.homePageInit.value != null) {
+                stableHomePageInit = state.homePageInit.value
+            }
+
+            val artistsState = persistList<Artist>("home/quickpicks/local/artists")
+            val artists by remember { Database.artistTable.sortFollowingByName().distinctUntilChanged() }.collectAsStateWithLifecycle(artistsState.value, context = Dispatchers.IO)
+            LaunchedEffect(artists) { artistsState.value = artists }
+
+            val newReleaseAlbumsFiltered = remember(state.discoverPageInit.value, artists) {
+                state.discoverPageInit.value?.newReleaseAlbums?.filter { album ->
+                    artists.any { it.name == album.authors?.firstOrNull()?.name }
+                }.orEmpty()
+            }
+
+            val monthlyPlaylistsState = persistList<PlaylistPreview>("home/quickpicks/local/monthlyPlaylists")
+            val monthlyPlaylists by remember {
+                Database.playlistTable.allAsPreview().distinctUntilChanged().map { list -> list.filter { it.playlist.name.startsWith(MONTHLY_PREFIX, true) } }
+            }.collectAsStateWithLifecycle(monthlyPlaylistsState.value, context = Dispatchers.IO)
+            LaunchedEffect(monthlyPlaylists) { monthlyPlaylistsState.value = monthlyPlaylists }
+
+            val maxTopPlaylistItems by rememberPreference(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`)
+            val myTopSongsState = persistList<Song>("home/quickpicks/local/myTopSongs")
+            val myTopSongs by remember { Database.eventTable.findSongsMostPlayedBetween(from = 0L, limit = maxTopPlaylistItems.toInt()) }.collectAsStateWithLifecycle(myTopSongsState.value, context = Dispatchers.IO)
+            LaunchedEffect(myTopSongs) { myTopSongsState.value = myTopSongs }
+
+            val sectionOrder = rememberQuickPicksSectionOrder()
+            val showCharts by rememberPreference(showChartsKey, true)
+            val showRelatedAlbums by rememberPreference(showRelatedAlbumsKey, true)
+            val showSimilarArtists by rememberPreference(showSimilarArtistsKey, true)
+            val showNewAlbumsArtists by rememberPreference(showNewAlbumsArtistsKey, true)
+            val showNewAlbums by rememberPreference(showNewAlbumsKey, true)
+            val showPlaylistMightLike by rememberPreference(showPlaylistMightLikeKey, true)
+            val showMoodsAndGenres by rememberPreference(showMoodsAndGenresKey, true)
+            val showMonthlyPlaylists by rememberPreference(showMonthlyPlaylistInQuickPicksKey, true)
+            val showMyTop by rememberPreference(showMyTopPlaylistKey, true)
+            val showFreshFindsOldFavorites by rememberPreference(showFreshFindsOldFavoritesKey, true)
+            val showMixedForYou by rememberPreference(showMixedForYouKey, true)
+            val showForgottenFavorites by rememberPreference(showForgottenFavoritesKey, true)
+            val showYourDailyDiscover by rememberPreference(showYourDailyDiscoverKey, true)
+            val showFreshNewMusic by rememberPreference(showFreshNewMusicKey, true)
+            val showNewReleases by rememberPreference(showNewReleasesKey, true)
+            val showAlbumsForYou by rememberPreference(showAlbumsForYouKey, true)
+            val showTodaysBiggestHits by rememberPreference(showTodaysBiggestHitsKey, true)
+            val showAllHits by rememberPreference(showAllHitsKey, true)
+            val showFeaturedPlaylists by rememberPreference(showFeaturedPlaylistsKey, true)
+            val showTrendingCommunityPlaylists by rememberPreference(showTrendingCommunityPlaylistsKey, true)
+            val showFromTheCommunity by rememberPreference(showFromTheCommunityKey, true)
+            val showTrendingSongsForYou by rememberPreference(showTrendingSongsForYouKey, true)
+            val showTopMusicVideos by rememberPreference(showTopMusicVideosKey, true)
+            val showCoverAndRemixes by rememberPreference(showCoverAndRemixesKey, true)
+            val showTrendingInShorts by rememberPreference(showTrendingInShortsKey, true)
+            val showMusicVideosForYou by rememberPreference(showMusicVideosForYouKey, true)
+            val showLivePerformances by rememberPreference(showLivePerformancesKey, true)
+            val showMoods by rememberPreference(showMoodsKey, true)
+            val showGenericYtmSections by rememberPreference(showGenericYtmSectionsKey, true)
+            val isViMusicUi = UiType.ViMusic.isCurrent()
+
+            val hasYtmSection: (String) -> Boolean = { predicate ->
+                ytmSections.any { section ->
+                    section.title.contains(predicate, ignoreCase = true) && section.items.any { it?.key != null }
+                }
+            }
+
+            LazyColumn(
+                state = scrollState,
                 modifier = Modifier
                     .background(colorPalette().background0)
                     .fillMaxHeight()
-                    .verticalScroll(scrollState)
             ) {
-                WelcomeMessage()
-
-                val showTips by rememberPreference(showTipsKey, true)
+                item(key = "welcome") {
+                    WelcomeMessage()
+                }
 
                 if (!state.loadedQuickPicks.value) {
-                    Box(modifier = Modifier.fillMaxWidth().height(Dimensions.itemsVerticalPadding * 3 * 9), contentAlignment = Alignment.Center) {
-                        LoadingIndicator(color = colorPalette().accent, modifier = Modifier.fillMaxHeight(0.5f).aspectRatio(1f))
+                    item(key = "loading") {
+                        Box(modifier = Modifier.fillMaxWidth().height(Dimensions.itemsVerticalPadding * 3 * 9), contentAlignment = Alignment.Center) {
+                            LoadingIndicator(color = colorPalette().accent, modifier = Modifier.fillMaxHeight(0.5f).aspectRatio(1f))
+                        }
                     }
                 } else {
-                    if (UiType.ViMusic.isCurrent())
-                        HeaderWithIcon(
-                            title = if (!isYouTubeLoggedIn()) stringResource(R.string.quick_picks) else stringResource(R.string.home),
-                            iconId = R.drawable.search,
-                            enabled = true,
-                            showIcon = !showSearchTab,
-                            modifier = Modifier,
-                            onClick = onSearchClick
-                        )
+                    if (isViMusicUi) {
+                        item(key = "header") {
+                            HeaderWithIcon(
+                                title = if (!currentYouTubeLoggedIn) stringResource(R.string.quick_picks) else stringResource(R.string.home),
+                                iconId = R.drawable.search,
+                                enabled = true,
+                                showIcon = !showSearchTab,
+                                modifier = Modifier,
+                                onClick = onSearchClick
+                            )
+                        }
+                    }
 
                     if (showTips) {
-                        QuickPicksHeader(
-                            playEventType = playEventType,
-                            onPlayEventTypeChange = { playEventType = it },
-                            onDiceClick = {
-                                scope.launch {
-                                    isQuickPicksLoading = true
-                                    delay(50)
-                                    try {
-                                        val relatedInit = state.relatedPageResult.value?.getOrNull()
-                                        val allItems = listOfNotNull(state.trending.value?.asMediaItem) + (relatedInit?.songs?.map { it.asMediaItem } ?: emptyList())
-                                        binder?.let { Shuffler.play(it, allItems) }
-                                    } finally {
-                                        isQuickPicksLoading = false
+                        item(key = "quick_picks_header") {
+                            QuickPicksHeader(
+                                playEventType = playEventType,
+                                onPlayEventTypeChange = { playEventType = it },
+                                onDiceClick = {
+                                    scope.launch {
+                                        isQuickPicksLoading = true
+                                        delay(50)
+                                        try {
+                                            val relatedInit = state.relatedPageResult.value?.getOrNull()
+                                            val allItems = listOfNotNull(state.trending.value?.asMediaItem) + (relatedInit?.songs?.map { it.asMediaItem } ?: emptyList())
+                                            binder?.let { Shuffler.play(it, allItems) }
+                                        } finally {
+                                            isQuickPicksLoading = false
+                                        }
                                     }
-                                }
-                            },
-                            onPlayAllClick = {
-                                scope.launch {
-                                    isQuickPicksLoading = true
-                                    delay(50)
-                                    try {
-                                        binder?.stopRadio()
-                                        state.trending.value?.let { binder?.player?.forcePlay(it.asMediaItem) }
-                                        val relatedInit = state.relatedPageResult.value?.getOrNull()
-                                        binder?.player?.addMediaItems(relatedInit?.songs?.map { it.asMediaItem } ?: emptyList())
-                                    } finally {
-                                        isQuickPicksLoading = false
+                                },
+                                onPlayAllClick = {
+                                    scope.launch {
+                                        isQuickPicksLoading = true
+                                        delay(50)
+                                        try {
+                                            binder?.stopRadio()
+                                            state.trending.value?.let { binder?.player?.forcePlay(it.asMediaItem) }
+                                            val relatedInit = state.relatedPageResult.value?.getOrNull()
+                                            binder?.player?.addMediaItems(relatedInit?.songs?.map { it.asMediaItem } ?: emptyList())
+                                        } finally {
+                                            isQuickPicksLoading = false
+                                        }
                                     }
-                                }
-                            },
-                            isLoading = isQuickPicksLoading
-                        )
+                                },
+                                isLoading = isQuickPicksLoading
+                            )
+                        }
 
-                        QuickPicksGrid(
-                            recommendations = state.recommendations.value,
-                            trendingList = state.trendingList.value,
-                            playEventType = playEventType,
-                            itemInHorizontalGridWidth = itemInHorizontalGridWidth,
-                            navController = navController,
-                            endPaddingValues = endPaddingValues,
-                            onSongClick = { binder?.startRadio(it, true) }
-                        )
+                        item(key = "quick_picks_grid") {
+                            QuickPicksGrid(
+                                recommendations = state.recommendations.value,
+                                trendingList = state.trendingList.value,
+                                playEventType = playEventType,
+                                itemInHorizontalGridWidth = itemInHorizontalGridWidth,
+                                navController = navController,
+                                endPaddingValues = endPaddingValues,
+                                onSongClick = { binder?.startRadio(it, true) },
+                                scrollToStartTrigger = state.refreshKey.value
+                            )
+                        }
                     }
                 }
-
-                val displayedSectionTitles = remember { mutableSetOf<String>() }
-                val ytmSections = state.homePageInit.value?.sections.orEmpty()
-
-                val artistsState = persistList<Artist>("home/quickpicks/local/artists")
-                val artists by remember { Database.artistTable.sortFollowingByName().distinctUntilChanged() }.collectAsStateWithLifecycle(artistsState.value, context = Dispatchers.IO)
-                LaunchedEffect(artists) { artistsState.value = artists }
-
-                val newReleaseAlbumsFiltered = remember(state.discoverPageInit.value, artists) {
-                    state.discoverPageInit.value?.newReleaseAlbums?.filter { album ->
-                        artists.any { it.name == album.authors?.firstOrNull()?.name }
-                    }.orEmpty()
-                }
-
-                val monthlyPlaylistsState = persistList<PlaylistPreview>("home/quickpicks/local/monthlyPlaylists")
-                val monthlyPlaylists by remember {
-                    Database.playlistTable.allAsPreview().distinctUntilChanged().map { list -> list.filter { it.playlist.name.startsWith(MONTHLY_PREFIX, true) } }
-                }.collectAsStateWithLifecycle(monthlyPlaylistsState.value, context = Dispatchers.IO)
-                LaunchedEffect(monthlyPlaylists) { monthlyPlaylistsState.value = monthlyPlaylists }
-
-                val maxTopPlaylistItems by rememberPreference(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`)
-                val myTopSongsState = persistList<Song>("home/quickpicks/local/myTopSongs")
-                val myTopSongs by remember { Database.eventTable.findSongsMostPlayedBetween(from = 0L, limit = maxTopPlaylistItems.toInt()) }.collectAsStateWithLifecycle(myTopSongsState.value, context = Dispatchers.IO)
-                LaunchedEffect(myTopSongs) { myTopSongsState.value = myTopSongs }
-
-                // Read section order and toggles from preferences
-                val sectionOrder = rememberQuickPicksSectionOrder()
-                val showCharts by rememberPreference(showChartsKey, true)
-                val showRelatedAlbums by rememberPreference(showRelatedAlbumsKey, true)
-                val showSimilarArtists by rememberPreference(showSimilarArtistsKey, true)
-                val showNewAlbumsArtists by rememberPreference(showNewAlbumsArtistsKey, true)
-                val showNewAlbums by rememberPreference(showNewAlbumsKey, true)
-                val showPlaylistMightLike by rememberPreference(showPlaylistMightLikeKey, true)
-                val showMoodsAndGenres by rememberPreference(showMoodsAndGenresKey, true)
-                val showMonthlyPlaylists by rememberPreference(showMonthlyPlaylistInQuickPicksKey, true)
-                val showMyTop by rememberPreference(showMyTopPlaylistKey, true)
-                val showFreshFindsOldFavorites by rememberPreference(showFreshFindsOldFavoritesKey, true)
-                val showMixedForYou by rememberPreference(showMixedForYouKey, true)
-                val showForgottenFavorites by rememberPreference(showForgottenFavoritesKey, true)
-                val showYourDailyDiscover by rememberPreference(showYourDailyDiscoverKey, true)
-                val showFreshNewMusic by rememberPreference(showFreshNewMusicKey, true)
-                val showNewReleases by rememberPreference(showNewReleasesKey, true)
-                val showAlbumsForYou by rememberPreference(showAlbumsForYouKey, true)
-                val showTodaysBiggestHits by rememberPreference(showTodaysBiggestHitsKey, true)
-                val showAllHits by rememberPreference(showAllHitsKey, true)
-                val showFeaturedPlaylists by rememberPreference(showFeaturedPlaylistsKey, true)
-                val showTrendingCommunityPlaylists by rememberPreference(showTrendingCommunityPlaylistsKey, true)
-                val showFromTheCommunity by rememberPreference(showFromTheCommunityKey, true)
-                val showTrendingSongsForYou by rememberPreference(showTrendingSongsForYouKey, true)
-                val showTopMusicVideos by rememberPreference(showTopMusicVideosKey, true)
-                val showCoverAndRemixes by rememberPreference(showCoverAndRemixesKey, true)
-                val showTrendingInShorts by rememberPreference(showTrendingInShortsKey, true)
-                val showMusicVideosForYou by rememberPreference(showMusicVideosForYouKey, true)
-                val showLivePerformances by rememberPreference(showLivePerformancesKey, true)
-                val showMoods by rememberPreference(showMoodsKey, true)
-                val showGenericYtmSections by rememberPreference(showGenericYtmSectionsKey, true)
 
                 // Render sections in configured order
                 sectionOrder.forEach { sectionId ->
                     when (sectionId) {
                         "tips" -> { /* Tips are always shown at top, handled separately */ }
                         "charts" -> {
-                            if (showCharts) {
-                                ChartsSection(showCharts, state.chartsPageInit.value, selectedCountryCode, { selectedCountryCode = it }, navController, onPlaylistClick, onArtistClick, endPaddingValues, playlistThumbnailSizePx, playlistThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, disableScrollingText, parentalControlEnabled, displayedSectionTitles, itemInHorizontalGridWidth)
+                            val hasChartsContent = state.chartsPageInit.value?.let { it.playlists?.isNotEmpty() == true || it.songs?.isNotEmpty() == true || it.artists?.isNotEmpty() == true } ?: false
+                            item(key = "charts") {
+                                AnimatedVisibility(visible = showCharts && hasChartsContent, modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    ChartsSection(showCharts, state.chartsPageInit.value, selectedCountryCode, { selectedCountryCode = it }, navController, onPlaylistClick, onArtistClick, endPaddingValues, playlistThumbnailSizePx, playlistThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, disableScrollingText, parentalControlEnabled, displayedSectionTitles, itemInHorizontalGridWidth)
+                                }
                             }
                         }
                         "related_albums" -> {
-                            if (showRelatedAlbums) {
-                                RelatedAlbumsSection(state.relatedPageResult.value?.getOrNull(), showRelatedAlbums, onAlbumClick, navController, albumThumbnailSizePx, albumThumbnailSizeDp, disableScrollingText, endPaddingValues, sectionTextModifier, displayedSectionTitles)
+                            val hasRelatedAlbums = state.relatedPageResult.value?.getOrNull()?.albums?.isNotEmpty() == true
+                            item(key = "related_albums") {
+                                AnimatedVisibility(visible = showRelatedAlbums && hasRelatedAlbums, modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    RelatedAlbumsSection(state.relatedPageResult.value?.getOrNull(), showRelatedAlbums, onAlbumClick, navController, albumThumbnailSizePx, albumThumbnailSizeDp, disableScrollingText, endPaddingValues, sectionTextModifier, displayedSectionTitles)
+                                }
                             }
                         }
                         "similar_artists" -> {
-                            if (showSimilarArtists) {
-                                SimilarArtistsSection(state.relatedPageResult.value?.getOrNull(), showSimilarArtists, onArtistClick, navController, artistThumbnailSizePx, artistThumbnailSizeDp, disableScrollingText, endPaddingValues, sectionTextModifier, displayedSectionTitles)
+                            val hasSimilarArtists = state.relatedPageResult.value?.getOrNull()?.artists?.isNotEmpty() == true
+                            item(key = "similar_artists") {
+                                AnimatedVisibility(visible = showSimilarArtists && hasSimilarArtists, modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    SimilarArtistsSection(state.relatedPageResult.value?.getOrNull(), showSimilarArtists, onArtistClick, navController, artistThumbnailSizePx, artistThumbnailSizeDp, disableScrollingText, endPaddingValues, sectionTextModifier, displayedSectionTitles)
+                                }
                             }
                         }
                         "new_albums_artists" -> {
-                            if (showNewAlbumsArtists) {
-                                NewAlbumsOfYourArtistsSection(state.discoverPageInit.value, artists, newReleaseAlbumsFiltered, showNewAlbumsArtists, onAlbumClick, navController, albumThumbnailSizePx, albumThumbnailSizeDp, disableScrollingText, endPaddingValues, sectionTextModifier)
+                            val hasNewAlbumsArtists = newReleaseAlbumsFiltered.isNotEmpty() && artists.isNotEmpty()
+                            item(key = "new_albums_artists") {
+                                AnimatedVisibility(visible = showNewAlbumsArtists && hasNewAlbumsArtists, modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    NewAlbumsOfYourArtistsSection(state.discoverPageInit.value, artists, newReleaseAlbumsFiltered, showNewAlbumsArtists, onAlbumClick, navController, albumThumbnailSizePx, albumThumbnailSizeDp, disableScrollingText, endPaddingValues, sectionTextModifier, showTitle = true)
+                                }
                             }
                         }
                         "new_albums" -> {
-                            if (showNewAlbums) {
-                                NewAlbumsSection(state.discoverPageInit.value, showNewAlbums, onAlbumClick, navController, albumThumbnailSizePx, albumThumbnailSizeDp, disableScrollingText, endPaddingValues, displayedSectionTitles)
+                            val hasNewAlbums = state.discoverPageInit.value?.newReleaseAlbums?.isNotEmpty() == true
+                            item(key = "new_albums") {
+                                AnimatedVisibility(visible = showNewAlbums && hasNewAlbums, modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    NewAlbumsSection(state.discoverPageInit.value, showNewAlbums, onAlbumClick, navController, albumThumbnailSizePx, albumThumbnailSizeDp, disableScrollingText, endPaddingValues, displayedSectionTitles, showTitle = true)
+                                }
                             }
                         }
                         "playlists_might_like" -> {
-                            if (showPlaylistMightLike) {
-                                YtmSectionByTitle(ytmSections, { it.contains("Playlist you might like", ignoreCase = true) }, stringResource(R.string.playlists_you_might_like), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "playlists_might_like") {
+                                AnimatedVisibility(visible = showPlaylistMightLike && (showLoader || hasYtmSection("Playlist you might like")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("Playlist you might like", ignoreCase = true) }, stringResource(R.string.playlists_you_might_like), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "moods_genres" -> {
-                            if (showMoodsAndGenres) {
-                                MoodsAndGenresSection(showMoodsAndGenres, state.discoverPageInit.value, onMoodClick, navController, gridsContentPadding, displayedSectionTitles)
+                            val hasMoodsGenres = state.discoverPageInit.value?.moods?.isNotEmpty() == true
+                            item(key = "moods_genres") {
+                                AnimatedVisibility(visible = showMoodsAndGenres && hasMoodsGenres, modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    MoodsAndGenresSection(showMoodsAndGenres, state.discoverPageInit.value, onMoodClick, navController, gridsContentPadding, displayedSectionTitles)
+                                }
                             }
                         }
                         "monthly_playlists" -> {
-                            if (showMonthlyPlaylists) {
-                                MonthlyPlaylistsSection(showMonthlyPlaylists, monthlyPlaylists, navController, endPaddingValues, playlistThumbnailSizeDp, playlistThumbnailSizePx, disableScrollingText)
+                            val hasMonthlyPlaylists = monthlyPlaylists.isNotEmpty()
+                            item(key = "monthly_playlists") {
+                                AnimatedVisibility(visible = showMonthlyPlaylists && hasMonthlyPlaylists, modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    MonthlyPlaylistsSection(showMonthlyPlaylists, monthlyPlaylists, navController, endPaddingValues, playlistThumbnailSizeDp, playlistThumbnailSizePx, disableScrollingText)
+                                }
                             }
                         }
                         "my_top" -> {
-                            if (showMyTop) {
-                                MyTopSection(showMyTop, myTopSongs, navController, endPaddingValues, sectionTextModifier, itemInHorizontalGridWidth)
+                            val hasMyTop = myTopSongs.isNotEmpty()
+                            item(key = "my_top") {
+                                AnimatedVisibility(visible = showMyTop && hasMyTop, modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    MyTopSection(showMyTop, myTopSongs, navController, endPaddingValues, sectionTextModifier, itemInHorizontalGridWidth)
+                                }
                             }
                         }
                         "fresh_finds_old_favorites" -> {
-                            if (showFreshFindsOldFavorites) {
-                                YtmSectionByTitle(ytmSections, { it.contains("Fresh finds", ignoreCase = true) || it.contains("Old favorites", ignoreCase = true) }, stringResource(R.string.fresh_finds_old_favorites), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "fresh_finds_old_favorites") {
+                                AnimatedVisibility(visible = showFreshFindsOldFavorites && (showLoader || hasYtmSection("Fresh finds") || hasYtmSection("Old favorites")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("Fresh finds", ignoreCase = true) || it.contains("Old favorites", ignoreCase = true) }, stringResource(R.string.fresh_finds_old_favorites), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "mixed_for_you" -> {
-                            if (showMixedForYou) {
-                                YtmSectionByTitle(ytmSections, { it.contains("Mixed for you", ignoreCase = true) }, stringResource(R.string.mixed_for_you), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "mixed_for_you") {
+                                AnimatedVisibility(visible = showMixedForYou && (showLoader || hasYtmSection("Mixed for you")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("Mixed for you", ignoreCase = true) }, stringResource(R.string.mixed_for_you), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "forgotten_favorites" -> {
-                            if (showForgottenFavorites) {
-                                YtmSectionByTitle(ytmSections, { it.contains("Forgotten favorites", ignoreCase = true) }, stringResource(R.string.forgotten_favorites), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "forgotten_favorites") {
+                                AnimatedVisibility(visible = showForgottenFavorites && (showLoader || hasYtmSection("Forgotten favorites")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("Forgotten favorites", ignoreCase = true) }, stringResource(R.string.forgotten_favorites), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "your_daily_discover" -> {
-                            if (showYourDailyDiscover) {
-                                YtmSectionByTitle(ytmSections, { it.contains("Your daily discover", ignoreCase = true) }, stringResource(R.string.your_daily_discover), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "your_daily_discover") {
+                                AnimatedVisibility(visible = showYourDailyDiscover && (showLoader || hasYtmSection("Your daily discover")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("Your daily discover", ignoreCase = true) }, stringResource(R.string.your_daily_discover), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "fresh_new_music" -> {
-                            if (showFreshNewMusic) {
-                                YtmSectionByTitle(ytmSections, { it.contains("Fresh new music", ignoreCase = true) }, stringResource(R.string.fresh_new_music), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "fresh_new_music") {
+                                AnimatedVisibility(visible = showFreshNewMusic && (showLoader || hasYtmSection("Fresh new music")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("Fresh new music", ignoreCase = true) }, stringResource(R.string.fresh_new_music), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "new_releases" -> {
-                            if (showNewReleases) {
-                                YtmSectionByTitle(ytmSections, { it.contains("New release", ignoreCase = true) && !it.contains("Fresh new music", ignoreCase = true) }, stringResource(R.string.new_releases), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "new_releases") {
+                                AnimatedVisibility(visible = showNewReleases && (showLoader || hasYtmSection("New release")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("New release", ignoreCase = true) && !it.contains("Fresh new music", ignoreCase = true) }, stringResource(R.string.new_releases), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "albums_for_you" -> {
-                            if (showAlbumsForYou) {
-                                YtmSectionByTitle(ytmSections, { it.contains("Albums for you", ignoreCase = true) }, stringResource(R.string.albums_for_you), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "albums_for_you") {
+                                AnimatedVisibility(visible = showAlbumsForYou && (showLoader || hasYtmSection("Albums for you")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("Albums for you", ignoreCase = true) }, stringResource(R.string.albums_for_you), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "todays_biggest_hits" -> {
-                            if (showTodaysBiggestHits) {
-                                YtmSectionByTitle(ytmSections, { it.contains("Today's biggest hits", ignoreCase = true) }, stringResource(R.string.todays_biggest_hits), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "todays_biggest_hits") {
+                                AnimatedVisibility(visible = showTodaysBiggestHits && (showLoader || hasYtmSection("Today's biggest hits")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("Today's biggest hits", ignoreCase = true) }, stringResource(R.string.todays_biggest_hits), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "all_hits" -> {
-                            if (showAllHits) {
-                                YtmSectionByTitle(ytmSections, { it.contains("All hits", ignoreCase = true) }, stringResource(R.string.all_hits), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "all_hits") {
+                                AnimatedVisibility(visible = showAllHits && (showLoader || hasYtmSection("All hits")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("All hits", ignoreCase = true) }, stringResource(R.string.all_hits), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "featured_playlists" -> {
-                            if (showFeaturedPlaylists) {
-                                YtmSectionByTitle(ytmSections, { it.contains("Featured playlists", ignoreCase = true) }, stringResource(R.string.featured_playlists_for_you), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "featured_playlists") {
+                                AnimatedVisibility(visible = showFeaturedPlaylists && (showLoader || hasYtmSection("Featured playlists")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("Featured playlists", ignoreCase = true) }, stringResource(R.string.featured_playlists_for_you), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "trending_community_playlists" -> {
-                            if (showTrendingCommunityPlaylists) {
-                                YtmSectionByTitle(ytmSections, { it.contains("Trending community playlists", ignoreCase = true) }, stringResource(R.string.trending_community_playlists), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "trending_community_playlists") {
+                                AnimatedVisibility(visible = showTrendingCommunityPlaylists && (showLoader || hasYtmSection("Trending community playlists")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("Trending community playlists", ignoreCase = true) }, stringResource(R.string.trending_community_playlists), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "from_the_community" -> {
-                            if (showFromTheCommunity) {
-                                YtmSectionByTitle(ytmSections, { it.contains("From the community", ignoreCase = true) }, stringResource(R.string.from_the_community), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "from_the_community") {
+                                AnimatedVisibility(visible = showFromTheCommunity && (showLoader || hasYtmSection("From the community")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("From the community", ignoreCase = true) }, stringResource(R.string.from_the_community), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "trending_songs_for_you" -> {
-                            if (showTrendingSongsForYou) {
-                                YtmSectionByTitle(ytmSections, { it.contains("Trending songs for you", ignoreCase = true) }, stringResource(R.string.trending_songs_for_you), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "trending_songs_for_you") {
+                                AnimatedVisibility(visible = showTrendingSongsForYou && (showLoader || hasYtmSection("Trending songs for you")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("Trending songs for you", ignoreCase = true) }, stringResource(R.string.trending_songs_for_you), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "top_music_videos" -> {
-                            if (showTopMusicVideos) {
-                                YtmSectionByTitle(ytmSections, { it.contains("Top music videos", ignoreCase = true) }, stringResource(R.string.top_music_videos), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "top_music_videos") {
+                                AnimatedVisibility(visible = showTopMusicVideos && (showLoader || hasYtmSection("Top music videos")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("Top music videos", ignoreCase = true) }, stringResource(R.string.top_music_videos), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "cover_and_remixes" -> {
-                            if (showCoverAndRemixes) {
-                                YtmSectionByTitle(ytmSections, { it.contains("Cover", ignoreCase = true) || it.contains("remix", ignoreCase = true) }, stringResource(R.string.cover_and_remixes), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "cover_and_remixes") {
+                                AnimatedVisibility(visible = showCoverAndRemixes && (showLoader || hasYtmSection("Cover") || hasYtmSection("remix")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("Cover", ignoreCase = true) || it.contains("remix", ignoreCase = true) }, stringResource(R.string.cover_and_remixes), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "trending_in_shorts" -> {
-                            if (showTrendingInShorts) {
-                                YtmSectionByTitle(ytmSections, { it.contains("Trending in Shorts", ignoreCase = true) }, stringResource(R.string.trending_in_shorts), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "trending_in_shorts") {
+                                AnimatedVisibility(visible = showTrendingInShorts && (showLoader || hasYtmSection("Trending in Shorts")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("Trending in Shorts", ignoreCase = true) }, stringResource(R.string.trending_in_shorts), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "music_videos_for_you" -> {
-                            if (showMusicVideosForYou) {
-                                YtmSectionByTitle(ytmSections, { it.contains("Music videos for you", ignoreCase = true) }, stringResource(R.string.music_videos_for_you), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "music_videos_for_you") {
+                                AnimatedVisibility(visible = showMusicVideosForYou && (showLoader || hasYtmSection("Music videos for you")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("Music videos for you", ignoreCase = true) }, stringResource(R.string.music_videos_for_you), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "live_performances" -> {
-                            if (showLivePerformances) {
-                                YtmSectionByTitle(ytmSections, { it.contains("Live performances", ignoreCase = true) }, stringResource(R.string.live_performances), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader)
+                            item(key = "live_performances") {
+                                AnimatedVisibility(visible = showLivePerformances && (showLoader || hasYtmSection("Live performances")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    YtmSectionByTitle(ytmSections, { it.contains("Live performances", ignoreCase = true) }, stringResource(R.string.live_performances), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                }
                             }
                         }
                         "moods" -> {
-                            if (showMoods) {
-                                MoodsSection(state.homePageInit.value, onChipClick, gridsContentPadding, displayedSectionTitles)
+                            val hasMoods = state.homePageInit.value?.chips?.isNotEmpty() == true
+                            item(key = "moods") {
+                                AnimatedVisibility(visible = showMoods && hasMoods, modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    MoodsSection(state.homePageInit.value, onChipClick, gridsContentPadding, displayedSectionTitles)
+                                }
                             }
                         }
                         "generic_ytm_sections" -> {
-                            if (showGenericYtmSections) {
-                                GenericYtmSections(state.homePageInit.value, displayedSectionTitles, itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, isLoading = showLoader)
-                            }
+                            // Handled after the loop
                         }
+                    }
+                }
+
+                if (showGenericYtmSections) {
+                    item(key = "generic_ytm_sections") {
+                        GenericYtmSections(stableHomePageInit, displayedSectionTitles, itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, isLoading = showLoader, showTitle = true)
                     }
                 }
                 
                 // HomeBottomShimmer removed as shimmers are now inline in their respective positions
 
                 if (state.relatedPageResult.value?.exceptionOrNull() != null) {
-                    Spacer(modifier = Modifier.height(50.dp))
-                    BasicText(text = stringResource(R.string.page_not_been_loaded), style = typography().s.secondary.center, modifier = Modifier.fillMaxWidth().padding(all = 16.dp))
+                    item(key = "error_related") {
+                        Spacer(modifier = Modifier.height(50.dp))
+                        BasicText(text = stringResource(R.string.page_not_been_loaded), style = typography().s.secondary.center, modifier = Modifier.fillMaxWidth().padding(all = 16.dp))
+                    }
                 } else {
-                    if (!isYouTubeLoggedIn()) {
-                        Spacer(modifier = Modifier.height(50.dp))
-                        BasicText(text = stringResource(R.string.log_in_to_ytm), style = typography().s.secondary.center, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).clickable(onClick = onSettingsClick))
+                    if (!currentYouTubeLoggedIn) {
+                        item(key = "login_prompt") {
+                            Spacer(modifier = Modifier.height(50.dp))
+                            BasicText(text = stringResource(R.string.log_in_to_ytm), style = typography().s.secondary.center, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).clickable(onClick = onSettingsClick))
+                        }
                     } else if (MainApplication.cookieStatus in listOf(MainApplication.CookieStatus.INVALID, MainApplication.CookieStatus.EXPIRED)) {
-                        Spacer(modifier = Modifier.height(50.dp))
-                        BasicText(text = stringResource(R.string.error_cookie_invalid), style = typography().s.secondary.center, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).clickable(onClick = onSettingsClick))
+                        item(key = "cookie_error") {
+                            Spacer(modifier = Modifier.height(50.dp))
+                            BasicText(text = stringResource(R.string.error_cookie_invalid), style = typography().s.secondary.center, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).clickable(onClick = onSettingsClick))
+                        }
                     }
                 }
-                Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
+                item(key = "bottom_spacer") {
+                    Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
+                }
             }
 
             val showFloatingIcon by rememberPreference(showFloatingIconKey, false)

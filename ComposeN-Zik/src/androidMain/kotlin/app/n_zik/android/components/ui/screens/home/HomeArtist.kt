@@ -9,6 +9,7 @@ import app.n_zik.android.uiRoundnessShape
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -149,7 +150,6 @@ import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.tab.SongShuffler
 import app.kreate.android.me.knighthat.utils.PropUtils
 import app.n_zik.android.components.menu.artist.LocalArtistItemMenu
-import kotlinx.coroutines.CoroutineScope
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.components.dialog.common.RetrySyncDialog
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
@@ -336,7 +336,7 @@ fun HomeArtists(
         }
     }
 
-    val sync = autoSyncToolbutton(R.string.autosync_channels, autosyncArtistsKey) { CoroutineScope(Dispatchers.IO).launch { importYTMSubscribedChannels(force = true) } }
+    val sync = autoSyncToolbutton(R.string.autosync_channels, autosyncArtistsKey) { coroutineScope.launch { importYTMSubscribedChannels(force = true) } }
 
     val doAutoSync by rememberPreference(autosyncArtistsKey, false)
     var justSynced by rememberSaveable { mutableStateOf(!doAutoSync) }
@@ -487,8 +487,8 @@ fun HomeArtists(
 
                 androidx.compose.animation.AnimatedVisibility(
                     visible = isToolbarVisible,
-                    enter = androidx.compose.animation.expandVertically() + androidx.compose.animation.fadeIn(),
-                    exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
+                    enter = androidx.compose.animation.expandVertically(animationSpec = tween(200)) + androidx.compose.animation.fadeIn(animationSpec = tween(200)),
+                    exit = androidx.compose.animation.shrinkVertically(animationSpec = tween(200)) + androidx.compose.animation.fadeOut(animationSpec = tween(200))
                 ) {
                     Column {
                         Column {
@@ -518,8 +518,8 @@ fun HomeArtists(
                     }
                     AnimatedVisibility(
                         visible = isYouTubeSyncEnabled(),
-                        enter = fadeIn() + expandVertically(),
-                        exit = fadeOut() + shrinkVertically()
+                        enter = fadeIn(animationSpec = tween(200)) + expandVertically(animationSpec = tween(200)),
+                        exit = fadeOut(animationSpec = tween(200)) + shrinkVertically(animationSpec = tween(200))
                     ) {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,

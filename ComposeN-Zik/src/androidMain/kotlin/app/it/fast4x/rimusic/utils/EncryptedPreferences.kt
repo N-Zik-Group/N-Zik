@@ -17,6 +17,27 @@ import timber.log.Timber
 
 var encryptedPreferencesUpdateTrigger by mutableStateOf(0)
 
+@Volatile
+private var cachedEncryptedPreferences: SharedPreferences? = null
+
+@Synchronized
+private fun getOrCreateEncryptedPreferences(context: Context): SharedPreferences {
+    return cachedEncryptedPreferences ?: run {
+        val prefs = context.getEncryptedSharedPreferencesResult().onFailure {
+            Timber.tag("EncryptedPreferences").w("Cannot retrieve preferences encrypted with current master key. Deleting and recreating.")
+            if (isAtLeastAndroid7) {
+                runCatching {
+                    context.deleteSharedPreferences("secure_preferences")
+                }.onFailure {
+                    Timber.tag("EncryptedPreferences").e(it, "Error while deleting encrypted preferences")
+                }
+            }
+        }.getOrThrow()
+        cachedEncryptedPreferences = prefs
+        prefs
+    }
+}
+
 
 
 const val discordPersonalAccessTokenKey = "DiscordPersonalAccessToken"
@@ -41,6 +62,10 @@ const val ytCookieExpiredKey = "ytCookieExpired"
 const val proxyPasswordEncryptedKey = "proxyPasswordEncrypted"
 const val proxyPasswordMigratedKey = "proxyPasswordMigrated"
 
+fun clearEncryptedPreferencesCache() {
+    cachedEncryptedPreferences = null
+}
+
 inline fun <reified T : Enum<T>> EncryptedSharedPreferences.getEnum(
     key: String,
     defaultValue: T
@@ -63,26 +88,7 @@ inline fun <reified T : Enum<T>> SharedPreferences.Editor.putEnum(
 
 
 val Context.encryptedPreferences: SharedPreferences
-    get() = getEncryptedSharedPreferencesResult().onFailure {
-        // idea based on https://gist.github.com/rynkowsg/86ebd680a67669dfcece4cc9ec9974df
-        run {
-            Timber.tag("EncryptedPreferences").w("Cannot retrieve preferences encrypted with current master key. Deleting and recreating.")
-
-            /**
-             * can only delete preferences this way on high enough API level.
-             * the code should behave the same as before for lower api levels
-             * (maybe this bug is only present on devices with high API levels anyway).
-             */
-            if (isAtLeastAndroid7) {
-                runCatching {
-                    deleteSharedPreferences("secure_preferences")
-                }.onFailure {
-                    Timber.tag("EncryptedPreferences").e(it, "Error while deleting encrypted preferences")
-                }
-            }
-            return getEncryptedSharedPreferencesResult().getOrThrow()
-        }
-    }.getOrThrow()
+    get() = getOrCreateEncryptedPreferences(this)
 
 fun Context.getEncryptedSharedPreferencesResult(): Result<SharedPreferences> = runCatching {
         EncryptedSharedPreferences.create(

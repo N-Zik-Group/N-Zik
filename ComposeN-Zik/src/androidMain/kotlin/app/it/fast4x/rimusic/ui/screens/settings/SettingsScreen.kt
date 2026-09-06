@@ -37,6 +37,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -101,6 +105,14 @@ fun SettingsScreen(
         mutableIntStateOf(0)
     }
 
+    val trigger = encryptedPreferencesUpdateTrigger
+    var ytLoggedIn by remember { mutableStateOf(false) }
+    LaunchedEffect(trigger) {
+        ytLoggedIn = withContext(Dispatchers.IO) {
+            isYouTubeLoginEnabled() && isYouTubeLoggedIn()
+        }
+    }
+
     Skeleton(
         navController,
         tabIndex,
@@ -110,8 +122,8 @@ fun SettingsScreen(
             item(0, stringResource(R.string.tab_general), R.drawable.ic_launcher_monochrome)
             item(1, stringResource(R.string.ui_tab), R.drawable.ui)
             item(2, stringResource(R.string.player_appearance), R.drawable.color_palette)
-            item(3, if (!isYouTubeLoggedIn()) stringResource(R.string.ai_recommendations)
-            else stringResource(R.string.home), if (!isYouTubeLoggedIn()) R.drawable.sparkles
+            item(3, if (!ytLoggedIn) stringResource(R.string.ai_recommendations)
+            else stringResource(R.string.home), if (!ytLoggedIn) R.drawable.sparkles
             else R.drawable.ytmusic)
             item(4, stringResource(R.string.tab_data), R.drawable.server)
             item(5, stringResource(R.string.tab_accounts), R.drawable.person)
@@ -126,7 +138,7 @@ fun SettingsScreen(
                 0 -> GeneralSettings(navController = navController)
                 1 -> UiSettings(navController = navController)
                 2 -> AppearanceSettings(navController = navController)
-                3 -> AIRecommendationSettings(navController = navController)
+                3 -> AIRecommendationSettings(navController = navController, ytLoggedIn = ytLoggedIn)
                 4 -> DataSettings()
                 5 -> AccountsSettings()
                 6 -> NetworkSettings(navController = navController)

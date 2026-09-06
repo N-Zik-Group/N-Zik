@@ -2,7 +2,13 @@ package app.it.fast4x.rimusic.utils
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -23,25 +29,32 @@ fun WelcomeMessage(){
             formatter.format(date).toInt()
         }
 
-    val message = when (hour) {
+    val baseMessage = when (hour) {
         in 6..12 -> {
             stringResource(R.string.good_morning)
         }
-
         in 13..17 -> {
             stringResource(R.string.good_afternoon)
         }
-
         in 18..23 -> {
             stringResource(R.string.good_evening)
         }
-
         else -> {
             stringResource(R.string.good_night)
         }
-    }.let {
-        if (isYouTubeLoggedIn()) "$it, ${ytAccountName()}"
-        else it
+    }
+
+    var message by remember { mutableStateOf(baseMessage) }
+
+    LaunchedEffect(baseMessage) {
+        withContext(Dispatchers.IO) {
+            if (isYouTubeLoggedIn()) {
+                val name = ytAccountName()
+                if (!name.isNullOrBlank()) {
+                    message = "$baseMessage, $name"
+                }
+            }
+        }
     }
 
     TitleMiniSection(

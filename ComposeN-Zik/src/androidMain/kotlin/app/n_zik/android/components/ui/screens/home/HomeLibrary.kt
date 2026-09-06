@@ -166,7 +166,6 @@ import app.n_zik.android.components.dialog.media.YouTubeLinkImportDialog
 import app.n_zik.android.components.tab.ImportPlaylistsMenu
 import app.n_zik.android.components.tab.ImportSongsFromServices
 import app.n_zik.android.typography
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.dialog.common.RetrySyncDialog
 import app.n_zik.android.components.dialog.settings.HomeLibraryToolbarSettingsDialog
@@ -297,7 +296,7 @@ fun HomeLibrary(
         )
     }
     val sync = autoSyncToolbutton(R.string.autosync, autosyncPlaylistsKey) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             importYTMPlaylists(force = true)
             importYTMLibrarySongs(force = true)
             importYTMUploadedSongs(force = true)
@@ -597,8 +596,8 @@ fun HomeLibrary(
 
                 androidx.compose.animation.AnimatedVisibility(
                     visible = isToolbarVisible,
-                    enter = androidx.compose.animation.expandVertically() + androidx.compose.animation.fadeIn(),
-                    exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
+                    enter = androidx.compose.animation.expandVertically(animationSpec = tween(200)) + androidx.compose.animation.fadeIn(animationSpec = tween(200)),
+                    exit = androidx.compose.animation.shrinkVertically(animationSpec = tween(200)) + androidx.compose.animation.fadeOut(animationSpec = tween(200))
                 ) {
                     Column {
                         Column {

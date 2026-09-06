@@ -157,6 +157,8 @@ fun List<Innertube.Info<*>?>?.parseArtists(): List<String> {
         if (name.matches(Regex("\\s*([,&])\\s*"))) continue
         // Skip view/play count patterns like "123,456,789 views" or "1.2M vues"
         if (Regex("\\d.*(view|plays)", RegexOption.IGNORE_CASE).containsMatchIn(name)) continue
+        // Skip duration patterns like "45:38" or "1:23:45"
+        if (Regex("^\\d{1,2}:\\d{2}(:\\d{2})?$").matches(name.trim())) continue
         // Check if this name contains multiple artists
         if (name.contains("&") || name.contains(",")) {
             // Split by & or , and add each

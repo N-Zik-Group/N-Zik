@@ -7,6 +7,7 @@ import app.it.fast4x.compose.persist.persist
 import app.it.fast4x.compose.persist.persistList
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.it.fast4x.rimusic.enums.*
+import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.utils.*
 import app.n_zik.android.core.database.Database
@@ -15,9 +16,11 @@ import it.fast4x.innertube.YtMusic
 import it.fast4x.innertube.requests.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -46,9 +49,11 @@ class HomeQuickPicksState(
     val localCount: Int,
     var recommendations: MutableState<List<Song>>,
     var ytmQuickPicks: MutableState<List<Song>>,
-    var refreshing: MutableState<Boolean>
+    var refreshing: MutableState<Boolean>,
+    var refreshKey: MutableState<Int>
 ) {
     private val from = 18250.days.inWholeMilliseconds
+    private var dbJob: Job? = null
 
     @SuppressLint("SuspiciousIndentation")
     suspend fun loadData() {
@@ -58,7 +63,7 @@ class HomeQuickPicksState(
 
         runCatching {
             // Phase 1: Parallel network calls for charts, discover, quick picks
-            coroutineScope {
+            supervisorScope {
                 val chartsDeferred = async(Dispatchers.IO) {
                     Innertube.chartsPageComplete(countryCode = selectedCountryCode.name)
                 }
@@ -104,7 +109,8 @@ class HomeQuickPicksState(
             }
 
             // Phase 2: Database observation with related page fetch (coupled as before)
-            scope.launch(Dispatchers.IO) {
+            dbJob?.cancel()
+            dbJob = scope.launch(Dispatchers.IO) {
                 when (playEventType) {
                     PlayEventsType.MostPlayed ->
                         Database.eventTable
@@ -202,8 +208,10 @@ class HomeQuickPicksState(
 
     fun refresh() {
         if (refreshing.value) return
+        refreshKey.value++
         trendingList.value = emptyList()
         ytmQuickPicks.value = emptyList()
+        recommendations.value = emptyList()
         loadedQuickPicks.value = false
         loadedData.value = false
         relatedPageResult.value = null
@@ -243,7 +251,7 @@ fun rememberHomeQuickPicksState(
     val discoverPageInit = persist<Innertube.DiscoverPage?>("home/quickpicks/discoveryAlbumsInit")
 
     val homePageResult = persist<Result<HomePage?>?>("home/quickpicks/homePageResult")
-    val homePageInit = persist<HomePage?>("home/quickpicks/homePageInit")
+    val homePageInit = rememberPreference("home/quickpicks/homePageInit", null as HomePage?)
 
     val ytmQuickPicks = persistList<Song>("home/quickpicks/ytmQuickPicks")
 
@@ -255,6 +263,7 @@ fun rememberHomeQuickPicksState(
     
     val recommendations = persistList<Song>("home/quickpicks/recommendations_list")
     val refreshing = remember { mutableStateOf(false) }
+    val refreshKey = remember { mutableIntStateOf(0) }
 
     return remember(playEventType, selectedCountryCode, parentalControlEnabled, localCount) {
         HomeQuickPicksState(
@@ -277,7 +286,8 @@ fun rememberHomeQuickPicksState(
             localCount = localCount,
             recommendations = recommendations,
             ytmQuickPicks = ytmQuickPicks,
-            refreshing = refreshing
+            refreshing = refreshing,
+            refreshKey = refreshKey
         )
     }
 }
