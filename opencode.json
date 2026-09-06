@@ -1,5 +1,4 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": ["N-Zik/AGENTS.md", "N-Zik/rules/*.md"],
-  "lsp": true
+  "instructions": ["N-Zik/AGENTS.md", "N-Zik/rules/*.md"]
 }
