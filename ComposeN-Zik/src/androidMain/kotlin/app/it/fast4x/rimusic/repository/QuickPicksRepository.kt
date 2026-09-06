@@ -171,7 +171,7 @@ object QuickPicksRepository {
     private suspend fun refreshRelatedIfNeeded() {
         val currentTrending = _trending.value
         if (currentTrending != null && (_relatedPage.value == null || _relatedPage.value?.songs?.firstOrNull()?.key != currentTrending.id)) {
-            _relatedPage.value = Innertube.relatedPage(videoId = currentTrending.id)?.getOrNull()
+            _relatedPage.value = Innertube.relatedPage(videoId = currentTrending.id, setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)?.getOrNull()
         }
     }
 }

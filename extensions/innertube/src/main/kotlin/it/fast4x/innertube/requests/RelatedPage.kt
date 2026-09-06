@@ -12,8 +12,9 @@ import it.fast4x.innertube.utils.from
 import it.fast4x.innertube.utils.runCatchingNonCancellable
 
 
-suspend fun Innertube.relatedPage(videoId: String) = runCatchingNonCancellable {
-    val nextResponse = next(videoId = videoId).body<NextResponse>()
+suspend fun Innertube.relatedPage(videoId: String, setLogin: Boolean = false) = runCatchingNonCancellable {
+    val hl = "en"
+    val nextResponse = next(videoId = videoId, hl = hl, setLogin = setLogin).body<NextResponse>()
 
     val tabs = nextResponse
         .contents
@@ -22,7 +23,7 @@ suspend fun Innertube.relatedPage(videoId: String) = runCatchingNonCancellable {
         ?.watchNextTabbedResultsRenderer
         ?.tabs
 
-    val tab = tabs?.find { it.tabRenderer?.title?.equals("Related", ignoreCase = true) == true } ?: tabs?.getOrNull(2)
+    val tab = tabs?.find { it.tabRenderer?.title?.contains("Related", ignoreCase = true) == true } ?: tabs?.getOrNull(2)
 
     val browseId = tab
         ?.tabRenderer
@@ -31,7 +32,7 @@ suspend fun Innertube.relatedPage(videoId: String) = runCatchingNonCancellable {
         ?.browseId
         ?: return@runCatchingNonCancellable null
 
-    val response = browse(browseId = browseId).body<BrowseResponse>()
+    val response = browse(browseId = browseId, hl = hl, setLogin = setLogin).body<BrowseResponse>()
 
     val sectionListRenderer = response
         .contents

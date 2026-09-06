@@ -638,15 +638,38 @@ object Innertube {
         index: Int? = null,
         params: String? = null,
         continuation: String? = null,
-    ) = innerTubeX.next(
-        client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
-        videoId = videoId,
-        playlistId = playlistId,
-        playlistSetVideoId = playlistSetVideoId,
-        index = index,
-        params = params,
-        continuation = continuation,
-    )
+        hl: String? = null,
+        setLogin: Boolean = false,
+    ): HttpResponse {
+        if (hl != null) {
+            val isolated = innerTubeX.createIsolatedSession(includeAccount = setLogin)
+            isolated.locale = com.metrolist.innertubex.models.YouTubeLocale(
+                gl = innerTubeX.locale.gl, hl = hl
+            )
+            return try {
+                isolated.next(
+                    client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+                    videoId = videoId,
+                    playlistId = playlistId,
+                    playlistSetVideoId = playlistSetVideoId,
+                    index = index,
+                    params = params,
+                    continuation = continuation,
+                )
+            } finally {
+                isolated.close()
+            }
+        }
+        return innerTubeX.next(
+            client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+            videoId = videoId,
+            playlistId = playlistId,
+            playlistSetVideoId = playlistSetVideoId,
+            index = index,
+            params = params,
+            continuation = continuation,
+        )
+    }
 
     suspend fun search(
         query: String? = null,

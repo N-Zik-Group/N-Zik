@@ -122,7 +122,7 @@ class HomeQuickPicksState(
                                                         .take(localCount)
                                     trending.value = trendingList.value.firstOrNull()
                                     if (relatedPageResult.value == null || trending.value?.id != trendingList.value.firstOrNull()?.id) {
-                                        relatedPageResult.value = Innertube.relatedPage(videoId = trending.value?.id ?: "4NRXx6U8ABQ")
+                                        relatedPageResult.value = Innertube.relatedPage(videoId = trending.value?.id ?: "4NRXx6U8ABQ", setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)
                                     }
                                     loadedQuickPicks.value = true
                                     Timber.tag("HomeQuickPicksState").d("Local data loaded (Trending: ${songs.size})")
@@ -137,7 +137,7 @@ class HomeQuickPicksState(
                                                         .take(localCount)
                                     trending.value = trendingList.value.firstOrNull()
                                     if (relatedPageResult.value == null || trending.value?.id != trendingList.value.firstOrNull()?.id) {
-                                        relatedPageResult.value = Innertube.relatedPage(videoId = trending.value?.id ?: "4NRXx6U8ABQ")
+                                        relatedPageResult.value = Innertube.relatedPage(videoId = trending.value?.id ?: "4NRXx6U8ABQ", setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)
                                     }
                                     loadedQuickPicks.value = true
                                     Timber.tag("HomeQuickPicksState").d("Local data loaded (Trending: ${songs.size})")
@@ -154,7 +154,7 @@ class HomeQuickPicksState(
                                     trendingList.value = shuffled
                                     trending.value = shuffled.firstOrNull()
                                     if (relatedPageResult.value == null || trending.value?.id != shuffled.firstOrNull()?.id) {
-                                        relatedPageResult.value = Innertube.relatedPage(videoId = trending.value?.id ?: "4NRXx6U8ABQ")
+                                        relatedPageResult.value = Innertube.relatedPage(videoId = trending.value?.id ?: "4NRXx6U8ABQ", setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)
                                     }
                                     loadedQuickPicks.value = true
                                 }

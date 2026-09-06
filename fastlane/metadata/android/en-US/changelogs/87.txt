@@ -10,6 +10,9 @@ Improved:
 - Crash logs with full device info, 30+ error code names.
 
 Fixed:
+- Quick picks empty on non-English devices — related page now forces English locale via isolated session.
+- All YTM home page API calls use isolated sessions to prevent locale leakage.
+- Related page passes login state for personalized recommendations.
 - Swapped download/delete toolbar icons (#587).
 - Multi-select respects active selection across all screens.
 - Queue shuffle/delete no longer crashes.

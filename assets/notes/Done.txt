@@ -1,3 +1,14 @@
+fix(home): force English locale on related page and isolated sessions for YTM home page data
+  - `Innertube.kt`: Added `hl` and `setLogin` parameters to `next()` with isolated session pattern — mirrors existing `browse()` implementation; creates isolated session via `createIsolatedSession(includeAccount = setLogin)`, sets locale override, executes request, closes in `finally` block
+  - `RelatedPage.kt`: `relatedPage()` now forces `hl = "en"` on both `next()` and `browse()` calls — previously used global session locale which returned localized section titles (e.g. "Lié" instead of "Related" on French devices), causing `findSectionByTitle()` exact-match to fail and return null
+  - `RelatedPage.kt`: `relatedPage()` now accepts `setLogin` parameter and passes it to both API calls — personalized related songs when user is logged in
+  - `RelatedPage.kt`: Changed tab finding from `equals("Related")` to `contains("Related")` for robustness against minor title variations
+  - `HomeQuickPicksState.kt`: All 3 `relatedPage()` callers (MostPlayed, LastPlayed, CasualPlayed branches) now pass `setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse`
+  - `QuickPicksBrowseHandler.kt`: `relatedPage()` call now passes `setLogin` for personalized Android Auto content
+  - `AutoSessionCallback.kt`: `relatedPage()` call now passes `setLogin` for personalized Android Auto content
+  - `QuickPicksRepository.kt`: `relatedPage()` call now passes `setLogin` for personalized legacy path
+  - Root cause: On non-English devices, `relatedPage()` returned null because section titles were localized and didn't match hardcoded English predicates, resulting in empty quick picks (0, 0, 0) on fresh install
+
 improve(ui): Quick Picks section animations and empty-state handling — complete overhaul
   - `HomeQuickPicks.kt`: Wrapped every section (charts, related albums, similar artists, new albums, playlists, moods, generic YTM sections, etc.) in `AnimatedVisibility` with `expandVertically()` + `fadeIn()` enter and `shrinkVertically()` + `fadeOut()` exit — sections now smoothly slide in instead of popping
   - `HomeQuickPicks.kt`: Each section now checks `hasXxxContent` (e.g. `hasChartsContent`, `hasRelatedAlbums`, `hasMoods`) before rendering — empty sections are hidden entirely instead of showing blank space

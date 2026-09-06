@@ -44,7 +44,7 @@ class QuickPicksBrowseHandler : BrowseHandler {
             
         val trending = database.eventTable.findSongsMostPlayedBetween(from = 0, limit = 500).first()
         val relatedSongs = if (trending.isNotEmpty()) {
-            Innertube.relatedPage(videoId = trending.first().id)?.getOrNull()?.songs?.map { it.asSong } ?: emptyList()
+            Innertube.relatedPage(videoId = trending.first().id, setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)?.getOrNull()?.songs?.map { it.asSong } ?: emptyList()
         } else emptyList()
         val ytmQuickPicks = if (isYouTubeLoggedIn()) {
             YtMusic.getQuickPicks(setLogin = true).getOrNull()?.map { it.asSong } ?: emptyList()
