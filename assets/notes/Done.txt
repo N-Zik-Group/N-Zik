@@ -1,3 +1,10 @@
+improve(debug): replace clipboard copy with file export for debug logs
+  - `CopyLogsDialog.kt`: Replaced `textCopyToClipboard()` with `ActivityResultContracts.CreateDocument("text/plain")` — logs are now saved to a user-selected file instead of the clipboard
+  - `CopyLogsDialog.kt`: Removed `ClipboardManager` and `ClipData` imports, added `rememberLauncherForActivityResult` with `Dispatchers.IO` coroutine scope for writing to `contentResolver.openOutputStream(uri)`
+  - `CopyLogsDialog.kt`: Button now launches file picker (default names: `N-Zik_debug_log.txt`, `N-Zik_crash_log.txt`, `N-Zik_logs.txt`) instead of copying text
+  - `OtherSettings.kt`: Updated debug settings entry to use new `export_logs` / `export_debug_log_description` strings
+  - `strings.xml`: Added 7 new strings (`export_logs`, `export_debug_log`, `export_crash_log`, `export_both_logs`, `export_debug_log_description`, `export_crash_log_description`, `export_both_logs_description`) — old clipboard strings kept for Crowdin
+
 fix(home): force English locale on related page and isolated sessions for YTM home page data
   - `Innertube.kt`: Added `hl` and `setLogin` parameters to `next()` with isolated session pattern — mirrors existing `browse()` implementation; creates isolated session via `createIsolatedSession(includeAccount = setLogin)`, sets locale override, executes request, closes in `finally` block
   - `RelatedPage.kt`: `relatedPage()` now forces `hl = "en"` on both `next()` and `browse()` calls — previously used global session locale which returned localized section titles (e.g. "Lié" instead of "Related" on French devices), causing `findSectionByTitle()` exact-match to fail and return null

@@ -1,5 +1,8 @@
 package app.n_zik.android.components.dialog.logs
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,17 +38,17 @@ import app.n_zik.android.uiRoundnessShape
 import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.semiBold
 import app.kreate.android.me.knighthat.utils.Toaster
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.io.File
 import app.n_zik.android.components.dialog.common.Dialog
-import android.content.Context
-import android.content.ClipboardManager
-import android.content.ClipData
 
 object CopyLogsDialog : Dialog {
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource(R.string.copy_logs)
+        get() = stringResource(R.string.export_logs)
 
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -53,15 +57,71 @@ object CopyLogsDialog : Dialog {
     @Composable
     override fun DialogBody() {
         val context = LocalContext.current
+        val coroutineScope = rememberCoroutineScope()
         val currentOption by selectedOption
 
-        val debugLogLabel = stringResource(R.string.copy_log_to_clipboard)
-        val debugLogDescription = stringResource(R.string.debug_log_description)
-        val crashLogLabel = stringResource(R.string.copy_crash_log_to_clipboard)
-        val crashLogDescription = stringResource(R.string.crash_log_description)
-        val bothLabel = stringResource(R.string.copy_both_logs)
-        val bothDescription = stringResource(R.string.copy_both_logs_description)
         val noLogAvailable = stringResource(R.string.no_log_available)
+
+        fun readLogContent(): String? {
+            val debugFile = File(context.filesDir.resolve("logs"), "N-Zik_log.txt")
+            val crashFile = File(context.filesDir.resolve("logs"), "N-Zik_crash_log.txt")
+
+            return when (currentOption) {
+                0 -> {
+                    if (debugFile.exists()) debugFile.readText() else null
+                }
+                1 -> {
+                    if (crashFile.exists()) crashFile.readText() else null
+                }
+                2 -> {
+                    val texts = mutableListOf<String>()
+                    if (debugFile.exists()) {
+                        texts.add("=== DEBUG LOG ===\n${debugFile.readText()}")
+                    }
+                    if (crashFile.exists()) {
+                        texts.add("=== CRASH LOG ===\n${crashFile.readText()}")
+                    }
+                    if (texts.isNotEmpty()) texts.joinToString("\n\n") else null
+                }
+                else -> null
+            }
+        }
+
+        val launcher = rememberLauncherForActivityResult(
+            ActivityResultContracts.CreateDocument("text/plain")
+        ) { uri: Uri? ->
+            uri ?: return@rememberLauncherForActivityResult
+            val content = readLogContent()
+            if (content == null) {
+                Toaster.w(noLogAvailable)
+                return@rememberLauncherForActivityResult
+            }
+            coroutineScope.launch(Dispatchers.IO) {
+                try {
+                    context.contentResolver.openOutputStream(uri)?.use { outStream ->
+                        outStream.write(content.toByteArray())
+                        Timber.tag("CopyLogsDialog").d("Logs exported successfully")
+                    }
+                } catch (e: Exception) {
+                    Timber.tag("CopyLogsDialog").e(e, "Failed to export logs")
+                }
+            }
+        }
+
+        fun getExportFileName(): String {
+            return when (currentOption) {
+                0 -> "N-Zik_debug_log.txt"
+                1 -> "N-Zik_crash_log.txt"
+                else -> "N-Zik_logs.txt"
+            }
+        }
+
+        val debugLogLabel = stringResource(R.string.export_debug_log)
+        val debugLogDescription = stringResource(R.string.export_debug_log_description)
+        val crashLogLabel = stringResource(R.string.export_crash_log)
+        val crashLogDescription = stringResource(R.string.export_crash_log_description)
+        val bothLabel = stringResource(R.string.export_both_logs)
+        val bothDescription = stringResource(R.string.export_both_logs_description)
 
         val options = listOf(
             Triple(R.drawable.copy, debugLogLabel, debugLogDescription),
@@ -119,40 +179,11 @@ object CopyLogsDialog : Dialog {
 
             Button(
                 onClick = {
-                    val debugFile = File(context.filesDir.resolve("logs"), "N-Zik_log.txt")
-                    val crashFile = File(context.filesDir.resolve("logs"), "N-Zik_crash_log.txt")
-
-                    when (currentOption) {
-                        0 -> {
-                            if (debugFile.exists()) {
-                                val text = debugFile.readText()
-                                textCopyToClipboard(text, context)
-                            } else {
-                                Toaster.w(noLogAvailable)
-                            }
-                        }
-                        1 -> {
-                            if (crashFile.exists()) {
-                                val text = crashFile.readText()
-                                textCopyToClipboard(text, context)
-                            } else {
-                                Toaster.w(noLogAvailable)
-                            }
-                        }
-                        2 -> {
-                            val texts = mutableListOf<String>()
-                            if (debugFile.exists()) {
-                                texts.add("=== DEBUG LOG ===\n${debugFile.readText()}")
-                            }
-                            if (crashFile.exists()) {
-                                texts.add("=== CRASH LOG ===\n${crashFile.readText()}")
-                            }
-                            if (texts.isNotEmpty()) {
-                                textCopyToClipboard(texts.joinToString("\n\n"), context)
-                            } else {
-                                Toaster.w(noLogAvailable)
-                            }
-                        }
+                    val content = readLogContent()
+                    if (content == null) {
+                        Toaster.w(noLogAvailable)
+                    } else {
+                        launcher.launch(getExportFileName())
                     }
                 },
                 modifier = Modifier
@@ -165,17 +196,10 @@ object CopyLogsDialog : Dialog {
                 shape = uiRoundnessShape()
             ) {
                 Text(
-                    text = stringResource(R.string.done),
+                    text = stringResource(R.string.export),
                     style = typography().s.medium
                 )
             }
         }
-    }
-
-    private fun textCopyToClipboard(text: String, context: Context) {
-        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("Logs", text)
-        clipboard.setPrimaryClip(clip)
-        Toaster.i(R.string.logs_copied)
     }
 }

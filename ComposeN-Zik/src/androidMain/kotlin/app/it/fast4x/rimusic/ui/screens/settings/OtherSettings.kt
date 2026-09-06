@@ -649,10 +649,10 @@ fun OtherSettings() {
                     ImportantSettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
                     
                     if (logDebugEnabled) {
-                        if (search.inputValue.isBlank() || stringResource(R.string.copy_logs).contains(search.inputValue, true) || stringResource(R.string.copy_logs_description).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.export_logs).contains(search.inputValue, true) || stringResource(R.string.export_debug_log_description).contains(search.inputValue, true)) {
                             OtherSettingsEntry(
-                                title = stringResource(R.string.copy_logs),
-                                text = stringResource(R.string.copy_logs_description),
+                                title = stringResource(R.string.export_logs),
+                                text = stringResource(R.string.export_debug_log_description),
                                 icon = R.drawable.copy,
                                 onClick = { CopyLogsDialog.showDialog() }
                             )
