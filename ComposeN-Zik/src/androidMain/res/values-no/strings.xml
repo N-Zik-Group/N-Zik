@@ -490,6 +490,13 @@
   <string name="copy_both_logs_description">Copy debug and crash logs to clipboard</string>
   <string name="logs_copied">Logs copied to clipboard</string>
   <string name="copy_logs_description">Copy debug or crash logs to clipboard</string>
+  <string name="export_logs">Export logs</string>
+  <string name="export_debug_log">Export debug log</string>
+  <string name="export_crash_log">Export crash log</string>
+  <string name="export_both_logs">Export both logs</string>
+  <string name="export_debug_log_description">Export debug log to a file</string>
+  <string name="export_crash_log_description">Export crash log to a file</string>
+  <string name="export_both_logs_description">Export debug and crash logs to a file</string>
   <string name="tab_data">Data</string>
   <string name="image_cache_max_size">Maks størrelse på bildebuffer</string>
   <string name="network_status">Kvalitet Status</string>
