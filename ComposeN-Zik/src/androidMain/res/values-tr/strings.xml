@@ -490,6 +490,13 @@
   <string name="copy_both_logs_description">Hata ayıklama ve çökme günlüklerini panoya kopyala</string>
   <string name="logs_copied">Kayıtlar panoya kopyalandı</string>
   <string name="copy_logs_description">Hata ayıklama veya çökme günlüklerini panoya kopyala</string>
+  <string name="export_logs">Export logs</string>
+  <string name="export_debug_log">Export debug log</string>
+  <string name="export_crash_log">Export crash log</string>
+  <string name="export_both_logs">Export both logs</string>
+  <string name="export_debug_log_description">Export debug log to a file</string>
+  <string name="export_crash_log_description">Export crash log to a file</string>
+  <string name="export_both_logs_description">Export debug and crash logs to a file</string>
   <string name="tab_data">Veri</string>
   <string name="image_cache_max_size">Resim önbelleği maksimum boyutu</string>
   <string name="network_status">Kalite Durumu</string>
