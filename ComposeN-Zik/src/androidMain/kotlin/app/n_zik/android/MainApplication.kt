@@ -1,10 +1,12 @@
 package app.n_zik.android
 
+import android.app.ActivityManager
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import android.os.Process
 import android.os.StrictMode
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
@@ -58,6 +60,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 
@@ -65,6 +68,11 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 
     override fun onCreate() {
         super.onCreate()
+
+        // CrashActivity runs in a separate process. Starting the full app there can make that
+        // process claim WebView's data directory and crash the next main-process WebView.
+        if (!isMainProcess()) return
+
         Dependencies.init(this)
         migrateCredentialsToEncrypted()
         InnerTubeXPlayer.initialize(this)
@@ -130,13 +138,22 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 cookieStatus = CookieStatus.NOT_LOGGED_IN
             }
 
+            // Initialize Store session (like Metrolist's DataStore pattern)
+            Store.initSession(this@MainApplication)
+
         } finally {
             StrictMode.setThreadPolicy(oldPolicy)
         }
 
-        // Prewarm InnerTubeX in background — the library handles visitor data internally
+        // Prewarm InnerTubeX in background — wait for visitorData like Metrolist
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
+                // Wait up to 12s for visitorData (like Metrolist)
+                var waitedMs = 0
+                while (Innertube.visitorData.isNullOrBlank() && waitedMs < 12_000) {
+                    delay(500)
+                    waitedMs += 500
+                }
                 InnerTubeXPlayer.prewarm()
                 Timber.tag("MainApplication").d("InnerTubeX prewarm completed")
             } catch (e: CancellationException) {
@@ -283,6 +300,24 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
     companion object {
         var cookieStatus: CookieStatus = CookieStatus.NOT_LOGGED_IN
             internal set
+    }
+
+    private fun isMainProcess(): Boolean {
+        val processName =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                Application.getProcessName()
+            } else {
+                runCatching {
+                    File("/proc/self/cmdline").readText().substringBefore('\u0000')
+                }.getOrNull()?.takeIf(String::isNotBlank)
+                    ?: run {
+                        val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                        activityManager.runningAppProcesses
+                            ?.firstOrNull { it.pid == Process.myPid() }
+                            ?.processName
+                    }
+            }
+        return processName == packageName
     }
 }
 

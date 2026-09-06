@@ -114,30 +114,22 @@ suspend fun prewarmPoToken() {
 }
 
 /**
- * Mark a videoId as having failed WEB_REMIX validation (403/expired).
- * Next resolve will skip HEAD validation for WEB_REMIX on this videoId.
- */
-fun markWebRemixFailed(videoId: String) {
-    webRemixFailedIds.add(videoId)
-    Timber.tag(TAG).d("Marked WEB_REMIX failed for $videoId")
-}
-
-/**
- * Clear all WEB_REMIX failure markers.
- * Called when cipher config is refreshed so WEB_REMIX gets another chance.
- */
-fun clearWebRemixFailures() {
-    webRemixFailedIds.clear()
-    Timber.tag(TAG).d("Cleared WEB_REMIX failures")
-}
-
-/**
  * Mark a videoId as having failed with a specific client.
  * Next resolve will skip that client for this videoId for CLIENT_FAILURE_TTL_MS.
  */
 fun markClientFailed(clientName: String, videoId: String) {
     clientFailedIds.getOrPut(clientName) { mutableMapOf() }[videoId] = System.currentTimeMillis()
     Timber.tag(TAG).d("Marked $clientName failed for $videoId")
+}
+
+/**
+ * Clear all client failure markers.
+ * Called when cipher config is refreshed so all clients get another chance.
+ */
+fun clearAllFailures() {
+    webRemixFailedIds.clear()
+    clientFailedIds.clear()
+    Timber.tag(TAG).d("Cleared all client failures")
 }
 
 /**
@@ -183,9 +175,15 @@ suspend fun upsertSongInfo(videoId: String) {
     }
 
     try {
+        Timber.tag(TAG).d("upsertSongInfo: calling Innertube.nextPage for $videoId")
         Innertube.nextPage(videoId = videoId)?.fold(
             onSuccess = { nextPage ->
-            val songItem = nextPage.itemsPage?.items?.firstOrNull() ?: return@fold
+            val songItem = nextPage.itemsPage?.items?.firstOrNull()
+            if (songItem == null) {
+                Timber.tag(TAG).w("upsertSongInfo: nextPage returned empty itemsPage for $videoId")
+                return@fold
+            }
+            Timber.tag(TAG).d("upsertSongInfo: got songItem '${songItem.info?.name}' for $videoId")
             Database.upsert(songItem)
             yield()
 
@@ -220,8 +218,10 @@ suspend fun upsertSongInfo(videoId: String) {
                         Timber.tag(TAG).d("[Artist Cache] $artistId outdated, fetching in background.")
                         scope.launch(PlaybackDispatchers.STREAM_RESOLVER) {
                             try {
+                                Timber.tag(TAG).d("upsertSongInfo: fetching artist page for $artistId")
                                 val artistPage = Innertube.artistPage(browseId = artistId)?.getOrNull()
                                 if (artistPage != null) {
+                                    Timber.tag(TAG).d("upsertSongInfo: got artist page '${artistPage.name}' for $artistId")
                                     Database.asyncTransaction {
                                         val existing = Database.artistTable.findByIdDirect(artistId)
                                         if (existing != null) {
@@ -275,8 +275,11 @@ suspend fun upsertSongInfo(videoId: String) {
         },
         onFailure = {
             when (it) {
-                is UnknownHostException -> justInserted = videoId
-                else -> Timber.tag(TAG).w(it, "Failed to upsert song info for $videoId")
+                is UnknownHostException -> {
+                    Timber.tag(TAG).w("upsertSongInfo: UnknownHostException for $videoId (DNS failure)")
+                    justInserted = videoId
+                }
+                else -> Timber.tag(TAG).w(it, "upsertSongInfo: FAILED for $videoId")
             }
         }
     )

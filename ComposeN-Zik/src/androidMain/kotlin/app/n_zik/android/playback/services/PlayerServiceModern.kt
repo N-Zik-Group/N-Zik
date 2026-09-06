@@ -91,8 +91,8 @@ import app.it.fast4x.rimusic.repository.QuickPicksRepository
 import app.n_zik.android.R
 import app.n_zik.android.playback.services.createDataSourceFactory
 import app.n_zik.android.playback.services.streamUrlCache
-import app.n_zik.android.playback.services.markWebRemixFailed
-import app.n_zik.android.playback.services.clearWebRemixFailures
+import app.n_zik.android.playback.services.markClientFailed
+import app.n_zik.android.playback.services.clearAllFailures
 
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.MoreExecutors
@@ -758,6 +758,7 @@ class PlayerServiceModern : MediaLibraryService(),
                     if (streamClient != "WEB_REMIX") {
                         Timber.tag("PlayerServiceModern").d("Stream client is $streamClient for $songId, re-fetching playback URL via WEB_REMIX")
                         runCatching {
+                            Timber.tag("PlayerServiceModern").d("onPlaybackStatsReady: calling Innertube.player for $songId")
                             val httpResponse = Innertube.player(videoId = songId)
                             val playerResponse = httpResponse.body<it.fast4x.innertube.models.PlayerResponse>()
                             val remixUrl = playerResponse.playbackTracking?.videostatsPlaybackUrl?.baseUrl
@@ -774,6 +775,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
                     Timber.tag("PlayerServiceModern").d("registerPlayback for $songId: streamClient=$streamClient, url=${playbackUrl?.take(120)}...")
                     runCatching {
+                        Timber.tag("PlayerServiceModern").d("onPlaybackStatsReady: calling Innertube.registerPlayback for $songId")
                         val response = Innertube.registerPlayback(url = playbackUrl!!, cpn = "")
                         val statusCode = response.status.value
                         if (statusCode !in 200..299) {
@@ -782,7 +784,7 @@ class PlayerServiceModern : MediaLibraryService(),
                             Timber.tag("PlayerServiceModern").d("History pushed to YTM: $songId (status=$statusCode)")
                         }
                     }.onFailure { e ->
-                        Timber.tag("PlayerServiceModern").e(e, "registerPlayback failed for $songId")
+                        Timber.tag("PlayerServiceModern").e(e, "registerPlayback FAILED for $songId")
                     }
                 }
             }
@@ -1334,10 +1336,10 @@ class PlayerServiceModern : MediaLibraryService(),
                         markClientFailed(streamClient, currentMediaId)
                         coroutineScope.launch {
                             if (InnerTubeXPlayer.refreshAfterStreamRejection()) {
-                                clearWebRemixFailures()
+                                clearAllFailures()
                             }
                         }
-                        markWebRemixFailed(currentMediaId)
+                        markClientFailed("WEB_REMIX", currentMediaId)
                     }
 
                     // 416 Range Not Satisfiable — cached data doesn't match stream size
@@ -1361,10 +1363,10 @@ class PlayerServiceModern : MediaLibraryService(),
                         markClientFailed(streamClient, currentMediaId)
                         coroutineScope.launch {
                             if (InnerTubeXPlayer.refreshAfterStreamRejection()) {
-                                clearWebRemixFailures()
+                                clearAllFailures()
                             }
                         }
-                        markWebRemixFailed(currentMediaId)
+                        markClientFailed("WEB_REMIX", currentMediaId)
                     }
 
                     // Audio renderer error — corrupted audio track state

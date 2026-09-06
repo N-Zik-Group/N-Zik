@@ -47,6 +47,9 @@ import nl.adaptivity.xmlutil.serialization.XML
 import java.net.Proxy
 import java.util.Locale
 import it.fast4x.innertube.models.SectionListRenderer
+import okhttp3.ConnectionPool
+import okhttp3.Protocol
+import java.io.File
 
 
 object Innertube {
@@ -90,16 +93,19 @@ object Innertube {
 
         val p = proxy ?: ProxyPreferences.preference?.let { getProxy(it) }
         engine {
-            // Prioritize IPv4 to fix home Wi-Fi IPv6 routing blackholes
             config {
-                dns(object : okhttp3.Dns {
-                    override fun lookup(hostname: String): List<java.net.InetAddress> {
-                        val addresses = okhttp3.Dns.SYSTEM.lookup(hostname)
-                        val ipv4 = addresses.filterIsInstance<java.net.Inet4Address>()
-                        val ipv6 = addresses.filterIsInstance<java.net.Inet6Address>()
-                        return ipv4 + ipv6
-                    }
-                })
+                // Enable HTTP/2 for better compatibility with YouTube servers
+                protocols(listOf(okhttp3.Protocol.HTTP_2, okhttp3.Protocol.HTTP_1_1))
+                // Retry on connection failure (like Metrolist)
+                retryOnConnectionFailure(true)
+                // Connection pool for better performance (like Metrolist)
+                connectionPool(okhttp3.ConnectionPool(10, 5, java.util.concurrent.TimeUnit.MINUTES))
+                // HTTP cache to reduce redundant network calls (like Metrolist)
+                cache(okhttp3.Cache(File(System.getProperty("java.io.tmpdir"), "n_zik_http_cache"), 50L * 1024L * 1024L))
+                // OkHttp-level timeouts (like Metrolist)
+                connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+                writeTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
             }
             if (p != null) {
                 proxy = p
@@ -135,11 +141,8 @@ object Innertube {
 
         defaultRequest {
             url( "https", YOUTUBE_MUSIC_HOST ) {
-                headers.append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                headers.append("sec-ch-ua", "\"Chromium\";v=\"137\", \"Not/A)Brand\";v=\"24\"")
-                headers.append("sec-ch-ua-mobile", "?0")
-                headers.append("sec-ch-ua-platform", "\"Windows\"")
-                parameters.append("prettyPrint", "false")
+                headers.append("Accept", "application/json")
+                headers.append("Cache-Control", "no-cache")
             }
         }
     }
@@ -239,7 +242,13 @@ object Innertube {
 
     var dataSyncId: String?
         get() = innerTubeX.dataSyncId
-        set(value) { innerTubeX.dataSyncId = value }
+        set(value) {
+            innerTubeX.dataSyncId = value?.let {
+                it.takeIf { !it.contains("||") }
+                    ?: it.takeIf { it.endsWith("||") }?.substringBefore("||")
+                    ?: it.substringAfter("||")
+            }
+        }
 
     var cookie: String?
         get() = innerTubeX.cookie
@@ -700,6 +709,8 @@ object Innertube {
 
     private suspend fun HttpResponse.requireSuccess(operation: String): HttpResponse {
         if (!status.isSuccess()) {
+            // Consume and discard response body to prevent resource leak (like Metrolist)
+            runCatching { body<String>() }
             throw IllegalStateException("$operation failed with status ${status.value}")
         }
         return this

@@ -1,3 +1,16 @@
+fix(player): align InnerTube network layer with Metrolist to fix YouTube stream blocking
+  - `Innertube.kt`: Removed suspicious `sec-ch-ua`, `sec-ch-ua-mobile`, `sec-ch-ua-platform`, `Content-Type`, and `prettyPrint=false` headers from defaultRequest — these Client Hints headers allowed YouTube to fingerprint the app as a bot, causing all player clients to return `streamingPresent=false, formatCount=0`
+  - `Innertube.kt`: Added defensive `dataSyncId` parsing with `||` split logic (matches Metrolist) — prevents invalid DataSyncId values from breaking authenticated sessions
+  - `MainApplication.kt`: Added `isMainProcess()` guard to prevent crash when CrashActivity runs in a separate process — matches Metrolist's process isolation pattern
+  - `MainApplication.kt`: Prewarm now waits up to 12s for `visitorData` before launching InnerTubeX prewarm — matches Metrolist's timing pattern, ensures visitor data is available for extraction
+  - `Store.kt`: Removed ghost cookie fetch and default cookie to match Metrolist's simpler session model
+  - `InnerTubeXPlayer.kt`: Changed failed client tracking from WEB_REMIX-only to all clients (`ConcurrentHashMap<String, Long>`) — matches Metrolist's generic failure tracking
+  - `InnerTubeXPlayer.kt`: Cipher refresh now clears ALL client failures, not just WEB_REMIX — allows all clients to retry after cipher update
+  - `InnerTubeXPlayer.kt`: Added `withEmbeddedConfigFallback()` extension on `YtConfigParser` — if watch-page config fetch fails, falls back to anonymous embedded player endpoint (matches Metrolist's resilience pattern)
+  - `StreamResolver.kt`: Unified `markClientFailed()` and `clearAllFailures()` to replace legacy `markWebRemixFailed()` / `clearWebRemixFailures()` — consistent with InnerTubeXPlayer's generic tracking
+  - `PlayerServiceModern.kt`: Updated error handlers to use new `markClientFailed()` / `clearAllFailures()` API — 403/expired and remote playback errors now track the actual failing client, not just WEB_REMIX
+  - Root cause: YouTube was rejecting ALL player clients (VISIONOS, WEB_EMBEDDED_PLAYER, WEB_REMIX, WEB_CREATOR, TVHTML5_SIMPLY, WEB_KIDS) because the `sec-ch-ua` headers exposed non-browser fingerprint, and the `next` endpoint returned HTTP 400
+
 improve(debug): replace clipboard copy with file export for debug logs
   - `CopyLogsDialog.kt`: Replaced `textCopyToClipboard()` with `ActivityResultContracts.CreateDocument("text/plain")` — logs are now saved to a user-selected file instead of the clipboard
   - `CopyLogsDialog.kt`: Removed `ClipboardManager` and `ClipData` imports, added `rememberLauncherForActivityResult` with `Dispatchers.IO` coroutine scope for writing to `contentResolver.openOutputStream(uri)`

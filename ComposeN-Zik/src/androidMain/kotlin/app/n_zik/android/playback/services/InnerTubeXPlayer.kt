@@ -37,7 +37,6 @@ import kotlin.time.Clock
  */
 object InnerTubeXPlayer {
     private const val TAG = "InnerTubeXPlayer"
-    private const val WEB_REMIX_FAILURE_TTL_MS = 5 * 60 * 1000L
     private const val DEFAULT_STREAM_TTL_SECONDS = 5 * 60
 
     @Volatile
@@ -47,7 +46,8 @@ object InnerTubeXPlayer {
     private var currentBundle: ExtractionBundle? = null
 
     private val bundleMutex = Mutex()
-    private val webRemixFailures = java.util.concurrent.ConcurrentHashMap<String, Long>()
+    private val failedClients = java.util.concurrent.ConcurrentHashMap<String, Long>()
+    private val FAILURE_TTL_MS = 5 * 60 * 1000L
 
     @Synchronized
     fun initialize(context: Context) {
@@ -76,6 +76,7 @@ object InnerTubeXPlayer {
         allowBoundedRange: Boolean = true,
     ): Result<PlaybackData> =
         try {
+            Timber.tag(TAG).d("playerResponseForPlayback: starting for videoId=$videoId, audioQuality=$audioQuality")
             val hints =
                 contentHints.copy(
                     isUploaded =
@@ -89,8 +90,13 @@ object InnerTubeXPlayer {
                 )
             val excludedClients =
                 buildSet {
-                    if (hasRecentWebRemixFailure(videoId)) add("WEB_REMIX")
+                    if (hasRecentFailure(videoId)) {
+                        Timber.tag(TAG).d("playerResponseForPlayback: excluding failed clients for $videoId (recent failure)")
+                        // Exclude ALL recently failed clients, not just WEB_REMIX
+                        failedClients.keys.forEach { add(it) }
+                    }
                 }
+            Timber.tag(TAG).d("playerResponseForPlayback: calling InnerTubeX extractor for $videoId")
             val stream =
                 requireNotNull(
                     bundle().extractor.extract(
@@ -102,10 +108,13 @@ object InnerTubeXPlayer {
                     ),
                 ) { "InnerTubeX returned no playable stream" }
             check(stream.sabrBootstrap == null) { "SABR is not supported by this playback engine" }
+            Timber.tag(TAG).d("playerResponseForPlayback: success for $videoId (client=${stream.clientName})")
             Result.success(stream.toPlaybackData())
         } catch (error: CancellationException) {
+            Timber.tag(TAG).d("playerResponseForPlayback: cancelled for $videoId")
             throw error
         } catch (error: StreamResolveException) {
+            Timber.tag(TAG).w(error, "playerResponseForPlayback: StreamResolveException for $videoId (reason=${error.reason})")
             val cause = error.cause
             Result.failure(
                 if (error.reason == StreamResolveException.Reason.NETWORK && cause != null) {
@@ -115,31 +124,30 @@ object InnerTubeXPlayer {
                 },
             )
         } catch (error: Exception) {
-            Timber.tag(TAG).e(error, "Stream resolution failed")
+            Timber.tag(TAG).e(error, "playerResponseForPlayback: FAILED for $videoId")
             Result.failure(error)
         }
 
-    fun markWebRemixFailed(videoId: String) {
-        webRemixFailures[videoId] = System.currentTimeMillis()
+    fun markClientFailed(videoId: String, clientName: String) {
+        failedClients["$videoId:$clientName"] = System.currentTimeMillis()
     }
 
-    fun clearWebRemixFailures() {
-        webRemixFailures.clear()
+    fun clearAllFailures() {
+        failedClients.clear()
     }
 
     suspend fun refreshAfterStreamRejection(): Boolean {
         val changed = bundle().cipherService.refreshAfterStreamRejection()
-        if (changed) clearWebRemixFailures()
+        if (changed) clearAllFailures()
         return changed
     }
 
-    private fun hasRecentWebRemixFailure(videoId: String): Boolean {
-        val failedAt = webRemixFailures[videoId] ?: return false
-        if ((System.currentTimeMillis() - failedAt) !in 0 until WEB_REMIX_FAILURE_TTL_MS) {
-            webRemixFailures.remove(videoId, failedAt)
-            return false
+    private fun hasRecentFailure(videoId: String): Boolean {
+        val now = System.currentTimeMillis()
+        val prefix = "$videoId:"
+        return failedClients.entries.any { (key, failedAt) ->
+            key.startsWith(prefix) && (now - failedAt) in 0 until FAILURE_TTL_MS
         }
-        return true
     }
 
     private suspend fun bundle(): ExtractionBundle {
@@ -173,7 +181,7 @@ object InnerTubeXPlayer {
                             latestTransport.innerTube,
                             remoteStore,
                             logger,
-                        ),
+                        ).withEmbeddedConfigFallback(),
                     cipherService = cipherService,
                     innerTube = latestTransport.innerTube,
                     tokenProvider = tokenProvider,
@@ -359,3 +367,21 @@ object InnerTubeXPlayer {
         )
     }
 }
+
+/**
+ * Wraps a [YtConfigParser] with embedded-config fallback resilience.
+ * If the normal watch-page config fetch fails, falls back to the anonymous embedded player endpoint.
+ * Matches Metrolist's behavior.
+ */
+internal fun com.metrolist.innertubex.extraction.YtConfigParser.withEmbeddedConfigFallback(): com.metrolist.innertubex.extraction.YtConfigParser =
+    object : com.metrolist.innertubex.extraction.YtConfigParser by this {
+        override suspend fun fetchConfig(
+            videoId: String,
+            useLoginCookies: Boolean,
+        ) =
+            try {
+                this@withEmbeddedConfigFallback.fetchConfig(videoId, useLoginCookies)
+            } catch (_: IllegalStateException) {
+                this@withEmbeddedConfigFallback.fetchEmbeddedConfig(videoId, useLoginCookies = false)
+            }
+    }
