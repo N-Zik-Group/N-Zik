@@ -6,7 +6,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.compression.ContentEncoding
-import io.ktor.client.plugins.compression.brotli
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.header
@@ -14,20 +13,14 @@ import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
-import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
-import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.http.userAgent
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.serialization.kotlinx.protobuf.protobuf
-import io.ktor.serialization.kotlinx.xml.xml
 import it.fast4x.innertube.clients.YouTubeLocale
 import it.fast4x.innertube.models.AccountInfo
 import it.fast4x.innertube.models.AccountMenuResponse
 import it.fast4x.innertube.models.BrowseResponse
-import it.fast4x.innertube.models.Context
-import it.fast4x.innertube.models.Context.Companion.DefaultWeb
 import it.fast4x.innertube.models.GridRenderer
 import it.fast4x.innertube.models.MusicNavigationButtonRenderer
 import it.fast4x.innertube.models.MusicShelfRenderer
@@ -39,11 +32,8 @@ import it.fast4x.innertube.utils.ProxyPreferences
 import it.fast4x.innertube.utils.YoutubePreferences
 import it.fast4x.innertube.utils.getProxy
 import it.fast4x.innertube.utils.parseCookieString
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import nl.adaptivity.xmlutil.XmlDeclMode
-import nl.adaptivity.xmlutil.serialization.XML
 import java.net.Proxy
 import java.util.Locale
 import it.fast4x.innertube.models.SectionListRenderer
@@ -58,25 +48,15 @@ object Innertube {
     private const val VISITOR_DATA_PREFIX = "Cgt"
     const val DEFAULT_VISITOR_DATA = "CgtMN0FkbDFaWERfdyi8t4u7BjIKCgJWThIEGgAgWQ%3D%3D"
 
-    @OptIn(ExperimentalSerializationApi::class)
     private fun createClient() = HttpClient(OkHttp) {
         expectSuccess = false
 
         install(ContentNegotiation) {
-            protobuf()
             json(Json {
                 ignoreUnknownKeys = true
                 explicitNulls = false
                 encodeDefaults = true
             })
-            xml(
-                format =
-                XML {
-                    xmlDeclMode = XmlDeclMode.Charset
-                    autoPolymorphic = true
-                },
-                contentType = ContentType.Text.Xml,
-            )
         }
 
         install(ContentEncoding) {

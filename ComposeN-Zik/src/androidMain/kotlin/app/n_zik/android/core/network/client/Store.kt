@@ -5,16 +5,8 @@ import app.it.fast4x.rimusic.utils.encryptedPreferences
 import app.it.fast4x.rimusic.utils.ytCookieKey
 import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
-import io.ktor.client.request.get
-import io.ktor.client.request.headers
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.Headers
-import io.ktor.http.HttpHeaders
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.Context as InnerContext
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
@@ -22,19 +14,10 @@ import java.io.IOException
 
 /**
  * Centralized store for session tokens and cookies.
- * Ghost cookie fetch + default cookie = NZik-specific improvements.
  */
 object Store {
 
-    private const val DEFAULT_COOKIE = "PREF=hl=en&tz=UTC; SOCS=CAI"
-    private const val YT_WATCH_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&bpctr=9999999999&has_verified=1"
-
-    private val fetchMutex = Mutex()
     private val visitorMutex = Mutex()
-
-    private var ghostResponseHeaders: Headers? = null
-    private var ghostResponseBody: String? = null
-    private var cookie: String? = null
 
     private var iosVisitorData: String? = null
 
@@ -121,53 +104,9 @@ object Store {
         Innertube.cookie = null
         Innertube.visitorData = null
         Innertube.dataSyncId = null
-        cookie = null
         iosVisitorData = null
-        ghostResponseHeaders = null
-        ghostResponseBody = null
 
         Timber.tag("Store").d("clearSession: all session data cleared")
-    }
-
-    /**
-     * Fetch cookies from YouTube watch page (ghost cookie fetch).
-     * This improves session handling by getting Set-Cookie headers.
-     */
-    private suspend fun fetchIfNeeded() {
-        if (ghostResponseBody != null && ghostResponseHeaders != null) {
-            Timber.tag("Store").d("fetchIfNeeded: already cached, skipping")
-            return
-        }
-
-        fetchMutex.withLock {
-            if (ghostResponseBody != null && ghostResponseHeaders != null) {
-                Timber.tag("Store").d("fetchIfNeeded: cached after lock, skipping")
-                return@withLock
-            }
-
-            Timber.tag("Store").d("fetchIfNeeded: fetching cookies from YouTube...")
-            runCatching {
-                Innertube.client.get(YT_WATCH_URL) {
-                    headers {
-                        append(HttpHeaders.Connection, "Close")
-                        append(HttpHeaders.Host, "www.youtube.com")
-                        append(HttpHeaders.Cookie, DEFAULT_COOKIE)
-                        append(HttpHeaders.UserAgent, InnerContext.USER_AGENT_WEB)
-                        append("Sec-Fetch-Mode", "navigate")
-                    }
-                }
-            }.fold(
-                onSuccess = {
-                    ghostResponseHeaders = it.headers
-                    ghostResponseBody = it.bodyAsText()
-                    val setCookieCount = it.headers.getAll(HttpHeaders.SetCookie)?.size ?: 0
-                    Timber.tag("Store").d("fetchIfNeeded: success, received $setCookieCount Set-Cookie headers")
-                },
-                onFailure = {
-                    Timber.tag("Store").e(it, "fetchIfNeeded: FAILED to fetch cookies from YouTube")
-                }
-            )
-        }
     }
 
     /**
@@ -210,37 +149,5 @@ object Store {
             Timber.tag("Store").e(e, "getIosVisitorData: FAILED - unexpected error, returning null")
             null
         }
-    }
-
-    /**
-     * Retrieves the network cookie, fetching it if necessary.
-     * Uses ghost cookie fetch + default cookie fallback.
-     */
-    fun getCookie(): String {
-        cookie?.let {
-            Timber.tag("Store").d("getCookie: returning cached cookie")
-            return it
-        }
-
-        Timber.tag("Store").d("getCookie: fetching fresh cookie...")
-        runBlocking(Dispatchers.IO) { fetchIfNeeded() }
-
-        val headers = ghostResponseHeaders
-        if (headers != null) {
-            headers.getAll(HttpHeaders.SetCookie)
-                .orEmpty()
-                .joinToString("; ") {
-                    it.split(";").first()
-                }
-                .let {
-                    val finalCookie = "$DEFAULT_COOKIE; $it"
-                    cookie = finalCookie
-                    Timber.tag("Store").d("getCookie: success, cookie length=${finalCookie.length}")
-                    return finalCookie
-                }
-        }
-
-        Timber.tag("Store").w("getCookie: no Set-Cookie headers, returning default")
-        return DEFAULT_COOKIE
     }
 }
