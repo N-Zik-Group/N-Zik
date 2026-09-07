@@ -66,7 +66,7 @@ object HomeAlbumsSettingsDialog : Dialog {
             when (id) {
                 "all" -> ToggleItem(id, R.drawable.album, allLabel, "always_true_albums", true)
                 "favorites" -> ToggleItem(id, R.drawable.heart, favLabel, showFavoritesAlbumKey, true)
-                "disliked" -> ToggleItem(id, R.drawable.dislike, dislikedLabel, showDislikedAlbumKey, true)
+                "disliked" -> ToggleItem(id, R.drawable.heart_outline, dislikedLabel, showDislikedAlbumKey, true)
                 else -> null
             }
         }.filterNotNull()

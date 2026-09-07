@@ -35,6 +35,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -101,6 +102,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.collectAsState
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 
 
 private interface SongIndicator: Icon {
@@ -263,21 +265,29 @@ fun SongItem(
 
             thumbnailOverlay()
 
-            val likeState by remember( displaySong.id ) {
+            val likeStateLoadedState = remember { mutableStateOf( false ) }
+            val likeStateFlow = remember( displaySong.id ) {
                 Database.songTable
                     .likeState( displaySong.id )
                     .distinctUntilChanged()
-            }.collectAsState( null, Dispatchers.IO )
+            }
+            val likeState by likeStateFlow.collectAsState( null, Dispatchers.IO )
+            
+            // Mark as loaded when first value is emitted
+            LaunchedEffect( displaySong.id ) {
+                likeStateLoadedState.value = false
+                likeStateFlow.first()
+                likeStateLoadedState.value = true
+            }
+            val likeStateLoaded = likeStateLoadedState.value
 
-            // Show icon only for liked (true) or disliked (false), not for neutral (null)
-            if( likeState != null )
+            // Show icon only for disliked (false), not for liked (true) or neutral (null)
+            // Only show after database has loaded to avoid showing wrong icon during load
+            if( likeStateLoaded && likeState == false )
                 HeaderIconButton(
                     onClick = {},
                     icon = getLikeState( displaySong.id ),
-                    color = when(likeState) {
-                        false -> colorPalette().red
-                        else -> colorPalette().favoritesIcon
-                    },
+                    color = colorPalette().red,
                     iconSize = 12.dp,
                     modifier = Modifier.align( Alignment.BottomStart )
                                        .absoluteOffset( x = (-8).dp )

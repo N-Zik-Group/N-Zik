@@ -7,11 +7,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -208,7 +211,15 @@ object HomeSongsSortSettingsDialog : Dialog {
                 selectedTabIndex = selectedTabIndex,
                 containerColor = Color.Transparent,
                 divider = {},
-                edgePadding = 8.dp
+                edgePadding = 8.dp,
+                indicator = { tabPositions ->
+                    if (selectedTabIndex < tabPositions.size) {
+                        TabRowDefaults.SecondaryIndicator(
+                            modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                            color = colorPalette().accent
+                        )
+                    }
+                }
             ) {
                 tabs.forEachIndexed { index, tab ->
                     Tab(
@@ -220,6 +231,7 @@ object HomeSongsSortSettingsDialog : Dialog {
                     )
                 }
             }
+            HorizontalDivider(color = colorPalette().textDisabled)
 
             ToggleListDialog(
                 items = items, lazyListState = lazyListState, reorderableState = reorderableState,

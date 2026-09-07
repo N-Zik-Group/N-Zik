@@ -134,10 +134,12 @@ import app.it.fast4x.rimusic.utils.formatAsTime
 import app.it.fast4x.rimusic.utils.center
 import app.it.fast4x.rimusic.utils.color
 import app.it.fast4x.rimusic.utils.showFavoritesArtistKey
+import app.it.fast4x.rimusic.utils.showDislikedArtistKey
 import app.it.fast4x.rimusic.utils.homeArtistsOrderKey
 import app.it.fast4x.rimusic.utils.showFloatingIconKey
 import app.it.fast4x.rimusic.utils.homeArtistsLibraryToolbarOrderKey
 import app.it.fast4x.rimusic.utils.homeArtistsFavoritesToolbarOrderKey
+import app.it.fast4x.rimusic.utils.homeArtistsDislikedToolbarOrderKey
 import app.it.fast4x.rimusic.utils.homeArtistsFavoritesSortMenuOrderKey
 import app.it.fast4x.rimusic.utils.homeArtistsLibrarySortMenuOrderKey
 import app.it.fast4x.rimusic.utils.homeArtistsDislikedSortMenuOrderKey
@@ -273,6 +275,7 @@ fun HomeArtists(
     )
 
     val showFavoritesArtist by rememberPreference(showFavoritesArtistKey, true)
+    val showDislikedArtist by rememberPreference(showDislikedArtistKey, true)
     val homeArtistsOrderPref by rememberPreference(homeArtistsOrderKey, "")
 
     val favoritesLabel = stringResource(R.string.favorites)
@@ -281,7 +284,7 @@ fun HomeArtists(
     val artistsDefaultOrder = listOf("all", "favorites", "disliked")
     val labelMap = mapOf("favorites" to favoritesLabel, "all" to allLabel, "disliked" to dislikedLabel)
     val typeMap = mapOf("favorites" to ArtistsType.Favorites, "all" to ArtistsType.Library, "disliked" to ArtistsType.Disliked)
-    val toggleMap = mapOf("favorites" to showFavoritesArtist, "all" to true, "disliked" to true)
+    val toggleMap = mapOf("favorites" to showFavoritesArtist, "all" to true, "disliked" to showDislikedArtist)
     val buttonsList = remember(showFavoritesArtist, homeArtistsOrderPref, favoritesLabel, allLabel, dislikedLabel) {
         val order = try {
             val arr = JSONArray(homeArtistsOrderPref)
@@ -406,9 +409,11 @@ fun HomeArtists(
 
                 val homeArtistsToolbarOrderPrefLibrary by rememberPreference(homeArtistsLibraryToolbarOrderKey, "")
                 val homeArtistsToolbarOrderPrefFavorites by rememberPreference(homeArtistsFavoritesToolbarOrderKey, "")
+                val homeArtistsToolbarOrderPrefDisliked by rememberPreference(homeArtistsDislikedToolbarOrderKey, "")
 
                 val currentToolbarOrderPref = when (artistType) {
                     ArtistsType.Favorites -> homeArtistsToolbarOrderPrefFavorites
+                    ArtistsType.Disliked -> homeArtistsToolbarOrderPrefDisliked
                     else -> homeArtistsToolbarOrderPrefLibrary
                 }
 

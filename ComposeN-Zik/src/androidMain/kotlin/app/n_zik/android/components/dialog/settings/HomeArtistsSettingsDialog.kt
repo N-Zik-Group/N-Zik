@@ -66,7 +66,7 @@ object HomeArtistsSettingsDialog : Dialog {
             when (id) {
                 "all" -> ToggleItem(id, R.drawable.people, allLabel, "always_true_artists", true)
                 "favorites" -> ToggleItem(id, R.drawable.heart, favLabel, showFavoritesArtistKey, true)
-                "disliked" -> ToggleItem(id, R.drawable.dislike, dislikedLabel, showDislikedArtistKey, true)
+                "disliked" -> ToggleItem(id, R.drawable.heart_outline, dislikedLabel, showDislikedArtistKey, true)
                 else -> null
             }
         }.filterNotNull()

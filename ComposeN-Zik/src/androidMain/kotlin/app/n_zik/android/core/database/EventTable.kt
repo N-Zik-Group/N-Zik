@@ -203,6 +203,27 @@ interface EventTable {
     fun deleteAll(): Int
 
     /**
+     * Return the total playtime for all songs over a given period.
+     * This is much more efficient than loading all songs and summing in memory.
+     * @param from start of the period (epoch millis)
+     * @param to end of the period (epoch millis)
+     * @return sum of playtime in ms
+     */
+    @Query("SELECT IFNULL(SUM(E.playtime), 0) FROM Event E WHERE E.timestamp BETWEEN :from AND :to")
+    fun getTotalPlayTimeBetween(from: Long, to: Long = System.currentTimeMillis()): Flow<Long>
+
+    /**
+     * Return the total playtime for specific songs over a given period.
+     * This is much more efficient than querying each song individually.
+     * @param songIds list of song IDs to calculate playtime for
+     * @param from start of the period (epoch millis)
+     * @param to end of the period (epoch millis)
+     * @return sum of playtime in ms for the specified songs
+     */
+    @Query("SELECT IFNULL(SUM(E.playtime), 0) FROM Event E WHERE E.songId IN (:songIds) AND E.timestamp BETWEEN :from AND :to")
+    fun getSongsTotalPlayTimeBetween(songIds: List<String>, from: Long, to: Long = System.currentTimeMillis()): Flow<Long>
+
+    /**
      * return the sum of playtime for a given song over a given period.
      * @param songId song id
      * @param from start of the period (epoch millis)

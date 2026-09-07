@@ -100,6 +100,7 @@ import app.it.fast4x.rimusic.utils.statisticsCategoryKey
 import app.n_zik.android.core.coil.thumbnail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
@@ -178,12 +179,8 @@ fun StatisticsPage(
     var totalPlayTimes by remember { mutableLongStateOf(0L) }
     val totalPlayTimesFlow = remember(from) {
         Database.eventTable
-            .findSongsMostPlayedBetween(
-                from = from,
-                limit = Int.MAX_VALUE
-            )
+            .getTotalPlayTimeBetween(from = from)
             .distinctUntilChanged()
-            .map { it.sumOf(Song::totalPlayTimeMs) }
     }
     val totalPlayTimesState = totalPlayTimesFlow.collectAsState(0L, Dispatchers.IO)
     totalPlayTimes = totalPlayTimesState.value
@@ -216,15 +213,17 @@ fun StatisticsPage(
 
     // Calcul of real listening time for the selected period (Songs category)
     var totalPlayTimesSongs by remember { mutableLongStateOf(0L) }
-    LaunchedEffect(songs, from) {
-        var total = 0L
-        songs.forEach { song ->
-            // Get the sum of playtime for the period
-            val playTime = Database.eventTable.getSongPlayTimeBetween(song.id, from).first()
-            total += playTime
+    val songIds = remember(songs) { songs.map { it.id } }
+    val totalPlayTimesSongsFlow = remember(songIds, from) {
+        if (songIds.isEmpty()) {
+            kotlinx.coroutines.flow.flowOf(0L)
+        } else {
+            Database.eventTable.getSongsTotalPlayTimeBetween(songIds, from)
+                .distinctUntilChanged()
         }
-        totalPlayTimesSongs = total
     }
+    val totalPlayTimesSongsState = totalPlayTimesSongsFlow.collectAsState(0L, Dispatchers.IO)
+    totalPlayTimesSongs = totalPlayTimesSongsState.value
 
     Box(
         modifier = Modifier
