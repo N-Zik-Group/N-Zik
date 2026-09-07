@@ -122,9 +122,7 @@ fun SettingsScreen(
             item(0, stringResource(R.string.tab_general), R.drawable.ic_launcher_monochrome)
             item(1, stringResource(R.string.ui_tab), R.drawable.ui)
             item(2, stringResource(R.string.player_appearance), R.drawable.color_palette)
-            item(3, if (!ytLoggedIn) stringResource(R.string.ai_recommendations)
-            else stringResource(R.string.home), if (!ytLoggedIn) R.drawable.sparkles
-            else R.drawable.ytmusic)
+            item(3, stringResource(R.string.ai_recommendations), R.drawable.sparkles)
             item(4, stringResource(R.string.tab_data), R.drawable.server)
             item(5, stringResource(R.string.tab_accounts), R.drawable.person)
             item(6, stringResource(R.string.tab_network), R.drawable.network)

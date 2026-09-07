@@ -1139,7 +1139,7 @@ class PlayerServiceModern : MediaLibraryService(),
      * Key = mediaId, Value = number of recovery attempts already made.
      */
     private val recoveryAttempts = mutableMapOf<String, Int>()
-    private val MAX_RECOVERY_ATTEMPTS = 7
+    private val MAX_RECOVERY_ATTEMPTS = 3
     private val MAX_RETRY_PER_SONG = 3
     private val RETRY_DELAY_MS = 1000L
     private val recentlyFailedSongs = mutableSetOf<String>()
@@ -1165,6 +1165,9 @@ class PlayerServiceModern : MediaLibraryService(),
             "page needs to be reloaded",
             "page must be reloaded",
             "reload",
+            "pagina deve essere ricaricata",
+            "la pagina deve essere ricaricata",
+            "ricaricata",
         )
         val errorMessage = error.message?.lowercase() ?: ""
         val causeMessage = error.cause?.message?.lowercase() ?: ""
@@ -1220,12 +1223,6 @@ class PlayerServiceModern : MediaLibraryService(),
             Timber.tag("PlayerServiceModern").d("Cleared download URL cache for $mediaId")
         } catch (e: Exception) {
             Timber.tag("PlayerServiceModern").w(e, "Failed to clear download URL cache for $mediaId")
-        }
-        try {
-            clearStreamCaches()
-            Timber.tag("PlayerServiceModern").d("Cleared stream caches for $mediaId")
-        } catch (e: Exception) {
-            Timber.tag("PlayerServiceModern").w(e, "Failed to clear stream caches for $mediaId")
         }
     }
 

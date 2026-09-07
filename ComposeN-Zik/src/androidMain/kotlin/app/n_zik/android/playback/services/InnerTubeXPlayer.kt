@@ -46,8 +46,6 @@ object InnerTubeXPlayer {
     private var currentBundle: ExtractionBundle? = null
 
     private val bundleMutex = Mutex()
-    private val failedClients = java.util.concurrent.ConcurrentHashMap<String, Long>()
-    private val FAILURE_TTL_MS = 5 * 60 * 1000L
 
     @Synchronized
     fun initialize(context: Context) {
@@ -88,14 +86,11 @@ object InnerTubeXPlayer {
                     allowSabr = false,
                     allowBoundedRange = allowBoundedRange,
                 )
-            val excludedClients =
-                buildSet {
-                    if (hasRecentFailure(videoId)) {
-                        Timber.tag(TAG).d("playerResponseForPlayback: excluding failed clients for $videoId (recent failure)")
-                        // Exclude ALL recently failed clients, not just WEB_REMIX
-                        failedClients.keys.forEach { add(it) }
-                    }
+            val excludedClients = getFailedClientNames(videoId).also {
+                if (it.isNotEmpty()) {
+                    Timber.tag(TAG).d("playerResponseForPlayback: excluding failed clients for $videoId: $it")
                 }
+            }
             Timber.tag(TAG).d("playerResponseForPlayback: calling InnerTubeX extractor for $videoId")
             val stream =
                 requireNotNull(
@@ -128,26 +123,10 @@ object InnerTubeXPlayer {
             Result.failure(error)
         }
 
-    fun markClientFailed(videoId: String, clientName: String) {
-        failedClients["$videoId:$clientName"] = System.currentTimeMillis()
-    }
-
-    fun clearAllFailures() {
-        failedClients.clear()
-    }
-
     suspend fun refreshAfterStreamRejection(): Boolean {
         val changed = bundle().cipherService.refreshAfterStreamRejection()
         if (changed) clearAllFailures()
         return changed
-    }
-
-    private fun hasRecentFailure(videoId: String): Boolean {
-        val now = System.currentTimeMillis()
-        val prefix = "$videoId:"
-        return failedClients.entries.any { (key, failedAt) ->
-            key.startsWith(prefix) && (now - failedAt) in 0 until FAILURE_TTL_MS
-        }
     }
 
     private suspend fun bundle(): ExtractionBundle {
@@ -221,7 +200,7 @@ object InnerTubeXPlayer {
                 }
 
             override suspend fun close() {
-                // PoTokenGenerator doesn't have a close method
+                poTokenGenerator.close()
             }
         }
 

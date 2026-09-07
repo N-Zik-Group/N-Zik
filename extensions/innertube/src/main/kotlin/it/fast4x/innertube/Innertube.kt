@@ -242,17 +242,18 @@ object Innertube {
 
     var cookieMap = emptyMap<String, String>()
 
-    // Language to fallback region — used when YouTube rejects the ISO region on400
-    private val LANGUAGE_REGION_FALLBACK = mapOf(
-        "fr" to "FR", "en" to "US", "de" to "DE", "es" to "ES", "pt" to "BR", "it" to "IT",
-        "ja" to "JP", "ko" to "KR", "zh" to "TW", "ar" to "SA", "hi" to "IN", "th" to "TH",
-        "vi" to "VN", "id" to "ID", "ms" to "MY", "tr" to "TR", "pl" to "PL", "nl" to "NL",
-        "ru" to "RU", "uk" to "UA", "cs" to "CZ", "ro" to "RO", "hu" to "HU", "el" to "GR",
-        "he" to "IL", "fa" to "IR", "bn" to "BD", "ta" to "IN", "te" to "IN", "mr" to "IN",
-        "sw" to "KE", "am" to "ET", "yo" to "NG", "ig" to "NG", "ha" to "NG", "zu" to "ZA",
-        "af" to "ZA", "km" to "KH", "lo" to "LA", "si" to "LK", "ne" to "NP",
-        "fil" to "PH", "tl" to "PH", "ml" to "IN", "kn" to "IN", "gu" to "IN", "pa" to "IN",
-        "or" to "IN", "as" to "IN", "ur" to "PK", "ps" to "PK"
+    // YouTube Music supported countries (same as Metrolist's CountryCodeToName)
+    // ISO-valid but YT-unsupported regions (e.g. MM) cause 400 errors
+    private val YOUTUBE_COUNTRIES = setOf(
+        "DZ", "AR", "AU", "AT", "AZ", "BH", "BD", "BY", "BE", "BO", "BA", "BR", "BG",
+        "KH", "CA", "CL", "HK", "CO", "CR", "HR", "CY", "CZ", "DK", "DO", "EC", "EG",
+        "SV", "EE", "FI", "FR", "GE", "DE", "GH", "GR", "GT", "HN", "HU", "IS", "IN",
+        "ID", "IQ", "IE", "IL", "IT", "JM", "JP", "JO", "KZ", "KE", "KR", "KW", "LA",
+        "LV", "LB", "LY", "LI", "LT", "LU", "MK", "MY", "MT", "MX", "ME", "MA", "NP",
+        "NL", "NZ", "NI", "NG", "NO", "OM", "PK", "PA", "PG", "PY", "PE", "PH", "PL",
+        "PT", "PR", "QA", "RO", "RU", "SA", "SN", "RS", "SG", "SK", "SI", "ZA", "ES",
+        "LK", "SE", "CH", "TW", "TZ", "TH", "TN", "TR", "UG", "UA", "AE", "GB", "US",
+        "UY", "VE", "VN", "YE", "ZW"
     )
 
     init {
@@ -264,7 +265,7 @@ object Innertube {
             regionOverride.uppercase()
         } else {
             val rawGl = Locale.getDefault().country.takeIf { it.length == 2 } ?: "US"
-            rawGl.takeIf { it in Locale.getISOCountries() } ?: "US"
+            rawGl.takeIf { it in YOUTUBE_COUNTRIES } ?: "US"
         }
         val hl = Locale.getDefault().toLanguageTag()
             .takeIf { it.length >= 2 }?.substringBefore("-") ?: "en"
@@ -273,9 +274,6 @@ object Innertube {
             hl = hl
         )
     }
-
-    private fun languageFallbackRegion(): String =
-        LANGUAGE_REGION_FALLBACK[Locale.getDefault().language] ?: "US"
 
     suspend fun ensureVisitorData() {
         if (visitorData.isNullOrBlank()) {
@@ -665,30 +663,12 @@ object Innertube {
         query: String? = null,
         params: String? = null,
         continuation: String? = null,
-    ): HttpResponse {
-        val response = innerTubeX.search(
-            client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
-            query = query,
-            params = params,
-            continuation = continuation,
-        )
-        if (response.status.value == 400 && !regionOverrideActive) {
-            val fallbackGl = languageFallbackRegion()
-            if (fallbackGl != innerTubeX.locale.gl) {
-                val originalGl = innerTubeX.locale.gl
-                innerTubeX.locale = com.metrolist.innertubex.models.YouTubeLocale(gl = fallbackGl, hl = innerTubeX.locale.hl)
-                val retryResponse = innerTubeX.search(
-                    client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
-                    query = query, params = params, continuation = continuation,
-                )
-                if (retryResponse.status.value != 200) {
-                    innerTubeX.locale = com.metrolist.innertubex.models.YouTubeLocale(gl = originalGl, hl = innerTubeX.locale.hl)
-                }
-                return retryResponse
-            }
-        }
-        return response
-    }
+    ) = innerTubeX.search(
+        client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+        query = query,
+        params = params,
+        continuation = continuation,
+    )
 
     suspend fun getQueue(
         videoIds: List<String>? = null,
@@ -701,34 +681,16 @@ object Innertube {
 
     suspend fun getSearchSuggestions(
         input: String,
-    ): HttpResponse {
-        val response = innerTubeX.getSearchSuggestions(
-            client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
-            input = input,
-        )
-        if (response.status.value == 400 && !regionOverrideActive) {
-            val fallbackGl = languageFallbackRegion()
-            if (fallbackGl != innerTubeX.locale.gl) {
-                val originalGl = innerTubeX.locale.gl
-                innerTubeX.locale = com.metrolist.innertubex.models.YouTubeLocale(gl = fallbackGl, hl = innerTubeX.locale.hl)
-                val retryResponse = innerTubeX.getSearchSuggestions(
-                    client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
-                    input = input,
-                )
-                if (retryResponse.status.value != 200) {
-                    innerTubeX.locale = com.metrolist.innertubex.models.YouTubeLocale(gl = originalGl, hl = innerTubeX.locale.hl)
-                }
-                return retryResponse
-            }
-        }
-        return response
-    }
+    ) = innerTubeX.getSearchSuggestions(
+        client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+        input = input,
+    )
 
     private suspend fun HttpResponse.requireSuccess(operation: String): HttpResponse {
         if (!status.isSuccess()) {
             // Consume and discard response body to prevent resource leak (like Metrolist)
             runCatching { body<String>() }
-            throw IllegalStateException("$operation failed with status ${status.value}")
+            throw InnertubeHttpException(operation, status)
         }
         return this
     }
@@ -836,23 +798,7 @@ object Innertube {
                 isolated.close()
             }
         }
-        val response = innerTubeX.browse(client, browseId, params, continuation, setLogin)
-        // If YouTube rejects the ISO region with 400, retry with language-based fallback
-        if (response.status.value == 400 && !regionOverrideActive) {
-            val fallbackGl = languageFallbackRegion()
-            if (fallbackGl != innerTubeX.locale.gl) {
-                InnertubeLogger.w("Innertube", "browse 400 with gl=${innerTubeX.locale.gl}, retrying with fallback gl=$fallbackGl")
-                val originalGl = innerTubeX.locale.gl
-                innerTubeX.locale = com.metrolist.innertubex.models.YouTubeLocale(gl = fallbackGl, hl = innerTubeX.locale.hl)
-                val retryResponse = innerTubeX.browse(client, browseId, params, continuation, setLogin)
-                if (retryResponse.status.value != 200) {
-                    // Restore original locale if fallback also fails
-                    innerTubeX.locale = com.metrolist.innertubex.models.YouTubeLocale(gl = originalGl, hl = innerTubeX.locale.hl)
-                }
-                return retryResponse
-            }
-        }
-        return response
+        return innerTubeX.browse(client, browseId, params, continuation, setLogin)
     }
 
     suspend fun library(browseId: String, tabIndex: Int = 0) = runCatching {

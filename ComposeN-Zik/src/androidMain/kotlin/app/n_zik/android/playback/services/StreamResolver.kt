@@ -162,6 +162,22 @@ fun clearClientFailures(clientName: String) {
 }
 
 /**
+ * Get the set of client names that have recently failed for a given videoId.
+ * Used by InnerTubeXPlayer to build the excludedClients set.
+ */
+fun getFailedClientNames(videoId: String): Set<String> {
+    val now = System.currentTimeMillis()
+    return buildSet {
+        clientFailedIds.forEach { (clientName, failureMap) ->
+            val failureTime = failureMap[videoId]
+            if (failureTime != null && now - failureTime in 0 until CLIENT_FAILURE_TTL_MS) {
+                add(clientName)
+            }
+        }
+    }
+}
+
+/**
  * Store id of song just added to the database to reduce load to Room.
  */
 @set:Synchronized
@@ -670,8 +686,7 @@ private suspend fun resolveStreamUriViaInnerTubeX(
                         )
                     }
 
-                    val contentLength = playbackData.format.contentLength ?: 1_000_000L
-                    val streamUrl = "${playbackData.streamUrl}&range=0-$contentLength"
+                    val streamUrl = playbackData.streamUrl
 
                     // Store in StreamUrlCache with headers from InnerTubeX
                     streamUrlCache.put(
