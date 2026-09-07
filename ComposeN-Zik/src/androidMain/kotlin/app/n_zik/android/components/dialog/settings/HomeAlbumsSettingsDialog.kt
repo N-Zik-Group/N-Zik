@@ -13,13 +13,14 @@ import app.n_zik.android.components.dialog.common.Dialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.it.fast4x.rimusic.utils.showFavoritesAlbumKey
+import app.it.fast4x.rimusic.utils.showDislikedAlbumKey
 import app.it.fast4x.rimusic.utils.homeAlbumsOrderKey
 import app.kreate.android.me.knighthat.utils.Toaster
 import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import android.content.Context
 
-private val albumsDefaultOrder = listOf("all", "favorites")
+private val albumsDefaultOrder = listOf("all", "favorites", "disliked")
 
 object HomeAlbumsSettingsDialog : Dialog {
     override val dialogTitle: String @Composable get() = stringResource(R.string.home_albums_settings)
@@ -38,7 +39,8 @@ object HomeAlbumsSettingsDialog : Dialog {
         var workingOrder by remember { mutableStateOf(parseOrder(prefs.getString(homeAlbumsOrderKey, "") ?: "").toMutableList()) }
 
         val prefKeys = mapOf(
-            "favorites" to showFavoritesAlbumKey
+            "favorites" to showFavoritesAlbumKey,
+            "disliked" to showDislikedAlbumKey
         )
 
         var workingToggles by remember {
@@ -52,6 +54,7 @@ object HomeAlbumsSettingsDialog : Dialog {
 
         val allLabel = stringResource(R.string.all)
         val favLabel = stringResource(R.string.favorites)
+        val dislikedLabel = stringResource(R.string.disliked)
 
         val lazyListState = rememberLazyListState()
         val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
@@ -63,6 +66,7 @@ object HomeAlbumsSettingsDialog : Dialog {
             when (id) {
                 "all" -> ToggleItem(id, R.drawable.album, allLabel, "always_true_albums", true)
                 "favorites" -> ToggleItem(id, R.drawable.heart, favLabel, showFavoritesAlbumKey, true)
+                "disliked" -> ToggleItem(id, R.drawable.dislike, dislikedLabel, showDislikedAlbumKey, true)
                 else -> null
             }
         }.filterNotNull()
@@ -101,6 +105,7 @@ object HomeAlbumsSettingsDialog : Dialog {
         prefs.edit()
             .putString(homeAlbumsOrderKey, serializeOrder(albumsDefaultOrder))
             .putBoolean(showFavoritesAlbumKey, true)
+            .putBoolean(showDislikedAlbumKey, true)
             .apply()
     }
 }

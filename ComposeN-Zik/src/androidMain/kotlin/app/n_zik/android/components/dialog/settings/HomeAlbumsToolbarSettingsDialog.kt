@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.ScrollableTabRow
@@ -13,6 +14,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import app.n_zik.android.R
+import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.Dialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
@@ -35,6 +37,7 @@ object HomeAlbumsToolbarSettingsDialog : Dialog {
 
     private fun getTabPrefix(tab: String): String = when (tab) {
         "favs" -> "favs"
+        "disliked" -> "disliked"
         else -> "all"
     }
 
@@ -65,7 +68,8 @@ object HomeAlbumsToolbarSettingsDialog : Dialog {
 
         val tabs = listOf(
             "lib" to homeAlbumsLibraryToolbarOrderKey,
-            "favs" to homeAlbumsFavoritesToolbarOrderKey
+            "favs" to homeAlbumsFavoritesToolbarOrderKey,
+            "disliked" to homeAlbumsDislikedToolbarOrderKey
         )
 
         var selectedTabIndex by remember { mutableStateOf(0) }
@@ -148,7 +152,7 @@ object HomeAlbumsToolbarSettingsDialog : Dialog {
         Column {
             ScrollableTabRow(
                 selectedTabIndex = selectedTabIndex,
-                containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                containerColor = Color.Transparent,
                 divider = {},
                 edgePadding = 8.dp
             ) {
@@ -156,7 +160,9 @@ object HomeAlbumsToolbarSettingsDialog : Dialog {
                     Tab(
                         selected = selectedTabIndex == index,
                         onClick = { selectedTabIndex = index },
-                        text = { Text(stringResource(when (tab.first) { "favs" -> R.string.favorites; else -> R.string.all })) }
+                        text = { Text(stringResource(when (tab.first) { "favs" -> R.string.favorites; "disliked" -> R.string.disliked; else -> R.string.all })) },
+                        selectedContentColor = colorPalette().accent,
+                        unselectedContentColor = colorPalette().textSecondary
                     )
                 }
             }
@@ -206,7 +212,8 @@ object HomeAlbumsToolbarSettingsDialog : Dialog {
         val edit = prefs.edit()
         val tabs = listOf(
             "favs" to homeAlbumsFavoritesToolbarOrderKey,
-            "lib" to homeAlbumsLibraryToolbarOrderKey
+            "lib" to homeAlbumsLibraryToolbarOrderKey,
+            "disliked" to homeAlbumsDislikedToolbarOrderKey
         )
         tabs.forEach { (tab, key) ->
             val tp = getTabPrefix(tab)

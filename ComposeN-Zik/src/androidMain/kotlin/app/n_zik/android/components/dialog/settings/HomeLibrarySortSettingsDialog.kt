@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.ScrollableTabRow
@@ -13,6 +14,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import app.n_zik.android.R
+import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.Dialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
@@ -119,8 +121,16 @@ object HomeLibrarySortSettingsDialog : Dialog {
         }
 
         Column {
-            ScrollableTabRow(selectedTabIndex = selectedTabIndex, containerColor = androidx.compose.ui.graphics.Color.Transparent, divider = {}, edgePadding = 8.dp) {
-                tabs.forEachIndexed { index, tab -> Tab(selected = selectedTabIndex == index, onClick = { selectedTabIndex = index }, text = { Text(stringResource(tab.textId)) }) }
+            ScrollableTabRow(selectedTabIndex = selectedTabIndex, containerColor = Color.Transparent, divider = {}, edgePadding = 8.dp) {
+                tabs.forEachIndexed { index, tab ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = { Text(stringResource(tab.textId)) },
+                        selectedContentColor = colorPalette().accent,
+                        unselectedContentColor = colorPalette().textSecondary
+                    )
+                }
             }
             ToggleListDialog(
                 items = items, lazyListState = lazyListState, reorderableState = reorderableState, enforceMinOneChecked = true,

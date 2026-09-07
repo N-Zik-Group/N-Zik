@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.ScrollableTabRow
@@ -13,6 +14,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import app.n_zik.android.R
+import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.Dialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
@@ -28,10 +30,12 @@ object HomeArtistsSortSettingsDialog : Dialog {
 
     private val librarySortIds = listOf("Name", "PlayCount", "ListeningTime", "DateAdded", "Custom")
     private val favoritesSortIds = listOf("Name", "PlayCount", "ListeningTime", "DateAdded")
+    private val dislikedSortIds = listOf("Name", "PlayCount", "ListeningTime", "DateAdded")
 
     private enum class ArtistTab(val textId: Int, val availableIds: List<String>) {
         Library(R.string.library, librarySortIds),
-        Favorites(R.string.favorites, favoritesSortIds)
+        Favorites(R.string.favorites, favoritesSortIds),
+        Disliked(R.string.disliked, dislikedSortIds)
     }
 
     private val tabs = ArtistTab.entries
@@ -68,6 +72,18 @@ object HomeArtistsSortSettingsDialog : Dialog {
         else -> id
     }
 
+    private fun getTabPrefix(tab: ArtistTab): String = when (tab) {
+        ArtistTab.Library -> "art_lib"
+        ArtistTab.Favorites -> "art_fav"
+        ArtistTab.Disliked -> "art_dis"
+    }
+
+    private fun getSortOrderKey(tab: ArtistTab): String = when (tab) {
+        ArtistTab.Library -> homeArtistsLibrarySortMenuOrderKey
+        ArtistTab.Favorites -> homeArtistsFavoritesSortMenuOrderKey
+        ArtistTab.Disliked -> homeArtistsDislikedSortMenuOrderKey
+    }
+
     @Composable
     override fun DialogBody() {
         val ctx = LocalContext.current
@@ -77,7 +93,7 @@ object HomeArtistsSortSettingsDialog : Dialog {
         var workingOrders by remember {
             mutableStateOf(
                 tabs.associate { tab ->
-                    val key = if (tab == ArtistTab.Library) homeArtistsLibrarySortMenuOrderKey else homeArtistsFavoritesSortMenuOrderKey
+                    val key = getSortOrderKey(tab)
                     tab to parseOrder(prefs.getString(key, "") ?: "", tab.availableIds).toMutableList()
                 }.toMutableMap()
             )
@@ -85,14 +101,14 @@ object HomeArtistsSortSettingsDialog : Dialog {
         var workingToggles by remember {
             mutableStateOf(
                 tabs.associate { tab ->
-                    val prefix = if (tab == ArtistTab.Library) "art_lib" else "art_fav"
+                    val prefix = getTabPrefix(tab)
                     tab to tab.availableIds.associateWith { id -> prefs.getBoolean("${prefix}_sort_${id}_visible", true) }.toMutableMap()
                 }.toMutableMap()
             )
         }
 
         val currentTab = tabs[selectedTabIndex]
-        val prefix = if (currentTab == ArtistTab.Library) "art_lib" else "art_fav"
+        val prefix = getTabPrefix(currentTab)
         val lazyListState = rememberLazyListState()
         val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
             val o = (workingOrders[currentTab] ?: return@rememberReorderableLazyListState).toMutableList()
@@ -104,8 +120,21 @@ object HomeArtistsSortSettingsDialog : Dialog {
         }
 
         Column {
-            ScrollableTabRow(selectedTabIndex = selectedTabIndex, containerColor = androidx.compose.ui.graphics.Color.Transparent, divider = {}, edgePadding = 8.dp) {
-                tabs.forEachIndexed { index, tab -> Tab(selected = selectedTabIndex == index, onClick = { selectedTabIndex = index }, text = { Text(stringResource(tab.textId)) }) }
+            ScrollableTabRow(
+                selectedTabIndex = selectedTabIndex,
+                containerColor = Color.Transparent,
+                divider = {},
+                edgePadding = 8.dp
+            ) {
+                tabs.forEachIndexed { index, tab ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = { Text(stringResource(tab.textId)) },
+                        selectedContentColor = colorPalette().accent,
+                        unselectedContentColor = colorPalette().textSecondary
+                    )
+                }
             }
             ToggleListDialog(
                 items = items, lazyListState = lazyListState, reorderableState = reorderableState, enforceMinOneChecked = true,
@@ -123,8 +152,8 @@ object HomeArtistsSortSettingsDialog : Dialog {
                 onConfirm = {
                     val edit = prefs.edit()
                     tabs.forEach { tab ->
-                        val prefix2 = if (tab == ArtistTab.Library) "art_lib" else "art_fav"
-                        val key = if (tab == ArtistTab.Library) homeArtistsLibrarySortMenuOrderKey else homeArtistsFavoritesSortMenuOrderKey
+                        val prefix2 = getTabPrefix(tab)
+                        val key = getSortOrderKey(tab)
                         (workingToggles[tab] ?: emptyMap()).forEach { (id, isChecked) -> edit.putBoolean("${prefix2}_sort_${id}_visible", isChecked) }
                         edit.putString(key, serializeOrder((workingOrders[tab] ?: emptyList()).filter { id -> (workingToggles[tab] ?: emptyMap())[id] == true }))
                     }
@@ -138,8 +167,8 @@ object HomeArtistsSortSettingsDialog : Dialog {
         val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         val edit = prefs.edit()
         tabs.forEach { tab ->
-            val prefix2 = if (tab == ArtistTab.Library) "art_lib" else "art_fav"
-            val key = if (tab == ArtistTab.Library) homeArtistsLibrarySortMenuOrderKey else homeArtistsFavoritesSortMenuOrderKey
+            val prefix2 = getTabPrefix(tab)
+            val key = getSortOrderKey(tab)
             tab.availableIds.forEach { id -> edit.putBoolean("${prefix2}_sort_${id}_visible", true) }
             edit.putString(key, serializeOrder(tab.availableIds))
         }
