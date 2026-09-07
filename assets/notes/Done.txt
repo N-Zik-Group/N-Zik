@@ -1,3 +1,27 @@
+feat(settings): add disliked tab to albums/artists settings dialogs + fix theme
+  - `Preferences.kt`: Added keys `homeAlbumsDislikedToolbarOrderKey`, `homeArtistsDislikedToolbarOrderKey`, `showDislikedAlbumKey`, `showDislikedArtistKey`
+  - `HomeAlbumsSortSettingsDialog.kt`: Added Disliked tab with sort options, dynamic theme (accent color for selected tab, textSecondary for unselected)
+  - `HomeArtistsSortSettingsDialog.kt`: Added Disliked tab with sort options, dynamic theme
+  - `HomeAlbumsToolbarSettingsDialog.kt`: Added Disliked tab with toolbar buttons, dynamic theme
+  - `HomeArtistsToolbarSettingsDialog.kt`: Added Disliked tab with toolbar buttons, dynamic theme
+  - `HomeAlbumsSettingsDialog.kt`: Added Disliked option with heart_outline icon, dynamic toggle
+  - `HomeArtistsSettingsDialog.kt`: Added Disliked option with heart_outline icon, dynamic toggle
+  - `HomeSongsSortSettingsDialog.kt`: Fixed dynamic theme (accent color for selected tab)
+  - `HomeSongsToolbarSettingsDialog.kt`: Fixed dynamic theme
+  - `HomeLibrarySortSettingsDialog.kt`: Fixed dynamic theme
+  - `HomeLibraryToolbarSettingsDialog.kt`: Fixed dynamic theme
+  - All dialogs: Added HorizontalDivider with dynamic color between tabs and content
+  - All dialogs: Added TabRowDefaults.SecondaryIndicator with accent color for tab indicator
+  - `HomeAlbum.kt`: Connected showDislikedAlbumKey and homeAlbumsDislikedToolbarOrderKey
+  - `HomeArtist.kt`: Connected showDislikedArtistKey and homeArtistsDislikedToolbarOrderKey
+
+feat(quickpicks): avoid showing wrong like icon during database load
+  - `SongItem.kt`: Added likeStateLoaded flag to track when database has returned value, only show dislike icon after database has loaded
+
+feat(ui+db): enhance item components, menus, and add DB migration v36→v37
+  - `StatisticsPage.kt`: Enhanced statistics page with new UI components
+  - `EventTable.kt`: Added getTotalPlayTimeBetween and getSongsTotalPlayTimeBetween queries
+
 feat(ui): add bookmark/dislike indicator icons on artist, album, and playlist items
   - `ArtistItem.kt`: Real-time like state via `Database.artistTable.likeState()` Flow, shows bookmark (favoritesIcon) or bookmark_slash (red) on thumbnail BottomStart with absoluteOffset, clip moved to inner Box to prevent icon clipping
   - `AlbumItem.kt`: Same pattern via `Database.albumTable.likeState()` Flow, bookmark/bookmark_slash icon on thumbnail
