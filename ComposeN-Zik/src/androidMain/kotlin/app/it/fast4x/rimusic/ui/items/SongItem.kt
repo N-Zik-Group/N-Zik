@@ -593,8 +593,6 @@ fun SongItem(
 
             Row(verticalAlignment = Alignment.CenterVertically) {
 
-                //Log.d("downloadState",downloadState.toString())
-
                 /*
                 if ((downloadState == Download.STATE_DOWNLOADING
                             || downloadState == Download.STATE_QUEUED

@@ -19,6 +19,7 @@ import io.ktor.http.path
 import io.ktor.serialization.kotlinx.json.json
 import it.fast4x.invidious.models.Instances
 import it.fast4x.invidious.models.InvidiousResponse
+import it.fast4x.invidious.utils.InvidiousLogger
 import it.fast4x.invidious.utils.ProxyPreferences
 import it.fast4x.invidious.utils.getProxy
 import it.fast4x.invidious.utils.runCatchingCancellable
@@ -132,16 +133,16 @@ object Invidious {
     class Api internal constructor() {
 
         suspend fun videos(videoId: String) = runCatchingCancellable {
-            println("Invidious.api.videos request started")
+            InvidiousLogger.d("Invidious", "api.videos request started")
             val url = "${Instances.YEWTU.apiUrl}videos/${videoId}"
-            println("Invidious.api.videos url: $url")
+            InvidiousLogger.d("Invidious", "api.videos url: $url")
             val response = client.get(url) {
                 contentType(ContentType.Application.Json)
             }.body<InvidiousResponse>()
-            println("Invidious.api.videos request finished $response")
+            InvidiousLogger.d("Invidious", "api.videos request finished $response")
             return@runCatchingCancellable response
         }?.onFailure {
-            println("Invidious.api.videos request failed: ${it.message}")
+            InvidiousLogger.e("Invidious", "api.videos request failed: ${it.message}", it)
         }
 
     }

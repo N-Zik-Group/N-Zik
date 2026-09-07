@@ -1,6 +1,6 @@
 package app.n_zik.android.recognition
 
-import android.util.Log
+import timber.log.Timber
 import app.n_zik.android.BuildConfig
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -43,7 +43,7 @@ class ShazamRepository {
         val signatureUri = runCatching {
             signature.safeCreate(shorts)
         }.onFailure {
-            Log.e(TAG, "Signature generation failed", it)
+            Timber.tag(TAG).e(it, "Signature generation failed")
         }.getOrNull() ?: return null
 
         val sampleMs = duration * 1000
@@ -74,11 +74,11 @@ class ShazamRepository {
 
             when (response.code) {
                 429 -> {
-                    Log.w(TAG, "Proxy rate-limited — trying direct")
+                    Timber.tag(TAG).w("Proxy rate-limited — trying direct")
                     return null
                 }
                 !in 200..299 -> {
-                    Log.w(TAG, "Proxy failed code=${response.code}")
+                    Timber.tag(TAG).w("Proxy failed code=%d", response.code)
                     return null
                 }
             }
@@ -86,7 +86,7 @@ class ShazamRepository {
             val responseBody = response.body?.use { it.string() } ?: return null
             parseTrack(responseBody)
         }.onFailure {
-            Log.w(TAG, "Proxy request exception", it)
+            Timber.tag(TAG).w(it, "Proxy request exception")
         }.getOrNull()
 
     // ── Direct Shazam endpoint (fallback) ────────────────────────────────────
@@ -126,14 +126,14 @@ class ShazamRepository {
             ).execute()
 
             if (!response.isSuccessful) {
-                Log.w(TAG, "Direct request failed code=${response.code}")
+                Timber.tag(TAG).w("Direct request failed code=%d", response.code)
                 return null
             }
 
             val responseBody = response.body?.use { it.string() } ?: return null
             parseTrack(responseBody)
         }.onFailure {
-            Log.w(TAG, "Direct request exception", it)
+            Timber.tag(TAG).w(it, "Direct request exception")
         }.getOrNull()
 
     // ── Response parser ───────────────────────────────────────────────────────
@@ -162,7 +162,7 @@ class ShazamRepository {
                 genre    = genres?.optString("primary").takeUnless { it.isNullOrBlank() }
             )
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to parse track JSON", e)
+            Timber.tag(TAG).w(e, "Failed to parse track JSON")
             null
         }
     }

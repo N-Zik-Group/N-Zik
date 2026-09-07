@@ -2182,7 +2182,6 @@ class PlayerServiceModern : MediaLibraryService(),
     @UnstableApi
     private fun maybeRestoreFromDiskPlayerQueue() {
         //if (!isPersistentQueueEnabled) return
-        //Log.d("mediaItem", "QueuePersistentEnabled Restore Initial")
 
         val parentalControlEnabled = preferences.getBoolean(parentalControlEnabledKey, false)
 
@@ -2193,8 +2192,7 @@ class PlayerServiceModern : MediaLibraryService(),
                 }
             }
         }.onSuccess { queue ->
-            //Log.d("mediaItem", "QueuePersistentEnabled Restored queue $queue")
-            //Log.d("mediaItem", "QueuePersistentEnabled Restored ${queue.songMediaItems.size}")
+
 
             // Filter explicit content if parental control is enabled
             val filteredItems = if (parentalControlEnabled) {
@@ -2221,18 +2219,14 @@ class PlayerServiceModern : MediaLibraryService(),
             }
 
         }.onFailure {
-            //it.printStackTrace()
             Timber.tag("PlayerServiceModern").e(it.stackTraceToString())
         }
-
-        //Log.d("mediaItem", "QueuePersistentEnabled Restored ${player.currentTimeline.mediaItems.size}")
 
     }
 
     private fun maybeSaveToDiskPlayerQueue() {
 
         //if (!isPersistentQueueEnabled) return
-        //Log.d("mediaItem", "QueuePersistentEnabled Save ${player.currentTimeline.mediaItems.size}")
 
         val persistentQueue = PersistentQueue(
             title = getString(R.string.txt_title),
@@ -2255,7 +2249,6 @@ class PlayerServiceModern : MediaLibraryService(),
                 }
             }
         }.onFailure {
-            //it.printStackTrace()
             Timber.tag("PlayerServiceModern").e(it.stackTraceToString())
 
         }.onSuccess {

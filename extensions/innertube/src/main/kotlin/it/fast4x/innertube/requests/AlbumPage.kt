@@ -11,6 +11,7 @@ import it.fast4x.innertube.models.NavigationEndpoint
 import it.fast4x.innertube.requests.playlistPage
 import it.fast4x.innertube.models.oddElements
 import it.fast4x.innertube.models.splitBySeparator
+import it.fast4x.innertube.utils.InnertubeLogger
 import it.fast4x.innertube.utils.PageHelper
 
 
@@ -88,7 +89,7 @@ data class AlbumPage(
         }
 
         fun getSong(renderer: MusicResponsiveListItemRenderer, album: Innertube.AlbumItem? = null): Innertube.SongItem {
-            println("AlbumPage: getSong ${renderer.flexColumns.get(1).musicResponsiveListItemFlexColumnRenderer?.text?.runs}")
+            InnertubeLogger.d("AlbumPage", "getSong ${renderer.flexColumns.get(1).musicResponsiveListItemFlexColumnRenderer?.text?.runs}")
             return Innertube.SongItem(
                 info = Info(
                     name = PageHelper.extractRuns(renderer.flexColumns, "MUSIC_VIDEO")

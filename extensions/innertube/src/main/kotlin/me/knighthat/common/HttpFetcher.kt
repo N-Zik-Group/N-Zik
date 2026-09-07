@@ -18,6 +18,7 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
 import io.ktor.serialization.kotlinx.json.json
+import it.fast4x.innertube.utils.InnertubeLogger
 import it.fast4x.innertube.utils.ProxyPreferences
 import it.fast4x.innertube.utils.getProxy
 import kotlinx.coroutines.async
@@ -204,8 +205,8 @@ internal object HttpFetcher {
 
                         // Only accept successful responses
                         if ( response.status == HttpStatusCode.OK ) {
-                            println("Fetch $hostUrl$endpoint returned code: ${response.status}:")
-                            println(response.bodyAsText().replace("\n", ""))
+                            InnertubeLogger.d("HttpFetcher", "Fetch $hostUrl$endpoint returned code: ${response.status}:")
+                            InnertubeLogger.d("HttpFetcher", response.bodyAsText().replace("\n", ""))
 
                             response.body<T>()
                         } else

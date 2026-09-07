@@ -2,6 +2,7 @@ package it.fast4x.innertube
 
 import io.ktor.client.call.body
 import it.fast4x.innertube.Innertube.getBestQuality
+import it.fast4x.innertube.utils.InnertubeLogger
 import it.fast4x.innertube.models.BrowseEndpoint
 import it.fast4x.innertube.models.BrowseResponse
 import it.fast4x.innertube.models.CreatePlaylistResponse
@@ -27,97 +28,97 @@ object YtMusic {
     suspend fun createPlaylist(title: String) = runCatching {
         Innertube.createPlaylist(title = title).body<CreatePlaylistResponse>().playlistId
     }.onFailure {
-        println("YtMusic: createPlaylist error: ${it.stackTraceToString()}")
+        InnertubeLogger.e("YtMusic", "createPlaylist error", it)
     }
 
     suspend fun deletePlaylist(playlistId: String) = runCatching {
         Innertube.deletePlaylist(playlistId = playlistId)
     }.onFailure {
-        println("YtMusic: deletePlaylist error: ${it.stackTraceToString()}")
+        InnertubeLogger.e("YtMusic", "deletePlaylist error", it)
     }
 
     suspend fun renamePlaylist(playlistId: String, name: String) = runCatching {
         Innertube.renamePlaylist(playlistId = playlistId, name = name)
     }.onFailure {
-        println("YtMusic: renamePlaylist error: ${it.stackTraceToString()}")
+        InnertubeLogger.e("YtMusic", "renamePlaylist error", it)
     }
 
     suspend fun addToPlaylist(playlistId: String, videoId: String) = runCatching {
         Innertube.addToPlaylist(playlistId = playlistId, videoId = videoId)
     }.onFailure {
-        println("YtMusic: addToPlaylist(single) error: ${it.stackTraceToString()}")
+        InnertubeLogger.e("YtMusic", "addToPlaylist(single) error", it)
     }
 
     suspend fun addToPlaylist(playlistId: String, videoIds: List<String>) = runCatching {
         val requestedVideoIds = videoIds.take(PLAYLIST_SIZE_LIMIT)
         val difference = videoIds.size - requestedVideoIds.size
         if (difference > 0) {
-            println("YtMusic: addToPlaylist warning: only adding (at most) $PLAYLIST_SIZE_LIMIT ids, (surpassed limit by $difference)")
+            InnertubeLogger.w("YtMusic", "addToPlaylist warning: only adding (at most) $PLAYLIST_SIZE_LIMIT ids, (surpassed limit by $difference)")
         }
         Innertube.addToPlaylist(playlistId = playlistId, videoIds = requestedVideoIds)
     }.onFailure {
-        println("YtMusic: addToPlaylist (list of size ${videoIds.size}) error: ${it.stackTraceToString()}")
+        InnertubeLogger.e("YtMusic", "addToPlaylist (list of size ${videoIds.size}) error", it)
     }
 
     suspend fun removeFromPlaylist(playlistId: String, videoId: String, setVideoId: String? = null) = runCatching {
-        println("YtMusic: removeFromPlaylist params: playlistId: $playlistId, videoId: $videoId, setVideoId: $setVideoId")
+        InnertubeLogger.d("YtMusic", "removeFromPlaylist params: playlistId: $playlistId, videoId: $videoId, setVideoId: $setVideoId")
             Innertube.removeFromPlaylist(playlistId = playlistId, videoId = videoId, setVideoId = setVideoId)
         }.onFailure {
-            println("YtMusic: removeFromPlaylist error: ${it.stackTraceToString()}")
+            InnertubeLogger.e("YtMusic", "removeFromPlaylist error", it)
         }
 
     suspend fun addPlaylistToPlaylist(playlistId: String, videoId: String) = runCatching {
         Innertube.addPlaylistToPlaylist(playlistId = playlistId, addPlaylistId = videoId)
     }.onFailure {
-        println("YtMusic: addPlaylistToPlaylist error: ${it.stackTraceToString()}")
+        InnertubeLogger.e("YtMusic", "addPlaylistToPlaylist error", it)
     }
 
     suspend fun removeFromPlaylist(playlistId: String, videoId: String, setVideoIds: List<String?>) = runCatching {
         Innertube.removeFromPlaylist(playlistId = playlistId, videoId = videoId, setVideoIds = setVideoIds)
     }.onFailure {
-        println("YtMusic: removeFromPlaylist (list of size ${setVideoIds.size}) error: ${it.stackTraceToString()}")
+        InnertubeLogger.e("YtMusic", "removeFromPlaylist (list of size ${setVideoIds.size}) error", it)
     }
 
     suspend fun subscribeChannel(channelId: String) = runCatching {
-        println("YtMusic: subscribeChannel channelId: $channelId")
+        InnertubeLogger.d("YtMusic", "subscribeChannel channelId: $channelId")
         Innertube.subscribeChannel(channelId)
     }.onFailure {
-        println("YtMusic: subscribeChannel error: ${it.stackTraceToString()}")
+        InnertubeLogger.e("YtMusic", "subscribeChannel error", it)
     }
 
     suspend fun unsubscribeChannel(channelId: String) = runCatching {
-        println("YtMusic: unsubscribeChannel channelId: $channelId")
+        InnertubeLogger.d("YtMusic", "unsubscribeChannel channelId: $channelId")
         Innertube.unsubscribeChannel(channelId)
     }.onFailure {
-        println("YtMusic: unsubscribeChannel error: ${it.stackTraceToString()}")
+        InnertubeLogger.e("YtMusic", "unsubscribeChannel error", it)
     }
 
     suspend fun likePlaylistOrAlbum(playlistId: String) = runCatching {
-        println("YtMusic: likePlaylistOrAlbum playlistId: $playlistId")
+        InnertubeLogger.d("YtMusic", "likePlaylistOrAlbum playlistId: $playlistId")
         Innertube.likePlaylistOrAlbum(playlistId)
     }.onFailure {
-        println("YtMusic: likePlaylistOrAlbum error: ${it.stackTraceToString()}")
+        InnertubeLogger.e("YtMusic", "likePlaylistOrAlbum error", it)
     }
 
     suspend fun removelikePlaylistOrAlbum(playlistId: String) = runCatching {
-        println("YtMusic: removelikePlaylistOrAlbum playlistId: $playlistId")
+        InnertubeLogger.d("YtMusic", "removelikePlaylistOrAlbum playlistId: $playlistId")
         Innertube.removelikePlaylistOrAlbum(playlistId)
     }.onFailure {
-        println("YtMusic: removelikePlaylistOrAlbum error: ${it.stackTraceToString()}")
+        InnertubeLogger.e("YtMusic", "removelikePlaylistOrAlbum error", it)
     }
 
     suspend fun likeVideoOrSong(VideoId: String) = runCatching {
-        println("YtMusic: likeVideoOrSong VideoId: $VideoId")
+        InnertubeLogger.d("YtMusic", "likeVideoOrSong VideoId: $VideoId")
         Innertube.likeVideoOrSong(VideoId)
     }.onFailure {
-        println("YtMusic: likeVideoOrSong error: ${it.stackTraceToString()}")
+        InnertubeLogger.e("YtMusic", "likeVideoOrSong error", it)
     }
 
     suspend fun removelikeVideoOrSong(VideoId: String) = runCatching {
-        println("YtMusic: removelikeVideoOrSong playlistIdId: $VideoId")
+        InnertubeLogger.d("YtMusic", "removelikeVideoOrSong playlistIdId: $VideoId")
         Innertube.removelikeVideoOrSong(VideoId)
     }.onFailure {
-        println("YtMusic: removelikeVideoOrSong error: ${it.stackTraceToString()}")
+        InnertubeLogger.e("YtMusic", "removelikeVideoOrSong error", it)
     }
 
     suspend fun getHomePage(setLogin: Boolean = false): Result<HomePage> = runCatching {
@@ -173,7 +174,7 @@ object YtMusic {
         val response = Innertube.browse(browseId = "FEmusic_history", setLogin = setLogin)
             .body<BrowseResponse>()
 
-        println("getHistory() response sections: ${response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
+        InnertubeLogger.d("YtMusic", "getHistory() response sections: ${response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
             ?.tabRenderer?.content?.sectionListRenderer?.contents}")
 
         HistoryPage(
@@ -311,12 +312,12 @@ object YtMusic {
             }
         }
     }.onFailure {
-        println("YtMusic: getArtistItemsPage() error: ${it.stackTraceToString()}")
+        InnertubeLogger.e("YtMusic", "getArtistItemsPage() error", it)
     }
 
     suspend fun getPlaylist(playlistId: String): Result<PlaylistPage> = runCatching {
         val playlistIdChecked = if (playlistId.startsWith("VL")) playlistId else "VL$playlistId"
-        println("YtMusic: getPlaylist playlistId: $playlistId Checked: $playlistIdChecked")
+        InnertubeLogger.d("YtMusic", "getPlaylist playlistId: $playlistId Checked: $playlistIdChecked")
         val response = Innertube.browse(
             browseId = playlistIdChecked,
             setLogin = true
@@ -328,7 +329,7 @@ object YtMusic {
         else
             getPlaylistNewMode(playlistIdChecked, response)
     }.onFailure {
-        println("YtMusic: getPlaylist error: ${it.stackTraceToString()}")
+        InnertubeLogger.e("YtMusic", "getPlaylist error", it)
     }
 
     private fun getPlaylistPreviousMode(playlistId: String, response: BrowseResponse): PlaylistPage {
@@ -394,7 +395,7 @@ object YtMusic {
             ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
             ?.musicEditablePlaylistDetailHeaderRenderer != null
 
-        println("getPlaylist new mode editable: $isEditable")
+        InnertubeLogger.d("YtMusic", "getPlaylist new mode editable: $isEditable")
 
         val songsContinuation = run {
             val shelf = response.contents?.twoColumnBrowseResultsRenderer
@@ -451,7 +452,7 @@ object YtMusic {
             setLogin = true
         ).body<BrowseResponse>()
 
-        println("YtMusic: getPlaylistContinuation fetching next page")
+        InnertubeLogger.d("YtMusic", "getPlaylistContinuation fetching next page")
 
         val mainContents: List<MusicShelfRenderer.Content> = response.continuationContents
             ?.sectionListContinuation?.contents
@@ -490,7 +491,7 @@ object YtMusic {
         )
 
     }.onFailure {
-        println("YtMusic: getPlaylistContinuation error: ${it.stackTraceToString()}")
+        InnertubeLogger.e("YtMusic", "getPlaylistContinuation error", it)
     }
 
     suspend fun getArtistItemsContinuation(continuation: String) = runCatching {
@@ -519,7 +520,7 @@ object YtMusic {
         }
 
     }.onFailure {
-        println("YtMusic: getArtistItemsContinuation error: ${it.stackTraceToString()}")
+        InnertubeLogger.e("YtMusic", "getArtistItemsContinuation error", it)
     }
 
     suspend fun getAlbum(browseId: String, withSongs: Boolean = true, onProgress: ((loaded: Int) -> Unit)? = null): Result<AlbumPage> = runCatching {
@@ -609,7 +610,7 @@ object YtMusic {
             }
         }
 
-        println("getAlbumSongs: Loaded ${songs.size} songs for playlist $playlistId")
+        InnertubeLogger.d("YtMusic", "getAlbumSongs: Loaded ${songs.size} songs for playlist $playlistId")
         songs
     }
 

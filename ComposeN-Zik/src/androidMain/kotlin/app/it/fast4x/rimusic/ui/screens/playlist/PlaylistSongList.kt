@@ -286,7 +286,6 @@ fun PlaylistSongList(
 
     var filterCharSequence: CharSequence
     filterCharSequence = filter.toString()
-    //Log.d("mediaItemFilter", "<${filter}>  <${filterCharSequence}>")
     if (!filter.isNullOrBlank()) {
         playlistPage?.songs =
             playlistPage?.songs?.filter { songItem ->

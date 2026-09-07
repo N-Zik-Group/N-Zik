@@ -56,6 +56,8 @@ import it.fast4x.innertube.utils.ProxyPreferences
 import java.net.Proxy
 import app.n_zik.android.playback.services.prewarmPoToken
 import it.fast4x.innertube.Innertube
+import it.fast4x.innertube.utils.InnertubeLogger
+import it.fast4x.invidious.utils.InvidiousLogger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -74,6 +76,27 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         if (!isMainProcess()) return
 
         Dependencies.init(this)
+
+        // Route InnertubeLogger (JVM module) to Timber (Android debug log)
+        InnertubeLogger.addListener { tag, level, message, throwable ->
+            when (level) {
+                InnertubeLogger.Level.DEBUG -> Timber.tag(tag).d(throwable, "%s", message)
+                InnertubeLogger.Level.INFO -> Timber.tag(tag).i(throwable, "%s", message)
+                InnertubeLogger.Level.WARN -> Timber.tag(tag).w(throwable, "%s", message)
+                InnertubeLogger.Level.ERROR -> Timber.tag(tag).e(throwable, "%s", message)
+            }
+        }
+
+        // Route InvidiousLogger (JVM module) to Timber (Android debug log)
+        InvidiousLogger.addListener { tag, level, message, throwable ->
+            when (level) {
+                InvidiousLogger.Level.DEBUG -> Timber.tag(tag).d(throwable, "%s", message)
+                InvidiousLogger.Level.INFO -> Timber.tag(tag).i(throwable, "%s", message)
+                InvidiousLogger.Level.WARN -> Timber.tag(tag).w(throwable, "%s", message)
+                InvidiousLogger.Level.ERROR -> Timber.tag(tag).e(throwable, "%s", message)
+            }
+        }
+
         migrateCredentialsToEncrypted()
         InnerTubeXPlayer.initialize(this)
 

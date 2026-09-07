@@ -28,6 +28,7 @@ import it.fast4x.innertube.models.NavigationEndpoint
 import it.fast4x.innertube.models.PlaylistPanelVideoRenderer
 import it.fast4x.innertube.models.Runs
 import it.fast4x.innertube.models.Thumbnail
+import it.fast4x.innertube.utils.InnertubeLogger
 import it.fast4x.innertube.utils.ProxyPreferences
 import it.fast4x.innertube.utils.YoutubePreferences
 import it.fast4x.innertube.utils.getProxy
@@ -85,6 +86,18 @@ object Innertube {
                 connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
                 readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
                 writeTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+                // Network logging interceptor
+                addInterceptor { chain ->
+                    val request = chain.request()
+                    val url = request.url
+                    val method = request.method
+                    val startTime = System.currentTimeMillis()
+                    InnertubeLogger.d("Innertube", "→ $method ${url.encodedPath}")
+                    val response = chain.proceed(request)
+                    val elapsed = System.currentTimeMillis() - startTime
+                    InnertubeLogger.d("Innertube", "← $method ${url.encodedPath} ${response.code} (${elapsed}ms)")
+                    response
+                }
             }
             if (p != null) {
                 proxy = p
@@ -98,7 +111,7 @@ object Innertube {
                                 val retryCount = request.header("X-Proxy-Retry-Count")?.toIntOrNull() ?: 0
 
                                 if (retryCount >= 3) {
-                                    println("Innertube: Proxy auth failed after $retryCount attempts, clearing credentials")
+                                    InnertubeLogger.w("Innertube", "Proxy auth failed after $retryCount attempts, clearing credentials")
                                     proxyAuth = null
                                     return@Authenticator null
                                 }
@@ -239,24 +252,6 @@ object Innertube {
     var cookieMap = emptyMap<String, String>()
 
     init {
-        // Initialize session from preferences in one batch to avoid multiple session changes
-        YoutubePreferences.preference?.let { prefs ->
-            val cookieValue = prefs.cookie?.takeIf { it.isNotBlank() }
-            val visitorDataValue = prefs.visitordata.takeIf { !it.isNullOrBlank() }
-            val dataSyncIdValue = prefs.dataSyncId?.takeIf { it.isNotBlank() }
-
-            // Set cookieMap locally
-            cookieMap = if (cookieValue == null) emptyMap() else parseCookieString(cookieValue)
-
-            // Set all session properties at once via replaceSession
-            innerTubeX.replaceSession(
-                cookie = cookieValue,
-                visitorData = visitorDataValue,
-                dataSyncId = dataSyncIdValue,
-                authUser = "",
-                useLoginForBrowse = true,
-            )
-        }
         applyLocale()
     }
 

@@ -7,6 +7,7 @@ import it.fast4x.innertube.models.BrowseResponse
 import it.fast4x.innertube.models.MusicCarouselShelfRenderer
 import it.fast4x.innertube.models.NavigationEndpoint
 import it.fast4x.innertube.models.SectionListRenderer
+import it.fast4x.innertube.utils.InnertubeLogger
 
 
 suspend fun Innertube.chartsPageComplete(countryCode: String = "") = runCatching {
@@ -34,7 +35,7 @@ suspend fun Innertube.chartsPageComplete(countryCode: String = "") = runCatching
     )
 
 }.onFailure {
-    println("Innertube: chartsPage error: ${it.stackTraceToString()}")
+    InnertubeLogger.e("ChartsPage", "chartsPage error", it)
 }
 
 fun Innertube.PlaylistItem.Companion.fromComplete(renderer: MusicCarouselShelfRenderer): Innertube.PlaylistItem? {

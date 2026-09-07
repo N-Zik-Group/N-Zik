@@ -13,6 +13,7 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.VideoOrSongInfo
+import it.fast4x.innertube.utils.InnertubeLogger
 import it.fast4x.innertube.utils.runCatchingNonCancellable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -160,6 +161,21 @@ private val youtubeWebClient by lazy {
                 explicitNulls = false
                 encodeDefaults = true
             })
+        }
+        engine {
+            config {
+                addInterceptor { chain ->
+                    val request = chain.request()
+                    val url = request.url
+                    val method = request.method
+                    val startTime = System.currentTimeMillis()
+                    InnertubeLogger.d("SongInfo", "→ $method ${url.encodedPath}")
+                    val response = chain.proceed(request)
+                    val elapsed = System.currentTimeMillis() - startTime
+                    InnertubeLogger.d("SongInfo", "← $method ${url.encodedPath} ${response.code} (${elapsed}ms)")
+                    response
+                }
+            }
         }
     }
 }

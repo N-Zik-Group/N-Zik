@@ -473,7 +473,7 @@ class MainActivity :
                 onBackInvokedDispatcher.registerOnBackInvokedCallback(
                     OnBackInvokedDispatcher.PRIORITY_DEFAULT
                 ) {
-                    //Log.d("onBackPress", "yeah")
+                
                 }
             }
 

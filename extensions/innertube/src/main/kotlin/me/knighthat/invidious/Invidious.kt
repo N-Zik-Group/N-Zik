@@ -6,6 +6,7 @@ import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import it.fast4x.innertube.utils.InnertubeLogger
 import me.knighthat.common.HttpFetcher
 import me.knighthat.common.PublicInstances
 
@@ -59,7 +60,7 @@ object Invidious: PublicInstances() {
 
             instances = getDistinctFirstGroup( response, DOMAIN_NO_PATH_REGEX )
         } catch ( e: HttpRequestTimeoutException ) {
-            println("Failed to fetch Invidious instances: ${e.stackTraceToString()}")
+            InnertubeLogger.e("Invidious", "Failed to fetch Invidious instances", e)
         }
     }
 }

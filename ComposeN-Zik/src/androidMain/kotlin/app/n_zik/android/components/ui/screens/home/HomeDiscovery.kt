@@ -124,8 +124,6 @@ fun HomeDiscovery(
     }
     val showSearchTab by rememberPreference(showSearchTabKey, false)
 
-    //Log.d("mediaItemArtists",preferitesArtists.toString())
-
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
     val menuState = LocalMenuState.current
     val hapticFeedback = LocalHapticFeedback.current

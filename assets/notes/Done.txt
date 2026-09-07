@@ -1,3 +1,20 @@
+improve(debug): add centralized network logging via InnertubeLogger/InvidiousLogger with Timber routing
+  - Created `InnertubeLogger.kt` (JVM module) — centralized logging abstraction with listener pattern, fallback to println when no listener registered
+  - Created `InvidiousLogger.kt` (invidious module) — same pattern for Invidious HTTP client
+  - `Innertube.kt`: Added OkHttp interceptor in `createClient()` logging all InnerTubeX API requests (method, path, status code, timing)
+  - `SongInfo.kt`: Added OkHttp interceptor to `youtubeWebClient` logging YouTube WEB client requests
+  - `YtMusic.kt`: Replaced 32 `println()` calls with `InnertubeLogger.d/e/w()`
+  - `HttpFetcher.kt`: Replaced 2 `println()` calls with `InnertubeLogger.d()`
+  - `Invidious.kt` (me.knighthat): Replaced `println()` with `InnertubeLogger.e()`
+  - `Invidious.kt` (it.fast4x): Replaced 4 `println()` calls with `InvidiousLogger.d/e()`
+  - `AlbumPage.kt`, `ChartsPageComplete.kt`, `HistoryPage.kt`, `LibraryPage.kt`, `NewReleaseAlbumPage.kt`: Replaced `println()` with `InnertubeLogger.d/e()`
+  - `MainApplication.kt`: Registered `InnertubeLogger` and `InvidiousLogger` listeners routing to Timber
+  - `ShazamRepository.kt`: Replaced 7 `Log.e/w()` calls with `Timber.tag()`
+  - Removed 12 lines of dead `//Log.d` code across 6 files
+  - `Innertube.kt`: Removed dead `init` block (`YoutubePreferences.preference` always null)
+  - `YoutubePreferences.kt`: Added `@Deprecated` on unused `preference` property
+  - Root cause: JVM modules had no proper logging — println went to stdout invisible in Android debug log; now all logs route through Timber
+
 fix(player): remove brotli compression from InnerTube HTTP client — YouTube doesn't accept brotli-compressed POST bodies
   - `Innertube.kt`: Removed `brotli(1.0F)` from `ContentEncoding` plugin — YouTube's InnerTube API servers accept `gzip` and `deflate` but not `br` for incoming request bodies; brotli compression caused ALL player clients to return `streamingPresent=false, formatCount=0` and the `next` endpoint to return HTTP 400
   - `MainApplication.kt`: Changed `visitorData` and `dataSyncId` fallback from empty string `""` to `null` — empty string passes null-checks and sends `X-Goog-Visitor-Id: ` (empty header), which YouTube rejects; Metrolist uses `takeIf { it != "null" }` pattern
