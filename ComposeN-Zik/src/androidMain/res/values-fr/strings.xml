@@ -1087,6 +1087,7 @@ Volume BAS : titre précédent</string>
   <string name="info_use_ytm_login_only_for_browse">À utiliser si les titres ne sont pas joués lors de la connexion</string>
   <string name="login_for_browse">Connectez-vous pour parcourir</string>
   <string name="login_for_browse_description">Utiliser les identifiants de connexion pour les requêtes de navigation (page d\'accueil, exploration, etc.)</string>
+  <string name="youtube_connect_first">Connect to YouTube first to enable this option</string>
   <string name="disliked">Pas aimé</string>
   <string name="disliked_this_song">Impossible d\'effectuer cette action lorsque tous les titres ne sont pas appréciés</string>
   <string name="removed_from_disliked">Supprimé des titres non appréciés</string>
