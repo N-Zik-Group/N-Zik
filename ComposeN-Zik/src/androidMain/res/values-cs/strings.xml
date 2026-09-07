@@ -1086,6 +1086,7 @@
   <string name="info_use_ytm_login_only_for_browse">Použije se, pokud se skladby po přihlášení nepřehrávají</string>
   <string name="login_for_browse">Login for Browse</string>
   <string name="login_for_browse_description">Use login for browse requests (home, explore, etc.)</string>
+  <string name="youtube_connect_first">Connect to YouTube first to enable this option</string>
   <string name="disliked">Disliked</string>
   <string name="disliked_this_song">Cannot Perform this Action with the Disliked Songs</string>
   <string name="removed_from_disliked">Removed from Dislike</string>

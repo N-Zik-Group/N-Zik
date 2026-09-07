@@ -1086,6 +1086,7 @@
   <string name="info_use_ytm_login_only_for_browse">Zu verwenden, wenn Musik nicht abgespielt wird, während man eingeloggt ist</string>
   <string name="login_for_browse">Login for Browse</string>
   <string name="login_for_browse_description">Use login for browse requests (home, explore, etc.)</string>
+  <string name="youtube_connect_first">Connect to YouTube first to enable this option</string>
   <string name="disliked">Disliked</string>
   <string name="disliked_this_song">Diese Aktion kann nicht mit den mit \"Mag ich nicht\" markierten Titeln durchgeführt werden</string>
   <string name="removed_from_disliked">Von \"Gefällt mir nicht\" entfernt</string>

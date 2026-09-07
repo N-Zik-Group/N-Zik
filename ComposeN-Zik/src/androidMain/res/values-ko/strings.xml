@@ -1086,6 +1086,7 @@
   <string name="info_use_ytm_login_only_for_browse">로그인 되었을 때 음악이 재생되지 않는 경우 사용됩니다</string>
   <string name="login_for_browse">Login for Browse</string>
   <string name="login_for_browse_description">Use login for browse requests (home, explore, etc.)</string>
+  <string name="youtube_connect_first">Connect to YouTube first to enable this option</string>
   <string name="disliked">Disliked</string>
   <string name="disliked_this_song">이 행동을 싫어요 표시된 곡에 수행할 수 없습니다</string>
   <string name="removed_from_disliked">싫어요 표시에서 제거됨</string>

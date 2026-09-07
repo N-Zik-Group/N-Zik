@@ -1086,6 +1086,7 @@
   <string name="info_use_ytm_login_only_for_browse">S\'utilitzarà si les cançons no es reprodueixen en iniciar sessió</string>
   <string name="login_for_browse">Login for Browse</string>
   <string name="login_for_browse_description">Use login for browse requests (home, explore, etc.)</string>
+  <string name="youtube_connect_first">Connect to YouTube first to enable this option</string>
   <string name="disliked">Disliked</string>
   <string name="disliked_this_song">No es pot dur a terme aquesta acció amb les cançons que no t\'agraden</string>
   <string name="removed_from_disliked">S\'ha eliminat de No m\'agrada</string>
