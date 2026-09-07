@@ -1086,6 +1086,7 @@
   <string name="info_use_ytm_login_only_for_browse">Giriş yapıldığında şarkılar çalınmıyorsa kullanılmak üzere</string>
   <string name="login_for_browse">Göz atmak için oturum açın</string>
   <string name="login_for_browse_description">Göz atma istekleri (ana sayfa, keşfet vb.) için oturum açma özelliğini kullanın</string>
+  <string name="youtube_connect_first">Connect to YouTube first to enable this option</string>
   <string name="disliked">Beğenilmedi</string>
   <string name="disliked_this_song">Beğenilmeyen Şarkılarla Bu Eylem Gerçekleştirilemez</string>
   <string name="removed_from_disliked">Beğenilmeyenlerden Kaldırıldı</string>
