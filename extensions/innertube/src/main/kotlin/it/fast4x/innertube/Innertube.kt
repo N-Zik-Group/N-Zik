@@ -241,13 +241,13 @@ object Innertube {
     init {
         // Initialize session from preferences in one batch to avoid multiple session changes
         YoutubePreferences.preference?.let { prefs ->
-            val cookieValue = prefs.cookie
+            val cookieValue = prefs.cookie?.takeIf { it.isNotBlank() }
             val visitorDataValue = prefs.visitordata.takeIf { !it.isNullOrBlank() }
-            val dataSyncIdValue = prefs.dataSyncId
-            
+            val dataSyncIdValue = prefs.dataSyncId?.takeIf { it.isNotBlank() }
+
             // Set cookieMap locally
             cookieMap = if (cookieValue == null) emptyMap() else parseCookieString(cookieValue)
-            
+
             // Set all session properties at once via replaceSession
             innerTubeX.replaceSession(
                 cookie = cookieValue,
@@ -257,21 +257,20 @@ object Innertube {
                 useLoginForBrowse = true,
             )
         }
-        innerTubeX.locale = YouTubeLocale(
-            gl = Locale.getDefault().country,
-            hl = Locale.getDefault().toLanguageTag()
-        ).let { com.metrolist.innertubex.models.YouTubeLocale(gl = it.gl, hl = it.hl) }
+        applyLocale()
     }
 
     private fun applyLocale() {
         val gl = if (regionOverrideActive && regionOverride.isNotBlank()) {
             regionOverride.uppercase()
         } else {
-            Locale.getDefault().country
+            Locale.getDefault().country.takeIf { it.length == 2 } ?: "US"
         }
+        val hl = Locale.getDefault().toLanguageTag()
+            .takeIf { it.length >= 2 }?.substringBefore("-") ?: "en"
         innerTubeX.locale = com.metrolist.innertubex.models.YouTubeLocale(
             gl = gl,
-            hl = Locale.getDefault().toLanguageTag()
+            hl = hl
         )
     }
 

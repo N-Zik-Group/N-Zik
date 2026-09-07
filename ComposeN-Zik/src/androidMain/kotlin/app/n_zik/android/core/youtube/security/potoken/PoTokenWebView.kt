@@ -12,7 +12,6 @@ import android.webkit.WebViewClient
 import androidx.annotation.MainThread
 import androidx.collection.ArrayMap
 import app.n_zik.android.BuildConfig
-import app.n_zik.android.core.network.client.NetworkClientFactory
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -462,8 +461,7 @@ class PoTokenWebView private constructor(
         // A live renderer mints a poToken in well under a second.
         private const val GENERATE_TIMEOUT_MS = 15_000L
 
-        private val httpClient: OkHttpClient
-            get() = NetworkClientFactory.getCachelessClient()
+        private val httpClient = OkHttpClient.Builder().build()
 
         suspend fun getNewPoTokenGenerator(context: Context): PoTokenWebView {
             var created: PoTokenWebView? = null
