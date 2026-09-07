@@ -148,17 +148,24 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 val hasLoginInfo = savedCookie.contains("LOGIN_INFO")
                 val wasExpired = preferences.getBoolean(ytCookieExpiredKey, false)
                 if (!hasSAPISID && !hasLoginInfo) {
-                    Timber.tag("MainApplication").w("YouTube cookie present but missing SAPISID/LOGIN_INFO — session may be expired")
+                    Timber.tag("MainApplication").w("YouTube cookie present but missing SAPISID/LOGIN_INFO — session may be expired, disabling useLoginForBrowse")
                     cookieStatus = CookieStatus.INVALID
+                    Innertube.useLoginForBrowse = false
+                    preferences.edit().putBoolean(useLoginForBrowseKey, false).apply()
                 } else if (wasExpired) {
-                    Timber.tag("MainApplication").w("YouTube cookie was previously marked expired — session is expired")
+                    Timber.tag("MainApplication").w("YouTube cookie was previously marked expired — session is expired, disabling useLoginForBrowse")
                     cookieStatus = CookieStatus.EXPIRED
+                    Innertube.useLoginForBrowse = false
+                    preferences.edit().putBoolean(useLoginForBrowseKey, false).apply()
                 } else {
                     Timber.tag("MainApplication").d("YouTube cookie loaded (SAPISID=$hasSAPISID, LOGIN_INFO=$hasLoginInfo)")
                     cookieStatus = CookieStatus.VALID
                 }
             } else {
+                Timber.tag("MainApplication").w("No YouTube cookie — disabling useLoginForBrowse")
                 cookieStatus = CookieStatus.NOT_LOGGED_IN
+                Innertube.useLoginForBrowse = false
+                preferences.edit().putBoolean(useLoginForBrowseKey, false).apply()
             }
 
             // Initialize Store session (like Metrolist's DataStore pattern)

@@ -1,3 +1,18 @@
+fix(innertube): fix HTTP 400 on browse/search for devices with unsupported region locale (issue https://github.com/N-Zik-Group/N-Zik/issues/6)
+  - Root cause: Devices with `Locale.getDefault().country` returning unsupported regions (e.g. MM/Myanmar) or `Locale.getDefault().toLanguageTag()` returning full tags (e.g. `fr-MM`) caused YouTube's WEB_REMIX API to return 400 INVALID_ARGUMENT
+  - `Innertube.kt`: Added retry-on-400 logic for `browse()`, `search()`, and `getSearchSuggestions()` — falls back to language-based region (e.g. `fr`→`FR`) when ISO region is rejected
+  - `Innertube.kt`: `applyLocale()` now validates `gl` against `Locale.getISOCountries()` (matches Metrolist's `CountryCodeToName` approach)
+  - `Innertube.kt`: `regionOverrideActive` no longer propagated to innertubex — was stripping visitor data from browse requests
+  - `Innertube.kt`: `useLoginForBrowse` now delegates directly to innertubex (fixed race condition with field initializer)
+  - `Innertube.kt`: `dataSyncId` setter sends raw value instead of parsing `||` separator
+  - `Innertube.kt`: `ensureVisitorData()` no longer checks against hardcoded `DEFAULT_VISITOR_DATA`
+  - `Innertube.kt`: `defaultRequest` URL changed to full path `https://music.youtube.com/youtubei/v1/` (matches Metrolist)
+  - `MainApplication.kt`: Disables `useLoginForBrowse` and writes to SharedPreferences when cookie is invalid/missing/expired
+  - `AccountsSettings.kt`: `useLoginForBrowse` toggle visible when YouTube enabled (grised if not logged in); re-enabled after login
+  - `SettingsScreen.kt`: Added `enabled` parameter to `OtherSwitchSettingEntry` with visual feedback (alpha 0.5f when disabled)
+  - `strings.xml`: Added `youtube_connect_first` string for disabled toggle description
+  - Reference: Metrolist validates `gl` in `App.kt:280-284` via `CountryCodeToName`; innertubex `systemYouTubeLocale()` has no validation (potential upstream fix)
+
 improve(debug): add centralized network logging via InnertubeLogger/InvidiousLogger with Timber routing
   - Created `InnertubeLogger.kt` (JVM module) — centralized logging abstraction with listener pattern, fallback to println when no listener registered
   - Created `InvidiousLogger.kt` (invidious module) — same pattern for Invidious HTTP client

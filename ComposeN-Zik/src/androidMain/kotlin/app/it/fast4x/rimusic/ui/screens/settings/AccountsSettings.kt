@@ -509,6 +509,9 @@ fun AccountsSettings() {
                                             // Clear expired flag on fresh login
                                             appContext().preferences.edit().putBoolean(ytCookieExpiredKey, false).apply()
                                             app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.VALID
+                                            // Re-enable useLoginForBrowse since we now have valid credentials
+                                            appContext().preferences.edit().putBoolean(useLoginForBrowseKey, true).apply()
+                                            Innertube.useLoginForBrowse = true
                                             // Force re-read account info from encrypted prefs (YouTubeLogin saved them)
                                             val ep = appContext().encryptedPreferences
                                             accountName = ep.getString(ytAccountNameKey, "") ?: ""
@@ -522,14 +525,15 @@ fun AccountsSettings() {
                             }
 
                             // Login for Browse option (must be enabled for sync to work)
-                            if (isLoggedIn) {
+                            if (isYouTubeLoginEnabled) {
                             var useLoginForBrowse by rememberPreference(useLoginForBrowseKey, true)
                             if (search.inputValue.isBlank() || stringResource(R.string.login_for_browse).contains(search.inputValue, true)) {
                                 OtherSwitchSettingEntry(
                                     title = stringResource(R.string.login_for_browse),
-                                    text = stringResource(R.string.login_for_browse_description),
-                                    isChecked = useLoginForBrowse,
-                                    onCheckedChange = { 
+                                    text = if (!isLoggedIn) stringResource(R.string.youtube_connect_first) else stringResource(R.string.login_for_browse_description),
+                                    isChecked = isLoggedIn && useLoginForBrowse,
+                                    enabled = isLoggedIn,
+                                    onCheckedChange = {
                                         useLoginForBrowse = it
                                         Innertube.useLoginForBrowse = it
                                         if (!it) {

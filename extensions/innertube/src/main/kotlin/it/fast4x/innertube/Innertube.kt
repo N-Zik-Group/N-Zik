@@ -132,10 +132,9 @@ object Innertube {
         }
 
         defaultRequest {
-            url( "https", YOUTUBE_MUSIC_HOST ) {
-                headers.append("Accept", "application/json")
-                headers.append("Cache-Control", "no-cache")
-            }
+            url("https://music.youtube.com/youtubei/v1/")
+            header("Accept", "application/json")
+            header("Cache-Control", "no-cache")
         }
     }
 
@@ -163,8 +162,9 @@ object Innertube {
         set(value) {
             if (field == value) return
             field = value
-            innerTubeX.regionOverrideActive = value
-            // Re-apply locale with override if active
+            // Don't propagate to innerTubeX.regionOverrideActive —
+            // that flag strips visitor data from browse requests, causing 400 errors.
+            // We only use it locally for locale override in applyLocale().
             if (value) applyLocale()
         }
 
@@ -175,12 +175,9 @@ object Innertube {
             if (regionOverrideActive) applyLocale()
         }
 
-    var useLoginForBrowse: Boolean = true
-        set(value) {
-            if (field == value) return
-            field = value
-            innerTubeX.useLoginForBrowse = value
-        }
+    var useLoginForBrowse: Boolean
+        get() = innerTubeX.useLoginForBrowse
+        set(value) { innerTubeX.useLoginForBrowse = value }
 
     @Synchronized
     private fun recreateTransport() {
@@ -234,13 +231,7 @@ object Innertube {
 
     var dataSyncId: String?
         get() = innerTubeX.dataSyncId
-        set(value) {
-            innerTubeX.dataSyncId = value?.let {
-                it.takeIf { !it.contains("||") }
-                    ?: it.takeIf { it.endsWith("||") }?.substringBefore("||")
-                    ?: it.substringAfter("||")
-            }
-        }
+        set(value) { innerTubeX.dataSyncId = value }
 
     var cookie: String?
         get() = innerTubeX.cookie
@@ -251,6 +242,19 @@ object Innertube {
 
     var cookieMap = emptyMap<String, String>()
 
+    // Language to fallback region — used when YouTube rejects the ISO region on400
+    private val LANGUAGE_REGION_FALLBACK = mapOf(
+        "fr" to "FR", "en" to "US", "de" to "DE", "es" to "ES", "pt" to "BR", "it" to "IT",
+        "ja" to "JP", "ko" to "KR", "zh" to "TW", "ar" to "SA", "hi" to "IN", "th" to "TH",
+        "vi" to "VN", "id" to "ID", "ms" to "MY", "tr" to "TR", "pl" to "PL", "nl" to "NL",
+        "ru" to "RU", "uk" to "UA", "cs" to "CZ", "ro" to "RO", "hu" to "HU", "el" to "GR",
+        "he" to "IL", "fa" to "IR", "bn" to "BD", "ta" to "IN", "te" to "IN", "mr" to "IN",
+        "sw" to "KE", "am" to "ET", "yo" to "NG", "ig" to "NG", "ha" to "NG", "zu" to "ZA",
+        "af" to "ZA", "km" to "KH", "lo" to "LA", "si" to "LK", "ne" to "NP",
+        "fil" to "PH", "tl" to "PH", "ml" to "IN", "kn" to "IN", "gu" to "IN", "pa" to "IN",
+        "or" to "IN", "as" to "IN", "ur" to "PK", "ps" to "PK"
+    )
+
     init {
         applyLocale()
     }
@@ -259,7 +263,8 @@ object Innertube {
         val gl = if (regionOverrideActive && regionOverride.isNotBlank()) {
             regionOverride.uppercase()
         } else {
-            Locale.getDefault().country.takeIf { it.length == 2 } ?: "US"
+            val rawGl = Locale.getDefault().country.takeIf { it.length == 2 } ?: "US"
+            rawGl.takeIf { it in Locale.getISOCountries() } ?: "US"
         }
         val hl = Locale.getDefault().toLanguageTag()
             .takeIf { it.length >= 2 }?.substringBefore("-") ?: "en"
@@ -269,8 +274,11 @@ object Innertube {
         )
     }
 
+    private fun languageFallbackRegion(): String =
+        LANGUAGE_REGION_FALLBACK[Locale.getDefault().language] ?: "US"
+
     suspend fun ensureVisitorData() {
-        if (visitorData.isNullOrBlank() || visitorData == DEFAULT_VISITOR_DATA) {
+        if (visitorData.isNullOrBlank()) {
             runCatching {
                 visitorData = innerTubeX.fetchFreshVisitorData()
             }
@@ -657,12 +665,30 @@ object Innertube {
         query: String? = null,
         params: String? = null,
         continuation: String? = null,
-    ) = innerTubeX.search(
-        client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
-        query = query,
-        params = params,
-        continuation = continuation,
-    )
+    ): HttpResponse {
+        val response = innerTubeX.search(
+            client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+            query = query,
+            params = params,
+            continuation = continuation,
+        )
+        if (response.status.value == 400 && !regionOverrideActive) {
+            val fallbackGl = languageFallbackRegion()
+            if (fallbackGl != innerTubeX.locale.gl) {
+                val originalGl = innerTubeX.locale.gl
+                innerTubeX.locale = com.metrolist.innertubex.models.YouTubeLocale(gl = fallbackGl, hl = innerTubeX.locale.hl)
+                val retryResponse = innerTubeX.search(
+                    client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+                    query = query, params = params, continuation = continuation,
+                )
+                if (retryResponse.status.value != 200) {
+                    innerTubeX.locale = com.metrolist.innertubex.models.YouTubeLocale(gl = originalGl, hl = innerTubeX.locale.hl)
+                }
+                return retryResponse
+            }
+        }
+        return response
+    }
 
     suspend fun getQueue(
         videoIds: List<String>? = null,
@@ -675,10 +701,28 @@ object Innertube {
 
     suspend fun getSearchSuggestions(
         input: String,
-    ) = innerTubeX.getSearchSuggestions(
-        client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
-        input = input,
-    )
+    ): HttpResponse {
+        val response = innerTubeX.getSearchSuggestions(
+            client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+            input = input,
+        )
+        if (response.status.value == 400 && !regionOverrideActive) {
+            val fallbackGl = languageFallbackRegion()
+            if (fallbackGl != innerTubeX.locale.gl) {
+                val originalGl = innerTubeX.locale.gl
+                innerTubeX.locale = com.metrolist.innertubex.models.YouTubeLocale(gl = fallbackGl, hl = innerTubeX.locale.hl)
+                val retryResponse = innerTubeX.getSearchSuggestions(
+                    client = com.metrolist.innertubex.models.YouTubeClient.WEB_REMIX,
+                    input = input,
+                )
+                if (retryResponse.status.value != 200) {
+                    innerTubeX.locale = com.metrolist.innertubex.models.YouTubeLocale(gl = originalGl, hl = innerTubeX.locale.hl)
+                }
+                return retryResponse
+            }
+        }
+        return response
+    }
 
     private suspend fun HttpResponse.requireSuccess(operation: String): HttpResponse {
         if (!status.isSuccess()) {
@@ -792,7 +836,23 @@ object Innertube {
                 isolated.close()
             }
         }
-        return innerTubeX.browse(client, browseId, params, continuation, setLogin)
+        val response = innerTubeX.browse(client, browseId, params, continuation, setLogin)
+        // If YouTube rejects the ISO region with 400, retry with language-based fallback
+        if (response.status.value == 400 && !regionOverrideActive) {
+            val fallbackGl = languageFallbackRegion()
+            if (fallbackGl != innerTubeX.locale.gl) {
+                InnertubeLogger.w("Innertube", "browse 400 with gl=${innerTubeX.locale.gl}, retrying with fallback gl=$fallbackGl")
+                val originalGl = innerTubeX.locale.gl
+                innerTubeX.locale = com.metrolist.innertubex.models.YouTubeLocale(gl = fallbackGl, hl = innerTubeX.locale.hl)
+                val retryResponse = innerTubeX.browse(client, browseId, params, continuation, setLogin)
+                if (retryResponse.status.value != 200) {
+                    // Restore original locale if fallback also fails
+                    innerTubeX.locale = com.metrolist.innertubex.models.YouTubeLocale(gl = originalGl, hl = innerTubeX.locale.hl)
+                }
+                return retryResponse
+            }
+        }
+        return response
     }
 
     suspend fun library(browseId: String, tabIndex: Int = 0) = runCatching {

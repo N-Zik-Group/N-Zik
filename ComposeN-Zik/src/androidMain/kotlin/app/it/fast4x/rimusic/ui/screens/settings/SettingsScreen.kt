@@ -274,6 +274,7 @@ fun OtherSwitchSettingEntry(
     title: String,
     text: String,
     isChecked: Boolean,
+    enabled: Boolean = true,
     onCheckedChange: (Boolean) -> Unit,
     icon: Int,
     modifier: Modifier = Modifier
@@ -290,13 +291,14 @@ fun OtherSwitchSettingEntry(
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clip(uiRoundnessShape())
-            .clip(uiRoundnessShape()).clickable(onClick = { onCheckedChange(!isChecked) }),
+            .clip(uiRoundnessShape()).clickable(enabled = enabled, onClick = { onCheckedChange(!isChecked) }),
         color = Color.Transparent
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .scale(scale)
+                .alpha(if (enabled) 1f else 0.5f)
         ) {
             Row(
                 modifier = Modifier
