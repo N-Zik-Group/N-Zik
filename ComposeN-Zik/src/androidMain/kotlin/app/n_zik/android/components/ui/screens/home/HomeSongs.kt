@@ -63,6 +63,7 @@ import app.n_zik.android.components.song.PeriodSelector
 import app.n_zik.android.components.tab.*
 
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.ext.FormatWithSong
 import app.it.fast4x.rimusic.utils.autosyncLikesKey
 import app.it.fast4x.rimusic.utils.importYTMLikedSongs
@@ -470,6 +471,11 @@ fun HomeSongs(
         }
     }
 
+    val songIds = remember(itemsOnDisplay) { itemsOnDisplay.map { it.id } }
+    val likeStatesMap by remember(songIds) {
+        LikeStateManager.getLikeStates(songIds)
+    }.collectAsState(emptyMap(), Dispatchers.IO)
+
     Box(modifier = Modifier.fillMaxSize()) {
         androidx.compose.runtime.CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
             LazyColumn(
@@ -520,6 +526,7 @@ fun HomeSongs(
                                 val isRecommended = song in relatedSongs
                                 SongItem(
                                     song = song,
+                                    isLiked = likeStatesMap[song.id],
                                     itemSelector = itemSelector,
                                     navController = navController,
                                     isRecommended = isRecommended,

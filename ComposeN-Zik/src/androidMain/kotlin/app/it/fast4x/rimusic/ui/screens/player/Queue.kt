@@ -42,6 +42,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -78,6 +79,7 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.binder
 import app.n_zik.android.colorPalette
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.LikeStateManager
 import app.it.fast4x.rimusic.enums.QueueLoopType
 import app.it.fast4x.rimusic.enums.QueueType
 import app.it.fast4x.rimusic.models.Song
@@ -120,6 +122,7 @@ import app.n_zik.android.components.ui.screens.player.QueueArrow
 import app.n_zik.android.components.ui.screens.player.Repeat
 import app.n_zik.android.components.ui.screens.player.ShuffleQueue
 import app.kreate.android.me.knighthat.utils.Toaster
+import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
 import app.kreate.android.themed.rimusic.component.playlist.PositionLock
 import androidx.compose.ui.res.stringResource
@@ -330,6 +333,11 @@ fun Queue(
             val backgroundAlpha = if( queueType == QueueType.Modern ) .5f else 1f
             val itemBackground = if ( queueType == QueueType.Modern ) androidx.compose.ui.graphics.Color.Transparent else colorPalette().background0
 
+            val queueSongIds = remember(windowsOnDisplay) { windowsOnDisplay.map { it.mediaItem.asSong.id } }
+            val likeStatesMap by remember(queueSongIds) {
+                LikeStateManager.getLikeStates(queueSongIds)
+            }.collectAsState(emptyMap(), Dispatchers.IO)
+
             LazyColumn(
                 state = lazyListState,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -350,10 +358,7 @@ fun Queue(
                     val isLocal by remember { derivedStateOf { song.isLocal } }
                     val isDownloaded = isLocal || isDownloadedSong(song.id)
 
-                    // Query like state from DB (MediaItem.asSong doesn't populate likedAt)
-                    val isLiked by remember(song.id) {
-                        Database.songTable.isLiked(song.id)
-                    }.collectAsStateWithLifecycle(initialValue = false)
+                    val isLiked = likeStatesMap[song.id]
 
                     ReorderableItem(
                         reorderableLazyListState,

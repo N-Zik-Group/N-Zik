@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -98,6 +99,7 @@ import app.n_zik.android.playback.utils.Shuffler
 import app.it.fast4x.rimusic.utils.addNext
 import app.n_zik.android.components.SongItem
 import app.it.fast4x.rimusic.models.Artist
+import app.n_zik.android.core.database.LikeStateManager
 import it.fast4x.innertube.requests.ArtistPage
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.text.BasicText
@@ -136,6 +138,12 @@ fun ArtistLocalSongs(
     }
 
     val songCount = songs?.size ?: 0
+
+    val songIds = remember(songs) { songs?.map { it.id }.orEmpty() }
+    val likeStatesMap by remember(songIds) {
+        LikeStateManager.getLikeStates(songIds)
+    }.collectAsState(emptyMap(), Dispatchers.IO)
+
     val totalDuration = songs?.sumOf { it.durationText?.split(":")?.let { parts ->
         if (parts.size == 2) parts[0].toInt() * 60 + parts[1].toInt() else 0
     } ?: 0 } ?: 0
@@ -299,6 +307,7 @@ fun ArtistLocalSongs(
                     ) {
                         SongItem(
                             song = song,
+                            isLiked = likeStatesMap[song.id],
                             navController = navController,
                             modifier = Modifier,
 
@@ -352,6 +361,11 @@ fun ArtistLocalSongs(
     val songThumbnailSizePx = songThumbnailSizeDp.px
 
     val lazyListState = rememberLazyListState()
+
+    val artistSongIds = remember(songs) { songs?.map { it.id }.orEmpty() }
+    val likeStatesMap by remember(artistSongIds) {
+        LikeStateManager.getLikeStates(artistSongIds)
+    }.collectAsState(emptyMap(), Dispatchers.IO)
 
     var showConfirmDeleteDownloadDialog by remember {
         mutableStateOf(false)
@@ -515,6 +529,7 @@ fun ArtistLocalSongs(
                             ) {
                                 SongItem(
                                     song = song,
+                                    isLiked = likeStatesMap[song.id],
                                     navController = navController,
                                     onClick = {
                                         binder?.stopRadio()

@@ -37,8 +37,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -177,6 +178,7 @@ import app.it.fast4x.rimusic.utils.ExternalUris
 import app.n_zik.android.components.ResetCache
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.playlist.PinPlaylist
+import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.components.playlist.PlaylistSongsSort
 import app.n_zik.android.components.dialog.playlist.RenamePlaylistDialog
 import app.n_zik.android.components.playlist.Reposition
@@ -1087,6 +1089,10 @@ fun LocalPlaylistSongs(
     val playlistNotMonthlyType =
         playlist?.name?.startsWith(MONTHLY_PREFIX, 0, true) == false
 
+    val songIds = remember(itemsOnDisplay) { itemsOnDisplay.map { it.id } }
+    val likeStatesMap by remember(songIds) {
+        LikeStateManager.getLikeStates(songIds)
+    }.collectAsState(emptyMap(), Dispatchers.IO)
 
     Box(
         modifier = Modifier
@@ -1417,6 +1423,7 @@ fun LocalPlaylistSongs(
                     ) {
                         SongItem(
                             song = song,
+                            isLiked = likeStatesMap[song.id],
                             itemSelector = itemSelector,
                             navController = navController,
                             isRecommended = song in relatedSongs,

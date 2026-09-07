@@ -280,14 +280,31 @@ interface SongTable {
     @Query("""
         SELECT 
             CASE 
-                WHEN likedAt > 0 THEN 1 
-                WHEN likedAt < 0 THEN 0 
+                WHEN likedAt > 0 THEN 1
+                WHEN likedAt = -1 THEN 0
                 ELSE NULL 
             END 
         FROM Song 
         WHERE id = :songId
     """)
     fun likeState( songId: String ): Flow<Boolean?>
+
+    /**
+     * Get like states for multiple songs at once.
+     * Returns a list of SongLikeState objects that can be converted to a Map.
+     * This is much more efficient than querying each song individually.
+     */
+    @Query("""
+        SELECT id as songId,
+            CASE 
+                WHEN likedAt > 0 THEN 1
+                WHEN likedAt = -1 THEN 0
+                ELSE NULL 
+            END as likeState
+        FROM Song 
+        WHERE id IN (:songIds)
+    """)
+    fun getLikeStatesForSongs( songIds: List<String> ): Flow<List<SongLikeState>>
 
     /**
      * This query updates the [Song.likedAt] column to

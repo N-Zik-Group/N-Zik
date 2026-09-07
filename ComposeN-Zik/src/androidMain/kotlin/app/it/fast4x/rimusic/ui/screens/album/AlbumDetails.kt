@@ -117,6 +117,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.album.AlbumModifier
+import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.tab.ItemSelector
@@ -292,6 +293,11 @@ fun AlbumDetails(
                     }
                 }
             } else {
+                val albumSongIds = remember(items) { items.map { it.id } }
+                val likeStatesMap by remember(albumSongIds) {
+                    LikeStateManager.getLikeStates(albumSongIds)
+                }.collectAsState(emptyMap(), Dispatchers.IO)
+
                 LazyColumn(
                     state = lazyListState,
                     userScrollEnabled = items.isNotEmpty(),
@@ -536,6 +542,7 @@ fun AlbumDetails(
                     ) {
                         SongItem(
                             song = song,
+                            isLiked = likeStatesMap[song.id],
                             itemSelector = itemSelector,
                             navController = navController,
                             showThumbnail = false,

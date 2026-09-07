@@ -37,7 +37,11 @@ import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.it.fast4x.rimusic.ui.components.themed.MultiFloatingActionsContainer
-import app.it.fast4x.rimusic.ui.items.*
+import app.it.fast4x.rimusic.ui.items.AlbumItem
+import app.it.fast4x.rimusic.ui.items.ArtistItem
+import app.it.fast4x.rimusic.ui.items.PlaylistItem
+import app.it.fast4x.rimusic.ui.items.VideoItem
+import app.n_zik.android.components.SongItem
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.px
 import app.it.fast4x.rimusic.utils.*
@@ -190,16 +194,11 @@ fun HomePage(
                                 when (item) {
                                     is Innertube.SongItem -> {
                                         SongItem(
-                                            song = item,
-                                            thumbnailSizePx = songThumbnailSizePx,
-                                            thumbnailSizeDp = songThumbnailSizeDp,
-                                            onDownloadClick = {},
-                                            downloadState = Download.STATE_STOPPED,
-                                            disableScrollingText = disableScrollingText,
-                                            isNowPlaying = false,
-                                            modifier = Modifier.clip(uiRoundnessShape()).clickable(onClick = {
+                                            song = item.asSong,
+                                            modifier = Modifier.clip(uiRoundnessShape()),
+                                            onClick = {
                                                 binder?.player?.forcePlay(item.asMediaItem)
-                                            })
+                                            }
                                         )
                                     }
                                     is Innertube.AlbumItem -> {

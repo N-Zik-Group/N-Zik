@@ -88,7 +88,7 @@ import app.it.fast4x.rimusic.ui.items.AlbumItem
 import app.it.fast4x.rimusic.ui.items.ArtistItem
 import app.it.fast4x.rimusic.ui.items.PlaylistItem
 import app.it.fast4x.rimusic.ui.items.VideoItem
-import app.it.fast4x.rimusic.ui.items.SongItem
+import app.n_zik.android.components.SongItem
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.px
 import app.it.fast4x.rimusic.utils.align
@@ -357,31 +357,13 @@ fun OnlineSearch(
                             item{
                                 it?.asMediaItem?.let { mediaItem ->
                                     SongItem(
-                                        song = mediaItem,
-                                        thumbnailSizePx = songThumbnailSizePx,
-                                        thumbnailSizeDp = songThumbnailSizeDp,
-                                        onThumbnailContent = {
-                                            NowPlayingSongIndicator(mediaItem.mediaId, binder?.player)
-                                        },
-                                        onDownloadClick = {},
-                                        downloadState = downloadState,
+                                        song = mediaItem.asSong,
+                                        navController = navController,
                                         modifier = Modifier
-                                            .clip(uiRoundnessShape()).combinedClickable(
-                                                onLongClick = {
-                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    menuState.display {
-                                                        SongItemMenu(
-                                                            navController = navController,
-                                                            song = mediaItem.asSong
-                                                        ).MenuComponent()
-                                                    }
-                                                },
-                                                onClick = {
-                                                    binder?.player?.forcePlay(mediaItem)
-                                                }
-                                            ),
-                                        disableScrollingText = disableScrollingText,
-                                        isNowPlaying = binder?.player?.isNowPlaying(mediaItem.mediaId) ?: false
+                                            .clip(uiRoundnessShape()),
+                                        onClick = {
+                                            binder?.player?.forcePlay(mediaItem)
+                                        }
                                     )
                                 }
                             }
@@ -772,31 +754,13 @@ fun OnlineSearch(
                             item{
                                 it?.asMediaItem?.let { mediaItem ->
                                     SongItem(
-                                        song = mediaItem,
-                                        thumbnailSizePx = songThumbnailSizePx,
-                                        thumbnailSizeDp = songThumbnailSizeDp,
-                                        onThumbnailContent = {
-                                            NowPlayingSongIndicator(mediaItem.mediaId, binder?.player)
-                                        },
-                                        onDownloadClick = {},
-                                        downloadState = downloadState,
+                                        song = mediaItem.asSong,
+                                        navController = navController,
                                         modifier = Modifier
-                                            .clip(uiRoundnessShape()).combinedClickable(
-                                                onLongClick = {
-                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    menuState.display {
-                                                        SongItemMenu(
-                                                            navController = navController,
-                                                            song = mediaItem.asSong
-                                                        ).MenuComponent()
-                                                    }
-                                                },
-                                                onClick = {
-                                                    binder?.player?.forcePlay(mediaItem)
-                                                }
-                                            ),
-                                        disableScrollingText = disableScrollingText,
-                                        isNowPlaying = binder?.player?.isNowPlaying(mediaItem.mediaId) ?: false
+                                            .clip(uiRoundnessShape()),
+                                        onClick = {
+                                            binder?.player?.forcePlay(mediaItem)
+                                        }
                                     )
                                 }
                             }

@@ -160,6 +160,7 @@ import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
 import app.n_zik.android.components.SongItem
 import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.playback.utils.Shuffler
 import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
 import timber.log.Timber
@@ -374,6 +375,11 @@ fun PlaylistSongList(
         url = playlistPage?.playlist?.thumbnail?.url,
         isYoutubePlaylist = true
     )
+
+    val playlistSongIds = remember(playlistSongs) { playlistSongs.mapNotNull { it.key } }
+    val likeStatesMap by remember(playlistSongIds) {
+        LikeStateManager.getLikeStates(playlistSongIds)
+    }.collectAsState(emptyMap(), Dispatchers.IO)
 
     LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
         Box(
@@ -1008,8 +1014,8 @@ fun PlaylistSongList(
                                     )
                                 }
                             }
-                        }
                     }
+                }
                 }
 
                 items(
@@ -1043,6 +1049,7 @@ fun PlaylistSongList(
                     ) {
                         SongItem(
                             song = ytSong.asSong,
+                            isLiked = likeStatesMap[ytSong.key],
                             navController = navController,
                             modifier = Modifier,
 

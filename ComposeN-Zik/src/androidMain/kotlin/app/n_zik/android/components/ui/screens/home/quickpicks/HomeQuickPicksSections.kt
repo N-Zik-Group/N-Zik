@@ -39,6 +39,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
 import app.n_zik.android.components.menu.artist.OnlineArtistItemMenu
 import app.n_zik.android.components.menu.playlist.OnlinePlaylistItemMenu
@@ -68,6 +69,7 @@ import app.it.fast4x.rimusic.utils.*
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.HomePage
 import app.it.fast4x.rimusic.models.PlaylistPreview
+import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.text.style.TextAlign
@@ -215,6 +217,11 @@ fun QuickPicksGrid(
 ) {
     val quickPicksLazyGridState = rememberLazyGridState()
 
+    val songIds = remember(recommendations) { recommendations.map { it.id } }
+    val likeStatesMap by remember(songIds) {
+        LikeStateManager.getLikeStates(songIds)
+    }.collectAsState(emptyMap(), Dispatchers.IO)
+
     LaunchedEffect(scrollToStartTrigger) {
         if (scrollToStartTrigger > 0) {
             quickPicksLazyGridState.animateScrollToItem(0)
@@ -237,6 +244,7 @@ fun QuickPicksGrid(
         items(recommendations.distinctBy { it.id }, key = { it.id }) { song ->
             SongItem(
                 song = song,
+                isLiked = likeStatesMap[song.id],
                 navController = navController,
                 onClick = { onSongClick(song) },
                 modifier = Modifier.width(itemInHorizontalGridWidth).animateItem(),
@@ -636,6 +644,12 @@ fun MyTopSection(
     itemInHorizontalGridWidth: Dp
 ) {
     val binder = LocalPlayerServiceBinder.current
+
+    val songIds = remember(myTopSongs) { myTopSongs.map { it.id } }
+    val likeStatesMap by remember(songIds) {
+        LikeStateManager.getLikeStates(songIds)
+    }.collectAsState(emptyMap(), Dispatchers.IO)
+
     if (showMyTopPlaylist) {
         if (myTopSongs.isNotEmpty()) {
             Timber.tag("HomeQuickPicksSections").d("Local Section found: My Top (${myTopSongs.size} items)")
@@ -654,6 +668,7 @@ fun MyTopSection(
                     ) { song ->
                         SongItem(
                             song = song,
+                            isLiked = likeStatesMap[song.id],
                             navController = navController,
                             onClick = { binder?.startRadio(song, true) },
                     modifier = Modifier.width(itemInHorizontalGridWidth).animateItem(),
@@ -847,6 +862,11 @@ fun ChartsSection(
 
                 chartsPageInit.songs?.let { songs ->
                     if (songs.isNotEmpty()) {
+                        val chartSongIds = remember(songs) { songs.mapNotNull { it.key } }
+                        val chartLikeStatesMap by remember(chartSongIds) {
+                            LikeStateManager.getLikeStates(chartSongIds)
+                        }.collectAsState(emptyMap(), Dispatchers.IO)
+
                         BasicText(
                             text = stringResource(R.string.chart_top_songs),
                             style = typography().l.semiBold,
@@ -884,6 +904,7 @@ fun ChartsSection(
                                     )
                                     SongItem(
                                         song = song.asSong ?: Song.makePlaceholder(""),
+                                        isLiked = chartLikeStatesMap[song.key],
                                         navController = navController,
                                         onClick = {
                                             val mediaItem = song.asMediaItem
@@ -1038,6 +1059,11 @@ fun GenericYtmSections(
 
             if (isSongOnly) {
                 val songItems = section.items.filterIsInstance<Innertube.SongItem>()
+                val sectionSongIds = remember(songItems) { songItems.mapNotNull { it.key } }
+                val sectionLikeStatesMap by remember(sectionSongIds) {
+                    LikeStateManager.getLikeStates(sectionSongIds)
+                }.collectAsState(emptyMap(), Dispatchers.IO)
+
                 LazyHorizontalGrid(
                 rows = GridCells.Fixed(3),
                 flingBehavior = ScrollableDefaults.flingBehavior(),
@@ -1047,6 +1073,7 @@ fun GenericYtmSections(
                 items(songItems, key = { it.key ?: it.hashCode() }, contentType = { "song" }) { item ->
                     SongItem(
                         song = item.asSong ?: Song.makePlaceholder(""),
+                        isLiked = sectionLikeStatesMap[item.key],
                         navController = navController,
                         onClick = {
                             val mediaItem = item.asMediaItem

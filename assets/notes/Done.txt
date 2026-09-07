@@ -1,3 +1,30 @@
+perf(like): centralized like state cache — batch SQL queries instead of N per-item queries
+  - `LikeStateManager.kt` (new): Centralized manager for song like states with `getLikeStates(songIds)` returning `Flow<Map<String, Boolean?>>` — 1 SQL query for N songs instead of N queries
+  - `SongTable.kt`: Added `getLikeStatesForSongs(songIds)` query returning `Flow<List<SongLikeState>>` for batch loading
+  - `SongLikeState.kt` (new): Data class for Room query results (songId, likeState)
+  - `SongItem.kt`: Added `isLiked: Boolean? = null` parameter — when provided, skips individual DB query; uses `getLikedIcon()`/`getDislikedIcon()` instead of `getLikeState()` to never show unlike icon
+  - `StatisticsPage.kt`: Combined songs + like states loading via `flatMapLatest` — icons appear immediately with list, no delay
+  - `HomeSongs.kt`, `OnDeviceSongs.kt`, `HomeQuickPicksSections.kt`, `HomeQuickPicksComponents.kt`, `HistoryList.kt`, `LocalPlaylistSongs.kt`, `PlaylistSongList.kt`, `AlbumDetails.kt`, `ArtistDetails.kt`, `ArtistLocalSongs.kt`, `Queue.kt`, `MoodList.kt`: Batch like state loading via `LikeStateManager.getLikeStates()`
+  - `OnlineSearch.kt`, `Podcast.kt`, `LocalSongSearch.kt`, `HomePage.kt`: Migrated from legacy `SongItem` to new `SongItem` with `isLiked` parameter
+  - `SwipeablePlaylistItem.kt`: Restored in StatisticsPage after temporary removal
+  - Performance: 50 visible items = 1 SQL query instead of 50, scroll lag eliminated
+
+fix(statistics): show bookmark/follow icons for artists, albums, and playlists
+  - `StatisticsPage.kt`: Changed `ArtistItem` to use overload with `artist = artists[it]` — automatically queries `likeState` from DB for follow icon
+  - `StatisticsPage.kt`: Changed `AlbumItem` to use overload with `album = albums[it]` — automatically queries `likeState` from DB for bookmark icon
+  - `StatisticsPage.kt`: Added `isYoutubePlaylist = playlists[it].playlist.isYoutubePlaylist` to `PlaylistItem` — shows bookmark icon for YouTube playlists
+  - `StatisticsPage.kt`: Added `showAuthors = true` to AlbumItem for consistent display with HomeAlbum
+
+fix(statistics): fix crash when scrolling with large numbers in statistics screen
+  - `StatisticsPage.kt`: Replaced `Int.MAX_VALUE` limit in `totalPlayTimesFlow` with new optimized SQL query `getTotalPlayTimeBetween()` — was loading ALL songs from database into memory
+  - `StatisticsPage.kt`: Replaced N+1 query in `LaunchedEffect` (one DB call per song) with single SQL query `getSongsTotalPlayTimeBetween()` for batch playtime calculation
+  - `EventTable.kt`: Added `getTotalPlayTimeBetween(from, to)` query — calculates total playtime directly in SQL without loading all Song objects
+  - `EventTable.kt`: Added `getSongsTotalPlayTimeBetween(songIds, from, to)` query — calculates playtime for specific songs in one query instead of N individual queries
+  - `SongItem.kt`: Fixed missing `LaunchedEffect` import that caused compilation error
+  - `SongItem.kt`: Fixed Compose state delegate issue — replaced `by remember(key) { mutableStateOf() }` with `remember { mutableStateOf() }` to resolve setValue delegate error
+  - Root cause: `Int.MAX_VALUE` limit caused OOM crash, N+1 queries caused lag during scroll
+  - Build verified: `./gradlew :ComposeN-Zik:assembleDebug` BUILD SUCCESSFUL
+
 feat(settings): add disliked tab to albums/artists settings dialogs + fix theme
   - `Preferences.kt`: Added keys `homeAlbumsDislikedToolbarOrderKey`, `homeArtistsDislikedToolbarOrderKey`, `showDislikedAlbumKey`, `showDislikedArtistKey`
   - `HomeAlbumsSortSettingsDialog.kt`: Added Disliked tab with sort options, dynamic theme (accent color for selected tab, textSecondary for unselected)

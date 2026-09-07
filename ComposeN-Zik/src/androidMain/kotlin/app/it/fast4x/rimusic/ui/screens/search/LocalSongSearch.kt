@@ -56,7 +56,7 @@ import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import app.it.fast4x.rimusic.ui.components.themed.Header
-import app.it.fast4x.rimusic.ui.items.SongItem
+import app.n_zik.android.components.SongItem
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.px
 import app.it.fast4x.rimusic.utils.align
@@ -74,6 +74,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
 import app.n_zik.android.components.menu.song.SongItemMenu
+import app.n_zik.android.core.database.LikeStateManager
 
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
@@ -116,6 +117,11 @@ fun LocalSongSearch(
     val focusRequester = remember {
         FocusRequester()
     }
+
+    val songIds = remember(items) { items.map { it.id } }
+    val likeStatesMap by remember(songIds) {
+        LikeStateManager.getLikeStates(songIds)
+    }.collectAsState(emptyMap(), Dispatchers.IO)
 
     //val navigationBarPosition by rememberPreference(navigationBarPositionKey, NavigationBarPosition.BottomFloating)
     //val contentWidth = context.preferences.getFloat(contentWidthKey,0.8f)
@@ -257,37 +263,20 @@ fun LocalSongSearch(
                 val isDownloaded = if (!isLocal) isDownloadedSong(song.asMediaItem.mediaId) else true
                 SongItem(
                     song = song,
-                    onDownloadClick = {
-                        binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                        Database.asyncTransaction {
-                            formatTable.findBySongId( song.id )
-                        }
-
-                        if (!isLocal)
-                        manageDownload(
-                            context = context,
-                            mediaItem = song.asMediaItem,
-                            downloadState = isDownloaded
-                        )
-                    },
-                    downloadState = downloadState,
-                    thumbnailSizePx = thumbnailSizePx,
-                    thumbnailSizeDp = thumbnailSizeDp,
+                    isLiked = likeStatesMap[song.id],
+                    navController = navController,
                     modifier = Modifier
-                        .clip(uiRoundnessShape()).combinedClickable(
-                            onLongClick = {
-                                menuState.display {
-                                    SongItemMenu(
-                                        navController = navController,
-                                        song = song
-                                    ).MenuComponent()
-                                }
-                            },
-                            onClick = { binder?.startRadio( song ) }
-                        )
+                        .clip(uiRoundnessShape())
                         .animateItem(),
-                    disableScrollingText = disableScrollingText,
-                    isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false
+                    onLongClick = {
+                        menuState.display {
+                            SongItemMenu(
+                                navController = navController,
+                                song = song
+                            ).MenuComponent()
+                        }
+                    },
+                    onClick = { binder?.startRadio( song ) }
                 )
             }
         }

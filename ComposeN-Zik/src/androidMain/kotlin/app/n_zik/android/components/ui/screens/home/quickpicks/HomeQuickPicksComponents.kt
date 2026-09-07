@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -61,8 +62,10 @@ import app.it.fast4x.rimusic.utils.playVideo
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.playlist.OnlinePlaylistItemMenu
+import app.n_zik.android.core.database.LikeStateManager
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.HomePage
+import kotlinx.coroutines.Dispatchers
 import kotlin.random.Random
 import app.it.fast4x.rimusic.ui.items.AlbumItemPlaceholder
 
@@ -148,6 +151,11 @@ fun YtmSectionItems(
 
             if (isSongOnly) {
                 val songItems = section.items.filterIsInstance<Innertube.SongItem>()
+                val sectionSongIds = remember(songItems) { songItems.mapNotNull { it.key } }
+                val sectionLikeStatesMap by remember(sectionSongIds) {
+                    LikeStateManager.getLikeStates(sectionSongIds)
+                }.collectAsState(emptyMap(), Dispatchers.IO)
+
                 LazyHorizontalGrid(
                     rows = GridCells.Fixed(3),
                     flingBehavior = ScrollableDefaults.flingBehavior(),
@@ -160,6 +168,7 @@ fun YtmSectionItems(
                         val binder = LocalPlayerServiceBinder.current
                         SongItem(
                             song = item.asSong ?: Song.makePlaceholder(""),
+                            isLiked = sectionLikeStatesMap[item.key],
                             navController = navController,
                             onClick = {
                                 val mediaItem = item.asMediaItem

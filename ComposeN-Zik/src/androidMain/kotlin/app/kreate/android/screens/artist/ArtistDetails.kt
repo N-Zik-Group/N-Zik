@@ -39,6 +39,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -119,6 +120,7 @@ import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.artist.FollowButton
+import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.tab.ItemSelector
@@ -279,6 +281,11 @@ fun ArtistDetails(
     downloadAllDialog.Render()
     deleteAllDownloadsDialog.Render()
     //</editor-fold>
+
+    val songIds = remember(songs) { songs.map { it.id } }
+    val likeStatesMap by remember(songIds) {
+        LikeStateManager.getLikeStates(songIds)
+    }.collectAsState(emptyMap(), Dispatchers.IO)
 
     DynamicOrientationLayout( thumbnailPainter, artistThumbnailShape() ) {
         LazyColumn(
@@ -635,6 +642,7 @@ fun ArtistDetails(
                         ) {
                             SongItem(
                                 song = song,
+                                isLiked = likeStatesMap[song.id],
                                 itemSelector = itemSelector,
                                 navController = navController,
                                 showThumbnail = true,

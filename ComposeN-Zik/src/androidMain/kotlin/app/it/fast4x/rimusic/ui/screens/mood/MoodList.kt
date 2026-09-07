@@ -26,6 +26,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -39,6 +40,7 @@ import app.it.fast4x.compose.persist.persist
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.BrowseResult
 import it.fast4x.innertube.requests.browseCategory
+import kotlinx.coroutines.Dispatchers
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.NavRoutes
@@ -70,6 +72,7 @@ import app.n_zik.android.components.menu.playlist.OnlinePlaylistItemMenu
 import app.it.fast4x.rimusic.ui.items.VideoItem
 import app.n_zik.android.components.SongItem
 import app.it.fast4x.rimusic.ui.components.SwipeablePlaylistItem
+import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.components.menu.song.SongItemMenu
 import app.n_zik.android.components.menu.video.VideoItemMenu
 import app.n_zik.android.core.database.Database
@@ -136,6 +139,15 @@ fun MoodList(
             .fillMaxWidth()
     ) {
         moodPage?.getOrNull()?.let { moodResult ->
+            val moodSongIds = remember(moodResult) {
+                moodResult.items.flatMap { section ->
+                    section.items.filterIsInstance<Innertube.SongItem>().mapNotNull { it.key }
+                }.distinct()
+            }
+            val likeStatesMap by remember(moodSongIds) {
+                LikeStateManager.getLikeStates(moodSongIds)
+            }.collectAsState(emptyMap(), Dispatchers.IO)
+
             LazyColumn(
                 state = lazyListState,
                 //contentPadding = LocalPlayerAwareWindowInsets.current
@@ -258,6 +270,7 @@ fun MoodList(
                                         ) {
                                             SongItem(
                                                 song = childItem.asMediaItem.asSong ?: Song.makePlaceholder(""),
+                                                isLiked = likeStatesMap[childItem.key],
                                                 navController = navController,
                                                 modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                                     onClick = {

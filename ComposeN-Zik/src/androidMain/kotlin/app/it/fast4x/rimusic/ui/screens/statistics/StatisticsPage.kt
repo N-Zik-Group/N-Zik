@@ -100,6 +100,7 @@ import app.it.fast4x.rimusic.utils.statisticsCategoryKey
 import app.n_zik.android.core.coil.thumbnail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.first
@@ -185,7 +186,7 @@ fun StatisticsPage(
     val totalPlayTimesState = totalPlayTimesFlow.collectAsState(0L, Dispatchers.IO)
     totalPlayTimes = totalPlayTimesState.value
 
-    val songs by remember(parentalControlEnabled, maxStatisticsItems) {
+    val songsWithLikeStates by remember(parentalControlEnabled, maxStatisticsItems) {
         Database.eventTable
             .findSongsMostPlayedBetween(
                 from = from,
@@ -196,7 +197,19 @@ fun StatisticsPage(
                 list.filter { !parentalControlEnabled || !it.title.startsWith(EXPLICIT_PREFIX, true) }
                     .take(maxStatisticsItems.toInt()) 
             }
-    }.collectAsState(emptyList(), Dispatchers.IO)
+            .flatMapLatest { songsList ->
+                val songIds = songsList.map { it.id }
+                if (songIds.isEmpty()) {
+                    kotlinx.coroutines.flow.flowOf(Pair(emptyList<Song>(), emptyMap<String, Boolean?>()))
+                } else {
+                    LikeStateManager.getLikeStates(songIds)
+                        .map { likeMap -> Pair(songsList, likeMap) }
+                }
+            }
+    }.collectAsState(Pair(emptyList(), emptyMap()), Dispatchers.IO)
+
+    val songs = songsWithLikeStates.first
+    val likeStatesMap = songsWithLikeStates.second
 
 
 
@@ -315,21 +328,16 @@ fun StatisticsPage(
 
                     items(
                         count = songs.count(),
+                        key = { index -> songs[index].id }
                     ) {
-                        val currentDownloadState = getDownloadState(songs.get(it).asMediaItem.mediaId)
-                        val isDownloaded = isDownloadedSong(songs.get(it).asMediaItem.mediaId)
-                        var forceRecompose by remember { mutableStateOf(false) }
                         SwipeablePlaylistItem(
-                            mediaItem = songs.get(it).asMediaItem,
-                            onPlayNext = {
-                                binder?.player?.addNext(songs.get(it).asMediaItem)
-                            },
-                            onEnqueue = {
-                                binder?.player?.enqueue(songs.get(it).asMediaItem)
-                            }
+                            mediaItem = songs[it].asMediaItem,
+                            onPlayNext = { binder?.player?.addNext(songs[it].asMediaItem) },
+                            onEnqueue = { binder?.player?.enqueue(songs[it].asMediaItem) }
                         ) {
                             SongItem(
                                 song = songs[it],
+                                isLiked = likeStatesMap[songs[it].id],
                                 navController = navController,
                                 onClick = {
                                     binder?.stopRadio()
@@ -369,10 +377,7 @@ fun StatisticsPage(
                             UpdateYoutubeArtist(artists[it].id)
 
                         ArtistItem(
-                            thumbnailUrl = artists[it].thumbnailUrl,
-                            name = cleanPrefix(artists[it].name ?: ""),
-                            showName = true,
-                            subscribersCount = null,
+                            artist = artists[it],
                             thumbnailSizePx = artistThumbnailSizePx,
                             thumbnailSizeDp = artistThumbnailSizeDp,
                             alternative = true,
@@ -419,13 +424,11 @@ fun StatisticsPage(
                             UpdateYoutubeAlbum(albums[it].id)
 
                         AlbumItem(
-                            thumbnailUrl = albums[it].thumbnailUrl,
-                            title = albums[it].title,
-                            authors = albums[it].authorsText,
-                            year = albums[it].year,
+                            album = albums[it],
                             thumbnailSizePx = albumThumbnailSizePx,
                             thumbnailSizeDp = albumThumbnailSizeDp,
                             alternative = true,
+                            showAuthors = true,
                             modifier = Modifier
                                 .clip(uiRoundnessShape()).combinedClickable(
                                     onClick = {
@@ -538,6 +541,7 @@ fun StatisticsPage(
                                 channelName = null,
                                 thumbnailSizeDp = playlistThumbnailSizeDp,
                                 alternative = true,
+                                isYoutubePlaylist = playlists[it].playlist.isYoutubePlaylist,
                                 modifier = Modifier
                                 .clip(uiRoundnessShape()).combinedClickable(
                                     onClick = {

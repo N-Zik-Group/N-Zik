@@ -83,7 +83,8 @@ import app.it.fast4x.rimusic.utils.conditional
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.downloadedStateMedia
 import app.it.fast4x.rimusic.utils.getDownloadState
-import app.it.fast4x.rimusic.utils.getLikeState
+import app.it.fast4x.rimusic.utils.getLikedIcon
+import app.it.fast4x.rimusic.utils.getDislikedIcon
 import app.it.fast4x.rimusic.utils.currentMediaItemIdAsState
 import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.playlistindicatorKey
@@ -265,32 +266,27 @@ fun SongItem(
 
             thumbnailOverlay()
 
-            val likeStateLoadedState = remember { mutableStateOf( false ) }
-            val likeStateFlow = remember( displaySong.id ) {
-                Database.songTable
-                    .likeState( displaySong.id )
-                    .distinctUntilChanged()
+            // Use pre-computed like state if provided, otherwise query database
+            val likeState by if (isLiked != null) {
+                remember(isLiked) { mutableStateOf(isLiked) }
+            } else {
+                remember( displaySong.id ) {
+                    Database.songTable
+                        .likeState( displaySong.id )
+                        .distinctUntilChanged()
+                }.collectAsState( null, Dispatchers.IO )
             }
-            val likeState by likeStateFlow.collectAsState( null, Dispatchers.IO )
-            
-            // Mark as loaded when first value is emitted
-            LaunchedEffect( displaySong.id ) {
-                likeStateLoadedState.value = false
-                likeStateFlow.first()
-                likeStateLoadedState.value = true
-            }
-            val likeStateLoaded = likeStateLoadedState.value
 
-            // Show icon only for disliked (false), not for liked (true) or neutral (null)
-            // Only show after database has loaded to avoid showing wrong icon during load
-            if( likeStateLoaded && likeState == false )
+            // Only show icon for liked (true) or disliked (false), NEVER for neutral (null)
+            if ( likeState != null )
                 HeaderIconButton(
                     onClick = {},
-                    icon = getLikeState( displaySong.id ),
-                    color = colorPalette().red,
+                    icon = if (likeState == true) getLikedIcon() else getDislikedIcon(),
+                    color = if (likeState == false) colorPalette().red else colorPalette().favoritesIcon,
                     iconSize = 12.dp,
-                    modifier = Modifier.align( Alignment.BottomStart )
-                                       .absoluteOffset( x = (-8).dp )
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .absoluteOffset( x = (-8).dp )
                 )
         }
 

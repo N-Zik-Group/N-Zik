@@ -90,6 +90,7 @@ import java.util.Locale
 import app.it.fast4x.rimusic.enums.SortOrder
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.song.SongItemMenu
+import app.n_zik.android.core.database.LikeStateManager
 import app.it.fast4x.rimusic.utils.historySortMenuOrderKey
 import androidx.compose.foundation.text.BasicText
 import app.it.fast4x.rimusic.utils.encryptedPreferences
@@ -277,6 +278,13 @@ fun HistoryList(
                 )
             }
         } else {
+            val allHistorySongIds = remember(events) {
+                events.values.flatten().map { it.song.id }.distinct()
+            }
+            val likeStatesMap by remember(allHistorySongIds) {
+                LikeStateManager.getLikeStates(allHistorySongIds)
+            }.collectAsState(emptyMap(), Dispatchers.IO)
+
             LazyColumn(
                 state = lazyListState,
                 contentPadding = LocalPlayerAwareWindowInsets.current
@@ -318,6 +326,7 @@ fun HistoryList(
                             ) {
                                 SongItem(
                                     song = event.song,
+                                    isLiked = likeStatesMap[event.song.id],
                                     navController = navController,
                                     modifier = Modifier,
 
@@ -366,6 +375,7 @@ fun HistoryList(
                             ) {
                                 SongItem(
                                     song = mediaItem.asSong,
+                                    isLiked = likeStatesMap[mediaItem.asSong.id],
                                     navController = navController,
                                     modifier = Modifier,
 

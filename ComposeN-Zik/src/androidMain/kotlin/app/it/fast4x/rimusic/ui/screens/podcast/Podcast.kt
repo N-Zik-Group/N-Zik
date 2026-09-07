@@ -98,7 +98,7 @@ import app.it.fast4x.rimusic.ui.components.themed.LayoutWithAdaptiveThumbnail
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsItemMenu
 import app.it.fast4x.rimusic.ui.components.themed.adaptiveThumbnailContent
 import app.it.fast4x.rimusic.ui.components.themed.Loader
-import app.it.fast4x.rimusic.ui.items.SongItem
+import app.n_zik.android.components.SongItem
 import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
@@ -657,47 +657,29 @@ fun Podcast(
                     ) {
                         var forceRecompose by remember { mutableStateOf(false) }
                         SongItem(
-                            song = song.asMediaItem,
-                            onDownloadClick = {
-                                binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                                Database.asyncTransaction {
-                                    formatTable.findBySongId( song.asMediaItem.mediaId )
-                                }
-                                if (!isLocal)
-                                    manageDownload(
-                                        context = context,
-                                        mediaItem = song.asMediaItem,
-                                        downloadState = isDownloaded
-                                    )
-                            },
-                            downloadState = downloadState,
-                            thumbnailSizePx = songThumbnailSizePx,
-                            thumbnailSizeDp = songThumbnailSizeDp,
+                            song = song.asMediaItem.asSong,
+                            navController = navController,
                             modifier = Modifier
                                 .background(colorPalette().background0)
-                                .clip(uiRoundnessShape()).combinedClickable(
-                                    onLongClick = {
-                                        menuState.display {
-                                            SongItemMenu(
-                                                navController = navController,
-                                                song = song.asMediaItem.asSong
-                                            ).MenuComponent()
-                                        }
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    },
-                                    onClick = {
-                                        searching = false
-                                        filter = null
-                                        podcastPage?.listEpisode?.map(Innertube.Podcast.EpisodeItem::asMediaItem)
-                                            ?.let { mediaItems ->
-                                                binder?.stopRadio()
-                                                binder?.player?.forcePlayAtIndex(mediaItems, index)
-                                            }
+                                .clip(uiRoundnessShape()),
+                            onLongClick = {
+                                menuState.display {
+                                    SongItemMenu(
+                                        navController = navController,
+                                        song = song.asMediaItem.asSong
+                                    ).MenuComponent()
+                                }
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                            },
+                            onClick = {
+                                searching = false
+                                filter = null
+                                podcastPage?.listEpisode?.map(Innertube.Podcast.EpisodeItem::asMediaItem)
+                                    ?.let { mediaItems ->
+                                        binder?.stopRadio()
+                                        binder?.player?.forcePlayAtIndex(mediaItems, index)
                                     }
-                                ),
-                            disableScrollingText = disableScrollingText,
-                            isNowPlaying = binder?.player?.isNowPlaying(song.videoId) ?: false,
-                            forceRecompose = forceRecompose
+                            }
                         )
                     }
                 }
