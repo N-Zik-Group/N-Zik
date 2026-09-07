@@ -8,6 +8,7 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -87,6 +88,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.components.menu.GridMenu
+import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
+import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.n_zik.android.components.menu.ListMenu
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
@@ -232,12 +235,38 @@ class AlbumItemMenu private constructor(
                 Box(
                     Modifier.size(Dimensions.thumbnails.album / 2) // Reduced size for the menu
                 ) {
-                    ImageCacheFactory.Thumbnail(
-                        thumbnailUrl = album.thumbnailUrl,
+                    Box(
                         modifier = Modifier
                             .size(Dimensions.thumbnails.album / 2)
                             .clip(thumbnailShape())
-                    )
+                    ) {
+                        ImageCacheFactory.Thumbnail(
+                            thumbnailUrl = album.thumbnailUrl,
+                            modifier = Modifier.size(Dimensions.thumbnails.album / 2)
+                        )
+                    }
+
+                    val likeState by remember(album.id) {
+                        Database.albumTable
+                            .likeState(album.id)
+                            .distinctUntilChanged()
+                    }.collectAsState(null, Dispatchers.IO)
+
+                    if (likeState != null)
+                        HeaderIconButton(
+                            onClick = {},
+                            icon = when(likeState) {
+                                false -> R.drawable.bookmark_slash
+                                else -> R.drawable.bookmark
+                            },
+                            color = when(likeState) {
+                                false -> colorPalette().red
+                                else -> colorPalette().favoritesIcon
+                            },
+                            iconSize = 12.dp,
+                            modifier = Modifier.align(Alignment.BottomStart)
+                                .absoluteOffset(x = (-8).dp)
+                        )
                 }
 
                 // Album's information
@@ -288,28 +317,58 @@ class AlbumItemMenu private constructor(
                         .distinctUntilChanged()
                 }.collectAsState(false, Dispatchers.IO)
 
+                val likeState by remember(album.id) {
+                    Database.albumTable
+                        .likeState(album.id)
+                        .distinctUntilChanged()
+                }.collectAsState(null, Dispatchers.IO)
+
                 Column(
                     Modifier.width(48.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     IconButton(
-                        icon = if (isBookmarked) R.drawable.bookmark else R.drawable.bookmark_outline,
-                        color = colorPalette().favoritesIcon,
+                        icon = when(likeState) {
+                            true -> R.drawable.bookmark
+                            false -> R.drawable.bookmark_slash
+                            null -> R.drawable.bookmark_outline
+                        },
+                        color = when(likeState) {
+                            true -> colorPalette().favoritesIcon
+                            false -> colorPalette().red
+                            null -> colorPalette().text
+                        },
                         onClick = {
                             coroutineScope.launch(Dispatchers.IO) {
                                 val pushAlbumBookmark = appContext().preferences.getBoolean(syncPushAlbumBookmarkKey, false)
                                 val syncDir = getSyncDirection()
-                                if (isYouTubeSyncEnabled() && pushAlbumBookmark && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
+                                // Only sync to YouTube if NOT disliked (dislike is local only)
+                                if (likeState != false && isYouTubeSyncEnabled() && pushAlbumBookmark && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
                                     val playlistId = album.shareUrl
                                         ?.substringAfter("list=")
                                         ?.takeIf { it.isNotBlank() }
                                     if (playlistId != null) {
-                                        if (isBookmarked) YtMusic.removelikePlaylistOrAlbum(playlistId)
+                                        if (likeState == true) YtMusic.removelikePlaylistOrAlbum(playlistId)
                                         else YtMusic.likePlaylistOrAlbum(playlistId)
                                     }
                                 }
-                                Database.albumTable.toggleBookmark(album.id)
-                                Toaster.s( if (isBookmarked) R.string.removed_from_favorites else R.string.added_to_favorites )
+                                Database.albumTable.rotateLikeState(album.id)
+                                val newState = when(likeState) {
+                                    true -> null  // bookmarked → neutral
+                                    false -> true // disliked → bookmarked
+                                    null -> false // neutral → disliked
+                                }
+                                val messageId = when(newState) {
+                                    true -> R.string.added_to_favorites
+                                    false -> R.string.added_to_dislikes
+                                    null -> R.string.removed_from_favorites
+                                }
+                                with( album ) {
+                                    if( title != null )
+                                        Toaster.s( messageId, "\"$title\"" )
+                                    else
+                                        Toaster.s( messageId )
+                                }
                             }
                         },
                         modifier = Modifier

@@ -33,6 +33,7 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Menu
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
+import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
 
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
@@ -152,16 +153,42 @@ class LocalArtistItemMenu private constructor(
                         horizontal = 16.dp
                     )
             ) {
+                val likeState by remember(artist.id) {
+                    Database.artistTable
+                        .likeState(artist.id)
+                        .distinctUntilChanged()
+                }.collectAsState(null, Dispatchers.IO)
+
                 // Artist's thumbnail
                 Box(
                     Modifier.size(Dimensions.thumbnails.album / 2)
                 ) {
-                    ImageCacheFactory.Thumbnail(
-                        thumbnailUrl = thumbnailUrl,
+                    Box(
                         modifier = Modifier
                             .size(Dimensions.thumbnails.album / 2)
                             .clip(artistThumbnailShape())
-                    )
+                    ) {
+                        ImageCacheFactory.Thumbnail(
+                            thumbnailUrl = thumbnailUrl,
+                            modifier = Modifier.size(Dimensions.thumbnails.album / 2)
+                        )
+                    }
+
+                    if (likeState != null)
+                        HeaderIconButton(
+                            onClick = {},
+                            icon = when(likeState) {
+                                false -> R.drawable.bookmark_slash
+                                else -> R.drawable.bookmark
+                            },
+                            color = when(likeState) {
+                                false -> colorPalette().red
+                                else -> colorPalette().favoritesIcon
+                            },
+                            iconSize = 12.dp,
+                            modifier = Modifier.align(Alignment.BottomStart)
+                                .absoluteOffset(x = (-8).dp)
+                        )
                 }
 
                 // Artist's information
@@ -208,13 +235,36 @@ class LocalArtistItemMenu private constructor(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     IconButton(
-                        icon = if (isFollowing) R.drawable.bookmark else R.drawable.bookmark_outline,
-                        color = colorPalette().favoritesIcon,
+                        icon = when(likeState) {
+                            true -> R.drawable.bookmark
+                            false -> R.drawable.bookmark_slash
+                            null -> R.drawable.bookmark_outline
+                        },
+                        color = when(likeState) {
+                            true -> colorPalette().favoritesIcon
+                            false -> colorPalette().red
+                            null -> colorPalette().text
+                        },
                         onClick = {
                             coroutineScope.launch(Dispatchers.IO) {
-                                Database.artistTable.toggleFollow(artist.id)
+                                Database.artistTable.rotateLikeState(artist.id)
                             }
-                            Toaster.s( if (isFollowing) R.string.removed_from_favorites else R.string.added_to_favorites )
+                            val newState = when(likeState) {
+                                true -> null  // followed → neutral
+                                false -> true // disliked → followed
+                                null -> false // neutral → disliked
+                            }
+                            val messageId = when(newState) {
+                                true -> R.string.added_to_favorites
+                                false -> R.string.added_to_dislikes
+                                null -> R.string.removed_from_favorites
+                            }
+                            with( artist ) {
+                                if( name != null )
+                                    Toaster.s( messageId, "\"$name\"" )
+                                else
+                                    Toaster.s( messageId )
+                            }
                         },
                         modifier = Modifier
                             .padding(all = 4.dp)

@@ -18,13 +18,17 @@ data class Album(
     val bookmarkedAt: Long? = null,
     val isYoutubeAlbum: Boolean = false,
     val position: Int = -1,
-    val lastFetch: Long? = null
+    val lastFetch: Long? = null,
+    val dislikedAt: Long? = null
 ) {
     fun toggleBookmark(): Album {
         return copy(
             bookmarkedAt = if (bookmarkedAt == null) System.currentTimeMillis() else null
         )
     }
+
+    val isDisliked: Boolean
+        get() = dislikedAt != null
 
     fun cleanTitle() = cleanPrefix( this.title ?: "" )
 

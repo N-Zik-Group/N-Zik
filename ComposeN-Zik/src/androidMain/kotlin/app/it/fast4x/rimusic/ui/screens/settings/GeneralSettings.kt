@@ -75,6 +75,9 @@ import app.it.fast4x.rimusic.utils.discoverKey
 import app.it.fast4x.rimusic.utils.enablePictureInPictureAutoKey
 import app.it.fast4x.rimusic.utils.enablePictureInPictureKey
 import app.it.fast4x.rimusic.utils.excludeSongsWithDurationLimitKey
+import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
+import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
+import app.it.fast4x.rimusic.utils.excludeDislikedAlbumsKey
 import app.it.fast4x.rimusic.utils.exoPlayerMinTimeForEventKey
 import app.it.fast4x.rimusic.utils.handleAudioFocusEnabledKey
 import app.it.fast4x.rimusic.utils.isAtLeastAndroid12
@@ -245,6 +248,9 @@ fun GeneralSettings(
 
     var useVolumeKeysToChangeSong by rememberPreference(useVolumeKeysToChangeSongKey, false)
     var excludeSongWithDurationLimit by rememberPreference(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
+    var excludeDislikedSongs by rememberPreference(excludeDislikedSongsKey, true)
+    var excludeDislikedArtists by rememberPreference(excludeDislikedArtistsKey, true)
+    var excludeDislikedAlbums by rememberPreference(excludeDislikedAlbumsKey, true)
     var playlistindicator by rememberPreference(playlistindicatorKey, false)
     var nowPlayingIndicator by rememberPreference(nowPlayingIndicatorKey, MusicAnimationType.Bubbles)
     var discoverIsEnabled by rememberPreference(discoverKey, false)
@@ -503,11 +509,39 @@ fun GeneralSettings(
                      }
                               },
                               values = DurationInMinutes.values().toList(),
-                              onDismiss = { showExcludeSongsDialog = false }
-                          )
-                      }
+                               onDismiss = { showExcludeSongsDialog = false }
+                           )
+                       }
 
-                                         var showPauseBetweenSongsDialog by remember { mutableStateOf(false) }
+                       // Dislike exclusion settings
+                       if (search.inputValue.isBlank() || stringResource(R.string.disliked).contains(search.inputValue,true)) {
+                           OtherSettingsEntry(
+                               title = stringResource(R.string.exclude_disliked_songs),
+                               text = if (excludeDislikedSongs) stringResource(R.string.on) else stringResource(R.string.off),
+                               onClick = { excludeDislikedSongs = !excludeDislikedSongs },
+                               icon = R.drawable.heart_dislike
+                           )
+                       }
+
+                       if (search.inputValue.isBlank() || stringResource(R.string.disliked).contains(search.inputValue,true)) {
+                           OtherSettingsEntry(
+                               title = stringResource(R.string.exclude_disliked_artists),
+                               text = if (excludeDislikedArtists) stringResource(R.string.on) else stringResource(R.string.off),
+                               onClick = { excludeDislikedArtists = !excludeDislikedArtists },
+                               icon = R.drawable.person
+                           )
+                       }
+
+                       if (search.inputValue.isBlank() || stringResource(R.string.disliked).contains(search.inputValue,true)) {
+                           OtherSettingsEntry(
+                               title = stringResource(R.string.exclude_disliked_albums),
+                               text = if (excludeDislikedAlbums) stringResource(R.string.on) else stringResource(R.string.off),
+                               onClick = { excludeDislikedAlbums = !excludeDislikedAlbums },
+                               icon = R.drawable.album
+                           )
+                       }
+
+                      var showPauseBetweenSongsDialog by remember { mutableStateOf(false) }
                      if (search.inputValue.isBlank() || stringResource(R.string.pause_between_songs).contains(search.inputValue,true)) {
                          OtherSettingsEntry(
                              title = stringResource(R.string.pause_between_songs),

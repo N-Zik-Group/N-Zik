@@ -119,6 +119,8 @@ import app.it.fast4x.rimusic.utils.Preference.HOME_ARTISTS_FAVORITES_SORT_BY
 import app.it.fast4x.rimusic.utils.Preference.HOME_ARTISTS_FAVORITES_SORT_ORDER
 import app.it.fast4x.rimusic.utils.Preference.HOME_ARTISTS_LIBRARY_SORT_BY
 import app.it.fast4x.rimusic.utils.Preference.HOME_ARTISTS_LIBRARY_SORT_ORDER
+import app.it.fast4x.rimusic.utils.Preference.HOME_ARTISTS_DISLIKED_SORT_BY
+import app.it.fast4x.rimusic.utils.Preference.HOME_ARTISTS_DISLIKED_SORT_ORDER
 import app.it.fast4x.rimusic.utils.Preference.HOME_ARTIST_ITEM_SIZE
 import app.it.fast4x.rimusic.utils.artistTypeKey
 import app.it.fast4x.rimusic.utils.autoSyncToolbutton
@@ -138,6 +140,7 @@ import app.it.fast4x.rimusic.utils.homeArtistsLibraryToolbarOrderKey
 import app.it.fast4x.rimusic.utils.homeArtistsFavoritesToolbarOrderKey
 import app.it.fast4x.rimusic.utils.homeArtistsFavoritesSortMenuOrderKey
 import app.it.fast4x.rimusic.utils.homeArtistsLibrarySortMenuOrderKey
+import app.it.fast4x.rimusic.utils.homeArtistsDislikedSortMenuOrderKey
 import org.json.JSONArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -204,6 +207,7 @@ fun HomeArtists(
     val sort = when( artistType ) {
         ArtistsType.Favorites -> Sort( HOME_ARTISTS_FAVORITES_SORT_BY, HOME_ARTISTS_FAVORITES_SORT_ORDER, homeArtistsFavoritesSortMenuOrderKey, "art_fav" )
         ArtistsType.Library -> Sort( HOME_ARTISTS_LIBRARY_SORT_BY, HOME_ARTISTS_LIBRARY_SORT_ORDER, homeArtistsLibrarySortMenuOrderKey, "art_lib" )
+        ArtistsType.Disliked -> Sort( HOME_ARTISTS_DISLIKED_SORT_BY, HOME_ARTISTS_DISLIKED_SORT_ORDER, homeArtistsDislikedSortMenuOrderKey, "art_dis" )
     }
     val positionLock = remember( sort.sortOrder ) { PositionLock(sort.sortOrder) }
 
@@ -273,11 +277,12 @@ fun HomeArtists(
 
     val favoritesLabel = stringResource(R.string.favorites)
     val allLabel = stringResource(R.string.all)
-    val artistsDefaultOrder = listOf("all", "favorites")
-    val labelMap = mapOf("favorites" to favoritesLabel, "all" to allLabel)
-    val typeMap = mapOf("favorites" to ArtistsType.Favorites, "all" to ArtistsType.Library)
-    val toggleMap = mapOf("favorites" to showFavoritesArtist, "all" to true)
-    val buttonsList = remember(showFavoritesArtist, homeArtistsOrderPref, favoritesLabel, allLabel) {
+    val dislikedLabel = stringResource(R.string.disliked)
+    val artistsDefaultOrder = listOf("all", "favorites", "disliked")
+    val labelMap = mapOf("favorites" to favoritesLabel, "all" to allLabel, "disliked" to dislikedLabel)
+    val typeMap = mapOf("favorites" to ArtistsType.Favorites, "all" to ArtistsType.Library, "disliked" to ArtistsType.Disliked)
+    val toggleMap = mapOf("favorites" to showFavoritesArtist, "all" to true, "disliked" to true)
+    val buttonsList = remember(showFavoritesArtist, homeArtistsOrderPref, favoritesLabel, allLabel, dislikedLabel) {
         val order = try {
             val arr = JSONArray(homeArtistsOrderPref)
             val parsed = (0 until arr.length()).map { arr.getString(it) }
@@ -306,6 +311,7 @@ fun HomeArtists(
         when( artistType ) {
             ArtistsType.Favorites -> Database.artistTable.sortFollowing( sort.sortBy, sort.sortOrder )
             ArtistsType.Library -> Database.artistTable.sortInLibrary( sort.sortBy, sort.sortOrder )
+            ArtistsType.Disliked -> Database.artistTable.allDisliked()
         }.collect { itemsToFilter = it }
     }
     LaunchedEffect( Unit, itemsToFilter, filterBy ) {

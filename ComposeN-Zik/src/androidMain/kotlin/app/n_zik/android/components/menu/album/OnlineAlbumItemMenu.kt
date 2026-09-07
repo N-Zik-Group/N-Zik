@@ -35,6 +35,7 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Menu
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
+import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
@@ -198,12 +199,38 @@ class OnlineAlbumItemMenu private constructor(
                 Box(
                     Modifier.size(Dimensions.thumbnails.album / 2)
                 ) {
-                    ImageCacheFactory.Thumbnail(
-                        thumbnailUrl = thumbnailUrl,
+                    Box(
                         modifier = Modifier
                             .size(Dimensions.thumbnails.album / 2)
                             .clip(thumbnailShape())
-                    )
+                    ) {
+                        ImageCacheFactory.Thumbnail(
+                            thumbnailUrl = thumbnailUrl,
+                            modifier = Modifier.size(Dimensions.thumbnails.album / 2)
+                        )
+                    }
+
+                    val likeState by remember(album.key) {
+                        Database.albumTable
+                            .likeState(album.key)
+                            .distinctUntilChanged()
+                    }.collectAsState(null, Dispatchers.IO)
+
+                    if (likeState != null)
+                        HeaderIconButton(
+                            onClick = {},
+                            icon = when(likeState) {
+                                false -> R.drawable.bookmark_slash
+                                else -> R.drawable.bookmark
+                            },
+                            color = when(likeState) {
+                                false -> colorPalette().red
+                                else -> colorPalette().favoritesIcon
+                            },
+                            iconSize = 12.dp,
+                            modifier = Modifier.align(Alignment.BottomStart)
+                                .absoluteOffset(x = (-8).dp)
+                        )
                 }
 
                 // Album's information
@@ -258,26 +285,55 @@ class OnlineAlbumItemMenu private constructor(
                         .distinctUntilChanged()
                 }.collectAsState(false, Dispatchers.IO)
 
+                val likeState by remember(album.key) {
+                    Database.albumTable
+                        .likeState(album.key)
+                        .distinctUntilChanged()
+                }.collectAsState(null, Dispatchers.IO)
+
                 Column(
                     Modifier.width(48.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     IconButton(
-                        icon = if (isBookmarked) R.drawable.bookmark else R.drawable.bookmark_outline,
-                        color = colorPalette().favoritesIcon,
+                        icon = when(likeState) {
+                            true -> R.drawable.bookmark
+                            false -> R.drawable.bookmark_slash
+                            null -> R.drawable.bookmark_outline
+                        },
+                        color = when(likeState) {
+                            true -> colorPalette().favoritesIcon
+                            false -> colorPalette().red
+                            null -> colorPalette().text
+                        },
                         onClick = {
                             coroutineScope.launch(Dispatchers.IO) {
                                 val pushAlbumBookmark = appContext().preferences.getBoolean(syncPushAlbumBookmarkKey, false)
                                 val syncDir = getSyncDirection()
-                                if (isYouTubeSyncEnabled() && pushAlbumBookmark && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
+                                // Only sync to YouTube if NOT disliked (dislike is local only)
+                                if (likeState != false && isYouTubeSyncEnabled() && pushAlbumBookmark && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
                                     val playlistId = album.playlistId
                                     if (playlistId != null) {
-                                        if (isBookmarked) YtMusic.removelikePlaylistOrAlbum(playlistId)
+                                        if (likeState == true) YtMusic.removelikePlaylistOrAlbum(playlistId)
                                         else YtMusic.likePlaylistOrAlbum(playlistId)
                                     }
                                 }
-                                Database.albumTable.toggleBookmark(album.key)
-                                Toaster.s( if (isBookmarked) R.string.removed_from_favorites else R.string.added_to_favorites )
+                                Database.albumTable.rotateLikeState(album.key)
+                                val newState = when(likeState) {
+                                    true -> null  // bookmarked → neutral
+                                    false -> true // disliked → bookmarked
+                                    null -> false // neutral → disliked
+                                }
+                                val messageId = when(newState) {
+                                    true -> R.string.added_to_favorites
+                                    false -> R.string.added_to_dislikes
+                                    null -> R.string.removed_from_favorites
+                                }
+                                val albumName = album.info?.name
+                                if( albumName != null )
+                                    Toaster.s( messageId, "\"$albumName\"" )
+                                else
+                                    Toaster.s( messageId )
                             }
                         },
                         modifier = Modifier

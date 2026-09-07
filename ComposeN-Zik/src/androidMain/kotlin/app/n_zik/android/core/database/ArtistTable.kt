@@ -232,6 +232,94 @@ interface ArtistTable {
     """)
     fun toggleFollow( artistId: String ): Int
 
+    /**
+     * Rotate like state for an artist: neutral → followed → disliked → neutral
+     * - neutral (NULL) → followed (bookmarkedAt = timestamp) = "follow"
+     * - followed (bookmarkedAt > 0) → disliked (dislikedAt = timestamp) = "dislike"
+     * - disliked (dislikedAt > 0) → neutral (NULL) = "remove dislike"
+     *
+     * @param artistId of artist to be updated
+     * @return number of rows affected
+     */
+    @Query("""
+        UPDATE Artist
+        SET
+            bookmarkedAt = CASE
+                WHEN bookmarkedAt IS NULL AND dislikedAt IS NULL THEN strftime('%s', 'now') * 1000
+                WHEN bookmarkedAt IS NOT NULL THEN NULL
+                ELSE bookmarkedAt
+            END,
+            dislikedAt = CASE
+                WHEN bookmarkedAt IS NOT NULL THEN strftime('%s', 'now') * 1000
+                WHEN dislikedAt IS NOT NULL THEN NULL
+                ELSE dislikedAt
+            END
+        WHERE id = :artistId
+    """)
+    fun rotateLikeState( artistId: String ): Int
+
+    /**
+     * @return like state of artist: true = followed, false = disliked, null = neutral
+     */
+    @Query("""
+        SELECT CASE
+            WHEN dislikedAt IS NOT NULL THEN 0
+            WHEN bookmarkedAt IS NOT NULL THEN 1
+            ELSE NULL
+        END
+        FROM Artist
+        WHERE id = :artistId
+    """)
+    fun likeState( artistId: String ): Flow<Boolean?>
+
+    /**
+     * Toggle dislike state for an artist.
+     *
+     * - If neutral (null) -> set to disliked (current timestamp)
+     * - If disliked -> set to neutral (null)
+     *
+     * @param artistId of artist to be updated
+     * @return number of rows affected
+     */
+    @Query("""
+        UPDATE Artist
+        SET dislikedAt =
+            CASE
+                WHEN dislikedAt IS NULL THEN strftime('%s', 'now') * 1000
+                ELSE NULL
+            END
+        WHERE id = :artistId
+    """)
+    fun toggleDislike( artistId: String ): Int
+
+    /**
+     * @return whether [Artist] with id [artistId] is disliked
+     */
+    @Query("""
+        SELECT COALESCE(
+            (
+                SELECT 1
+                FROM Artist
+                WHERE id = :artistId
+                AND dislikedAt IS NOT NULL
+            ),
+            0
+        )
+    """)
+    fun isDisliked( artistId: String ): Flow<Boolean>
+
+    /**
+     * @return all disliked artists
+     */
+    @Query("""
+        SELECT DISTINCT *
+        FROM Artist
+        WHERE dislikedAt IS NOT NULL
+        ORDER BY dislikedAt DESC
+        LIMIT :limit
+    """)
+    fun allDisliked( limit: Int = Int.MAX_VALUE ): Flow<List<Artist>>
+
     @Query("UPDATE Artist SET position = :position WHERE id = :artistId")
     fun updatePosition( artistId: String, position: Int ): Int
 

@@ -10,12 +10,14 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -66,6 +68,7 @@ import app.n_zik.android.core.database.Database
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.n_zik.android.components.tab.SongShuffler
 import android.net.Uri
+import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
 
 @UnstableApi
 @OptIn(ExperimentalFoundationApi::class)
@@ -184,12 +187,31 @@ class OnlinePlaylistItemMenu private constructor(
                 Box(
                     Modifier.size(Dimensions.thumbnails.album / 2)
                 ) {
-                    ImageCacheFactory.Thumbnail(
-                        thumbnailUrl = thumbnailUrl,
+                    // Clipped thumbnail content
+                    Box(
                         modifier = Modifier
                             .size(Dimensions.thumbnails.album / 2)
                             .clip(thumbnailShape())
-                    )
+                    ) {
+                        ImageCacheFactory.Thumbnail(
+                            thumbnailUrl = thumbnailUrl,
+                            modifier = Modifier.size(Dimensions.thumbnails.album / 2)
+                        )
+                    }
+
+                    val localPlaylistFlow = remember(playlist.key) { Database.playlistTable.findByBrowseId(playlist.key) }
+                    val localPlaylist by localPlaylistFlow.collectAsState(null, Dispatchers.IO)
+                    val isBookmarked = localPlaylist?.isYoutubePlaylist == true
+
+                    if (isBookmarked)
+                        HeaderIconButton(
+                            onClick = {},
+                            icon = R.drawable.bookmark,
+                            color = colorPalette().favoritesIcon,
+                            iconSize = 12.dp,
+                            modifier = Modifier.align( Alignment.BottomStart )
+                                               .absoluteOffset( x = (-8).dp )
+                        )
                 }
 
                 // Playlist's information

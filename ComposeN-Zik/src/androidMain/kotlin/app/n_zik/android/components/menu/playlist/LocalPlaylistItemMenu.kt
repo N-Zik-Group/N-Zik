@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,6 +46,7 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.DynamicColor
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Menu
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
+import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.*
 import app.n_zik.android.components.menu.GridMenu
@@ -204,41 +207,56 @@ class LocalPlaylistItemMenu private constructor(
                                     }
                     }.collectAsStateWithLifecycle( emptyList() )
 
-                    if (thumbnails.isEmpty()) {
-                        Image(
-                            painter = painterResource(R.drawable.library),
-                            contentDescription = null,
-                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(colorPalette().textSecondary),
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .size(Dimensions.thumbnails.album / 4)
-                        )
-                    } else if (thumbnails.size == 1) {
-                        ImageCacheFactory.Thumbnail(
-                            thumbnailUrl = thumbnails[0],
-                            modifier = Modifier
-                                .size(Dimensions.thumbnails.album / 2)
-                                .clip(thumbnailShape())
-                        )
-                    } else {
-                        // 4 grid
-                        Row(modifier = Modifier.size(Dimensions.thumbnails.album / 2).clip(thumbnailShape())) {
-                            Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                                ImageCacheFactory.Thumbnail(thumbnailUrl = thumbnails[0], modifier = Modifier.weight(1f).fillMaxWidth())
-                                if (thumbnails.size > 2) {
-                                    ImageCacheFactory.Thumbnail(thumbnailUrl = thumbnails[2], modifier = Modifier.weight(1f).fillMaxWidth())
+                    // Clipped thumbnail content
+                    Box(
+                        modifier = Modifier
+                            .size(Dimensions.thumbnails.album / 2)
+                            .clip(thumbnailShape())
+                    ) {
+                        if (thumbnails.isEmpty()) {
+                            Image(
+                                painter = painterResource(R.drawable.library),
+                                contentDescription = null,
+                                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(colorPalette().textSecondary),
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .size(Dimensions.thumbnails.album / 4)
+                            )
+                        } else if (thumbnails.size == 1) {
+                            ImageCacheFactory.Thumbnail(
+                                thumbnailUrl = thumbnails[0],
+                                modifier = Modifier.size(Dimensions.thumbnails.album / 2)
+                            )
+                        } else {
+                            // 4 grid
+                            Row(modifier = Modifier.size(Dimensions.thumbnails.album / 2)) {
+                                Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                                    ImageCacheFactory.Thumbnail(thumbnailUrl = thumbnails[0], modifier = Modifier.weight(1f).fillMaxWidth())
+                                    if (thumbnails.size > 2) {
+                                        ImageCacheFactory.Thumbnail(thumbnailUrl = thumbnails[2], modifier = Modifier.weight(1f).fillMaxWidth())
+                                    }
                                 }
-                            }
-                            Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                                if (thumbnails.size > 1) {
-                                    ImageCacheFactory.Thumbnail(thumbnailUrl = thumbnails[1], modifier = Modifier.weight(1f).fillMaxWidth())
-                                }
-                                if (thumbnails.size > 3) {
-                                    ImageCacheFactory.Thumbnail(thumbnailUrl = thumbnails[3], modifier = Modifier.weight(1f).fillMaxWidth())
+                                Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                                    if (thumbnails.size > 1) {
+                                        ImageCacheFactory.Thumbnail(thumbnailUrl = thumbnails[1], modifier = Modifier.weight(1f).fillMaxWidth())
+                                    }
+                                    if (thumbnails.size > 3) {
+                                        ImageCacheFactory.Thumbnail(thumbnailUrl = thumbnails[3], modifier = Modifier.weight(1f).fillMaxWidth())
+                                    }
                                 }
                             }
                         }
                     }
+
+                    if (isBookmarked)
+                        HeaderIconButton(
+                            onClick = {},
+                            icon = R.drawable.bookmark,
+                            color = colorPalette().favoritesIcon,
+                            iconSize = 12.dp,
+                            modifier = Modifier.align( Alignment.BottomStart )
+                                               .absoluteOffset( x = (-8).dp )
+                        )
                 }
 
                 // Playlist's information

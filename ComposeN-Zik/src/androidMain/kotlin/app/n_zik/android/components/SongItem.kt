@@ -98,7 +98,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.ripple
 import androidx.compose.material3.Icon
+import androidx.compose.runtime.collectAsState
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 
 private interface SongIndicator: Icon {
@@ -261,13 +263,21 @@ fun SongItem(
 
             thumbnailOverlay()
 
-            val showLiked = isLiked ?: (displaySong.likedAt != null)
-            val showDisliked = displaySong.likedAt == -1L
-            if( showLiked || showDisliked )
+            val likeState by remember( displaySong.id ) {
+                Database.songTable
+                    .likeState( displaySong.id )
+                    .distinctUntilChanged()
+            }.collectAsState( null, Dispatchers.IO )
+
+            // Show icon only for liked (true) or disliked (false), not for neutral (null)
+            if( likeState != null )
                 HeaderIconButton(
                     onClick = {},
                     icon = getLikeState( displaySong.id ),
-                    color = colorPalette().favoritesIcon,
+                    color = when(likeState) {
+                        false -> colorPalette().red
+                        else -> colorPalette().favoritesIcon
+                    },
                     iconSize = 12.dp,
                     modifier = Modifier.align( Alignment.BottomStart )
                                        .absoluteOffset( x = (-8).dp )

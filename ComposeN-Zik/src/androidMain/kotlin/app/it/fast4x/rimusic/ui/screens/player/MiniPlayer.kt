@@ -574,7 +574,7 @@ fun MiniPlayer(
                         app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton(
                             onClick = {},
                             icon = if (likeState == true) getLikedIcon() else getDislikedIcon(),
-                            color = colorPalette().favoritesIcon,
+                            color = if (likeState == false) colorPalette().red else colorPalette().favoritesIcon,
                             iconSize = 10.dp,
                             modifier = Modifier.align( Alignment.BottomStart )
                                                .absoluteOffset( x = (-5).dp )
@@ -825,7 +825,10 @@ private fun MiniPlayerSlotButton(
                     null -> getUnlikedIcon()
                     else -> getLikedIcon()
                 },
-                color = colorPalette().favoritesIcon,
+                color = when(likeState) {
+                    false -> colorPalette().red
+                    else -> colorPalette().favoritesIcon
+                },
                 onClick = onLikeClick,
                 modifier = modifier
             )

@@ -1,3 +1,5 @@
-Update YTB sync to use new innertube api also update eevery sync like album artists songs ect...
-Add back dislike button in player, android auto and notification still support it
+95% of ytb sync
+Missing podcast totally
+Sync ytb playlsit marche mais push non !
+the sync sync too much in each page, add the possibility to hide toast
 Make the desktop version

@@ -758,7 +758,7 @@ fun PlaylistSongList(
                             )
                             HeaderIconButton(
                                 icon = if (localPlaylist?.isYoutubePlaylist == true) R.drawable.bookmark else R.drawable.bookmark_outline,
-                                color = colorPalette().text,
+                                color = if (localPlaylist?.isYoutubePlaylist == true) colorPalette().favoritesIcon else colorPalette().text,
                                 modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
                                 onClick = {
                                     CoroutineScope(Dispatchers.IO).launch {

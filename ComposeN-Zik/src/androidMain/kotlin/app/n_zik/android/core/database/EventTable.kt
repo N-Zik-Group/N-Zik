@@ -50,6 +50,7 @@ interface EventTable {
         FROM Song S
         JOIN Event E ON E.songId = S.id
         WHERE E."timestamp" BETWEEN :from AND :to
+        AND (S.likedAt IS NULL OR S.likedAt >= 0)
         GROUP BY E.songId 
         ORDER BY SUM(E.playtime) DESC
         LIMIT :limit
@@ -83,6 +84,7 @@ interface EventTable {
         JOIN SongArtistMap SAM ON SAM.artistId = A.id
         JOIN Event E ON E.songId = SAM.songId
         WHERE E."timestamp" BETWEEN :from AND :to
+        AND (A.dislikedAt IS NULL)
         GROUP BY A.id
         ORDER BY SUM(E.playtime) DESC
         LIMIT :limit
@@ -116,6 +118,7 @@ interface EventTable {
         JOIN SongAlbumMap SAM ON SAM.albumId = A.id
         JOIN Event E ON E.songId = SAM.songId
         WHERE E."timestamp" BETWEEN :from AND :to
+        AND (A.dislikedAt IS NULL)
         GROUP BY A.id
         ORDER BY SUM(E.playtime) DESC
         LIMIT :limit

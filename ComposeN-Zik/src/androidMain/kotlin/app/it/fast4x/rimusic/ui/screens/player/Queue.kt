@@ -455,7 +455,7 @@ fun Queue(
                                     itemSelector = itemSelector,
                                     isLiked = isLiked,
                                     backgroundColor = itemBackground,
-                                    onLongClick = {},
+                                    onLongClick = null, // null triggers SongItemMenu on long press
                                     trailingContent = {
                                         if( !positionLock.isLocked() )
                                         // Create a fake box to store drag anchor and checkbox

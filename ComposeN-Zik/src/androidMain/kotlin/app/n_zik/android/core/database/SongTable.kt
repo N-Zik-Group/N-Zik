@@ -70,6 +70,40 @@ interface SongTable {
     fun allDisliked( limit: Int = Int.MAX_VALUE ): Flow<List<Song>>
 
     /**
+     * @return all disliked song IDs
+     */
+    @Query("""
+        SELECT DISTINCT id
+        FROM Song
+        WHERE likedAt IS NOT NULL AND likedAt < 0
+    """)
+    suspend fun getAllDislikedIds(): List<String>
+
+    /**
+     * @return all song IDs from disliked artists
+     */
+    @Query("""
+        SELECT DISTINCT S.id
+        FROM Song S
+        JOIN SongArtistMap SAM ON SAM.songId = S.id
+        JOIN Artist A ON A.id = SAM.artistId
+        WHERE A.dislikedAt IS NOT NULL
+    """)
+    suspend fun getSongsByDislikedArtists(): List<String>
+
+    /**
+     * @return all song IDs from disliked albums
+     */
+    @Query("""
+        SELECT DISTINCT S.id
+        FROM Song S
+        JOIN SongAlbumMap SAM ON SAM.songId = S.id
+        JOIN Album AL ON AL.id = SAM.albumId
+        WHERE AL.dislikedAt IS NOT NULL
+    """)
+    suspend fun getSongsByDislikedAlbums(): List<String>
+
+    /**
      * Delete all songs with [Song.totalPlayTimeMs] equal to `0`
      *
      * @return number of rows affected by this operation
@@ -259,9 +293,9 @@ interface SongTable {
      * This query updates the [Song.likedAt] column to
      * cycle through three values in a fixed rotation:
      *
-     * - `-1` to `0`
-     * - `0` to `1`
-     * - `1` to `-1`
+     * - neutral (NULL) to liked (timestamp) = "like"
+     * - liked (timestamp) to disliked (-1) = "dislike"
+     * - disliked (-1) to neutral (NULL) = "remove dislike"
      *
      * @param songId of song to be updated
      * @return number of rows affected by this operation
@@ -270,9 +304,9 @@ interface SongTable {
         UPDATE Song  
         SET likedAt = 
             CASE  
-                WHEN likedAt < 0 THEN NULL
                 WHEN likedAt IS NULL THEN strftime('%s', 'now') * 1000
-                ELSE -1
+                WHEN likedAt > 0 THEN -1
+                ELSE NULL
             END  
         WHERE id = :songId
     """)

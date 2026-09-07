@@ -7,9 +7,11 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -64,6 +66,8 @@ import kotlinx.coroutines.flow.map
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.ui.res.stringResource
+import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
+import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 
 val HTTP_REGEX = Regex("^https?://.*")
 val FOUR_CORNERS = listOf( Alignment.TopStart, Alignment.TopEnd, Alignment.BottomStart, Alignment.BottomEnd )
@@ -211,6 +215,11 @@ fun PlaylistItem(
     showInfo: Boolean = true,
     isEditable : Boolean = false
 ) {
+    val localPlaylist by remember(playlist.key) {
+        Database.playlistTable.findByBrowseId(playlist.key)
+    }.collectAsState(null, Dispatchers.IO)
+    val isBookmarked = localPlaylist?.isYoutubePlaylist == true
+
     PlaylistItem(
         thumbnailContent = thumb@ {
             val thumbnailUrl = playlist.thumbnail?.url ?: return@thumb
@@ -232,7 +241,7 @@ fun PlaylistItem(
         showName = showName,
         disableScrollingText = disableScrollingText,
         browseId = playlist.key,
-        isYoutubePlaylist = isYoutubePlaylist,
+        isYoutubePlaylist = isBookmarked,
         showInfo = showInfo,
         isEditable = isEditable
     )
@@ -261,66 +270,86 @@ fun PlaylistItem(
         thumbnailSizeDp = thumbnailSizeDp,
         modifier = modifier
     ) {
-        BoxWithConstraints(
-            modifier = Modifier
-                .conditional(alternative) { fillMaxWidth().aspectRatio(1f) }
-                .conditional(!alternative) { size(thumbnailSizeDp) }
-                .clip(thumbnailShape())
-                .background(colorPalette().background4)
-        ) {
-            thumbnailContent()
-            thumbnailOverlay()
+        Box {
+            BoxWithConstraints(
+                modifier = Modifier
+                    .conditional(alternative) { fillMaxWidth().aspectRatio(1f) }
+                    .conditional(!alternative) { size(thumbnailSizeDp) }
+                    .clip(thumbnailShape())
+                    .background(colorPalette().background4)
+            ) {
+                // Clipped thumbnail area with overlay, icon and song count
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(thumbnailShape())
+                ) {
+                    this@BoxWithConstraints.run {
+                        thumbnailContent()
+                        thumbnailOverlay()
+                    }
 
-            name ?: return@BoxWithConstraints
-            val (icon, color) = when {
+                    if (name != null) {
+                        val (icon, color) = when {
+                            name.startsWith( PINNED_PREFIX, true ) ->
+                                painterResource( R.drawable.pin_filled ) to colorPalette().accent
 
+                            name.startsWith( MONTHLY_PREFIX, true ) ->
+                                painterResource( R.drawable.stat_month ) to colorPalette().accent
 
-                name.startsWith( PINNED_PREFIX, true ) ->
-                    painterResource( R.drawable.pin_filled ) to colorPalette().accent
+                            browseId == "SPOTIFY_IMPORT" || browseId?.startsWith("SPOTIFY_IMPORT") == true ->
+                                painterResource( R.drawable.spotify ) to Color.Unspecified
 
-                name.startsWith( MONTHLY_PREFIX, true ) ->
-                    painterResource( R.drawable.stat_month ) to colorPalette().accent
+                            browseId == "RIPLAY_IMPORT" || browseId?.startsWith("RIPLAY_IMPORT") == true ->
+                                painterResource( R.drawable.riplay ) to Color.Unspecified
 
-                browseId == "SPOTIFY_IMPORT" || browseId?.startsWith("SPOTIFY_IMPORT") == true ->
-                    painterResource( R.drawable.spotify ) to Color.Unspecified
+                            isYoutubePlaylist || browseId?.startsWith("VL") == true ->
+                                painterResource( R.drawable.ytmusic ) to Color.Red
 
-                browseId == "RIPLAY_IMPORT" || browseId?.startsWith("RIPLAY_IMPORT") == true ->
-                    painterResource( R.drawable.riplay ) to Color.Unspecified
+                            browseId.isNullOrEmpty() ->
+                                painterResource( R.drawable.ic_launcher ) to Color.Unspecified
 
-                isYoutubePlaylist || browseId?.startsWith("VL") == true ->
-                    painterResource( R.drawable.ytmusic ) to Color.Red
+                            else ->
+                                painterResource( R.drawable.ic_launcher ) to Color.Unspecified
+                        }
 
-                browseId.isNullOrEmpty() ->
-                    painterResource( R.drawable.ic_launcher ) to Color.Unspecified
+                        Icon(
+                            painter = icon,
+                            contentDescription = stringResource(R.string.cd_origin_indicator),
+                            tint = color,
+                            modifier = Modifier.size( 40.dp ).padding( all = 5.dp )
+                        )
 
-                else ->
-                    painterResource( R.drawable.ic_launcher ) to Color.Unspecified
+                        songCount?.let {
+                            if( showSongsCount )
+                                BasicText(
+                                    text = songCount.toString(),
+                                    style = typography().xxs.medium.color( colorPalette().onOverlay ),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.padding( all = 4.dp )
+                                                       .background(
+                                                           color = colorPalette().overlay,
+                                                           shape = uiRoundnessShape()
+                                                       )
+                                                       .padding( all = 6.dp)
+                                                       .align(Alignment.BottomEnd)
+                                )
+                        }
+                    }
+                }
             }
 
-            Icon(
-                painter = icon,
-                contentDescription = stringResource(R.string.cd_origin_indicator),
-                tint = color,
-                modifier = Modifier.size( 40.dp ).padding( all = 5.dp )
-            )
-
-            songCount?.let {
-                if( !showSongsCount ) return@let
-
-                BasicText(
-                    text = songCount.toString(),
-                    style = typography().xxs.medium.color( colorPalette().onOverlay ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding( all = 4.dp )
-                                       .background(
-                                           color = colorPalette().overlay,
-                                           shape = uiRoundnessShape()
-                                       )
-                                       .padding( all = 6.dp)
-                                       .align(Alignment.BottomEnd)
+            // Bookmark icon outside clip so it's not clipped
+            if (isYoutubePlaylist)
+                HeaderIconButton(
+                    onClick = {},
+                    icon = R.drawable.bookmark,
+                    color = colorPalette().favoritesIcon,
+                    iconSize = 12.dp,
+                    modifier = Modifier.align( Alignment.BottomStart )
+                                       .absoluteOffset( x = (-8).dp )
                 )
-            }
         }
 
         if (showInfo) {

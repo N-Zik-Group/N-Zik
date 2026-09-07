@@ -387,17 +387,20 @@ fun SongItem(
         ) {
             thumbnailContent()
 
-            val isSongLiked by remember( mediaItem.mediaId ) {
+            val likeState by remember( mediaItem.mediaId ) {
                 Database.songTable
-                    .isLiked( mediaItem.mediaId )
+                    .likeState( mediaItem.mediaId )
                     .distinctUntilChanged()
-            }.collectAsState( false, Dispatchers.IO )
+            }.collectAsState( null, Dispatchers.IO )
 
-            if ( isSongLiked )
+            if ( likeState != null )
                 HeaderIconButton(
                     onClick = {},
                     icon = getLikeState(mediaItem.mediaId),
-                    color = colorPalette().favoritesIcon,
+                    color = when(likeState) {
+                        false -> colorPalette().red
+                        else -> colorPalette().favoritesIcon
+                    },
                     iconSize = 12.dp,
                     modifier = Modifier
                         .align(Alignment.BottomStart)

@@ -20,7 +20,7 @@ fun getLikeState(mediaId: String): Int {
         Database.songTable
                 .likeState( mediaId )
                 .distinctUntilChanged()
-    }.collectAsState( false, Dispatchers.IO )
+    }.collectAsState( null, Dispatchers.IO )
 
     return when( songLikeState ) {
         false -> getDislikedIcon()

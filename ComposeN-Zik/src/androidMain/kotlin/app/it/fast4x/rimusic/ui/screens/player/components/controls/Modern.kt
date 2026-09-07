@@ -242,7 +242,7 @@ fun InfoAlbumAndArtistModern(
                         .weight(0.1f)
                 ){
                     IconButton(
-                        color = colorPalette().favoritesIcon,
+                        color = if(likedAt == -1L) colorPalette().red else colorPalette().favoritesIcon,
                         icon = getLikeState(mediaId),
                         onClick = {
                             CoroutineScope( Dispatchers.IO ).launch {

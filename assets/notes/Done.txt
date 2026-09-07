@@ -1,3 +1,48 @@
+feat(ui): add bookmark/dislike indicator icons on artist, album, and playlist items
+  - `ArtistItem.kt`: Real-time like state via `Database.artistTable.likeState()` Flow, shows bookmark (favoritesIcon) or bookmark_slash (red) on thumbnail BottomStart with absoluteOffset, clip moved to inner Box to prevent icon clipping
+  - `AlbumItem.kt`: Same pattern via `Database.albumTable.likeState()` Flow, bookmark/bookmark_slash icon on thumbnail
+  - `PlaylistItem.kt`: Bookmark icon shown when `isYoutubePlaylist == true` (playlist saved locally), clip moved to inner Box, uses `Database.playlistTable.findByBrowseId()` for online playlists to check bookmark status
+  - `LocalArtistItemMenu.kt`: Added bookmark icon on artist thumbnail in menu display, moved likeState declaration before thumbnail to fix scope
+  - `AlbumItemMenu.kt`: Added bookmark icon on album thumbnail in menu display with reactive likeState Flow
+  - `OnlineAlbumItemMenu.kt`: Added bookmark icon on album thumbnail with reactive likeState Flow
+  - `OnlineArtistItemMenu.kt`: Added bookmark icon on artist thumbnail with reactive likeState Flow
+  - `LocalPlaylistItemMenu.kt`: Added bookmark icon on playlist thumbnail when bookmarked, clip moved to inner Box
+  - `OnlinePlaylistItemMenu.kt`: Added bookmark icon on playlist thumbnail when bookmarked, clip moved to inner Box
+  - `PlaylistSongList.kt`: Bookmark icon color changed to favoritesIcon when playlist is bookmarked
+  - All icons use same pattern as SongItem's like indicator (HeaderIconButton, 12dp, BottomStart alignment with absoluteOffset)
+
+feat(dislike): add complete dislike system for songs, artists, and albums
+  - `SongTable.kt`: Rotation neutre→liké→disliké→neutre, added `getAllDislikedIds()`, `getSongsByDislikedArtists()`, `getSongsByDislikedAlbums()` queries
+  - `ArtistTable.kt`: Added `dislikedAt` field, `rotateLikeState()`, `likeState()`, `toggleDislike()`, `isDisliked()`, `allDisliked()`
+  - `AlbumTable.kt`: Added `dislikedAt` field, `rotateLikeState()`, `likeState()`, `toggleDislike()`, `isDisliked()`, `allDisliked()`
+  - `From36To37Migration.kt`: Database migration adding `dislikedAt` column to Artist and Album tables
+  - `Database.kt`: Version bumped to 37
+  - `YouTubeSync.kt`: State determined BEFORE rotation (null→true, true→false, false→null), YouTube sync blocked when disliked
+  - `LocalArtistItemMenu.kt`, `OnlineArtistItemMenu.kt`: 3-state icon (bookmark/bookmark_slash/bookmark_outline) with red color
+  - `AlbumItemMenu.kt`, `OnlineAlbumItemMenu.kt`: 3-state icon with red color
+  - `SongItemMenu.kt`, `VideoItemMenu.kt`, `PlayerItemMenu.kt`: heart_dislike icon with red color
+  - `MiniPlayer.kt`, `Essential.kt`, `Modern.kt`: Red color for dislike icon in player controls
+  - `FollowButton.kt`: 3-state rotation (followed→neutral→disliked→neutral), red background when disliked
+  - `AlbumDetails.kt`: AlbumBookmark uses rotateLikeState(), red color when disliked
+  - `SongItem.kt` (components): Real-time like state via Flow from database, shows heart/heart_dislike on thumbnail
+  - `HomeArtist.kt`, `HomeAlbum.kt`: Added Disliked tab with sort preferences
+  - `ArtistsType.kt`, `AlbumsType.kt`: Added Disliked enum value
+  - `GeneralSettings.kt`: 3 toggles for exclude disliked songs/artists/albums (default ON)
+  - `Preferences.kt`: Added `excludeDislikedSongsKey`, `excludeDislikedArtistsKey`, `excludeDislikedAlbumsKey`
+  - `Player.kt`: Exclusion in `excludeMediaItems()` for disliked songs, artists, albums
+  - `Shuffler.kt`: Exclusion in `play()` for disliked songs, artists, albums
+  - `NZikRadio.kt`: Exclusion in `discoverFilter()` for disliked songs, artists, albums
+  - `EventTable.kt`: Excluded disliked songs/artists/albums from stats and monthly playlists
+  - `LikeState.kt`: Fixed initial value from `false` to `null` to prevent dislike icon flashing at load
+  - `strings.xml`: Added `exclude_disliked_songs`, `exclude_disliked_artists`, `exclude_disliked_albums`
+  - Rotation order: songs (liked→neutral→disliked→neutral), artists (followed→neutral→disliked→neutral), albums (bookmarked→neutral→disliked→neutral)
+  - Dislike is local only - NOT synced to YouTube
+
+fix(queue): enable long press context menu on queue items
+  - `Queue.kt`: Removed `onLongClick = {}` from `SongItem` call — empty lambda suppressed `SongItemMenu` creation (condition in `SongItem.kt:210`: menu only created when `onLongClick == null`)
+  - Changed to `onLongClick = null` (explicit) with comment to prevent future regression
+  - `SongItemMenu` content is rendered lazily (only on open) — no performance impact on queue scrolling
+
 fix(innertube): fix HTTP 400 on browse/search for devices with unsupported region locale (issue https://github.com/N-Zik-Group/N-Zik/issues/6)
   - Root cause: Devices with `Locale.getDefault().country` returning unsupported regions (e.g. MM/Myanmar) or `Locale.getDefault().toLanguageTag()` returning full tags (e.g. `fr-MM`) caused YouTube's WEB_REMIX API to return 400 INVALID_ARGUMENT
   - `Innertube.kt`: Added retry-on-400 logic for `browse()`, `search()`, and `getSearchSuggestions()` — falls back to language-based region (e.g. `fr`→`FR`) when ISO region is rejected

@@ -61,44 +61,80 @@ class FollowButton private constructor(
             Toaster.noInternet()
         } else {
             val artist = getArtist()
-            val wasFollowed = artist.bookmarkedAt != null
-
-            Database.asyncTransaction {
-                artistTable.toggleFollow( artist.id )
+            val currentState = artist.let {
+                when {
+                    it.dislikedAt != null -> false // disliked
+                    it.bookmarkedAt != null -> true // followed
+                    else -> null // neutral
+                }
             }
 
-            Toaster.s( if (wasFollowed) R.string.removed_from_favorites else R.string.added_to_favorites )
+            Database.asyncTransaction {
+                artistTable.rotateLikeState( artist.id )
+            }
 
-            CoroutineScope( Dispatchers.IO ).launch {
-                if( !isYouTubeSyncEnabled() ) return@launch
-
-                val pushArtistFollow = appContext().preferences.getBoolean(syncPushArtistFollowKey, false)
-                if( !pushArtistFollow ) return@launch
-
-                val syncDirection = getSyncDirection()
-                if( syncDirection == SyncDirection.YT_TO_APP ) return@launch
-                if( !isNetworkConnected(appContext()) ) return@launch
-
-                if ( wasFollowed )
-                    YtMusic.unsubscribeChannel( artist.id )
+            val newState = when(currentState) {
+                true -> null  // followed → neutral
+                false -> true // disliked → followed
+                null -> false // neutral → disliked
+            }
+            val messageId = when(newState) {
+                true -> R.string.added_to_favorites
+                false -> R.string.added_to_dislikes
+                null -> R.string.removed_from_favorites
+            }
+            with( artist ) {
+                if( name != null )
+                    Toaster.s( messageId, "\"$name\"" )
                 else
-                    YtMusic.subscribeChannel( artist.id )
+                    Toaster.s( messageId )
+            }
+
+            // Only sync to YouTube if NOT disliked (dislike is local only)
+            if (newState != false) {
+                CoroutineScope( Dispatchers.IO ).launch {
+                    if( !isYouTubeSyncEnabled() ) return@launch
+
+                    val pushArtistFollow = appContext().preferences.getBoolean(syncPushArtistFollowKey, false)
+                    if( !pushArtistFollow ) return@launch
+
+                    val syncDirection = getSyncDirection()
+                    if( syncDirection == SyncDirection.YT_TO_APP ) return@launch
+                    if( !isNetworkConnected(appContext()) ) return@launch
+
+                    if ( newState == null ) // unfollow
+                        YtMusic.unsubscribeChannel( artist.id )
+                    else // follow
+                        YtMusic.subscribeChannel( artist.id )
+                }
             }
         }
     }
 
     @Composable
     override fun ToolBarButton() {
-        val isFollowed by remember {
+        val likeState by remember {
             Database.artistTable
-                    .isFollowing( getArtist().id )
-        }.collectAsState( false, Dispatchers.IO )
+                    .likeState( getArtist().id )
+        }.collectAsState( null, Dispatchers.IO )
         val colorPalette = colorPalette()
 
-        val buttonProps: Triple<Int, Color, Color> = remember( isFollowed ) {
-            val text = if( isFollowed ) R.string.following else R.string.follow
-            val background = if( isFollowed ) colorPalette.accent else colorPalette.background2
-            val foreground = if( isFollowed ) colorPalette.onAccent else colorPalette.text
+        val buttonProps: Triple<Int, Color, Color> = remember( likeState ) {
+            val text = when(likeState) {
+                true -> R.string.following
+                false -> R.string.disliked
+                null -> R.string.follow
+            }
+            val background = when(likeState) {
+                true -> colorPalette.accent
+                false -> colorPalette.red
+                null -> colorPalette.background2
+            }
+            val foreground = when(likeState) {
+                true -> colorPalette.onAccent
+                false -> colorPalette.onAccent
+                null -> colorPalette.text
+            }
 
             Triple(text, background, foreground)
         }

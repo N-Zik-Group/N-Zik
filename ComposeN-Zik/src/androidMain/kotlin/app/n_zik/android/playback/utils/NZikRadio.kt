@@ -13,6 +13,9 @@ import app.kreate.android.me.knighthat.utils.Toaster
 import app.it.fast4x.rimusic.utils.discoverKey
 import app.it.fast4x.rimusic.utils.autoLoadSongsInQueueKey
 import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
+import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
+import app.it.fast4x.rimusic.utils.excludeDislikedAlbumsKey
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.NavigationEndpoint
 import it.fast4x.innertube.requests.nextPage
@@ -221,6 +224,33 @@ class NZikRadio(
                 !(isMapped && isLiked) // Keep if NOT (mapped AND liked)
             }
         }
+
+        // Apply Dislike Filter
+        val preferences = context.preferences
+        val excludeDislikedSongs = preferences.getBoolean(excludeDislikedSongsKey, true)
+        if (excludeDislikedSongs) {
+            val dislikedSongIds = Database.songTable.getAllDislikedIds()
+            if (dislikedSongIds.isNotEmpty()) {
+                filtered = filtered.filter { !dislikedSongIds.contains(it.mediaId) }
+            }
+        }
+
+        val excludeDislikedArtists = preferences.getBoolean(excludeDislikedArtistsKey, true)
+        if (excludeDislikedArtists) {
+            val dislikedArtistSongIds = Database.songTable.getSongsByDislikedArtists()
+            if (dislikedArtistSongIds.isNotEmpty()) {
+                filtered = filtered.filter { !dislikedArtistSongIds.contains(it.mediaId) }
+            }
+        }
+
+        val excludeDislikedAlbums = preferences.getBoolean(excludeDislikedAlbumsKey, true)
+        if (excludeDislikedAlbums) {
+            val dislikedAlbumSongIds = Database.songTable.getSongsByDislikedAlbums()
+            if (dislikedAlbumSongIds.isNotEmpty()) {
+                filtered = filtered.filter { !dislikedAlbumSongIds.contains(it.mediaId) }
+            }
+        }
+
         return Shuffler.shuffle(filtered)
     }
 

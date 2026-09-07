@@ -72,6 +72,7 @@ import app.n_zik.android.core.database.migration.From32To33Migration
 import app.n_zik.android.core.database.migration.From33To34Migration
 import app.n_zik.android.core.database.migration.From34To35Migration
 import app.n_zik.android.core.database.migration.From35To36Migration
+import app.n_zik.android.core.database.migration.From36To37Migration
 import app.kreate.android.me.knighthat.utils.PropUtils
 import app.n_zik.android.core.backup.BackupManager
 import androidx.room.InvalidationTracker
@@ -648,7 +649,7 @@ object Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 36,
+    version = 37,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -711,7 +712,8 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                     From32To33Migration(),
                     From33To34Migration(),
                     From34To35Migration(),
-                    From35To36Migration
+                    From35To36Migration,
+                    From36To37Migration
                 )
                 .fallbackToDestructiveMigration()
                 .build()

@@ -86,23 +86,31 @@ class AlbumModifier private constructor(
 fun AlbumBookmark(
     albumId: String
 ): MenuIcon = object : MenuIcon, Descriptive, DualIcon {
-    val isBookmarked by remember(albumId) {
-        Database.albumTable.isBookmarked( albumId )
+    val likeState by remember(albumId) {
+        Database.albumTable.likeState( albumId )
             .distinctUntilChanged()
-    }.collectAsState( false, Dispatchers.IO )
+    }.collectAsState( null, Dispatchers.IO )
 
     val album by remember(albumId) {
         Database.albumTable.findById( albumId )
             .distinctUntilChanged()
     }.collectAsState( null, Dispatchers.IO )
 
-    override val iconId: Int = R.drawable.bookmark
+    override val iconId: Int = when(likeState) {
+        true -> R.drawable.bookmark
+        false -> R.drawable.bookmark_slash
+        null -> R.drawable.bookmark_outline
+    }
     override val secondIconId: Int = R.drawable.bookmark_outline
-    override var isFirstIcon: Boolean = isBookmarked
+    override var isFirstIcon: Boolean = likeState != null
     override val messageId: Int = R.string.info_bookmark_album
     override val color: Color
         @Composable
-        get() = colorPalette().accent
+        get() = when(likeState) {
+            true -> colorPalette().accent
+            false -> colorPalette().red
+            null -> colorPalette().text
+        }
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -111,17 +119,32 @@ fun AlbumBookmark(
         CoroutineScope( Dispatchers.IO ).launch {
             val pushAlbumBookmark = appContext().preferences.getBoolean(syncPushAlbumBookmarkKey, false)
             val syncDir = getSyncDirection()
-            if (isYouTubeSyncEnabled() && pushAlbumBookmark && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
+            // Only sync to YouTube if NOT disliked (dislike is local only)
+            if (likeState != false && isYouTubeSyncEnabled() && pushAlbumBookmark && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
                 val playlistId = album?.shareUrl
                     ?.substringAfter("list=")
                     ?.takeIf { it.isNotBlank() }
                 if (playlistId != null) {
-                    if (isBookmarked) YtMusic.removelikePlaylistOrAlbum(playlistId)
+                    if (likeState == true) YtMusic.removelikePlaylistOrAlbum(playlistId)
                     else YtMusic.likePlaylistOrAlbum(playlistId)
                 }
             }
-            Database.albumTable.toggleBookmark( albumId )
-            Toaster.s( if (isBookmarked) R.string.removed_from_favorites else R.string.added_to_favorites )
+            Database.albumTable.rotateLikeState( albumId )
+            val newState = when(likeState) {
+                true -> null  // bookmarked → neutral
+                false -> true // disliked → bookmarked
+                null -> false // neutral → disliked
+            }
+            val messageId = when(newState) {
+                true -> R.string.added_to_favorites
+                false -> R.string.added_to_dislikes
+                null -> R.string.removed_from_favorites
+            }
+            val albumName = album?.title
+            if( albumName != null )
+                Toaster.s( messageId, "\"$albumName\"" )
+            else
+                Toaster.s( messageId )
         }
     }
 }

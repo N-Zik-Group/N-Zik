@@ -27,7 +27,7 @@ import app.kreate.android.me.knighthat.utils.Toaster
 object YouTubeSync {
 
     /**
-     * Rotates like state through 3 states: neutral → liked → disliked → neutral.
+     * Rotates like state: neutral → liked → disliked → neutral.
      *
      * - **Liked** → pushed to YouTube as "like"
      * - **Neutral** → pushed to YouTube as "unlike"
@@ -43,10 +43,19 @@ object YouTubeSync {
             "Cannot run YouTubeSync.rotateSongLikeState on main thread"
         }
 
+        // Get state BEFORE rotation to determine what the NEW state will be
+        val currentState = Database.songTable.likeState( mediaItem.mediaId ).first()
+
         Database.insertIgnore( mediaItem )
         Database.songTable.rotateLikeState( mediaItem.mediaId )
 
-        val likeState = Database.songTable.likeState( mediaItem.mediaId ).first()
+        // Determine new state based on rotation: neutral → liked → disliked → neutral
+        val likeState = when(currentState) {
+            null -> true    // neutral → liked
+            true -> false   // liked → disliked
+            false -> null   // disliked → neutral
+        }
+
         MyDownloadHelper.downloadOnLike( mediaItem, likeState, context )
 
         // Check if we should push to YouTube

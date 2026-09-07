@@ -351,7 +351,7 @@ fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): Lis
             preferences.getEnum(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
 
         if (excludeSongWithDurationLimit != DurationInMinutes.Disabled) {
-            filteredMediaItems = mediaItems.filter {
+            filteredMediaItems = filteredMediaItems.filter {
                 it.mediaMetadata.extras?.getString("durationText")?.let { it1 ->
                     durationTextToMillis(it1)
                 }!! < excludeSongWithDurationLimit.asMillis
@@ -360,6 +360,57 @@ fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): Lis
             val excludedSongs = mediaItems.size - filteredMediaItems.size
             if (excludedSongs > 0)
                 Toaster.n( R.string.message_excluded_s_songs, arrayOf( excludedSongs ) )
+        }
+
+        // Filter disliked songs if setting is enabled
+        val excludeDislikedSongs = preferences.getBoolean(excludeDislikedSongsKey, true)
+        if (excludeDislikedSongs) {
+            val dislikedSongIds = kotlinx.coroutines.runBlocking {
+                Database.songTable.getAllDislikedIds()
+            }
+            if (dislikedSongIds.isNotEmpty()) {
+                val beforeCount = filteredMediaItems.size
+                filteredMediaItems = filteredMediaItems.filter {
+                    !dislikedSongIds.contains(it.mediaId)
+                }
+                val excludedDisliked = beforeCount - filteredMediaItems.size
+                if (excludedDisliked > 0)
+                    Timber.tag("Player").d("Excluded $excludedDisliked disliked songs")
+            }
+        }
+
+        // Filter songs from disliked artists if setting is enabled
+        val excludeDislikedArtists = preferences.getBoolean(excludeDislikedArtistsKey, true)
+        if (excludeDislikedArtists) {
+            val dislikedArtistSongIds = kotlinx.coroutines.runBlocking {
+                Database.songTable.getSongsByDislikedArtists()
+            }
+            if (dislikedArtistSongIds.isNotEmpty()) {
+                val beforeCount = filteredMediaItems.size
+                filteredMediaItems = filteredMediaItems.filter {
+                    !dislikedArtistSongIds.contains(it.mediaId)
+                }
+                val excludedDisliked = beforeCount - filteredMediaItems.size
+                if (excludedDisliked > 0)
+                    Timber.tag("Player").d("Excluded $excludedDisliked songs from disliked artists")
+            }
+        }
+
+        // Filter songs from disliked albums if setting is enabled
+        val excludeDislikedAlbums = preferences.getBoolean(excludeDislikedAlbumsKey, true)
+        if (excludeDislikedAlbums) {
+            val dislikedAlbumSongIds = kotlinx.coroutines.runBlocking {
+                Database.songTable.getSongsByDislikedAlbums()
+            }
+            if (dislikedAlbumSongIds.isNotEmpty()) {
+                val beforeCount = filteredMediaItems.size
+                filteredMediaItems = filteredMediaItems.filter {
+                    !dislikedAlbumSongIds.contains(it.mediaId)
+                }
+                val excludedDisliked = beforeCount - filteredMediaItems.size
+                if (excludedDisliked > 0)
+                    Timber.tag("Player").d("Excluded $excludedDisliked songs from disliked albums")
+            }
         }
     }.onFailure {
         Timber.tag("Player").e(it.message)

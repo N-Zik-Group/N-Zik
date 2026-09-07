@@ -456,7 +456,11 @@ class VideoItemMenu private constructor(
                                     null -> R.drawable.heart_outline
                                     else -> R.drawable.heart
                                 },
-                                color = colorPalette().favoritesIcon,
+                                color = when(likeState) {
+                                    false -> colorPalette().red
+                                    null -> colorPalette().text
+                                    else -> colorPalette().favoritesIcon
+                                },
                                 onClick = {
                                     coroutineScope.launch( Dispatchers.IO ) {
                                         YouTubeSync.rotateSongLikeState( context, song.asMediaItem )

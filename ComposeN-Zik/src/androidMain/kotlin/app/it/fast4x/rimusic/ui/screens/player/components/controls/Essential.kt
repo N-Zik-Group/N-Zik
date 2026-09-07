@@ -261,7 +261,7 @@ fun InfoAlbumAndArtistEssential(
                 ) {
                     likeButtonWidth = maxWidth
                     IconButton(
-                        color = colorPalette().favoritesIcon,
+                        color = if(likedAt == -1L) colorPalette().red else colorPalette().favoritesIcon,
                         icon = getLikeState(mediaId),
                         onClick = {
                             CoroutineScope( Dispatchers.IO ).launch {
@@ -429,7 +429,7 @@ fun ControlsEssential(
 
     Box {
         IconButton(
-            color = colorPalette().favoritesIcon,
+            color = if(likedAt == -1L) colorPalette().red else colorPalette().favoritesIcon,
             icon = getLikeState(mediaId),
             onClick = {
                 CoroutineScope( Dispatchers.IO ).launch {

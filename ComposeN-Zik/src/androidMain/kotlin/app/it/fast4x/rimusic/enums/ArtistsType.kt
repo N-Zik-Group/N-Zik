@@ -9,7 +9,8 @@ enum class ArtistsType(
 ): TextView {
 
     Favorites( R.string.favorites ),
-    Library( R.string.library );
+    Library( R.string.library ),
+    Disliked( R.string.disliked );
 }
 
 

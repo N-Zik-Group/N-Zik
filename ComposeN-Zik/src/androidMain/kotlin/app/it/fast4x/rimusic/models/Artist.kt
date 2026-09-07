@@ -15,9 +15,13 @@ data class Artist(
     val bookmarkedAt: Long? = null,
     val isYoutubeArtist: Boolean = false,
     val position: Int = -1,
-    val lastFetch: Long? = null
+    val lastFetch: Long? = null,
+    val dislikedAt: Long? = null
 ) {
     fun cleanName() = cleanPrefix( this.name ?: "" )
+
+    val isDisliked: Boolean
+        get() = dislikedAt != null
 }
 
 

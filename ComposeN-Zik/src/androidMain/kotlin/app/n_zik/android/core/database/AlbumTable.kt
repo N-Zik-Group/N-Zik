@@ -236,6 +236,98 @@ interface AlbumTable {
     fun toggleBookmark( albumId: String ): Int
 
     /**
+     * Rotate like state for an album: neutral → bookmarked → disliked → neutral
+     * - neutral (NULL) → bookmarked (bookmarkedAt = timestamp) = "bookmark"
+     * - bookmarked (bookmarkedAt > 0) → disliked (dislikedAt = timestamp) = "dislike"
+     * - disliked (dislikedAt > 0) → neutral (NULL) = "remove dislike"
+     *
+     * @param albumId of album to be updated
+     * @return number of rows affected
+     */
+    @Query("""
+        UPDATE Album
+        SET
+            bookmarkedAt = CASE
+                WHEN bookmarkedAt IS NULL AND dislikedAt IS NULL THEN strftime('%s', 'now') * 1000
+                WHEN bookmarkedAt IS NOT NULL THEN NULL
+                ELSE bookmarkedAt
+            END,
+            dislikedAt = CASE
+                WHEN bookmarkedAt IS NOT NULL THEN strftime('%s', 'now') * 1000
+                WHEN dislikedAt IS NOT NULL THEN NULL
+                ELSE dislikedAt
+            END,
+            lastFetch = CASE
+                WHEN bookmarkedAt IS NOT NULL THEN NULL
+                ELSE lastFetch
+            END
+        WHERE id = :albumId
+    """)
+    fun rotateLikeState( albumId: String ): Int
+
+    /**
+     * @return like state of album: true = bookmarked, false = disliked, null = neutral
+     */
+    @Query("""
+        SELECT CASE
+            WHEN dislikedAt IS NOT NULL THEN 0
+            WHEN bookmarkedAt IS NOT NULL THEN 1
+            ELSE NULL
+        END
+        FROM Album
+        WHERE id = :albumId
+    """)
+    fun likeState( albumId: String ): Flow<Boolean?>
+
+    /**
+     * Toggle dislike state for an album.
+     *
+     * - If neutral (null) -> set to disliked (current timestamp)
+     * - If disliked -> set to neutral (null)
+     *
+     * @param albumId of album to be updated
+     * @return number of rows affected
+     */
+    @Query("""
+        UPDATE Album
+        SET dislikedAt =
+            CASE
+                WHEN dislikedAt IS NULL THEN strftime('%s', 'now') * 1000
+                ELSE NULL
+            END
+        WHERE id = :albumId
+    """)
+    fun toggleDislike( albumId: String ): Int
+
+    /**
+     * @return whether [Album] with id [albumId] is disliked
+     */
+    @Query("""
+        SELECT COALESCE(
+            (
+                SELECT 1
+                FROM Album
+                WHERE id = :albumId
+                AND dislikedAt IS NOT NULL
+            ),
+            0
+        )
+    """)
+    fun isDisliked( albumId: String ): Flow<Boolean>
+
+    /**
+     * @return all disliked albums
+     */
+    @Query("""
+        SELECT DISTINCT *
+        FROM Album
+        WHERE dislikedAt IS NOT NULL
+        ORDER BY dislikedAt DESC
+        LIMIT :limit
+    """)
+    fun allDisliked( limit: Int = Int.MAX_VALUE ): Flow<List<Album>>
+
+    /**
      * @param albumId identifier of [Album]
      * @param thumbnailUrl new url to thumbnail
      *
