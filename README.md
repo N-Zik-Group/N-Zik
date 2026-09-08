@@ -299,6 +299,8 @@ New:
 - [**Kreate**](https://github.com/knighthat/Kreate)
 - [**RiMusic**](https://github.com/fast4x/RiMusic)
 - [**ViMusic**](https://github.com/vfsfitvnm/ViMusic)
+- [**VIVImusic**](https://github.com/vivizzz007/vivi-music)
+- [**PixelPlayer**](https://github.com/PixelPlayerHQ/PixelPlayer)
 
 ### 🎨 Design & UI Contributions:
 
