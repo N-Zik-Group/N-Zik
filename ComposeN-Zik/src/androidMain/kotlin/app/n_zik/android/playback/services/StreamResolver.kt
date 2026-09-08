@@ -1102,6 +1102,18 @@ private fun DataSpec.processForDownload(
                     val contentLength = playbackData.format.contentLength ?: 1_000_000L
                     val streamUrl = "${playbackData.streamUrl}&range=0-$contentLength"
 
+                    // Upsert song/artist/album info in background (fire-and-forget, like Cubic Music)
+                    scope.launch(PlaybackDispatchers.STREAM_RESOLVER) {
+                        upsertSongInfo(videoId)
+                        upsertSongFormat(
+                            videoId,
+                            playbackData.format,
+                            playbackData.audioConfig?.perceptualLoudnessDb,
+                            playbackData.playbackTracking?.videostatsPlaybackUrl?.baseUrl,
+                            playbackData.audioConfig?.loudnessDb
+                        )
+                    }
+
                     // Cache for future use
                     streamUrlCache.put(
                         mediaId = videoId,

@@ -1,3 +1,9 @@
+fix(download): restore upsertSongInfo for album/artist metadata during downloads
+  - `StreamResolver.kt`: Reordered `upsertSongInfo` before `upsertSongFormat` in `processForDownload()` — `upsertSongFormat` was setting `justInserted = videoId` which caused `upsertSongInfo` to skip via guard
+  - `StreamResolver.kt`: Removed duplicate `upsertSongInfo` call after `upsertSongFormat`
+  - Root cause: `justInserted` guard in `upsertSongInfo` was preventing metadata fetch during downloads
+  - Result: Album songs, artist pages, and song metadata now properly saved during download
+
 fix(download): separate streaming and downloading resolvers + improve download speed
   - `StreamResolver.kt`: Created `createDownloadDataSourceFactory()` dedicated to downloads, separate from streaming resolver
   - `StreamResolver.kt`: Created `processForDownload()` that calls `InnerTubeXPlayer.playerResponseForPlayback()` directly — no session change retry, no fetchFormatIfMissing, no upsertSongInfo
