@@ -314,6 +314,7 @@ New:
 - [**KuGou**](https://www.kugou.com): Lyrics provider
 - [**LrcLib**](https://lrclib.net): Lyrics provider
 - [**Better Lyrics**](https://betterlyrics.org/): Lyrics provider
+- [**Innertube/YTB Lyrics**](https://github.com/MetrolistGroup/innertubex): Lyrics provider
 
 ### 🧠 Features & Tools:
 
