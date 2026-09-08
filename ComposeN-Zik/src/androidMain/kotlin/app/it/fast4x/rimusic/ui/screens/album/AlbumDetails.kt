@@ -116,6 +116,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.SongItem
+import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.components.album.AlbumModifier
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
@@ -125,6 +126,12 @@ import app.n_zik.android.components.tab.Locator
 import app.n_zik.android.components.tab.Radio
 import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.components.ui.screens.DynamicOrientationLayout
+import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.n_zik.android.download.utils.MyDownloadHelper
+import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.components.ui.screens.album.AlbumBookmark
 import app.n_zik.android.components.ui.screens.album.Translate
 import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
@@ -298,6 +305,23 @@ fun AlbumDetails(
                     LikeStateManager.getLikeStates(albumSongIds)
                 }.collectAsState(emptyMap(), Dispatchers.IO)
 
+                val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle()
+                val downloadedIds by remember {
+                    derivedStateOf {
+                        downloadsMapState.values
+                            .filter { it.state == Download.STATE_COMPLETED }
+                            .mapTo(HashSet()) { it.request.id }
+                    }
+                }
+                val downloadStatesMap by remember {
+                    derivedStateOf {
+                        items.associate { song ->
+                            song.id to if (song.id in downloadedIds) DownloadedStateMedia.DOWNLOADED else DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
+                        }
+                    }
+                }
+
+                CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
                 LazyColumn(
                     state = lazyListState,
                     userScrollEnabled = items.isNotEmpty(),
@@ -624,6 +648,7 @@ fun AlbumDetails(
 
 
             }
+                }
 
             val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
             if ( showFloatingIcon )

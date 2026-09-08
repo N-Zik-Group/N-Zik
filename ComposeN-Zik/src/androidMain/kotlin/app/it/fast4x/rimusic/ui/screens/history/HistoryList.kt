@@ -88,8 +88,15 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import app.it.fast4x.rimusic.enums.SortOrder
+import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.song.SongItemMenu
+import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.n_zik.android.download.utils.MyDownloadHelper
+import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.core.database.LikeStateManager
 import app.it.fast4x.rimusic.utils.historySortMenuOrderKey
 import androidx.compose.foundation.text.BasicText
@@ -285,6 +292,24 @@ fun HistoryList(
                 LikeStateManager.getLikeStates(allHistorySongIds)
             }.collectAsState(emptyMap(), Dispatchers.IO)
 
+            val allHistorySongs = remember(events) { events.values.flatten().map { it.song } }
+            val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle()
+            val downloadedIds by remember {
+                derivedStateOf {
+                    downloadsMapState.values
+                        .filter { it.state == Download.STATE_COMPLETED }
+                        .mapTo(HashSet()) { it.request.id }
+                }
+            }
+            val downloadStatesMap by remember {
+                derivedStateOf {
+                    allHistorySongs.associate { song ->
+                        song.id to if (song.id in downloadedIds) DownloadedStateMedia.DOWNLOADED else DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
+                    }
+                }
+            }
+
+            CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
             LazyColumn(
                 state = lazyListState,
                 contentPadding = LocalPlayerAwareWindowInsets.current
@@ -395,6 +420,7 @@ fun HistoryList(
                         }
                     }
                 }
+            }
             }
         }
     }

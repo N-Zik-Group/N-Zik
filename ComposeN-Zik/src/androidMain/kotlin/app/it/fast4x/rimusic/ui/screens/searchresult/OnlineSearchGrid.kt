@@ -19,6 +19,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,11 +43,14 @@ import app.it.fast4x.rimusic.utils.parseArtists
 import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.asSong
 import app.it.fast4x.rimusic.utils.enqueue
+import app.it.fast4x.rimusic.utils.downloadedStateMedia
 import app.it.fast4x.rimusic.utils.forcePlay
 import app.it.fast4x.rimusic.utils.isDownloadedSong
 import app.it.fast4x.rimusic.utils.manageDownload
 import app.it.fast4x.rimusic.utils.playVideo
 import app.n_zik.android.colorPalette
+import app.n_zik.android.LocalDownloadStatesMap
+import app.it.fast4x.rimusic.enums.DownloadedStateMedia
 import app.it.fast4x.rimusic.ui.items.ArtistItemPlaceholder
 import app.it.fast4x.rimusic.ui.items.SongItemPlaceholder
 import app.it.fast4x.rimusic.ui.items.VideoItem
@@ -340,6 +346,9 @@ fun OnlineSearchGrid(
         }
     }
 
+    val downloadStatesMap = remember { mutableStateMapOf<String, DownloadedStateMedia>() }
+
+    CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
     ItemsGridPage(
         filterContentType = filterContentType,
         tag = "searchResults/$query/${getTabName(tabIndex)}",
@@ -370,6 +379,7 @@ fun OnlineSearchGrid(
         },
         thumbnailSizeDp = thumbnailSizeDp
     )
+    }
 }
 
 private fun getTabName(tabIndex: Int): String = when (tabIndex) {

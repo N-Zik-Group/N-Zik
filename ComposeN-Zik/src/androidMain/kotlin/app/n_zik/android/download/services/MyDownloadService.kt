@@ -98,14 +98,23 @@ class MyDownloadService : DownloadService(
     ): Notification {
         val total = batchTotal
         val completed = batchCompleted
+        
+        // Calculate progress for active downloads
+        val activeDownload = downloads.firstOrNull { it.state == Download.STATE_DOWNLOADING } ?: downloads.firstOrNull()
+        val currentDownloadName = activeDownload?.request?.data?.let { Util.fromUtf8Bytes(it) }
+        
+        // Calculate overall progress from all active downloads
+        val totalBytes = downloads.sumOf { it.contentLength }.coerceAtLeast(1)
+        val downloadedBytes = downloads.sumOf { it.bytesDownloaded }
+        val downloadProgress = if (totalBytes > 0) (downloadedBytes * 100 / totalBytes).toInt() else 0
+        
         val message = if (total > 0) {
             getString(R.string.download_progress, completed, total)
+        } else if (downloads.isNotEmpty()) {
+            getString(R.string.download_in_progress, downloads.size) + " ($downloadProgress%)"
         } else {
             getString(R.string.download_in_progress, downloads.size)
         }
-
-        val activeDownload = downloads.firstOrNull { it.state == Download.STATE_DOWNLOADING } ?: downloads.firstOrNull()
-        val currentDownloadName = activeDownload?.request?.data?.let { Util.fromUtf8Bytes(it) }
 
         val isPaused = MyDownloadHelper.getDownloadManager(this).downloadsPaused
 
@@ -131,12 +140,17 @@ class MyDownloadService : DownloadService(
         val deleteAllPendingIntent = PendingIntent.getService(this, 2, deleteAllIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val deleteAllAction = NotificationCompat.Action(R.drawable.trash, getString(R.string.delete), deleteAllPendingIntent)
 
+        // Use batch progress if available, otherwise use download progress
+        val progressMax = if (total > 0) total else 100
+        val progressCurrent = if (total > 0) completed else downloadProgress
+        val indeterminate = downloads.isEmpty()
+
         return NotificationCompat.Builder(this, DOWNLOAD_NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.download_progress)
             .setContentTitle(getString(R.string.download))
             .setContentText(currentDownloadName ?: message)
             .setSubText(message)
-            .setProgress(total, completed, total == 0)
+            .setProgress(progressMax, progressCurrent, indeterminate)
             .setOngoing(!isPaused)
             .setShowWhen(false)
             .addAction(pauseResumeAction)

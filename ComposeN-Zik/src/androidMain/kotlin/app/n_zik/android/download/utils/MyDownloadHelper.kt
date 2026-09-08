@@ -23,6 +23,7 @@ import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.exoplayer.scheduler.Requirements
 import app.n_zik.android.utils.artistTextOrDb
 import app.n_zik.android.playback.services.createDataSourceFactory
+import app.n_zik.android.playback.services.createDownloadDataSourceFactory
 
 import app.it.fast4x.rimusic.enums.AudioQualityFormat
 import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
@@ -257,7 +258,7 @@ object MyDownloadHelper {
                 context,
                 getDatabaseProvider(context),
                 getDownloadCache(context),
-                createDataSourceFactory(),
+                createDownloadDataSourceFactory(), // Use dedicated download resolver
                 executor
             ).apply {
                 maxParallelDownloads = 3
@@ -453,9 +454,10 @@ object MyDownloadHelper {
                     Timber.tag("MyDownloadHelper").e("scheduleDownload exception ${it.stackTraceToString()}")
                     Toaster.e(R.string.error_playback_failed)
                 }
-                downloadSyncedLyrics( mediaItem.asSong )
-                ImageCacheFactory.preloadImage(mediaItem.mediaMetadata.artworkUri.toString())
             }
+            // Lyrics and image preload OUTSIDE semaphore - don't block download preparation
+            downloadSyncedLyrics( mediaItem.asSong )
+            ImageCacheFactory.preloadImage(mediaItem.mediaMetadata.artworkUri.toString())
         }
 
 
@@ -525,13 +527,26 @@ object MyDownloadHelper {
     fun handleDownload(context: Context, song: Song, removeIfDownloaded: Boolean = false ) {
         if( song.isLocal ) return
 
-        val isDownloaded =
-            downloads.value.values.any{ it.state == Download.STATE_COMPLETED && it.request.id == song.id }
+        val download = downloads.value.values.firstOrNull { it.request.id == song.id }
+        val isDownloaded = download?.state == Download.STATE_COMPLETED
+        val isDownloading = download?.state == Download.STATE_DOWNLOADING || 
+                           download?.state == Download.STATE_QUEUED ||
+                           download?.state == Download.STATE_RESTARTING
 
-        if( isDownloaded && removeIfDownloaded )
-            removeDownload( context, song.asMediaItem )
-        else if( !isDownloaded )
-            addDownload( context, song.asMediaItem )
+        when {
+            // If currently downloading/queued → stop and remove
+            isDownloading -> {
+                removeDownload( context, song.asMediaItem )
+            }
+            // If completed and removeIfDownloaded → remove
+            isDownloaded && removeIfDownloaded -> {
+                removeDownload( context, song.asMediaItem )
+            }
+            // If not downloaded and not downloading → start download
+            !isDownloaded && !isDownloading -> {
+                addDownload( context, song.asMediaItem )
+            }
+        }
     }
 
     /**

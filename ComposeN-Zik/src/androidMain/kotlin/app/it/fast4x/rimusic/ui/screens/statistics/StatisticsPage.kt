@@ -113,6 +113,13 @@ import app.n_zik.android.components.menu.playlist.LocalPlaylistItemMenu
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.artistThumbnailShape
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
+import app.n_zik.android.LocalDownloadStatesMap
+import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import app.n_zik.android.download.utils.MyDownloadHelper
+import androidx.media3.exoplayer.offline.Download
+import androidx.compose.runtime.derivedStateOf
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.CompositionLocalProvider
 
 
 @ExperimentalTextApi
@@ -211,7 +218,25 @@ fun StatisticsPage(
     val songs = songsWithLikeStates.first
     val likeStatesMap = songsWithLikeStates.second
 
-
+    // Download state cache
+    val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle()
+    val downloadedIds by remember {
+        derivedStateOf {
+            downloadsMapState.values
+                .filter { it.state == Download.STATE_COMPLETED }
+                .mapTo(HashSet()) { it.request.id }
+        }
+    }
+    val downloadStatesMap by remember {
+        derivedStateOf {
+            songs.associate { song ->
+                song.id to when {
+                    song.id in downloadedIds -> DownloadedStateMedia.DOWNLOADED
+                    else -> DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
+                }
+            }
+        }
+    }
 
     var statisticsCategory by rememberPreference(
         statisticsCategoryKey,
@@ -245,6 +270,7 @@ fun StatisticsPage(
             .fillMaxHeight()
             .fillMaxWidth()
     ) {
+        CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
             val lazyGridState = rememberLazyGridState()
             LazyVerticalGrid(
                 state = lazyGridState,
@@ -589,8 +615,8 @@ fun StatisticsPage(
                     }
                 }
             }
-
-        }
+        } // CompositionLocalProvider
+    }
 }
 
 

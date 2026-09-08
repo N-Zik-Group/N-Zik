@@ -71,6 +71,7 @@ import app.n_zik.android.components.menu.artist.OnlineArtistItemMenu
 import app.n_zik.android.components.menu.playlist.OnlinePlaylistItemMenu
 import app.it.fast4x.rimusic.ui.items.VideoItem
 import app.n_zik.android.components.SongItem
+import app.n_zik.android.LocalDownloadStatesMap
 import app.it.fast4x.rimusic.ui.components.SwipeablePlaylistItem
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.components.menu.song.SongItemMenu
@@ -92,6 +93,12 @@ import app.it.fast4x.rimusic.utils.forcePlay
 import app.it.fast4x.rimusic.utils.isDownloadedSong
 import app.it.fast4x.rimusic.utils.manageDownload
 import app.it.fast4x.rimusic.utils.playVideo
+import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.n_zik.android.download.utils.MyDownloadHelper
+import androidx.media3.exoplayer.offline.Download
 
 internal const val defaultBrowseId = "FEmusic_moods_and_genres_category"
 
@@ -148,6 +155,28 @@ fun MoodList(
                 LikeStateManager.getLikeStates(moodSongIds)
             }.collectAsState(emptyMap(), Dispatchers.IO)
 
+            val moodSongs = remember(moodResult) {
+                moodResult.items.flatMap { section ->
+                    section.items.filterIsInstance<Innertube.SongItem>()
+                }
+            }
+            val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle()
+            val downloadedIds by remember {
+                derivedStateOf {
+                    downloadsMapState.values
+                        .filter { it.state == Download.STATE_COMPLETED }
+                        .mapTo(HashSet()) { it.request.id }
+                }
+            }
+            val downloadStatesMap by remember {
+                derivedStateOf {
+                    moodSongs.associate { song ->
+                        (song.key ?: "") to if ((song.key ?: "") in downloadedIds) DownloadedStateMedia.DOWNLOADED else DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
+                    }
+                }
+            }
+
+            CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
             LazyColumn(
                 state = lazyListState,
                 //contentPadding = LocalPlayerAwareWindowInsets.current
@@ -342,6 +371,7 @@ fun MoodList(
                     Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
                 }
 
+            }
             }
         } ?: moodPage?.exceptionOrNull()?.let {
             BasicText(

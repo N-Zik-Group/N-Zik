@@ -78,6 +78,13 @@ import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.components.tab.Search
 import app.kreate.android.me.knighthat.utils.PathUtils
 import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.LocalDownloadStatesMap
+import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.media3.exoplayer.offline.Download
 import app.kreate.android.me.knighthat.utils.getLocalSongs
 
 @UnstableApi
@@ -189,11 +196,32 @@ fun OnDeviceSong(
         LikeStateManager.getLikeStates(songIds)
     }.collectAsState(emptyMap(), Dispatchers.IO)
 
+    // Download state cache
+    val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle()
+    val downloadedIds by remember {
+        derivedStateOf {
+            downloadsMapState.values
+                .filter { it.state == Download.STATE_COMPLETED }
+                .mapTo(HashSet()) { it.request.id }
+        }
+    }
+    val downloadStatesMap by remember {
+        derivedStateOf {
+            itemsOnDisplay.associate { song ->
+                song.id to when {
+                    song.id in downloadedIds -> DownloadedStateMedia.DOWNLOADED
+                    else -> DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
+                }
+            }
+        }
+    }
+
     AppPullToRefreshBox(
         isRefreshing = false,
         onRefresh = { refreshKey++ },
         modifier = Modifier.fillMaxSize()
     ) {
+    CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
     LazyColumn(
         state = lazyListState,
         userScrollEnabled = songsOnDevice.isNotEmpty(),
@@ -316,6 +344,7 @@ fun OnDeviceSong(
             }
         }
     }
+    } // CompositionLocalProvider
     }
 }
 

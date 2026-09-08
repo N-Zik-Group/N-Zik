@@ -159,10 +159,17 @@ import app.it.fast4x.rimusic.utils.ExternalUris
 import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
 import app.n_zik.android.components.SongItem
+import app.n_zik.android.LocalDownloadStatesMap
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.playback.utils.Shuffler
 import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
+import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.n_zik.android.download.utils.MyDownloadHelper
+import androidx.media3.exoplayer.offline.Download
 import timber.log.Timber
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.n_zik.android.thumbnailShape
@@ -406,6 +413,23 @@ fun PlaylistSongList(
                     }
                 }
             } else {
+                val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle()
+                val downloadedIds by remember {
+                    derivedStateOf {
+                        downloadsMapState.values
+                            .filter { it.state == Download.STATE_COMPLETED }
+                            .mapTo(HashSet()) { it.request.id }
+                    }
+                }
+                val downloadStatesMap by remember {
+                    derivedStateOf {
+                        playlistSongs.associate { song ->
+                            (song.key ?: "") to if ((song.key ?: "") in downloadedIds) DownloadedStateMedia.DOWNLOADED else DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
+                        }
+                    }
+                }
+
+                CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
                 LazyColumn(
                     state = lazyListState,
                     contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer),
@@ -1078,6 +1102,7 @@ fun PlaylistSongList(
                     item("loading") { SongItemPlaceholder() }
                 }
             }
+                }
 
             val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
             if( showFloatingIcon )

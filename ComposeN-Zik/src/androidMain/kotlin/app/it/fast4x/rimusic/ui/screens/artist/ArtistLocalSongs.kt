@@ -105,6 +105,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.text.BasicText
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import androidx.compose.material3.Text
+import app.n_zik.android.LocalDownloadStatesMap
+import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import app.n_zik.android.download.utils.MyDownloadHelper
+import androidx.compose.runtime.derivedStateOf
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.CompositionLocalProvider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalTextApi
@@ -144,6 +150,26 @@ fun ArtistLocalSongs(
         LikeStateManager.getLikeStates(songIds)
     }.collectAsState(emptyMap(), Dispatchers.IO)
 
+    // Download state cache
+    val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle()
+    val downloadedIds by remember {
+        derivedStateOf {
+            downloadsMapState.values
+                .filter { it.state == Download.STATE_COMPLETED }
+                .mapTo(HashSet()) { it.request.id }
+        }
+    }
+    val downloadStatesMap by remember {
+        derivedStateOf {
+            songs.orEmpty().associate { song ->
+                song.id to when {
+                    song.id in downloadedIds -> DownloadedStateMedia.DOWNLOADED
+                    else -> DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
+                }
+            }
+        }
+    }
+
     val totalDuration = songs?.sumOf { it.durationText?.split(":")?.let { parts ->
         if (parts.size == 2) parts[0].toInt() * 60 + parts[1].toInt() else 0
     } ?: 0 } ?: 0
@@ -155,6 +181,7 @@ fun ArtistLocalSongs(
         else "%dm %02ds".format(minutes, seconds)
     } else ""
 
+    CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
     LazyColumn(
         state = lazyListState,
         contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer),
@@ -568,6 +595,7 @@ fun ArtistLocalSongs(
 
         }
     }
+    } // CompositionLocalProvider
 }
 
 @Composable

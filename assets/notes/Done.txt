@@ -1,3 +1,19 @@
+fix(download): separate streaming and downloading resolvers + improve download speed
+  - `StreamResolver.kt`: Created `createDownloadDataSourceFactory()` dedicated to downloads, separate from streaming resolver
+  - `StreamResolver.kt`: Created `processForDownload()` that calls `InnerTubeXPlayer.playerResponseForPlayback()` directly — no session change retry, no fetchFormatIfMissing, no upsertSongInfo
+  - `MyDownloadHelper.kt`: Uses `createDownloadDataSourceFactory()` instead of `createDataSourceFactory()`
+  - Root cause: Streaming resolver's session change retries were canceling download requests, adding ~200ms+ per download
+  - Pattern: Same separation as Metrolist's `DownloadUtil.kt` and Cubic Music's `MyDownloadHelper.createDataSourceFactory()`
+
+fix(download): stop/delete download on re-click + fix notification progress
+  - `MyDownloadHelper.kt`: `handleDownload()` now checks `STATE_DOWNLOADING/QUEUED/RESTARTING` — stops and removes download if re-clicked
+  - `MyDownloadService.kt`: Notification now shows actual download progress percentage (`bytesDownloaded/contentLength`) instead of indeterminate spinner for individual downloads
+
+fix(session): restore ghost cookie fetch for session handling
+  - `Store.kt`: Restored `fetchIfNeeded()`, `getCookie()`, and `DEFAULT_COOKIE` for YouTube watch page cookie fetch
+  - `Store.kt`: Restored `ghostResponseHeaders`, `ghostResponseBody`, `cookie` fields
+  - `Innertube.kt`: Removed `YOUTUBE_COUNTRIES` locale validation — simplified `applyLocale()` to use device country directly
+
 perf(like): centralized like state cache — batch SQL queries instead of N per-item queries
   - `LikeStateManager.kt` (new): Centralized manager for song like states with `getLikeStates(songIds)` returning `Flow<Map<String, Boolean?>>` — 1 SQL query for N songs instead of N queries
   - `SongTable.kt`: Added `getLikeStatesForSongs(songIds)` query returning `Flow<List<SongLikeState>>` for batch loading

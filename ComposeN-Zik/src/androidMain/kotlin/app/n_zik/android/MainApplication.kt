@@ -170,6 +170,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 
             // Initialize Store session (like Metrolist's DataStore pattern)
             Store.initSession(this@MainApplication)
+            Store.prefetchCookie()
 
         } finally {
             StrictMode.setThreadPolicy(oldPolicy)

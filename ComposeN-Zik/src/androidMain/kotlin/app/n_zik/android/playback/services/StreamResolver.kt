@@ -1001,3 +1001,140 @@ fun MyDownloadHelper.createDataSourceFactory(): DataSource.Factory {
         .setUpstreamDataSourceFactory(resolvingDataSourceFactory)
         .setCacheWriteDataSinkFactory(null)
 }
+
+/**
+ * Dedicated download data source factory - separated from streaming resolver.
+ * This prevents session changes from affecting downloads (like Metrolist/Cubic).
+ */
+@UnstableApi
+fun MyDownloadHelper.createDownloadDataSourceFactory(): DataSource.Factory {
+    val upstreamFactory = appContext().okHttpDataSourceFactory
+
+    val resolvingDataSourceFactory = ResolvingDataSource.Factory(upstreamFactory) { dataSpec ->
+        val videoId = dataSpec.uri.toString().substringAfter("watch?v=")
+        val length = if (dataSpec.length >= 0) dataSpec.length else 1
+
+        // Cache-first: if download cache already has this range, skip resolution entirely
+        if (downloadCache.isCached(videoId, dataSpec.position, length)) {
+            return@Factory dataSpec
+        }
+
+        // Check StreamUrlCache first (populated by playback or previous resolve)
+        val cachedStream = streamUrlCache[videoId]
+        if (cachedStream != null) {
+            return@Factory dataSpec.withResolvedStream(cachedStream).buildUpon().setKey(videoId).build()
+        }
+
+        // Direct resolution - no session changes, no fetchFormatIfMissing, no upsertSongInfo
+        runCatching {
+            dataSpec.processForDownload(videoId, audioQualityFormat)
+                .buildUpon()
+                .setKey(videoId)
+                .build()
+        }.recoverCatching { firstError ->
+            // Retry once after invalidating URL cache (handles expired 403/410/416)
+            Timber.tag("StreamResolver").w(firstError, "Download resolve failed for $videoId, invalidating cache and retrying")
+            streamUrlCache.invalidate(videoId)
+            try { downloadCache.removeResource(videoId) } catch (_: Exception) {}
+            dataSpec.processForDownload(videoId, audioQualityFormat)
+                .buildUpon()
+                .setKey(videoId)
+                .build()
+        }.onFailure {
+            Timber.tag("StreamResolver").e(it, "Download resolve failed for $videoId after retry")
+        }.getOrThrow()
+    }
+
+    // DownloadManager owns the writable download cache
+    return resolvingDataSourceFactory
+}
+
+/**
+ * Simplified process function for downloads - NO session change retry.
+ * Calls InnerTubeXPlayer.playerResponseForPlayback() directly like Metrolist.
+ * This prevents session changes from affecting downloads.
+ */
+@UnstableApi
+private fun DataSpec.processForDownload(
+    videoId: String,
+    audioQualityFormat: AudioQualityFormat
+): DataSpec {
+    return try {
+        runBlocking(Dispatchers.IO) {
+            val parentalControlEnabled = appContext().preferences.getBoolean(parentalControlEnabledKey, false)
+            if (parentalControlEnabled) {
+                val song = Database.songTable.findByIdDirect(videoId)
+                if (song?.title?.startsWith(EXPLICIT_PREFIX, true) == true) {
+                    throw ExplicitContentException()
+                }
+            }
+
+            if (videoId.length != 11 && !videoId.startsWith(LOCAL_KEY_PREFIX)) {
+                throw UnmatchedSongException()
+            }
+
+            val cachedStream = streamUrlCache[videoId]
+            if (cachedStream != null) {
+                Timber.tag(TAG).d("Download StreamUrlCache hit for $videoId")
+                return@runBlocking withResolvedStream(cachedStream)
+            }
+
+            // Direct call to InnerTubeXPlayer - NO session change retry
+            val connectivityManager = appContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+            val audioQuality = when (audioQualityFormat) {
+                AudioQualityFormat.High -> InnerTubeXAudioQuality.HIGH
+                AudioQualityFormat.Low -> InnerTubeXAudioQuality.LOW
+                else -> if (appContext().isConnectionMetered()) InnerTubeXAudioQuality.LOW else InnerTubeXAudioQuality.AUTO
+            }
+
+            Timber.tag(TAG).d("Download resolving for $videoId (quality=$audioQuality)")
+            val result = InnerTubeXPlayer.playerResponseForPlayback(
+                videoId = videoId,
+                audioQuality = audioQuality,
+                connectivityManager = connectivityManager,
+                contentHints = ContentHints(),
+                allowBoundedRange = false,
+            )
+
+            result.fold(
+                onSuccess = { playbackData ->
+                    Timber.tag(TAG).d("Download success for $videoId (client=${playbackData.streamClient})")
+                    val contentLength = playbackData.format.contentLength ?: 1_000_000L
+                    val streamUrl = "${playbackData.streamUrl}&range=0-$contentLength"
+
+                    // Cache for future use
+                    streamUrlCache.put(
+                        mediaId = videoId,
+                        url = streamUrl,
+                        requestHeaders = playbackData.streamHeaders,
+                        clientName = playbackData.streamClient,
+                        expiresInSeconds = playbackData.streamExpiresInSeconds,
+                        requireBoundedRange = playbackData.requireBoundedRange,
+                        rangeChunkSizeBytes = playbackData.rangeChunkSizeBytes,
+                        useRangeChunks = playbackData.useRangeChunks,
+                    )
+
+                    withResolvedStream(
+                        CachedStreamUrl(
+                            url = streamUrl,
+                            requestHeaders = playbackData.streamHeaders,
+                            clientName = playbackData.streamClient,
+                            requireBoundedRange = playbackData.requireBoundedRange,
+                            rangeChunkSizeBytes = playbackData.rangeChunkSizeBytes,
+                            useRangeChunks = playbackData.useRangeChunks,
+                        )
+                    )
+                },
+                onFailure = { error ->
+                    Timber.tag(TAG).e(error, "Download failed for $videoId")
+                    throw error
+                }
+            )
+        }
+    } catch (e: CancellationException) {
+        if (e.cause is InterruptedException) {
+            throw IOException("Download stream resolution interrupted for $videoId", e)
+        }
+        throw e
+    }
+}

@@ -112,10 +112,17 @@ import app.it.fast4x.rimusic.utils.shouldBePlaying
 import app.it.fast4x.rimusic.utils.showButtonPlayerDiscoverKey
 import app.it.fast4x.rimusic.utils.windows
 import app.n_zik.android.components.SongItem
+import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.components.tab.Locator
 import app.n_zik.android.components.tab.Search
+import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.n_zik.android.download.utils.MyDownloadHelper
+import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.components.ui.screens.player.DeleteFromQueue
 import app.n_zik.android.components.ui.screens.player.Discover
 import app.n_zik.android.components.ui.screens.player.QueueArrow
@@ -338,6 +345,24 @@ fun Queue(
                 LikeStateManager.getLikeStates(queueSongIds)
             }.collectAsState(emptyMap(), Dispatchers.IO)
 
+            val queueSongs = remember(windowsOnDisplay) { windowsOnDisplay.map { it.mediaItem.asSong } }
+            val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle()
+            val downloadedIds by remember {
+                derivedStateOf {
+                    downloadsMapState.values
+                        .filter { it.state == Download.STATE_COMPLETED }
+                        .mapTo(HashSet()) { it.request.id }
+                }
+            }
+            val downloadStatesMap by remember {
+                derivedStateOf {
+                    queueSongs.associate { song ->
+                        song.id to if (song.id in downloadedIds) DownloadedStateMedia.DOWNLOADED else DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
+                    }
+                }
+            }
+
+            CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
             LazyColumn(
                 state = lazyListState,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -500,6 +525,7 @@ fun Queue(
                         }
                     }
                 }
+            }
             }
 
             // Search box

@@ -133,6 +133,11 @@ import app.n_zik.android.playback.utils.Shuffler
 import app.n_zik.android.components.menu.song.SongItemMenu
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.n_zik.android.thumbnailShape
+import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.LocalDownloadStatesMap
+import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 
 @ExperimentalTextApi
@@ -224,6 +229,27 @@ fun Podcast(
     val lazyListState = rememberLazyListState()
 
     LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
+        // Download state cache
+        val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle()
+        val downloadedIds by remember {
+            derivedStateOf {
+                downloadsMapState.values
+                    .filter { it.state == Download.STATE_COMPLETED }
+                    .mapTo(HashSet()) { it.request.id }
+            }
+        }
+        val downloadStatesMap by remember {
+            derivedStateOf {
+                podcastPage?.listEpisode.orEmpty().associate { episode ->
+                    val songId = episode.asMediaItem.mediaId
+                    songId to when {
+                        songId in downloadedIds -> DownloadedStateMedia.DOWNLOADED
+                        else -> DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
+                    }
+                }
+            }
+        }
+
         Box(
             modifier = Modifier
                 .background(colorPalette().background0)
@@ -235,6 +261,7 @@ fun Podcast(
             if (podcastPage == null) {
                 Loader()
             } else {
+                CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
                 LazyColumn(
                     state = lazyListState,
                     //contentPadding = LocalPlayerAwareWindowInsets.current
@@ -691,6 +718,7 @@ fun Podcast(
                     Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
                 }
             }
+            } // CompositionLocalProvider
 
             val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
             if( showFloatingIcon )

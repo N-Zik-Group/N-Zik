@@ -5,8 +5,16 @@ import app.it.fast4x.rimusic.utils.encryptedPreferences
 import app.it.fast4x.rimusic.utils.ytCookieKey
 import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
+import io.ktor.client.request.get
+import io.ktor.client.request.headers
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
 import it.fast4x.innertube.Innertube
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
@@ -14,10 +22,19 @@ import java.io.IOException
 
 /**
  * Centralized store for session tokens and cookies.
+ * Ghost cookie fetch + default cookie = NZik-specific improvements.
  */
 object Store {
 
+    private const val DEFAULT_COOKIE = "PREF=hl=en&tz=UTC; SOCS=CAI"
+    private const val YT_WATCH_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&bpctr=9999999999&has_verified=1"
+
+    private val fetchMutex = Mutex()
     private val visitorMutex = Mutex()
+
+    private var ghostResponseHeaders: Headers? = null
+    private var ghostResponseBody: String? = null
+    private var cookie: String? = null
 
     private var iosVisitorData: String? = null
 
@@ -104,9 +121,53 @@ object Store {
         Innertube.cookie = null
         Innertube.visitorData = null
         Innertube.dataSyncId = null
+        cookie = null
         iosVisitorData = null
+        ghostResponseHeaders = null
+        ghostResponseBody = null
 
         Timber.tag("Store").d("clearSession: all session data cleared")
+    }
+
+    /**
+     * Fetch cookies from YouTube watch page (ghost cookie fetch).
+     * This improves session handling by getting Set-Cookie headers.
+     */
+    private suspend fun fetchIfNeeded() {
+        if (ghostResponseBody != null && ghostResponseHeaders != null) {
+            Timber.tag("Store").d("fetchIfNeeded: already cached, skipping")
+            return
+        }
+
+        fetchMutex.withLock {
+            if (ghostResponseBody != null && ghostResponseHeaders != null) {
+                Timber.tag("Store").d("fetchIfNeeded: cached after lock, skipping")
+                return@withLock
+            }
+
+            Timber.tag("Store").d("fetchIfNeeded: fetching cookies from YouTube...")
+            runCatching {
+                Innertube.client.get(YT_WATCH_URL) {
+                    headers {
+                        append(HttpHeaders.Connection, "Close")
+                        append(HttpHeaders.Host, "www.youtube.com")
+                        append(HttpHeaders.Cookie, DEFAULT_COOKIE)
+                        append(HttpHeaders.UserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.3")
+                        append("Sec-Fetch-Mode", "navigate")
+                    }
+                }
+            }.fold(
+                onSuccess = {
+                    ghostResponseHeaders = it.headers
+                    ghostResponseBody = it.bodyAsText()
+                    val setCookieCount = it.headers.getAll(HttpHeaders.SetCookie)?.size ?: 0
+                    Timber.tag("Store").d("fetchIfNeeded: success, received $setCookieCount Set-Cookie headers")
+                },
+                onFailure = {
+                    Timber.tag("Store").e(it, "fetchIfNeeded: FAILED to fetch cookies from YouTube")
+                }
+            )
+        }
     }
 
     /**
@@ -149,5 +210,68 @@ object Store {
             Timber.tag("Store").e(e, "getIosVisitorData: FAILED - unexpected error, returning null")
             null
         }
+    }
+
+    /**
+     * Retrieves the network cookie, fetching it if necessary.
+     * Uses ghost cookie fetch + default cookie fallback.
+     * Safe to call from any thread — never blocks the caller for network I/O.
+     */
+    suspend fun getCookieSuspend(): String {
+        cookie?.let {
+            Timber.tag("Store").d("getCookieSuspend: returning cached cookie")
+            return it
+        }
+
+        Timber.tag("Store").d("getCookieSuspend: fetching fresh cookie...")
+        fetchIfNeeded()
+
+        return buildCookieFromHeaders()
+    }
+
+    /**
+     * Synchronous cookie getter — returns cached cookie or DEFAULT_COOKIE immediately.
+     * Never blocks for network I/O. Call [prefetchCookie] at app startup to warm the cache.
+     */
+    fun getCookie(): String {
+        cookie?.let { return it }
+
+        // If ghost headers are already available (prefetched), build cookie now
+        if (ghostResponseHeaders != null) {
+            return buildCookieFromHeaders()
+        }
+
+        Timber.tag("Store").w("getCookie: no cached cookie, returning default (call prefetchCookie at startup)")
+        return DEFAULT_COOKIE
+    }
+
+    /**
+     * Prefetch the ghost cookie in the background.
+     * Call this once at app init (e.g. in MainApplication) so getCookie() has data ready.
+     */
+    fun prefetchCookie() {
+        kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
+            runCatching { fetchIfNeeded() }
+                .onSuccess { buildCookieFromHeaders() }
+                .onFailure { Timber.tag("Store").w(it, "prefetchCookie: failed") }
+        }
+    }
+
+    private fun buildCookieFromHeaders(): String {
+        val headers = ghostResponseHeaders
+        if (headers != null) {
+            val setCookies = headers.getAll(HttpHeaders.SetCookie)
+                .orEmpty()
+                .joinToString("; ") { it.split(";").first() }
+            if (setCookies.isNotBlank()) {
+                val finalCookie = "$DEFAULT_COOKIE; $setCookies"
+                cookie = finalCookie
+                Timber.tag("Store").d("buildCookieFromHeaders: success, cookie length=${finalCookie.length}")
+                return finalCookie
+            }
+        }
+
+        Timber.tag("Store").w("buildCookieFromHeaders: no Set-Cookie headers, returning default")
+        return DEFAULT_COOKIE
     }
 }

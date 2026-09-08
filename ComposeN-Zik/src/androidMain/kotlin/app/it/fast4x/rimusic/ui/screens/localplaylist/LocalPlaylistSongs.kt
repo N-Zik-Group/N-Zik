@@ -152,6 +152,9 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.Preference
 import app.n_zik.android.download.utils.MyDownloadHelper
 import androidx.media3.exoplayer.offline.Download
+import app.n_zik.android.LocalDownloadStatesMap
+import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import androidx.compose.runtime.CompositionLocalProvider
 
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.saveImageToInternalStorage
@@ -1094,6 +1097,26 @@ fun LocalPlaylistSongs(
         LikeStateManager.getLikeStates(songIds)
     }.collectAsState(emptyMap(), Dispatchers.IO)
 
+    // Download state cache
+    val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle()
+    val downloadedIds by remember {
+        derivedStateOf {
+            downloadsMapState.values
+                .filter { it.state == Download.STATE_COMPLETED }
+                .mapTo(HashSet()) { it.request.id }
+        }
+    }
+    val downloadStatesMap by remember {
+        derivedStateOf {
+            itemsOnDisplay.associate { song ->
+                song.id to when {
+                    song.id in downloadedIds -> DownloadedStateMedia.DOWNLOADED
+                    else -> DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
+                }
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .background(colorPalette().background0)
@@ -1101,7 +1124,7 @@ fun LocalPlaylistSongs(
             .fillMaxHeight()
                 .fillMaxWidth()
     ) {
-        //LookaheadScope {
+        CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
         LazyColumn(
             state = lazyListState,
             //contentPadding = LocalPlayerAwareWindowInsets.current
@@ -1500,6 +1523,7 @@ fun LocalPlaylistSongs(
                 Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
             }
         }
+        } // CompositionLocalProvider
 
         FloatingActionsContainerWithScrollToTop(lazyListState = lazyListState)
 

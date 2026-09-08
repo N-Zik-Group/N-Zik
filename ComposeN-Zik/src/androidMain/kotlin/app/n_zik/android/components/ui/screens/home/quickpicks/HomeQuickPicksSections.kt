@@ -52,6 +52,7 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.it.fast4x.rimusic.enums.Countries
+import app.it.fast4x.rimusic.enums.DownloadedStateMedia
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.PlayEventsType
 import app.it.fast4x.rimusic.models.Song
@@ -77,6 +78,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.material3.Text
 import app.it.fast4x.rimusic.ui.items.AlbumItemPlaceholder
 import app.it.fast4x.rimusic.ui.components.ShimmerHost
+import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.LocalDownloadStatesMap
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.media3.exoplayer.offline.Download
 
 @Composable
 fun QuickPicksHeader(
@@ -222,12 +227,33 @@ fun QuickPicksGrid(
         LikeStateManager.getLikeStates(songIds)
     }.collectAsState(emptyMap(), Dispatchers.IO)
 
+    // Download state cache
+    val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle()
+    val downloadedIds by remember {
+        derivedStateOf {
+            downloadsMapState.values
+                .filter { it.state == Download.STATE_COMPLETED }
+                .mapTo(HashSet()) { it.request.id }
+        }
+    }
+    val downloadStatesMap by remember {
+        derivedStateOf {
+            recommendations.associate { song ->
+                song.id to when {
+                    song.id in downloadedIds -> DownloadedStateMedia.DOWNLOADED
+                    else -> DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
+                }
+            }
+        }
+    }
+
     LaunchedEffect(scrollToStartTrigger) {
         if (scrollToStartTrigger > 0) {
             quickPicksLazyGridState.animateScrollToItem(0)
         }
     }
 
+    CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
     LazyHorizontalGrid(
         state = quickPicksLazyGridState,
         rows = GridCells.Fixed(if (recommendations.isNotEmpty()) 3 else 1),
@@ -265,6 +291,7 @@ fun QuickPicksGrid(
             )
         }
     }
+    } // CompositionLocalProvider
 }
 
 
