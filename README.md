@@ -305,10 +305,8 @@ New:
 
 ### 🎨 Design & UI Contributions:
 
-- Current banner and logo [OrangeZXZ](https://github.com/OrangeZXZ), [NEVARLeVrai](https://github.com/NEVARLeVrai)
-- RiMusic previous logo and many current icons: [jaimtres](https://github.com/jaimtres)
-- Player design: [aneesh1122](https://github.com/aneesh1122)
-- App logo: [MedieroAF](https://github.com/MedieroAF)
+- Current banner and logo [**OrangeZXZ**](https://github.com/OrangeZXZ), [**NEVARLeVrai**](https://github.com/NEVARLeVrai)
+- Player design: [**aneesh1122**](https://github.com/aneesh1122), [**OrangeZXZ**](https://github.com/OrangeZXZ), [**NEVARLeVrai**](https://github.com/NEVARLeVrai)
 - Icons: [**Ionicons**](https://github.com/ionic-team/ionicons), [**FlatIcon.com**](https://www.flaticon.com)
 
 ### 🎵 Lyrics & Media:
