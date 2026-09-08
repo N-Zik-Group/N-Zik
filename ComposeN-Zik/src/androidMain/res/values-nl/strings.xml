@@ -1414,6 +1414,9 @@
   <string name="invalid_version_string">Ongeldige versie string: %s</string>
   <string name="on">op</string>
   <string name="off">UIT</string>
+  <string name="exclude_disliked_songs">Exclude disliked songs</string>
+  <string name="exclude_disliked_artists">Exclude disliked artists</string>
+  <string name="exclude_disliked_albums">Exclude disliked albums</string>
   <string name="menu">Menu</string>
   <string name="whats_new_in">Wat is er nieuw in %s</string>
   <string name="downloading_actual_version">Herstarten: %1$s (%2$s)</string>

@@ -1414,6 +1414,9 @@
   <string name="invalid_version_string">Ugyldig versjonstring: %s</string>
   <string name="on">På</string>
   <string name="off">Av</string>
+  <string name="exclude_disliked_songs">Exclude disliked songs</string>
+  <string name="exclude_disliked_artists">Exclude disliked artists</string>
+  <string name="exclude_disliked_albums">Exclude disliked albums</string>
   <string name="menu">Meny</string>
   <string name="whats_new_in">Hva er nytt i %s</string>
   <string name="downloading_actual_version">Reinstallerer: %1$s (%2$s)</string>

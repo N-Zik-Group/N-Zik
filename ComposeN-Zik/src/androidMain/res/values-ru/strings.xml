@@ -1414,6 +1414,9 @@
   <string name="invalid_version_string">Недопустимая строка версии: %s</string>
   <string name="on">На</string>
   <string name="off">Выкл</string>
+  <string name="exclude_disliked_songs">Exclude disliked songs</string>
+  <string name="exclude_disliked_artists">Exclude disliked artists</string>
+  <string name="exclude_disliked_albums">Exclude disliked albums</string>
   <string name="menu">Меню</string>
   <string name="whats_new_in">Что нового в %s</string>
   <string name="downloading_actual_version">Переустановка: %1$s (%2$s)</string>

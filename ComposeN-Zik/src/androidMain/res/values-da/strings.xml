@@ -1414,6 +1414,9 @@
   <string name="invalid_version_string">Ugyldig versionsstreng: %s</string>
   <string name="on">Til</string>
   <string name="off">Fra</string>
+  <string name="exclude_disliked_songs">Exclude disliked songs</string>
+  <string name="exclude_disliked_artists">Exclude disliked artists</string>
+  <string name="exclude_disliked_albums">Exclude disliked albums</string>
   <string name="menu">Menu</string>
   <string name="whats_new_in">Hvad er nyt i %s</string>
   <string name="downloading_actual_version">Geninstallation: %1$s (%2$s)</string>

@@ -1414,6 +1414,9 @@
   <string name="invalid_version_string">無効なバージョン文字列: %s</string>
   <string name="on">オン</string>
   <string name="off">オフ</string>
+  <string name="exclude_disliked_songs">Exclude disliked songs</string>
+  <string name="exclude_disliked_artists">Exclude disliked artists</string>
+  <string name="exclude_disliked_albums">Exclude disliked albums</string>
   <string name="menu">メニュー</string>
   <string name="whats_new_in">%s の新機能</string>
   <string name="downloading_actual_version">再インストール: %1$s (%2$s)</string>

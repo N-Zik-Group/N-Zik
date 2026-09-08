@@ -1414,6 +1414,9 @@
   <string name="invalid_version_string">Geçersiz sürüm dizesi: %s</string>
   <string name="on">Açık</string>
   <string name="off">Kapalı</string>
+  <string name="exclude_disliked_songs">Exclude disliked songs</string>
+  <string name="exclude_disliked_artists">Exclude disliked artists</string>
+  <string name="exclude_disliked_albums">Exclude disliked albums</string>
   <string name="menu">Menü</string>
   <string name="whats_new_in">%s sürümündeki yenilikler</string>
   <string name="downloading_actual_version">Yeniden yükleme: %1$s (%2$s)</string>
