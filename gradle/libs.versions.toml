@@ -83,7 +83,7 @@ composeReorderable = "3.1.0"
 freedroidwarn = "V1.13"
 work = "2.11.2"
 carapp = "1.4.0"
-innertubex = "v0.5.2"
+innertubex = "v0.6.0"
 
 [libraries]
 # Kotlinx
