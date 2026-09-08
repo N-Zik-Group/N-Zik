@@ -686,7 +686,8 @@ private suspend fun resolveStreamUriViaInnerTubeX(
                         )
                     }
 
-                    val streamUrl = playbackData.streamUrl
+                    val contentLength = playbackData.format.contentLength ?: 1_000_000L
+                    val streamUrl = "${playbackData.streamUrl}&range=0-$contentLength"
 
                     // Store in StreamUrlCache with headers from InnerTubeX
                     streamUrlCache.put(
