@@ -322,6 +322,41 @@ New:
 - [**HypnoticCanvas**](https://mikepenz.github.io/HypnoticCanvas/): Shader effects for Compose.
 - [**Metrolist**](https://github.com/metrolistgroup/metrolist): Has helped a lot with bug fixes and feature expansion!
 - [**ZemerTeam/zemer-cipher**](https://github.com/ZemerTeam/zemer-cipher): Cipher configs
+- [**Invidious**](https://github.com/iv-org/invidious): Alternative YouTube frontend used as a streaming source.
+
+### 📚 Libraries & Dependencies:
+
+- [**InnertubeX**](https://github.com/MetrolistGroup/innertubex): Innertube library for streaming and YouTube synchronization.
+- [**MetrolistExtractor**](https://github.com/MetrolistGroup/MetrolistExtractor): Fast and reliable data extraction library.
+- [**Media3 / ExoPlayer**](https://github.com/androidx/media): The core media player powering the audio experience.
+- [**FFmpegKit Audio**](https://github.com/maxrave-dev/ffmpeg-kit-16KB): Powerful audio processing, conversion, and metadata export.
+- [**TeamNewPipe / nanojson**](https://github.com/TeamNewPipe/nanojson): Ultra-lightweight JSON parser by the NewPipe team.
+- [**MonetCompat**](https://github.com/KieronQuinn/MonetCompat): Material You dynamic colors on older Android versions.
+- [**Coil**](https://github.com/coil-kt/coil): Image loading library for covers, artist images, and more.
+- [**Ktor**](https://github.com/ktorio/ktor): HTTP client framework for network requests.
+- [**OkHttp**](https://github.com/square/okhttp): HTTP & HTTP/2 client.
+- [**Jetpack Glance**](https://developer.android.com/develop/ui/compose/glance): Home screen widgets framework.
+- [**Android YouTube Player**](https://github.com/PierfrancescoSoffritti/android-youtube-player): Lightweight YouTube player integration.
+- [**Koin**](https://github.com/InsertKoinIO/koin): Pragmatic dependency injection framework.
+- [**Toasty**](https://github.com/GrenderG/Toasty): Custom styled Android toast messages.
+- [**Timber**](https://github.com/JakeWharton/timber): Extensible logging utility.
+- [**KSoup**](https://github.com/MohamedRejeb/Ksoup): Multiplatform HTML parser.
+- [**compose-shimmer**](https://github.com/valentinilk/compose-shimmer): Shimmer effect for loading states in Compose.
+- [**compose-reorderable**](https://github.com/Calvin-LL/Reorderable): Drag & drop reorderable lists in Compose.
+- [**kotlin-csv**](https://github.com/jsoizo/kotlin-csv): CSV reading/writing for playlist import/export.
+- [**Brotli**](https://github.com/google/brotli): Brotli compression for HTTP responses.
+- [**FreeDroidWarn**](https://github.com/woheller69/FreeDroidWarn): Customizable warning dialogs.
+- [**Jetpack Palette**](https://developer.android.com/develop/ui/views/graphics/palette-colors): Color extraction from album artwork.
+- [**Jetpack Navigation Compose**](https://developer.android.com/develop/ui/compose/navigation): Type-safe navigation for Compose.
+- [**Room**](https://developer.android.com/training/data-storage/room): Local database with SQLite abstraction.
+- [**mediaplayer-kmp**](https://github.com/KhubaibKhan4/MediaPlayer-KMP): Multiplatform media player.
+- [**Apache Commons Math3**](https://commons.apache.org/proper/commons-math/): Math library used for audio visualization algorithms.
+
+### 🌍 Platform & Ecosystem:
+
+- [**Kotlin**](https://kotlinlang.org/) / [**JetBrains Compose Multiplatform**](https://www.jetbrains.com/compose-multiplatform/): Language and UI framework.
+- [**Crowdin**](https://crowdin.com/): Community translation platform powering 30+ languages.
+- [**Android Open Source Project (AOSP)**](https://source.android.com/): The foundation of it all.
 
 # 👀 Status
 
