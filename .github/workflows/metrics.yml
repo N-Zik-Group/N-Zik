@@ -69,7 +69,7 @@ jobs:
 
           # Save a new data point ONLY if the number changed since last time
           if [ "$LAST_SAVED" != "$TOTAL_DOWNLOADS" ]; then
-            TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M")
+            TIMESTAMP=$(date +"%Y-%m-%d %H:%M")
             jq --arg time "$TIMESTAMP" --argjson dl "$TOTAL_DOWNLOADS" '. += [{"time": $time, "downloads": $dl}]' assets/stats/history.json > tmp.json && mv tmp.json assets/stats/history.json
             echo "UPDATE_NEEDED=true" >> $GITHUB_ENV
           else
