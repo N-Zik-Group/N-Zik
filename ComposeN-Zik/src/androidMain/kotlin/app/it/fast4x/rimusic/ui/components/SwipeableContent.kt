@@ -1,4 +1,4 @@
-﻿@file:kotlin.OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@file:kotlin.OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.it.fast4x.rimusic.ui.components
 
 import app.n_zik.android.core.database.*
@@ -28,6 +28,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,6 +76,9 @@ import app.kreate.android.me.knighthat.sync.YouTubeSync
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.R
 import androidx.compose.ui.platform.LocalDensity
+import app.it.fast4x.rimusic.enums.DislikeMode
+import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
+import app.it.fast4x.rimusic.utils.preferences
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -162,13 +166,22 @@ fun SwipeableQueueItem(
     modifier: Modifier = Modifier,
     backgroundColor: Color = colorPalette().background0,
     skipLikeQuery: Boolean = false,
+    likeState: Boolean? = null,
+    downloadStateParam: Int? = null,
+    downloadedStateMediaParam: DownloadedStateMedia? = null,
+    swipeLeftActionParam: QueueSwipeAction? = null,
+    swipeRightActionParam: QueueSwipeAction? = null,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val showDisliked = remember {
+        context.preferences.getString(excludeDislikedSongsKey, DislikeMode.Enabled.name)
+            ?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() }?.isEnabled ?: true
+    }
 
-    val downloadState = getDownloadState(mediaItem.mediaId)
-    var downloadedStateMedia by remember { mutableStateOf(DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED) }
-    downloadedStateMedia = if (!mediaItem.isLocal) downloadedStateMedia(mediaItem.mediaId)
+    val downloadState = downloadStateParam ?: getDownloadState(mediaItem.mediaId)
+    val downloadedStateMedia = downloadedStateMediaParam ?: if (!mediaItem.isLocal) downloadedStateMedia(mediaItem.mediaId)
     else DownloadedStateMedia.DOWNLOADED
 
     val onDownloadButtonClick: () -> Unit = {
@@ -195,24 +208,30 @@ fun SwipeableQueueItem(
         }
     }
 
-    val songLikeState by remember {
-        if (skipLikeQuery) {
-            kotlinx.coroutines.flow.flowOf(null)
-        } else {
-            Database.songTable
+    val songLikeState by if (likeState != null) {
+        remember(likeState) { mutableStateOf(likeState) }
+    } else {
+        remember {
+            if (skipLikeQuery) {
+                flowOf(null)
+            } else {
+                Database.songTable
                     .likeState( mediaItem.mediaId )
                     .distinctUntilChanged()
-        }
-    }.collectAsState( null, Dispatchers.IO )
+            }
+        }.collectAsState( null, Dispatchers.IO )
+    }
 
     val onFavourite: () -> Unit = {
-        CoroutineScope( Dispatchers.IO ).launch {
+        coroutineScope.launch(Dispatchers.IO) {
             YouTubeSync.rotateSongLikeState( context, mediaItem )
         }
     }
 
-    val queueSwipeLeftAction by rememberPreference(queueSwipeLeftActionKey, QueueSwipeAction.RemoveFromQueue)
-    val queueSwipeRightAction by rememberPreference(queueSwipeRightActionKey, QueueSwipeAction.PlayNext)
+    val queueSwipeLeftAction = swipeLeftActionParam
+        ?: rememberPreference(queueSwipeLeftActionKey, QueueSwipeAction.RemoveFromQueue).value
+    val queueSwipeRightAction = swipeRightActionParam
+        ?: rememberPreference(queueSwipeRightActionKey, QueueSwipeAction.PlayNext).value
 
     fun getActionCallback(actionName: QueueSwipeAction): () -> Unit {
         return when (actionName) {
@@ -231,12 +250,14 @@ fun SwipeableQueueItem(
         swipeToLeftIcon = queueSwipeLeftAction.getStateIcon(
             songLikeState,
             downloadState,
-            downloadedStateMedia
+            downloadedStateMedia,
+            showDisliked
         ),
         swipeToRightIcon = queueSwipeRightAction.getStateIcon(
             songLikeState,
             downloadState,
-            downloadedStateMedia
+            downloadedStateMedia,
+            showDisliked
         ),
         onSwipeToLeft = swipeLeftCallback,
         onSwipeToRight = swipeRighCallback,
@@ -255,33 +276,80 @@ fun SwipeablePlaylistItem(
     onPlayNext: (() -> Unit) = {},
     onDownload: (() -> Unit) = {},
     onEnqueue: (() -> Unit) = {},
+    likeState: Boolean? = null,
+    downloadStateParam: Int? = null,
+    downloadedStateMediaParam: DownloadedStateMedia? = null,
+    swipeLeftActionParam: PlaylistSwipeAction? = null,
+    swipeRightActionParam: PlaylistSwipeAction? = null,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
-    val downloadState = getDownloadState(mediaItem.mediaId)
-    var downloadedStateMedia by remember { mutableStateOf(DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED) }
-    downloadedStateMedia = if (!mediaItem.isLocal) downloadedStateMedia(mediaItem.mediaId)
+    val coroutineScope = rememberCoroutineScope()
+    val showDisliked = remember {
+        context.preferences.getString(excludeDislikedSongsKey, DislikeMode.Enabled.name)
+            ?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() }?.isEnabled ?: true
+    }
+
+    val downloadState = downloadStateParam ?: getDownloadState(mediaItem.mediaId)
+    val downloadedStateMedia = downloadedStateMediaParam ?: if (!mediaItem.isLocal) downloadedStateMedia(mediaItem.mediaId)
     else DownloadedStateMedia.DOWNLOADED
 
-    val songLikeState by remember {
-        Database.songTable
-            .likeState( mediaItem.mediaId )
-            .distinctUntilChanged()
-    }.collectAsState( null, Dispatchers.IO )
+    val songLikeState by if (likeState != null) {
+        remember(likeState) { mutableStateOf(likeState) }
+    } else {
+        remember {
+            Database.songTable
+                .likeState( mediaItem.mediaId )
+                .distinctUntilChanged()
+        }.collectAsState( null, Dispatchers.IO )
+    }
 
     val onFavourite: () -> Unit = {
-        CoroutineScope( Dispatchers.IO ).launch {
+        coroutineScope.launch(Dispatchers.IO) {
             YouTubeSync.rotateSongLikeState( context, mediaItem )
         }
     }
 
-    val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
-    val playlistSwipeRightAction by rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
+    val playlistSwipeLeftAction = swipeLeftActionParam
+        ?: rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite).value
+    val playlistSwipeRightAction = swipeRightActionParam
+        ?: rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext).value
+
+    val onDownloadToggle: () -> Unit = {
+        if (
+            (downloadState == Download.STATE_DOWNLOADING
+            || downloadState == Download.STATE_QUEUED
+            || downloadState == Download.STATE_RESTARTING)
+            && downloadedStateMedia == DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
+        ) {
+            // Cancel download in progress
+            DownloadService.sendRemoveDownload(
+                context,
+                MyDownloadService::class.java,
+                mediaItem.mediaId,
+                false
+            )
+        } else if (
+            downloadedStateMedia == DownloadedStateMedia.DOWNLOADED
+            || downloadedStateMedia == DownloadedStateMedia.CACHED_AND_DOWNLOADED
+        ) {
+            // Delete downloaded file
+            DownloadService.sendRemoveDownload(
+                context,
+                MyDownloadService::class.java,
+                mediaItem.mediaId,
+                false
+            )
+        } else {
+            // Start download
+            onDownload()
+        }
+    }
 
     fun getActionCallback(actionName: PlaylistSwipeAction): () -> Unit {
         return when (actionName) {
             PlaylistSwipeAction.PlayNext -> onPlayNext
-            PlaylistSwipeAction.Download -> onDownload
+            PlaylistSwipeAction.Download -> onDownloadToggle
             PlaylistSwipeAction.Favourite -> onFavourite
             PlaylistSwipeAction.Enqueue -> onEnqueue
             else -> ({})
@@ -294,12 +362,14 @@ fun SwipeablePlaylistItem(
         swipeToLeftIcon =  playlistSwipeLeftAction.getStateIcon(
             songLikeState,
             downloadState,
-            downloadedStateMedia
+            downloadedStateMedia,
+            showDisliked
         ),
         swipeToRightIcon =  playlistSwipeRightAction.getStateIcon(
             songLikeState,
             downloadState,
-            downloadedStateMedia
+            downloadedStateMedia,
+            showDisliked
         ),
         onSwipeToLeft = swipeLeftCallback,
         onSwipeToRight = swipeRighCallback

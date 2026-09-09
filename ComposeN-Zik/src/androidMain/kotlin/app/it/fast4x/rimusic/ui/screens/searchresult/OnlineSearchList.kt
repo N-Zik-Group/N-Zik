@@ -65,6 +65,12 @@ import app.it.fast4x.rimusic.utils.playVideo
 import app.n_zik.android.colorPalette
 import app.n_zik.android.LocalDownloadStatesMap
 import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import app.n_zik.android.download.utils.MyDownloadHelper
+import androidx.media3.exoplayer.offline.Download
+import app.it.fast4x.rimusic.enums.PlaylistSwipeAction
+import app.it.fast4x.rimusic.utils.playlistSwipeLeftActionKey
+import app.it.fast4x.rimusic.utils.playlistSwipeRightActionKey
+import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.ui.items.ArtistItemPlaceholder
 import app.it.fast4x.rimusic.ui.items.SongItemPlaceholder
 import app.it.fast4x.rimusic.ui.items.VideoItem
@@ -153,6 +159,19 @@ fun OnlineSearchList(
         LikeStateManager.getLikeStates(videoKeys)
     }.collectAsStateWithLifecycle(emptyMap())
 
+    // Hoisted download states
+    val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle()
+    val downloadStatesMap = remember(downloadsMapState) {
+        downloadsMapState.mapValues { (_, download) ->
+            if (download.state == Download.STATE_COMPLETED) DownloadedStateMedia.DOWNLOADED
+            else DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
+        }
+    }
+
+    // Hoisted swipe action preferences
+    val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
+    val playlistSwipeRightAction by rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
+
     val itemContent: @Composable LazyItemScope.(Innertube.Item) -> Unit = { item ->
         when (item) {
             is Innertube.SongItem -> {
@@ -167,7 +186,11 @@ fun OnlineSearchList(
                         }
                         manageDownload(context, item.asMediaItem, isDownloaded)
                     },
-                    onEnqueue = { binder?.player?.enqueue(item.asMediaItem) }
+                    onEnqueue = { binder?.player?.enqueue(item.asMediaItem) },
+                    downloadStateParam = downloadsMapState[item.asMediaItem.mediaId]?.state ?: Download.STATE_STOPPED,
+                    downloadedStateMediaParam = downloadStatesMap[item.asMediaItem.mediaId] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
+                    swipeLeftActionParam = playlistSwipeLeftAction,
+                    swipeRightActionParam = playlistSwipeRightAction
                 ) {
                     SongItem(
                         song = item.asSong,
@@ -185,7 +208,11 @@ fun OnlineSearchList(
                     mediaItem = item.asMediaItem,
                     onPlayNext = { binder?.player?.addNext(item.asMediaItem) },
                     onDownload = { Toaster.w(R.string.downloading_videos_not_supported) },
-                    onEnqueue = { binder?.player?.enqueue(item.asMediaItem) }
+                    onEnqueue = { binder?.player?.enqueue(item.asMediaItem) },
+                    downloadStateParam = downloadsMapState[item.asMediaItem.mediaId]?.state ?: Download.STATE_STOPPED,
+                    downloadedStateMediaParam = downloadStatesMap[item.asMediaItem.mediaId] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
+                    swipeLeftActionParam = playlistSwipeLeftAction,
+                    swipeRightActionParam = playlistSwipeRightAction
                 ) {
                     VideoItem(
                         video = item,
@@ -414,8 +441,6 @@ fun OnlineSearchList(
             }
         }
     }
-
-    val downloadStatesMap = remember { mutableStateMapOf<String, DownloadedStateMedia>() }
 
     CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
     ItemsPage(

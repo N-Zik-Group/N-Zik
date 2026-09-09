@@ -118,6 +118,9 @@ import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.components.tab.Locator
 import app.n_zik.android.components.tab.Search
 import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import app.it.fast4x.rimusic.enums.QueueSwipeAction
+import app.it.fast4x.rimusic.utils.queueSwipeLeftActionKey
+import app.it.fast4x.rimusic.utils.queueSwipeRightActionKey
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -346,6 +349,11 @@ fun Queue(
             }.collectAsState(emptyMap(), Dispatchers.IO)
 
             val queueSongs = remember(windowsOnDisplay) { windowsOnDisplay.map { it.mediaItem.asSong } }
+
+            // Hoisted swipe action preferences
+            val queueSwipeLeftAction by rememberPreference(queueSwipeLeftActionKey, QueueSwipeAction.RemoveFromQueue)
+            val queueSwipeRightAction by rememberPreference(queueSwipeRightActionKey, QueueSwipeAction.PlayNext)
+
             val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle()
             val downloadedIds by remember {
                 derivedStateOf {
@@ -425,6 +433,10 @@ fun Queue(
                                 mediaItem = mediaItem,
                                 backgroundColor = itemBackground,
                                 skipLikeQuery = true,
+                                downloadStateParam = downloadsMapState[song.id]?.state ?: Download.STATE_STOPPED,
+                                downloadedStateMediaParam = downloadStatesMap[song.id] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
+                                swipeLeftActionParam = queueSwipeLeftAction,
+                                swipeRightActionParam = queueSwipeRightAction,
                                 onPlayNext = {
                                     val currentIndex = binder.player.currentMediaItemIndex
                                     val targetIndex = currentIndex + 1

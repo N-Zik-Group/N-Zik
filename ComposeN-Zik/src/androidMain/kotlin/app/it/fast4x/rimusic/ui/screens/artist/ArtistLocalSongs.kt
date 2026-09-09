@@ -107,6 +107,9 @@ import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import androidx.compose.material3.Text
 import app.n_zik.android.LocalDownloadStatesMap
 import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import app.it.fast4x.rimusic.enums.PlaylistSwipeAction
+import app.it.fast4x.rimusic.utils.playlistSwipeLeftActionKey
+import app.it.fast4x.rimusic.utils.playlistSwipeRightActionKey
 import app.n_zik.android.download.utils.MyDownloadHelper
 import androidx.compose.runtime.derivedStateOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -180,6 +183,10 @@ fun ArtistLocalSongs(
         if (hours > 0) "%dh %02dm %02ds".format(hours, minutes, seconds)
         else "%dm %02ds".format(minutes, seconds)
     } else ""
+
+    // Hoisted swipe action preferences
+    val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
+    val playlistSwipeRightAction by rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
 
     CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
     LazyColumn(
@@ -330,7 +337,11 @@ fun ArtistLocalSongs(
                         },
                         onEnqueue = {
                             binder?.player?.enqueue(song.asMediaItem)
-                        }
+                        },
+                        downloadStateParam = downloadsMapState[song.id]?.state ?: Download.STATE_STOPPED,
+                        downloadedStateMediaParam = downloadStatesMap[song.id] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
+                        swipeLeftActionParam = playlistSwipeLeftAction,
+                        swipeRightActionParam = playlistSwipeRightAction
                     ) {
                         SongItem(
                             song = song,
@@ -401,6 +412,30 @@ fun ArtistLocalSongs(
     var showConfirmDownloadAllDialog by remember {
         mutableStateOf(false)
     }
+
+    // Hoisted download states
+    val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle()
+    val downloadedIds by remember {
+        derivedStateOf {
+            downloadsMapState.values
+                .filter { it.state == Download.STATE_COMPLETED }
+                .mapTo(HashSet()) { it.request.id }
+        }
+    }
+    val downloadStatesMap by remember {
+        derivedStateOf {
+            songs.orEmpty().associate { song ->
+                song.id to when {
+                    song.id in downloadedIds -> DownloadedStateMedia.DOWNLOADED
+                    else -> DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
+                }
+            }
+        }
+    }
+
+    // Hoisted swipe action preferences
+    val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
+    val playlistSwipeRightAction by rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
 
     LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
         Box(
@@ -538,7 +573,6 @@ fun ArtistLocalSongs(
                         key = { _, song -> song.id }
                     ) { index, song ->
 
-                        downloadState = getDownloadState(song.asMediaItem.mediaId)
                         val isDownloaded = isDownloadedSong(song.asMediaItem.mediaId)
                         Box(
                             Modifier
@@ -552,7 +586,11 @@ fun ArtistLocalSongs(
                                 },
                                 onEnqueue = {
                                     binder?.player?.enqueue(song.asMediaItem)
-                                }
+                                },
+                                downloadStateParam = downloadsMapState[song.id]?.state ?: Download.STATE_STOPPED,
+                                downloadedStateMediaParam = downloadStatesMap[song.id] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
+                                swipeLeftActionParam = playlistSwipeLeftAction,
+                                swipeRightActionParam = playlistSwipeRightAction
                             ) {
                                 SongItem(
                                     song = song,

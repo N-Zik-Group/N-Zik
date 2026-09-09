@@ -525,3 +525,13 @@ fix(settings): use bookmark_slash icon for dislike tabs
 fix(history): default sort order descending
   - `Preference.kt`: Changed `HISTORY_SORT_ORDER` default from `Ascending` to `Descending` — shows newest events first
 
+perf(swipe): optimize SwipeableContent — eliminate N+1 DB queries and SharedPrefs listeners per item
+  - `SwipeableContent.kt`: Added optional pre-computed params to `SwipeablePlaylistItem` and `SwipeableQueueItem` — `likeState`, `downloadStateParam`, `downloadedStateMediaParam`, `swipeLeftActionParam`, `swipeRightActionParam`
+  - `SwipeableContent.kt`: When params provided, skips individual DB queries and SharedPrefs reads — uses `mutableStateOf` fallback for backward compat
+  - `SwipeableContent.kt`: Fixed `CoroutineScope` leak — replaced `CoroutineScope(Dispatchers.IO).launch` with `rememberCoroutineScope()` in both `SwipeablePlaylistItem` and `SwipeableQueueItem`
+  - `SwipeableContent.kt`: Added `onDownloadToggle` in `SwipeablePlaylistItem` — handles download/cancel/delete toggle (not downloaded→download, downloading→cancel, downloaded→delete)
+  - `PlaylistSwipeAction.kt`: `getStateIcon()` already handles download states correctly (downloading/queued/restart show progress icon)
+  - 10 parent screens updated to hoist preferences and download states: `OnlineSearchList.kt`, `HomeSongs.kt`, `Queue.kt`, `PlaylistSongList.kt`, `HistoryList.kt`, `OnDeviceSongs.kt`, `MoodList.kt`, `AlbumDetails.kt`, `ArtistLocalSongs.kt`, `LocalPlaylistSongs.kt`
+  - Pattern: `MyDownloadHelper.downloads.collectAsStateWithLifecycle()` hoisted at composable level, `rememberPreference` for swipe actions hoisted before LazyColumn/LazyGrid
+  - Impact: 50 visible items → 0 flows DB + 2 SharedPrefs listeners + 0 scope leaks (was: ~250 flows + 100 listeners + 50 leaks)
+

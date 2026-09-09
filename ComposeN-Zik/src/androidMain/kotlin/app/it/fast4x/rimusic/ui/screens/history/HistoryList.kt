@@ -92,6 +92,9 @@ import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.song.SongItemMenu
 import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import app.it.fast4x.rimusic.enums.PlaylistSwipeAction
+import app.it.fast4x.rimusic.utils.playlistSwipeLeftActionKey
+import app.it.fast4x.rimusic.utils.playlistSwipeRightActionKey
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -309,6 +312,10 @@ fun HistoryList(
                 }
             }
 
+            // Hoisted swipe action preferences
+            val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
+            val playlistSwipeRightAction by rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
+
             CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
             LazyColumn(
                 state = lazyListState,
@@ -347,7 +354,11 @@ fun HistoryList(
                                 },
                                 onEnqueue = {
                                     binder?.player?.enqueue(event.song.asMediaItem)
-                                }
+                                },
+                                downloadStateParam = downloadsMapState[event.song.id]?.state ?: Download.STATE_STOPPED,
+                                downloadedStateMediaParam = downloadStatesMap[event.song.id] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
+                                swipeLeftActionParam = playlistSwipeLeftAction,
+                                swipeRightActionParam = playlistSwipeRightAction
                             ) {
                                 SongItem(
                                     song = event.song,
@@ -396,7 +407,11 @@ fun HistoryList(
                                 },
                                 onEnqueue = {
                                     binder?.player?.enqueue(mediaItem)
-                                }
+                                },
+                                downloadStateParam = downloadsMapState[mediaItem.mediaId]?.state ?: Download.STATE_STOPPED,
+                                downloadedStateMediaParam = downloadStatesMap[mediaItem.mediaId] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
+                                swipeLeftActionParam = playlistSwipeLeftAction,
+                                swipeRightActionParam = playlistSwipeRightAction
                             ) {
                                 SongItem(
                                     song = mediaItem.asSong,

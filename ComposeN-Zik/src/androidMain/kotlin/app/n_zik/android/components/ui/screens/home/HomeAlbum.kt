@@ -322,7 +322,7 @@ fun HomeAlbums(
             FilterBy.YoutubeLibrary -> itemsToFilter.filter { it.isYoutubeAlbum }
             FilterBy.Local -> itemsToFilter.filterNot { it.isYoutubeAlbum }
         }.let { list ->
-            if (!showDislikedAlbum.isEnabled && albumType != AlbumsType.Disliked) {
+            if (albumType != AlbumsType.Disliked) {
                 list.filter { it.dislikedAt == null }
             } else list
         }

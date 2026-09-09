@@ -74,6 +74,9 @@ import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.isUnmatched
 import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import app.it.fast4x.rimusic.enums.PlaylistSwipeAction
+import app.it.fast4x.rimusic.utils.playlistSwipeLeftActionKey
+import app.it.fast4x.rimusic.utils.playlistSwipeRightActionKey
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import it.fast4x.innertube.Innertube
@@ -328,7 +331,7 @@ fun HomeSongs(
                     FilterBy.YoutubeLibrary -> it.filter { song -> song.isYoutubeSong }
                     FilterBy.Local -> it.filterNot { song -> song.isYoutubeSong }
                 }.let { list ->
-                    if (!showDislikedPlaylist.isEnabled && builtInPlaylist != BuiltInPlaylist.Disliked) {
+                    if (builtInPlaylist != BuiltInPlaylist.Disliked) {
                         list.filter { song -> song.likedAt != -1L }
                     } else list
                 }
@@ -484,6 +487,10 @@ fun HomeSongs(
         LikeStateManager.getLikeStates(songIds)
     }.collectAsState(emptyMap(), Dispatchers.IO)
 
+    // Hoisted swipe action preferences
+    val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
+    val playlistSwipeRightAction by rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
+
     Box(modifier = Modifier.fillMaxSize()) {
         androidx.compose.runtime.CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
             LazyColumn(
@@ -529,7 +536,11 @@ fun HomeSongs(
                                             )
                                     }
                                 },
-                                onEnqueue = { binder?.player?.enqueue(mediaItem) }
+                                onEnqueue = { binder?.player?.enqueue(mediaItem) },
+                                downloadStateParam = downloadsMapState[mediaItem.mediaId]?.state ?: Download.STATE_STOPPED,
+                                downloadedStateMediaParam = downloadStatesMap[mediaItem.mediaId] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
+                                swipeLeftActionParam = playlistSwipeLeftAction,
+                                swipeRightActionParam = playlistSwipeRightAction
                             ) {
                                 val isRecommended = song in relatedSongs
                                 SongItem(

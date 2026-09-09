@@ -326,7 +326,7 @@ fun HomeArtists(
             FilterBy.YoutubeLibrary -> itemsToFilter.filter { it.isYoutubeArtist }
             FilterBy.Local -> itemsToFilter.filterNot { it.isYoutubeArtist }
         }.let { list ->
-            if (!showDislikedArtist.isEnabled && artistType != ArtistsType.Disliked) {
+            if (artistType != ArtistsType.Disliked) {
                 list.filter { it.dislikedAt == null }
             } else list
         }

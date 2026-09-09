@@ -154,6 +154,9 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.LocalDownloadStatesMap
 import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import app.it.fast4x.rimusic.enums.QueueSwipeAction
+import app.it.fast4x.rimusic.utils.queueSwipeLeftActionKey
+import app.it.fast4x.rimusic.utils.queueSwipeRightActionKey
 import androidx.compose.runtime.CompositionLocalProvider
 
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
@@ -1117,6 +1120,10 @@ fun LocalPlaylistSongs(
         }
     }
 
+    // Hoisted swipe action preferences
+    val queueSwipeLeftAction by rememberPreference(queueSwipeLeftActionKey, QueueSwipeAction.RemoveFromQueue)
+    val queueSwipeRightAction by rememberPreference(queueSwipeRightActionKey, QueueSwipeAction.PlayNext)
+
     Box(
         modifier = Modifier
             .background(colorPalette().background0)
@@ -1443,6 +1450,10 @@ fun LocalPlaylistSongs(
                                 context
                             )
                         },
+                        downloadStateParam = downloadsMapState[song.id]?.state ?: Download.STATE_STOPPED,
+                        downloadedStateMediaParam = downloadStatesMap[song.id] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
+                        swipeLeftActionParam = queueSwipeLeftAction,
+                        swipeRightActionParam = queueSwipeRightAction,
                     ) {
                         SongItem(
                             song = song,

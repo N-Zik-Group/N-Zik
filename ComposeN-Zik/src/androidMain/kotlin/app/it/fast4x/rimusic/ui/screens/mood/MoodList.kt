@@ -100,6 +100,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.download.utils.MyDownloadHelper
 import androidx.media3.exoplayer.offline.Download
+import app.it.fast4x.rimusic.enums.PlaylistSwipeAction
+import app.it.fast4x.rimusic.utils.playlistSwipeLeftActionKey
+import app.it.fast4x.rimusic.utils.playlistSwipeRightActionKey
 
 internal const val defaultBrowseId = "FEmusic_moods_and_genres_category"
 
@@ -176,6 +179,10 @@ fun MoodList(
                     }
                 }
             }
+
+            // Hoisted swipe action preferences
+            val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
+            val playlistSwipeRightAction by rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
 
             CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
             LazyColumn(
@@ -312,7 +319,11 @@ fun MoodList(
                                                 }
                                                 manageDownload(context, childItem.asMediaItem, isDownloaded)
                                             },
-                                            onEnqueue = { binder?.player?.enqueue(childItem.asMediaItem) }
+                                            onEnqueue = { binder?.player?.enqueue(childItem.asMediaItem) },
+                                            downloadStateParam = downloadsMapState[childItem.key]?.state ?: Download.STATE_STOPPED,
+                                            downloadedStateMediaParam = downloadStatesMap[childItem.key] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
+                                            swipeLeftActionParam = playlistSwipeLeftAction,
+                                            swipeRightActionParam = playlistSwipeRightAction
                                         ) {
                                             SongItem(
                                                 song = childItem.asMediaItem.asSong ?: Song.makePlaceholder(""),
@@ -348,7 +359,11 @@ fun MoodList(
                                             mediaItem = childItem.asMediaItem,
                                             onPlayNext = { binder?.player?.addNext(childItem.asMediaItem) },
                                             onDownload = { Toaster.w(R.string.downloading_videos_not_supported) },
-                                            onEnqueue = { binder?.player?.enqueue(childItem.asMediaItem) }
+                                            onEnqueue = { binder?.player?.enqueue(childItem.asMediaItem) },
+                                            downloadStateParam = downloadsMapState[childItem.key]?.state ?: Download.STATE_STOPPED,
+                                            downloadedStateMediaParam = downloadStatesMap[childItem.key] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
+                                            swipeLeftActionParam = playlistSwipeLeftAction,
+                                            swipeRightActionParam = playlistSwipeRightAction
                                         ) {
                                             VideoItem(
                                                 video = childItem,

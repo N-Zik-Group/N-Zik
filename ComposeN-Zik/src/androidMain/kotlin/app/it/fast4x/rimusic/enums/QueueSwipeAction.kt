@@ -25,7 +25,7 @@ enum class QueueSwipeAction(
     Enqueue( R.drawable.enqueue, R.string.enqueue );
 
     @OptIn(UnstableApi::class)
-    fun getStateIcon( likeState: Boolean?, downloadState: Int, downloadedStateMedia: DownloadedStateMedia ): Int? =
+    fun getStateIcon( likeState: Boolean?, downloadState: Int, downloadedStateMedia: DownloadedStateMedia, showDisliked: Boolean = true ): Int? =
         when( this ) {
             NoAction -> null
             Download -> when( downloadedStateMedia ) {
@@ -37,10 +37,17 @@ enum class QueueSwipeAction(
                 }
                 else -> downloadedStateMedia.iconId
             }
-            Favourite -> when( likeState ) {
-                false -> R.drawable.heart_dislike
-                null  -> R.drawable.heart_outline
-                else  -> R.drawable.heart
+            Favourite -> if (showDisliked) {
+                when( likeState ) {
+                    false -> R.drawable.heart_dislike
+                    null  -> R.drawable.heart_outline
+                    else  -> R.drawable.heart
+                }
+            } else {
+                when( likeState ) {
+                    true -> R.drawable.heart
+                    else -> R.drawable.heart_outline
+                }
             }
             else -> iconId
         }

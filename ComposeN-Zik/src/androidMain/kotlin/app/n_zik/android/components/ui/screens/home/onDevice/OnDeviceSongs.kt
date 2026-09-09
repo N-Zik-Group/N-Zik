@@ -81,6 +81,10 @@ import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.LocalDownloadStatesMap
 import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import app.it.fast4x.rimusic.enums.PlaylistSwipeAction
+import app.it.fast4x.rimusic.utils.playlistSwipeLeftActionKey
+import app.it.fast4x.rimusic.utils.playlistSwipeRightActionKey
+import app.it.fast4x.rimusic.utils.rememberPreference
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -221,6 +225,10 @@ fun OnDeviceSong(
         onRefresh = { refreshKey++ },
         modifier = Modifier.fillMaxSize()
     ) {
+    // Hoisted swipe action preferences
+    val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
+    val playlistSwipeRightAction by rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
+
     CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
     LazyColumn(
         state = lazyListState,
@@ -324,7 +332,11 @@ fun OnDeviceSong(
                 onPlayNext = { binder?.player?.addNext( mediaItem ) },
                 onEnqueue = {
                     binder?.player?.enqueue(mediaItem)
-                }
+                },
+                downloadStateParam = downloadsMapState[mediaItem.mediaId]?.state ?: Download.STATE_STOPPED,
+                downloadedStateMediaParam = downloadStatesMap[mediaItem.mediaId] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
+                swipeLeftActionParam = playlistSwipeLeftAction,
+                swipeRightActionParam = playlistSwipeRightAction
             ) {
                 SongItem(
                     song = song,

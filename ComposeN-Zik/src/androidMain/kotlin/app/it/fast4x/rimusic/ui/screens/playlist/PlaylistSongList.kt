@@ -168,6 +168,9 @@ import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.playback.utils.Shuffler
 import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
 import app.it.fast4x.rimusic.enums.DownloadedStateMedia
+import app.it.fast4x.rimusic.enums.PlaylistSwipeAction
+import app.it.fast4x.rimusic.utils.playlistSwipeLeftActionKey
+import app.it.fast4x.rimusic.utils.playlistSwipeRightActionKey
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -431,6 +434,10 @@ fun PlaylistSongList(
                         }
                     }
                 }
+
+                // Hoisted swipe action preferences
+                val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
+                val playlistSwipeRightAction by rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
 
                 CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
                 LazyColumn(
@@ -1079,7 +1086,11 @@ fun PlaylistSongList(
                         },
                         onEnqueue = {
                             binder?.player?.enqueue(ytSong.asMediaItem)
-                        }
+                        },
+                        downloadStateParam = downloadsMapState[ytSong.key]?.state ?: Download.STATE_STOPPED,
+                        downloadedStateMediaParam = downloadStatesMap[ytSong.key] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
+                        swipeLeftActionParam = playlistSwipeLeftAction,
+                        swipeRightActionParam = playlistSwipeRightAction
                     ) {
                         SongItem(
                             song = ytSong.asSong,
