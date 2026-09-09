@@ -52,6 +52,9 @@ import androidx.compose.runtime.rememberUpdatedState
 import app.it.fast4x.rimusic.utils.getDownloadStateMedia
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.playerTimelineTypeKey
+import app.it.fast4x.rimusic.utils.showDislikedPlaylistKey
+import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
+import app.it.fast4x.rimusic.enums.DislikeMode
 import androidx.compose.ui.draw.alpha
 import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.enums.NavRoutes
@@ -276,6 +279,7 @@ class SongItemMenu private constructor(
         val coroutineScope = rememberCoroutineScope()
 
         val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
+        val showDisliked by rememberPreference(excludeDislikedSongsKey, DislikeMode.Enabled)
         val downloadStateMediaState = rememberUpdatedState(
             binder?.let { getDownloadStateMedia(it, song.id) } ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
         )
@@ -562,7 +566,11 @@ class SongItemMenu private constructor(
                                 },
                                 onClick = {
                                     CoroutineScope( Dispatchers.IO ).launch {
-                                        YouTubeSync.rotateSongLikeState( context, song.asMediaItem )
+                                        if (showDisliked.isEnabled) {
+                                            YouTubeSync.rotateSongLikeState( context, song.asMediaItem )
+                                        } else {
+                                            YouTubeSync.toggleSongLikeState( context, song.asMediaItem )
+                                        }
                                     }
                                 },
                                 modifier = Modifier.padding( all = 4.dp ).size( 20.dp )

@@ -78,6 +78,9 @@ import app.it.fast4x.rimusic.utils.forcePlay
 import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
+import app.it.fast4x.rimusic.utils.showDislikedPlaylistKey
+import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
+import app.it.fast4x.rimusic.enums.DislikeMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import app.n_zik.android.components.SongItem
@@ -284,6 +287,7 @@ class PlayerItemMenu private constructor(
         val coroutineScope = rememberCoroutineScope()
         val song = remember(mediaItem) { mediaItem.asSong }
         val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
+        val showDisliked by rememberPreference(excludeDislikedSongsKey, DislikeMode.Enabled)
 
         // Reactively collect Album and Artists (like the old menu)
         val albumData by remember(mediaItem.mediaId) {
@@ -731,7 +735,11 @@ class PlayerItemMenu private constructor(
                                 },
                             onClick = {
                                 coroutineScope.launch(Dispatchers.IO) {
-                                    YouTubeSync.rotateSongLikeState( mContext, song.asMediaItem )
+                                    if (showDisliked.isEnabled) {
+                                        YouTubeSync.rotateSongLikeState( mContext, song.asMediaItem )
+                                    } else {
+                                        YouTubeSync.toggleSongLikeState( mContext, song.asMediaItem )
+                                    }
                                 }
                             },
                                 modifier = Modifier.padding(all = 4.dp).size(20.dp)

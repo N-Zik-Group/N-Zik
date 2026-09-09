@@ -329,6 +329,9 @@ interface SongTable {
     """)
     fun rotateLikeState( songId: String ): Int
 
+    @Query("UPDATE Song SET likedAt = NULL WHERE likedAt = -1")
+    fun clearAllDisliked(): Int
+
     /**
      * Toggle dislike state for a song.
      *

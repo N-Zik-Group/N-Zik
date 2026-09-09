@@ -12,8 +12,11 @@ import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.Dialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
+import app.n_zik.android.core.database.Database
 import app.it.fast4x.rimusic.utils.showFavoritesAlbumKey
 import app.it.fast4x.rimusic.utils.showDislikedAlbumKey
+import app.it.fast4x.rimusic.utils.excludeDislikedAlbumsKey
+import app.it.fast4x.rimusic.enums.DislikeMode
 import app.it.fast4x.rimusic.utils.homeAlbumsOrderKey
 import app.kreate.android.me.knighthat.utils.Toaster
 import org.json.JSONArray
@@ -39,15 +42,20 @@ object HomeAlbumsSettingsDialog : Dialog {
         var workingOrder by remember { mutableStateOf(parseOrder(prefs.getString(homeAlbumsOrderKey, "") ?: "").toMutableList()) }
 
         val prefKeys = mapOf(
-            "favorites" to showFavoritesAlbumKey,
-            "disliked" to showDislikedAlbumKey
+            "favorites" to showFavoritesAlbumKey
         )
 
         var workingToggles by remember {
             mutableStateOf(
                 albumsDefaultOrder.associateWith { id ->
-                    val pk = prefKeys[id]
-                    if (pk != null) prefs.getBoolean(pk, true) else true
+                    if (id == "disliked") {
+                        prefs.getString(excludeDislikedAlbumsKey, DislikeMode.Enabled.name)
+                            ?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() }
+                            ?.isEnabled ?: true
+                    } else {
+                        val pk = prefKeys[id]
+                        if (pk != null) prefs.getBoolean(pk, true) else true
+                    }
                 }.toMutableMap()
             )
         }
@@ -94,7 +102,11 @@ object HomeAlbumsSettingsDialog : Dialog {
                 prefKeys.forEach { (id, pk) ->
                     edit.putBoolean(pk, workingToggles[id] ?: true)
                 }
+                edit.putString(excludeDislikedAlbumsKey, if (workingToggles["disliked"] == true) DislikeMode.Enabled.name else DislikeMode.Disabled.name)
                 edit.apply()
+                if (workingToggles["disliked"] == false) {
+                    Database.albumTable.clearAllDisliked()
+                }
                 Toaster.s(R.string.toast_preference_saved); hideDialog()
             }
         )
@@ -105,7 +117,7 @@ object HomeAlbumsSettingsDialog : Dialog {
         prefs.edit()
             .putString(homeAlbumsOrderKey, serializeOrder(albumsDefaultOrder))
             .putBoolean(showFavoritesAlbumKey, true)
-            .putBoolean(showDislikedAlbumKey, true)
+            .putString(excludeDislikedAlbumsKey, DislikeMode.Enabled.name)
             .apply()
     }
 }

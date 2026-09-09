@@ -1,5 +1,6 @@
 package app.it.fast4x.rimusic.utils
 
+import app.it.fast4x.rimusic.enums.DislikeMode
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -363,8 +364,8 @@ fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): Lis
         }
 
         // Filter disliked songs if setting is enabled
-        val excludeDislikedSongs = preferences.getBoolean(excludeDislikedSongsKey, true)
-        if (excludeDislikedSongs) {
+        val excludeDislikedSongs = preferences.getString(excludeDislikedSongsKey, DislikeMode.Enabled.name)?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() } ?: DislikeMode.Enabled
+        if (excludeDislikedSongs.isEnabled) {
             val dislikedSongIds = kotlinx.coroutines.runBlocking {
                 Database.songTable.getAllDislikedIds()
             }
@@ -380,8 +381,8 @@ fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): Lis
         }
 
         // Filter songs from disliked artists if setting is enabled
-        val excludeDislikedArtists = preferences.getBoolean(excludeDislikedArtistsKey, true)
-        if (excludeDislikedArtists) {
+        val excludeDislikedArtists = preferences.getString(excludeDislikedArtistsKey, DislikeMode.Enabled.name)?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() } ?: DislikeMode.Enabled
+        if (excludeDislikedArtists.isEnabled) {
             val dislikedArtistSongIds = kotlinx.coroutines.runBlocking {
                 Database.songTable.getSongsByDislikedArtists()
             }
@@ -397,8 +398,8 @@ fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): Lis
         }
 
         // Filter songs from disliked albums if setting is enabled
-        val excludeDislikedAlbums = preferences.getBoolean(excludeDislikedAlbumsKey, true)
-        if (excludeDislikedAlbums) {
+        val excludeDislikedAlbums = preferences.getString(excludeDislikedAlbumsKey, DislikeMode.Enabled.name)?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() } ?: DislikeMode.Enabled
+        if (excludeDislikedAlbums.isEnabled) {
             val dislikedAlbumSongIds = kotlinx.coroutines.runBlocking {
                 Database.songTable.getSongsByDislikedAlbums()
             }

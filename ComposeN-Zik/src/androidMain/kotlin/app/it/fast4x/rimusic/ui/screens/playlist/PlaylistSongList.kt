@@ -5,6 +5,8 @@ import androidx.compose.ui.draw.clip
 import app.n_zik.android.uiRoundnessShape
 
 import app.n_zik.android.core.database.*
+import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
+import app.it.fast4x.rimusic.enums.DislikeMode
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -93,6 +95,7 @@ import it.fast4x.innertube.requests.PlaylistPage
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.appContext
+import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.cleanPrefix
 
 import app.n_zik.android.colorPalette
@@ -769,12 +772,19 @@ fun PlaylistSongList(
                                                 Toaster.noInternet()
                                             } else if (!isYouTubeSyncEnabled()){
                                                 CoroutineScope( Dispatchers.IO ).launch {
+                                                    val showDisliked = appContext().preferences.getString(excludeDislikedSongsKey, DislikeMode.Enabled.name)?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() }?.isEnabled ?: true
                                                     playlistPage!!.songs
                                                                   .map{ it.asSong.id }
                                                                   .filter {
                                                                       !Database.songTable.isLiked( it ).first()
                                                                   }
-                                                                  .forEach( Database.songTable::toggleLike )
+                                                                  .forEach { id ->
+                                                                      if (showDisliked) {
+                                                                          Database.songTable.rotateLikeState(id)
+                                                                      } else {
+                                                                          Database.songTable.toggleLike(id)
+                                                                      }
+                                                                  }
 
                                                     Toaster.done()
                                                 }

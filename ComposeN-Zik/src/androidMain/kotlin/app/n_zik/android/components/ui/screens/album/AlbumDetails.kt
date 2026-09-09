@@ -27,6 +27,10 @@ import app.it.fast4x.rimusic.utils.syncPushAlbumBookmarkKey
 import app.it.fast4x.rimusic.utils.syncDirectionKey
 import app.it.fast4x.rimusic.utils.getSyncDirection
 import app.it.fast4x.rimusic.utils.isNetworkConnected
+import app.it.fast4x.rimusic.utils.showDislikedAlbumKey
+import app.it.fast4x.rimusic.utils.excludeDislikedAlbumsKey
+import app.it.fast4x.rimusic.enums.DislikeMode
+import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.enums.SyncDirection
 import app.n_zik.android.appContext
 import app.it.fast4x.rimusic.utils.preferences
@@ -96,6 +100,8 @@ fun AlbumBookmark(
             .distinctUntilChanged()
     }.collectAsState( null, Dispatchers.IO )
 
+    val showDisliked = rememberPreference(excludeDislikedAlbumsKey, DislikeMode.Enabled).value.isEnabled
+
     override val iconId: Int = when(likeState) {
         true -> R.drawable.bookmark
         false -> R.drawable.bookmark_slash
@@ -129,16 +135,36 @@ fun AlbumBookmark(
                     else YtMusic.likePlaylistOrAlbum(playlistId)
                 }
             }
-            Database.albumTable.rotateLikeState( albumId )
-            val newState = when(likeState) {
-                true -> false // bookmarked → disliked
-                false -> null // disliked → neutral
-                null -> true  // neutral → bookmarked
+            if (showDisliked) {
+                Database.albumTable.rotateLikeState( albumId )
+            } else {
+                Database.albumTable.toggleBookmark( albumId )
             }
-            val messageId = when(newState) {
-                true -> R.string.added_to_favorites
-                false -> R.string.added_to_dislikes
-                null -> R.string.removed_from_favorites
+            val newState = if (showDisliked) {
+                when(likeState) {
+                    true -> false // bookmarked → disliked
+                    false -> null // disliked → neutral
+                    null -> true  // neutral → bookmarked
+                }
+            } else {
+                when(likeState) {
+                    true -> null  // bookmarked → neutral
+                    false -> true // disliked → bookmarked
+                    null -> true  // neutral → bookmarked
+                }
+            }
+            val messageId = if (showDisliked) {
+                when(newState) {
+                    true -> R.string.added_to_favorites
+                    false -> R.string.added_to_dislikes
+                    null -> R.string.removed_from_favorites
+                }
+            } else {
+                when(newState) {
+                    true -> R.string.added_to_favorites
+                    null -> R.string.removed_from_favorites
+                    else -> R.string.added_to_favorites
+                }
             }
             val albumName = album?.title
             if( albumName != null )

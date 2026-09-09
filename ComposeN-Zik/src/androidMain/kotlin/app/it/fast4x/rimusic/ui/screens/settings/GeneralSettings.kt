@@ -56,6 +56,7 @@ import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.NavigationBarType
 import app.it.fast4x.rimusic.enums.NotificationType
 import app.it.fast4x.rimusic.enums.PauseBetweenSongs
+import app.it.fast4x.rimusic.enums.DislikeMode
 import app.it.fast4x.rimusic.enums.PipModule
 import app.it.fast4x.rimusic.enums.PresetsReverb
 import app.n_zik.android.typography
@@ -78,6 +79,10 @@ import app.it.fast4x.rimusic.utils.excludeSongsWithDurationLimitKey
 import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
 import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
 import app.it.fast4x.rimusic.utils.excludeDislikedAlbumsKey
+import app.n_zik.android.core.database.Database
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import app.it.fast4x.rimusic.utils.exoPlayerMinTimeForEventKey
 import app.it.fast4x.rimusic.utils.handleAudioFocusEnabledKey
 import app.it.fast4x.rimusic.utils.isAtLeastAndroid12
@@ -248,9 +253,9 @@ fun GeneralSettings(
 
     var useVolumeKeysToChangeSong by rememberPreference(useVolumeKeysToChangeSongKey, false)
     var excludeSongWithDurationLimit by rememberPreference(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
-    var excludeDislikedSongs by rememberPreference(excludeDislikedSongsKey, true)
-    var excludeDislikedArtists by rememberPreference(excludeDislikedArtistsKey, true)
-    var excludeDislikedAlbums by rememberPreference(excludeDislikedAlbumsKey, true)
+    var excludeDislikedSongs by rememberPreference(excludeDislikedSongsKey, DislikeMode.Enabled)
+    var excludeDislikedArtists by rememberPreference(excludeDislikedArtistsKey, DislikeMode.Enabled)
+    var excludeDislikedAlbums by rememberPreference(excludeDislikedAlbumsKey, DislikeMode.Enabled)
     var playlistindicator by rememberPreference(playlistindicatorKey, false)
     var nowPlayingIndicator by rememberPreference(nowPlayingIndicatorKey, MusicAnimationType.Bubbles)
     var discoverIsEnabled by rememberPreference(discoverKey, false)
@@ -514,30 +519,84 @@ fun GeneralSettings(
                        }
 
                        // Dislike exclusion settings
+                       var showDislikeSongsDialog by remember { mutableStateOf(false) }
                        if (search.inputValue.isBlank() || stringResource(R.string.disliked).contains(search.inputValue,true)) {
                            OtherSettingsEntry(
                                title = stringResource(R.string.exclude_disliked_songs),
-                               text = if (excludeDislikedSongs) stringResource(R.string.on) else stringResource(R.string.off),
-                               onClick = { excludeDislikedSongs = !excludeDislikedSongs },
+                               text = excludeDislikedSongs.text,
+                               onClick = { showDislikeSongsDialog = true },
                                icon = R.drawable.heart_dislike
                            )
                        }
-
-                       if (search.inputValue.isBlank() || stringResource(R.string.disliked).contains(search.inputValue,true)) {
-                           OtherSettingsEntry(
-                               title = stringResource(R.string.exclude_disliked_artists),
-                               text = if (excludeDislikedArtists) stringResource(R.string.on) else stringResource(R.string.off),
-                               onClick = { excludeDislikedArtists = !excludeDislikedArtists },
-                               icon = R.drawable.person
+                       if (showDislikeSongsDialog) {
+                           ValueSelectorDialog(
+                               title = stringResource(R.string.exclude_disliked_songs),
+                               selectedValue = excludeDislikedSongs,
+                               onValueSelected = {
+                                   excludeDislikedSongs = it
+                                   if (it == DislikeMode.Disabled) {
+                                       CoroutineScope(Dispatchers.IO).launch {
+                                           Database.songTable.clearAllDisliked()
+                                       }
+                                   }
+                               },
+                               valueText = { it.text },
+                               values = DislikeMode.values().toList(),
+                               onDismiss = { showDislikeSongsDialog = false }
                            )
                        }
 
+                       var showDislikeArtistsDialog by remember { mutableStateOf(false) }
+                       if (search.inputValue.isBlank() || stringResource(R.string.disliked).contains(search.inputValue,true)) {
+                           OtherSettingsEntry(
+                               title = stringResource(R.string.exclude_disliked_artists),
+                               text = excludeDislikedArtists.text,
+                               onClick = { showDislikeArtistsDialog = true },
+                               icon = R.drawable.person
+                           )
+                       }
+                       if (showDislikeArtistsDialog) {
+                           ValueSelectorDialog(
+                               title = stringResource(R.string.exclude_disliked_artists),
+                               selectedValue = excludeDislikedArtists,
+                               onValueSelected = {
+                                   excludeDislikedArtists = it
+                                   if (it == DislikeMode.Disabled) {
+                                       CoroutineScope(Dispatchers.IO).launch {
+                                           Database.artistTable.clearAllDisliked()
+                                       }
+                                   }
+                               },
+                               valueText = { it.text },
+                               values = DislikeMode.values().toList(),
+                               onDismiss = { showDislikeArtistsDialog = false }
+                           )
+                       }
+
+                       var showDislikeAlbumsDialog by remember { mutableStateOf(false) }
                        if (search.inputValue.isBlank() || stringResource(R.string.disliked).contains(search.inputValue,true)) {
                            OtherSettingsEntry(
                                title = stringResource(R.string.exclude_disliked_albums),
-                               text = if (excludeDislikedAlbums) stringResource(R.string.on) else stringResource(R.string.off),
-                               onClick = { excludeDislikedAlbums = !excludeDislikedAlbums },
+                               text = excludeDislikedAlbums.text,
+                               onClick = { showDislikeAlbumsDialog = true },
                                icon = R.drawable.album
+                           )
+                       }
+                       if (showDislikeAlbumsDialog) {
+                           ValueSelectorDialog(
+                               title = stringResource(R.string.exclude_disliked_albums),
+                               selectedValue = excludeDislikedAlbums,
+                               onValueSelected = {
+                                   excludeDislikedAlbums = it
+                                   if (it == DislikeMode.Disabled) {
+                                       CoroutineScope(Dispatchers.IO).launch {
+                                           Database.albumTable.clearAllDisliked()
+                                       }
+                                   }
+                               },
+                               valueText = { it.text },
+                               values = DislikeMode.values().toList(),
+                               onDismiss = { showDislikeAlbumsDialog = false }
                            )
                        }
 

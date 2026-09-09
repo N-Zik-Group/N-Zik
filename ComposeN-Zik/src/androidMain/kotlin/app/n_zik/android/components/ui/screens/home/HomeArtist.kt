@@ -136,6 +136,8 @@ import app.it.fast4x.rimusic.utils.center
 import app.it.fast4x.rimusic.utils.color
 import app.it.fast4x.rimusic.utils.showFavoritesArtistKey
 import app.it.fast4x.rimusic.utils.showDislikedArtistKey
+import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
+import app.it.fast4x.rimusic.enums.DislikeMode
 import app.it.fast4x.rimusic.utils.homeArtistsOrderKey
 import app.it.fast4x.rimusic.utils.showFloatingIconKey
 import app.it.fast4x.rimusic.utils.homeArtistsLibraryToolbarOrderKey
@@ -276,7 +278,7 @@ fun HomeArtists(
     )
 
     val showFavoritesArtist by rememberPreference(showFavoritesArtistKey, true)
-    val showDislikedArtist by rememberPreference(showDislikedArtistKey, true)
+    val showDislikedArtist by rememberPreference(excludeDislikedArtistsKey, DislikeMode.Enabled)
     val homeArtistsOrderPref by rememberPreference(homeArtistsOrderKey, "")
 
     val favoritesLabel = stringResource(R.string.favorites)
@@ -285,7 +287,7 @@ fun HomeArtists(
     val artistsDefaultOrder = listOf("all", "favorites", "disliked")
     val labelMap = mapOf("favorites" to favoritesLabel, "all" to allLabel, "disliked" to dislikedLabel)
     val typeMap = mapOf("favorites" to ArtistsType.Favorites, "all" to ArtistsType.Library, "disliked" to ArtistsType.Disliked)
-    val toggleMap = mapOf("favorites" to showFavoritesArtist, "all" to true, "disliked" to showDislikedArtist)
+    val toggleMap = mapOf("favorites" to showFavoritesArtist, "all" to true, "disliked" to showDislikedArtist.isEnabled)
     val buttonsList = remember(showFavoritesArtist, homeArtistsOrderPref, favoritesLabel, allLabel, dislikedLabel) {
         val order = try {
             val arr = JSONArray(homeArtistsOrderPref)
@@ -324,7 +326,7 @@ fun HomeArtists(
             FilterBy.YoutubeLibrary -> itemsToFilter.filter { it.isYoutubeArtist }
             FilterBy.Local -> itemsToFilter.filterNot { it.isYoutubeArtist }
         }.let { list ->
-            if (!showDislikedArtist && artistType != ArtistsType.Disliked) {
+            if (!showDislikedArtist.isEnabled && artistType != ArtistsType.Disliked) {
                 list.filter { it.dislikedAt == null }
             } else list
         }

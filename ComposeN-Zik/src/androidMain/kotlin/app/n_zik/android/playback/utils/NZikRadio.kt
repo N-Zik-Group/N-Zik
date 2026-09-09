@@ -16,6 +16,7 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
 import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
 import app.it.fast4x.rimusic.utils.excludeDislikedAlbumsKey
+import app.it.fast4x.rimusic.enums.DislikeMode
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.NavigationEndpoint
 import it.fast4x.innertube.requests.nextPage
@@ -227,24 +228,24 @@ class NZikRadio(
 
         // Apply Dislike Filter
         val preferences = context.preferences
-        val excludeDislikedSongs = preferences.getBoolean(excludeDislikedSongsKey, true)
-        if (excludeDislikedSongs) {
+        val excludeDislikedSongs = preferences.getString(excludeDislikedSongsKey, DislikeMode.Enabled.name)?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() } ?: DislikeMode.Enabled
+        if (excludeDislikedSongs.isEnabled) {
             val dislikedSongIds = Database.songTable.getAllDislikedIds()
             if (dislikedSongIds.isNotEmpty()) {
                 filtered = filtered.filter { !dislikedSongIds.contains(it.mediaId) }
             }
         }
 
-        val excludeDislikedArtists = preferences.getBoolean(excludeDislikedArtistsKey, true)
-        if (excludeDislikedArtists) {
+        val excludeDislikedArtists = preferences.getString(excludeDislikedArtistsKey, DislikeMode.Enabled.name)?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() } ?: DislikeMode.Enabled
+        if (excludeDislikedArtists.isEnabled) {
             val dislikedArtistSongIds = Database.songTable.getSongsByDislikedArtists()
             if (dislikedArtistSongIds.isNotEmpty()) {
                 filtered = filtered.filter { !dislikedArtistSongIds.contains(it.mediaId) }
             }
         }
 
-        val excludeDislikedAlbums = preferences.getBoolean(excludeDislikedAlbumsKey, true)
-        if (excludeDislikedAlbums) {
+        val excludeDislikedAlbums = preferences.getString(excludeDislikedAlbumsKey, DislikeMode.Enabled.name)?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() } ?: DislikeMode.Enabled
+        if (excludeDislikedAlbums.isEnabled) {
             val dislikedAlbumSongIds = Database.songTable.getSongsByDislikedAlbums()
             if (dislikedAlbumSongIds.isNotEmpty()) {
                 filtered = filtered.filter { !dislikedAlbumSongIds.contains(it.mediaId) }

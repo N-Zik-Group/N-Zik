@@ -124,6 +124,8 @@ import app.it.fast4x.rimusic.utils.center
 import app.it.fast4x.rimusic.utils.color
 import app.it.fast4x.rimusic.utils.showFavoritesAlbumKey
 import app.it.fast4x.rimusic.utils.showDislikedAlbumKey
+import app.it.fast4x.rimusic.utils.excludeDislikedAlbumsKey
+import app.it.fast4x.rimusic.enums.DislikeMode
 import app.it.fast4x.rimusic.utils.homeAlbumsOrderKey
 import app.it.fast4x.rimusic.utils.showFloatingIconKey
 import app.it.fast4x.rimusic.utils.homeAlbumsLibraryToolbarOrderKey
@@ -272,7 +274,7 @@ fun HomeAlbums(
     )
 
     val showFavoritesAlbum by rememberPreference(showFavoritesAlbumKey, true)
-    val showDislikedAlbum by rememberPreference(showDislikedAlbumKey, true)
+    val showDislikedAlbum by rememberPreference(excludeDislikedAlbumsKey, DislikeMode.Enabled)
     val homeAlbumsOrderPref by rememberPreference(homeAlbumsOrderKey, "")
 
     val favoritesLabel = stringResource(R.string.favorites)
@@ -281,7 +283,7 @@ fun HomeAlbums(
     val albumsDefaultOrder = listOf("all", "favorites", "disliked")
     val labelMap = mapOf("favorites" to favoritesLabel, "all" to allLabel, "disliked" to dislikedLabel)
     val typeMap = mapOf("favorites" to AlbumsType.Favorites, "all" to AlbumsType.Library, "disliked" to AlbumsType.Disliked)
-    val toggleMap = mapOf("favorites" to showFavoritesAlbum, "all" to true, "disliked" to showDislikedAlbum)
+    val toggleMap = mapOf("favorites" to showFavoritesAlbum, "all" to true, "disliked" to showDislikedAlbum.isEnabled)
     val buttonsList = remember(showFavoritesAlbum, homeAlbumsOrderPref, favoritesLabel, allLabel, dislikedLabel) {
         val order = try {
             val arr = JSONArray(homeAlbumsOrderPref)
@@ -320,7 +322,7 @@ fun HomeAlbums(
             FilterBy.YoutubeLibrary -> itemsToFilter.filter { it.isYoutubeAlbum }
             FilterBy.Local -> itemsToFilter.filterNot { it.isYoutubeAlbum }
         }.let { list ->
-            if (!showDislikedAlbum && albumType != AlbumsType.Disliked) {
+            if (!showDislikedAlbum.isEnabled && albumType != AlbumsType.Disliked) {
                 list.filter { it.dislikedAt == null }
             } else list
         }

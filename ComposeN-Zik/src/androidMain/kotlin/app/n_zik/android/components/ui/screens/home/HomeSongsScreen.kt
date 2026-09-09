@@ -95,6 +95,8 @@ import app.it.fast4x.rimusic.utils.homeSongsOnDeviceToolbarOrderKey
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.utils.homeSongsTopToolbarOrderKey
 import app.it.fast4x.rimusic.utils.homeSongsOfflineToolbarOrderKey
+import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
+import app.it.fast4x.rimusic.enums.DislikeMode
 import java.util.concurrent.atomic.AtomicInteger
 import android.content.Intent
 import android.net.Uri
@@ -696,7 +698,7 @@ fun HomeSongsScreen(navController: NavController ) {
                             val showMyTopPlaylist by rememberPreference( showMyTopPlaylistKey, true )
                             val showDownloadedPlaylist by rememberPreference( showDownloadedPlaylistKey, true )
                             val showOnDeviceChip by rememberPreference( showOnDevicePlaylistKey, true )
-                            val showDislikedChip by rememberPreference( showDislikedPlaylistKey, true )
+                            val showDislikedChip by rememberPreference( excludeDislikedSongsKey, DislikeMode.Enabled )
                             val homeSongsOrderPref by rememberPreference( homeSongsOrderKey, "" )
                             val chips = remember( showFavoritesPlaylist, showCachedPlaylist, showMyTopPlaylist, showDownloadedPlaylist, showOnDeviceChip, showDislikedChip, homeSongsOrderPref ) {
                                 val songsDefaultOrder = listOf("all", "favorites", "disliked", "cached", "downloaded", "top", "on_device")
@@ -706,7 +708,7 @@ fun HomeSongsScreen(navController: NavController ) {
                                     "downloaded" to showDownloadedPlaylist,
                                     "top" to showMyTopPlaylist,
                                     "on_device" to showOnDeviceChip,
-                                    "disliked" to showDislikedChip
+                                    "disliked" to showDislikedChip.isEnabled
                                 )
                                 val builtinMap = mapOf(
                                     "all" to BuiltInPlaylist.All,

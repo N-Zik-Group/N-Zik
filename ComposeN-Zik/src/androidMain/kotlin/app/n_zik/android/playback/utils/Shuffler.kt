@@ -20,6 +20,7 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
 import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
 import app.it.fast4x.rimusic.utils.excludeDislikedAlbumsKey
+import app.it.fast4x.rimusic.enums.DislikeMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -40,8 +41,8 @@ object Shuffler {
 
         // Filter disliked songs if setting is enabled
         val preferences = appContext().preferences
-        val excludeDislikedSongs = preferences.getBoolean(excludeDislikedSongsKey, true)
-        if (excludeDislikedSongs) {
+        val excludeDislikedSongs = preferences.getString(excludeDislikedSongsKey, DislikeMode.Enabled.name)?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() } ?: DislikeMode.Enabled
+        if (excludeDislikedSongs.isEnabled) {
             val dislikedSongIds = runBlocking {
                 Database.songTable.getAllDislikedIds()
             }
@@ -53,8 +54,8 @@ object Shuffler {
         }
 
         // Filter songs from disliked artists if setting is enabled
-        val excludeDislikedArtists = preferences.getBoolean(excludeDislikedArtistsKey, true)
-        if (excludeDislikedArtists) {
+        val excludeDislikedArtists = preferences.getString(excludeDislikedArtistsKey, DislikeMode.Enabled.name)?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() } ?: DislikeMode.Enabled
+        if (excludeDislikedArtists.isEnabled) {
             val dislikedArtistSongIds = runBlocking {
                 Database.songTable.getSongsByDislikedArtists()
             }
@@ -66,8 +67,8 @@ object Shuffler {
         }
 
         // Filter songs from disliked albums if setting is enabled
-        val excludeDislikedAlbums = preferences.getBoolean(excludeDislikedAlbumsKey, true)
-        if (excludeDislikedAlbums) {
+        val excludeDislikedAlbums = preferences.getString(excludeDislikedAlbumsKey, DislikeMode.Enabled.name)?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() } ?: DislikeMode.Enabled
+        if (excludeDislikedAlbums.isEnabled) {
             val dislikedAlbumSongIds = runBlocking {
                 Database.songTable.getSongsByDislikedAlbums()
             }

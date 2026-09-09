@@ -18,6 +18,8 @@ import app.it.fast4x.rimusic.utils.showMyTopPlaylistKey
 import app.it.fast4x.rimusic.utils.showDownloadedPlaylistKey
 import app.it.fast4x.rimusic.utils.showOnDevicePlaylistKey
 import app.it.fast4x.rimusic.utils.showDislikedPlaylistKey
+import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
+import app.it.fast4x.rimusic.enums.DislikeMode
 import app.it.fast4x.rimusic.utils.homeSongsOrderKey
 import app.kreate.android.me.knighthat.utils.Toaster
 import org.json.JSONArray
@@ -47,15 +49,20 @@ object HomeSongsSettingsDialog : Dialog {
             "cached" to showCachedPlaylistKey,
             "downloaded" to showDownloadedPlaylistKey,
             "top" to showMyTopPlaylistKey,
-            "on_device" to showOnDevicePlaylistKey,
-            "disliked" to showDislikedPlaylistKey
+            "on_device" to showOnDevicePlaylistKey
         )
 
         var workingToggles by remember {
             mutableStateOf(
                 songsDefaultOrder.associateWith { id ->
-                    val pk = prefKeys[id]
-                    if (pk != null) prefs.getBoolean(pk, true) else true
+                    if (id == "disliked") {
+                        prefs.getString(excludeDislikedSongsKey, DislikeMode.Enabled.name)
+                            ?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() }
+                            ?.isEnabled ?: true
+                    } else {
+                        val pk = prefKeys[id]
+                        if (pk != null) prefs.getBoolean(pk, true) else true
+                    }
                 }.toMutableMap()
             )
         }
@@ -110,6 +117,7 @@ object HomeSongsSettingsDialog : Dialog {
                 prefKeys.forEach { (id, pk) ->
                     edit.putBoolean(pk, workingToggles[id] ?: true)
                 }
+                edit.putString(excludeDislikedSongsKey, if (workingToggles["disliked"] == true) DislikeMode.Enabled.name else DislikeMode.Disabled.name)
                 edit.apply()
                 Toaster.s(R.string.toast_preference_saved); hideDialog()
             }
@@ -125,7 +133,7 @@ object HomeSongsSettingsDialog : Dialog {
             .putBoolean(showDownloadedPlaylistKey, true)
             .putBoolean(showMyTopPlaylistKey, true)
             .putBoolean(showOnDevicePlaylistKey, true)
-            .putBoolean(showDislikedPlaylistKey, true)
+            .putString(excludeDislikedSongsKey, DislikeMode.Enabled.name)
             .apply()
     }
 }

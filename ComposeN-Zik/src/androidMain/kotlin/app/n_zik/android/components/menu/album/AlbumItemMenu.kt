@@ -99,6 +99,9 @@ import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
+import app.it.fast4x.rimusic.utils.showDislikedAlbumKey
+import app.it.fast4x.rimusic.utils.excludeDislikedAlbumsKey
+import app.it.fast4x.rimusic.enums.DislikeMode
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.album.ChangeAlbumTitleDialog
@@ -206,6 +209,7 @@ class AlbumItemMenu private constructor(
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
         val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+        val showDisliked by rememberPreference(excludeDislikedAlbumsKey, DislikeMode.Enabled)
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -352,23 +356,43 @@ class AlbumItemMenu private constructor(
                                         else YtMusic.likePlaylistOrAlbum(playlistId)
                                     }
                                 }
-                                Database.albumTable.rotateLikeState(album.id)
-                                val newState = when(likeState) {
+                                if (showDisliked.isEnabled) {
+                                    Database.albumTable.rotateLikeState(album.id)
+                                } else {
+                                    Database.albumTable.toggleBookmark(album.id)
+                                }
+                            }
+                            val newState = if (showDisliked.isEnabled) {
+                                when(likeState) {
                                     true -> false // bookmarked → disliked
                                     false -> null // disliked → neutral
                                     null -> true  // neutral → bookmarked
                                 }
-                                val messageId = when(newState) {
+                            } else {
+                                when(likeState) {
+                                    true -> null  // bookmarked → neutral
+                                    false -> true // disliked → bookmarked
+                                    null -> true  // neutral → bookmarked
+                                }
+                            }
+                            val messageId = if (showDisliked.isEnabled) {
+                                when(newState) {
                                     true -> R.string.added_to_favorites
                                     false -> R.string.added_to_dislikes
                                     null -> R.string.removed_from_favorites
                                 }
-                                with( album ) {
-                                    if( title != null )
-                                        Toaster.s( messageId, "\"$title\"" )
-                                    else
-                                        Toaster.s( messageId )
+                            } else {
+                                when(newState) {
+                                    true -> R.string.added_to_favorites
+                                    null -> R.string.removed_from_favorites
+                                    else -> R.string.added_to_favorites
                                 }
+                            }
+                            with( album ) {
+                                if( title != null )
+                                    Toaster.s( messageId, "\"$title\"" )
+                                else
+                                    Toaster.s( messageId )
                             }
                         },
                         modifier = Modifier

@@ -27,6 +27,9 @@ import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.typography
+import app.it.fast4x.rimusic.utils.showDislikedArtistKey
+import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
+import app.it.fast4x.rimusic.enums.DislikeMode
 import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
@@ -69,19 +72,41 @@ class FollowButton private constructor(
                 }
             }
 
+            val showDisliked = appContext().preferences.getString(excludeDislikedArtistsKey, DislikeMode.Enabled.name)?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() }?.isEnabled ?: true
+
             Database.asyncTransaction {
-                artistTable.rotateLikeState( artist.id )
+                if (showDisliked) {
+                    artistTable.rotateLikeState( artist.id )
+                } else {
+                    artistTable.toggleBookmark( artist.id )
+                }
             }
 
-            val newState = when(currentState) {
-                true -> false // followed → disliked
-                false -> null // disliked → neutral
-                null -> true  // neutral → followed
+            val newState = if (showDisliked) {
+                when(currentState) {
+                    true -> false // followed → disliked
+                    false -> null // disliked → neutral
+                    null -> true  // neutral → followed
+                }
+            } else {
+                when(currentState) {
+                    true -> null  // followed → neutral
+                    false -> true // disliked → followed
+                    null -> true  // neutral → followed
+                }
             }
-            val messageId = when(newState) {
-                true -> R.string.added_to_favorites
-                false -> R.string.added_to_dislikes
-                null -> R.string.removed_from_favorites
+            val messageId = if (showDisliked) {
+                when(newState) {
+                    true -> R.string.added_to_favorites
+                    false -> R.string.added_to_dislikes
+                    null -> R.string.removed_from_favorites
+                }
+            } else {
+                when(newState) {
+                    true -> R.string.added_to_favorites
+                    null -> R.string.removed_from_favorites
+                    else -> R.string.added_to_favorites
+                }
             }
             with( artist ) {
                 if( name != null )

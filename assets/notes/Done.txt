@@ -446,3 +446,82 @@ Other:
   - `StreamUrlCacheTest.kt` (new): cache put / invalidate / expiry behavior
   - `StreamResolverSessionChangeTest.kt` (new): resolver behavior across Innertube session changes
 
+perf(bookmark): centralized bookmark state cache — batch SQL queries for artists, albums, playlists
+  - `BookmarkStateManager.kt` (new): Centralized manager for artist/album/playlist bookmark states with `getArtistBookmarkStates()`, `getAlbumBookmarkStates()`, `getPlaylistBookmarkStates()` returning `Flow<Map<String, Boolean?>>` — 1 SQL query for N items instead of N queries
+  - `ArtistTable.kt`: Added `ArtistBookmarkState` data class + `getBookmarkStatesForArtists()` batch query
+  - `AlbumTable.kt`: Added `AlbumBookmarkState` data class + `getBookmarkStatesForAlbums()` batch query
+  - `PlaylistTable.kt`: Added `PlaylistBookmarkState` data class + `getBookmarkStatesForPlaylists()` batch query
+  - `ArtistItem.kt`: Added optional `bookmarkState: Boolean?` parameter — when provided, skips individual DB query
+  - `AlbumItem.kt`: Added optional `bookmarkState: Boolean?` parameter — when provided, skips individual DB query
+  - `PlaylistItem.kt`: Added optional `isBookmarked: Boolean?` parameter for Innertube.PlaylistItem overload
+  - Applied to 12+ screens: HomeArtist, HomeAlbum, HomeDiscovery, HomeQuickPicksSections, HomeQuickPicksComponents, OnlineSearchList, MoodList, StatisticsPage, NewAlbumsFromArtists, NewAlbums, AlbumDetails, ArtistDetails
+  - Performance: N visible items = 1 SQL query instead of N
+
+feat(video): add like icon on VideoItem
+  - `VideoItem.kt`: Added `likeState: Boolean? = null` parameter + `HeaderIconButton` with heart icons (getLikedIcon/getDislikedIcon) on thumbnail BottomStart
+  - `OnlineSearchList.kt`: Passes `likeState` to VideoItem via `Database.songTable.likeState()` query
+  - `HomeQuickPicksSections.kt`: Passes `likeState` via `LikeStateManager.getLikeStates()` batch query
+  - `HomeQuickPicksComponents.kt`: Passes `likeState` via `LikeStateManager.getLikeStates()` batch query
+  - `ArtistDetails.kt`: Passes `likeState` via `LikeStateManager.getLikeStates()` batch query for video sections
+
+fix(search): add bookmark/like icons to OnlineSearchList
+  - `OnlineSearchList.kt`: Added bookmark icons for Album, Artist, Playlist items in list view (else branch)
+  - `OnlineSearchList.kt`: Added like icon for VideoItem in list view
+  - Pattern: queries `Database.*Table.likeState()` for each item type, displays `HeaderIconButton` on thumbnail
+
+fix(rotation): fix rotateLikeState SQL — correct cycle order
+  - `ArtistTable.kt`: Fixed SQL rotation to use original values (dislikedAt IS NULL AND bookmarkedAt IS NULL for neutral→bookmarked)
+  - `AlbumTable.kt`: Same SQL fix for consistent rotation
+  - Cycle: neutral → bookmarked → disliked → neutral (was: neutral → disliked → bookmarked)
+
+fix(toaster): fix inverted toaster messages for bookmark/dislike
+  - `OnlineArtistItemMenu.kt`: Fixed newState mapping (null→true for neutral→bookmarked)
+  - `OnlineAlbumItemMenu.kt`: Same fix
+  - `LocalArtistItemMenu.kt`: Same fix
+  - `AlbumItemMenu.kt`: Same fix
+  - `AlbumDetails.kt`: Same fix
+  - `FollowButton.kt`: Same fix
+
+fix(insert): insert artist/album before rotateLikeState
+  - `OnlineArtistItemMenu.kt`: Added `insertIgnore()` before `rotateLikeState()` for online artists
+  - `OnlineAlbumItemMenu.kt`: Added `insertIgnore()` before `rotateLikeState()` for online albums
+  - Root cause: `rotateLikeState` does UPDATE — if item doesn't exist in DB, affects 0 rows
+
+fix(dislike): preserve dislikedAt across YouTube fetch
+  - `AlbumScreen.kt`: Replaced `upsert()` with `insertMetadata()` + `updateMetadata()` — doesn't touch bookmarkedAt/dislikedAt
+  - `ArtistScreenModern.kt`: Same pattern — `insertMetadata()` + `updateMetadata()`
+  - `HomeSyncService.kt`: Added `dislikedAt` to all 6 album/artist upsert calls
+  - `Database.kt`: Added `dislikedAt` to all 4 album upsert calls
+  - `UpdateYoutubeEntity.kt`: Added `dislikedAt` to album/artist upsert calls
+  - `AlbumDetailHandler.kt`: Added `dislikedAt` to album upsert call
+  - Root cause: `@Upsert` replaces ALL columns — omitting `dislikedAt` reset it to null
+
+feat(dislike): DislikeMode enum — centralized dislike toggle
+  - `DislikeMode.kt` (new): Enum `Enabled`/`Disabled` with `isEnabled` property, implements `TextView`
+  - `GeneralSettings.kt`: `ValueSelectorDialog` for songs/artists/albums dislike toggle
+  - `SongTable.kt`: Added `clearAllDisliked()` query (UPDATE Song SET likedAt = NULL WHERE likedAt = -1)
+  - All menus: `showDisliked.isEnabled` check — uses `rotateLikeState` when enabled, `toggleBookmark`/`toggleLike` when disabled
+  - `Shuffler.kt`, `NZikRadio.kt`, `Player.kt`: `getString` + `DislikeMode.valueOf` pattern for non-Compose contexts
+  - `YouTubeSync.kt`: Same pattern for song like rotation
+
+fix(settings): settings dialogs write to correct DislikeMode keys
+  - `HomeSongsSettingsDialog.kt`: Writes to `excludeDislikedSongsKey` (DislikeMode enum) instead of `showDislikedPlaylistKey` (Boolean)
+  - `HomeArtistsSettingsDialog.kt`: Writes to `excludeDislikedArtistsKey` (DislikeMode enum) instead of `showDislikedArtistKey` (Boolean)
+  - `HomeAlbumsSettingsDialog.kt`: Writes to `excludeDislikedAlbumsKey` (DislikeMode enum) instead of `showDislikedAlbumKey` (Boolean)
+  - Root cause: settings dialogs were writing to old Boolean keys while Home screens read from new DislikeMode enum keys
+
+fix(home): filter disliked items from All tab when dislike disabled
+  - `HomeArtist.kt`: Filters `dislikedAt == null` when `!showDislikedArtist.isEnabled`
+  - `HomeAlbum.kt`: Filters `dislikedAt == null` when `!showDislikedAlbum.isEnabled`
+  - `HomeSongs.kt`: Filters `likedAt != -1L` when `!showDislikedPlaylist.isEnabled`
+  - `HomeSongsScreen.kt`: Tab visibility uses `showDislikedChip.isEnabled` in toggleMap
+  - `HomeArtist.kt`: Tab visibility uses `showDislikedArtist.isEnabled` in toggleMap
+  - `HomeAlbum.kt`: Tab visibility uses `showDislikedAlbum.isEnabled` in toggleMap
+
+fix(settings): use bookmark_slash icon for dislike tabs
+  - `HomeArtistsSettingsDialog.kt`: Changed `R.drawable.heart_outline` to `R.drawable.bookmark_slash` for disliked icon
+  - `HomeAlbumsSettingsDialog.kt`: Changed `R.drawable.heart_outline` to `R.drawable.bookmark_slash` for disliked icon
+
+fix(history): default sort order descending
+  - `Preference.kt`: Changed `HISTORY_SORT_ORDER` default from `Ascending` to `Descending` — shows newest events first
+

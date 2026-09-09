@@ -41,6 +41,8 @@ import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.showDislikedArtistKey
+import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
+import app.it.fast4x.rimusic.enums.DislikeMode
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
@@ -137,7 +139,7 @@ class OnlineArtistItemMenu private constructor(
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
         val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
-        val showDisliked by rememberPreference(showDislikedArtistKey, true)
+        val showDisliked by rememberPreference(excludeDislikedArtistsKey, DislikeMode.Enabled)
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -270,13 +272,13 @@ class OnlineArtistItemMenu private constructor(
                                         thumbnailUrl = artist.thumbnail?.url
                                     )
                                 )
-                                if (showDisliked) {
+                                if (showDisliked.isEnabled) {
                                     Database.artistTable.rotateLikeState(artist.key)
                                 } else {
                                     Database.artistTable.toggleBookmark(artist.key)
                                 }
                             }
-                            val newState = if (showDisliked) {
+                            val newState = if (showDisliked.isEnabled) {
                                 when(likeState) {
                                     true -> false // bookmarked → disliked
                                     false -> null // disliked → neutral
@@ -289,7 +291,7 @@ class OnlineArtistItemMenu private constructor(
                                     null -> true  // neutral → bookmarked
                                 }
                             }
-                            val messageId = if (showDisliked) {
+                            val messageId = if (showDisliked.isEnabled) {
                                 when(newState) {
                                     true -> R.string.added_to_favorites
                                     false -> R.string.added_to_dislikes
