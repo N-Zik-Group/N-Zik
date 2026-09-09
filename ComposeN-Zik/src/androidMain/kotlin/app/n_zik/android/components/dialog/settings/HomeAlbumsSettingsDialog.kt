@@ -65,8 +65,8 @@ object HomeAlbumsSettingsDialog : Dialog {
         val items = workingOrder.map { id ->
             when (id) {
                 "all" -> ToggleItem(id, R.drawable.album, allLabel, "always_true_albums", true)
-                "favorites" -> ToggleItem(id, R.drawable.heart, favLabel, showFavoritesAlbumKey, true)
-                "disliked" -> ToggleItem(id, R.drawable.heart_outline, dislikedLabel, showDislikedAlbumKey, true)
+                "favorites" -> ToggleItem(id, R.drawable.bookmark, favLabel, showFavoritesAlbumKey, true)
+                "disliked" -> ToggleItem(id, R.drawable.bookmark_slash, dislikedLabel, showDislikedAlbumKey, true)
                 else -> null
             }
         }.filterNotNull()

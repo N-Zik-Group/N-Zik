@@ -79,17 +79,25 @@ fun ArtistScreenModern(
                .onSuccess { online ->
                    artistPage = online
 
-                   Database.asyncTransaction {
-                         val onlineArtist = Artist(
-                             id = browseId,
-                             name =  PropUtils.retainIfModified( localArtist?.name, online.artist.title ),
-                             thumbnailUrl = PropUtils.retainIfModified( localArtist?.thumbnailUrl, online.artist.thumbnail?.url ),
-                             timestamp = localArtist?.timestamp ?: System.currentTimeMillis(),
-                             bookmarkedAt = localArtist?.bookmarkedAt,
-                             isYoutubeArtist = localArtist?.isYoutubeArtist == true,
-                             position = localArtist?.position ?: -1
-                         )
-                       artistTable.upsert( onlineArtist )
+                    Database.asyncTransaction {
+                          val now = System.currentTimeMillis()
+                          val inserted = artistTable.insertMetadata(
+                              id = browseId,
+                              name = online.artist.title,
+                              thumbnailUrl = online.artist.thumbnail?.url,
+                              timestamp = now,
+                              isYoutubeArtist = false,
+                              position = -1
+                          )
+                          if (inserted == -1L) {
+                              artistTable.updateMetadata(
+                                  id = browseId,
+                                  name = PropUtils.retainIfModified(localArtist?.name, online.artist.title),
+                                  thumbnailUrl = PropUtils.retainIfModified(localArtist?.thumbnailUrl, online.artist.thumbnail?.url),
+                                  isYoutubeArtist = localArtist?.isYoutubeArtist == true,
+                                  position = localArtist?.position ?: -1
+                              )
+                          }
 
                        online.sections
                              .fastFirstOrNull { section ->
@@ -97,9 +105,9 @@ fun ArtistScreenModern(
                              }
                              ?.items
                              ?.map { (it as Innertube.SongItem).asMediaItem }
-                             ?.also {
-                                 mapIgnore( onlineArtist, *it.toTypedArray() )
-                             }
+                              ?.also {
+                                  localArtist?.let { artist -> mapIgnore( artist, *it.toTypedArray() ) }
+                              }
                    }
 
                    // Batch fetch durations for videos and songs missing it

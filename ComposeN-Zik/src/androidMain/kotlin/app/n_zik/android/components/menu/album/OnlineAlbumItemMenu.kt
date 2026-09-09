@@ -308,21 +308,33 @@ class OnlineAlbumItemMenu private constructor(
                         },
                         onClick = {
                             coroutineScope.launch(Dispatchers.IO) {
+                                Database.albumTable.insertIgnore(
+                                    app.it.fast4x.rimusic.models.Album(
+                                        id = album.key,
+                                        title = album.info?.name,
+                                        thumbnailUrl = album.thumbnail?.url,
+                                        year = album.year,
+                                        authorsText = album.authors?.joinToString(", ") { it.name ?: "" }
+                                    )
+                                )
                                 val pushAlbumBookmark = appContext().preferences.getBoolean(syncPushAlbumBookmarkKey, false)
                                 val syncDir = getSyncDirection()
-                                // Only sync to YouTube if NOT disliked (dislike is local only)
-                                if (likeState != false && isYouTubeSyncEnabled() && pushAlbumBookmark && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
+                                if (likeState != true && isYouTubeSyncEnabled() && pushAlbumBookmark && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
                                     val playlistId = album.playlistId
                                     if (playlistId != null) {
-                                        if (likeState == true) YtMusic.removelikePlaylistOrAlbum(playlistId)
-                                        else YtMusic.likePlaylistOrAlbum(playlistId)
+                                        YtMusic.likePlaylistOrAlbum(playlistId)
+                                    }
+                                } else if (likeState == true && isYouTubeSyncEnabled() && pushAlbumBookmark && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
+                                    val playlistId = album.playlistId
+                                    if (playlistId != null) {
+                                        YtMusic.removelikePlaylistOrAlbum(playlistId)
                                     }
                                 }
                                 Database.albumTable.rotateLikeState(album.key)
                                 val newState = when(likeState) {
-                                    true -> null  // bookmarked → neutral
-                                    false -> true // disliked → bookmarked
-                                    null -> false // neutral → disliked
+                                    true -> false // bookmarked → disliked
+                                    false -> null // disliked → neutral
+                                    null -> true  // neutral → bookmarked
                                 }
                                 val messageId = when(newState) {
                                     true -> R.string.added_to_favorites

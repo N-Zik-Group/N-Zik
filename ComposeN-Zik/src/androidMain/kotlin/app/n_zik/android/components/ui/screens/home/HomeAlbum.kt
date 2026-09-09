@@ -75,6 +75,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.it.fast4x.compose.persist.persistList
+import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
@@ -313,11 +314,15 @@ fun HomeAlbums(
             AlbumsType.Disliked -> Database.albumTable.allDisliked()
         }.collect { itemsToFilter = it }
     }
-    LaunchedEffect( Unit, itemsToFilter, filterBy ) {
+    LaunchedEffect( Unit, itemsToFilter, filterBy, showDislikedAlbum ) {
         items = when(filterBy) {
             FilterBy.All -> itemsToFilter
             FilterBy.YoutubeLibrary -> itemsToFilter.filter { it.isYoutubeAlbum }
             FilterBy.Local -> itemsToFilter.filterNot { it.isYoutubeAlbum }
+        }.let { list ->
+            if (!showDislikedAlbum && albumType != AlbumsType.Disliked) {
+                list.filter { it.dislikedAt == null }
+            } else list
         }
 
     }
@@ -622,6 +627,11 @@ fun HomeAlbums(
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
+                    val albumIds = remember(itemsOnDisplay) { itemsOnDisplay.map { it.id } }
+                    val bookmarkStatesMap by remember(albumIds) {
+                        BookmarkStateManager.getAlbumBookmarkStates(albumIds)
+                    }.collectAsStateWithLifecycle(emptyMap())
+
                     LazyVerticalGrid(
                         state = lazyGridState,
                         columns = GridCells.Adaptive( itemSize.size.dp ),
@@ -679,6 +689,7 @@ fun HomeAlbums(
                             album = album,
                             thumbnailSizeDp = itemSize.size.dp,
                             thumbnailSizePx = itemSize.size.px,
+                            bookmarkState = bookmarkStatesMap[album.id],
                             modifier = Modifier
                                 .clip(uiRoundnessShape()).combinedClickable(
 

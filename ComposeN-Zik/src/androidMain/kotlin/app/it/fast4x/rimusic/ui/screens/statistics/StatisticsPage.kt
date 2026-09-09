@@ -5,6 +5,7 @@ import androidx.compose.ui.draw.clip
 import app.n_zik.android.uiRoundnessShape
 
 import app.n_zik.android.core.database.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -263,6 +264,19 @@ fun StatisticsPage(
     val totalPlayTimesSongsState = totalPlayTimesSongsFlow.collectAsState(0L, Dispatchers.IO)
     totalPlayTimesSongs = totalPlayTimesSongsState.value
 
+    val artistBookmarkIds = remember(artists) { artists.map { it.id } }
+    val artistBookmarkStatesMap by remember(artistBookmarkIds) {
+        BookmarkStateManager.getArtistBookmarkStates(artistBookmarkIds)
+    }.collectAsStateWithLifecycle(emptyMap())
+    val albumBookmarkIds = remember(albums) { albums.map { it.id } }
+    val albumBookmarkStatesMap by remember(albumBookmarkIds) {
+        BookmarkStateManager.getAlbumBookmarkStates(albumBookmarkIds)
+    }.collectAsStateWithLifecycle(emptyMap())
+    val playlistBookmarkIds = remember(playlists) { playlists.map { it.playlist.id.toString() } }
+    val playlistBookmarkStatesMap by remember(playlistBookmarkIds) {
+        BookmarkStateManager.getPlaylistBookmarkStates(playlistBookmarkIds)
+    }.collectAsStateWithLifecycle(emptyMap())
+
     Box(
         modifier = Modifier
             .background(colorPalette().background0)
@@ -407,6 +421,7 @@ fun StatisticsPage(
                             thumbnailSizePx = artistThumbnailSizePx,
                             thumbnailSizeDp = artistThumbnailSizeDp,
                             alternative = true,
+                            bookmarkState = artistBookmarkStatesMap[artists[it].id],
                             modifier = Modifier
                                 .clip(uiRoundnessShape()).combinedClickable(
                                     onClick = {
@@ -455,6 +470,7 @@ fun StatisticsPage(
                             thumbnailSizeDp = albumThumbnailSizeDp,
                             alternative = true,
                             showAuthors = true,
+                            bookmarkState = albumBookmarkStatesMap[albums[it].id],
                             modifier = Modifier
                                 .clip(uiRoundnessShape()).combinedClickable(
                                     onClick = {

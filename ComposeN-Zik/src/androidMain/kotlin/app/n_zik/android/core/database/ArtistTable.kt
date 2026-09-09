@@ -16,6 +16,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 
+data class ArtistBookmarkState(
+    val artistId: String,
+    val bookmarkState: Boolean?
+)
+
 @Dao
 @RewriteQueriesToDropUnusedColumns
 interface ArtistTable {
@@ -169,6 +174,35 @@ interface ArtistTable {
     @Upsert
     fun upsert( artist: Artist )
 
+    @Query("""
+        UPDATE Artist SET
+            name = :name,
+            thumbnailUrl = :thumbnailUrl,
+            isYoutubeArtist = :isYoutubeArtist,
+            position = :position
+        WHERE id = :id
+    """)
+    fun updateMetadata(
+        id: String,
+        name: String?,
+        thumbnailUrl: String?,
+        isYoutubeArtist: Boolean,
+        position: Int
+    ): Int
+
+    @Query("""
+        INSERT OR IGNORE INTO Artist (id, name, thumbnailUrl, timestamp, isYoutubeArtist, position)
+        VALUES (:id, :name, :thumbnailUrl, :timestamp, :isYoutubeArtist, :position)
+    """)
+    fun insertMetadata(
+        id: String,
+        name: String?,
+        thumbnailUrl: String?,
+        timestamp: Long,
+        isYoutubeArtist: Boolean,
+        position: Int
+    ): Long
+
     /**
      * Attempt to write the list of [Artist] to database.
      *
@@ -245,18 +279,29 @@ interface ArtistTable {
         UPDATE Artist
         SET
             bookmarkedAt = CASE
-                WHEN bookmarkedAt IS NULL AND dislikedAt IS NULL THEN strftime('%s', 'now') * 1000
-                WHEN bookmarkedAt IS NOT NULL THEN NULL
-                ELSE bookmarkedAt
+                WHEN dislikedAt IS NULL AND bookmarkedAt IS NULL THEN strftime('%s', 'now') * 1000
+                WHEN dislikedAt IS NULL THEN NULL
+                ELSE NULL
             END,
             dislikedAt = CASE
-                WHEN bookmarkedAt IS NOT NULL THEN strftime('%s', 'now') * 1000
+                WHEN dislikedAt IS NULL AND bookmarkedAt IS NOT NULL THEN strftime('%s', 'now') * 1000
                 WHEN dislikedAt IS NOT NULL THEN NULL
-                ELSE dislikedAt
+                ELSE NULL
             END
         WHERE id = :artistId
     """)
     fun rotateLikeState( artistId: String ): Int
+
+    @Query("""
+        UPDATE Artist
+        SET bookmarkedAt = CASE
+                WHEN bookmarkedAt IS NULL THEN strftime('%s', 'now') * 1000
+                ELSE NULL
+            END,
+            dislikedAt = NULL
+        WHERE id = :artistId
+    """)
+    fun toggleBookmark( artistId: String ): Int
 
     /**
      * @return like state of artist: true = followed, false = disliked, null = neutral
@@ -271,6 +316,18 @@ interface ArtistTable {
         WHERE id = :artistId
     """)
     fun likeState( artistId: String ): Flow<Boolean?>
+
+    @Query("""
+        SELECT id as artistId,
+            CASE
+                WHEN dislikedAt IS NOT NULL THEN 0
+                WHEN bookmarkedAt IS NOT NULL THEN 1
+                ELSE NULL
+            END as bookmarkState
+        FROM Artist
+        WHERE id IN (:artistIds)
+    """)
+    fun getBookmarkStatesForArtists( artistIds: List<String> ): Flow<List<ArtistBookmarkState>>
 
     /**
      * Toggle dislike state for an artist.
@@ -291,6 +348,9 @@ interface ArtistTable {
         WHERE id = :artistId
     """)
     fun toggleDislike( artistId: String ): Int
+
+    @Query("UPDATE Artist SET dislikedAt = NULL WHERE dislikedAt IS NOT NULL")
+    fun clearAllDisliked(): Int
 
     /**
      * @return whether [Artist] with id [artistId] is disliked

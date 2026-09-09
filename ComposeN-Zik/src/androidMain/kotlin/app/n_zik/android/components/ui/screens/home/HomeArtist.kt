@@ -80,6 +80,7 @@ import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.searchPage
 import it.fast4x.innertube.utils.from
 import it.fast4x.innertube.YtMusic
+import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.colorPalette
 import app.n_zik.android.appContext
@@ -317,11 +318,15 @@ fun HomeArtists(
             ArtistsType.Disliked -> Database.artistTable.allDisliked()
         }.collect { itemsToFilter = it }
     }
-    LaunchedEffect( Unit, itemsToFilter, filterBy ) {
+    LaunchedEffect( Unit, itemsToFilter, filterBy, showDislikedArtist ) {
         items = when(filterBy) {
             FilterBy.All -> itemsToFilter
             FilterBy.YoutubeLibrary -> itemsToFilter.filter { it.isYoutubeArtist }
             FilterBy.Local -> itemsToFilter.filterNot { it.isYoutubeArtist }
+        }.let { list ->
+            if (!showDislikedArtist && artistType != ArtistsType.Disliked) {
+                list.filter { it.dislikedAt == null }
+            } else list
         }
 
     }
@@ -607,6 +612,11 @@ fun HomeArtists(
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
+                    val artistIds = remember(itemsOnDisplay) { itemsOnDisplay.map { it.id } }
+                    val bookmarkStatesMap by remember(artistIds) {
+                        BookmarkStateManager.getArtistBookmarkStates(artistIds)
+                    }.collectAsStateWithLifecycle(emptyMap())
+
                     LazyVerticalGrid(
                         state = lazyGridState,
                         columns = GridCells.Adaptive( itemSize.size.dp ),
@@ -655,6 +665,7 @@ fun HomeArtists(
                                     thumbnailSizeDp = itemSize.size.dp,
                                     thumbnailSizePx = itemSize.size.px,
                                     alternative = true,
+                                    bookmarkState = bookmarkStatesMap[artist.id],
                                     modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                         onClick = {
                                             if( itemSelector.isActive ) {

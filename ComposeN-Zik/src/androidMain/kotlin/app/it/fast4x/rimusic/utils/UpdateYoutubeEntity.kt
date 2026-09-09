@@ -56,6 +56,7 @@ fun UpdateYoutubeArtist(browseId: String) {
                                             thumbnailUrl = PropUtils.retainIfModified(currentArtist?.thumbnailUrl, currentArtistPage.thumbnail?.url),
                                             timestamp = System.currentTimeMillis(),
                                             bookmarkedAt = currentArtist?.bookmarkedAt,
+                                            dislikedAt = currentArtist?.dislikedAt,
                                             lastFetch = System.currentTimeMillis()
                                         )
                                     )
@@ -99,7 +100,8 @@ fun UpdateYoutubeAlbum (browseId: String) {
                                             authorsText = PropUtils.retainIfModified(album?.authorsText, currentAlbumPage.authors.parseArtists().joinToString(", ").takeIf { it.isNotBlank() }),
                                             shareUrl = currentAlbumPage.url,
                                             timestamp = System.currentTimeMillis(),
-                                            bookmarkedAt = album?.bookmarkedAt
+                                            bookmarkedAt = album?.bookmarkedAt,
+                                            dislikedAt = album?.dislikedAt
                                         )
                                     )
                                     currentAlbumPage.songsPage

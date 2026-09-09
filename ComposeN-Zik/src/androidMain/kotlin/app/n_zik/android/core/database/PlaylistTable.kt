@@ -22,6 +22,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 
+data class PlaylistBookmarkState(
+    val browseId: String,
+    val isYoutubePlaylist: Boolean
+)
+
 @Dao
 @RewriteQueriesToDropUnusedColumns
 interface PlaylistTable {
@@ -103,6 +108,13 @@ interface PlaylistTable {
      */
     @Query("SELECT DISTINCT * FROM Playlist WHERE browseId = :browseId")
     fun findByBrowseId( browseId: String ): Flow<Playlist?>
+
+    @Query("""
+        SELECT browseId, isYoutubePlaylist
+        FROM Playlist
+        WHERE browseId IN (:browseIds)
+    """)
+    fun getBookmarkStatesForPlaylists( browseIds: List<String> ): Flow<List<PlaylistBookmarkState>>
 
     /**
      * @return [Playlist] that has [Playlist.name] equals to [playlistName], case-insensitive

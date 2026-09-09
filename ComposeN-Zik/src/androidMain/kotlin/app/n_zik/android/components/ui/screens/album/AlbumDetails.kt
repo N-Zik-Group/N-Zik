@@ -131,9 +131,9 @@ fun AlbumBookmark(
             }
             Database.albumTable.rotateLikeState( albumId )
             val newState = when(likeState) {
-                true -> null  // bookmarked → neutral
-                false -> true // disliked → bookmarked
-                null -> false // neutral → disliked
+                true -> false // bookmarked → disliked
+                false -> null // disliked → neutral
+                null -> true  // neutral → bookmarked
             }
             val messageId = when(newState) {
                 true -> R.string.added_to_favorites

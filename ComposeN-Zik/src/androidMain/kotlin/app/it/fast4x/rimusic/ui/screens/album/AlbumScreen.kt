@@ -133,20 +133,33 @@ fun AlbumScreen(
                    }
                    Timber.tag("ALBUM-DETAILS-DEBUG").w("========== END ALBUM DETAILS [GET ALBUM] ==========")
 
-                   Database.asyncTransaction {
-                       albumTable.upsert(Album(
-                           id = browseId,
-                           title = PropUtils.retainIfModified( album?.title, onlineAlbum.title ),
-                           thumbnailUrl = PropUtils.retainIfModified( album?.thumbnailUrl, onlineAlbum.thumbnail?.url ),
-                           year = onlineAlbum.year,
-                           authorsText = PropUtils.retainIfModified( album?.authorsText, authorsText ),
-                           shareUrl = online.url,
-                           timestamp = album?.timestamp ?: System.currentTimeMillis(),
-                           bookmarkedAt = album?.bookmarkedAt,
-                           isYoutubeAlbum = album?.isYoutubeAlbum == true,
-                           position = album?.position ?: -1,
-                           lastFetch = System.currentTimeMillis()
-                        ))
+                    Database.asyncTransaction {
+                         val now = System.currentTimeMillis()
+                         val inserted = albumTable.insertMetadata(
+                             id = browseId,
+                             title = onlineAlbum.title,
+                             thumbnailUrl = onlineAlbum.thumbnail?.url,
+                             year = onlineAlbum.year,
+                             authorsText = authorsText,
+                             shareUrl = online.url,
+                             timestamp = now,
+                             isYoutubeAlbum = false,
+                             position = -1,
+                             lastFetch = now
+                         )
+                         if (inserted == -1L) {
+                             albumTable.updateMetadata(
+                                 id = browseId,
+                                 title = PropUtils.retainIfModified(album?.title, onlineAlbum.title),
+                                 thumbnailUrl = PropUtils.retainIfModified(album?.thumbnailUrl, onlineAlbum.thumbnail?.url),
+                                 year = onlineAlbum.year,
+                                 authorsText = PropUtils.retainIfModified(album?.authorsText, authorsText),
+                                 shareUrl = online.url,
+                                 isYoutubeAlbum = album?.isYoutubeAlbum == true,
+                                 position = album?.position ?: -1,
+                                 lastFetch = now
+                             )
+                         }
 
                          songAlbumMapTable.clear(browseId)
 

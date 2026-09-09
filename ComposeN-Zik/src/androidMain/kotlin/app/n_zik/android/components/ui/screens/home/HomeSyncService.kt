@@ -189,6 +189,7 @@ class HomeSyncService : Service() {
                             thumbnailUrl = PropUtils.retainIfModified(artist.thumbnailUrl, a.thumbnail?.url) ?: artist.thumbnailUrl,
                             timestamp = artist.timestamp,
                             bookmarkedAt = artist.bookmarkedAt,
+                            dislikedAt = artist.dislikedAt,
                             isYoutubeArtist = artist.isYoutubeArtist,
                             position = artist.position
                         ))
@@ -238,6 +239,7 @@ class HomeSyncService : Service() {
                                 thumbnailUrl = PropUtils.retainIfModified(artist.thumbnailUrl, a.thumbnail?.url) ?: artist.thumbnailUrl,
                                 timestamp = artist.timestamp,
                                 bookmarkedAt = artist.bookmarkedAt,
+                                dislikedAt = artist.dislikedAt,
                                 isYoutubeArtist = artist.isYoutubeArtist,
                                 position = artist.position
                             ))
@@ -271,6 +273,7 @@ class HomeSyncService : Service() {
                                         thumbnailUrl = PropUtils.retainIfModified(artist.thumbnailUrl, a.thumbnail?.url) ?: artist.thumbnailUrl,
                                         timestamp = artist.timestamp,
                                         bookmarkedAt = artist.bookmarkedAt,
+                                        dislikedAt = artist.dislikedAt,
                                         isYoutubeArtist = artist.isYoutubeArtist,
                                         position = artist.position
                                     ))
@@ -393,6 +396,7 @@ class HomeSyncService : Service() {
                             thumbnailUrl = PropUtils.retainIfModified(album.thumbnailUrl, a.thumbnail?.url) ?: album.thumbnailUrl,
                             timestamp = album.timestamp,
                             bookmarkedAt = album.bookmarkedAt,
+                            dislikedAt = album.dislikedAt,
                             isYoutubeAlbum = album.isYoutubeAlbum,
                             position = album.position
                         ))
@@ -453,6 +457,7 @@ class HomeSyncService : Service() {
                                 thumbnailUrl = PropUtils.retainIfModified(album.thumbnailUrl, a.thumbnail?.url) ?: album.thumbnailUrl,
                                 timestamp = album.timestamp,
                                 bookmarkedAt = album.bookmarkedAt,
+                                dislikedAt = album.dislikedAt,
                                 isYoutubeAlbum = album.isYoutubeAlbum,
                                 position = album.position
                             ))
@@ -499,6 +504,7 @@ class HomeSyncService : Service() {
                                         thumbnailUrl = PropUtils.retainIfModified(album.thumbnailUrl, a.thumbnail?.url) ?: album.thumbnailUrl,
                                         timestamp = album.timestamp,
                                         bookmarkedAt = album.bookmarkedAt,
+                                        dislikedAt = album.dislikedAt,
                                         isYoutubeAlbum = album.isYoutubeAlbum,
                                         position = album.position
                                     ))

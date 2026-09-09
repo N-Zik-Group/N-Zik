@@ -57,6 +57,7 @@ import app.it.fast4x.compose.persist.persist
 import app.it.fast4x.compose.persist.persistList
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.discoverPage
+import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.colorPalette
@@ -184,6 +185,11 @@ fun HomeDiscovery(
                         modifier = sectionTextModifier
                     )
 
+                    val filteredAlbumKeys = remember(newReleaseAlbumsFiltered) { newReleaseAlbumsFiltered.map { it.key } }
+                    val filteredBookmarkStatesMap by remember(filteredAlbumKeys) {
+                        BookmarkStateManager.getAlbumBookmarkStates(filteredAlbumKeys)
+                    }.collectAsStateWithLifecycle(emptyMap())
+
                     LazyRow(contentPadding = endPaddingValues) {
                         items(items = newReleaseAlbumsFiltered.distinctBy { it.key }, key = { it.key }, contentType = { "album" }) {
                               //preferitesArtists.forEach { artist ->
@@ -193,6 +199,7 @@ fun HomeDiscovery(
                                             thumbnailSizePx = thumbnailPx,
                                             thumbnailSizeDp = thumbnailDp,
                                             alternative = true,
+                                            bookmarkState = filteredBookmarkStatesMap[it.key],
                                             modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                                 onClick = {
                                                     onNewReleaseAlbumClick(it.key)
@@ -223,6 +230,11 @@ fun HomeDiscovery(
                         modifier = sectionTextModifier
                     )
 
+                    val newAlbumKeys = remember(page.newReleaseAlbums) { page.newReleaseAlbums.map { it.key } }
+                    val newAlbumBookmarkStatesMap by remember(newAlbumKeys) {
+                        BookmarkStateManager.getAlbumBookmarkStates(newAlbumKeys)
+                    }.collectAsStateWithLifecycle(emptyMap())
+
                     LazyRow(contentPadding = endPaddingValues) {
                         items(items = page.newReleaseAlbums.distinctBy { it.key }, key = { it.key }, contentType = { "album" }) {
                             AlbumItem(
@@ -230,6 +242,7 @@ fun HomeDiscovery(
                                 thumbnailSizePx = thumbnailPx,
                                 thumbnailSizeDp = thumbnailDp,
                                 alternative = true,
+                                bookmarkState = newAlbumBookmarkStatesMap[it.key],
                                 modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                     onClick = { onNewReleaseAlbumClick(it.key) },
                                     onLongClick = {

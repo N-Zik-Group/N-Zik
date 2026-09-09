@@ -80,6 +80,7 @@ class AlbumDetailHandler : BrowseHandler {
                             shareUrl = online.url,
                             timestamp = album?.timestamp ?: System.currentTimeMillis(),
                             bookmarkedAt = album?.bookmarkedAt,
+                            dislikedAt = album?.dislikedAt,
                             isYoutubeAlbum = album?.isYoutubeAlbum ?: true,
                             position = album?.position ?: -1
                         )

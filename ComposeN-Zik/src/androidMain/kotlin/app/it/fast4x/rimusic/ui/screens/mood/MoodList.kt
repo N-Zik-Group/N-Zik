@@ -76,6 +76,7 @@ import app.it.fast4x.rimusic.ui.components.SwipeablePlaylistItem
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.components.menu.song.SongItemMenu
 import app.n_zik.android.components.menu.video.VideoItemMenu
+import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import androidx.compose.ui.platform.LocalContext
@@ -210,6 +211,19 @@ fun MoodList(
                         )
                     }
                     item {
+                        val sectionAlbumKeys = remember(item) { item.items.filterIsInstance<Innertube.AlbumItem>().mapNotNull { it.key } }
+                        val sectionAlbumBookmarkStatesMap by remember(sectionAlbumKeys) {
+                            BookmarkStateManager.getAlbumBookmarkStates(sectionAlbumKeys)
+                        }.collectAsStateWithLifecycle(emptyMap())
+                        val sectionArtistKeys = remember(item) { item.items.filterIsInstance<Innertube.ArtistItem>().mapNotNull { it.key } }
+                        val sectionArtistBookmarkStatesMap by remember(sectionArtistKeys) {
+                            BookmarkStateManager.getArtistBookmarkStates(sectionArtistKeys)
+                        }.collectAsStateWithLifecycle(emptyMap())
+                        val sectionPlaylistKeys = remember(item) { item.items.filterIsInstance<Innertube.PlaylistItem>().mapNotNull { it.key } }
+                        val sectionPlaylistBookmarkStatesMap by remember(sectionPlaylistKeys) {
+                            BookmarkStateManager.getPlaylistBookmarkStates(sectionPlaylistKeys)
+                        }.collectAsStateWithLifecycle(emptyMap())
+
                         LazyRow {
                             items(items = item.items, key = { it.key }) { childItem ->
                                 if (childItem.key == defaultBrowseId) return@items
@@ -219,6 +233,7 @@ fun MoodList(
                                         thumbnailSizePx = thumbnailSizePx,
                                         thumbnailSizeDp = thumbnailSizeDp,
                                         alternative = true,
+                                        bookmarkState = sectionAlbumBookmarkStatesMap[childItem.key],
                                         modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                             onClick = {
                                                 childItem.info?.endpoint?.browseId?.let {
@@ -243,6 +258,7 @@ fun MoodList(
                                         thumbnailSizePx = thumbnailSizePx,
                                         thumbnailSizeDp = thumbnailSizeDp,
                                         alternative = true,
+                                        bookmarkState = sectionArtistBookmarkStatesMap[childItem.key],
                                         modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                             onClick = {
                                                 childItem.info?.endpoint?.browseId?.let {
@@ -264,6 +280,7 @@ fun MoodList(
                                         thumbnailSizePx = thumbnailSizePx,
                                         thumbnailSizeDp = thumbnailSizeDp,
                                         alternative = true,
+                                        isBookmarked = sectionPlaylistBookmarkStatesMap[childItem.key],
                                         modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                             onClick = {
                                                 childItem.info?.endpoint?.let { endpoint ->

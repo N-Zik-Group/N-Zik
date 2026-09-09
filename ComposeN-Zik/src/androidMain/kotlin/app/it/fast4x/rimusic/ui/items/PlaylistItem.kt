@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,6 +46,7 @@ import app.it.fast4x.rimusic.PINNED_PREFIX
 
 import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.colorPalette
+import app.it.fast4x.rimusic.models.Playlist
 import app.it.fast4x.rimusic.models.PlaylistPreview
 import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.thumbnailShape
@@ -213,12 +215,17 @@ fun PlaylistItem(
     disableScrollingText: Boolean,
     isYoutubePlaylist : Boolean = false,
     showInfo: Boolean = true,
-    isEditable : Boolean = false
+    isEditable : Boolean = false,
+    isBookmarked: Boolean? = null
 ) {
-    val localPlaylist by remember(playlist.key) {
-        Database.playlistTable.findByBrowseId(playlist.key)
-    }.collectAsState(null, Dispatchers.IO)
-    val isBookmarked = localPlaylist?.isYoutubePlaylist == true
+    val localPlaylist by if (isBookmarked != null) {
+        remember(isBookmarked) { mutableStateOf<Playlist?>(null) }
+    } else {
+        remember(playlist.key) {
+            Database.playlistTable.findByBrowseId(playlist.key)
+        }.collectAsState(null, Dispatchers.IO)
+    }
+    val isBookmarkedResolved = isBookmarked ?: (localPlaylist?.isYoutubePlaylist == true)
 
     PlaylistItem(
         thumbnailContent = thumb@ {
@@ -241,7 +248,7 @@ fun PlaylistItem(
         showName = showName,
         disableScrollingText = disableScrollingText,
         browseId = playlist.key,
-        isYoutubePlaylist = isBookmarked,
+        isYoutubePlaylist = isBookmarkedResolved,
         showInfo = showInfo,
         isEditable = isEditable
     )

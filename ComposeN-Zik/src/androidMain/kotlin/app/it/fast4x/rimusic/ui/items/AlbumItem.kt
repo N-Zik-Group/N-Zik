@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -73,13 +74,18 @@ fun AlbumItem(
     disableScrollingText: Boolean,
     showInfo: Boolean = true,
     isYoutubeAlbum: Boolean = false,
+    bookmarkState: Boolean? = null,
     thumbnailOverlay: @Composable () -> Unit = {}
 ) {
-    val likeState by remember( album.id ) {
-        Database.albumTable
-            .likeState( album.id )
-            .distinctUntilChanged()
-    }.collectAsState( null, Dispatchers.IO )
+    val likeState by if (bookmarkState != null) {
+        remember(bookmarkState) { mutableStateOf(bookmarkState) }
+    } else {
+        remember( album.id ) {
+            Database.albumTable
+                .likeState( album.id )
+                .distinctUntilChanged()
+        }.collectAsState( null, Dispatchers.IO )
+    }
 
     AlbumItem(
         thumbnailUrl = album.thumbnailUrl,
@@ -112,13 +118,18 @@ fun AlbumItem(
     isYoutubeAlbum: Boolean = false,
     showInfo: Boolean = true,
     disableScrollingText: Boolean,
+    bookmarkState: Boolean? = null,
     thumbnailOverlay: @Composable () -> Unit = {}
 ) {
-    val likeState by remember( album.key ) {
-        Database.albumTable
-            .likeState( album.key )
-            .distinctUntilChanged()
-    }.collectAsState( null, Dispatchers.IO )
+    val likeState by if (bookmarkState != null) {
+        remember(bookmarkState) { mutableStateOf(bookmarkState) }
+    } else {
+        remember( album.key ) {
+            Database.albumTable
+                .likeState( album.key )
+                .distinctUntilChanged()
+        }.collectAsState( null, Dispatchers.IO )
+    }
 
     AlbumItem(
         thumbnailUrl = album.thumbnail?.url,

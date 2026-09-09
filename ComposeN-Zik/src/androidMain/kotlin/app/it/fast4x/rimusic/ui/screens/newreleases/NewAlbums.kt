@@ -24,7 +24,9 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -37,6 +39,7 @@ import app.it.fast4x.compose.persist.persist
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.discoverPage
 import app.n_zik.android.colorPalette
+import app.n_zik.android.core.database.BookmarkStateManager
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.it.fast4x.rimusic.ui.components.themed.Loader
@@ -87,6 +90,11 @@ fun NewAlbums(
                 Loader()
             }
         } else {
+            val albumKeys = remember(page.newReleaseAlbums) { page.newReleaseAlbums.map { it.key } }
+            val bookmarkStatesMap by remember(albumKeys) {
+                BookmarkStateManager.getAlbumBookmarkStates(albumKeys)
+            }.collectAsStateWithLifecycle(emptyMap())
+
             LazyVerticalGrid(
                 state = lazyGridState,
                 columns = GridCells.Adaptive(Dimensions.thumbnails.album + 24.dp),
@@ -117,6 +125,7 @@ fun NewAlbums(
                         thumbnailSizePx = thumbnailSizePx,
                         thumbnailSizeDp = thumbnailSizeDp,
                         alternative = true,
+                        bookmarkState = bookmarkStatesMap[it.key],
                         modifier = Modifier.clip(uiRoundnessShape()).clickable(onClick = {
                             navController.navigate(route = "${NavRoutes.album.name}/${it.key}")
                         }),

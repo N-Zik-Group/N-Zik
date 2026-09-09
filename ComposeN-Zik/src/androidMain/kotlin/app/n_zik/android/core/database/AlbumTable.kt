@@ -16,6 +16,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 
+data class AlbumBookmarkState(
+    val albumId: String,
+    val bookmarkState: Boolean?
+)
+
 @Dao
 @RewriteQueriesToDropUnusedColumns
 interface AlbumTable {
@@ -177,6 +182,47 @@ interface AlbumTable {
     @Upsert
     fun upsert( album: Album )
 
+    @Query("""
+        UPDATE Album SET
+            title = :title,
+            thumbnailUrl = :thumbnailUrl,
+            year = :year,
+            authorsText = :authorsText,
+            shareUrl = :shareUrl,
+            isYoutubeAlbum = :isYoutubeAlbum,
+            position = :position,
+            lastFetch = :lastFetch
+        WHERE id = :id
+    """)
+    fun updateMetadata(
+        id: String,
+        title: String?,
+        thumbnailUrl: String?,
+        year: String?,
+        authorsText: String?,
+        shareUrl: String?,
+        isYoutubeAlbum: Boolean,
+        position: Int,
+        lastFetch: Long?
+    ): Int
+
+    @Query("""
+        INSERT OR IGNORE INTO Album (id, title, thumbnailUrl, year, authorsText, shareUrl, timestamp, isYoutubeAlbum, position, lastFetch)
+        VALUES (:id, :title, :thumbnailUrl, :year, :authorsText, :shareUrl, :timestamp, :isYoutubeAlbum, :position, :lastFetch)
+    """)
+    fun insertMetadata(
+        id: String,
+        title: String?,
+        thumbnailUrl: String?,
+        year: String?,
+        authorsText: String?,
+        shareUrl: String?,
+        timestamp: Long,
+        isYoutubeAlbum: Boolean,
+        position: Int,
+        lastFetch: Long?
+    ): Long
+
     /**
      * Attempt to write the list of [Album] to database.
      *
@@ -248,17 +294,17 @@ interface AlbumTable {
         UPDATE Album
         SET
             bookmarkedAt = CASE
-                WHEN bookmarkedAt IS NULL AND dislikedAt IS NULL THEN strftime('%s', 'now') * 1000
-                WHEN bookmarkedAt IS NOT NULL THEN NULL
-                ELSE bookmarkedAt
+                WHEN dislikedAt IS NULL AND bookmarkedAt IS NULL THEN strftime('%s', 'now') * 1000
+                WHEN dislikedAt IS NULL THEN NULL
+                ELSE NULL
             END,
             dislikedAt = CASE
-                WHEN bookmarkedAt IS NOT NULL THEN strftime('%s', 'now') * 1000
+                WHEN dislikedAt IS NULL AND bookmarkedAt IS NOT NULL THEN strftime('%s', 'now') * 1000
                 WHEN dislikedAt IS NOT NULL THEN NULL
-                ELSE dislikedAt
+                ELSE NULL
             END,
             lastFetch = CASE
-                WHEN bookmarkedAt IS NOT NULL THEN NULL
+                WHEN dislikedAt IS NULL AND bookmarkedAt IS NULL THEN NULL
                 ELSE lastFetch
             END
         WHERE id = :albumId
@@ -279,6 +325,18 @@ interface AlbumTable {
     """)
     fun likeState( albumId: String ): Flow<Boolean?>
 
+    @Query("""
+        SELECT id as albumId,
+            CASE
+                WHEN dislikedAt IS NOT NULL THEN 0
+                WHEN bookmarkedAt IS NOT NULL THEN 1
+                ELSE NULL
+            END as bookmarkState
+        FROM Album
+        WHERE id IN (:albumIds)
+    """)
+    fun getBookmarkStatesForAlbums( albumIds: List<String> ): Flow<List<AlbumBookmarkState>>
+
     /**
      * Toggle dislike state for an album.
      *
@@ -298,6 +356,9 @@ interface AlbumTable {
         WHERE id = :albumId
     """)
     fun toggleDislike( albumId: String ): Int
+
+    @Query("UPDATE Album SET dislikedAt = NULL WHERE dislikedAt IS NOT NULL")
+    fun clearAllDisliked(): Int
 
     /**
      * @return whether [Album] with id [albumId] is disliked

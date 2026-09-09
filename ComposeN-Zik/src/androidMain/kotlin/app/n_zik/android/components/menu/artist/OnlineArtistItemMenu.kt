@@ -40,6 +40,7 @@ import app.it.fast4x.rimusic.utils.conditional
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.rememberPreference
+import app.it.fast4x.rimusic.utils.showDislikedArtistKey
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
@@ -136,6 +137,7 @@ class OnlineArtistItemMenu private constructor(
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
         val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+        val showDisliked by rememberPreference(showDislikedArtistKey, true)
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -261,17 +263,44 @@ class OnlineArtistItemMenu private constructor(
                         },
                         onClick = {
                             coroutineScope.launch(Dispatchers.IO) {
-                                Database.artistTable.rotateLikeState(artist.key)
+                                Database.artistTable.insertIgnore(
+                                    app.it.fast4x.rimusic.models.Artist(
+                                        id = artist.key,
+                                        name = artist.info?.name,
+                                        thumbnailUrl = artist.thumbnail?.url
+                                    )
+                                )
+                                if (showDisliked) {
+                                    Database.artistTable.rotateLikeState(artist.key)
+                                } else {
+                                    Database.artistTable.toggleBookmark(artist.key)
+                                }
                             }
-                            val newState = when(likeState) {
-                                true -> null  // followed → neutral
-                                false -> true // disliked → followed
-                                null -> false // neutral → disliked
+                            val newState = if (showDisliked) {
+                                when(likeState) {
+                                    true -> false // bookmarked → disliked
+                                    false -> null // disliked → neutral
+                                    null -> true  // neutral → bookmarked
+                                }
+                            } else {
+                                when(likeState) {
+                                    true -> null  // bookmarked → neutral
+                                    false -> true // disliked → bookmarked
+                                    null -> true  // neutral → bookmarked
+                                }
                             }
-                            val messageId = when(newState) {
-                                true -> R.string.added_to_favorites
-                                false -> R.string.added_to_dislikes
-                                null -> R.string.removed_from_favorites
+                            val messageId = if (showDisliked) {
+                                when(newState) {
+                                    true -> R.string.added_to_favorites
+                                    false -> R.string.added_to_dislikes
+                                    null -> R.string.removed_from_favorites
+                                }
+                            } else {
+                                when(newState) {
+                                    true -> R.string.added_to_favorites
+                                    null -> R.string.removed_from_favorites
+                                    else -> R.string.added_to_favorites
+                                }
                             }
                             val artistName = artist.info?.name
                             if( artistName != null )

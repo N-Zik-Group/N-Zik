@@ -71,7 +71,7 @@ object Preference {
     val HOME_LIBRARY_PINNED_PLAYLIST_SORT_ORDER = Key( "HomeLibraryPinnedPlaylistSortOrder", SortOrder.Ascending )
     val HOME_LIBRARY_MONTHLY_PLAYLIST_SORT_ORDER = Key( "HomeLibraryMonthlyPlaylistSortOrder", SortOrder.Ascending )
     val PLAYLIST_SONGS_SORT_ORDER = Key( "PlaylistSongsSortOrder", SortOrder.Ascending )
-    val HISTORY_SORT_ORDER = Key( "HistorySortOrder", SortOrder.Ascending )
+    val HISTORY_SORT_ORDER = Key( "HistorySortOrder", SortOrder.Descending )
     //</editor-fold>
 
     val SEARCH_RESULT_GRID_STATES = Key( "searchResultGridStates", "1111111" )

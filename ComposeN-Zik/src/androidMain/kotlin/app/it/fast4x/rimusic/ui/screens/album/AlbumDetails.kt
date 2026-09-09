@@ -60,6 +60,7 @@ import androidx.compose.ui.graphics.painter.Painter
 
 import app.it.fast4x.compose.persist.PersistMapCleanup
 import it.fast4x.innertube.Innertube
+import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
@@ -615,6 +616,11 @@ fun AlbumDetails(
                             modifier = Modifier.padding( all = 16.dp )
                         )
 
+                        val altAlbumKeys = remember(alternatives) { alternatives.map { it.key } }
+                        val altBookmarkStatesMap by remember(altAlbumKeys) {
+                            BookmarkStateManager.getAlbumBookmarkStates(altAlbumKeys)
+                        }.collectAsStateWithLifecycle(emptyMap())
+
                         // List all alternatives
                         ItemsList(
                             tag = "album/$browseId/alternatives_list",
@@ -633,6 +639,7 @@ fun AlbumDetails(
                                     album = album,
                                     thumbnailSizePx = thumbnailAlbumSizePx,
                                     thumbnailSizeDp = thumbnailAlbumSizeDp,
+                                    bookmarkState = altBookmarkStatesMap[album.key],
                                     modifier = Modifier
                                         .clip(uiRoundnessShape()).clickable {
                                             navController.navigate(route = "${NavRoutes.album.name}/${album.key}")

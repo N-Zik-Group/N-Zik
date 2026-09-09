@@ -65,8 +65,8 @@ object HomeArtistsSettingsDialog : Dialog {
         val items = workingOrder.map { id ->
             when (id) {
                 "all" -> ToggleItem(id, R.drawable.people, allLabel, "always_true_artists", true)
-                "favorites" -> ToggleItem(id, R.drawable.heart, favLabel, showFavoritesArtistKey, true)
-                "disliked" -> ToggleItem(id, R.drawable.heart_outline, dislikedLabel, showDislikedArtistKey, true)
+                "favorites" -> ToggleItem(id, R.drawable.bookmark, favLabel, showFavoritesArtistKey, true)
+                "disliked" -> ToggleItem(id, R.drawable.bookmark_slash, dislikedLabel, showDislikedArtistKey, true)
                 else -> null
             }
         }.filterNotNull()

@@ -751,7 +751,11 @@ fun ArtistDetails(
                     }
 
 
-                if( section.items.fastAll { it is Innertube.VideoItem } )
+                if( section.items.fastAll { it is Innertube.VideoItem } ) {
+                    val videoKeys = remember(section.items) { section.items.fastMap { (it as Innertube.VideoItem).key } }
+                    val videoLikeStatesMap by remember(videoKeys) {
+                        LikeStateManager.getLikeStates(videoKeys)
+                    }.collectAsStateWithLifecycle(emptyMap())
                     LazyRow {
                         items(
                             items = section.items.fastMap { it as Innertube.VideoItem },
@@ -762,6 +766,7 @@ fun ArtistDetails(
                                 thumbnailHeightDp = 72.dp,
                                 thumbnailWidthDp = 128.dp,
                                 alternative = true,
+                                likeState = videoLikeStatesMap[video.key],
                                 disableScrollingText = disableScrollingText,
                                 modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                     onLongClick = {
@@ -782,6 +787,7 @@ fun ArtistDetails(
 
                         }
                     }
+                }
 
                 if( section.items.fastAll { it is Innertube.ArtistItem } )
                     LazyRow {

@@ -74,9 +74,9 @@ class FollowButton private constructor(
             }
 
             val newState = when(currentState) {
-                true -> null  // followed → neutral
-                false -> true // disliked → followed
-                null -> false // neutral → disliked
+                true -> false // followed → disliked
+                false -> null // disliked → neutral
+                null -> true  // neutral → followed
             }
             val messageId = when(newState) {
                 true -> R.string.added_to_favorites

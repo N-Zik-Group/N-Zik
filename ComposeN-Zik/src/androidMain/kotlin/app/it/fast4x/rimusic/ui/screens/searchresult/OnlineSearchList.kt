@@ -47,6 +47,8 @@ import app.it.fast4x.rimusic.utils.parseArtists
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.BookmarkStateManager
+import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
@@ -76,10 +78,21 @@ import app.kreate.android.me.knighthat.utils.Toaster
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.showButtonPlayerVideoKey
 import it.fast4x.innertube.models.MusicShelfRenderer
+import androidx.compose.foundation.layout.absoluteOffset
+import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
+import app.it.fast4x.rimusic.ui.styling.favoritesIcon
+import app.it.fast4x.rimusic.utils.getLikedIcon
+import app.it.fast4x.rimusic.utils.getDislikedIcon
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 @Composable
@@ -103,6 +116,42 @@ fun OnlineSearchList(
     val menuState = LocalMenuState.current
     val hapticFeedback = LocalHapticFeedback.current
     val isVideoEnabled = remember { context.preferences.getBoolean(showButtonPlayerVideoKey, false) }
+
+    val loadedItems = remember { androidx.compose.runtime.mutableStateOf<List<Innertube.Item>>(emptyList()) }
+
+    val albumKeys by remember {
+        derivedStateOf {
+            loadedItems.value.filterIsInstance<Innertube.AlbumItem>().map { it.key }
+        }
+    }
+    val artistKeys by remember {
+        derivedStateOf {
+            loadedItems.value.filterIsInstance<Innertube.ArtistItem>().map { it.key }
+        }
+    }
+    val playlistKeys by remember {
+        derivedStateOf {
+            loadedItems.value.filterIsInstance<Innertube.PlaylistItem>().map { it.key }
+        }
+    }
+    val videoKeys by remember {
+        derivedStateOf {
+            loadedItems.value.filterIsInstance<Innertube.VideoItem>().map { it.key }
+        }
+    }
+
+    val albumBookmarkStatesMap by remember(albumKeys) {
+        BookmarkStateManager.getAlbumBookmarkStates(albumKeys)
+    }.collectAsStateWithLifecycle(emptyMap())
+    val artistBookmarkStatesMap by remember(artistKeys) {
+        BookmarkStateManager.getArtistBookmarkStates(artistKeys)
+    }.collectAsStateWithLifecycle(emptyMap())
+    val playlistBookmarkStatesMap by remember(playlistKeys) {
+        BookmarkStateManager.getPlaylistBookmarkStates(playlistKeys)
+    }.collectAsStateWithLifecycle(emptyMap())
+    val videoLikeStatesMap by remember(videoKeys) {
+        LikeStateManager.getLikeStates(videoKeys)
+    }.collectAsStateWithLifecycle(emptyMap())
 
     val itemContent: @Composable LazyItemScope.(Innertube.Item) -> Unit = { item ->
         when (item) {
@@ -131,6 +180,7 @@ fun OnlineSearchList(
                 }
             }
             is Innertube.VideoItem -> {
+                val videoLikeState = videoLikeStatesMap[item.key]
                 SwipeablePlaylistItem(
                     mediaItem = item.asMediaItem,
                     onPlayNext = { binder?.player?.addNext(item.asMediaItem) },
@@ -141,6 +191,7 @@ fun OnlineSearchList(
                         video = item,
                         thumbnailWidthDp = 128.dp,
                         thumbnailHeightDp = 72.dp,
+                        likeState = videoLikeState,
                         modifier = Modifier
                             .background(colorPalette().background0)
                             .clip(uiRoundnessShape()).combinedClickable(
@@ -164,6 +215,13 @@ fun OnlineSearchList(
                 }
             }
             else -> {
+                val bookmarkState = when (item) {
+                    is Innertube.AlbumItem -> albumBookmarkStatesMap[item.key]
+                    is Innertube.ArtistItem -> artistBookmarkStatesMap[item.key]
+                    is Innertube.PlaylistItem -> playlistBookmarkStatesMap[item.key]
+                    else -> null
+                }
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -231,6 +289,21 @@ fun OnlineSearchList(
                                 contentScale = ContentScale.Fit
                             )
                         }
+                        if (bookmarkState != null)
+                            HeaderIconButton(
+                                onClick = {},
+                                icon = when(bookmarkState) {
+                                    false -> R.drawable.bookmark_slash
+                                    else -> R.drawable.bookmark
+                                },
+                                color = when(bookmarkState) {
+                                    false -> colorPalette().red
+                                    else -> colorPalette().favoritesIcon
+                                },
+                                iconSize = 12.dp,
+                                modifier = Modifier.align(Alignment.BottomStart)
+                                                   .absoluteOffset(x = (-8).dp)
+                            )
                     }
 
                     Column(
@@ -365,6 +438,7 @@ fun OnlineSearchList(
         emptyItemsText = emptyItemsText,
         headerContent = headerContent,
         itemContent = { itemContent(it) },
+        loadedItemsState = loadedItems,
         itemPlaceholderContent = {
             when (tabIndex) {
                 0 -> Column { repeat(8) { SongItemPlaceholder() } }

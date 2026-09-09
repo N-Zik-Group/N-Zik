@@ -74,6 +74,7 @@ inline fun <T : Innertube.Item> ItemsPage(
     emptyItemsText: String = "",
     filterContentType: ContentType = ContentType.All,
     noinline itemsPageProvider: (suspend (String?) -> Result<Innertube.ItemsPage<T>?>?)? = null,
+    loadedItemsState: androidx.compose.runtime.MutableState<List<T>>? = null,
 ) {
     val updatedItemsPageProvider by rememberUpdatedState(itemsPageProvider)
 
@@ -115,6 +116,7 @@ inline fun <T : Innertube.Item> ItemsPage(
                             itemsPage + newPage
                         }
                         itemsPage = merged
+                        loadedItemsState?.value = merged.items ?: emptyList()
                     }
                 }?.onFailure {
                     Timber.tag("ItemsPage").e(it, "Failed to load more items")
@@ -135,6 +137,7 @@ inline fun <T : Innertube.Item> ItemsPage(
                     itemsPage = Innertube.ItemsPage(null, null)
                 } else {
                     itemsPage = it
+                    loadedItemsState?.value = it.items ?: emptyList()
                 }
             }?.onFailure { e -> Timber.tag("ItemsPage").e(e, "Failed to load initial items") }
         }
@@ -145,6 +148,10 @@ inline fun <T : Innertube.Item> ItemsPage(
             lazyListState.scrollToItem(0)
             hasScrolledToTop = true
         }
+    }
+
+    LaunchedEffect(itemsPage?.items) {
+        loadedItemsState?.value = itemsPage?.items ?: emptyList()
     }
 
     Box(
@@ -254,7 +261,8 @@ inline fun <T : Innertube.Item> ItemsGridPage(
     emptyItemsText: String = "",
     filterContentType: ContentType = ContentType.All,
     noinline itemsPageProvider: (suspend (String?) -> Result<Innertube.ItemsPage<T>?>?)? = null,
-    thumbnailSizeDp: Dp
+    thumbnailSizeDp: Dp,
+    loadedItemsState: androidx.compose.runtime.MutableState<List<T>>? = null,
 ) {
     val updatedItemsPageProvider by rememberUpdatedState(itemsPageProvider)
     val lazyGridState = rememberLazyGridState()
@@ -293,6 +301,7 @@ inline fun <T : Innertube.Item> ItemsGridPage(
                             itemsPage + newPage
                         }
                         itemsPage = merged
+                        loadedItemsState?.value = merged.items ?: emptyList()
                     }
                 }?.onFailure {
                     Timber.tag("ItemsPage").e(it, "Failed to load more items")
@@ -313,6 +322,7 @@ inline fun <T : Innertube.Item> ItemsGridPage(
                     itemsPage = Innertube.ItemsPage(null, null)
                 } else {
                     itemsPage = it
+                    loadedItemsState?.value = it.items ?: emptyList()
                 }
             }?.onFailure { e -> Timber.tag("ItemsPage").e(e, "Failed to load initial items") }
         }
@@ -323,6 +333,10 @@ inline fun <T : Innertube.Item> ItemsGridPage(
             lazyGridState.scrollToItem(0)
             hasScrolledToTop = true
         }
+    }
+
+    LaunchedEffect(itemsPage?.items) {
+        loadedItemsState?.value = itemsPage?.items ?: emptyList()
     }
 
     Box(

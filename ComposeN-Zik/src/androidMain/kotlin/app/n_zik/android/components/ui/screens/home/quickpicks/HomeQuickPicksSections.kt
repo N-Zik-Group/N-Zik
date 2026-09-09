@@ -39,6 +39,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
 import app.n_zik.android.components.menu.artist.OnlineArtistItemMenu
@@ -427,6 +428,11 @@ fun NewAlbumsOfYourArtistsSection(
                     )
                 }
 
+                val filteredAlbumKeys = remember(newReleaseAlbumsFiltered) { newReleaseAlbumsFiltered.map { it.key } }
+                val filteredBookmarkStatesMap by remember(filteredAlbumKeys) {
+                    BookmarkStateManager.getAlbumBookmarkStates(filteredAlbumKeys)
+                }.collectAsStateWithLifecycle(emptyMap())
+
                 LazyRow(contentPadding = endPaddingValues) {
                     items(
                         items = newReleaseAlbumsFiltered.distinctBy { it.key },
@@ -437,6 +443,7 @@ fun NewAlbumsOfYourArtistsSection(
                             thumbnailSizePx = albumThumbnailSizePx,
                             thumbnailSizeDp = albumThumbnailSizeDp,
                             alternative = true,
+                            bookmarkState = filteredBookmarkStatesMap[it.key],
                             modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                 onClick = { onAlbumClick(it.key) },
                                 onLongClick = { menuState.display { OnlineAlbumItemMenu(navController = navController, album = it).MenuComponent() } }
@@ -480,6 +487,11 @@ fun NewAlbumsSection(
                         )
                     }
 
+                    val newAlbumsKeys = remember(albums) { albums.map { it.key } }
+                    val newAlbumsBookmarkStatesMap by remember(newAlbumsKeys) {
+                        BookmarkStateManager.getAlbumBookmarkStates(newAlbumsKeys)
+                    }.collectAsStateWithLifecycle(emptyMap())
+
                     LazyRow(contentPadding = endPaddingValues) {
                         items(
                             items = albums.distinctBy { it.key },
@@ -490,6 +502,7 @@ fun NewAlbumsSection(
                                 thumbnailSizePx = albumThumbnailSizePx,
                                 thumbnailSizeDp = albumThumbnailSizeDp,
                                 alternative = true,
+                                bookmarkState = newAlbumsBookmarkStatesMap[it.key],
                                 modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                     onClick = { onAlbumClick(it.key) },
                                     onLongClick = { menuState.display { OnlineAlbumItemMenu(navController = navController, album = it).MenuComponent() } }
@@ -532,6 +545,11 @@ fun RelatedAlbumsSection(
                     modifier = sectionTextModifier
                 )
 
+                val relatedAlbumKeys = remember(albums) { albums.map { it.key } }
+                val relatedAlbumBookmarkStatesMap by remember(relatedAlbumKeys) {
+                    BookmarkStateManager.getAlbumBookmarkStates(relatedAlbumKeys)
+                }.collectAsStateWithLifecycle(emptyMap())
+
                 LazyRow(contentPadding = endPaddingValues) {
                     items(
                         items = albums.distinctBy { it.key },
@@ -543,6 +561,7 @@ fun RelatedAlbumsSection(
                             thumbnailSizePx = albumThumbnailSizePx,
                             thumbnailSizeDp = albumThumbnailSizeDp,
                             alternative = true,
+                            bookmarkState = relatedAlbumBookmarkStatesMap[album.key],
                             modifier = Modifier
                                 .clip(uiRoundnessShape()).combinedClickable(
                                     onClick = { onAlbumClick(album.key) },
@@ -585,6 +604,11 @@ fun SimilarArtistsSection(
                     modifier = sectionTextModifier
                 )
 
+                val similarArtistKeys = remember(artists) { artists.map { it.key } }
+                val similarArtistBookmarkStatesMap by remember(similarArtistKeys) {
+                    BookmarkStateManager.getArtistBookmarkStates(similarArtistKeys)
+                }.collectAsStateWithLifecycle(emptyMap())
+
                 LazyRow(contentPadding = endPaddingValues) {
                     items(
                         items = artists.distinctBy { it.key },
@@ -596,6 +620,7 @@ fun SimilarArtistsSection(
                             thumbnailSizePx = artistThumbnailSizePx,
                             thumbnailSizeDp = artistThumbnailSizeDp,
                             alternative = true,
+                            bookmarkState = similarArtistBookmarkStatesMap[artist.key],
                             modifier = Modifier
                                 .clip(uiRoundnessShape()).combinedClickable(
                                     onClick = { onArtistClick(artist.key) },
@@ -863,6 +888,11 @@ fun ChartsSection(
 
                     chartsPageInit.playlists?.let { playlists ->
                         if (playlists.isNotEmpty()) {
+                            val chartPlaylistKeys = remember(playlists) { playlists.map { it.key } }
+                            val chartPlaylistBookmarkStatesMap by remember(chartPlaylistKeys) {
+                                BookmarkStateManager.getPlaylistBookmarkStates(chartPlaylistKeys)
+                            }.collectAsStateWithLifecycle(emptyMap())
+
                             LazyRow(contentPadding = endPaddingValues) {
                                 items(
                                     items = playlists.distinctBy { it.key },
@@ -875,6 +905,7 @@ fun ChartsSection(
                                         thumbnailSizeDp = playlistThumbnailSizeDp,
                                         alternative = true,
                                         showSongsCount = false,
+                                        isBookmarked = chartPlaylistBookmarkStatesMap[playlist.key],
                                         modifier = Modifier
                                             .clip(uiRoundnessShape()).combinedClickable(
                                                 onClick = { onPlaylistClick(playlist.key) },
@@ -948,6 +979,11 @@ fun ChartsSection(
 
                 chartsPageInit.artists?.let { artists ->
                     if (artists.isNotEmpty()) {
+                        val chartArtistKeys = remember(artists) { artists.map { it.key } }
+                        val chartArtistBookmarkStatesMap by remember(chartArtistKeys) {
+                            BookmarkStateManager.getArtistBookmarkStates(chartArtistKeys)
+                        }.collectAsStateWithLifecycle(emptyMap())
+
                         BasicText(
                             text = stringResource(R.string.chart_top_artists),
                             style = typography().l.semiBold,
@@ -984,6 +1020,7 @@ fun ChartsSection(
                                         thumbnailSizePx = songThumbnailSizePx,
                                         thumbnailSizeDp = songThumbnailSizeDp,
                                         alternative = false,
+                                        bookmarkState = chartArtistBookmarkStatesMap[artist.key],
                                         modifier = Modifier
                                             .width(200.dp)
                                             .clip(uiRoundnessShape()).combinedClickable(
@@ -1136,6 +1173,23 @@ fun GenericYtmSections(
                 }
             }
         } else {
+            val sectionAlbumKeys = remember(section.items) { section.items.filterIsInstance<Innertube.AlbumItem>().map { it.key } }
+            val sectionAlbumBookmarkStatesMap by remember(sectionAlbumKeys) {
+                BookmarkStateManager.getAlbumBookmarkStates(sectionAlbumKeys)
+            }.collectAsStateWithLifecycle(emptyMap())
+            val sectionArtistKeys = remember(section.items) { section.items.filterIsInstance<Innertube.ArtistItem>().map { it.key } }
+            val sectionArtistBookmarkStatesMap by remember(sectionArtistKeys) {
+                BookmarkStateManager.getArtistBookmarkStates(sectionArtistKeys)
+            }.collectAsStateWithLifecycle(emptyMap())
+            val sectionPlaylistKeys = remember(section.items) { section.items.filterIsInstance<Innertube.PlaylistItem>().map { it.key } }
+            val sectionPlaylistBookmarkStatesMap by remember(sectionPlaylistKeys) {
+                BookmarkStateManager.getPlaylistBookmarkStates(sectionPlaylistKeys)
+            }.collectAsStateWithLifecycle(emptyMap())
+            val sectionVideoKeys = remember(section.items) { section.items.filterIsInstance<Innertube.VideoItem>().map { it.key } }
+            val sectionVideoLikeStatesMap by remember(sectionVideoKeys) {
+                LikeStateManager.getLikeStates(sectionVideoKeys)
+            }.collectAsStateWithLifecycle(emptyMap())
+
             LazyRow(contentPadding = endPaddingValues) {
                 items(section.items, key = { it?.hashCode() ?: 0 }, contentType = { "item" }) { item ->
                     when (item) {
@@ -1171,6 +1225,7 @@ fun GenericYtmSections(
                                 alternative = true,
                                 thumbnailSizePx = albumThumbnailSizePx,
                                 thumbnailSizeDp = albumThumbnailSizeDp,
+                                bookmarkState = sectionAlbumBookmarkStatesMap[item.key],
                                 disableScrollingText = disableScrollingText,
                                 modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                     onClick = { navController.navigate("${NavRoutes.album.name}/${item.key}") },
@@ -1183,6 +1238,7 @@ fun GenericYtmSections(
                                 artist = item,
                                 thumbnailSizePx = songThumbnailSizePx,
                                 thumbnailSizeDp = songThumbnailSizeDp,
+                                bookmarkState = sectionArtistBookmarkStatesMap[item.key],
                                 disableScrollingText = disableScrollingText,
                                 modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                     onClick = { navController.navigate("${NavRoutes.artist.name}/${item.key}") },
@@ -1196,6 +1252,7 @@ fun GenericYtmSections(
                                 alternative = true,
                                 thumbnailSizePx = playlistThumbnailSizePx,
                                 thumbnailSizeDp = playlistThumbnailSizeDp,
+                                isBookmarked = sectionPlaylistBookmarkStatesMap[item.key],
                                 disableScrollingText = disableScrollingText,
                                 modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                     onClick = { navController.navigate("${NavRoutes.playlist.name}/${item.key}") },
@@ -1208,6 +1265,7 @@ fun GenericYtmSections(
                                 video = item,
                                 thumbnailHeightDp = albumThumbnailSizeDp,
                                 thumbnailWidthDp = (albumThumbnailSizeDp * 16 / 9),
+                                likeState = sectionVideoLikeStatesMap[item.key],
                                 disableScrollingText = disableScrollingText,
                                 alternative = true,
                                 modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(

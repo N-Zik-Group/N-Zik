@@ -250,9 +250,9 @@ class LocalArtistItemMenu private constructor(
                                 Database.artistTable.rotateLikeState(artist.id)
                             }
                             val newState = when(likeState) {
-                                true -> null  // followed → neutral
-                                false -> true // disliked → followed
-                                null -> false // neutral → disliked
+                                true -> false // bookmarked → disliked
+                                false -> null // disliked → neutral
+                                null -> true  // neutral → bookmarked
                             }
                             val messageId = when(newState) {
                                 true -> R.string.added_to_favorites

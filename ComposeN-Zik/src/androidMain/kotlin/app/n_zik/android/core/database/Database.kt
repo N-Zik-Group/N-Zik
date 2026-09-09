@@ -231,6 +231,7 @@ object Database {
                     shareUrl = dbAlbum?.shareUrl,
                     timestamp = dbAlbum?.timestamp,
                     bookmarkedAt = dbAlbum?.bookmarkedAt,
+                    dislikedAt = dbAlbum?.dislikedAt,
                     isYoutubeAlbum = dbAlbum?.isYoutubeAlbum == true,
                     lastFetch = dbAlbum?.lastFetch
                 )
@@ -254,6 +255,7 @@ object Database {
                                             shareUrl = PropUtils.retainIfModified(fetchedAlbum.shareUrl, albumPage.url) ?: fetchedAlbum.shareUrl,
                                             timestamp = System.currentTimeMillis(),
                                             bookmarkedAt = fetchedAlbum.bookmarkedAt,
+                                            dislikedAt = fetchedAlbum.dislikedAt,
                                             isYoutubeAlbum = fetchedAlbum.isYoutubeAlbum,
                                             lastFetch = fetchedAlbum.lastFetch
                                         )
@@ -334,6 +336,7 @@ object Database {
                     shareUrl = dbAlbum.shareUrl,
                     timestamp = dbAlbum.timestamp,
                     bookmarkedAt = dbAlbum.bookmarkedAt,
+                    dislikedAt = dbAlbum.dislikedAt,
                     lastFetch = dbAlbum.lastFetch
                 )
             } else {
@@ -363,7 +366,8 @@ object Database {
                                         authorsText = PropUtils.retainIfModified(mergedAlbum.authorsText, albumPage.authors.parseArtists().joinToString(", ").takeIf { it.isNotBlank() }) ?: mergedAlbum.authorsText,
                                         shareUrl = PropUtils.retainIfModified(mergedAlbum.shareUrl, albumPage.url) ?: mergedAlbum.shareUrl,
                                         timestamp = System.currentTimeMillis(),
-                                        bookmarkedAt = mergedAlbum.bookmarkedAt
+                                        bookmarkedAt = mergedAlbum.bookmarkedAt,
+                                        dislikedAt = mergedAlbum.dislikedAt
                                     )
                                     albumTable.upsert(updatedAlbum)
                                 }

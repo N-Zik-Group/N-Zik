@@ -3,6 +3,7 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +46,14 @@ import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.shimmerEffect
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.core.database.Database
+import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
+import app.it.fast4x.rimusic.ui.styling.favoritesIcon
+import app.it.fast4x.rimusic.utils.getLikedIcon
+import app.it.fast4x.rimusic.utils.getDislikedIcon
+import app.n_zik.android.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun VideoItem(
@@ -50,7 +62,8 @@ fun VideoItem(
     thumbnailWidthDp: Dp,
     modifier: Modifier = Modifier,
     alternative: Boolean = false,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
+    likeState: Boolean? = null
 ) {
     VideoItem(
         thumbnailUrl = video.thumbnail?.url,
@@ -62,7 +75,8 @@ fun VideoItem(
         thumbnailWidthDp = thumbnailWidthDp,
         modifier = modifier,
         alternative = alternative,
-        disableScrollingText = disableScrollingText
+        disableScrollingText = disableScrollingText,
+        likeState = likeState
     )
 }
 
@@ -77,7 +91,8 @@ fun VideoItem(
     thumbnailWidthDp: Dp,
     modifier: Modifier = Modifier,
     alternative: Boolean = false,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
+    likeState: Boolean? = null
 ) {
     ItemContainer(
         alternative = alternative,
@@ -110,6 +125,19 @@ fun VideoItem(
                         .align(Alignment.BottomEnd)
                 )
             }
+
+            if (likeState != null)
+                HeaderIconButton(
+                    onClick = {},
+                    icon = if (likeState == true) getLikedIcon() else getDislikedIcon(),
+                    color = when(likeState) {
+                        false -> colorPalette().red
+                        else -> colorPalette().favoritesIcon
+                    },
+                    iconSize = 12.dp,
+                    modifier = Modifier.align( Alignment.BottomStart )
+                                       .absoluteOffset( x = (-8).dp )
+                )
         }
 
         ItemInfoContainer {

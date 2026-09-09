@@ -89,6 +89,7 @@ import kotlinx.coroutines.withContext
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import app.it.fast4x.rimusic.enums.SortOrder
+import app.it.fast4x.rimusic.utils.showDislikedPlaylistKey
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 
@@ -119,6 +120,7 @@ fun HomeSongs(
     val includeLocalSongs by rememberPreference( includeLocalSongsKey, true )
     val excludeSongWithDurationLimit by rememberPreference( excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled )
     var filterBy by rememberPreference(filterByKey, FilterBy.All)
+    val showDislikedPlaylist by rememberPreference(showDislikedPlaylistKey, true)
 
     var items by remember { mutableStateOf(emptyList<Song>()) }
 
@@ -323,6 +325,10 @@ fun HomeSongs(
                     FilterBy.All -> it
                     FilterBy.YoutubeLibrary -> it.filter { song -> song.isYoutubeSong }
                     FilterBy.Local -> it.filterNot { song -> song.isYoutubeSong }
+                }.let { list ->
+                    if (!showDislikedPlaylist && builtInPlaylist != BuiltInPlaylist.Disliked) {
+                        list.filter { song -> song.likedAt != -1L }
+                    } else list
                 }
                 isLoading = false
             }

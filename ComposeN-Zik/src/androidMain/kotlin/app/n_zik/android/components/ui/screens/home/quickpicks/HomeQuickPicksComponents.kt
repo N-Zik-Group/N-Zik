@@ -62,6 +62,7 @@ import app.it.fast4x.rimusic.utils.playVideo
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.playlist.OnlinePlaylistItemMenu
+import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.LikeStateManager
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.HomePage
@@ -233,6 +234,23 @@ fun YtmSectionItems(
                 }
                 } // CompositionLocalProvider
             } else {
+                val sectionAlbumKeys = remember(section.items) { section.items.filterIsInstance<Innertube.AlbumItem>().map { it.key } }
+                val sectionAlbumBookmarkStatesMap by remember(sectionAlbumKeys) {
+                    BookmarkStateManager.getAlbumBookmarkStates(sectionAlbumKeys)
+                }.collectAsStateWithLifecycle(emptyMap())
+                val sectionArtistKeys = remember(section.items) { section.items.filterIsInstance<Innertube.ArtistItem>().map { it.key } }
+                val sectionArtistBookmarkStatesMap by remember(sectionArtistKeys) {
+                    BookmarkStateManager.getArtistBookmarkStates(sectionArtistKeys)
+                }.collectAsStateWithLifecycle(emptyMap())
+                val sectionPlaylistKeys = remember(section.items) { section.items.filterIsInstance<Innertube.PlaylistItem>().map { it.key } }
+                val sectionPlaylistBookmarkStatesMap by remember(sectionPlaylistKeys) {
+                    BookmarkStateManager.getPlaylistBookmarkStates(sectionPlaylistKeys)
+                }.collectAsStateWithLifecycle(emptyMap())
+                val sectionVideoKeys = remember(section.items) { section.items.filterIsInstance<Innertube.VideoItem>().map { it.key } }
+                val sectionVideoLikeStatesMap by remember(sectionVideoKeys) {
+                    LikeStateManager.getLikeStates(sectionVideoKeys)
+                }.collectAsStateWithLifecycle(emptyMap())
+
                 LazyRow(contentPadding = endPaddingValues) {
                     items(section.items, key = { it?.key ?: it.hashCode() }, contentType = { "item" }) { item ->
                         when (item) {
@@ -271,6 +289,7 @@ fun YtmSectionItems(
                                     thumbnailSizePx = albumThumbnailSizePx,
                                     thumbnailSizeDp = albumThumbnailSizeDp,
                                     alternative = true,
+                                    bookmarkState = sectionAlbumBookmarkStatesMap[item.key],
                                     modifier = Modifier
                                         .clip(uiRoundnessShape())
                                         .combinedClickable(
@@ -289,6 +308,7 @@ fun YtmSectionItems(
                                     thumbnailSizePx = songThumbnailSizePx,
                                     thumbnailSizeDp = songThumbnailSizeDp,
                                     alternative = false,
+                                    bookmarkState = sectionArtistBookmarkStatesMap[item.key],
                                     modifier = Modifier
                                         .width(200.dp)
                                         .clip(uiRoundnessShape())
@@ -310,6 +330,7 @@ fun YtmSectionItems(
                                     alternative = true,
                                     showSongsCount = false,
                                     isYoutubePlaylist = true,
+                                    isBookmarked = sectionPlaylistBookmarkStatesMap[item.key],
                                     modifier = Modifier
                                         .clip(uiRoundnessShape())
                                         .combinedClickable(
@@ -328,6 +349,7 @@ fun YtmSectionItems(
                                     video = item,
                                     thumbnailHeightDp = albumThumbnailSizeDp,
                                     thumbnailWidthDp = (albumThumbnailSizeDp * 16 / 9),
+                                    likeState = sectionVideoLikeStatesMap[item.key],
                                     disableScrollingText = disableScrollingText,
                                     alternative = true,
                                     modifier = Modifier
