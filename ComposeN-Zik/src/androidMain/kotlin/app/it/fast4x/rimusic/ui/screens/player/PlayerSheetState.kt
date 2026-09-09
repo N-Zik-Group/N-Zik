@@ -4,6 +4,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.tween
@@ -28,6 +29,10 @@ import androidx.compose.ui.unit.Velocity
 import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+
+const val expandedAnchor = 2
+const val collapsedAnchor = 1
+const val dismissedAnchor = 0
 
 @Stable
 class PlayerSheetState(
@@ -61,6 +66,12 @@ class PlayerSheetState(
         1f - (animatable.upperBound!! - animatable.value) / (animatable.upperBound!! - collapsedBound)
     }
 
+    val isVisible by derivedStateOf { !isCollapsed }
+
+    fun hide() {
+        collapseSoft()
+    }
+
     fun collapse(animationSpec: AnimationSpec<Dp>) {
         onAnchorChanged(collapsedAnchor)
         coroutineScope.launch {
@@ -84,11 +95,11 @@ class PlayerSheetState(
     }
 
     fun collapseSoft() {
-        collapse(tween(300))
+        collapse(tween(500)) // No bounce, smooth animation
     }
 
     fun expandSoft() {
-        expand(tween(300))
+        expand(tween(500)) // No bounce, smooth animation
     }
 
     fun dismiss() {
@@ -104,35 +115,46 @@ class PlayerSheetState(
         }
     }
 
+    suspend fun snapToAndWait(value: Dp) {
+        animatable.snapTo(value)
+    }
+
+    suspend fun dismissAndWait() {
+        onAnchorChanged(dismissedAnchor)
+        animatable.animateTo(animatable.lowerBound!!)
+    }
+
     fun performFling(velocity: Float, onDismiss: (() -> Unit)?) {
-        if (velocity > 250) {
-            expand()
-        } else if (velocity < -250) {
-            if (value < collapsedBound && onDismiss != null) {
-                dismiss()
-                onDismiss.invoke()
-            } else {
-                collapse()
-            }
-        } else {
-            val l0 = dismissedBound
-            val l1 = (collapsedBound - dismissedBound) / 2
-            val l2 = (expandedBound - collapsedBound) / 2
-            val l3 = expandedBound
-
-            when (value) {
-                in l0..l1 -> {
-                    if (onDismiss != null) {
-                        dismiss()
-                        onDismiss.invoke()
-                    } else {
-                        collapse()
-                    }
+        coroutineScope.launch {
+            if (velocity > 250) {
+                expand()
+            } else if (velocity < -100) {
+                if (value <= collapsedBound && onDismiss != null) {
+                    dismissAndWait()
+                    onDismiss.invoke()
+                } else {
+                    collapse()
                 }
+            } else {
+                val l0 = dismissedBound
+                val l1 = dismissedBound + (collapsedBound - dismissedBound) * 0.80f
+                val l2 = collapsedBound + (expandedBound - collapsedBound) / 2
+                val l3 = expandedBound
 
-                in l1..l2 -> collapse()
-                in l2..l3 -> expand()
-                else -> Unit
+                when (value) {
+                    in l0..l1 -> {
+                        if (onDismiss != null) {
+                            dismissAndWait()
+                            onDismiss.invoke()
+                        } else {
+                            collapse()
+                        }
+                    }
+
+                    in l1..l2 -> collapse()
+                    in l2..l3 -> expand()
+                    else -> Unit
+                }
             }
         }
     }
@@ -188,10 +210,6 @@ class PlayerSheetState(
             }
         }
 }
-
-const val expandedAnchor = 2
-const val collapsedAnchor = 1
-const val dismissedAnchor = 0
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi

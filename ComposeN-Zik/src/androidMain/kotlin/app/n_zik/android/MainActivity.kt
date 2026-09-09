@@ -83,6 +83,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
@@ -148,7 +149,9 @@ import app.it.fast4x.rimusic.ui.screens.AppNavigation
 import app.it.fast4x.rimusic.ui.screens.player.MiniPlayer
 import app.it.fast4x.rimusic.ui.screens.player.Player
 import app.it.fast4x.rimusic.ui.screens.player.components.YoutubePlayer
+import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
 import app.it.fast4x.rimusic.ui.screens.player.rememberPlayerSheetState
+import app.n_zik.android.components.CustomBottomSheet
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
@@ -164,6 +167,8 @@ import app.it.fast4x.rimusic.utils.applyFontPaddingKey
 import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.audioQualityFormatKey
 import app.it.fast4x.rimusic.utils.backgroundProgressKey
+import app.it.fast4x.rimusic.utils.playerPositionKey
+import app.it.fast4x.rimusic.enums.PlayerPosition
 import app.it.fast4x.rimusic.utils.closeWithBackButtonKey
 import app.it.fast4x.rimusic.utils.colorPaletteModeKey
 import app.it.fast4x.rimusic.utils.colorPaletteNameKey
@@ -268,12 +273,14 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.runtime.State
 import androidx.core.view.WindowInsetsControllerCompat
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.n_zik.android.core.database.Database
 import android.Manifest
+import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import kotlinx.coroutines.Job
 
 @UnstableApi
@@ -1048,8 +1055,6 @@ class MainActivity :
             var isBarsVisible by remember { mutableStateOf(true) }
             val topBarOffsetAnimatable = remember { androidx.compose.animation.core.Animatable(0f) }
             val bottomBarOffsetAnimatable = remember { androidx.compose.animation.core.Animatable(0f) }
-            var accumulatedDownScroll by remember { mutableFloatStateOf(0f) }
-            var accumulatedUpScroll by remember { mutableFloatStateOf(0f) }
             
             val density = LocalDensity.current
             val safeDrawingInsets = WindowInsets.safeDrawing
@@ -1078,8 +1083,6 @@ class MainActivity :
                 bottomBarOffsetAnimatable.snapTo(0f)
                 
                 isBarsVisible = true
-                accumulatedDownScroll = 0f
-                accumulatedUpScroll = 0f
             }
 
             val nestedScrollConnection = remember(isLandscape, isViMusic, isScrollableRoute, isLandscapeHiddenRoute, density, safeDrawingInsets) {
@@ -1088,45 +1091,68 @@ class MainActivity :
                         val shouldHideOnScroll = isLandscape || isScrollableRoute
 
                         if (!shouldHideOnScroll || isViMusic) return Offset.Zero
-                        
+
                         val statusBarsTopPx = safeDrawingInsets.getTop(density)
                         val topBarHeightPx = with(density) { 64.dp.roundToPx() } + statusBarsTopPx
-                        
+
                         val delta = available.y
-                        
-                        if (delta > 0) {
-                            // Scrolling UP
-                            accumulatedDownScroll = 0f
-                            accumulatedUpScroll += delta
-                            if (accumulatedUpScroll > 100f && !isBarsVisible) {
-                                isBarsVisible = true
-                                if (!(isLandscape && isLandscapeHiddenRoute)) {
-                                    coroutineScope.launch {
-                                        topBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(400))
-                                    }
-                                }
-                                coroutineScope.launch {
-                                    bottomBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(400))
+
+                        // Move bars directly with scroll (finger-linked) - both in same launch for sync
+                        coroutineScope.launch {
+                            if (!(isLandscape && isLandscapeHiddenRoute)) {
+                                val currentOffset = topBarOffsetAnimatable.value
+                                val newOffset = (currentOffset + delta).coerceIn(-topBarHeightPx.toFloat(), 0f)
+                                if (newOffset != currentOffset) {
+                                    topBarOffsetAnimatable.snapTo(newOffset)
                                 }
                             }
-                        } else if (delta < 0) {
-                            // Scrolling DOWN
-                            accumulatedUpScroll = 0f
-                            accumulatedDownScroll += delta
-                            if (accumulatedDownScroll < -300f && isBarsVisible) {
-                                isBarsVisible = false
-                                if (!(isLandscape && isLandscapeHiddenRoute)) {
-                                    coroutineScope.launch {
-                                        topBarOffsetAnimatable.animateTo(-topBarHeightPx.toFloat(), androidx.compose.animation.core.tween(400))
-                                    }
-                                }
-                                coroutineScope.launch {
-                                    bottomBarOffsetAnimatable.animateTo(bottomBarHeightPx, androidx.compose.animation.core.tween(400))
-                                }
+
+                            val currentBottomOffset = bottomBarOffsetAnimatable.value
+                            val newBottomOffset = (currentBottomOffset - delta).coerceIn(0f, bottomBarHeightPx)
+                            if (newBottomOffset != currentBottomOffset) {
+                                bottomBarOffsetAnimatable.snapTo(newBottomOffset)
                             }
                         }
-                        
+
                         return Offset.Zero
+                    }
+
+                    override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                        // When scroll is exhausted (at top or bottom), force bars visible
+                        val statusBarsTopPx = safeDrawingInsets.getTop(density)
+                        val topBarHeightPx = with(density) { 64.dp.roundToPx() } + statusBarsTopPx
+                        val currentTopOffset = topBarOffsetAnimatable.value
+
+                        if ((available.y > 0f || available.y < 0f) && currentTopOffset < 0f) {
+                            // At top scrolling up OR at bottom scrolling down → show bars
+                            coroutineScope.launch {
+                                topBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
+                                bottomBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
+                            }
+                            isBarsVisible = true
+                        }
+                        return Offset.Zero
+                    }
+
+                    override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+                        // Snap to fully visible or fully hidden after fling ends
+                        val statusBarsTopPx = safeDrawingInsets.getTop(density)
+                        val topBarHeightPx = with(density) { 64.dp.roundToPx() } + statusBarsTopPx
+
+                        val currentTopOffset = topBarOffsetAnimatable.value
+                        val threshold = -topBarHeightPx / 2f
+
+                        if (currentTopOffset < threshold) {
+                            topBarOffsetAnimatable.animateTo(-topBarHeightPx.toFloat(), androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
+                            bottomBarOffsetAnimatable.animateTo(bottomBarHeightPx, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
+                            isBarsVisible = false
+                        } else {
+                            topBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
+                            bottomBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
+                            isBarsVisible = true
+                        }
+
+                        return super.onPostFling(consumed, available)
                     }
                 }
             }
@@ -1146,14 +1172,35 @@ class MainActivity :
                 val windowsInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
                 val bottomDp = with(density) { windowsInsets.getBottom(density).toDp() }
 
+                // Calculate player padding before initializing playerSheetState
+                val isFloatingNavBar = NavigationBarPosition.BottomFloating.isCurrent()
+                val isIconOnlyNav = app.it.fast4x.rimusic.enums.NavigationBarType.IconOnly.isCurrent()
+                val navBarBottomPad = Dimensions.navBarBottomPadding(isFloatingNavBar)
+                val hasNavBar = true
+
+                val playerPos by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
+                val playerPadBottom = if (playerPos == PlayerPosition.Bottom) {
+                    if (isFloatingNavBar) {
+                        if (hasNavBar) {
+                            val barHeight = if (isIconOnlyNav) Dimensions.floatingNavBarIconOnlyHeight else Dimensions.floatingNavBarHeight
+                            barHeight + navBarBottomPad + 4.dp
+                        } else {
+                            navBarBottomPad
+                        }
+                    } else {
+                        if (hasNavBar && NavigationBarPosition.Bottom.isCurrent()) {
+                            Dimensions.standardNavBarHeight + navBarBottomPad + 4.dp
+                        } else {
+                            navBarBottomPad + 5.dp
+                        }
+                    }
+                } else 5.dp
+
                 val playerSheetState = rememberPlayerSheetState(
                     dismissedBound = 0.dp,
                     collapsedBound = Dimensions.collapsedPlayer + bottomDp,
                     expandedBound = maxHeight,
                 )
-
-                val playerState =
-                    rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
                 val playerAwareWindowInsets by remember(
                     bottomDp,
@@ -1227,7 +1274,7 @@ class MainActivity :
                             LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
                             LocalLayoutDirection provides LayoutDirection.Ltr,
                             LocalDownloadHelper provides downloadHelper,
-                            LocalPlayerSheetState provides playerState,
+                            LocalPlayerSheetState provides playerSheetState,
                             LocalMonetCompat provides monet,
                             LocalPersistMap provides persistMap,
                             LocalPendingMiniPlayerAction provides pendingMiniPlayerAction,
@@ -1237,28 +1284,65 @@ class MainActivity :
                             LocalBottomBarOffset provides bottomBarOffsetState
                             //LocalInternetConnected provides internetConnected
                         ) {
-
                             AppNavigation(
                                 navController = navController,
-                                miniPlayer = {
-                                    MiniPlayer(
-                                        showPlayer = { showPlayer = true },
-                                        hidePlayer = {
-                                            coroutineScope.launch {
-                                                if (playerState.isVisible) playerState.hide()
-                                                showPlayer = false
-                                            }
-                                        },
-                                        navController = navController
-                                    )
-                                },
+                                miniPlayer = {},
                                 openTabFromShortcut = openTabFromShortcut
                             )
 
+                            val disableClosingPlayerSwipingDown by rememberPreference(disableClosingPlayerSwipingDownKey, false)
                             checkIfAppIsRunningInBackground()
 
-
-                            
+                            // Single CustomBottomSheet — always rendered when there's media.
+                            // Handles both collapsed (mini-player) and expanded (player) states
+                            // in a single composition tree, preventing animation jumps.
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = if (playerPos == PlayerPosition.Top)
+                                    Alignment.TopCenter
+                                else
+                                    Alignment.BottomCenter
+                            ) {
+                                CustomBottomSheet(
+                                    state = playerSheetState,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    onDismiss = {
+                                        binder?.stopRadio()
+                                        binder?.player?.clearMediaItems()
+                                        showPlayer = false
+                                        switchToAudioPlayer = false
+                                        runCatching {
+                                            this@MainActivity.stopService(this@MainActivity.intent<app.n_zik.android.playback.services.PlayerServiceModern>())
+                                        }
+                                    },
+                                    bottomPadding = playerPadBottom,
+                                    collapsedContentHeight = Dimensions.collapsedPlayer,
+                                    disableDismiss = disableClosingPlayerSwipingDown,
+                                    collapsedContent = {
+                                        MiniPlayer(
+                                            showPlayer = {
+                                                showPlayer = true
+                                                playerSheetState.expandSoft()
+                                            },
+                                            hidePlayer = {
+                                                coroutineScope.launch {
+                                                    playerSheetState.hide()
+                                                    showPlayer = false
+                                                }
+                                            },
+                                            navController = navController
+                                        )
+                                    }
+                                ) {
+                                    Player(navController) {
+                                        coroutineScope.launch {
+                                            playerSheetState.hide()
+                                            showPlayer = false
+                                            switchToAudioPlayer = false
+                                        }
+                                    }
+                                }
+                            }
 
                             val isVideo = binder?.player?.currentMediaItem?.isVideo ?: false
                             val isVideoEnabled =
@@ -1279,56 +1363,13 @@ class MainActivity :
                                 }
                             }
 
-                            PipEventContainer(
-                                enable = true,
-                                onPipOutAction = {
-                                    showPlayer = false
-                                    switchToAudioPlayer = false
-                                }
-                            ) {
-                                CustomModalBottomSheet(
-                                    showSheet = switchToAudioPlayer || showPlayer,
-                                    onDismissRequest = {
-                                        showPlayer = false
-                                        switchToAudioPlayer = false
-                                    },
-                                    containerColor = finalAppearance.colorPalette.background0,
-                                    contentColor = finalAppearance.colorPalette.background0,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    sheetState = playerState,
-                                    dragHandle = {
-                                        Surface(
-                                            modifier = Modifier.padding(vertical = 0.dp),
-                                            color = finalAppearance.colorPalette.background0,
-                                            shape = uiRoundnessShape()
-                                        ) {}
-                                    },
-                                    shape = (uiRoundnessShape() as? RoundedCornerShape)?.let {
-                                        RoundedCornerShape(
-                                            topStart = it.topStart,
-                                            topEnd = it.topEnd,
-                                            bottomStart = CornerSize(0.dp),
-                                            bottomEnd = CornerSize(0.dp)
-                                        )
-                                    } ?: uiRoundnessShape()
-                                ) {
-                                    Player( navController ) { 
-                                        coroutineScope.launch {
-                                            if (playerState.isVisible) playerState.hide()
-                                            showPlayer = false
-                                            switchToAudioPlayer = false
-                                        }
-                                    }
-                                }
-                            }
-
                             CustomModalBottomSheet(
                                 showSheet = isVideo && isVideoEnabled && showPlayer,
                                 onDismissRequest = { showPlayer = false },
                                 containerColor = finalAppearance.colorPalette.background0,
                                 contentColor = finalAppearance.colorPalette.background0,
                                 modifier = Modifier.fillMaxWidth(),
-                                sheetState = playerState,
+                                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                                 dragHandle = {
                                     Surface(
                                         modifier = Modifier.padding(vertical = 0.dp),
@@ -1401,17 +1442,24 @@ class MainActivity :
                     if (!isPlayerInitialized) {
                         isPlayerInitialized = true
                         if (player.currentMediaItem == null) {
-                            if (playerState.isVisible) {
+                            if (playerSheetState.isVisible) {
                                 showPlayer = false
                             }
                         } else {
                             if (launchedFromNotification) {
                                 intent.replaceExtras(Bundle())
-                                if (preferences.getBoolean(keepPlayerMinimizedKey, true))
+                                if (preferences.getBoolean(keepPlayerMinimizedKey, true)) {
                                     showPlayer = false
-                                else showPlayer = true
+                                    // Snap to collapsed so the mini-player is at the right position
+                                    playerSheetState.snapTo(playerSheetState.collapsedBound)
+                                } else {
+                                    showPlayer = true
+                                    playerSheetState.expandSoft()
+                                }
                             } else {
                                 showPlayer = false
+                                // Snap to collapsed so the mini-player is at the right position
+                                playerSheetState.snapTo(playerSheetState.collapsedBound)
                             }
                         }
                     }
@@ -1420,9 +1468,14 @@ class MainActivity :
                         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
                                 if (mediaItem.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
-                                    if (preferences.getBoolean(keepPlayerMinimizedKey, true))
+                                    if (preferences.getBoolean(keepPlayerMinimizedKey, true)) {
                                         showPlayer = false
-                                    else showPlayer = true
+                                        // Ensure mini-player is at collapsed position
+                                        playerSheetState.snapTo(playerSheetState.collapsedBound)
+                                    } else {
+                                        showPlayer = true
+                                        playerSheetState.expandSoft()
+                                    }
                                 }
                             }
 
@@ -1650,9 +1703,8 @@ val LocalPlayerAwareWindowInsets = staticCompositionLocalOf<WindowInsets> { TODO
 
 val LocalDownloadHelper = staticCompositionLocalOf<MyDownloadHelper> { error("No Downloader provided") }
 
-@OptIn(ExperimentalMaterial3Api::class)
 val LocalPlayerSheetState =
-    staticCompositionLocalOf<SheetState> { error("No player sheet state provided") }
+    staticCompositionLocalOf<PlayerSheetState> { error("No player sheet state provided") }
 
 //val LocalInternetConnected = staticCompositionLocalOf<Boolean> { error("No Network Status provided") }
 

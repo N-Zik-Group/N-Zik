@@ -5,12 +5,15 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,7 +30,12 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.n_zik.android.BuildConfig
+import app.n_zik.android.LocalPlayerSheetState
 import app.n_zik.android.colorPalette
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
+import androidx.compose.ui.graphics.graphicsLayer
 import app.it.fast4x.rimusic.enums.CheckUpdateState
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.PlayerPosition
@@ -222,13 +230,8 @@ fun Skeleton(
                         }
                     } else 5.dp
 
-
-                    Box(
-                        Modifier
-                            .padding( top = 5.dp, bottom = playerPaddingBottom )
-                            .align( playerAlignment ),
-                        content = { miniPlayer?.invoke() }
-                    )
+                    // MiniPlayer is now rendered in CustomBottomSheet (MainActivity)
+                    // No need to render it here
                 }
             }
         }

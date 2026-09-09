@@ -1,3 +1,10 @@
+feat(ui): unified player/mini-player and improved swipe-to-dismiss
+  - `MainActivity.kt`: Replaced separate AnimatedVisibility(MiniPlayer) and CustomModalBottomSheet(Player) with a unified `CustomBottomSheet` component to prevent animation jumps when transitioning
+  - `CustomBottomSheet.kt`: Added custom dragging handler to support both the collapsed MiniPlayer and expanded Player in a single gesture, using a continuous `progress` factor for padding and height compensations
+  - `MiniPlayer.kt`: Removed internal `pointerInput` vertical drag to let the parent `CustomBottomSheet` handle all drag gestures
+  - `PlayerSheetState.kt`: Fixed midpoint calculation bug `dismissedBound + (collapsedBound - dismissedBound) * 0.80f` to make downward dismiss swipes highly sensitive and fluid without rebound logic errors
+  - `MainActivity.kt`: Restored old `disableClosingPlayerSwipingDown` preference support in `onDismiss` block. Swipe to dismiss now properly calls `binder.player.stop()`, `binder.player.clearMediaItems()`, and `context.stopService()` like the old `hidePlayer()` implementation did.
+
 fix(download): restore upsertSongInfo for album/artist metadata during downloads
   - `StreamResolver.kt`: Reordered `upsertSongInfo` before `upsertSongFormat` in `processForDownload()` — `upsertSongFormat` was setting `justInserted = videoId` which caused `upsertSongInfo` to skip via guard
   - `StreamResolver.kt`: Removed duplicate `upsertSongInfo` call after `upsertSongFormat`
@@ -534,4 +541,12 @@ perf(swipe): optimize SwipeableContent — eliminate N+1 DB queries and SharedPr
   - 10 parent screens updated to hoist preferences and download states: `OnlineSearchList.kt`, `HomeSongs.kt`, `Queue.kt`, `PlaylistSongList.kt`, `HistoryList.kt`, `OnDeviceSongs.kt`, `MoodList.kt`, `AlbumDetails.kt`, `ArtistLocalSongs.kt`, `LocalPlaylistSongs.kt`
   - Pattern: `MyDownloadHelper.downloads.collectAsStateWithLifecycle()` hoisted at composable level, `rememberPreference` for swipe actions hoisted before LazyColumn/LazyGrid
   - Impact: 50 visible items → 0 flows DB + 2 SharedPrefs listeners + 0 scope leaks (was: ~250 flows + 100 listeners + 50 leaks)
+
+improve(ui): finger-linked header/navbar scroll animation
+  - `MainActivity.kt`: Header and navbar now move directly with scroll delta (no more threshold-based jump)
+  - `MainActivity.kt`: `onPreScroll` directly updates offset with scroll delta, clamped to bar height
+  - `MainActivity.kt`: `onPostScroll` forces bars visible when scroll exhausted at top (`available.y > 0`)
+  - `MainActivity.kt`: `onPostFling` snaps to fully visible or fully hidden with linear 150ms animation
+  - `MainActivity.kt`: Removed accumulated scroll tracking (`accumulatedDownScroll`/`accumulatedUpScroll`) — no longer needed
+  - Behavior: scroll down → header slides up with finger, scroll up → header slides down with finger, release → snaps to nearest position, scroll to top → bars reappear
 

@@ -92,7 +92,9 @@ import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.enums.MiniPlayerButton
 import app.n_zik.android.enums.PendingMiniPlayerAction
 import app.n_zik.android.LocalPendingMiniPlayerAction
+import app.n_zik.android.LocalPlayerSheetState
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
+import androidx.compose.ui.graphics.graphicsLayer
 import app.n_zik.android.components.menu.player.AddToPlaylistPlayerMenu
 import app.n_zik.android.components.menu.player.AudioDeviceMenu
 import app.n_zik.android.playback.services.AudioOutputManager
@@ -433,6 +435,8 @@ fun MiniPlayer(
     val isFloating = NavigationBarPosition.BottomFloating.isCurrent()
     val shape = if (isFloating) uiRoundnessShape() else uiRoundnessShape()
 
+    // Get player sheet state for gesture handling
+    val playerSheetState = LocalPlayerSheetState.current
 
     SwipeToDismissBox(
         modifier = Modifier
@@ -508,25 +512,6 @@ fun MiniPlayer(
                     }
                 )
                 //.clip(uiRoundnessShape()).clickable(onClick = showPlayer)
-                .pointerInput(Unit) {
-                    detectVerticalDragGestures(
-                        onVerticalDrag = { _, dragAmount ->
-                            if (dragAmount < 0) showPlayer()
-                            else if (dragAmount > 20) {
-                                if (!disableClosingPlayerSwipingDown) {
-                                    binder.stopRadio()
-                                    binder.player.clearMediaItems()
-                                    hidePlayer()
-                                    runCatching {
-                                        context.stopService(context.intent<PlayerServiceModern>())
-                                    }
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                } else
-                                    Toaster.i( R.string.player_swiping_down_is_disabled )
-                            }
-                        }
-                    )
-                }
                 .background(colorPalette().background2)
                 .fillMaxWidth()
                 .drawBehind {
