@@ -12,6 +12,7 @@
 - [ ] Finish the bookmark listener (currently not fully implemented).
 - [ ] Revamp the player / miniplayer transition animations.
 - [ ] Build the Desktop version of the application.
+- [ ] Swipabable content should be also listener need to be completed, too many N +1 causing lags in N-Zik
 
 ## Bug Fixes
 - [ ] Fix history reordering: it displays in the wrong order during a fresh install.
