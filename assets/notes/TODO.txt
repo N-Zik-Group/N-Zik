@@ -1,5 +1,17 @@
-95% of ytb sync
-Missing podcast totally
-Sync ytb playlsit marche mais push non !
-the sync sync too much in each page, add the possibility to hide toast
-Make the desktop version
+# TODO List
+
+## YouTube Sync (Revamp)
+- [ ] Rework the YouTube Sync logic and UI: it's currently too confusing to distinguish between app and YouTube sync states.
+- [ ] Clarify what Auto-sync actually does vs Import/Export.
+- [ ] Fix Full Sync not respecting the home screen (Podcasts are entirely missing).
+- [ ] Improve YouTube Playlist sync: currently only supports pulling, not pushing (push only works for creating a playlist and adding tracks, but lacks full management).
+- [ ] Optimize background sync: it's currently syncing too much on every single page.
+- [ ] Add an option in settings to hide sync toast notifications.
+
+## Features & UI
+- [ ] Finish the bookmark listener (currently not fully implemented).
+- [ ] Revamp the player / miniplayer transition animations.
+- [ ] Build the Desktop version of the application.
+
+## Bug Fixes
+- [ ] Fix history reordering: it displays in the wrong order during a fresh install.
