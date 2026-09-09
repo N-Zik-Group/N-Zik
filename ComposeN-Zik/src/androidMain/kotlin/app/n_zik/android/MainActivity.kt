@@ -1097,8 +1097,8 @@ class MainActivity :
 
                         val delta = available.y
 
-                        // Move bars directly with scroll (finger-linked) - both in same launch for sync
-                        coroutineScope.launch {
+                        // Move bars directly with scroll (finger-linked) - execute immediately to avoid stutter
+                        coroutineScope.launch(Dispatchers.Main.immediate) {
                             if (!(isLandscape && isLandscapeHiddenRoute)) {
                                 val currentOffset = topBarOffsetAnimatable.value
                                 val newOffset = (currentOffset + delta).coerceIn(-topBarHeightPx.toFloat(), 0f)
@@ -1118,19 +1118,7 @@ class MainActivity :
                     }
 
                     override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                        // When scroll is exhausted (at top or bottom), force bars visible
-                        val statusBarsTopPx = safeDrawingInsets.getTop(density)
-                        val topBarHeightPx = with(density) { 64.dp.roundToPx() } + statusBarsTopPx
-                        val currentTopOffset = topBarOffsetAnimatable.value
-
-                        if ((available.y > 0f || available.y < 0f) && currentTopOffset < 0f) {
-                            // At top scrolling up OR at bottom scrolling down → show bars
-                            coroutineScope.launch {
-                                topBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
-                                bottomBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
-                            }
-                            isBarsVisible = true
-                        }
+                        // Overscroll detection disabled per user request
                         return Offset.Zero
                     }
 
@@ -1143,13 +1131,25 @@ class MainActivity :
                         val threshold = -topBarHeightPx / 2f
 
                         if (currentTopOffset < threshold) {
-                            topBarOffsetAnimatable.animateTo(-topBarHeightPx.toFloat(), androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
-                            bottomBarOffsetAnimatable.animateTo(bottomBarHeightPx, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
-                            isBarsVisible = false
+                            if (topBarOffsetAnimatable.targetValue != -topBarHeightPx.toFloat()) {
+                                coroutineScope.launch {
+                                    topBarOffsetAnimatable.animateTo(-topBarHeightPx.toFloat(), androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
+                                }
+                                coroutineScope.launch {
+                                    bottomBarOffsetAnimatable.animateTo(bottomBarHeightPx, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
+                                }
+                                isBarsVisible = false
+                            }
                         } else {
-                            topBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
-                            bottomBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
-                            isBarsVisible = true
+                            if (topBarOffsetAnimatable.targetValue != 0f) {
+                                coroutineScope.launch {
+                                    topBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
+                                }
+                                coroutineScope.launch {
+                                    bottomBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
+                                }
+                                isBarsVisible = true
+                            }
                         }
 
                         return super.onPostFling(consumed, available)
