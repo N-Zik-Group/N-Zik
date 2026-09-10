@@ -1799,4 +1799,5 @@
   <string name="find_try_again_hint">Tekrar denemek için düğmeye dokunun</string>
   <string name="find_identify_another_hint">Başka bir şarkıyı tanımlamak için düğmeye dokunun</string>
   <string name="find_music_hint">Analizin çalışması için biraz müzik çalın</string>
+  <string name="and">and</string>
 </resources>
