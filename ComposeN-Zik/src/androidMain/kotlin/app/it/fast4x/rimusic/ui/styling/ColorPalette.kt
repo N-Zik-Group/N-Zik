@@ -5,6 +5,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils
 import androidx.palette.graphics.Palette
@@ -287,5 +288,24 @@ inline val ColorPalette.applyPitchBlack: ColorPalette
         background4 = Color.Black,
         text = Color.White,
     )
+
+fun ColorPalette.lerpTo(target: ColorPalette, fraction: Float): ColorPalette {
+    return ColorPalette(
+        background0 = lerp(background0, target.background0, fraction),
+        background1 = lerp(background1, target.background1, fraction),
+        background2 = lerp(background2, target.background2, fraction),
+        background3 = lerp(background3, target.background3, fraction),
+        background4 = lerp(background4, target.background4, fraction),
+        accent = lerp(accent, target.accent, fraction),
+        onAccent = lerp(onAccent, target.onAccent, fraction),
+        red = lerp(red, target.red, fraction),
+        blue = lerp(blue, target.blue, fraction),
+        text = lerp(text, target.text, fraction),
+        textSecondary = lerp(textSecondary, target.textSecondary, fraction),
+        textDisabled = lerp(textDisabled, target.textDisabled, fraction),
+        isDark = target.isDark,
+        iconButtonPlayer = lerp(iconButtonPlayer, target.iconButtonPlayer, fraction),
+    )
+}
 
 

@@ -24,8 +24,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.AnimatedContent
@@ -85,6 +87,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -280,10 +283,14 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.runtime.State
 import androidx.core.view.WindowInsetsControllerCompat
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
+import app.it.fast4x.rimusic.ui.styling.lerpTo
 import app.n_zik.android.core.database.Database
 import android.Manifest
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import kotlinx.coroutines.Job
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
 
 @UnstableApi
 class MainActivity :
@@ -657,20 +664,32 @@ class MainActivity :
                     val isPicthBlack = colorPaletteMode == ColorPaletteMode.PitchBlack
                     val isDark = colorPaletteMode == ColorPaletteMode.Dark || isPicthBlack || (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
                     
-                    // Create a palette with fixed violet accent
-                    val violetAccent = Color(0.54509807f, 0.36078432f, 0.9647059f) // Couleur violette
+                    val violetAccent = Color(0.54509807f, 0.36078432f, 0.9647059f)
                     val defaultColorPalette = dynamicColorPaletteOf(violetAccent, isDark)
+                    val targetPalette = if (!isPicthBlack) defaultColorPalette else defaultColorPalette.copy(
+                        background0 = Color.Black,
+                        background1 = Color.Black,
+                        background2 = Color.Black,
+                        background3 = Color.Black,
+                        background4 = Color.Black,
+                    )
                     setSystemBarAppearance(defaultColorPalette.isDark)
+                    val oldPalette = appearance.colorPalette
+                    if (oldPalette == targetPalette) return
                     appearance = appearance.copy(
-                        colorPalette = if (!isPicthBlack) defaultColorPalette else defaultColorPalette.copy(
-                            background0 = Color.Black,
-                            background1 = Color.Black,
-                            background2 = Color.Black,
-                            background3 = Color.Black,
-                            background4 = Color.Black,
-                        ),
                         typography = appearance.typography.copy(defaultColorPalette.text)
                     )
+                    paletteJob.value?.cancel()
+                    paletteJob.value = coroutineScope.launch(Dispatchers.Main) {
+                        val steps = 12
+                        for (i in 1..steps) {
+                            val fraction = i.toFloat() / steps
+                            appearance = appearance.copy(
+                                colorPalette = oldPalette.lerpTo(targetPalette, fraction)
+                            )
+                            delay(33)
+                        }
+                    }
                     return
                 }
 
@@ -696,52 +715,90 @@ class MainActivity :
 
                             val paletteResult = dynamicColorPaletteOf(bitmap, isDark)
                             if (paletteResult != null) {
+                                val finalPalette = if (!isPicthBlack) paletteResult else paletteResult.copy(
+                                    isDark = true,
+                                    background0 = Color.Black,
+                                    background1 = Color.Black,
+                                    background2 = Color.Black,
+                                    background3 = Color.Black,
+                                    background4 = Color.Black,
+                                    text = Color.White
+                                )
+                                val oldPalette = appearance.colorPalette
+                                if (oldPalette == finalPalette) {
+                                    savePaletteForWidget(finalPalette)
+                                    return@launch
+                                }
                                 withContext(Dispatchers.Main) {
-                                    val finalPalette = if (!isPicthBlack) paletteResult else paletteResult.copy(
-                                        isDark = true,
-                                        background0 = Color.Black,
-                                        background1 = Color.Black,
-                                        background2 = Color.Black,
-                                        background3 = Color.Black,
-                                        background4 = Color.Black,
-                                        text = Color.White
-                                    )
                                     setSystemBarAppearance(finalPalette.isDark)
-                                    val newAppearance = appearance.copy(
-                                        colorPalette = finalPalette,
+                                    appearance = appearance.copy(
                                         typography = appearance.typography.copy(finalPalette.text)
                                     )
-                                    appearance = newAppearance
-                                    savePaletteForWidget(finalPalette)
+                                    paletteJob.value?.cancel()
+                                    paletteJob.value = coroutineScope.launch(Dispatchers.Main) {
+                                        val steps = 12
+                                        for (i in 1..steps) {
+                                            val fraction = i.toFloat() / steps
+                                            appearance = appearance.copy(
+                                                colorPalette = oldPalette.lerpTo(finalPalette, fraction)
+                                            )
+                                            delay(33)
+                                        }
+                                        savePaletteForWidget(finalPalette)
+                                    }
                                 }
                             } else {
+                                val defaultColorPalette = dynamicColorPaletteOf(Color(0.54509807f, 0.36078432f, 0.9647059f), isDark)
+                                val targetPalette = if (!isPicthBlack) defaultColorPalette else defaultColorPalette.copy(
+                                    background0 = Color.Black, background1 = Color.Black,
+                                    background2 = Color.Black, background3 = Color.Black, background4 = Color.Black,
+                                )
+                                val oldPalette = appearance.colorPalette
                                 withContext(Dispatchers.Main) {
-                                    val defaultColorPalette = dynamicColorPaletteOf(Color(0.54509807f, 0.36078432f, 0.9647059f), isDark)
                                     setSystemBarAppearance(defaultColorPalette.isDark)
                                     appearance = appearance.copy(
-                                        colorPalette = if (!isPicthBlack) defaultColorPalette else defaultColorPalette.copy(
-                                            background0 = Color.Black, background1 = Color.Black,
-                                            background2 = Color.Black, background3 = Color.Black, background4 = Color.Black,
-                                        ),
                                         typography = appearance.typography.copy(defaultColorPalette.text)
                                     )
+                                    paletteJob.value?.cancel()
+                                    paletteJob.value = coroutineScope.launch(Dispatchers.Main) {
+                                        val steps = 12
+                                        for (i in 1..steps) {
+                                            val fraction = i.toFloat() / steps
+                                            appearance = appearance.copy(
+                                                colorPalette = oldPalette.lerpTo(targetPalette, fraction)
+                                            )
+                                            delay(33)
+                                        }
+                                    }
                                 }
                             }
                         } else {
+                            val violetAccent = Color(0.54509807f, 0.36078432f, 0.9647059f)
+                            val defaultColorPalette = dynamicColorPaletteOf(violetAccent, isDark)
+                            val targetPalette = if (!isPicthBlack) defaultColorPalette else defaultColorPalette.copy(
+                                background0 = Color.Black,
+                                background1 = Color.Black,
+                                background2 = Color.Black,
+                                background3 = Color.Black,
+                                background4 = Color.Black,
+                            )
+                            val oldPalette = appearance.colorPalette
                             withContext(Dispatchers.Main) {
-                                val violetAccent = Color(0.54509807f, 0.36078432f, 0.9647059f)
-                                val defaultColorPalette = dynamicColorPaletteOf(violetAccent, isDark)
                                 setSystemBarAppearance(defaultColorPalette.isDark)
                                 appearance = appearance.copy(
-                                    colorPalette = if (!isPicthBlack) defaultColorPalette else defaultColorPalette.copy(
-                                        background0 = Color.Black,
-                                        background1 = Color.Black,
-                                        background2 = Color.Black,
-                                        background3 = Color.Black,
-                                        background4 = Color.Black,
-                                    ),
                                     typography = appearance.typography.copy(defaultColorPalette.text)
                                 )
+                                paletteJob.value?.cancel()
+                                paletteJob.value = coroutineScope.launch(Dispatchers.Main) {
+                                    val steps = 12
+                                    for (i in 1..steps) {
+                                        val fraction = i.toFloat() / steps
+                                        appearance = appearance.copy(
+                                            colorPalette = oldPalette.lerpTo(targetPalette, fraction)
+                                        )
+                                        delay(33)
+                                    }
+                                }
                             }
                         }
                     } catch (e: Exception) {
@@ -1302,7 +1359,8 @@ class MainActivity :
                             // in a single composition tree, preventing animation jumps.
                             if (currentMediaId != null) {
                                 Box(
-                                    modifier = Modifier.fillMaxSize(),
+                                    modifier = Modifier.fillMaxSize()
+                                        .offset { IntOffset(0, bottomBarOffsetState.value.roundToInt()) },
                                     contentAlignment = if (playerPos == PlayerPosition.Top)
                                         Alignment.TopCenter
                                     else

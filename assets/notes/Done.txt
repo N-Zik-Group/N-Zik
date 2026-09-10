@@ -1,3 +1,14 @@
+feat(ui): smooth color palette fade transition on music change
+  - `ColorPalette.kt`: Added `lerpTo()` extension function — interpolates all 14 color fields (background0-4, accent, onAccent, red, blue, text, textSecondary, textDisabled, iconButtonPlayer) using Compose `lerp()` with `isDark` from target
+  - `ColorPalette.kt`: Added `import androidx.compose.ui.graphics.lerp` for color interpolation
+  - `MainActivity.kt`: Modified `setDynamicPalette()` — replaces instant `appearance = appearance.copy(colorPalette = ...)` with stepped fade animation (12 steps × 33ms = ~400ms total)
+  - `MainActivity.kt`: All 4 palette code paths (bitmap success, bitmap null, palette null, URL null/violet fallback) now use consistent 12×33ms fade
+  - `MainActivity.kt`: Typography set immediately at start of transition (cheap), only colors animated per-step to reduce recomposition scope
+  - `MainActivity.kt`: `paletteJob.value?.cancel()` before each new animation — cancels in-flight transition if music changes rapidly (skip scenario)
+  - `MainActivity.kt`: Added `import kotlinx.coroutines.delay` for step timing
+  - Pattern: Uses `delay(33)` loop instead of `Animatable.animateTo{}` — avoids per-frame `appearance` update that caused player lag in debug builds
+  - No lag confirmed: discrete steps reduce recomposition frequency from ~60fps to ~30fps while maintaining visual smoothness
+
 feat(ui): synced toolbar background fade with scroll gesture on home screens
   - `HomeSongsScreen.kt`: Replaced local `nestedScrollConnection` header system with `graphicsLayer` alpha fade — background fades out progressively as toolbar scrolls away, fades back in on return
   - `HomeAlbum.kt`: Same pattern — `nestedScrollConnection` + `headerOffset` + `headerAlpha` via `derivedStateOf` + `graphicsLayer { alpha = headerAlpha }` on header background
