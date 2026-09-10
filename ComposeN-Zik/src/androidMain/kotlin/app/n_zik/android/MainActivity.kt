@@ -1053,8 +1053,9 @@ class MainActivity :
             
             val bottomBarHeightPx = with(LocalDensity.current) { 240.dp.roundToPx().toFloat() } // Enough to hide floating bar + miniplayer
             var isBarsVisible by remember { mutableStateOf(true) }
-            val topBarOffsetAnimatable = remember { androidx.compose.animation.core.Animatable(0f) }
-            val bottomBarOffsetAnimatable = remember { androidx.compose.animation.core.Animatable(0f) }
+            var topBarOffset by remember { mutableFloatStateOf(0f) }
+            var bottomBarOffset by remember { mutableFloatStateOf(0f) }
+            val offsetAnimationJob = remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
             
             val density = LocalDensity.current
             val safeDrawingInsets = WindowInsets.safeDrawing
@@ -1077,11 +1078,11 @@ class MainActivity :
                 val topBarHeightPx = with(density) { 64.dp.roundToPx() } + statusBarsTopPx
                 
                 if (isLandscape && isLandscapeHiddenRoute) {
-                    topBarOffsetAnimatable.snapTo(-topBarHeightPx.toFloat())
+                    topBarOffset = -topBarHeightPx.toFloat()
                 } else {
-                    topBarOffsetAnimatable.snapTo(0f)
+                    topBarOffset = 0f
                 }
-                bottomBarOffsetAnimatable.snapTo(0f)
+                bottomBarOffset = 0f
                 
                 isBarsVisible = true
             }
@@ -1100,31 +1101,20 @@ class MainActivity :
                         if (delta == 0f) return Offset.Zero
 
                         // Cancel ongoing fling animation when user touches again
-                        if (topBarOffsetAnimatable.isRunning || bottomBarOffsetAnimatable.isRunning) {
-                            coroutineScope.launch(Dispatchers.Main.immediate) {
-                                topBarOffsetAnimatable.stop()
-                                bottomBarOffsetAnimatable.stop()
-                            }
+                        offsetAnimationJob.value?.cancel()
+                        offsetAnimationJob.value = null
+
+                        // Move bars with finger in both directions synchronously
+                        var consumedY = 0f
+                        if (!(isLandscape && isLandscapeHiddenRoute)) {
+                            val previousTopOffset = topBarOffset
+                            topBarOffset = (topBarOffset + delta).coerceIn(-topBarHeightPx.toFloat(), 0f)
+                            consumedY = topBarOffset - previousTopOffset
                         }
 
-                        // Move bars with finger in both directions
-                        coroutineScope.launch(Dispatchers.Main.immediate) {
-                            if (!(isLandscape && isLandscapeHiddenRoute)) {
-                                val currentOffset = topBarOffsetAnimatable.value
-                                val newOffset = (currentOffset + delta).coerceIn(-topBarHeightPx.toFloat(), 0f)
-                                if (newOffset != currentOffset) {
-                                    topBarOffsetAnimatable.snapTo(newOffset)
-                                }
-                            }
+                        bottomBarOffset = (bottomBarOffset - delta).coerceIn(0f, bottomBarHeightPx)
 
-                            val currentBottomOffset = bottomBarOffsetAnimatable.value
-                            val newBottomOffset = (currentBottomOffset - delta).coerceIn(0f, bottomBarHeightPx)
-                            if (newBottomOffset != currentBottomOffset) {
-                                bottomBarOffsetAnimatable.snapTo(newBottomOffset)
-                            }
-                        }
-
-                        return Offset.Zero
+                        return Offset(0f, consumedY)
                     }
 
                     override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
@@ -1135,17 +1125,18 @@ class MainActivity :
                         val statusBarsTopPx = safeDrawingInsets.getTop(density)
                         val topBarHeightPx = with(density) { 64.dp.roundToPx() } + statusBarsTopPx
 
-                        val currentTopOffset = topBarOffsetAnimatable.value
+                        val currentTopOffset = topBarOffset
                         val threshold = -topBarHeightPx / 2f
 
-                        coroutineScope.launch {
+                        offsetAnimationJob.value?.cancel()
+                        offsetAnimationJob.value = coroutineScope.launch {
                             if (currentTopOffset < threshold) {
-                                launch { topBarOffsetAnimatable.animateTo(-topBarHeightPx.toFloat(), androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing)) }
-                                launch { bottomBarOffsetAnimatable.animateTo(bottomBarHeightPx, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing)) }
+                                launch { androidx.compose.animation.core.Animatable(topBarOffset).animateTo(-topBarHeightPx.toFloat(), androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing)) { topBarOffset = value } }
+                                launch { androidx.compose.animation.core.Animatable(bottomBarOffset).animateTo(bottomBarHeightPx, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing)) { bottomBarOffset = value } }
                                 isBarsVisible = false
                             } else {
-                                launch { topBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing)) }
-                                launch { bottomBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing)) }
+                                launch { androidx.compose.animation.core.Animatable(topBarOffset).animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing)) { topBarOffset = value } }
+                                launch { androidx.compose.animation.core.Animatable(bottomBarOffset).animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing)) { bottomBarOffset = value } }
                                 isBarsVisible = true
                             }
                         }
@@ -1155,8 +1146,8 @@ class MainActivity :
                 }
             }
 
-            val topBarOffsetState = derivedStateOf { topBarOffsetAnimatable.value }
-            val bottomBarOffsetState = derivedStateOf { bottomBarOffsetAnimatable.value }
+            val topBarOffsetState = derivedStateOf { topBarOffset }
+            val bottomBarOffsetState = derivedStateOf { bottomBarOffset }
 
             BoxWithConstraints(
                 modifier = Modifier
