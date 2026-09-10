@@ -149,6 +149,28 @@ fun CustomBottomSheet(
                 val p = state.progress.coerceIn(0f, 1f)
                 translationY = targetY * (1f - p)
             }
+            // ── Clip to the exact animated card rect (same geometry as drawBehind) ──
+            // MUST precede the pointerInput below: the hit-test walks this chain
+            // outside-in, and a clip stops it for any point outside the card. If the
+            // drag input were registered first, its hit area would be the whole
+            // translated box (full screen when collapsed), covering the navbar strip
+            // behind the miniplayer and stealing its taps. clip→input restricts the
+            // input area to the animated card rect (miniplayer band when collapsed,
+            // full screen when expanded).
+            .graphicsLayer {
+                val p = state.progress.coerceIn(0f, 1f)
+                val baseCornerPx = (baseShape as? RoundedCornerShape)?.topStart?.toPx(size, this) ?: 16.dp.toPx()
+                val geometry = computeCardGeometry(
+                    p = p,
+                    size = size,
+                    collapsedHeightPx = collapsedContentHeight.toPx(),
+                    horizontalPaddingPx = 16.dp.toPx(),
+                    baseCornerPx = baseCornerPx,
+                    corner28Px = 28.dp.toPx(),
+                )
+                shape = CardClipShape(geometry)
+                clip = true
+            }
             .pointerInput(state, isExpandable, disableDismiss) {
                 if (!isExpandable) return@pointerInput
                 val velocityTracker = VelocityTracker()
@@ -168,21 +190,6 @@ fun CustomBottomSheet(
                         state.performFling(velocity, if (!disableDismiss) onDismiss else null)
                     }
                 )
-            }
-            // ── Clip to the exact animated card rect (same geometry as drawBehind) ──
-            .graphicsLayer {
-                val p = state.progress.coerceIn(0f, 1f)
-                val baseCornerPx = (baseShape as? RoundedCornerShape)?.topStart?.toPx(size, this) ?: 16.dp.toPx()
-                val geometry = computeCardGeometry(
-                    p = p,
-                    size = size,
-                    collapsedHeightPx = collapsedContentHeight.toPx(),
-                    horizontalPaddingPx = 16.dp.toPx(),
-                    baseCornerPx = baseCornerPx,
-                    corner28Px = 28.dp.toPx(),
-                )
-                shape = CardClipShape(geometry)
-                clip = true
             }
             // ── Deploy animation: expanding card background ──
             .drawBehind {

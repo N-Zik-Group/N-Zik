@@ -681,13 +681,14 @@ class MainActivity :
                     )
                     paletteJob.value?.cancel()
                     paletteJob.value = coroutineScope.launch(Dispatchers.Main) {
-                        val steps = 12
+                        val steps = if (showPlayer) 3 else 8
+                                        val stepDelay = if (showPlayer) 100L else 50L
                         for (i in 1..steps) {
                             val fraction = i.toFloat() / steps
                             appearance = appearance.copy(
                                 colorPalette = oldPalette.lerpTo(targetPalette, fraction)
                             )
-                            delay(33)
+                            delay(stepDelay)
                         }
                     }
                     return
@@ -736,13 +737,15 @@ class MainActivity :
                                     )
                                     paletteJob.value?.cancel()
                                     paletteJob.value = coroutineScope.launch(Dispatchers.Main) {
-                                        val steps = 12
+                                        // Fewer steps when player is visible to avoid lag
+                                        val steps = if (showPlayer) 3 else 8
+                                        val stepDelay = if (showPlayer) 100L else 50L
                                         for (i in 1..steps) {
                                             val fraction = i.toFloat() / steps
                                             appearance = appearance.copy(
                                                 colorPalette = oldPalette.lerpTo(finalPalette, fraction)
                                             )
-                                            delay(33)
+                                            delay(stepDelay)
                                         }
                                         savePaletteForWidget(finalPalette)
                                     }
@@ -761,13 +764,14 @@ class MainActivity :
                                     )
                                     paletteJob.value?.cancel()
                                     paletteJob.value = coroutineScope.launch(Dispatchers.Main) {
-                                        val steps = 12
+                                        val steps = if (showPlayer) 3 else 8
+                                        val stepDelay = if (showPlayer) 100L else 50L
                                         for (i in 1..steps) {
                                             val fraction = i.toFloat() / steps
                                             appearance = appearance.copy(
                                                 colorPalette = oldPalette.lerpTo(targetPalette, fraction)
                                             )
-                                            delay(33)
+                                            delay(stepDelay)
                                         }
                                     }
                                 }
@@ -790,13 +794,14 @@ class MainActivity :
                                 )
                                 paletteJob.value?.cancel()
                                 paletteJob.value = coroutineScope.launch(Dispatchers.Main) {
-                                    val steps = 12
+                                    val steps = if (showPlayer) 3 else 8
+                                    val stepDelay = if (showPlayer) 100L else 50L
                                     for (i in 1..steps) {
                                         val fraction = i.toFloat() / steps
                                         appearance = appearance.copy(
                                             colorPalette = oldPalette.lerpTo(targetPalette, fraction)
                                         )
-                                        delay(33)
+                                        delay(stepDelay)
                                     }
                                 }
                             }
@@ -1146,9 +1151,12 @@ class MainActivity :
                 isBarsVisible = true
             }
 
-            val nestedScrollConnection = remember(isLandscape, isViMusic, isScrollableRoute, isLandscapeHiddenRoute, density, safeDrawingInsets) {
+            val nestedScrollConnection = remember(isLandscape, isViMusic, isScrollableRoute, isLandscapeHiddenRoute, density, safeDrawingInsets, showPlayer) {
                 object : NestedScrollConnection {
                     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                        // Disable scroll-hide when player or queue is open
+                        if (showPlayer) return Offset.Zero
+
                         val shouldHideOnScroll = isLandscape || isScrollableRoute
 
                         if (!shouldHideOnScroll || isViMusic) return Offset.Zero
@@ -1181,6 +1189,9 @@ class MainActivity :
                     }
 
                     override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+                        // Disable scroll-hide when player or queue is open
+                        if (showPlayer) return super.onPostFling(consumed, available)
+
                         val statusBarsTopPx = safeDrawingInsets.getTop(density)
                         val topBarHeightPx = with(density) { 64.dp.roundToPx() } + statusBarsTopPx
 

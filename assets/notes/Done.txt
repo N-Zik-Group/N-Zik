@@ -1,3 +1,10 @@
+fix(player): miniplayer no longer blocks clicks on the bottom navigation bar
+  - `CustomBottomSheet.kt`: moved the animated card clip (`graphicsLayer { shape = CardClipShape; clip = true }`) BEFORE the drag `pointerInput` in the outer Box modifier chain, with an explanatory comment
+  - Root cause: commit d3a3bc9f3a ("fix : miniplayer laggy") turned the sheet into a full-screen Box with an unconditional `pointerInput(detectVerticalDragGestures)`; Compose hit-test walks the modifier chain outside-in and records the pointer input before reaching the clip layer, so the clip did not restrict the input area
+  - When collapsed, the translated box input bounds (from the miniplayer top down to the screen bottom) covered the entire navbar strip, stealing taps on the bottom navigation tabs
+  - With clip→input ordering the hit area becomes the animated card rect itself: only the miniplayer band (65dp, 16dp side insets) when collapsed, full screen when expanded — navbar tabs are clickable again
+  - Drag gestures unchanged (expand / collapse / dismiss by velocity, `performFling` untouched); in-progress drags are unaffected because the pointer is acquired by the gesture after touch slop without per-frame re-hit-testing
+
 feat(ui): smooth color palette fade transition on music change
   - `ColorPalette.kt`: Added `lerpTo()` extension function — interpolates all 14 color fields (background0-4, accent, onAccent, red, blue, text, textSecondary, textDisabled, iconButtonPlayer) using Compose `lerp()` with `isDark` from target
   - `ColorPalette.kt`: Added `import androidx.compose.ui.graphics.lerp` for color interpolation
