@@ -1460,7 +1460,10 @@ class MainActivity :
                                     playerSheetState.snapTo(playerSheetState.collapsedBound)
                                 } else {
                                     showPlayer = true
-                                    playerSheetState.expandSoft()
+                                    coroutineScope.launch {
+                                        delay(800)
+                                        playerSheetState.expandSoft()
+                                    }
                                 }
                             } else {
                                 showPlayer = false
@@ -1480,7 +1483,10 @@ class MainActivity :
                                         playerSheetState.snapTo(playerSheetState.collapsedBound)
                                     } else {
                                         showPlayer = true
-                                        playerSheetState.expandSoft()
+                                        coroutineScope.launch {
+                                            delay(800)
+                                            playerSheetState.expandSoft()
+                                        }
                                     }
                                 }
                             }

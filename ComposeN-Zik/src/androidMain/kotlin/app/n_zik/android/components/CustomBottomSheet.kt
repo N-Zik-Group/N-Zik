@@ -118,7 +118,6 @@ fun CustomBottomSheet(
     val scope = rememberCoroutineScope()
 
     val miniPlayerColor = colorPalette().background2
-    val playerColor = colorPalette().background0
 
     Box(
         modifier = modifier
