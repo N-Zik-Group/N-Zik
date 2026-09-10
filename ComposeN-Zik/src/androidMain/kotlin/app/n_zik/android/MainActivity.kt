@@ -156,6 +156,7 @@ import app.it.fast4x.rimusic.ui.screens.player.components.YoutubePlayer
 import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
 import app.it.fast4x.rimusic.ui.screens.player.rememberPlayerSheetState
 import app.n_zik.android.components.CustomBottomSheet
+import app.n_zik.android.components.player.presentMiniplayerThenExpand
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
@@ -1529,10 +1530,7 @@ class MainActivity :
                                     playerSheetState.snapTo(playerSheetState.collapsedBound)
                                 } else {
                                     showPlayer = true
-                                    coroutineScope.launch {
-                                        delay(800)
-                                        playerSheetState.expandSoft()
-                                    }
+                                    coroutineScope.presentMiniplayerThenExpand(playerSheetState)
                                 }
                             } else {
                                 showPlayer = false
@@ -1552,10 +1550,7 @@ class MainActivity :
                                         playerSheetState.snapTo(playerSheetState.collapsedBound)
                                     } else {
                                         showPlayer = true
-                                        coroutineScope.launch {
-                                            delay(800)
-                                            playerSheetState.expandSoft()
-                                        }
+                                        coroutineScope.presentMiniplayerThenExpand(playerSheetState)
                                     }
                                 }
                             }
