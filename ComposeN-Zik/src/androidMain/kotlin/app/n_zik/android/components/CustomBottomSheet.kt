@@ -40,14 +40,14 @@ import app.n_zik.android.colorPalette
  * ET pour le clip (graphicsLayer), afin qu'ils restent toujours synchronisés
  * — c'est ce qui évite le débordement de contenu à l'ouverture/fermeture.
  */
-private data class CardGeometry(
+internal data class CardGeometry(
     val left: Float,
     val width: Float,
     val height: Float,
     val cornerPx: Float,
 )
 
-private fun computeCardGeometry(
+internal fun computeCardGeometry(
     p: Float,
     size: Size,
     collapsedHeightPx: Float,
@@ -66,6 +66,24 @@ private fun computeCardGeometry(
     }
     return CardGeometry(cardLeft, cardWidth, cardHeight, cornerPx)
 }
+
+/**
+ * Fade-in progress of the full player content (0 = hidden, 1 = visible).
+ * Starts at 0.45f, exactly when the mini-player is fully faded
+ * (miniPlayerFade), so the hand-over has no pop, no overlap and no
+ * empty gap.
+ */
+internal fun playerContentFade(progress: Float): Float =
+    ((progress - 0.45f) / 0.55f).coerceIn(0f, 1f)
+
+/**
+ * Fade-out progress of the mini-player (1 = visible, 0 = hidden).
+ * Starts fading as soon as the drag begins and is fully transparent at
+ * 0.45f — right when the player fade-in starts — so the mini-player is
+ * already gone before the player appears (no overlap, no empty gap).
+ */
+internal fun miniPlayerFade(progress: Float): Float =
+    1f - (progress / 0.45f).coerceIn(0f, 1f)
 
 /**
  * Shape qui suit exactement le rectangle animé de la carte "deploy"
@@ -179,7 +197,9 @@ fun CustomBottomSheet(
                         baseCornerPx = baseCornerPx,
                         corner28Px = 28.dp.toPx(),
                     )
-                    val currentColor = androidx.compose.ui.graphics.lerp(miniPlayerColor, playerColor, p)
+                    // The card keeps the mini-player background color throughout
+                    // the deploy animation instead of lerping toward the player color.
+                    val currentColor = miniPlayerColor
                     drawRoundRect(
                         color = currentColor,
                         topLeft = Offset(geometry.left, 0f),
@@ -189,6 +209,10 @@ fun CustomBottomSheet(
                 }
             }
     ) {
+        // Player content fade-in (see playerContentFade); the mini-player
+        // fades out on its own, earlier curve (see miniPlayerFade).
+        val playerAlpha = playerContentFade(state.progress)
+
         if (!state.isCollapsed && !state.isDismissed) {
             BackHandler(onBack = state::collapseSoft)
         }
@@ -213,24 +237,26 @@ fun CustomBottomSheet(
                     // Skip the (potentially heavy) draw entirely below the alpha
                     // threshold instead of just setting alpha = 0, which still
                     // records the full display list every frame.
-                    val alpha = ((state.progress - 0.45f) / 0.55f).coerceIn(0f, 1f)
-                    if (state.progress >= 0.3f && alpha > 0.01f) {
+                    if (state.progress >= 0.3f && playerAlpha > 0.01f) {
                         drawContent()
                     }
                 }
                 .graphicsLayer {
-                    alpha = if (state.progress < 0.3f) 0f
-                    else ((state.progress - 0.45f) / 0.55f).coerceIn(0f, 1f)
+                    alpha = playerAlpha
                 },
             content = content
         )
 
-        // Mini-player — visible while the card is not deployed. No fade: it
-        // stays fully opaque and is removed from composition as-is at
-        // progress 0.3f, so this box carries no per-frame alpha animation.
-        // Excluded when dismissed: at the dismissed bound the sheet is closed and
-        // keeping the box would leave an invisible tap/drag target at the screen edge.
-        if (state.progress < 0.3f && !state.isExpanded && !state.isDismissed) {
+        // Mini-player — visible while the card is not fully deployed. Fades
+        // out from 0 to 0.45f (miniPlayerFade), so it is fully transparent
+        // right when the player fade-in starts — the hand-over is smooth,
+        // without pop, overlap or empty gap. Excluded when dismissed: at
+        // the dismissed bound the sheet is closed and keeping the box would
+        // leave an invisible tap/drag target at the screen edge.
+        // Clipped to the collapsed card shape (geometry at progress 0) while
+        // deploying so the mini-player's shadow (drawn inside the legacy
+        // MiniPlayer) cannot leak outside its card as the card grows around it.
+        if (!state.isExpanded && !state.isDismissed) {
             Box(
                 modifier =
                 Modifier
@@ -240,7 +266,24 @@ fun CustomBottomSheet(
                         onClick = { if (isExpandable) state.expandSoft() },
                     )
                     .fillMaxWidth()
-                    .height(collapsedContentHeight),
+                    .height(collapsedContentHeight)
+                    .graphicsLayer {
+                        alpha = miniPlayerFade(state.progress)
+                        if (state.progress > 0.01f) {
+                            val baseCornerPx = (baseShape as? RoundedCornerShape)?.topStart?.toPx(size, this) ?: 16.dp.toPx()
+                            shape = CardClipShape(
+                                computeCardGeometry(
+                                    p = 0f,
+                                    size = size,
+                                    collapsedHeightPx = collapsedContentHeight.toPx(),
+                                    horizontalPaddingPx = 16.dp.toPx(),
+                                    baseCornerPx = baseCornerPx,
+                                    corner28Px = 28.dp.toPx(),
+                                )
+                            )
+                            clip = true
+                        }
+                    },
                 content = collapsedContent,
             )
         }
