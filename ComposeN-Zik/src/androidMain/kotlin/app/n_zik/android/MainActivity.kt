@@ -1137,14 +1137,16 @@ class MainActivity :
                         val currentTopOffset = topBarOffsetAnimatable.value
                         val threshold = -topBarHeightPx / 2f
 
-                        if (currentTopOffset < threshold) {
-                            topBarOffsetAnimatable.animateTo(-topBarHeightPx.toFloat(), androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
-                            bottomBarOffsetAnimatable.animateTo(bottomBarHeightPx, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
-                            isBarsVisible = false
-                        } else {
-                            topBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
-                            bottomBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing))
-                            isBarsVisible = true
+                        coroutineScope.launch {
+                            if (currentTopOffset < threshold) {
+                                launch { topBarOffsetAnimatable.animateTo(-topBarHeightPx.toFloat(), androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing)) }
+                                launch { bottomBarOffsetAnimatable.animateTo(bottomBarHeightPx, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing)) }
+                                isBarsVisible = false
+                            } else {
+                                launch { topBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing)) }
+                                launch { bottomBarOffsetAnimatable.animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing)) }
+                                isBarsVisible = true
+                            }
                         }
 
                         return super.onPostFling(consumed, available)
