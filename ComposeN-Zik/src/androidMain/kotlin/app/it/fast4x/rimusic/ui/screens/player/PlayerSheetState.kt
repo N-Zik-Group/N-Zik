@@ -95,11 +95,11 @@ class PlayerSheetState(
     }
 
     fun collapseSoft() {
-        collapse(tween(500)) // No bounce, smooth animation
+        collapse(tween(650)) // Smooth deploy-reverse animation
     }
 
     fun expandSoft() {
-        expand(tween(500)) // No bounce, smooth animation
+        expand(tween(650)) // Smooth deploy animation
     }
 
     fun dismiss() {
