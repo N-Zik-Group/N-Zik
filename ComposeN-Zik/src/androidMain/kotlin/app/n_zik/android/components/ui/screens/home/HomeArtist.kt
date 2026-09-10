@@ -2,6 +2,7 @@
 package app.n_zik.android.components.ui.screens.home
 
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 
 import app.n_zik.android.uiRoundnessShape
 
@@ -29,6 +30,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -456,38 +459,8 @@ fun HomeArtists(
 
 
                 val hapticFeedback = LocalHapticFeedback.current
-                
-                var isToolbarVisible by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(true) }
-                var previousIndex by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(lazyGridState.firstVisibleItemIndex) }
-                var previousScrollOffset by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(lazyGridState.firstVisibleItemScrollOffset) }
-            
-                androidx.compose.runtime.LaunchedEffect(lazyGridState) {
-                    androidx.compose.runtime.snapshotFlow { lazyGridState.firstVisibleItemIndex to lazyGridState.firstVisibleItemScrollOffset }
-                        .collect { (index, offset) ->
-                            if (index < 10) {
-                                isToolbarVisible = true
-                            } else {
-                                if (index < previousIndex) {
-                                    isToolbarVisible = true
-                                } else if (index > previousIndex) {
-                                    isToolbarVisible = false
-                                } else {
-                                    if (offset < previousScrollOffset - 15) {
-                                        isToolbarVisible = true
-                                    } else if (offset > previousScrollOffset + 15) {
-                                        isToolbarVisible = false
-                                    }
-                                }
-                            }
-                            
-                            if (kotlin.math.abs(offset - previousScrollOffset) > 15 || index != previousIndex) {
-                                previousIndex = index
-                                previousScrollOffset = offset
-                            }
-                        }
-                }
 
-                val reorderableLazyGridState = rememberReorderableLazyGridState(
+                val reorderableLazyGridState = sh.calvin.reorderable.rememberReorderableLazyGridState(
                     lazyGridState = lazyGridState
                 ) { from, to ->
                     val mutableItems = itemsOnDisplay.toMutableList()
@@ -501,13 +474,7 @@ fun HomeArtists(
                     }
                 }
 
-
-
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = isToolbarVisible,
-                    enter = androidx.compose.animation.expandVertically(animationSpec = tween(200)) + androidx.compose.animation.fadeIn(animationSpec = tween(200)),
-                    exit = androidx.compose.animation.shrinkVertically(animationSpec = tween(200)) + androidx.compose.animation.fadeOut(animationSpec = tween(200))
-                ) {
+                val header: @Composable () -> Unit = {
                     Column {
                         Column {
                             TabHeader( R.string.artists ) {
@@ -619,12 +586,33 @@ fun HomeArtists(
                         BookmarkStateManager.getArtistBookmarkStates(artistIds)
                     }.collectAsStateWithLifecycle(emptyMap())
 
-                    LazyVerticalGrid(
-                        state = lazyGridState,
-                        columns = GridCells.Adaptive( itemSize.size.dp ),
-                        modifier = Modifier.background( colorPalette().background0 ).fillMaxSize(),
-                        contentPadding = PaddingValues( bottom = Dimensions.bottomSpacer )
-                    ) {
+                    var headerHeight by remember { androidx.compose.runtime.mutableIntStateOf(0) }
+                    var headerOffset by remember { androidx.compose.runtime.mutableFloatStateOf(0f) }
+                    val headerAlpha by remember(headerHeight) {
+                        androidx.compose.runtime.derivedStateOf {
+                            if (headerHeight == 0) 1f
+                            else (1f + headerOffset / headerHeight).coerceIn(0f, 1f)
+                        }
+                    }
+
+                    val nestedScrollConnection = remember(headerHeight) {
+                        object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
+                            override fun onPreScroll(available: androidx.compose.ui.geometry.Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): androidx.compose.ui.geometry.Offset {
+                                val delta = available.y
+                                headerOffset = (headerOffset + delta).coerceIn(-headerHeight.toFloat(), 0f)
+                                return androidx.compose.ui.geometry.Offset.Zero
+                            }
+                        }
+                    }
+
+                    Box(modifier = Modifier.fillMaxSize().nestedScroll(nestedScrollConnection)) {
+                        val headerPadding = with(androidx.compose.ui.platform.LocalDensity.current) { headerHeight.toDp() }
+                        LazyVerticalGrid(
+                            state = lazyGridState,
+                            columns = GridCells.Adaptive( itemSize.size.dp ),
+                            modifier = Modifier.background( colorPalette().background0 ).fillMaxSize(),
+                            contentPadding = PaddingValues( top = headerPadding, bottom = Dimensions.bottomSpacer )
+                        ) {
                     items(items = itemsOnDisplay.distinctBy { it.id }, key = { it.id }) { artist ->
                         ReorderableItem(
                             reorderableLazyGridState,
@@ -751,6 +739,17 @@ fun HomeArtists(
                         )
                     }
                 }
+                    }
+
+                        Box(
+                            modifier = Modifier
+                                .graphicsLayer { alpha = headerAlpha }
+                                .background(colorPalette().background0)
+                                .onGloballyPositioned { headerHeight = it.size.height }
+                                .offset { androidx.compose.ui.unit.IntOffset(0, kotlin.math.round(headerOffset).toInt()) }
+                        ) {
+                            header()
+                        }
             }
             }
 

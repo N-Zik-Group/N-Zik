@@ -58,6 +58,7 @@ import org.json.JSONArray
 import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceSong
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
+import app.n_zik.android.LocalTopBarOffset
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
@@ -103,6 +104,9 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
 import app.n_zik.android.enums.lyrics.LyricsType
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -552,51 +556,9 @@ fun HomeSongsScreen(navController: NavController ) {
         }
     }
 
-    var isToolbarVisible by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(true) }
-    var previousIndex by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(lazyListState.firstVisibleItemIndex) }
-    var previousScrollOffset by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(lazyListState.firstVisibleItemScrollOffset) }
-
-    androidx.compose.runtime.LaunchedEffect(lazyListState) {
-        androidx.compose.runtime.snapshotFlow { lazyListState.firstVisibleItemIndex to lazyListState.firstVisibleItemScrollOffset }
-            .collect { (index, offset) ->
-                if (index < 10) {
-                    isToolbarVisible = true
-                } else {
-                    if (index < previousIndex) {
-                        isToolbarVisible = true
-                    } else if (index > previousIndex) {
-                        isToolbarVisible = false
-                    } else {
-                        if (offset < previousScrollOffset - 15) {
-                            isToolbarVisible = true
-                        } else if (offset > previousScrollOffset + 15) {
-                            isToolbarVisible = false
-                        }
-                    }
-                }
-                
-                if (kotlin.math.abs(offset - previousScrollOffset) > 15 || index != previousIndex) {
-                    previousIndex = index
-                    previousScrollOffset = offset
-                }
-            }
-    }
-
-    Box(
-        modifier = Modifier.background( colorPalette().background0 )
-            .fillMaxHeight()
-            .fillMaxWidth()
-    ) {
-        Column( Modifier.fillMaxSize() ) {
-            // Header is rendered directly in the Column (not inside LazyColumn)
-            // so it stays stable when switching between HomeSongs and OnDeviceSong
-            androidx.compose.animation.AnimatedVisibility(
-                visible = isToolbarVisible,
-                enter = androidx.compose.animation.expandVertically(animationSpec = tween(200)) + androidx.compose.animation.fadeIn(animationSpec = tween(200)),
-                exit = androidx.compose.animation.shrinkVertically(animationSpec = tween(200)) + androidx.compose.animation.fadeOut(animationSpec = tween(200))
-            ) {
-                Column {
-                    TabHeader( R.string.songs ) {
+    val header: @Composable () -> Unit = {
+        Column {
+            TabHeader( R.string.songs ) {
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 HeaderInfo( itemsOnDisplayState.size.toString(), R.drawable.musical_notes )
@@ -805,12 +767,49 @@ fun HomeSongsScreen(navController: NavController ) {
                     }
                     search.SearchBar( columnScope = this@Column )
                 }
-            }
+    }
 
-            when( builtInPlaylist ) {
-                BuiltInPlaylist.OnDevice -> OnDeviceSong( navController, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs )
-                else                     -> HomeSongs( navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, matchButton = null, onRecommendationCountChange = { count -> recommendationCount = count }, onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading }, isRecommendationEnabled = isRecommendationEnabled, refreshKey = matchRefreshKey, onMatchClick = { showConfirmMatchAllDialog = true } )
+    var headerHeight by remember { mutableIntStateOf(0) }
+    var headerOffset by remember { mutableFloatStateOf(0f) }
+    val headerAlpha by remember(headerHeight) {
+        derivedStateOf {
+            if (headerHeight == 0) 1f
+            else (1f + headerOffset / headerHeight).coerceIn(0f, 1f)
+        }
+    }
+
+    val nestedScrollConnection = remember(headerHeight) {
+        object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
+            override fun onPreScroll(available: androidx.compose.ui.geometry.Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): androidx.compose.ui.geometry.Offset {
+                val delta = available.y
+                headerOffset = (headerOffset + delta).coerceIn(-headerHeight.toFloat(), 0f)
+                return androidx.compose.ui.geometry.Offset.Zero
             }
+        }
+    }
+
+    Box(
+        modifier = Modifier.background( colorPalette().background0 )
+            .fillMaxHeight()
+            .fillMaxWidth()
+            .nestedScroll(nestedScrollConnection)
+    ) {
+        Column( Modifier.fillMaxSize() ) {
+            val headerPadding = with(androidx.compose.ui.platform.LocalDensity.current) { headerHeight.toDp() }
+            when( builtInPlaylist ) {
+                BuiltInPlaylist.OnDevice -> OnDeviceSong( navController, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, headerPadding )
+                else                     -> HomeSongs( navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, matchButton = null, onRecommendationCountChange = { count -> recommendationCount = count }, onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading }, isRecommendationEnabled = isRecommendationEnabled, refreshKey = matchRefreshKey, onMatchClick = { showConfirmMatchAllDialog = true }, headerPadding = headerPadding )
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .graphicsLayer { alpha = headerAlpha }
+                .background(colorPalette().background0)
+                .onGloballyPositioned { headerHeight = it.size.height }
+                .offset { androidx.compose.ui.unit.IntOffset(0, kotlin.math.round(headerOffset).toInt()) }
+        ) {
+            header()
         }
         FloatingActionsContainerWithScrollToTop(lazyListState = lazyListState)
 

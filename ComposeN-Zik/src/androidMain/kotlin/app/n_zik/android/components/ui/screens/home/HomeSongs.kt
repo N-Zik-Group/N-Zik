@@ -115,7 +115,8 @@ fun HomeSongs(
     onRecommendationsLoadingChange: (Boolean) -> Unit = {},
     isRecommendationEnabled: Boolean = false,
     refreshKey: Int = 0,
-    onMatchClick: () -> Unit = {}
+    onMatchClick: (() -> Unit)? = null,
+    headerPadding: androidx.compose.ui.unit.Dp = 0.dp
 ) {
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
@@ -456,7 +457,7 @@ fun HomeSongs(
             override val iconId: Int = R.drawable.alert
             override val messageId: Int = R.string.match_album_audio_version
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
-            override fun onShortClick() { onMatchClick() }
+            override fun onShortClick() { onMatchClick?.invoke() }
             override fun onLongClick() {}
         }
     }
@@ -496,7 +497,7 @@ fun HomeSongs(
             LazyColumn(
                 state = lazyListState,
                 userScrollEnabled = !isLoading,
-                contentPadding = PaddingValues( bottom = Dimensions.bottomSpacer ),
+                contentPadding = PaddingValues( top = headerPadding, bottom = Dimensions.bottomSpacer ),
                 modifier = Modifier
                     .background(colorPalette().background0)
                     .fillMaxSize()

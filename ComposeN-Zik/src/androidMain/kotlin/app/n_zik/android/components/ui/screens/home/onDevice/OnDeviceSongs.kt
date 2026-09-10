@@ -101,7 +101,8 @@ fun OnDeviceSong(
     search: Search,
     buttons: MutableList<Button>,
     itemsOnDisplay: MutableList<Song>,
-    getSongs: () -> List<Song>
+    getSongs: () -> List<Song>,
+    headerPadding: androidx.compose.ui.unit.Dp = 0.dp
 ) {
     // Essentials
     val context = LocalContext.current
@@ -233,10 +234,9 @@ fun OnDeviceSong(
     LazyColumn(
         state = lazyListState,
         userScrollEnabled = songsOnDevice.isNotEmpty(),
-        contentPadding = PaddingValues( bottom = Dimensions.bottomSpacer )
+        contentPadding = PaddingValues(top = headerPadding, bottom = Dimensions.bottomSpacer),
+        modifier = Modifier.fillMaxSize()
     ) {
-
-
         if( !isPermissionGranted ) {
             item {
                 Box(

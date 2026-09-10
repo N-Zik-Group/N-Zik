@@ -1,3 +1,12 @@
+feat(ui): synced toolbar background fade with scroll gesture on home screens
+  - `HomeSongsScreen.kt`: Replaced local `nestedScrollConnection` header system with `graphicsLayer` alpha fade — background fades out progressively as toolbar scrolls away, fades back in on return
+  - `HomeAlbum.kt`: Same pattern — `nestedScrollConnection` + `headerOffset` + `headerAlpha` via `derivedStateOf` + `graphicsLayer { alpha = headerAlpha }` on header background
+  - `HomeArtist.kt`: Replaced `AnimatedVisibility` + `isToolbarVisible` (snapshotFlow-based) with `nestedScrollConnection` + `header` lambda + `graphicsLayer` alpha fade on background
+  - `HomeLibrary.kt`: Same as HomeArtist — unified scroll-driven toolbar fade across all home screens
+  - All 4 files: Background uses `graphicsLayer { alpha }` (GPU-accelerated, no recomposition) instead of `background(color.copy(alpha = ...))` (caused lag)
+  - All 4 files: `derivedStateOf` reads `headerOffset` directly (no state key in `remember` to avoid per-frame recomposition)
+  - `TabHeader.kt`: Minor cleanup
+
 fix(innertube): locale-aware artist name parsing — handle "et", "and", etc. as separators
   - `Runs.kt`: Added `ArtistConjunctions` object (default `listOf("and")`) and `splitArtistsByConjunction()` function matching Metrolist's pattern — splits artist runs on locale-aware conjunctions + "&"
   - `Runs.kt`: Added `clean()` extension to drop non-artist first groups from subtitle runs

@@ -53,6 +53,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.key
@@ -65,6 +66,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -74,6 +77,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
+import app.n_zik.android.LocalTopBarOffset
 import app.it.fast4x.compose.persist.persistList
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.Database
@@ -171,6 +175,8 @@ import app.n_zik.android.components.AppPullToRefreshBox
 import androidx.core.content.ContextCompat
 import java.util.ArrayList
 import android.content.Intent
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
 import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -472,37 +478,7 @@ fun HomeAlbums(
 
                 val hapticFeedback = LocalHapticFeedback.current
                 
-                var isToolbarVisible by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(true) }
-                var previousIndex by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(lazyGridState.firstVisibleItemIndex) }
-                var previousScrollOffset by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(lazyGridState.firstVisibleItemScrollOffset) }
-            
-                androidx.compose.runtime.LaunchedEffect(lazyGridState) {
-                    androidx.compose.runtime.snapshotFlow { lazyGridState.firstVisibleItemIndex to lazyGridState.firstVisibleItemScrollOffset }
-                        .collect { (index, offset) ->
-                            if (index < 10) {
-                                isToolbarVisible = true
-                            } else {
-                                if (index < previousIndex) {
-                                    isToolbarVisible = true
-                                } else if (index > previousIndex) {
-                                    isToolbarVisible = false
-                                } else {
-                                    if (offset < previousScrollOffset - 15) {
-                                        isToolbarVisible = true
-                                    } else if (offset > previousScrollOffset + 15) {
-                                        isToolbarVisible = false
-                                    }
-                                }
-                            }
-                            
-                            if (kotlin.math.abs(offset - previousScrollOffset) > 15 || index != previousIndex) {
-                                previousIndex = index
-                                previousScrollOffset = offset
-                            }
-                        }
-                }
-
-                val reorderableLazyGridState = rememberReorderableLazyGridState(
+                val reorderableLazyGridState = sh.calvin.reorderable.rememberReorderableLazyGridState(
                     lazyGridState = lazyGridState
                 ) { from, to ->
                     val mutableItems = itemsOnDisplay.toMutableList()
@@ -516,13 +492,7 @@ fun HomeAlbums(
                     }
                 }
 
-
-
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = isToolbarVisible,
-                    enter = androidx.compose.animation.expandVertically(animationSpec = tween(200)) + androidx.compose.animation.fadeIn(animationSpec = tween(200)),
-                    exit = androidx.compose.animation.shrinkVertically(animationSpec = tween(200)) + androidx.compose.animation.fadeOut(animationSpec = tween(200))
-                ) {
+                val header: @Composable () -> Unit = {
                     Column {
                         Column {
                     TabHeader(R.string.albums) {
@@ -634,142 +604,174 @@ fun HomeAlbums(
                         BookmarkStateManager.getAlbumBookmarkStates(albumIds)
                     }.collectAsStateWithLifecycle(emptyMap())
 
-                    LazyVerticalGrid(
-                        state = lazyGridState,
-                        columns = GridCells.Adaptive( itemSize.size.dp ),
-                        modifier = Modifier.background( colorPalette().background0 ).fillMaxSize(),
-                        contentPadding = PaddingValues( bottom = Dimensions.bottomSpacer )
-                    ) {
-                    items(
-                        items = itemsOnDisplay.distinctBy { it.id },
-                        key = { it.id }
-                    ) { album ->
-                        ReorderableItem(
-                            reorderableLazyGridState,
-                            key = album.id
-                        ) { isDraggingItem ->
-                            Box(modifier = Modifier) {
-                                if (!positionLock.isLocked() && sort.sortBy == AlbumSortBy.Custom && sort.sortOrder == SortOrder.Ascending) {
-                                    Box(
-                                        modifier = Modifier
-                                            .padding(4.dp)
-                                            .size(32.dp)
-                                            .align(Alignment.TopEnd)
-                                            .zIndex(2f)
-                                            .draggableHandle(
-                                                onDragStarted = {
-                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                },
-                                                onDragStopped = {
-                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                                    val currentItems = itemsOnDisplay.toList()
-                                                    Database.asyncTransaction {
-                                                        currentItems.forEachIndexed { index, album ->
-                                                            albumTable.updatePosition(album.id, index)
-                                                        }
-                                                    }
-                                                }
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.reorder),
-                                            contentDescription = null,
-                                            tint = if (isDraggingItem) colorPalette().accent else colorPalette().textDisabled
-                                        )
-                                    }
-                                }
-
-                                var position by remember {
-                            mutableIntStateOf(0)
+                    var headerHeight by remember { androidx.compose.runtime.mutableIntStateOf(0) }
+                    var headerOffset by remember { androidx.compose.runtime.mutableFloatStateOf(0f) }
+                    val headerAlpha by remember(headerHeight) {
+                        derivedStateOf {
+                            if (headerHeight == 0) 1f
+                            else (1f + headerOffset / headerHeight).coerceIn(0f, 1f)
                         }
-                        val context = LocalContext.current
+                    }
 
-                        AlbumItem(
-                            alternative = true,
-                            showAuthors = true,
-                            album = album,
-                            thumbnailSizeDp = itemSize.size.dp,
-                            thumbnailSizePx = itemSize.size.px,
-                            bookmarkState = bookmarkStatesMap[album.id],
-                            modifier = Modifier
-                                .clip(uiRoundnessShape()).combinedClickable(
-
-                                    onLongClick = {
-                                        menuState.display {
-                                            AlbumItemMenu(
-                                                navController = navController,
-                                                album = album,
-                                                binder = binder
-                                            ).MenuComponent()
-                                        }
-                                    },
-                                    onClick = {
-                                        if( itemSelector.isActive ) {
-                                            if( album in itemSelector ) itemSelector.remove( album )
-                                            else itemSelector.add( album )
-                                        } else {
-                                            search.hideIfEmpty()
-                                            onAlbumClick( album )
-                                        }
-                                    }
-                                )
-                                .clip(thumbnailShape()),
-                            disableScrollingText = disableScrollingText,
-                            isYoutubeAlbum = album.isYoutubeAlbum,
-                            thumbnailOverlay = {
-                                if( itemSelector.isActive ) {
-                                    key(itemSelector.size) {
-                                        Icon(
-                                            painter = painterResource(if (album in itemSelector) R.drawable.checked_filled else R.drawable.unchecked_outline),
-                                            contentDescription = null,
-                                            tint = if (album in itemSelector) colorPalette().accent else colorPalette().text,
-                                            modifier = Modifier
-                                                .padding(4.dp)
-                                                .size(24.dp)
-                                                .align(Alignment.TopStart)
-                                                .zIndex(2f)
-                                        )
-                                    }
-                                } else if (sort.sortBy == AlbumSortBy.PlayCount) {
-                                    val playCount by Database.eventTable.getAlbumPlayCount(album.id).collectAsStateWithLifecycle(initialValue = 0)
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .clip(thumbnailShape())
-                                            .background(colorPalette().overlay)
-                                    ) {
-                                        BasicText(
-                                            text = playCount.toString(),
-                                            style = typography.s.semiBold.center.color(colorPalette().onOverlay),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            modifier = Modifier.align(Alignment.Center).basicMarquee(iterations = Int.MAX_VALUE)
-                                        )
-                                    }
-                                } else if (sort.sortBy == AlbumSortBy.ListeningTime) {
-                                    val playTime by Database.eventTable.getAlbumTotalPlayTime(album.id).collectAsStateWithLifecycle(initialValue = 0L)
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .clip(thumbnailShape())
-                                            .background(colorPalette().overlay)
-                                    ) {
-                                        BasicText(
-                                            text = formatAsTime(playTime),
-                                            style = typography.s.semiBold.center.color(colorPalette().onOverlay),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            modifier = Modifier.align(Alignment.Center).basicMarquee(iterations = Int.MAX_VALUE)
-                                        )
-                                    }
-                                }
-                            }
-                        )
+                    val nestedScrollConnection = remember(headerHeight) {
+                        object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
+                            override fun onPreScroll(available: androidx.compose.ui.geometry.Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): androidx.compose.ui.geometry.Offset {
+                                val delta = available.y
+                                headerOffset = (headerOffset + delta).coerceIn(-headerHeight.toFloat(), 0f)
+                                return androidx.compose.ui.geometry.Offset.Zero
                             }
                         }
                     }
-                }
+
+                    Box(modifier = Modifier.fillMaxSize().nestedScroll(nestedScrollConnection)) {
+                        val headerPadding = with(androidx.compose.ui.platform.LocalDensity.current) { headerHeight.toDp() }
+                        LazyVerticalGrid(
+                            state = lazyGridState,
+                            columns = GridCells.Adaptive( itemSize.size.dp ),
+                            contentPadding = PaddingValues( top = headerPadding, bottom = Dimensions.bottomSpacer ),
+                            modifier = Modifier.background( colorPalette().background0 ).fillMaxSize()
+                        ) {
+                            items(
+                                items = itemsOnDisplay.distinctBy { it.id },
+                                key = { it.id }
+                            ) { album ->
+                                ReorderableItem(
+                                    reorderableLazyGridState,
+                                    key = album.id
+                                ) { isDraggingItem ->
+                                    Box(modifier = Modifier) {
+                                        if (!positionLock.isLocked() && sort.sortBy == AlbumSortBy.Custom && sort.sortOrder == SortOrder.Ascending) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .padding(4.dp)
+                                                    .size(32.dp)
+                                                    .align(Alignment.TopEnd)
+                                                    .zIndex(2f)
+                                                    .draggableHandle(
+                                                        onDragStarted = {
+                                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                        },
+                                                        onDragStopped = {
+                                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                                            val currentItems = itemsOnDisplay.toList()
+                                                            Database.asyncTransaction {
+                                                                currentItems.forEachIndexed { index, album ->
+                                                                    albumTable.updatePosition(album.id, index)
+                                                                }
+                                                            }
+                                                        }
+                                                    ),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    painter = painterResource(R.drawable.reorder),
+                                                    contentDescription = null,
+                                                    tint = if (isDraggingItem) colorPalette().accent else colorPalette().textDisabled
+                                                )
+                                            }
+                                        }
+
+                                        var position by remember {
+                                            mutableIntStateOf(0)
+                                        }
+                                        val context = LocalContext.current
+
+                                        AlbumItem(
+                                            alternative = true,
+                                            showAuthors = true,
+                                            album = album,
+                                            thumbnailSizeDp = itemSize.size.dp,
+                                            thumbnailSizePx = itemSize.size.px,
+                                            bookmarkState = bookmarkStatesMap[album.id],
+                                            modifier = Modifier
+                                                .clip(uiRoundnessShape()).combinedClickable(
+
+                                                    onLongClick = {
+                                                        menuState.display {
+                                                            AlbumItemMenu(
+                                                                navController = navController,
+                                                                album = album,
+                                                                binder = binder
+                                                            ).MenuComponent()
+                                                        }
+                                                    },
+                                                    onClick = {
+                                                        if( itemSelector.isActive ) {
+                                                            if( album in itemSelector ) itemSelector.remove( album )
+                                                            else itemSelector.add( album )
+                                                        } else {
+                                                            search.hideIfEmpty()
+                                                            onAlbumClick( album )
+                                                        }
+                                                    }
+                                                )
+                                                .clip(thumbnailShape()),
+                                            disableScrollingText = disableScrollingText,
+                                            isYoutubeAlbum = album.isYoutubeAlbum,
+                                            thumbnailOverlay = {
+                                                if( itemSelector.isActive ) {
+                                                    key(itemSelector.size) {
+                                                        Icon(
+                                                            painter = painterResource(if (album in itemSelector) R.drawable.checked_filled else R.drawable.unchecked_outline),
+                                                            contentDescription = null,
+                                                            tint = if (album in itemSelector) colorPalette().accent else colorPalette().text,
+                                                            modifier = Modifier
+                                                                .padding(4.dp)
+                                                                .size(24.dp)
+                                                                .align(Alignment.TopStart)
+                                                                .zIndex(2f)
+                                                        )
+                                                    }
+                                                } else if (sort.sortBy == AlbumSortBy.PlayCount) {
+                                                    val playCount by Database.eventTable.getAlbumPlayCount(album.id).collectAsStateWithLifecycle(initialValue = 0)
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .fillMaxSize()
+                                                            .clip(thumbnailShape())
+                                                            .background(colorPalette().overlay)
+                                                    ) {
+                                                        BasicText(
+                                                            text = playCount.toString(),
+                                                            style = typography.s.semiBold.center.color(colorPalette().onOverlay),
+                                                            maxLines = 1,
+                                                            overflow = TextOverflow.Ellipsis,
+                                                            modifier = Modifier.align(Alignment.Center).basicMarquee(iterations = Int.MAX_VALUE)
+                                                        )
+                                                    }
+                                                } else if (sort.sortBy == AlbumSortBy.ListeningTime) {
+                                                    val playTime by Database.eventTable.getAlbumTotalPlayTime(album.id).collectAsStateWithLifecycle(initialValue = 0L)
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .fillMaxSize()
+                                                            .clip(thumbnailShape())
+                                                            .background(colorPalette().overlay)
+                                                    ) {
+                                                        BasicText(
+                                                            text = formatAsTime(playTime),
+                                                            style = typography.s.semiBold.center.color(colorPalette().onOverlay),
+                                                            maxLines = 1,
+                                                            overflow = TextOverflow.Ellipsis,
+                                                            modifier = Modifier.align(Alignment.Center).basicMarquee(iterations = Int.MAX_VALUE)
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .graphicsLayer { alpha = headerAlpha }
+                                .background(colorPalette().background0)
+                                .onGloballyPositioned { headerHeight = it.size.height }
+                                .offset { androidx.compose.ui.unit.IntOffset(0, kotlin.math.round(headerOffset).toInt()) }
+                        ) {
+                            header()
+                        }
+                    }
 
                 if (itemsOnDisplay.isEmpty()) {
                     Box(
