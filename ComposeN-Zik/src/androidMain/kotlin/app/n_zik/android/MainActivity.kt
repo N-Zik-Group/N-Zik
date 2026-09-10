@@ -1065,6 +1065,7 @@ class MainActivity :
             val isScrollableRoute = currentRoute == "home" ||
                     currentRoute?.startsWith("artist") == true ||
                     currentRoute?.startsWith("album") == true ||
+                    currentRoute?.startsWith("playlist") == true ||
                     currentRoute?.startsWith("localPlaylist") == true ||
                     currentRoute?.startsWith("searchResults") == true ||
                     currentRoute?.startsWith("settings") == true
