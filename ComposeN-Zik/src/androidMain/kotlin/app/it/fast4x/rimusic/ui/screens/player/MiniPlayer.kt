@@ -398,8 +398,13 @@ fun MiniPlayer(
         derivedStateOf { positionAndDurationState.value.second }
     }
 
+    // Get player sheet state for gesture handling
+    val playerSheetState = LocalPlayerSheetState.current
+
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
+            if (playerSheetState.progress > 0f) return@rememberSwipeToDismissBoxState false
+
             if (value == SwipeToDismissBoxValue.StartToEnd)
                 if (miniPlayerType == MiniPlayerType.Essential)
                     toggleLike()
@@ -424,6 +429,17 @@ fun MiniPlayer(
     )
 
     var isRotated by rememberSaveable { mutableStateOf(false) }
+    
+    LaunchedEffect(playerSheetState.progress) {
+        if (playerSheetState.progress > 0f && dismissState.targetValue != SwipeToDismissBoxValue.Settled) {
+            try {
+                dismissState.snapTo(SwipeToDismissBoxValue.Settled)
+            } catch (e: Exception) {
+                // Ignore
+            }
+        }
+    }
+
     val rotationAngle by animateFloatAsState(
         targetValue = if (isRotated) 360F else 0f,
         animationSpec = tween(durationMillis = 200), label = ""
@@ -435,15 +451,13 @@ fun MiniPlayer(
     val isFloating = NavigationBarPosition.BottomFloating.isCurrent()
     val shape = if (isFloating) uiRoundnessShape() else uiRoundnessShape()
 
-    // Get player sheet state for gesture handling
-    val playerSheetState = LocalPlayerSheetState.current
-
     SwipeToDismissBox(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .shadow(elevation = if (isFloating) 8.dp else 0.dp, shape = shape)
             .clip(shape),
-
+        enableDismissFromStartToEnd = playerSheetState.progress == 0f,
+        enableDismissFromEndToStart = playerSheetState.progress == 0f,
         state = dismissState,
         backgroundContent = {
             /*

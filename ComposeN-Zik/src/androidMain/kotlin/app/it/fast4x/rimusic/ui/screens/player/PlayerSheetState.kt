@@ -95,11 +95,11 @@ class PlayerSheetState(
     }
 
     fun collapseSoft() {
-        collapse(tween(650)) // Smooth deploy-reverse animation
+        collapse(tween(400)) // Smooth deploy-reverse animation
     }
 
     fun expandSoft() {
-        expand(tween(650)) // Smooth deploy animation
+        expand(tween(400)) // Smooth deploy animation
     }
 
     fun dismiss() {

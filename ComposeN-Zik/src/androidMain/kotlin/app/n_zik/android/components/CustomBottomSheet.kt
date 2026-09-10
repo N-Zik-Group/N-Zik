@@ -56,9 +56,10 @@ fun CustomBottomSheet(
     content: @Composable BoxScope.() -> Unit,
 ) {
     val isCollapsedOrDismissed = state.isCollapsed || state.isDismissed
+    val baseShape = app.n_zik.android.uiRoundnessShape()
 
-    // Background color for the expanding card
-    val bgColor = colorPalette().background0
+    val miniPlayerColor = colorPalette().background2
+    val playerColor = colorPalette().background0
 
     Box(
         modifier = modifier
@@ -120,10 +121,12 @@ fun CustomBottomSheet(
             // ── Clip with progressive corners ──
             .graphicsLayer {
                 val p = state.progress.coerceIn(0f, 1f)
+                val baseCornerPx = (baseShape as? RoundedCornerShape)?.topStart?.toPx(size, this) ?: 16.dp.toPx()
+                val corner28Px = 28.dp.toPx()
                 val cornerPx = if (p < 0.5f) {
-                    lerp(16.dp, 28.dp, p / 0.5f).toPx()
+                    baseCornerPx + (corner28Px - baseCornerPx) * (p / 0.5f)
                 } else {
-                    lerp(28.dp, 0.dp, (p - 0.5f) / 0.5f).toPx()
+                    corner28Px * (1f - (p - 0.5f) / 0.5f)
                 }
                 shape = RoundedCornerShape(cornerPx)
                 clip = true
@@ -140,27 +143,27 @@ fun CustomBottomSheet(
                     // Anchored at top of box (which appears at bottom of screen due to translationY)
                     val cardHeight = miniHeightPx + (size.height - miniHeightPx) * p
 
-                    // Card width: bell curve — narrows slightly in the middle for a "card" feel
-                    // 1.0 → 0.94 → 1.0
-                    val widthFraction = if (p < 0.5f) {
-                        1f - 0.06f * (p / 0.5f)
-                    } else {
-                        0.94f + 0.06f * ((p - 0.5f) / 0.5f)
-                    }
-                    val cardWidth = size.width * widthFraction
+                    // Card width starts at mini-player width (with 16dp padding on each side)
+                    // and grows to full width.
+                    val horizontalPaddingPx = 16.dp.toPx()
+                    val startWidth = size.width - (horizontalPaddingPx * 2)
+                    val cardWidth = startWidth + (size.width - startWidth) * p
+                    
                     val cardLeft = (size.width - cardWidth) / 2f
 
                     // Corner radius: bell curve — grows then shrinks
-                    val corner16 = 16.dp.toPx()
-                    val corner28 = 28.dp.toPx()
+                    val baseCornerPx = (baseShape as? RoundedCornerShape)?.topStart?.toPx(size, this) ?: 16.dp.toPx()
+                    val corner28Px = 28.dp.toPx()
                     val cornerPx = if (p < 0.5f) {
-                        corner16 + (corner28 - corner16) * (p / 0.5f)
+                        baseCornerPx + (corner28Px - baseCornerPx) * (p / 0.5f)
                     } else {
-                        corner28 * (1f - (p - 0.5f) / 0.5f)
+                        corner28Px * (1f - (p - 0.5f) / 0.5f)
                     }
 
+                    val currentColor = androidx.compose.ui.graphics.lerp(miniPlayerColor, playerColor, p)
+
                     drawRoundRect(
-                        color = bgColor,
+                        color = currentColor,
                         topLeft = Offset(cardLeft, 0f),
                         size = Size(cardWidth, cardHeight),
                         cornerRadius = CornerRadius(cornerPx, cornerPx)
@@ -216,7 +219,7 @@ fun CustomBottomSheet(
 
         // Mini-player — visible when not fully expanded
         // Fades out/in over 0%–65% — smooth transition, visible as card shrinks
-        if (!state.isExpanded && (onDismiss == null || !state.isDismissed)) {
+        if (state.progress < 0.65f && !state.isExpanded && (onDismiss == null || !state.isDismissed)) {
             Box(
                 modifier =
                 Modifier
