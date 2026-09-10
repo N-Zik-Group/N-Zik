@@ -3,6 +3,7 @@ package app.it.fast4x.rimusic.utils
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import android.R.attr.duration
 import app.n_zik.android.core.database.*
+import it.fast4x.innertube.models.ArtistConjunctions
 
 
 import android.content.ContentUris
@@ -150,24 +151,54 @@ val Innertube.SongItem.asMediaItem: MediaItem
 fun List<Innertube.Info<*>?>?.parseArtists(): List<String> {
     if (this == null) return emptyList()
     
+    val conjunctions = ArtistConjunctions.conjunctions
+    val conjunctionPattern = if (conjunctions.isNotEmpty()) {
+        Regex(" (${conjunctions.joinToString("|") { Regex.escape(it) }}) | & | , ", RegexOption.IGNORE_CASE)
+    } else {
+        Regex(" & | , ", RegexOption.IGNORE_CASE)
+    }
+    
     val result = mutableListOf<String>()
     for (author in this) {
         val name = author?.name ?: continue
+        val trimmed = name.trim().replace('\u00a0', ' ')
         // Skip pure separators
-        if (name.matches(Regex("\\s*([,&])\\s*"))) continue
-        // Skip view/play count patterns like "123,456,789 views" or "1.2M vues"
-        if (Regex("\\d.*(view|plays)", RegexOption.IGNORE_CASE).containsMatchIn(name)) continue
+        if (trimmed.matches(Regex("([,&])"))) continue
+        // Skip standalone conjunction words
+        if (conjunctions.any { trimmed.equals(it, ignoreCase = true) }) continue
+        // Skip standalone bullet
+        if (trimmed == "•") continue
+        // Skip view/play/subscriber/likes count patterns
+        if (Regex("\\d[\\d.,]*[kmb]?\\s*(?:views?|plays?|likes?|subscribers?|monthly audience)", RegexOption.IGNORE_CASE).containsMatchIn(trimmed)) continue
         // Skip duration patterns like "45:38" or "1:23:45"
-        if (Regex("^\\d{1,2}:\\d{2}(:\\d{2})?$").matches(name.trim())) continue
+        if (Regex("^\\d{1,2}[:.,]\\d{2}([:. ,]\\d{2})?$").matches(trimmed)) continue
+        // Skip year patterns like "2024"
+        if (Regex("^(?:19|20)\\d{2}$").matches(trimmed)) continue
+        // Skip type labels
+        if (trimmed.lowercase() in setOf("song", "video", "single", "album", "episode", "playlist", "podcast")) continue
         // Check if this name contains multiple artists
-        if (name.contains("&") || name.contains(",")) {
-            // Split by & or , and add each
-            name.split("&", ",").map { it.trim() }.filter { it.isNotBlank() }.forEach { result.add(it) }
+        if (name.contains(conjunctionPattern)) {
+            name.split(conjunctionPattern).map { it.trim() }.filter { it.isNotBlank() }.forEach { result.add(it) }
         } else {
             result.add(name)
         }
     }
     return result.distinctBy { it.lowercase() }
+}
+
+/**
+ * Split a stored artistsText string into individual artist names.
+ * Handles ",", "&", and locale-aware conjunctions (e.g. "et", "and").
+ */
+fun String?.splitArtistNames(): List<String> {
+    if (this.isNullOrBlank()) return emptyList()
+    val conjunctions = ArtistConjunctions.conjunctions
+    val pattern = if (conjunctions.isNotEmpty()) {
+        Regex("\\s*(${conjunctions.joinToString("|") { Regex.escape(it) }}|&|,)\\s*", RegexOption.IGNORE_CASE)
+    } else {
+        Regex("\\s*(&|,)\\s*", RegexOption.IGNORE_CASE)
+    }
+    return this.split(pattern).map { it.trim() }.filter { it.isNotBlank() }
 }
 
 val Innertube.SongItem.asSong: Song

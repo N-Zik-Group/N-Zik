@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.models.SongArtistMap
+import app.it.fast4x.rimusic.utils.splitArtistNames
 import app.n_zik.android.core.database.Database
 import androidx.compose.ui.text.font.FontStyle
 
@@ -75,9 +76,7 @@ fun VideoOrSongInfoScreen(
             } else if (songArtist.isNotBlank()) {
                 // Parse songArtist - handle "," and "&" separators, then deduplicate
                 val parsed = songArtist
-                    .split(",", "&")
-                    .map { it.trim() }
-                    .filter { it.isNotBlank() }
+                    .splitArtistNames()
                     .distinctBy { it.lowercase() }
                 val artistsWithIds = mutableListOf<Pair<String, String>>()
                 for (name in parsed) {

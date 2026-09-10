@@ -1,3 +1,15 @@
+fix(innertube): locale-aware artist name parsing — handle "et", "and", etc. as separators
+  - `Runs.kt`: Added `ArtistConjunctions` object (default `listOf("and")`) and `splitArtistsByConjunction()` function matching Metrolist's pattern — splits artist runs on locale-aware conjunctions + "&"
+  - `Runs.kt`: Added `clean()` extension to drop non-artist first groups from subtitle runs
+  - `Runs.kt`: Fixed `splitBySeparator()` to use `trim()` instead of exact match on " • " — handles bullet variants without surrounding spaces
+  - `Utils.kt`: `parseArtists()` now splits on conjunctions from `ArtistConjunctions` + filters metadata (years, type labels like "Song"/"Album", "monthly audience", views/plays/likes/subscribers, durations, NBSP)
+  - `Utils.kt`: Added `splitArtistNames()` utility for downstream menu splits on stored `artistsText` strings
+  - `MainApplication.kt`: Initializes `ArtistConjunctions.conjunctions` from `R.string.and` at startup (locale-dependent: "et" FR, "and" EN, "und" DE, etc.)
+  - `values/strings.xml`: Added `<string name="and">and</string>` — Crowdin handles translations for other locales
+  - `SongItemMenu.kt`, `PlayerItemMenu.kt`, `VideoItemMenu.kt`, `AlbumItemMenu.kt`, `ImportSongsFromServices.kt`, `VideoOrSongInfoScreen.kt`: All downstream `.split(",", "&")` replaced with `.splitArtistNames()`
+  - `Database.kt`: Kept existing "et"/"and" safety-net filter as defense-in-depth
+  - Root cause: YouTube/InnerTube returns locale-specific conjunction separators (e.g. "Artist1 et Artist2" in French) — previous code only split on "&" and "," causing "ET" to be treated as an artist name linked to a random artist
+
 feat(ui): unified player/mini-player and improved swipe-to-dismiss
   - `MainActivity.kt`: Replaced separate AnimatedVisibility(MiniPlayer) and CustomModalBottomSheet(Player) with a unified `CustomBottomSheet` component to prevent animation jumps when transitioning
   - `CustomBottomSheet.kt`: Added custom dragging handler to support both the collapsed MiniPlayer and expanded Player in a single gesture, using a continuous `progress` factor for padding and height compensations

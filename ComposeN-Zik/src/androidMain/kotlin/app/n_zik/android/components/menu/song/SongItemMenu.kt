@@ -89,6 +89,7 @@ import app.n_zik.android.components.menu.ListMenu
 import androidx.compose.runtime.mutableStateOf
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.it.fast4x.rimusic.utils.forcePlay
+import app.it.fast4x.rimusic.utils.splitArtistNames
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.components.dialog.song.ChangeAuthorDialog
 import app.n_zik.android.components.dialog.song.ChangeCoverDialog
@@ -422,10 +423,7 @@ class SongItemMenu private constructor(
                 if (artistsData.isEmpty()) {
                     // No DB data: split artistsText to create per-artist buttons
                     val artistNames = song.artistsText
-                        ?.split(",", "&")
-                        ?.map { it.trim() }
-                        ?.filter { it.isNotBlank() }
-                        ?: emptyList()
+                        .splitArtistNames()
 
                     if (artistNames.size <= 1) {
                         // Single artist - use fallback with Innertube lookup

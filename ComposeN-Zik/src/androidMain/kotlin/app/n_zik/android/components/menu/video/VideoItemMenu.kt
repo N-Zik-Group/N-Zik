@@ -51,6 +51,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.withTimeoutOrNull
 import androidx.compose.runtime.rememberUpdatedState
 import app.it.fast4x.rimusic.utils.getDownloadStateMedia
+import app.it.fast4x.rimusic.utils.splitArtistNames
 import app.it.fast4x.rimusic.utils.playerTimelineTypeKey
 import androidx.compose.ui.draw.alpha
 import app.it.fast4x.rimusic.enums.MenuStyle
@@ -334,10 +335,7 @@ class VideoItemMenu private constructor(
             
             if (artistsData.isEmpty()) {
                 val artistNames = song.artistsText
-                    ?.split(",", "&")
-                    ?.map { it.trim() }
-                    ?.filter { it.isNotBlank() }
-                    ?: emptyList()
+                    .splitArtistNames()
 
                 if (artistNames.size <= 1) {
                     add( goToArtistFallback )

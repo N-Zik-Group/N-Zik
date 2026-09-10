@@ -57,6 +57,7 @@ import java.net.Proxy
 import app.n_zik.android.playback.services.prewarmPoToken
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.utils.InnertubeLogger
+import it.fast4x.innertube.models.ArtistConjunctions
 import it.fast4x.invidious.utils.InvidiousLogger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -95,6 +96,10 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 InvidiousLogger.Level.WARN -> Timber.tag(tag).w(throwable, "%s", message)
                 InvidiousLogger.Level.ERROR -> Timber.tag(tag).e(throwable, "%s", message)
             }
+        }
+
+        ArtistConjunctions.conjunctions = listOf(R.string.and).mapNotNull { id ->
+            runCatching { getString(id) }.getOrNull()
         }
 
         migrateCredentialsToEncrypted()

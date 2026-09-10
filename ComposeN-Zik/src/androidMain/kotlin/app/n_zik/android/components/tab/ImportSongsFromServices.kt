@@ -19,6 +19,7 @@ import app.n_zik.android.appContext
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.utils.formatAsDuration
+import app.it.fast4x.rimusic.utils.splitArtistNames
 import app.n_zik.android.utils.getAlbumVersionFromVideo
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import kotlinx.coroutines.CoroutineScope
@@ -131,7 +132,7 @@ class ImportSongsFromServices private constructor(
                                         title = albumTitle
                                     )
 
-                                    val artistNames = row["Artist Name(s)"]?.split(",", "&")
+                                    val artistNames = row["Artist Name(s)"]?.splitArtistNames()
                                     artists = artistNames?.map { name ->
                                         Artist(
                                             id = "",
@@ -168,7 +169,7 @@ class ImportSongsFromServices private constructor(
                                         title = albumTitle
                                     )
 
-                                    val artistNames = row["Artists"]?.split(",", "&")
+                                    val artistNames = row["Artists"]?.splitArtistNames()
                                     val artistIds = row["ArtistIds"]?.split(",")
                                     val mutableArtists = mutableListOf<Artist>()
                                     if (artistIds != null && (artistNames?.size == artistIds.size)) {

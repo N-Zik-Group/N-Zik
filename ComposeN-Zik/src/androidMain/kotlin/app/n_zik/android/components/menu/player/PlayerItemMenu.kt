@@ -72,6 +72,7 @@ import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
 import app.it.fast4x.rimusic.ui.components.themed.ListenOnDialog
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.asMediaItem
+import app.it.fast4x.rimusic.utils.splitArtistNames
 import app.it.fast4x.rimusic.utils.asSong
 import app.it.fast4x.rimusic.utils.enqueue
 import app.it.fast4x.rimusic.utils.forcePlay
@@ -545,10 +546,7 @@ class PlayerItemMenu private constructor(
                     // Go to Artist
                     if (artistsData.isEmpty()) {
                         val artistNames = song.artistsText
-                            ?.split(",", "&")
-                            ?.map { it.trim() }
-                            ?.filter { it.isNotBlank() }
-                            ?: emptyList()
+                            .splitArtistNames()
 
                         if (artistNames.size <= 1) {
                             add(object : MenuIcon, Descriptive, Clickable {

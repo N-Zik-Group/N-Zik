@@ -46,6 +46,7 @@ import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.splitArtistNames
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.models.Album
@@ -482,10 +483,7 @@ class AlbumItemMenu private constructor(
             
             if (artistsData.isEmpty()) {
                 val artistNames = album.authorsText
-                    ?.split(",", "&")
-                    ?.map { it.trim() }
-                    ?.filter { it.isNotBlank() }
-                    ?: emptyList()
+                    .splitArtistNames()
 
                 val firstSong = songs.firstOrNull()
                 if (firstSong != null) {
