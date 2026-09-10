@@ -1799,4 +1799,5 @@
   <string name="find_try_again_hint">Tap the button to try again</string>
   <string name="find_identify_another_hint">Tap the button to identify another song</string>
   <string name="find_music_hint">Play some music for the analysis to work</string>
+  <string name="and">and</string>
 </resources>
