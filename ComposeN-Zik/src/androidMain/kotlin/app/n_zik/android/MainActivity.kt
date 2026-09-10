@@ -142,6 +142,7 @@ import app.it.fast4x.rimusic.extensions.pip.PipModuleContainer
 import app.it.fast4x.rimusic.extensions.pip.PipModuleCover
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.utils.PlayerAwareInsetsTracker
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.themed.CrossfadeContainer
@@ -193,6 +194,7 @@ import app.it.fast4x.rimusic.utils.customThemeLight_accentKey
 import app.it.fast4x.rimusic.utils.customThemeLight_iconButtonPlayerKey
 import app.it.fast4x.rimusic.utils.customThemeLight_textDisabledKey
 import app.it.fast4x.rimusic.utils.customThemeLight_textSecondaryKey
+import app.it.fast4x.rimusic.utils.currentMediaItemIdAsState
 import app.it.fast4x.rimusic.utils.disableClosingPlayerSwipingDownKey
 import app.it.fast4x.rimusic.utils.disablePlayerHorizontalSwipeKey
 import app.it.fast4x.rimusic.utils.effectRotationKey
@@ -1191,20 +1193,21 @@ class MainActivity :
                     expandedBound = maxHeight,
                 )
 
-                val playerAwareWindowInsets by remember(
-                    bottomDp,
-                    playerSheetState.value
-                ) {
-                    derivedStateOf {
-                        val bottom = playerSheetState.value.coerceIn(
-                            bottomDp,
-                            playerSheetState.collapsedBound
-                        )
-
-                        windowsInsets
-                            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
-                            .add(WindowInsets(bottom = bottom))
-                    }
+                // NOT keyed on playerSheetState.value: that changes every drag frame,
+                // which used to recreate the derived state and re-provide
+                // LocalPlayerAwareWindowInsets per frame, recomposing every screen
+                // that consumes the insets while the mini-player is dragged.
+                // The tracker returns the same WindowInsets instance while the
+                // clamped bottom is stable, so no consumer is invalidated per frame.
+                val playerAwareWindowInsets by remember(bottomDp, playerSheetState.collapsedBound) {
+                    val insetsTracker = PlayerAwareInsetsTracker(
+                        baseInsets = windowsInsets.only(
+                            WindowInsetsSides.Horizontal + WindowInsetsSides.Top
+                        ),
+                        lowerBound = bottomDp,
+                        upperBound = playerSheetState.collapsedBound,
+                    )
+                    derivedStateOf { insetsTracker.resolve(playerSheetState.value) }
                 }
 
                 var openTabFromShortcut = remember { -1 }
@@ -1282,52 +1285,66 @@ class MainActivity :
                             val disableClosingPlayerSwipingDown by rememberPreference(disableClosingPlayerSwipingDownKey, false)
                             checkIfAppIsRunningInBackground()
 
-                            // Single CustomBottomSheet — always rendered when there's media.
+                            // Reactive media-item presence: the sheet (including its
+                            // collapsed hit target) must not be composed when the
+                            // player has nothing to play, otherwise an invisible
+                            // tappable strip stays at the bottom of the screen.
+                            val currentMediaId by (binder?.player?.currentMediaItemIdAsState() ?: remember { mutableStateOf<String?>(null) })
+
+                            LaunchedEffect(currentMediaId) {
+                                if (currentMediaId == null && !playerSheetState.isDismissed) {
+                                    playerSheetState.snapTo(playerSheetState.dismissedBound)
+                                }
+                            }
+
+                            // Single CustomBottomSheet — only rendered while there's media.
                             // Handles both collapsed (mini-player) and expanded (player) states
                             // in a single composition tree, preventing animation jumps.
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = if (playerPos == PlayerPosition.Top)
-                                    Alignment.TopCenter
-                                else
-                                    Alignment.BottomCenter
-                            ) {
-                                CustomBottomSheet(
-                                    state = playerSheetState,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    onDismiss = {
-                                        binder?.stopRadio()
-                                        binder?.player?.clearMediaItems()
-                                        showPlayer = false
-                                        switchToAudioPlayer = false
-                                        runCatching {
-                                            this@MainActivity.stopService(this@MainActivity.intent<app.n_zik.android.playback.services.PlayerServiceModern>())
-                                        }
-                                    },
-                                    bottomPadding = playerPadBottom,
-                                    collapsedContentHeight = Dimensions.collapsedPlayer,
-                                    disableDismiss = disableClosingPlayerSwipingDown,
-                                    collapsedContent = {
-                                        MiniPlayer(
-                                            showPlayer = {
-                                                showPlayer = true
-                                                playerSheetState.expandSoft()
-                                            },
-                                            hidePlayer = {
-                                                coroutineScope.launch {
-                                                    playerSheetState.hide()
-                                                    showPlayer = false
-                                                }
-                                            },
-                                            navController = navController
-                                        )
-                                    }
+                            if (currentMediaId != null) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = if (playerPos == PlayerPosition.Top)
+                                        Alignment.TopCenter
+                                    else
+                                        Alignment.BottomCenter
                                 ) {
-                                    Player(navController) {
-                                        coroutineScope.launch {
-                                            playerSheetState.hide()
+                                    CustomBottomSheet(
+                                        state = playerSheetState,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        onDismiss = {
+                                            binder?.stopRadio()
+                                            binder?.player?.clearMediaItems()
                                             showPlayer = false
                                             switchToAudioPlayer = false
+                                            runCatching {
+                                                this@MainActivity.stopService(this@MainActivity.intent<app.n_zik.android.playback.services.PlayerServiceModern>())
+                                            }
+                                        },
+                                        bottomPadding = playerPadBottom,
+                                        collapsedContentHeight = Dimensions.collapsedPlayer,
+                                        disableDismiss = disableClosingPlayerSwipingDown,
+                                        collapsedContent = {
+                                            MiniPlayer(
+                                                showPlayer = {
+                                                    showPlayer = true
+                                                    playerSheetState.expandSoft()
+                                                },
+                                                hidePlayer = {
+                                                    coroutineScope.launch {
+                                                        playerSheetState.hide()
+                                                        showPlayer = false
+                                                    }
+                                                },
+                                                navController = navController
+                                            )
+                                        }
+                                    ) {
+                                        Player(navController) {
+                                            coroutineScope.launch {
+                                                playerSheetState.hide()
+                                                showPlayer = false
+                                                switchToAudioPlayer = false
+                                            }
                                         }
                                     }
                                 }
