@@ -1800,5 +1800,5 @@ Volume BAS : titre précédent</string>
   <string name="find_try_again_hint">Appuyez sur le bouton pour réessayer</string>
   <string name="find_identify_another_hint">Appuyez sur le bouton pour identifier un autre morceau</string>
   <string name="find_music_hint">Lancez un morceau de musique pour que l\'analyse fonctionne</string>
-  <string name="and">and</string>
+  <string name="and">et</string>
 </resources>
