@@ -128,7 +128,7 @@ fun HomeQuickPicks(
             lastPlayEventType = playEventType
             lastSelectedCountry = selectedCountryCode
         }
-        state.loadData()
+        state.load()
     }
 
     LaunchedEffect(Unit) {
@@ -145,7 +145,7 @@ fun HomeQuickPicks(
             state.ytmQuickPicks.value = emptyList()
             state.loadedQuickPicks.value = false
             state.loadedData.value = false
-            state.loadData()
+            state.load()
             Timber.tag("HomeQuickPicks").d("YouTube login state changed. Data cleared.")
         }
     }
@@ -243,9 +243,12 @@ fun HomeQuickPicks(
     val scope = rememberCoroutineScope()
     var isQuickPicksLoading by remember { mutableStateOf(false) }
 
-    var showLoader by remember { mutableStateOf(!state.loadedData.value) }
-    LaunchedEffect(state.loadedData.value) {
-        if (state.loadedData.value) {
+    // Honest loading state: keep the skeleton while data is missing, even if a
+    // stale "loaded" flag survived — flag true + no data used to render a
+    // silent blank wall instead of a spinner.
+    var showLoader by remember { mutableStateOf(!state.loadedData.value || state.homePageInit.value == null) }
+    LaunchedEffect(state.loadedData.value, state.homePageInit.value?.sections?.size) {
+        if (state.loadedData.value && state.homePageInit.value != null) {
             delay(600)
             showLoader = false
         } else {

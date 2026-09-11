@@ -9,5 +9,4 @@
 - [ ] Add an option in settings to hide sync toast notifications.
 
 ## Features & UI
-- [ ] Revamp the player / miniplayer transition animations.
 - [ ] Build the Desktop version of the application.

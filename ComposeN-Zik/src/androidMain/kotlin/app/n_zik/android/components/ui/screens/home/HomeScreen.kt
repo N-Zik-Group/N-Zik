@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.lifecycle.Lifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
@@ -265,7 +264,9 @@ fun HomeScreen(
     BackHandler {
         // Prevent this from being applied when user is not on HomeScreen
         if( NavRoutes.home.isNotHere( navController ) )  {
-            if ( navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED )
+            // Structural check instead of a RESUMED lifecycle gate, so the back
+            // press is not silently swallowed right after a transition.
+            if ( navController.currentBackStackEntry != null && navController.previousBackStackEntry != null )
                 navController.popBackStack()
 
             return@BackHandler

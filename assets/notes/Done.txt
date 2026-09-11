@@ -1,3 +1,27 @@
+fix(quickpicks): load survives page switches — shared scope and shared state instead of composable scope
+  - `HomeQuickPicksState.kt`: added `companion object` holding `loadScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)`, `@Volatile sharedLoadJob` and `@Volatile sharedRefreshPending` — the load no longer lives in the composable scope, so it is not cancelled on navigation
+  - `HomeQuickPicksState.kt`: removed the `scope: CoroutineScope` constructor param; `load()`, `refresh()` and the phase 2 `dbJob` now run on `loadScope`; `rememberHomeQuickPicksState` no longer calls `rememberCoroutineScope()`
+  - `HomeQuickPicksState.kt`: `homePageInit` changed from `rememberPreference` (per-composable SharedPreferences wrapper) to `persist<HomePage>(tag = "home/quickpicks/homePageInit")` (activity-level persistMap) — a background load's writes are visible to the next composable instance, so returning does not trigger a reload
+  - `HomeQuickPicksState.kt`: `loadData()` guard-skip path now repairs the `loadedQuickPicks` flag when `trendingList` is non-empty (DB observer cancelled before its first emission) — prevents an endless skeleton
+  - `HomeQuickPicksState.kt`: removed unused `rememberPreference` import, added `SupervisorJob` import
+  - Behavior: switching pages mid-load no longer cancels it; on return an in-flight load keeps running (honest skeleton via shared `loadedData`/`homePageInit`) and data appears without a reload; a finished load renders instantly
+  - Root cause: the load was launched in the composable scope (`rememberCoroutineScope()`), which is cancelled on page change — the job died and the partial persisted state forced a full reload on re-entry
+
+fix(home): back navigation no longer resets Quick Picks — in-app arrow, system back, home-jump option, and PTR indicator
+  - `AppHeader.kt` (legacy, targeted edit approved): in-app back arrow now uses a structural check (`currentBackStackEntry != null && previousBackStackEntry != null`) instead of a RESUMED lifecycle gate — the entry can legitimately be non-RESUMED right after a transition, which used to silently swallow the click; Timber.d on every path
+  - `HomeScreen.kt`: same structural check in the system `BackHandler`
+  - `AppHeader.kt`: home-jump option (`disableNavigationBackStackKey`) now does `popBackStack(NavRoutes.home.name, inclusive = false)` to restore the existing home entry with its saved state; falls back to the old `navigate(home) { popUpTo(home) { inclusive = true } }` only when home is not on the stack
+  - Root cause (home jump): the old path destroyed the home entry and rebuilt it, recomposing Quick Picks from scratch and wiping the in-memory persisted state — full reset + reload on every jump-to-home
+  - `HomeQuickPicksState.kt`: `loadData()` became `loadData(force: Boolean = false): Boolean` — returns false when the guard skips (loadedData present + homePageInit non-null), true on a real load
+  - `HomeQuickPicksState.kt`: `load()` is now the single owner of the pull-to-refresh indicator — sets `refreshing = true` only when the guard will not skip (startup, explicit pull, deferred reload) and clears it in `finally` including after the deferred reload
+  - `HomeQuickPicksState.kt`: removed the two `refreshing.value = true` from `refresh()` — the indicator no longer flashes on page change (no-op load); shown on startup, manual pull, and deferred refresh
+  - Regression fixed: the earlier single-flight fix set `refreshing = true` unconditionally in `load()` even when the guard skipped, making the PTR spinner appear on every page change
+
+test(quickpicks): extract load guard into a pure function + full truth-table unit test
+  - `HomeQuickPicksState.kt`: extracted `shouldSkipQuickPicksLoad(loadedData, homePagePresent)` as a top-level pure function — previously inlined in `loadData()` and the phase 3 merge, now used by both
+  - `QuickPicksLoadGuardTest.kt` (new, `ComposeN-Zik/src/test/.../home/quickpicks/`): 4 JUnit5 cases covering the full truth table — skip only when loadedData AND homePagePresent, load on fresh install / missing home data / missing loaded flag
+  - 4/4 green; 13 pre-existing test failures (Shuffler, LyricsDecisionMaker, PauseOnHeadphone) proven unrelated via `git stash` on a clean tree
+
 feat(sync): disable YTB sync toggle in non-dev builds
   - `AccountsSettings.kt`: added `import app.n_zik.android.BuildConfig`
   - `AccountsSettings.kt`: `OtherSwitchSettingEntry` for sync toggle now has `enabled = BuildConfig.BUILD_TYPE in listOf("debug", "dev")` — grisé (alpha 0.5f) et non cliquable en build full/minified/beta/foss

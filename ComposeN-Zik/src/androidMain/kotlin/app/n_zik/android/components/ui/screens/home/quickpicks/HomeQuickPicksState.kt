@@ -7,13 +7,13 @@ import app.it.fast4x.compose.persist.persist
 import app.it.fast4x.compose.persist.persistList
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.it.fast4x.rimusic.enums.*
-import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.utils.*
 import app.n_zik.android.core.database.Database
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic
 import it.fast4x.innertube.requests.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -21,6 +21,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -30,7 +31,6 @@ import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
 
 @UnstableApi
 class HomeQuickPicksState(
-    val scope: CoroutineScope,
     var trendingList: MutableState<List<Song>>,
     var trending: MutableState<Song?>,
     val trendingInit: Song?,
@@ -52,12 +52,32 @@ class HomeQuickPicksState(
     var refreshing: MutableState<Boolean>,
     var refreshKey: MutableState<Int>
 ) {
+    companion object {
+        // Outlives the composable so a Quick Picks load keeps running when the
+        // user switches pages; on return the results are already there instead
+        // of a cancelled load forcing a full reload.
+        private val loadScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+        @Volatile
+        private var sharedLoadJob: Job? = null
+
+        @Volatile
+        private var sharedRefreshPending = false
+    }
+
     private val from = 18250.days.inWholeMilliseconds
     private var dbJob: Job? = null
 
     @SuppressLint("SuspiciousIndentation")
-    suspend fun loadData() {
-        if (loadedData.value && homePageInit.value != null) return
+    suspend fun loadData(force: Boolean = false): Boolean {
+        if (!force && shouldSkipQuickPicksLoad(loadedData.value, homePageInit.value != null)) {
+            // Consistency repair: local data present but its "loaded" flag was lost
+            // (DB observer cancelled before its first emission) — do not spin forever.
+            if (trendingList.value.isNotEmpty() && !loadedQuickPicks.value) {
+                loadedQuickPicks.value = true
+            }
+            return false
+        }
 
         Timber.tag("HomeQuickPicksState").d("Starting loadData...")
 
@@ -110,7 +130,7 @@ class HomeQuickPicksState(
 
             // Phase 2: Database observation with related page fetch (coupled as before)
             dbJob?.cancel()
-            dbJob = scope.launch(Dispatchers.IO) {
+            dbJob = loadScope.launch(Dispatchers.IO) {
                 when (playEventType) {
                     PlayEventsType.MostPlayed ->
                         Database.eventTable
@@ -163,7 +183,9 @@ class HomeQuickPicksState(
             }
 
             // Phase 3: Home page sections (sequential but with early exit)
-            if (!loadedData.value) {
+            // Also re-run when no YTM data is available: a stale "loaded" flag
+            // left by a cancelled or failed load must not block the re-fetch.
+            if (!shouldSkipQuickPicksLoad(loadedData.value, homePageInit.value != null)) {
                 var cumulativeSections = homePageInit.value?.sections.orEmpty()
                 var cumulativeChips = homePageInit.value?.chips.orEmpty()
                 repeat(3) { attempt ->
@@ -198,15 +220,72 @@ class HomeQuickPicksState(
                 Timber.tag("HomeQuickPicksState").d("YouTube Music sections loaded: ${homePageInit.value?.sections?.size ?: 0}")
             }
 
-        }.onFailure {
-            Timber.tag("HomeQuickPicksState").e("Failed loadData ${it.stackTraceToString()}")
-            loadedData.value = false
+        }.onFailure { e ->
+            if (e is CancellationException) {
+                // Load was cancelled (navigation away): reset the flags together
+                // so a stale "loaded" flag can never block a future reload.
+                Timber.tag("HomeQuickPicksState").d("LoadData cancelled, flags reset")
+                loadedData.value = false
+                if (trendingList.value.isEmpty()) loadedQuickPicks.value = false
+            } else {
+                Timber.tag("HomeQuickPicksState").e("Failed loadData ${e.stackTraceToString()}")
+                loadedData.value = false
+            }
         }.onSuccess {
-            loadedData.value = true
+            // Only mark as loaded when YTM data is actually present; otherwise an
+            // empty/failed phase 3 would block future reloads forever.
+            loadedData.value = homePageInit.value != null
+        }
+        return true
+    }
+
+    /**
+     * Single-flight entry point for loading: only one load runs at a time, and
+     * the running load survives page switches (it lives in the shared companion
+     * scope, not the composable scope). A call made while a load is in progress
+     * marks a deferred reload instead of starting a concurrent one (concurrent
+     * loads used to interleave the phase 3 merge and corrupt the YTM sections/chips).
+     */
+    fun load() {
+        val job = sharedLoadJob
+        if (job != null && job.isActive) {
+            sharedRefreshPending = true
+            Timber.tag("HomeQuickPicksState").d("Load in progress, refresh deferred")
+            return
+        }
+        sharedLoadJob = loadScope.launch {
+            // The pull-to-refresh indicator tracks a real data load only: startup,
+            // an explicit refresh, or a deferred reload. A cached page change is a
+            // no-op load and must not flash the indicator.
+            if (!shouldSkipQuickPicksLoad(loadedData.value, homePageInit.value != null)) {
+                refreshing.value = true
+            }
+            try {
+                loadData()
+                delay(500)
+                if (sharedRefreshPending && coroutineContext[Job]?.isActive == true) {
+                    sharedRefreshPending = false
+                    refreshKey.value++
+                    refreshing.value = true
+                    Timber.tag("HomeQuickPicksState").d("Deferred refresh after load completed")
+                    loadData(force = true)
+                }
+            } finally {
+                refreshing.value = false
+            }
         }
     }
 
     fun refresh() {
+        val job = sharedLoadJob
+        if (job != null && job.isActive) {
+            // A load is in progress: tearing its state down mid-flight is what
+            // caused the corrupted data. Defer a full reload instead; the running
+            // load keeps the indicator up until the deferred reload finishes.
+            sharedRefreshPending = true
+            Timber.tag("HomeQuickPicksState").d("Refresh deferred: load already in progress")
+            return
+        }
         if (refreshing.value) return
         refreshKey.value++
         trendingList.value = emptyList()
@@ -222,14 +301,18 @@ class HomeQuickPicksState(
         discoverPageInit.value = null
         chartsPageResult.value = null
         chartsPageInit.value = null
-        scope.launch(Dispatchers.IO) {
-            refreshing.value = true
-            loadData()
-            delay(500)
-            refreshing.value = false
-        }
+        load()
     }
 }
+
+/**
+ * Decides whether Quick Picks can skip a load because the YTM data is already
+ * present. A stale "loaded" flag without data must never be trusted: that
+ * combination is exactly what used to leave the page stuck with no spinner
+ * and no YouTube categories.
+ */
+fun shouldSkipQuickPicksLoad(loadedData: Boolean, homePagePresent: Boolean): Boolean =
+    loadedData && homePagePresent
 
 @UnstableApi
 @Composable
@@ -239,8 +322,6 @@ fun rememberHomeQuickPicksState(
     parentalControlEnabled: Boolean,
     localCount: Int
 ): HomeQuickPicksState {
-    val scope = rememberCoroutineScope()
-    
     val trendingList = persistList<Song>("home/quickpicks/trending_list")
     val trending = persist<Song?>("home/quickpicks/trending")
     val trendingInit = persist<Song?>(tag = "home/quickpicks/trending_init").value
@@ -251,7 +332,9 @@ fun rememberHomeQuickPicksState(
     val discoverPageInit = persist<Innertube.DiscoverPage?>("home/quickpicks/discoveryAlbumsInit")
 
     val homePageResult = persist<Result<HomePage?>?>("home/quickpicks/homePageResult")
-    val homePageInit = rememberPreference("home/quickpicks/homePageInit", null as HomePage?)
+    // persist (not rememberPreference) so a load running in the background
+    // writes to the same shared state the next composable instance reads.
+    val homePageInit = persist<HomePage>(tag = "home/quickpicks/homePageInit")
 
     val ytmQuickPicks = persistList<Song>("home/quickpicks/ytmQuickPicks")
 
@@ -267,7 +350,6 @@ fun rememberHomeQuickPicksState(
 
     return remember(playEventType, selectedCountryCode, parentalControlEnabled, localCount) {
         HomeQuickPicksState(
-            scope = scope,
             trendingList = trendingList,
             trending = trending,
             trendingInit = trendingInit,

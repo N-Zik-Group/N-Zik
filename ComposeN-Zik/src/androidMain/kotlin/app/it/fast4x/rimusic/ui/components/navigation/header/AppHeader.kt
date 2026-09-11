@@ -37,7 +37,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import app.it.fast4x.rimusic.enums.NavRoutes
@@ -50,6 +49,7 @@ import app.it.fast4x.rimusic.utils.VoiceSearchState
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.disableNavigationBackStackKey
 import app.n_zik.android.LocalTopBarOffset
+import timber.log.Timber
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -132,15 +132,29 @@ class AppHeader(
                             .size(48.dp)
                             .clip(uiRoundnessShape())
                             .clickable {
-                                if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED) {
+                                // Structural check instead of a RESUMED lifecycle gate: the
+                                // entry can legitimately be non-RESUMED right after a
+                                // transition, which used to silently swallow the click.
+                                if (navController.currentBackStackEntry != null && navController.previousBackStackEntry != null) {
                                     val disableBackStack = context.preferences.getBoolean(disableNavigationBackStackKey, false)
                                     if (disableBackStack) {
-                                        navController.navigate(NavRoutes.home.name) {
-                                            popUpTo(NavRoutes.home.name) { inclusive = true }
+                                        // Jump straight to home by popping the pages above the
+                                        // existing home entry. The previous navigate +
+                                        // popUpTo(inclusive = true) destroyed the home entry
+                                        // and rebuilt it, wiping its saved state and forcing a
+                                        // full Quick Picks reload on every jump-to-home.
+                                        if (!navController.popBackStack(NavRoutes.home.name, inclusive = false)) {
+                                            navController.navigate(NavRoutes.home.name) {
+                                                popUpTo(NavRoutes.home.name) { inclusive = true }
+                                            }
                                         }
+                                        Timber.tag("AppHeader").d("Back pressed -> home (back stack cleared)")
                                     } else {
                                         navController.popBackStack()
+                                        Timber.tag("AppHeader").d("Back pressed -> popBackStack")
                                     }
+                                } else {
+                                    Timber.tag("AppHeader").d("Back pressed but no previous entry, ignored")
                                 }
                             },
                         contentAlignment = Alignment.Center
