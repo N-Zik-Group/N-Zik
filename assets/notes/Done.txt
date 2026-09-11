@@ -1,3 +1,11 @@
+feat(player): add in-app queue overlay accessible from mini player long-press
+  - `MiniPlayerQueueInterceptor.kt` (nouveau, `app.n_zik.android.core.navigation`): intercepte la navigation vers la route "queue" déclenchée par le long-press du miniplayer via `addOnDestinationChangedListener` + `popBackStack()` synchrone — la route queue n'est jamais composée
+  - `MiniPlayerQueueOverlay.kt` (nouveau, `app.n_zik.android.components.player`): copie exacte du panneau de queue inline du player (Player.kt:2315-2482) — panel resizable avec drag-to-resize, scrim animé, handle 48dp avec `background0.copy(alpha)` (Modern=0.5, Essential=1), `QueueToolBar` avec `graphicsLayer` animation (slide+fade), nav bar strip `background1`, fond piloté par la préférence `queueTypeKey` (Modern=Transparent, Essential=background2)
+  - `MainActivity.kt`: wiring — `showQueueOverlay` state, `DisposableEffect` pour attach/detach de l'intercepteur, composition de `MiniPlayerQueueOverlay` après le player sheet, fermeture de l'overlay quand `currentMediaId == null`, intégration dans le `nestedScrollConnection` (scroll-hide désactivé quand overlay ouvert)
+  - `AppHeader.kt`: la route "queue" est maintenant traitée comme "home" dans le calcul de `isHome` — la flèche de retour in-app ne s'affiche plus quand la queue overlay est ouverte
+  - `MiniPlayerQueueInterceptorTest.kt` (nouveau): 4 tests JUnit5 + MockK — interception, idempotence, attach/detach, route non-queue ignorée
+  - Le panneau de queue utilise `Queue`, `QueueToolBar`, `QueueArrow`, `Discover`, `Repeat`, `ShuffleQueue` — mêmes composants que le player, même `QueueToolBarState` global
+
 fix(player): miniplayer no longer blocks clicks on the bottom navigation bar
   - `CustomBottomSheet.kt`: moved the animated card clip (`graphicsLayer { shape = CardClipShape; clip = true }`) BEFORE the drag `pointerInput` in the outer Box modifier chain, with an explanatory comment
   - Root cause: commit d3a3bc9f3a ("fix : miniplayer laggy") turned the sheet into a full-screen Box with an unconditional `pointerInput(detectVerticalDragGestures)`; Compose hit-test walks the modifier chain outside-in and records the pointer input before reaching the clip layer, so the clip did not restrict the input area

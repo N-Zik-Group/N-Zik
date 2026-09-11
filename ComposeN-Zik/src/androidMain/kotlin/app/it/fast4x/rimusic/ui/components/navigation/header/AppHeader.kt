@@ -76,7 +76,9 @@ class AppHeader(
     fun Draw() {
         val context = LocalContext.current
         val currentEntry by navController.currentBackStackEntryAsState()
-        val isHome = currentEntry?.destination?.route?.startsWith(NavRoutes.home.name) ?: true
+        val isHome = currentEntry?.destination?.route?.let { route ->
+            route.startsWith(NavRoutes.home.name) || route == NavRoutes.queue.name
+        } ?: true
         val isVoiceSearchActive = VoiceSearchState.isActive
         val themeBackground = colorPalette().background0
 

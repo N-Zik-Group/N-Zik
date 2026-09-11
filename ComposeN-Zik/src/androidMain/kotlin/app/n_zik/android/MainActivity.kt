@@ -156,6 +156,7 @@ import app.it.fast4x.rimusic.ui.screens.player.components.YoutubePlayer
 import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
 import app.it.fast4x.rimusic.ui.screens.player.rememberPlayerSheetState
 import app.n_zik.android.components.CustomBottomSheet
+import app.n_zik.android.components.player.MiniPlayerQueueOverlay
 import app.n_zik.android.components.player.presentMiniplayerThenExpand
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.Dimensions
@@ -265,6 +266,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import app.it.fast4x.rimusic.enums.UiType
 import org.woheller69.freeDroidWarn.FreeDroidWarn
 import app.it.fast4x.rimusic.ui.styling.BoundedCornerSize
+import app.n_zik.android.core.navigation.MiniPlayerQueueInterceptor
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.extensions.discord.DiscordUiState
 import androidx.compose.foundation.shape.CircleShape
@@ -572,6 +574,14 @@ class MainActivity :
                 }
             }
             var showPlayer by rememberSaveable { mutableStateOf(false) }
+            var showQueueOverlay by rememberSaveable { mutableStateOf(false) }
+            val queueInterceptor = remember(navController) {
+                MiniPlayerQueueInterceptor(navController) { showQueueOverlay = true }
+            }
+            DisposableEffect(navController) {
+                queueInterceptor.attach()
+                onDispose { queueInterceptor.detach() }
+            }
             var switchToAudioPlayer by rememberSaveable { mutableStateOf(false) }
             val pendingMiniPlayerAction = remember { mutableStateOf<PendingMiniPlayerAction?>(null) }
             val isShowingLyrics = rememberSaveable { mutableStateOf(false) }
@@ -1152,11 +1162,11 @@ class MainActivity :
                 isBarsVisible = true
             }
 
-            val nestedScrollConnection = remember(isLandscape, isViMusic, isScrollableRoute, isLandscapeHiddenRoute, density, safeDrawingInsets, showPlayer) {
+            val nestedScrollConnection = remember(isLandscape, isViMusic, isScrollableRoute, isLandscapeHiddenRoute, density, safeDrawingInsets, showPlayer, showQueueOverlay) {
                 object : NestedScrollConnection {
                     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                         // Disable scroll-hide when player or queue is open
-                        if (showPlayer) return Offset.Zero
+                        if (showPlayer || showQueueOverlay) return Offset.Zero
 
                         val shouldHideOnScroll = isLandscape || isScrollableRoute
 
@@ -1191,7 +1201,7 @@ class MainActivity :
 
                     override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
                         // Disable scroll-hide when player or queue is open
-                        if (showPlayer) return super.onPostFling(consumed, available)
+                        if (showPlayer || showQueueOverlay) return super.onPostFling(consumed, available)
 
                         val statusBarsTopPx = safeDrawingInsets.getTop(density)
                         val topBarHeightPx = with(density) { 64.dp.roundToPx() } + statusBarsTopPx
@@ -1361,8 +1371,11 @@ class MainActivity :
                             val currentMediaId by (binder?.player?.currentMediaItemIdAsState() ?: remember { mutableStateOf<String?>(null) })
 
                             LaunchedEffect(currentMediaId) {
-                                if (currentMediaId == null && !playerSheetState.isDismissed) {
-                                    playerSheetState.snapTo(playerSheetState.dismissedBound)
+                                if (currentMediaId == null) {
+                                    if (!playerSheetState.isDismissed) {
+                                        playerSheetState.snapTo(playerSheetState.dismissedBound)
+                                    }
+                                    showQueueOverlay = false
                                 }
                             }
 
@@ -1419,6 +1432,12 @@ class MainActivity :
                                     }
                                 }
                             }
+
+                            MiniPlayerQueueOverlay(
+                                showSheet = showQueueOverlay,
+                                navController = navController,
+                                onDismiss = { showQueueOverlay = false }
+                            )
 
                             val isVideo = binder?.player?.currentMediaItem?.isVideo ?: false
                             val isVideoEnabled =
