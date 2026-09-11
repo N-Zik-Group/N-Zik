@@ -1,0 +1,3 @@
+Added: new dislike system for songs/artists/albums, in-app queue overlay from the mini player, unified player/mini player, experimental YouTube sync engine, bookmark/like/dislike badges, direct play on audio search.
+Improved: smoother palette and scroll animations, faster home lists and downloads.
+Fixed: Quick Picks reload on page change, mini player blocking the nav bar, YouTube stream blocking and browse/search 400 on odd locales, download metadata issues.

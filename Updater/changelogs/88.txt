@@ -1,0 +1,60 @@
+Added:
+- Complete dislike system for songs, artists, and albums. Each can now cycle neutral -> liked/bookmarked -> disliked. Dislike is a local-only blacklist (never pushed to YouTube), and excluded items stay out of playback, shuffle, radio, and statistics. New toggles in General Settings let you exclude disliked songs/artists/albums (on by default).
+- In-app queue overlay from the mini player: long-press the mini player to open a resizable queue panel (drag to resize, animated scrim) that mirrors the player queue without leaving the screen.
+- Unified player and mini player: a single bottom-sheet gesture now expands the mini player into the full player and back, with improved swipe-to-dismiss that stops playback properly.
+- New YouTube sync engine (experimental): three-state like rotation, sync direction (two-way / app-to-YouTube / YouTube-to-app), per-target auto-sync (channels, albums, playlists, likes), cooldown, background guard, "Sync Now" and "Clear synced data", plus per-operation status and result dialogs. Known to be buggy for now - treat as experimental.
+- Bookmark / like / dislike badge icons on artist, album, playlist, and video items.
+- Disliked tabs in Home Albums and Home Artists, with their own sort and toolbar settings.
+- Artist thumbnail roundness setting is now applied app-wide (items, menus, search, statistics, dialogs, landscape layout).
+- Direct "Play" button on audio recognition results to start the recognized song immediately.
+- InnerTubeX options: proxy username/password, region override, and a "Login for Browse" toggle.
+- "Disabled" option for shake sensitivity on the M3E morphing theme.
+
+Changed:
+- The YouTube sync toggle is now disabled in non-dev builds (debug/dev only); it stays visible but greyed out elsewhere.
+- History now defaults to newest-first (descending) order.
+- Related / home page data is fetched in isolated sessions with a forced English locale, so section titles stay consistent across languages.
+
+Improved:
+- Quick Picks: smoother section animations, empty sections are hidden, lists are stable, and loading now survives page switches (an in-flight load keeps running when you return).
+- Quick Picks loading uses supervised coroutines (one failed API no longer cancels the others) and clears stale data on refresh.
+- Color palette cross-fades smoothly on track change instead of switching instantly.
+- Toolbar background fades in sync with scroll on all home screens; the header and nav bar now hide/show smoothly and follow the finger on scroll.
+- Home lists (All / Favorites / Top / Downloaded / Cached) are much faster: precomputed state removes hundreds of per-item database queries and live subscriptions.
+- Swipe rows no longer run a database query or a preferences listener per item.
+- Like / bookmark / dislike state is loaded with a single SQL query per screen instead of one query per item.
+- Downloads use a dedicated resolver (separate from streaming) for faster, more reliable downloads.
+- Encrypted preferences are cached to avoid repeated expensive creation.
+- YouTube login state is read on a background thread to prevent app freezes on slow storage.
+- Debug logs can now be exported to a file instead of copied to the clipboard, and network calls are logged centrally through Timber.
+
+Fixed:
+- Quick Picks load is no longer cancelled when switching pages; returning keeps the in-flight load running instead of forcing a full reload.
+- Back navigation (in-app arrow, system back, home-jump) no longer resets Quick Picks.
+- The mini player no longer steals taps on the bottom navigation bar.
+- Long-press context menu works again on queue items.
+- Downloads: album/artist metadata is saved again; re-clicking a download stops/deletes it; the notification shows real progress; pause state and progress survive app restarts.
+- Statistics screen: fixed a crash and lag when scrolling with large numbers; bookmark/follow icons now show on artists, albums, and playlists.
+- Artist name parsing now handles locale conjunctions ("et", "and", "und", ...) and skips duration strings, so "Artist1 et Artist2" no longer creates a fake artist.
+- YouTube browse/search HTTP 400 on devices with unsupported region locales (issue https://github.com/N-Zik-Group/N-Zik/issues/6) is handled with a language-based region fallback.
+- YouTube streaming: removed brotli request compression and bot-fingerprinting headers that made all player clients fail; session handling and expired-stream detection now match Metrolist.
+- Dislike / bookmark state is preserved across YouTube fetches, settings dialogs write to the correct keys, and toaster messages no longer invert.
+- Like icon no longer flashes incorrectly before the database loads.
+- Home tabs use a consistent, snappy 200ms animation; unstructured coroutines were replaced with structured scopes.
+- Grid items no longer animate over headers on load; home tab headers and the cache indicator stay stable.
+- Queue panel stretching/lag and the mini player "like" icon position are fixed.
+
+Refactor:
+- Large code-quality pass across ~71 files to comply with CODE.md (structured coroutines, lifecycle-aware state collection, null-safety, no wildcard imports, keyed lazy lists).
+- InnerTube request body objects removed in favor of named parameters.
+- Dislike handling centralized behind a DislikeMode enum.
+
+Removed:
+- System-audio (MediaProjection) mode from audio search - it always uses the microphone now (avoids an Android 14+ crash).
+- Download/delete buttons hidden on the "On Device" tab.
+- Loading placeholders removed from On Device and Home Songs to enable smooth reorder animations.
+- Unused legacy fields removed from the StatsForNerds debug screen.
+
+Other:
+- InnerTubeX migration fully verified against Metrolist; streaming confirmed working on device.
+- New unit tests: quick-picks load guard truth table, mini-player queue interceptor, stream cache, and session-change behavior.
