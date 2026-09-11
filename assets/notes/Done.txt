@@ -1,3 +1,10 @@
+feat(sync): disable YTB sync toggle in non-dev builds
+  - `AccountsSettings.kt`: added `import app.n_zik.android.BuildConfig`
+  - `AccountsSettings.kt`: `OtherSwitchSettingEntry` for sync toggle now has `enabled = BuildConfig.BUILD_TYPE in listOf("debug", "dev")` — grisé (alpha 0.5f) et non cliquable en build full/minified/beta/foss
+  - `AccountsSettings.kt`: `isYouTubeSyncEnabled()` retourne `false` si `BUILD_TYPE` pas dans `["debug", "dev"]` — gate de securite pour tous les consommateurs (SyncYTMusicUtils.kt, Utils.kt)
+  - La preference `enableYouTubeSyncKey` reste intacte, pas de suppression de cle
+  - La section sync reste visible mais le toggle principal est desactive
+
 feat(player): add in-app queue overlay accessible from mini player long-press
   - `MiniPlayerQueueInterceptor.kt` (nouveau, `app.n_zik.android.core.navigation`): intercepte la navigation vers la route "queue" déclenchée par le long-press du miniplayer via `addOnDestinationChangedListener` + `popBackStack()` synchrone — la route queue n'est jamais composée
   - `MiniPlayerQueueOverlay.kt` (nouveau, `app.n_zik.android.components.player`): copie exacte du panneau de queue inline du player (Player.kt:2315-2482) — panel resizable avec drag-to-resize, scrim animé, handle 48dp avec `background0.copy(alpha)` (Modern=0.5, Essential=1), `QueueToolBar` avec `graphicsLayer` animation (slide+fade), nav bar strip `background1`, fond piloté par la préférence `queueTypeKey` (Modern=Transparent, Essential=background2)

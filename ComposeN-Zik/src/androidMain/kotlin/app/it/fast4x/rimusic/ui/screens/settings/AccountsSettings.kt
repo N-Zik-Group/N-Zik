@@ -1,5 +1,6 @@
 package app.it.fast4x.rimusic.ui.screens.settings
 
+import app.n_zik.android.BuildConfig
 import app.n_zik.android.components.tab.Search
 import android.annotation.SuppressLint
 import android.webkit.CookieManager
@@ -607,6 +608,7 @@ fun AccountsSettings() {
                             title = stringResource(R.string.sync_data_with_ytm_account),
                             text = stringResource(R.string.playlists_albums_artists_history_like_etc),
                             isChecked = isYouTubeSyncEnabled,
+                            enabled = BuildConfig.BUILD_TYPE in listOf("debug", "dev"),
                             onCheckedChange = {
                                 isYouTubeSyncEnabled = it
                                 if (!it) {
@@ -1222,6 +1224,8 @@ fun isYouTubeLoginEnabled(): Boolean {
 }
 
 fun isYouTubeSyncEnabled(): Boolean {
+    val isDevBuild = BuildConfig.BUILD_TYPE in listOf("debug", "dev")
+    if (!isDevBuild) return false
     val isYouTubeSyncEnabled = appContext().encryptedPreferences.getBoolean(enableYouTubeSyncKey, false)
     val useLoginForBrowse = appContext().preferences.getBoolean(useLoginForBrowseKey, true)
     return isYouTubeSyncEnabled && isYouTubeLoggedIn() && isYouTubeLoginEnabled() && useLoginForBrowse
