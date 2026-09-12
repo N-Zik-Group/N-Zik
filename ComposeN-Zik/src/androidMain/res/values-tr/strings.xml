@@ -330,6 +330,9 @@
   <string name="statistics_songs_heard">dinlenen şarkılar</string>
   <string name="statistics_of_time_taken">harcanan zaman</string>
   <string name="statistics_max_number_of_items">Maksimum öğe sayısı</string>
+  <string name="max_items_custom">Özel</string>
+  <string name="max_items_custom_value">Custom (%1$d)</string>
+  <string name="max_items_unlimited">Sınırsız</string>
   <string name="arabic">Arapça (العربية)</string>
   <string name="chinese_simplified">Basitleştirilmiş Çince (汉语)</string>
   <string name="chinese_traditional">Geleneksel Çince (漢語)</string>
