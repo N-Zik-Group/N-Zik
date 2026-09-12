@@ -330,6 +330,9 @@
   <string name="statistics_songs_heard">liedjies geluister</string>
   <string name="statistics_of_time_taken">tyd gespandeer</string>
   <string name="statistics_max_number_of_items">Max aantal items</string>
+  <string name="max_items_custom">Custom</string>
+  <string name="max_items_custom_value">Custom (%1$d)</string>
+  <string name="max_items_unlimited">Onbeperk</string>
   <string name="arabic">Arabies</string>
   <string name="chinese_simplified">Chinees Vereenvoudig</string>
   <string name="chinese_traditional">Chinees Tradisioneel</string>
