@@ -330,6 +330,9 @@
   <string name="statistics_songs_heard">odtworzone piosenki</string>
   <string name="statistics_of_time_taken">czas spędzony</string>
   <string name="statistics_max_number_of_items">Maksymalny numer utworów</string>
+  <string name="max_items_custom">Niestandardowy</string>
+  <string name="max_items_custom_value">Custom (%1$d)</string>
+  <string name="max_items_unlimited">Nielimitowane</string>
   <string name="arabic">arabski (&lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; )</string>
   <string name="chinese_simplified">Chiński uproszczony (&lt;unk&gt; &lt;unk&gt; )</string>
   <string name="chinese_traditional">Chiński tradycyjny (&lt;unk&gt; &lt;unk&gt; )</string>
