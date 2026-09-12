@@ -330,6 +330,9 @@
   <string name="statistics_songs_heard">brani ascoltati</string>
   <string name="statistics_of_time_taken">tempo trascorso</string>
   <string name="statistics_max_number_of_items">Numero massimo di elementi</string>
+  <string name="max_items_custom">Personalizzata</string>
+  <string name="max_items_custom_value">Custom (%1$d)</string>
+  <string name="max_items_unlimited">Illimitato</string>
   <string name="arabic">Arabo (Tariffe رب&lt;unk&gt; )</string>
   <string name="chinese_simplified">Cinese Semplificato (&lt;unk&gt; &lt;unk&gt; )</string>
   <string name="chinese_traditional">Cinese Tradizionale (&lt;unk&gt; &lt;unk&gt; )</string>
