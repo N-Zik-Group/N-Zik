@@ -330,6 +330,9 @@
   <string name="statistics_songs_heard">пісні чути</string>
   <string name="statistics_of_time_taken">витрачено часу</string>
   <string name="statistics_max_number_of_items">Максимальна кількість позицій</string>
+  <string name="max_items_custom">Користувальницькі</string>
+  <string name="max_items_custom_value">Custom (%1$d)</string>
+  <string name="max_items_unlimited">Необмежено</string>
   <string name="arabic">Арабська (&lt;unk&gt; ди-ди-ди)</string>
   <string name="chinese_simplified">Китайське спрощене (&lt;unk&gt; )</string>
   <string name="chinese_traditional">Китайська (&lt;unk&gt; )</string>
