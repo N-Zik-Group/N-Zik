@@ -330,6 +330,9 @@
   <string name="statistics_songs_heard">cançons escoltades</string>
   <string name="statistics_of_time_taken">de temps ocupat</string>
   <string name="statistics_max_number_of_items">Nombre màxim d\'elements</string>
+  <string name="max_items_custom">Personalitzat</string>
+  <string name="max_items_custom_value">Custom (%1$d)</string>
+  <string name="max_items_unlimited">Il·limitat</string>
   <string name="arabic">Àrab</string>
   <string name="chinese_simplified">Xinès simplificat</string>
   <string name="chinese_traditional">Xinès tradicional</string>
