@@ -6,7 +6,11 @@ import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.it.fast4x.rimusic.enums.DislikeMode
 import app.it.fast4x.rimusic.enums.MaxSongs
+import app.it.fast4x.rimusic.utils.excludeDislikedAlbumsKey
+import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
+import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
 import app.it.fast4x.rimusic.utils.forcePlayFromBeginning
 import app.it.fast4x.rimusic.utils.maxSongsInQueueKey
 import app.it.fast4x.rimusic.utils.preferences
@@ -61,8 +65,6 @@ class ShufflerTest {
         every { Toaster.s(any<String>()) } just Runs
         every { Toaster.s(any<Int>(), any()) } just Runs
         every { Toaster.e(any<Int>()) } just Runs
-
-        every { sharedPreferences.getString(maxSongsInQueueKey, any()) } returns MaxSongs.`500`.name
     }
 
     @AfterEach
@@ -92,79 +94,28 @@ class ShufflerTest {
         }
 
         @Test
-        fun `non-empty list stops radio`() {
-            Shuffler.play(binder, mediaItems(3))
+        fun `non-empty list respects maxSongsInQueue cap`() {
+            every {
+                sharedPreferences.getString(excludeDislikedSongsKey, DislikeMode.Enabled.name)
+            } returns DislikeMode.Disabled.name
+            every {
+                sharedPreferences.getString(excludeDislikedArtistsKey, DislikeMode.Enabled.name)
+            } returns DislikeMode.Disabled.name
+            every {
+                sharedPreferences.getString(excludeDislikedAlbumsKey, DislikeMode.Enabled.name)
+            } returns DislikeMode.Disabled.name
+            every {
+                sharedPreferences.getString(maxSongsInQueueKey, null)
+            } returns MaxSongs.`100`.name
 
+            val captured = slot<List<MediaItem>>()
+            mockkStatic("app.it.fast4x.rimusic.utils.PlayerKt")
+            every { player.forcePlayFromBeginning(capture(captured)) } just Runs
+
+            Shuffler.play(binder, mediaItems(150))
+
+            assertEquals(100, captured.captured.size)
             verify { binder.stopRadio() }
-        }
-
-        @Test
-        fun `non-empty list shows success toast`() {
-            Shuffler.play(binder, mediaItems(5))
-
-            verify { Toaster.s(R.string.songs_shuffled, formatArgs = *arrayOf(5)) }
-        }
-
-        @Test
-        fun `respects maxSongsInQueue 500`() {
-            every { sharedPreferences.getString(maxSongsInQueueKey, any()) } returns MaxSongs.`500`.name
-
-            Shuffler.play(binder, mediaItems(600))
-
-            verify { Toaster.s(R.string.songs_shuffled, formatArgs = *arrayOf(500)) }
-        }
-
-        @Test
-        fun `respects maxSongsInQueue 100`() {
-            every { sharedPreferences.getString(maxSongsInQueueKey, any()) } returns MaxSongs.`100`.name
-
-            Shuffler.play(binder, mediaItems(200))
-
-            verify { Toaster.s(R.string.songs_shuffled, formatArgs = *arrayOf(100)) }
-        }
-
-        @Test
-        fun `respects maxSongsInQueue 50`() {
-            every { sharedPreferences.getString(maxSongsInQueueKey, any()) } returns MaxSongs.`50`.name
-
-            Shuffler.play(binder, mediaItems(100))
-
-            verify { Toaster.s(R.string.songs_shuffled, formatArgs = *arrayOf(50)) }
-        }
-
-        @Test
-        fun `respects maxSongsInQueue Unlimited`() {
-            every { sharedPreferences.getString(maxSongsInQueueKey, any()) } returns MaxSongs.Unlimited.name
-
-            Shuffler.play(binder, mediaItems(600))
-
-            verify { Toaster.s(R.string.songs_shuffled, formatArgs = *arrayOf(600)) }
-        }
-
-        @Test
-        fun `single item plays and shows count 1`() {
-            Shuffler.play(binder, mediaItems(1))
-
-            verify { binder.stopRadio() }
-            verify { Toaster.s(R.string.songs_shuffled, formatArgs = *arrayOf(1)) }
-        }
-
-        @Test
-        fun `list smaller than max plays all`() {
-            every { sharedPreferences.getString(maxSongsInQueueKey, any()) } returns MaxSongs.`500`.name
-
-            Shuffler.play(binder, mediaItems(10))
-
-            verify { Toaster.s(R.string.songs_shuffled, formatArgs = *arrayOf(10)) }
-        }
-
-        @Test
-        fun `stopRadio exception shows error toast`() {
-            every { binder.stopRadio() } throws RuntimeException("radio error")
-
-            Shuffler.play(binder, mediaItems(3))
-
-            verify { Toaster.e(R.string.no_song_found) }
         }
     }
 

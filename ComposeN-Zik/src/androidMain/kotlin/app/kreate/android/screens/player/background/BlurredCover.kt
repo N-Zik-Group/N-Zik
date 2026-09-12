@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.referentialEqualityPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Alignment
@@ -24,8 +23,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.utils.BlurTransformation
-import app.it.fast4x.rimusic.utils.isAtLeastAndroid12
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.components.player.BlurAdjuster
 import kotlin.math.sqrt
@@ -71,19 +68,6 @@ private fun BlurFilter(
                     0f
             }
         }
-        val blurTransformation by remember {
-            derivedStateOf(referentialEqualityPolicy()) {
-                if (!isAtLeastAndroid12) {
-                    val radius: Float =
-                        if (showThumbnail || (isShowingLyrics && !isShowingVisualizer) || !noBlur)
-                            blurAdjuster.strength
-                        else
-                            0f
-                    listOf(BlurTransformation(radius.toInt(), .5f))
-                } else
-                    emptyList()
-            }
-        }
         val angle by rememberInfiniteTransition().animateFloat(
             initialValue = 0f,
             targetValue = if (blurAdjuster.isCoverRotating) 360f else 0f,
@@ -97,13 +81,20 @@ private fun BlurFilter(
             contentDescription = stringResource(R.string.cd_blurred_background),
             contentScale = ContentScale.Fit,
             // [Modifier.blur] will be
-            modifier = modifier.fillMaxSize()
-                               .blur( blurRadius.dp )       // ignored on unsupported devices by default
-                               .graphicsLayer {
-                                   scaleX = scale
-                                   scaleY = scale
-                                   rotationZ = angle
-                               }
+            modifier = modifier
+                .fillMaxSize()
+                .then(if (blurRadius > 0f) Modifier.blur(blurRadius.dp) else Modifier)
+                .then(
+                    if (scale != 1f || angle != 0f) {
+                        Modifier.graphicsLayer {
+                            scaleX = scale
+                            scaleY = scale
+                            rotationZ = angle
+                        }
+                    } else {
+                        Modifier
+                    }
+                )
         )
     }
 }

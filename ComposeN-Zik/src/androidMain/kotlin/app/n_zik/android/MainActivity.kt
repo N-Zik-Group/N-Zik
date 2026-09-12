@@ -24,6 +24,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -157,10 +158,12 @@ import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
 import app.it.fast4x.rimusic.ui.screens.player.rememberPlayerSheetState
 import app.n_zik.android.components.CustomBottomSheet
 import app.n_zik.android.components.player.MiniPlayerQueueOverlay
+import app.n_zik.android.components.player.PaletteFade
 import app.n_zik.android.components.player.presentMiniplayerThenExpand
+import app.n_zik.android.components.theme.AnimatedAppearance
+import app.n_zik.android.components.theme.withColor
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.Dimensions
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.colorPaletteOf
 import app.it.fast4x.rimusic.ui.styling.customColorPalette
 import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
@@ -286,7 +289,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.runtime.State
 import androidx.core.view.WindowInsetsControllerCompat
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
-import app.it.fast4x.rimusic.ui.styling.lerpTo
 import app.n_zik.android.core.database.Database
 import android.Manifest
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
@@ -537,9 +539,6 @@ class MainActivity :
 
         setContent {
             val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
-            val isPicthBlack = colorPaletteMode == ColorPaletteMode.PitchBlack
-//            val isDark =
-//                colorPaletteMode == ColorPaletteMode.Dark || isPicthBlack || (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme())
 
             // Valid to get log when app crash
             if (intent.action == action_copy_crash_log) {
@@ -599,60 +598,60 @@ class MainActivity :
 
             preferences.getEnum(audioQualityFormatKey, AudioQualityFormat.Auto)
 
-            var appearance by rememberSaveable(
-                !lightTheme,
-                stateSaver = Appearance.Companion
-            ) {
-                with(preferences) {
-                    val colorPaletteName =
-                        getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
-                    val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
-                    val thumbnailRoundnessDp = getFloat(thumbnailRoundnessDpKey, 12f)
-                    val artistThumbnailRoundnessDp = getFloat(artistThumbnailRoundnessDpKey, 48f)
-                    val uiRoundnessDp = getFloat("uiRoundnessDpKey", 25f)
-                    val useSystemFont = getBoolean(useSystemFontKey, false)
-                    val applyFontPadding = getBoolean(applyFontPaddingKey, false)
+            fun computeAppearance(): Appearance = with(preferences) {
+                val colorPaletteName =
+                    getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
+                val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
+                val thumbnailRoundnessDp = getFloat(thumbnailRoundnessDpKey, 12f)
+                val artistThumbnailRoundnessDp = getFloat(artistThumbnailRoundnessDpKey, 48f)
+                val uiRoundnessDp = getFloat("uiRoundnessDpKey", 25f)
+                val useSystemFont = getBoolean(useSystemFontKey, false)
+                val applyFontPadding = getBoolean(applyFontPaddingKey, false)
 
-                    var colorPalette =
-                        colorPaletteOf(colorPaletteName, colorPaletteMode, !lightTheme)
+                var colorPalette =
+                    colorPaletteOf(colorPaletteName, colorPaletteMode, !lightTheme)
 
-                    val fontType = getEnum(fontTypeKey, FontType.Rubik)
+                val fontType = getEnum(fontTypeKey, FontType.Rubik)
 
-                    if (colorPaletteName == ColorPaletteName.MaterialYou) {
-                        colorPalette = dynamicColorPaletteOf(
-                            Color(monet.getAccentColor(this@MainActivity)),
-                            !lightTheme
-                        )
-                    }
-                    if (colorPaletteName == ColorPaletteName.CustomColor) {
-                        colorPalette = dynamicColorPaletteOf(
-                            Color(customColor),
-                            !lightTheme
-                        )
-                    }
-
-                    setSystemBarAppearance(colorPalette.isDark)
-
-                    mutableStateOf(
-                        Appearance(
-                            colorPalette = colorPalette,
-                            typography = typographyOf(
-                                colorPalette.text,
-                                useSystemFont,
-                                applyFontPadding,
-                                fontType
-                            ),
-                            thumbnailShape = if (thumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(thumbnailRoundnessDp.dp, 0.25f)),
-                            uiRoundnessShape = RoundedCornerShape(BoundedCornerSize(uiRoundnessDp.dp, 0.4f)),
-                            artistThumbnailShape = if (artistThumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(artistThumbnailRoundnessDp.dp, 0.25f))
-                        )
+                if (colorPaletteName == ColorPaletteName.MaterialYou) {
+                    colorPalette = dynamicColorPaletteOf(
+                        Color(monet.getAccentColor(this@MainActivity)),
+                        !lightTheme
+                    )
+                }
+                if (colorPaletteName == ColorPaletteName.CustomColor) {
+                    colorPalette = dynamicColorPaletteOf(
+                        Color(customColor),
+                        !lightTheme
                     )
                 }
 
-
+                Appearance(
+                    colorPalette = colorPalette,
+                    typography = typographyOf(
+                        colorPalette.text,
+                        useSystemFont,
+                        applyFontPadding,
+                        fontType
+                    ),
+                    thumbnailShape = if (thumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(thumbnailRoundnessDp.dp, 0.25f)),
+                    uiRoundnessShape = RoundedCornerShape(BoundedCornerSize(uiRoundnessDp.dp, 0.4f)),
+                    artistThumbnailShape = if (artistThumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(artistThumbnailRoundnessDp.dp, 0.25f))
+                )
             }
 
-            fun setDynamicPalette(url: String?) {
+            var appearance by rememberSaveable(stateSaver = Appearance.Companion) {
+                mutableStateOf(computeAppearance())
+            }
+
+            var fadeFromAppearance by remember { mutableStateOf<Appearance?>(null) }
+
+            fun updateAppearance(newAppearance: Appearance, animateGlobal: Boolean = false) {
+                if (animateGlobal) fadeFromAppearance = appearance
+                appearance = newAppearance
+            }
+
+            fun setDynamicPalette(url: String?, animateTheme: Boolean = false) {
                 val playerBackgroundColors = preferences.getEnum(
                     playerBackgroundColorsKey,
                     PlayerBackgroundColors.BlurredCoverColor
@@ -687,21 +686,16 @@ class MainActivity :
                     setSystemBarAppearance(defaultColorPalette.isDark)
                     val oldPalette = appearance.colorPalette
                     if (oldPalette == targetPalette) return
-                    appearance = appearance.copy(
-                        typography = appearance.typography.copy(defaultColorPalette.text)
+                    // Single global mutation (the perceived fade happens locally
+                    // in the player scope, see PaletteFade) — mutating the
+                    // global palette N times per track invalidated the whole UI
+                    updateAppearance(
+                        appearance.copy(
+                            colorPalette = targetPalette,
+                            typography = appearance.typography.withColor(targetPalette.text)
+                        ),
+                        animateTheme
                     )
-                    paletteJob.value?.cancel()
-                    paletteJob.value = coroutineScope.launch(Dispatchers.Main) {
-                        val steps = if (showPlayer) 3 else 8
-                                        val stepDelay = if (showPlayer) 100L else 50L
-                        for (i in 1..steps) {
-                            val fraction = i.toFloat() / steps
-                            appearance = appearance.copy(
-                                colorPalette = oldPalette.lerpTo(targetPalette, fraction)
-                            )
-                            delay(stepDelay)
-                        }
-                    }
                     return
                 }
 
@@ -743,23 +737,14 @@ class MainActivity :
                                 }
                                 withContext(Dispatchers.Main) {
                                     setSystemBarAppearance(finalPalette.isDark)
-                                    appearance = appearance.copy(
-                                        typography = appearance.typography.copy(finalPalette.text)
+                                    updateAppearance(
+                                        appearance.copy(
+                                            colorPalette = finalPalette,
+                                            typography = appearance.typography.withColor(finalPalette.text)
+                                        ),
+                                        animateTheme
                                     )
-                                    paletteJob.value?.cancel()
-                                    paletteJob.value = coroutineScope.launch(Dispatchers.Main) {
-                                        // Fewer steps when player is visible to avoid lag
-                                        val steps = if (showPlayer) 3 else 8
-                                        val stepDelay = if (showPlayer) 100L else 50L
-                                        for (i in 1..steps) {
-                                            val fraction = i.toFloat() / steps
-                                            appearance = appearance.copy(
-                                                colorPalette = oldPalette.lerpTo(finalPalette, fraction)
-                                            )
-                                            delay(stepDelay)
-                                        }
-                                        savePaletteForWidget(finalPalette)
-                                    }
+                                    savePaletteForWidget(finalPalette)
                                 }
                             } else {
                                 val defaultColorPalette = dynamicColorPaletteOf(Color(0.54509807f, 0.36078432f, 0.9647059f), isDark)
@@ -767,24 +752,15 @@ class MainActivity :
                                     background0 = Color.Black, background1 = Color.Black,
                                     background2 = Color.Black, background3 = Color.Black, background4 = Color.Black,
                                 )
-                                val oldPalette = appearance.colorPalette
                                 withContext(Dispatchers.Main) {
                                     setSystemBarAppearance(defaultColorPalette.isDark)
-                                    appearance = appearance.copy(
-                                        typography = appearance.typography.copy(defaultColorPalette.text)
+                                    updateAppearance(
+                                        appearance.copy(
+                                            colorPalette = targetPalette,
+                                            typography = appearance.typography.withColor(targetPalette.text)
+                                        ),
+                                        animateTheme
                                     )
-                                    paletteJob.value?.cancel()
-                                    paletteJob.value = coroutineScope.launch(Dispatchers.Main) {
-                                        val steps = if (showPlayer) 3 else 8
-                                        val stepDelay = if (showPlayer) 100L else 50L
-                                        for (i in 1..steps) {
-                                            val fraction = i.toFloat() / steps
-                                            appearance = appearance.copy(
-                                                colorPalette = oldPalette.lerpTo(targetPalette, fraction)
-                                            )
-                                            delay(stepDelay)
-                                        }
-                                    }
                                 }
                             }
                         } else {
@@ -797,24 +773,15 @@ class MainActivity :
                                 background3 = Color.Black,
                                 background4 = Color.Black,
                             )
-                            val oldPalette = appearance.colorPalette
                             withContext(Dispatchers.Main) {
                                 setSystemBarAppearance(defaultColorPalette.isDark)
-                                appearance = appearance.copy(
-                                    typography = appearance.typography.copy(defaultColorPalette.text)
+                                updateAppearance(
+                                    appearance.copy(
+                                        colorPalette = targetPalette,
+                                        typography = appearance.typography.withColor(targetPalette.text)
+                                    ),
+                                    animateTheme
                                 )
-                                paletteJob.value?.cancel()
-                                paletteJob.value = coroutineScope.launch(Dispatchers.Main) {
-                                    val steps = if (showPlayer) 3 else 8
-                                    val stepDelay = if (showPlayer) 100L else 50L
-                                    for (i in 1..steps) {
-                                        val fraction = i.toFloat() / steps
-                                        appearance = appearance.copy(
-                                            colorPalette = oldPalette.lerpTo(targetPalette, fraction)
-                                        )
-                                        delay(stepDelay)
-                                    }
-                                }
                             }
                         }
                     } catch (e: Exception) {
@@ -823,8 +790,32 @@ class MainActivity :
                 }
             }
 
+            var hasInitializedAppearance by rememberSaveable { mutableStateOf(false) }
 
-            DisposableEffect(binder, !lightTheme) {
+            LaunchedEffect(isSystemInDarkTheme) {
+                if (!hasInitializedAppearance) {
+                    hasInitializedAppearance = true
+                    val computed = computeAppearance()
+                    if (appearance.colorPalette != computed.colorPalette) {
+                        appearance = computed
+                    }
+                    return@LaunchedEffect
+                }
+                val colorPaletteName = preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
+                if (colorPaletteName == ColorPaletteName.Dynamic) {
+                    setDynamicPalette(
+                        binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri?.thumbnail(1000)?.toString(),
+                        animateTheme = true
+                    )
+                } else {
+                    val computed = computeAppearance()
+                    if (appearance.colorPalette != computed.colorPalette) {
+                        updateAppearance(computed, animateGlobal = true)
+                    }
+                }
+            }
+
+            DisposableEffect(binder) {
                 /*
             var bitmapListenerJob: Job? = null
 
@@ -962,16 +953,21 @@ class MainActivity :
                                         ColorPaletteMode.System
                                     )
 
+                                val newIsDark = colorPaletteMode == ColorPaletteMode.Dark ||
+                                        colorPaletteMode == ColorPaletteMode.PitchBlack ||
+                                        (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
+                                val newIsPitchBlack = colorPaletteMode == ColorPaletteMode.PitchBlack
+
                                 var colorPalette = colorPaletteOf(
                                     colorPaletteName,
                                     colorPaletteMode,
-                                    !lightTheme
+                                    isSystemInDarkTheme
                                 )
 
                                 if (colorPaletteName == ColorPaletteName.Dynamic) {
                                     // Always call setDynamicPalette when switching to the dynamic theme
                                     val currentArtworkUri = binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri?.thumbnail(1000)?.toString()
-                                    setDynamicPalette(currentArtworkUri)
+                                    setDynamicPalette(currentArtworkUri, animateTheme = true)
                                 } else {
                                     //bitmapListenerJob?.cancel()
                                     //binder?.setBitmapListener(null)
@@ -979,7 +975,7 @@ class MainActivity :
                                     if (colorPaletteName == ColorPaletteName.MaterialYou) {
                                         colorPalette = dynamicColorPaletteOf(
                                             Color(monet.getAccentColor(this@MainActivity)),
-                                            !lightTheme
+                                            newIsDark
                                         )
                                     }
 
@@ -994,22 +990,25 @@ class MainActivity :
                                         val newCustomColor = sharedPreferences.getInt(customColorKey, Color.Green.hashCode())
                                         colorPalette = dynamicColorPaletteOf(
                                             Color(newCustomColor),
-                                            !lightTheme
+                                            newIsDark
                                         )
                                     }
 
                                     setSystemBarAppearance(colorPalette.isDark)
 
-                                    appearance = appearance.copy(
-                                        colorPalette = if (!isPicthBlack) colorPalette else colorPalette.copy(
-                                            background0 = Color.Black,
-                                            background1 = Color.Black,
-                                            background2 = Color.Black,
-                                            background3 = Color.Black,
-                                            background4 = Color.Black,
-                                            text = Color.White
+                                    updateAppearance(
+                                        appearance.copy(
+                                            colorPalette = if (!newIsPitchBlack) colorPalette else colorPalette.copy(
+                                                background0 = Color.Black,
+                                                background1 = Color.Black,
+                                                background2 = Color.Black,
+                                                background3 = Color.Black,
+                                                background4 = Color.Black,
+                                                text = Color.White
+                                            ),
+                                            typography = appearance.typography.withColor(if (!newIsPitchBlack) colorPalette.text else Color.White),
                                         ),
-                                        typography = appearance.typography.copy(if (!isPicthBlack) colorPalette.text else Color.White),
+                                        animateGlobal = true
                                     )
                                 }
                             }
@@ -1104,11 +1103,15 @@ class MainActivity :
                 val colorPaletteName =
                     preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
                 if (colorPaletteName == ColorPaletteName.Customized) {
-                    appearance = appearance.copy(
-                        colorPalette = customColorPalette(
-                            appearance.colorPalette,
-                            this@MainActivity,
-                            isSystemInDarkTheme
+                    val customPalette = customColorPalette(
+                        appearance.colorPalette,
+                        this@MainActivity,
+                        isSystemInDarkTheme
+                    )
+                    updateAppearance(
+                        appearance.copy(
+                            colorPalette = customPalette,
+                            typography = appearance.typography.withColor(customPalette.text)
                         )
                     )
                 }
@@ -1230,12 +1233,22 @@ class MainActivity :
             val topBarOffsetState = derivedStateOf { topBarOffset }
             val bottomBarOffsetState = derivedStateOf { bottomBarOffset }
 
-            BoxWithConstraints(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(finalAppearance.colorPalette.background0)
-                    .nestedScroll(nestedScrollConnection)
-            ) {
+            AnimatedAppearance(
+                target = appearance,
+                fadeFrom = fadeFromAppearance,
+                onFadeComplete = { fadeFromAppearance = null }
+            ) { _ ->
+                val rootBackgroundColor by animateColorAsState(
+                    targetValue = appearance.colorPalette.background0,
+                    animationSpec = tween(350, easing = FastOutSlowInEasing),
+                    label = "rootBackground"
+                )
+                BoxWithConstraints(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(rootBackgroundColor)
+                        .nestedScroll(nestedScrollConnection)
+                ) {
 
 
                 val density = LocalDensity.current
@@ -1336,9 +1349,8 @@ class MainActivity :
                         }
 
                     } else
-                                                 CompositionLocalProvider(
-                             LocalAppearance provides finalAppearance,
-                            LocalIndication provides ripple(bounded = true),
+                             CompositionLocalProvider(
+                             LocalIndication provides ripple(bounded = true),
                             LocalRippleConfiguration provides rippleConfiguration,
                             LocalShimmerTheme provides shimmerTheme,
                             LocalPlayerServiceBinder provides binder,
@@ -1391,42 +1403,47 @@ class MainActivity :
                                     else
                                         Alignment.BottomCenter
                                 ) {
-                                    CustomBottomSheet(
-                                        state = playerSheetState,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        onDismiss = {
-                                            binder?.stopRadio()
-                                            binder?.player?.clearMediaItems()
-                                            showPlayer = false
-                                            switchToAudioPlayer = false
-                                            runCatching {
-                                                this@MainActivity.stopService(this@MainActivity.intent<app.n_zik.android.playback.services.PlayerServiceModern>())
-                                            }
-                                        },
-                                        bottomPadding = playerPadBottom,
-                                        collapsedContentHeight = Dimensions.collapsedPlayer,
-                                        disableDismiss = disableClosingPlayerSwipingDown,
-                                        collapsedContent = {
-                                            MiniPlayer(
-                                                showPlayer = {
-                                                    showPlayer = true
-                                                    playerSheetState.expandSoft()
-                                                },
-                                                hidePlayer = {
-                                                    coroutineScope.launch {
-                                                        playerSheetState.hide()
-                                                        showPlayer = false
-                                                    }
-                                                },
-                                                navController = navController
-                                            )
-                                        }
-                                    ) {
-                                        Player(navController) {
-                                            coroutineScope.launch {
-                                                playerSheetState.hide()
+                                    // Palette fade scope: the global palette switches in one
+                                    // step, only this subtree (mini-player + full player)
+                                    // animates the transition
+                                    PaletteFade {
+                                        CustomBottomSheet(
+                                            state = playerSheetState,
+                                            modifier = Modifier.fillMaxWidth(),
+                                            onDismiss = {
+                                                binder?.stopRadio()
+                                                binder?.player?.clearMediaItems()
                                                 showPlayer = false
                                                 switchToAudioPlayer = false
+                                                runCatching {
+                                                    this@MainActivity.stopService(this@MainActivity.intent<app.n_zik.android.playback.services.PlayerServiceModern>())
+                                                }
+                                            },
+                                            bottomPadding = playerPadBottom,
+                                            collapsedContentHeight = Dimensions.collapsedPlayer,
+                                            disableDismiss = disableClosingPlayerSwipingDown,
+                                            collapsedContent = {
+                                                MiniPlayer(
+                                                    showPlayer = {
+                                                        showPlayer = true
+                                                        playerSheetState.expandSoft()
+                                                    },
+                                                    hidePlayer = {
+                                                        coroutineScope.launch {
+                                                            playerSheetState.hide()
+                                                            showPlayer = false
+                                                        }
+                                                    },
+                                                    navController = navController
+                                                )
+                                            }
+                                        ) {
+                                            Player(navController) {
+                                                coroutineScope.launch {
+                                                    playerSheetState.hide()
+                                                    showPlayer = false
+                                                    switchToAudioPlayer = false
+                                                }
                                             }
                                         }
                                     }
@@ -1587,6 +1604,7 @@ class MainActivity :
 
                 InitDownloader()
 
+                }
             }
 
             LaunchedEffect(intentUriData) {
@@ -1733,7 +1751,15 @@ class MainActivity :
             .apply()
     }
 
+    private var lastSystemBarIsDark: Boolean? = null
+
     private fun setSystemBarAppearance(isDark: Boolean) {
+        // The bars only depend on the light/dark state; re-applying the same
+        // state on every track change costs a window-level insets update
+        // (the hideStatusBar pref change triggers recreate(), so no forced
+        // re-apply path is needed)
+        if (lastSystemBarIsDark == isDark) return
+        lastSystemBarIsDark = isDark
         val hideStatusBar = preferences.getBoolean(hideStatusBarKey, false)
         with(WindowCompat.getInsetsController(window, window.decorView)) {
             isAppearanceLightStatusBars = !isDark

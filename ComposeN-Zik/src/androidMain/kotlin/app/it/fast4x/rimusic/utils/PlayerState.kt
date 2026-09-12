@@ -37,11 +37,20 @@ fun Player.DisposableListener(
     }
 }
 
+/**
+ * Polls the player position once per frame into [state].
+ *
+ * @param active When false the poller stays suspended from writing, so
+ * consumers are not invalidated every frame (the player content is always
+ * composed but may be hidden behind the mini-player). The first frame after
+ * [active] becomes true again re-syncs the position.
+ */
 @Composable
-fun Player.positionAndDurationState(key1: Any? = null): State<Pair<Long, Long>> {
+fun Player.positionAndDurationState(key1: Any? = null, active: Boolean = true): State<Pair<Long, Long>> {
     val state = remember(key1) {
         mutableStateOf(currentPosition to duration)
     }
+    val activeRef = rememberUpdatedState(active)
 
     LaunchedEffect(this, key1) {
         var isSeeking = false
@@ -77,7 +86,7 @@ fun Player.positionAndDurationState(key1: Any? = null): State<Pair<Long, Long>> 
         val pollJob = launch {
             while (isActive) {
                 withFrameNanos { }
-                if (!isSeeking || needsUpdate) {
+                if (activeRef.value && (!isSeeking || needsUpdate)) {
                     state.value = currentPosition to duration
                     needsUpdate = false
                 }

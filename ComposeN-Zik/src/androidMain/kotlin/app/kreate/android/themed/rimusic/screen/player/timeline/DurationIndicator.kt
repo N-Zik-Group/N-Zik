@@ -3,6 +3,7 @@ package app.kreate.android.themed.rimusic.screen.player.timeline
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.components.PLAYER_SHEET_HANDOVER_PROGRESS
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -47,6 +48,7 @@ import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.it.fast4x.rimusic.enums.PauseBetweenSongs
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.typography
+import app.n_zik.android.LocalPlayerSheetState
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.DURATION_INDICATOR_HEIGHT
 import app.it.fast4x.rimusic.utils.colorPaletteModeKey
@@ -204,7 +206,11 @@ fun DurationIndicator(
                                    .height( DURATION_INDICATOR_HEIGHT.dp ),
                 contentAlignment = Alignment.Center
             ) {
-                val positionAndDurationState = binder.player.positionAndDurationState()
+                // The full player stays composed while hidden behind the
+                // mini-player; only poll position when its content is visible
+                // (0.45f = CustomBottomSheet hand-over threshold)
+                val positionAndDurationState =
+                    binder.player.positionAndDurationState(active = LocalPlayerSheetState.current.progress > PLAYER_SHEET_HANDOVER_PROGRESS)
                 val timeRemainingState = remember {
                     derivedStateOf {
                         (positionAndDurationState.value.second - positionAndDurationState.value.first).coerceAtLeast( 0 )

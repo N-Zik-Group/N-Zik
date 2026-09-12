@@ -6,11 +6,14 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.first
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithCache
@@ -46,6 +49,12 @@ import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.shakeSensitivityThemeKey
 import app.n_zik.android.enums.ShakeSensitivityTheme
 
+internal fun m3eVisibilityTarget(
+    animating: Boolean,
+    skipMaskActive: Boolean,
+    immediateSkipHide: Boolean = false
+): Float = if (animating && !skipMaskActive && !immediateSkipHide) 1f else 0f
+
 @OptIn(UnstableApi::class)
 fun Modifier.animatedM3EBackground(
     animating: Boolean,
@@ -55,17 +64,29 @@ fun Modifier.animatedM3EBackground(
     DV: Color,
     M: Color,
     LM: Color,
-    DM: Color
+    DM: Color,
+    skipToken: Any? = null
 ): Modifier = composed {
     val accumulatedTime = remember { mutableFloatStateOf(0f) }
 
+    val colors = listOf(V, DV, M)
+
+    var skipMaskActive by remember { mutableStateOf(false) }
+    val skipTokenTracker = remember { SkipTokenTracker(skipToken) }
+    val immediateSkipHide = skipTokenTracker.last != null && skipToken != null && skipTokenTracker.last != skipToken
+    skipTokenTracker.last = skipToken
+    val lastEffectToken = remember { SkipTokenTracker(skipToken) }
+    val latestSkipToken by rememberUpdatedState(skipToken)
+
+    val visibilityTarget = m3eVisibilityTarget(animating, skipMaskActive, immediateSkipHide)
     val visibilityProgress by animateFloatAsState(
-        targetValue = if (animating) 1f else 0f,
-        animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
+        targetValue = visibilityTarget,
+        animationSpec = tween(
+            durationMillis = if (visibilityTarget == 1f) 600 else if (skipMaskActive || immediateSkipHide) 150 else 600,
+            easing = FastOutSlowInEasing
+        ),
         label = "visibility"
     )
-
-    val colors = listOf(V, DV, M)
 
     val shapes = remember {
         val states = mutableListOf<ShapeConfig>()
@@ -152,23 +173,51 @@ fun Modifier.animatedM3EBackground(
     val mountTime = remember { System.currentTimeMillis() }
     val hasExploded = remember { mutableStateOf(false) }
 
+    fun explodeShapes() {
+        shapes.forEach { shape ->
+            shape.vx += (Random.nextFloat() - 0.5f) * 1.0f
+            shape.vy += (Random.nextFloat() - 0.5f) * 1.0f
+        }
+    }
+
+    LaunchedEffect(skipToken) {
+        val previousToken = lastEffectToken.last
+        lastEffectToken.last = skipToken
+
+        if (skipToken == null) {
+            skipMaskActive = false
+            return@LaunchedEffect
+        }
+        if (previousToken == null || previousToken == skipToken) {
+            skipMaskActive = false
+            return@LaunchedEffect
+        }
+
+        skipMaskActive = true
+
+        snapshotFlow { visibilityProgress }
+            .first { it <= 0.01f }
+
+        if (latestSkipToken != skipToken) {
+            return@LaunchedEffect
+        }
+
+        lastLocalColor.value = V.value
+        explodeShapes()
+        skipMaskActive = false
+    }
+
     // Explosion on song change (colors change) and startup
     LaunchedEffect(V) {
         val currentColor = V.value
         val now = System.currentTimeMillis()
         if (!hasExploded.value) {
             hasExploded.value = true
-            shapes.forEach { shape ->
-                shape.vx += (Random.nextFloat() - 0.5f) * 1.0f
-                shape.vy += (Random.nextFloat() - 0.5f) * 1.0f
-            }
-        } else if (lastLocalColor.value != currentColor) {
+            explodeShapes()
+        } else if (lastLocalColor.value != currentColor && !skipMaskActive) {
             lastLocalColor.value = currentColor
             if (now - mountTime > 800) {
-                shapes.forEach { shape ->
-                    shape.vx += (Random.nextFloat() - 0.5f) * 1.0f
-                    shape.vy += (Random.nextFloat() - 0.5f) * 1.0f
-                }
+                explodeShapes()
             }
         }
     }
@@ -382,6 +431,8 @@ fun Modifier.animatedM3EBackground(
         }
     }
 }
+
+private class SkipTokenTracker(var last: Any?)
 
 private class ShapeConfig(
     var x: Float,

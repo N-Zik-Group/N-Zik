@@ -33,8 +33,17 @@ class PauseOnHeadphoneDisconnectTest {
     }
 
     @Test
+    fun `isPauseOnHeadphoneDisconnectEnabled returns false when preference is false`() {
+        every { sharedPreferences.getBoolean(pauseOnHeadphoneDisconnectKey, true) } returns false
+
+        val result = isPauseOnHeadphoneDisconnectEnabled()
+
+        assertFalse(result)
+    }
+
+    @Test
     fun `isPauseOnHeadphoneDisconnectEnabled returns true when preference is true`() {
-        every { sharedPreferences.getBoolean(pauseOnHeadphoneDisconnectKey, false) } returns true
+        every { sharedPreferences.getBoolean(pauseOnHeadphoneDisconnectKey, true) } returns true
 
         val result = isPauseOnHeadphoneDisconnectEnabled()
 
@@ -42,21 +51,12 @@ class PauseOnHeadphoneDisconnectTest {
     }
 
     @Test
-    fun `isPauseOnHeadphoneDisconnectEnabled returns false when preference is false`() {
-        every { sharedPreferences.getBoolean(pauseOnHeadphoneDisconnectKey, false) } returns false
+    fun `isPauseOnHeadphoneDisconnectEnabled defaults to true`() {
+        every { sharedPreferences.getBoolean(pauseOnHeadphoneDisconnectKey, true) } returns true
 
         val result = isPauseOnHeadphoneDisconnectEnabled()
 
-        assertFalse(result)
+        assertTrue(result)
     }
 
-    @Test
-    fun `isPauseOnHeadphoneDisconnectEnabled returns false by default`() {
-        every { sharedPreferences.getBoolean(pauseOnHeadphoneDisconnectKey, false) } returns false
-
-        val result = isPauseOnHeadphoneDisconnectEnabled()
-
-        assertFalse(result)
-        verify { sharedPreferences.getBoolean(pauseOnHeadphoneDisconnectKey, false) }
-    }
 }

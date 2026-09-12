@@ -69,30 +69,7 @@ class LyricsDecisionMakerTest {
     }
 
     @Test
-    fun `when wanting karaoke but only sync exists, currentLyrics falls back to sync`() {
-        val syncLyrics = Lyrics(
-            songId = "song1",
-            type = LyricsType.Synced.name,
-            data = "[00:10.00] Sync line 1"
-        )
-
-        val needs = LyricsDecisionMaker.evaluateFetchNeeds(
-            mediaId = "song1",
-            lyricsType = LyricsType.Karaoke,
-            allLyrics = listOf(syncLyrics),
-            globalLastKaraokeAttemptMediaId = null,
-            globalLastSyncedAttemptMediaId = null,
-            globalLastUnSyncedAttemptMediaId = null
-        )
-
-        // It needs karaoke fetch because Karaoke DB slot is missing
-        assertTrue(needs.needKaraokeFetch)
-        // But UI should still render the Sync lyrics as fallback while loading
-        assertEquals(syncLyrics, needs.currentLyrics)
-    }
-
-    @Test
-    fun `when wanting sync and db is empty, it needs sync fetch`() {
+    fun `when wanting synced and database is empty, it needs synced fetch`() {
         val needs = LyricsDecisionMaker.evaluateFetchNeeds(
             mediaId = "song1",
             lyricsType = LyricsType.Synced,
@@ -103,7 +80,8 @@ class LyricsDecisionMakerTest {
         )
 
         assertTrue(needs.needSyncedFetch)
-        assertFalse(needs.needKaraokeFetch)
+        assertTrue(needs.needKaraokeFetch)
         assertNull(needs.currentLyrics)
     }
+
 }

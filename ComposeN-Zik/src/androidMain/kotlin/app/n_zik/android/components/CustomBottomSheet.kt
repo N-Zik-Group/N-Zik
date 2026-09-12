@@ -73,8 +73,10 @@ internal fun computeCardGeometry(
  * (miniPlayerFade), so the hand-over has no pop, no overlap and no
  * empty gap.
  */
-internal fun playerContentFade(progress: Float): Float =
-    ((progress - 0.45f) / 0.55f).coerceIn(0f, 1f)
+const val PLAYER_SHEET_HANDOVER_PROGRESS = 0.45f
+
+fun playerContentFade(progress: Float): Float =
+    ((progress - PLAYER_SHEET_HANDOVER_PROGRESS) / (1f - PLAYER_SHEET_HANDOVER_PROGRESS)).coerceIn(0f, 1f)
 
 /**
  * Fade-out progress of the mini-player (1 = visible, 0 = hidden).
@@ -82,8 +84,8 @@ internal fun playerContentFade(progress: Float): Float =
  * 0.45f — right when the player fade-in starts — so the mini-player is
  * already gone before the player appears (no overlap, no empty gap).
  */
-internal fun miniPlayerFade(progress: Float): Float =
-    1f - (progress / 0.45f).coerceIn(0f, 1f)
+fun miniPlayerFade(progress: Float): Float =
+    1f - (progress / PLAYER_SHEET_HANDOVER_PROGRESS).coerceIn(0f, 1f)
 
 /**
  * Shape qui suit exactement le rectangle animé de la carte "deploy"
