@@ -330,6 +330,9 @@
   <string name="statistics_songs_heard">poslechnuté skladby</string>
   <string name="statistics_of_time_taken">potřebného času</string>
   <string name="statistics_max_number_of_items">Maximální počet položek</string>
+  <string name="max_items_custom">Vlastní</string>
+  <string name="max_items_custom_value">Custom (%1$d)</string>
+  <string name="max_items_unlimited">Neomezený</string>
   <string name="arabic">Arabština (العربية)</string>
   <string name="chinese_simplified">Zjednodušená čínština (汉语)</string>
   <string name="chinese_traditional">Tradiční čínština (漢語)</string>
