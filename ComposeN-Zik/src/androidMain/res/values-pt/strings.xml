@@ -330,6 +330,9 @@
   <string name="statistics_songs_heard">Músicas ouvidas</string>
   <string name="statistics_of_time_taken">tempo gasto</string>
   <string name="statistics_max_number_of_items">Número máximo de itens</string>
+  <string name="max_items_custom">Personalizado</string>
+  <string name="max_items_custom_value">Custom (%1$d)</string>
+  <string name="max_items_unlimited">Ilimitado</string>
   <string name="arabic">Arábico (rebenta&amp;rbélicowkksvksvkkskskskrbgsgskbkkkwwkkwwkken)</string>
   <string name="chinese_simplified">Chinês simplificado (Portugal,)</string>
   <string name="chinese_traditional">Chinês tradicional (Portugal,)</string>

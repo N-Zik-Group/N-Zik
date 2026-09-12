@@ -330,6 +330,9 @@
   <string name="statistics_songs_heard">曲聴きました</string>
   <string name="statistics_of_time_taken">費やした時間</string>
   <string name="statistics_max_number_of_items">アイテムの最大数</string>
+  <string name="max_items_custom">カスタム</string>
+  <string name="max_items_custom_value">Custom (%1$d)</string>
+  <string name="max_items_unlimited">無制限</string>
   <string name="arabic">アラビア語(&lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; )</string>
   <string name="chinese_simplified">簡体字中国語 (&lt;unk&gt; &lt;unk&gt; )</string>
   <string name="chinese_traditional">繁体字中国語（&lt;unk&gt; &lt;unk&gt; ）</string>

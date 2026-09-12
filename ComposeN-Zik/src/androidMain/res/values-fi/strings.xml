@@ -330,6 +330,9 @@
   <string name="statistics_songs_heard">kuunneltua kappaletta</string>
   <string name="statistics_of_time_taken">käytetty aika</string>
   <string name="statistics_max_number_of_items">Suurin määrä kohteita</string>
+  <string name="max_items_custom">Mukautettu</string>
+  <string name="max_items_custom_value">Custom (%1$d)</string>
+  <string name="max_items_unlimited">Rajoittamaton</string>
   <string name="arabic">Arabialainen (- Pannaan Pannaan Vannaan Vann)</string>
   <string name="chinese_simplified">Kiinalainen Yksinkertaistettu (Päivä )</string>
   <string name="chinese_traditional">Kiinalainen Perinteinen (¼ )</string>

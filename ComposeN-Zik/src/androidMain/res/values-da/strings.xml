@@ -330,6 +330,9 @@
   <string name="statistics_songs_heard">sange hørt</string>
   <string name="statistics_of_time_taken">af tid taget</string>
   <string name="statistics_max_number_of_items">Maks. antal elementer</string>
+  <string name="max_items_custom">Tilpasset</string>
+  <string name="max_items_custom_value">Custom (%1$d)</string>
+  <string name="max_items_unlimited">Ubegrænset</string>
   <string name="arabic">Arabisk</string>
   <string name="chinese_simplified">Kinesisk (forenklet)</string>
   <string name="chinese_traditional">Kinesisk (traditionel)</string>

@@ -330,6 +330,9 @@
   <string name="statistics_songs_heard">যে গান গুলো শুনেছেন</string>
   <string name="statistics_of_time_taken">যতটা সময় নিয়েছে</string>
   <string name="statistics_max_number_of_items">মোট আইটেম সংখ্যা</string>
+  <string name="max_items_custom">কাস্টম</string>
+  <string name="max_items_custom_value">Custom (%1$d)</string>
+  <string name="max_items_unlimited">আনলিমিটেড</string>
   <string name="arabic">আরবি</string>
   <string name="chinese_simplified">চাইনিজ সিমপ্লিফাইড</string>
   <string name="chinese_traditional">ঐতিহ্যবাহী চীনা</string>

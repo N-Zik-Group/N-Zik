@@ -330,6 +330,9 @@
   <string name="statistics_songs_heard">прослушанные треки</string>
   <string name="statistics_of_time_taken">затрачено времени</string>
   <string name="statistics_max_number_of_items">Макс. кол-во элементов</string>
+  <string name="max_items_custom">Пользовательский</string>
+  <string name="max_items_custom_value">Custom (%1$d)</string>
+  <string name="max_items_unlimited">Неограниченный</string>
   <string name="arabic">Арабский (العربي&lt;unk&gt; )</string>
   <string name="chinese_simplified">Китайская упрощенная (&lt;unk&gt; &lt;unk&gt; )</string>
   <string name="chinese_traditional">Китайский традиционный (&lt;unk&gt; &lt;unk&gt; )</string>
