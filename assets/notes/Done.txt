@@ -1,3 +1,12 @@
+fix(statistics): header totals reflect the full listening period instead of the capped list (issue https://github.com/N-Zik-Group/N-Zik/issues/786)
+  - `EventTable.kt`: new DAO `countDistinctSongsPlayedBetween(from, to = now): Flow<Int>` — counts distinct `song_id` in `play_events` over the selected period, uncapped
+  - `StatisticsPage.kt`: header "songs heard" now reads the new uncapped `distinctSongsPlayedCount` flow instead of the capped `songs.size`; header "time spent" now uses the full-period `getTotalPlayTimeBetween` total (`totalPlayTimes`)
+  - `StatisticsPage.kt`: removed the dead `totalPlayTimesSongs`/`songIds` block that recomputed listening time over the capped top-N song list — root cause of the undercount
+  - `EventTableTest.kt` (new, Robolectric, in-memory Room): 4 tests covering distinct-song count and total play time with and without out-of-period events
+  - Root cause: header aggregates were computed from the top-N list limited by the "Max number of items" setting, so totals were wrong for any user with more than N distinct songs in the period
+
+
+BETA 8.0.0
 fix(quickpicks): load survives page switches — shared scope and shared state instead of composable scope
   - `HomeQuickPicksState.kt`: added `companion object` holding `loadScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)`, `@Volatile sharedLoadJob` and `@Volatile sharedRefreshPending` — the load no longer lives in the composable scope, so it is not cancelled on navigation
   - `HomeQuickPicksState.kt`: removed the `scope: CoroutineScope` constructor param; `load()`, `refresh()` and the phase 2 `dbJob` now run on `loadScope`; `rememberHomeQuickPicksState` no longer calls `rememberCoroutineScope()`

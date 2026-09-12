@@ -213,6 +213,17 @@ interface EventTable {
     fun getTotalPlayTimeBetween(from: Long, to: Long = System.currentTimeMillis()): Flow<Long>
 
     /**
+     * Return the number of distinct songs played over a given period.
+     * Unlike [findSongsMostPlayedBetween], this is not affected by any limit:
+     * it counts every song listened to at least once between [from] and [to].
+     * @param from start of the period (epoch millis)
+     * @param to end of the period (epoch millis)
+     * @return number of distinct songs played in the period
+     */
+    @Query("SELECT COUNT(DISTINCT E.songId) FROM Event E WHERE E.timestamp BETWEEN :from AND :to")
+    fun countDistinctSongsPlayedBetween(from: Long, to: Long = System.currentTimeMillis()): Flow<Int>
+
+    /**
      * Return the total playtime for specific songs over a given period.
      * This is much more efficient than querying each song individually.
      * @param songIds list of song IDs to calculate playtime for

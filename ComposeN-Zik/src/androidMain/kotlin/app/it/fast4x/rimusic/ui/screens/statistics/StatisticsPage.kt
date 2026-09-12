@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -194,6 +195,15 @@ fun StatisticsPage(
     val totalPlayTimesState = totalPlayTimesFlow.collectAsState(0L, Dispatchers.IO)
     totalPlayTimes = totalPlayTimesState.value
 
+    var distinctSongsPlayedCount by remember { mutableIntStateOf(0) }
+    val distinctSongsPlayedCountFlow = remember(from) {
+        Database.eventTable
+            .countDistinctSongsPlayedBetween(from = from)
+            .distinctUntilChanged()
+    }
+    val distinctSongsPlayedCountState = distinctSongsPlayedCountFlow.collectAsState(0, Dispatchers.IO)
+    distinctSongsPlayedCount = distinctSongsPlayedCountState.value
+
     val songsWithLikeStates by remember(parentalControlEnabled, maxStatisticsItems) {
         Database.eventTable
             .findSongsMostPlayedBetween(
@@ -249,20 +259,6 @@ fun StatisticsPage(
         StatisticsCategory.Albums to StatisticsCategory.Albums.text,
         StatisticsCategory.Playlists to StatisticsCategory.Playlists.text
     )
-
-    // Calcul of real listening time for the selected period (Songs category)
-    var totalPlayTimesSongs by remember { mutableLongStateOf(0L) }
-    val songIds = remember(songs) { songs.map { it.id } }
-    val totalPlayTimesSongsFlow = remember(songIds, from) {
-        if (songIds.isEmpty()) {
-            kotlinx.coroutines.flow.flowOf(0L)
-        } else {
-            Database.eventTable.getSongsTotalPlayTimeBetween(songIds, from)
-                .distinctUntilChanged()
-        }
-    }
-    val totalPlayTimesSongsState = totalPlayTimesSongsFlow.collectAsState(0L, Dispatchers.IO)
-    totalPlayTimesSongs = totalPlayTimesSongsState.value
 
     val artistBookmarkIds = remember(artists) { artists.map { it.id } }
     val artistBookmarkStatesMap by remember(artistBookmarkIds) {
@@ -343,8 +339,8 @@ fun StatisticsPage(
                             ) {
                                 Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 8.dp)) {
                                     SettingsEntry(
-                                        title = "${songs.size} ${stringResource(R.string.statistics_songs_heard)}",
-                                        text = "${formatAsTime(totalPlayTimesSongs)} ${stringResource(R.string.statistics_of_time_taken)}",
+                                        title = "${distinctSongsPlayedCount} ${stringResource(R.string.statistics_songs_heard)}",
+                                        text = "${formatAsTime(totalPlayTimes)} ${stringResource(R.string.statistics_of_time_taken)}",
                                         onClick = {},
                                         trailingContent = {
                                             Image(
