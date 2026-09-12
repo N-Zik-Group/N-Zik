@@ -95,6 +95,7 @@ import app.it.fast4x.rimusic.utils.isDownloadedSong
 import app.it.fast4x.rimusic.utils.isNowPlaying
 import app.it.fast4x.rimusic.utils.manageDownload
 import app.it.fast4x.rimusic.utils.maxStatisticsItemsKey
+import app.it.fast4x.rimusic.utils.maxStatisticsItemsCustomValueKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.showStatsListeningTimeKey
@@ -158,6 +159,7 @@ fun StatisticsPage(
     val thumbnailSize = thumbnailSizeDp.px
 
     val maxStatisticsItems by rememberPreference( maxStatisticsItemsKey, MaxStatisticsItems.`10` )
+    val maxStatisticsItemsCustomValue by rememberPreference( maxStatisticsItemsCustomValueKey, 10 )
     val from = remember( statisticsType ) { statisticsType.timeStampInMillis() }
 
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
@@ -166,7 +168,7 @@ fun StatisticsPage(
         Database.eventTable
                 .findArtistsMostPlayedBetween(
                     from = from,
-                    limit = maxStatisticsItems.toInt()
+                    limit = maxStatisticsItems.toInt(maxStatisticsItemsCustomValue)
                 )
                 .distinctUntilChanged()
     }.collectAsState( emptyList(), Dispatchers.IO )
@@ -174,7 +176,7 @@ fun StatisticsPage(
         Database.eventTable
                 .findAlbumsMostPlayedBetween(
                     from = from,
-                    limit = maxStatisticsItems.toInt()
+                    limit = maxStatisticsItems.toInt(maxStatisticsItemsCustomValue)
                 )
                 .distinctUntilChanged()
     }.collectAsState( emptyList(), Dispatchers.IO )
@@ -182,7 +184,7 @@ fun StatisticsPage(
         Database.eventTable
                 .findPlaylistMostPlayedBetweenAsPreview(
                     from = from,
-                    limit = maxStatisticsItems.toInt()
+                    limit = maxStatisticsItems.toInt(maxStatisticsItemsCustomValue)
                 )
                 .distinctUntilChanged()
     }.collectAsState( emptyList(), Dispatchers.IO )
@@ -204,16 +206,21 @@ fun StatisticsPage(
     val distinctSongsPlayedCountState = distinctSongsPlayedCountFlow.collectAsState(0, Dispatchers.IO)
     distinctSongsPlayedCount = distinctSongsPlayedCountState.value
 
-    val songsWithLikeStates by remember(parentalControlEnabled, maxStatisticsItems) {
+    val songsWithLikeStates by remember(parentalControlEnabled, maxStatisticsItems, maxStatisticsItemsCustomValue) {
+        // Multiply in Long and cap to avoid Int overflow (Unlimited or large Custom values)
+        val fetchLimit = (maxStatisticsItems.toInt(maxStatisticsItemsCustomValue).toLong() *
+            (if (parentalControlEnabled) 5L else 1L))
+            .coerceAtMost(Int.MAX_VALUE.toLong())
+            .toInt()
         Database.eventTable
             .findSongsMostPlayedBetween(
                 from = from,
-                limit = maxStatisticsItems.toInt() * (if (parentalControlEnabled) 5 else 1)
+                limit = fetchLimit
             )
             .distinctUntilChanged()
-            .map { list -> 
+            .map { list ->
                 list.filter { !parentalControlEnabled || !it.title.startsWith(EXPLICIT_PREFIX, true) }
-                    .take(maxStatisticsItems.toInt()) 
+                    .take(maxStatisticsItems.toInt(maxStatisticsItemsCustomValue))
             }
             .flatMapLatest { songsList ->
                 val songIds = songsList.map { it.id }

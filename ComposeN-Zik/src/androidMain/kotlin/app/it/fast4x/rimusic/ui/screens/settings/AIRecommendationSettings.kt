@@ -57,9 +57,13 @@ import app.it.fast4x.rimusic.utils.showMonthlyPlaylistsKey
 import app.it.fast4x.rimusic.utils.showMyTopPlaylistKey
 import app.it.fast4x.rimusic.utils.showStatsListeningTimeKey
 import app.it.fast4x.rimusic.utils.maxStatisticsItemsKey
+import app.it.fast4x.rimusic.utils.maxStatisticsItemsCustomValueKey
 import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsKey
+import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsCustomValueKey
 import app.it.fast4x.rimusic.enums.MaxStatisticsItems
 import app.it.fast4x.rimusic.enums.MaxTopPlaylistItems
+import android.text.TextUtils
+import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import kotlinx.coroutines.Dispatchers
 import app.kreate.android.me.knighthat.utils.Toaster
 import androidx.compose.ui.platform.LocalContext
@@ -116,10 +120,14 @@ fun DefaultAIRecommendationSettings() {
     showStatsListeningTime = true
     var maxStatisticsItems by rememberPreference(maxStatisticsItemsKey, MaxStatisticsItems.`10`)
     maxStatisticsItems = MaxStatisticsItems.`10`
+    var maxStatisticsItemsCustomValue by rememberPreference(maxStatisticsItemsCustomValueKey, 10)
+    maxStatisticsItemsCustomValue = 10
     
     // Top Playlists Settings
     var maxTopPlaylistItems by rememberPreference(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`)
     maxTopPlaylistItems = MaxTopPlaylistItems.`10`
+    var maxTopPlaylistItemsCustomValue by rememberPreference(MaxTopPlaylistItemsCustomValueKey, 10)
+    maxTopPlaylistItemsCustomValue = 10
 }
 
 @ExperimentalAnimationApi
@@ -158,9 +166,11 @@ fun AIRecommendationSettings(
     var showMyTopPlaylist by rememberPreference(showMyTopPlaylistKey, true)
     var showStatsListeningTime by rememberPreference(showStatsListeningTimeKey, true)
     var maxStatisticsItems by rememberPreference(maxStatisticsItemsKey, MaxStatisticsItems.`10`)
+    var maxStatisticsItemsCustomValue by rememberPreference(maxStatisticsItemsCustomValueKey, 10)
     
     // Top Playlists Settings
     var maxTopPlaylistItems by rememberPreference(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`)
+    var maxTopPlaylistItemsCustomValue by rememberPreference(MaxTopPlaylistItemsCustomValueKey, 10)
     
     val search = Search()
     
@@ -439,10 +449,11 @@ fun AIRecommendationSettings(
                 icon = R.drawable.trending,
                 content = {
                     var showStatisticsDialog by remember { mutableStateOf(false) }
+                    var showCustomStatisticsItemsDialog by remember { mutableStateOf(false) }
                     if (search.inputValue.isBlank() || stringResource(R.string.statistics_max_number_of_items).contains(search.inputValue, true)) {
                         OtherSettingsEntry(
                             title = stringResource(R.string.statistics_max_number_of_items),
-                            text = maxStatisticsItems.name,
+                            text = maxStatisticsItems.displayName(maxStatisticsItemsCustomValue),
                             icon = R.drawable.musical_notes,
                             onClick = { showStatisticsDialog = true }
                         )
@@ -453,10 +464,29 @@ fun AIRecommendationSettings(
                             title = stringResource(R.string.statistics_max_number_of_items),
                             selectedValue = maxStatisticsItems,
                             values = MaxStatisticsItems.values().toList(),
-                            onValueSelected = { maxStatisticsItems = it },
-                            valueText = { it.name },
+                            onValueSelected = {
+                                maxStatisticsItems = it
+                                if (it == MaxStatisticsItems.Custom) showCustomStatisticsItemsDialog = true
+                            },
+                            valueText = { it.optionLabel() },
                             onDismiss = { showStatisticsDialog = false }
                         )
+                    }
+
+                    if (showCustomStatisticsItemsDialog) {
+                        SettingsInputDialog(
+                            title = stringResource(R.string.statistics_max_number_of_items),
+                            initialValue = maxStatisticsItemsCustomValue.toString(),
+                            placeholder = stringResource(R.string.statistics_max_number_of_items),
+                            onDismiss = { showCustomStatisticsItemsDialog = false },
+                            onSetValue = {
+                                if (TextUtils.isDigitsOnly(it) && it.length <= 9)
+                                    maxStatisticsItemsCustomValue = it.toIntOrNull()?.coerceAtLeast(1) ?: 10
+                            }
+                        ).apply {
+                            showDialog()
+                            Render()
+                        }
                     }
 
                     if (search.inputValue.isBlank() || stringResource(R.string.listening_time).contains(search.inputValue, true) || (stringResource(R.string.shows_the_number_of_songs_heard_and_their_listening_time)).contains(search.inputValue, true)) {
@@ -489,10 +519,11 @@ fun AIRecommendationSettings(
                 icon = R.drawable.playlist,
                 content = {
                     var showTopPlaylistsDialog by remember { mutableStateOf(false) }
+                    var showCustomTopPlaylistsItemsDialog by remember { mutableStateOf(false) }
                     if (search.inputValue.isBlank() || stringResource(R.string.statistics_max_number_of_items).contains(search.inputValue, true)) {
                         OtherSettingsEntry(
                             title = stringResource(R.string.statistics_max_number_of_items),
-                            text = maxTopPlaylistItems.name,
+                            text = maxTopPlaylistItems.displayName(maxTopPlaylistItemsCustomValue),
                             icon = R.drawable.musical_notes,
                             onClick = { showTopPlaylistsDialog = true }
                         )
@@ -503,10 +534,29 @@ fun AIRecommendationSettings(
                             title = stringResource(R.string.statistics_max_number_of_items),
                             selectedValue = maxTopPlaylistItems,
                             values = MaxTopPlaylistItems.values().toList(),
-                            onValueSelected = { maxTopPlaylistItems = it },
-                            valueText = { it.name },
+                            onValueSelected = {
+                                maxTopPlaylistItems = it
+                                if (it == MaxTopPlaylistItems.Custom) showCustomTopPlaylistsItemsDialog = true
+                            },
+                            valueText = { it.optionLabel() },
                             onDismiss = { showTopPlaylistsDialog = false }
                         )
+                    }
+
+                    if (showCustomTopPlaylistsItemsDialog) {
+                        SettingsInputDialog(
+                            title = stringResource(R.string.statistics_max_number_of_items),
+                            initialValue = maxTopPlaylistItemsCustomValue.toString(),
+                            placeholder = stringResource(R.string.statistics_max_number_of_items),
+                            onDismiss = { showCustomTopPlaylistsItemsDialog = false },
+                            onSetValue = {
+                                if (TextUtils.isDigitsOnly(it) && it.length <= 9)
+                                    maxTopPlaylistItemsCustomValue = it.toIntOrNull()?.coerceAtLeast(1) ?: 10
+                            }
+                        ).apply {
+                            showDialog()
+                            Render()
+                        }
                     }
 
                     if (search.inputValue.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.my_playlist_top1)}".contains(search.inputValue, true)) {

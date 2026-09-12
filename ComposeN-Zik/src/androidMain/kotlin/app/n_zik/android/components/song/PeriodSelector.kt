@@ -36,6 +36,7 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.components.menu.ListMenu
 import androidx.compose.material3.Icon
 import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsKey
+import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsCustomValueKey
 import app.it.fast4x.rimusic.utils.Preference
 import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.rememberPreference
@@ -166,9 +167,14 @@ class PeriodSelector private constructor(
     @Composable
     override fun MenuComponent() {
         val size by rememberPreference( MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10` )
+        val sizeCustomValue by rememberPreference( MaxTopPlaylistItemsCustomValueKey, 10 )
+        val sizeLabel = when (size) {
+            MaxTopPlaylistItems.Unlimited -> stringResource(R.string.max_items_unlimited)
+            else -> size.toInt(sizeCustomValue).toString()
+        }
         val sortedEntries = readSortedEntries()
 
-        ListMenu.Menu(title = stringResource( R.string.header_view_top_of, size )) {
+        ListMenu.Menu(title = stringResource( R.string.header_view_top_of, sizeLabel )) {
             sortedEntries.forEach {
                 ListMenu.Entry(
                     text = it.text,

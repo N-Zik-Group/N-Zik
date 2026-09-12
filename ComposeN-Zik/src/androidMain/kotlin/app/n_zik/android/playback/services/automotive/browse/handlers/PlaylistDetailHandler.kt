@@ -59,7 +59,7 @@ class PlaylistDetailHandler : BrowseHandler {
             AutoSessionConstants.ID_TOP -> {
                 val sortBy = context.preferences.getEnum(Preference.HOME_SONGS_TOP_SORT_BY.key, SongSortBy.Title)
                 val sortOrder = context.preferences.getEnum(Preference.HOME_SONGS_TOP_SORT_ORDER.key, SortOrder.Ascending)
-                val topIds = database.eventTable.findSongsMostPlayedBetween(from = 0, limit = context.preferences.getEnum(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`).toInt()).first().map { it.id }.toSet()
+                val topIds = database.eventTable.findSongsMostPlayedBetween(from = 0, limit = context.preferences.getEnum(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`).toInt(context.preferences.getInt(MaxTopPlaylistItemsCustomValueKey, 10))).first().map { it.id }.toSet()
                 database.songTable.sortAll(sortBy, sortOrder, excludeHidden = true).map { songs -> songs.filter { it.id in topIds } }
             }
             AutoSessionConstants.ID_ONDEVICE -> {

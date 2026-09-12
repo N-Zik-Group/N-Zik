@@ -1,3 +1,13 @@
+feat(settings): unify "Max number of items" options with Custom and Unlimited
+  - `MaxStatisticsItems.kt` + `TopPlaylistItems.kt`: both enums now share `10,20,30,40,50,70,90,100,150,200` + `Custom` + `Unlimited`; single resolver `toInt(customValue)` (Custom → value clamped to >= 1, Unlimited → Int.MAX_VALUE); `optionLabel()`/`displayName()` via string resources (no hardcoded strings)
+  - `strings.xml`: new keys `max_items_custom`, `max_items_custom_value`, `max_items_unlimited`
+  - `Preferences.kt`: new Int keys `maxStatisticsItemsCustomValueKey` + `MaxTopPlaylistItemsCustomValueKey` (default 10)
+  - `AIRecommendationSettings.kt`: both settings dialogs list the 12 options; selecting `Custom` opens `SettingsInputDialog` (digits only, <= 9 digits, min 1); reset-to-defaults covers the new custom values
+  - `StatisticsPage.kt`: parental-control x5 fetch limit computed in Long and capped (no Int overflow with Unlimited/large Custom); `remember` keys include the custom value
+  - Migrated all `MaxTopPlaylistItems` consumers: `HomeSongs.kt`, `HomeQuickPicks.kt`, `PeriodSelector.kt` ("Top %s of ..." shows resolved value / "Unlimited"), automotive `AutoSessionCallback.kt`, `SongsBrowseHandler.kt`, `PlaylistDetailHandler.kt`
+  - `MaxItemsLimitsTest.kt` (new, JUnit5): 6 tests on `toInt(customValue)` for both enums (numeric mapping, Custom floor, Unlimited = Int.MAX_VALUE)
+  - Back-compatible: stored enum names remain valid, existing user settings keep working
+
 fix(statistics): header totals reflect the full listening period instead of the capped list (issue https://github.com/N-Zik-Group/N-Zik/issues/786)
   - `EventTable.kt`: new DAO `countDistinctSongsPlayedBetween(from, to = now): Flow<Int>` — counts distinct `song_id` in `play_events` over the selected period, uncapped
   - `StatisticsPage.kt`: header "songs heard" now reads the new uncapped `distinctSongsPlayedCount` flow instead of the capped `songs.size`; header "time spent" now uses the full-period `getTotalPlayTimeBetween` total (`totalPlayTimes`)

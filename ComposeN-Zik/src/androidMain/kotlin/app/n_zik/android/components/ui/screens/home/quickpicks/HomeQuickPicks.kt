@@ -297,8 +297,9 @@ fun HomeQuickPicks(
             LaunchedEffect(monthlyPlaylists) { monthlyPlaylistsState.value = monthlyPlaylists }
 
             val maxTopPlaylistItems by rememberPreference(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`)
+            val maxTopPlaylistItemsCustomValue by rememberPreference(MaxTopPlaylistItemsCustomValueKey, 10)
             val myTopSongsState = persistList<Song>("home/quickpicks/local/myTopSongs")
-            val myTopSongs by remember { Database.eventTable.findSongsMostPlayedBetween(from = 0L, limit = maxTopPlaylistItems.toInt()) }.collectAsStateWithLifecycle(myTopSongsState.value, context = Dispatchers.IO)
+            val myTopSongs by remember { Database.eventTable.findSongsMostPlayedBetween(from = 0L, limit = maxTopPlaylistItems.toInt(maxTopPlaylistItemsCustomValue)) }.collectAsStateWithLifecycle(myTopSongsState.value, context = Dispatchers.IO)
             LaunchedEffect(myTopSongs) { myTopSongsState.value = myTopSongs }
 
             val sectionOrder = rememberQuickPicksSectionOrder()

@@ -123,6 +123,7 @@ fun HomeSongs(
 
     val parentalControlEnabled by rememberPreference( parentalControlEnabledKey, false )
     val maxTopPlaylistItems by rememberPreference( MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10` )
+    val maxTopPlaylistItemsCustomValue by rememberPreference( MaxTopPlaylistItemsCustomValueKey, 10 )
     val includeLocalSongs by rememberPreference( includeLocalSongsKey, true )
     val excludeSongWithDurationLimit by rememberPreference( excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled )
     var filterBy by rememberPreference(filterByKey, FilterBy.All)
@@ -286,7 +287,7 @@ fun HomeSongs(
                     Database.eventTable
                         .findSongsMostPlayedBetween(
                             from = topPlaylists.period.timeStampInMillis(),
-                            limit = maxTopPlaylistItems.toInt()
+                            limit = maxTopPlaylistItems.toInt(maxTopPlaylistItemsCustomValue)
                         )
                         .map { list ->
                             list.fastFilter { song ->
@@ -305,7 +306,7 @@ fun HomeSongs(
                     Database.eventTable
                         .findSongsMostPlayedBetween(
                             from = topPlaylists.period.timeStampInMillis(),
-                            limit = maxTopPlaylistItems.toInt()
+                            limit = maxTopPlaylistItems.toInt(maxTopPlaylistItemsCustomValue)
                         )
                         .map { list ->
                             list.fastFilter { song ->
