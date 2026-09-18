@@ -1,3 +1,8 @@
+feat(rescue): add category headers and delete logs action (issue https://github.com/N-Zik-Group/N-Zik/issues/811)
+  - Added category headers (Data & Backup, Maintenance, Danger Zone) to the Rescue Center menu to better organize the available actions.
+  - Added a new "Delete logs" action with a trash icon to allow the user to easily clean up crash and debug logs.
+  - Added a new "Delete downloads" action to clean up ExoPlayer downloads and its database.
+  - Wired the new action in `RescueFiles.kt` with a `deleteLogs` method.
 fix(database): resolve Room migration crash on startup due to unhandled default values
   - Root cause: Room migrations 26->40 added several columns across `Artist`, `Album`, `Song`, `Playlist`, `Format`, and `SongPlaylistMap` using `DEFAULT ...` in SQLite, but the Kotlin `@Entity` data classes omitted the corresponding `@ColumnInfo(defaultValue = "...")` annotations. This caused `IllegalStateException: Migration didn't properly handle` upon schema verification.
   - Fix: Added the missing `@ColumnInfo(defaultValue = "...")` to all affected properties in `Artist.kt`, `Album.kt`, `Song.kt`, `Playlist.kt`, `Format.kt`, and `SongPlaylistMap.kt` to match the exact defaults defined in the SQLite migration scripts (`"0"`, `"-1"`, `"NULL"`).
@@ -936,3 +941,5 @@ fix(rescue): synchronize rescue center colors with main app theme and fix app sh
 
 fix(rescue): use dynamic theme color for rescue shortcut icon (issue https://github.com/N-Zik-Group/N-Zik/issues/811)
   - `shortcut_rescue.xml`: Replaced hardcoded black tint with `@color/shortcut_icon` so the icon adapts correctly to the launcher's dynamic theme like other shortcuts.
+
+

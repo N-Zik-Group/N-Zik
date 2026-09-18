@@ -414,6 +414,24 @@ object RescueFiles {
         return File(logsDir, CRASH_LOG_FILE).exists() || File(logsDir, DEBUG_LOG_FILE).exists()
     }
 
+    /**
+     * Deletes the crash and debug log files.
+     */
+    fun deleteLogs(context: Context): Result<Unit> = runCatching {
+        val logsDir = File(context.filesDir, LOGS_DIR)
+        val crashLog = File(logsDir, CRASH_LOG_FILE)
+        val debugLog = File(logsDir, DEBUG_LOG_FILE)
+
+        var deletedAny = false
+        if (crashLog.exists() && crashLog.delete()) deletedAny = true
+        if (debugLog.exists() && debugLog.delete()) deletedAny = true
+
+        if (!deletedAny && hasLogs(context)) {
+            error("Failed to delete log files")
+        }
+        Timber.tag(TAG).i("Logs deleted successfully")
+    }
+
     // ──────────────────────────────────────────────────────────────────────
     // Clear cache
     // ──────────────────────────────────────────────────────────────────────
@@ -471,6 +489,29 @@ object RescueFiles {
             Timber.tag(TAG).e(e, "Failed to delete %s", dir.absolutePath)
             0
         }
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Delete downloads
+    // ──────────────────────────────────────────────────────────────────────
+
+    /**
+     * Deletes all downloaded media files and the ExoPlayer download database.
+     */
+    fun deleteDownloads(context: Context): Result<Int> = runCatching {
+        var deletedCount = 0
+        val bases = listOfNotNull(context.cacheDir, context.filesDir, context.externalCacheDir)
+
+        bases.forEach { base ->
+            deletedCount += safeDeleteDir(File(base, DOWNLOAD_CACHE_DIR))
+            val dbFile = File(base, DOWNLOAD_DB_FILE)
+            if (dbFile.exists() && dbFile.delete()) {
+                deletedCount++
+            }
+        }
+
+        Timber.tag(TAG).i("Downloads deleted: %d items", deletedCount)
+        deletedCount
     }
 
     // ──────────────────────────────────────────────────────────────────────

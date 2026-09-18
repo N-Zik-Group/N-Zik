@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
 <string name="cancel">Cancel</string>
 <string name="reset">Reset</string>
@@ -1919,4 +1919,13 @@
     <string name="rescue_delete_backups_description">Delete the saved database and settings backups from cache to free space</string>
     <string name="rescue_confirm_delete_backups">Are you sure you want to permanently delete all backups? You will not be able to restore the database or settings afterwards.</string>
     <string name="rescue_no_backups_to_delete">No backups found</string>
+    <string name="rescue_delete_logs">Delete logs</string>
+    <string name="rescue_delete_logs_description">Delete crash and debug logs to free up space</string>
+    <string name="rescue_confirm_delete_logs">Are you sure you want to permanently delete all logs?</string>
+    <string name="rescue_delete_downloads">Delete downloads</string>
+    <string name="rescue_delete_downloads_description">Delete all downloaded media to free up space</string>
+    <string name="rescue_confirm_delete_downloads">Are you sure you want to delete all downloaded media? You will need to download them again for offline listening.</string>
+    <string name="rescue_category_data">Data &amp; Backup</string>
+    <string name="rescue_category_maintenance">Maintenance</string>
+    <string name="rescue_category_danger">Danger Zone</string>
 </resources>

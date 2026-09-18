@@ -321,7 +321,10 @@ fun RescueScreen() {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ─── DATA & BACKUP ───
+            RescueCategoryHeader(stringResource(R.string.rescue_category_data))
 
             // 1. Export database
             RescueActionCard(
@@ -373,19 +376,12 @@ fun RescueScreen() {
                 }
             )
 
-            // 5. Export logs
-            RescueActionCard(
-                iconRes = R.drawable.bugs,
-                title = stringResource(R.string.rescue_export_logs),
-                description = stringResource(R.string.rescue_export_logs_description),
-                enabled = RescueFiles.hasLogs(context),
-                disabledReason = stringResource(R.string.rescue_no_logs),
-                onClick = {
-                    exportLogsLauncher.launch("${BuildConfig.APP_NAME} $date Logs.txt")
-                }
-            )
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // 6. Clear cache
+            // ─── MAINTENANCE ───
+            RescueCategoryHeader(stringResource(R.string.rescue_category_maintenance))
+
+            // 5. Clear cache
             RescueActionCard(
                 iconRes = R.drawable.trash,
                 title = stringResource(R.string.rescue_clear_cache),
@@ -404,17 +400,17 @@ fun RescueScreen() {
                 }
             )
 
-            // 7. Reset database
+            // 6. Delete downloads
             RescueActionCard(
-                iconRes = R.drawable.server,
-                title = stringResource(R.string.rescue_reset_database),
-                description = stringResource(R.string.rescue_reset_database_description),
+                iconRes = R.drawable.trash,
+                title = stringResource(R.string.rescue_delete_downloads),
+                description = stringResource(R.string.rescue_delete_downloads_description),
                 onClick = {
                     guardWrite {
-                        confirmAction = ConfirmAction(R.string.rescue_confirm_reset_database) {
+                        confirmAction = ConfirmAction(R.string.rescue_confirm_delete_downloads) {
                             scope.launch {
                                 val result = withContext(Dispatchers.IO) {
-                                    RescueFiles.resetDatabase(context)
+                                    RescueFiles.deleteDownloads(context)
                                 }
                                 showResult(result)
                             }
@@ -423,19 +419,31 @@ fun RescueScreen() {
                 }
             )
 
-            // 8. Restore database
+            // 6. Export logs
             RescueActionCard(
-                iconRes = R.drawable.server,
-                title = stringResource(R.string.rescue_restore_database),
-                description = stringResource(R.string.rescue_restore_database_description),
-                enabled = RescueFiles.hasBackup(context),
-                disabledReason = stringResource(R.string.rescue_no_backup),
+                iconRes = R.drawable.bugs,
+                title = stringResource(R.string.rescue_export_logs),
+                description = stringResource(R.string.rescue_export_logs_description),
+                enabled = RescueFiles.hasLogs(context),
+                disabledReason = stringResource(R.string.rescue_no_logs),
+                onClick = {
+                    exportLogsLauncher.launch("${BuildConfig.APP_NAME} $date Logs.txt")
+                }
+            )
+
+            // 7. Delete logs
+            RescueActionCard(
+                iconRes = R.drawable.trash,
+                title = stringResource(R.string.rescue_delete_logs),
+                description = stringResource(R.string.rescue_delete_logs_description),
+                enabled = RescueFiles.hasLogs(context),
+                disabledReason = stringResource(R.string.rescue_no_logs),
                 onClick = {
                     guardWrite {
-                        confirmAction = ConfirmAction(R.string.rescue_confirm_restore_database) {
+                        confirmAction = ConfirmAction(R.string.rescue_confirm_delete_logs) {
                             scope.launch {
                                 val result = withContext(Dispatchers.IO) {
-                                    RescueFiles.restoreDatabase(context)
+                                    RescueFiles.deleteLogs(context)
                                 }
                                 showResult(result)
                             }
@@ -444,47 +452,7 @@ fun RescueScreen() {
                 }
             )
 
-            // 9. Reset settings
-            RescueActionCard(
-                iconRes = R.drawable.settings,
-                title = stringResource(R.string.rescue_reset_settings),
-                description = stringResource(R.string.rescue_reset_settings_description),
-                onClick = {
-                    guardWrite {
-                        confirmAction = ConfirmAction(R.string.rescue_confirm_reset_settings) {
-                            scope.launch {
-                                val result = withContext(Dispatchers.IO) {
-                                    RescueFiles.resetSettings(context, encryptedPrefsResult)
-                                }
-                                showResult(result)
-                            }
-                        }
-                    }
-                }
-            )
-
-            // 10. Restore settings
-            RescueActionCard(
-                iconRes = R.drawable.settings,
-                title = stringResource(R.string.rescue_restore_settings),
-                description = stringResource(R.string.rescue_restore_settings_description),
-                enabled = RescueFiles.hasSettingsBackup(context),
-                disabledReason = stringResource(R.string.rescue_no_settings_backup),
-                onClick = {
-                    guardWrite {
-                        confirmAction = ConfirmAction(R.string.rescue_confirm_restore_settings) {
-                            scope.launch {
-                                val result = withContext(Dispatchers.IO) {
-                                    RescueFiles.restoreSettings(context)
-                                }
-                                showResult(result)
-                            }
-                        }
-                    }
-                }
-            )
-
-            // 11. Delete backups (corbeille)
+            // 8. Delete backups (corbeille)
             RescueActionCard(
                 iconRes = R.drawable.trash,
                 title = stringResource(R.string.rescue_delete_backups),
@@ -505,9 +473,105 @@ fun RescueScreen() {
                 }
             )
 
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // ─── DANGER ZONE ───
+            RescueCategoryHeader(stringResource(R.string.rescue_category_danger))
+
+            // 9. Reset database
+            RescueActionCard(
+                iconRes = R.drawable.server,
+                title = stringResource(R.string.rescue_reset_database),
+                description = stringResource(R.string.rescue_reset_database_description),
+                onClick = {
+                    guardWrite {
+                        confirmAction = ConfirmAction(R.string.rescue_confirm_reset_database) {
+                            scope.launch {
+                                val result = withContext(Dispatchers.IO) {
+                                    RescueFiles.resetDatabase(context)
+                                }
+                                showResult(result)
+                            }
+                        }
+                    }
+                }
+            )
+
+            // 10. Restore database
+            RescueActionCard(
+                iconRes = R.drawable.server,
+                title = stringResource(R.string.rescue_restore_database),
+                description = stringResource(R.string.rescue_restore_database_description),
+                enabled = RescueFiles.hasBackup(context),
+                disabledReason = stringResource(R.string.rescue_no_backup),
+                onClick = {
+                    guardWrite {
+                        confirmAction = ConfirmAction(R.string.rescue_confirm_restore_database) {
+                            scope.launch {
+                                val result = withContext(Dispatchers.IO) {
+                                    RescueFiles.restoreDatabase(context)
+                                }
+                                showResult(result)
+                            }
+                        }
+                    }
+                }
+            )
+
+            // 11. Reset settings
+            RescueActionCard(
+                iconRes = R.drawable.settings,
+                title = stringResource(R.string.rescue_reset_settings),
+                description = stringResource(R.string.rescue_reset_settings_description),
+                onClick = {
+                    guardWrite {
+                        confirmAction = ConfirmAction(R.string.rescue_confirm_reset_settings) {
+                            scope.launch {
+                                val result = withContext(Dispatchers.IO) {
+                                    RescueFiles.resetSettings(context, encryptedPrefsResult)
+                                }
+                                showResult(result)
+                            }
+                        }
+                    }
+                }
+            )
+
+            // 12. Restore settings
+            RescueActionCard(
+                iconRes = R.drawable.settings,
+                title = stringResource(R.string.rescue_restore_settings),
+                description = stringResource(R.string.rescue_restore_settings_description),
+                enabled = RescueFiles.hasSettingsBackup(context),
+                disabledReason = stringResource(R.string.rescue_no_settings_backup),
+                onClick = {
+                    guardWrite {
+                        confirmAction = ConfirmAction(R.string.rescue_confirm_restore_settings) {
+                            scope.launch {
+                                val result = withContext(Dispatchers.IO) {
+                                    RescueFiles.restoreSettings(context)
+                                }
+                                showResult(result)
+                            }
+                        }
+                    }
+                }
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
+}
+
+@Composable
+private fun RescueCategoryHeader(title: String) {
+    Text(
+        text = title.uppercase(),
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 4.dp, top = 8.dp, bottom = 4.dp)
+    )
 }
 
 @Composable
