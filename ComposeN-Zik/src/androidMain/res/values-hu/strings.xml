@@ -444,10 +444,6 @@
     <string name="lang_sinhala">Sinhala (සිංහල)</string>
     <string name="update_available">Frissítés érhető el</string>
     <string name="reinstalling_update">Reinstalling update</string>
-    <string name="actions_you_can_do">Műveletek, amelyeket megtehetsz:</string>
-    <string name="open_the_github_releases_web_page_and_download_latest_version">Nyissa meg a Github kiadások weboldalát, és töltse le a legújabb verziót</string>
-    <string name="download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it">Töltsd le a legújabb verziót a Githubról, a fájlt az értesítési felületen találod, és rákattintva telepítheted</string>
-    <string name="f_droid_users_can_wait_for_the_update_info">Az F-Droid felhasználók várhatnak az F-Droid frissítésére, amely általában néhány órán belül megérkezik az IzzyOnDroid repóval, és néhány napon belül az F-Droid.org repójával is.</string>
     <string name="check_update">Frissítés keresése</string>
     <string name="enable_check_for_update">Enable automatic update check</string>
     <string name="when_enabled_a_new_version_is_checked_and_notified_during_startup">Show notification to prompt app update when new version is available.</string>

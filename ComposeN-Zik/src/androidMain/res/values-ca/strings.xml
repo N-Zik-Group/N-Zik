@@ -444,10 +444,6 @@
     <string name="lang_sinhala">Singalès</string>
     <string name="update_available">Actualització disponible</string>
     <string name="reinstalling_update">Reinstalling update</string>
-    <string name="actions_you_can_do">Accions que podeu fer:</string>
-    <string name="open_the_github_releases_web_page_and_download_latest_version">Obre la pàgina web de versions de Github i descarregueu la darrera versió</string>
-    <string name="download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it">Descarrega la darrera versió de Github, trobareu el fitxer a l\'àrea de notificacions i podeu instal·lar-lo fent clic a sobre</string>
-    <string name="f_droid_users_can_wait_for_the_update_info">Els usuaris de F-Droid poden esperar l\'actualització de F-Droid, que normalment arriba en poques hores amb el repositori d\'IzzyOnDroid, i uns quants dies amb el repositori de F-Droid.org.</string>
     <string name="check_update">Comprova si hi ha una actualització</string>
     <string name="enable_check_for_update">Activa la comprovació d\'actualització</string>
     <string name="when_enabled_a_new_version_is_checked_and_notified_during_startup">Quan està activat, es comprova una nova versió i es notifica durant l\'inici.</string>

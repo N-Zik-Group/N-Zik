@@ -444,10 +444,6 @@
     <string name="lang_sinhala">Sinhala (සිංහල)</string>
     <string name="update_available">最新版あり</string>
     <string name="reinstalling_update">アップデートを再インストールしています</string>
-    <string name="actions_you_can_do">実行できる操作:</string>
-    <string name="open_the_github_releases_web_page_and_download_latest_version">Githubのウェブページを開き、最新版をダウンロードする</string>
-    <string name="download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it">Githubから最新版をダウンロード。通知領域にファイルが表示され、クリックしてインストールできます</string>
-    <string name="f_droid_users_can_wait_for_the_update_info">F-Droidユーザーは、F-Droidでの更新を待つこともできます。通常、IzzyOnDroidのリポジトリで数時間以内、F-Droidのレポジトリでは数日以内に用意されます。</string>
     <string name="check_update">アップデートを確認</string>
     <string name="enable_check_for_update">自動更新チェックを有効にする</string>
     <string name="when_enabled_a_new_version_is_checked_and_notified_during_startup">新しいバージョンが利用可能になったときにアプリの更新を促す通知を表示します。</string>

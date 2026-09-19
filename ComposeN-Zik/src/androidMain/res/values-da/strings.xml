@@ -444,10 +444,6 @@
     <string name="lang_sinhala">Singalesisk</string>
     <string name="update_available">Opdatering tilgængelig</string>
     <string name="reinstalling_update">Geninstallerer opdatering</string>
-    <string name="actions_you_can_do">Handlinger, du kan udføre:</string>
-    <string name="open_the_github_releases_web_page_and_download_latest_version">Åbn Github-udgivelsessiden, og hent den nyeste version</string>
-    <string name="download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it">Hent den seneste version fra Github. Du kan finde filen i notifikationsområdet og installere den ved at trykke på den</string>
-    <string name="f_droid_users_can_wait_for_the_update_info">F-Droid-brugere kan vente på opdateringen fra F-Droid, som normalt kommer inden for et par timer med IzzyOnDroid\'s repo og et par dage med F-Droid.org\'s repo.</string>
     <string name="check_update">Søg efter opdatering</string>
     <string name="enable_check_for_update">Aktivér søgning efter opdatering</string>
     <string name="when_enabled_a_new_version_is_checked_and_notified_during_startup">Når aktiveret, søges der efter en ny version og meddeles ved opstart.</string>

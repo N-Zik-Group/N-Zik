@@ -444,10 +444,6 @@
     <string name="lang_sinhala">Sinhala (සිංහල)</string>
     <string name="update_available">Доступно оновлення</string>
     <string name="reinstalling_update">Перевстановлення оновлення</string>
-    <string name="actions_you_can_do">Дії, які ви можете виконати:</string>
-    <string name="open_the_github_releases_web_page_and_download_latest_version">Відкрийте вебсторінку Github і завантажте останню стабільну версію</string>
-    <string name="download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it">Завантажте останню версію з Github, ви знайдете файл в області сповіщень і зможете встановити, натиснувши на нього</string>
-    <string name="f_droid_users_can_wait_for_the_update_info">Користувачі F-Droid можуть чекати на оновлення від F-Droid, яке зазвичай надходить протягом кількох годин із репозиторієм IzzyOnDroid і через кілька днів із репозиторієм F-Droid.org.</string>
     <string name="check_update">Перевірити оновлення</string>
     <string name="enable_check_for_update">Увімкнути автоматичну перевірку оновлень</string>
     <string name="when_enabled_a_new_version_is_checked_and_notified_during_startup">Показувати сповіщення про оновлення додатку, коли доступна нова версія.</string>

@@ -444,10 +444,6 @@
     <string name="lang_sinhala">সিংহলী</string>
     <string name="update_available">আপডেট আছে</string>
     <string name="reinstalling_update">Reinstalling update</string>
-    <string name="actions_you_can_do">যে কাজ গুলো করতে পারেন:</string>
-    <string name="open_the_github_releases_web_page_and_download_latest_version">গিটহাবের রিলিজ পেজ ওপেন করে লেটেস্ট ভার্শন ডাওনলোড করুন</string>
-    <string name="download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it">গিটহাব থেকে লেটেস্ট ভার্শন ডাওনলোড করুন, নোটিফিকেশন এরিয়াতে ফাইলটা খুঁজে পাবেন আর ক্লিক করে ইন্সটল করা যাবে।</string>
-    <string name="f_droid_users_can_wait_for_the_update_info">এফ-ড্রয়েড ইউজার রা কয়েক ঘন্টা অপেক্ষা করলে এফ-ড্রয়েড থেকে ইন্সটল করতে পারবেন ইজিঅনড্রয়েডের সাথে আর এফ-ড্রয়েড.অরগ রেপো থেকে কয়েক দিনের মধ্যে ডাওনলোড করতে পারবেন।</string>
     <string name="check_update">আপডেট চেক করুন</string>
     <string name="enable_check_for_update">আপডেট চেক চালু করুন</string>
     <string name="when_enabled_a_new_version_is_checked_and_notified_during_startup">এনাবল করলে, নতুন ভার্শন আছে কিনা চেক করে এপ চালুর সময় জানানো হবে।</string>

@@ -444,10 +444,6 @@
     <string name="lang_sinhala">僧伽罗语</string>
     <string name="update_available">有可用更新</string>
     <string name="reinstalling_update">正在重新安装更新</string>
-    <string name="actions_you_can_do">你可以做的操作:</string>
-    <string name="open_the_github_releases_web_page_and_download_latest_version">打开Github版本网页, 下载最新版本</string>
-    <string name="download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it">从Github下载最新版本，你会在通知区域找到文件，你可以通过点击它来安装</string>
-    <string name="f_droid_users_can_wait_for_the_update_info">F-Droid用户可以等待F-Droid的更新，IzzyOnDroid的更新通常会在几个小时内到达，而F-Droid.org的更新则会在几天内到达。</string>
     <string name="check_update">检查更新</string>
     <string name="enable_check_for_update">启用更新检查</string>
     <string name="when_enabled_a_new_version_is_checked_and_notified_during_startup">启用后，将在启动过程中检查并通知新版本。</string>

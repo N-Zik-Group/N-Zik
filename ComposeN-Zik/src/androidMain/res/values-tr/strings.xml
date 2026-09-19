@@ -444,10 +444,6 @@
     <string name="lang_sinhala">Sinhala (සිංහල)</string>
     <string name="update_available">Güncelleme mevcut</string>
     <string name="reinstalling_update">Güncellemeyi yeniden yükleme</string>
-    <string name="actions_you_can_do">Yapabileceğiniz eylemler:</string>
-    <string name="open_the_github_releases_web_page_and_download_latest_version">GitHub yayınlar web sayfasını açın ve en son sürümü indirin</string>
-    <string name="download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it">GitHub\'dan en son sürümü indirin, dosyayı bildirim alanında bulacaksınız ve üzerine tıklayarak yükleyebilirsiniz</string>
-    <string name="f_droid_users_can_wait_for_the_update_info">F-Droid kullanıcıları, genellikle IzzyOnDroid deposu ile birkaç saat içinde, F-Droid.org deposu ile birkaç gün içinde gelen güncellemeyi bekleyebilir.</string>
     <string name="check_update">Güncellemeyi kontrol et</string>
     <string name="enable_check_for_update">Otomatik güncelleme kontrolünü etkinleştir</string>
     <string name="when_enabled_a_new_version_is_checked_and_notified_during_startup">Yeni sürüm çıktığında uygulama güncellemesini bildiren bir bildirim göster.</string>

@@ -444,10 +444,6 @@
     <string name="lang_sinhala">Singhalesisch (සිංහල)</string>
     <string name="update_available">Neue Version verfügbar</string>
     <string name="reinstalling_update">Update wird neu geladen</string>
-    <string name="actions_you_can_do">Du hast folgende Möglichkeiten:</string>
-    <string name="open_the_github_releases_web_page_and_download_latest_version">Öffne die Github Releases-Webseite und lade die neueste Version herunter</string>
-    <string name="download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it">Lade die neueste Version von Github herunter, anschließend findest du die Datei in den Benachrichtigungen, von dort kannst du sie durch anklicken installieren</string>
-    <string name="f_droid_users_can_wait_for_the_update_info">F-Droid Benutzer können auf das Update über F-Droid warten, das in der Regel innerhalb weniger Stunden über das IzzyOnDroid-Repo, und innerhalb einiger Tage über das F-Droid.org-Repo verfügbar ist.</string>
     <string name="check_update">Nach Update suchen</string>
     <string name="enable_check_for_update">Suche nach Update aktivieren</string>
     <string name="when_enabled_a_new_version_is_checked_and_notified_during_startup">Wenn aktiviert, wird beim Start der App nach einer neuen Version gesucht und eine Benachrichtigung erscheint.</string>
