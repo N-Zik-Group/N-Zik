@@ -244,7 +244,7 @@
     <string name="french">Fransızca (Français)</string>
     <string name="romanian">Rumence (Română)</string>
     <string name="russian">Rusça (Русский)</string>
-    <string name="turkish">Türkçe (Türkçe)</string>
+    <string name="turkish">Türkçe (Turkish)</string>
     <string name="polish">Lehçe (Polski)</string>
     <string name="dark">Koyu</string>
     <string name="system">Sistem</string>
@@ -302,7 +302,7 @@
     <string name="new_albums_of_your_artists">Sanatçılarınızdan yeni albümler</string>
     <string name="timeline">Zaman çizelgesi</string>
     <string name="song_cache_by_player">ŞARKI ÖNBELLEĞİ (Oynatma)</string>
-    <string name="song_cache_by_download">İNDİRMEYE GÖRE ŞARKI ÖNBELLEĞİ</string>
+    <string name="song_cache_by_download">ŞARKI ÖNBELLEĞİ (İndirme)</string>
     <string name="visualizer">Görselleştirme</string>
     <string name="visualizer_white_color_option">Görselleştirici rengi</string>
     <string name="color_white">Beyaz</string>
@@ -355,12 +355,12 @@
     <string name="disable_scrolling_text">Kaydırılan metni devre dışı bırak</string>
     <string name="scrolling_text_is_used_for_long_texts">Kaydırılan metin uzun metinler için kullanılır</string>
     <string name="audio_quality_format">Ses Kalitesi</string>
-    <string name="download_quality_format">Download Quality</string>
-    <string name="update_downloads">Update downloads</string>
-    <string name="update_downloads_description">Re-download the songs that were downloaded with a different quality</string>
-    <string name="update_downloads_count">Re-download %d downloads?</string>
-    <string name="update_downloads_nothing">All downloads already match the selected quality</string>
-    <string name="download_quality">Download quality</string>
+    <string name="download_quality_format">İndirme Kalitesi</string>
+    <string name="update_downloads">İndirilenleri güncelle</string>
+    <string name="update_downloads_description">Farklı bir kalitede indirilmiş şarkıları yeniden indirin</string>
+    <string name="update_downloads_count">%d indirmeyi yeniden indirmek ister misiniz?</string>
+    <string name="update_downloads_nothing">Tüm indirmeler zaten seçilen kaliteye uygun</string>
+    <string name="download_quality">İndirme kalitesi</string>
     <string name="persian">Farsça (فارسی)</string>
     <string name="hungarian">Macarca (Hungarian)</string>
     <string name="korean">Korece (한국인)</string>
@@ -1239,7 +1239,7 @@
     <string name="please_wait">Lütfen bekleyin</string>
     <string name="songs_liked_yt">Şarkı(lar) YouTube\'da Beğenildi</string>
     <string name="song_unliked_yt">Şarkı YouTube\'da Beğenilmedi</string>
-    <string name="add_rimusic_to_ytm_favorites">RiMusic Beğenilen Şarkıları YouTube\'da Beğen</string>
+    <string name="add_rimusic_to_ytm_favorites">N-Zik Beğenilen Şarkıları YouTube\'da Beğen</string>
     <string name="do_you_really_want_to_like_all_rimusictoytmusic">Tüm şarkıları beğenmek için (tahmini süre) gereklidir. Bu işlem yarıda kesilirse devam edilemez. Bu işlemi iptal etmek için uygulamayı kapatmanız gerekir. Devam etmek istiyor musunuz?</string>
     <string name="do_you_really_want_to_like_all">Tüm şarkıları beğenmek için (tahmini süre) gereklidir. Bu işlemi iptal etmek için uygulamayı kapatmanız gerekir. Devam etmek istiyor musunuz?</string>
     <string name="songs_liked_yt_failed">Şarkı YouTube\'da beğenilemedi</string>
@@ -1323,7 +1323,7 @@
     <string name="login_to_discord">Discord\'a giriş yapın</string>
     <string name="discord_token_text_invalid">Discord tokeniniz geçersiz, lütfen tekrar giriş yapın</string>
     <string name="discord_login_successful">Discord\'a giriş başarıyla tamamlandı</string>
-    <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
+    <string name="discord_rpc_reconnect_failed">Discord Zengin Varlık yeniden bağlanamadı, durum güncellemeleri bir sonraki medya değişikliğine veya manuel yeniden bağlanmaya kadar durduruldu</string>
     <string name="youtube_disconnect">Bağlantıyı kes</string>
     <string name="youtube_connect">Bağlan</string>
     <string name="youtube_login_successful">YouTube\'da oturum açma işlemi başarıyla tamamlandı</string>
