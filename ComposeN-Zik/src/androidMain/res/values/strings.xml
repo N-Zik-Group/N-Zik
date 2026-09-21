@@ -823,11 +823,33 @@
 <string name="discord_advanced_state">State template</string>
 <string name="discord_advanced_details">Details template</string>
 <string name="discord_advanced_pause">Paused line template</string>
-<string name="discord_advanced_placeholders">Placeholders: {song.name}, {song.id}, {artist.name}, {album.name}</string>
+<string name="discord_advanced_placeholders">Placeholders: {song.name}, {song.id}, {artist.name}, {album.name}, {app.version}</string>
 <string name="discord_advanced_button1">Button 1</string>
 <string name="discord_advanced_button2">Button 2</string>
 <string name="discord_advanced_button_label">Label</string>
 <string name="discord_advanced_button_url">URL</string>
+<string name="discord_advanced_show_details">Show details line</string>
+<string name="discord_advanced_show_details_text">Show the title line ({song.name} by default)</string>
+<string name="discord_advanced_show_state">Show state line</string>
+<string name="discord_advanced_show_state_text">Show the second line ({artist.name} by default)</string>
+<string name="discord_advanced_show_artwork">Show artwork</string>
+<string name="discord_advanced_show_artwork_text">Show the album artwork on the left of the card</string>
+<string name="discord_advanced_show_small_image">Show app logo</string>
+<string name="discord_advanced_show_small_image_text">Show the small N-Zik logo with the app version</string>
+<string name="discord_advanced_show_timestamps">Show progress bar</string>
+<string name="discord_advanced_show_timestamps_text">Show the playing progress bar with the timestamps</string>
+<string name="discord_advanced_image_text">Image text</string>
+<string name="discord_advanced_logo_text">Logo text</string>
+<string name="discord_advanced_group_identity">Identity</string>
+<string name="discord_advanced_group_lines">Lines</string>
+<string name="discord_advanced_group_images">Images</string>
+<string name="discord_advanced_group_progress">Progress bar</string>
+<string name="discord_advanced_group_buttons">Buttons</string>
+<string name="discord_advanced_group_connection">Connection</string>
+<string name="discord_advanced_pause_auto_clear">Auto-clear after pause</string>
+<string name="discord_advanced_pause_auto_clear_text">With the pause presence off, clear the presence 60 s after pausing. Off = keep the last presence.</string>
+<string name="discord_advanced_idle_close">Close after 10 min idle</string>
+<string name="discord_advanced_idle_close_text">Close the RPC connection after 10 min with no media event. Off = keep the connection open.</string>
 <string name="discord_preview_title">Rich Presence preview</string>
 <string name="discord_preview_state_actual">Actual state</string>
 <string name="discord_preview_state_playing">Playing</string>
@@ -836,7 +858,6 @@
 <string name="discord_presence_button_get_nzik">Get N-Zik</string>
 <string name="discord_presence_button_listen_ytmusic">Listen to YTMusic</string>
 <string name="discord_presence_pause_default">⏸︎ Paused: {song.name}</string>
-<string name="discord_template_default_value">(default)</string>
 <string name="discord_template_unknown_album">Unknown Album</string>
 <string name="settings_reset">Reset</string>
 <string name="settings_restore_default_settings">Restore default settings</string>
