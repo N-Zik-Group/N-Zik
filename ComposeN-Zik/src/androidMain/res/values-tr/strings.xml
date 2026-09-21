@@ -1309,7 +1309,7 @@
     <string name="redownload_update">Son güncellemeyi tekrar indir</string>
     <string name="view_changelog_settings_title">Değişiklikleri görüntüle</string>
     <string name="view_changelog_settings_text">Şu anda yüklü olan sürümün değişiklik günlüğünü görüntüle</string>
-    <string name="artist_songs_count_duration">%1$d Songs • %2$s</string>
+    <string name="artist_songs_count_duration">%1$d Şarkı • %2$s</string>
     <string name="beta_title">BETA</string>
     <string name="dev_title">GELİŞTİRİCİ</string>
     <string name="debug_title">HATA AYIKLAMA</string>
@@ -1427,7 +1427,7 @@
     <string name="error_playback_failed">Oynatma başarısız: %1$s</string>
     <string name="error_playback_failed_with_code">Oynatma başarısız: %1$s [%2$s]</string>
     <string name="error_all_stream_attempts_failed">Oynatılamıyor: %1$s</string>
-    <string name="stream_still_retrying">Tekrar dene</string>
+    <string name="stream_still_retrying">Hala yükleniyor… Deneme %1$s</string>
     <string name="stream_unexpected_skip">Beklenmedik bir parça değişikliği tespit edildi</string>
     <string name="songs_remaining">%1$s şarkı kaldı</string>
     <string name="failed_to_copy_clipboard">Metin panoya kopyalanamadı, lütfen tekrar deneyin</string>
