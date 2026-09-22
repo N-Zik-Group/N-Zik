@@ -94,6 +94,7 @@ import app.n_zik.android.extensions.discord.DiscordMediaInfo
 import app.n_zik.android.extensions.discord.DiscordPresenceManager
 import app.n_zik.android.extensions.discord.DiscordRpcError
 import app.n_zik.android.extensions.discord.DiscordRpcErrorState
+import app.n_zik.android.extensions.discord.DiscordTemplateFieldActions
 import app.n_zik.android.extensions.discord.DiscordTemplateRenderer
 import app.n_zik.android.components.settings.LastFmSettingsCard
 import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
@@ -196,6 +197,7 @@ import app.kreate.android.me.knighthat.utils.Toaster
 
 import app.it.fast4x.rimusic.utils.clearAllSyncedData
 import app.it.fast4x.rimusic.utils.encryptedPreferences
+import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.queueSync
 import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.syncPushHistoryKey
@@ -1939,8 +1941,15 @@ private fun DiscordAdvancedSection(search: Search) {
  * Discord section only (item 6): template field dialog with placeholder chips
  * (upstream TemplateFieldDialog equivalent). When the field is empty, the effective
  * [placeholderValue] (the default that gets used) is shown in the field background.
- * The Reset button restores the built-in default (empties the field, so the default
- * template applies again) and saves it immediately.
+ *
+ * The buttons follow the toolbar settings dialogs (ToggleListDialog) pattern —
+ * Reset, Cancel, OK — with the same look and behavior:
+ * - Reset: clears the draft to the built-in default (empty value — the default
+ *   template applies again) without saving; the dialog stays open so the user can
+ *   confirm with OK or discard with Cancel.
+ * - Cancel: discards the draft and closes the dialog.
+ * - OK: saves the draft, closes the dialog and confirms with the "preference saved"
+ *   toast, exactly like the toolbar dialogs.
  */
 @Composable
 private fun DiscordTemplateFieldDialog(
@@ -1950,7 +1959,9 @@ private fun DiscordTemplateFieldDialog(
     onDone: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var text by remember { mutableStateOf(value) }
+    val textState = remember { mutableStateOf(value) }
+    var text by textState
+    val actions = remember { DiscordTemplateFieldActions(textState) }
     val palette = colorPalette()
     DefaultDialog(onDismiss = onDismiss) {
         Text(
@@ -2001,37 +2012,48 @@ private fun DiscordTemplateFieldDialog(
             }
         }
         Spacer(Modifier.height(16.dp))
+        // Toolbar settings dialogs' button bar (ToggleListDialog): Reset — Cancel — OK,
+        // same look and same behavior. Reset clears the draft only (the dialog stays
+        // open), Cancel discards it, OK saves it and toasts the confirmation.
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            Text(
-                text = stringResource(android.R.string.cancel),
-                style = typography().m.copy(color = palette.textSecondary),
+            BasicText(
+                text = stringResource(R.string.reset),
+                style = typography().xs.medium.copy(
+                    color = palette.textDisabled,
+                    textAlign = TextAlign.Center
+                ),
+                modifier = Modifier
+                    .clip(uiRoundnessShape())
+                    .clickable { actions.reset() }
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+            BasicText(
+                text = stringResource(R.string.cancel),
+                style = typography().xs.medium.copy(
+                    color = palette.red.copy(alpha = 0.3f),
+                    textAlign = TextAlign.Center
+                ),
                 modifier = Modifier
                     .clip(uiRoundnessShape())
                     .clickable(onClick = onDismiss)
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
             )
-            Spacer(Modifier.width(12.dp))
-            // Reset the field to its built-in default (the empty value — the default
-            // template applies again, shown as the placeholder above).
-            Text(
-                text = stringResource(R.string.reset),
-                style = typography().m.copy(color = palette.textSecondary),
+            Spacer(Modifier.width(8.dp))
+            BasicText(
+                text = stringResource(R.string.ok),
+                style = typography().xs.semiBold.copy(
+                    color = palette.onAccent,
+                    textAlign = TextAlign.Center
+                ),
                 modifier = Modifier
                     .clip(uiRoundnessShape())
-                    .clickable { onDone(""); onDismiss() }
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-            Spacer(Modifier.width(12.dp))
-            Text(
-                text = stringResource(android.R.string.ok),
-                style = typography().m.copy(color = palette.accent),
-                modifier = Modifier
-                    .clip(uiRoundnessShape())
-                    .clickable { onDone(text); onDismiss() }
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .background(palette.accent)
+                    .clickable { actions.confirm(onDone, onDismiss) }
+                    .padding(horizontal = 20.dp, vertical = 10.dp)
             )
         }
     }
@@ -2061,17 +2083,22 @@ private fun DiscordImageTooltipDialog(
             style = typography().s.copy(color = palette.text)
         )
         Spacer(Modifier.height(16.dp))
+        // Same OK button as the toolbar settings dialogs (ToggleListDialog).
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            Text(
-                text = stringResource(android.R.string.ok),
-                style = typography().m.copy(color = palette.accent),
+            BasicText(
+                text = stringResource(R.string.ok),
+                style = typography().xs.semiBold.copy(
+                    color = palette.onAccent,
+                    textAlign = TextAlign.Center
+                ),
                 modifier = Modifier
                     .clip(uiRoundnessShape())
+                    .background(palette.accent)
                     .clickable(onClick = onDismiss)
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .padding(horizontal = 20.dp, vertical = 10.dp)
             )
         }
     }
