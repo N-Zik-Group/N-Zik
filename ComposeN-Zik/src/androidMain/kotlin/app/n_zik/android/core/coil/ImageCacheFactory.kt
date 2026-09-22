@@ -191,6 +191,14 @@ object ImageCacheFactory {
     val LOADER: ImageLoader by lazy {
         ImageLoader.Builder(appContext())
             .crossfade(true)
+            // Decode every image as a software bitmap. Coil defaults to Bitmap.Config.HARDWARE
+            // on API 26+, but the Rewind share screenshot replays the whole view tree on a
+            // software canvas, where hardware bitmaps cannot be drawn at all (IllegalArgument
+            // Exception: Software rendering doesn't support hardware bitmaps) — and the legacy
+            // mini player (in tree on every screen) loads its cover through this same factory.
+            // loadBitmap() keeps its per-request allowHardware override for callers that need
+            // hardware bitmaps.
+            .allowHardware(false)
             .memoryCache { MemoryCache.Builder().maxSizePercent(appContext(), 0.15).strongReferencesEnabled(true).build() }
             .diskCache(DISK_CACHE)
             .components {

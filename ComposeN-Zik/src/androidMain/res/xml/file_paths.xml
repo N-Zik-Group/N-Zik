@@ -6,4 +6,7 @@
     <files-path
         name="app_covers"
         path="app_covers/" />
+    <cache-path
+        name="shared_rewind"
+        path="shared_rewind/" />
 </paths>

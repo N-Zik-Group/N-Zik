@@ -31,6 +31,9 @@ import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -88,6 +91,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
@@ -1500,10 +1504,27 @@ class MainActivity :
                             // Single CustomBottomSheet — only rendered while there's media.
                             // Handles both collapsed (mini-player) and expanded (player) states
                             // in a single composition tree, preventing animation jumps.
+                            // Rewind is a full-screen deck: the player sheet (mini-player included) slides
+                            // down out of the screen with the same jelly spring as the header, and returns
+                            // with the same bounce when leaving the deck
+                            val isRewindDeck = currentRoute?.startsWith(NavRoutes.rewind.name) ?: false
+                            val rewindSheetProgress = animateFloatAsState(
+                                targetValue = if (isRewindDeck) 1f else 0f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioLowBouncy,
+                                    stiffness = Spring.StiffnessMediumLow
+                                ),
+                                label = "rewindSheetDismiss"
+                            )
+
                             if (currentMediaId != null) {
                                 Box(
                                     // Top anchor follows the header through topPadding instead
                                     modifier = Modifier.fillMaxSize()
+                                        .graphicsLayer {
+                                            translationY = rewindSheetProgress.value * 160.dp.toPx()
+                                            alpha = (1f - rewindSheetProgress.value).coerceIn(0f, 1f)
+                                        }
                                         .offset { IntOffset(0, if (isTopPlayer) 0 else bottomBarOffsetState.value.roundToInt()) }
                                 ) {
                                     // Palette fade scope: the global palette switches in one

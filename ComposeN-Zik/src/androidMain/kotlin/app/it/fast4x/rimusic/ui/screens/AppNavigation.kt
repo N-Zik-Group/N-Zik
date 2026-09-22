@@ -8,6 +8,7 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
@@ -91,6 +92,7 @@ import app.it.fast4x.rimusic.ui.screens.search.SearchScreen
 import app.it.fast4x.rimusic.ui.screens.searchresult.SearchResultScreen
 import app.it.fast4x.rimusic.ui.screens.settings.SettingsScreen
 import app.it.fast4x.rimusic.ui.screens.statistics.StatisticsScreen
+import app.n_zik.android.components.ui.screens.rewind.RewindScreen
 import app.it.fast4x.rimusic.utils.clearPreference
 import app.it.fast4x.rimusic.utils.homeScreenTabIndexKey
 import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
@@ -116,6 +118,7 @@ import app.n_zik.android.LocalTopBarOffset
 import app.n_zik.android.uiRoundnessShape
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.activity.OnBackPressedCallback
+import androidx.compose.animation.core.spring
 import androidx.compose.runtime.DisposableEffect
 
 fun NavHostController.navigateClean(route: String, context: Context) {
@@ -223,6 +226,7 @@ fun AppNavigation(
     val disableBackStack by rememberPreference(disableNavigationBackStackKey, false)
     val currentEntry by navController.currentBackStackEntryAsState()
     val isHome = currentEntry?.destination?.route?.startsWith(NavRoutes.home.name) ?: true
+    val isRewind = currentEntry?.destination?.route?.startsWith(NavRoutes.rewind.name) ?: false
 
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -261,6 +265,16 @@ fun AppNavigation(
         animationSpec = tween(app.it.fast4x.rimusic.utils.LANDSCAPE_BARS_ANIMATION_MS, easing = FastOutSlowInEasing),
         label = "landscapeHeaderProgress"
     )
+    // Rewind is a full-screen deck: the header slides up out of the screen on a jelly spring
+    // (and slides back in with the same bounce when leaving the deck)
+    val rewindHeaderProgress = animateFloatAsState(
+        targetValue = if (isRewind) 0f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioLowBouncy,
+            stiffness = Spring.StiffnessMediumLow
+        ),
+        label = "rewindHeaderProgress"
+    )
     val isBarlessScreenState = rememberUpdatedState(isBarlessScreen)
     // On these screens (and until the slide has finished) the toggle drives the header
     // position; everywhere else the header keeps following the scroll-hide offset
@@ -284,7 +298,8 @@ fun AppNavigation(
     val topBarOffsetState = remember(headerHeightPx, scrollTopBarOffset) {
         derivedStateOf {
             if (toggleDrivesHeader.value) -(1f - headerProgress.value) * headerHeightPx
-            else scrollTopBarOffset.value
+            // Rewind slide is additive: 0 on every normal screen, -headerHeight on the deck
+            else scrollTopBarOffset.value - (1f - rewindHeaderProgress.value) * headerHeightPx
         }
     }
 
@@ -505,6 +520,13 @@ fun AppNavigation(
             StatisticsScreen(
                 navController = navController,
                 statisticsType = StatisticsType.Today,
+                miniPlayer = miniPlayer,
+            )
+        }
+
+        composable(route = NavRoutes.rewind.name) {
+            RewindScreen(
+                navController = navController,
                 miniPlayer = miniPlayer,
             )
         }

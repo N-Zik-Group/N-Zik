@@ -77,6 +77,13 @@ private fun HamburgerMenu(
             R.string.statistics
         ) { onItemClick( NavRoutes.statistics ) }
     )
+    // Rewind button (Cubic-style yearly listening recap, issue #275)
+    menu.add(
+        DropdownMenu.Item(
+            R.drawable.sparkles,
+            R.string.rewind
+        ) { onItemClick( NavRoutes.rewind ) }
+    )
     // Picture in picture button
     if (isPipSupported && enablePictureInPicture)
         menu.add(
