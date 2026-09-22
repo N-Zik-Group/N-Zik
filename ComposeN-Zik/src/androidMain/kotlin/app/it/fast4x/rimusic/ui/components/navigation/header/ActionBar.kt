@@ -1,5 +1,6 @@
 package app.it.fast4x.rimusic.ui.components.navigation.header
 
+import android.content.Intent
 import app.n_zik.android.uiRoundnessShape
 
 import androidx.compose.foundation.background
@@ -19,9 +20,12 @@ import androidx.compose.runtime.setValue
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.n_zik.android.R
+import app.n_zik.android.components.menu.header.DebugLogsMenuItem
+import app.n_zik.android.components.ui.screens.rescue.RescueActivity
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.NavRoutes
@@ -31,6 +35,7 @@ import app.it.fast4x.rimusic.ui.components.themed.DropdownMenu
 import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
 import app.it.fast4x.rimusic.utils.enablePictureInPictureKey
 import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.shortcuts.ACTION_RESCUE
 import app.n_zik.android.ytAccountThumbnail
 import androidx.compose.ui.draw.clip
 import app.n_zik.android.thumbnailShape
@@ -44,9 +49,12 @@ import it.fast4x.innertube.utils.parseCookieString
 @Composable
 private fun HamburgerMenu(
     expanded: Boolean,
+    navController: NavController,
     onItemClick: (NavRoutes) -> Unit,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    onItemConsumed: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     val enablePictureInPicture by rememberPreference(enablePictureInPictureKey, false)
     val pipHandler = rememberPipHandler()
 
@@ -84,6 +92,29 @@ private fun HamburgerMenu(
             R.drawable.settings,
             R.string.settings
         ) { onItemClick( NavRoutes.settings ) }
+    )
+    // Debug button (same design as the other items: short tap toggles the debug logs,
+    // long press opens the Misc settings directly on the Debug card)
+    menu.add {
+        DebugLogsMenuItem(
+            onLongClick = {
+                navController.navigate("${NavRoutes.settings.name}?tab=7&focus=debug")
+                onItemConsumed()
+            },
+            onConsume = onItemConsumed
+        )
+    }
+    // Rescue Center button (opens the :rescue process activity, same intent as the launcher shortcut)
+    menu.add(
+        DropdownMenu.Item(
+            R.drawable.shortcut_rescue,
+            R.string.rescue_center
+        ) {
+            context.startActivity(
+                Intent(context, RescueActivity::class.java).setAction(ACTION_RESCUE)
+            )
+            onItemConsumed()
+        }
     )
     menu.Draw()
 }
@@ -143,8 +174,10 @@ fun ActionBar(
         // Hamburger menu
         HamburgerMenu(
             expanded = expanded,
+            navController = navController,
             onItemClick = onItemClick,
-            onDismissRequest = onDismissRequest
+            onDismissRequest = onDismissRequest,
+            onItemConsumed = { expanded = false }
         )
     }
 // END

@@ -97,12 +97,14 @@ import app.n_zik.android.uiRoundnessShape
 fun SettingsScreen(
     navController: NavController,
     miniPlayer: @Composable () -> Unit = {},
+    initialTab: Int = 0,
+    focus: String = "",
 ) {
     //val context = LocalContext.current
     val saveableStateHolder = rememberSaveableStateHolder()
 
     val (tabIndex, onTabChanged) = rememberSaveable {
-        mutableIntStateOf(0)
+        mutableIntStateOf(initialTab)
     }
 
     val trigger = encryptedPreferencesUpdateTrigger
@@ -140,7 +142,7 @@ fun SettingsScreen(
                 4 -> DataSettings()
                 5 -> AccountsSettings()
                 6 -> NetworkSettings(navController = navController)
-                7 -> OtherSettings()
+                7 -> OtherSettings(focus = focus)
                 8 -> About(navController = navController)
 
             }

@@ -31,6 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -53,6 +55,8 @@ import app.n_zik.android.components.dialog.logs.CopyLogsDialog
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.first
+import kotlin.math.roundToInt
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.defaultFolderKey
 import app.it.fast4x.rimusic.utils.extraspaceKey
@@ -128,7 +132,9 @@ fun DefaultOtherSettings() {
 @SuppressLint("BatteryLife")
 @ExperimentalAnimationApi
 @Composable
-fun OtherSettings() {
+fun OtherSettings(
+    focus: String = ""
+) {
     val search = Search()
 
     val context = LocalContext.current
@@ -185,12 +191,29 @@ fun OtherSettings() {
     var logDebugEnabled by rememberPreference(logDebugEnabledKey, false)
     var extraspace by rememberPreference(extraspaceKey, false)
 
+    // Scroll to the Debug card when the screen was opened with focus=debug
+    // (long press on the Debug entry in the hamburger menu)
+    val scrollState = rememberScrollState()
+    var containerTopY by remember { mutableFloatStateOf(-1f) }
+    var debugCardTopY by remember { mutableFloatStateOf(-1f) }
+
+    LaunchedEffect(focus) {
+        if (focus != "debug") return@LaunchedEffect
+        // The card may be off-screen but is still laid out: wait until its position is measured
+        val offset = snapshotFlow {
+            if (debugCardTopY < 0f || containerTopY < 0f) -1f
+            else debugCardTopY - containerTopY + scrollState.value
+        }.first { it >= 0f }
+        scrollState.animateScrollTo(offset.roundToInt())
+    }
+
     Column(
         modifier = Modifier
             .background(colorPalette().background0)
             .fillMaxHeight()
             .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
+            .onGloballyPositioned { containerTopY = it.positionInRoot().y }
     ) {
 
         HeaderWithIcon(
@@ -629,9 +652,10 @@ fun OtherSettings() {
                 initialScale = 0.9f
             )
         ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.debug),
-                icon = R.drawable.bugs,
+            Box(modifier = Modifier.onGloballyPositioned { debugCardTopY = it.positionInRoot().y }) {
+                SettingsSectionCard(
+                    title = stringResource(R.string.debug),
+                    icon = R.drawable.bugs,
                 content = {
                     CopyLogsDialog.Render()
 
@@ -671,6 +695,7 @@ fun OtherSettings() {
                     }
                 }
             )
+            }
         }
 
         

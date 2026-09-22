@@ -471,10 +471,33 @@ fun AppNavigation(
             )
         }
 
-        composable(route = NavRoutes.settings.name) {
+        composable(
+            route = "${NavRoutes.settings.name}?tab={tab}&focus={focus}",
+            arguments = listOf(
+                navArgument(
+                    name = "tab",
+                    builder = {
+                        type = NavType.IntType
+                        defaultValue = 0
+                    }
+                ),
+                navArgument(
+                    name = "focus",
+                    builder = {
+                        type = NavType.StringType
+                        defaultValue = ""
+                    }
+                )
+            )
+        ) { navBackStackEntry ->
+            val tab = navBackStackEntry.arguments?.getInt("tab", 0) ?: 0
+            val focus = navBackStackEntry.arguments?.getString("focus", "") ?: ""
+
             SettingsScreen(
                 navController = navController,
                 miniPlayer = miniPlayer,
+                initialTab = tab,
+                focus = focus,
             )
         }
 
