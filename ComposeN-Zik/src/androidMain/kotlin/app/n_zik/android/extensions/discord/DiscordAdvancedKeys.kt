@@ -102,7 +102,7 @@ data class DiscordAdvancedSettings(
     val showArtwork: Boolean,
     val showSmallImage: Boolean,
     val showTimestamps: Boolean,
-    /** Advanced-mode template for the large image tooltip (empty = "details - state"). */
+    /** Advanced-mode template for the large image tooltip (empty = the live album value, then "details - state"). */
     val largeImageTextTemplate: String,
     /** Advanced-mode template for the small image tooltip (empty = "v{app.version}"). */
     val smallImageTextTemplate: String,

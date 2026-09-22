@@ -7,8 +7,8 @@ import androidx.compose.runtime.remember
 import androidx.media3.common.MediaItem
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.models.Info
-import kotlinx.coroutines.flow.first
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
 import app.it.fast4x.rimusic.cleanPrefix
@@ -62,6 +62,39 @@ fun MediaItem.albumIdWithFallback(): String? {
     return dbAlbum?.id
 }
 
+/**
+ * Pure album-title resolution shared by the Composable preview fallback below: metadata
+ * first, then the DB record; fork prefixes ("e:", "modified:", "pinned:", the "🅴 "
+ * marker, ...) are stripped from both sources (same contract as [artistTextOrDb] /
+ * [titleOrDb]); a blank or literal "null" is treated as missing, and the result `null`
+ * means "unknown" (the caller applies its own localized fallback).
+ */
+fun resolveAlbumTitle(metadataAlbum: String?, dbAlbum: Album?): String? {
+    val meta = cleanPrefix(metadataAlbum ?: "")
+    if (meta.isNotBlank() && meta != "null") return meta
+    val db = dbAlbum?.title?.let { cleanPrefix(it) }.orEmpty()
+    return db.takeIf { it.isNotBlank() && it != "null" }
+}
+
+/**
+ * Composable variant of [albumTitleOrDb] for UI previews: metadata first, then the DB as
+ * a live Flow, so the preview re-renders once the DB learns the album (a streaming
+ * MediaItem usually carries no albumTitle; the one-shot [albumTitleOrDb] used by the
+ * presence re-resolves on its ~5 s refresh tick instead). The DB source mirrors the
+ * player screen: the albumId extra (direct Album row) when the MediaItem carries one,
+ * otherwise the song→album mapping created at playback start. Null = unknown.
+ */
+@Composable
+fun MediaItem.albumTitleWithFallback(): String? {
+    resolveAlbumTitle(mediaMetadata.albumTitle?.toString(), null)?.let { return it }
+    val albumId = mediaMetadata.extras?.getString("albumId")?.takeIf { it.isNotBlank() }
+    val dbAlbum by remember(albumId, mediaId) {
+        if (albumId != null) Database.albumTable.findById(albumId)
+        else Database.albumTable.findBySongId(mediaId)
+    }.collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
+    return resolveAlbumTitle(null, dbAlbum)
+}
+
 // ─── Non-Composable fallbacks (for services, notifications, etc.) ───
 
 fun MediaItem.artistTextOrDb(): String {
@@ -73,9 +106,16 @@ fun MediaItem.artistTextOrDb(): String {
 }
 
 fun MediaItem.albumTitleOrDb(): String {
-    val album = mediaMetadata.albumTitle?.toString() ?: ""
+    val album = cleanPrefix(mediaMetadata.albumTitle?.toString() ?: "")
     if (album.isNotBlank() && album != "null") return album
-    return Database.albumTable.findBySongIdDirect(mediaId)?.title ?: album
+    // Same sources as the player screen: the albumId extra (direct album row) when the
+    // MediaItem carries one, otherwise the song→album mapping created at playback start.
+    val albumId = mediaMetadata.extras?.getString("albumId")?.takeIf { it.isNotBlank() }
+    val dbAlbum = if (albumId != null) Database.albumTable.findByIdDirect(albumId)
+        else Database.albumTable.findBySongIdDirect(mediaId)
+    val dbTitle = dbAlbum?.title?.let { cleanPrefix(it) }
+        ?.takeIf { it.isNotBlank() && it != "null" }
+    return dbTitle ?: album
 }
 
 fun MediaItem.titleOrDb(): String {

@@ -6,6 +6,8 @@ import android.content.pm.PackageManager
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import app.n_zik.android.R
+import app.n_zik.android.core.database.AlbumTable
+import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import com.metrolist.music.discordrpc.DiscordRpcConnection
 import io.mockk.coVerify
@@ -26,10 +28,11 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
 /**
- * Image tooltips: the advanced mode can override the large image tooltip (default
- * "details - state") and the small image tooltip (default "v{app.version}") with
- * templates — `{app.version}` resolves to the app version name. Normal mode keeps the
- * built-in defaults (the templates are ignored, frozen identity).
+ * Image tooltips: the advanced mode can override the large image tooltip (built-in
+ * default: the album when the app knows it, otherwise "details - state") and the small
+ * image tooltip (default "v{app.version}") with templates — `{app.version}` resolves to
+ * the app version name. Normal mode keeps the built-in defaults (the templates are
+ * ignored, frozen identity).
  */
 class DiscordImageTooltipTest {
 
@@ -176,7 +179,7 @@ class DiscordImageTooltipTest {
             play(manager, this)
 
             val args = lastImages(connection)
-            assertEquals("Song - Artist", args.largeText, "default = details - state")
+            assertEquals("Album", args.largeText, "default = the album value when the app knows it")
             assertEquals("v2.3.4", args.smallText, "default = v{app.version}")
         } finally {
             manager.onStop()
@@ -199,8 +202,63 @@ class DiscordImageTooltipTest {
             play(manager, this)
 
             val args = lastImages(connection)
-            assertEquals("Song - Artist", args.largeText, "normal mode keeps the default large text")
+            assertEquals("Album", args.largeText, "normal mode keeps the album-first default")
             assertEquals("v2.3.4", args.smallText, "normal mode keeps the default small text")
+        } finally {
+            manager.onStop()
+        }
+    }
+
+    @Test
+    fun `the default large image text template is the album name`() {
+        // The image text field's effective default (empty field) is the album template —
+        // the same pattern as the state/details defaults; the real presence renders it
+        // live to the album value (unknown album → "details - state", never "Unknown Album").
+        assertEquals("{album.name}", DiscordActivityBuilder.DEFAULT_LARGE_IMAGE_TEXT_TEMPLATE)
+        assertEquals(
+            "My Album",
+            DiscordTemplateRenderer.render(
+                DiscordActivityBuilder.DEFAULT_LARGE_IMAGE_TEXT_TEMPLATE,
+                "Title", "Artist", "My Album", "id", "Unknown Album", "1.0",
+            ),
+        )
+    }
+
+    @Test
+    fun `unknown album falls back to the details-state combination for the large image default`() = runTest {
+        // No albumTitle in the metadata and no DB row: the built-in default keeps the
+        // previous "details - state" combination (same principle as before).
+        mockkObject(Database)
+        val albumTable = mockk<AlbumTable>()
+        every { Database.albumTable } returns albumTable
+        every { albumTable.findBySongIdDirect("dQw4w9WgXcQ") } returns null
+        val connection = newConnection()
+        val manager = newManager(
+            UnconfinedTestDispatcher(testScheduler),
+            connection,
+            DiscordAdvancedSettings.DEFAULTS,
+        )
+        try {
+            manager.onPlayingStateChanged(
+                MediaItem.Builder()
+                    .setMediaId("dQw4w9WgXcQ")
+                    .setMediaMetadata(
+                        MediaMetadata.Builder()
+                            .setTitle("Song")
+                            .setArtist("Artist")
+                            .build()
+                    )
+                    .build(),
+                isPlaying = true,
+                position = 10_000,
+                duration = 100_000,
+                getCurrentPosition = { 10_000 },
+                isPlayingProvider = { true },
+            )
+            advanceTimeBy(5_001)
+
+            val args = lastImages(connection)
+            assertEquals("Song - Artist", args.largeText, "unknown album keeps the previous details - state default")
         } finally {
             manager.onStop()
         }

@@ -82,6 +82,16 @@ object DiscordActivityBuilder {
      */
     const val DEFAULT_LOGO_TEXT_TEMPLATE = "v{app.version}"
 
+    /**
+     * Default artwork (large image) text template — the album name. Like the state/details
+     * defaults, this const is the field's effective default when it is empty: the settings
+     * entry, the dialog placeholder, the idle preview line and the artwork tooltip show it
+     * as-is (the template IS the fallback when nothing plays). The real presence renders it
+     * live to the album value (metadata or DB), falling back to the current configuration's
+     * "details - state" combination when the album is unknown.
+     */
+    const val DEFAULT_LARGE_IMAGE_TEXT_TEMPLATE = "{album.name}"
+
     private fun render(template: String, info: DiscordMediaInfo, str: DiscordStrings): String =
         DiscordTemplateRenderer.render(
             template,

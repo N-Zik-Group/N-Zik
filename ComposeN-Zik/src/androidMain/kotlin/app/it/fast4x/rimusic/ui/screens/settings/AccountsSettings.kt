@@ -114,6 +114,7 @@ import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import androidx.compose.ui.res.painterResource
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
+import app.it.fast4x.rimusic.utils.isExplicit
 import app.it.fast4x.rimusic.utils.getVersionName
 import app.n_zik.android.extensions.discord.discordAdvancedActivityTypeKey
 import app.n_zik.android.extensions.discord.discordAdvancedButton1EnabledKey
@@ -200,6 +201,9 @@ import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.syncPushHistoryKey
 import app.n_zik.android.extensions.discord.DiscordStrings
 import app.n_zik.android.extensions.discord.discordAdvancedLargeImageTextKey
+import app.n_zik.android.utils.albumTitleWithFallback
+import app.n_zik.android.utils.artistTextWithFallback
+import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.extensions.discord.discordAdvancedShowArtworkKey
 import app.n_zik.android.extensions.discord.discordAdvancedShowDetailsKey
 import app.n_zik.android.extensions.discord.discordAdvancedShowSmallImageKey
@@ -1094,7 +1098,21 @@ fun AccountsSettings() {
                                     while (isActive) {
                                         delay(100)
                                         runCatching {
-                                            if (player != null) previewPosition = player.currentPosition
+                                            // The pinned "Paused" variant must freeze its progress
+                                            // bar: while the card shows paused but the real player
+                                            // still plays (pinned chip during playback), the live
+                                            // position must stop advancing. Live follow (-1) is
+                                            // unaffected — a real pause already keeps
+                                            // currentPosition static.
+                                            val effectiveMode =
+                                                if (previewMode >= 0) previewMode
+                                                else when {
+                                                    player != null && player.currentMediaItem != null && player.isPlaying -> 0
+                                                    player != null && player.currentMediaItem != null -> 1
+                                                    else -> 2
+                                                }
+                                            val frozen = effectiveMode == 1 && player?.isPlaying == true
+                                            if (player != null && !frozen) previewPosition = player.currentPosition
                                             previewTick++
                                         }
                                     }
@@ -1543,18 +1561,10 @@ private fun DiscordAdvancedSection(search: Search) {
         5 -> stringResource(R.string.discord_activity_competing)
         else -> stringResource(R.string.discord_activity_listening)
     }
-    // The built-in image text default is NOT a static template: the real presence computes
-    // it live as "details - state" (manager sendActivity). The entry recovers it from the
-    // current line templates — a hidden section falls out of it, exactly like the card.
-    val defaultImageText = run {
-        val details =
-            if (showDetails) detailsTemplate.ifEmpty { DiscordActivityBuilder.DEFAULT_DETAILS_TEMPLATE }
-            else ""
-        val state =
-            if (showState) stateTemplate.ifEmpty { DiscordActivityBuilder.DEFAULT_STATE_TEMPLATE }
-            else ""
-        if (state.isNotEmpty()) "$details - $state" else details
-    }
+    // The image text field shows its own template default when empty (the album
+    // template — DiscordActivityBuilder.DEFAULT_LARGE_IMAGE_TEXT_TEMPLATE), exactly like
+    // the state/details fields show theirs; there is no longer a "details - state"
+    // recovery expression for it.
     Column {
         // Grouped layout (2026-09-22): related entries live under a shared group header —
         // the presence card parts (lines, images, progress bar), then the actions
@@ -1683,7 +1693,7 @@ private fun DiscordAdvancedSection(search: Search) {
                 if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_image_text).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         title = stringResource(R.string.discord_advanced_image_text),
-                        text = largeImageText.ifEmpty { defaultImageText },
+                        text = largeImageText.ifEmpty { DiscordActivityBuilder.DEFAULT_LARGE_IMAGE_TEXT_TEMPLATE },
                         icon = R.drawable.text,
                         onClick = { showLargeImageTextDialog = true }
                     )
@@ -1909,7 +1919,7 @@ private fun DiscordAdvancedSection(search: Search) {
         DiscordTemplateFieldDialog(
             title = stringResource(R.string.discord_advanced_image_text),
             value = largeImageText,
-            placeholderValue = defaultImageText,
+            placeholderValue = DiscordActivityBuilder.DEFAULT_LARGE_IMAGE_TEXT_TEMPLATE,
             onDone = { largeImageText = it },
             onDismiss = { showLargeImageTextDialog = false }
         )
@@ -1929,6 +1939,8 @@ private fun DiscordAdvancedSection(search: Search) {
  * Discord section only (item 6): template field dialog with placeholder chips
  * (upstream TemplateFieldDialog equivalent). When the field is empty, the effective
  * [placeholderValue] (the default that gets used) is shown in the field background.
+ * The Reset button restores the built-in default (empties the field, so the default
+ * template applies again) and saves it immediately.
  */
 @Composable
 private fun DiscordTemplateFieldDialog(
@@ -1999,6 +2011,17 @@ private fun DiscordTemplateFieldDialog(
                 modifier = Modifier
                     .clip(uiRoundnessShape())
                     .clickable(onClick = onDismiss)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+            Spacer(Modifier.width(12.dp))
+            // Reset the field to its built-in default (the empty value — the default
+            // template applies again, shown as the placeholder above).
+            Text(
+                text = stringResource(R.string.reset),
+                style = typography().m.copy(color = palette.textSecondary),
+                modifier = Modifier
+                    .clip(uiRoundnessShape())
+                    .clickable { onDone(""); onDismiss() }
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             )
             Spacer(Modifier.width(12.dp))
@@ -2175,14 +2198,18 @@ private fun DiscordRpcPreviewCard(
             .padding(12.dp)
     ) {
         val item = player?.currentMediaItem
-        val info = item?.let {
+        val info = item?.let { item ->
+            val cleanTitle = cleanPrefix(item.mediaMetadata.title?.toString() ?: "").takeIf { it.isNotBlank() }
+                ?: stringResource(R.string.unknown_title)
             DiscordMediaInfo(
-                title = it.mediaMetadata.title?.toString()?.takeIf { it.isNotBlank() }
-                    ?: stringResource(R.string.unknown_title),
-                artist = it.mediaMetadata.artist?.toString()?.takeIf { it.isNotBlank() }
-                    ?: stringResource(R.string.unknown_artist),
-                albumName = it.mediaMetadata.albumTitle?.toString()?.takeIf { it.isNotBlank() },
-                songId = it.mediaId
+                // The explicit marker, exactly like the real presence / notification:
+                // prepended when the app's MediaItem.isExplicit flags the track.
+                title = if (item.isExplicit) "\uD83C\uDD74 $cleanTitle" else cleanTitle,
+                // Artist resolved metadata → DB, the same sources the real presence uses
+                // (artistTextOrDb) — the preview stays "what you see is what gets sent".
+                artist = item.artistTextWithFallback(),
+                albumName = item.albumTitleWithFallback(),
+                songId = item.mediaId
             )
         } ?: // Idle state: never used (the fallback card renders the templates as-is).
             DiscordMediaInfo("", "", null, "")
@@ -2248,10 +2275,11 @@ private fun DiscordRpcPreviewCard(
         // The large image text (the artwork's Discord hover tooltip): rendered as its own
         // card line so the customization is visible in the preview (on Discord itself it
         // only shows as a tooltip over the artwork). A custom template renders with the
-        // media (as-is on the fallback card); the built-in default is the SAME
-        // "details - state" expression the real presence uses (manager sendActivity) —
-        // the paused line renders into details, so the paused state shows in the image
-        // text too.
+        // media (as-is on the fallback card). The built-in default is the live album
+        // value when the app knows it, otherwise the current configuration's
+        // "details - state" expression — the same the real presence computes (manager
+        // sendActivity); the paused line renders into details, so the paused state shows
+        // in the image text too.
         val imageText =
             if (settings.advancedMode && settings.largeImageTextTemplate.isNotBlank()) {
                 if (item != null) {
@@ -2268,31 +2296,36 @@ private fun DiscordRpcPreviewCard(
                     settings.largeImageTextTemplate
                 }
             } else {
-                // Built-in default, exactly like the real presence: "details - state".
-                if (content.state.isNotBlank()) "${content.details} - ${content.state}"
-                else content.details
+                // Built-in default, exactly like the real presence: the album value when
+                // the app knows it (live — metadata then DB). Unknown album while media
+                // is loaded → the current configuration's "details - state" expression
+                // (never a rendered "Unknown Album"). No media (fallback card) → the
+                // current image template, i.e. the built-in album template as-is.
+                if (item != null) {
+                    info.albumName?.takeIf { it.isNotBlank() }
+                        ?: if (content.state.isNotBlank()) "${content.details} - ${content.state}" else content.details
+                } else {
+                    DiscordActivityBuilder.DEFAULT_LARGE_IMAGE_TEXT_TEMPLATE
+                }
             }
-        // The raw image text templates (with the {placeholders} as-is): the tooltip
-        // dialogs show the configured templates, not the rendered values (the card
-        // line above renders them). Empty = the built-in default template.
-        val largeImageTemplate =
-            if (settings.largeImageTextTemplate.isNotBlank()) {
-                settings.largeImageTextTemplate
+        // The app logo tooltip content: rendered while media is loaded (the same value
+        // the real presence sends), the template as-is otherwise (the current template
+        // IS the fallback). The artwork tooltip reuses the card line above (`imageText`)
+        // — rendered content with media, template as-is without.
+        val smallImageTooltipText =
+            if (item != null) {
+                DiscordTemplateRenderer.render(
+                    settings.smallImageTextTemplate.ifBlank { DiscordActivityBuilder.DEFAULT_LOGO_TEXT_TEMPLATE },
+                    info.title,
+                    info.artist,
+                    info.albumName,
+                    info.songId,
+                    strings.unknownAlbum,
+                    strings.appVersion,
+                )
             } else {
-                // The built-in default is the live "details - state" expression the real
-                // presence computes — recovered from the configured line templates (a
-                // hidden advanced section falls out of it; normal mode keeps its frozen
-                // title/artist identity, so no toggle applies there).
-                val details =
-                    if (settings.advancedMode && !settings.showDetails) ""
-                    else settings.detailsTemplate.ifBlank { DiscordActivityBuilder.DEFAULT_DETAILS_TEMPLATE }
-                val state =
-                    if (settings.advancedMode && !settings.showState) ""
-                    else settings.stateTemplate.ifBlank { DiscordActivityBuilder.DEFAULT_STATE_TEMPLATE }
-                if (state.isNotEmpty()) "$details - $state" else details
+                settings.smallImageTextTemplate.ifBlank { DiscordActivityBuilder.DEFAULT_LOGO_TEXT_TEMPLATE }
             }
-        val smallImageTemplate =
-            settings.smallImageTextTemplate.ifBlank { DiscordActivityBuilder.DEFAULT_LOGO_TEXT_TEMPLATE }
         // Tooltip popups: tapping the artwork / the app logo shows the matching image
         // text, mirroring Discord's hover tooltips.
         val cardContext = LocalContext.current
@@ -2470,14 +2503,14 @@ private fun DiscordRpcPreviewCard(
         if (showLargeImageTooltip) {
             DiscordImageTooltipDialog(
                 title = stringResource(R.string.discord_advanced_image_text),
-                text = largeImageTemplate,
+                text = imageText,
                 onDismiss = { showLargeImageTooltip = false },
             )
         }
         if (showSmallImageTooltip) {
             DiscordImageTooltipDialog(
                 title = stringResource(R.string.discord_advanced_logo_text),
-                text = smallImageTemplate,
+                text = smallImageTooltipText,
                 onDismiss = { showSmallImageTooltip = false },
             )
         }
