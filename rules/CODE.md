@@ -1,6 +1,6 @@
 # Code Quality Rules
 
-**Version:** 1.2.0 | **Last updated:** 2026-08-24
+**Version:** 1.3.0 | **Last updated:** 2026-09-23
 
 ## Naming Conventions
 
@@ -8,7 +8,7 @@
 - **Functions/camelCase**: `getSongById`, `updatePlaylist`, `handlePlaybackError`
 - **Constants/UPPER_SNAKE_CASE**: `LOCAL_KEY_PREFIX`, `MAX_RETRY_COUNT`
 - **Variables/camelCase**: `songList`, `isPlaying`, `currentPosition`
-- **Packages/lowercase**: `app.n_zik.android.playback`, `database.entities`
+- **Packages/lowercase**: `app.n_zik.android.playback`, `app.n_zik.android.core.database`
 
 ## Kotlin/Compose Anti-Patterns
 
@@ -102,15 +102,15 @@ New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app
 | Domain menus                   | `components/menu.{domain}/`                        |
 | Page-level screens             | `components.ui.screens.{screen}/`                  |
 | ViewModels                     | co-located with their screen, in `components.ui.screens.{screen}/` |
-| Repositories                   | `core/data/` (one repository per domain, e.g. `SongRepository`) |
+| Repositories                   | collocated with their domain package (one repository per domain, e.g. `ShazamRepository` in `recognition/`) |
 | Player UI + lyrics             | `components/player/` + `components/player/lyrics/` |
 | Settings components            | `components/settings/`                             |
 | Enums                          | `enums/`                                           |
-| Extensions (optional features) | `extensions.{feature}/`                            |
+| Extensions (optional features) | package `extensions/{feature}/` under `app.n_zik.android` (the Gradle subprojects in `N-Zik/extensions/` are separate API modules — see `settings.gradle.kts`) |
 | Database tables & migrations   | `core/database/`                                   |
 | Network layer                  | `core/network/`                                    |
 | Services (player, download)    | `playback/services/`, `download/services/`         |
-| Dependency injection modules   | `core/di/`                                         |
+| Dependency injection           | plain constructor injection (no DI framework in the app module) |
 | Navigation (sealed route defs) | `core/navigation/`                                 |
 | Utilities                      | `utils/`                                           |
 
@@ -206,7 +206,7 @@ NEVER swallow exceptions silently. ALWAYS log with Timber.
 ## UI — Jetpack Compose + Material 3
 
 - All UI in Jetpack Compose (no XML layouts)
-- Use existing theming system (`LocalColorPalette.current`, `LocalTypography.current`)
+- Use the existing theming system — colors via `app.n_zik.android.colorPalette` (legacy `ColorPaletteMode`/`ColorPaletteName` enums when touching legacy UI), typography via legacy `app.it.fast4x.rimusic.ui.styling.Typography` (read-only). Do NOT invent new CompositionLocals
 - Animations under 300ms for snappy feel
 - Use `Modifier` for styling, chain for multiple effects
 - Keep composables small (single responsibility)

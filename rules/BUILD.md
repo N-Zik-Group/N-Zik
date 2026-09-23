@@ -62,6 +62,7 @@ When committing, update `Done.txt` using its own template (`Changelog_Template.t
 
 Include full issue link (use `issue https://...` to avoid auto-closing).
 Entries are grouped under the section headers defined by the template (`Hotfix:` / `Added:` / `Changed:` / `Improved:` / `Fixed:` / `Refactor:` / `Removed:` / `Deprecated:` / `Other:`) — place each entry under the matching section.
+The entry keyword for Done.txt follows the template's sections — it is NOT a commit type: e.g. `change(...)` or `improve(...)` is a valid Done.txt entry but NOT a valid commit message type (see Commit Convention).
 
 ## Build Types
 
@@ -69,7 +70,9 @@ Entries are grouped under the section headers defined by the template (`Hotfix:`
 | ------- | --------------- | ----------------------------- |
 | `debug` | `assembleDebug` | Primary development build     |
 | `foss`  | `assembleFoss`  | No proprietary dependencies   |
-| `beta`  | `assembleBeta`  | Beta build with debug signing |
+| `beta`  | `assembleBeta`  | Beta build (unsigned locally, signed in CI) |
+
+Other build types (see `ComposeN-Zik/build.gradle.kts`): `full`, `minified` (R8 minify + shrinkResources), `full32`, `minified32`, `beta32`, `dev`, `dev32`. The `release` build type is explicitly disabled.
 
 ## Proguard/R8
 
@@ -133,7 +136,7 @@ class ShufflerTest {
 }
 ```
 
-Test files: `ComposeN-Zik/src/test/kotlin/` — mirror source package structure, EXCEPT tests of legacy code (`app.it.fast4x.rimusic.*` / `app.kreate.android.*`): those MUST live under `app.n_zik.android.legacyoffmain.<mirror>` (existing convention — NEVER under the legacy namespace itself, per AGENTS.md and the Step 6 guard check).
+Test files: `ComposeN-Zik/src/test/kotlin/` — mirror source package structure, EXCEPT tests of legacy code (`app.it.fast4x.rimusic.*` / `app.kreate.android.*`): those MUST live under `app.n_zik.android.legacyoffmain.<mirror>` (existing convention — NEVER under the legacy namespace itself, per AGENTS.md and the Step 6 guard check). Grandfathering: 3 pre-existing test files live under the legacy namespace (`app/it/fast4x/rimusic/models/PlaylistTest.kt`, `app/it/fast4x/rimusic/utils/InvincibleServiceTest.kt`, `app/it/fast4x/rimusic/utils/LandscapeBarsTest.kt`) — do NOT move or rewrite them; every NEW legacy test goes under `legacyoffmain`.
 
 New features/bug fixes should include at least one test. If no test framework is available → HALT and note it.
 

@@ -20,7 +20,7 @@ Attempt 3 → HALT → Report to user with error log
 
 If a BMAD skill fails or gets stuck:
 
-1. **Skill not found** → Search `{project-root}/.agents/skills/` (or `.claude/skills/` for Claude Code, `.agent/skills/` for Antigravity). Remember: `{project-root}` is the parent of `N-Zik/` where `_bmad/` and `.agents/` live.
+1. **Skill not found** → Search the IDE-specific skills directory for the user's IDE (see `rules/BMAD-TOOLS.md` table — most IDEs use `{project-root}/.agents/skills/`). Remember: `{project-root}` is the parent of `N-Zik/` where `_bmad/` and `.agents/` live.
 2. If still not found → HALT, inform user, suggest re-running BMAD installer
 3. **SKILL.md malformed** → HALT, report error, suggest `bmad-module-builder` to rebuild
 4. **Skill execution error** → Fallback to `bmad-build` for implementation tasks
@@ -78,7 +78,7 @@ If `./gradlew` fails or is corrupted:
 ## Corrupted \_bmad/ Directory
 
 1. **NEVER** manually edit `_bmad/` internals
-2. Delete `_bmad/` and re-run installer
+2. Before deleting: back up `_bmad/custom/` (human-authored overrides) to a temp folder, then delete `_bmad/` and re-run the installer, then restore `_bmad/custom/`
 3. Verify with `bmad-bmb-setup` skill
 
 ## Loop Detection

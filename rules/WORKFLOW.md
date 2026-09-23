@@ -25,7 +25,7 @@ Use this format every session — keep it SHORT:
 3. Build: ./gradlew :ComposeN-Zik:assembleDebug
 4. Version catalog refs only (libs.versions.toml)
 5. NEVER commit without human approval
-6. NEVER skip BMAD workflow — complete FULL workflow before coding
+6. NEVER skip BMAD workflow — complete FULL workflow before coding (exception: trivial doc-only edits, see "Doc-Only Exception")
 7. User suggestions ≠ shortcut (still complete workflow)
 8. Ask IDE ONE at a time (path depends on IDE)
 9. NEVER edit values-*/strings.xml (only values/)
@@ -89,7 +89,7 @@ NEVER write code or create implementation plans without completing this step.
 
 #### 3b: BMAD Activation Sequence (MANDATORY for every skill)
 
-**`{project-root}`** = the workspace root directory containing `_bmad/` and `.agents/`. Resolve it at runtime by finding the directory that contains `_bmad/` or `.agents/`.
+**`{project-root}`** = the workspace root directory containing both `_bmad/` and `.agents/` (if only one exists, prefer `_bmad/`). Resolve it at runtime by finding that directory.
 
 > **Important for this project:** `_bmad/` and `.agents/` live at the **parent** of `N-Zik/`. If your CWD is `N-Zik/`, go **up one level** to find `{project-root}`.
 
@@ -99,6 +99,11 @@ NEVER write code or create implementation plans without completing this step.
 - **Google Antigravity:** `{project-root}/.agent/skills/{skill-name}`
 
 Example for `bmad-build` with OpenCode: `{project-root}/.agents/skills/bmad-build`
+
+**TWO SKILL FORMATS EXIST — read the SKILL.md first and pick the matching activation path:**
+
+- **(a) Bootstrap format** (e.g. `bmad-build`): the SKILL.md instructs running `_bmad/scripts/render_skill.py` exactly once. → Run that command FIRST, then follow ONLY the rendered `workflow.md` it prints (its own "On Activation" section supersedes steps 1–8 below). On failure (including `uv` unavailable) → HALT and report the command output; no manual fallback, no direct reading of the workflow sources.
+- **(b) Inline format** (e.g. `bmad-cis-*`): follow steps 1–8 below.
 
 1. Run `resolve_customization.py` to get merged config:
 
@@ -127,7 +132,7 @@ Example for `bmad-build` with OpenCode: `{project-root}/.agents/skills/bmad-buil
 
 8. Execute `activation_steps_append` (after greeting, before workflow)
 
-**After activation, read the ENTIRE SKILL.md file before starting the workflow.** Do NOT just read the step headers — read EVERY line including:
+**After activation, read the ENTIRE workflow source before starting: the full `SKILL.md` (inline skills) or the rendered `workflow.md` (bootstrap skills).** Do NOT just read the step headers — read EVERY line including:
 
 - `<template-output>` tags (what to produce at each step)
 - `<energy-checkpoint>` tags (when to ask for breaks)
@@ -141,7 +146,7 @@ Example for `bmad-build` with OpenCode: `{project-root}/.agents/skills/bmad-buil
 
 #### 3c: Spec Production (MANDATORY)
 
-- If the skill has a `template.md` → you MUST produce a spec document using that template
+- If the skill has a spec template file (`template.md` or `spec-template.md` — check the skill root's file listing) → you MUST produce a spec document using that template
 - **Process:**
   1. Read `{template_file}` (the template structure with `{{placeholders}}`)
   2. After each step, replace the `{{placeholders}}` with actual values
@@ -150,7 +155,7 @@ Example for `bmad-build` with OpenCode: `{project-root}/.agents/skills/bmad-buil
   5. After each write, state the ABSOLUTE PATH of the spec file on disk (the path is the evidence — never just claim "saved")
 - **Where to write:** Read the skill's SKILL.md for the exact output path (resolved from config, e.g. `{project-root}/_bmad-output/`)
 - **In this project:** `{output_folder}` = `{project-root}/_bmad-output` (at workspace root, one level above `N-Zik/`)
-- Show checkpoint separator, display generated content, present options `[a] Advanced Elicitation`, `[c] Continue`, `[p] Party-Mode`, `[y] YOLO`
+- Show checkpoint separator, display generated content, present the checkpoint options DEFINED BY THE LOADED SKILL (CIS skills: `[a] [c] [p] [y]`; step-file skills: their `### CHECKPOINT` sections — verbatim)
 - Wait for user response before proceeding to next step
 - NEVER skip spec production — the spec IS the workflow output
 - NEVER just display the spec in chat — it MUST be saved to a file
@@ -201,27 +206,27 @@ Example for `bmad-build` with OpenCode: `{project-root}/.agents/skills/bmad-buil
 **Enforcement — before starting the workflow:**
 
 1. Read the skill's SKILL.md file — **EVERY line, NOT just step headers**
-2. Count the total number of steps in the `<workflow>` section
+2. Count the total number of steps in the loaded workflow — either the `<workflow>` section (inline skills), the `## On Activation`/step sections of the rendered `workflow.md`, or the `step-NN-*.md` files (bootstrap/step-file skills)
 3. List all steps: "Steps: 1. X, 2. Y, 3. Z, ..."
-4. List all `<template-output>` tags per step (what to produce)
-5. List all `<energy-checkpoint>` tags (when to ask for breaks)
-6. List all checkpoint instructions (what options to present)
+4. List the output artifact per step (from `<template-output>` tags when present, otherwise from each step's explicit "write `{spec_file}`" instruction)
+5. List the break points (from `<energy-checkpoint>` tags when present, otherwise from `### CHECKPOINT N` sections and "WAIT FOR INPUT" instructions)
+6. List all checkpoint instructions (what options to present — from the skill's checkpoint sections, verbatim)
 7. Announce: "BMAD workflow has N steps. Starting step 1."
 
 **Enforcement — during the workflow:**
 
-- Before each action, announce the current step — TWO formats only: `[Step X/8: <name>]` for the 8-step wrapper workflow (at every transition) and `[BMAD Step X/N: <step name>]` for the loaded BMAD skill's internal steps
-- After each step, present the checkpoint options from the SKILL.md (e.g., `[a] Advanced Elicitation`, `[c] Continue`, `[p] Party-Mode`, `[y] YOLO`) — NEVER just ask "Step X complete. Proceed to step Y?"
+- Before each action, announce the current step — TWO formats only: `[Step X/8: <name>]` for the 8-step wrapper workflow (at every transition) and `[BMAD Step X/N: <step name>]` for the loaded BMAD skill's internal steps. For the Step 8 sub-steps use `[Step 8x: <name>]` (e.g. `[Step 8b: Code Review Proposal]`, `[Step 8d: Commit]`)
+- After each step, present the checkpoint options DEFINED BY THE LOADED SKILL (CIS skills use `[a] [c] [p] [y]`; `bmad-build` uses its own `### CHECKPOINT N` sections — present them verbatim). If the skill defines no option list, present its checkpoint message verbatim — NEVER invent options, and NEVER just ask "Step X complete. Proceed to step Y?"
 - Before implementing, verify: "All N steps complete. Ready to implement?"
 - If you cannot name the current step → HALT, you are lost
 
 **User suggestions are input to the workflow, NOT a shortcut to skip it.** Even if the user suggests a specific fix, complete the skill's full workflow before implementing.
 
-**If user declines BMAD skill:** HALT and explain that BMAD workflow is mandatory per AGENTS.md rules. Ask user to confirm they want to proceed without BMAD. If the user confirms: record the explicit waiver, but it covers the BMAD skill (Step 3) ONLY — Step 6 (hygiene gate + build + tests), Step 8b (review gate) and Step 8d (commit mode gate) still apply. If the user does not confirm → HALT, no code is written.
+**If user declines BMAD skill:** HALT and explain that BMAD workflow is mandatory per AGENTS.md rules. Ask user to confirm they want to proceed without BMAD. If the user confirms: record the explicit waiver, but it covers the BMAD skill (Step 3) ONLY — Step 6 (hygiene gate + build + tests), Step 8b (review gate) and Step 8d (commit mode gate) still apply. When Step 3 is waived, Step 4 is replaced by: present the implementation plan (files, approach, risks) and ask the same plan-approval question (HARD GATE unchanged). Steps 7, 8a and 8e still apply. If the user does not confirm → HALT, no code is written.
 
 **If skill not found:**
 
-1. Search `{project-root}/.agents/skills/` (or `.claude/skills/` for Claude Code, `.agent/skills/` for Antigravity)
+1. Search the IDE-specific skills directory for the user's IDE (see `rules/BMAD-TOOLS.md` table — most IDEs use `{project-root}/.agents/skills/`)
 2. If still not found → HALT, inform user, suggest re-running BMAD installer
 3. If SKILL.md is malformed → HALT, report error, suggest `bmad-module-builder` to rebuild
 
@@ -245,7 +250,7 @@ Some skills use micro-file design where each step is in its own file.
 - This step is a hard gate: after the plan/spec is produced, HALT and wait for the user's answer before editing ANY file, running ANY build, or starting ANY implementation — no step 5, no code, no "it's obvious, proceeding anyway".
 - Before implementing, **MUST ask user using question tool** — process:
   - Read the SKILL.md to see what actions/checkpoints are available after the plan
-  - Present the actions from the SKILL.md (e.g., `[a] Advanced Elicitation`, `[c] Continue`, `[p] Party-Mode`, `[y] YOLO`)
+  - Present the actions from the SKILL.md verbatim (e.g. `[a] [c] [p] [y]` for CIS skills; the `### CHECKPOINT` sections for `bmad-build`)
   - Wait for user to choose before proceeding
 - If the session was interrupted before the question was answered → on resume, re-announce Step 4 and ask the question again (never assume a previous answer)
 
@@ -299,8 +304,9 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
   1. Yes → launch bmad-code-review
   2. No → structured self-check pass + fixes
   ```
-- If user says "No" → do a structured self-check pass (null-safety, structured concurrency/lifecycle, Timber usage, error handling, test coverage), LIST the findings (or explicitly state "none found"), fix them, rebuild, then ask the Step 8b question again (the user may change their mind) — ask this question at most ONE more time; if the user says "No" again, record it as an explicit decision to skip the review (announce it) and proceed to Step 8d. No further self-check loops.
+- If user says "No" → do a structured self-check pass (null-safety, structured concurrency/lifecycle, Timber usage, error handling, test coverage), LIST the findings (or explicitly state "none found"), fix them, rebuild, then ask the Step 8b question again (the user may change their mind) — ask this question at most ONE more time; if the user says "No" again, record it as an explicit decision to skip the review (announce it: "8c skipped — no review") and proceed to Step 8d. No further self-check loops.
 - If user says "Yes" → load and execute `bmad-code-review` skill
+- If the `bmad-code-review` skill fails to load or execute (render/uv error, skill HALT) → HALT, report the error verbatim, and ask the user via question tool: (1) retry the skill, (2) proceed to the structured self-check pass of the "No" branch — explicitly announced as NOT fulfilling the 8b review gate
 - If the session was interrupted before the question was answered → on resume, re-announce Step 8b and ask the question again (never assume a previous answer)
 
 **Step 8c: Post-Review Actions**
@@ -313,7 +319,7 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
   2. Not functional → re-read and fix
   3. Other → ask user
   ```
-- If "Not functional" → fix the findings, rebuild + re-run tests, then RE-RUN `bmad-code-review` on the fixed scope before asking 8c again (fixes to review findings require a fresh review — never present self-judged fixes as review-passed)
+- If "Not functional" → fix the findings, rebuild + re-run tests, then RE-RUN `bmad-code-review` on the fixed scope before asking 8c again (fixes to review findings require a fresh review — never present self-judged fixes as review-passed). After **3** fix/re-review cycles without a "Functional" verdict → HALT and report the recurring findings to the user instead of looping again
 - If the session was interrupted before the question was answered → on resume, re-announce Step 8c and ask the question again (never assume a previous answer)
 
 **Step 8d: Commit (only if user says "Functional") — ASK MODE FIRST, THEN EDIT**

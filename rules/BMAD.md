@@ -8,7 +8,7 @@
 
 ## Installation Location
 
-**`{project-root}`** = the workspace root directory containing `_bmad/` and `.agents/`. This is a literal placeholder — the agent must resolve it at runtime by finding the directory that contains `_bmad/` or `.agents/`.
+**`{project-root}`** = the workspace root directory containing both `_bmad/` and `.agents/` (if only one exists, prefer `_bmad/`). This is a literal placeholder — the agent must resolve it at runtime by finding that directory.
 
 > **Important for this project:** `_bmad/` and `.agents/` live at the **parent** of `N-Zik/`. If your CWD is `N-Zik/`, go **up one level** to find `{project-root}`. The actual path is `../` relative to `N-Zik/`.
 
@@ -34,9 +34,9 @@ _bmad/
 ├── custom/                     # Human-authored overrides
 │   ├── config.toml             # Team overrides (committed)
 │   └── config.user.toml        # User overrides (gitignored)
-├── scripts/                    # resolve_config.py, resolve_customization.py, memlog.py
+├── scripts/                    # resolve_config.py, resolve_customization.py, render_skill.py, memlog.py, config_utils.py
 ├── core/config.yaml            # Core module config
-├── <module>/config.yaml        # Per-module config (bmm, cis, bmb, gds, tea, bmad-loop)
+├── <module>/config.yaml        # Per-module config (bmm, cis, bmb, tea, bmad-loop)
 └── render/                     # Rendered skill outputs (runtime)
 ```
 
@@ -144,7 +144,7 @@ uv run {project-root}/_bmad/scripts/resolve_config.py --project-root {project-ro
 ## Command Pointer Files
 
 OpenCode: `.opencode/commands/` with `@skills/{canonicalId}` format.
-Copilot: `.github/agents/` with `LOAD the FULL {path}/SKILL.md` format.
+Copilot: no command pointer files are currently installed in this workspace (the upstream `.github/agents/` convention does not exist here) — load a skill by reading its `SKILL.md` directly (instruction format: `LOAD the FULL {path}/SKILL.md`).
 
 ### OpenCode — Direct Skill Loading
 
@@ -156,8 +156,8 @@ This triggers the agent to read and follow the SKILL.md from `.agents/skills/bma
 
 ## Skill Naming
 
-- Agents: `bmad-agent-{name}.md` (core) or `bmad-agent-{module}-{name}.md`
-- Workflows: `bmad-{module}-{name}.md`
+- Installed layout: each skill is a directory `{ide-dir}/skills/{skill-name}/` with a `SKILL.md` (+ step/template files)
+- Upstream naming (reference only, NOT the installed layout): agents `bmad-agent-{name}.md`, workflows `bmad-{module}-{name}.md`
 
 ---
 

@@ -1,5 +1,7 @@
 # AGENTS.md — NZik
 
+**Version:** 1.3.0 | **Last updated:** 2026-09-23
+
 **MANDATORY: Read this file + rules/*.md before any task.**
 
 ## Session Startup
@@ -14,7 +16,7 @@
 
 ## ✅ Always Do
 
-- Code → `app.n_zik.android.*` ONLY (legacy packages are READ-ONLY)
+- Code → `app.n_zik.android.*` ONLY — legacy packages (`app.it.fast4x.rimusic.*` / `app.kreate.android.*`) are READ-ONLY: no new files there; MODIFYING an existing legacy file is allowed ONLY when a bug fix cannot be expressed outside it AND ONLY after explicit user approval — prefer implementing the fix in `app.n_zik.android.*` (wrapper/overlay)
 - Use Timber with tags (no println/Log.d)
 - Use version catalog refs (`libs.versions.toml`)
 - Verify build passes after changes (`./gradlew :ComposeN-Zik:assembleDebug`)
@@ -48,7 +50,7 @@
 
 ## Skill Discovery
 
-**`{project-root}`** = the directory containing `_bmad/` and `.agents/` folders. This is the **workspace root** (`N-Zik-Projet/`), NOT the `N-Zik/` subdirectory where this AGENTS.md lives. Go **up one level** from `N-Zik/` to find it.
+**`{project-root}`** = the directory containing both `_bmad/` and `.agents/` folders (if only one exists, prefer `_bmad/`). This is the **workspace root** (`N-Zik-Projet/`), NOT the `N-Zik/` subdirectory where this AGENTS.md lives. Go **up one level** from `N-Zik/` to find it.
 
 > **OpenCode path resolution:** Scripts are at `{project-root}/_bmad/scripts/`. If you're running from `N-Zik/`, use `../_bmad/scripts/` or resolve to workspace root first.
 
@@ -87,7 +89,7 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 ├── ComposeN-Zik/src/
 │   ├── androidMain/kotlin/app/n_zik/android/  ★ NEW code
 │   └── test/                                   Tests
-├── extensions/              API modules (innertube, lrclib)
+├── extensions/              API Gradle modules (innertube, kugou, lrclib, musicbrainz, invidious, ktor-client-brotli, lastfm); `piped/` present but NOT in settings.gradle.kts
 ├── modules/                 Feature submodules
 ├── composeApp/              DEAD folder — NOT a gradle module (excluded from settings.gradle.kts); orphaned sources + stale build artifacts → ignore, never build/modify
 ├── gradle/libs.versions.toml  Version catalog
@@ -98,8 +100,8 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 | ------------ | ------------------------------------------ |
 | Main code    | `app/n_zik/android/`                       |
 | Database     | `app/n_zik/android/core/database/`         |
-| Repositories | `app/n_zik/android/core/data/`             |
-| DI modules   | `app/n_zik/android/core/di/`               |
+| Repositories | collocated with their domain (e.g. `recognition/ShazamRepository.kt`) — no central `core/data/` exists |
+| DI           | no DI framework in the app module (Hilt declared in the catalog but never applied) — plain constructor injection; introducing a DI framework requires user approval |
 | Navigation   | `app/n_zik/android/core/navigation/`       |
 | Player       | `app/n_zik/android/playback/services/`     |
 | UI           | `app/n_zik/android/components/ui/screens/` |

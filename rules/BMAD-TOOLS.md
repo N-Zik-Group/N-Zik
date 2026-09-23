@@ -9,7 +9,7 @@ Reference only — read only when configuring IDE tooling. Skim for your tool, s
 | Tool                     | Skills dir        | Global dir                      | Commands dir          |
 | ------------------------ | ----------------- | ------------------------------- | --------------------- |
 | **OpenCode** ⭐           | `.agents/skills/` | `~/.agents/skills/`             | `.opencode/commands/` |
-| **GitHub Copilot** ⭐     | `.agents/skills/` | `~/.agents/skills/`             | `.github/agents/`     |
+| **GitHub Copilot** ⭐     | `.agents/skills/` | `~/.agents/skills/`             | `.github/agents/` (upstream convention — none installed here) |
 | **Google Antigravity** ⭐ | `.agent/skills/`  | `~/.gemini/antigravity/skills/` | —                     |
 
 ## All Other Tools

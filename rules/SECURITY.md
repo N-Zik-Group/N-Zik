@@ -37,7 +37,7 @@
 
 - NEVER commit a keystore file (`.jks`, `.keystore`) or its passwords, under any build variant
 - Release/Beta/Foss signing credentials are referenced via `local.properties` or CI secrets (GitHub Actions secrets) — NEVER hardcoded in `build.gradle.kts`
-- `debug` and `Beta` build types may use debug signing — this is expected, do NOT "fix" it into release signing without explicit instruction
+- Only the `debug` build type uses debug signing locally; `beta`/`foss`/release APKs are unsigned locally and signed in CI via GitHub Actions secrets — do NOT add a local signing config for non-debug build types without explicit instruction
 - NEVER modify signing config blocks (`signingConfigs {}`) without explicit instruction — a wrong signing config can invalidate the Play Store / F-Droid update chain (mismatched signature blocks app updates for all existing users)
 - If a keystore or signing secret is found in a diff, commit, or log output → HALT immediately, treat as a leaked secret (same escalation as "Secrets found in code" below)
 
