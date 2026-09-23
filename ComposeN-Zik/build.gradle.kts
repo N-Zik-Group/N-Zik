@@ -390,6 +390,7 @@ dependencies {
     testImplementation(libs.robolectric)
     testImplementation(libs.room.testing)
     testImplementation(libs.androidx.test.core)
+    testImplementation(libs.compose.ui.test)
     testRuntimeOnly(libs.junit.platform)
     testRuntimeOnly(libs.junit.vintage.engine)
     compileOnly(libs.lombok)

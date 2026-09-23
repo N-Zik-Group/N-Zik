@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -34,6 +35,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -250,7 +252,13 @@ fun LastFmSettingsCard() {
                             },
                             containerColor = Color.Transparent,
                             modifier = Modifier.statusBarsPadding(),
-                            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false),
+                            // Skip PartiallyExpanded: its anchor is a fixed 50% of the window
+                            // height, while the sheet window is not resized by the keyboard
+                            // (SOFT_INPUT_ADJUST_NOTHING on API 30+), so the fields stay hidden
+                            // behind it. The Expanded anchor is content-driven
+                            // (fullHeight - sheetHeight) and follows the IME insets applied to
+                            // the sheet content by CustomModalBottomSheet.
+                            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                             shape = (uiRoundnessShape() as? RoundedCornerShape)?.let {
                                 RoundedCornerShape(
                                     topStart = it.topStart,
@@ -266,19 +274,31 @@ fun LastFmSettingsCard() {
                                 ) {}
                             }
                         ) {
-                            ListMenu.Menu(title = stringResource(R.string.social_lastfm)) {
-                                LastFmLoginContent(
-                                    onConnected = { sessionKey, username ->
-                                        loginLastfm = false
-                                        lastfmSession = sessionKey
-                                        lastfmUsername = username
-                                        lastfmAvatarUrl = ""
-                                        cardScope.launch {
-                                            val avatarUrl = LastFm.getUserPicture(username).getOrNull().orEmpty()
-                                            if (avatarUrl.isNotEmpty()) lastfmAvatarUrl = avatarUrl
+                            // Cap the content at ~50% of the screen: ListMenu.Menu stretches to
+                            // the full screen height on its own, which would make the Expanded
+                            // sheet cover the whole window. Bounded to half the screen, the
+                            // sheet keeps its current half-screen look at rest while the anchor
+                            // stays content-driven (it grows with the keyboard).
+                            val screenHeightDp = LocalConfiguration.current.screenHeightDp
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = (screenHeightDp * 0.5f).dp)
+                            ) {
+                                ListMenu.Menu(title = stringResource(R.string.social_lastfm)) {
+                                    LastFmLoginContent(
+                                        onConnected = { sessionKey, username ->
+                                            loginLastfm = false
+                                            lastfmSession = sessionKey
+                                            lastfmUsername = username
+                                            lastfmAvatarUrl = ""
+                                            cardScope.launch {
+                                                val avatarUrl = LastFm.getUserPicture(username).getOrNull().orEmpty()
+                                                if (avatarUrl.isNotEmpty()) lastfmAvatarUrl = avatarUrl
+                                            }
                                         }
-                                    }
-                                )
+                                    )
+                                }
                             }
                         }
                     }
@@ -288,8 +308,12 @@ fun LastFmSettingsCard() {
     }
 }
 
+/**
+ * Content of the Last.fm login sheet: username/password fields and the login button.
+ * Internal so it can be exercised by the Compose UI test.
+ */
 @Composable
-private fun LastFmLoginContent(
+internal fun LastFmLoginContent(
     onConnected: (sessionKey: String, username: String) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -375,7 +399,9 @@ private fun LastFmLoginContent(
                         .also { isLoggingIn = false }
                 }
             },
-            enabled = !isLoggingIn,
+            // Keep the button disabled until both credentials are entered, so the
+            // disabled state is visible instead of a no-op click on empty fields.
+            enabled = username.isNotBlank() && password.isNotBlank() && !isLoggingIn,
             colors = ButtonDefaults.buttonColors(
                 containerColor = colorPalette().accent,
                 contentColor = colorPalette().textSecondary

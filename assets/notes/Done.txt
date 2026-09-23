@@ -1,0 +1,9 @@
+Fixed:
+- fix(lastfm): move login sheet above keyboard on IME open
+  - Root cause: the sheet rested in the partially expanded state whose top anchor is a fixed 50% of the window height; on API 30+ the sheet dialog window uses SOFT_INPUT_ADJUST_NOTHING, so the keyboard never resized it and the IME insets only grew the content downward, leaving the username/password fields hidden behind the keyboard
+  - `LastFmSettingsCard.kt`: sheetState now uses `rememberModalBottomSheetState(skipPartiallyExpanded = true)`, so the sheet opens fully expanded where the anchor is content-driven (fullHeight - sheetHeight) and follows the IME insets — same behavior as the working YouTube login sheet
+  - `LastFmSettingsCard.kt`: sheet content wrapped in a `Box` capped at ~50% of `screenHeightDp` (`heightIn(max = ...)`) to keep the current half-screen appearance
+  - `LastFmSettingsCard.kt`: login button now disabled until both username and password are non-blank
+  - `LastFmSettingsCard.kt`: `LastFmLoginContent` made `internal` (was `private`) for testability
+  - New `LastFmLoginContentTest.kt`: Compose UI test (`createComposeRule`, JUnit 4/Robolectric) verifying both fields render and the button disabled/enabled states
+  - `libs.versions.toml` + `ComposeN-Zik/build.gradle.kts`: added `compose-ui-test` ref (`androidx.compose.ui:ui-test-junit4`, version aligned with `compose` 1.11.4) as a test-only dependency
