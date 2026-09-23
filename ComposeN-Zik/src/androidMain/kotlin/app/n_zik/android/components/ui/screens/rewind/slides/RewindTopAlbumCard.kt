@@ -45,7 +45,7 @@ import app.n_zik.android.components.ui.screens.rewind.rewindAlbumLevel
 @Composable
 internal fun RewindTopAlbumShow(
     topAlbum: TopAlbum?,
-    year: Int,
+    periodLabel: String,
     page: Int,
     pageCount: Int,
     active: Boolean,
@@ -94,7 +94,7 @@ internal fun RewindTopAlbumShow(
             val title = topAlbum.album.cleanTitle()
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(kickerId, year), rewindColors.value.lime)
+                    RewindKicker(stringResource(kickerId, periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(11.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
@@ -183,7 +183,7 @@ internal fun RewindTopAlbumShow(
 @Composable
 fun RewindTopAlbumCard(
     topAlbum: TopAlbum?,
-    year: Int,
+    periodLabel: String,
     page: Int,
     pageCount: Int,
     active: Boolean,
@@ -191,7 +191,7 @@ fun RewindTopAlbumCard(
 ) {
     RewindTopAlbumShow(
         topAlbum = topAlbum,
-        year = year,
+        periodLabel = periodLabel,
         page = page,
         pageCount = pageCount,
         active = active,

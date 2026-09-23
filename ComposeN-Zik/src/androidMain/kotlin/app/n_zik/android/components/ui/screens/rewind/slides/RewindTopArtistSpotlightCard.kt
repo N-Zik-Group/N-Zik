@@ -33,7 +33,7 @@ import app.n_zik.android.components.ui.screens.rewind.rewindArtistLevel
 @Composable
 fun RewindTopArtistSpotlightCard(
     artist: TopArtist?,
-    year: Int,
+    periodLabel: String,
     page: Int,
     pageCount: Int,
     active: Boolean,
@@ -90,7 +90,7 @@ fun RewindTopArtistSpotlightCard(
             }
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_artist_spotlight_kicker, year), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rw_artist_spotlight_kicker, periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(12.dp))
                 RewindReveal(active, 180, scaleFrom = 0.90f, durationMillis = 760) {

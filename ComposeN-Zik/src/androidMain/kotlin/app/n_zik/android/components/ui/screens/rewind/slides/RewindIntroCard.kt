@@ -112,7 +112,7 @@ fun RewindIntroCard(
             }
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 50, direction = RewindRevealDirection.Left, distance = 18.dp) {
-                    RewindKicker(stringResource(R.string.rw_intro_kicker, data.year), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rw_intro_kicker, data.periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(if (compact) 14.dp else 18.dp))
                 RewindReveal(active, 220, direction = RewindRevealDirection.Left, distance = 30.dp) {
@@ -142,7 +142,7 @@ fun RewindIntroCard(
                 RewindReveal(active, 650, direction = RewindRevealDirection.Right, distance = 46.dp) {
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(
-                            text = data.year.toString(),
+                            text = data.periodLabel,
                             color = rewindColors.value.cream,
                             fontSize = if (compact) 78.sp else 94.sp,
                             lineHeight = if (compact) 70.sp else 84.sp,
@@ -183,7 +183,13 @@ fun RewindIntroCard(
                 Spacer(Modifier.weight(1f))
                 RewindReveal(active, 1_900, direction = RewindRevealDirection.Up) {
                     Text(
-                        text = stringResource(R.string.rw_intro_tagline),
+                        text = stringResource(
+                            if (data.periodLabel == data.year.toString()) {
+                                R.string.rw_intro_tagline
+                            } else {
+                                R.string.rw_intro_tagline_month
+                            }
+                        ),
                         color = rewindColors.value.cream,
                         fontSize = 13.sp,
                         lineHeight = 17.sp,

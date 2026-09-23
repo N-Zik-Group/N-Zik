@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas as AndroidCanvas
 import android.os.SystemClock
 import android.view.View
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Animatable
@@ -57,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.ui.draw.clip
 import androidx.navigation.NavController
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
@@ -66,6 +68,7 @@ import app.n_zik.android.components.ui.screens.rewind.slides.rewindColors
 import app.n_zik.android.components.ui.screens.rewind.slides.LocalRewindShaderWarm
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindAlbumsCard
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindColors
+import app.n_zik.android.components.ui.screens.rewind.slides.RewindDaysCard
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindDeepCutsCard
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindDiscoveryCard
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindFinaleCard
@@ -123,13 +126,14 @@ internal val rewindShareCaptureActive = mutableStateOf(false)
 fun RewindScreen(
     navController: NavController,
     miniPlayer: @Composable () -> Unit = {},
-    rewindYear: Int? = null
+    rewindYear: Int? = null,
+    rewindMonth: Int? = null
 ) {
     val fallbackYear = LocalDate.now().year
     val defaultUsername = stringResource(R.string.rw_default_username)
     var activeYear by remember(rewindYear) { mutableStateOf(rewindYear ?: fallbackYear) }
-    var rewindData by remember(activeYear) { mutableStateOf<RewindData?>(null) }
-    var isLoading by remember(activeYear) { mutableStateOf(true) }
+    var rewindData by remember(activeYear, rewindMonth) { mutableStateOf<RewindData?>(null) }
+    var isLoading by remember(activeYear, rewindMonth) { mutableStateOf(true) }
     var username by remember { mutableStateOf(defaultUsername) }
     var shareMode by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -137,6 +141,11 @@ fun RewindScreen(
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { RewindDeckPageCount })
     val palette = colorPalette()
+
+    // The deck is a full-screen pager that swallows the system edge-swipe, and the app-wide
+    // "back goes home" preference would pop past the rewind home: any back event while the
+    // deck is on screen pops exactly one level, landing on the rewind home.
+    BackHandler { navController.popBackStack() }
 
     // SAF folder picker for the deck export (same flow as the cached-song export): the user
     // chooses where the 16 images land, then the deck plays itself and each settled page is
@@ -146,7 +155,7 @@ fun RewindScreen(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { folderUri ->
         folderUri ?: return@rememberLauncherForActivityResult
-        val data = rewindData ?: createEmptyRewindData(activeYear)
+        val data = rewindData ?: createEmptyRewindData(activeYear, rewindMonth)
         scope.launch {
             shareMode = true
             runCatching {
@@ -165,6 +174,7 @@ fun RewindScreen(
                 view = rootView,
                 pagerState = pagerState,
                 year = data.year,
+                month = rewindMonth,
                 pageCount = RewindDeckPageCount
             )
             val exported = if (deckPages != null) {
@@ -187,7 +197,7 @@ fun RewindScreen(
                     withFrameNanos { }
                     withFrameNanos { }
                 }
-                val fallbackFile = captureRewindScreenshot(context, rootView, data.year)
+                val fallbackFile = captureRewindScreenshot(context, rootView, data.year, rewindMonth)
                 rewindCaptureMode.value = false
                 fallbackFile?.let { exportRewindPagesToFolder(context, folderUri, listOf(it)) } ?: false
             }
@@ -207,7 +217,7 @@ fun RewindScreen(
         rewindColors.value = RewindColors.fromPalette(palette)
     }
 
-    LaunchedEffect(activeYear) {
+    LaunchedEffect(activeYear, rewindMonth) {
         val startedAt = SystemClock.elapsedRealtime()
         try {
             username = withContext(Dispatchers.IO) {
@@ -217,10 +227,10 @@ fun RewindScreen(
                     defaultUsername
                 )
             }
-            rewindData = RewindDataFetcher.getRewindData(activeYear)
+            rewindData = RewindDataFetcher.getRewindData(activeYear, rewindMonth)
         } catch (error: Throwable) {
-            Timber.e(error, "Failed to build Rewind for %d", activeYear)
-            rewindData = createEmptyRewindData(activeYear)
+            Timber.e(error, "Failed to build Rewind for %d (month=%s)", activeYear, rewindMonth)
+            rewindData = createEmptyRewindData(activeYear, rewindMonth)
         } finally {
             val elapsed = SystemClock.elapsedRealtime() - startedAt
             val remaining = (MinimumOpeningRevealMs - elapsed).coerceAtLeast(0L)
@@ -236,12 +246,13 @@ fun RewindScreen(
     ) {
         if (isLoading) {
             RewindLoadingScreen(
-                year = activeYear,
+                periodLabel = rewindPeriodLabel(activeYear, rewindMonth),
+                isMonthly = rewindMonth != null,
                 username = username,
                 data = rewindData
             )
         } else {
-            val data = rewindData ?: createEmptyRewindData(activeYear)
+            val data = rewindData ?: createEmptyRewindData(activeYear, rewindMonth)
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
@@ -268,18 +279,24 @@ fun RewindScreen(
                         0 -> RewindIntroCard(data, username, page, RewindDeckPageCount, active, next)
                         1 -> RewindListenerBadgeCard(data, page, RewindDeckPageCount, active, next)
                         2 -> RewindTotalTimeCard(data, page, RewindDeckPageCount, active, next)
-                        3 -> RewindTopSongCard(data.topSongs, data.year, page, RewindDeckPageCount, active, next)
-                        4 -> RewindTopArtistsCard(data.topArtists, data.year, page, RewindDeckPageCount, active, next)
-                        5 -> RewindTopArtistSpotlightCard(data.topArtists.firstOrNull(), data.year, page, RewindDeckPageCount, active, next)
-                        6 -> RewindTopSongsCard(data.topSongs, data.year, page, RewindDeckPageCount, active, next)
-                        7 -> RewindDeepCutsCard(data.topSongs, data.year, page, RewindDeckPageCount, active, next)
+                        3 -> RewindTopSongCard(data.topSongs, data.periodLabel, page, RewindDeckPageCount, active, next)
+                        4 -> RewindTopArtistsCard(data.topArtists, data.periodLabel, page, RewindDeckPageCount, active, next)
+                        5 -> RewindTopArtistSpotlightCard(data.topArtists.firstOrNull(), data.periodLabel, page, RewindDeckPageCount, active, next)
+                        6 -> RewindTopSongsCard(data.topSongs, data.periodLabel, page, RewindDeckPageCount, active, next)
+                        7 -> RewindDeepCutsCard(data.topSongs, data.periodLabel, page, RewindDeckPageCount, active, next)
                         8 -> RewindPeakTimeCard(data, page, RewindDeckPageCount, active, next)
                         9 -> RewindListeningDaysCard(data, page, RewindDeckPageCount, active, next)
                         10 -> RewindDiscoveryCard(data, page, RewindDeckPageCount, active, next)
-                        11 -> RewindTopAlbumCard(data.topAlbums.firstOrNull(), data.year, page, RewindDeckPageCount, active, next)
-                        12 -> RewindAlbumsCard(data.topAlbums, data.year, page, RewindDeckPageCount, active, next)
-                        13 -> RewindTopPlaylistsCard(data.topPlaylists, data.year, page, RewindDeckPageCount, active, next)
-                        14 -> RewindMonthlyCard(data, page, RewindDeckPageCount, active, next)
+                        11 -> RewindTopAlbumCard(data.topAlbums.firstOrNull(), data.periodLabel, page, RewindDeckPageCount, active, next)
+                        12 -> RewindAlbumsCard(data.topAlbums, data.periodLabel, page, RewindDeckPageCount, active, next)
+                        13 -> RewindTopPlaylistsCard(data.topPlaylists, data.periodLabel, page, RewindDeckPageCount, active, next)
+                        14 -> if (rewindMonth != null) {
+                            // A single-month deck breaks the month down day by day instead of
+                            // showing twelve months of which only one has data
+                            RewindDaysCard(data, page, RewindDeckPageCount, active, next)
+                        } else {
+                            RewindMonthlyCard(data, page, RewindDeckPageCount, active, next)
+                        }
                         else -> RewindFinaleCard(
                             data = data,
                             username = username,
@@ -327,12 +344,13 @@ fun RewindScreen(
  */
 @Composable
 private fun RewindLoadingScreen(
-    year: Int,
+    periodLabel: String,
+    isMonthly: Boolean,
     username: String,
     data: RewindData?
 ) {
-    val timeline = remember(year) { Animatable(0f) }
-    LaunchedEffect(year) {
+    val timeline = remember(periodLabel) { Animatable(0f) }
+    LaunchedEffect(periodLabel) {
         timeline.snapTo(0f)
         timeline.animateTo(
             targetValue = 1f,
@@ -404,7 +422,7 @@ private fun RewindLoadingScreen(
                 )
                 Spacer(Modifier.weight(1f))
                 Text(
-                    text = year.toString(),
+                    text = periodLabel,
                     color = lime.copy(alpha = segment(p, 0.08f, 0.20f)),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Black,
@@ -426,12 +444,18 @@ private fun RewindLoadingScreen(
                     verticalArrangement = Arrangement.spacedBy(7.dp)
                 ) {
                     LoadingWord(stringResource(R.string.rw_loader_word_your), lime, ink, segment(p, 0.11f, 0.22f), fromRight = false)
-                    LoadingWord(stringResource(R.string.rw_loader_word_year), pink, ink, segment(p, 0.19f, 0.30f), fromRight = true)
+                    LoadingWord(
+                        stringResource(if (isMonthly) R.string.rw_loader_word_month else R.string.rw_loader_word_year),
+                        pink,
+                        ink,
+                        segment(p, 0.19f, 0.30f),
+                        fromRight = true
+                    )
                     LoadingWord(stringResource(R.string.rw_loader_word_in), orange, ink, segment(p, 0.27f, 0.38f), fromRight = false)
                     LoadingWord(stringResource(R.string.rw_loader_word_music), cream, ink, segment(p, 0.35f, 0.46f), fromRight = true)
                 }
                 RewindLoaderLockup(
-                    year = year,
+                    periodLabel = periodLabel,
                     progress = segment(p, 0.56f, 0.80f),
                     cream = cream,
                     lime = lime,
@@ -507,7 +531,7 @@ private fun LoadingWord(
 
 @Composable
 private fun RewindLoaderLockup(
-    year: Int,
+    periodLabel: String,
     progress: Float,
     cream: Color,
     lime: Color,
@@ -550,7 +574,7 @@ private fun RewindLoaderLockup(
             }
         )
         Text(
-            text = year.toString(),
+            text = periodLabel,
             color = ink,
             fontSize = 43.sp,
             lineHeight = 42.sp,
@@ -591,7 +615,8 @@ private fun segment(value: Float, start: Float, end: Float): Float {
 private suspend fun captureRewindScreenshot(
     context: Context,
     view: View,
-    year: Int
+    year: Int,
+    month: Int? = null
 ): File? {
     return runCatching {
         val bitmap = withContext(Dispatchers.Main.immediate) {
@@ -610,7 +635,7 @@ private suspend fun captureRewindScreenshot(
                 ?.forEach(File::delete)
             File(
                 shareDirectory,
-                "NZik_Rewind_${year}_${System.currentTimeMillis()}.png"
+                "NZik_Rewind_${year}${rewindMonthSuffix(month)}_${System.currentTimeMillis()}.png"
             ).also { outputFile ->
                 outputFile.outputStream().buffered().use { output ->
                     check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)) {
@@ -629,7 +654,7 @@ private suspend fun captureRewindScreenshot(
     }
 }
 
-private fun createEmptyRewindData(year: Int): RewindData {
+private fun createEmptyRewindData(year: Int, month: Int? = null): RewindData {
     return RewindData(
         topSongs = emptyList(),
         topArtists = emptyList(),
@@ -653,6 +678,12 @@ private fun createEmptyRewindData(year: Int): RewindData {
         totalUniqueAlbums = 0,
         totalUniquePlaylists = 0,
         year = year,
-        daysWithMusic = 0
+        daysWithMusic = 0,
+        periodLabel = rewindPeriodLabel(year, month),
+        daysInPeriod = rewindDaysInPeriod(year, month)
     )
 }
+
+/** "_03" style suffix for a monthly deck file name, empty for the annual deck. */
+private fun rewindMonthSuffix(month: Int?): String =
+    month?.let { "_${it.toString().padStart(2, '0')}" }.orEmpty()

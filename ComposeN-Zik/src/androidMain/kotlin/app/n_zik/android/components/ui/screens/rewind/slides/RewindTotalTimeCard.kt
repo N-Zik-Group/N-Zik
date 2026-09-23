@@ -54,7 +54,7 @@ fun RewindTotalTimeCard(
             }
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 50, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_totals_kicker, data.year), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rw_totals_kicker, data.periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(11.dp))
                 RewindReveal(active, 130, direction = RewindRevealDirection.Left) {

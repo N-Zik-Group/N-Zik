@@ -1507,7 +1507,9 @@ class MainActivity :
                             // Rewind is a full-screen deck: the player sheet (mini-player included) slides
                             // down out of the screen with the same jelly spring as the header, and returns
                             // with the same bounce when leaving the deck
-                            val isRewindDeck = currentRoute?.startsWith(NavRoutes.rewind.name) ?: false
+                            val isRewindDeck = currentRoute?.let { route ->
+                                route == NavRoutes.rewind.name || route.startsWith("${NavRoutes.rewind.name}?")
+                            } ?: false
                             val rewindSheetProgress = animateFloatAsState(
                                 targetValue = if (isRewindDeck) 1f else 0f,
                                 animationSpec = spring(

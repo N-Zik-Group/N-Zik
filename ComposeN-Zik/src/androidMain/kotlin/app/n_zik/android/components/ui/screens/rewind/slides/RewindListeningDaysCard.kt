@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.screens.rewind.RewindData
-import java.time.Year
 import kotlin.math.roundToInt
 
 @Composable
@@ -40,9 +39,9 @@ fun RewindListeningDaysCard(
     active: Boolean,
     onNext: () -> Unit
 ) {
-    val daysInYear = Year.of(data.year).length()
-    val ratio = (data.daysWithMusic.toFloat() / daysInYear.toFloat()).coerceIn(0f, 1f)
-    val bar = remember(data.daysWithMusic, data.year) { Animatable(0f) }
+    val daysInPeriod = data.daysInPeriod
+    val ratio = (data.daysWithMusic.toFloat() / daysInPeriod.toFloat()).coerceIn(0f, 1f)
+    val bar = remember(data.daysWithMusic, data.periodLabel) { Animatable(0f) }
     LaunchedEffect(active, ratio) {
         if (!active) {
             bar.snapTo(0f)
@@ -62,7 +61,7 @@ fun RewindListeningDaysCard(
             val compact = maxHeight < 700.dp
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_listening_days_kicker, data.year), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rw_listening_days_kicker, data.periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(11.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
@@ -142,7 +141,7 @@ fun RewindListeningDaysCard(
                         }
                         Spacer(Modifier.height(10.dp))
                         Text(
-                            text = stringResource(R.string.rw_listening_days_without, formatRewindNumber((daysInYear - data.daysWithMusic).coerceAtLeast(0).toLong())),
+                            text = stringResource(R.string.rw_listening_days_without, formatRewindNumber((daysInPeriod - data.daysWithMusic).coerceAtLeast(0).toLong())),
                             color = rewindColors.value.cream.copy(alpha = 0.52f),
                             fontSize = 10.sp,
                             lineHeight = 14.sp,

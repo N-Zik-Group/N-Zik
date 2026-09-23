@@ -24,15 +24,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.screens.rewind.CalendarDayStat
 import app.n_zik.android.components.ui.screens.rewind.RewindData
 
+/**
+ * "DAY BY DAY" slide of a monthly deck: one bar per calendar day of the month. The annual deck
+ * shows [RewindMonthlyCard] on this page instead, since a month-by-month chart of a single
+ * month only has one bar of data.
+ */
 @Composable
-fun RewindMonthlyCard(
+fun RewindDaysCard(
     data: RewindData,
     page: Int,
     pageCount: Int,
@@ -40,8 +48,11 @@ fun RewindMonthlyCard(
     onNext: () -> Unit
 ) {
     val chart = remember { Animatable(0f) }
-    val months = data.monthlyStats.take(12)
-    val peak = months.maxByOrNull { it.minutes }
+    // One bar per calendar day of the month; days without stats (data not loaded) render at zero.
+    val days = (1..data.daysInPeriod).map { day ->
+        data.calendarDayStats.firstOrNull { stat -> stat.day == day } ?: CalendarDayStat(day, 0L, 0)
+    }
+    val peak = days.maxByOrNull { it.minutes }?.takeIf { it.minutes > 0 }
     LaunchedEffect(active) {
         if (!active) {
             chart.snapTo(0f)
@@ -63,12 +74,12 @@ fun RewindMonthlyCard(
             val chartHeight = if (compact) 205.dp else 250.dp
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_monthly_kicker, data.periodLabel), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rw_days_kicker, data.periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(11.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
                     Text(
-                        text = stringResource(R.string.rw_monthly_heading),
+                        text = stringResource(R.string.rw_days_heading),
                         color = onSlide,
                         fontSize = if (compact) 35.sp else 41.sp,
                         lineHeight = if (compact) 33.sp else 38.sp,
@@ -79,7 +90,7 @@ fun RewindMonthlyCard(
                 Spacer(Modifier.height(8.dp))
                 RewindReveal(active, 210) {
                     Text(
-                        text = peak?.let { stringResource(R.string.rw_monthly_peak_sub, it.month.uppercase()) } ?: stringResource(R.string.rw_monthly_default_sub),
+                        text = peak?.let { stringResource(R.string.rw_days_peak_sub, it.day) } ?: stringResource(R.string.rw_days_default_sub),
                         color = onSlide,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Black,
@@ -103,38 +114,47 @@ fun RewindMonthlyCard(
                                 .fillMaxWidth()
                                 .height(chartHeight)
                         ) {
-                            val maxMinutes = months.maxOfOrNull { it.minutes }?.coerceAtLeast(1L) ?: 1L
-                            val gap = 5.dp.toPx()
-                            val barWidth = if (months.isEmpty()) size.width else (size.width - gap * 11f) / 12f
-                            months.forEachIndexed { index, month ->
-                                val local = ((chart.value * 1.55f) - index * 0.05f).coerceIn(0f, 1f)
-                                val ratio = month.minutes.toFloat() / maxMinutes.toFloat()
+                            val gapPx = 2.dp.toPx()
+                            val maxMinutes = days.maxOfOrNull { it.minutes }?.coerceAtLeast(1L) ?: 1L
+                            val barWidth =
+                                if (days.isEmpty()) size.width
+                                else (size.width - gapPx * (days.size - 1f)) / days.size
+                            // The monthly card staggers 12 bars by 0.05f; spread the same total
+                            // delay over the (many more) day bars so the last one still lands.
+                            val stagger = 0.55f / days.size.coerceAtLeast(1)
+                            days.forEachIndexed { index, day ->
+                                val local = ((chart.value * 1.55f) - index * stagger).coerceIn(0f, 1f)
+                                val ratio = day.minutes.toFloat() / maxMinutes.toFloat()
                                 val barHeight = size.height * ratio * local
-                                val x = index * (barWidth + gap)
+                                val x = index * (barWidth + gapPx)
                                 drawRoundRect(
                                     color = when {
-                                        month == peak -> rewindColors.value.lime
+                                        day == peak -> rewindColors.value.lime
                                         index % 3 == 0 -> rewindColors.value.purple
                                         index % 3 == 1 -> rewindColors.value.pink
                                         else -> rewindColors.value.orange
                                     },
                                     topLeft = Offset(x, size.height - barHeight),
                                     size = androidx.compose.ui.geometry.Size(barWidth, barHeight),
-                                    cornerRadius = CornerRadius(4.dp.toPx())
+                                    cornerRadius = CornerRadius(2.dp.toPx())
                                 )
                             }
                         }
                         Spacer(Modifier.height(8.dp))
+                        // The label row mirrors the bar layout (same count, same gaps) so every
+                        // day number sits under its bar.
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
                         ) {
-                            months.forEach { month ->
+                            days.forEach { day ->
                                 Text(
-                                    text = month.month.take(1).uppercase(),
-                                    color = if (month == peak) rewindColors.value.lime else rewindColors.value.cream.copy(alpha = 0.50f),
-                                    fontSize = 8.sp,
-                                    fontWeight = FontWeight.Black
+                                    text = day.day.toString(),
+                                    color = if (day == peak) rewindColors.value.lime else rewindColors.value.cream.copy(alpha = 0.50f),
+                                    fontSize = 7.sp,
+                                    fontWeight = FontWeight.Black,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.weight(1f)
                                 )
                             }
                         }
@@ -145,15 +165,15 @@ fun RewindMonthlyCard(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(9.dp)
                     ) {
-                        MonthMetric(
-                            label = stringResource(R.string.rw_monthly_peak_month),
-                            value = peak?.month?.uppercase() ?: "—",
+                        DayMetric(
+                            label = stringResource(R.string.rw_days_peak_day),
+                            value = peak?.day?.toString() ?: "—",
                             background = rewindColors.value.purple,
                             foreground = rewindColors.value.textOn(rewindColors.value.purple),
                             modifier = Modifier.weight(1f)
                         )
-                        MonthMetric(
-                            label = stringResource(R.string.rw_monthly_peak_minutes),
+                        DayMetric(
+                            label = stringResource(R.string.rw_days_peak_minutes),
                             value = formatRewindNumber(peak?.minutes ?: 0L),
                             background = rewindColors.value.pink,
                             foreground = rewindColors.value.textOn(rewindColors.value.pink),
@@ -167,11 +187,11 @@ fun RewindMonthlyCard(
 }
 
 @Composable
-private fun MonthMetric(
+private fun DayMetric(
     label: String,
     value: String,
-    background: androidx.compose.ui.graphics.Color,
-    foreground: androidx.compose.ui.graphics.Color,
+    background: Color,
+    foreground: Color,
     modifier: Modifier = Modifier
 ) {
     Column(

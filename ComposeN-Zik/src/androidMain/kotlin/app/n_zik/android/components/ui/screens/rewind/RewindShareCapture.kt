@@ -44,7 +44,8 @@ internal const val RewindPageSettleMs = 900L
  * RuntimeShader backgrounds included — which `view.draw()` cannot replay on a software
  * canvas (RuntimeShader and hardware bitmaps both throw there). The deck visits its pages
  * in order; each one waits for its reveal to settle before its frame is copied and saved
- * as `NZik_Rewind_<year>_NN.png`. Each image carries the same top/bottom padding as the
+ * as `NZik_Rewind_<year>_NN.png` (a monthly deck adds the month: `NZik_Rewind_<year>_<MM>_NN.png`).
+ * Each image carries the same top/bottom padding as the
  * live deck, but with the system bars hidden for the whole pass: the deck pins the
  * ignoring-visibility bar insets through [rewindShareCaptureActive], so the bar areas show
  * the slide background (no clock, battery icons or nav buttons) instead of the system UI.
@@ -57,6 +58,7 @@ internal suspend fun captureRewindDeckPages(
     view: View,
     pagerState: PagerState,
     year: Int,
+    month: Int? = null,
     pageCount: Int
 ): List<File>? {
     val activity = view.context as? Activity ?: return null
@@ -110,9 +112,10 @@ internal suspend fun captureRewindDeckPages(
             ) ?: return null
 
             // Zero-paged so galleries order the 16 slides lexicographically (01..16)
+            val monthSuffix = month?.let { "_${it.toString().padStart(2, '0')}" }.orEmpty()
             val pageFile = File(
                 shareDirectory,
-                "NZik_Rewind_${year}_${(page + 1).toString().padStart(2, '0')}.png"
+                "NZik_Rewind_${year}${monthSuffix}_${(page + 1).toString().padStart(2, '0')}.png"
             )
             val compressed = withContext(Dispatchers.IO) {
                 pageFile.outputStream().buffered().use { output ->

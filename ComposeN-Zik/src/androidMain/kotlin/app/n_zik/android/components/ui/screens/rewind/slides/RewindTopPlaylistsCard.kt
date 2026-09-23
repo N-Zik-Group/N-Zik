@@ -28,7 +28,7 @@ import app.n_zik.android.components.ui.screens.rewind.rewindPlaylistLevel
 @Composable
 fun RewindTopPlaylistsCard(
     playlists: List<TopPlaylist>,
-    year: Int,
+    periodLabel: String,
     page: Int,
     pageCount: Int,
     active: Boolean,
@@ -60,7 +60,7 @@ fun RewindTopPlaylistsCard(
         }
         Column(modifier = Modifier.fillMaxSize()) {
             RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                RewindKicker(stringResource(R.string.rw_top_five_kicker, year), rewindColors.value.lime)
+                RewindKicker(stringResource(R.string.rw_top_five_kicker, periodLabel), rewindColors.value.lime)
             }
             Spacer(Modifier.height(11.dp))
             RewindReveal(active, 110, direction = RewindRevealDirection.Left) {

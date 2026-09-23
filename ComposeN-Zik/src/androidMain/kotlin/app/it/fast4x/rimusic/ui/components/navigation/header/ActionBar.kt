@@ -82,7 +82,7 @@ private fun HamburgerMenu(
         DropdownMenu.Item(
             R.drawable.sparkles,
             R.string.rewind
-        ) { onItemClick( NavRoutes.rewind ) }
+        ) { onItemClick( NavRoutes.rewindHome ) }
     )
     // Picture in picture button
     if (isPipSupported && enablePictureInPicture)

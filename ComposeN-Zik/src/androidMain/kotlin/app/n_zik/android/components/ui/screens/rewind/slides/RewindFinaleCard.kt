@@ -104,12 +104,12 @@ fun RewindFinaleCard(
             val statSize = if (compact) 19.sp else 23.sp
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_finale_kicker, data.year), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rw_finale_kicker, data.periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(10.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
                     Text(
-                        text = stringResource(R.string.rw_finale_heading, data.year),
+                        text = stringResource(R.string.rw_finale_heading, data.periodLabel),
                         color = rewindColors.value.cream,
                         fontSize = if (compact) 40.sp else 48.sp,
                         lineHeight = if (compact) 37.sp else 44.sp,
@@ -340,7 +340,7 @@ fun RewindFinaleCard(
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
-                                text = stringResource(R.string.rw_finale_brand, data.year),
+                                text = stringResource(R.string.rw_finale_brand, data.periodLabel),
                                 color = rewindColors.value.lime,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Black,

@@ -30,7 +30,7 @@ import app.n_zik.android.components.ui.screens.rewind.TopAlbum
 @Composable
 fun RewindAlbumsCard(
     albums: List<TopAlbum>,
-    year: Int,
+    periodLabel: String,
     page: Int,
     pageCount: Int,
     active: Boolean,
@@ -64,7 +64,7 @@ fun RewindAlbumsCard(
             val topCover = if (compact) 116.dp else 140.dp
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_albums_kicker, year), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rw_albums_kicker, periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(9.dp))
                 RewindReveal(active, 100, direction = RewindRevealDirection.Left) {

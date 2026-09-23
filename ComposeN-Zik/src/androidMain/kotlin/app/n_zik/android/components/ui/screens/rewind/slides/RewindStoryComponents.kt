@@ -47,6 +47,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.ContentScale
@@ -646,6 +647,10 @@ internal fun RewindPlaylistArtwork(
     isYoutubePlaylist: Boolean,
     // Named sizeDp (not "size") so the parameter does not shadow Modifier.size().
     sizeDp: Dp = 46.dp,
+    shape: Shape = thumbnailShape(),
+    // When true, a playlist without artwork shows the app launcher box (ImageCacheFactory's
+    // fallback) instead of the initials placeholder.
+    emptyFallback: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val quadrant = sizeDp / 2
@@ -667,13 +672,21 @@ internal fun RewindPlaylistArtwork(
         }
     }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
 
+    val showFallback = emptyFallback && thumbnails.isEmpty()
     Box(
         modifier = modifier
-            .clip(thumbnailShape())
+            .clip(shape)
             .background(rewindColors.value.ink),
         contentAlignment = Alignment.Center
     ) {
         when {
+            showFallback ->
+                Image(
+                    painter = painterResource(R.drawable.ic_launcher_box),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
             thumbnails.isEmpty() ->
                 Text(
                     text = title.trim().take(2).uppercase().ifBlank { "♪" },
@@ -708,27 +721,29 @@ internal fun RewindPlaylistArtwork(
                     }
                 }
         }
-        // Same dimming overlay as the statistics screen, without the rank: the rank number
-        // is rendered by the row itself (Deep Cuts style).
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(thumbnailShape())
-                .background(colorPalette().overlay)
-        ) {
-            // No rank — it's on the row (Deep Cuts style).
+        if (!showFallback) {
+            // Same dimming overlay as the statistics screen, without the rank: the rank
+            // number is rendered by the row itself (Deep Cuts style).
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(shape)
+                    .background(colorPalette().overlay)
+            ) {
+                // No rank — it's on the row (Deep Cuts style).
+            }
+            // The statistics screen also paints an origin indicator (N-Zik logo, pin,
+            // source icon) over the artwork; it is kept top-right on the deck artworks.
+            RewindPlaylistOriginIcon(
+                name = name,
+                browseId = browseId,
+                isYoutubePlaylist = isYoutubePlaylist,
+                iconSize = sizeDp * 0.30f,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(sizeDp * 0.05f)
+            )
         }
-        // The statistics screen also paints an origin indicator (N-Zik logo, pin, source
-        // icon) over the artwork; it is kept top-right on the deck artworks.
-        RewindPlaylistOriginIcon(
-            name = name,
-            browseId = browseId,
-            isYoutubePlaylist = isYoutubePlaylist,
-            iconSize = sizeDp * 0.30f,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(sizeDp * 0.05f)
-        )
     }
 }
 

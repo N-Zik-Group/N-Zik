@@ -82,7 +82,7 @@ fun RewindDiscoveryCard(
             }
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_discovery_kicker, data.year), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rw_discovery_kicker, data.periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(11.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {

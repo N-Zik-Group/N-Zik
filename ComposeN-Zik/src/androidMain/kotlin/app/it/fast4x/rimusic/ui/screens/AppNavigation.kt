@@ -92,6 +92,7 @@ import app.it.fast4x.rimusic.ui.screens.search.SearchScreen
 import app.it.fast4x.rimusic.ui.screens.searchresult.SearchResultScreen
 import app.it.fast4x.rimusic.ui.screens.settings.SettingsScreen
 import app.it.fast4x.rimusic.ui.screens.statistics.StatisticsScreen
+import app.n_zik.android.components.ui.screens.rewind.RewindHomeScreen
 import app.n_zik.android.components.ui.screens.rewind.RewindScreen
 import app.it.fast4x.rimusic.utils.clearPreference
 import app.it.fast4x.rimusic.utils.homeScreenTabIndexKey
@@ -226,7 +227,9 @@ fun AppNavigation(
     val disableBackStack by rememberPreference(disableNavigationBackStackKey, false)
     val currentEntry by navController.currentBackStackEntryAsState()
     val isHome = currentEntry?.destination?.route?.startsWith(NavRoutes.home.name) ?: true
-    val isRewind = currentEntry?.destination?.route?.startsWith(NavRoutes.rewind.name) ?: false
+    val isRewind = currentEntry?.destination?.route?.let { route ->
+        route == NavRoutes.rewind.name || route.startsWith("${NavRoutes.rewind.name}?")
+    } ?: false
 
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -524,10 +527,28 @@ fun AppNavigation(
             )
         }
 
-        composable(route = NavRoutes.rewind.name) {
+        // Rewind home: yearly/monthly entry point to the deck
+        composable(route = NavRoutes.rewindHome.name) {
+            RewindHomeScreen(
+                navController = navController,
+                miniPlayer = miniPlayer,
+            )
+        }
+
+        composable(
+            route = "${NavRoutes.rewind.name}?year={year}&month={month}",
+            arguments = listOf(
+                navArgument("year") { type = NavType.IntType; defaultValue = 0 },
+                navArgument("month") { type = NavType.IntType; defaultValue = -1 },
+            )
+        ) { backStackEntry ->
+            val year = backStackEntry.arguments?.getInt("year", 0) ?: 0
+            val month = backStackEntry.arguments?.getInt("month", -1) ?: -1
             RewindScreen(
                 navController = navController,
                 miniPlayer = miniPlayer,
+                rewindYear = if (year > 0) year else null,
+                rewindMonth = if (month > 0) month else null,
             )
         }
 

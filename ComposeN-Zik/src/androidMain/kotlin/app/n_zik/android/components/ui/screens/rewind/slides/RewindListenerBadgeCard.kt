@@ -74,7 +74,7 @@ fun RewindListenerBadgeCard(
             val badgeSize = if (compact) 178.dp else 215.dp
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_badge_kicker, data.year), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rw_badge_kicker, data.periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(12.dp))
                 RewindReveal(active, 120, direction = RewindRevealDirection.Left) {
@@ -106,7 +106,7 @@ fun RewindListenerBadgeCard(
                                 Text(
                                     text = stringResource(R.string.rw_badge_index_label),
                                     color = rewindColors.value.cream.copy(alpha = 0.55f),
-                                    fontSize = 9.sp,
+                                    fontSize = 11.sp,
                                     fontWeight = FontWeight.Black,
                                     letterSpacing = 1.0.sp
                                 )
@@ -121,7 +121,7 @@ fun RewindListenerBadgeCard(
                                 Text(
                                     text = stringResource(R.string.rw_badge_index_sublabel),
                                     color = rewindColors.value.cream,
-                                    fontSize = 9.sp,
+                                    fontSize = 11.sp,
                                     fontWeight = FontWeight.Black,
                                     letterSpacing = 0.8.sp
                                 )
@@ -187,7 +187,7 @@ fun RewindListenerBadgeCard(
                                         reached -> rewindColors.value.cream.copy(alpha = 0.76f)
                                         else -> rewindColors.value.cream.copy(alpha = 0.28f)
                                     },
-                                    fontSize = if (current) 8.sp else 6.sp,
+                                    fontSize = if (current) 11.sp else 9.sp,
                                     fontWeight = FontWeight.Black,
                                     letterSpacing = 0.5.sp,
                                     textAlign = TextAlign.End,

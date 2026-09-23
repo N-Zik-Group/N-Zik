@@ -48,7 +48,7 @@ import kotlinx.coroutines.delay
 @Composable
 internal fun RewindTopSongShow(
     songs: List<TopSong>,
-    year: Int,
+    periodLabel: String,
     page: Int,
     pageCount: Int,
     active: Boolean,
@@ -125,7 +125,7 @@ internal fun RewindTopSongShow(
             val frameWidth = if (compact) 218.dp else 252.dp
             Column(modifier = Modifier.fillMaxSize()) outerColumn@ {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(kickerId, year), rewindColors.value.lime)
+                    RewindKicker(stringResource(kickerId, periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(12.dp))
                 if (phase < 2) {
@@ -227,7 +227,7 @@ internal fun RewindTopSongShow(
                     RewindReveal(active, 170, scaleFrom = 0.78f, durationMillis = 720) {
                         TopSongWallFrame(
                             song = winner,
-                            year = year,
+                            periodLabel = periodLabel,
                             frameWidth = frameWidth,
                             modifier = Modifier.graphicsLayer {
                                 rotationZ = -2.4f
@@ -305,7 +305,7 @@ internal fun RewindTopSongShow(
 @Composable
 fun RewindTopSongCard(
     songs: List<TopSong>,
-    year: Int,
+    periodLabel: String,
     page: Int,
     pageCount: Int,
     active: Boolean,
@@ -313,7 +313,7 @@ fun RewindTopSongCard(
 ) {
     RewindTopSongShow(
         songs = songs,
-        year = year,
+        periodLabel = periodLabel,
         page = page,
         pageCount = pageCount,
         active = active,
@@ -327,12 +327,12 @@ fun RewindTopSongCard(
 
 /**
  * Framed "wall" artwork for a top song: cream frame on ink, artwork inside and a
- * "MOST PLAYED / year / 01" footer bar. Reused by the Favorite Song slide as its hero.
+ * "MOST PLAYED / period / 01" footer bar. Reused by the Favorite Song slide as its hero.
  */
 @Composable
 internal fun TopSongWallFrame(
     song: TopSong,
-    year: Int,
+    periodLabel: String,
     frameWidth: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier
 ) {
@@ -376,7 +376,7 @@ internal fun TopSongWallFrame(
                         letterSpacing = 0.8.sp
                     )
                     Text(
-                        text = year.toString(),
+                        text = periodLabel,
                         color = rewindColors.value.cream,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Black
