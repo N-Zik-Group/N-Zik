@@ -347,7 +347,6 @@ New:
 - [**compose-reorderable**](https://github.com/Calvin-LL/Reorderable): Drag & drop reorderable lists in Compose.
 - [**kotlin-csv**](https://github.com/jsoizo/kotlin-csv): CSV reading/writing for playlist import/export.
 - [**Brotli**](https://github.com/google/brotli): Brotli compression for HTTP responses.
-- [**FreeDroidWarn**](https://github.com/woheller69/FreeDroidWarn): Customizable warning dialogs.
 - [**Jetpack Palette**](https://developer.android.com/develop/ui/views/graphics/palette-colors): Color extraction from album artwork.
 - [**Jetpack Navigation Compose**](https://developer.android.com/develop/ui/compose/navigation): Type-safe navigation for Compose.
 - [**Room**](https://developer.android.com/training/data-storage/room): Local database with SQLite abstraction.

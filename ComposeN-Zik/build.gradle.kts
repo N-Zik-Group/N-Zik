@@ -387,7 +387,6 @@ dependencies {
     implementation(projects.musicbrainz)
     implementation(projects.lastfm)
     implementation(projects.betterlyrics)
-    implementation(libs.freedroidwarn)
 
 
     coreLibraryDesugaring(libs.desugaring.nio)

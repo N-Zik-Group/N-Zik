@@ -80,7 +80,6 @@ koin = "4.2.2"
 kermit = "2.2.0"
 kotlinx-serialization = "1.11.0"
 composeReorderable = "3.1.0"
-freedroidwarn = "V1.13"
 work = "2.11.2"
 carapp = "1.4.0"
 innertubex = "v0.7.0"
@@ -202,7 +201,6 @@ brotli = { group = "org.brotli", name = "dec", version.ref = "brotli" }
 desugaring-nio = { group = "com.android.tools", name = "desugar_jdk_libs_nio", version.ref = "desugaring" }
 compose-shimmer = { group = "com.valentinilk.shimmer", name = "compose-shimmer", version.ref = "shimmer" }
 compose-reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "composeReorderable" }
-freedroidwarn = { module = "com.github.woheller69:FreeDroidWarn", version.ref = "freedroidwarn" }
 media3-muxer = { group = "androidx.media3", name = "media3-muxer", version.ref = "media3" }
 media3-transformer = { group = "androidx.media3", name = "media3-transformer", version.ref = "media3" }
 ffmpeg-kit-audio = { group = "io.github.maxrave-dev", name = "ffmpeg-kit-audio", version.ref = "ffmpegkit" }

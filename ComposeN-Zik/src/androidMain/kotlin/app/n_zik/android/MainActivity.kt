@@ -277,7 +277,6 @@ import java.util.Locale
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import app.it.fast4x.rimusic.enums.UiType
-import org.woheller69.freeDroidWarn.FreeDroidWarn
 import app.it.fast4x.rimusic.ui.styling.BoundedCornerSize
 import app.n_zik.android.core.navigation.MiniPlayerQueueInterceptor
 import app.n_zik.android.core.network.client.NetworkClientFactory
@@ -392,7 +391,6 @@ class MainActivity :
     @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        FreeDroidWarn.showWarningOnUpgrade(this, BuildConfig.VERSION_CODE)
         MonetCompat.enablePaletteCompat()
 
         enableEdgeToEdge(
