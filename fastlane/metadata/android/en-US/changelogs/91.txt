@@ -1,4 +1,4 @@
-Hotfix: F-Droid (FOSS) build repaired - the Last.fm key is now in the source so F-Droid can rebuild the FOSS APK identically.
+Hotfix: F-Droid (FOSS) build repaired: the Last.fm key is now in the source so F-Droid can rebuild the FOSS APK identically.
 Added: "My Rewind" home page, monthly deck ("Wrapped du mois") and deck image export (unfinished, not fully tested), Rescue Center & Debug menu entries.
 Improved: Discord RPC album fallback from the database, explicit marker on the presence, album-based default image text.
 Fixed: "Unknown Album" on stream presences, RPC preview card parity, rewind deck back navigation.
