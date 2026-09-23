@@ -64,6 +64,7 @@ import app.it.fast4x.rimusic.enums.MaxStatisticsItems
 import app.it.fast4x.rimusic.enums.MaxTopPlaylistItems
 import android.text.TextUtils
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
+import app.n_zik.android.components.settings.RewindSettingsCard
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.kreate.android.me.knighthat.utils.Toaster
 import androidx.compose.ui.platform.LocalContext
@@ -226,6 +227,8 @@ fun AIRecommendationSettings(
         
         search.ToolBarButton()
         search.SearchBar( this )
+
+        RewindSettingsCard()
 
         // General Settings Section
         AnimatedVisibility(

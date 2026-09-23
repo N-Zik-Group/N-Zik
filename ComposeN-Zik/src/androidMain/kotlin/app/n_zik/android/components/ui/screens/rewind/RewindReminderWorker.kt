@@ -15,6 +15,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import app.n_zik.android.MainActivity
 import app.n_zik.android.R
+import app.n_zik.android.utils.DataStoreUtils
 import timber.log.Timber
 import java.time.Duration
 import java.time.LocalDate
@@ -32,8 +33,10 @@ import java.util.concurrent.TimeUnit
  * The worker is self-perpetuating: every run reschedules itself for the next 1st, so a
  * single [schedule] at app startup keeps the monthly cadence for the app's whole life.
  *
- * Gating is the OS-level one only (frozen task contract): on API 33+ the notification is
- * skipped — with a log, not a failure — when `POST_NOTIFICATIONS` was denied at runtime.
+ * Gating has two layers: the settings gate ([isMonthlyReminderEnabled], spec GH-275) is
+ * checked when scheduling (off cancels the pending work) and again at execution (off
+ * skips the post); the OS-level gate (frozen task contract) skips the notification —
+ * with a log, not a failure — when `POST_NOTIFICATIONS` was denied at runtime on API 33+.
  * The channel itself ("rewind", importance LOW) is created by the application.
  */
 internal class RewindReminderWorker(
@@ -65,10 +68,29 @@ internal class RewindReminderWorker(
         private const val JITTER_MS = 10L * 60 * 1000
 
         /**
+         * The monthly reminder gate (spec GH-275): the reminder only runs while the master
+         * switch, the monthly recap and the monthly notification toggles are all on — a type
+         * off implies its notification off, even if the notification toggle is on. The yearly
+         * notification toggle belongs to the yearly worker (roadmap item 2) and is not part
+         * of this gate. Internal so unit tests can verify the decision without a WorkManager.
+         */
+        internal fun isMonthlyReminderEnabled(context: Context): Boolean =
+            DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, true) &&
+            DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, true) &&
+            DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_NOTIF_ENABLED, true)
+
+        /**
          * Schedules the first reminder for the next 1st of the month. KEEP avoids piling up
          * concurrent runs when the app is started several times before the work fires.
+         * While the feature is off in the settings, any pending work is canceled instead so
+         * a toggle takes effect without an app restart (spec GH-275).
          */
         fun schedule(context: Context) {
+            if (!isMonthlyReminderEnabled(context)) {
+                WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
+                Timber.tag(TAG).i("Rewind monthly reminder disabled in settings: canceling pending work")
+                return
+            }
             val request = OneTimeWorkRequestBuilder<RewindReminderWorker>()
                 .setInitialDelay(
                     applyJitter(msUntilNextMonthStart(), (-JITTER_MS..JITTER_MS).random()),
@@ -99,7 +121,15 @@ internal class RewindReminderWorker(
     override suspend fun doWork(): Result {
         return try {
             val finished = LocalDate.now().minusMonths(1)
-            if (
+            if (!isMonthlyReminderEnabled(applicationContext)) {
+                // Re-read the toggles at execution time: a flip made after the work was
+                // enqueued must suppress the notification (spec GH-275). The self-reschedule
+                // below still runs and, with the gate off, cancels the pending work: the
+                // monthly cadence resumes at the next app startup while the gate is on.
+                Timber.tag(TAG).i("Rewind disabled in settings: skipping the %s reminder",
+                    finished.month.getDisplayName(TextStyle.FULL, Locale.getDefault()))
+                Result.success()
+            } else if (
                 Build.VERSION.SDK_INT >= 33 &&
                 applicationContext.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
                 PackageManager.PERMISSION_GRANTED

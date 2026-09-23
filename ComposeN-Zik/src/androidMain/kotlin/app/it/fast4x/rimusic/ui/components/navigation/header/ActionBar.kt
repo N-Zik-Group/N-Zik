@@ -44,6 +44,8 @@ import app.it.fast4x.rimusic.utils.ytCookieKey
 import app.it.fast4x.rimusic.utils.enableYouTubeLoginKey
 import app.it.fast4x.rimusic.utils.encryptedPreferences
 import app.it.fast4x.rimusic.utils.rememberEncryptedPreference
+import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.utils.rememberDataStoreBooleanPreference
 import it.fast4x.innertube.utils.parseCookieString
 
 @Composable
@@ -57,6 +59,11 @@ private fun HamburgerMenu(
     val context = LocalContext.current
     val enablePictureInPicture by rememberPreference(enablePictureInPictureKey, false)
     val pipHandler = rememberPipHandler()
+    // Rewind master switch (spec GH-275): while off, the menu item below is hidden —
+    // same conditional pattern as the PiP item. Live preference read: this header stays
+    // composed across the whole session, so a one-shot remember read would keep a stale
+    // value after a flip in the settings
+    val rewindEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_ENABLED, true)
 
     val menu = DropdownMenu(
         expanded = expanded,
@@ -77,13 +84,15 @@ private fun HamburgerMenu(
             R.string.statistics
         ) { onItemClick( NavRoutes.statistics ) }
     )
-    // Rewind button (Cubic-style yearly listening recap, issue #275)
-    menu.add(
-        DropdownMenu.Item(
-            R.drawable.sparkles,
-            R.string.rewind
-        ) { onItemClick( NavRoutes.rewindHome ) }
-    )
+    // Rewind button (Cubic-style yearly listening recap, issue #275); hidden while the
+    // feature is disabled in the settings (spec GH-275)
+    if (rewindEnabled)
+        menu.add(
+            DropdownMenu.Item(
+                R.drawable.sparkles,
+                R.string.rewind
+            ) { onItemClick( NavRoutes.rewindHome ) }
+        )
     // Picture in picture button
     if (isPipSupported && enablePictureInPicture)
         menu.add(

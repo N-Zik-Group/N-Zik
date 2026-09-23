@@ -7,9 +7,11 @@ import android.content.Context
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import app.n_zik.android.MainActivity
+import app.n_zik.android.utils.DataStoreUtils
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -112,6 +114,78 @@ class RewindReminderWorkerTest {
             finished.monthValue,
             contentIntent.getIntExtra(RewindReminderWorker.EXTRA_DECK_MONTH, -1)
         )
+    }
+
+    // ---- Settings gating (spec GH-275): master / monthly / monthly-notif ----
+
+    @Test
+    fun masterOffSkipsTheNotificationButStillRunsTheRescheduleStep() {
+        setPermissionState(granted = true, permission = Manifest.permission.POST_NOTIFICATIONS)
+        DataStoreUtils.saveBoolean(RuntimeEnvironment.getApplication(), DataStoreUtils.KEY_REWIND_ENABLED, false)
+        val reschedules = mutableListOf<Context>()
+        val worker = workerWithRescheduleHook(reschedules)
+
+        val result = runBlocking { worker.doWork() }
+
+        // WorkManager results carry no equals(): a Success is the only acceptable outcome
+        assertTrue(result is ListenableWorker.Result.Success)
+        assertEquals("master off must not produce a notification even with the grant", 0, postedNotifications().size)
+        assertEquals(
+            "the worker must still perform its reschedule step after a settings-gate skip",
+            1,
+            reschedules.size
+        )
+    }
+
+    @Test
+    fun monthlyOffSkipsTheNotificationDespiteTheNotifToggleOn() {
+        setPermissionState(granted = true, permission = Manifest.permission.POST_NOTIFICATIONS)
+        // Hierarchical gate: a type off implies its notification off, even with the notif toggle on
+        DataStoreUtils.saveBoolean(RuntimeEnvironment.getApplication(), DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, false)
+        val reschedules = mutableListOf<Context>()
+        val worker = workerWithRescheduleHook(reschedules)
+
+        val result = runBlocking { worker.doWork() }
+
+        assertTrue(result is ListenableWorker.Result.Success)
+        assertEquals(0, postedNotifications().size)
+        assertEquals(1, reschedules.size)
+    }
+
+    @Test
+    fun monthlyNotifOffSkipsTheNotification() {
+        setPermissionState(granted = true, permission = Manifest.permission.POST_NOTIFICATIONS)
+        // The monthly recap itself stays on (its home entries remain) but its notification is off
+        DataStoreUtils.saveBoolean(RuntimeEnvironment.getApplication(), DataStoreUtils.KEY_REWIND_MONTHLY_NOTIF_ENABLED, false)
+        val reschedules = mutableListOf<Context>()
+        val worker = workerWithRescheduleHook(reschedules)
+
+        val result = runBlocking { worker.doWork() }
+
+        assertTrue(result is ListenableWorker.Result.Success)
+        assertEquals(0, postedNotifications().size)
+        assertEquals(1, reschedules.size)
+    }
+
+    @Test
+    fun scheduleGateFollowsTheHierarchicalToggles() {
+        val app = RuntimeEnvironment.getApplication()
+        // Nothing saved: the defaults are all on, so the work is enqueued as today
+        assertTrue(RewindReminderWorker.isMonthlyReminderEnabled(app))
+
+        // Each off-toggle alone disables the gate, in which case schedule() cancels the work
+        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_ENABLED, false)
+        assertFalse(RewindReminderWorker.isMonthlyReminderEnabled(app))
+        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_ENABLED, true)
+        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, false)
+        assertFalse(RewindReminderWorker.isMonthlyReminderEnabled(app))
+        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, true)
+        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_MONTHLY_NOTIF_ENABLED, false)
+        assertFalse(RewindReminderWorker.isMonthlyReminderEnabled(app))
+
+        // Re-enable: the gate is on again and the next schedule() re-enqueues the work
+        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_MONTHLY_NOTIF_ENABLED, true)
+        assertTrue(RewindReminderWorker.isMonthlyReminderEnabled(app))
     }
 
     private fun workerWithRescheduleHook(reschedules: MutableList<Context>): RewindReminderWorker {

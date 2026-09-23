@@ -68,6 +68,8 @@ import app.n_zik.android.components.ui.screens.rewind.slides.RewindArtwork
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindPlaylistArtwork
 import app.n_zik.android.components.ui.screens.rewind.slides.formatRewindNumber
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.utils.rememberDataStoreBooleanPreference
 import java.util.Locale
 
 /**
@@ -89,6 +91,11 @@ fun RewindHomeScreen(
     miniPlayer: @Composable () -> Unit = {}
 ) {
     val palette = colorPalette()
+    // Recap type toggles (spec GH-275): live reads so a flip made in the settings takes
+    // effect in real time, whatever the composition lifecycle
+    val yearlyEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_ENABLED, true)
+    val monthlyEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, true)
+    val globalEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_GLOBAL_ENABLED, true)
     val viewModel: RewindHomeViewModel = viewModel(factory = RewindHomeViewModel)
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     // Saveable so the selected year survives a round-trip into the deck
@@ -144,6 +151,9 @@ fun RewindHomeScreen(
                 years = uiState.years,
                 global = uiState.global,
                 selectedYear = selectedYear,
+                yearlyEnabled = yearlyEnabled,
+                monthlyEnabled = monthlyEnabled,
+                globalEnabled = globalEnabled,
                 yearsOrder = yearsOrder,
                 monthsOrder = monthsOrder,
                 onYearOrderToggle = { yearsOrder = !yearsOrder },
@@ -185,6 +195,10 @@ private fun RewindHomeContent(
     years: List<RewindHomeYear>,
     global: RewindHomeGlobal?,
     selectedYear: Int,
+    // Recap type toggles (spec GH-275): a disabled type is not offered — its items are skipped
+    yearlyEnabled: Boolean,
+    monthlyEnabled: Boolean,
+    globalEnabled: Boolean,
     yearsOrder: SortOrder,
     monthsOrder: SortOrder,
     onYearOrderToggle: () -> Unit,
@@ -223,129 +237,138 @@ private fun RewindHomeContent(
         }
 
         // ALL TIME — the lifetime totals, above the years: tap opens the all-time deck
-        // (null while the history has no plays at all)
-        global?.let { allTime ->
-            item(key = "all_time") {
+        // (null while the history has no plays at all). Skipped while the all-time recap
+        // is disabled in the settings (spec GH-275)
+        if (globalEnabled) {
+            global?.let { allTime ->
+                item(key = "all_time") {
+                    Column(modifier = Modifier.animateItem()) {
+                        RewindHomeYearRow(
+                            label = stringResource(R.string.rw_home_all_time),
+                            stats = stringResource(
+                                R.string.rw_home_year_stats,
+                                rewindHomeDuration(allTime.minutes),
+                                formatRewindNumber(allTime.plays.toLong())
+                            ),
+                            tops = allTime.topArtworks,
+                            onClick = onOpenGlobal
+                        )
+                        Spacer(Modifier.height(22.dp))
+                    }
+                }
+            }
+        }
+
+        // YEARS — one row per year: tap selects the year and opens the deck. Skipped while
+        // the yearly recaps are disabled in the settings (spec GH-275)
+        if (yearlyEnabled) {
+            item(key = "years_header") {
+                RewindHomeSectionHeader(
+                    text = stringResource(R.string.rw_home_years),
+                    order = yearsOrder,
+                    onToggleOrder = onYearOrderToggle
+                )
+            }
+            items(yearsDisplay, key = { it.year }) { year ->
                 Column(modifier = Modifier.animateItem()) {
                     RewindHomeYearRow(
-                        label = stringResource(R.string.rw_home_all_time),
+                        label = year.year.toString(),
                         stats = stringResource(
                             R.string.rw_home_year_stats,
-                            rewindHomeDuration(allTime.minutes),
-                            formatRewindNumber(allTime.plays.toLong())
+                            rewindHomeDuration(year.minutes),
+                            formatRewindNumber(year.plays.toLong())
                         ),
-                        tops = allTime.topArtworks,
-                        onClick = onOpenGlobal
+                        tops = year.topArtworks,
+                        // Opens the year deck only — the month grid and its chips below keep
+                        // their current selection (the chips are the way to switch years there).
+                        onClick = { onOpenDeck(year.year, null) }
                     )
-                    Spacer(Modifier.height(22.dp))
+                    Spacer(Modifier.height(8.dp))
                 }
             }
+            item(key = "years_spacing") { Spacer(Modifier.height(14.dp)) }
         }
 
-        // YEARS — one row per year: tap selects the year and opens the deck
-        item(key = "years_header") {
-            RewindHomeSectionHeader(
-                text = stringResource(R.string.rw_home_years),
-                order = yearsOrder,
-                onToggleOrder = onYearOrderToggle
-            )
-        }
-        items(yearsDisplay, key = { it.year }) { year ->
-            Column(modifier = Modifier.animateItem()) {
-                RewindHomeYearRow(
-                    label = year.year.toString(),
-                    stats = stringResource(
-                        R.string.rw_home_year_stats,
-                        rewindHomeDuration(year.minutes),
-                        formatRewindNumber(year.plays.toLong())
-                    ),
-                    tops = year.topArtworks,
-                    // Opens the year deck only — the month grid and its chips below keep
-                    // their current selection (the chips are the way to switch years there).
-                    onClick = { onOpenDeck(year.year, null) }
+        // MONTHS OF <selected year> — chips switch the grid without opening the deck.
+        // Skipped while the month grid is disabled in the settings (spec GH-275)
+        if (monthlyEnabled) {
+            item(key = "months_header") {
+                RewindHomeSectionHeader(
+                    text = stringResource(R.string.rw_home_months_of, selectedYear.toString()),
+                    order = monthsOrder,
+                    onToggleOrder = onMonthOrderToggle
                 )
-                Spacer(Modifier.height(8.dp))
             }
-        }
-        item(key = "years_spacing") { Spacer(Modifier.height(14.dp)) }
-
-        // MONTHS OF <selected year> — chips switch the grid without opening the deck
-        item(key = "months_header") {
-            RewindHomeSectionHeader(
-                text = stringResource(R.string.rw_home_months_of, selectedYear.toString()),
-                order = monthsOrder,
-                onToggleOrder = onMonthOrderToggle
-            )
-        }
-        item(key = "year_chips") {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                // Chips keep the stable data order (newest first) — the year sort above only
-                // reorders the year rows, never the chips.
-                years.forEach { year ->
-                    FilterChip(
-                        label = { Text(year.year.toString()) },
-                        selected = year.year == selectedYear,
-                        shape = uiRoundnessShape(),
-                        colors = FilterChipDefaults.filterChipColors(
-                            containerColor = colorPalette().background1,
-                            labelColor = colorPalette().text,
-                            selectedContainerColor = colorPalette().accent,
-                            selectedLabelColor = colorPalette().onAccent,
-                        ),
-                        onClick = { onYearSelected(year.year) }
-                    )
+            item(key = "year_chips") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    // Chips keep the stable data order (newest first) — the year sort above only
+                    // reorders the year rows, never the chips.
+                    years.forEach { year ->
+                        FilterChip(
+                            label = { Text(year.year.toString()) },
+                            selected = year.year == selectedYear,
+                            shape = uiRoundnessShape(),
+                            colors = FilterChipDefaults.filterChipColors(
+                                containerColor = colorPalette().background1,
+                                labelColor = colorPalette().text,
+                                selectedContainerColor = colorPalette().accent,
+                                selectedLabelColor = colorPalette().onAccent,
+                            ),
+                            onClick = { onYearSelected(year.year) }
+                        )
+                    }
                 }
             }
-        }
 
-        selected?.let { year ->
-            // Crossfade the whole grid when the chip switches the year: the cells keep the
-            // same month keys, so a plain recomposition would swap the content instantly.
-            // A sort toggle only reorders the items, which animateItem() handles.
-            item(key = "months_grid") {
-                Crossfade(
-                    targetState = year.year,
-                    modifier = Modifier.fillMaxWidth()
-                ) { yearKey ->
-                    val yearOfKey = years.first { it.year == yearKey }
-                    // Calendar month numbers in display order; the number drives navigation
-                    // no matter the display order.
-                    val monthEntries = yearOfKey.months
-                        .mapIndexed { index, month -> index to month }
-                        .let { if (monthsOrder == SortOrder.Descending) it.reversed() else it }
+            selected?.let { year ->
+                // Crossfade the whole grid when the chip switches the year: the cells keep the
+                // same month keys, so a plain recomposition would swap the content instantly.
+                // A sort toggle only reorders the items, which animateItem() handles.
+                item(key = "months_grid") {
+                    Crossfade(
+                        targetState = year.year,
+                        modifier = Modifier.fillMaxWidth()
+                    ) { yearKey ->
+                        val yearOfKey = years.first { it.year == yearKey }
+                        // Calendar month numbers in display order; the number drives navigation
+                        // no matter the display order.
+                        val monthEntries = yearOfKey.months
+                            .mapIndexed { index, month -> index to month }
+                            .let { if (monthsOrder == SortOrder.Descending) it.reversed() else it }
 
-                    // Fixed-height lazy grid (QuickPicks pattern): 12 months over 4 rows of
-                    // 3. The height is derived from the actual cell width so the grid fits
-                    // exactly, with no nested scroll.
-                    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-                        val spacing = 10.dp
-                        val cellWidth = (maxWidth - 2 * spacing) / 3
-                        val gridHeight = 4 * (cellWidth / 0.92f) + 3 * spacing + 6.dp
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(3),
-                            flingBehavior = ScrollableDefaults.flingBehavior(),
-                            horizontalArrangement = Arrangement.spacedBy(spacing),
-                            verticalArrangement = Arrangement.spacedBy(spacing),
-                            contentPadding = PaddingValues(top = 6.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(gridHeight)
-                        ) {
-                            items(monthEntries, key = { it.first + 1 }) { entry ->
-                                val (index, month) = entry
-                                RewindHomeMonthCell(
-                                    modifier = Modifier.animateItem(),
-                                    month = month,
-                                    empty = month.plays == 0,
-                                    tops = yearOfKey.monthTopArtworks.getOrNull(index)
-                                        ?: TopArtworks(null, null, null, null),
-                                    onClick = { onOpenDeck(yearOfKey.year, index + 1) }
-                                )
+                        // Fixed-height lazy grid (QuickPicks pattern): 12 months over 4 rows of
+                        // 3. The height is derived from the actual cell width so the grid fits
+                        // exactly, with no nested scroll.
+                        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                            val spacing = 10.dp
+                            val cellWidth = (maxWidth - 2 * spacing) / 3
+                            val gridHeight = 4 * (cellWidth / 0.92f) + 3 * spacing + 6.dp
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(3),
+                                flingBehavior = ScrollableDefaults.flingBehavior(),
+                                horizontalArrangement = Arrangement.spacedBy(spacing),
+                                verticalArrangement = Arrangement.spacedBy(spacing),
+                                contentPadding = PaddingValues(top = 6.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(gridHeight)
+                            ) {
+                                items(monthEntries, key = { it.first + 1 }) { entry ->
+                                    val (index, month) = entry
+                                    RewindHomeMonthCell(
+                                        modifier = Modifier.animateItem(),
+                                        month = month,
+                                        empty = month.plays == 0,
+                                        tops = yearOfKey.monthTopArtworks.getOrNull(index)
+                                            ?: TopArtworks(null, null, null, null),
+                                        onClick = { onOpenDeck(yearOfKey.year, index + 1) }
+                                    )
+                                }
                             }
                         }
                     }
