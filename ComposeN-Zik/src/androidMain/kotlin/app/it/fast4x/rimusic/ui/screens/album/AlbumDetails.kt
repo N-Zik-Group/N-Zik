@@ -125,6 +125,7 @@ import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.components.album.AlbumModifier
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
 import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
@@ -327,6 +328,9 @@ fun AlbumDetails(
                 val albumSongIds = remember(items) { items.map { it.id } }
                 val likeStatesMap by remember(albumSongIds) {
                     LikeStateManager.getLikeStates(albumSongIds)
+                }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+                val playlistStatesMap by remember(albumSongIds) {
+                    PlaylistStateManager.getPlaylistStates(albumSongIds)
                 }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
                 val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
@@ -599,6 +603,7 @@ fun AlbumDetails(
                         SongItem(
                             song = song,
                             isLiked = likeStatesMap[song.id],
+                            inPlaylist = playlistStatesMap[song.id],
                             itemSelector = itemSelector,
                             navController = navController,
                             showThumbnail = false,

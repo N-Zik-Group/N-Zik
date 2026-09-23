@@ -99,6 +99,7 @@ import app.it.fast4x.rimusic.utils.addNext
 import app.n_zik.android.components.SongItem
 import app.it.fast4x.rimusic.models.Artist
 import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import it.fast4x.innertube.requests.ArtistPage
 import androidx.compose.material3.MaterialTheme
@@ -151,6 +152,9 @@ fun ArtistLocalSongs(
     val songIds = remember(songs) { songs?.map { it.id }.orEmpty() }
     val likeStatesMap by remember(songIds) {
         LikeStateManager.getLikeStates(songIds)
+    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+    val playlistStatesMap by remember(songIds) {
+        PlaylistStateManager.getPlaylistStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     // Download state cache
@@ -368,6 +372,7 @@ fun ArtistLocalSongs(
                         SongItem(
                             song = song,
                             isLiked = likeStatesMap[song.id],
+                            inPlaylist = playlistStatesMap[song.id],
                             navController = navController,
                             modifier = Modifier,
 
@@ -425,6 +430,9 @@ fun ArtistLocalSongs(
     val artistSongIds = remember(songs) { songs?.map { it.id }.orEmpty() }
     val likeStatesMap by remember(artistSongIds) {
         LikeStateManager.getLikeStates(artistSongIds)
+    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+    val playlistStatesMap by remember(artistSongIds) {
+        PlaylistStateManager.getPlaylistStates(artistSongIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     var showConfirmDeleteDownloadDialog by remember {
@@ -636,6 +644,7 @@ fun ArtistLocalSongs(
                                 SongItem(
                                     song = song,
                                     isLiked = likeStatesMap[song.id],
+                                    inPlaylist = playlistStatesMap[song.id],
                                     navController = navController,
                                     onClick = {
                                         binder?.stopRadio()

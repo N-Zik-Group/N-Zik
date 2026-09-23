@@ -74,6 +74,7 @@ import app.n_zik.android.components.SongItem
 import app.n_zik.android.LocalDownloadStatesMap
 import app.it.fast4x.rimusic.ui.components.SwipeablePlaylistItem
 import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.components.menu.song.SongItemMenu
 import app.n_zik.android.components.menu.video.VideoItemMenu
 import app.n_zik.android.core.database.BookmarkStateManager
@@ -159,6 +160,9 @@ fun MoodList(
             }
             val likeStatesMap by remember(moodSongIds) {
                 LikeStateManager.getLikeStates(moodSongIds)
+            }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+            val playlistStatesMap by remember(moodSongIds) {
+                PlaylistStateManager.getPlaylistStates(moodSongIds)
             }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
             val moodSongs = remember(moodResult) {
@@ -330,6 +334,7 @@ fun MoodList(
                                             SongItem(
                                                 song = childItem.asMediaItem.asSong ?: Song.makePlaceholder(""),
                                                 isLiked = likeStatesMap[childItem.key],
+                                                inPlaylist = playlistStatesMap[childItem.key],
                                                 navController = navController,
                                                 modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                                                     onClick = {

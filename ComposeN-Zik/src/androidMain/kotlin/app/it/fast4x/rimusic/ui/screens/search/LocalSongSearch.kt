@@ -74,6 +74,7 @@ import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
 import app.n_zik.android.components.menu.song.SongItemMenu
 import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.LocalDownloadStatesMap
 import app.it.fast4x.rimusic.enums.DownloadedStateMedia
@@ -125,6 +126,9 @@ fun LocalSongSearch(
     val songIds = remember(items) { items.map { it.id } }
     val likeStatesMap by remember(songIds) {
         LikeStateManager.getLikeStates(songIds)
+    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+    val playlistStatesMap by remember(songIds) {
+        PlaylistStateManager.getPlaylistStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     // Download state cache
@@ -289,6 +293,7 @@ fun LocalSongSearch(
                 SongItem(
                     song = song,
                     isLiked = likeStatesMap[song.id],
+                    inPlaylist = playlistStatesMap[song.id],
                     navController = navController,
                     modifier = Modifier
                         .clip(uiRoundnessShape())

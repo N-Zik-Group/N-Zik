@@ -233,6 +233,10 @@ fun StatisticsPage(
 
     val songs = songsWithLikeStates.first
     val likeStatesMap = songsWithLikeStates.second
+    val songIds = remember(songs) { songs.map { it.id } }
+    val playlistStatesMap by remember(songIds) {
+        PlaylistStateManager.getPlaylistStates(songIds)
+    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     // Download state cache
     val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
@@ -379,6 +383,7 @@ fun StatisticsPage(
                             SongItem(
                                 song = songs[it],
                                 isLiked = likeStatesMap[songs[it].id],
+                                inPlaylist = playlistStatesMap[songs[it].id],
                                 navController = navController,
                                 onClick = {
                                     binder?.stopRadio()

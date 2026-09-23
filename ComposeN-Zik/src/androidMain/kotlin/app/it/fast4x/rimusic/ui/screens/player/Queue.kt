@@ -79,6 +79,7 @@ import app.n_zik.android.binder
 import app.n_zik.android.colorPalette
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.PlaylistStateManager
 import app.it.fast4x.rimusic.enums.QueueLoopType
 import app.it.fast4x.rimusic.enums.QueueType
 import app.it.fast4x.rimusic.models.Song
@@ -345,6 +346,9 @@ fun Queue(
             val likeStatesMap by remember(queueSongIds) {
                 LikeStateManager.getLikeStates(queueSongIds)
             }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+            val playlistStatesMap by remember(queueSongIds) {
+                PlaylistStateManager.getPlaylistStates(queueSongIds)
+            }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
             val queueSongs = remember(windowsOnDisplay) { windowsOnDisplay.map { it.mediaItem.asSong } }
 
@@ -390,6 +394,7 @@ fun Queue(
                     val isDownloaded = isLocal || isDownloadedSong(song.id)
 
                     val isLiked = likeStatesMap[song.id]
+                    val inPlaylist = playlistStatesMap[song.id]
 
                     ReorderableItem(
                         reorderableLazyListState,
@@ -494,6 +499,7 @@ fun Queue(
                                     navController = navController,
                                     itemSelector = itemSelector,
                                     isLiked = isLiked,
+                                    inPlaylist = inPlaylist,
                                     backgroundColor = itemBackground,
                                     onLongClick = null, // null triggers SongItemMenu on long press
                                     trailingContent = {

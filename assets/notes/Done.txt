@@ -7,3 +7,11 @@ Fixed:
   - `LastFmSettingsCard.kt`: `LastFmLoginContent` made `internal` (was `private`) for testability
   - New `LastFmLoginContentTest.kt`: Compose UI test (`createComposeRule`, JUnit 4/Robolectric) verifying both fields render and the button disabled/enabled states
   - `libs.versions.toml` + `ComposeN-Zik/build.gradle.kts`: added `compose-ui-test` ref (`androidx.compose.ui:ui-test-junit4`, version aligned with `compose` 1.11.4) as a test-only dependency
+Improved:
+- improve(playlists): batch playlist-membership indicator state — one indexed DB query per screen instead of one reactive query per song
+  - New `PlaylistStateManager.getPlaylistStates(songIds): Flow<Map<String, Boolean>>` in `core/database`, mirrors `LikeStateManager`; explicit `false` materialized for every requested ID (join-table semantics), empty list short-circuits to `emptyMap()` before the DAO call
+  - New `@Query` `songsInPlaylists(songIds)` (`SELECT DISTINCT songId ... IN (:songIds)`) on `SongPlaylistMapTable`, served by the existing index on `songId`
+  - `SongItem` gains an optional `inPlaylist: Boolean?` param: precomputed value used when provided, otherwise the existing per-song `isMapped` fallback is kept (menus, podcasts, online search, widgets, legacy `SongItem`, player action bar — all untouched)
+  - Wired into all 24 screens already passing `isLiked` (18 files: 8 new package + 10 legacy, additive-only), one `collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)` batch collect per screen with the same `remember(ids)` key as the like map
+  - New `PlaylistStateManagerTest` (4 tests, JUnit 4/Robolectric): mapped/unmapped materialization, unknown ID → false, empty list → empty map, reactive re-emission on playlist insert
+  - Verification: full `testDebugUnitTest` run = 781 tests, the 4 new ones green; the only 2 failures are pre-existing `LastFmLoginContentTest` Compose UI failures (`Resources$NotFoundException`, from the lastfm commit, unrelated to this change)

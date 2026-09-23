@@ -189,6 +189,7 @@ fun SongItem(
     navController: NavController? = null,
     isRecommended: Boolean = false,
     isLiked: Boolean? = null,
+    inPlaylist: Boolean? = null,
     modifier: Modifier = Modifier,
     backgroundColor: Color = colorPalette().background0,
     showThumbnail: Boolean = true,
@@ -308,9 +309,14 @@ fun SongItem(
                 // except when in playlist.
                 if( showInPlaylistIndicator && !isInPlaylistScreen ) {
 
-                    val isExistedInAPlaylist by remember( showInPlaylistIndicator ) {
-                        Database.songPlaylistMapTable.isMapped( displaySong.id )
-                    }.collectAsStateWithLifecycle(initialValue = false, context = NzikDispatchers.DATA)
+                    // Use pre-computed playlist state if provided, otherwise query database
+                    val isExistedInAPlaylist by if (inPlaylist != null) {
+                        remember(inPlaylist) { mutableStateOf(inPlaylist) }
+                    } else {
+                        remember( displaySong.id ) {
+                            Database.songPlaylistMapTable.isMapped( displaySong.id )
+                        }.collectAsStateWithLifecycle(initialValue = false, context = NzikDispatchers.DATA)
+                    }
 
                     if( isExistedInAPlaylist )
                         object: SongIndicator {

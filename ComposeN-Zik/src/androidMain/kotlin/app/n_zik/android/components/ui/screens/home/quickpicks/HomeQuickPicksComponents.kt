@@ -63,6 +63,7 @@ import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.playlist.OnlinePlaylistItemMenu
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.PlaylistStateManager
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.HomePage
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -161,6 +162,9 @@ fun YtmSectionItems(
                 val sectionLikeStatesMap by remember(sectionSongIds) {
                     LikeStateManager.getLikeStates(sectionSongIds)
                 }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+                val sectionPlaylistStatesMap by remember(sectionSongIds) {
+                    PlaylistStateManager.getPlaylistStates(sectionSongIds)
+                }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
                 // Download state cache
                 val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
@@ -197,6 +201,7 @@ fun YtmSectionItems(
                         SongItem(
                             song = item.asSong ?: Song.makePlaceholder(""),
                             isLiked = sectionLikeStatesMap[item.key],
+                            inPlaylist = sectionPlaylistStatesMap[item.key],
                             navController = navController,
                             onClick = {
                                 val mediaItem = item.asMediaItem

@@ -100,6 +100,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.download.utils.MyDownloadHelper
 import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.PlaylistStateManager
 import app.it.fast4x.rimusic.utils.historySortMenuOrderKey
 import androidx.compose.foundation.text.BasicText
 import app.it.fast4x.rimusic.utils.encryptedPreferences
@@ -293,6 +294,9 @@ fun HistoryList(
             val likeStatesMap by remember(allHistorySongIds) {
                 LikeStateManager.getLikeStates(allHistorySongIds)
             }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+            val playlistStatesMap by remember(allHistorySongIds) {
+                PlaylistStateManager.getPlaylistStates(allHistorySongIds)
+            }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
             val allHistorySongs = remember(events) { events.values.flatten().map { it.song } }
             val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
@@ -362,6 +366,7 @@ fun HistoryList(
                                 SongItem(
                                     song = event.song,
                                     isLiked = likeStatesMap[event.song.id],
+                                    inPlaylist = playlistStatesMap[event.song.id],
                                     navController = navController,
                                     modifier = Modifier,
 
@@ -415,6 +420,7 @@ fun HistoryList(
                                 SongItem(
                                     song = mediaItem.asSong,
                                     isLiked = likeStatesMap[mediaItem.asSong.id],
+                                    inPlaylist = playlistStatesMap[mediaItem.asSong.id],
                                     navController = navController,
                                     modifier = Modifier,
 

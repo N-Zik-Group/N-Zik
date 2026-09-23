@@ -156,6 +156,7 @@ import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.extensions.musicbrainz.MBMetadataHelper
@@ -581,6 +582,9 @@ fun AlbumDetails(
                 val likeStatesMap by remember(albumSongIds) {
                     LikeStateManager.getLikeStates(albumSongIds)
                 }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+                val playlistStatesMap by remember(albumSongIds) {
+                    PlaylistStateManager.getPlaylistStates(albumSongIds)
+                }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
                 val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
                 val downloadedIds by remember {
@@ -783,6 +787,7 @@ fun AlbumDetails(
                                 SongItem(
                                     song = song,
                                     isLiked = likeStatesMap[song.id],
+                                    inPlaylist = playlistStatesMap[song.id],
                                     itemSelector = itemSelector,
                                     navController = navController,
                                     showThumbnail = false,

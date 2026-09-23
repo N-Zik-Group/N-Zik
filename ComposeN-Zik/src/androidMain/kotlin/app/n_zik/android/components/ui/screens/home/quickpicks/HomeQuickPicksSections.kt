@@ -41,6 +41,7 @@ import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
 import app.n_zik.android.components.menu.artist.OnlineArtistItemMenu
 import app.n_zik.android.components.menu.playlist.OnlinePlaylistItemMenu
@@ -227,6 +228,9 @@ fun QuickPicksGrid(
     val likeStatesMap by remember(songIds) {
         LikeStateManager.getLikeStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+    val playlistStatesMap by remember(songIds) {
+        PlaylistStateManager.getPlaylistStates(songIds)
+    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     // Download state cache
     val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
@@ -272,6 +276,7 @@ fun QuickPicksGrid(
             SongItem(
                 song = song,
                 isLiked = likeStatesMap[song.id],
+                inPlaylist = playlistStatesMap[song.id],
                 navController = navController,
                 onClick = { onSongClick(song) },
                 modifier = Modifier.width(itemInHorizontalGridWidth).animateItem(),
@@ -701,6 +706,9 @@ fun MyTopSection(
     val likeStatesMap by remember(songIds) {
         LikeStateManager.getLikeStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+    val playlistStatesMap by remember(songIds) {
+        PlaylistStateManager.getPlaylistStates(songIds)
+    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     if (showMyTopPlaylist) {
         if (myTopSongs.isNotEmpty()) {
@@ -721,6 +729,7 @@ fun MyTopSection(
                         SongItem(
                             song = song,
                             isLiked = likeStatesMap[song.id],
+                            inPlaylist = playlistStatesMap[song.id],
                             navController = navController,
                             onClick = { binder?.startRadio(song, true) },
                     modifier = Modifier.width(itemInHorizontalGridWidth).animateItem(),
@@ -924,6 +933,9 @@ fun ChartsSection(
                         val chartLikeStatesMap by remember(chartSongIds) {
                             LikeStateManager.getLikeStates(chartSongIds)
                         }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+                        val chartPlaylistStatesMap by remember(chartSongIds) {
+                            PlaylistStateManager.getPlaylistStates(chartSongIds)
+                        }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
                         BasicText(
                             text = stringResource(R.string.chart_top_songs),
@@ -963,6 +975,7 @@ fun ChartsSection(
                                     SongItem(
                                         song = song.asSong ?: Song.makePlaceholder(""),
                                         isLiked = chartLikeStatesMap[song.key],
+                                        inPlaylist = chartPlaylistStatesMap[song.key],
                                         navController = navController,
                                         onClick = {
                                             val mediaItem = song.asMediaItem
@@ -1127,6 +1140,9 @@ fun GenericYtmSections(
                 val sectionLikeStatesMap by remember(sectionSongIds) {
                     LikeStateManager.getLikeStates(sectionSongIds)
                 }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+                val sectionPlaylistStatesMap by remember(sectionSongIds) {
+                    PlaylistStateManager.getPlaylistStates(sectionSongIds)
+                }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
                 LazyHorizontalGrid(
                 rows = GridCells.Fixed(3),
@@ -1138,6 +1154,7 @@ fun GenericYtmSections(
                     SongItem(
                         song = item.asSong ?: Song.makePlaceholder(""),
                         isLiked = sectionLikeStatesMap[item.key],
+                        inPlaylist = sectionPlaylistStatesMap[item.key],
                         navController = navController,
                         onClick = {
                             val mediaItem = item.asMediaItem

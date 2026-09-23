@@ -119,6 +119,17 @@ interface SongPlaylistMapTable {
     fun isMappedSync( songId: String ): Boolean
 
     /**
+     * Batch variant of [isMapped]: checks a whole list of songs with a single query.
+     *
+     * @param songIds song IDs to check
+     *
+     * @return the subset of [songIds] that is mapped to at least one playlist;
+     * any ID absent from the result is not mapped
+     */
+    @Query("SELECT DISTINCT songId FROM SongPlaylistMap WHERE songId IN (:songIds)")
+    fun songsInPlaylists( songIds: List<String> ): Flow<List<String>>
+
+    /**
      * @return list of [Playlist.id] that [songId] is mapped to
      */
     @Query("""

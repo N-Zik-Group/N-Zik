@@ -166,6 +166,7 @@ import app.n_zik.android.components.SongItem
 import app.n_zik.android.LocalDownloadStatesMap
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.playback.utils.Shuffler
 import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
 import app.it.fast4x.rimusic.enums.DownloadedStateMedia
@@ -384,6 +385,9 @@ fun PlaylistSongList(
     val playlistSongIds = remember(playlistSongs) { playlistSongs.mapNotNull { it.key } }
     val likeStatesMap by remember(playlistSongIds) {
         LikeStateManager.getLikeStates(playlistSongIds)
+    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+    val playlistStatesMap by remember(playlistSongIds) {
+        PlaylistStateManager.getPlaylistStates(playlistSongIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
@@ -1080,6 +1084,7 @@ fun PlaylistSongList(
                         SongItem(
                             song = ytSong.asSong,
                             isLiked = likeStatesMap[ytSong.key],
+                            inPlaylist = playlistStatesMap[ytSong.key],
                             navController = navController,
                             modifier = Modifier,
 

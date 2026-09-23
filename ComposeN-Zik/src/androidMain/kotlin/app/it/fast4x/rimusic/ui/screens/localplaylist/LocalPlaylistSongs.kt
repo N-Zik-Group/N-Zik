@@ -183,6 +183,7 @@ import app.n_zik.android.components.ResetCache
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.playlist.PinPlaylist
 import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.components.playlist.PlaylistSongsSort
 import app.n_zik.android.components.dialog.playlist.RenamePlaylistDialog
 import app.n_zik.android.components.playlist.Reposition
@@ -1119,6 +1120,9 @@ fun LocalPlaylistSongs(
     val likeStatesMap by remember(songIds) {
         LikeStateManager.getLikeStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+    val playlistStatesMap by remember(songIds) {
+        PlaylistStateManager.getPlaylistStates(songIds)
+    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     // Download state cache
     val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
@@ -1481,6 +1485,7 @@ fun LocalPlaylistSongs(
                         SongItem(
                             song = song,
                             isLiked = likeStatesMap[song.id],
+                            inPlaylist = playlistStatesMap[song.id],
                             itemSelector = itemSelector,
                             navController = navController,
                             isRecommended = song in relatedSongs,

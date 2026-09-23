@@ -64,6 +64,7 @@ import app.n_zik.android.components.tab.*
 
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.core.database.ext.FormatWithSong
 import app.it.fast4x.rimusic.utils.autosyncLikesKey
 import app.it.fast4x.rimusic.utils.importYTMLikedSongs
@@ -488,6 +489,9 @@ fun HomeSongs(
     val likeStatesMap by remember(songIds) {
         LikeStateManager.getLikeStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+    val playlistStatesMap by remember(songIds) {
+        PlaylistStateManager.getPlaylistStates(songIds)
+    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     // Hoisted swipe action preferences
     val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
@@ -548,6 +552,7 @@ fun HomeSongs(
                                 SongItem(
                                     song = song,
                                     isLiked = likeStatesMap[song.id],
+                                    inPlaylist = playlistStatesMap[song.id],
                                     itemSelector = itemSelector,
                                     navController = navController,
                                     isRecommended = isRecommended,

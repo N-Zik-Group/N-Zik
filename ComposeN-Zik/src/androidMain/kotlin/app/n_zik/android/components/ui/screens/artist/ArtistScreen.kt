@@ -134,6 +134,7 @@ import app.n_zik.android.components.ui.screens.album.Translate
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.extensions.musicbrainz.MBMetadataHelper
@@ -466,6 +467,9 @@ fun ArtistOverview(
     val songIds = remember(songs) { songs.map { it.id } }
     val likeStatesMap by remember(songIds) {
         LikeStateManager.getLikeStates(songIds)
+    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+    val playlistStatesMap by remember(songIds) {
+        PlaylistStateManager.getPlaylistStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
@@ -802,6 +806,7 @@ fun ArtistOverview(
                                 SongItem(
                                     song = song,
                                     isLiked = likeStatesMap[song.id],
+                                    inPlaylist = playlistStatesMap[song.id],
                                     itemSelector = itemSelector,
                                     navController = navController,
                                     showThumbnail = true,

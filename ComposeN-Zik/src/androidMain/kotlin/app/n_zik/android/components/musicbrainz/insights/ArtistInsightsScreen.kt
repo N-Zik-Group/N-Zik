@@ -62,6 +62,7 @@ import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
 import app.n_zik.android.components.menu.artist.OnlineArtistItemMenu
 import app.n_zik.android.components.musicbrainz.KeywordChips
 import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.musicbrainz.utils.toFlagEmoji
 import app.n_zik.android.typography
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -95,6 +96,9 @@ fun ArtistInsightsScreen(
     val songIds = remember(state.topTracks) { state.topTracks.map { it.id } }
     val likeStatesMap by remember(songIds) {
         LikeStateManager.getLikeStates(songIds)
+    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+    val playlistStatesMap by remember(songIds) {
+        PlaylistStateManager.getPlaylistStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     if (state.isLoading) {
@@ -195,6 +199,7 @@ fun ArtistInsightsScreen(
                                 SongItem(
                                     song = song,
                                     isLiked = likeStatesMap[song.id],
+                                    inPlaylist = playlistStatesMap[song.id],
                                     navController = navController,
                                     showThumbnail = true,
                                     backgroundColor = colorPalette().background2,
