@@ -1,0 +1,24 @@
+Hotfix:
+- This release is mainly to repair the F-Droid (FOSS) build: the FOSS APK was failing F-Droid's binary verification because the Last.fm API key was injected by the CI build environment instead of being part of the source; the key (a public value) is now committed in the project, so F-Droid can rebuild the FOSS APK bit-for-bit identically, and the now-redundant CI environment variables were removed.
+
+Added:
+- "My Rewind" home page in the hamburger menu (Rewind): listening time and play count per year with the year's top artwork, and a 12-month grid with per-month stats (empty months greyed out); tap a year or a month to open its rewind deck. (unfinished - full testing and code review still in progress)
+- Monthly rewind deck ("Wrapped du mois"): the full deck for a single month, with localized period labels and a new day-by-day (DAYS) slide showing per-day minutes and plays with the peak day highlighted. (unfinished - full testing and code review still in progress)
+- Rewind deck image export: the share button on the deck finale captures all 16 slides with the system bars hidden and saves them to a folder you pick (one PNG per slide, in order); on Android 13 and below a single final-slide image is exported instead. (unfinished - full testing and code review still in progress)
+- Rescue Center and Debug entries in the hamburger menu: Rescue opens the recovery screen; Debug toggles debug logs (enabling prompts a restart, disabling purges the log files) and a long press jumps straight to the Debug settings card.
+
+Changed:
+- Discord RPC template field dialogs (all 10 fields) now use the same Reset / Cancel / OK button pattern as the settings dialogs: Reset clears the draft without saving and the dialog stays open, OK saves and closes, Cancel discards the draft.
+- The Discord RPC built-in default for the artwork hover text (large image text) is now the album name instead of "title - artist".
+
+Fixed:
+- Discord RPC: "Unknown Album" on stream presences - the album title now falls back to the app database when YouTube does not provide one, with the same resolution order as the player screen.
+- Discord RPC: explicit songs now carry the explicit marker on the presence title, exactly like the notification (and it is never doubled).
+- Discord RPC: preview card parity - the artwork and logo tooltips show the actually rendered text while media is loaded, text prefixes are cleaned on every preview field, and the pinned "Paused" card freezes its progress bar while the real player keeps playing.
+- Rewind: the system back button from the deck now returns to the "My Rewind" home page instead of skipping it all the way to the app home. (unfinished feature)
+- Rewind: listener tier names and badge labels enlarged for readability on the listener badge card. (unfinished feature)
+- Hamburger menu: opening Rescue Center no longer leaves the menu open.
+
+Other:
+- The rewind additions in this release ("My Rewind" home page, monthly deck, deck image export) are unfinished code: full testing and code review are still in progress.
+- Verification: full unit test suite green (775 tests), FOSS release build and dex content verified.
