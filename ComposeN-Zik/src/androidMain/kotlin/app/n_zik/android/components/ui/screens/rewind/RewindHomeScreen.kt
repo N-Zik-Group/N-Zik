@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -37,9 +38,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -81,14 +83,14 @@ import java.util.Locale
  * The fixed height is required: a lazy layout nested in a scrollable Column receives infinite
  * height constraints and crashes.
  */
-@Suppress("UNUSED_PARAMETER")
 @Composable
 fun RewindHomeScreen(
     navController: NavController,
     miniPlayer: @Composable () -> Unit = {}
 ) {
     val palette = colorPalette()
-    var years by remember { mutableStateOf<List<RewindHomeYear>?>(null) }
+    val viewModel: RewindHomeViewModel = viewModel(factory = RewindHomeViewModel)
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
     // Saveable so the selected year survives a round-trip into the deck
     var selectedYear by rememberSaveable { mutableIntStateOf(-1) }
     // Display orders, same contract as the app's sort toolbars (Sort.ToolBarButton):
@@ -98,26 +100,26 @@ fun RewindHomeScreen(
     var monthsOrder by rememberSaveable { mutableStateOf(SortOrder.Ascending) }
 
     LaunchedEffect(Unit) {
-        val loaded = RewindDataFetcher.getRewindHomeData()
-        // Default to the newest year with data; keep the previous selection when it is still
-        // valid (coming back from the deck). Written before [years] so a composition never
-        // sees content with an unselected year.
-        if (selectedYear !in loaded.map { it.year }) {
-            selectedYear = loaded.firstOrNull()?.year ?: -1
-        }
-        years = loaded
+        viewModel.load()
     }
 
-    val loadedYears = years
+    // Default to the newest year with data; keep the previous selection when it is still
+    // valid (coming back from the deck).
+    LaunchedEffect(uiState.years) {
+        if (selectedYear !in uiState.years.map { it.year }) {
+            selectedYear = uiState.years.firstOrNull()?.year ?: -1
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(palette.background0)
     ) {
-        if (loadedYears == null) {
+        if (uiState.isLoading) {
             // Theme-aware loader while the year summaries are built
             Loader(modifier = Modifier.align(Alignment.Center))
-        } else if (loadedYears.isEmpty()) {
+        } else if (uiState.years.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -139,7 +141,8 @@ fun RewindHomeScreen(
             }
         } else {
             RewindHomeContent(
-                years = loadedYears,
+                years = uiState.years,
+                global = uiState.global,
                 selectedYear = selectedYear,
                 yearsOrder = yearsOrder,
                 monthsOrder = monthsOrder,
@@ -154,8 +157,20 @@ fun RewindHomeScreen(
                             "${NavRoutes.rewind.name}?year=$year&month=$month"
                         }
                     )
+                },
+                onOpenGlobal = {
+                    navController.navigate("${NavRoutes.rewind.name}?scope=global")
                 }
             )
+        }
+        // The mini player is drawn as on every screen; AppNavigation wraps it in a jelly-spring
+        // slide-down + fade while the home is on screen (same animation as the header hide)
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+        ) {
+            miniPlayer()
         }
     }
 }
@@ -168,13 +183,15 @@ fun RewindHomeScreen(
 @Composable
 private fun RewindHomeContent(
     years: List<RewindHomeYear>,
+    global: RewindHomeGlobal?,
     selectedYear: Int,
     yearsOrder: SortOrder,
     monthsOrder: SortOrder,
     onYearOrderToggle: () -> Unit,
     onMonthOrderToggle: () -> Unit,
     onYearSelected: (Int) -> Unit,
-    onOpenDeck: (year: Int, month: Int?) -> Unit
+    onOpenDeck: (year: Int, month: Int?) -> Unit,
+    onOpenGlobal: () -> Unit
 ) {
     val palette = colorPalette()
     val yearsDisplay = if (yearsOrder == SortOrder.Descending) years else years.reversed()
@@ -205,6 +222,26 @@ private fun RewindHomeContent(
             Spacer(Modifier.height(26.dp))
         }
 
+        // ALL TIME — the lifetime totals, above the years: tap opens the all-time deck
+        // (null while the history has no plays at all)
+        global?.let { allTime ->
+            item(key = "all_time") {
+                Column(modifier = Modifier.animateItem()) {
+                    RewindHomeYearRow(
+                        label = stringResource(R.string.rw_home_all_time),
+                        stats = stringResource(
+                            R.string.rw_home_year_stats,
+                            rewindHomeDuration(allTime.minutes),
+                            formatRewindNumber(allTime.plays.toLong())
+                        ),
+                        tops = allTime.topArtworks,
+                        onClick = onOpenGlobal
+                    )
+                    Spacer(Modifier.height(22.dp))
+                }
+            }
+        }
+
         // YEARS — one row per year: tap selects the year and opens the deck
         item(key = "years_header") {
             RewindHomeSectionHeader(
@@ -216,12 +253,13 @@ private fun RewindHomeContent(
         items(yearsDisplay, key = { it.year }) { year ->
             Column(modifier = Modifier.animateItem()) {
                 RewindHomeYearRow(
-                    year = year,
+                    label = year.year.toString(),
                     stats = stringResource(
                         R.string.rw_home_year_stats,
                         rewindHomeDuration(year.minutes),
                         formatRewindNumber(year.plays.toLong())
                     ),
+                    tops = year.topArtworks,
                     // Opens the year deck only — the month grid and its chips below keep
                     // their current selection (the chips are the way to switch years there).
                     onClick = { onOpenDeck(year.year, null) }
@@ -362,15 +400,20 @@ private fun RewindHomeSortArrow(
     )
 }
 
+/**
+ * One tappable home row (a year, or the all-time row): a strip collage of the period's top
+ * song/album/artist/playlist behind the label + totals, with the same dark-scrim treatment
+ * as the month cells.
+ */
 @Composable
 private fun RewindHomeYearRow(
-    year: RewindHomeYear,
+    label: String,
     stats: String,
+    tops: TopArtworks,
     onClick: () -> Unit
 ) {
     // Row height; all four quadrants share it, as in the month collage.
     val rowHeight = 96.dp
-    val tops = year.topArtworks
     val hasArtwork = !tops.song.isNullOrBlank() ||
         !tops.album.isNullOrBlank() ||
         !tops.artist.isNullOrBlank() ||
@@ -476,7 +519,7 @@ private fun RewindHomeYearRow(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = year.year.toString(),
+                    text = label,
                     color = Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Black,

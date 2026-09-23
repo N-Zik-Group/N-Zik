@@ -37,7 +37,8 @@ fun RewindTopArtistSpotlightCard(
     page: Int,
     pageCount: Int,
     active: Boolean,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null
 ) {
     val artistName = artist?.artist?.cleanName().orEmpty()
     val wiki = rememberArtistWikiMetadata(artistName, artist?.artist?.id)
@@ -47,6 +48,7 @@ fun RewindTopArtistSpotlightCard(
         background = rewindColors.value.ink,
         progressColor = rewindColors.value.cream,
         onNext = onNext,
+        onShareSlide = onShareSlide,
         backgroundArt = {
             Canvas(Modifier.fillMaxSize()) {
                 val pinkSlash = Path().apply {

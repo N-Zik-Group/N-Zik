@@ -25,7 +25,8 @@ fun RewindTopSongsCard(
     page: Int,
     pageCount: Int,
     active: Boolean,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null
 ) {
     val topFive = songs.take(5)
     val onAccent = rewindColors.value.textOn(rewindColors.value.lime)
@@ -35,6 +36,7 @@ fun RewindTopSongsCard(
         background = rewindColors.value.lime,
         progressColor = onAccent,
         onNext = onNext,
+        onShareSlide = onShareSlide,
         backgroundArt = {
             Canvas(Modifier.fillMaxSize()) {
                 drawCircle(
@@ -98,14 +100,18 @@ fun RewindTopSongsCard(
                 }
             }
             Spacer(Modifier.weight(1f))
-            RewindReveal(active, 980) {
-                Text(
-                    text = stringResource(R.string.rw_top_songs_next),
-                    color = onAccent.copy(alpha = 0.62f),
-                    fontSize = 11.sp,
-                    lineHeight = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
+            // "Next: songs 6–N" only makes sense when there are more songs than the five
+            // shown (spec GH-275, patch "TEN SONGS. ONE WINNER.")
+            if (songs.size > 5) {
+                RewindReveal(active, 980) {
+                    Text(
+                        text = stringResource(R.string.rw_top_songs_next, minOf(songs.size, 10)),
+                        color = onAccent.copy(alpha = 0.62f),
+                        fontSize = 11.sp,
+                        lineHeight = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }

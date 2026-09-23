@@ -148,6 +148,7 @@ import app.it.fast4x.rimusic.extensions.pip.PipModuleContainer
 import app.it.fast4x.rimusic.extensions.pip.PipModuleCover
 import app.n_zik.android.components.ui.screens.home.OPEN_SEARCH_SHORTCUT
 import app.n_zik.android.components.ui.screens.home.initialShortcutAction
+import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.utils.PlayerAwareInsetsTracker
@@ -306,6 +307,20 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.unit.IntOffset
 import kotlin.math.roundToInt
 
+/**
+ * Decodes the finished-month deck target carried by the monthly rewind reminder's
+ * content intent: valid extras yield the `(year, month)` pair, anything else (missing
+ * extras, out-of-range values, restored process instance) yields null so the app
+ * starts without a forced deck open. Top-level so the parse contract is unit-testable
+ * without launching the activity (spec GH-275, re-review: consumer side untested).
+ */
+internal fun rewindDeckTargetFromIntent(intent: Intent?, isRestoredInstance: Boolean): Pair<Int, Int>? {
+    if (isRestoredInstance) return null
+    val year = intent?.getIntExtra(RewindReminderWorker.EXTRA_DECK_YEAR, 0) ?: 0
+    val month = intent?.getIntExtra(RewindReminderWorker.EXTRA_DECK_MONTH, 0) ?: 0
+    return if (year in 2000..2100 && month in 1..12) year to month else null
+}
+
 @UnstableApi
 class MainActivity :
 //MonetCompatActivity(),
@@ -337,6 +352,11 @@ class MainActivity :
     // Not re-seeded from the launch intent when the activity is recreated (theme change, settings
     // import): the shortcut was already consumed and would otherwise pop the back stack to home.
     private var shortcutIntentAction by mutableStateOf<String?>(null)
+
+    // Finished month carried by the monthly rewind reminder's content intent. Set on cold start
+    // (startApp) and warm start (onNewIntent), consumed once by the navigation effect that opens
+    // the deck on that month.
+    private var rewindDeckTarget by mutableStateOf<Pair<Int, Int>?>(null)
 
     override val persistMap = PersistMap()
 
@@ -529,6 +549,7 @@ class MainActivity :
 
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
         shortcutIntentAction = initialShortcutAction(intent.action, isRestoredInstance)
+        rewindDeckTarget = rewindDeckTargetFromIntent(intent, isRestoredInstance)
 
         with(preferences) {
             if (getBoolean(isKeepScreenOnEnabledKey, false)) {
@@ -1426,6 +1447,16 @@ class MainActivity :
                     }
                 }
 
+                // Monthly rewind reminder notification: open the deck on the finished month
+                // (extras set in startApp / onNewIntent). Consumed from an effect, like the
+                // shortcut above, so the navigation happens once the graph is composed.
+                LaunchedEffect(rewindDeckTarget) {
+                    rewindDeckTarget?.let { (year, month) ->
+                        navController.navigate("${NavRoutes.rewind.name}?year=$year&month=$month")
+                        rewindDeckTarget = null
+                    }
+                }
+
                         CrossfadeContainer(state = pipState.value) { isCurrentInPip ->
                             Timber.tag("MainActivity").d("pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
                             val pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
@@ -1842,6 +1873,7 @@ class MainActivity :
         setIntent(intent)
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
         shortcutIntentAction = intent.action
+        rewindDeckTarget = rewindDeckTargetFromIntent(intent, isRestoredInstance = false)
     }
 
     override fun onStop() {

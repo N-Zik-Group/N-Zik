@@ -1,11 +1,20 @@
 package app.n_zik.android.components.ui.screens.rewind.slides
 
+import android.util.LruCache
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -85,6 +94,7 @@ import app.it.fast4x.rimusic.ui.styling.overlay
 import app.it.fast4x.rimusic.ui.styling.onOverlay
 import app.it.fast4x.rimusic.ui.styling.px
 import it.fast4x.innertube.YtMusic
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -230,6 +240,7 @@ internal fun RewindStoryShell(
     progressColor: Color,
     modifier: Modifier = Modifier,
     onNext: (() -> Unit)? = null,
+    onShareSlide: (() -> Unit)? = null,
     showProgress: Boolean = true,
     showBrand: Boolean = true,
     backgroundArt: @Composable () -> Unit = {},
@@ -247,6 +258,10 @@ internal fun RewindStoryShell(
     // ignoring-visibility insets report the bar sizes even while hidden, so the deck keeps
     // exactly the same safe-area padding as on screen (the regular insets would collapse to 0).
     val holdBarPadding = rewindShareCaptureActive.value
+    // Per-slide share button (top-right, below the progress row). It is an overlay only —
+    // its visibility never changes the content layout, so pages never reflow when it
+    // appears or disappears.
+    val showShareButton = onShareSlide != null && LocalRewindActive.current && !rewindShareCaptureActive.value
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -317,6 +332,68 @@ internal fun RewindStoryShell(
                     .padding(end = 16.dp, bottom = 8.dp)
             )
         }
+        // Per-slide system share (single PNG). Only the active page offers it, and it is
+        // hidden during the export capture so it never lands inside the exported frames.
+        // Overlay below the progress row (see RewindShareSlideButton) — never in the layout
+        // flow, so toggling it can't reflow the slide content. It pops in with a small
+        // scale/fade when the page activates and pops back out when it deactivates; while
+        // an export capture is in flight the exit is instant, so a copied frame never shows
+        // the icon mid-animation (same rule as the deck's reveal snaps).
+        AnimatedVisibility(
+            visible = showShareButton,
+            enter = scaleIn(
+                initialScale = 0.5f,
+                // Spring with a light overshoot: a smooth transition that still reads as a pop
+                animationSpec = spring(dampingRatio = 0.62f, stiffness = Spring.StiffnessMedium)
+            ) + fadeIn(tween(200, easing = LinearOutSlowInEasing)),
+            exit = if (rewindShareCaptureActive.value) {
+                // Export capture in flight: vanish instantly for a clean frame
+                fadeOut(tween(0))
+            } else {
+                scaleOut(
+                    targetScale = 0.8f,
+                    animationSpec = tween(160, easing = FastOutLinearInEasing)
+                ) + fadeOut(tween(160, easing = FastOutLinearInEasing))
+            },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .statusBarsPadding()
+                .padding(top = 44.dp, end = 12.dp)
+        ) {
+            RewindShareSlideButton(
+                tint = progressColor.copy(alpha = 0.85f),
+                onClick = { onShareSlide?.invoke() }
+            )
+        }
+    }
+}
+
+/**
+ * Share icon in the top-right corner of a slide, below the 3dp progress row. It is an
+ * overlay (outside the content layout) so showing or hiding it never reflows the slide.
+ * The 24dp glyph sits in a 40dp touch target. Capturing and sharing the displayed slide is
+ * handled by the caller
+ * (see [app.n_zik.android.components.ui.screens.rewind.shareRewindSlide]).
+ */
+@Composable
+private fun RewindShareSlideButton(
+    tint: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(40.dp)
+            .clickable(onClick = onClick)
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.share_social),
+            contentDescription = stringResource(R.string.rw_share_slide),
+            tint = tint,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(24.dp)
+        )
     }
 }
 
@@ -490,47 +567,6 @@ internal fun RewindAnimatedNumber(
         lineHeight = (fontSize * 0.90f).sp,
         letterSpacing = (-3.2).sp,
         fontWeight = FontWeight.Black,
-        modifier = modifier
-    )
-}
-
-@Composable
-internal fun RewindTypewriterText(
-    text: String,
-    active: Boolean,
-    color: Color,
-    fontSize: Int,
-    modifier: Modifier = Modifier,
-    delayMillis: Int = 0,
-    lineHeight: Int = fontSize,
-    maxLines: Int = 2,
-    charDelayMillis: Long = 34L,
-    letterSpacing: Float = -1.2f
-) {
-    var visibleCharacters by remember(text) { mutableStateOf(0) }
-    LaunchedEffect(active, text) {
-        visibleCharacters = 0
-        if (!active) return@LaunchedEffect
-        if (rewindShareCaptureActive.value) {
-            // Export capture: show the whole line straight away
-            visibleCharacters = text.length
-        } else {
-            delay(delayMillis.toLong())
-            text.indices.forEach { index ->
-                visibleCharacters = index + 1
-                delay(charDelayMillis)
-            }
-        }
-    }
-    Text(
-        text = text.take(visibleCharacters),
-        color = color,
-        fontSize = fontSize.sp,
-        lineHeight = lineHeight.sp,
-        letterSpacing = letterSpacing.sp,
-        fontWeight = FontWeight.Black,
-        maxLines = maxLines,
-        overflow = TextOverflow.Ellipsis,
         modifier = modifier
     )
 }
@@ -764,6 +800,11 @@ internal fun RewindArtistArtwork(
         failedUrls = emptySet()
         activeIndex = 0
         if (artistName.isBlank()) return@LaunchedEffect
+        if (rewindShareCaptureActive.value) {
+            // Export capture: skip the wiki fetch entirely — the frame settles on the
+            // primary artwork only (no network wait, no late portrait).
+            return@LaunchedEffect
+        }
         if (enableSlideshow || preferWikipedia || primaryUrl.isNullOrBlank()) {
             wikipediaUrl = withContext(Dispatchers.IO) {
                 WikipediaArtistImageResolver.findImage(artistName)
@@ -784,6 +825,8 @@ internal fun RewindArtistArtwork(
         if (enableSlideshow && candidates.size > 1) {
             while (true) {
                 delay(7_000)
+                // Export capture: stop cycling so a frame cannot land mid-crossfade
+                if (rewindShareCaptureActive.value) break
                 activeIndex = (activeIndex + 1) % candidates.size
             }
         }
@@ -791,7 +834,7 @@ internal fun RewindArtistArtwork(
     val selectedUrl = candidates.getOrNull(activeIndex) ?: candidates.firstOrNull()
     Crossfade(
         targetState = selectedUrl,
-        animationSpec = tween(durationMillis = 900),
+        animationSpec = if (rewindShareCaptureActive.value) tween(0) else tween(900),
         label = "rewindArtistArtwork"
     ) { imageUrl ->
         RewindArtworkWithFallback(
@@ -814,19 +857,6 @@ internal data class ArtistWikiMetadata(
     val bio: String? = null,
     val wikipediaUrl: String? = null
 )
-
-@Composable
-internal fun rememberArtistDescription(artistName: String): String? {
-    var description by remember(artistName) { mutableStateOf<String?>(null) }
-    LaunchedEffect(artistName) {
-        description = null
-        if (artistName.isBlank()) return@LaunchedEffect
-        description = withContext(Dispatchers.IO) {
-            WikipediaArtistMetadataResolver.find(artistName)?.description
-        }
-    }
-    return description
-}
 
 /**
  * Full Wikipedia metadata (portrait, short description, longer bio paragraph and the article
@@ -872,35 +902,58 @@ private fun ArtistWikiMetadata.hasUsableDescription(): Boolean {
 }
 
 private object WikipediaArtistImageResolver {
-    fun findImage(artistName: String): String? =
+    suspend fun findImage(artistName: String): String? =
         WikipediaArtistMetadataResolver.find(artistName)?.imageUrl
 }
 
 private object WikipediaArtistMetadataResolver {
     private const val MissCacheTtlMs = 5L * 60L * 1000L
-    private val cache = ConcurrentHashMap<String, ArtistWikiMetadata>()
+    private const val CacheCapacity = 64
+    // Bounded cache: process-lifetime retention of every resolved artist would grow without
+    // bound (spec GH-275, patch "Wikipedia cache unbounded").
+    private val cache = LruCache<String, ArtistWikiMetadata>(CacheCapacity)
     private val misses = ConcurrentHashMap<String, Long>()
+    // In-flight coalescing: concurrent searches for the same artist share one network request.
+    private val inFlight = ConcurrentHashMap<String, CompletableDeferred<ArtistWikiMetadata?>>()
 
-    fun find(artistName: String): ArtistWikiMetadata? {
+    suspend fun find(artistName: String): ArtistWikiMetadata? {
         val key = artistName.trim().lowercase()
         if (key.isBlank()) return null
-        cache[key]?.let { return it }
+        cache.get(key)?.let { return it }
         val now = System.currentTimeMillis()
         misses[key]?.let { missedAt ->
             if (now - missedAt < MissCacheTtlMs) return null
             misses.remove(key, missedAt)
         }
-        val candidates = listOf(
-            "$artistName musician",
-            "$artistName singer",
-            "$artistName rapper",
-            artistName
-        )
-        val resolved = candidates.firstNotNullOfOrNull { query ->
-            runCatching { requestMetadata(artistName, query) }.getOrNull()
+        val slot = CompletableDeferred<ArtistWikiMetadata?>()
+        val existing = inFlight.putIfAbsent(key, slot)
+        val resolved: ArtistWikiMetadata? = if (existing == null) {
+            // We own the in-flight slot [slot]: resolve, publish to the waiters, release the
+            // slot
+            val result = runCatching {
+                listOf(
+                    "$artistName musician",
+                    "$artistName singer",
+                    "$artistName rapper",
+                    artistName
+                ).firstNotNullOfOrNull { query ->
+                    runCatching { requestMetadata(artistName, query) }.getOrNull()
+                }
+            }.getOrNull()
+            try {
+                slot.complete(result)
+                result
+            } finally {
+                // Remove only when still the slot owner (a newer in-flight search replaced it)
+                inFlight.remove(key, slot)
+            }
+        } else {
+            // A concurrent search already owns the slot: await its result instead of firing
+            // a duplicate network request
+            existing.await()
         }
         if (resolved != null) {
-            cache[key] = resolved
+            cache.put(key, resolved)
             misses.remove(key)
         } else {
             misses[key] = now
@@ -1158,14 +1211,20 @@ internal data class ListenerBadge(
 /**
  * NZik listening index. This is deliberately NOT called a percentile because the app only
  * has the listener's local history, not a global population. The reference point is calibrated
- * so ~45k minutes / 14k plays / 201 days / 5.6k unique songs lands around index 70, leaving
- * several genuinely harder tiers above it.
+ * so ~45k minutes / 14k plays / 201 days / 5.6k unique songs lands around index 70 on a FULL
+ * YEAR, leaving several genuinely harder tiers above it.
+ *
+ * The four annual thresholds are scaled by the period's length
+ * ([RewindData.daysInPeriod] / 365.25), so a month is judged against a month's worth of the
+ * reference instead of a whole year's (spec GH-275, patch "Listener badge not scaled").
+ * A period with zero days (empty all-time data) scores every ratio 0 — no 0/0 NaN.
  */
 internal fun calculateListenerBadge(data: RewindData): ListenerBadge {
-    val minuteRatio = (data.stats.totalMinutes.toDouble() / 45_000.0).coerceIn(0.0, 2.4)
-    val playRatio = (data.stats.totalPlays.toDouble() / 14_000.0).coerceIn(0.0, 2.4)
-    val dayRatio = (data.daysWithMusic.toDouble() / 201.0).coerceIn(0.0, 1.82)
-    val uniqueRatio = (data.totalUniqueSongs.toDouble() / 5_612.0).coerceIn(0.0, 2.4)
+    val scale = data.daysInPeriod.toDouble() / 365.25
+    val minuteRatio = if (scale > 0.0) (data.stats.totalMinutes.toDouble() / (45_000.0 * scale)).coerceIn(0.0, 2.4) else 0.0
+    val playRatio = if (scale > 0.0) (data.stats.totalPlays.toDouble() / (14_000.0 * scale)).coerceIn(0.0, 2.4) else 0.0
+    val dayRatio = if (scale > 0.0) (data.daysWithMusic.toDouble() / (201.0 * scale)).coerceIn(0.0, 1.82) else 0.0
+    val uniqueRatio = if (scale > 0.0) (data.totalUniqueSongs.toDouble() / (5_612.0 * scale)).coerceIn(0.0, 2.4) else 0.0
     val intensity = (
         minuteRatio * 0.38 +
             playRatio * 0.25 +

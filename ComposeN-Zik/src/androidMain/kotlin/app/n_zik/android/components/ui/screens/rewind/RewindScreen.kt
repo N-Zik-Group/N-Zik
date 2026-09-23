@@ -2,8 +2,6 @@ package app.n_zik.android.components.ui.screens.rewind
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Canvas as AndroidCanvas
 import android.os.SystemClock
 import android.view.View
 import androidx.activity.compose.BackHandler
@@ -13,8 +11,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
-import com.mikepenz.hypnoticcanvas.shaderBackground
-import com.mikepenz.hypnoticcanvas.shaders.GradientFlow
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -28,7 +24,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -43,23 +38,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.ui.draw.clip
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.mikepenz.hypnoticcanvas.shaderBackground
+import com.mikepenz.hypnoticcanvas.shaders.GradientFlow
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -84,18 +79,12 @@ import app.n_zik.android.components.ui.screens.rewind.slides.RewindTopSongCard
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindTopSongsCard
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindTopPlaylistsCard
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindTotalTimeCard
+import app.n_zik.android.components.ui.screens.rewind.slides.RewindYearsCard
 import app.n_zik.android.components.ui.screens.rewind.slides.formatRewindNumber
-import app.n_zik.android.utils.DataStoreUtils
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
+import java.io.File
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import timber.log.Timber
-import java.io.File
-import java.time.LocalDate
-import kotlin.math.cos
-import kotlin.math.sin
 
 private const val RewindDeckPageCount = 16
 private const val MinimumOpeningRevealMs = 6_800L
@@ -120,21 +109,29 @@ internal val rewindCaptureMode = mutableStateOf(false)
  */
 internal val rewindShareCaptureActive = mutableStateOf(false)
 
-@Suppress("UNUSED_PARAMETER")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RewindScreen(
     navController: NavController,
     miniPlayer: @Composable () -> Unit = {},
     rewindYear: Int? = null,
-    rewindMonth: Int? = null
+    rewindMonth: Int? = null,
+    rewindScope: String? = null
 ) {
-    val fallbackYear = LocalDate.now().year
-    val defaultUsername = stringResource(R.string.rw_default_username)
-    var activeYear by remember(rewindYear) { mutableStateOf(rewindYear ?: fallbackYear) }
-    var rewindData by remember(activeYear, rewindMonth) { mutableStateOf<RewindData?>(null) }
-    var isLoading by remember(activeYear, rewindMonth) { mutableStateOf(true) }
-    var username by remember { mutableStateOf(defaultUsername) }
+    // Period resolution from the route parameters: the explicit scope wins, then the
+    // year+month pair, then the year alone; nothing (or an unknown scope) opens the
+    // all-time deck. Smart casts only — no !! anywhere (spec GH-275, patch "global period").
+    val period: RewindPeriod = remember(rewindScope, rewindYear, rewindMonth) {
+        when {
+            rewindScope == "global" -> RewindPeriod.Global
+            rewindYear != null && rewindMonth != null -> RewindPeriod.Month(rewindYear, rewindMonth)
+            rewindYear != null -> RewindPeriod.Year(rewindYear)
+            else -> RewindPeriod.Global
+        }
+    }
+    val viewModel: RewindDeckViewModel = viewModel(factory = RewindDeckViewModel)
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
+    var openingDone by remember(period) { mutableStateOf(false) }
     var shareMode by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val rootView = LocalView.current
@@ -155,7 +152,7 @@ fun RewindScreen(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { folderUri ->
         folderUri ?: return@rememberLauncherForActivityResult
-        val data = rewindData ?: createEmptyRewindData(activeYear, rewindMonth)
+        val data = uiState.data ?: emptyRewindData(period)
         scope.launch {
             shareMode = true
             runCatching {
@@ -163,6 +160,11 @@ fun RewindScreen(
                     folderUri,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
+            }.onFailure { error ->
+                // A failed persist used to be swallowed silently; the folder may still be
+                // writable for this run, so only the persistence is lost (patch "folder
+                // export has no partial-failure handling")
+                Timber.tag("RewindShare").e(error, "Failed to persist the export folder permission")
             }
             // Two frames so the shareMode recomposition lands before the deck plays itself.
             withFrameNanos { }
@@ -173,38 +175,29 @@ fun RewindScreen(
             val deckPages = captureRewindDeckPages(
                 view = rootView,
                 pagerState = pagerState,
-                year = data.year,
-                month = rewindMonth,
+                period = period,
                 pageCount = RewindDeckPageCount
             )
-            val exported = if (deckPages != null) {
+            val written = if (deckPages != null) {
                 exportRewindPagesToFolder(context, folderUri, deckPages)
             } else {
                 // Last resort: software-replay only the final slide, exported to the same
                 // folder. The Bitmap canvas cannot draw a RuntimeShader, so the deck
                 // switches to its solid fallback backgrounds for the capture, then restores.
-                if (pagerState.currentPage != RewindDeckPageCount - 1) {
-                    // The capture may have failed mid-deck: come back to the finale
-                    // (fresh reveal, then wait for its footer to settle).
-                    pagerState.scrollToPage(RewindDeckPageCount - 1)
-                    withFrameNanos { }
-                    rewindCaptureMode.value = true
-                    delay(1_700)
-                    withFrameNanos { }
-                    withFrameNanos { }
+                val fallbackFile = captureFinaleSlide(context, rootView, pagerState, period)
+                if (fallbackFile != null) {
+                    exportRewindPagesToFolder(context, folderUri, listOf(fallbackFile))
                 } else {
-                    rewindCaptureMode.value = true
-                    withFrameNanos { }
-                    withFrameNanos { }
+                    0
                 }
-                val fallbackFile = captureRewindScreenshot(context, rootView, data.year, rewindMonth)
-                rewindCaptureMode.value = false
-                fallbackFile?.let { exportRewindPagesToFolder(context, folderUri, listOf(it)) } ?: false
             }
             shareMode = false
-            if (exported) {
+            if (written == RewindDeckPageCount) {
                 // Kreate toaster: app-styled confirmation instead of a raw system toast.
                 Toaster.done()
+            } else if (written > 0) {
+                // Partial export: the user gets the pages that landed, told how many
+                Toaster.e(R.string.rw_error_export_partial, written, RewindDeckPageCount)
             } else {
                 Toaster.e(R.string.rw_error_export)
             }
@@ -217,27 +210,37 @@ fun RewindScreen(
         rewindColors.value = RewindColors.fromPalette(palette)
     }
 
-    LaunchedEffect(activeYear, rewindMonth) {
+    // Load for the requested period; the VM cancels the previous load on a period change.
+    LaunchedEffect(period) {
+        viewModel.load(period)
+    }
+
+    // The scripted opening floor: the deck never reveals before MinimumOpeningRevealMs even
+    // when the data is ready early (the loader's lockup needs its full run).
+    LaunchedEffect(period) {
         val startedAt = SystemClock.elapsedRealtime()
-        try {
-            username = withContext(Dispatchers.IO) {
-                DataStoreUtils.getString(
-                    context,
-                    DataStoreUtils.KEY_USERNAME,
-                    defaultUsername
-                )
+        val elapsed = SystemClock.elapsedRealtime() - startedAt
+        val remaining = (MinimumOpeningRevealMs - elapsed).coerceAtLeast(0L)
+        if (remaining > 0L) delay(remaining)
+        openingDone = true
+    }
+
+    // Per-slide system share: captures the displayed slide and hands the PNG to the system
+    // share sheet (patch "per-slide system share"). Suppressed while a deck export is in
+    // flight, so the two capture paths never fight over the display.
+    val onShareSlide: (() -> Unit)? = if (shareMode) {
+        null
+    } else {
+        {
+            scope.launch {
+                shareRewindSlide(context, rootView, period, pagerState.currentPage)
             }
-            rewindData = RewindDataFetcher.getRewindData(activeYear, rewindMonth)
-        } catch (error: Throwable) {
-            Timber.e(error, "Failed to build Rewind for %d (month=%s)", activeYear, rewindMonth)
-            rewindData = createEmptyRewindData(activeYear, rewindMonth)
-        } finally {
-            val elapsed = SystemClock.elapsedRealtime() - startedAt
-            val remaining = (MinimumOpeningRevealMs - elapsed).coerceAtLeast(0L)
-            if (remaining > 0L) delay(remaining)
-            isLoading = false
         }
     }
+
+    val isLoading = uiState.isLoading || !openingDone
+    val data = uiState.data ?: emptyRewindData(period)
+    val username = uiState.username
 
     Box(
         modifier = Modifier
@@ -246,13 +249,11 @@ fun RewindScreen(
     ) {
         if (isLoading) {
             RewindLoadingScreen(
-                periodLabel = rewindPeriodLabel(activeYear, rewindMonth),
-                isMonthly = rewindMonth != null,
-                username = username,
-                data = rewindData
+                periodLabel = period.label(),
+                isMonthly = period is RewindPeriod.Month,
+                data = uiState.data
             )
         } else {
-            val data = rewindData ?: createEmptyRewindData(activeYear, rewindMonth)
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
@@ -276,26 +277,27 @@ fun RewindScreen(
                     LocalRewindShaderWarm provides shaderWarm
                 ) {
                     when (page) {
-                        0 -> RewindIntroCard(data, username, page, RewindDeckPageCount, active, next)
-                        1 -> RewindListenerBadgeCard(data, page, RewindDeckPageCount, active, next)
-                        2 -> RewindTotalTimeCard(data, page, RewindDeckPageCount, active, next)
-                        3 -> RewindTopSongCard(data.topSongs, data.periodLabel, page, RewindDeckPageCount, active, next)
-                        4 -> RewindTopArtistsCard(data.topArtists, data.periodLabel, page, RewindDeckPageCount, active, next)
-                        5 -> RewindTopArtistSpotlightCard(data.topArtists.firstOrNull(), data.periodLabel, page, RewindDeckPageCount, active, next)
-                        6 -> RewindTopSongsCard(data.topSongs, data.periodLabel, page, RewindDeckPageCount, active, next)
-                        7 -> RewindDeepCutsCard(data.topSongs, data.periodLabel, page, RewindDeckPageCount, active, next)
-                        8 -> RewindPeakTimeCard(data, page, RewindDeckPageCount, active, next)
-                        9 -> RewindListeningDaysCard(data, page, RewindDeckPageCount, active, next)
-                        10 -> RewindDiscoveryCard(data, page, RewindDeckPageCount, active, next)
-                        11 -> RewindTopAlbumCard(data.topAlbums.firstOrNull(), data.periodLabel, page, RewindDeckPageCount, active, next)
-                        12 -> RewindAlbumsCard(data.topAlbums, data.periodLabel, page, RewindDeckPageCount, active, next)
-                        13 -> RewindTopPlaylistsCard(data.topPlaylists, data.periodLabel, page, RewindDeckPageCount, active, next)
-                        14 -> if (rewindMonth != null) {
+                        0 -> RewindIntroCard(data, username, page, RewindDeckPageCount, active, next, onShareSlide)
+                        1 -> RewindListenerBadgeCard(data, page, RewindDeckPageCount, active, next, onShareSlide)
+                        2 -> RewindTotalTimeCard(data, page, RewindDeckPageCount, active, next, onShareSlide)
+                        3 -> RewindTopSongCard(data.topSongs, data.periodLabel, page, RewindDeckPageCount, active, next, onShareSlide)
+                        4 -> RewindTopArtistsCard(data.topArtists, data.periodLabel, page, RewindDeckPageCount, active, next, onShareSlide)
+                        5 -> RewindTopArtistSpotlightCard(data.topArtists.firstOrNull(), data.periodLabel, page, RewindDeckPageCount, active, next, onShareSlide)
+                        6 -> RewindTopSongsCard(data.topSongs, data.periodLabel, page, RewindDeckPageCount, active, next, onShareSlide)
+                        7 -> RewindDeepCutsCard(data.topSongs, data.periodLabel, page, RewindDeckPageCount, active, next, onShareSlide)
+                        8 -> RewindPeakTimeCard(data, page, RewindDeckPageCount, active, next, onShareSlide)
+                        9 -> RewindListeningDaysCard(data, page, RewindDeckPageCount, active, next, onShareSlide)
+                        10 -> RewindDiscoveryCard(data, page, RewindDeckPageCount, active, next, onShareSlide)
+                        11 -> RewindTopAlbumCard(data.topAlbums.firstOrNull(), data.periodLabel, page, RewindDeckPageCount, active, next, onShareSlide)
+                        12 -> RewindAlbumsCard(data.topAlbums, data.periodLabel, page, RewindDeckPageCount, active, next, onShareSlide)
+                        13 -> RewindTopPlaylistsCard(data.topPlaylists, data.periodLabel, page, RewindDeckPageCount, active, next, onShareSlide)
+                        14 -> when (period) {
                             // A single-month deck breaks the month down day by day instead of
                             // showing twelve months of which only one has data
-                            RewindDaysCard(data, page, RewindDeckPageCount, active, next)
-                        } else {
-                            RewindMonthlyCard(data, page, RewindDeckPageCount, active, next)
+                            is RewindPeriod.Month -> RewindDaysCard(data, page, RewindDeckPageCount, active, next, onShareSlide)
+                            // The all-time deck charts one bar per year with data
+                            is RewindPeriod.Global -> RewindYearsCard(data, page, RewindDeckPageCount, active, next, onShareSlide)
+                            else -> RewindMonthlyCard(data, page, RewindDeckPageCount, active, next, onShareSlide)
                         }
                         else -> RewindFinaleCard(
                             data = data,
@@ -304,6 +306,7 @@ fun RewindScreen(
                             pageCount = RewindDeckPageCount,
                             active = active,
                             shareMode = shareMode,
+                            onShareSlide = onShareSlide,
                             onShare = {
                                 if (!shareMode) {
                                     // The system folder picker chooses where the exported
@@ -326,27 +329,64 @@ fun RewindScreen(
         }
 
         // The mini player is drawn as on every screen; AppNavigation wraps it in a jelly-spring
-        // slide-down + fade while the deck is on screen (same animation as the header hide)
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .navigationBarsPadding()
-        ) {
-            miniPlayer()
+        // slide-down + fade while the deck is on screen (same animation as the header hide).
+        // Hidden during any capture: it is inside the root view that PixelCopy / the software
+        // replay copy, and would otherwise appear in every exported or shared frame
+        // (patch "mini-player rendered inside the exported frames").
+        if (!shareMode && !rewindShareCaptureActive.value && !rewindCaptureMode.value) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
+            ) {
+                miniPlayer()
+            }
         }
+    }
+}
+
+/**
+ * Last-resort single-slide capture for the deck export: the finale, software-replayed with
+ * its solid fallback backgrounds. [rewindCaptureMode] is held in a try/finally so a cancelled
+ * capture cannot leave the deck stuck in its solid state until process death (patch
+ * "rewindCaptureMode not in try/finally").
+ *
+ * @return the saved PNG, or null when the replay or the compression failed
+ */
+private suspend fun captureFinaleSlide(
+    context: Context,
+    view: View,
+    pagerState: PagerState,
+    period: RewindPeriod
+): File? {
+    if (pagerState.currentPage != RewindDeckPageCount - 1) {
+        // The capture may have failed mid-deck: come back to the finale
+        // (fresh reveal, then wait for its footer to settle)
+        pagerState.scrollToPage(RewindDeckPageCount - 1)
+        withFrameNanos { }
+        delay(1_700)
+        withFrameNanos { }
+        withFrameNanos { }
+    }
+    try {
+        rewindCaptureMode.value = true
+        withFrameNanos { }
+        withFrameNanos { }
+        return captureRewindScreenshot(context, view, period, RewindDeckPageCount - 1)
+    } finally {
+        rewindCaptureMode.value = false
     }
 }
 
 /**
  * Deliberately dramatic, non-looping opening sequence.
  * The technical monochrome language is inspired by the reference the user supplied, but the
- * content/branding is NZik and the year always comes from the requested rewind year.
+ * content/branding is NZik and the period always comes from the requested rewind period.
  */
 @Composable
 private fun RewindLoadingScreen(
     periodLabel: String,
     isMonthly: Boolean,
-    username: String,
     data: RewindData?
 ) {
     val timeline = remember(periodLabel) { Animatable(0f) }
@@ -598,92 +638,3 @@ private fun segment(value: Float, start: Float, end: Float): Float {
     if (end <= start) return if (value >= end) 1f else 0f
     return ((value - start) / (end - start)).coerceIn(0f, 1f)
 }
-
-/**
- * Software-replays the current deck page onto a fresh bitmap and saves it as a PNG in the
- * shared cache directory. Last-resort single-slide capture for devices below API 34, where
- * the display-framebuffer PixelCopy overloads do not exist; the caller exports the returned
- * file like any captured deck page.
- *
- * The caller has switched the deck into capture mode (solid slide backgrounds): a Bitmap
- * canvas replays the view in software mode, where the HypnoticCanvas RuntimeShaders would
- * throw (Software rendering doesn't support RuntimeShader). Coil images are safe too: the
- * shared loader decodes software bitmaps (ImageCacheFactory, allowHardware(false)).
- *
- * @return the saved PNG, or null when the replay or the compression failed
- */
-private suspend fun captureRewindScreenshot(
-    context: Context,
-    view: View,
-    year: Int,
-    month: Int? = null
-): File? {
-    return runCatching {
-        val bitmap = withContext(Dispatchers.Main.immediate) {
-            val width = view.width.coerceAtLeast(1)
-            val height = view.height.coerceAtLeast(1)
-            Timber.tag("RewindShare").d("Capturing %dx%d from %s", width, height, view.javaClass.simpleName)
-            Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also { target ->
-                view.draw(AndroidCanvas(target))
-            }
-        }
-        val imageFile = withContext(Dispatchers.IO) {
-            val shareDirectory = File(context.cacheDir, "shared_rewind").apply { mkdirs() }
-            val staleBefore = System.currentTimeMillis() - 24L * 60L * 60L * 1000L
-            shareDirectory.listFiles()
-                ?.filter { it.lastModified() < staleBefore }
-                ?.forEach(File::delete)
-            File(
-                shareDirectory,
-                "NZik_Rewind_${year}${rewindMonthSuffix(month)}_${System.currentTimeMillis()}.png"
-            ).also { outputFile ->
-                outputFile.outputStream().buffered().use { output ->
-                    check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)) {
-                        "PNG compression failed"
-                    }
-                }
-                Timber.tag("RewindShare").d("Saved %d bytes to %s", outputFile.length(), outputFile.name)
-            }
-        }
-        bitmap.recycle()
-        imageFile
-    }.getOrElse { error ->
-        if (error is CancellationException) throw error
-        Timber.tag("RewindShare").e(error, "Failed to capture Rewind screenshot")
-        null
-    }
-}
-
-private fun createEmptyRewindData(year: Int, month: Int? = null): RewindData {
-    return RewindData(
-        topSongs = emptyList(),
-        topArtists = emptyList(),
-        topAlbums = emptyList(),
-        topPlaylists = emptyList(),
-        stats = ListeningStats(
-            totalPlays = 0,
-            totalMinutes = 0,
-            mostActiveDay = null,
-            mostActiveHour = null,
-            mostActiveMonth = null,
-            averageDailyMinutes = 0.0,
-            firstPlayDate = null,
-            lastPlayDate = null
-        ),
-        monthlyStats = emptyList(),
-        dailyStats = emptyList(),
-        hourlyStats = emptyList(),
-        totalUniqueSongs = 0,
-        totalUniqueArtists = 0,
-        totalUniqueAlbums = 0,
-        totalUniquePlaylists = 0,
-        year = year,
-        daysWithMusic = 0,
-        periodLabel = rewindPeriodLabel(year, month),
-        daysInPeriod = rewindDaysInPeriod(year, month)
-    )
-}
-
-/** "_03" style suffix for a monthly deck file name, empty for the annual deck. */
-private fun rewindMonthSuffix(month: Int?): String =
-    month?.let { "_${it.toString().padStart(2, '0')}" }.orEmpty()

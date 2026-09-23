@@ -29,6 +29,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 /**
  * Issue #606 (part 2, lot C) -- `Player.excludeMediaItems`
@@ -42,8 +43,14 @@ import org.robolectric.RobolectricTestRunner
  * JUnit 5 platform, the Robolectric runner only works with JUnit 4) because
  * `context.preferences` needs a real SharedPreferences. The caller is a named single-thread
  * executor standing in for the main thread (same technique as ForcePlayAtIndexDispatchTest).
+ *
+ * [Config] pins the SDK explicitly: with Android resources on the unit-test classpath,
+ * tests running on the default (target) SDK would trigger Android's
+ * `ApplicationSharedMemory` bootstrap, whose raw FileDescriptor reflection does not work
+ * on the JVM (same as every other Robolectric test in this module).
  */
 @RunWith(RobolectricTestRunner::class)
+@Config(sdk = [33])
 class ExcludeMediaItemsDislikedQueriesOffMainTest {
 
     private fun mediaItem(id: String) = MediaItem.Builder().setMediaId(id).build()

@@ -34,7 +34,8 @@ fun RewindDeepCutsCard(
     page: Int,
     pageCount: Int,
     active: Boolean,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null
 ) {
     val deepCuts = songs.drop(5).take(5)
     val onSlide = rewindColors.value.textOn(rewindColors.value.cream)
@@ -43,7 +44,8 @@ fun RewindDeepCutsCard(
         pageCount = pageCount,
         background = rewindColors.value.cream,
         progressColor = onSlide,
-        onNext = onNext
+        onNext = onNext,
+        onShareSlide = onShareSlide
     ) {
         if (deepCuts.isEmpty()) {
             Column(
@@ -66,7 +68,7 @@ fun RewindDeepCutsCard(
             Spacer(Modifier.height(11.dp))
             RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
                 Text(
-                    text = stringResource(R.string.rw_deep_cuts_heading),
+                    text = stringResource(R.string.rw_deep_cuts_heading, 5 + deepCuts.size),
                     color = onSlide,
                     fontSize = 34.sp,
                     lineHeight = 32.sp,

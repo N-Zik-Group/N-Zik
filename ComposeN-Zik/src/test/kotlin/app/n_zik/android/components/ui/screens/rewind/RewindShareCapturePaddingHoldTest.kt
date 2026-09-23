@@ -1,6 +1,5 @@
-package utils
+package app.n_zik.android.components.ui.screens.rewind
 
-import app.n_zik.android.components.ui.screens.rewind.rewindShareCaptureActive
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test

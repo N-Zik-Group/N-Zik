@@ -50,6 +50,7 @@ internal fun RewindTopAlbumShow(
     pageCount: Int,
     active: Boolean,
     onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null,
     kickerId: Int,
     headingId: Int,
     emptyTitleId: Int,
@@ -70,7 +71,8 @@ internal fun RewindTopAlbumShow(
         pageCount = pageCount,
         background = rewindColors.value.yellow,
         progressColor = onYellow,
-        onNext = onNext
+        onNext = onNext,
+        onShareSlide = onShareSlide
     ) {
         if (topAlbum == null) {
             Column(
@@ -187,7 +189,8 @@ fun RewindTopAlbumCard(
     page: Int,
     pageCount: Int,
     active: Boolean,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null
 ) {
     RewindTopAlbumShow(
         topAlbum = topAlbum,
@@ -196,6 +199,7 @@ fun RewindTopAlbumCard(
         pageCount = pageCount,
         active = active,
         onNext = onNext,
+        onShareSlide = onShareSlide,
         kickerId = R.string.rw_top_album_kicker,
         headingId = R.string.rw_top_album_heading,
         emptyTitleId = R.string.rw_top_album_empty_title,

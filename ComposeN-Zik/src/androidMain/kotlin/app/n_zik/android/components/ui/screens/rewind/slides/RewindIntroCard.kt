@@ -40,8 +40,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.screens.rewind.RewindData
+import app.n_zik.android.components.ui.screens.rewind.RewindPeriod
 import app.n_zik.android.components.ui.screens.rewind.rewindShareCaptureActive
 import kotlinx.coroutines.delay
+import androidx.compose.runtime.withFrameNanos
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.sin
 
@@ -52,7 +55,8 @@ fun RewindIntroCard(
     page: Int,
     pageCount: Int,
     active: Boolean,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null
 ) {
     var revealComplete by remember { mutableStateOf(false) }
     LaunchedEffect(active) {
@@ -72,6 +76,7 @@ fun RewindIntroCard(
         background = rewindColors.value.purple,
         progressColor = rewindColors.value.cream,
         onNext = if (revealComplete) onNext else null,
+        onShareSlide = onShareSlide,
         backgroundArt = {
             Canvas(Modifier.fillMaxSize()) {
                 // Deliberately angular. No records, wheels or circular "fingerprint" artwork.
@@ -184,10 +189,10 @@ fun RewindIntroCard(
                 RewindReveal(active, 1_900, direction = RewindRevealDirection.Up) {
                     Text(
                         text = stringResource(
-                            if (data.periodLabel == data.year.toString()) {
-                                R.string.rw_intro_tagline
-                            } else {
-                                R.string.rw_intro_tagline_month
+                            when (data.period) {
+                                is RewindPeriod.Year -> R.string.rw_intro_tagline
+                                is RewindPeriod.Month -> R.string.rw_intro_tagline_month
+                                is RewindPeriod.Global -> R.string.rw_intro_tagline_global
                             }
                         ),
                         color = rewindColors.value.cream,
@@ -259,9 +264,17 @@ private fun RewindListeningWave(
 
     LaunchedEffect(active) {
         if (!active) return@LaunchedEffect
+        // Frame-driven invalidation: advance the phase once per rendered frame, scaled by the
+        // real frame delta (a fixed 16 ms tick was off-vsync on 120 Hz displays), and wrap on
+        // the wave's common period π so the Float never grows unbounded
+        // (spec GH-275, patch "hand-rolled 16 ms tick loop").
+        var lastFrameNs = withFrameNanos { it }
         while (true) {
-            time += 0.08f
-            delay(16)
+            val frameNs = withFrameNanos { it }
+            val deltaNs = (frameNs - lastFrameNs).coerceAtLeast(0L)
+            lastFrameNs = frameNs
+            time += (deltaNs / 16_000_000.0 * 0.08).toFloat()
+            time %= PI.toFloat()
         }
     }
 

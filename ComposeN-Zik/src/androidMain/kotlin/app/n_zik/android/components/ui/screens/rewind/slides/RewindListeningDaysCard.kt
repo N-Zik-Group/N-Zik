@@ -37,10 +37,13 @@ fun RewindListeningDaysCard(
     page: Int,
     pageCount: Int,
     active: Boolean,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null
 ) {
     val daysInPeriod = data.daysInPeriod
-    val ratio = (data.daysWithMusic.toFloat() / daysInPeriod.toFloat()).coerceIn(0f, 1f)
+    // The all-time period has no fixed length; with an empty history its data span is zero —
+    // the ratio is 0 instead of 0/0 = NaN (spec GH-275, patch "Stale string key name").
+    val ratio = if (daysInPeriod > 0) (data.daysWithMusic.toFloat() / daysInPeriod.toFloat()).coerceIn(0f, 1f) else 0f
     val bar = remember(data.daysWithMusic, data.periodLabel) { Animatable(0f) }
     LaunchedEffect(active, ratio) {
         if (!active) {
@@ -55,7 +58,8 @@ fun RewindListeningDaysCard(
         pageCount = pageCount,
         background = rewindColors.value.blue,
         progressColor = rewindColors.value.cream,
-        onNext = onNext
+        onNext = onNext,
+        onShareSlide = onShareSlide
     ) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val compact = maxHeight < 700.dp
@@ -119,7 +123,7 @@ fun RewindListeningDaysCard(
                                 letterSpacing = 0.8.sp
                             )
                             Text(
-                                text = stringResource(R.string.rw_listening_days_percent_of_year, (ratio * 100f).roundToInt()),
+                                text = stringResource(R.string.rw_listening_days_percent_of_period, (ratio * 100f).roundToInt()),
                                 color = rewindColors.value.lime,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Black

@@ -37,11 +37,17 @@ fun RewindMonthlyCard(
     page: Int,
     pageCount: Int,
     active: Boolean,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null
 ) {
     val chart = remember { Animatable(0f) }
     val months = data.monthlyStats.take(12)
-    val peak = months.maxByOrNull { it.minutes }
+    // Highlight the peak by position, not data-class equality: ties must not light several
+    // bars, and an all-zero period must not highlight the first bar
+    // (spec GH-275, patch "Peak highlighting by data-class equality").
+    val peakMinutes = months.maxOfOrNull { it.minutes }?.takeIf { it > 0 }
+    val peakIndex = peakMinutes?.let { peak -> months.indexOfFirst { it.minutes == peak } } ?: -1
+    val peak = months.getOrNull(peakIndex)
     LaunchedEffect(active) {
         if (!active) {
             chart.snapTo(0f)
@@ -56,7 +62,8 @@ fun RewindMonthlyCard(
         pageCount = pageCount,
         background = rewindColors.value.cream,
         progressColor = onSlide,
-        onNext = onNext
+        onNext = onNext,
+        onShareSlide = onShareSlide
     ) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val compact = maxHeight < 700.dp
@@ -113,7 +120,7 @@ fun RewindMonthlyCard(
                                 val x = index * (barWidth + gap)
                                 drawRoundRect(
                                     color = when {
-                                        month == peak -> rewindColors.value.lime
+                                        index == peakIndex -> rewindColors.value.lime
                                         index % 3 == 0 -> rewindColors.value.purple
                                         index % 3 == 1 -> rewindColors.value.pink
                                         else -> rewindColors.value.orange
@@ -129,10 +136,10 @@ fun RewindMonthlyCard(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            months.forEach { month ->
+                            months.forEachIndexed { index, month ->
                                 Text(
                                     text = month.month.take(1).uppercase(),
-                                    color = if (month == peak) rewindColors.value.lime else rewindColors.value.cream.copy(alpha = 0.50f),
+                                    color = if (index == peakIndex) rewindColors.value.lime else rewindColors.value.cream.copy(alpha = 0.50f),
                                     fontSize = 8.sp,
                                     fontWeight = FontWeight.Black
                                 )

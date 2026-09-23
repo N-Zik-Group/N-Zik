@@ -47,6 +47,7 @@ import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.migration.RemovedSettingsMigration
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.network.client.Store
+import app.n_zik.android.core.rescue.RescueProcess
 import app.n_zik.android.extensions.audiobar.VisualizerCaptureCoordinator
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.logging.FileLoggingTree
@@ -67,6 +68,7 @@ import it.fast4x.innertube.utils.InnertubeLogger
 import it.fast4x.innertube.models.ArtistConjunctions
 import it.fast4x.invidious.utils.InvidiousLogger
 import app.n_zik.android.extensions.musicbrainz.workers.MbBackfillWorker
+import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
 import app.n_zik.android.musicbrainz.MBCircuitBreakerPersistence
 import app.n_zik.android.musicbrainz.MBLogger
 import app.n_zik.android.musicbrainz.MBNetwork
@@ -86,6 +88,23 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // RescueActivity runs in the :rescue process. Starting the full app there can make
         // that process claim WebView's data directory and crash the next main-process WebView.
         if (!isMainProcess()) return
+
+        // Rescue Center safety net: the Rescue writes a kill-request flag when its hot kill
+        // (broadcast) may be lost (main process dead or fully frozen). Consume it BEFORE any
+        // heavy initialization and end this process. The flag was consumed before the kill,
+        // so the next launch cannot self-kill again (no kill loop). If the flag cannot even be
+        // read at boot, do not kill: a stale flag is preferable to a broken launch loop.
+        if (runCatching { RescueProcess.consumeKillRequest(this) }.getOrDefault(false)) {
+            // killProcess is the public API for ending a process from inside (the framework's
+            // exitProcess is @hide and not part of the SDK).
+            Process.killProcess(Process.myPid())
+            return
+        }
+
+        // Same Rescue Center: register the receiver that ends this process on demand. Early,
+        // BEFORE Dependencies.init, so the receiver exists even if initialization crashes below
+        // (same rationale as the shortcuts registration just below).
+        RescueProcess.registerKillMainReceiver(this)
 
         // Register app shortcuts early, BEFORE Dependencies.init, so that the Rescue
         // shortcut exists even if initialization crashes below.
@@ -253,6 +272,9 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // Enrich artist/album MusicBrainz metadata in background (first run after 1h)
         MbBackfillWorker.schedule(this)
 
+        // Monthly rewind reminder (next 1st of the month, WorkManager, self-rescheduling)
+        RewindReminderWorker.schedule(this)
+
         /**** LOG *********/
         val logEnabled = preferences.getBoolean(logDebugEnabledKey, false)
         
@@ -376,7 +398,19 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 setShowBadge(false)
             }
 
-            notificationManager.createNotificationChannels(listOf(playerChannel, sleepTimerChannel, downloadChannel, syncChannel))
+            // Channel for the monthly rewind reminder
+            val rewindChannel = NotificationChannel(
+                RewindReminderWorker.CHANNEL_ID,
+                applicationContext.getString(R.string.rw_channel),
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = applicationContext.getString(R.string.rw_channel)
+                setShowBadge(false)
+            }
+
+            notificationManager.createNotificationChannels(
+                listOf(playerChannel, sleepTimerChannel, downloadChannel, syncChannel, rewindChannel)
+            )
         }
     }
 

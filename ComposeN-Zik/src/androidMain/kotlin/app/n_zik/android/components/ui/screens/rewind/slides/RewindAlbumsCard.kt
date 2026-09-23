@@ -34,7 +34,8 @@ fun RewindAlbumsCard(
     page: Int,
     pageCount: Int,
     active: Boolean,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null
 ) {
     val topFive = albums.take(5)
     RewindStoryShell(
@@ -42,7 +43,8 @@ fun RewindAlbumsCard(
         pageCount = pageCount,
         background = rewindColors.value.red,
         progressColor = rewindColors.value.cream,
-        onNext = onNext
+        onNext = onNext,
+        onShareSlide = onShareSlide
     ) {
         if (topFive.isEmpty()) {
             Column(

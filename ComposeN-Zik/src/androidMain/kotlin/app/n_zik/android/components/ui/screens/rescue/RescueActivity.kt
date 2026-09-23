@@ -26,6 +26,7 @@ import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setDefaultPalette
 import app.n_zik.android.BuildConfig
+import app.n_zik.android.core.rescue.RescueProcess
 import com.kieronquinn.monetcompat.core.MonetCompat
 import timber.log.Timber
 
@@ -50,6 +51,11 @@ class RescueActivity : ComponentActivity() {
             Timber.plant(Timber.DebugTree())
         }
         Timber.tag(TAG).i("Rescue Center started in process %d", Process.myPid())
+
+        // The Rescue Center exists precisely so its write actions can run without the main
+        // process: ask it to end itself the moment the screen opens (broadcast + safety-net
+        // flag), whatever the entry point (launcher shortcut or in-app menu).
+        RescueProcess.requestKillMain(this)
 
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(scrim = AndroidColor.TRANSPARENT),

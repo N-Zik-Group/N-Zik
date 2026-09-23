@@ -314,6 +314,14 @@ android {
     androidResources {
         generateLocaleConfig = true
     }
+
+    testOptions {
+        // Unit tests (Robolectric) must be able to resolve app resources such as strings
+        // and drawables (e.g. the rewind reminder worker reads its notification strings)
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 java {

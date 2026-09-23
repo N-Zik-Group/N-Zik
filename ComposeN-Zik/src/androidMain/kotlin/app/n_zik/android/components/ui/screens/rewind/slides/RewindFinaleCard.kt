@@ -35,7 +35,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.screens.rewind.RewindData
+import app.n_zik.android.components.ui.screens.rewind.rewindShareCaptureActive
 
+/**
+ * Finale slide of the Rewind deck.
+ *
+ * Export actions live at the bottom as two explicitly labelled pills — "export this page"
+ * (single-PNG system share of the displayed slide, [onShareSlide]) and "export all pages"
+ * (16-image folder export, [onShare]) — instead of the top-right per-slide share icon the
+ * other slides carry.
+ */
 @Composable
 fun RewindFinaleCard(
     data: RewindData,
@@ -45,7 +54,8 @@ fun RewindFinaleCard(
     active: Boolean,
     shareMode: Boolean,
     onShare: () -> Unit,
-    onRestart: () -> Unit
+    onRestart: () -> Unit,
+    onShareSlide: (() -> Unit)? = null
 ) {
     val topArtist = data.topArtists.firstOrNull()
     val topSong = data.topSongs.firstOrNull()
@@ -66,6 +76,9 @@ fun RewindFinaleCard(
         background = rewindColors.value.ink,
         progressColor = rewindColors.value.cream,
         onNext = null,
+        // The finale shows no top-right share icon: its export actions live at the bottom as
+        // two explicitly labelled pills (export this page / export all pages).
+        onShareSlide = null,
         showProgress = !shareMode,
         showBrand = true,
         backgroundArt = {
@@ -208,9 +221,10 @@ fun RewindFinaleCard(
                     }
                 }
                 Spacer(Modifier.height(if (compact) 8.dp else 10.dp))
-                // In shareMode the footer signature already carries the badge + index, so the
-                // big row is hidden there to avoid showing it twice in the shared image.
-                if (!shareMode) {
+                // In shareMode — and while any capture is in flight — the footer signature
+                // already carries the badge + index, so the big row is hidden there to
+                // avoid showing it twice in the shared image.
+                if (!shareMode && !rewindShareCaptureActive.value) {
                     RewindReveal(active, 740, scaleFrom = 0.94f) {
                         Row(
                             modifier = Modifier
@@ -332,7 +346,10 @@ fun RewindFinaleCard(
                     }
                 }
                 Spacer(Modifier.weight(1f))
-                if (shareMode) {
+                // The brand footer is the "exported" look of the finale: the 16-image deck
+                // export shows it on this page, and a single-page capture of the finale must
+                // produce the same frame — identical content, no interactive pills.
+                if (shareMode || rewindShareCaptureActive.value) {
                     RewindReveal(active, 1_060) {
                         Column(
                             modifier = Modifier.fillMaxWidth(),
@@ -374,11 +391,52 @@ fun RewindFinaleCard(
                         }
                     }
                 } else {
+                    // Interactive UI: the export pills only exist in the live deck — any
+                    // captured frame (per-slide share, deck export) renders the brand footer
+                    // above instead, so shared images never carry clickable chrome.
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        RewindReveal(active, 1_080) {
+                        // Two distinct export actions (on-device feedback): the single-page
+                        // share of the displayed slide and the full-deck folder export.
+                        if (onShareSlide != null) {
+                            RewindReveal(active, 1_080) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(
+                                            rewindColors.value.cream.copy(alpha = 0.10f),
+                                            RoundedCornerShape(100.dp)
+                                        )
+                                        .border(
+                                            1.dp,
+                                            rewindColors.value.cream.copy(alpha = 0.45f),
+                                            RoundedCornerShape(100.dp)
+                                        )
+                                        .clickable(onClick = onShareSlide, indication = null, interactionSource = remember { MutableInteractionSource() })
+                                        .padding(vertical = 8.dp),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.share_social),
+                                        contentDescription = null,
+                                        tint = rewindColors.value.cream,
+                                        modifier = Modifier.size(13.dp)
+                                    )
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(
+                                        text = stringResource(R.string.rw_finale_export_page),
+                                        color = rewindColors.value.cream,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Black,
+                                        letterSpacing = 0.8.sp
+                                    )
+                                }
+                            }
+                        }
+                        RewindReveal(active, 1_150) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -404,7 +462,7 @@ fun RewindFinaleCard(
                                 )
                             }
                         }
-                        RewindReveal(active, 1_150) {
+                        RewindReveal(active, 1_220) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()

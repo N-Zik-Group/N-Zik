@@ -2,6 +2,7 @@ package app.n_zik.android.components.ui.screens.rescue
 
 import android.app.Activity
 import android.net.Uri
+import android.os.Build
 import android.os.Process
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -50,6 +51,7 @@ import app.it.fast4x.rimusic.utils.getEncryptedSharedPreferencesResult
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.core.rescue.RescueFiles
+import app.n_zik.android.core.rescue.RescueProcess
 import kotlinx.coroutines.CoroutineStart
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.async
@@ -122,6 +124,55 @@ fun RescueScreen() {
                 hasDatabaseBackup = RescueFiles.hasBackup(context),
                 hasSettingsBackup = RescueFiles.hasSettingsBackup(context)
             )
+        }
+    }
+
+    // Status of the main process, which the process guard (guardWrite) watches. Poll every
+    // second while it is alive: the kill request sent when the Rescue Center opened usually
+    // lands within a few seconds, so the status moves from "stopping" to "stopped" without
+    // the user doing anything.
+    //
+    // When the main process is observed dead BELOW 31 (where the probe is trustworthy), the
+    // kill-request flag is discarded: a dead process has no pending kill, and a stale flag
+    // would make the next healthy launch end itself at startup. From 31 on,
+    // getRunningAppProcesses() is restricted to the calling process, so the probe reports
+    // "not running" even while the main process is alive: there the flag is NOT cancelled and
+    // the status falls back to the flag itself — it disappears only once the kill receiver
+    // consumed it, i.e. once the kill landed.
+    // A new kill request (danger zone) restarts the polling via killRequestGeneration.
+    var mainProcessRunning by remember { mutableStateOf<Boolean?>(null) }
+    var killRequestGeneration by remember { mutableIntStateOf(0) }
+    LaunchedEffect(killRequestGeneration) {
+        while (true) {
+            val running = runCatching {
+                withContext(NzikDispatchers.DATA) { RescueFiles.isMainProcessRunning(context) }
+            }.getOrNull()
+            when {
+                // Probe failed: keep the last known state and retry — never cancel on unknown.
+                running == null -> Unit
+                running -> mainProcessRunning = true
+                else -> {
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                        // Trustworthy probe: the main process is dead — discard the pending flag.
+                        runCatching {
+                            withContext(NzikDispatchers.DATA) { RescueProcess.cancelKillRequest(context) }
+                        }
+                        mainProcessRunning = false
+                        break
+                    }
+                    // 31+: "not running" is not proof of death — the flag is: it is gone only
+                    // after the kill receiver consumed it. Unknown flag state → still pending.
+                    val killPending = runCatching {
+                        withContext(NzikDispatchers.DATA) { RescueProcess.hasKillRequest(context) }
+                    }.getOrDefault(true)
+                    if (!killPending) {
+                        mainProcessRunning = false
+                        break
+                    }
+                    mainProcessRunning = true
+                }
+            }
+            delay(1_000L)
         }
     }
 
@@ -338,6 +389,33 @@ fun RescueScreen() {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
+            // Main process status: "stopping" while the kill request is pending, "stopped"
+            // once it landed (the process guard is then released).
+            mainProcessRunning?.let { running ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(if (running) R.drawable.loader else R.drawable.checkmark),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        stringResource(
+                            if (running) R.string.rescue_status_main_process_stopping
+                            else R.string.rescue_status_main_process_stopped
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             // ─── DATA & BACKUP ───
@@ -473,6 +551,26 @@ fun RescueScreen() {
 
             // ─── DANGER ZONE ───
             RescueCategoryHeader(stringResource(R.string.rescue_category_danger))
+
+            // Kill the app: re-sends the kill request when the automatic one (sent when this
+            // screen opened) failed — broadcast lost, main thread fully frozen. Not gated by
+            // guardWrite: its whole purpose is to release the guard, and it writes nothing.
+            RescueActionCard(
+                iconRes = R.drawable.logout,
+                title = stringResource(R.string.rescue_kill_app),
+                description = stringResource(R.string.rescue_kill_app_description),
+                onClick = {
+                    confirmAction = ConfirmAction(R.string.rescue_confirm_kill_app) {
+                        scope.launch {
+                            withContext(NzikDispatchers.DATA) {
+                                RescueProcess.requestKillMain(context)
+                            }
+                        }
+                        // Restart the status polling so "stopping" → "stopped" is visible again.
+                        killRequestGeneration++
+                    }
+                }
+            )
 
             // Reset database
             RescueActionCard(
