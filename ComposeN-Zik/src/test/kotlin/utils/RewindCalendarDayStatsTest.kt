@@ -29,7 +29,7 @@ class RewindCalendarDayStatsTest {
         assertEquals(31, stats.size)
         assertEquals(1, stats.first().day)
         assertEquals(31, stats.last().day)
-        assertEquals(stats.indices, stats.map { it.day })
+        assertEquals((1..stats.size).toList(), stats.map { it.day })
     }
 
     @Test
