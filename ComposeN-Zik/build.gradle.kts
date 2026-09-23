@@ -132,12 +132,37 @@ android {
         if (localPropertiesFile.exists()) {
             localProperties.load(FileInputStream(localPropertiesFile))
         }
+        // Committed keys for public (release / F-Droid) builds. F-Droid builds
+        // without environment variables, so the values must live in the source
+        // to stay reproducible; they are already embedded in release APKs.
+        val buildProperties = Properties()
+        val buildPropertiesFile = rootProject.file("build.properties")
+        if (buildPropertiesFile.exists()) {
+            buildProperties.load(FileInputStream(buildPropertiesFile))
+        }
         val shazamKey = localProperties.getProperty("shazam_proxy_api_key", "")
         buildConfigField("String", "SHAZAM_PROXY_API_KEY", "\"$shazamKey\"")
-        val lastfmApiKey = localProperties.getProperty("lastfm_api_key") ?: System.getenv("LASTFM_API_KEY") ?: ""
-        val lastfmApiSecret = localProperties.getProperty("lastfm_api_secret") ?: System.getenv("LASTFM_API_SECRET") ?: ""
+        val lastfmApiKey = localProperties.getProperty("lastfm_api_key")
+            ?: buildProperties.getProperty("lastfm_api_key")
+            ?: System.getenv("LASTFM_API_KEY")
+            ?: ""
+        val lastfmApiSecret = localProperties.getProperty("lastfm_api_secret")
+            ?: buildProperties.getProperty("lastfm_api_secret")
+            ?: System.getenv("LASTFM_API_SECRET")
+            ?: ""
         buildConfigField("String", "LASTFM_API_KEY", "\"$lastfmApiKey\"")
         buildConfigField("String", "LASTFM_API_SECRET", "\"$lastfmApiSecret\"")
+        // Canary/decoy fields (same scheme as RiPlay): random unused constants
+        // compiled into the APK to pollute automated key harvesters. Names are
+        // listed here; values are committed in build.properties.
+        val canaryFieldNames = listOf(
+            "Qx7Kd2Wm9P", "Vt4Rn8Jb3H", "Zy6Mf5Lc1N", "Wd3Gh9Qs6U", "Xb8Jk2Tv5R",
+            "Fp5Yw7Zd4M", "Hn2Cb9Xk3G", "Mr7Qf4Lw8S", "Kz6Vt1Jh5D", "Pw9Xb3Fm7Y",
+            "Gd4Rk8Nq2C", "Sx5Wj7Zb1H"
+        )
+        canaryFieldNames.forEach { name ->
+            buildConfigField("String", name, "\"${buildProperties.getProperty(name, "")}\"")
+        }
     }
 
     packaging {

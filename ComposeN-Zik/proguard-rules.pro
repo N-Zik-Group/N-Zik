@@ -164,3 +164,21 @@
 ## Rules for org.jaudiotagger (references Java AWT/ImageIO not available on Android)
 -dontwarn java.awt.**
 -dontwarn javax.imageio.**
+
+## Canary/decoy BuildConfig fields — kept so the decoy values survive
+## minification and land in the release dex (anti key-harvester layer,
+## see canaryFieldNames in ComposeN-Zik/build.gradle.kts).
+-keepclassmembers class app.n_zik.android.BuildConfig {
+    public static java.lang.String Qx7Kd2Wm9P;
+    public static java.lang.String Vt4Rn8Jb3H;
+    public static java.lang.String Zy6Mf5Lc1N;
+    public static java.lang.String Wd3Gh9Qs6U;
+    public static java.lang.String Xb8Jk2Tv5R;
+    public static java.lang.String Fp5Yw7Zd4M;
+    public static java.lang.String Hn2Cb9Xk3G;
+    public static java.lang.String Mr7Qf4Lw8S;
+    public static java.lang.String Kz6Vt1Jh5D;
+    public static java.lang.String Pw9Xb3Fm7Y;
+    public static java.lang.String Gd4Rk8Nq2C;
+    public static java.lang.String Sx5Wj7Zb1H;
+}
