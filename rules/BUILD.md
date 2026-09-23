@@ -1,6 +1,6 @@
 # Build & Test Rules
 
-**Version:** 1.2.0 | **Last updated:** 2026-08-24
+**Version:** 1.3.0 | **Last updated:** 2026-09-23
 
 ## Gradle Version Catalog
 
@@ -27,6 +27,9 @@ If a needed library isn't in the catalog → HALT and ask user before adding to 
 ./gradlew :ComposeN-Zik:testDebugUnitTest --tests "app.n_zik.android.playback.utils.ShufflerTest"
 ./gradlew clean :ComposeN-Zik:assembleDebug    # Clean + debug
 ```
+
+> **Windows:** use `gradlew.bat` instead of `./gradlew` (e.g. `gradlew.bat :ComposeN-Zik:assembleDebug`).
+> **CWD:** all `gradlew` and `git` commands run from the repo root `N-Zik/` — the workspace root (`N-Zik-Projet/`) is **not** a git repo (BMAD files live there, outside the repo).
 
 ## Verification
 
@@ -58,6 +61,7 @@ When committing, update `Done.txt` using its own template (`Changelog_Template.t
 ```
 
 Include full issue link (use `issue https://...` to avoid auto-closing).
+Entries are grouped under the section headers defined by the template (`Hotfix:` / `Added:` / `Changed:` / `Improved:` / `Fixed:` / `Refactor:` / `Removed:` / `Deprecated:` / `Other:`) — place each entry under the matching section.
 
 ## Build Types
 
@@ -115,7 +119,7 @@ Rules:
 ```kotlin
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class ShufflerTest {
@@ -129,7 +133,7 @@ class ShufflerTest {
 }
 ```
 
-Test files: `ComposeN-Zik/src/test/kotlin/` — mirror source package structure.
+Test files: `ComposeN-Zik/src/test/kotlin/` — mirror source package structure, EXCEPT tests of legacy code (`app.it.fast4x.rimusic.*` / `app.kreate.android.*`): those MUST live under `app.n_zik.android.legacyoffmain.<mirror>` (existing convention — NEVER under the legacy namespace itself, per AGENTS.md and the Step 6 guard check).
 
 New features/bug fixes should include at least one test. If no test framework is available → HALT and note it.
 

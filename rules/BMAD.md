@@ -1,6 +1,6 @@
 # BMAD Technical Reference
 
-**Version:** 1.2.0 | **Last updated:** 2026-08-24
+**Version:** 1.3.0 | **Last updated:** 2026-09-23
 
 **MANDATORY: Read this file before executing any BMAD skill.**
 
@@ -48,6 +48,8 @@ _bmad/
 | 2           | `_bmad/config.user.toml`        | Installer | Yes                |
 | 3           | `_bmad/custom/config.toml`      | Human     | Yes                |
 | 4 (highest) | `_bmad/custom/config.user.toml` | Human     | No (\*.gitignored) |
+
+> In this project, `_bmad/` lives at the workspace root, OUTSIDE the git repo (`N-Zik/`). The "Committed?" column describes the upstream BMAD layout — never `git add` anything from `_bmad/` into the N-Zik repo.
 
 **Merge rules:** Scalars override, tables deep-merge, keyed arrays merge by key, other arrays append.
 

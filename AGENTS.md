@@ -6,7 +6,9 @@
 
 1. Read this file entirely
 2. Read ALL `rules/*.md` files
-3. Ask user via question tool: "Bug, feature, or something else?"
+3. Match the user's language and announce the critical rules (see rules/WORKFLOW.md "Session Startup Sequence" + "Announcement Template")
+4. Ask user via question tool: "Bug, feature, or something else?"
+5. If bug or feature → ASK which IDE/tool (ONE at a time) AND which skill to use before loading anything (see rules/WORKFLOW.md Step 3a)
 
 ---
 
@@ -26,14 +28,16 @@
 - Database schema changes (NEVER edit without explicit instruction)
 - Adding new dependencies not in `libs.versions.toml`
 - Committing code (NEVER without human testing + approval)
+- Commit mode at end of workflow: (1) Bump+commit = bump version + write fastlane/Updater changelogs + empty Done.txt, (2) Done+commit = Done.txt only, (3) Wait = nothing — ASK before editing ANY file (see rules/WORKFLOW.md Step 8d)
 - Which IDE/tool to use (ask ONE at a time — see BMAD-TOOLS.md for preferred list)
 
 ## 🚫 Never Do
 
-- Create files under `app.it.fast4x.rimusic.*` or `app.kreate.android.*`
+- Create files under `app.it.fast4x.rimusic.*` or `app.kreate.android.*` (tests covering legacy classes are the single exception: they go under `app.n_zik.android.legacyoffmain.*` — see rules/BUILD.md)
 - Edit `values-*/strings.xml` (only `values/strings.xml`)
 - Write code before completing full BMAD workflow
 - Skip BMAD workflow steps
+- Skip the Step 8b code-review gate, or edit `fastlane/`/`Updater/`/`Done.txt` before the user chose a commit mode (Step 8d) — exception: doc-only edits (rules/WORKFLOW.md "Doc-Only Exception") follow their own commit-approval flow and are NOT subject to the Step 8d mode question
 - Commit without human approval
 - Use `GlobalScope`, `runBlocking`, `collectAsState()` (use `collectAsStateWithLifecycle()`)
 - Use `!!` operator unless justified with comment explaining why
@@ -79,14 +83,15 @@
 ## Project Structure
 
 ```
-N-Zik/
+N-Zik/                     ← git repo root (run gradlew/git from here)
 ├── ComposeN-Zik/src/
 │   ├── androidMain/kotlin/app/n_zik/android/  ★ NEW code
 │   └── test/                                   Tests
 ├── extensions/              API modules (innertube, lrclib)
 ├── modules/                 Feature submodules
+├── composeApp/              DEAD folder — NOT a gradle module (excluded from settings.gradle.kts); orphaned sources + stale build artifacts → ignore, never build/modify
 ├── gradle/libs.versions.toml  Version catalog
-└── docs/                    Reference (READ-ONLY)
+└── (docs/ lives at the WORKSPACE ROOT, one level above N-Zik/ — Reference, READ-ONLY)
 ```
 
 | What         | Where                                      |
@@ -109,6 +114,8 @@ N-Zik/
 ./gradlew :ComposeN-Zik:test                       # All tests
 ./gradlew :ComposeN-Zik:testDebugUnitTest --tests "app.n_zik.android.SomeTest"  # Single test
 ```
+
+> **Windows:** run `gradlew.bat …` from the repo root `N-Zik/` (e.g. `gradlew.bat :ComposeN-Zik:assembleDebug`). The workspace root (`N-Zik-Projet/`, where `_bmad/` lives) is **not** a git/gradle project — all `git` and `gradlew` commands run from `N-Zik/`.
 
 HALT after 3 failed build attempts → report with full error log.
 
