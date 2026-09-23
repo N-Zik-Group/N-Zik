@@ -99,7 +99,9 @@ fun binder() = LocalPlayerServiceBinder.current?.service
 fun appContext(): Context = Dependencies.application.applicationContext
 fun context(): Context = Dependencies.application
 
-fun ytAccountName() = appContext().encryptedPreferences.getString(ytAccountNameKey, "")
+// Explicit non-null return: the platform getString() is a nullable type, and the
+// display-name consumers (Rewind deck, onboarding, Accounts card) expect a String
+fun ytAccountName(): String = appContext().encryptedPreferences.getString(ytAccountNameKey, "").orEmpty()
 fun ytAccountThumbnail() = appContext().encryptedPreferences.getString(ytAccountThumbnailKey, "")
 fun isVideoEnabled() = appContext().preferences.getBoolean(showButtonPlayerVideoKey, false)
 

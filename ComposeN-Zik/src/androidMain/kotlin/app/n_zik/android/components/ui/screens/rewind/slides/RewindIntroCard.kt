@@ -67,7 +67,7 @@ fun RewindIntroCard(
             revealComplete = true
         }
     }
-    val defaultUsername = stringResource(R.string.rw_default_username)
+    val defaultUsername = stringResource(R.string.display_name_default)
     val displayName = username.trim().ifBlank { defaultUsername }
     val onLime = rewindColors.value.textOn(rewindColors.value.lime)
     RewindStoryShell(

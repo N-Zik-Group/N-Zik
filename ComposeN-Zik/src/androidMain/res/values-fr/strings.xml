@@ -1619,7 +1619,6 @@ Volume BAS : titre précédent</string>
     <string name="rescue_category_data">Données &amp; Sauvegarde</string>
     <string name="rescue_category_maintenance">Maintenance</string>
     <string name="rescue_category_danger">Zone dangereuse</string>
-    <string name="rw_default_username">Music Fan</string>
     <string name="rw_loader_word_your">YOUR</string>
     <string name="rw_loader_word_year">YEAR</string>
     <string name="rw_loader_word_month">MONTH</string>

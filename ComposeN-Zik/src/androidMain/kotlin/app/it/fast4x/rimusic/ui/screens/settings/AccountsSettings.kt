@@ -96,6 +96,7 @@ import app.n_zik.android.extensions.discord.DiscordRpcError
 import app.n_zik.android.extensions.discord.DiscordRpcErrorState
 import app.n_zik.android.extensions.discord.DiscordTemplateFieldActions
 import app.n_zik.android.extensions.discord.DiscordTemplateRenderer
+import app.n_zik.android.components.settings.DisplayNameSettingsCard
 import app.n_zik.android.components.settings.LastFmSettingsCard
 import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
 import app.n_zik.android.thumbnailShape
@@ -337,6 +338,8 @@ fun AccountsSettings() {
         search.SearchBar( this )
 
         /* Removed Spacer */
+
+        DisplayNameSettingsCard()
 
         // YouTube Music Section
         AnimatedVisibility(

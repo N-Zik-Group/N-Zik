@@ -5,10 +5,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
 import app.n_zik.android.Dependencies
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.utils.resolveDisplayName
+import app.n_zik.android.ytAccountName
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -58,14 +61,24 @@ internal class RewindDeckViewModel(
             try {
                 val username = withContext(dataDispatcher) {
                     runCatching {
-                        DataStoreUtils.getString(
+                        // The display-name choice is custom (guest) or YouTube: the YouTube
+                        // account is only consulted when the stored source is actually YouTube
+                        val source = DataStoreUtils.getString(
                             application,
-                            DataStoreUtils.KEY_USERNAME,
-                            application.getString(R.string.rw_default_username)
+                            DataStoreUtils.KEY_DISPLAY_NAME_SOURCE,
+                            DataStoreUtils.DISPLAY_NAME_SOURCE_CUSTOM
+                        )
+                        val useYouTubeName = source == DataStoreUtils.DISPLAY_NAME_SOURCE_YOUTUBE
+                        resolveDisplayName(
+                            source = source,
+                            ytLoggedIn = useYouTubeName && isYouTubeLoggedIn(),
+                            ytName = if (useYouTubeName) ytAccountName() else "",
+                            customName = DataStoreUtils.getString(application, DataStoreUtils.KEY_USERNAME, ""),
+                            default = application.getString(R.string.display_name_default)
                         )
                     }.getOrElse { error ->
-                        Timber.tag("Rewind").e(error, "Failed to read the rewind username")
-                        application.getString(R.string.rw_default_username)
+                        Timber.tag("Rewind").e(error, "Failed to resolve the rewind display name")
+                        application.getString(R.string.display_name_default)
                     }
                 }
                 val data = fetcher.getRewindData(period)

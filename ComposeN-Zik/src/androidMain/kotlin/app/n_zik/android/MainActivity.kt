@@ -38,6 +38,11 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -146,11 +151,17 @@ import app.it.fast4x.rimusic.enums.PlayerBackgroundColors
 import app.it.fast4x.rimusic.extensions.pip.PipEventContainer
 import app.it.fast4x.rimusic.extensions.pip.PipModuleContainer
 import app.it.fast4x.rimusic.extensions.pip.PipModuleCover
+import app.n_zik.android.components.onboarding.OnboardingAccountsScreen
+import app.n_zik.android.components.onboarding.OnboardingImportScreen
+import app.n_zik.android.components.onboarding.OnboardingNameScreen
+import app.n_zik.android.components.onboarding.OnboardingScreen
 import app.n_zik.android.components.ui.screens.home.OPEN_SEARCH_SHORTCUT
 import app.n_zik.android.components.ui.screens.home.initialShortcutAction
 import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.enums.OnboardingStep
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.PlayerAwareInsetsTracker
 import app.n_zik.android.utils.shouldRecreateActivity
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
@@ -246,6 +257,7 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.proxyHostnameKey
 import app.it.fast4x.rimusic.utils.proxyModeKey
 import app.it.fast4x.rimusic.utils.proxyPortKey
+import app.it.fast4x.rimusic.enums.TransitionEffect
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.restartActivityKey
 import app.it.fast4x.rimusic.utils.hideStatusBarKey
@@ -356,6 +368,51 @@ class MainActivity :
     // (startApp) and warm start (onNewIntent), consumed once by the navigation effect that opens
     // the deck on that month.
     private var rewindDeckTarget by mutableStateOf<Pair<Int, Int>?>(null)
+
+    // Current step of the first-launch onboarding flow, held by the activity so a
+    // recreation (rotation) resumes the flow at the right step; null means the flow
+    // is complete and the main navigation renders instead. The step is persisted in
+    // prefs on every transition (see advanceOnboarding), so a process restart —
+    // post-import restart or process death — resumes at the right step too. The
+    // onboardingComplete flag is written once the flow is fully done, or when a restore
+    // succeeds (the restart then lands directly in the app), so a mid-flow crash never
+    // marks the onboarding as finished.
+    private var onboardingStep by mutableStateOf<OnboardingStep?>(null)
+
+    /**
+     * Advances the onboarding flow to the next step ([OnboardingStep.advance]). The step is
+     * persisted first so a process restart (post-import restart, process death) resumes at
+     * that step instead of replaying the flow. When the flow completes, the
+     * onboarding-complete flag is written and the persisted step cleared.
+     */
+    private fun advanceOnboarding() {
+        val current = onboardingStep ?: return
+        val next = current.advance()
+        if (next == null) {
+            DataStoreUtils.saveBoolean(this, DataStoreUtils.KEY_ONBOARDING_COMPLETE, true)
+            DataStoreUtils.saveString(this, DataStoreUtils.KEY_ONBOARDING_STEP, "")
+            Timber.tag("MainActivity").i("Onboarding complete, flag written, step cleared")
+        } else {
+            DataStoreUtils.saveString(this, DataStoreUtils.KEY_ONBOARDING_STEP, next.name)
+            Timber.tag("MainActivity").d("Onboarding step: ${current.name} -> ${next.name}")
+        }
+        onboardingStep = next
+    }
+
+    /**
+     * Marks the onboarding as complete without leaving the current step. Used by the
+     * restore step (a successful import restarts the app) and by the accounts step
+     * (leaving the step with a Discord token set restarts the app): the restart
+     * must land directly in the main app (restored settings already contain the
+     * display name and the YouTube account), so the flag is written and the
+     * persisted step cleared now — the step field stays put until the restart
+     * happens.
+     */
+    private fun completeOnboarding() {
+        DataStoreUtils.saveBoolean(this, DataStoreUtils.KEY_ONBOARDING_COMPLETE, true)
+        DataStoreUtils.saveString(this, DataStoreUtils.KEY_ONBOARDING_STEP, "")
+        Timber.tag("MainActivity").i("Onboarding completed before restart, flag written, step cleared")
+    }
 
     override val persistMap = PersistMap()
 
@@ -548,6 +605,14 @@ class MainActivity :
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
         shortcutIntentAction = initialShortcutAction(intent.action, isRestoredInstance)
         rewindDeckTarget = rewindDeckTargetFromIntent(intent, isRestoredInstance)
+        onboardingStep = if (DataStoreUtils.getBoolean(this, DataStoreUtils.KEY_ONBOARDING_COMPLETE, false)) {
+            null
+        } else {
+            // Resume at the persisted step after a post-import restart or process death;
+            // fresh installs have nothing persisted, so fall back to the first step
+            val savedStep = DataStoreUtils.getString(this, DataStoreUtils.KEY_ONBOARDING_STEP, "")
+            OnboardingStep.entries.firstOrNull { it.name == savedStep } ?: OnboardingStep.PERMISSIONS
+        }
 
         with(preferences) {
             if (getBoolean(isKeepScreenOnEnabledKey, false)) {
@@ -1448,7 +1513,11 @@ class MainActivity :
                 // Monthly rewind reminder notification: open the deck on the finished month
                 // (extras set in startApp / onNewIntent). Consumed from an effect, like the
                 // shortcut above, so the navigation happens once the graph is composed.
-                LaunchedEffect(rewindDeckTarget) {
+                // The gate is part of the key: while onboarding is up the NavHost is not
+                // composed (empty graph — navigating would crash), so the target is held
+                // until the flow completes and the effect re-runs.
+                LaunchedEffect(rewindDeckTarget, onboardingStep == null) {
+                    if (onboardingStep != null) return@LaunchedEffect
                     rewindDeckTarget?.let { (year, month) ->
                         navController.navigate("${NavRoutes.rewind.name}?year=$year&month=$month")
                         rewindDeckTarget = null
@@ -1499,11 +1568,73 @@ class MainActivity :
                             LocalBottomBarOffset provides bottomBarOffsetState
                             //LocalInternetConnected provides internetConnected
                         ) {
-                            AppNavigation(
-                                navController = navController,
-                                miniPlayer = {},
-                                openTabFromShortcut = openTabFromShortcut
-                            )
+                            // First-launch onboarding: rendered instead of the main
+                            // navigation while the flag is false. Page changes (permissions ->
+                            // restore -> name -> accounts -> main app) animate with the user's chosen
+                            // transition effect, same spec as AppNavigation
+                            val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Fade)
+                            AnimatedContent(
+                                targetState = onboardingStep,
+                                transitionSpec = {
+                                    when (transitionEffect) {
+                                        TransitionEffect.None ->
+                                            EnterTransition.None togetherWith ExitTransition.None
+
+                                        TransitionEffect.Expand ->
+                                            scaleIn(animationSpec = tween(350), initialScale = 2.0f) togetherWith
+                                            scaleOut(animationSpec = tween(350), targetScale = 2.0f)
+
+                                        TransitionEffect.Fade ->
+                                            fadeIn(animationSpec = tween(350)) togetherWith
+                                            fadeOut(animationSpec = tween(350))
+
+                                        TransitionEffect.Scale ->
+                                            scaleIn(animationSpec = tween(350)) togetherWith
+                                            scaleOut(animationSpec = tween(350))
+
+                                        TransitionEffect.SlideVertical ->
+                                            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up) togetherWith
+                                            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+
+                                        TransitionEffect.SlideHorizontal ->
+                                            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) togetherWith
+                                            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+                                    }
+                                },
+                                label = "onboardingPhase"
+                            ) { phase ->
+                                when (phase) {
+                                    null -> AppNavigation(
+                                        navController = navController,
+                                        miniPlayer = {},
+                                        openTabFromShortcut = openTabFromShortcut
+                                    )
+
+                                    // Step transitions, the step persistence and the flag timing
+                                    // are all handled by advanceOnboarding() + OnboardingStep.advance()
+                                    OnboardingStep.PERMISSIONS -> OnboardingScreen(
+                                        onComplete = { advanceOnboarding() }
+                                    )
+
+                                    OnboardingStep.IMPORT -> OnboardingImportScreen(
+                                        // "Skip" moves on to the name step; a successful
+                                        // restore completes the onboarding instead (flag
+                                        // written before the restart), so the post-import
+                                        // restart lands directly in the main app
+                                        onComplete = { advanceOnboarding() },
+                                        onRestoreDone = { completeOnboarding() }
+                                    )
+
+                                    OnboardingStep.NAME -> OnboardingNameScreen(
+                                        onComplete = { advanceOnboarding() }
+                                    )
+
+                                    OnboardingStep.ACCOUNTS -> OnboardingAccountsScreen(
+                                        onComplete = { advanceOnboarding() },
+                                        onDiscordConnected = { completeOnboarding() }
+                                    )
+                                }
+                            }
 
                             val disableClosingPlayerSwipingDown by rememberPreference(disableClosingPlayerSwipingDownKey, false)
         checkIfAppIsRunningInBackground()
@@ -1765,7 +1896,11 @@ class MainActivity :
                 }
             }
 
-            LaunchedEffect(intentUriData) {
+            // Same gate guard as the rewind reminder effect above: the NavHost is only
+            // composed once onboarding is done — a shared / deep-linked URL must not
+            // navigate into an empty graph while the gate is up
+            LaunchedEffect(intentUriData, onboardingStep == null) {
+                if (onboardingStep != null) return@LaunchedEffect
                 val uri = intentUriData ?: return@LaunchedEffect
 
                 Toaster.n(
