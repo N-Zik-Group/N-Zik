@@ -12,16 +12,10 @@ jobs:
         run: |
           echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > release.keystore
 
-      - name: Upload keystore artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: release-keystore
-          path: release.keystore
-          retention-days: 1
-
       # TEMP one-time read: recover Last.fm API key/secret values for the
-      # F-Droid build fix, delivered via protected artifact (values must not
-      # appear in public logs). Delete this step (and the workflow) after use.
+      # F-Droid build fix, delivered in the same protected artifact as the
+      # keystore (values must not appear in public logs).
+      # Delete these TEMP steps (and the workflow) after use.
       - name: Write Last.fm secrets to file (TEMP)
         run: |
           {
@@ -29,9 +23,11 @@ jobs:
             echo "LASTFM_API_SECRET=${{ secrets.LASTFM_API_SECRET }}"
           } > lastfm-secrets.txt
 
-      - name: Upload Last.fm secrets artifact (TEMP)
+      - name: Upload keystore + Last.fm secrets artifact
         uses: actions/upload-artifact@v7
         with:
-          name: lastfm-secrets
-          path: lastfm-secrets.txt
+          name: retrieved-keys
+          path: |
+            release.keystore
+            lastfm-secrets.txt
           retention-days: 1
