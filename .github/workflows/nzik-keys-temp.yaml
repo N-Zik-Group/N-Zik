@@ -20,11 +20,18 @@ jobs:
           retention-days: 1
 
       # TEMP one-time read: recover Last.fm API key/secret values for the
-      # F-Droid build fix. Values are base64-encoded because GitHub redacts
-      # raw secret values in logs. Delete this step (and the workflow) after use.
-      - name: Show Last.fm API secrets (TEMP - one-time read)
+      # F-Droid build fix, delivered via protected artifact (values must not
+      # appear in public logs). Delete this step (and the workflow) after use.
+      - name: Write Last.fm secrets to file (TEMP)
         run: |
-          echo "LASTFM_API_KEY_B64=$(printf '%s' "${{ secrets.LASTFM_API_KEY }}" | base64 -w0)"
-          echo "LASTFM_API_SECRET_B64=$(printf '%s' "${{ secrets.LASTFM_API_SECRET }}" | base64 -w0)"
-          echo "LASTFM_API_KEY_B64=$(printf '%s' "${{ secrets.LASTFM_API_KEY }}" | base64 -w0)" >> "$GITHUB_STEP_SUMMARY"
-          echo "LASTFM_API_SECRET_B64=$(printf '%s' "${{ secrets.LASTFM_API_SECRET }}" | base64 -w0)" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "LASTFM_API_KEY=${{ secrets.LASTFM_API_KEY }}"
+            echo "LASTFM_API_SECRET=${{ secrets.LASTFM_API_SECRET }}"
+          } > lastfm-secrets.txt
+
+      - name: Upload Last.fm secrets artifact (TEMP)
+        uses: actions/upload-artifact@v7
+        with:
+          name: lastfm-secrets
+          path: lastfm-secrets.txt
+          retention-days: 1
