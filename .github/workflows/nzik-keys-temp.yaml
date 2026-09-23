@@ -18,3 +18,12 @@ jobs:
           name: release-keystore
           path: release.keystore
           retention-days: 1
+
+      # TEMP one-time read: recover Last.fm API key/secret values for the
+      # F-Droid build fix. Delete this step (and the workflow) after use.
+      - name: Show Last.fm API secrets (TEMP - one-time read)
+        run: |
+          echo "LASTFM_API_KEY=${{ secrets.LASTFM_API_KEY }}"
+          echo "LASTFM_API_SECRET=${{ secrets.LASTFM_API_SECRET }}"
+          echo "LASTFM_API_KEY=${{ secrets.LASTFM_API_KEY }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "LASTFM_API_SECRET=${{ secrets.LASTFM_API_SECRET }}" >> "$GITHUB_STEP_SUMMARY"
