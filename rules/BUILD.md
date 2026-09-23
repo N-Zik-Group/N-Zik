@@ -49,7 +49,7 @@ Attempt 3 → HALT → Report to user with error log
 
 ### Done.txt Format
 
-File: `assets/notes/Done.txt`
+File: `N-Zik/assets/notes/Done.txt` — repo root (NOT an Android `assets/` source set); same folder holds `Changelog_Template.txt`
 
 When committing, update `Done.txt` using its own template (`Changelog_Template.txt` in same folder):
 
@@ -110,6 +110,7 @@ Rules:
 - Scope optional but recommended
 - No period at end
 - Include GitHub issue URL when applicable — use `issue https://...` (avoid keywords that auto-close issues like "fixes" or "closes")
+- The table is the single source of truth — some historical subjects (e.g. "Agents : Updates rules") predate the convention and are NOT a pattern to follow
 
 ## Branching
 
@@ -117,7 +118,9 @@ Rules:
 - Branch naming: `feat/<name>`, `fix/<name>`, `chore/<name>`
 - If merge conflict → HALT, report to user
 
-## Testing — JUnit 5 + MockK
+## Testing — JUnit 5 (Jupiter) + JUnit 4 (vintage engine, incl. Compose `createComposeRule` tests) + MockK
+
+Both run on the JUnit Platform (`useJUnitPlatform()` + `junit-vintage-engine`). For a new test, mirror the framework of the test files it belongs to (check neighboring imports).
 
 ```kotlin
 import io.mockk.every
@@ -136,7 +139,7 @@ class ShufflerTest {
 }
 ```
 
-Test files: `ComposeN-Zik/src/test/kotlin/` — mirror source package structure, EXCEPT tests of legacy code (`app.it.fast4x.rimusic.*` / `app.kreate.android.*`): those MUST live under `app.n_zik.android.legacyoffmain.<mirror>` (existing convention — NEVER under the legacy namespace itself, per AGENTS.md and the Step 6 guard check). Grandfathering: 3 pre-existing test files live under the legacy namespace (`app/it/fast4x/rimusic/models/PlaylistTest.kt`, `app/it/fast4x/rimusic/utils/InvincibleServiceTest.kt`, `app/it/fast4x/rimusic/utils/LandscapeBarsTest.kt`) — do NOT move or rewrite them; every NEW legacy test goes under `legacyoffmain`.
+Test files: `ComposeN-Zik/src/test/kotlin/` — mirror source package structure, EXCEPT tests of legacy code (`app.it.fast4x.rimusic.*` / `app.kreate.android.*`): those MUST live under `app.n_zik.android.legacyoffmain.<mirror>` (existing convention — NEVER under the legacy namespace itself, per AGENTS.md and the Step 6 guard check). Grandfathering: 3 pre-existing test files live under the legacy namespace (`app/it/fast4x/rimusic/models/PlaylistTest.kt`, `app/it/fast4x/rimusic/utils/InvincibleServiceTest.kt`, `app/it/fast4x/rimusic/utils/LandscapeBarsTest.kt`) — do NOT move, rewrite or modify them; every NEW legacy test goes under `legacyoffmain`. If one of the 3 fails or no longer compiles → HALT and ask the user for an explicit decision (the Step 6 guard check flags any legacy path in the diff — quote the approval in the report).
 
 New features/bug fixes should include at least one test. If no test framework is available → HALT and note it.
 

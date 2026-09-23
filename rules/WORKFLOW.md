@@ -104,7 +104,7 @@ Example for `bmad-build` with OpenCode: `{project-root}/.agents/skills/bmad-buil
 
 **TWO SKILL FORMATS EXIST — read the SKILL.md first and pick the matching activation path:**
 
-- **(a) Bootstrap format** (e.g. `bmad-build`): the SKILL.md instructs running `_bmad/scripts/render_skill.py` exactly once. → Run that command FIRST, then follow ONLY the rendered `workflow.md` it prints (its own "On Activation" section supersedes steps 1–8 below). On failure (including `uv` unavailable) → HALT and report the command output; no manual fallback, no direct reading of the workflow sources.
+- **(a) Bootstrap format** (e.g. `bmad-build`): the SKILL.md instructs running `_bmad/scripts/render_skill.py` exactly once. → Run that command FIRST, then follow ONLY the rendered `workflow.md` it prints (its own "On Activation" section supersedes steps 1–8 below). On failure (including `uv` unavailable) → HALT and report the command output; no manual fallback, no direct reading of the workflow sources. The rendered `workflow.md` supersedes the inline activation sequence (steps 1–8) ONLY — the wrapper sub-steps 3c–3i remain MANDATORY on top of the skill's own steps; if the skill's step files already implement one of them (spec file, checkpoints, on_complete), follow the skill's implementation once — do NOT run a second pass.
 - **(b) Inline format** (e.g. `bmad-cis-*`): follow steps 1–8 below.
 
 1. Run `resolve_customization.py` to get merged config:
@@ -115,7 +115,7 @@ Example for `bmad-build` with OpenCode: `{project-root}/.agents/skills/bmad-buil
 
    (or `--key workflow` for workflow skills)
 
-   > **Path tip:** If running from `N-Zik/`, `{project-root}` resolves to the parent directory. Use `..` or resolve the absolute path to `N-Zik-Projet/` before running scripts.
+   > **Path tip:** If running from `N-Zik/`, `{project-root}` resolves to the parent directory. Use `..` or resolve the absolute path to the workspace root (the directory containing `_bmad/`) before running scripts.
 
 2. If script fails → manually read 3 files in order and merge:
    - `{skill-root}/customize.toml` (defaults)
@@ -217,7 +217,7 @@ Example for `bmad-build` with OpenCode: `{project-root}/.agents/skills/bmad-buil
 
 **Enforcement — during the workflow:**
 
-- Before each action, announce the current step — TWO formats only: `[Step X/8: <name>]` for the 8-step wrapper workflow (at every transition) and `[BMAD Step X/N: <step name>]` for the loaded BMAD skill's internal steps. For the Step 8 sub-steps use `[Step 8x: <name>]` (e.g. `[Step 8b: Code Review Proposal]`, `[Step 8d: Commit]`)
+- Before each action, announce the current step — THREE formats only: `[Step X/8: <name>]` for the 8-step wrapper workflow (at every transition), `[BMAD Step X/N: <step name>]` for the loaded BMAD skill's internal steps, and `[Step 8x: <name>]` for the Step 8 sub-steps (e.g. `[Step 8b: Code Review Proposal]`, `[Step 8d: Commit]`)
 - After each step, present the checkpoint options DEFINED BY THE LOADED SKILL (CIS skills use `[a] [c] [p] [y]`; `bmad-build` uses its own `### CHECKPOINT N` sections — present them verbatim). If the skill defines no option list, present its checkpoint message verbatim — NEVER invent options, and NEVER just ask "Step X complete. Proceed to step Y?"
 - Before implementing, verify: "All N steps complete. Ready to implement?"
 - If you cannot name the current step → HALT, you are lost
@@ -229,7 +229,7 @@ Example for `bmad-build` with OpenCode: `{project-root}/.agents/skills/bmad-buil
 **If skill not found:**
 
 1. Search the IDE-specific skills directory for the user's IDE (see `rules/BMAD-TOOLS.md` table — most IDEs use `{project-root}/.agents/skills/`)
-2. If still not found → HALT, inform user, suggest re-running BMAD installer
+2. If still not found → HALT, inform the user; re-installation is NOT defined in this workspace (see BMAD.md "Installation Location") — ask the user for the re-installation procedure
 3. If SKILL.md is malformed → HALT, report error, suggest `bmad-module-builder` to rebuild
 
 **IMPORTANT: This workflow has 8 steps. NEVER stop before Step 8. Step 8 (Post-BMAD Actions) is MANDATORY.**
@@ -251,8 +251,8 @@ Some skills use micro-file design where each step is in its own file.
 
 - This step is a hard gate: after the plan/spec is produced, HALT and wait for the user's answer before editing ANY file, running ANY build, or starting ANY implementation — no step 5, no code, no "it's obvious, proceeding anyway".
 - Before implementing, **MUST ask user using question tool** — process:
-  - Read the SKILL.md to see what actions/checkpoints are available after the plan
-  - Present the actions from the SKILL.md verbatim (e.g. `[a] [c] [p] [y]` for CIS skills; the `### CHECKPOINT` sections for `bmad-build`)
+  - Read the loaded workflow (the full `SKILL.md` for inline skills; the rendered `workflow.md` + the current `step-NN-*.md` file for bootstrap/step-file skills) to see what actions/checkpoints are available after the plan
+  - Present them verbatim (e.g. `[a] [c] [p] [y]` for CIS skills; the `### CHECKPOINT` sections for `bmad-build`)
   - Wait for user to choose before proceeding
 - If the session was interrupted before the question was answered → on resume, re-announce Step 4 and ask the question again (never assume a previous answer)
 
@@ -306,9 +306,9 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
   1. Yes → launch bmad-code-review
   2. No → structured self-check pass + fixes
   ```
-- If user says "No" → do a structured self-check pass (null-safety, structured concurrency/lifecycle, Timber usage, error handling, test coverage), LIST the findings (or explicitly state "none found"), fix them, rebuild, then ask the Step 8b question again (the user may change their mind) — ask this question at most ONE more time; if the user says "No" again, record it as an explicit decision to skip the review (announce it: "8c skipped — no review") and proceed to Step 8d. No further self-check loops.
+- If user says "No" → do a structured self-check pass (null-safety, structured concurrency/lifecycle, Timber usage, error handling, test coverage), LIST the findings (or explicitly state "none found"), fix them, rebuild, then ask the Step 8b question again (the user may change their mind) — ask this question at most ONE more time; if the user says "No" again, record it as an explicit decision to skip the review (announce it: "8b review declined by user — 8c not applicable, no review performed") and proceed to Step 8d. No further self-check loops.
 - If user says "Yes" → load and execute `bmad-code-review` skill
-- If the `bmad-code-review` skill fails to load or execute (render/uv error, skill HALT) → HALT, report the error verbatim, and ask the user via question tool: (1) retry the skill, (2) proceed to the structured self-check pass of the "No" branch — explicitly announced as NOT fulfilling the 8b review gate
+- If the `bmad-code-review` skill fails to load or execute (render/uv error, skill HALT) → HALT, report the error verbatim, and ask the user via question tool: (1) retry the skill, (2) proceed to the structured self-check pass of the "No" branch — explicitly announced as NOT fulfilling the 8b review gate. Cap retries at 2 — on the third failure, HALT and re-ask with only the self-check option (announced as NOT fulfilling the 8b gate) and "stop"
 - If the session was interrupted before the question was answered → on resume, re-announce Step 8b and ask the question again (never assume a previous answer)
 
 **Step 8c: Post-Review Actions**

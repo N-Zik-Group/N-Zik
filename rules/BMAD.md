@@ -70,7 +70,7 @@ uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root
 uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key workflow
 ```
 
-> **Path tip:** If running from `N-Zik/`, `{project-root}` resolves to the parent directory. Use `..` or resolve the absolute path to `N-Zik-Projet/` before running scripts.
+> **Path tip:** If running from `N-Zik/`, `{project-root}` resolves to the parent directory. Use `..` or resolve the absolute path to the workspace root (the directory containing `_bmad/`) before running scripts.
 
 **`{skill-root}`** = `{project-root}/{target_dir}/{skill-name}` where `target_dir` depends on your IDE:
 - **Cursor/Copilot/Codex/OpenCode/Windsurf:** `{project-root}/.agents/skills/{skill-name}`
@@ -114,7 +114,7 @@ uv run {project-root}/_bmad/scripts/memlog.py append --workspace {doc_workspace}
 uv run {project-root}/_bmad/scripts/memlog.py set --workspace {doc_workspace} --key status --value complete
 ```
 
-**Types:** decision, constraint, capability, assumption, question, direction, note, event
+**Types:** free-form (`--type` is not validated by the script) — use the vocabulary of the skill that calls memlog (common values: decision, direction, assumption, question, note, event)
 
 **Rules:**
 

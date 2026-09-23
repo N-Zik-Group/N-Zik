@@ -23,7 +23,7 @@ If a BMAD skill fails or gets stuck:
 1. **Skill not found** → Search the IDE-specific skills directory for the user's IDE (see `rules/BMAD-TOOLS.md` table — most IDEs use `{project-root}/.agents/skills/`). Remember: `{project-root}` is the parent of `N-Zik/` where `_bmad/` and `.agents/` live.
 2. If still not found → HALT, inform user, and ask how to re-run the BMAD installer (no installer command is defined in these rules — see BMAD.md "Installation Location")
 3. **SKILL.md malformed** → HALT, report error, suggest `bmad-module-builder` to rebuild
-4. **Skill execution error** → Fallback to `bmad-build` for implementation tasks
+4. **Skill execution error** → HALT, report the error, then ask the user via question tool: (1) retry the skill, (2) switch to `bmad-build` (implementation tasks only — user's explicit choice), (3) stop. Never switch skills without the user's answer.
 5. **Agent stuck in loop** → HALT after 5 iterations, ask user
 
 ## Database Migration Failure

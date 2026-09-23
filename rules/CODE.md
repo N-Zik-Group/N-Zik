@@ -217,7 +217,8 @@ When dismissing a `CustomModalBottomSheet` manually, orchestrate hide animation 
 
 ```kotlin
 // CORRECT
-coroutineScope.launch {
+val scope = rememberCoroutineScope()
+scope.launch {
     if (sheetState.isVisible) sheetState.hide()
     showSheet = false // Only AFTER animation
 }
@@ -303,7 +304,7 @@ class LyricsScreenTest {
 
 - Source strings live ONLY in `values/strings.xml` — this is the single source of truth for translators
 - NEVER hand-edit any `values-*/strings.xml` file — these are managed exclusively by the Crowdin sync (automated PR/commit); manual edits get overwritten and cause merge conflicts with translator work
-- If a Crowdin sync commit/PR appears (bot-authored, touches only `values-*/strings.xml`), it is exempt from the full BMAD workflow and from code review — merge as-is after a diff sanity check
+- If a Crowdin sync commit/PR appears (bot-authored, touches only `values-*/strings.xml`), it is exempt from the full BMAD workflow and from code review — merge as-is after a diff sanity check (human commit approval from AGENTS.md still applies: show the diff, ask before merging/committing)
 - Adding a NEW string key: add it to `values/strings.xml` only; Crowdin will propagate it to other locales automatically
 - Removing or renaming a string key: check for usages across the codebase first (a stale key breaks translator context, not just compilation)
 - Never assume a `values-*` string is wrong because it "reads oddly" in English — flag it to the user/translation team instead of editing it directly

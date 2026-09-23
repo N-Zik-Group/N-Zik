@@ -56,7 +56,7 @@
 
 **Skills location** (depends on your IDE):
 
-> This table lists only the 3 preferred tools plus common alternatives. It is NOT the authoritative full list — if the user's IDE isn't shown here, **BMAD-TOOLS.md is the source of truth** for all ~40 supported tools and their skills/global/commands directories. Never assume a tool is unsupported just because it's absent from this shorter table.
+> This table lists only the 3 preferred tools plus common alternatives. It is NOT the authoritative full list — if the user's IDE isn't shown here, **BMAD-TOOLS.md is the source of truth** for all 45 supported tools and their skills/global/commands directories. Never assume a tool is unsupported just because it's absent from this shorter table.
 
 | IDE                  | Skills Path                                           | How to Load                     |
 | -------------------- | ----------------------------------------------------- | ------------------------------- |
@@ -95,6 +95,8 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 ├── modules/                 Feature submodules
 ├── composeApp/              DEAD folder — NOT a gradle module (excluded from settings.gradle.kts); orphaned sources + stale build artifacts → ignore, never build/modify
 ├── gradle/libs.versions.toml  Version catalog
+├── assets/notes/              Done.txt + Changelog_Template.txt (repo-root working files — NOT an Android assets source set)
+├── fastlane/ + Updater/       changelogs by versionCode (released)
 └── (docs/ lives at the WORKSPACE ROOT, one level above N-Zik/ — Reference, READ-ONLY)
 ```
 
