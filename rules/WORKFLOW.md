@@ -24,7 +24,7 @@ Use this format every session — keep it SHORT:
 [CRITICAL]
 1. Code → app.n_zik.android.* only (legacy packages READ-ONLY)
 2. Timber with tags ONLY (no println/Log.d)
-3. Build: ./gradlew :ComposeN-Zik:assembleDebug
+3. Build: gradlew :ComposeN-Zik:assembleDebug (gradlew.bat on Windows)
 4. Version catalog refs only (libs.versions.toml)
 5. NEVER commit without human approval
 6. NEVER skip BMAD workflow — complete FULL workflow before coding (exception: trivial doc-only edits, see "Doc-Only Exception")
@@ -96,7 +96,7 @@ NEVER write code or create implementation plans without completing this step.
 > **Important for this project:** `_bmad/` and `.agents/` live at the **parent** of `N-Zik/`. If your CWD is `N-Zik/`, go **up one level** to find `{project-root}`.
 
 **`{skill-root}`** = `{project-root}/{target_dir}/{skill-name}` where `target_dir` depends on your IDE:
-- **Cursor/Copilot/Codex/OpenCode/Windsurf:** `{project-root}/.agents/skills/{skill-name}`
+- **Cursor/Copilot/Codex/OpenCode/Windsurf/Gemini CLI:** `{project-root}/.agents/skills/{skill-name}`
 - **Claude Code:** `{project-root}/.claude/skills/{skill-name}`
 - **Google Antigravity:** `{project-root}/.agent/skills/{skill-name}`
 
@@ -117,7 +117,7 @@ Example for `bmad-build` with OpenCode: `{project-root}/.agents/skills/bmad-buil
 
    > **Path tip:** If running from `N-Zik/`, `{project-root}` resolves to the parent directory. Use `..` or resolve the absolute path to the workspace root (the directory containing `_bmad/`) before running scripts.
 
-2. If script fails → manually read 3 files in order and merge:
+2. If script fails → manually read 3 files in order and merge (scalars override, tables deep-merge, arrays of tables keyed by `code`/`id` → the matching entry is REPLACED, not field-merged, by the higher-priority one; unmatched entries keep, other arrays append):
    - `{skill-root}/customize.toml` (defaults)
    - `{project-root}/_bmad/custom/{skill-name}.toml` (team)
    - `{project-root}/_bmad/custom/{skill-name}.user.toml` (personal)
@@ -166,7 +166,7 @@ Example for `bmad-build` with OpenCode: `{project-root}/.agents/skills/bmad-buil
 
 #### 3d: on_complete hook (MANDATORY)
 
-- After workflow completes, run: `uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key workflow.on_complete`
+- At the end of the loaded BMAD skill's internal workflow (i.e. end of Step 3, BEFORE Step 4), run: `uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key workflow.on_complete`
 - If the resolved value is non-empty → follow it as final terminal instruction before exiting
 - NEVER skip this hook — it is the skill's official completion action
 - If the script cannot be executed (uv missing, path or permission error) → say so explicitly to the user, then continue — never fail silently, never "skip" without reporting
@@ -284,7 +284,7 @@ Some skills use micro-file design where each step is in its own file.
 
 - Summarize what was done and why
 - Note files modified or created
-- Do NOT commit unless explicitly asked
+- Do NOT commit unless explicitly asked. An explicit commit request BEFORE Step 8 is recorded but only executed AFTER the 8b/8d gates (8b is a HARD GATE; the 8d mode choice always applies) — announce: "commit requested, will run after the 8b/8d gates"
 
 ### Step 8: Post-BMAD Actions (MANDATORY)
 
@@ -347,7 +347,7 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
 - If the session was interrupted before the question was answered → on resume, re-announce Step 8d and ask the question again (never assume a previous answer)
 - After the chosen edits, show the diff AND the proposed commit message (conventional format `type(scope): …` per BUILD.md), then **MUST ask user for commit approval** (NEVER commit without approval) — ONE prompt, not separately, **translated into `{communication_language}`**:
   ```
-  Do you approve this commit ?
+  Do you approve this commit ? (Your approval also confirms the human testing required by AGENTS.md)
   Message: <type(scope): short description>
   1. Commit + push
   2. Commit only (no push)
@@ -361,7 +361,7 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
 
 **Step 8e: Finish Workflow (always runs)**
 
-- Run the `on_complete` hook ONLY if it was NOT already executed in Step 3d — it is a single hook: never run it twice (if already run, state so and move on)
+- Run the `on_complete` hook ONLY if it was NOT already executed in Step 3d — it is a single hook: never run it twice (if already run, state so and move on). Step 8e runs it only when Step 3 was waived or 3d could not run
 - Announce: "Workflow complete."
 - **Start a new conversation** — the next task should begin with fresh context. Instruct the user (in `{communication_language}`) to open a new conversation for the next task.
 
@@ -372,10 +372,11 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
 When changes span multiple modules (`extensions/`, `modules/`, `ComposeN-Zik/`):
 
 1. Identify all affected modules before starting
-2. Build each module individually if possible
-3. Test cross-module interactions
-4. Verify no circular dependencies introduced
-5. Report which modules were affected
+2. `modules/betterlyrics`, `modules/discordrpc`, `modules/nextvisualizer` are **git submodules** (see `N-Zik/.gitmodules`): if the diff touches a submodule's interior, HALT before Step 6 — the commit must happen twice (commit inside the submodule, then update the gitlink pointer in `N-Zik/`); ask the user for the exact procedure before acting. The Step 6 guard check reads a "Subproject commit …" line as a modified submodule, not as a file
+3. Build each module individually if possible
+4. Test cross-module interactions
+5. Verify no circular dependencies introduced
+6. Report which modules were affected
 
 ## Announce Steps
 

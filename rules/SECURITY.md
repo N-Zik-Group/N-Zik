@@ -60,4 +60,4 @@ When using code from external sources (web, GitHub, StackOverflow, AI):
 | SQL injection risk         | HALT, verify Room parameterized queries, report                     |
 | Hardcoded credentials      | HALT, remove credentials, use BuildConfig or local.properties       |
 | Insecure network call      | HALT, switch to HTTPS, verify certificate pinning                   |
-| User data leak             | HALT, identify leak source, report to user, fix immediately         |
+| User data leak             | HALT, identify leak source, report to user (fix only after user confirmation)  |

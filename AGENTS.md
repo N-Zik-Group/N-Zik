@@ -87,11 +87,11 @@
 ```
 N-Zik/                     ← git repo root (run gradlew/git from here)
 ├── ComposeN-Zik/src/
-│   ├── androidMain/kotlin/app/n_zik/android/  ★ NEW code
-│   ├── commonMain/                            KMP shared logic
-│   ├── main/                                  Android res (drawables) + AndroidManifest
-│   └── test/                                  Tests
-├── extensions/              API Gradle modules (innertube, kugou, lrclib, musicbrainz, invidious, ktor-client-brotli, lastfm); `piped/` present but NOT in settings.gradle.kts
+│   ├── androidMain/           AndroidManifest.xml + res (values, values-*) + kotlin/app/n_zik/android/ ★ NEW code
+│   ├── commonMain/            KMP shared logic
+│   ├── main/                  res only (drawables, mipmap)
+│   └── test/                  Tests
+├── extensions/              API Gradle modules (innertube → module `:oldtube`, kugou, lrclib, musicbrainz, invidious, ktor-client-brotli, lastfm — module names in `settings.gradle.kts`); `piped/` present but NOT in settings.gradle.kts
 ├── modules/                 Feature submodules
 ├── composeApp/              DEAD folder — NOT a gradle module (excluded from settings.gradle.kts); orphaned sources + stale build artifacts → ignore, never build/modify
 ├── gradle/libs.versions.toml  Version catalog

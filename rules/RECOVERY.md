@@ -2,6 +2,8 @@
 
 **Version:** 1.3.0 | **Last updated:** 2026-09-23
 
+**HALT semantics (applies to every HALT in every rule file):** HALT = stop ALL autonomous work (no edits, no builds, no commits, no skills). Present the required report, then wait for an explicit user instruction before resuming. The only exception is when the HALT rule itself prescribes follow-up actions — run them, then HALT again.
+
 ## Build Failure Recovery
 
 1. Read error messages carefully

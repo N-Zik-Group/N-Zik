@@ -38,7 +38,7 @@ ALWAYS verify changes compile before reporting. If build fails:
 1. Read error messages
 2. Fix the first error (often cascading)
 3. Rebuild
-4. **HALT after 3 failed attempts** — report to user with full error log
+4. **HALT after 3 failed attempts** — report to user with full error log (the 3-attempt counter is per autonomous cycle — it resets when the user gives a new explicit direction after a HALT)
 
 ```
 BUILD FAILURE ESCALATION:
@@ -55,9 +55,8 @@ When committing, update `Done.txt` using its own template (`Changelog_Template.t
 
 ```
 <keyword>(<scope>): <short summary> (issue ref)
-
-- Technical detail 1
-- Technical detail 2
+  - Technical detail 1
+  - Technical detail 2
 ```
 
 Include full issue link (use `issue https://...` to avoid auto-closing).
@@ -139,14 +138,13 @@ class ShufflerTest {
 }
 ```
 
-Test files: `ComposeN-Zik/src/test/kotlin/` — mirror source package structure, EXCEPT tests of legacy code (`app.it.fast4x.rimusic.*` / `app.kreate.android.*`): those MUST live under `app.n_zik.android.legacyoffmain.<mirror>` (existing convention — NEVER under the legacy namespace itself, per AGENTS.md and the Step 6 guard check). Grandfathering: 3 pre-existing test files live under the legacy namespace (`app/it/fast4x/rimusic/models/PlaylistTest.kt`, `app/it/fast4x/rimusic/utils/InvincibleServiceTest.kt`, `app/it/fast4x/rimusic/utils/LandscapeBarsTest.kt`) — do NOT move, rewrite or modify them; every NEW legacy test goes under `legacyoffmain`. If one of the 3 fails or no longer compiles → HALT and ask the user for an explicit decision (the Step 6 guard check flags any legacy path in the diff — quote the approval in the report).
+Test files: `ComposeN-Zik/src/test/kotlin/` — mirror source package structure, EXCEPT tests of legacy code (`app.it.fast4x.rimusic.*` / `app.kreate.android.*`): those MUST live under `app.n_zik.android.legacyoffmain.<mirror>` (existing convention — NEVER under the legacy namespace itself, per AGENTS.md and the Step 6 guard check). Grandfathering: 3 pre-existing test files live under the legacy namespace (`app/it/fast4x/rimusic/models/PlaylistTest.kt`, `app/it/fast4x/rimusic/utils/InvincibleServiceTest.kt`, `app/it/fast4x/rimusic/utils/LandscapeBarsTest.kt`) — do NOT move, rewrite or modify them; every NEW legacy test goes under `legacyoffmain`. If one of the 3 fails or no longer compiles → HALT and ask the user for an explicit decision (the Step 6 guard check flags any legacy path in the diff — quote the approval in the report). Also grandfathered: the top-level test packages `test/kotlin/utils/` and `test/kotlin/painters/` predate the mirroring rule — do NOT move them; new tests follow the mirroring rule.
 
 New features/bug fixes should include at least one test. If no test framework is available → HALT and note it.
 
 ## CI Expectations
 
-- Pre-commit hooks may run lint and build checks
-- If pre-commit hook fails → fix before committing
+- No pre-commit hooks are configured in this repo — do not wait for hook signals; run lint/build with the commands in this file
 - If CI pipeline fails after push → HALT, investigate, fix
 
 ## Code Formatting

@@ -64,9 +64,9 @@ LazyColumn {
 Rules:
 
 - NEVER use `GlobalScope` — use `viewModelScope`, `lifecycleScope`, or structured scopes
-- NEVER use `runBlocking` in suspend code
+- NEVER use `runBlocking` in production code (use suspend functions). In JVM unit tests prefer `runTest` (kotlinx-coroutines-test) over `runBlocking`
 - NEVER use `collectAsState()` — use `collectAsStateWithLifecycle()`
-- NEVER use `_state.value = ...` — use `_state.update { it.copy(...) }`
+- NEVER do a read-modify-write (`_state.value = _state.value.copy(...)`) — use `_state.update { it.copy(...) }`. Direct assignment (`_state.value = …`) is allowed only to set the initial state
 - Use `StateFlow` over `LiveData` — expose single sealed `UiState` class
 - Data params to children: annotate with `@Stable` or `@Immutable`
 - No IO/DB/network in composition body

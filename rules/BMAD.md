@@ -83,7 +83,7 @@ uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root
 2. `{project-root}/_bmad/custom/{skill-name}.toml` (team)
 3. `{project-root}/_bmad/custom/{skill-name}.user.toml` (personal)
 
-**Merge rules:** Scalars override, tables deep-merge, keyed arrays merge by `code` or `id`, other arrays append. **No removal mechanism** — to suppress a default, override by `code` with no-op.
+**Merge rules:** Scalars override, tables deep-merge, arrays of tables keyed by `code` or `id` → the matching entry is REPLACED (not field-merged) by the higher-priority one, unmatched entries keep; other arrays append. **No removal mechanism** — to suppress a default, override by `code` with no-op.
 
 **Key files:**
 
