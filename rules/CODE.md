@@ -107,7 +107,7 @@ New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app
 | Settings components            | `components/settings/`                             |
 | Enums                          | `enums/`                                           |
 | Extensions (optional features) | package `extensions/{feature}/` under `app.n_zik.android` (the Gradle subprojects in `N-Zik/extensions/` are separate API modules — see `settings.gradle.kts`) |
-| Database tables & migrations   | `core/database/`                                   |
+| Database tables & migrations   | `core/database/` (migrations in `core/database/migration/`; note: `core/migration/` holds settings-only migrations) |
 | Network layer                  | `core/network/`                                    |
 | Services (player, download)    | `playback/services/`, `download/services/`         |
 | Dependency injection           | plain constructor injection (no DI framework in the app module) |
@@ -206,7 +206,7 @@ NEVER swallow exceptions silently. ALWAYS log with Timber.
 ## UI — Jetpack Compose + Material 3
 
 - All UI in Jetpack Compose (no XML layouts)
-- Use the existing theming system — colors via `app.n_zik.android.colorPalette` (legacy `ColorPaletteMode`/`ColorPaletteName` enums when touching legacy UI), typography via legacy `app.it.fast4x.rimusic.ui.styling.Typography` (read-only). Do NOT invent new CompositionLocals
+- Use the existing theming system — dynamic palette via legacy `app.it.fast4x.rimusic.ui.styling.ColorPalette` (`dynamicColorPaletteOf`, READ-ONLY); palette animation in `app.n_zik.android.components.theme.AnimatedAppearance`; legacy `ColorPaletteMode`/`ColorPaletteName` enums in `app.it.fast4x.rimusic.enums/`; typography via legacy `app.it.fast4x.rimusic.ui.styling.Typography` (read-only). Do NOT invent new CompositionLocals
 - Animations under 300ms for snappy feel
 - Use `Modifier` for styling, chain for multiple effects
 - Keep composables small (single responsibility)

@@ -12,6 +12,8 @@
 6. Wait for user input
 7. If bug or feature: ASK which IDE/tool (ONE at a time), ASK which skill to use
 
+> **"question tool"** = the IDE's interactive ask mechanism. If your IDE has no such tool, ask in chat and WAIT for the reply before proceeding — the blocking semantics are identical for every gate.
+
 ## Announcement Template
 
 Use this format every session — keep it SHORT:
@@ -50,7 +52,7 @@ See rules/*.md for full details.
 
 Before triggering the full BMAD workflow, check if the request is **doc-only and trivial**:
 
-- Applies ONLY to: typo fixes, comment wording, `Done.txt`/changelog wording, README/markdown prose — **zero changes to `.kt`, `.xml`, `.toml`, `.gradle.kts`, or any build/schema file**
+- Applies ONLY to: typo fixes, `Done.txt`/changelog wording, README/markdown prose — **zero changes to `.kt`, `.xml`, `.toml`, `.gradle.kts`, or any build/schema file** (a comment change inside a code file is NOT doc-only — run the full workflow)
 - If it qualifies → SKIP the BMAD workflow, make the edit directly, show the diff, ask for approval before committing (commit approval rule from AGENTS.md still applies)
 - If there is ANY doubt whether a change is "trivial" (e.g. it touches a string resource key, not just prose) → treat it as a normal change and run the full workflow
 - This exception does NOT apply to code, schema, dependency, or config changes, however small
@@ -222,7 +224,7 @@ Example for `bmad-build` with OpenCode: `{project-root}/.agents/skills/bmad-buil
 
 **User suggestions are input to the workflow, NOT a shortcut to skip it.** Even if the user suggests a specific fix, complete the skill's full workflow before implementing.
 
-**If user declines BMAD skill:** HALT and explain that BMAD workflow is mandatory per AGENTS.md rules. Ask user to confirm they want to proceed without BMAD. If the user confirms: record the explicit waiver, but it covers the BMAD skill (Step 3) ONLY — Step 6 (hygiene gate + build + tests), Step 8b (review gate) and Step 8d (commit mode gate) still apply. When Step 3 is waived, Step 4 is replaced by: present the implementation plan (files, approach, risks) and ask the same plan-approval question (HARD GATE unchanged). Steps 7, 8a and 8e still apply. If the user does not confirm → HALT, no code is written.
+**If user declines BMAD skill:** HALT and explain that BMAD workflow is mandatory per AGENTS.md rules. Ask user to confirm they want to proceed without BMAD. If the user confirms: record the explicit waiver, but it covers the BMAD skill (Step 3) ONLY — Step 6 (hygiene gate + build + tests), Step 8b (review gate) and Step 8d (commit mode gate) still apply. When Step 3 is waived, Step 4 is replaced by: present the implementation plan (files, approach, risks) and ask the same plan-approval question (HARD GATE unchanged). Steps 1, 2, 5, 7, 8a, 8b, 8c (after review) and 8e still apply unchanged. If the user does not confirm → HALT, no code is written.
 
 **If skill not found:**
 
@@ -275,7 +277,7 @@ Some skills use micro-file design where each step is in its own file.
 - Build: `./gradlew :ComposeN-Zik:assembleDebug` (on Windows: `gradlew.bat`)
 - Run tests (new feature/bug fix → at least one new test, per AGENTS.md: list the test file(s) added)
 - Review changes for quality
-- **Guard check (MANDATORY):** run `git diff --name-only HEAD` (staged + unstaged) AND `git status --porcelain` (includes untracked new files) from the repo root `N-Zik/`, and verify that NEITHER contains any file under `app.it.fast4x.rimusic.*` or `app.kreate.android.*` nor any `values-*/strings.xml` file — if one appears, HALT, revert it and report to the user
+- **Guard check (MANDATORY):** run `git diff --name-only HEAD` (staged + unstaged) AND `git status --porcelain` (includes untracked new files) from the repo root `N-Zik/`, and verify that NEITHER contains any file under `app.it.fast4x.rimusic.*` or `app.kreate.android.*` nor any `values-*/strings.xml` file — if one appears, HALT, revert it and report to the user (EXCEPTION: a legacy file modification explicitly approved by the user per the AGENTS.md legacy-modification rule — quote the approval in the report; the guard still applies to any NEW legacy file)
 - Show evidence: paste the build output tail + test results — never just claim "done"
 
 ### Step 7: Report
@@ -316,7 +318,7 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
   ```
   Code review complete. What next ?
   1. Functional → proceed to commit
-  2. Not functional → re-read and fix
+  2. Not functional → fix the findings (then re-review)
   3. Other → ask user
   ```
 - If "Not functional" → fix the findings, rebuild + re-run tests, then RE-RUN `bmad-code-review` on the fixed scope before asking 8c again (fixes to review findings require a fresh review — never present self-judged fixes as review-passed). After **3** fix/re-review cycles without a "Functional" verdict → HALT and report the recurring findings to the user instead of looping again
@@ -347,9 +349,9 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
   ```
   Do you approve this commit ?
   Message: <type(scope): short description>
-  1. Yes → commit + push
-  2. Yes → commit only
-  3. No → cancel
+  1. Commit + push
+  2. Commit only (no push)
+  3. Cancel
   ```
 
 > **Rule:** every user-facing prompt template in this file is written in English as a reference — agents MUST present it translated into `{communication_language}` (resolved from BMAD config), never mix languages within the same session.

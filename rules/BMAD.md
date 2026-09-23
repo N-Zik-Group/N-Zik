@@ -12,6 +12,8 @@
 
 > **Important for this project:** `_bmad/` and `.agents/` live at the **parent** of `N-Zik/`. If your CWD is `N-Zik/`, go **up one level** to find `{project-root}`. The actual path is `../` relative to `N-Zik/`.
 
+> **Re-installation is NOT defined in this workspace** — no installer command is documented in these rules. If a re-install is needed (see RECOVERY.md), HALT and ask the user for the re-installation procedure; the upstream documentation is the reference (https://docs.bmad-method.org/).
+
 **Skills are NOT in `_bmad/`** — they are in IDE-specific directories at `{project-root}`:
 
 | IDE                                                    | Skills Directory                 |

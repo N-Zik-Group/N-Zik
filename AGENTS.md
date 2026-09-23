@@ -36,7 +36,7 @@
 ## 🚫 Never Do
 
 - Create files under `app.it.fast4x.rimusic.*` or `app.kreate.android.*` (tests covering legacy classes are the single exception: they go under `app.n_zik.android.legacyoffmain.*` — see rules/BUILD.md)
-- Edit `values-*/strings.xml` (only `values/strings.xml`)
+- Edit any `values-*/strings.xml` (the only source of truth is `ComposeN-Zik/src/androidMain/res/values/strings.xml`)
 - Write code before completing full BMAD workflow
 - Skip BMAD workflow steps
 - Skip the Step 8b code-review gate, or edit `fastlane/`/`Updater/`/`Done.txt` before the user chose a commit mode (Step 8d) — exception: doc-only edits (rules/WORKFLOW.md "Doc-Only Exception") follow their own commit-approval flow and are NOT subject to the Step 8d mode question
@@ -88,7 +88,9 @@
 N-Zik/                     ← git repo root (run gradlew/git from here)
 ├── ComposeN-Zik/src/
 │   ├── androidMain/kotlin/app/n_zik/android/  ★ NEW code
-│   └── test/                                   Tests
+│   ├── commonMain/                            KMP shared logic
+│   ├── main/                                  Android res (drawables) + AndroidManifest
+│   └── test/                                  Tests
 ├── extensions/              API Gradle modules (innertube, kugou, lrclib, musicbrainz, invidious, ktor-client-brotli, lastfm); `piped/` present but NOT in settings.gradle.kts
 ├── modules/                 Feature submodules
 ├── composeApp/              DEAD folder — NOT a gradle module (excluded from settings.gradle.kts); orphaned sources + stale build artifacts → ignore, never build/modify
@@ -101,7 +103,7 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 | Main code    | `app/n_zik/android/`                       |
 | Database     | `app/n_zik/android/core/database/`         |
 | Repositories | collocated with their domain (e.g. `recognition/ShazamRepository.kt`) — no central `core/data/` exists |
-| DI           | no DI framework in the app module (Hilt declared in the catalog but never applied) — plain constructor injection; introducing a DI framework requires user approval |
+| DI           | no DI framework in the app module (Hilt and Koin declared in the catalog but never applied) — plain constructor injection; introducing a DI framework requires user approval |
 | Navigation   | `app/n_zik/android/core/navigation/`       |
 | Player       | `app/n_zik/android/playback/services/`     |
 | UI           | `app/n_zik/android/components/ui/screens/` |
