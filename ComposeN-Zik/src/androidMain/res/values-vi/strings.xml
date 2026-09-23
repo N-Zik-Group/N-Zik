@@ -1867,4 +1867,17 @@
     <string name="rw_listening_days_without">%1$s days without listening.</string>
     <string name="rw_meta_plays">%1$s plays</string>
     <string name="rw_meta_songs">%1$s songs</string>
+    <string name="rw_settings_title">Rewind</string>
+    <string name="rw_settings_master">Enable Rewind</string>
+    <string name="rw_settings_master_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rw_settings_yearly">Yearly rewind</string>
+    <string name="rw_settings_yearly_description">Show the yearly recaps on the Rewind home.</string>
+    <string name="rw_settings_yearly_notification">Yearly rewind notification</string>
+    <string name="rw_settings_yearly_notification_description">Get notified when a yearly rewind is ready.</string>
+    <string name="rw_settings_monthly">Monthly rewind</string>
+    <string name="rw_settings_monthly_description">Show the month grid on the Rewind home.</string>
+    <string name="rw_settings_monthly_notification">Monthly rewind notification</string>
+    <string name="rw_settings_monthly_notification_description">Get notified on the 1st that the previous month\'s rewind is ready.</string>
+    <string name="rw_settings_global">All-time rewind</string>
+    <string name="rw_settings_global_description">Show the all-time recap on the Rewind home.</string>
 </resources>
