@@ -34,6 +34,14 @@ import java.util.UUID
  * stays until the receiver consumes it. Either way the flag must not leak into the next launch
  * and make a perfectly healthy app end itself at startup.
  *
+ * This object also carries the main process's liveness detection: from API 31 on the process
+ * probe ([RescueFiles.isMainProcessRunning]) is restricted to the calling process, so the
+ * `:rescue` process keeps its own signal — the alive marker ([ALIVE_MARKER_NAME]), a small
+ * file the main process refreshes every [ALIVE_MARKER_REFRESH_MS] from a background thread
+ * ([startAliveMarkerUpdater]). [isMainProcessLikelyAlive] is the single "is the main process
+ * alive?" answer used by the Rescue Center to decide whether a kill request is even worth
+ * recording.
+ *
  * Kept apart from [RescueFiles] (which is the Rescue Center's data-side file logic): this
  * object is the kill coordination shared by the main process (MainApplication) and the
  * `:rescue` process (RescueActivity / RescueScreen).
@@ -44,6 +52,33 @@ object RescueProcess {
 
     /** Name of the kill-request flag file, inside [Context.getFilesDir]. */
     internal const val KILL_REQUEST_FLAG_NAME = "rescue_kill_main.flag"
+
+    /** Name of the alive-marker file, inside [Context.getFilesDir]. */
+    internal const val ALIVE_MARKER_NAME = "rescue_main_alive.marker"
+
+    /**
+     * A marker older than this is considered stale (the main process is no longer refreshing it,
+     * i.e. it is dead). Three refresh cycles: the main process re-touches the file every
+     * [ALIVE_MARKER_REFRESH_MS] — but while the device is in deep Doze the background looper is
+     * not woken at all, so the scheduled ticks simply do not fire: the whole 15 s budget is
+     * consumed on the Doze entry itself, and the marker then reads stale for the entire Doze
+     * even though the process is alive (the accepted blind spot of [isMainProcessLikelyAlive]).
+     */
+    internal const val ALIVE_MARKER_STALE_MS = 15_000L
+
+    /**
+     * A kill-request flag older than this at startup is an orphan, not a pending kill: it is
+     * discarded WITHOUT killing.
+     *
+     * Older app versions recorded the flag on EVERY Rescue Center open, even while the main
+     * process was alive, so a healthy app could carry a leftover flag. Consuming that flag on
+     * the first launch after an upgrade would self-kill a perfectly healthy app; only a fresh
+     * flag (recorded recently by the `:rescue` process) keeps the safety-net behavior.
+     */
+    internal const val KILL_REQUEST_MAX_AGE_MS = 30 * 60 * 1000L
+
+    /** How often the main process refreshes the alive marker, in the background. */
+    internal const val ALIVE_MARKER_REFRESH_MS = 5_000L
 
     /**
      * Action of the internal kill broadcast. Always sent with [Intent.setPackage], and the
@@ -80,6 +115,22 @@ object RescueProcess {
      */
     internal val KILL_REQUEST_HANDLER: Handler by lazy {
         HandlerThread("nzik-rescue-kill").apply {
+            isDaemon = true
+            start()
+        }.let { Handler(it.looper) }
+    }
+
+    /**
+     * Handler bound to a dedicated background thread that refreshes the alive marker.
+     *
+     * Same rationale as [KILL_REQUEST_HANDLER]: the looper keeps running while the main thread
+     * is frozen (ANR), so the marker stays fresh exactly when "frozen but alive" is the signal
+     * the Rescue Center needs to send the kill (which the background kill receiver can then
+     * honor). A lifecycle-scoped tick would freeze with the main thread and falsely report the
+     * process dead. Daemon and process-lifetime: never closed, it lives with the process.
+     */
+    internal val ALIVE_MARKER_HANDLER: Handler by lazy {
+        HandlerThread("nzik-rescue-alive").apply {
             isDaemon = true
             start()
         }.let { Handler(it.looper) }
@@ -237,6 +288,36 @@ object RescueProcess {
     }
 
     /**
+     * Startup age-check of the pending kill-request flag, called by the main process BEFORE
+     * [consumeKillRequest]: a flag whose file mtime is older than [KILL_REQUEST_MAX_AGE_MS]
+     * is an orphan (e.g. left by an older app version that recorded the flag on every Rescue
+     * open) and is discarded without killing.
+     *
+     * @return true when the flag was old and has been discarded — the caller must NOT kill;
+     *   a younger (or unreadable) flag returns false and keeps the safety-net behavior.
+     */
+    internal fun discardStaleKillRequest(
+        filesDir: File,
+        now: Long = System.currentTimeMillis()
+    ): Boolean {
+        val flag = File(filesDir, KILL_REQUEST_FLAG_NAME)
+        val mtime = flag.lastModified()
+        if (mtime > 0L && now - mtime > KILL_REQUEST_MAX_AGE_MS) {
+            cancelKillRequestFlag(filesDir)
+            Timber.tag(TAG).i(
+                "Kill request flag is older than %d ms; discarding it without killing",
+                KILL_REQUEST_MAX_AGE_MS
+            )
+            return true
+        }
+        return false
+    }
+
+    /** Context overload of [discardStaleKillRequest] for [MainApplication.onCreate]. */
+    internal fun discardStaleKillRequest(context: Context): Boolean =
+        discardStaleKillRequest(context.filesDir)
+
+    /**
      * File-based core of [cancelKillRequest]: removes the flag (and any leftover parking file)
      * without reporting anything to the caller.
      */
@@ -270,7 +351,11 @@ object RescueProcess {
      * Before consuming the request and dying, the broadcast's nonce is verified against the
      * pending flag: on API < 33 the receiver is exported, so the nonce is the only thing that
      * stops a third-party app from triggering the kill. The flag is consumed BEFORE the kill,
-     * so the next launch does not end itself again (no kill loop).
+     * so the next launch does not end itself again (no kill loop). The alive marker is
+     * invalidated BEFORE the kill as well: it would otherwise stay fresh for up to
+     * [ALIVE_MARKER_STALE_MS] after this very death, and a Rescue Center reopened in that
+     * window would record a NEW kill request for an already-dead process (whose orphan flag
+     * would then self-kill the next healthy launch).
      */
     fun registerKillMainReceiver(context: Context) {
         val receiver = object : BroadcastReceiver() {
@@ -281,6 +366,11 @@ object RescueProcess {
                     return
                 }
                 if (consumeKillRequestIfNonceMatches(context.filesDir, nonce)) {
+                    // Invalidate the alive marker before dying: without it, the marker would
+                    // still claim the process is alive for up to [ALIVE_MARKER_STALE_MS] after
+                    // this kill (a re-opened Rescue Center would record a new request for a
+                    // dead process — the orphan flag would self-kill the next healthy launch).
+                    invalidateMainAliveMarker(context.filesDir)
                     Timber.tag(TAG).i("Kill request honored; ending the main process")
                     // killProcess is the public API for ending a process from inside (the
                     // framework's exitProcess is @hide and not part of the SDK).
@@ -302,6 +392,147 @@ object RescueProcess {
             )
         } else {
             context.registerReceiver(receiver, IntentFilter(ACTION_KILL_MAIN), null, KILL_REQUEST_HANDLER)
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Alive marker (main-process liveness, the only reliable signal from 31 on)
+    // ──────────────────────────────────────────────────────────────────────
+
+    /**
+     * Starts the alive-marker updater of this (main) process: a background loop on
+     * [ALIVE_MARKER_HANDLER] refreshes [ALIVE_MARKER_NAME] immediately, then every
+     * [ALIVE_MARKER_REFRESH_MS].
+     *
+     * Must be called by the main process only ([MainApplication.onCreate], after the main
+     * process guard): the marker is the main process's own liveness signal, and the
+     * `:rescue` process must never refresh it (a `:rescue` touch would claim the main process
+     * is alive while it is not). The loop is never stopped — daemon thread, it lives with
+     * the process, same semantics as [KILL_REQUEST_HANDLER].
+     */
+    fun startAliveMarkerUpdater(context: Context) {
+        val filesDir = context.filesDir
+        val refresh = object : Runnable {
+            override fun run() {
+                touchMainAliveMarker(filesDir)
+                ALIVE_MARKER_HANDLER.postDelayed(this, ALIVE_MARKER_REFRESH_MS)
+            }
+        }
+        ALIVE_MARKER_HANDLER.post(refresh)
+    }
+
+    /**
+     * Deletes the alive marker so it reads stale from now on.
+     *
+     * Called by the kill receiver right before the process dies ([registerKillMainReceiver]):
+     * without it the marker would stay fresh for up to [ALIVE_MARKER_STALE_MS] after the kill
+     * and a re-opened Rescue Center would record a new request for an already-dead process.
+     */
+    internal fun invalidateMainAliveMarker(filesDir: File) {
+        val marker = File(filesDir, ALIVE_MARKER_NAME)
+        if (marker.exists() && !marker.delete()) {
+            Timber.tag(TAG).w("Could not delete the alive marker (%s)", marker.name)
+        }
+    }
+
+    /**
+     * Refreshes the alive marker with a short timestamp payload (~30 bytes).
+     *
+     * Liveness is derived from the file's mtime, not its content; the payload is diagnostic
+     * only. Only the main process calls this.
+     */
+    fun touchMainAliveMarker(context: Context) = touchMainAliveMarker(context.filesDir)
+
+    /**
+     * File-based core of [touchMainAliveMarker], with the payload assembled by the caller —
+     * kept out of the JVM-invisible [Process] API so the marker logic stays unit-testable
+     * (same seam as [writeKillRequestFlag]).
+     */
+    internal fun touchMainAliveMarker(filesDir: File) {
+        touchMainAliveMarker(
+            filesDir,
+            "alive pid=${Process.myPid()} at=${System.currentTimeMillis()}"
+        )
+    }
+
+    /**
+     * File-based core of [touchMainAliveMarker].
+     *
+     * Written atomically (temp file + rename, the same discipline as [writeKillRequestFlag],
+     * including the Windows rename fallback). The guarantee is nevertheless mtime-only and
+     * time-bounded: liveness is read from the file's mtime alone, so the only failure window
+     * is a missed refresh (the marker then reads stale after [ALIVE_MARKER_STALE_MS]) — the
+     * atomic write only rules out a truncated marker, not a delayed one (e.g. the direct-write
+     * last resort, or a crash between the rename and the next tick).
+     *
+     * @param payload short (~30 byte) diagnostic payload, e.g. `alive pid=42 at=123456`;
+     *   liveness itself only ever comes from the file's mtime.
+     */
+    internal fun touchMainAliveMarker(filesDir: File, payload: String) {
+        val marker = File(filesDir, ALIVE_MARKER_NAME)
+        marker.parentFile?.mkdirs()
+        runCatching {
+            val tmp = File(marker.path + ".tmp")
+            tmp.writeText(payload + "\n")
+            if (tmp.renameTo(marker)) return
+            // On Windows File.renameTo cannot replace an existing destination: remove the stale
+            // marker and retry; as a last resort fall back to a direct (non-atomic) write.
+            if (marker.delete() && tmp.renameTo(marker)) return
+            tmp.delete()
+            Timber.tag(TAG).w("Atomic marker write failed; falling back to a direct (non-atomic) write")
+            marker.writeText(payload + "\n")
+        }.onFailure {
+            Timber.tag(TAG).w(it, "Could not refresh the alive marker (%s)", marker.name)
+        }
+    }
+
+    /**
+     * True when the alive marker was refreshed within the last [ALIVE_MARKER_STALE_MS]
+     * milliseconds — i.e. the main process is (recently) alive.
+     */
+    fun isMainAliveMarkerFresh(context: Context): Boolean =
+        isMainAliveMarkerFresh(context.filesDir, System.currentTimeMillis())
+
+    /**
+     * File-based core of [isMainAliveMarkerFresh].
+     *
+     * @param now reference timestamp (defaults to the current time; injected so unit tests
+     *   can pin the clock instead of sleeping).
+     */
+    internal fun isMainAliveMarkerFresh(
+        filesDir: File,
+        now: Long = System.currentTimeMillis()
+    ): Boolean {
+        val marker = File(filesDir, ALIVE_MARKER_NAME)
+        val mtime = marker.lastModified()
+        // A future mtime (the device clock was rewound or NTP-corrected after the last
+        // refresh) must read stale — never fresh — or a dead process would read alive
+        // indefinitely. The age is therefore clamped to the window 0..STALE_MS.
+        return mtime > 0L && now - mtime in 0L..ALIVE_MARKER_STALE_MS
+    }
+
+    /**
+     * Best-effort answer to "is the main app process alive right now?", from either process.
+     *
+     * Below API 31 the [RescueFiles.isMainProcessRunning] probe is trustworthy, so it decides.
+     * From API 31 on `getRunningAppProcesses()` is restricted to the calling process, so that
+     * probe reports "not running" even while the main process is alive — there the alive
+     * marker (refreshed by the main process itself, [ALIVE_MARKER_REFRESH_MS] cadence) is the
+     * only reliable source.
+     *
+     * A stale marker reports a dead process. That is the SAFE direction of the misread:
+     * its consequences — no kill request recorded when the Rescue Center opens, the status
+     * row reading "stopped", and the "Kill the app" button staying disabled — all leave
+     * the main process alive. Known blind spot (accepted, see the rescue spec): a main
+     * process throttled in the background may stop refreshing the marker and is then
+     * reported dead; write actions additionally stay protected by the DB-busy guard
+     * ([RescueFiles.checkpointWal]) in that case.
+     */
+    fun isMainProcessLikelyAlive(context: Context): Boolean {
+        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            RescueFiles.isMainProcessRunning(context)
+        } else {
+            isMainAliveMarkerFresh(context)
         }
     }
 }

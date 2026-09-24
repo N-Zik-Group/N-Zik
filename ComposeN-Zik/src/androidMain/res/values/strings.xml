@@ -1615,7 +1615,7 @@
 <string name="rescue_category_maintenance">Maintenance</string>
 <string name="rescue_category_danger">Danger Zone</string>
 <string name="rescue_status_main_process_stopping">The app is shutting down…</string>
-<string name="rescue_status_main_process_stopped">The app is stopped</string>
+<string name="rescue_status_main_process_stopped">The app is stopped — no kill action needed</string>
 <string name="rescue_kill_app">Kill the app</string>
 <string name="rescue_kill_app_description">Force the app process to end if the automatic stop did not work</string>
 <string name="rescue_confirm_kill_app">Force the app process to end now? The kill is immediate and cannot be undone, and it may interrupt operations in progress.</string>

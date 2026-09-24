@@ -198,4 +198,81 @@ class RescueProcessTest {
         assertFalse(flagFile(tmp).exists())
         assertFalse(File(flagFile(tmp).path + ".consumed").exists())
     }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Alive marker (main-process liveness, the only reliable signal from 31 on)
+    // ──────────────────────────────────────────────────────────────────────
+
+    private fun markerFile(dir: File) = File(dir, RescueProcess.ALIVE_MARKER_NAME)
+
+    @Test
+    fun `touching the alive marker creates a fresh marker that reads fresh`(@TempDir tmp: File) {
+        RescueProcess.touchMainAliveMarker(tmp, "alive pid=42 at=123456")
+
+        val marker = markerFile(tmp)
+        assertTrue(marker.exists(), "the marker must exist after a touch")
+        assertEquals("alive pid=42 at=123456\n", marker.readText())
+        assertTrue(RescueProcess.isMainAliveMarkerFresh(tmp), "a just-touched marker must read fresh")
+    }
+
+    @Test
+    fun `a marker older than the threshold reads stale`(@TempDir tmp: File) {
+        val now = System.currentTimeMillis()
+        RescueProcess.touchMainAliveMarker(tmp, "alive pid=42 at=1")
+        // The main process died a while ago: its marker stopped being refreshed long before.
+        markerFile(tmp).setLastModified(now - 20_000)
+
+        assertFalse(
+            RescueProcess.isMainAliveMarkerFresh(tmp, now),
+            "a stale marker must read as a dead main process"
+        )
+    }
+
+    @Test
+    fun `a marker refreshed exactly at the threshold still reads fresh`(@TempDir tmp: File) {
+        val now = System.currentTimeMillis()
+        RescueProcess.touchMainAliveMarker(tmp, "alive pid=42 at=1")
+        // 15 s is the staleness threshold (3 x the 5 s refresh cadence): the boundary is
+        // inclusive, so the ticks a background-throttled process may miss still read alive.
+        markerFile(tmp).setLastModified(now - 15_000)
+
+        assertTrue(
+            RescueProcess.isMainAliveMarkerFresh(tmp, now),
+            "the threshold is inclusive: a marker at exactly 15 s must still read fresh"
+        )
+    }
+
+    @Test
+    fun `a marker with a future mtime reads stale`(@TempDir tmp: File) {
+        val now = System.currentTimeMillis()
+        RescueProcess.touchMainAliveMarker(tmp, "alive pid=42 at=1")
+        // The device clock was rewound (or NTP-corrected) after the last refresh: the
+        // marker's mtime now sits in the future relative to "now".
+        markerFile(tmp).setLastModified(now + 60_000)
+
+        assertFalse(
+            RescueProcess.isMainAliveMarkerFresh(tmp, now),
+            "a future mtime must read stale: a dead process must not read alive indefinitely"
+        )
+    }
+
+    @Test
+    fun `a missing marker reads stale`(@TempDir tmp: File) {
+        assertFalse(
+            RescueProcess.isMainAliveMarkerFresh(tmp),
+            "without a marker there is no main process to report alive"
+        )
+    }
+
+    @Test
+    fun `re-touching a stale marker makes it fresh again`(@TempDir tmp: File) {
+        val now = System.currentTimeMillis()
+        RescueProcess.touchMainAliveMarker(tmp, "alive pid=42 at=1")
+        markerFile(tmp).setLastModified(now - 20_000)
+        assertFalse(RescueProcess.isMainAliveMarkerFresh(tmp, now))
+
+        // The main process is still alive: its next background tick refreshes the marker.
+        RescueProcess.touchMainAliveMarker(tmp, "alive pid=42 at=2")
+        assertTrue(RescueProcess.isMainAliveMarkerFresh(tmp, now + 1_000))
+    }
 }

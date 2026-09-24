@@ -7,6 +7,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Looper
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -14,13 +16,18 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.R
 import app.n_zik.android.core.rescue.RescueProcess
+import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.Description
 import org.junit.runner.RunWith
+import org.junit.rules.TestRule
+import org.junit.runners.model.Statement
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
@@ -29,19 +36,28 @@ import org.robolectric.annotation.Config
  * Compose UI tests for the main-process status row and the "Kill the app" action of
  * [RescueScreen].
  *
- * The status row polls the main process once per second: below 31 (where the
- * [app.n_zik.android.core.rescue.RescueFiles.isMainProcessRunning] probe is trustworthy) an
+ * The status row polls the main process once per second. Liveness comes from
+ * [RescueProcess.isMainProcessLikelyAlive]: below 31 (where
+ * [app.n_zik.android.core.rescue.RescueFiles.isMainProcessRunning] is trustworthy) an
  * observed-dead process discards the pending kill flag; from 31 on (where
- * getRunningAppProcesses() is restricted to the calling process) the status follows the flag
- * itself — it turns to "stopped" only once the kill receiver has consumed it. The danger-zone
- * button re-sends the kill request (broadcast + safety-net flag) when the automatic one was
- * lost.
+ * getRunningAppProcesses() is restricted to the calling process) the alive marker — refreshed
+ * by the main process itself every ~5 s — decides, and the flag consumed by the kill receiver
+ * (the kill landed) turns the status to "stopped" instantly. The danger-zone button re-sends
+ * the kill request when the automatic one was lost — but only while the process is (still)
+ * alive: once stopped it is disabled, because a request sent to a dead process would only
+ * record a stale flag that the next healthy launch consumes as a self-kill.
  *
  * JUnit 4 + [RobolectricTestRunner], executed through the project's junit-vintage-engine on the
  * JUnit 5 platform. The rule launches the real [RescueActivity]: it is declared in the
  * manifest, which Robolectric's ActivityScenario requires (an undeclared ComponentActivity
  * cannot be resolved — see robolectric PR #4736), so the production entry point composes the
- * screen and its onCreate requests the kill; each test asserts from that state. The plain
+ * screen and its onCreate records the kill request; each test asserts from that state.
+ *
+ * [statePreseeder] plants the alive marker BEFORE the activity launches (Robolectric defers
+ * the activity launch until the main looper drains, so the pre-seed always precedes
+ * [RescueActivity.onCreate]): every scenario starts from "the main process is alive when
+ * the Rescue Center opens" (the realistic case, so onCreate records the request), and each
+ * test then steers the marker stale or absent to reach the state it verifies. The plain
  * [Application] is used so the app's heavy init (DI, Room, player) is skipped. Under
  * Robolectric the main process is never listed by runningAppProcesses, i.e. the probe reports
  * "not running".
@@ -49,6 +65,41 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
 class RescueScreenProcessStatusTest {
+
+    /**
+     * Plants the initial process state before the compose rule launches [RescueActivity].
+     *
+     * Robolectric defers the activity launch until the main looper drains, so the pre-seed
+     * always precedes [RescueActivity.onCreate]: the marker is on disk when onCreate's
+     * liveness check reads it, and every scenario starts from "the main process is alive
+     * when the Rescue Center opens" (the realistic case, so onCreate records the kill
+     * request).
+     *
+     * The below-31 test's pending flag is planted HERE, not in the test body: the first
+     * poll already runs before the body (during the rule's before phase, together with the
+     * composition), so the flag must exist before that first poll for the discard
+     * assertion to mean anything. It is keyed on the test's [Config] SDK annotation, not
+     * its method name — the annotation travels with the test, so a rename cannot silently
+     * drop the pre-seed.
+     */
+    @get:Rule
+    val statePreseeder = object : TestRule {
+        override fun apply(base: Statement, description: Description): Statement =
+            object : Statement() {
+                override fun evaluate() {
+                    val filesDir = ApplicationProvider.getApplicationContext<Context>().filesDir
+                    RescueProcess.touchMainAliveMarker(filesDir)
+                    // Method-level @Config wins, falling back to the class-level default
+                    // (SDK 33): only the below-31 scenario needs the pending flag up front.
+                    val sdk = description.getAnnotation(Config::class.java)
+                        ?.sdk?.firstOrNull() ?: 33
+                    if (sdk < 31) {
+                        RescueProcess.writeKillRequestFlag(filesDir, "nonce=below-31-pending")
+                    }
+                    base.evaluate()
+                }
+            }
+    }
 
     @get:Rule
     val composeRule = createAndroidComposeRule<RescueActivity>()
@@ -58,6 +109,8 @@ class RescueScreenProcessStatusTest {
     // initializer (which runs before the rule) hits a resource table without the app package.
     private lateinit var context: Context
     private lateinit var killTitle: String
+
+    private fun aliveMarker(): File = File(context.filesDir, RescueProcess.ALIVE_MARKER_NAME)
 
     @Before
     fun setUp() {
@@ -72,11 +125,9 @@ class RescueScreenProcessStatusTest {
     @Test
     @Config(sdk = [30])
     fun `below 31 an observed dead main process discards the pending flag`() {
-        // Opening the Rescue Center wrote the pending flag (its presence is asserted by the
-        // wiring tests and by the SDK 33 test below, whose poll never discards it). The first
-        // poll may already have run while the rule launched the activity, so the flag cannot
-        // be asserted up front here — the discard below is what this test verifies: if the
-        // poll never ran, or ran without discarding, the flag would still be present.
+        // The pre-seed planted a pending flag (a request recorded while the probe still saw
+        // the process alive): the trustworthy probe says dead, so the poll must discard it,
+        // show "stopped", and leave the kill button disabled.
         composeRule.waitForIdle()
         composeRule.mainClock.advanceTimeBy(1_500)
         composeRule.waitForIdle()
@@ -86,11 +137,16 @@ class RescueScreenProcessStatusTest {
                 "discarded so the next healthy launch does not self-kill",
             RescueProcess.hasKillRequest(context)
         )
+        composeRule
+            .onNodeWithText(context.getString(R.string.rescue_status_main_process_stopped))
+            .assertIsDisplayed()
+        composeRule.onNodeWithText(killTitle).assertIsNotEnabled()
     }
 
     @Test
     fun `from 31 on the status follows the pending flag`() {
-        // Precondition: opening the Rescue Center already requested the kill.
+        // Precondition: opening the Rescue Center already requested the kill (the pre-seeded
+        // marker made onCreate record it).
         assertTrue(
             "opening the Rescue Center must leave a pending kill request",
             RescueProcess.hasKillRequest(context)
@@ -107,6 +163,7 @@ class RescueScreenProcessStatusTest {
         composeRule
             .onNodeWithText(context.getString(R.string.rescue_status_main_process_stopping))
             .assertIsDisplayed()
+        composeRule.onNodeWithText(killTitle).assertIsEnabled()
 
         // Simulate the kill landing: the main process receiver consumed the flag.
         RescueProcess.consumeKillRequest(context)
@@ -118,15 +175,87 @@ class RescueScreenProcessStatusTest {
             .assertIsDisplayed()
     }
 
+    @Test
+    fun `from 31 on an app still alive shows stopping and an active kill button`() {
+        // The pre-seeded fresh marker is the scenario itself: the main process is alive when
+        // the Rescue Center opens, so the request is pending and the process still running.
+        assertTrue(
+            "opening with the process alive must leave a pending kill request",
+            RescueProcess.hasKillRequest(context)
+        )
+
+        composeRule.waitForIdle()
+        composeRule.mainClock.advanceTimeBy(1_500)
+        composeRule.waitForIdle()
+
+        composeRule
+            .onNodeWithText(context.getString(R.string.rescue_status_main_process_stopping))
+            .assertIsDisplayed()
+        composeRule.onNodeWithText(killTitle).assertIsEnabled()
+    }
+
+    @Test
+    fun `from 31 on an app already closed shows stopped and disables the kill button`() {
+        // The pre-seed made the app "alive" at open time; steer to the reported bug: the main
+        // process is already dead, so no marker is left behind at all. The poll must observe
+        // the dead state, discard the pending flag, and grey out the kill button.
+        aliveMarker().delete()
+
+        composeRule.waitForIdle()
+        composeRule.mainClock.advanceTimeBy(1_500)
+        composeRule.waitForIdle()
+
+        composeRule
+            .onNodeWithText(context.getString(R.string.rescue_status_main_process_stopped))
+            .assertIsDisplayed()
+        composeRule.onNodeWithText(killTitle).assertIsNotEnabled()
+        assertFalse(
+            "a dead main process has no pending kill: the flag must be discarded so the " +
+                "next healthy launch does not self-kill",
+            RescueProcess.hasKillRequest(context)
+        )
+    }
+
+    @Test
+    fun `from 31 on a stale marker with a pending flag shows stopped and cancels the flag`() {
+        // The pre-seed made the app "alive" at open time (the request was recorded); steer to
+        // the died-in-flight case: the process died before its receiver could consume the
+        // flag, so the marker stops being refreshed — it is still on disk, just stale (the
+        // OS never deletes it).
+        aliveMarker().setLastModified(System.currentTimeMillis() - 30_000)
+
+        composeRule.waitForIdle()
+        composeRule.mainClock.advanceTimeBy(1_500)
+        composeRule.waitForIdle()
+
+        composeRule
+            .onNodeWithText(context.getString(R.string.rescue_status_main_process_stopped))
+            .assertIsDisplayed()
+        composeRule.onNodeWithText(killTitle).assertIsNotEnabled()
+        assertFalse(
+            "the orphan flag must be cancelled: a dead process has no pending kill",
+            RescueProcess.hasKillRequest(context)
+        )
+    }
+
     // ──────────────────────────────────────────────────────────────────────
     // Danger zone: "Kill the app"
     // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `the kill the app action re-sends the kill request`() {
-        // Clean state: discard the request fired by the activity's onCreate (it was sent
-        // before this receiver existed, so it is not counted below).
-        RescueProcess.cancelKillRequest(context)
+        // Let the poll establish the "alive" state first (the pre-seeded marker keeps the
+        // process alive): the kill button is active only while the process is running.
+        composeRule.waitForIdle()
+        composeRule.mainClock.advanceTimeBy(1_500)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText(killTitle).assertIsEnabled()
+
+        // The request recorded by the activity's onCreate is still pending: remember its
+        // nonce to prove the click below produces a NEW request (the receiver is registered
+        // now, so only the re-send is counted below).
+        val originalNonce = RescueProcess.flagNonce(context.filesDir)
+        assertNotNull("opening with the process alive must leave a pending request", originalNonce)
 
         val received = mutableListOf<Intent>()
         val receiver = object : BroadcastReceiver() {
@@ -140,8 +269,6 @@ class RescueScreenProcessStatusTest {
             Context.RECEIVER_NOT_EXPORTED
         )
 
-        composeRule.waitForIdle()
-
         // The card opens the confirmation dialog (it sits in the danger zone, below the fold).
         composeRule.onNodeWithText(killTitle).performScrollTo()
         composeRule.onNodeWithText(killTitle).performClick()
@@ -150,8 +277,8 @@ class RescueScreenProcessStatusTest {
         // platform string capitalization is not pinned by the app.
         composeRule.onNodeWithText("ok", substring = true, ignoreCase = true).performClick()
 
-        // The request is sent off the main thread: wait until the flag is on disk.
-        composeRule.waitUntil { RescueProcess.hasKillRequest(context) }
+        // The request is sent off the main thread: wait until the flag carries the new nonce.
+        composeRule.waitUntil { RescueProcess.flagNonce(context.filesDir) != originalNonce }
         Shadows.shadowOf(Looper.getMainLooper()).idle()
 
         assertTrue(
@@ -168,9 +295,38 @@ class RescueScreenProcessStatusTest {
             "the broadcast must carry a non-blank per-request nonce",
             !nonce.isNullOrBlank()
         )
+        assertEquals(
+            "the re-request must be a NEW nonce replacing the stale pending one",
+            nonce,
+            RescueProcess.flagNonce(context.filesDir)
+        )
 
         context.unregisterReceiver(receiver)
         // Clean up: the request is moot in the test.
         RescueProcess.cancelKillRequest(context)
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Process guard (guardWrite)
+    // ──────────────────────────────────────────────────────────────────────
+
+    @Test
+    fun `the process guard refuses writes while alive and releases them when dead`() {
+        val clearCacheTitle = context.getString(R.string.rescue_clear_cache)
+        val confirmText = context.getString(R.string.rescue_confirm_clear_cache)
+
+        // The pre-seeded fresh marker keeps the main process "alive": the guarded write
+        // must be refused — the confirmation dialog never appears.
+        composeRule.onNodeWithText(clearCacheTitle).performScrollTo()
+        composeRule.onNodeWithText(clearCacheTitle).performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText(confirmText).assertDoesNotExist()
+
+        // Steer to death: the marker is gone, so the guard releases and the same click
+        // surfaces the confirmation dialog.
+        aliveMarker().delete()
+        composeRule.onNodeWithText(clearCacheTitle).performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText(confirmText).assertIsDisplayed()
     }
 }

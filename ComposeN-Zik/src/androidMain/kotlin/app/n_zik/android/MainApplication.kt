@@ -98,6 +98,13 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // heavy initialization and end this process. The flag was consumed before the kill,
         // so the next launch cannot self-kill again (no kill loop). If the flag cannot even be
         // read at boot, do not kill: a stale flag is preferable to a broken launch loop.
+        // A leftover flag older than the max age (left by an older app version, which
+        // recorded the kill request on every Rescue Center open even while the process was
+        // alive) is discarded WITHOUT killing — only a fresh request justifies it.
+        if (runCatching { RescueProcess.discardStaleKillRequest(this) }.getOrDefault(false)) {
+            return
+        }
+
         if (runCatching { RescueProcess.consumeKillRequest(this) }.getOrDefault(false)) {
             // killProcess is the public API for ending a process from inside (the framework's
             // exitProcess is @hide and not part of the SDK).
@@ -109,6 +116,12 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // BEFORE Dependencies.init, so the receiver exists even if initialization crashes below
         // (same rationale as the shortcuts registration just below).
         RescueProcess.registerKillMainReceiver(this)
+
+        // Same Rescue Center: start the alive-marker updater — the only reliable liveness
+        // signal the `:rescue` process can see from API 31 on (the process probe is then
+        // restricted to the calling process). Background thread: the marker stays fresh even
+        // while the main thread is frozen, and it is never stopped (it lives with the process).
+        RescueProcess.startAliveMarkerUpdater(this)
 
         // Register app shortcuts early, BEFORE Dependencies.init, so that the Rescue
         // shortcut exists even if initialization crashes below.

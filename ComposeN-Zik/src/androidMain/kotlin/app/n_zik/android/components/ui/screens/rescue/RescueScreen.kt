@@ -132,44 +132,56 @@ fun RescueScreen() {
     // lands within a few seconds, so the status moves from "stopping" to "stopped" without
     // the user doing anything.
     //
-    // When the main process is observed dead BELOW 31 (where the probe is trustworthy), the
-    // kill-request flag is discarded: a dead process has no pending kill, and a stale flag
-    // would make the next healthy launch end itself at startup. From 31 on,
-    // getRunningAppProcesses() is restricted to the calling process, so the probe reports
-    // "not running" even while the main process is alive: there the flag is NOT cancelled and
-    // the status falls back to the flag itself — it disappears only once the kill receiver
-    // consumed it, i.e. once the kill landed.
+    // Liveness comes from RescueProcess.isMainProcessLikelyAlive: below 31 the
+    // getRunningAppProcesses() probe is trustworthy; from 31 on it is restricted to the
+    // calling process, so the alive marker (refreshed by the main process itself every ~5 s)
+    // decides. When the process is observed dead — trustworthy probe below 31, stale marker
+    // from 31 on — the pending kill request is discarded: a dead process has no pending kill,
+    // and a stale flag would make the next healthy launch end itself at startup. From 31 on
+    // there is one more "stopped" signal: the flag consumed by the kill receiver (the kill
+    // landed) — the status turns to "stopped" at that instant, even while the marker is
+    // still fresh (the marker stays fresh for up to 15 s after the process dies).
     // A new kill request (danger zone) restarts the polling via killRequestGeneration.
     var mainProcessRunning by remember { mutableStateOf<Boolean?>(null) }
     var killRequestGeneration by remember { mutableIntStateOf(0) }
     LaunchedEffect(killRequestGeneration) {
         while (true) {
-            val running = runCatching {
-                withContext(NzikDispatchers.DATA) { RescueFiles.isMainProcessRunning(context) }
+            val likelyAlive = runCatching {
+                withContext(NzikDispatchers.DATA) { RescueProcess.isMainProcessLikelyAlive(context) }
             }.getOrNull()
             when {
-                // Probe failed: keep the last known state and retry — never cancel on unknown.
-                running == null -> Unit
-                running -> mainProcessRunning = true
-                else -> {
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-                        // Trustworthy probe: the main process is dead — discard the pending flag.
-                        runCatching {
-                            withContext(NzikDispatchers.DATA) { RescueProcess.cancelKillRequest(context) }
+                // Detection failed: keep the last known state and retry — never cancel on unknown.
+                likelyAlive == null -> Unit
+                likelyAlive -> {
+                    // From 31 on the marker alone is not enough: the kill may have landed
+                    // already — the flag is gone once the kill receiver consumed it, while the
+                    // marker is still fresh for up to 15 s. Unknown flag state → still pending.
+                    val killPending =
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            runCatching {
+                                withContext(NzikDispatchers.DATA) { RescueProcess.hasKillRequest(context) }
+                            }.getOrDefault(true)
+                        } else {
+                            true
                         }
+                    if (killPending) {
+                        mainProcessRunning = true
+                    } else {
+                        // The kill request was consumed: the kill landed — nothing left to stop.
                         mainProcessRunning = false
                         break
                     }
-                    // 31+: "not running" is not proof of death — the flag is: it is gone only
-                    // after the kill receiver consumed it. Unknown flag state → still pending.
-                    val killPending = runCatching {
-                        withContext(NzikDispatchers.DATA) { RescueProcess.hasKillRequest(context) }
-                    }.getOrDefault(true)
-                    if (!killPending) {
-                        mainProcessRunning = false
-                        break
+                }
+                else -> {
+                    // The main process is observed dead: discard the pending kill request so it
+                    // never leaks into the next launch and makes a healthy app end itself at
+                    // startup (below 31 the trustworthy probe says dead; from 31 on the stale
+                    // marker does — covering a process that died without consuming the flag).
+                    runCatching {
+                        withContext(NzikDispatchers.DATA) { RescueProcess.cancelKillRequest(context) }
                     }
-                    mainProcessRunning = true
+                    mainProcessRunning = false
+                    break
                 }
             }
             delay(1_000L)
@@ -210,7 +222,10 @@ fun RescueScreen() {
     fun guardWrite(action: () -> Unit) {
         // A write now would commit this process's stale in-memory preferences over the restored files.
         if (exitPending) return
-        if (RescueFiles.isMainProcessRunning(context)) {
+        // Likely-alive, not raw probe: from 31 on the probe is restricted to the calling
+        // process and would always say "not running", letting a live main process through. The
+        // DB-busy guard (checkpointWal) stays the last resort when the marker misleads.
+        if (RescueProcess.isMainProcessLikelyAlive(context)) {
             Toasty.warning(context, context.getString(R.string.rescue_main_process_running), Toast.LENGTH_LONG, true).show()
         } else {
             action()
@@ -553,12 +568,17 @@ fun RescueScreen() {
             RescueCategoryHeader(stringResource(R.string.rescue_category_danger))
 
             // Kill the app: re-sends the kill request when the automatic one (sent when this
-            // screen opened) failed — broadcast lost, main thread fully frozen. Not gated by
-            // guardWrite: its whole purpose is to release the guard, and it writes nothing.
+            // screen opened) failed — broadcast lost, main thread fully frozen. Gated on the
+            // process being (still) alive: once it is stopped there is nothing to kill, and a
+            // request sent to a dead process would only record a stale flag that the next
+            // healthy launch consumes as a self-kill. Not gated by guardWrite: its whole
+            // purpose is to release the guard, and it writes nothing (while the process is
+            // alive — which is exactly when this button is enabled).
             RescueActionCard(
                 iconRes = R.drawable.logout,
                 title = stringResource(R.string.rescue_kill_app),
                 description = stringResource(R.string.rescue_kill_app_description),
+                enabled = mainProcessRunning == true,
                 onClick = {
                     confirmAction = ConfirmAction(R.string.rescue_confirm_kill_app) {
                         scope.launch {

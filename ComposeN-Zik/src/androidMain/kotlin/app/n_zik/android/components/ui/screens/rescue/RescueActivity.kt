@@ -55,7 +55,19 @@ class RescueActivity : ComponentActivity() {
         // The Rescue Center exists precisely so its write actions can run without the main
         // process: ask it to end itself the moment the screen opens (broadcast + safety-net
         // flag), whatever the entry point (launcher shortcut or in-app menu).
-        RescueProcess.requestKillMain(this)
+        //
+        // But only when the main process is (likely) alive. When it is already dead (alive
+        // marker stale or absent, or the trustworthy probe says so below 31) no kill request
+        // is recorded at all: a stale flag would make the next healthy launch end itself at
+        // startup — the unexpected self-kill this guard removes. The status line shows
+        // "stopped" immediately in that case and the kill button stays disabled.
+        if (RescueProcess.isMainProcessLikelyAlive(this)) {
+            RescueProcess.requestKillMain(this)
+        } else {
+            Timber.tag(TAG).i(
+                "Main process not alive (marker stale/absent): no kill request recorded on open"
+            )
+        }
 
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(scrim = AndroidColor.TRANSPARENT),
