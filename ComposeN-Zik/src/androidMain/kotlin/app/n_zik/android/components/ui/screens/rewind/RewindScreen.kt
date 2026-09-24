@@ -7,13 +7,27 @@ import android.view.View
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,30 +38,44 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.media3.common.Player
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -56,13 +84,19 @@ import androidx.navigation.NavController
 import com.mikepenz.hypnoticcanvas.shaderBackground
 import com.mikepenz.hypnoticcanvas.shaders.GradientFlow
 import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
+import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.ui.screens.rewind.slides.LocalRewindActive
 import app.n_zik.android.components.ui.screens.rewind.slides.rewindColors
 import app.n_zik.android.core.rewind.GenerateMode
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.core.rewind.generateRewindPlaylist
+import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.utils.rememberDataStoreBooleanPreference
+import app.n_zik.android.utils.rememberDataStoreIntPreference
 import app.n_zik.android.components.ui.screens.rewind.slides.LocalRewindShaderWarm
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindAlbumsCard
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindColors
@@ -85,7 +119,9 @@ import app.n_zik.android.components.ui.screens.rewind.slides.RewindTotalTimeCard
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindYearsCard
 import app.n_zik.android.components.ui.screens.rewind.slides.formatRewindNumber
 import java.io.File
+import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -248,6 +284,135 @@ fun RewindScreen(
         openingDone = true
     }
 
+    // ── Background music (spec 3) ──────────────────────────────────────────────────
+    // A hidden A/B ExoPlayer pair plays one library track per card, tied to the card's
+    // content where the deck shows a song, artist or album (the Top song card plays the
+    // #1 song, the album cards fetch their first track, ...): the active player plays
+    // the current card's track while the standby preloads the next one, so the per-card
+    // swap never goes silent. The players are anonymous — no notification, no playback
+    // registration — so the deck's stats stay untouched. It starts after the opening,
+    // yields to the main player, and is released when the deck leaves the composition.
+    val playerBinder = LocalPlayerServiceBinder.current
+    val bgmEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_BGM_ENABLED, true)
+    val bgmVolume by rememberDataStoreIntPreference(
+        DataStoreUtils.KEY_REWIND_BGM_VOLUME,
+        DataStoreUtils.DEFAULT_REWIND_BGM_VOLUME
+    )
+    val bgmController = remember(playerBinder) {
+        if (playerBinder != null) {
+            RewindBackgroundMusicController(
+                context = appContext(),
+                dataSourceFactory = backgroundMusicDataSourceFactory(playerBinder),
+                isDownloaded = MyDownloadHelper::isSongDownloaded
+            )
+        } else {
+            // The service is bound at app start; without it the deck stays silent
+            null
+        }
+    }
+
+    // No audio, no leak after exit: the players live exactly as long as the deck is
+    // composed
+    DisposableEffect(bgmController) {
+        onDispose { bgmController?.release() }
+    }
+
+    // Start as soon as the deck data is in — under the opening lockup, so the intro
+    // already has its music when it is revealed (spec v4: "l'intro a pas de musique").
+    // The pool comes from the top songs (the same source as the Top songs slide — no
+    // extra fetch); the resolver ties each card to its content (song/artist pages play
+    // their track, album pages fetch their first track, deep cuts play their first cut)
+    // and stats-only cards roll from the pool. The first swap fades in from silence.
+    // A mid-deck flip of the toggle re-runs the effect; start() is idempotent for the
+    // same period.
+    LaunchedEffect(bgmController, bgmEnabled, uiState.data, period) {
+        if (!bgmEnabled) return@LaunchedEffect
+        val data = uiState.data ?: return@LaunchedEffect
+        val topSongs = data.topSongs.map { it.song }
+        if (topSongs.isEmpty()) return@LaunchedEffect
+        bgmController?.start(
+            topSongs = topSongs,
+            contentTrack = { page ->
+                when (val track = contentTrackForPage(data, page)) {
+                    is BgmContentTrack.SongTrack -> track.songId
+                    is BgmContentTrack.AlbumTrack -> albumTrackForBgm(track.albumId)
+                    BgmContentTrack.None -> null
+                }
+            },
+            period = period
+        )
+    }
+
+    // The deck's mute button and the settings entry share the same key — keep the
+    // controller in sync with it, live
+    LaunchedEffect(bgmController, bgmEnabled) {
+        bgmController?.setMuted(!bgmEnabled)
+    }
+
+    // The slider persists on every change and is applied immediately to both players
+    LaunchedEffect(bgmController, bgmVolume) {
+        bgmController?.setVolume(bgmVolume / 100f)
+    }
+
+    // Yield to the main player: the background pauses while it plays music and resumes
+    // when it stops. The service swaps the underlying ExoPlayer on a crossfade and
+    // bumps playerUpdateTrigger (only on a swap), so the listener is re-attached on
+    // every tick.
+    LaunchedEffect(bgmController, playerBinder) {
+        val controller = bgmController ?: return@LaunchedEffect
+        val binder = playerBinder ?: return@LaunchedEffect
+        val listener = object : Player.Listener {
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                controller.onMainPlayerPlayingChanged(isPlaying)
+            }
+        }
+        var watched: Player? = null
+        fun attach(player: Player) {
+            if (watched === player) return
+            watched?.removeListener(listener)
+            player.addListener(listener)
+            watched = player
+            // The first attach reports the current state — the deck may open while the
+            // main player is already playing
+            controller.onMainPlayerPlayingChanged(player.isPlaying)
+        }
+        attach(binder.player)
+        binder.playerUpdateTrigger.collect {
+            attach(binder.player)
+        }
+    }
+
+    // Per-card BGM: as soon as a swipe starts, the standby preloads the page the pager is
+    // heading to (v5: "precharge le prochain a l'avance" — the track is usually READY by
+    // settle time, even for a non-cached stream); the controller then decides the track on
+    // every settle (debounced; the standby was preloading while the card was on screen).
+    // Report only while the pager is no longer scrolling — a flick that keeps going
+    // reports nothing until it lands.
+    LaunchedEffect(bgmController, pagerState) {
+        val controller = bgmController ?: return@LaunchedEffect
+        var preloadTarget: Int? = null
+        snapshotFlow {
+            Triple(
+                pagerState.currentPage,
+                pagerState.currentPageOffsetFraction,
+                pagerState.isScrollInProgress
+            )
+        }.distinctUntilChanged().collect { (page, offset, scrolling) ->
+            if (scrolling) {
+                // Re-target as the gesture direction becomes detectable (the deck flows
+                // forward while the offset is still inside the dead zone)
+                val target = scrollTargetPage(page, offset)
+                if (preloadTarget != target) {
+                    preloadTarget = target
+                    controller.onScrollStarted(target.coerceIn(0, RewindDeckPageCount - 1))
+                }
+            } else {
+                preloadTarget = null
+                controller.onPageSettled(page)
+            }
+        }
+    }
+
     // Per-slide system share: captures the displayed slide and hands the PNG to the system
     // share sheet (patch "per-slide system share"). Suppressed while a deck export is in
     // flight, so the two capture paths never fight over the display.
@@ -365,6 +530,114 @@ fun RewindScreen(
                     .navigationBarsPadding()
             ) {
                 miniPlayer()
+            }
+        }
+
+        // Background-music chrome (spec 3): the volume toggle sits in the per-slide share
+        // button's row (same 40 dp rounded target, 8 dp to its left). A tap cuts or
+        // restores the sound; a long press reveals the vertical volume slider below it
+        // (another long press hides it). Like the share button, the chrome depops on
+        // every slide — it scales out as soon as the pager starts scrolling and pops
+        // back in when the new card settles (same spring/curves as the share). Hidden
+        // during any capture, like the mini player — it is live chrome and must not land
+        // in a captured frame.
+        if (
+            bgmController != null &&
+            !shareMode &&
+            !rewindShareCaptureActive.value &&
+            !rewindCaptureMode.value
+        ) {
+            // Volume 0 counts as off: it cuts the audio (player volume 0) and the toggle
+            // shows the same "off" state as a disabled background
+            val bgmOff = !bgmEnabled || bgmVolume <= 0
+            var bgmSliderVisible by remember { mutableStateOf(false) }
+            // Settled on a card = visible; scrolling = depopped (the slider keeps its
+            // revealed state across slides — only the pop-out/pop-in is animated)
+            val bgmChromeSettled = !pagerState.isScrollInProgress
+            AnimatedVisibility(
+                visible = bgmChromeSettled,
+                enter = scaleIn(
+                    initialScale = 0.5f,
+                    // Spring with a light overshoot: a smooth transition that still reads as a pop
+                    animationSpec = spring(dampingRatio = 0.62f, stiffness = Spring.StiffnessMedium)
+                ) + fadeIn(tween(200, easing = LinearOutSlowInEasing)),
+                exit = scaleOut(
+                    targetScale = 0.8f,
+                    animationSpec = tween(160, easing = FastOutLinearInEasing)
+                ) + fadeOut(tween(160, easing = FastOutLinearInEasing)),
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(top = 44.dp, end = 60.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(rewindColors.value.cream.copy(alpha = 0.12f))
+                        .combinedClickable(
+                            onClick = {
+                                DataStoreUtils.saveBoolean(
+                                    context,
+                                    DataStoreUtils.KEY_REWIND_BGM_ENABLED,
+                                    !bgmEnabled
+                                )
+                            },
+                            onLongClick = { bgmSliderVisible = !bgmSliderVisible }
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.volume_up),
+                        contentDescription = stringResource(R.string.rw_bgmusic_mute_cd),
+                        tint = rewindColors.value.cream.copy(alpha = if (bgmOff) 0.35f else 0.85f),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    if (bgmOff) {
+                        // No mute icon ships in the project: a rotated 2 dp bar over the
+                        // speaker reads as "off" at a glance
+                        Box(
+                            modifier = Modifier
+                                .width(24.dp)
+                                .height(2.dp)
+                                .graphicsLayer { rotationZ = -45f }
+                                .background(
+                                    rewindColors.value.cream.copy(alpha = 0.85f),
+                                    RoundedCornerShape(1.dp)
+                                )
+                        )
+                    }
+                }
+            }
+            // The slider reveals below the toggle and expands downward from its row; it
+            // depops/repopps with the button on every slide
+            AnimatedVisibility(
+                visible = bgmChromeSettled && bgmSliderVisible,
+                enter = expandVertically(
+                    expandFrom = Alignment.Top,
+                    animationSpec = tween(200, easing = FastOutSlowInEasing)
+                ) + fadeIn(tween(200, easing = FastOutSlowInEasing)),
+                exit = shrinkVertically(
+                    shrinkTowards = Alignment.Top,
+                    animationSpec = tween(160, easing = FastOutLinearInEasing)
+                ) + fadeOut(tween(160, easing = FastOutLinearInEasing)),
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(top = 92.dp, end = 56.dp)
+            ) {
+                RewindBgmVolumeSlider(
+                    volume = bgmVolume.toFloat(),
+                    colors = rewindColors.value,
+                    onVolumeChange = { bgmController.setVolume(it / 100f) },
+                    onVolumeReleased = {
+                        DataStoreUtils.saveInt(
+                            context,
+                            DataStoreUtils.KEY_REWIND_BGM_VOLUME,
+                            it
+                        )
+                    }
+                )
             }
         }
     }
@@ -662,4 +935,79 @@ private fun RewindLoaderLockup(
 private fun segment(value: Float, start: Float, end: Float): Float {
     if (end <= start) return if (value >= end) 1f else 0f
     return ((value - start) / (end - start)).coerceIn(0f, 1f)
+}
+
+/**
+ * The deck's vertical volume slider (spec 3) — a rounded 48 x 80 dp control revealed below
+ * the volume toggle by a long press. It is custom rather than a material3 slider: the
+ * alpha-version VerticalSlider's thin track proved ungrabbable on device, and a tap here
+ * must jump the thumb while a vertical drag moves it. Both apply the volume live to the
+ * hidden players ([onVolumeChange]); the DataStore write happens only when the finger
+ * lifts ([onVolumeReleased]), so a drag never triggers per-frame I/O. The volume rises
+ * with the thumb.
+ */
+@Composable
+private fun RewindBgmVolumeSlider(
+    volume: Float,
+    colors: RewindColors,
+    onVolumeChange: (Float) -> Unit,
+    onVolumeReleased: (Int) -> Unit
+) {
+    // Live value while the finger is down; [volume] (the persisted 0-100 value) re-syncs it
+    var live by remember { mutableFloatStateOf(volume) }
+    LaunchedEffect(volume) { live = volume }
+    // Hoisted out of the semantics lambda, which is not a composable context
+    val volumeCd = stringResource(R.string.rw_bgmusic_volume_cd)
+    // Track geometry: 56 dp tall, centered in the 80 dp control (12 dp above and below)
+    val trackTopPx = with(LocalDensity.current) { 12.dp.toPx() }
+    val trackBottomPx = with(LocalDensity.current) { 68.dp.toPx() }
+    val trackHeightPx = trackBottomPx - trackTopPx
+    Box(
+        modifier = Modifier
+            .size(width = 48.dp, height = 80.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(colors.cream.copy(alpha = 0.12f))
+            .semantics {
+                contentDescription = volumeCd
+            }
+            .pointerInput(Unit) {
+                // A tap is a zero-length drag: onDragStart jumps the thumb, onDragEnd persists
+                detectDragGestures(
+                    onDragStart = { pos ->
+                        live = (((trackBottomPx - pos.y) / trackHeightPx * 100f).coerceIn(0f, 100f))
+                        onVolumeChange(live)
+                    },
+                    onDrag = { change, _ ->
+                        change.consume()
+                        live = (((trackBottomPx - change.position.y) / trackHeightPx * 100f).coerceIn(0f, 100f))
+                        onVolumeChange(live)
+                    },
+                    onDragEnd = { onVolumeReleased(live.roundToInt()) },
+                    onDragCancel = { onVolumeReleased(live.roundToInt()) }
+                )
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .width(4.dp)
+                .height(56.dp)
+                .background(colors.cream.copy(alpha = 0.25f), RoundedCornerShape(2.dp)),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height((56f * live / 100f).dp)
+                    .background(colors.lime, RoundedCornerShape(2.dp))
+            )
+        }
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = (4f + 0.56f * live).dp)
+                .size(16.dp)
+                .background(colors.cream, CircleShape)
+        )
+    }
 }

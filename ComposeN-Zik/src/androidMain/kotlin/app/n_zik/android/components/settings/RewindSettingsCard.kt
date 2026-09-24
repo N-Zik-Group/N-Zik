@@ -46,6 +46,7 @@ fun RewindSettingsCard() {
     val yearlyPlaylistEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
     val monthlyPlaylistNotifEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_NOTIF_ENABLED, true)
     val yearlyPlaylistNotifEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_NOTIF_ENABLED, true)
+    val bgmEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_BGM_ENABLED, true)
 
     // "Rewind" card: recap type toggles, only relevant while the feature is on
     SettingsSectionCard(
@@ -82,6 +83,19 @@ fun RewindSettingsCard() {
                     Timber.tag("RewindReminder").i("Rewind all-time -> $it")
                 },
                 icon = R.drawable.star_brilliant
+            )
+            // Deck background music (spec 3): the same key as the deck's mute button — a flip
+            // here is live for a deck already open, and off means no player is created when
+            // the deck opens.
+            OtherSwitchSettingEntry(
+                title = stringResource(R.string.rw_bgmusic_settings),
+                text = stringResource(R.string.rw_bgmusic_mute_cd),
+                isChecked = bgmEnabled,
+                onCheckedChange = {
+                    DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_BGM_ENABLED, it)
+                    Timber.tag("RewindReminder").i("Rewind background music -> $it")
+                },
+                icon = R.drawable.volume_up
             )
         }
     )

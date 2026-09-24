@@ -994,6 +994,57 @@ fun PlayerServiceModern.createDataSourceFactory(): DataSource.Factory {
 }
 
 /**
+ * Data source factory dedicated to the Rewind deck's hidden background-music players
+ * (spec "Deck Rewind — musique de fond"): pure stream resolution only — resolve the stream
+ * URL, serve it from the stream LRU cache, fall back to the download cache,
+ * parental-control gate included.
+ *
+ * Unlike [createDataSourceFactory], it launches **no metadata maintenance**: no
+ * [upsertSongInfo] (no Innertube `nextPage` call, no artist/album page pre-caching) and no
+ * [fetchFormatIfMissing] (no format row upserts) — the background players must only read
+ * the music, never feed the library caches (spec: the deck's stats stay untouched).
+ */
+@UnstableApi
+fun PlayerServiceModern.createBackgroundMusicDataSourceFactory(): DataSource.Factory {
+    val upstreamFactory = appContext().okHttpDataSourceFactory
+
+    val resolvingDataSourceFactory = ResolvingDataSource.Factory(upstreamFactory) { dataSpec ->
+        val videoId = dataSpec.uri.toString().substringAfter("watch?v=")
+        val isLocal = dataSpec.uri.scheme == ContentResolver.SCHEME_CONTENT ||
+                      dataSpec.uri.scheme == ContentResolver.SCHEME_FILE
+
+        if (isLocal) return@Factory dataSpec
+
+        dataSpec.process(videoId, audioQualityFormat, applicationContext.isConnectionMetered())
+            .buildUpon()
+            .setKey(videoId)
+            .build()
+    }
+
+    val lruCacheFactory = CacheDataSource.Factory()
+        .setCache(cache)
+        .setUpstreamDataSourceFactory(resolvingDataSourceFactory)
+
+    val finalCacheFactory = CacheDataSource.Factory()
+        .setCache(downloadCache)
+        .setUpstreamDataSourceFactory(lruCacheFactory)
+        .setCacheWriteDataSinkFactory(null)
+        .setFlags(FLAG_IGNORE_CACHE_ON_ERROR)
+
+    return ResolvingDataSource.Factory(finalCacheFactory) { dataSpec ->
+        val videoId = dataSpec.key ?: dataSpec.uri.toString().substringAfter("watch?v=")
+        val parentalControlEnabled = appContext().preferences.getBoolean(parentalControlEnabledKey, false)
+        if (parentalControlEnabled) {
+            val isExplicit = Database.songTable.findByIdDirect(videoId)?.title?.startsWith(EXPLICIT_PREFIX, true) == true
+            if (isExplicit) {
+                throw ExplicitContentException()
+            }
+        }
+        dataSpec.buildUpon().setKey(videoId).build()
+    }
+}
+
+/**
  * Dedicated download data source factory - separated from streaming resolver.
  * This prevents session changes from affecting downloads (like Metrolist/Cubic).
  */

@@ -87,6 +87,20 @@ object DataStoreUtils {
     /** Notification when the yearly rewind playlist is ready; also gated on [KEY_REWIND_YEARLY_PLAYLIST_ENABLED]. */
     const val KEY_REWIND_YEARLY_PLAYLIST_NOTIF_ENABLED = "rewind_yearly_playlist_notif_enabled"
 
+    // Rewind deck background music (spec 3): the hidden per-card BGM players of the deck.
+    // The toggle is shared by the deck's mute button and the settings entry (same key, live
+    // on both sides); the volume (0-100) drives the deck's slider. Both default so an
+    // existing install hears the feature on first deck open (ON by default, volume 70).
+
+    /** Deck background music on/off (deck mute button + settings entry). */
+    const val KEY_REWIND_BGM_ENABLED = "rewind_bgm_enabled"
+
+    /** Deck background music volume, 0-100. */
+    const val KEY_REWIND_BGM_VOLUME = "rewind_bgm_volume"
+
+    /** Default deck background music volume. */
+    const val DEFAULT_REWIND_BGM_VOLUME = 70
+
     private const val PREFS_NAME = "app_settings"
 
     // Internal (not private) so the file-top-level rememberDataStoreBooleanPreference
@@ -114,6 +128,17 @@ object DataStoreUtils {
 
     fun saveBoolean(context: Context, key: String, value: Boolean) {
         prefs(context).edit().putBoolean(key, value).apply()
+    }
+
+    /**
+     * Read an integer preference. Plain SharedPreferences read, safe to call from a
+     * coroutine on any dispatcher.
+     */
+    fun getInt(context: Context, key: String, default: Int = 0): Int =
+        prefs(context).getInt(key, default)
+
+    fun saveInt(context: Context, key: String, value: Int) {
+        prefs(context).edit().putInt(key, value).apply()
     }
 }
 
@@ -149,6 +174,49 @@ fun rememberDataStoreBooleanPreference(key: String, default: Boolean): MutableSt
     val state = remember { mutableStateOf(prefs.getBoolean(key, default)) }
     val listener = remember(prefs, key, default) {
         createBooleanPreferenceListener(context, key, default) { newValue ->
+            if (state.value != newValue) {
+                state.value = newValue
+            }
+        }
+    }
+    DisposableEffect(prefs, listener) {
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+    return state
+}
+
+/**
+ * Builds a SharedPreferences listener reporting every same-process write to [key] with its
+ * new value — the int twin of [createBooleanPreferenceListener] (spec 3, deck background
+ * music volume slider).
+ */
+internal fun createIntPreferenceListener(
+    context: Context,
+    key: String,
+    default: Int,
+    onChange: (Int) -> Unit
+): SharedPreferences.OnSharedPreferenceChangeListener =
+    SharedPreferences.OnSharedPreferenceChangeListener { _, changedKey ->
+        if (changedKey == key) {
+            onChange(DataStoreUtils.prefs(context).getInt(key, default))
+        }
+    }
+
+/**
+ * Live version of [DataStoreUtils.getInt] (spec 3) — same listener pattern as
+ * [rememberDataStoreBooleanPreference], for the deck's volume slider which the deck chrome
+ * writes and the settings entry (if ever added) would read live.
+ */
+@Composable
+fun rememberDataStoreIntPreference(key: String, default: Int): MutableState<Int> {
+    val context = LocalContext.current
+    val prefs = DataStoreUtils.prefs(context)
+    val state = remember { mutableStateOf(prefs.getInt(key, default)) }
+    val listener = remember(prefs, key, default) {
+        createIntPreferenceListener(context, key, default) { newValue ->
             if (state.value != newValue) {
                 state.value = newValue
             }

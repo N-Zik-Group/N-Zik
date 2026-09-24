@@ -385,6 +385,9 @@ private fun RewindShareSlideButton(
     Box(
         modifier = modifier
             .size(40.dp)
+            // Same rounded chrome as the deck's volume toggle (spec 3)
+            .clip(RoundedCornerShape(14.dp))
+            .background(rewindColors.value.cream.copy(alpha = 0.12f))
             .clickable(onClick = onClick)
     ) {
         Icon(

@@ -1899,6 +1899,9 @@
 <string name="rw_settings_playlists_yearly_description">Create the yearly rewind playlist.</string>
 <string name="rw_settings_playlists_yearly_notification">Yearly rewind playlist notification</string>
 <string name="rw_settings_playlists_yearly_notification_description">Get notified when the yearly rewind playlist is ready.</string>
+<string name="rw_bgmusic_settings">Background music</string>
+<string name="rw_bgmusic_mute_cd">Toggle background music</string>
+<string name="rw_bgmusic_volume_cd">Background music volume</string>
 <string name="rewind_filter_month">Month</string>
 <string name="rewind_filter_year">Year</string>
 <string name="rw_playlist_notif_title">Your %1$s rewind playlist is ready</string>
