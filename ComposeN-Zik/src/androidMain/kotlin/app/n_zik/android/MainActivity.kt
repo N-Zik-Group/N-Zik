@@ -319,18 +319,41 @@ import androidx.compose.ui.unit.IntOffset
 import kotlin.math.roundToInt
 
 /**
- * Decodes the finished-month deck target carried by the monthly rewind reminder's
- * content intent: valid extras yield the `(year, month)` pair, anything else (missing
- * extras, out-of-range values, restored process instance) yields null so the app
- * starts without a forced deck open. Top-level so the parse contract is unit-testable
- * without launching the activity (spec GH-275, re-review: consumer side untested).
+ * Decodes the deck target carried by a rewind reminder's content intent: a valid year with a
+ * month 1..12 yields the finished `(year, month)` pair (monthly reminder); a valid year with
+ * the month extra missing (default 0) or explicitly 0 yields the yearly target `(year, 0)`
+ * (yearly reminder — its content intent carries the year extra only). Anything else (missing
+ * year, out-of-range values, restored process instance) yields null so the app starts without
+ * a forced deck open. Top-level so the parse contract is unit-testable without launching the
+ * activity (spec GH-275, re-review: consumer side untested).
  */
 internal fun rewindDeckTargetFromIntent(intent: Intent?, isRestoredInstance: Boolean): Pair<Int, Int>? {
     if (isRestoredInstance) return null
     val year = intent?.getIntExtra(RewindReminderWorker.EXTRA_DECK_YEAR, 0) ?: 0
     val month = intent?.getIntExtra(RewindReminderWorker.EXTRA_DECK_MONTH, 0) ?: 0
-    return if (year in 2000..2100 && month in 1..12) year to month else null
+    return when {
+        year !in 2000..2100 -> null
+        month in 1..12 -> year to month
+        // Yearly sentinel: the yearly reminder posts the year extra only, so the missing
+        // month extra (default 0) selects the finished-year deck
+        month == 0 -> year to month
+        else -> null
+    }
 }
+
+/**
+ * Builds the deck route for a decoded target (spec GH-275): the monthly target (month 1..12)
+ * carries both arguments, while the yearly target (month = 0 intent sentinel) omits the month
+ * argument — the route's default month=-1 then maps to `rewindMonth = null` in
+ * `RewindScreen`, i.e. the year-only deck. Top-level so the monthly/yearly branch is
+ * unit-testable without launching the activity.
+ */
+internal fun rewindDeckRoute(year: Int, month: Int): String =
+    if (month == 0) {
+        "${NavRoutes.rewind.name}?year=$year"
+    } else {
+        "${NavRoutes.rewind.name}?year=$year&month=$month"
+    }
 
 @UnstableApi
 class MainActivity :
@@ -364,9 +387,10 @@ class MainActivity :
     // import): the shortcut was already consumed and would otherwise pop the back stack to home.
     private var shortcutIntentAction by mutableStateOf<String?>(null)
 
-    // Finished month carried by the monthly rewind reminder's content intent. Set on cold start
-    // (startApp) and warm start (onNewIntent), consumed once by the navigation effect that opens
-    // the deck on that month.
+    // Finished month (or finished year, month = 0 yearly sentinel) carried by a rewind
+    // reminder's content intent. Set on cold start (startApp) and warm start (onNewIntent),
+    // consumed once by the navigation effect that opens the deck on that month — or the
+    // yearly deck on that year.
     private var rewindDeckTarget by mutableStateOf<Pair<Int, Int>?>(null)
 
     // Current step of the first-launch onboarding flow, held by the activity so a
@@ -1510,16 +1534,20 @@ class MainActivity :
                     }
                 }
 
-                // Monthly rewind reminder notification: open the deck on the finished month
-                // (extras set in startApp / onNewIntent). Consumed from an effect, like the
-                // shortcut above, so the navigation happens once the graph is composed.
-                // The gate is part of the key: while onboarding is up the NavHost is not
-                // composed (empty graph — navigating would crash), so the target is held
-                // until the flow completes and the effect re-runs.
+                // Rewind reminder notification: open the deck on the finished month (monthly)
+                // or the yearly deck on the finished year (yearly, month = 0 sentinel — extras
+                // set in startApp / onNewIntent). Consumed from an effect, like the shortcut
+                // above, so the navigation happens once the graph is composed. The gate is
+                // part of the key: while onboarding is up the NavHost is not composed (empty
+                // graph — navigating would crash), so the target is held until the flow
+                // completes and the effect re-runs.
                 LaunchedEffect(rewindDeckTarget, onboardingStep == null) {
                     if (onboardingStep != null) return@LaunchedEffect
                     rewindDeckTarget?.let { (year, month) ->
-                        navController.navigate("${NavRoutes.rewind.name}?year=$year&month=$month")
+                        // rewindDeckRoute omits the month argument for the yearly target:
+                        // the route's default month=-1 maps to rewindMonth = null in
+                        // RewindScreen, i.e. the year-only deck
+                        navController.navigate(rewindDeckRoute(year, month))
                         rewindDeckTarget = null
                     }
                 }

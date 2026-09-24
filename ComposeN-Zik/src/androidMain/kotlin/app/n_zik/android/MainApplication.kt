@@ -69,6 +69,7 @@ import it.fast4x.innertube.models.ArtistConjunctions
 import it.fast4x.invidious.utils.InvidiousLogger
 import app.n_zik.android.extensions.musicbrainz.workers.MbBackfillWorker
 import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
+import app.n_zik.android.components.ui.screens.rewind.RewindYearlyReminderWorker
 import app.n_zik.android.musicbrainz.MBCircuitBreakerPersistence
 import app.n_zik.android.musicbrainz.MBLogger
 import app.n_zik.android.musicbrainz.MBNetwork
@@ -274,6 +275,9 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 
         // Monthly rewind reminder (next 1st of the month, WorkManager, self-rescheduling)
         RewindReminderWorker.schedule(this)
+
+        // Yearly rewind reminder (next 1st of January, WorkManager, self-rescheduling)
+        RewindYearlyReminderWorker.schedule(this)
 
         /**** LOG *********/
         val logEnabled = preferences.getBoolean(logDebugEnabledKey, false)

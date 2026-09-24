@@ -24,11 +24,12 @@ import timber.log.Timber
 /**
  * Rewind settings card in the AI tab (spec GH-275, roadmap item 1): a master switch plus one
  * toggle per recap type (yearly / monthly / all-time) and one notification toggle per type
- * that has a worker (monthly now; yearly stays inert until the yearly worker lands).
+ * that has a worker (monthly and yearly).
  *
  * The same [DataStoreUtils] keys gate the Rewind home entries, the hamburger menu item and
- * the monthly reminder worker, so a flip here takes effect without an app restart: the home
- * and the worker re-read the keys, and the card writes every toggle immediately.
+ * the monthly and yearly reminder workers, so a flip here takes effect without an app
+ * restart: the home and the workers re-read the keys, and the card writes every toggle
+ * immediately.
  *
  * Visual hierarchy (device feedback, 2026-09-24): the type toggles stay aligned with the
  * master, and only the notification toggles are indented under their recap type (25.dp) —

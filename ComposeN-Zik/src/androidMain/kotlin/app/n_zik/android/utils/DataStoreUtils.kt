@@ -61,7 +61,7 @@ object DataStoreUtils {
     /** Monthly reminder notification; also gated on [KEY_REWIND_MONTHLY_ENABLED]. */
     const val KEY_REWIND_MONTHLY_NOTIF_ENABLED = "rewind_monthly_notif_enabled"
 
-    /** Yearly reminder notification; inert until the yearly worker lands (roadmap item 2). */
+    /** Yearly reminder notification; also gated on [KEY_REWIND_YEARLY_ENABLED]. */
     const val KEY_REWIND_YEARLY_NOTIF_ENABLED = "rewind_yearly_notif_enabled"
 
     private const val PREFS_NAME = "app_settings"

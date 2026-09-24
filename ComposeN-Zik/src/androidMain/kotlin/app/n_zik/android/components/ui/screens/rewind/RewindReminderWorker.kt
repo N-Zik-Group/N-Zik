@@ -64,7 +64,9 @@ internal class RewindReminderWorker(
         internal const val EXTRA_DECK_YEAR = "rewind_deck_year"
         internal const val EXTRA_DECK_MONTH = "rewind_deck_month"
 
-        // Small jitter so installs do not all hit WorkManager at the same 1st-of-month instant
+        // Positive-only jitter so installs do not all hit WorkManager at the same
+        // 1st-of-month instant: it can only push the firing later (up to +10 min), never
+        // before the 1st — an early fire would compute the finished month one month too far back
         private const val JITTER_MS = 10L * 60 * 1000
 
         /**
@@ -93,7 +95,7 @@ internal class RewindReminderWorker(
             }
             val request = OneTimeWorkRequestBuilder<RewindReminderWorker>()
                 .setInitialDelay(
-                    applyJitter(msUntilNextMonthStart(), (-JITTER_MS..JITTER_MS).random()),
+                    applyJitter(msUntilNextMonthStart(), (0L..JITTER_MS).random()),
                     TimeUnit.MILLISECONDS
                 )
                 .build()
@@ -113,7 +115,7 @@ internal class RewindReminderWorker(
             return Duration.between(now, next).toMillis()
         }
 
-        /** Applies the scheduling jitter [deltaMs] and clamps the result to non-negative. */
+        /** Applies the scheduling jitter [deltaMs] (drawn positive-only by [schedule]) and clamps the result to non-negative as a safety net. */
         internal fun applyJitter(delayMs: Long, deltaMs: Long): Long =
             (delayMs + deltaMs).coerceAtLeast(0)
     }
@@ -169,7 +171,7 @@ internal class RewindReminderWorker(
             NotificationCompat.Builder(applicationContext, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_monochrome)
                 .setContentTitle(applicationContext.getString(R.string.rw_notif_title, monthName))
-                .setContentText(applicationContext.getString(R.string.rw_notif_body))
+                .setContentText(applicationContext.getString(R.string.rw_monthly_notif_body))
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setAutoCancel(true)
                 .setContentIntent(pending)
