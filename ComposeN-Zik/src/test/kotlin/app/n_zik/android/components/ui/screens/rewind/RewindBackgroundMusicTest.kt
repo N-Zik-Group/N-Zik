@@ -344,6 +344,22 @@ class RewindBackgroundMusicTest {
     }
 
     @Test
+    fun standbySwapPageLandsOnTheCardOnScreen() {
+        // The preloaded track of a fast swipe swaps as soon as it is ready (v7)
+        assertEquals(5, standbySwapPage(currentPage = 5, standbyHoldPage = 5, activeTrackPage = 3))
+        // Stale hold — the deck moved on while the load was in flight → no swap
+        assertNull(standbySwapPage(currentPage = 5, standbyHoldPage = 4, activeTrackPage = 3))
+        // Nothing settled yet → no swap
+        assertNull(standbySwapPage(currentPage = -1, standbyHoldPage = -1, activeTrackPage = null))
+    }
+
+    @Test
+    fun standbySwapPageNeverSwapsToTheAlreadyActiveCard() {
+        // The card's track is already the active one → no double swap
+        assertNull(standbySwapPage(currentPage = 5, standbyHoldPage = 5, activeTrackPage = 5))
+    }
+
+    @Test
     fun statsCardsRollFromThePool() {
         val data = deckData(topSongs = listOf(contentSong("s1", "Artist A")))
         listOf(0, 1, 2, 8, 9, 10, 13, 14).forEach { page ->

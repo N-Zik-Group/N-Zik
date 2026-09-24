@@ -85,6 +85,20 @@ fun fadeTailPreparePage(deferredPage: Int?, defaultNextPage: Int): Int =
     deferredPage ?: defaultNextPage
 
 /**
+ * The page a READY standby track (holding the track for [standbyHoldPage]) may be
+ * swapped to: only the deck's last settled card ([currentPage]) — null when nothing is
+ * settled yet (negative), when the hold is stale (the deck moved on while the load was
+ * in flight), or when that card's track is already the active one. (v7: a fast
+ * navigation's preloaded track still lands on the card on screen.)
+ */
+fun standbySwapPage(currentPage: Int, standbyHoldPage: Int?, activeTrackPage: Int?): Int? =
+    if (currentPage < 0 || standbyHoldPage != currentPage || activeTrackPage == currentPage) {
+        null
+    } else {
+        currentPage
+    }
+
+/**
  * Builds the session background-music pool from the deck window's top songs (the same source
  * as the "Top songs" slide — spec: no extra fetch): distinct by song id, blank ids dropped,
  * downloaded songs first (whole file guaranteed locally — instant start + mid-track offset),
@@ -309,8 +323,6 @@ class RewindBackgroundMusicController(
     private var standbyHold: StandbyHold? = null
     /** The in-flight track resolution (cancelled when the deck moves on). */
     private var standbyPrepareJob: Job? = null
-    /** The card waiting for its standby replacement (standby-miss path), or null. */
-    private var pendingSwapPage: Int? = null
     /** The card whose track the active player is playing (guard against same-card re-seeks). */
     private var activeTrackPage: Int? = null
     private var fadeJob: Job? = null
@@ -361,7 +373,6 @@ class RewindBackgroundMusicController(
         currentPage = 0
         lastSettleAtMs = SystemClock.elapsedRealtime()
         started = true
-        pendingSwapPage = 0
         prepareStandby(0)
     }
 
@@ -378,12 +389,16 @@ class RewindBackgroundMusicController(
     }
 
     /**
-     * Called by the deck on every pager settle (valid or skipped). A settle inside the
-     * debounce window is skipped — no new track for that card, the current one continues
-     * (spec: "si on change trop vite il lit pas"). Otherwise: the standby already holds
-     * track(P) → fade swap now; standby miss (flick landed on an unpreloaded card) → the
-     * standby prepares track(P) and the current track keeps playing until the replacement
-     * is ready (never silent; the swap is then faded with the longer delayed fade).
+     * Called by the deck on every pager settle (valid or skipped). The card on screen is
+     * recorded either way ([currentPage] is the sync target). If the standby is already
+     * READY with this card's track (preloaded during the flick — v5), the swap happens
+     * immediately, even for a debounced settle (v7: "si je swipe trop vite il met du
+     * temps a fade/switch" — an already-loaded track is used, never re-loaded). A settle
+     * inside the debounce window never starts a NEW load ("si on change trop vite il lit
+     * pas") — but an in-flight preloaded track still lands on this card when it becomes
+     * ready ([standbyBecameReady] compares against [currentPage]). A standby miss on a
+     * valid settle prepares the track and the current one keeps playing until it is
+     * ready (never silent; the swap is then faded with the longer delayed fade).
      */
     fun onPageSettled(page: Int) {
         if (!started) return
@@ -392,19 +407,18 @@ class RewindBackgroundMusicController(
         val elapsed = if (lastSettleAtMs == 0L) Long.MAX_VALUE else now - lastSettleAtMs
         lastSettleAtMs = now
         currentPage = page
-        if (!shouldSwitchTrack(elapsed)) {
-            Timber.tag(REWIND_BGM_TAG).d("Settle on card $page skipped (debounce) — current track continues")
-            return
-        }
         val standby = standby ?: return
         // The standby must be READY *and* actually holding this page's track —
         // standbyPreparedPage alone would also match an in-flight (async) resolution
         if (standby.playbackState == Player.STATE_READY && standbyHold?.page == page) {
             doSwap(page)
-        } else {
+            return
+        }
+        if (shouldSwitchTrack(elapsed)) {
             Timber.tag(REWIND_BGM_TAG).d("Standby miss on card $page — preparing its track, current keeps playing")
-            pendingSwapPage = page
             prepareStandby(page)
+        } else {
+            Timber.tag(REWIND_BGM_TAG).d("Settle on card $page skipped (debounce) — no new load, current track continues")
         }
     }
 
@@ -471,7 +485,6 @@ class RewindBackgroundMusicController(
         standbyPrepareJob = null
         standbyPreparedPage = null
         standbyHold = null
-        pendingSwapPage = null
         activeTrackPage = null
         pool = emptyList()
         contentTrack = null
@@ -555,7 +568,6 @@ class RewindBackgroundMusicController(
         standbyHold = null
         standbyPrepareJob?.cancel()
         standbyPrepareJob = null
-        pendingSwapPage = null
         activeTrackPage = null
         playerA?.stop()
         playerB?.stop()
@@ -623,10 +635,14 @@ class RewindBackgroundMusicController(
 
     private fun standbyBecameReady(player: ExoPlayer) {
         if (player !== standby) return
-        val page = pendingSwapPage ?: return
-        // The standby must actually hold this page's prepared track (an async resolution
-        // can leave a stale READY for an item that was already replaced)
-        if (standbyHold?.page != page) return
+        // The deck's last settled card is the ONLY track the standby may hand over —
+        // a fast navigation may have moved on while the load was in flight, so a stale
+        // READY is ignored (the next settle / scroll-start re-targets the standby). The
+        // hold must match the current card, and that card's track must not already be
+        // the active one (v7: the preloaded track of a fast swipe lands on the card
+        // on screen instead of waiting for the next swipe)
+        val page = currentPage
+        if (standbySwapPage(page, standbyHold?.page, activeTrackPage) != page) return
         // The track only became ready AFTER the settle (the current track kept playing
         // while it loaded): use the longer fade so the hand-over is a soft crossfade
         // between two tracks the user heard apart, not a switch (v5)
@@ -646,7 +662,6 @@ class RewindBackgroundMusicController(
         // The track is the one the standby actually prepared (content or pool) — not a
         // fresh pool roll, which could pick a different track than the prepared item
         val hold = standbyHold?.takeIf { it.page == page } ?: return
-        pendingSwapPage = null
         activeTrackPage = page
         // The duration is known: the standby prepared the item before becoming ready
         val offset = startOffset(incoming.duration, isDownloaded(hold.trackId), random)
@@ -700,13 +715,13 @@ class RewindBackgroundMusicController(
             else pool = pool.filter { it.id != hold.trackId }
         }
         if (pool.isEmpty()) {
-            pendingSwapPage = null
             Timber.tag(REWIND_BGM_TAG).i("Pool exhausted after standby failure: background music silent")
             return
         }
-        // The deck may have moved on while this load was in flight: re-target the standby
-        // at the page it actually wants — never leave it idle while a swap is pending (v5)
-        pendingSwapPage?.let { prepareStandby(it) }
+        // The failed load was for the card on screen: re-arm it (a different track after
+        // the pool shrink / content-fail mark). A stale load (the deck moved on) is left
+        // alone — the next settle / scroll-start re-targets the standby (v7)
+        if (page == currentPage) prepareStandby(currentPage)
     }
 
     /** The active track failed: the standby replaces it for the same card (never silent
@@ -718,7 +733,6 @@ class RewindBackgroundMusicController(
         if (standby.playbackState == Player.STATE_READY && standbyHold?.page == currentPage) {
             doSwap(currentPage)
         } else {
-            pendingSwapPage = currentPage
             prepareStandby(currentPage)
         }
     }
