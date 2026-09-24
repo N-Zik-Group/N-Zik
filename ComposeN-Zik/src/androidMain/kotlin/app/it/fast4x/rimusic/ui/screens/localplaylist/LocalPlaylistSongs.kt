@@ -213,6 +213,8 @@ import app.n_zik.android.components.tab.ImportSongsFromCSV
 import app.n_zik.android.components.tab.ImportSongsFromServices
 import app.n_zik.android.core.database.ImportSong
 import app.n_zik.android.components.dialog.settings.LocalPlaylistToolbarSettingsDialog
+import app.n_zik.android.core.rewind.RewindPlaylists
+import app.n_zik.android.core.rewind.RewindPlaylists.rewindDisplayName
 import app.n_zik.android.utils.getAlbumVersionFromVideo
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
@@ -273,7 +275,11 @@ fun LocalPlaylistSongs(
                 .findById( playlistId )
     }.collectAsStateWithLifecycle( null, context = NzikDispatchers.DATA )
 
-    val sort = PlaylistSongsSort(playlistId)
+    // Spec 2: generated `rewind-*` playlists are protected (Spotify principle) and get
+    // the "Rewind Top" sort option; declared before the sort wiring that consumes it
+    val isRewindPlaylist = playlist?.name?.let { RewindPlaylists.isRewind(it) } == true
+
+    val sort = PlaylistSongsSort(playlistId, isRewind = isRewindPlaylist)
 
     val items by remember( sort.sortBy, sort.sortOrder ) {
         if (sort.sortBy == PlaylistSongSortBy.Downloaded) {
@@ -316,6 +322,9 @@ fun LocalPlaylistSongs(
         // Only force Custom if no saved preference exists AND playlist has imports
         if ((isSpotifyRiplay || hasImportedSongs) && currentSort == null) {
             sort.sortBy = PlaylistSongSortBy.Custom
+        } else if (isRewindPlaylist && currentSort == null) {
+            // Spec 2: a generated rewind-* playlist defaults to its top-order snapshot
+            sort.sortBy = PlaylistSongSortBy.RewindTop
         }
     }
 
@@ -1114,7 +1123,9 @@ fun LocalPlaylistSongs(
     val rippleIndication = ripple(bounded = false)
 
     val playlistNotMonthlyType =
-        playlist?.name?.startsWith(MONTHLY_PREFIX, 0, true) == false
+        playlist?.name?.startsWith(MONTHLY_PREFIX, 0, true) == false &&
+        // Spec 2: pinning prefixes the name, breaking the rewind-* naming contract
+        !isRewindPlaylist
 
     val songIds = remember(itemsOnDisplay) { itemsOnDisplay.map { it.id } }
     val likeStatesMap by remember(songIds) {
@@ -1177,7 +1188,8 @@ fun LocalPlaylistSongs(
                 ) {
 
                     HeaderWithIcon(
-                        title = cleanPrefix( playlist?.name ?: "" ),
+                        // Spec 2: localized display name for generated rewind-* playlists
+                        title = context.rewindDisplayName( cleanPrefix( playlist?.name ?: "" ) ),
                         iconId = R.drawable.playlist,
                         enabled = true,
                         showIcon = false,
@@ -1343,9 +1355,10 @@ fun LocalPlaylistSongs(
                         when (id) {
                             "pin" -> if (playlistNotMonthlyType) add( pin )
                             "search" -> add( search )
-                            "position_lock" -> if ( sort.sortBy == PlaylistSongSortBy.Custom ) add( positionLock )
+                            // Spec 2: renumbering/position-lock rewrites position, destroying the top order
+                            "position_lock" -> if ( sort.sortBy == PlaylistSongSortBy.Custom && !isRewindPlaylist ) add( positionLock )
                             "match" -> if ( hasUnmatchedSongs ) add( matchAlbumButton )
-                            "renumber" -> if ( sort.sortBy == PlaylistSongSortBy.Custom ) add( renumberDialog )
+                            "renumber" -> if ( sort.sortBy == PlaylistSongSortBy.Custom && !isRewindPlaylist ) add( renumberDialog )
                             "download_all" -> add( downloadAllDialog )
                             "delete_downloads" -> add( deleteDownloadsDialog )
                             "item_selector" -> add( itemSelector )
@@ -1356,7 +1369,8 @@ fun LocalPlaylistSongs(
                             "sync" -> if ( !playlist?.browseId.isNullOrBlank() ) add( syncComponent )
                             "listen_on_yt" -> if ( !playlist?.browseId.isNullOrBlank() ) add( listenOnYT )
                             "import_menu" -> add( importMenu )
-                            "rename" -> add( renameDialog )
+                            // Spec 2: rewind-* keep their language-neutral name — no rename
+                            "rename" -> if ( !isRewindPlaylist ) add( renameDialog )
                             "delete" -> add( deleteDialog )
                             "export" -> add( exportDialog )
                             "thumbnail_picker" -> add( thumbnailPicker )

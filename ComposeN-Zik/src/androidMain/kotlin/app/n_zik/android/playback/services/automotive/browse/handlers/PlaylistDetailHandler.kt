@@ -12,6 +12,7 @@ import app.it.fast4x.rimusic.enums.SongSortBy
 import app.it.fast4x.rimusic.enums.SortOrder
 import app.it.fast4x.rimusic.utils.*
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
@@ -77,9 +78,17 @@ class PlaylistDetailHandler : BrowseHandler {
             }
             else -> {
                 if (playlistId.toLongOrNull() != null) {
-                    val sortBy = context.preferences.getEnum("PlaylistSongsSortBy_$playlistId", PlaylistSongSortBy.Title)
+                    // Spec 2: generated rewind-* playlists default to their top-order
+                    // snapshot on Android Auto (like the app detail screen)
+                    val localPlaylistId = playlistId.toLong()
+                    val isRewindPlaylist = database.playlistTable.findById(localPlaylistId).first()
+                        ?.name?.let { RewindPlaylists.isRewind(it) } == true
+                    val sortBy = context.preferences.getEnum(
+                        "PlaylistSongsSortBy_$playlistId",
+                        if (isRewindPlaylist) PlaylistSongSortBy.RewindTop else PlaylistSongSortBy.Title
+                    )
                     val sortOrder = context.preferences.getEnum("PlaylistSongsSortOrder_$playlistId", SortOrder.Ascending)
-                    database.songPlaylistMapTable.sortSongs(playlistId.toLong(), sortBy, sortOrder)
+                    database.songPlaylistMapTable.sortSongs(localPlaylistId, sortBy, sortOrder)
                 } else {
                     val playlistPage = Innertube.playlistPage(browseId = playlistId.removePrefix(MODIFIED_PREFIX))?.getOrNull()
                     val songs = playlistPage?.songsPage?.items?.map { item -> item.asSong } ?: emptyList()

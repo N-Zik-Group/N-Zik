@@ -43,6 +43,8 @@ import it.fast4x.innertube.Innertube
 import app.n_zik.android.core.database.Database
 import app.it.fast4x.rimusic.MONTHLY_PREFIX
 import app.it.fast4x.rimusic.PINNED_PREFIX
+import app.n_zik.android.core.rewind.RewindPlaylists
+import app.n_zik.android.core.rewind.RewindPlaylists.rewindDisplayName
 
 import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.colorPalette
@@ -271,6 +273,7 @@ fun PlaylistItem(
     isEditable : Boolean = false,
     thumbnailOverlay: @Composable () -> Unit = {}
 ) {
+    val context = LocalContext.current
     ItemContainer(
         alternative = alternative,
         thumbnailSizeDp = thumbnailSizeDp,
@@ -302,6 +305,16 @@ fun PlaylistItem(
 
                             name.startsWith( MONTHLY_PREFIX, true ) ->
                                 painterResource( R.drawable.stat_month ) to colorPalette().accent
+
+                            // Spec 2: origin icons of the generated rewind-* playlists
+                            RewindPlaylists.isMonthly( name ) ->
+                                painterResource( R.drawable.stat_month ) to colorPalette().accent
+
+                            RewindPlaylists.isYearly( name ) ->
+                                painterResource( R.drawable.stat_year ) to colorPalette().accent
+
+                            RewindPlaylists.isAlltime( name ) ->
+                                painterResource( R.drawable.musical_notes ) to colorPalette().accent
 
                             browseId == "SPOTIFY_IMPORT" || browseId?.startsWith("SPOTIFY_IMPORT") == true ->
                                 painterResource( R.drawable.spotify ) to Color.Unspecified
@@ -368,7 +381,8 @@ fun PlaylistItem(
                     if (name != null) {
                         BasicText(
                             //text = name.substringAfter(PINNED_PREFIX) ?: "",
-                            text = cleanPrefix(name),
+                            // Spec 2: localized display name for generated rewind-* playlists (no-op for other names)
+                            text = context.rewindDisplayName(cleanPrefix(name)),
                             style = typography().xs.semiBold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,

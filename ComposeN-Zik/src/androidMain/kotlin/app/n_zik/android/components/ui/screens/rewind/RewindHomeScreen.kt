@@ -38,6 +38,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -62,6 +63,7 @@ import app.it.fast4x.rimusic.enums.SortOrder
 import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
 import app.it.fast4x.rimusic.ui.styling.Dimensions
+import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindArtwork
@@ -78,7 +80,16 @@ import java.util.Locale
  * One row per year (listening time + plays, newest first) and, for the selected year, a 3x4
  * grid of its 12 months. Tapping a year row opens the annual deck; tapping a month cell opens
  * the monthly deck (same 16 slides, data filtered to that month). Months without events are
- * greyed out and not tappable.
+ * greyed out and not tappable. Unfinished periods — the in-progress month, the future months
+ * and the in-progress year — are shown locked (the N-Zik launcher box under the same dark
+ * scrim as the playable cells, at full opacity like them: months without stats and a
+ * padlock; the year with "LOCKED" instead of its stats, no album previews, and a padlock
+ * instead of the "open" chevron) and open nothing: their deck unlocks only once the period
+ * is over (user decision, 2026-09-24).
+ * Spammer easter eggs (same decision): hammering a locked cell or year row answers with a
+ * rotation of funny messages; the tap that reaches the threshold kicks the user back from
+ * the home with the final "I said no" message. Tapping an empty finished month answers with
+ * a random sad one-liner (no kick).
  *
  * Layout follows the QuickPicks home section: the whole page is a LazyColumn (the year rows are
  * its items) and the month grid is a fixed-height LazyVerticalGrid inside one of those items.
@@ -98,6 +109,25 @@ fun RewindHomeScreen(
     val globalEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_GLOBAL_ENABLED, true)
     val viewModel: RewindHomeViewModel = viewModel(factory = RewindHomeViewModel)
     val uiState by viewModel.state.collectAsStateWithLifecycle()
+    // The locked-period spam rotation (user decision, 2026-09-24): each tap on a locked
+    // month cell or year row answers with the next funny message; the tap that reaches
+    // the threshold kicks the user back from the home ("chépa, j'ai dit non, arrêter").
+    // The counter resets when the home leaves the composition.
+    var lockedSpam by remember { mutableStateOf(0) }
+    val onLockedSpam: () -> Unit = {
+        val reply = nextLockedSpamReply(lockedSpam, LOCKED_SPAM_MESSAGES, R.string.rw_home_locked_spam_kick)
+        lockedSpam = if (reply.kicks) 0 else lockedSpam + 1
+        // The app's in-app toaster (theme colors, main-thread, floating-nav-bar aware):
+        // info toasts for the rotation, red for the final "stop".
+        if (reply.kicks) Toaster.e(reply.messageRes) else Toaster.i(reply.messageRes)
+        // The kick sends the user back (popBackStack() is a no-op from the root entry).
+        if (reply.kicks) navController.popBackStack()
+    }
+    // Empty finished months: a random sad reply on each tap (user decision, 2026-09-24) —
+    // no kick, nothing to protect there.
+    val onEmptyMonthSpam: () -> Unit = {
+        Toaster.i(randomEmptyMonthMessage(EMPTY_MONTH_SPAM_MESSAGES))
+    }
     // Saveable so the selected year survives a round-trip into the deck
     var selectedYear by rememberSaveable { mutableIntStateOf(-1) }
     // Display orders, same contract as the app's sort toolbars (Sort.ToolBarButton):
@@ -159,6 +189,8 @@ fun RewindHomeScreen(
                 onYearOrderToggle = { yearsOrder = !yearsOrder },
                 onMonthOrderToggle = { monthsOrder = !monthsOrder },
                 onYearSelected = { selectedYear = it },
+                onLockedSpam = onLockedSpam,
+                onEmptyMonthSpam = onEmptyMonthSpam,
                 onOpenDeck = { year, month ->
                     navController.navigate(
                         if (month == null) {
@@ -204,6 +236,10 @@ private fun RewindHomeContent(
     onYearOrderToggle: () -> Unit,
     onMonthOrderToggle: () -> Unit,
     onYearSelected: (Int) -> Unit,
+    // The locked-period spam rotation (funny replies, then the kick — see the screen KDoc).
+    onLockedSpam: () -> Unit,
+    // The empty-month random replies (see the screen KDoc).
+    onEmptyMonthSpam: () -> Unit,
     onOpenDeck: (year: Int, month: Int?) -> Unit,
     onOpenGlobal: () -> Unit
 ) {
@@ -251,6 +287,8 @@ private fun RewindHomeContent(
                                 formatRewindNumber(allTime.plays.toLong())
                             ),
                             tops = allTime.topArtworks,
+                            // All time has no ending: never locked.
+                            locked = false,
                             onClick = onOpenGlobal
                         )
                         Spacer(Modifier.height(22.dp))
@@ -271,17 +309,31 @@ private fun RewindHomeContent(
             }
             items(yearsDisplay, key = { it.year }) { year ->
                 Column(modifier = Modifier.animateItem()) {
+                    // The in-progress year is locked until it is over (user decision,
+                    // 2026-09-24): the row shows "LOCKED" instead of its stats, no album
+                    // previews, and a padlock instead of the "open" chevron; the tap opens
+                    // nothing (the funny replies only come out when it is spammed). The
+                    // chips below keep selecting it for the month grid.
+                    val yearLocked = !isYearComplete(year.year)
                     RewindHomeYearRow(
                         label = year.year.toString(),
-                        stats = stringResource(
-                            R.string.rw_home_year_stats,
-                            rewindHomeDuration(year.minutes),
-                            formatRewindNumber(year.plays.toLong())
-                        ),
+                        // The locked year shows "LOCKED" instead of its (spoiling) stats —
+                        // same anti-spoiler decision as the album previews.
+                        stats = if (yearLocked) {
+                            stringResource(R.string.rw_home_locked)
+                        } else {
+                            stringResource(
+                                R.string.rw_home_year_stats,
+                                rewindHomeDuration(year.minutes),
+                                formatRewindNumber(year.plays.toLong())
+                            )
+                        },
                         tops = year.topArtworks,
+                        locked = yearLocked,
                         // Opens the year deck only — the month grid and its chips below keep
                         // their current selection (the chips are the way to switch years there).
-                        onClick = { onOpenDeck(year.year, null) }
+                        onClick = { if (!yearLocked) onOpenDeck(year.year, null) },
+                        onLockedTap = onLockedSpam
                     )
                     Spacer(Modifier.height(8.dp))
                 }
@@ -336,7 +388,11 @@ private fun RewindHomeContent(
                     ) { yearKey ->
                         val yearOfKey = years.first { it.year == yearKey }
                         // Calendar month numbers in display order; the number drives navigation
-                        // no matter the display order.
+                        // no matter the display order. All twelve months are always shown:
+                        // the unfinished ones (the in-progress month and the future months)
+                        // render a locked cell instead of their stats, and open nothing
+                        // (user decision, 2026-09-24: a deck opens only once its period is
+                        // over).
                         val monthEntries = yearOfKey.months
                             .mapIndexed { index, month -> index to month }
                             .let { if (monthsOrder == SortOrder.Descending) it.reversed() else it }
@@ -364,9 +420,14 @@ private fun RewindHomeContent(
                                         modifier = Modifier.animateItem(),
                                         month = month,
                                         empty = month.plays == 0,
+                                        // Locked until the month is fully over (the in-progress
+                                        // and the future months): no stats, no deck navigation.
+                                        locked = !isMonthComplete(yearOfKey.year, index + 1),
                                         tops = yearOfKey.monthTopArtworks.getOrNull(index)
                                             ?: TopArtworks(null, null, null, null),
-                                        onClick = { onOpenDeck(yearOfKey.year, index + 1) }
+                                        onClick = { onOpenDeck(yearOfKey.year, index + 1) },
+                                        onLockedTap = onLockedSpam,
+                                        onEmptyTap = onEmptyMonthSpam
                                     )
                                 }
                             }
@@ -433,8 +494,15 @@ private fun RewindHomeYearRow(
     label: String,
     stats: String,
     tops: TopArtworks,
-    onClick: () -> Unit
+    // Locked = the period is not over yet (the in-progress year): no deck navigation, no
+    // album previews, a padlock replaces the "open" chevron; the caller passes "LOCKED"
+    // as [stats].
+    locked: Boolean,
+    onClick: () -> Unit,
+    // Only called while [locked] (the spam rotation — funny replies, then the kick).
+    onLockedTap: () -> Unit = {}
 ) {
+    val palette = colorPalette()
     // Row height; all four quadrants share it, as in the month collage.
     val rowHeight = 96.dp
     val hasArtwork = !tops.song.isNullOrBlank() ||
@@ -446,11 +514,27 @@ private fun RewindHomeYearRow(
             .fillMaxWidth()
             .height(rowHeight)
             .clip(uiRoundnessShape())
-            .background(Color.Black)
-            .clickable(onClick = onClick),
+            // Theme background (not raw black): while the network artworks are loading,
+            // the row blends into the page instead of flashing black (same user decision
+            // as the month cells, 2026-09-24).
+            .background(palette.background1)
+            .then(
+                if (locked) Modifier.clickable(onClick = onLockedTap)
+                else Modifier.clickable(onClick = onClick)
+            ),
         contentAlignment = Alignment.CenterStart
     ) {
-        if (hasArtwork) {
+        if (locked) {
+            // In-progress year: no album/artist previews — they would spoil the annual
+            // deck (user decision, 2026-09-24). The N-Zik launcher box under the dark
+            // scrim, same treatment as the locked month cells.
+            RewindHomeLauncherBox(Modifier.fillMaxSize())
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f))
+            )
+        } else if (hasArtwork) {
             // The year's top song, album, artist and playlist as a strip behind the text;
             // the dark scrim keeps the white text readable over any covers.
             Row(
@@ -556,12 +640,23 @@ private fun RewindHomeYearRow(
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(Modifier.width(4.dp))
-                Icon(
-                    painter = painterResource(R.drawable.chevron_forward),
-                    contentDescription = null,
-                    tint = Color.White.copy(alpha = 0.7f),
-                    modifier = Modifier.size(15.dp)
-                )
+                if (locked) {
+                    // In-progress year: a padlock instead of the "open the deck" chevron —
+                    // the annual deck unlocks once the year is over.
+                    Icon(
+                        painter = painterResource(R.drawable.locked),
+                        contentDescription = null,
+                        tint = Color.White.copy(alpha = 0.7f),
+                        modifier = Modifier.size(15.dp)
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(R.drawable.chevron_forward),
+                        contentDescription = null,
+                        tint = Color.White.copy(alpha = 0.7f),
+                        modifier = Modifier.size(15.dp)
+                    )
+                }
             }
         }
     }
@@ -584,11 +679,18 @@ private fun RewindHomeMonthCell(
     modifier: Modifier = Modifier,
     month: MonthlyStat,
     empty: Boolean,
+    // Locked = the month is not over yet (in progress or future): the N-Zik launcher box
+    // with a padlock on top, no stats, no deck navigation (user decision, 2026-09-24).
+    locked: Boolean,
     tops: TopArtworks,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    // Only called while [locked] (the spam rotation — funny replies, then the kick).
+    onLockedTap: () -> Unit = {},
+    // Only called while the month is finished and empty (the random sad replies).
+    onEmptyTap: () -> Unit = {}
 ) {
     val palette = colorPalette()
-    val playable = !empty
+    val playable = !empty && !locked
     val showArtwork = playable &&
         (!tops.song.isNullOrBlank() ||
             !tops.artist.isNullOrBlank() ||
@@ -598,10 +700,17 @@ private fun RewindHomeMonthCell(
         modifier = modifier
             .aspectRatio(0.92f)
             .clip(uiRoundnessShape())
-            .background(Color.Black)
-            .graphicsLayer { alpha = if (playable) 1f else 0.35f }
+            // Theme background (not raw black): while the network artworks are loading,
+            // the cell blends into the page instead of flashing black (user decision,
+            // 2026-09-24).
+            .background(palette.background1)
             .then(
-                if (playable) Modifier.clickable(onClick = onClick) else Modifier
+                when {
+                    playable -> Modifier.clickable(onClick = onClick)
+                    locked -> Modifier.clickable(onClick = onLockedTap)
+                    // Empty finished month: tap for a random sad reply.
+                    else -> Modifier.clickable(onClick = onEmptyTap)
+                }
             ),
         contentAlignment = Alignment.CenterStart
     ) {
@@ -614,41 +723,81 @@ private fun RewindHomeMonthCell(
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.7f))
             )
-        } else if (empty) {
-            // No plays this month: the N-Zik launcher box behind the label, under a dark
-            // scrim — same treatment as playable cells with artwork.
+        } else {
+            // No artwork: an empty finished month or an unfinished one — the N-Zik launcher
+            // box under the same dark scrim as the playable cells (scrim on top of the
+            // image, full opacity, so the text stays readable — user decision 2026-09-24).
+            RewindHomeLauncherBox(Modifier.fillMaxSize())
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.55f))
+                    .background(Color.Black.copy(alpha = 0.7f))
             )
-            RewindHomeLauncherBox(Modifier.fillMaxSize())
+            if (locked) {
+                // Unfinished month: a padlock on top, no stats and no message (the funny
+                // replies only come out when the cell is spammed). The deck unlocks once
+                // the month is over.
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.locked),
+                        contentDescription = null,
+                        tint = Color.White.copy(alpha = 0.7f),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
         }
         Column(modifier = Modifier.padding(9.dp)) {
             Text(
                 text = month.month.uppercase(Locale.getDefault()),
-                color = if (showArtwork || empty) Color.White else palette.text,
+                color = if (showArtwork || empty || locked) Color.White else palette.text,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Black,
                 letterSpacing = 0.7.sp
             )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = if (playable) rewindHomeDuration(month.minutes) else "—",
-                color = if (showArtwork || empty) Color.White else palette.text,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(Modifier.height(2.dp))
-            Text(
-                text = stringResource(
-                    R.string.rw_home_plays,
-                    formatRewindNumber(month.plays.toLong())
-                ),
-                color = if (showArtwork || empty) Color.White.copy(alpha = 0.7f) else palette.textSecondary,
-                fontSize = 8.sp,
-                fontWeight = FontWeight.Medium
-            )
+            if (locked) {
+                // Locked cell: the "LOCKED" label under the month name (same treatment as
+                // the locked year row — user decision, 2026-09-24); the funny replies still
+                // appear as toasts while the cell is spammed.
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.rw_home_locked),
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            } else if (playable) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = rewindHomeDuration(month.minutes),
+                    color = if (showArtwork) Color.White else palette.text,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = stringResource(
+                        R.string.rw_home_plays,
+                        formatRewindNumber(month.plays.toLong())
+                    ),
+                    color = if (showArtwork) Color.White.copy(alpha = 0.7f) else palette.textSecondary,
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            } else {
+                // Empty finished month: a sad one-liner instead of the dash + "0 plays"
+                // (user decision, 2026-09-24)
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.rw_home_month_empty_sad),
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
         }
     }
 }
@@ -742,4 +891,67 @@ private fun rewindHomeDuration(minutes: Long): String {
     } else {
         stringResource(R.string.rw_minutes_compact, formatRewindNumber(minutes))
     }
+}
+
+/**
+ * The locked-period spam rotation (user decision, 2026-09-24): the funny replies to a
+ * locked month cell or year row being hammered, in order.
+ */
+internal val LOCKED_SPAM_MESSAGES = intArrayOf(
+    R.string.rw_home_locked_spam_1,
+    R.string.rw_home_locked_spam_2,
+    R.string.rw_home_locked_spam_3,
+    R.string.rw_home_locked_spam_4,
+    R.string.rw_home_locked_spam_5
+)
+
+/** The tap that reaches this count kicks the user back from the home (final message). */
+internal const val LOCKED_SPAM_KICK_THRESHOLD = 6
+
+/** One step of the spam rotation: [messageRes] to answer with, [kicks] = user sent back. */
+internal data class LockedSpamReply(val messageRes: Int, val kicks: Boolean)
+
+/**
+ * Pure step of the locked-period spam rotation so it can be unit-tested without UI.
+ * [spamCount] is the number of taps already answered: each tap below the threshold answers
+ * with the next message of [messages]; the tap that reaches [threshold] kicks the user back
+ * with [kickMessageRes] (the caller resets [spamCount] to 0 on [kicks]).
+ */
+internal fun nextLockedSpamReply(
+    spamCount: Int,
+    messages: IntArray,
+    kickMessageRes: Int,
+    threshold: Int = LOCKED_SPAM_KICK_THRESHOLD
+): LockedSpamReply {
+    val next = spamCount + 1
+    return if (next >= threshold) {
+        LockedSpamReply(kickMessageRes, kicks = true)
+    } else {
+        LockedSpamReply(messages[next - 1], kicks = false)
+    }
+}
+
+/**
+ * The random replies to an empty finished month being tapped (user decision, 2026-09-24):
+ * each tap answers with a random sad one-liner (no rotation, no kick — nothing to protect
+ * there, just the joke).
+ */
+internal val EMPTY_MONTH_SPAM_MESSAGES = intArrayOf(
+    R.string.rw_home_month_empty_spam_1,
+    R.string.rw_home_month_empty_spam_2,
+    R.string.rw_home_month_empty_spam_3,
+    R.string.rw_home_month_empty_spam_4,
+    R.string.rw_home_month_empty_spam_5,
+    R.string.rw_home_month_empty_spam_6
+)
+
+/**
+ * Pure random pick of an empty-month reply so it can be unit-tested without UI:
+ * [nextIndex] is invoked with the list size and its result is reduced modulo it.
+ */
+internal fun randomEmptyMonthMessage(
+    messages: IntArray,
+    nextIndex: (Int) -> Int = { (0 until it).random() }
+): Int {
+    return messages[nextIndex(messages.size) % messages.size]
 }

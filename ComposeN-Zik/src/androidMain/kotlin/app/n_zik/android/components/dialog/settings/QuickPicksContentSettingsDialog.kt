@@ -25,6 +25,7 @@ import app.it.fast4x.rimusic.utils.showNewAlbumsKey
 import app.it.fast4x.rimusic.utils.showPlaylistMightLikeKey
 import app.it.fast4x.rimusic.utils.showMoodsAndGenresKey
 import app.it.fast4x.rimusic.utils.showMyTopPlaylistKey
+import app.it.fast4x.rimusic.utils.showMonthlyPlaylistsKey
 import app.it.fast4x.rimusic.utils.showFreshFindsOldFavoritesKey
 import app.it.fast4x.rimusic.utils.showMixedForYouKey
 import app.it.fast4x.rimusic.utils.showForgottenFavoritesKey
@@ -66,6 +67,7 @@ private val defaultSectionOrder = listOf(
     "albums_for_you",
     "related_albums",
     "my_top",
+    "rewind",
     "similar_artists",
     "todays_biggest_hits",
     "all_hits",
@@ -103,6 +105,9 @@ private fun buildSectionDefs(): Map<String, QuickPicksSectionDef> = mapOf(
     "playlists_might_like" to QuickPicksSectionDef("playlists_might_like", showPlaylistMightLikeKey, R.drawable.playlist, R.string.playlists_you_might_like, true),
     "moods_genres" to QuickPicksSectionDef("moods_genres", showMoodsAndGenresKey, R.drawable.moods, R.string.moods_and_genres, true),
     "my_top" to QuickPicksSectionDef("my_top", showMyTopPlaylistKey, R.drawable.person, R.string.my_top, true),
+    // Spec 2: restored "Rewind" section — reuses the legacy showMonthlyPlaylistsKey so the
+    // existing user preference (kept by spec 1) is preserved, zero new DataStore key.
+    "rewind" to QuickPicksSectionDef("rewind", showMonthlyPlaylistsKey, R.drawable.musical_notes, R.string.rewind, true),
     "fresh_finds_old_favorites" to QuickPicksSectionDef("fresh_finds_old_favorites", showFreshFindsOldFavoritesKey, R.drawable.trending, R.string.fresh_finds_old_favorites, true),
     "mixed_for_you" to QuickPicksSectionDef("mixed_for_you", showMixedForYouKey, R.drawable.playlist, R.string.mixed_for_you, true),
     "forgotten_favorites" to QuickPicksSectionDef("forgotten_favorites", showForgottenFavoritesKey, R.drawable.person, R.string.forgotten_favorites, true),

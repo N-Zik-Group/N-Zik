@@ -10,6 +10,8 @@ import app.it.fast4x.rimusic.enums.SortOrder
 import app.it.fast4x.rimusic.utils.*
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.rewind.RewindPlaylists
+import app.n_zik.android.core.rewind.RewindPlaylists.rewindDisplayName
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants.ID_PLAYLISTS_LOCAL
@@ -52,7 +54,10 @@ class PlaylistsBrowseHandler : BrowseHandler {
                 val sortOrder = context.preferences.getEnum(Preference.HOME_LIBRARY_PLAYLIST_SORT_ORDER.key, SortOrder.Ascending)
                 val playlists = database.playlistTable.sortPreviews(sortBy, sortOrder).first()
                     .filter { !it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX, true) }
-                    .map { preview -> browsableMediaItem("${PlayerServiceModern.PLAYLIST}/${preview.playlist.id}", preview.playlist.name, preview.songCount.toString(), drawableUri(context, R.drawable.library), MediaMetadata.MEDIA_TYPE_PLAYLIST) }
+                    .map { preview ->
+                        // Spec 2: generated rewind-* playlists show their localized display name
+                        browsableMediaItem("${PlayerServiceModern.PLAYLIST}/${preview.playlist.id}", context.rewindDisplayName(preview.playlist.name), preview.songCount.toString(), drawableUri(context, R.drawable.library), MediaMetadata.MEDIA_TYPE_PLAYLIST)
+                    }
                 listOf(shuffleItem) + playlists
             }
             ID_PLAYLISTS_YT -> {

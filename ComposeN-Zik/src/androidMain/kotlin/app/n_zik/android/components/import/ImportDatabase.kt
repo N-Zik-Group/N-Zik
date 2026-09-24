@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.ImportFromFile
 import app.n_zik.android.components.dialog.common.RestartAppDialog
+import app.n_zik.android.core.rewind.RewindPostImportRegenerationWorker
 import app.kreate.android.me.knighthat.utils.Toaster
 import timber.log.Timber
 import java.io.FileOutputStream
@@ -73,6 +74,10 @@ class ImportDatabase private constructor(
                                            Timber.tag("ImportDatabase").d("Import complete, bytes written: $bytes")
                                        }
                                    } ?: Timber.tag("ImportDatabase").w("Failed to open input stream")
+
+                            // The listening history was just replaced: recompute every existing
+                            // rewind-* playlist from it (one-shot job, silent, not gated — spec 2)
+                            RewindPostImportRegenerationWorker.schedule(context)
 
                             withContext(NzikDispatchers.UI) {
                                 // Reset cookie status after import — fresh start

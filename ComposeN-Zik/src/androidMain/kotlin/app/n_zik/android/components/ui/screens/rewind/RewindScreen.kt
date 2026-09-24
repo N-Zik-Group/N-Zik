@@ -60,6 +60,9 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.ui.screens.rewind.slides.LocalRewindActive
 import app.n_zik.android.components.ui.screens.rewind.slides.rewindColors
+import app.n_zik.android.core.rewind.GenerateMode
+import app.n_zik.android.core.rewind.RewindPlaylists
+import app.n_zik.android.core.rewind.generateRewindPlaylist
 import app.n_zik.android.components.ui.screens.rewind.slides.LocalRewindShaderWarm
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindAlbumsCard
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindColors
@@ -127,6 +130,26 @@ fun RewindScreen(
             rewindYear != null && rewindMonth != null -> RewindPeriod.Month(rewindYear, rewindMonth)
             rewindYear != null -> RewindPeriod.Year(rewindYear)
             else -> RewindPeriod.Global
+        }
+    }
+    // Regeneration callbacks of the finale (spec 2): a Month/Year deck regenerates its
+    // own playlist (delete-then-recreate — the click means "recompute now", and it also
+    // covers the current month, which no auto playlist exists for before the next 1st);
+    // the Global deck regenerates the unique all-time snapshot. Each returns the number
+    // of songs written so the pill can show its 2 s confirmation only on a real write.
+    val (regeneratePlaylist, regenerateAlltime) = remember(period) {
+        val forName: (String) -> (suspend () -> Int)? = { name ->
+            val window = RewindPlaylists.windowFor(name)
+            if (window != null) {
+                { generateRewindPlaylist(name, window.first, window.second, GenerateMode.Regenerate) }
+            } else {
+                null
+            }
+        }
+        when (period) {
+            is RewindPeriod.Month -> forName(RewindPlaylists.monthlyName(period.year, period.month)) to null
+            is RewindPeriod.Year -> forName(RewindPlaylists.yearlyName(period.year)) to null
+            else -> null to forName(RewindPlaylists.ALLTIME_NAME)
         }
     }
     val viewModel: RewindDeckViewModel = viewModel(factory = RewindDeckViewModel)
@@ -307,6 +330,8 @@ fun RewindScreen(
                             active = active,
                             shareMode = shareMode,
                             onShareSlide = onShareSlide,
+                            onRegeneratePlaylist = regeneratePlaylist,
+                            onRegenerateAlltime = regenerateAlltime,
                             onShare = {
                                 if (!shareMode) {
                                     // The system folder picker chooses where the exported

@@ -349,4 +349,30 @@ class EventTableTest {
         assertEquals(listOf(2L, 1L), stats.map { it.playlist.playlist.id })
         assertEquals(180_000L, stats.first().playTimeMs)
     }
+
+    @Test
+    fun `findPlaylistListeningStatsBetween excludes the generated rewind playlists`() = runBlocking {
+        insertSong("song_A")
+        insertSong("song_B")
+        // the three generated name forms, in the case spellings a user could create
+        db.playlistTable.insertIgnore(Playlist(id = 1L, name = "rewind-monthly:202602"))
+        db.playlistTable.insertIgnore(Playlist(id = 2L, name = "REWIND-YEARLY:2025"))
+        db.playlistTable.insertIgnore(Playlist(id = 3L, name = "rewind-alltime"))
+        db.playlistTable.insertIgnore(Playlist(id = 4L, name = "P_A"))
+        db.songPlaylistMapTable.map(songId = "song_A", playlistId = 1L)
+        db.songPlaylistMapTable.map(songId = "song_A", playlistId = 2L)
+        db.songPlaylistMapTable.map(songId = "song_A", playlistId = 3L)
+        db.songPlaylistMapTable.map(songId = "song_A", playlistId = 4L)
+        db.songPlaylistMapTable.map(songId = "song_B", playlistId = 4L)
+
+        eventDao.insertIgnore(Event(songId = "song_A", timestamp = 3_100L, playTime = 900_000L))
+        eventDao.insertIgnore(Event(songId = "song_B", timestamp = 3_300L, playTime = 30_000L)) // P_A only
+
+        val stats = eventDao.findPlaylistListeningStatsBetween(from = 3_000L, to = 4_000L).first()
+
+        // song_A (900s) is the most-played song and sits in every rewind-* playlist:
+        // without the exclusion the generated playlists would rank first (self-referential)
+        assertEquals(listOf(4L), stats.map { it.playlist.playlist.id })
+        assertEquals(930_000L, stats.first().playTimeMs)
+    }
 }

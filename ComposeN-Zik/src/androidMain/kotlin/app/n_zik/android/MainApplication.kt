@@ -71,6 +71,8 @@ import it.fast4x.invidious.utils.InvidiousLogger
 import app.n_zik.android.extensions.musicbrainz.workers.MbBackfillWorker
 import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
 import app.n_zik.android.components.ui.screens.rewind.RewindYearlyReminderWorker
+import app.n_zik.android.core.rewind.RewindMonthlyPlaylistWorker
+import app.n_zik.android.core.rewind.RewindYearlyPlaylistWorker
 import app.n_zik.android.musicbrainz.MBCircuitBreakerPersistence
 import app.n_zik.android.musicbrainz.MBLogger
 import app.n_zik.android.musicbrainz.MBNetwork
@@ -283,6 +285,12 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 
         // Yearly rewind reminder (next 1st of January, WorkManager, self-rescheduling)
         RewindYearlyReminderWorker.schedule(this)
+
+        // Rewind monthly playlist (next 1st of the month, WorkManager, self-rescheduling)
+        RewindMonthlyPlaylistWorker.schedule(this)
+
+        // Rewind yearly playlist (next 1st of January, WorkManager, self-rescheduling)
+        RewindYearlyPlaylistWorker.schedule(this)
 
         /**** LOG *********/
         val logEnabled = preferences.getBoolean(logDebugEnabledKey, false)

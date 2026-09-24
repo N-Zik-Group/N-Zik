@@ -99,3 +99,34 @@ internal fun RewindPeriod.fileNameToken(): String = when (this) {
     is RewindPeriod.Month -> String.format(Locale.ROOT, "%d_%02d", year, month)
     is RewindPeriod.Global -> "GLOBAL"
 }
+
+/**
+ * Whether the month [month] (1-based) of [year] is fully over at [now]: the first
+ * day of the following month, 00:00 in the device's local timezone, is at or before
+ * [now]. The Rewind home shows unfinished months (the in-progress one and the future
+ * ones) as locked cells instead of their stats, and their deck opens only from this
+ * instant — the same moment the completion notification would fire, so access never
+ * depends on whether that notification was actually delivered (user decision,
+ * 2026-09-24: a period is not opened before it is finished).
+ */
+internal fun isMonthComplete(year: Int, month: Int, now: Long = System.currentTimeMillis()): Boolean {
+    val end = LocalDate.of(year, month, 1).plusMonths(1)
+        .atStartOfDay(ZoneId.systemDefault())
+        .toInstant()
+        .toEpochMilli()
+    return end <= now
+}
+
+/**
+ * Whether [year] is fully over at [now] (January 1st of the following year, 00:00 in
+ * the device's local timezone, is at or before [now]). The Rewind home locks the
+ * in-progress year's deck until it is over — the same user decision as
+ * [isMonthComplete].
+ */
+internal fun isYearComplete(year: Int, now: Long = System.currentTimeMillis()): Boolean {
+    val end = LocalDate.of(year + 1, 1, 1)
+        .atStartOfDay(ZoneId.systemDefault())
+        .toInstant()
+        .toEpochMilli()
+    return end <= now
+}

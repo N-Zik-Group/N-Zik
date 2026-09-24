@@ -244,6 +244,13 @@ interface EventTable : RewindEventSource {
      * Same join as [findPlaylistMostPlayedBetweenAsPreview] but also aggregates the
      * total play time so callers can rank and display real minutes per playlist.
      *
+     * The generated `rewind-*` playlists are excluded (user decision, 2026-09-24):
+     * they contain the user's most-played songs and would always rank first, making
+     * the Rewind deck's top-playlist story self-referential. All three generated name
+     * forms share the `rewind-` prefix (`rewind-monthly:`, `rewind-yearly:`,
+     * `rewind-alltime`); SQLite's LIKE is case-insensitive over ASCII, matching the
+     * ignoreCase predicate of `RewindPlaylists.isRewind`.
+     *
      * @param from beginning of period to query in epoch millis format
      * @param to the end of period to query in epoch millis format
      * @param limit trim result to have maximum size of this value
@@ -256,6 +263,7 @@ interface EventTable : RewindEventSource {
         JOIN SongPlaylistMap SPM ON SPM.playlistId = P.id
         JOIN Event E ON E.songId = SPM.songId
         WHERE E."timestamp" BETWEEN :from AND :to
+        AND P.name NOT LIKE 'rewind-%'
         GROUP BY P.id
         ORDER BY playTimeMs DESC, songCount DESC, P.id ASC
         LIMIT :limit

@@ -26,7 +26,8 @@ class PlaylistSongsSort private constructor(
     menuState: MenuState,
     sortByState: MutableState<PlaylistSongSortBy>,
     sortOrderState: MutableState<SortOrder>,
-    styleState: MutableState<MenuStyle>
+    styleState: MutableState<MenuStyle>,
+    private val isRewind: Boolean
 ): Sort<PlaylistSongSortBy>(
     menuState, sortByState, sortOrderState, styleState,
     sortMenuOrderKey = localPlaylistSortMenuOrderKey,
@@ -35,13 +36,21 @@ class PlaylistSongsSort private constructor(
 
     companion object {
         @Composable
-        operator fun invoke(playlistId: Long) = PlaylistSongsSort(
+        operator fun invoke(playlistId: Long, isRewind: Boolean = false) = PlaylistSongsSort(
             LocalMenuState.current,
             rememberPreference("PlaylistSongsSortBy_$playlistId", PlaylistSongSortBy.Title),
             rememberPreference("PlaylistSongsSortOrder_$playlistId", SortOrder.Ascending),
-            rememberPreference( menuStyleKey, MenuStyle.List )
+            rememberPreference( menuStyleKey, MenuStyle.List ),
+            isRewind
         )
     }
+
+    /**
+     * Spec 2: "Rewind Top" exists only in the sort menu of the generated `rewind-*`
+     * playlists; every other playlist keeps the classic option list.
+     */
+    override fun getEnumConstants(): List<PlaylistSongSortBy> =
+        super.getEnumConstants().filter { it != PlaylistSongSortBy.RewindTop || isRewind }
 
     override fun onLongClick() { /* Does nothing */ }
 

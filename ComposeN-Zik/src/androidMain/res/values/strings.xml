@@ -1700,6 +1700,20 @@
 <string name="rw_home_empty">No rewind yet. Play some music first.</string>
 <string name="rw_home_plays">%1$s plays</string>
 <string name="rw_home_sort_toggle">Change sort order</string>
+<string name="rw_home_locked">LOCKED</string>
+<string name="rw_home_locked_spam_1">Nice try.</string>
+<string name="rw_home_locked_spam_2">Nope. Not yet.</string>
+<string name="rw_home_locked_spam_3">It\'s not finished!</string>
+<string name="rw_home_locked_spam_4">Hang on, it\'s not done!</string>
+<string name="rw_home_locked_spam_5">I said wait!</string>
+<string name="rw_home_locked_spam_kick">Enough! I said NO, stop!</string>
+<string name="rw_home_month_empty_sad">You didn\'t play anything, that\'s sad.</string>
+<string name="rw_home_month_empty_spam_1">Still nothing. Ouch.</string>
+<string name="rw_home_month_empty_spam_2">Zero plays. Tragic.</string>
+<string name="rw_home_month_empty_spam_3">This month is a ghost.</string>
+<string name="rw_home_month_empty_spam_4">Even your phone noticed.</string>
+<string name="rw_home_month_empty_spam_5">Try playing something?</string>
+<string name="rw_home_month_empty_spam_6">A sad little month.</string>
 <string name="rw_intro_kicker">N-ZIK • %1$s</string>
 <string name="rw_intro_this_is_your">THIS IS YOUR</string>
 <string name="rw_intro_reword">REWIND.</string>
@@ -1889,4 +1903,11 @@
 <string name="rw_settings_playlists_yearly_notification_description">Get notified when the yearly rewind playlist is ready.</string>
 <string name="rewind_filter_month">Month</string>
 <string name="rewind_filter_year">Year</string>
+<string name="rw_playlist_notif_title">Your %1$s rewind playlist is ready</string>
+<string name="rw_playlist_notif_body">Tap to open your Rewind playlists.</string>
+<string name="rw_finale_regen_playlist">REGENERATE PLAYLIST</string>
+<string name="rw_finale_regen_alltime">REGENERATE ALL-TIME</string>
+<string name="rw_finale_regen_done">PLAYLIST UPDATED</string>
+<string name="rewind_top_sort">Rewind Top</string>
+<string name="rewind_alltime_name">All-time</string>
 </resources>

@@ -77,6 +77,7 @@ import app.n_zik.android.components.ui.screens.rewind.RewindLevel
 import app.it.fast4x.rimusic.MONTHLY_PREFIX
 import app.it.fast4x.rimusic.PINNED_PREFIX
 import app.it.fast4x.rimusic.cleanPrefix
+import app.n_zik.android.core.rewind.RewindPlaylists
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.utils.checkFileExists
 import app.n_zik.android.components.ui.screens.rewind.RewindData
@@ -625,6 +626,9 @@ internal fun RewindArtworkWithFallback(
  * Origin indicator overlay for a playlist artwork, mirroring the statistics screen playlist
  * rows: the N-Zik launcher icon on local playlists, the pin on pinned playlists, the month
  * icon on monthly playlists, and the source icon on imported or YouTube playlists.
+ *
+ * Spec 2 adds the dedicated origin icons of the generated rewind-* playlists
+ * (monthly -> month, yearly -> year, all-time -> notes, accent tint).
  */
 @Composable
 internal fun RewindPlaylistOriginIcon(
@@ -640,6 +644,15 @@ internal fun RewindPlaylistOriginIcon(
 
         name.startsWith(MONTHLY_PREFIX, true) ->
             painterResource(R.drawable.stat_month) to colorPalette().accent
+
+        RewindPlaylists.isMonthly(name) ->
+            painterResource(R.drawable.stat_month) to colorPalette().accent
+
+        RewindPlaylists.isYearly(name) ->
+            painterResource(R.drawable.stat_year) to colorPalette().accent
+
+        RewindPlaylists.isAlltime(name) ->
+            painterResource(R.drawable.musical_notes) to colorPalette().accent
 
         browseId == "SPOTIFY_IMPORT" || browseId?.startsWith("SPOTIFY_IMPORT") == true ->
             painterResource(R.drawable.spotify) to Color.Unspecified
