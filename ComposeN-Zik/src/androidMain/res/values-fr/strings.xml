@@ -1619,10 +1619,10 @@ Volume BAS : titre précédent</string>
     <string name="rescue_category_data">Données &amp; Sauvegarde</string>
     <string name="rescue_category_maintenance">Maintenance</string>
     <string name="rescue_category_danger">Zone dangereuse</string>
-    <string name="rescue_status_main_process_stopping">The app is shutting down…</string>
-    <string name="rescue_status_main_process_stopped">The app is stopped</string>
-    <string name="rescue_kill_app">Kill the app</string>
-    <string name="rescue_kill_app_description">Force the app process to end if the automatic stop did not work</string>
+    <string name="rescue_status_main_process_stopping">L\'application est en train de se fermer…</string>
+    <string name="rescue_status_main_process_stopped">L\'application est arrêtée</string>
+    <string name="rescue_kill_app">Fermer l\'application</string>
+    <string name="rescue_kill_app_description">Forcer l\'arrêt du processus de l\'application si l\'arrêt automatique n\'a pas fonctionné</string>
     <string name="rescue_confirm_kill_app">Force the app process to end now? The kill is immediate and cannot be undone, and it may interrupt operations in progress.</string>
     <string name="onboard_greeting">Hello! Let\'s set up NZik for the perfect music experience. Every permission below is optional.</string>
     <string name="onboard_permissions_section">Permissions</string>
