@@ -44,6 +44,7 @@ import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
 import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
 import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.migration.MonthlyPlaylistCleanup
 import app.n_zik.android.core.migration.RemovedSettingsMigration
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.network.client.Store
@@ -171,6 +172,10 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         migrateCredentialsToEncrypted()
         runCatching { RemovedSettingsMigration.run(preferences) }
             .onFailure { Timber.tag("MainApplication").w(it, "Removed settings migration failed") }
+        // One-shot cleanup of the legacy `monthly:YYYYMM` playlists, abandoned with the
+        // on-the-fly generation mechanism (flag-guarded, idempotent, background)
+        runCatching { MonthlyPlaylistCleanup.run(this) }
+            .onFailure { Timber.tag("MainApplication").w(it, "Monthly playlists cleanup failed") }
         InnerTubeXPlayer.initialize(this)
 
         // Setup session BEFORE prewarm — ensures session is stable when IO thread starts

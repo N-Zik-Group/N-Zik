@@ -554,7 +554,6 @@
     <string name="te_slide_horizontal">横にスライド</string>
     <string name="info_wait_it_may_take_a_few_minutes">しばらくお待ちください。数分かかる場合があります。</string>
     <string name="album_alternative_versions">別のバージョン</string>
-    <string name="monthly_playlists">月ごと</string>
     <string name="month_january_s">%s年1月</string>
     <string name="month_february_s">%s年2月</string>
     <string name="month_march_s">%s年3月</string>
@@ -581,9 +580,6 @@
     <string name="bg_colors_gradient_background_from_theme">テーマからグラデーションする</string>
     <string name="vimusic_show_search_button_in_navigation_bar">ナビゲーションバーに検索ボタンを表示する</string>
     <string name="vismusic_only_in_left_right_navigation_bar">ViMusic UI の左右ナビゲーションバーのみ</string>
-    <string name="enable_monthly_playlists_creation">月間プレイリストを作成</string>
-    <string name="show_monthly_playlists_in_quick_picks">月間プレイリストをクイックピックで表示する</string>
-    <string name="show_monthly_playlists_in_library">月間プレイリストをライブラリに表示</string>
     <string name="info_no_songs_yet">利用可能な曲がありません</string>
     <string name="theme_customized">自分で調整</string>
     <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">調整したライトテーマの色を初期化しますか？</string>

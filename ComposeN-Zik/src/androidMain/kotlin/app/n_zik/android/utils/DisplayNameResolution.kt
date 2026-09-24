@@ -1,7 +1,7 @@
 package app.n_zik.android.utils
 
 /**
- * Resolves the display name shown on the Rewind slides from its [source].
+ * Resolves the display name shown on the app from its [source].
  *
  * The `youtube` source wins only while a YouTube account is actually logged in AND a
  * name was captured by the login flow; otherwise the custom name is used, falling back

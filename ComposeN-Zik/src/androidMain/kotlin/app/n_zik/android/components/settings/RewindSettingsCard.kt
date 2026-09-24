@@ -1,159 +1,176 @@
 package app.n_zik.android.components.settings
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.scaleIn
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.ui.screens.settings.OtherSwitchSettingEntry
 import app.it.fast4x.rimusic.ui.screens.settings.SettingsSectionCard
 import app.n_zik.android.R
 import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.utils.rememberDataStoreBooleanPreference
 import timber.log.Timber
 
 /**
- * Rewind settings card in the AI tab (spec GH-275, roadmap item 1): a master switch plus one
- * toggle per recap type (yearly / monthly / all-time) and one notification toggle per type
- * that has a worker (monthly and yearly).
+ * Rewind settings cards of the AI tab, grouped like the Quick Picks sections (user
+ * re-negotiation, 2026-09-24 passes 5-7): the master switch lives in the screen's
+ * existing "General" card, then three grouped cards — "Rewind" (recap type toggles),
+ * "Rewind notifications" (every notification toggle together) and "Rewind playlists"
+ * (the two creation toggles, decoupled from the master switch per spec decision).
  *
- * The same [DataStoreUtils] keys gate the Rewind home entries, the hamburger menu item and
- * the monthly and yearly reminder workers, so a flip here takes effect without an app
- * restart: the home and the workers re-read the keys, and the card writes every toggle
- * immediately.
+ * Card visibility is delegated to [SettingsSectionCard]'s `visible` parameter, which
+ * animates the card height to/from zero globally (expand/collapse + fade) so the other
+ * cards slide naturally. Entry visibility inside the notifications card uses the shared
+ * [settingsEntryEnter]/[settingsEntryExit] specs so the card shrinks smoothly when a
+ * type is off.
  *
- * Visual hierarchy (device feedback, 2026-09-24): the type toggles stay aligned with the
- * master, and only the notification toggles are indented under their recap type (25.dp) —
- * both notification toggles share the same bell icon (house pattern of the "Player
- * notification" section).
+ * Every key is read live from [DataStoreUtils]: the master is flipped from the General
+ * card and the same keys gate the Rewind home entries, the hamburger menu item and the
+ * monthly and yearly reminder workers, so a flip takes effect without an app restart.
+ *
+ * The four playlist keys are the frozen contract spec 2 reads for its worker (creation
+ * gate) and its notification (creation gate + notification gate). A notification entry
+ * hides while its parent type is off (off type = off notification).
  */
 @Composable
 fun RewindSettingsCard() {
     val context = LocalContext.current
-    var rewindEnabled by remember {
-        mutableStateOf(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, true))
-    }
-    var yearlyEnabled by remember {
-        mutableStateOf(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_ENABLED, true))
-    }
-    var monthlyEnabled by remember {
-        mutableStateOf(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, true))
-    }
-    var globalEnabled by remember {
-        mutableStateOf(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_GLOBAL_ENABLED, true))
-    }
-    var monthlyNotifEnabled by remember {
-        mutableStateOf(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_NOTIF_ENABLED, true))
-    }
-    var yearlyNotifEnabled by remember {
-        mutableStateOf(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_NOTIF_ENABLED, true))
-    }
+    val rewindEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_ENABLED, true)
+    val yearlyEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_ENABLED, true)
+    val monthlyEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, true)
+    val globalEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_GLOBAL_ENABLED, true)
+    val yearlyNotifEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_NOTIF_ENABLED, true)
+    val monthlyNotifEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_MONTHLY_NOTIF_ENABLED, true)
+    val monthlyPlaylistEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true)
+    val yearlyPlaylistEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
+    val monthlyPlaylistNotifEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_NOTIF_ENABLED, true)
+    val yearlyPlaylistNotifEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_NOTIF_ENABLED, true)
 
-    AnimatedVisibility(
-        visible = true,
-        enter = fadeIn(animationSpec = tween(600)) + scaleIn(
-            animationSpec = tween(600),
-            initialScale = 0.9f
-        )
-    ) {
-        SettingsSectionCard(
-            title = stringResource(R.string.rw_settings_title),
-            icon = R.drawable.sparkles,
-            content = {
+    // "Rewind" card: recap type toggles, only relevant while the feature is on
+    SettingsSectionCard(
+        title = stringResource(R.string.rw_settings_title),
+        icon = R.drawable.sparkles,
+        visible = rewindEnabled,
+        content = {
+            OtherSwitchSettingEntry(
+                title = stringResource(R.string.rw_settings_yearly),
+                text = stringResource(R.string.rw_settings_yearly_description),
+                isChecked = yearlyEnabled,
+                onCheckedChange = {
+                    DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_ENABLED, it)
+                    Timber.tag("RewindReminder").i("Rewind yearly -> $it")
+                },
+                icon = R.drawable.trending
+            )
+            OtherSwitchSettingEntry(
+                title = stringResource(R.string.rw_settings_monthly),
+                text = stringResource(R.string.rw_settings_monthly_description),
+                isChecked = monthlyEnabled,
+                onCheckedChange = {
+                    DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, it)
+                    Timber.tag("RewindReminder").i("Rewind monthly -> $it")
+                },
+                icon = R.drawable.calendar
+            )
+            OtherSwitchSettingEntry(
+                title = stringResource(R.string.rw_settings_global),
+                text = stringResource(R.string.rw_settings_global_description),
+                isChecked = globalEnabled,
+                onCheckedChange = {
+                    DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_GLOBAL_ENABLED, it)
+                    Timber.tag("RewindReminder").i("Rewind all-time -> $it")
+                },
+                icon = R.drawable.star_brilliant
+            )
+        }
+    )
+
+    // "Rewind notifications" card: every notification toggle together. Each entry hides
+    // with its parent type (off type = off notification); the card hides only when every
+    // parent it can show is off.
+    SettingsSectionCard(
+        title = stringResource(R.string.rw_settings_notifications),
+        icon = R.drawable.notification2,
+        visible = rewindEnabled || monthlyPlaylistEnabled || yearlyPlaylistEnabled,
+        content = {
+            AnimatedVisibility(visible = rewindEnabled && yearlyEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
                 OtherSwitchSettingEntry(
-                    title = stringResource(R.string.rw_settings_master),
-                    text = stringResource(R.string.rw_settings_master_description),
-                    isChecked = rewindEnabled,
+                    title = stringResource(R.string.rw_settings_yearly_notification),
+                    text = stringResource(R.string.rw_settings_yearly_notification_description),
+                    isChecked = yearlyNotifEnabled,
                     onCheckedChange = {
-                        rewindEnabled = it
-                        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, it)
-                        Timber.tag("RewindReminder").i("Rewind master -> $it")
+                        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_NOTIF_ENABLED, it)
+                        Timber.tag("RewindReminder").i("Rewind yearly notification -> $it")
                     },
-                    icon = R.drawable.sparkles
+                    icon = R.drawable.notification2
                 )
-
-                // The type toggles are only relevant while the feature is on
-                AnimatedVisibility(visible = rewindEnabled) {
-                    Column {
-                        OtherSwitchSettingEntry(
-                            title = stringResource(R.string.rw_settings_yearly),
-                            text = stringResource(R.string.rw_settings_yearly_description),
-                            isChecked = yearlyEnabled,
-                            onCheckedChange = {
-                                yearlyEnabled = it
-                                DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_ENABLED, it)
-                                Timber.tag("RewindReminder").i("Rewind yearly -> $it")
-                            },
-                            icon = R.drawable.trending
-                        )
-
-                        // Notification toggle nested under its type: off type = off notification
-                        AnimatedVisibility(visible = yearlyEnabled) {
-                            OtherSwitchSettingEntry(
-                                title = stringResource(R.string.rw_settings_yearly_notification),
-                                text = stringResource(R.string.rw_settings_yearly_notification_description),
-                                isChecked = yearlyNotifEnabled,
-                                onCheckedChange = {
-                                    yearlyNotifEnabled = it
-                                    DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_NOTIF_ENABLED, it)
-                                    Timber.tag("RewindReminder").i("Rewind yearly notification -> $it")
-                                },
-                                icon = R.drawable.notification2,
-                                modifier = Modifier.padding(start = 25.dp)
-                            )
-                        }
-
-                        OtherSwitchSettingEntry(
-                            title = stringResource(R.string.rw_settings_monthly),
-                            text = stringResource(R.string.rw_settings_monthly_description),
-                            isChecked = monthlyEnabled,
-                            onCheckedChange = {
-                                monthlyEnabled = it
-                                DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, it)
-                                Timber.tag("RewindReminder").i("Rewind monthly -> $it")
-                            },
-                            icon = R.drawable.calendar
-                        )
-
-                        // Notification toggle nested under its type: off type = off notification
-                        AnimatedVisibility(visible = monthlyEnabled) {
-                            OtherSwitchSettingEntry(
-                                title = stringResource(R.string.rw_settings_monthly_notification),
-                                text = stringResource(R.string.rw_settings_monthly_notification_description),
-                                isChecked = monthlyNotifEnabled,
-                                onCheckedChange = {
-                                    monthlyNotifEnabled = it
-                                    DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_NOTIF_ENABLED, it)
-                                    Timber.tag("RewindReminder").i("Rewind monthly notification -> $it")
-                                },
-                                icon = R.drawable.notification2,
-                                modifier = Modifier.padding(start = 25.dp)
-                            )
-                        }
-
-                        OtherSwitchSettingEntry(
-                            title = stringResource(R.string.rw_settings_global),
-                            text = stringResource(R.string.rw_settings_global_description),
-                            isChecked = globalEnabled,
-                            onCheckedChange = {
-                                globalEnabled = it
-                                DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_GLOBAL_ENABLED, it)
-                                Timber.tag("RewindReminder").i("Rewind all-time -> $it")
-                            },
-                            icon = R.drawable.star_brilliant
-                        )
-                    }
-                }
             }
-        )
-    }
+            AnimatedVisibility(visible = rewindEnabled && monthlyEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
+                OtherSwitchSettingEntry(
+                    title = stringResource(R.string.rw_settings_monthly_notification),
+                    text = stringResource(R.string.rw_settings_monthly_notification_description),
+                    isChecked = monthlyNotifEnabled,
+                    onCheckedChange = {
+                        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_NOTIF_ENABLED, it)
+                        Timber.tag("RewindReminder").i("Rewind monthly notification -> $it")
+                    },
+                    icon = R.drawable.notification2
+                )
+            }
+            AnimatedVisibility(visible = monthlyPlaylistEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
+                OtherSwitchSettingEntry(
+                    title = stringResource(R.string.rw_settings_playlists_monthly_notification),
+                    text = stringResource(R.string.rw_settings_playlists_monthly_notification_description),
+                    isChecked = monthlyPlaylistNotifEnabled,
+                    onCheckedChange = {
+                        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_NOTIF_ENABLED, it)
+                        Timber.tag("RewindReminder").i("Rewind monthly playlist notification -> $it")
+                    },
+                    icon = R.drawable.notification2
+                )
+            }
+            AnimatedVisibility(visible = yearlyPlaylistEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
+                OtherSwitchSettingEntry(
+                    title = stringResource(R.string.rw_settings_playlists_yearly_notification),
+                    text = stringResource(R.string.rw_settings_playlists_yearly_notification_description),
+                    isChecked = yearlyPlaylistNotifEnabled,
+                    onCheckedChange = {
+                        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_NOTIF_ENABLED, it)
+                        Timber.tag("RewindReminder").i("Rewind yearly playlist notification -> $it")
+                    },
+                    icon = R.drawable.notification2
+                )
+            }
+        }
+    )
+
+    // "Rewind playlists" card: decoupled from the master switch — always visible. Spec 2
+    // wires these keys to the worker and its notification.
+    SettingsSectionCard(
+        title = stringResource(R.string.rw_settings_playlists_title),
+        icon = R.drawable.calendar,
+        content = {
+            OtherSwitchSettingEntry(
+                title = stringResource(R.string.rw_settings_playlists_monthly),
+                text = stringResource(R.string.rw_settings_playlists_monthly_description),
+                isChecked = monthlyPlaylistEnabled,
+                onCheckedChange = {
+                    DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, it)
+                    Timber.tag("RewindReminder").i("Rewind monthly playlist -> $it")
+                },
+                icon = R.drawable.calendar
+            )
+            OtherSwitchSettingEntry(
+                title = stringResource(R.string.rw_settings_playlists_yearly),
+                text = stringResource(R.string.rw_settings_playlists_yearly_description),
+                isChecked = yearlyPlaylistEnabled,
+                onCheckedChange = {
+                    DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, it)
+                    Timber.tag("RewindReminder").i("Rewind yearly playlist -> $it")
+                },
+                icon = R.drawable.trending
+            )
+        }
+    )
 }

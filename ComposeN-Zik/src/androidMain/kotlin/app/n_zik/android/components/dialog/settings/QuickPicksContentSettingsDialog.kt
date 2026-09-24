@@ -24,7 +24,6 @@ import app.it.fast4x.rimusic.utils.showNewAlbumsArtistsKey
 import app.it.fast4x.rimusic.utils.showNewAlbumsKey
 import app.it.fast4x.rimusic.utils.showPlaylistMightLikeKey
 import app.it.fast4x.rimusic.utils.showMoodsAndGenresKey
-import app.it.fast4x.rimusic.utils.showMonthlyPlaylistInQuickPicksKey
 import app.it.fast4x.rimusic.utils.showMyTopPlaylistKey
 import app.it.fast4x.rimusic.utils.showFreshFindsOldFavoritesKey
 import app.it.fast4x.rimusic.utils.showMixedForYouKey
@@ -66,7 +65,6 @@ private val defaultSectionOrder = listOf(
     "new_albums",
     "albums_for_you",
     "related_albums",
-    "monthly_playlists",
     "my_top",
     "similar_artists",
     "todays_biggest_hits",
@@ -104,7 +102,6 @@ private fun buildSectionDefs(): Map<String, QuickPicksSectionDef> = mapOf(
     "new_albums" to QuickPicksSectionDef("new_albums", showNewAlbumsKey, R.drawable.album, R.string.new_albums, true),
     "playlists_might_like" to QuickPicksSectionDef("playlists_might_like", showPlaylistMightLikeKey, R.drawable.playlist, R.string.playlists_you_might_like, true),
     "moods_genres" to QuickPicksSectionDef("moods_genres", showMoodsAndGenresKey, R.drawable.moods, R.string.moods_and_genres, true),
-    "monthly_playlists" to QuickPicksSectionDef("monthly_playlists", showMonthlyPlaylistInQuickPicksKey, R.drawable.featured_playlist, R.string.show_monthly_playlists_in_quick_picks, true),
     "my_top" to QuickPicksSectionDef("my_top", showMyTopPlaylistKey, R.drawable.person, R.string.my_top, true),
     "fresh_finds_old_favorites" to QuickPicksSectionDef("fresh_finds_old_favorites", showFreshFindsOldFavoritesKey, R.drawable.trending, R.string.fresh_finds_old_favorites, true),
     "mixed_for_you" to QuickPicksSectionDef("mixed_for_you", showMixedForYouKey, R.drawable.playlist, R.string.mixed_for_you, true),

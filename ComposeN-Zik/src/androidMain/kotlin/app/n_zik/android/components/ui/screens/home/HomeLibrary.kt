@@ -7,10 +7,13 @@ import androidx.compose.ui.graphics.graphicsLayer
 import app.n_zik.android.uiRoundnessShape
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.background
@@ -60,8 +63,12 @@ import app.it.fast4x.rimusic.ui.components.themed.ConfirmationDialog
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.size
+import androidx.annotation.DrawableRes
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Text
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -71,11 +78,11 @@ import sh.calvin.reorderable.ReorderableItem
 import app.kreate.android.themed.rimusic.component.playlist.PositionLock
 import app.it.fast4x.rimusic.enums.PlaylistSortBy
 import androidx.media3.common.util.UnstableApi
+import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.playlist.LocalPlaylistItemMenu
 import androidx.navigation.NavController
 import app.it.fast4x.compose.persist.persistList
 import app.n_zik.android.core.database.Database
-import app.it.fast4x.rimusic.MONTHLY_PREFIX
 import app.it.fast4x.rimusic.PINNED_PREFIX
 import app.n_zik.android.R
 import androidx.compose.foundation.clickable
@@ -86,7 +93,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 
-import app.it.fast4x.rimusic.YTP_PREFIX
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.PlaylistsType
 import app.it.fast4x.rimusic.enums.UiType
@@ -102,7 +108,6 @@ import app.it.fast4x.rimusic.ui.components.themed.MultiFloatingActionsContainer
 import app.it.fast4x.rimusic.ui.items.PlaylistItem
 import app.n_zik.android.components.tab.ItemSelector
 import app.it.fast4x.rimusic.ui.styling.Dimensions
-import app.it.fast4x.rimusic.utils.CheckMonthlyPlaylist
 import app.it.fast4x.rimusic.utils.Preference.HOME_LIBRARY_ITEM_SIZE
 import app.it.fast4x.rimusic.utils.Preference.HOME_LIBRARY_PLAYLIST_SORT_BY
 import app.it.fast4x.rimusic.utils.Preference.HOME_LIBRARY_PLAYLIST_SORT_ORDER
@@ -120,7 +125,6 @@ import app.it.fast4x.rimusic.utils.importYTMLibrarySongs
 import app.it.fast4x.rimusic.utils.importYTMUploadedSongs
 import app.it.fast4x.rimusic.utils.importYTMUploadedAlbums
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
-import app.it.fast4x.rimusic.utils.enableCreateMonthlyPlaylistsKey
 import app.it.fast4x.rimusic.utils.playlistTypeKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.showFloatingIconKey
@@ -175,6 +179,9 @@ import app.n_zik.android.typography
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.dialog.common.RetrySyncDialog
 import app.n_zik.android.components.dialog.settings.HomeLibraryToolbarSettingsDialog
+import app.n_zik.android.core.rewind.RewindPlaylists
+import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.utils.rememberDataStoreBooleanPreference
 import androidx.compose.material3.LinearWavyProgressIndicator
 import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
 import app.n_zik.android.thumbnailShape
@@ -186,6 +193,26 @@ import androidx.core.content.ContextCompat
 import java.util.ArrayList
 import android.content.Intent
 
+
+@Composable
+private fun RewindFilterIcon(@DrawableRes icon: Int) {
+    Box(
+        modifier = Modifier
+            .size(32.dp)
+            .background(
+                color = colorPalette().accent.copy(alpha = 0.1f),
+                shape = uiRoundnessShape()
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(icon),
+            tint = colorPalette().accent,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp)
+        )
+    }
+}
 
 @ExperimentalMaterial3Api
 @UnstableApi
@@ -221,7 +248,7 @@ fun HomeLibrary(
         PlaylistsType.YTPlaylist -> Sort( HOME_LIBRARY_YT_PLAYLIST_SORT_BY, HOME_LIBRARY_YT_PLAYLIST_SORT_ORDER, homeLibraryYTPlaylistSortMenuOrderKey, "lib_yt" )
 
         PlaylistsType.PinnedPlaylist -> Sort( HOME_LIBRARY_PINNED_PLAYLIST_SORT_BY, HOME_LIBRARY_PINNED_PLAYLIST_SORT_ORDER, homeLibraryPinnedPlaylistSortMenuOrderKey, "lib_pin" )
-        PlaylistsType.MonthlyPlaylist -> Sort( HOME_LIBRARY_MONTHLY_PLAYLIST_SORT_BY, HOME_LIBRARY_MONTHLY_PLAYLIST_SORT_ORDER, homeLibraryMonthlyPlaylistSortMenuOrderKey, "lib_mon" )
+        PlaylistsType.MonthlyPlaylist -> Sort( HOME_LIBRARY_MONTHLY_PLAYLIST_SORT_BY, HOME_LIBRARY_MONTHLY_PLAYLIST_SORT_ORDER, homeLibraryMonthlyPlaylistSortMenuOrderKey, "lib_rw" )
     }
     val positionLock = remember( sort.sortOrder ) { PositionLock(sort.sortOrder) }
     val itemSize = ItemSize.init( HOME_LIBRARY_ITEM_SIZE )
@@ -362,32 +389,37 @@ fun HomeLibrary(
 
     // START: Additional playlists
     val showPinnedPlaylists by rememberPreference(showPinnedPlaylistsKey, true)
-    val showMonthlyPlaylists by rememberPreference(showMonthlyPlaylistsKey, true)
+    val showRewind by rememberPreference(showMonthlyPlaylistsKey, true)
     val showYtPlaylists by rememberPreference(showYtPlaylistsKey, true)
+    // Rewind playlists creation toggles (live DataStore reads): spec 1 only consumes them
+    // for the Month/Year/All row visibility — spec 2 wires them to the worker
+    val rewindMonthlyPlaylistEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true)
+    val rewindYearlyPlaylistEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
+    var rewindPlaylistsFilter by rememberPreference(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.Month)
     val isSyncEnabled = isYouTubeSyncEnabled()
     val homePlaylistsOrderPref by rememberPreference(homePlaylistsOrderKey, "")
 
-    val playlistsDefaultOrder = listOf("all", "pinned_playlists", "monthly_playlists", "yt_playlists")
+    val playlistsDefaultOrder = listOf("all", "pinned_playlists", "rewind", "yt_playlists")
     val toggleMap = mapOf(
         "yt_playlists" to (showYtPlaylists && isSyncEnabled),
         "pinned_playlists" to showPinnedPlaylists,
-        "monthly_playlists" to showMonthlyPlaylists
+        "rewind" to showRewind
     )
     val typeMap = mapOf(
         "yt_playlists" to PlaylistsType.YTPlaylist,
         "pinned_playlists" to PlaylistsType.PinnedPlaylist,
-        "monthly_playlists" to PlaylistsType.MonthlyPlaylist
+        "rewind" to PlaylistsType.MonthlyPlaylist
     )
     val allLabel = stringResource(R.string.all)
     val ytLabel = stringResource(R.string.yt_playlists)
     val pinnedLabel = stringResource(R.string.pinned_playlists)
-    val monthlyLabel = stringResource(R.string.monthly_playlists)
+    val rewindLabel = stringResource(R.string.rewind)
     val labelMap = mapOf(
         "yt_playlists" to ytLabel,
         "pinned_playlists" to pinnedLabel,
-        "monthly_playlists" to monthlyLabel
+        "rewind" to rewindLabel
     )
-    val buttonsList = remember(showPinnedPlaylists, showMonthlyPlaylists, showYtPlaylists, homePlaylistsOrderPref, allLabel, ytLabel, pinnedLabel, monthlyLabel) {
+    val buttonsList = remember(showPinnedPlaylists, showRewind, showYtPlaylists, homePlaylistsOrderPref, allLabel, ytLabel, pinnedLabel, rewindLabel) {
         val order = try {
             val arr = JSONArray(homePlaylistsOrderPref)
             val parsed = (0 until arr.length()).map { arr.getString(it) }
@@ -409,9 +441,9 @@ fun HomeLibrary(
     }
     // END - Additional playlists
 
-    LaunchedEffect(showPinnedPlaylists, showMonthlyPlaylists, showYtPlaylists) {
+    LaunchedEffect(showPinnedPlaylists, showRewind, showYtPlaylists) {
         if (!showPinnedPlaylists && playlistType == PlaylistsType.PinnedPlaylist) playlistType = PlaylistsType.Playlist
-        if (!showMonthlyPlaylists && playlistType == PlaylistsType.MonthlyPlaylist) playlistType = PlaylistsType.Playlist
+        if (!showRewind && playlistType == PlaylistsType.MonthlyPlaylist) playlistType = PlaylistsType.Playlist
         if (!showYtPlaylists && playlistType == PlaylistsType.YTPlaylist) playlistType = PlaylistsType.Playlist
         if (!showYtPlaylists && playlistType == PlaylistsType.YTPlaylist) playlistType = PlaylistsType.Playlist
     }
@@ -422,12 +454,6 @@ fun HomeLibrary(
     // START - Import menu
     importMenu.Render()
     // END - Import menu
-
-    // START - Monthly playlist
-    val enableCreateMonthlyPlaylists by rememberPreference(enableCreateMonthlyPlaylistsKey, true)
-    if (enableCreateMonthlyPlaylists)
-        CheckMonthlyPlaylist()
-    // END - Monthly playlist
 
     val doAutoSync by rememberPreference(autosyncPlaylistsKey, false)
     var justSynced by rememberSaveable { mutableStateOf(!doAutoSync) }
@@ -533,24 +559,25 @@ fun HomeLibrary(
                 }
 
 
-                val listPrefix =
-                    when( playlistType ) {
-                        PlaylistsType.Playlist -> ""    // Matches everything
-                        PlaylistsType.PinnedPlaylist -> PINNED_PREFIX
-                        PlaylistsType.MonthlyPlaylist -> MONTHLY_PREFIX
-                        PlaylistsType.YTPlaylist -> YTP_PREFIX
-                    }
-                val condition: (PlaylistPreview) -> Boolean = {
+                val condition: (PlaylistPreview) -> Boolean = { preview ->
                     when (playlistType) {
-                        PlaylistsType.YTPlaylist -> it.playlist.isYoutubePlaylist
+                        PlaylistsType.YTPlaylist -> preview.playlist.isYoutubePlaylist
                         PlaylistsType.Playlist -> {
-                            val isMonthly = it.playlist.name.startsWith(MONTHLY_PREFIX, true)
-                            val isPinned = it.playlist.name.startsWith(PINNED_PREFIX, true)
-                            
-                            (!isMonthly || showMonthlyPlaylists) && 
+                            val isRewind = RewindPlaylists.isRewind(preview.playlist.name)
+                            val isPinned = preview.playlist.name.startsWith(PINNED_PREFIX, true)
+
+                            (!isRewind || showRewind) &&
                             (!isPinned || showPinnedPlaylists)
                         }
-                        else -> it.playlist.name.startsWith(listPrefix, true)
+                        // Rewind playlists category: month/year content per the creation
+                        // toggles and the selected Month/Year/All chip (RewindPlaylists contract)
+                        PlaylistsType.MonthlyPlaylist -> RewindPlaylists.isShown(
+                            preview.playlist.name,
+                            rewindMonthlyPlaylistEnabled,
+                            rewindYearlyPlaylistEnabled,
+                            rewindPlaylistsFilter
+                        )
+                        PlaylistsType.PinnedPlaylist -> preview.playlist.name.startsWith(PINNED_PREFIX, true)
                     }
                 }
                 val filteredItems = itemsOnDisplay.filter( condition )
@@ -625,6 +652,77 @@ fun HomeLibrary(
                                 currentValue = playlistType,
                                 onValueUpdate = { playlistType = it },
                                 modifier = Modifier.padding(end = 12.dp)
+                            )
+                        }
+                    }
+                    // Month/Year/All filter: only when the "Rewind" chip is selected AND
+                    // both creation toggles are on (one active type -> nothing to filter, the
+                    // tab shows that type directly; none -> empty list, no row)
+                    val rewindFilterMonthLabel = stringResource(R.string.rewind_filter_month)
+                    val rewindFilterYearLabel = stringResource(R.string.rewind_filter_year)
+                    val rewindFilterAllLabel = stringResource(R.string.all)
+                    AnimatedVisibility(
+                        visible = playlistType == PlaylistsType.MonthlyPlaylist &&
+                                RewindPlaylists.rowVisible(rewindMonthlyPlaylistEnabled, rewindYearlyPlaylistEnabled),
+                        enter = fadeIn(animationSpec = tween(200)) + expandVertically(animationSpec = tween(200)),
+                        exit = fadeOut(animationSpec = tween(200)) + shrinkVertically(animationSpec = tween(200))
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .padding(bottom = 8.dp)
+                                .fillMaxWidth()
+                        ) {
+                            FilterChip(
+                                label = {
+                                    Text(
+                                        text = when (rewindPlaylistsFilter) {
+                                            RewindPlaylists.Filter.Month -> rewindFilterMonthLabel
+                                            RewindPlaylists.Filter.Year -> rewindFilterYearLabel
+                                            RewindPlaylists.Filter.All -> rewindFilterAllLabel
+                                        }
+                                    )
+                                },
+                                selected = true,
+                                shape = uiRoundnessShape(),
+                                colors = FilterChipDefaults.filterChipColors(
+                                    containerColor = colorPalette().background1,
+                                    labelColor = colorPalette().text,
+                                    selectedContainerColor = colorPalette().accent,
+                                    selectedLabelColor = colorPalette().onAccent,
+                                ),
+                                onClick = {
+                                    menuState.display {
+                                        ListMenu.Menu(title = stringResource(R.string.filter_by)) {
+                                            ListMenu.Entry(
+                                                text = rewindFilterMonthLabel,
+                                                icon = { RewindFilterIcon(R.drawable.stat_month) },
+                                                onClick = {
+                                                    menuState.hide()
+                                                    rewindPlaylistsFilter = RewindPlaylists.Filter.Month
+                                                }
+                                            )
+                                            ListMenu.Entry(
+                                                text = rewindFilterYearLabel,
+                                                icon = { RewindFilterIcon(R.drawable.stat_year) },
+                                                onClick = {
+                                                    menuState.hide()
+                                                    rewindPlaylistsFilter = RewindPlaylists.Filter.Year
+                                                }
+                                            )
+                                            ListMenu.Entry(
+                                                text = rewindFilterAllLabel,
+                                                icon = { RewindFilterIcon(R.drawable.musical_notes) },
+                                                onClick = {
+                                                    menuState.hide()
+                                                    rewindPlaylistsFilter = RewindPlaylists.Filter.All
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
                             )
                         }
                     }

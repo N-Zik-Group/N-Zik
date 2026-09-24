@@ -554,7 +554,6 @@
     <string name="te_slide_horizontal">水平滑動</string>
     <string name="info_wait_it_may_take_a_few_minutes">請稍後，可能需要數分鐘...</string>
     <string name="album_alternative_versions">其他版本</string>
-    <string name="monthly_playlists">每月播放清單</string>
     <string name="month_january_s">一月 %s</string>
     <string name="month_february_s">二月 %s</string>
     <string name="month_march_s">三月 %s</string>
@@ -581,9 +580,6 @@
     <string name="bg_colors_gradient_background_from_theme">根據主題的漸層背景</string>
     <string name="vimusic_show_search_button_in_navigation_bar">在導航列中顯示搜尋按鈕</string>
     <string name="vismusic_only_in_left_right_navigation_bar">Only for ViMusic ui mode in left/right navigation bar</string>
-    <string name="enable_monthly_playlists_creation">啟用建立每月播放清單</string>
-    <string name="show_monthly_playlists_in_quick_picks">在快速选择中显示每月播放列表</string>
-    <string name="show_monthly_playlists_in_library">在书库中显示每月播放列表</string>
     <string name="info_no_songs_yet">尚無歌曲</string>
     <string name="theme_customized">自訂</string>
     <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">您真的想要重置自定义的亮色主题颜色吗？</string>

@@ -61,7 +61,7 @@ import timber.log.Timber
 
 /**
  * Third step of the first-launch onboarding flow: pick where the display name
- * shown on the Rewind slides comes from.
+ * shown on the app comes from.
  *
  * "Log in (YouTube)" reuses the existing cookie WebView login from the Accounts tab
  * (same [YouTubeLogin] composable, same on-login side effects); success switches the

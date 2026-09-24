@@ -554,7 +554,6 @@
     <string name="te_slide_horizontal">Desplaça horitzontal</string>
     <string name="info_wait_it_may_take_a_few_minutes">Espera, pot trigar uns minuts...</string>
     <string name="album_alternative_versions">Versions alternatives</string>
-    <string name="monthly_playlists">Llistes de reproducció mensuals</string>
     <string name="month_january_s">Gener %s</string>
     <string name="month_february_s">Febrer %s</string>
     <string name="month_march_s">Març %s</string>
@@ -581,9 +580,6 @@
     <string name="bg_colors_gradient_background_from_theme">Fons degradat del tema</string>
     <string name="vimusic_show_search_button_in_navigation_bar">Mostra el botó de cerca a la barra de navegació</string>
     <string name="vismusic_only_in_left_right_navigation_bar">Només per al mode d\'interfície d\'usuari de ViMusic a la barra de navegació esquerra/dreta</string>
-    <string name="enable_monthly_playlists_creation">Activa la creació de llistes de reproducció mensuals</string>
-    <string name="show_monthly_playlists_in_quick_picks">Show Monthly Playlists in Quick Picks</string>
-    <string name="show_monthly_playlists_in_library">Show Monthly Playlists in Library</string>
     <string name="info_no_songs_yet">Encara no hi ha cançons</string>
     <string name="theme_customized">Personalitzat</string>
     <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">Realment voleu restablir els colors del tema de llum personalitzats?</string>

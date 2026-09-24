@@ -554,7 +554,6 @@
     <string name="te_slide_horizontal">Glid vandret</string>
     <string name="info_wait_it_may_take_a_few_minutes">Vent, det kan tage et par minutter...</string>
     <string name="album_alternative_versions">Alternative versioner</string>
-    <string name="monthly_playlists">Månedlige playlister</string>
     <string name="month_january_s">Januar %s</string>
     <string name="month_february_s">Februar %s</string>
     <string name="month_march_s">Marts %s</string>
@@ -581,9 +580,6 @@
     <string name="bg_colors_gradient_background_from_theme">Gradientbaggrund fra tema</string>
     <string name="vimusic_show_search_button_in_navigation_bar">Vis søgeknap i navigationslinje</string>
     <string name="vismusic_only_in_left_right_navigation_bar">Kun for ViMusic UI-tilstand i venstre/højre navigationslinje</string>
-    <string name="enable_monthly_playlists_creation">Aktivér oprettelse af månedlige playlister</string>
-    <string name="show_monthly_playlists_in_quick_picks">Vis månedlige spillelister i hurtige valg</string>
-    <string name="show_monthly_playlists_in_library">Vis månedlige afspilningslister i biblioteket</string>
     <string name="info_no_songs_yet">Ingen sange endnu</string>
     <string name="theme_customized">Tilpasset</string>
     <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">Vil du virkelig nulstille de tilpassede farver for lyst tema?</string>

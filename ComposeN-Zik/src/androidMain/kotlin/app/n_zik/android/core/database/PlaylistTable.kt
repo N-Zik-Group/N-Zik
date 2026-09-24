@@ -9,7 +9,6 @@ import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Update
 import androidx.room.Upsert
-import app.it.fast4x.rimusic.MONTHLY_PREFIX
 import app.it.fast4x.rimusic.PINNED_PREFIX
 
 import app.it.fast4x.rimusic.enums.PlaylistSortBy
@@ -70,20 +69,6 @@ interface PlaylistTable {
         LIMIT :limit
     """)
     fun allYTPlaylistSongs( limit: Int = Int.MAX_VALUE ): Flow<List<Song>>
-
-    /**
-     * @return list of songs that were mapped to at least 1 **monthly** playlist
-     */
-    @Query("""
-        SELECT DISTINCT S.*
-        FROM SongPlaylistMap spm
-        JOIN Song S ON S.id = spm.songId
-        JOIN Playlist P ON P.id = spm.playlistId
-        WHERE P.name LIKE '$MONTHLY_PREFIX%' COLLATE NOCASE
-        ORDER BY S.ROWID
-        LIMIT :limit
-    """)
-    fun allMonthlySongs( limit: Int = Int.MAX_VALUE ): Flow<List<Song>>
 
     /**
      * @return all playlists from this table with number of songs they carry

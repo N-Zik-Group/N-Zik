@@ -554,7 +554,6 @@
     <string name="te_slide_horizontal">Slide Horizontal</string>
     <string name="info_wait_it_may_take_a_few_minutes">Even geduld, dit kan enkele minuten duren...</string>
     <string name="album_alternative_versions">Alternative versions</string>
-    <string name="monthly_playlists">maandelijks</string>
     <string name="month_january_s">January %s</string>
     <string name="month_february_s">February %s</string>
     <string name="month_march_s">March %s</string>
@@ -581,9 +580,6 @@
     <string name="bg_colors_gradient_background_from_theme">Kleurovergang van thema</string>
     <string name="vimusic_show_search_button_in_navigation_bar">Toon de zoek knop in de navigatie balk</string>
     <string name="vismusic_only_in_left_right_navigation_bar">Alleen voor de linker- of rechternavigatiebalk in ViMusic UI</string>
-    <string name="enable_monthly_playlists_creation">Enable monthly playlists creation</string>
-    <string name="show_monthly_playlists_in_quick_picks">Toon Maandelijkse Afspeellijsten in Quick Picks</string>
-    <string name="show_monthly_playlists_in_library">Maandelijkse afspeellijsten tonen in bibliotheek</string>
     <string name="info_no_songs_yet">Geen nummers beschikbaar</string>
     <string name="theme_customized">Customized</string>
     <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">Do you really want to reset the custom light theme colors?</string>

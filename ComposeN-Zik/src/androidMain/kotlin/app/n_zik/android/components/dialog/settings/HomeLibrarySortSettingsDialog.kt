@@ -36,13 +36,13 @@ object HomeLibrarySortSettingsDialog : Dialog {
     private val libraryPlaylistSortIds = listOf("Name", "SongCount", "ListeningTime", "PlayCount", "DateAdded", "Custom")
     private val ytPlaylistSortIds = listOf("Name", "SongCount", "DateAdded")
     private val pinnedPlaylistSortIds = listOf("Name", "SongCount", "ListeningTime", "PlayCount", "DateAdded")
-    private val monthlyPlaylistSortIds = listOf("Name", "SongCount", "DateAdded")
+    private val rewindSortIds = listOf("Name", "SongCount", "DateAdded")
 
     private enum class LibraryTab(val textId: Int, val availableIds: List<String>) {
         Playlist(R.string.playlists, libraryPlaylistSortIds),
         YTPlaylist(R.string.youtube_playlist, ytPlaylistSortIds),
         PinnedPlaylist(R.string.pinned_playlists, pinnedPlaylistSortIds),
-        MonthlyPlaylist(R.string.monthly_playlists, monthlyPlaylistSortIds)
+        Rewind(R.string.rewind, rewindSortIds)
     }
 
     private val tabs = LibraryTab.entries
@@ -91,13 +91,13 @@ object HomeLibrarySortSettingsDialog : Dialog {
             LibraryTab.Playlist -> homeLibraryPlaylistSortMenuOrderKey
             LibraryTab.YTPlaylist -> homeLibraryYTPlaylistSortMenuOrderKey
             LibraryTab.PinnedPlaylist -> homeLibraryPinnedPlaylistSortMenuOrderKey
-            LibraryTab.MonthlyPlaylist -> homeLibraryMonthlyPlaylistSortMenuOrderKey
+            LibraryTab.Rewind -> homeLibraryMonthlyPlaylistSortMenuOrderKey
         }
         fun getPrefix(tab: LibraryTab): String = when (tab) {
             LibraryTab.Playlist -> "lib_pl"
             LibraryTab.YTPlaylist -> "lib_yt"
             LibraryTab.PinnedPlaylist -> "lib_pin"
-            LibraryTab.MonthlyPlaylist -> "lib_mon"
+            LibraryTab.Rewind -> "lib_rw"
         }
 
         var workingOrders by remember {
@@ -180,13 +180,13 @@ object HomeLibrarySortSettingsDialog : Dialog {
                 LibraryTab.Playlist -> "lib_pl"
                 LibraryTab.YTPlaylist -> "lib_yt"
                 LibraryTab.PinnedPlaylist -> "lib_pin"
-                LibraryTab.MonthlyPlaylist -> "lib_mon"
+                LibraryTab.Rewind -> "lib_rw"
             }
             val key = when (tab) {
                 LibraryTab.Playlist -> homeLibraryPlaylistSortMenuOrderKey
                 LibraryTab.YTPlaylist -> homeLibraryYTPlaylistSortMenuOrderKey
                 LibraryTab.PinnedPlaylist -> homeLibraryPinnedPlaylistSortMenuOrderKey
-                LibraryTab.MonthlyPlaylist -> homeLibraryMonthlyPlaylistSortMenuOrderKey
+                LibraryTab.Rewind -> homeLibraryMonthlyPlaylistSortMenuOrderKey
             }
             tab.availableIds.forEach { id -> edit.putBoolean("${p}_sort_${id}_visible", true) }
             edit.putString(key, serializeOrder(tab.availableIds))

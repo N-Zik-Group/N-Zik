@@ -554,7 +554,6 @@
     <string name="te_slide_horizontal">Горизонтальный сдвиг</string>
     <string name="info_wait_it_may_take_a_few_minutes">Пожалуйста, подождите, это может занять несколько минут...</string>
     <string name="album_alternative_versions">Альтернативные версии</string>
-    <string name="monthly_playlists">Ежемесячно</string>
     <string name="month_january_s">Январь %s</string>
     <string name="month_february_s">Февраль %s</string>
     <string name="month_march_s">Март %s</string>
@@ -581,9 +580,6 @@
     <string name="bg_colors_gradient_background_from_theme">Градиент из темы</string>
     <string name="vimusic_show_search_button_in_navigation_bar">Показывать кнопку поиска на панели навигации</string>
     <string name="vismusic_only_in_left_right_navigation_bar">Только для левой или правой панели навигации в ViMusic UI</string>
-    <string name="enable_monthly_playlists_creation">Включить создание ежемесячных плейлистов</string>
-    <string name="show_monthly_playlists_in_quick_picks">Плейлисты за месяц в Быстрой выборке</string>
-    <string name="show_monthly_playlists_in_library">Показывать ежемесячные плейлисты в библиотеке</string>
     <string name="info_no_songs_yet">Нет доступных песен</string>
     <string name="theme_customized">Пользовательская</string>
     <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">Вы действительно хотите сбросить пользовательские цвета светлой темы?</string>

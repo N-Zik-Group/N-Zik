@@ -36,7 +36,7 @@ object DataStoreUtils {
      */
     const val KEY_ONBOARDING_PERMISSIONS_REQUESTED = "onboarding_permissions_requested"
 
-    /** Source of the display name shown on the Rewind slides (see [resolveDisplayName]). */
+    /** Source of the display name shown on the app (see [resolveDisplayName]). */
     const val KEY_DISPLAY_NAME_SOURCE = "display_name_source"
 
     // Display name sources (values stored under [KEY_DISPLAY_NAME_SOURCE])
@@ -63,6 +63,29 @@ object DataStoreUtils {
 
     /** Yearly reminder notification; also gated on [KEY_REWIND_YEARLY_ENABLED]. */
     const val KEY_REWIND_YEARLY_NOTIF_ENABLED = "rewind_yearly_notif_enabled"
+
+    // Rewind playlists (spec "Retrait du mécanisme legacy « monthly playlists » + catégorie
+    // « Rewind playlists »"). Frozen contract for spec 2: the playlist worker gates its
+    // CREATION on KEY_REWIND_{TYPE}_PLAYLIST_ENABLED and its NOTIFICATION on
+    // KEY_REWIND_{TYPE}_PLAYLIST_NOTIF_ENABLED. Spec 1 only consumes the two creation keys
+    // to show/hide the Month/Year/All filter row. All default to `true` on read (zero
+    // regression on existing installs), same store as the deck toggles.
+    //
+    // Decoupling (user decision, 2026-09-24): these keys are NOT gated by
+    // [KEY_REWIND_ENABLED] nor by the deck type toggles — a deck type off does not hide its
+    // playlist.
+
+    /** Creation of the monthly rewind playlist (`rewind-monthly:YYYYMM`). */
+    const val KEY_REWIND_MONTHLY_PLAYLIST_ENABLED = "rewind_monthly_playlist_enabled"
+
+    /** Creation of the yearly rewind playlist (`rewind-yearly:YYYY`). */
+    const val KEY_REWIND_YEARLY_PLAYLIST_ENABLED = "rewind_yearly_playlist_enabled"
+
+    /** Notification when the monthly rewind playlist is ready; also gated on [KEY_REWIND_MONTHLY_PLAYLIST_ENABLED]. */
+    const val KEY_REWIND_MONTHLY_PLAYLIST_NOTIF_ENABLED = "rewind_monthly_playlist_notif_enabled"
+
+    /** Notification when the yearly rewind playlist is ready; also gated on [KEY_REWIND_YEARLY_PLAYLIST_ENABLED]. */
+    const val KEY_REWIND_YEARLY_PLAYLIST_NOTIF_ENABLED = "rewind_yearly_playlist_notif_enabled"
 
     private const val PREFS_NAME = "app_settings"
 

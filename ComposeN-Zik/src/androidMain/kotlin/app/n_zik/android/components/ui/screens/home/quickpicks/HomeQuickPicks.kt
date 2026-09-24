@@ -36,10 +36,8 @@ import androidx.navigation.NavController
 import app.it.fast4x.compose.persist.persistList
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.n_zik.android.MainApplication
-import app.it.fast4x.rimusic.MONTHLY_PREFIX
 import app.it.fast4x.rimusic.enums.*
 import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.models.PlaylistPreview
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
@@ -290,12 +288,6 @@ fun HomeQuickPicks(
                 }.orEmpty()
             }
 
-            val monthlyPlaylistsState = persistList<PlaylistPreview>("home/quickpicks/local/monthlyPlaylists")
-            val monthlyPlaylists by remember {
-                Database.playlistTable.allAsPreview().distinctUntilChanged().map { list -> list.filter { it.playlist.name.startsWith(MONTHLY_PREFIX, true) } }
-            }.collectAsStateWithLifecycle(monthlyPlaylistsState.value, context = NzikDispatchers.DATA)
-            LaunchedEffect(monthlyPlaylists) { monthlyPlaylistsState.value = monthlyPlaylists }
-
             val maxTopPlaylistItems by rememberPreference(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`)
             val maxTopPlaylistItemsCustomValue by rememberPreference(MaxTopPlaylistItemsCustomValueKey, 10)
             val myTopSongsState = persistList<Song>("home/quickpicks/local/myTopSongs")
@@ -310,7 +302,6 @@ fun HomeQuickPicks(
             val showNewAlbums by rememberPreference(showNewAlbumsKey, true)
             val showPlaylistMightLike by rememberPreference(showPlaylistMightLikeKey, true)
             val showMoodsAndGenres by rememberPreference(showMoodsAndGenresKey, true)
-            val showMonthlyPlaylists by rememberPreference(showMonthlyPlaylistInQuickPicksKey, true)
             val showMyTop by rememberPreference(showMyTopPlaylistKey, true)
             val showFreshFindsOldFavorites by rememberPreference(showFreshFindsOldFavoritesKey, true)
             val showMixedForYou by rememberPreference(showMixedForYouKey, true)
@@ -486,14 +477,6 @@ fun HomeQuickPicks(
                             item(key = "moods_genres") {
                                 AnimatedVisibility(visible = showMoodsAndGenres && hasMoodsGenres, modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
                                     MoodsAndGenresSection(showMoodsAndGenres, state.discoverPageInit.value, onMoodClick, navController, gridsContentPadding, displayedSectionTitles)
-                                }
-                            }
-                        }
-                        "monthly_playlists" -> {
-                            val hasMonthlyPlaylists = monthlyPlaylists.isNotEmpty()
-                            item(key = "monthly_playlists") {
-                                AnimatedVisibility(visible = showMonthlyPlaylists && hasMonthlyPlaylists, modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    MonthlyPlaylistsSection(showMonthlyPlaylists, monthlyPlaylists, navController, endPaddingValues, playlistThumbnailSizeDp, playlistThumbnailSizePx, disableScrollingText)
                                 }
                             }
                         }
@@ -697,7 +680,6 @@ private val defaultQuickPicksSectionOrder = listOf(
     "new_albums",
     "albums_for_you",
     "related_albums",
-    "monthly_playlists",
     "my_top",
     "similar_artists",
     "todays_biggest_hits",

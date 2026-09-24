@@ -40,7 +40,7 @@ object HomeLibraryToolbarSettingsDialog : Dialog {
 
     private fun getTabPrefix(tab: String): String = when (tab) {
         "pin" -> "pin"
-        "mon" -> "mon"
+        "rw" -> "rw"
         "yt" -> "yt"
         else -> "all"
     }
@@ -73,7 +73,7 @@ object HomeLibraryToolbarSettingsDialog : Dialog {
         val tabs = listOf(
             "all" to homeLibraryToolbarOrderKey,
             "pin" to homeLibraryPinnedPlaylistToolbarOrderKey,
-            "mon" to homeLibraryMonthlyPlaylistToolbarOrderKey,
+            "rw" to homeLibraryMonthlyPlaylistToolbarOrderKey,
             "yt" to homeLibraryYTPlaylistToolbarOrderKey
         )
 
@@ -178,7 +178,7 @@ object HomeLibraryToolbarSettingsDialog : Dialog {
                         text = {
                             Text(stringResource(when (tab.first) {
                                 "pin" -> R.string.pinned_playlists
-                                "mon" -> R.string.monthly_playlists
+                                "rw" -> R.string.rewind
                                 "yt" -> R.string.yt_playlists
                                 else -> R.string.all
                             }))
@@ -236,7 +236,7 @@ object HomeLibraryToolbarSettingsDialog : Dialog {
         val tabs = listOf(
             "all" to homeLibraryToolbarOrderKey,
             "pin" to homeLibraryPinnedPlaylistToolbarOrderKey,
-            "mon" to homeLibraryMonthlyPlaylistToolbarOrderKey,
+            "rw" to homeLibraryMonthlyPlaylistToolbarOrderKey,
             "yt" to homeLibraryYTPlaylistToolbarOrderKey
         )
         tabs.forEach { (tab, key) ->

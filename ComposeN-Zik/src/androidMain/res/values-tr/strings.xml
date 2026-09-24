@@ -554,7 +554,6 @@
     <string name="te_slide_horizontal">Yatay Kaydır</string>
     <string name="info_wait_it_may_take_a_few_minutes">Lütfen bekleyin, bu işlem birkaç dakika sürebilir...</string>
     <string name="album_alternative_versions">Alternatif versiyonlar</string>
-    <string name="monthly_playlists">Aylık</string>
     <string name="month_january_s">Ocak %s</string>
     <string name="month_february_s">Şubat %s</string>
     <string name="month_march_s">Mart %s</string>
@@ -581,9 +580,6 @@
     <string name="bg_colors_gradient_background_from_theme">Temadan geçiş (gradient)</string>
     <string name="vimusic_show_search_button_in_navigation_bar">Gezinme çubuğunda arama düğmesini göster</string>
     <string name="vismusic_only_in_left_right_navigation_bar">Sadece ViMusic arayüzündeki sol veya sağ gezinme çubuğu için</string>
-    <string name="enable_monthly_playlists_creation">Aylık çalma listeleri oluşturmayı etkinleştir</string>
-    <string name="show_monthly_playlists_in_quick_picks">Hızlı Seçimlerde Aylık Çalma Listelerini Göster</string>
-    <string name="show_monthly_playlists_in_library">Kütüphanede Aylık Çalma Listelerini Göster</string>
     <string name="info_no_songs_yet">Şarkılar bulunamadı</string>
     <string name="theme_customized">Özelleştirilmiş</string>
     <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">Özel açık tema renklerini gerçekten sıfırlamak istiyor musunuz?</string>

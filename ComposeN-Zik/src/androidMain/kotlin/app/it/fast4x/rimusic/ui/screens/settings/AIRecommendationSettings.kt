@@ -2,13 +2,6 @@ package app.it.fast4x.rimusic.ui.screens.settings
 
 import app.n_zik.android.core.database.*
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -52,8 +45,6 @@ import app.it.fast4x.rimusic.utils.showRelatedAlbumsKey
 import app.it.fast4x.rimusic.utils.showSimilarArtistsKey
 import app.it.fast4x.rimusic.utils.showTipsKey
 import app.it.fast4x.rimusic.utils.recommendationsNumberKey
-import app.it.fast4x.rimusic.utils.enableCreateMonthlyPlaylistsKey
-import app.it.fast4x.rimusic.utils.showMonthlyPlaylistsKey
 import app.it.fast4x.rimusic.utils.showMyTopPlaylistKey
 import app.it.fast4x.rimusic.utils.showStatsListeningTimeKey
 import app.it.fast4x.rimusic.utils.maxStatisticsItemsKey
@@ -66,6 +57,8 @@ import android.text.TextUtils
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.settings.RewindSettingsCard
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.utils.rememberDataStoreBooleanPreference
 import app.kreate.android.me.knighthat.utils.Toaster
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
@@ -108,12 +101,6 @@ fun DefaultAIRecommendationSettings() {
     var recommendationsNumber by rememberPreference(recommendationsNumberKey, RecommendationsNumber.Adaptive)
     recommendationsNumber = RecommendationsNumber.Adaptive
     
-    // Monthly Playlists Settings
-    var enableCreateMonthlyPlaylists by rememberPreference(enableCreateMonthlyPlaylistsKey, true)
-    enableCreateMonthlyPlaylists = true
-    var showMonthlyPlaylists by rememberPreference(showMonthlyPlaylistsKey, true)
-    showMonthlyPlaylists = true
-    
     // Statistics Settings
     var showMyTopPlaylist by rememberPreference(showMyTopPlaylistKey, true)
     showMyTopPlaylist = true
@@ -131,7 +118,6 @@ fun DefaultAIRecommendationSettings() {
     maxTopPlaylistItemsCustomValue = 10
 }
 
-@ExperimentalAnimationApi
 @UnstableApi
 @Composable
 fun AIRecommendationSettings(
@@ -152,16 +138,17 @@ fun AIRecommendationSettings(
     var showMonthlyPlaylistInQuickPicks by rememberPreference(showMonthlyPlaylistInQuickPicksKey, true)
     var showCharts by rememberPreference(showChartsKey, true)
     var enableQuickPicksPage by rememberPreference(enableQuickPicksPageKey, true)
+    // Rewind master switch: live DataStore read, flipped from the General card below
+    val rewindEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_ENABLED, true)
+    val context = LocalContext.current
     var clearEvents by remember { mutableStateOf(false) }
+    var showTipsDialog by remember { mutableStateOf(false) }
+    var showQuickSelectionDialog by remember { mutableStateOf(false) }
     var localRecommandationsNumber by rememberPreference(
         key = "LocalRecommandationsNumber",
         defaultValue = LocalRecommandationsNumber.SixQ
     )
     var recommendationsNumber by rememberPreference(recommendationsNumberKey, RecommendationsNumber.Adaptive)
-    
-    // Monthly Playlists Settings
-    var enableCreateMonthlyPlaylists by rememberPreference(enableCreateMonthlyPlaylistsKey, true)
-    var showMonthlyPlaylists by rememberPreference(showMonthlyPlaylistsKey, true)
     
     // Statistics Settings
     var showMyTopPlaylist by rememberPreference(showMyTopPlaylistKey, true)
@@ -175,10 +162,8 @@ fun AIRecommendationSettings(
     
     val search = Search()
     
-    val searchCtx_0 = search.inputValue.isBlank() || stringResource(R.string.tab_general).contains(search.inputValue, true) || stringResource(R.string.enable_quick_picks_page).contains(search.inputValue, true) || stringResource(R.string.disable_if_you_do_not_want_to_see).contains(search.inputValue, true)
-    val searchCtx_1 = search.inputValue.isBlank() || stringResource(R.string.quick_picks).contains(search.inputValue, true) || stringResource(R.string.quick_picks_content).contains(search.inputValue, true) || stringResource(R.string.show).contains(search.inputValue, true) || stringResource(R.string.tips).contains(search.inputValue, true) || stringResource(R.string.charts).contains(search.inputValue, true) || stringResource(R.string.related_albums).contains(search.inputValue, true) || stringResource(R.string.similar_artists).contains(search.inputValue, true) || stringResource(R.string.new_albums_of_your_artists).contains(search.inputValue, true) || stringResource(R.string.new_albums).contains(search.inputValue, true) || stringResource(R.string.playlists_you_might_like).contains(search.inputValue, true) || stringResource(R.string.moods_and_genres).contains(search.inputValue, true) || stringResource(R.string.show_monthly_playlists_in_quick_picks).contains(search.inputValue, true) || stringResource(R.string.disable_if_you_do_not_want_to_see).contains(search.inputValue, true)
-    val searchCtx_2 = search.inputValue.isBlank() || stringResource(R.string.tips).contains(search.inputValue, true) || stringResource(R.string.quick_selection_type).contains(search.inputValue, true)
-    val searchCtx_3 = search.inputValue.isBlank() || stringResource(R.string.monthly_playlists).contains(search.inputValue, true) || stringResource(R.string.show_monthly_playlists_in_library).contains(search.inputValue, true) || stringResource(R.string.enable_monthly_playlists_creation).contains(search.inputValue, true)
+    val searchCtx_0 = search.inputValue.isBlank() || stringResource(R.string.tab_general).contains(search.inputValue, true) || stringResource(R.string.enable_quick_picks_page).contains(search.inputValue, true) || stringResource(R.string.rw_settings_master).contains(search.inputValue, true) || stringResource(R.string.rw_settings_title).contains(search.inputValue, true) || stringResource(R.string.disable_if_you_do_not_want_to_see).contains(search.inputValue, true)
+    val searchCtx_1 = search.inputValue.isBlank() || stringResource(R.string.quick_picks).contains(search.inputValue, true) || stringResource(R.string.quick_picks_content).contains(search.inputValue, true) || stringResource(R.string.show).contains(search.inputValue, true) || stringResource(R.string.tips).contains(search.inputValue, true) || stringResource(R.string.charts).contains(search.inputValue, true) || stringResource(R.string.related_albums).contains(search.inputValue, true) || stringResource(R.string.similar_artists).contains(search.inputValue, true) || stringResource(R.string.new_albums_of_your_artists).contains(search.inputValue, true) || stringResource(R.string.new_albums).contains(search.inputValue, true) || stringResource(R.string.playlists_you_might_like).contains(search.inputValue, true) || stringResource(R.string.moods_and_genres).contains(search.inputValue, true) || stringResource(R.string.quick_selection_type).contains(search.inputValue, true) || stringResource(R.string.disable_if_you_do_not_want_to_see).contains(search.inputValue, true)
     val searchCtx_4 = search.inputValue.isBlank() || stringResource(R.string.smart_recommendations).contains(search.inputValue, true) || stringResource(R.string.smart_recommendations_number).contains(search.inputValue, true)
     val searchCtx_5 = search.inputValue.isBlank() || stringResource(R.string.statistics).contains(search.inputValue, true) || stringResource(R.string.statistics_max_number_of_items).contains(search.inputValue, true) || stringResource(R.string.listening_time).contains(search.inputValue, true)
     val searchCtx_6 = search.inputValue.isBlank() || stringResource(R.string.playlist_top).contains(search.inputValue, true) || stringResource(R.string.statistics_max_number_of_items).contains(search.inputValue, true) || stringResource(R.string.my_playlist_top1).contains(search.inputValue, true)
@@ -228,426 +213,318 @@ fun AIRecommendationSettings(
         search.ToolBarButton()
         search.SearchBar( this )
 
-        RewindSettingsCard()
-
         // General Settings Section
-        AnimatedVisibility(
+        SettingsSectionCard(
+            title = stringResource(R.string.tab_general),
+            icon = R.drawable.settings,
             visible = searchCtx_0,
-            enter = fadeIn(animationSpec = tween(600)) + scaleIn(
-                animationSpec = tween(600),
-                initialScale = 0.9f
-            )
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.tab_general),
-                icon = R.drawable.settings,
-                content = {
-                    if (search.inputValue.isBlank() || stringResource(R.string.enable_quick_picks_page).contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                            title = stringResource(R.string.enable_quick_picks_page),
-                            text = "",
-                            isChecked = enableQuickPicksPage,
-                            onCheckedChange = {
-                                enableQuickPicksPage = it
-                            },
-                            icon = R.drawable.sparkles
-                        )
-                    }
+            content = {
+                if (search.inputValue.isBlank() || stringResource(R.string.enable_quick_picks_page).contains(search.inputValue, true)) {
+                    OtherSwitchSettingEntry(
+                        title = stringResource(R.string.enable_quick_picks_page),
+                        text = "",
+                        isChecked = enableQuickPicksPage,
+                        onCheckedChange = {
+                            enableQuickPicksPage = it
+                        },
+                        icon = R.drawable.sparkles
+                    )
                 }
-            )
-        }
+                if (search.inputValue.isBlank() || stringResource(R.string.rw_settings_master).contains(search.inputValue, true)) {
+                    OtherSwitchSettingEntry(
+                        title = stringResource(R.string.rw_settings_master),
+                        text = stringResource(R.string.rw_settings_master_description),
+                        isChecked = rewindEnabled,
+                        onCheckedChange = {
+                            DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, it)
+                        },
+                        icon = R.drawable.sparkles
+                    )
+                }
+            }
+        )
 
-        /* Removed Spacer */
-
-        // Content Sections
-        AnimatedVisibility(
+        // Quick Picks card: content sections + For You + quick selection (merged from the
+        // former separate "Quick Picks" and "For You" cards)
+        SettingsSectionCard(
+            title = stringResource(R.string.quick_picks),
+            icon = R.drawable.star_brilliant,
             visible = enableQuickPicksPage && searchCtx_1,
-            enter = fadeIn(animationSpec = tween(800)) + scaleIn(
-                animationSpec = tween(800),
-                initialScale = 0.9f
-            ),
-            exit = fadeOut(animationSpec = tween(200)) + scaleOut(
-                animationSpec = tween(200),
-                targetScale = 0.9f
-            )
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.quick_picks),
-                icon = R.drawable.star_brilliant,
-                content = {
-                    if (search.inputValue.isBlank() || stringResource(R.string.quick_picks_content).contains(search.inputValue, true)) {
-                        OtherSettingsEntry(
-                            title = stringResource(R.string.quick_picks_content),
-                            text = stringResource(R.string.quick_picks_content_description),
-                            onClick = { QuickPicksContentSettingsDialog.showDialog() },
-                            icon = R.drawable.star_brilliant
-                        )
-                    }
+            content = {
+                if (search.inputValue.isBlank() || stringResource(R.string.quick_picks_content).contains(search.inputValue, true)) {
+                    OtherSettingsEntry(
+                        title = stringResource(R.string.quick_picks_content),
+                        text = stringResource(R.string.quick_picks_content_description),
+                        onClick = { QuickPicksContentSettingsDialog.showDialog() },
+                        icon = R.drawable.star_brilliant
+                    )
                 }
-            )
-        }
 
-        /* Removed Spacer */
-
-        // Tips Configuration Section
-        AnimatedVisibility(
-            visible = enableQuickPicksPage && showTips && searchCtx_2,
-            enter = fadeIn(animationSpec = tween(1000)) + scaleIn(
-                animationSpec = tween(1000),
-                initialScale = 0.9f
-            ),
-            exit = fadeOut(animationSpec = tween(200)) + scaleOut(
-                animationSpec = tween(200),
-                targetScale = 0.9f
-            )
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.tips),
-                icon = R.drawable.person,
-                content = {
-                    var showTipsDialog by remember { mutableStateOf(false) }
-                    if (search.inputValue.isBlank() || stringResource(R.string.tips).contains(search.inputValue, true)) {
-                        OtherSettingsEntry(
-                            title = stringResource(R.string.tips),
-                            text = playEventType.text,
-                            icon = R.drawable.sort_vertical,
-                            onClick = { showTipsDialog = true }
-                        )
-                    }
-
-                    if (showTipsDialog) {
-                        ValueSelectorDialog(
-                            title = stringResource(R.string.tips),
-                            selectedValue = playEventType,
-                            values = PlayEventsType.values().toList(),
-                            onValueSelected = { playEventType = it },
-                            valueText = { it.text },
-                            onDismiss = { showTipsDialog = false }
-                        )
-                    }
-
-                    var showQuickSelectionDialog by remember { mutableStateOf(false) }
-                    if (search.inputValue.isBlank() || stringResource(R.string.quick_selection_type).contains(search.inputValue, true) || (stringResource(R.string.quick_selection, localRecommandationsNumber.value)).contains(search.inputValue, true)) {
-                        OtherSettingsEntry(
-                            title = stringResource(R.string.quick_selection_type),
-                            text = stringResource(R.string.quick_selection, localRecommandationsNumber.value),
-                            icon = R.drawable.sparkles,
-                            onClick = { showQuickSelectionDialog = true }
-                        )
-                    }
-
-                    if (showQuickSelectionDialog) {
-                        ValueSelectorDialog(
-                            title = stringResource(R.string.quick_selection_type),
-                            selectedValue = localRecommandationsNumber,
-                            values = LocalRecommandationsNumber.values().toList(),
-                            onValueSelected = { localRecommandationsNumber = it },
-                            valueText = { option ->
-                                stringResource(R.string.quick_selection, option.value)
-                            },
-                            onDismiss = { showQuickSelectionDialog = false }
-                        )
-                    }
+                if (showTips && (search.inputValue.isBlank() || stringResource(R.string.tips).contains(search.inputValue, true))) {
+                    OtherSettingsEntry(
+                        title = stringResource(R.string.tips),
+                        text = playEventType.text,
+                        icon = R.drawable.sort_vertical,
+                        onClick = { showTipsDialog = true }
+                    )
                 }
-            )
-        }
-
-        /* Removed Spacer */
-
-        // Monthly Playlists Section
-        AnimatedVisibility(
-            visible = searchCtx_3,
-            enter = fadeIn(animationSpec = tween(1400)) + scaleIn(
-                animationSpec = tween(1400),
-                initialScale = 0.9f
-            )
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.monthly_playlists),
-                icon = R.drawable.calendar,
-                content = {
-					if (search.inputValue.isBlank() || stringResource(R.string.show_monthly_playlists_in_library).contains(search.inputValue, true) || (stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(R.string.monthly_playlists) + " " + stringResource(R.string.in_txt) + " " + stringResource(R.string.library)).contains(search.inputValue, true)) {
-    					OtherSwitchSettingEntry(
-    						title = stringResource(R.string.show_monthly_playlists_in_library),
-    						text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(R.string.monthly_playlists) + " " + stringResource(R.string.in_txt) + " " + stringResource(R.string.library),
-    						isChecked = showMonthlyPlaylists,
-    						onCheckedChange = {
-    							showMonthlyPlaylists = it
-    						},
-    						icon = R.drawable.eye
-    					)
-					}
-
-                    if (search.inputValue.isBlank() || stringResource(R.string.enable_monthly_playlists_creation).contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                            title = stringResource(R.string.enable_monthly_playlists_creation),
-                            text = "",
-                            isChecked = enableCreateMonthlyPlaylists,
-                            onCheckedChange = {
-                                enableCreateMonthlyPlaylists = it
-                            },
-                            icon = R.drawable.calendar_clear
-                        )
-                    }
+                if (showTipsDialog) {
+                    ValueSelectorDialog(
+                        title = stringResource(R.string.tips),
+                        selectedValue = playEventType,
+                        values = PlayEventsType.values().toList(),
+                        onValueSelected = { playEventType = it },
+                        valueText = { it.text },
+                        onDismiss = { showTipsDialog = false }
+                    )
                 }
-            )
-        }
+
+                if (showTips && (search.inputValue.isBlank() || stringResource(R.string.quick_selection_type).contains(search.inputValue, true) || (stringResource(R.string.quick_selection, localRecommandationsNumber.value)).contains(search.inputValue, true))) {
+                    OtherSettingsEntry(
+                        title = stringResource(R.string.quick_selection_type),
+                        text = stringResource(R.string.quick_selection, localRecommandationsNumber.value),
+                        icon = R.drawable.sparkles,
+                        onClick = { showQuickSelectionDialog = true }
+                    )
+                }
+                if (showQuickSelectionDialog) {
+                    ValueSelectorDialog(
+                        title = stringResource(R.string.quick_selection_type),
+                        selectedValue = localRecommandationsNumber,
+                        values = LocalRecommandationsNumber.values().toList(),
+                        onValueSelected = { localRecommandationsNumber = it },
+                        valueText = { option ->
+                            stringResource(R.string.quick_selection, option.value)
+                        },
+                        onDismiss = { showQuickSelectionDialog = false }
+                    )
+                }
+            }
+        )
+
+        // Rewind settings cards (master switch above, in the General card)
+        RewindSettingsCard()
 
         /* Removed Spacer */
 
         // Smart Recommendations Section
-        AnimatedVisibility(
+        SettingsSectionCard(
+            title = stringResource(R.string.smart_recommendations),
+            icon = R.drawable.smart_shuffle,
             visible = searchCtx_4,
-            enter = fadeIn(animationSpec = tween(1400)) + scaleIn(
-                animationSpec = tween(1400),
-                initialScale = 0.9f
-            )
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.smart_recommendations),
-                icon = R.drawable.smart_shuffle,
-                content = {
-                    var showRecommendationsDialog by remember { mutableStateOf(false) }
-                    if (search.inputValue.isBlank() || stringResource(R.string.smart_recommendations_number).contains(search.inputValue, true)) {
-                        OtherSettingsEntry(
-                            title = stringResource(R.string.smart_recommendations_number),
-                            text = if (recommendationsNumber == RecommendationsNumber.Adaptive) 
-                                stringResource(R.string.smart_recommendations_adaptive_description) else recommendationsNumber.text,
-                            icon = R.drawable.shuffle,
-                            onClick = { showRecommendationsDialog = true }
-                        )
-                    }
-
-                    if (showRecommendationsDialog) {
-                        ValueSelectorDialog(
-                            title = stringResource(R.string.smart_recommendations_number),
-                            selectedValue = recommendationsNumber,
-                            values = RecommendationsNumber.values().toList(),
-                            onValueSelected = { recommendationsNumber = it },
-                            valueText = { 
-                                when (it) {
-                                    RecommendationsNumber.Adaptive -> stringResource(R.string.smart_recommendations_adaptive)
-                                    else -> it.text
-                                }
-                            },
-                            onDismiss = { showRecommendationsDialog = false }
-                        )
-                    }
+            content = {
+                var showRecommendationsDialog by remember { mutableStateOf(false) }
+                if (search.inputValue.isBlank() || stringResource(R.string.smart_recommendations_number).contains(search.inputValue, true)) {
+                    OtherSettingsEntry(
+                        title = stringResource(R.string.smart_recommendations_number),
+                        text = if (recommendationsNumber == RecommendationsNumber.Adaptive) 
+                            stringResource(R.string.smart_recommendations_adaptive_description) else recommendationsNumber.text,
+                        icon = R.drawable.shuffle,
+                        onClick = { showRecommendationsDialog = true }
+                    )
                 }
-            )
-        }
+
+                if (showRecommendationsDialog) {
+                    ValueSelectorDialog(
+                        title = stringResource(R.string.smart_recommendations_number),
+                        selectedValue = recommendationsNumber,
+                        values = RecommendationsNumber.values().toList(),
+                        onValueSelected = { recommendationsNumber = it },
+                        valueText = { 
+                            when (it) {
+                                RecommendationsNumber.Adaptive -> stringResource(R.string.smart_recommendations_adaptive)
+                                else -> it.text
+                            }
+                        },
+                        onDismiss = { showRecommendationsDialog = false }
+                    )
+                }
+            }
+        )
 
         /* Removed Spacer */
 
         // Statistics Section
-        AnimatedVisibility(
+        SettingsSectionCard(
+            title = stringResource(R.string.statistics),
+            icon = R.drawable.trending,
             visible = searchCtx_5,
-            enter = fadeIn(animationSpec = tween(1600)) + scaleIn(
-                animationSpec = tween(1600),
-                initialScale = 0.9f
-            )
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.statistics),
-                icon = R.drawable.trending,
-                content = {
-                    var showStatisticsDialog by remember { mutableStateOf(false) }
-                    var showCustomStatisticsItemsDialog by remember { mutableStateOf(false) }
-                    if (search.inputValue.isBlank() || stringResource(R.string.statistics_max_number_of_items).contains(search.inputValue, true)) {
-                        OtherSettingsEntry(
-                            title = stringResource(R.string.statistics_max_number_of_items),
-                            text = maxStatisticsItems.displayName(maxStatisticsItemsCustomValue),
-                            icon = R.drawable.musical_notes,
-                            onClick = { showStatisticsDialog = true }
-                        )
-                    }
+            content = {
+                var showStatisticsDialog by remember { mutableStateOf(false) }
+                var showCustomStatisticsItemsDialog by remember { mutableStateOf(false) }
+                if (search.inputValue.isBlank() || stringResource(R.string.statistics_max_number_of_items).contains(search.inputValue, true)) {
+                    OtherSettingsEntry(
+                        title = stringResource(R.string.statistics_max_number_of_items),
+                        text = maxStatisticsItems.displayName(maxStatisticsItemsCustomValue),
+                        icon = R.drawable.musical_notes,
+                        onClick = { showStatisticsDialog = true }
+                    )
+                }
 
-                    if (showStatisticsDialog) {
-                        ValueSelectorDialog(
-                            title = stringResource(R.string.statistics_max_number_of_items),
-                            selectedValue = maxStatisticsItems,
-                            values = MaxStatisticsItems.values().toList(),
-                            onValueSelected = {
-                                maxStatisticsItems = it
-                                if (it == MaxStatisticsItems.Custom) showCustomStatisticsItemsDialog = true
-                            },
-                            valueText = { it.optionLabel() },
-                            onDismiss = { showStatisticsDialog = false }
-                        )
-                    }
+                if (showStatisticsDialog) {
+                    ValueSelectorDialog(
+                        title = stringResource(R.string.statistics_max_number_of_items),
+                        selectedValue = maxStatisticsItems,
+                        values = MaxStatisticsItems.values().toList(),
+                        onValueSelected = {
+                            maxStatisticsItems = it
+                            if (it == MaxStatisticsItems.Custom) showCustomStatisticsItemsDialog = true
+                        },
+                        valueText = { it.optionLabel() },
+                        onDismiss = { showStatisticsDialog = false }
+                    )
+                }
 
-                    if (showCustomStatisticsItemsDialog) {
-                        SettingsInputDialog(
-                            title = stringResource(R.string.statistics_max_number_of_items),
-                            initialValue = maxStatisticsItemsCustomValue.toString(),
-                            placeholder = stringResource(R.string.statistics_max_number_of_items),
-                            onDismiss = { showCustomStatisticsItemsDialog = false },
-                            onSetValue = {
-                                if (TextUtils.isDigitsOnly(it) && it.length <= 9)
-                                    maxStatisticsItemsCustomValue = it.toIntOrNull()?.coerceAtLeast(1) ?: 10
-                            }
-                        ).apply {
-                            showDialog()
-                            Render()
+                if (showCustomStatisticsItemsDialog) {
+                    SettingsInputDialog(
+                        title = stringResource(R.string.statistics_max_number_of_items),
+                        initialValue = maxStatisticsItemsCustomValue.toString(),
+                        placeholder = stringResource(R.string.statistics_max_number_of_items),
+                        onDismiss = { showCustomStatisticsItemsDialog = false },
+                        onSetValue = {
+                            if (TextUtils.isDigitsOnly(it) && it.length <= 9)
+                                maxStatisticsItemsCustomValue = it.toIntOrNull()?.coerceAtLeast(1) ?: 10
                         }
-                    }
-
-                    if (search.inputValue.isBlank() || stringResource(R.string.listening_time).contains(search.inputValue, true) || (stringResource(R.string.shows_the_number_of_songs_heard_and_their_listening_time)).contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                            title = stringResource(R.string.listening_time),
-                            text = stringResource(R.string.shows_the_number_of_songs_heard_and_their_listening_time),
-                            isChecked = showStatsListeningTime,
-                            onCheckedChange = {
-                                showStatsListeningTime = it
-                            },
-                            icon = R.drawable.time
-                        )
+                    ).apply {
+                        showDialog()
+                        Render()
                     }
                 }
-            )
-        }
+
+                if (search.inputValue.isBlank() || stringResource(R.string.listening_time).contains(search.inputValue, true) || (stringResource(R.string.shows_the_number_of_songs_heard_and_their_listening_time)).contains(search.inputValue, true)) {
+                    OtherSwitchSettingEntry(
+                        title = stringResource(R.string.listening_time),
+                        text = stringResource(R.string.shows_the_number_of_songs_heard_and_their_listening_time),
+                        isChecked = showStatsListeningTime,
+                        onCheckedChange = {
+                            showStatsListeningTime = it
+                        },
+                        icon = R.drawable.time
+                    )
+                }
+            }
+        )
 
         /* Removed Spacer */
 
         // Top Playlists Section
-        AnimatedVisibility(
+        SettingsSectionCard(
+            title = stringResource(R.string.playlist_top),
+            icon = R.drawable.playlist,
             visible = searchCtx_6,
-            enter = fadeIn(animationSpec = tween(1800)) + scaleIn(
-                animationSpec = tween(1800),
-                initialScale = 0.9f
-            )
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.playlist_top),
-                icon = R.drawable.playlist,
-                content = {
-                    var showTopPlaylistsDialog by remember { mutableStateOf(false) }
-                    var showCustomTopPlaylistsItemsDialog by remember { mutableStateOf(false) }
-                    if (search.inputValue.isBlank() || stringResource(R.string.statistics_max_number_of_items).contains(search.inputValue, true)) {
-                        OtherSettingsEntry(
-                            title = stringResource(R.string.statistics_max_number_of_items),
-                            text = maxTopPlaylistItems.displayName(maxTopPlaylistItemsCustomValue),
-                            icon = R.drawable.musical_notes,
-                            onClick = { showTopPlaylistsDialog = true }
-                        )
-                    }
+            content = {
+                var showTopPlaylistsDialog by remember { mutableStateOf(false) }
+                var showCustomTopPlaylistsItemsDialog by remember { mutableStateOf(false) }
+                if (search.inputValue.isBlank() || stringResource(R.string.statistics_max_number_of_items).contains(search.inputValue, true)) {
+                    OtherSettingsEntry(
+                        title = stringResource(R.string.statistics_max_number_of_items),
+                        text = maxTopPlaylistItems.displayName(maxTopPlaylistItemsCustomValue),
+                        icon = R.drawable.musical_notes,
+                        onClick = { showTopPlaylistsDialog = true }
+                    )
+                }
 
-                    if (showTopPlaylistsDialog) {
-                        ValueSelectorDialog(
-                            title = stringResource(R.string.statistics_max_number_of_items),
-                            selectedValue = maxTopPlaylistItems,
-                            values = MaxTopPlaylistItems.values().toList(),
-                            onValueSelected = {
-                                maxTopPlaylistItems = it
-                                if (it == MaxTopPlaylistItems.Custom) showCustomTopPlaylistsItemsDialog = true
-                            },
-                            valueText = { it.optionLabel() },
-                            onDismiss = { showTopPlaylistsDialog = false }
-                        )
-                    }
+                if (showTopPlaylistsDialog) {
+                    ValueSelectorDialog(
+                        title = stringResource(R.string.statistics_max_number_of_items),
+                        selectedValue = maxTopPlaylistItems,
+                        values = MaxTopPlaylistItems.values().toList(),
+                        onValueSelected = {
+                            maxTopPlaylistItems = it
+                            if (it == MaxTopPlaylistItems.Custom) showCustomTopPlaylistsItemsDialog = true
+                        },
+                        valueText = { it.optionLabel() },
+                        onDismiss = { showTopPlaylistsDialog = false }
+                    )
+                }
 
-                    if (showCustomTopPlaylistsItemsDialog) {
-                        SettingsInputDialog(
-                            title = stringResource(R.string.statistics_max_number_of_items),
-                            initialValue = maxTopPlaylistItemsCustomValue.toString(),
-                            placeholder = stringResource(R.string.statistics_max_number_of_items),
-                            onDismiss = { showCustomTopPlaylistsItemsDialog = false },
-                            onSetValue = {
-                                if (TextUtils.isDigitsOnly(it) && it.length <= 9)
-                                    maxTopPlaylistItemsCustomValue = it.toIntOrNull()?.coerceAtLeast(1) ?: 10
-                            }
-                        ).apply {
-                            showDialog()
-                            Render()
+                if (showCustomTopPlaylistsItemsDialog) {
+                    SettingsInputDialog(
+                        title = stringResource(R.string.statistics_max_number_of_items),
+                        initialValue = maxTopPlaylistItemsCustomValue.toString(),
+                        placeholder = stringResource(R.string.statistics_max_number_of_items),
+                        onDismiss = { showCustomTopPlaylistsItemsDialog = false },
+                        onSetValue = {
+                            if (TextUtils.isDigitsOnly(it) && it.length <= 9)
+                                maxTopPlaylistItemsCustomValue = it.toIntOrNull()?.coerceAtLeast(1) ?: 10
                         }
-                    }
-
-                    if (search.inputValue.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.my_playlist_top1)}".contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                            title = "${stringResource(R.string.show)} ${stringResource(R.string.my_playlist_top1)}",
-                            text = "",
-                            isChecked = showMyTopPlaylist,
-                            onCheckedChange = {
-                                showMyTopPlaylist = it
-                            },
-                            icon = R.drawable.trending
-                        )
+                    ).apply {
+                        showDialog()
+                        Render()
                     }
                 }
 
-            )
-        }
+                if (search.inputValue.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.my_playlist_top1)}".contains(search.inputValue, true)) {
+                    OtherSwitchSettingEntry(
+                        title = "${stringResource(R.string.show)} ${stringResource(R.string.my_playlist_top1)}",
+                        text = "",
+                        isChecked = showMyTopPlaylist,
+                        onCheckedChange = {
+                            showMyTopPlaylist = it
+                        },
+                        icon = R.drawable.trending
+                    )
+                }
+            }
+
+        )
 
         /* Removed Spacer */
 
         // Data Management Section
-        AnimatedVisibility(
+        SettingsSectionCard(
+            title = stringResource(R.string.tab_data),
+            icon = R.drawable.server,
             visible = searchCtx_7,
-            enter = fadeIn(animationSpec = tween(2000)) + scaleIn(
-                animationSpec = tween(2000),
-                initialScale = 0.9f
-            )
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.tab_data),
-                icon = R.drawable.server,
-                content = {
-                    val eventsCount by remember {
-                        Database.eventTable
-                                .countAll()
-                    }.collectAsStateWithLifecycle(0L, context = NzikDispatchers.DATA)
+            content = {
+                val eventsCount by remember {
+                    Database.eventTable
+                            .countAll()
+                }.collectAsStateWithLifecycle(0L, context = NzikDispatchers.DATA)
 
-                    if (search.inputValue.isBlank() || stringResource(R.string.reset_quick_picks).contains(search.inputValue, true)) {
-                        OtherSettingsEntry(
-                            title = stringResource(R.string.reset_quick_picks),
-                            text = if (eventsCount > 0) {
-                                stringResource(R.string.delete_playback_events, eventsCount)
-                            } else {
-                                stringResource(R.string.quick_picks_are_cleared)
-                            },
-                            icon = R.drawable.trash,
-                            onClick = { clearEvents = true }
-                        )
-                    }
+                if (search.inputValue.isBlank() || stringResource(R.string.reset_quick_picks).contains(search.inputValue, true)) {
+                    OtherSettingsEntry(
+                        title = stringResource(R.string.reset_quick_picks),
+                        text = if (eventsCount > 0) {
+                            stringResource(R.string.delete_playback_events, eventsCount)
+                        } else {
+                            stringResource(R.string.quick_picks_are_cleared)
+                        },
+                        icon = R.drawable.trash,
+                        onClick = { clearEvents = true }
+                    )
                 }
-            )
-        }
+            }
+        )
 
         /* Removed Spacer */
 
         // Reset to Default Section
-        AnimatedVisibility(
+        SettingsSectionCard(
+            title = stringResource(R.string.settings_reset),
+            icon = R.drawable.refresh,
             visible = searchCtx_8,
-            enter = fadeIn(animationSpec = tween(2200)) + scaleIn(
-                animationSpec = tween(2200),
-                initialScale = 0.9f
-            )
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.settings_reset),
-                icon = R.drawable.refresh,
-                content = {
-                    var resetToDefault by remember { mutableStateOf(false) }
-                    val context = LocalContext.current
-                    if (search.inputValue.isBlank() || stringResource(R.string.settings_reset).contains(search.inputValue, true) || (stringResource(R.string.settings_restore_default_settings)).contains(search.inputValue, true)) {
-                        OtherSettingsEntry(
-                            title = stringResource(R.string.settings_reset),
-                            text = stringResource(R.string.settings_restore_default_settings),
-                            icon = R.drawable.refresh,
-                            onClick = { resetToDefault = true
-                                QuickPicksContentSettingsDialog.reset(context) }
-                        )
-                    }
-                    if (resetToDefault) {
-                        DefaultAIRecommendationSettings()
-                        LaunchedEffect(Unit) {
-                            resetToDefault = false
-                        }
-                        Toaster.done()
-                    }
+            content = {
+                var resetToDefault by remember { mutableStateOf(false) }
+                val context = LocalContext.current
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_reset).contains(search.inputValue, true) || (stringResource(R.string.settings_restore_default_settings)).contains(search.inputValue, true)) {
+                    OtherSettingsEntry(
+                        title = stringResource(R.string.settings_reset),
+                        text = stringResource(R.string.settings_restore_default_settings),
+                        icon = R.drawable.refresh,
+                        onClick = { resetToDefault = true
+                            QuickPicksContentSettingsDialog.reset(context) }
+                    )
                 }
-            )
-        }
+                if (resetToDefault) {
+                    DefaultAIRecommendationSettings()
+                    LaunchedEffect(Unit) {
+                        resetToDefault = false
+                    }
+                    Toaster.done()
+                }
+            }
+        )
 
         SettingsGroupSpacer(
             modifier = Modifier.height(Dimensions.bottomSpacer)

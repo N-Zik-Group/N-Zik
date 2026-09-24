@@ -554,7 +554,6 @@
     <string name="te_slide_horizontal">পাশাপাশি স্লাইড</string>
     <string name="info_wait_it_may_take_a_few_minutes">অপেক্ষা করুন, কিছু মিনিট সময় লাগবে...</string>
     <string name="album_alternative_versions">অল্টারনেটিভ ভারশন গুলো</string>
-    <string name="monthly_playlists">মান্থলি প্লে-লিস্ট গুলো</string>
     <string name="month_january_s">জানুয়ারি %s</string>
     <string name="month_february_s">ফেব্রুয়ারি %s</string>
     <string name="month_march_s">মার্চ %s</string>
@@ -581,9 +580,6 @@
     <string name="bg_colors_gradient_background_from_theme">থিম থেকে গ্রাডিয়েন্ট ব্যাকগ্রাউন্ড</string>
     <string name="vimusic_show_search_button_in_navigation_bar">নেভিগেশন বারে সার্চ বাটন দেখান</string>
     <string name="vismusic_only_in_left_right_navigation_bar">শুধু মাত্র ViMusic এ ডানে/বামে নেভিগেশন বারে ui মোড </string>
-    <string name="enable_monthly_playlists_creation">মাসিক প্লে লিস্ট তৈরি চালু করুন</string>
-    <string name="show_monthly_playlists_in_quick_picks">Show Monthly Playlists in Quick Picks</string>
-    <string name="show_monthly_playlists_in_library">Show Monthly Playlists in Library</string>
     <string name="info_no_songs_yet">কোনো গান নাই এখনো</string>
     <string name="theme_customized">কাস্টমাইজ করা</string>
     <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">আপনি কি সত্যি কাস্টম লাইট থিম কালার রিসেট করতে চান?</string>

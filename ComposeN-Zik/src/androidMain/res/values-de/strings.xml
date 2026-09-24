@@ -554,7 +554,6 @@
     <string name="te_slide_horizontal">Horizontal verschieben</string>
     <string name="info_wait_it_may_take_a_few_minutes">Warte, es kann einige Minuten dauern...</string>
     <string name="album_alternative_versions">Alternative Versionen</string>
-    <string name="monthly_playlists">Monatliche Playlisten</string>
     <string name="month_january_s">%s Januar</string>
     <string name="month_february_s">%s Februar</string>
     <string name="month_march_s">%s März</string>
@@ -581,9 +580,6 @@
     <string name="bg_colors_gradient_background_from_theme">Farbverlauf vom Design</string>
     <string name="vimusic_show_search_button_in_navigation_bar">Suchbutton in der Navigationsleiste anzeigen</string>
     <string name="vismusic_only_in_left_right_navigation_bar">Nur im ViMusic UI Modus bei Navigationsleiste links oder rechts</string>
-    <string name="enable_monthly_playlists_creation">Monatliche Playlist-Erstellung aktivieren</string>
-    <string name="show_monthly_playlists_in_quick_picks">Monatliche Playlisten in Schnellauswahl anzeigen</string>
-    <string name="show_monthly_playlists_in_library">Monatliche Playlisten in der Bibliothek anzeigen</string>
     <string name="info_no_songs_yet">Bisher keine Titel</string>
     <string name="theme_customized">Benutzerdefiniert</string>
     <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">Sollen die Farben des hellen Designs zurückgesetzt werden?</string>

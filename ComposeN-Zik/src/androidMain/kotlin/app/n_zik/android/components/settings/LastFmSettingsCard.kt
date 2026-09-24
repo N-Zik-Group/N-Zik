@@ -1,9 +1,6 @@
 package app.n_zik.android.components.settings
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -85,227 +82,219 @@ import timber.log.Timber
 fun LastFmSettingsCard() {
     if (BuildConfig.LASTFM_API_KEY.isEmpty() || BuildConfig.LASTFM_API_SECRET.isEmpty()) return
 
-    AnimatedVisibility(
-        visible = true,
-        enter = fadeIn(animationSpec = tween(1000)) + scaleIn(
-            animationSpec = tween(1000),
-            initialScale = 0.9f
-        )
-    ) {
-        SettingsSectionCard(
-            title = stringResource(R.string.social_lastfm),
-            icon = R.drawable.logo_lastfm,
-            content = {
-                var isLastfmScrobblingEnabled by rememberEncryptedPreference(isLastfmScrobblingEnabledKey, false)
-                var isLastfmNowPlayingEnabled by rememberEncryptedPreference(isLastfmNowPlayingEnabledKey, true)
-                var isLastfmScrobbleEnabled by rememberEncryptedPreference(isLastfmScrobbleEnabledKey, true)
-                var lastfmMinTrackDurationSeconds by rememberEncryptedPreference(lastfmMinTrackDurationSecondsKey, 30)
-                var lastfmScrobbleThresholdPercent by rememberEncryptedPreference(lastfmScrobbleThresholdPercentKey, 50)
-                var lastfmMaxScrobbleDelaySeconds by rememberEncryptedPreference(lastfmMaxScrobbleDelaySecondsKey, 50)
-                var lastfmSession by rememberEncryptedPreference(lastfmSessionKey, "")
-                var lastfmUsername by rememberEncryptedPreference(lastfmUsernameKey, "")
-                var lastfmAvatarUrl by rememberEncryptedPreference(lastfmAvatarUrlKey, "")
-                var loginLastfm by remember { mutableStateOf(false) }
-                val cardScope = rememberCoroutineScope()
+    SettingsSectionCard(
+        title = stringResource(R.string.social_lastfm),
+        icon = R.drawable.logo_lastfm,
+        content = {
+            var isLastfmScrobblingEnabled by rememberEncryptedPreference(isLastfmScrobblingEnabledKey, false)
+            var isLastfmNowPlayingEnabled by rememberEncryptedPreference(isLastfmNowPlayingEnabledKey, true)
+            var isLastfmScrobbleEnabled by rememberEncryptedPreference(isLastfmScrobbleEnabledKey, true)
+            var lastfmMinTrackDurationSeconds by rememberEncryptedPreference(lastfmMinTrackDurationSecondsKey, 30)
+            var lastfmScrobbleThresholdPercent by rememberEncryptedPreference(lastfmScrobbleThresholdPercentKey, 50)
+            var lastfmMaxScrobbleDelaySeconds by rememberEncryptedPreference(lastfmMaxScrobbleDelaySecondsKey, 50)
+            var lastfmSession by rememberEncryptedPreference(lastfmSessionKey, "")
+            var lastfmUsername by rememberEncryptedPreference(lastfmUsernameKey, "")
+            var lastfmAvatarUrl by rememberEncryptedPreference(lastfmAvatarUrlKey, "")
+            var loginLastfm by remember { mutableStateOf(false) }
+            val cardScope = rememberCoroutineScope()
 
-                val minDurationInitial by remember { derivedStateOf { lastfmMinTrackDurationSeconds.toFloat() } }
-                var minDurationUi by remember(minDurationInitial) { mutableFloatStateOf(minDurationInitial) }
-                val thresholdInitial by remember { derivedStateOf { lastfmScrobbleThresholdPercent.toFloat() } }
-                var thresholdUi by remember(thresholdInitial) { mutableFloatStateOf(thresholdInitial) }
-                val maxDelayInitial by remember { derivedStateOf { lastfmMaxScrobbleDelaySeconds.toFloat() } }
-                var maxDelayUi by remember(maxDelayInitial) { mutableFloatStateOf(maxDelayInitial) }
+            val minDurationInitial by remember { derivedStateOf { lastfmMinTrackDurationSeconds.toFloat() } }
+            var minDurationUi by remember(minDurationInitial) { mutableFloatStateOf(minDurationInitial) }
+            val thresholdInitial by remember { derivedStateOf { lastfmScrobbleThresholdPercent.toFloat() } }
+            var thresholdUi by remember(thresholdInitial) { mutableFloatStateOf(thresholdInitial) }
+            val maxDelayInitial by remember { derivedStateOf { lastfmMaxScrobbleDelaySeconds.toFloat() } }
+            var maxDelayUi by remember(maxDelayInitial) { mutableFloatStateOf(maxDelayInitial) }
 
-                OtherSwitchSettingEntry(
-                    title = stringResource(R.string.lastfm_enable_scrobbling),
-                    text = stringResource(R.string.social_lastfm_info),
-                    isChecked = isLastfmScrobblingEnabled,
-                    onCheckedChange = { isLastfmScrobblingEnabled = it },
-                    icon = R.drawable.musical_notes
-                )
+            OtherSwitchSettingEntry(
+                title = stringResource(R.string.lastfm_enable_scrobbling),
+                text = stringResource(R.string.social_lastfm_info),
+                isChecked = isLastfmScrobblingEnabled,
+                onCheckedChange = { isLastfmScrobblingEnabled = it },
+                icon = R.drawable.musical_notes
+            )
 
-                AnimatedVisibility(visible = isLastfmScrobblingEnabled) {
-                    Column {
-                        if (lastfmSession.isNotEmpty()) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                if (lastfmAvatarUrl.isNotEmpty()) {
-                                    ImageCacheFactory.AsyncImage(
-                                        thumbnailUrl = lastfmAvatarUrl,
-                                        contentDescription = stringResource(R.string.lastfm_username),
-                                        modifier = Modifier
-                                            .padding(start = 5.dp, top = 8.dp, bottom = 8.dp)
-                                            .size(50.dp)
-                                            .clip(thumbnailShape())
-                                    )
-                                } else {
-                                    Icon(
-                                        painter = painterResource(R.drawable.person),
-                                        contentDescription = stringResource(R.string.lastfm_username),
-                                        modifier = Modifier
-                                            .padding(start = 5.dp, top = 8.dp, bottom = 8.dp)
-                                            .size(50.dp)
-                                            .clip(thumbnailShape()),
-                                        tint = colorPalette().textSecondary
-                                    )
-                                }
-
-                                Box(
-                                    modifier = Modifier
-                                        .padding(start = 8.dp)
-                                        .height(50.dp)
-                                        .padding(top = 8.dp, bottom = 8.dp),
-                                    contentAlignment = Alignment.CenterStart
-                                ) {
-                                    Text(
-                                        text = lastfmUsername,
-                                        color = colorPalette().textSecondary,
-                                        modifier = Modifier.padding(start = 5.dp),
-                                        style = typography().m
-                                    )
-                                }
-                            }
-                        }
-
-                        OtherSettingsEntry(
-                            title = if (lastfmSession.isNotEmpty()) stringResource(R.string.lastfm_disconnect) else stringResource(R.string.lastfm_connect),
-                            text = if (lastfmSession.isNotEmpty()) stringResource(R.string.lastfm_connected) else stringResource(R.string.social_lastfm_info),
-                            icon = R.drawable.logout,
-                            onClick = {
-                                if (lastfmSession.isNotEmpty()) {
-                                    lastfmSession = ""
-                                    lastfmUsername = ""
-                                    lastfmAvatarUrl = ""
-                                    LastFm.sessionKey = null
-                                } else {
-                                    loginLastfm = true
-                                }
-                            }
-                        )
-
-                        OtherSwitchSettingEntry(
-                            title = stringResource(R.string.lastfm_now_playing),
-                            text = stringResource(R.string.lastfm_now_playing_info),
-                            isChecked = isLastfmNowPlayingEnabled,
-                            onCheckedChange = { isLastfmNowPlayingEnabled = it },
-                            icon = R.drawable.play
-                        )
-
-                        OtherSwitchSettingEntry(
-                            title = stringResource(R.string.lastfm_scrobble),
-                            text = stringResource(R.string.lastfm_scrobble_info),
-                            isChecked = isLastfmScrobbleEnabled,
-                            onCheckedChange = { isLastfmScrobbleEnabled = it },
-                            icon = R.drawable.history
-                        )
-
-                        // Gates Now Playing too, so it stays visible even when scrobbling is off
-                        SliderSettingsEntry(
-                            title = stringResource(R.string.lastfm_min_track_duration),
-                            text = stringResource(R.string.lastfm_min_track_duration_info),
-                            state = minDurationUi,
-                            range = 10f..60f,
-                            stepSize = 5f,
-                            onSlide = { minDurationUi = it },
-                            onSlideComplete = { lastfmMinTrackDurationSeconds = minDurationUi.toInt() },
-                            toDisplay = { "${it.toInt()} s" },
-                            isIntegerOnly = true,
-                            icon = R.drawable.time
-                        )
-
-                        AnimatedVisibility(visible = isLastfmScrobbleEnabled) {
-                            Column {
-                                SliderSettingsEntry(
-                                    title = stringResource(R.string.lastfm_scrobble_threshold),
-                                    text = stringResource(R.string.lastfm_scrobble_threshold_info),
-                                    state = thresholdUi,
-                                    range = 30f..95f,
-                                    stepSize = 5f,
-                                    onSlide = { thresholdUi = it },
-                                    onSlideComplete = { lastfmScrobbleThresholdPercent = thresholdUi.toInt() },
-                                    toDisplay = { "${it.toInt()} %" },
-                                    isIntegerOnly = true,
-                                    icon = R.drawable.playbackduration
-                                )
-                                SliderSettingsEntry(
-                                    title = stringResource(R.string.lastfm_max_scrobble_delay),
-                                    text = stringResource(R.string.lastfm_max_scrobble_delay_info),
-                                    state = maxDelayUi,
-                                    range = 30f..360f,
-                                    stepSize = 30f,
-                                    onSlide = { maxDelayUi = it },
-                                    onSlideComplete = { lastfmMaxScrobbleDelaySeconds = maxDelayUi.toInt() },
-                                    toDisplay = { "${it.toInt()} s" },
-                                    isIntegerOnly = true,
-                                    icon = R.drawable.playbackduration
-                                )
-                            }
-                        }
-
-                        CustomModalBottomSheet(
-                            showSheet = loginLastfm,
-                            onDismissRequest = {
-                                loginLastfm = false
-                            },
-                            containerColor = Color.Transparent,
-                            modifier = Modifier.statusBarsPadding(),
-                            // Skip PartiallyExpanded: its anchor is a fixed 50% of the window
-                            // height, while the sheet window is not resized by the keyboard
-                            // (SOFT_INPUT_ADJUST_NOTHING on API 30+), so the fields stay hidden
-                            // behind it. The Expanded anchor is content-driven
-                            // (fullHeight - sheetHeight) and follows the IME insets applied to
-                            // the sheet content by CustomModalBottomSheet.
-                            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-                            shape = (uiRoundnessShape() as? RoundedCornerShape)?.let {
-                                RoundedCornerShape(
-                                    topStart = it.topStart,
-                                    topEnd = it.topEnd,
-                                    bottomStart = CornerSize(0.dp),
-                                    bottomEnd = CornerSize(0.dp)
-                                )
-                            } ?: uiRoundnessShape(),
-                            dragHandle = {
-                                Surface(
-                                    modifier = Modifier.padding(vertical = 0.dp),
-                                    color = Color.Transparent
-                                ) {}
-                            }
+            AnimatedVisibility(visible = isLastfmScrobblingEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
+                Column {
+                    if (lastfmSession.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Cap the content at ~50% of the screen: ListMenu.Menu stretches to
-                            // the full screen height on its own, which would make the Expanded
-                            // sheet cover the whole window. Bounded to half the screen, the
-                            // sheet keeps its current half-screen look at rest while the anchor
-                            // stays content-driven (it grows with the keyboard).
-                            val screenHeightDp = LocalConfiguration.current.screenHeightDp
+                            if (lastfmAvatarUrl.isNotEmpty()) {
+                                ImageCacheFactory.AsyncImage(
+                                    thumbnailUrl = lastfmAvatarUrl,
+                                    contentDescription = stringResource(R.string.lastfm_username),
+                                    modifier = Modifier
+                                        .padding(start = 5.dp, top = 8.dp, bottom = 8.dp)
+                                        .size(50.dp)
+                                        .clip(thumbnailShape())
+                                )
+                            } else {
+                                Icon(
+                                    painter = painterResource(R.drawable.person),
+                                    contentDescription = stringResource(R.string.lastfm_username),
+                                    modifier = Modifier
+                                        .padding(start = 5.dp, top = 8.dp, bottom = 8.dp)
+                                        .size(50.dp)
+                                        .clip(thumbnailShape()),
+                                    tint = colorPalette().textSecondary
+                                )
+                            }
+
                             Box(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(max = (screenHeightDp * 0.5f).dp)
+                                    .padding(start = 8.dp)
+                                    .height(50.dp)
+                                    .padding(top = 8.dp, bottom = 8.dp),
+                                contentAlignment = Alignment.CenterStart
                             ) {
-                                ListMenu.Menu(title = stringResource(R.string.social_lastfm)) {
-                                    LastFmLoginContent(
-                                        onConnected = { sessionKey, username ->
-                                            loginLastfm = false
-                                            lastfmSession = sessionKey
-                                            lastfmUsername = username
-                                            lastfmAvatarUrl = ""
-                                            cardScope.launch {
-                                                val avatarUrl = LastFm.getUserPicture(username).getOrNull().orEmpty()
-                                                if (avatarUrl.isNotEmpty()) lastfmAvatarUrl = avatarUrl
-                                            }
+                                Text(
+                                    text = lastfmUsername,
+                                    color = colorPalette().textSecondary,
+                                    modifier = Modifier.padding(start = 5.dp),
+                                    style = typography().m
+                                )
+                            }
+                        }
+                    }
+
+                    OtherSettingsEntry(
+                        title = if (lastfmSession.isNotEmpty()) stringResource(R.string.lastfm_disconnect) else stringResource(R.string.lastfm_connect),
+                        text = if (lastfmSession.isNotEmpty()) stringResource(R.string.lastfm_connected) else stringResource(R.string.social_lastfm_info),
+                        icon = R.drawable.logout,
+                        onClick = {
+                            if (lastfmSession.isNotEmpty()) {
+                                lastfmSession = ""
+                                lastfmUsername = ""
+                                lastfmAvatarUrl = ""
+                                LastFm.sessionKey = null
+                            } else {
+                                loginLastfm = true
+                            }
+                        }
+                    )
+
+                    OtherSwitchSettingEntry(
+                        title = stringResource(R.string.lastfm_now_playing),
+                        text = stringResource(R.string.lastfm_now_playing_info),
+                        isChecked = isLastfmNowPlayingEnabled,
+                        onCheckedChange = { isLastfmNowPlayingEnabled = it },
+                        icon = R.drawable.play
+                    )
+
+                    OtherSwitchSettingEntry(
+                        title = stringResource(R.string.lastfm_scrobble),
+                        text = stringResource(R.string.lastfm_scrobble_info),
+                        isChecked = isLastfmScrobbleEnabled,
+                        onCheckedChange = { isLastfmScrobbleEnabled = it },
+                        icon = R.drawable.history
+                    )
+
+                    // Gates Now Playing too, so it stays visible even when scrobbling is off
+                    SliderSettingsEntry(
+                        title = stringResource(R.string.lastfm_min_track_duration),
+                        text = stringResource(R.string.lastfm_min_track_duration_info),
+                        state = minDurationUi,
+                        range = 10f..60f,
+                        stepSize = 5f,
+                        onSlide = { minDurationUi = it },
+                        onSlideComplete = { lastfmMinTrackDurationSeconds = minDurationUi.toInt() },
+                        toDisplay = { "${it.toInt()} s" },
+                        isIntegerOnly = true,
+                        icon = R.drawable.time
+                    )
+
+                    AnimatedVisibility(visible = isLastfmScrobbleEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
+                        Column {
+                            SliderSettingsEntry(
+                                title = stringResource(R.string.lastfm_scrobble_threshold),
+                                text = stringResource(R.string.lastfm_scrobble_threshold_info),
+                                state = thresholdUi,
+                                range = 30f..95f,
+                                stepSize = 5f,
+                                onSlide = { thresholdUi = it },
+                                onSlideComplete = { lastfmScrobbleThresholdPercent = thresholdUi.toInt() },
+                                toDisplay = { "${it.toInt()} %" },
+                                isIntegerOnly = true,
+                                icon = R.drawable.playbackduration
+                            )
+                            SliderSettingsEntry(
+                                title = stringResource(R.string.lastfm_max_scrobble_delay),
+                                text = stringResource(R.string.lastfm_max_scrobble_delay_info),
+                                state = maxDelayUi,
+                                range = 30f..360f,
+                                stepSize = 30f,
+                                onSlide = { maxDelayUi = it },
+                                onSlideComplete = { lastfmMaxScrobbleDelaySeconds = maxDelayUi.toInt() },
+                                toDisplay = { "${it.toInt()} s" },
+                                isIntegerOnly = true,
+                                icon = R.drawable.playbackduration
+                            )
+                        }
+                    }
+
+                    CustomModalBottomSheet(
+                        showSheet = loginLastfm,
+                        onDismissRequest = {
+                            loginLastfm = false
+                        },
+                        containerColor = Color.Transparent,
+                        modifier = Modifier.statusBarsPadding(),
+                        // Skip PartiallyExpanded: its anchor is a fixed 50% of the window
+                        // height, while the sheet window is not resized by the keyboard
+                        // (SOFT_INPUT_ADJUST_NOTHING on API 30+), so the fields stay hidden
+                        // behind it. The Expanded anchor is content-driven
+                        // (fullHeight - sheetHeight) and follows the IME insets applied to
+                        // the sheet content by CustomModalBottomSheet.
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                        shape = (uiRoundnessShape() as? RoundedCornerShape)?.let {
+                            RoundedCornerShape(
+                                topStart = it.topStart,
+                                topEnd = it.topEnd,
+                                bottomStart = CornerSize(0.dp),
+                                bottomEnd = CornerSize(0.dp)
+                            )
+                        } ?: uiRoundnessShape(),
+                        dragHandle = {
+                            Surface(
+                                modifier = Modifier.padding(vertical = 0.dp),
+                                color = Color.Transparent
+                            ) {}
+                        }
+                    ) {
+                        // Cap the content at ~50% of the screen: ListMenu.Menu stretches to
+                        // the full screen height on its own, which would make the Expanded
+                        // sheet cover the whole window. Bounded to half the screen, the
+                        // sheet keeps its current half-screen look at rest while the anchor
+                        // stays content-driven (it grows with the keyboard).
+                        val screenHeightDp = LocalConfiguration.current.screenHeightDp
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = (screenHeightDp * 0.5f).dp)
+                        ) {
+                            ListMenu.Menu(title = stringResource(R.string.social_lastfm)) {
+                                LastFmLoginContent(
+                                    onConnected = { sessionKey, username ->
+                                        loginLastfm = false
+                                        lastfmSession = sessionKey
+                                        lastfmUsername = username
+                                        lastfmAvatarUrl = ""
+                                        cardScope.launch {
+                                            val avatarUrl = LastFm.getUserPicture(username).getOrNull().orEmpty()
+                                            if (avatarUrl.isNotEmpty()) lastfmAvatarUrl = avatarUrl
                                         }
-                                    )
-                                }
+                                    }
+                                )
                             }
                         }
                     }
                 }
             }
-        )
-    }
+        }
+    )
 }
 
 /**

@@ -71,7 +71,6 @@ import app.it.fast4x.rimusic.ui.styling.overlay
 import app.it.fast4x.rimusic.utils.*
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.HomePage
-import app.it.fast4x.rimusic.models.PlaylistPreview
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import timber.log.Timber
 import androidx.compose.material3.CircularProgressIndicator
@@ -632,55 +631,6 @@ fun SimilarArtistsSection(
                                     onLongClick = { menuState.display { OnlineArtistItemMenu(navController = navController, artist = artist).MenuComponent() } }
                                 ).animateItem(),
                             disableScrollingText = disableScrollingText
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@UnstableApi
-@Composable
-fun MonthlyPlaylistsSection(
-    showMonthlyPlaylistInQuickPicks: Boolean,
-    monthlyPlaylists: List<PlaylistPreview>,
-    navController: NavController,
-    endPaddingValues: PaddingValues,
-    playlistThumbnailSizeDp: Dp,
-    playlistThumbnailSizePx: Int,
-    disableScrollingText: Boolean
-) {
-    if (showMonthlyPlaylistInQuickPicks) {
-        if (monthlyPlaylists.isNotEmpty()) {
-            Timber.tag("HomeQuickPicksSections").d("Local Section found: Monthly Playlists (${monthlyPlaylists.size} items)")
-            Column {
-                BasicText(
-                    text = stringResource(R.string.monthly_playlists),
-                    style = typography().l.semiBold,
-                    modifier = Modifier
-                        .padding(horizontal = 12.dp)
-                        .padding(top = 16.dp, bottom = 8.dp)
-                )
-
-                LazyRow(contentPadding = endPaddingValues) {
-                    items(
-                        items = monthlyPlaylists.distinctBy { it.playlist.id },
-                        key = { it.playlist.id },
-                        contentType = { "playlist" }
-                    ) { playlist ->
-                        PlaylistItem(
-                            playlist = playlist,
-                            thumbnailSizeDp = playlistThumbnailSizeDp,
-                            thumbnailSizePx = playlistThumbnailSizePx,
-                            alternative = true,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(uiRoundnessShape()).clickable(onClick = { navController.navigate(route = "${NavRoutes.localPlaylist.name}/${playlist.playlist.id}") }).animateItem(),
-                            disableScrollingText = disableScrollingText,
-                            isYoutubePlaylist = playlist.playlist.isYoutubePlaylist,
-                            isEditable = playlist.playlist.isEditable
                         )
                     }
                 }

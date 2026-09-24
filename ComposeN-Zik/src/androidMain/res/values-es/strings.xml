@@ -554,7 +554,6 @@
     <string name="te_slide_horizontal">Deslizar horizontalmente</string>
     <string name="info_wait_it_may_take_a_few_minutes">Espera, puede tomar unos minutos...</string>
     <string name="album_alternative_versions">Versiones alternativas</string>
-    <string name="monthly_playlists">Listas de reproducción mensuales</string>
     <string name="month_january_s">Enero %s</string>
     <string name="month_february_s">Febrero %s</string>
     <string name="month_march_s">Marzo %s</string>
@@ -581,9 +580,6 @@
     <string name="bg_colors_gradient_background_from_theme">Fondo degradado del tema</string>
     <string name="vimusic_show_search_button_in_navigation_bar">Mostrar botón de búsqueda en la barra de navegación</string>
     <string name="vismusic_only_in_left_right_navigation_bar">Solo para el modo de interfaz ViMusic en la barra de navegación izquierda/derecha</string>
-    <string name="enable_monthly_playlists_creation">Habilitar creación de listas de reproducción mensuales</string>
-    <string name="show_monthly_playlists_in_quick_picks">Mostrar listas mensuales en selecciones rápidas</string>
-    <string name="show_monthly_playlists_in_library">Mostrar listas mensuales en la biblioteca</string>
     <string name="info_no_songs_yet">Aún no hay canciones</string>
     <string name="theme_customized">Personalizado</string>
     <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">¿Seguro que quieres restablecer los colores personalizados del tema claro?</string>
