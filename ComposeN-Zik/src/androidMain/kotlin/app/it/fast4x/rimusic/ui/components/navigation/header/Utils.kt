@@ -19,7 +19,6 @@ import androidx.compose.ui.Alignment
 import app.n_zik.android.uiRoundnessShape
 import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.it.fast4x.rimusic.utils.colorPaletteModeKey
-import app.it.fast4x.rimusic.utils.logDebugEnabledKey
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.colorPalette
@@ -54,10 +53,6 @@ internal class Preference {
         @Composable
         fun parentalControl(): Boolean =
             rememberPreference( parentalControlEnabledKey, false ).value
-
-        @Composable
-        fun debugLog(): Boolean =
-            rememberPreference( logDebugEnabledKey, false ).value
 
         @Composable
         fun colorTheme(): ColorPaletteMode =
