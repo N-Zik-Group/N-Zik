@@ -1192,7 +1192,6 @@
 <string name="content_type_all">All</string>
 <string name="content_type_official">Official</string>
 <string name="content_type_user_generated">User Generated</string>
-<string name="in_txt">in</string>
 <string name="other">Others</string>
 <string name="download_in_progress">%1$d in progress</string>
 <string name="download_progress">%1$d / %2$d</string>
@@ -1699,7 +1698,6 @@
 <string name="rw_home_duration">%1$d h %2$d</string>
 <string name="rw_home_empty">No rewind yet. Play some music first.</string>
 <string name="rw_home_plays">%1$s plays</string>
-<string name="rw_home_sort_toggle">Change sort order</string>
 <string name="rw_home_locked">LOCKED</string>
 <string name="rw_home_locked_spam_1">Nice try.</string>
 <string name="rw_home_locked_spam_2">Nope. Not yet.</string>

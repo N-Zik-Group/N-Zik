@@ -1192,7 +1192,6 @@
     <string name="content_type_all">Усе</string>
     <string name="content_type_official">Офіційний</string>
     <string name="content_type_user_generated">Створено користувачем</string>
-    <string name="in_txt">за</string>
     <string name="other">Інші</string>
     <string name="download_in_progress">%1$d in progress</string>
     <string name="download_progress">%1$d / %2$d</string>
@@ -1639,7 +1638,6 @@
     <string name="rw_home_duration">%1$d h %2$d</string>
     <string name="rw_home_empty">No rewind yet. Play some music first.</string>
     <string name="rw_home_plays">%1$s plays</string>
-    <string name="rw_home_sort_toggle">Change sort order</string>
     <string name="rw_intro_kicker">N-ZIK • %1$s</string>
     <string name="rw_intro_this_is_your">THIS IS YOUR</string>
     <string name="rw_intro_reword">REWIND.</string>
@@ -1688,7 +1686,6 @@
     <string name="rw_top_song_empty_title">NO #1 YET</string>
     <string name="rw_top_song_empty_body">Your #1 song will appear here once there is enough listening history.</string>
     <string name="rw_top_song_kicker">YOUR #1 SONG • %1$s</string>
-    <string name="rw_top_song_teaser_ten">TEN SONGS.\nONE WINNER.</string>
     <string name="rw_top_song_teaser_winner">AND THEN\nTHERE WAS ONE.</string>
     <string name="rw_top_song_heading">YOUR MOST-PLAYED\nSONG.</string>
     <string name="rw_top_song_most_played">MOST PLAYED</string>
@@ -1793,7 +1790,6 @@
     <string name="rw_level_artist_devotee_tagline">You are The Devoted</string>
     <string name="rw_minutes_compact">%1$s min</string>
     <string name="rw_empty_state_kicker">REWIND</string>
-    <string name="rw_listening_days_percent_of_year">%1$d%% OF THE PERIOD</string>
     <string name="rw_listening_days_without">%1$s days without listening.</string>
     <string name="rw_meta_plays">%1$s plays</string>
     <string name="rw_meta_songs">%1$s songs</string>
