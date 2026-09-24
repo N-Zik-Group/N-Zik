@@ -986,10 +986,10 @@ fun LocalPlaylistSongs(
                 relatedSongsResult?.songs?.forEach { songItem ->
                     // Filter out songs that are already in the playlist
                     if (!existingSongIds.contains(songItem.info?.endpoint?.videoId)) {
-                        val prefix = if (songItem.explicit) EXPLICIT_PREFIX else ""
                         val song = Song(
-                            id = "$prefix${songItem.info!!.endpoint!!.videoId!!}",
-                            title = songItem.info!!.name!!,
+                            // raw videoId + "e:" title prefix, as in Innertube.SongItem.asSong
+                            id = songItem.info!!.endpoint!!.videoId!!,
+                            title = (if (songItem.explicit) EXPLICIT_PREFIX else "") + (songItem.info!!.name ?: ""),
                             artistsText = songItem.authors.parseArtists().joinToString(", "),
                             durationText = songItem.durationText,
                             thumbnailUrl = songItem.thumbnail?.url

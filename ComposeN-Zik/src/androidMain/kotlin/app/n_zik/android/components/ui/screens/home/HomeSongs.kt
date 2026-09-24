@@ -83,6 +83,7 @@ import app.n_zik.android.typography
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.relatedSongs
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -92,12 +93,15 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import timber.log.Timber
 import app.it.fast4x.rimusic.enums.SortOrder
 import app.it.fast4x.rimusic.utils.showDislikedPlaylistKey
 import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
 import app.it.fast4x.rimusic.enums.DislikeMode
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
+
+private const val TAG = "SmartShuffle"
 
 @UnstableApi
 @ExperimentalFoundationApi
@@ -374,24 +378,43 @@ fun HomeSongs(
 
         for (seedSong in seedSongs) {
             try {
-                val relatedSongsResult = Innertube.relatedSongs(videoId = seedSong.id)?.getOrNull()
+                val relatedSongsResult = when (val result = Innertube.relatedSongs(videoId = seedSong.id)) {
+                    null -> {
+                        // null result only happens on cancellation
+                        Timber.tag(TAG).w("relatedSongs was cancelled for seed %s", seedSong.id)
+                        null
+                    }
+                    else -> if (result.isFailure) {
+                        Timber.tag(TAG).e(result.exceptionOrNull(), "relatedSongs failed for seed %s", seedSong.id)
+                        null
+                    } else {
+                        result.getOrNull()
+                    }
+                }
 
-                relatedSongsResult?.songs?.forEach { songItem ->
-                    songItem.info?.let { info ->
-                        info.endpoint?.videoId?.let { videoId ->
-                            if (!existingSongIds.contains(videoId)) {
-                                if (parentalControlEnabled && songItem.explicit) return@let
-                                val prefix = if (songItem.explicit) EXPLICIT_PREFIX else ""
-                                val song = Song(
-                                    id = "$prefix$videoId",
-                                    title = info.name ?: "",
-                                    artistsText = songItem.authors.parseArtists().joinToString(", "),
-                                    durationText = songItem.durationText,
-                                    thumbnailUrl = songItem.thumbnail?.url
-                                )
+                if (relatedSongsResult != null) {
+                    val songs = relatedSongsResult.songs
+                    if (songs.isNullOrEmpty()) {
+                        Timber.tag(TAG).w("0 recommandation pour seed %s", seedSong.id)
+                    } else {
+                        songs.forEach { songItem ->
+                            songItem.info?.let { info ->
+                                info.endpoint?.videoId?.let { videoId ->
+                                    if (!existingSongIds.contains(videoId)) {
+                                        if (parentalControlEnabled && songItem.explicit) return@let
+                                        val song = Song(
+                                            // raw videoId + "e:" title prefix, as in Innertube.SongItem.asSong
+                                            id = videoId,
+                                            title = (if (songItem.explicit) EXPLICIT_PREFIX else "") + (info.name ?: ""),
+                                            artistsText = songItem.authors.parseArtists().joinToString(", "),
+                                            durationText = songItem.durationText,
+                                            thumbnailUrl = songItem.thumbnail?.url
+                                        )
 
-                                if (!allRelatedSongs.any { it.id == song.id }) {
-                                    allRelatedSongs.add(song)
+                                        if (!allRelatedSongs.any { it.id == song.id }) {
+                                            allRelatedSongs.add(song)
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -400,6 +423,10 @@ fun HomeSongs(
 
                 if (numberOfRequests > 1) delay(200L)
             } catch (e: Exception) {
+                // Rethrow cancellation so the LaunchedEffect stops instead of
+                // storming the log with one line per remaining seed
+                if (e is CancellationException) throw e
+                Timber.tag(TAG).e(e, "seed %s threw while fetching recommendations", seedSong.id)
                 continue
             }
         }
