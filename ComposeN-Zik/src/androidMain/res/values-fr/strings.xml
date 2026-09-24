@@ -1823,7 +1823,7 @@ Volume BAS : titre précédent</string>
     <string name="rw_finale_top_album">TOP ALBUM</string>
     <string name="rw_finale_top_playlist">TOP PLAYLIST</string>
     <string name="rw_finale_brand">RÉTROSPECTIVE N-ZIK %1$s</string>
-    <string name="rw_finale_share">SHARE REWIND</string>
+    <string name="rw_finale_share">EXPORTER TOUTES LES PAGES</string>
     <string name="rw_finale_export_page">EXPORT THIS PAGE</string>
     <string name="rw_finale_play_again">PLAY AGAIN</string>
     <string name="rw_top_playlists_empty_title">NO PLAYLIST CHART YET</string>
