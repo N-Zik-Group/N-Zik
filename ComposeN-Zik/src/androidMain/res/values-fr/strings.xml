@@ -800,10 +800,10 @@ Volume BAS : titre précédent</string>
     <string name="update_song">Voulez-vous vraiment récupérer ce titre ? La durée d\'écoute et les données mises en cache seront effacées.\nCette action est irréversible.</string>
     <string name="player_pause_listen_history_info">N\'enregistre pas les événements de lecture utilisés pour les statistiques, l\'historique et les suggestions dans la « Sélection Rapide »</string>
     <string name="sleep_timer_ended">Minuterie de veille terminée</string>
+    <string name="account_login">Se connecter</string>
+    <string name="account_logoff">Log off</string>
     <string name="social_discord">Discord</string>
     <string name="discord_enable_rich_presence">Activer Rich Presence (Discord)</string>
-    <string name="discord_disconnect">Déconnecté</string>
-    <string name="discord_connect">Se connecter</string>
     <string name="discord_connected_to_discord_account">Connecté au compte Discord</string>
     <string name="discord_error_banner_title">Problème lié à la fonctionnalité « Rich Presence » sur Discord</string>
     <string name="discord_error_invalid_token">Votre jeton Discord a été refusé (non valide ou périmé). Mettez à jour votre jeton, puis redémarrez l\'application.</string>
@@ -1129,8 +1129,6 @@ Volume BAS : titre précédent</string>
     <string name="quick_selection">%s titres recommandée</string>
     <string name="discord_token_text_invalid">Votre jeton Discord n\'est pas valide, veuillez vous reconnecter</string>
     <string name="discord_rpc_reconnect_failed">La fonctionnalité « Rich Presence » de Discord n\'a pas pu se reconnecter ; les mises à jour de statut sont suspendues jusqu\'au prochain changement de média ou à une reconnexion manuelle.</string>
-    <string name="youtube_disconnect">Se déconnecter</string>
-    <string name="youtube_connect">Se connecter</string>
     <string name="youtube_login_successful">Connexion à YouTube réussie</string>
     <string name="account_info">Informations sur le compte</string>
     <string name="save_visualizer_state">Enregistrer l\'état du visualiseur</string>
@@ -1531,8 +1529,6 @@ Volume BAS : titre précédent</string>
     <string name="social_lastfm">Last.fm</string>
     <string name="social_lastfm_info">Partagez votre musique sur Last.fm</string>
     <string name="lastfm_enable_scrobbling">Activer le scrobbling</string>
-    <string name="lastfm_connect">Se connecter</string>
-    <string name="lastfm_disconnect">Se déconnecter</string>
     <string name="lastfm_connected">Connecté à un compte Last.fm</string>
     <string name="lastfm_username">Nom d’utilisateur</string>
     <string name="lastfm_password">Mot de passe</string>
@@ -1641,7 +1637,6 @@ Volume BAS : titre précédent</string>
     <string name="onboard_name_youtube">Se connecter (YouTube)</string>
     <string name="onboard_name_youtube_desc">Utilisez le nom de votre compte YouTube pour les diapositives de Rétrospective</string>
     <string name="onboard_name_youtube_account">Connecté en tant que %1$s</string>
-    <string name="onboard_name_youtube_button">Se connecter</string>
     <string name="onboard_name_guest">Continuer en tant qu\'invité</string>
     <string name="onboard_name_guest_desc">Choisissez un nom personnalisé ou laissez ce champ vide pour conserver le nom par défaut</string>
     <string name="onboard_name_field_hint">Votre nom</string>
