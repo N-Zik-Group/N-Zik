@@ -799,10 +799,10 @@
     <string name="update_song">Bu şarkıyı gerçekten yeniden getirmek istiyor musunuz? Çalma süresi ve önbelleğe alınan veriler silinecek.\nBu işlem geri alınamaz.</string>
     <string name="player_pause_listen_history_info">İstatistikler, geçmiş ve hızlı resimlerdeki öneriler için kullanılan çalma olaylarını kaydetmez</string>
     <string name="sleep_timer_ended">Uyku zamanlayıcısı sona erdi</string>
+    <string name="account_login">Giriş yap</string>
+    <string name="account_logoff">Log off</string>
     <string name="social_discord">Discord</string>
     <string name="discord_enable_rich_presence">Zengin Durumu Etkinleştir</string>
-    <string name="discord_disconnect">Bağlantıyı kes</string>
-    <string name="discord_connect">Bağlan</string>
     <string name="discord_connected_to_discord_account">Discord Hesabına Bağlanıldı</string>
     <string name="discord_error_banner_title">Discord Zengin Varlık sorunu</string>
     <string name="discord_error_invalid_token">Discord tokeniniz reddedildi (geçersiz veya süresi dolmuş). Tokeninizi güncelleyin, ardından uygulamayı yeniden başlatın.</string>
@@ -1128,8 +1128,6 @@
     <string name="quick_selection">%s önerilen şarkı </string>
     <string name="discord_token_text_invalid">Discord tokeniniz geçersiz, lütfen tekrar giriş yapın</string>
     <string name="discord_rpc_reconnect_failed">Discord Zengin Varlık yeniden bağlanamadı, durum güncellemeleri bir sonraki medya değişikliğine veya manuel yeniden bağlanmaya kadar durduruldu</string>
-    <string name="youtube_disconnect">Bağlantıyı kes</string>
-    <string name="youtube_connect">Bağlan</string>
     <string name="youtube_login_successful">YouTube\'da oturum açma işlemi başarıyla tamamlandı</string>
     <string name="account_info">Hesap bilgileri </string>
     <string name="save_visualizer_state">Görselleştirici durumunu kaydet</string>
@@ -1530,8 +1528,6 @@
     <string name="social_lastfm">Last.fm</string>
     <string name="social_lastfm_info">Müziğinizi Last.fm’e kaydedin</string>
     <string name="lastfm_enable_scrobbling">Kaydetmeyi etkinleştir</string>
-    <string name="lastfm_connect">Bağlan</string>
-    <string name="lastfm_disconnect">Bağlantıyı kes</string>
     <string name="lastfm_connected">Last.fm hesabına bağlı</string>
     <string name="lastfm_username">Kullanıcı adı</string>
     <string name="lastfm_password">Şifre</string>
@@ -1640,7 +1636,6 @@
     <string name="onboard_name_youtube">Giriş yap (YouTube)</string>
     <string name="onboard_name_youtube_desc">Geri Sarma slaytları için YouTube hesap adınızı kullanın</string>
     <string name="onboard_name_youtube_account">%1$s olarak oturum açıldı</string>
-    <string name="onboard_name_youtube_button">Giriş yap</string>
     <string name="onboard_name_guest">Misafir olarak devam et</string>
     <string name="onboard_name_guest_desc">İstediğiniz herhangi bir özel adı seçin ya da varsayılanı korumak için bu alanı boş bırakın</string>
     <string name="onboard_name_field_hint">Adınız</string>
