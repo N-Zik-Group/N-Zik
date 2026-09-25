@@ -1616,7 +1616,7 @@ Volume BAS : titre précédent</string>
     <string name="rescue_category_maintenance">Maintenance</string>
     <string name="rescue_category_danger">Zone dangereuse</string>
     <string name="rescue_status_main_process_stopping">L\'application est en train de se fermer…</string>
-    <string name="rescue_status_main_process_stopped">L\'application est arrêtée</string>
+    <string name="rescue_status_main_process_stopped">L\'application est arrêtée — aucune action de fermeture n\'est nécessaire</string>
     <string name="rescue_kill_app">Fermer l\'application</string>
     <string name="rescue_kill_app_description">Forcer l\'arrêt du processus de l\'application si l\'arrêt automatique n\'a pas fonctionné</string>
     <string name="rescue_confirm_kill_app">Voulez-vous forcer la fermeture immédiate du processus de l\'application ? La fermeture est immédiate et irréversible, et elle peut interrompre les opérations en cours.</string>
@@ -1874,8 +1874,8 @@ Volume BAS : titre précédent</string>
     <string name="rw_level_artist_devotee_tagline">Vous êtes le dévoué</string>
     <string name="rw_minutes_compact">%1$s min</string>
     <string name="rw_empty_state_kicker">RÉTROSPECTIVE</string>
-    <string name="rw_listening_days_percent_of_period">%1$d%% OF THE PERIOD</string>
-    <string name="rw_listening_days_without">%1$s days without listening.</string>
+    <string name="rw_listening_days_percent_of_period">%1$d%% DE LA PÉRIODE</string>
+    <string name="rw_listening_days_without">%1$s jours sans écouter de musique.</string>
     <string name="rw_meta_plays">%1$s lectures</string>
     <string name="rw_meta_songs">%1$s titres</string>
     <string name="rw_settings_title">Rétrospective</string>
@@ -1884,19 +1884,19 @@ Volume BAS : titre précédent</string>
     <string name="rw_settings_master">Activer la rétrospective</string>
     <string name="rw_settings_master_description">Activer ou désactiver l\'élément de menu et les rappels.</string>
     <string name="rw_settings_yearly">Rétrospective annuelle</string>
-    <string name="rw_settings_yearly_description">Show the yearly recaps on the Rewind home.</string>
+    <string name="rw_settings_yearly_description">Afficher les rétrospectives annuelles sur la page d\'accueil de la Rétrospective.</string>
     <string name="rw_settings_yearly_notification">Notification annuelle de réinitialisation</string>
     <string name="rw_settings_yearly_notification_description">Recevez une notification dès qu\'une rétrospective annuelle est disponible.</string>
     <string name="rw_settings_monthly">Rétrospective mensuelle</string>
-    <string name="rw_settings_monthly_description">Show the month grid on the Rewind home.</string>
+    <string name="rw_settings_monthly_description">Afficher le calendrier mensuel sur la page d\'accueil de la Rétrospective.</string>
     <string name="rw_settings_monthly_notification">Notification mensuelle de rétrospective</string>
     <string name="rw_settings_monthly_notification_description">Recevez une notification le 1er du mois vous informant que le récapitulatif du mois précédent est disponible.</string>
-    <string name="rw_settings_global">All-time rewind</string>
+    <string name="rw_settings_global">Retour en arrière à travers les âges</string>
     <string name="rw_settings_global_description">Afficher le récapitulatif de tous les épisodes sur la page d\'accueil de « Rétrospective ».</string>
-    <string name="rw_settings_playlists_monthly">Monthly rewind playlist</string>
+    <string name="rw_settings_playlists_monthly">Playlist rétrospective du mois</string>
     <string name="rw_settings_playlists_monthly_description">Créer la playlist mensuelle « Rétrospective ».</string>
     <string name="rw_settings_playlists_monthly_notification">Notification concernant la playlist « Rétrospective mensuelle »</string>
-    <string name="rw_settings_playlists_monthly_notification_description">Get notified when the monthly rewind playlist is ready.</string>
+    <string name="rw_settings_playlists_monthly_notification_description">Recevez une notification dès que la playlist « Rétrospective mensuelle » sera disponible.</string>
     <string name="rw_settings_playlists_yearly">Playlist rétrospective de l\'année</string>
     <string name="rw_settings_playlists_yearly_description">Créer la playlist « rétrospective de l\'année ».</string>
     <string name="rw_settings_playlists_yearly_notification">Notification concernant la playlist « Rétrospective de l\'année »</string>
@@ -1909,8 +1909,8 @@ Volume BAS : titre précédent</string>
     <string name="rw_playlist_notif_title">Votre playlist « Rétrospective %1$s » est prête</string>
     <string name="rw_playlist_notif_body">Appuyez pour ouvrir vos playlists rétrospectives.</string>
     <string name="rw_finale_regen_playlist">RÉGÉNÉRER LA PLAYLIST</string>
-    <string name="rw_finale_regen_alltime">REGENERATE ALL-TIME</string>
+    <string name="rw_finale_regen_alltime">RÉGÉNÉRER TOUTES LES DONNÉES</string>
     <string name="rw_finale_regen_done">PLAYLIST MISE À JOUR</string>
-    <string name="rewind_top_sort">Rewind Top</string>
-    <string name="rewind_alltime_name">All-time</string>
+    <string name="rewind_top_sort">Meilleures Rétrospectives</string>
+    <string name="rewind_alltime_name">De tous les temps</string>
 </resources>
