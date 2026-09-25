@@ -44,6 +44,7 @@ import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
 import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
 import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.migration.DbCleanup
 import app.n_zik.android.core.migration.MonthlyPlaylistCleanup
 import app.n_zik.android.core.migration.RemovedSettingsMigration
 import app.n_zik.android.core.network.client.NetworkClientFactory
@@ -191,6 +192,11 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // on-the-fly generation mechanism (flag-guarded, idempotent, background)
         runCatching { MonthlyPlaylistCleanup.run(this) }
             .onFailure { Timber.tag("MainApplication").w(it, "Monthly playlists cleanup failed") }
+        // Cleanup of polluted artist↔song links accumulated by the old add-only
+        // mapping (idempotent, background) — re-runs on every launch, so it also
+        // heals links that reappear through database imports
+        runCatching { DbCleanup.run(this) }
+            .onFailure { Timber.tag("MainApplication").w(it, "Artist link cleanup failed") }
         InnerTubeXPlayer.initialize(this)
 
         // Setup session BEFORE prewarm — ensures session is stable when IO thread starts

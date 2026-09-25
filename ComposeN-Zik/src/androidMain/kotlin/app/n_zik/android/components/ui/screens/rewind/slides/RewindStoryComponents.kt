@@ -95,6 +95,7 @@ import app.it.fast4x.rimusic.ui.styling.overlay
 import app.it.fast4x.rimusic.ui.styling.onOverlay
 import app.it.fast4x.rimusic.ui.styling.px
 import it.fast4x.innertube.YtMusic
+import it.fast4x.innertube.requests.ArtistPage
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -875,46 +876,58 @@ internal data class ArtistWikiMetadata(
 )
 
 /**
- * Full Wikipedia metadata (portrait, short description, longer bio paragraph and the article
- * URL) for a single artist. Used by the Top Artist spotlight page. Returns null while loading
- * or when nothing plausible was found — callers should render gracefully without it.
+ * In-app artist bio for the Top Artist spotlight page. Uses the same source the artist
+ * screen uses: the description already stored on the artist row (written by the artist
+ * screen from the Innertube artist page), then the Innertube artist page fetched by
+ * browseId.
+ *
+ * A by-name Wikipedia lookup is deliberately NOT used for the bio: for ambiguous or
+ * channel-derived artist names it resolves to unrelated pages (e.g. the Wikipedia article
+ * of a same-named song), which is what the spotlight used to show.
+ *
+ * Returns null while loading or when no description is available — the card renders
+ * without the "about" section in that case.
  */
 @Composable
-internal fun rememberArtistWikiMetadata(
-    artistName: String,
-    fallbackBrowseId: String? = null
+internal fun rememberArtistBio(
+    browseId: String?,
+    storedDescription: String? = null
 ): ArtistWikiMetadata? {
-    var metadata by remember(artistName, fallbackBrowseId) { mutableStateOf<ArtistWikiMetadata?>(null) }
-    LaunchedEffect(artistName, fallbackBrowseId) {
+    var metadata by remember(browseId, storedDescription) { mutableStateOf<ArtistWikiMetadata?>(null) }
+    LaunchedEffect(browseId, storedDescription) {
         metadata = null
-        if (artistName.isBlank()) return@LaunchedEffect
         metadata = withContext(Dispatchers.IO) {
-            val wikipedia = WikipediaArtistMetadataResolver.find(artistName)
-            if (wikipedia?.hasUsableDescription() == true) {
-                wikipedia
-            } else {
-                fallbackBrowseId
-                    ?.takeIf(String::isNotBlank)
-                    ?.let { browseId ->
-                        YtMusic.getArtistPage(browseId).getOrNull()?.let { page ->
-                            ArtistWikiMetadata(
-                                imageUrl = page.artist.thumbnail?.url,
-                                description = page.description,
-                                bio = page.description
-                            )
-                        }
-                    }
-            }
+            RewindArtistBioResolver.resolve(browseId, storedDescription)
         }
     }
     return metadata
 }
 
-private fun ArtistWikiMetadata.hasUsableDescription(): Boolean {
-    val text = (bio ?: description).orEmpty().trim()
-    return text.isNotBlank() &&
-        !text.contains("may refer to", ignoreCase = true) &&
-        !text.contains("disambiguation", ignoreCase = true)
+/**
+ * Compose-free bio resolution so the in-app-first ordering is unit-testable: a non-blank
+ * stored description short-circuits any network fetch, and otherwise the Innertube artist
+ * page (fetched by [browseId]) is the sole source. [fetchPage] is injectable for tests.
+ */
+internal object RewindArtistBioResolver {
+    suspend fun resolve(
+        browseId: String?,
+        storedDescription: String?,
+        fetchPage: suspend (String) -> Result<ArtistPage> = { YtMusic.getArtistPage(it) }
+    ): ArtistWikiMetadata? {
+        val stored = storedDescription?.trim()?.takeIf(String::isNotBlank)
+        if (stored != null) {
+            return ArtistWikiMetadata(imageUrl = null, description = stored, bio = stored)
+        }
+        val id = browseId?.trim()?.takeIf(String::isNotBlank) ?: return null
+        return fetchPage(id).getOrNull()?.let { page ->
+            val description = page.description?.trim()?.takeIf(String::isNotBlank) ?: return@let null
+            ArtistWikiMetadata(
+                imageUrl = page.artist.thumbnail?.url,
+                description = description,
+                bio = description
+            )
+        }
+    }
 }
 
 private object WikipediaArtistImageResolver {

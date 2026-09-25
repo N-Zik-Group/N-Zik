@@ -41,7 +41,7 @@ fun RewindTopArtistSpotlightCard(
     onShareSlide: (() -> Unit)? = null
 ) {
     val artistName = artist?.artist?.cleanName().orEmpty()
-    val wiki = rememberArtistWikiMetadata(artistName, artist?.artist?.id)
+    val bioMeta = rememberArtistBio(artist?.artist?.id, artist?.artist?.description)
     RewindStoryShell(
         page = page,
         pageCount = pageCount,
@@ -199,7 +199,7 @@ fun RewindTopArtistSpotlightCard(
                     }
                 }
                 Spacer(Modifier.height(10.dp))
-                val bio = wiki?.bio ?: wiki?.description
+                val bio = bioMeta?.bio ?: bioMeta?.description
                 if (!bio.isNullOrBlank()) {
                     RewindReveal(active, 960) {
                         Column(modifier = Modifier.fillMaxWidth()) {
@@ -221,7 +221,7 @@ fun RewindTopArtistSpotlightCard(
                             )
                             Spacer(Modifier.height(5.dp))
                             Text(
-                                text = if (wiki?.wikipediaUrl != null) stringResource(R.string.rw_artist_spotlight_wikipedia) else stringResource(R.string.rw_artist_spotlight_innertube),
+                                text = stringResource(R.string.rw_artist_spotlight_innertube),
                                 color = rewindColors.value.cream.copy(alpha = 0.35f),
                                 fontSize = 8.sp,
                                 fontWeight = FontWeight.Bold,

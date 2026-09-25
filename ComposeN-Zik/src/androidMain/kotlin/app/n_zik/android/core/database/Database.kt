@@ -219,7 +219,24 @@ object Database {
             if (artistsToUpsert.isNotEmpty()) {
                 artistTable.upsert(artistsToUpsert)
             }
-            artistsToMap.forEach { mapIgnore(it, song) }
+            // Reconcile the artist mapping from this fresh YTM response when it is
+            // complete (every parsed artist is backed by a browse ID): the map must
+            // reflect the latest playback context, not the union of every context
+            // ever seen. A names-only/partial list keeps the legacy add-only path.
+            if (ArtistMappingReconcile.isCompleteAuthorList(artistNames, songItem.authors)) {
+                val dropped = songArtistMapTable.deleteBySongId(song.id)
+                val reconcileArtists = artistDataList.mapNotNull { it.second }
+                artistTable.upsert(reconcileArtists)
+                reconcileArtists.forEach { artist ->
+                    songArtistMapTable.insertIgnore(SongArtistMap(song.id, artist.id))
+                }
+                Timber.tag("Database").d(
+                    "upsert RECONCILE song=%s dropped=%d latestList=%d artists",
+                    song.id, dropped, artistNames.size
+                )
+            } else {
+                artistsToMap.forEach { mapIgnore(it, song) }
+            }
 
             // Upsert album
             songItem.album?.let {
@@ -375,6 +392,22 @@ object Database {
         val artistsIds = mediaItem.mediaMetadata.extras?.getStringArrayList("artistIds").orEmpty()
         
         if (artistsIds.isNotEmpty()) {
+            // Reconcile before re-mapping: the mapping must reflect the latest YTM author
+            // list, not the union of every list ever seen. YTM author lists vary by
+            // playback context (a channel playlist/radio credits the channel as an
+            // author), so insert-only accumulation pollutes SongArtistMap over time
+            // (bug: a channel-derived artist row collected hundreds of plays of
+            // unrelated songs and ranked as a top artist in the Rewind deck).
+            // Guarded: only an existing song has stale rows to drop, and only the
+            // id-bearing path reconciles — a names-only/local re-insert must never
+            // wipe existing mappings.
+            if (dbSong != null) {
+                val dropped = songArtistMapTable.deleteBySongId(cleanSongId)
+                Timber.tag("Database").d(
+                    "insertIgnore RECONCILE ids song=%s dropped=%d latestList=%s",
+                    cleanSongId, dropped, artistsIds
+                )
+            }
             // Normal case: zip names with IDs
             artistsNames.zip(artistsIds).forEach { (name, id) ->
                 val existingArtist = artistTable.findByNameDirect(name)
@@ -387,6 +420,17 @@ object Database {
                 songArtistMapTable.insertIgnore(SongArtistMap(cleanSongId, targetArtistId))
             }
         } else if (artistsNames.isNotEmpty()) {
+            // A names-only author list (search results often carry names without
+            // browse IDs) is still the latest authoritative answer for this
+            // context, so the same reconcile rule applies: stale rows from other
+            // contexts must not survive it. Guarded like above: existing song only.
+            if (dbSong != null) {
+                val dropped = songArtistMapTable.deleteBySongId(cleanSongId)
+                Timber.tag("Database").d(
+                    "insertIgnore RECONCILE names song=%s dropped=%d latestList=%s",
+                    cleanSongId, dropped, artistsNames
+                )
+            }
             // No browse IDs but we have names: try database by name first
             artistsNames.forEach { name ->
                 val existingArtist = artistTable.findByNameDirect(name)

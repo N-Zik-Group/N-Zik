@@ -108,5 +108,22 @@ interface SongArtistMapTable {
      */
     @Query("DELETE FROM SongArtistMap WHERE songId = :songId")
     fun deleteBySongId(songId: String): Int
+
+    /**
+     * @return every (songId, artistId) pair in this table, used by data
+     * cleanups that must scan all mappings at once
+     */
+    @Query("SELECT songId, artistId FROM SongArtistMap")
+    fun allPairsDirect(): List<SongArtistMap>
+
+    /**
+     * Delete a single mapping
+     *
+     * @param songId song side of the pair
+     * @param artistId artist side of the pair
+     * @return number of rows affected by this operation
+     */
+    @Query("DELETE FROM SongArtistMap WHERE songId = :songId AND artistId = :artistId")
+    fun deletePairDirect(songId: String, artistId: String): Int
 }
 

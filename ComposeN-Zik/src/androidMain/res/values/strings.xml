@@ -1307,6 +1307,7 @@
 <string name="section_lyrics_translation">Translation</string>
 <string name="section_lyrics_actions">Actions</string>
 <string name="toast_preference_saved">Preference Saved</string>
+<string name="db_artist_link_cleanup_toast">Removed %d incorrect artist link(s)</string>
 <string name="txt_width">width</string>
 <string name="cd_blurred_background">blurred_background</string>
 <string name="cd_rename_dialog_text_box_icon">Rename dialog text box icon</string>
