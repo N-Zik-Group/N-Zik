@@ -799,10 +799,10 @@
 <string name="update_song">Do you really want to refetch this song? Playback time and cached data will be wiped.\nThis action is irreversible.</string>
 <string name="player_pause_listen_history_info">Does not save playback events used for statistics, history and suggestions in quick pics</string>
 <string name="sleep_timer_ended">Sleep timer ended</string>
+<string name="account_login">Log in</string>
+<string name="account_logoff">Log off</string>
 <string name="social_discord">Discord</string>
 <string name="discord_enable_rich_presence">Enable Rich Presence</string>
-<string name="discord_disconnect">Disconnect</string>
-<string name="discord_connect">Connect</string>
 <string name="discord_connected_to_discord_account">Connected to Discord account</string>
 <string name="discord_error_banner_title">Discord Rich Presence problem</string>
 <string name="discord_error_invalid_token">Your Discord token was rejected (invalid or expired). Update your token, then restart the app.</string>
@@ -1128,8 +1128,6 @@
 <string name="quick_selection">%s recommended song</string>
 <string name="discord_token_text_invalid">Your Discord token is invalid, please login again</string>
 <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates stopped until the next media change or manual reconnect</string>
-<string name="youtube_disconnect">Disconnect</string>
-<string name="youtube_connect">Connect</string>
 <string name="youtube_login_successful">YouTube login successful</string>
 <string name="account_info">Account info</string>
 <string name="save_visualizer_state">Save visualizer state</string>
@@ -1530,8 +1528,6 @@
 <string name="social_lastfm">Last.fm</string>
 <string name="social_lastfm_info">Scrobble your music to Last.fm</string>
 <string name="lastfm_enable_scrobbling">Enable scrobbling</string>
-<string name="lastfm_connect">Connect</string>
-<string name="lastfm_disconnect">Disconnect</string>
 <string name="lastfm_connected">Connected to Last.fm account</string>
 <string name="lastfm_username">Username</string>
 <string name="lastfm_password">Password</string>
@@ -1640,7 +1636,6 @@
 <string name="onboard_name_youtube">Log in (YouTube)</string>
 <string name="onboard_name_youtube_desc">Use your YouTube account name for the Rewind slides</string>
 <string name="onboard_name_youtube_account">Logged in as %1$s</string>
-<string name="onboard_name_youtube_button">Log in</string>
 <string name="onboard_name_guest">Continue as guest</string>
 <string name="onboard_name_guest_desc">Pick any custom name, or leave it empty to keep the default</string>
 <string name="onboard_name_field_hint">Your name</string>

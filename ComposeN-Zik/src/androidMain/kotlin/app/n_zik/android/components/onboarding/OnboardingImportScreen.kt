@@ -57,16 +57,15 @@ import timber.log.Timber
  * normally only composed inside the settings screen, which is not alive during onboarding.
  *
  * Two exits: "skip" calls [onComplete] (the flow moves on to the name step); a
- * successful restore calls [onRestoreDone] just before the restart prompt — the
- * activity marks the onboarding complete there, so the restart lands directly in the
- * main app with the restored data (the restored settings already contain the display
- * name and the YouTube account).
+ * successful restore advances the flow to the next step and triggers the restart
+ * prompt — the complete flag is left unwritten, so the restart lands on the next step
+ * and the user stays inside onboarding, with the restored data live once the app
+ * re-reads its preferences.
  */
 @Composable
 fun OnboardingImportScreen(
     modifier: Modifier = Modifier,
     onComplete: () -> Unit,
-    onRestoreDone: () -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -76,23 +75,24 @@ fun OnboardingImportScreen(
     var selectedOption by rememberSaveable { mutableIntStateOf(2) }
     var bothMode by rememberSaveable { mutableStateOf(false) }
 
-    // Settings import finished -> the activity marks the onboarding complete (flag
-    // written), then the restart prompt so the app re-reads every restored value
+    // Settings import finished -> advance the flow to the next step (persisted by the
+    // activity) and restart so the app re-reads every restored value; the onboarding is
+    // NOT marked complete, so the restart lands on the next step (stays in onboarding)
     val importSettings = ImportSettings(context) {
-        Timber.tag("Onboarding").i("Restore done, completing the onboarding before the app restart")
-        onRestoreDone()
+        Timber.tag("Onboarding").i("Restore done, advancing the onboarding before the app restart")
+        onComplete()
         RestartAppDialog.showDialog()
     }
 
     // Database import finished -> in both mode the settings import runs next,
-    // otherwise straight to the restart prompt (same "complete first" behavior)
+    // otherwise straight to the advance + restart prompt (same "stay in the flow" behavior)
     val importDatabase = ImportDatabase(context) {
         if (bothMode) {
             Timber.tag("Onboarding").d("Database import done, chaining the settings import (both mode)")
             importSettings.onShortClick()
         } else {
-            Timber.tag("Onboarding").i("Restore done, completing the onboarding before the app restart")
-            onRestoreDone()
+            Timber.tag("Onboarding").i("Restore done, advancing the onboarding before the app restart")
+            onComplete()
             RestartAppDialog.showDialog()
         }
     }

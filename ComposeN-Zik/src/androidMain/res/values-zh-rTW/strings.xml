@@ -585,8 +585,6 @@
 <string name="sleep_timer_ended">睡眠計時結束</string>
 <string name="social_discord">Discord</string>
 <string name="discord_enable_rich_presence">啟用 Discord 狀態 (RPC)</string>
-<string name="discord_disconnect">中斷連接</string>
-<string name="discord_connect">連接</string>
 <string name="discord_connected_to_discord_account">已連接至 Discord 帳戶</string>
 <string name="settings_reset">重置</string>
 <string name="settings_restore_default_settings">恢復預設設定</string>
@@ -775,8 +773,6 @@
     <string name="account_info">Account info</string>
     <string name="quick_selection">%s recommended song</string>
     <string name="discord_token_text_invalid">Your Discord token is invalid, please login again</string>
-    <string name="youtube_disconnect">Disconnect</string>
-    <string name="youtube_connect">Connect</string>
     <string name="youtube_login_successful">YouTube login successful</string>
     <string name="save_visualizer_state">Save visualizer state</string>
     <string name="save_visualizer_state_description">Keep visualizer state between sessions</string>

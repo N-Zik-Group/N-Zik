@@ -27,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,6 +68,28 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 /**
+ * First-composition behavior of the accounts step, as a pure mapping (unit-tested in
+ * [OnboardingAccountsStepActionTest]).
+ */
+enum class OnboardingAccountsStepAction {
+    /** Show the step as usual. */
+    SHOW,
+
+    /** Auto-advance: both accounts are already connected, nothing left to connect. */
+    AUTO_ADVANCE
+}
+
+/**
+ * Both optional accounts already connected (e.g. restored by the import step) means
+ * there is nothing left to configure: the step is skipped on its own, the same way
+ * the skip button would in that state (Discord path: flag written, then the restart
+ * prompt — a Discord token is only live after a restart).
+ */
+fun accountsStepInitialAction(lastFmConnected: Boolean, discordConnected: Boolean): OnboardingAccountsStepAction =
+    if (lastFmConnected && discordConnected) OnboardingAccountsStepAction.AUTO_ADVANCE
+    else OnboardingAccountsStepAction.SHOW
+
+/**
  * Fourth and final step of the first-launch onboarding flow: optional account
  * connections (Last.fm scrobbling and Discord rich presence), after the name choice.
  *
@@ -87,9 +110,16 @@ import timber.log.Timber
  * restart prompt is normally only composed inside the settings screen, which is
  * not alive during onboarding.
  *
+ * Auto-skip: when BOTH accounts are already connected on first composition
+ * (restored by the import step, or a returning state), the step is skipped on its
+ * own — the same way the skip button would in that state
+ * ([accountsStepInitialAction]): the flag is written and the restart prompt shows
+ * (a Discord token is only live after a restart).
+ *
  * @param onComplete skip pressed with no Discord token — the flow completes
- * @param onDiscordConnected skip pressed while a Discord token is set — the
- *   activity must complete the onboarding (flag written) BEFORE the restart prompt
+ * @param onDiscordConnected skip pressed (or the auto-skip fired) while a Discord
+ *   token is set — the activity must complete the onboarding (flag written) BEFORE
+ *   the restart prompt
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,6 +145,20 @@ fun OnboardingAccountsScreen(
     // are not configured
     val lastfmConfigured =
         !BuildConfig.LASTFM_API_KEY.isEmpty() && !BuildConfig.LASTFM_API_SECRET.isEmpty()
+
+    // Both accounts already connected (restored by the import step, or a returning
+    // state): skip the step the same way the skip button would — the flag is written
+    // and the restart prompt shows (a Discord token is only live after a restart)
+    LaunchedEffect(Unit) {
+        if (
+            accountsStepInitialAction(lastfmSession.isNotEmpty(), discordToken.isNotEmpty()) ==
+            OnboardingAccountsStepAction.AUTO_ADVANCE
+        ) {
+            Timber.tag("Onboarding").i("Both accounts already connected, auto-skipping the accounts step")
+            onDiscordConnected()
+            RestartAppDialog.showDialog()
+        }
+    }
 
     Column(
         modifier = modifier
@@ -170,11 +214,7 @@ fun OnboardingAccountsScreen(
                         } else {
                             stringResource(R.string.social_lastfm_info)
                         },
-                        actionLabel = if (lastfmSession.isNotEmpty()) {
-                            stringResource(R.string.lastfm_disconnect)
-                        } else {
-                            stringResource(R.string.lastfm_connect)
-                        },
+                        actionLabel = stringResource(onboardingAccountButtonResId(lastfmSession.isNotEmpty())),
                         onAction = {
                             if (lastfmSession.isNotEmpty()) {
                                 lastfmSession = ""
@@ -199,11 +239,7 @@ fun OnboardingAccountsScreen(
                     } else {
                         stringResource(R.string.onboard_accounts_discord_desc)
                     },
-                    actionLabel = if (discordToken.isNotEmpty()) {
-                        stringResource(R.string.discord_disconnect)
-                    } else {
-                        stringResource(R.string.discord_connect)
-                    },
+                    actionLabel = stringResource(onboardingAccountButtonResId(discordToken.isNotEmpty())),
                     onAction = {
                         if (discordToken.isNotEmpty()) {
                             discordToken = ""

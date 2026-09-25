@@ -161,7 +161,7 @@ fun LastFmSettingsCard() {
                     }
 
                     OtherSettingsEntry(
-                        title = if (lastfmSession.isNotEmpty()) stringResource(R.string.lastfm_disconnect) else stringResource(R.string.lastfm_connect),
+                        title = if (lastfmSession.isNotEmpty()) stringResource(R.string.account_logoff) else stringResource(R.string.account_login),
                         text = if (lastfmSession.isNotEmpty()) stringResource(R.string.lastfm_connected) else stringResource(R.string.social_lastfm_info),
                         icon = R.drawable.logout,
                         onClick = {

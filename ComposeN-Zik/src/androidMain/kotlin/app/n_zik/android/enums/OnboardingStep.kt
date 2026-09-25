@@ -22,4 +22,19 @@ enum class OnboardingStep {
         NAME -> ACCOUNTS
         ACCOUNTS -> null
     }
+
+    companion object {
+        /**
+         * Resolves the onboarding step to render at activity start from the persisted
+         * state. Returns `null` (the main app) when the flow is complete. Otherwise the
+         * persisted step — a post-import restart or process death resumes the flow
+         * there, a restore included (it advances the flow but never completes the
+         * onboarding, so the restart lands on the next step) — or the first step when
+         * nothing is persisted (fresh install).
+         */
+        fun resolveStartupStep(complete: Boolean, persistedStepName: String): OnboardingStep? {
+            if (complete) return null
+            return entries.firstOrNull { it.name == persistedStepName } ?: PERMISSIONS
+        }
+    }
 }

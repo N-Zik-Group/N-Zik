@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,9 +44,18 @@ import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
 import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
+import app.it.fast4x.rimusic.utils.encryptedPreferences
+import app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.useLoginForBrowseKey
+import app.it.fast4x.rimusic.utils.ytAccountChannelHandleKey
+import app.it.fast4x.rimusic.utils.ytAccountEmailKey
+import app.it.fast4x.rimusic.utils.ytAccountNameKey
+import app.it.fast4x.rimusic.utils.ytAccountThumbnailKey
 import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
+import app.it.fast4x.rimusic.utils.ytCookieKey
+import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
+import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.MainApplication
 import app.n_zik.android.R
@@ -60,6 +70,27 @@ import it.fast4x.innertube.Innertube
 import timber.log.Timber
 
 /**
+ * First-composition behavior of the name step, as a pure mapping (unit-tested in
+ * [OnboardingNameStepActionTest]).
+ */
+enum class OnboardingNameStepAction {
+    /** Show the step as usual — no YouTube account connected. */
+    SHOW,
+
+    /** Auto-advance — a YouTube account is already connected, the display name is settled. */
+    AUTO_ADVANCE
+}
+
+/**
+ * A YouTube account already connected on first composition (a cookie restored by the
+ * import step, or a returning state) means the display name is settled: the step
+ * advances on its own instead of showing cards whose "Continue" would silently switch
+ * the restored name source to `custom`.
+ */
+fun nameStepInitialAction(ytLoggedIn: Boolean): OnboardingNameStepAction =
+    if (ytLoggedIn) OnboardingNameStepAction.AUTO_ADVANCE else OnboardingNameStepAction.SHOW
+
+/**
  * Third step of the first-launch onboarding flow: pick where the display name
  * shown on the app comes from.
  *
@@ -68,6 +99,11 @@ import timber.log.Timber
  * source to `youtube`. "Continue as guest" stores an optional custom name and switches
  * the source to `custom` (blank name keeps the app default). Either choice moves on to
  * the optional accounts step — nothing is enforced.
+ *
+ * Auto-skip: when a YouTube account is already connected on first composition (a cookie
+ * restored by the import step, or a returning state), the display name is settled and
+ * the step advances on its own ([nameStepInitialAction]) — showing the cards would only
+ * offer a "Continue" that silently switches the restored name source to `custom`.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,12 +118,45 @@ fun OnboardingNameScreen(
         mutableStateOf(DataStoreUtils.getString(context, DataStoreUtils.KEY_USERNAME, ""))
     }
 
-    // One-shot reads: the screen leaves as soon as a choice is made, so a stale value
-    // (no login side-effect recomposition here) is acceptable by contract.
-    val ytLoggedIn = remember { isYouTubeLoggedIn() }
+    // One-shot read of the login state: it can only change from this screen
+    // (the logoff below flips it explicitly), and the screen leaves as soon as
+    // a choice is made, so a stale read is acceptable by contract.
+    var ytLoggedIn by remember { mutableStateOf(isYouTubeLoggedIn()) }
     // The account name is only read while an account is actually connected
     // (the choice is custom (guest) or YouTube)
     val ytName = remember { if (ytLoggedIn) ytAccountName() else "" }
+
+    // A restored YouTube account means the display name is settled: skip the step
+    // before the cards render — the restored name source (youtube or custom) is kept
+    // as-is, instead of the "Continue" button silently switching it to custom
+    LaunchedEffect(Unit) {
+        if (nameStepInitialAction(ytLoggedIn) == OnboardingNameStepAction.AUTO_ADVANCE) {
+            Timber.tag("Onboarding").i("YouTube account already connected, auto-advancing the name step")
+            onComplete()
+        }
+    }
+
+    // Logoff: the minimal mirror of the Accounts tab logout — the destructive
+    // synced-data clear is skipped because onboarding is a fresh install, there
+    // is nothing synced to wipe
+    fun logOffYouTube() {
+        val ep = appContext().encryptedPreferences
+        ep.edit().putString(ytCookieKey, "").apply()
+        ep.edit().putString(ytAccountNameKey, "").apply()
+        ep.edit().putString(ytAccountChannelHandleKey, "").apply()
+        ep.edit().putString(ytAccountEmailKey, "").apply()
+        ep.edit().putString(ytAccountThumbnailKey, "").apply()
+        ep.edit().putString(ytVisitorDataKey, "").apply()
+        ep.edit().putString(ytDataSyncIdKey, "").apply()
+        // Force recomposition of every encrypted-prefs observer (Accounts tab pattern)
+        encryptedPreferencesUpdateTrigger++
+        appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
+        appContext().preferences.edit().putBoolean(useLoginForBrowseKey, false).apply()
+        Innertube.useLoginForBrowse = false
+        MainApplication.cookieStatus = MainApplication.CookieStatus.NOT_LOGGED_IN
+        ytLoggedIn = false
+        Timber.tag("Onboarding").i("YouTube logged off from onboarding")
+    }
 
     Column(
         modifier = modifier
@@ -177,14 +246,17 @@ fun OnboardingNameScreen(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Button(
-                    onClick = { loginYouTube = true },
+                    onClick = {
+                        if (ytLoggedIn) logOffYouTube() else loginYouTube = true
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colorPalette().accent,
                         contentColor = colorPalette().textSecondary
                     ),
                     shape = uiRoundnessShape()
                 ) {
-                    Text(stringResource(R.string.onboard_name_youtube_button))
+                    // Same generic login/logoff pair as the other onboarding menus
+                    Text(stringResource(onboardingAccountButtonResId(ytLoggedIn)))
                 }
             }
         }

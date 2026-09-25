@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Test
  * The restore step can restart the app, so the flow contract under test here is the
  * step sequence itself: the activity persists the current step on every transition and
  * resumes at it after a restart (see `DataStoreUtils.KEY_ONBOARDING_STEP`). A successful
- * restore instead completes the flow (flag written, the restart lands directly in the
- * app — see `MainActivity.completeOnboarding`).
+ * restore never completes the flow — the complete flag stays unwritten, so the restart
+ * lands back on the persisted step and the user stays inside onboarding.
  */
 class OnboardingStepTest {
 
@@ -53,6 +53,49 @@ class OnboardingStepTest {
                 null
             ),
             visited
+        )
+    }
+
+    // ── Startup resolution (post-restart / post-crash / post-restore resume) ──
+
+    @Test
+    fun completeFlagAlwaysWinsOverThePersistedStep() {
+        assertNull(
+            OnboardingStep.resolveStartupStep(complete = true, persistedStepName = OnboardingStep.IMPORT.name)
+        )
+        assertNull(
+            OnboardingStep.resolveStartupStep(complete = true, persistedStepName = OnboardingStep.NAME.name)
+        )
+        assertNull(OnboardingStep.resolveStartupStep(complete = true, persistedStepName = ""))
+    }
+
+    @Test
+    fun persistedStepResumesTheFlowAfterRestart() {
+        OnboardingStep.entries.forEach { step ->
+            assertEquals(step, OnboardingStep.resolveStartupStep(complete = false, persistedStepName = step.name))
+        }
+    }
+
+    @Test
+    fun restoreRestartResumesInOnboardingNeverInTheApp() {
+        // The regression this guard exists for: a successful restore must not write the
+        // complete flag, so whatever step the flow persisted before the restart resumes
+        // inside onboarding — never the main app
+        assertEquals(
+            OnboardingStep.IMPORT,
+            OnboardingStep.resolveStartupStep(complete = false, persistedStepName = OnboardingStep.IMPORT.name)
+        )
+    }
+
+    @Test
+    fun blankOrUnknownPersistedStepFallsBackToTheFirstStep() {
+        assertEquals(
+            OnboardingStep.PERMISSIONS,
+            OnboardingStep.resolveStartupStep(complete = false, persistedStepName = "")
+        )
+        assertEquals(
+            OnboardingStep.PERMISSIONS,
+            OnboardingStep.resolveStartupStep(complete = false, persistedStepName = "NOT_A_STEP")
         )
     }
 }

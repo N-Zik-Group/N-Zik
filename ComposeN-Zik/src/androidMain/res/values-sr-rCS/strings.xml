@@ -585,8 +585,6 @@
 <string name="sleep_timer_ended">Sleep timer ended</string>
 <string name="social_discord">Discord</string>
 <string name="discord_enable_rich_presence">Enable Rich Presence</string>
-<string name="discord_disconnect">Disconnect</string>
-<string name="discord_connect">Connect</string>
 <string name="discord_connected_to_discord_account">Connected to Discord Account</string>
 <string name="settings_reset">Reset</string>
 <string name="settings_restore_default_settings">Restore default settings</string>
@@ -775,8 +773,6 @@
     <string name="account_info">Account info</string>
     <string name="quick_selection">%s recommended song</string>
     <string name="discord_token_text_invalid">Your Discord token is invalid, please login again</string>
-    <string name="youtube_disconnect">Disconnect</string>
-    <string name="youtube_connect">Connect</string>
     <string name="youtube_login_successful">YouTube login successful</string>
     <string name="save_visualizer_state">Save visualizer state</string>
     <string name="save_visualizer_state_description">Keep visualizer state between sessions</string>

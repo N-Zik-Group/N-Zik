@@ -801,8 +801,6 @@
     <string name="sleep_timer_ended">Таймер сна завершен</string>
     <string name="social_discord">Discord</string>
     <string name="discord_enable_rich_presence">Включить Rich Presence</string>
-    <string name="discord_disconnect">Отключиться</string>
-    <string name="discord_connect">Подключиться</string>
     <string name="discord_connected_to_discord_account">Подключено к учётной записи Discord</string>
     <string name="discord_error_banner_title">Discord Rich Presence problem</string>
     <string name="discord_error_invalid_token">Your Discord token was rejected (invalid or expired). Update your token, then restart the app.</string>
@@ -1128,8 +1126,6 @@
     <string name="quick_selection">%s рекомендуемая песня</string>
     <string name="discord_token_text_invalid">Ваш Discord токен недействителен, пожалуйста, войдите снова</string>
     <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
-    <string name="youtube_disconnect">Отключиться</string>
-    <string name="youtube_connect">Подключиться</string>
     <string name="youtube_login_successful">Логин YouTube успешно завершен</string>
     <string name="account_info">Информация о клиенте</string>
     <string name="save_visualizer_state">Сохранить состояние визуализатора</string>
@@ -1530,8 +1526,6 @@
     <string name="social_lastfm">Last.fm</string>
     <string name="social_lastfm_info">Scrobble your music to Last.fm</string>
     <string name="lastfm_enable_scrobbling">Enable scrobbling</string>
-    <string name="lastfm_connect">Подключиться</string>
-    <string name="lastfm_disconnect">Отключиться</string>
     <string name="lastfm_connected">Connected to Last.fm account</string>
     <string name="lastfm_username">Логин</string>
     <string name="lastfm_password">Пароль</string>
@@ -1640,7 +1634,6 @@
     <string name="onboard_name_youtube">Log in (YouTube)</string>
     <string name="onboard_name_youtube_desc">Use your YouTube account name for the Rewind slides</string>
     <string name="onboard_name_youtube_account">Logged in as %1$s</string>
-    <string name="onboard_name_youtube_button">Log in</string>
     <string name="onboard_name_guest">Continue as guest</string>
     <string name="onboard_name_guest_desc">Pick any custom name, or leave it empty to keep the default</string>
     <string name="onboard_name_field_hint">Your name</string>

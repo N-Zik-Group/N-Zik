@@ -398,9 +398,11 @@ class MainActivity :
     // is complete and the main navigation renders instead. The step is persisted in
     // prefs on every transition (see advanceOnboarding), so a process restart —
     // post-import restart or process death — resumes at the right step too. The
-    // onboardingComplete flag is written once the flow is fully done, or when a restore
-    // succeeds (the restart then lands directly in the app), so a mid-flow crash never
-    // marks the onboarding as finished.
+    // onboardingComplete flag is written only when the flow is fully done (or when the
+    // accounts step leaves with a Discord token set) — a successful restore never
+    // writes it: the flow advances to the next step before the restart, so the restart
+    // lands on that step, keeping the user inside onboarding — and a mid-flow crash
+    // never marks it as finished.
     private var onboardingStep by mutableStateOf<OnboardingStep?>(null)
 
     /**
@@ -425,12 +427,11 @@ class MainActivity :
 
     /**
      * Marks the onboarding as complete without leaving the current step. Used by the
-     * restore step (a successful import restarts the app) and by the accounts step
-     * (leaving the step with a Discord token set restarts the app): the restart
-     * must land directly in the main app (restored settings already contain the
-     * display name and the YouTube account), so the flag is written and the
+     * accounts step (leaving the step with a Discord token set restarts the app): the
+     * restart must land directly in the main app, so the flag is written and the
      * persisted step cleared now — the step field stays put until the restart
-     * happens.
+     * happens. A successful restore never uses this: it restarts the app without
+     * writing the flag, and the flow resumes at the persisted step.
      */
     private fun completeOnboarding() {
         DataStoreUtils.saveBoolean(this, DataStoreUtils.KEY_ONBOARDING_COMPLETE, true)
@@ -629,14 +630,13 @@ class MainActivity :
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
         shortcutIntentAction = initialShortcutAction(intent.action, isRestoredInstance)
         rewindDeckTarget = rewindDeckTargetFromIntent(intent, isRestoredInstance)
-        onboardingStep = if (DataStoreUtils.getBoolean(this, DataStoreUtils.KEY_ONBOARDING_COMPLETE, false)) {
-            null
-        } else {
-            // Resume at the persisted step after a post-import restart or process death;
-            // fresh installs have nothing persisted, so fall back to the first step
-            val savedStep = DataStoreUtils.getString(this, DataStoreUtils.KEY_ONBOARDING_STEP, "")
-            OnboardingStep.entries.firstOrNull { it.name == savedStep } ?: OnboardingStep.PERMISSIONS
-        }
+        onboardingStep = OnboardingStep.resolveStartupStep(
+            complete = DataStoreUtils.getBoolean(this, DataStoreUtils.KEY_ONBOARDING_COMPLETE, false),
+            // Resume at the persisted step after a post-import restart or process death
+            // (a restore never completes the onboarding, so this covers it too); fresh
+            // installs have nothing persisted and fall back to the first step
+            persistedStepName = DataStoreUtils.getString(this, DataStoreUtils.KEY_ONBOARDING_STEP, ""),
+        )
 
         with(preferences) {
             if (getBoolean(isKeepScreenOnEnabledKey, false)) {
@@ -1645,12 +1645,11 @@ class MainActivity :
                                     )
 
                                     OnboardingStep.IMPORT -> OnboardingImportScreen(
-                                        // "Skip" moves on to the name step; a successful
-                                        // restore completes the onboarding instead (flag
-                                        // written before the restart), so the post-import
-                                        // restart lands directly in the main app
-                                        onComplete = { advanceOnboarding() },
-                                        onRestoreDone = { completeOnboarding() }
+                                        // "Skip" and a successful restore both advance to
+                                        // the name step; a restore additionally restarts
+                                        // the app (flag unwritten), so the restart lands
+                                        // on the next step — the user stays inside onboarding
+                                        onComplete = { advanceOnboarding() }
                                     )
 
                                     OnboardingStep.NAME -> OnboardingNameScreen(
