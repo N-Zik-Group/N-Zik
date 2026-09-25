@@ -121,6 +121,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.animation.core.spring
 import androidx.compose.runtime.DisposableEffect
+import app.n_zik.android.components.ui.screens.profiles.ProfileScreen
 
 fun NavHostController.navigateClean(route: String, context: Context) {
     val disableBackStack = context.preferences.getBoolean(disableNavigationBackStackKey, false)
@@ -549,6 +550,13 @@ fun AppNavigation(
                 miniPlayer = miniPlayer,
                 rewindYear = if (year > 0) year else null,
                 rewindMonth = if (month > 0) month else null,
+            )
+        }
+
+        composable(route = NavRoutes.profiles.name) {
+            ProfileScreen(
+                navController = navController,
+                miniPlayer = miniPlayer,
             )
         }
 

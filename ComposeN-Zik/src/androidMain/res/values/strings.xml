@@ -1802,4 +1802,10 @@
 <string name="rw_listening_days_without">%1$s days without listening.</string>
 <string name="rw_meta_plays">%1$s plays</string>
 <string name="rw_meta_songs">%1$s songs</string>
+    <string name="profiles">Profiles</string>
+    <string name="add_profile">Add profile</string>
+    <string name="enter_profile_name">Enter profile name</string>
+    <string name="remove_profile">Remove profile</string>
+    <string name="this_profile_alreaty_exist">This profile aleady exist</string>
+    <string name="profile_restart_required">This required a restart of the app</string>
 </resources>
