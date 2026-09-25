@@ -799,10 +799,10 @@
     <string name="update_song">Do you really want to refetch this song? Playback time and cached data will be wiped.\nThis action is irreversible.</string>
     <string name="player_pause_listen_history_info">Neukládat přehrávané záznamy, které se používají pro statistiky, historii a návrhy v rychlém výběru</string>
     <string name="sleep_timer_ended">Časovač spánku ukončen</string>
+    <string name="account_login">Log in</string>
+    <string name="account_logoff">Log off</string>
     <string name="social_discord">Discord</string>
     <string name="discord_enable_rich_presence">Povolit Discord Rich Presence</string>
-    <string name="discord_disconnect">Odpojit</string>
-    <string name="discord_connect">Připojit</string>
     <string name="discord_connected_to_discord_account">Připojeno k Discord účtu</string>
     <string name="discord_error_banner_title">Discord Rich Presence problem</string>
     <string name="discord_error_invalid_token">Your Discord token was rejected (invalid or expired). Update your token, then restart the app.</string>
@@ -1128,8 +1128,6 @@
     <string name="quick_selection">%s doporučená skladba</string>
     <string name="discord_token_text_invalid">Váš Discord token je neplatný, přihlaste se prosím znovu</string>
     <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
-    <string name="youtube_disconnect">Odpojit</string>
-    <string name="youtube_connect">Připojit</string>
     <string name="youtube_login_successful">YouTube přihlášení úspěšné</string>
     <string name="account_info">Informace o účtu</string>
     <string name="save_visualizer_state">Uložit stav vizualizéru</string>
@@ -1530,8 +1528,6 @@
     <string name="social_lastfm">Last.fm</string>
     <string name="social_lastfm_info">Scrobble your music to Last.fm</string>
     <string name="lastfm_enable_scrobbling">Enable scrobbling</string>
-    <string name="lastfm_connect">Připojit</string>
-    <string name="lastfm_disconnect">Odpojit</string>
     <string name="lastfm_connected">Connected to Last.fm account</string>
     <string name="lastfm_username">Uživatelské jméno</string>
     <string name="lastfm_password">Heslo</string>
@@ -1640,7 +1636,6 @@
     <string name="onboard_name_youtube">Log in (YouTube)</string>
     <string name="onboard_name_youtube_desc">Use your YouTube account name for the Rewind slides</string>
     <string name="onboard_name_youtube_account">Logged in as %1$s</string>
-    <string name="onboard_name_youtube_button">Log in</string>
     <string name="onboard_name_guest">Continue as guest</string>
     <string name="onboard_name_guest_desc">Pick any custom name, or leave it empty to keep the default</string>
     <string name="onboard_name_field_hint">Your name</string>
