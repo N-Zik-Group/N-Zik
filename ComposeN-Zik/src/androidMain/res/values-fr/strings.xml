@@ -801,7 +801,7 @@ Volume BAS : titre précédent</string>
     <string name="player_pause_listen_history_info">N\'enregistre pas les événements de lecture utilisés pour les statistiques, l\'historique et les suggestions dans la « Sélection Rapide »</string>
     <string name="sleep_timer_ended">Minuterie de veille terminée</string>
     <string name="account_login">Se connecter</string>
-    <string name="account_logoff">Log off</string>
+    <string name="account_logoff">Se déconnecter</string>
     <string name="social_discord">Discord</string>
     <string name="discord_enable_rich_presence">Activer Rich Presence (Discord)</string>
     <string name="discord_connected_to_discord_account">Connecté au compte Discord</string>
