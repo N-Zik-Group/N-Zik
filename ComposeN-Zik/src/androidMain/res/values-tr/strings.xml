@@ -1707,7 +1707,7 @@
     <string name="rw_home_locked_spam_5">Bekle dedim!</string>
     <string name="rw_home_locked_spam_kick">Yeter artık! HAYIR dedim, dur!</string>
     <string name="rw_home_month_empty_sad">Hiçbir şey oynamadın, bu çok üzücü.</string>
-    <string name="rw_home_month_empty_spam_1">Hala bir şey yok. Ah!</string>
+    <string name="rw_home_month_empty_spam_1">Hala bir şey yok. Ah.</string>
     <string name="rw_home_month_empty_spam_2">Oynama sayısı sıfır. Ne yazık ki.</string>
     <string name="rw_home_month_empty_spam_3">Bu ay bir hayalet gibi.</string>
     <string name="rw_home_month_empty_spam_4">Telefonun bile fark etti.</string>
