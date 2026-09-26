@@ -247,6 +247,8 @@ Some skills use micro-file design where each step is in its own file.
 - ALWAYS halt at checkpoints and wait for human input
 - Load next step file ONLY when directed by current step
 
+**Alternate path (bmad-build):** `bmad-build` also ships `step-oneshot.md` — an EARLY EXIT taken by `step-01`/`step-02` when the spec carries `route: 'oneshot'`. It is a 6th step file with its own checkpoint semantics: when it is loaded, follow IT (do not continue the numbered sequence). When counting steps for the enforcement list, count it as an alternate path, not an extra sequential step.
+
 ### Step 4: Validate Plan (MANDATORY — HARD GATE)
 
 - This step is a hard gate: after the plan/spec is produced, HALT and wait for the user's answer before editing ANY file, running ANY build, or starting ANY implementation — no step 5, no code, no "it's obvious, proceeding anyway".
@@ -339,6 +341,7 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
     - Create `fastlane/metadata/android/en-US/changelogs/{newVersionCode}.txt` from the `Done.txt` entries, using its own template (`Changelog_Template.txt` in same folder) — **max 500 characters**
     - Create `Updater/changelogs/{newVersionCode}.txt` from the `Done.txt` entries, using its own template — **no character limit**, include full issue link
     - Both changelogs are written in ENGLISH (fastlane metadata is en-US) — even when the session language is another one
+    - **Known historical gaps:** version #5 and #14 are missing from BOTH changelog folders (sequence jumps 4→6, 13→15) — do NOT backfill them. `Updater/changelogs/` also holds a non-version `dev.txt` and a copy of `Changelog_Template.txt` (besides the canonical one in `assets/notes/`) — treat both as expected, do NOT "clean" them
     - Empty `assets/notes/Done.txt` (the released entries now live in the changelogs)
   - **2. Done + commit (no release):**
     - Append the new work to `assets/notes/Done.txt` using its own template (`Changelog_Template.txt` in same folder) — format: `<keyword>(<scope>): <short summary> (issue ref)` + technical sub-bullets, include full issue link — NO version bump, NO `fastlane/`/`Updater/` files

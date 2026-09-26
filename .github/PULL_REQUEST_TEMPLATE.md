@@ -50,7 +50,7 @@
 
 ### 🏗️ 2. Architecture & File Placement (`CODE.md` & `AGENTS.md`)
 - [ ] **Location**: New code is strictly in `app.n_zik.android.*` (or `ComposeN-Zik/src/test/`).
-- [ ] **Legacy Rules**: NO files created/edited under `app.it.fast4x.rimusic.*` or `app.kreate.android.*`.
+- [ ] **Legacy Rules**: NO files created under `app.it.fast4x.rimusic.*` or `app.kreate.android.*`; an existing legacy file was edited ONLY with the user's explicit approval (AGENTS.md legacy rule / WORKFLOW.md Step 6 exception) — the approval is quoted in the description.
 - [ ] **String Resources**: ONLY `values/strings.xml` was edited (NEVER `values-*/strings.xml` — those are Crowdin-managed, see below).
 - [ ] **ViewModels/Repositories**: ViewModels co-located with their screen; Repositories collocated with their domain package (no central `core/data/` exists).
 - [ ] **DI & Navigation**: Plain constructor injection (NO DI framework in the app module); routing stays on the legacy `NavRoutes` enum + string route helpers (no sealed route class — see `CODE.md` Navigation).
@@ -62,7 +62,7 @@
 - [ ] **Key Removal Check**: If a string key was removed/renamed, usages were checked across the codebase first.
 
 ### 💻 3. Kotlin & Core Patterns (`CODE.md`)
-- [ ] **Coroutines**: Used `viewModelScope` / `lifecycleScope` (NO `GlobalScope` or `runBlocking`).
+- [ ] **Coroutines**: Used `viewModelScope` / `lifecycleScope` (NO `GlobalScope`; `runBlocking` only with a justification comment — see CODE.md).
 - [ ] **Dispatchers**: Used `NzikDispatchers` named dispatchers only (`UI`/`PLAYBACK`/`VISUALIZER`/`MEDIA`/`DATA` + Room executors) — no new raw `Dispatchers.*`; fire-and-forget scopes built with `NzikDispatchers.fireAndForget()`.
 - [ ] **State Updates**: Used atomic updates (`_state.update { ... }`), NOT `_state.value = ...`.
 - [ ] **StateFlow**: Prefer `StateFlow` over `LiveData`, exposing a single `data class *UiState` per feature.

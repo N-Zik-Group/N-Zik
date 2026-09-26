@@ -26,7 +26,7 @@
 
 **`_bmad/` contains:** config, scripts, modules, rendered outputs — NOT skills.
 
-> **`_bmad-output/`** (workspace root, sibling of `_bmad/` — NOT part of the installation) is BMAD's output directory: planning/implementation/test artifacts, `problem-solution-*.md` reports, and `DONTREAD/` (archive of older outputs — respect it, do not delete or reorganize). It is separate from the protected `_bmad/` installation.
+> **`_bmad-output/`** (workspace root, sibling of `_bmad/` — NOT part of the installation) is BMAD's output directory: planning/implementation/test artifacts, `problem-solution-*.md` reports, and `DONTREAD/` (archive of older outputs — respect it, do not delete or reorganize). It is separate from the protected `_bmad/` installation. Artifacts currently live in `implementation/` and `DONTREAD/`; `planning/` and `test/` are empty — do NOT infer "never produced" (older outputs may be archived in `DONTREAD/`).
 
 ---
 
@@ -43,7 +43,7 @@ _bmad/
 │   └── .gitignore              # Ignores *.user.toml
 ├── scripts/                    # resolve_config.py, resolve_customization.py, render_skill.py, memlog.py, config_utils.py
 ├── core/config.yaml            # Core module config
-├── <module>/config.yaml        # Per-module config (bmm, cis, bmb, tea, bmad-loop; module dirs also carry module-help.csv / v6-shims/)
+├── <module>/config.yaml        # Per-module config (bmm, cis, bmb, tea, bmad-loop; module dirs carry module-help.csv — v6-shims/ exists ONLY in core/ and bmm/, README-only, shims disabled globally via installShims: false)
 └── render/                     # Rendered skill outputs (runtime)
 ```
 

@@ -7,6 +7,7 @@
 - NEVER commit secrets, API keys, or tokens
 - Use `local.properties` for local secrets (gitignored)
 - Use `BuildConfig` fields for build-time secrets
+- API-key resolution chain (see `build.gradle.kts`, Last.fm as reference): `local.properties` → committed `build.properties` (public values only — see exception below) → environment variables (e.g. `LASTFM_API_KEY`/`LASTFM_API_SECRET`) → empty string. Mirror this chain when adding a new API key
 - NEVER log sensitive data (tokens, passwords, user data)
 
 > **Documented exception — `N-Zik/build.properties`:** the Last.fm API key/secret in this file are **intentionally committed** (F-Droid builds from tagged source without environment variables, so public values must live in source — official F-Droid practice; they are already embedded in every released APK, so committing them exposes nothing new). The random canary entries (10-char random names, e.g. `Qx7Kd2Wm9P=…`) are **decoy values, NOT real keys**. Do NOT flag `build.properties` as a secret leak, and do NOT move, gitignore or "clean" these values. The `shazam_proxy_api_key` is intentionally left empty in public builds (kept out on purpose per the file's comments). A real secret (keystore, signing key, private token) appearing anywhere else still triggers the HALT rules below.

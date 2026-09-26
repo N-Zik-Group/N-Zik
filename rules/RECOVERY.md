@@ -61,6 +61,8 @@ Symptom: Gradle sync or build fails before compilation with unresolved module er
 2. Rebuild
 3. If a submodule pointer itself changed unexpectedly (not by the user) → HALT, report to user
 
+> **Config caveat:** `.git/config` also carries a legacy `upstream` remote (`knighthat/Kreate`) and a stale `[submodule "discord"]` section that no longer exists in `.gitmodules`. `git remote -v` / `git submodule` output will show them — ignore them, and do NOT delete or act on them without explicit instruction.
+
 ## Known Flaky Tests
 
 `RescueScreenProcessStatusTest` is a known pre-existing flaky test (noted repeatedly in `Done.txt`). A failure there on otherwise-green code → do NOT burn the 3-attempt build counter chasing it: re-run once, and if it fails again → HALT and report as the known flaky case instead of treating it as a regression.
@@ -107,6 +109,7 @@ If you notice yourself repeating the same action:
 ## General Rollback
 
 - `git log --oneline -5` — find safe rollback point
+- **Reflog caveat:** this repo's reflog is dense with historical `reset`/`amend`/`rebase` churn (hundreds of entries, loose subjects like "temporary push") — use `git log` for rollback targets, not the reflog, unless the user asks specifically about a recent reset
 - `git reset --soft HEAD~1` — undo last commit but keep changes staged (only if not pushed)
 - **NEVER** force push without explicit user instruction
 - **NEVER** delete committed history

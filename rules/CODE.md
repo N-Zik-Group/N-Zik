@@ -110,7 +110,7 @@ New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app
 | Database tables & migrations   | `core/database/` (migrations in `core/database/migration/`; note: `core/migration/` holds 3 launch-time cleanup objects — NOT Room migrations) |
 | Network layer                  | `core/network/`                                    |
 | Services (player, download)    | `playback/services/`, `download/services/`         |
-| Dependency injection           | plain constructor injection (no DI framework in the app module) |
+| Dependency injection           | plain constructor injection (no DI framework in the app module); process-lifetime `Application` access goes through the `object Dependencies` service locator in `MainApplication.kt` |
 | Navigation (interceptors only — routes are the legacy `NavRoutes` enum + strings; see **Navigation** below) | `core/navigation/` |
 | Utilities                      | `utils/`                                           |
 
@@ -207,7 +207,7 @@ NEVER swallow exceptions silently. ALWAYS log with Timber.
 
 ## Coroutines & Dispatchers — NzikDispatchers (MANDATORY)
 
-All named threads/dispatchers in the app come from `NzikDispatchers` (`app.n_zik.android.utils.coroutines`) — the single source of truth for threading (issue #606). NEVER add new raw `Dispatchers.IO` / `Dispatchers.Default` / `Dispatchers.Main` / hand-rolled `Executors.*` usages in app code — use the named entries below. (A few pre-existing raw `Dispatchers.IO` usages — plus one `Dispatchers.Main.immediate` — remain in the rewind screen — do NOT opportunistically migrate them unless the user asks.)
+All named threads/dispatchers in the app come from `NzikDispatchers` (`app.n_zik.android.utils.coroutines`) — the single source of truth for threading (issue #606). NEVER add new raw `Dispatchers.IO` / `Dispatchers.Default` / `Dispatchers.Main` / hand-rolled `Executors.*` usages in app code — use the named entries below. (6 pre-existing raw `Dispatchers.IO` usages across 2 rewind files (`RewindStoryComponents.kt`, `RewindShareCapture.kt`) — plus one `Dispatchers.Main.immediate` — remain in the rewind screen — do NOT opportunistically migrate them unless the user asks.)
 
 | Entry point                                            | Threads                       | Use for                                                                                                                        |
 | ------------------------------------------------------ | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
@@ -274,12 +274,13 @@ NEVER edit schema without explicit instruction. Never add, remove, or rename col
 - Use `@Insert(onConflict = OnConflictStrategy.IGNORE)` for insert-or-ignore
 - Use `@Upsert` for insert-or-update
 - Use `@Query` with `Flow<T>` for reactive queries
-- Use `@Transaction` for multi-step operations
+- Use `@Transaction` for multi-step operations — Room transactions in this app run via `Database.asyncTransaction` (`core/database/Database.kt`), which **retries 3× on `SQLiteDatabaseLockedException`** — keep that resilience when touching transaction code
 - All DAO methods `suspend` (except Flow-returning queries)
-- Migration testing required before reporting — frozen schema JSON fixtures live in `ComposeN-Zik/src/test/resources/schemas/app.n_zik.android.core.database.DatabaseInitializer/` (40-42.json, used by the `From*To*MigrationTest` suite); the LIVE Room export directory is `ComposeN-Zik/schemas/` (`schemaDirectory`) — new version JSONs land there after a DB change
+- Migration testing required before reporting — frozen schema JSON fixtures live in `ComposeN-Zik/src/test/resources/schemas/app.n_zik.android.core.database.DatabaseInitializer/` (40-42.json, used by the `From*To*MigrationTest` suite); the LIVE Room export directory is `ComposeN-Zik/schemas/` (`schemaDirectory`) — new version JSONs land there after a DB change (known historical gap: `33.json` is missing from the n_zik export dir — legacy 1-27 + n_zik 34-42 exist; do NOT "fix" or regenerate it without the user)
 
 ### Migration Safety
 
+- **CRITICAL — `fallbackToDestructiveMigration()` is configured in the `Database.kt` builder:** if a version bump lands without a complete migration chain, Room **silently drops all user data** (no error, no crash). A DB version bump without a valid migration from every reachable previous version = data loss for every user — HALT and flag it to the user before shipping; do NOT "clean up" the `fallbackToDestructiveMigration()` call without explicit instruction
 - Always backup test database before migration testing
 - Test migration with realistic data volumes
 - If migration fails → HALT, do NOT commit, report to user
@@ -309,6 +310,7 @@ NEVER edit schema without explicit instruction. Never add, remove, or rename col
 ## Compose UI Testing
 
 - Compose `createComposeRule()` tests run under the **JUnit 4 vintage engine** (Robolectric) — write them JUnit 4 even though the module uses the JUnit Platform/JUnit 5 everywhere else
+- Robolectric harness — do NOT "clean up" these without understanding: `src/test/resources/robolectric.properties` forces `application=android.app.Application` (because `MainApplication.onCreate()` touches `AndroidKeyStore`, absent on the JVM), and `ComposeN-Zik/src/debug/AndroidManifest.xml` declares `androidx.activity.ComponentActivity` as a Robolectric PR #4736 workaround for `createComposeRule()`
 - Use `createComposeRule()` for Compose tests
 - Test state changes with `onNodeWithTag` / `onNodeWithText`
 - Use `SemanticsMatcher` for accessibility checks
@@ -347,4 +349,5 @@ class LyricsScreenTest {
 ## Dependency Injection
 
 - Follow existing DI patterns in the codebase
-- Prefer constructor injection over service locator
+- Plain constructor injection (no DI framework is applied in the app module)
+- The one sanctioned service locator is `object Dependencies` (`MainApplication.kt`) — use it for the process-lifetime `Application` reference; do NOT add new entries to it without the user
