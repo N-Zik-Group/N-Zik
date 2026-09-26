@@ -151,7 +151,7 @@ New features/bug fixes should include at least one test. If no test framework is
 
 - No pre-commit hooks are configured in this repo — do not wait for hook signals; run build with the commands in this file
 - **No CI workflow runs the unit test suite** — tests are local-only; always run them yourself before reporting
-- CI signs the unsigned APKs in GitHub Actions via `secrets.RELEASE_KEYSTORE*` (beta manual, weekly all-flavors, dev nightly + on-push gated to the maintainer)
+- CI signs the unsigned APKs in GitHub Actions via `secrets.RELEASE_KEYSTORE*` (beta manual, weekly all-flavors, dev nightly + manual — an author gate for the maintainer `NEVARLeVrai` exists in `build-dev.yml` but no `push` trigger is configured, so it is currently unreachable)
 - If CI pipeline fails after push → HALT, investigate, fix
 
 ## Code Formatting

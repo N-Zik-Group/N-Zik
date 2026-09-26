@@ -270,7 +270,7 @@ NEVER edit schema without explicit instruction. Never add, remove, or rename col
 
 - Table naming: **singular** (`Song`, `Playlist`) — all 13 existing tables are singular
 - DAO suffix: **`*Table`** (`SongTable`, `PlaylistTable`) — 13 DAO interfaces, none named `*Dao`
-- Every DAO carries `@RewriteQueriesToDropUnusedColumns` — new DAOs must too
+- DAOs carry `@RewriteQueriesToDropUnusedColumns` (12 of 13 existing — `ImportSongTable` is the exception) — new DAOs must carry it
 - Use `@Insert(onConflict = OnConflictStrategy.IGNORE)` for insert-or-ignore
 - Use `@Upsert` for insert-or-update
 - Use `@Query` with `Flow<T>` for reactive queries
@@ -303,7 +303,7 @@ NEVER edit schema without explicit instruction. Never add, remove, or rename col
 ## Testing Conventions
 
 - Test method names are backtick descriptive sentences (`` fun `shuffle should return list of same size`() ``) — match this style
-- **Off-main tests** (name suffix `*OffMainTest`, ~29 existing): assert that offloaded work actually lands on a named `NzikDispatchers` thread (thread-name assertion, e.g. `nzik-media-1`). Any new work moved off the main thread gets one — this is the verification pillar of issue #606
+- **Off-main tests** (name suffix `*OffMainTest`, 28 existing): assert that offloaded work actually lands on a named `NzikDispatchers` thread (thread-name prefix assertion, e.g. `nzik-media-`). Any new work moved off the main thread gets one — this is the verification pillar of issue #606
 - Tests of legacy classes go under `app.n_zik.android.legacyoffmain.<mirror>` — never under the legacy namespace (see rules/BUILD.md, incl. the 3 grandfathered exceptions)
 
 ## Compose UI Testing
