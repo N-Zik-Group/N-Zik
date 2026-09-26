@@ -64,7 +64,7 @@ LazyColumn {
 Rules:
 
 - NEVER use `GlobalScope` — use `viewModelScope`, `lifecycleScope`, or structured scopes
-- NEVER use `runBlocking` in production code (use suspend functions). A few pre-existing production usages carry a justification comment (e.g. ExoPlayer sync APIs) — any NEW one must carry an equivalent comment. In JVM unit tests both `runBlocking` (dominant, 100+ usages) and `runTest` (~23 files) are used — mirror the neighboring tests
+- NEVER use `runBlocking` in production code (use suspend functions). A few pre-existing production usages carry a justification comment (e.g. ExoPlayer sync APIs) — any NEW one must carry an equivalent comment. In JVM unit tests both `runBlocking` (dominant, 100+ usages) and `runTest` (~24 files) are used — mirror the neighboring tests
 - NEVER use `collectAsState()` — use `collectAsStateWithLifecycle()`
 - NEVER do a read-modify-write (`_state.value = _state.value.copy(...)`) — use `_state.update { it.copy(...) }`. Direct assignment (`_state.value = …`) is allowed only to set the initial state
 - Use `StateFlow` over `LiveData` — expose a single `data class *UiState` per feature (sealed state class/interface only when states are mutually exclusive, e.g. `FindUiState`)
@@ -100,7 +100,7 @@ New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app
 | Generic reusable dialogs       | `components/dialog/`                               |
 | Domain-specific dialogs        | `components/dialog/{domain}/` (e.g. `dialog/song/`, `dialog/album/`) |
 | Domain menus                   | `components/menu.{domain}/`                        |
-| Page-level screens             | `components.ui.screens.{screen}/`                  |
+| Page-level screens             | `components/ui/screens/{screen}/` (exceptions: `components/onboarding/`, `updater/ui/UpdateScreen`) |
 | ViewModels                     | co-located with their screen (`components/ui/screens/{screen}/`, or the domain screen package, e.g. `components/musicbrainz/insights/`) |
 | Repositories                   | collocated with their domain package (one repository per domain, e.g. `ShazamRepository` in `recognition/`) |
 | Player UI + lyrics             | `components/player/` + `components/player/lyrics/` |
@@ -207,7 +207,7 @@ NEVER swallow exceptions silently. ALWAYS log with Timber.
 
 ## Coroutines & Dispatchers — NzikDispatchers (MANDATORY)
 
-All named threads/dispatchers in the app come from `NzikDispatchers` (`app.n_zik.android.utils.coroutines`) — the single source of truth for threading (issue #606). NEVER add new raw `Dispatchers.IO` / `Dispatchers.Default` / `Dispatchers.Main` / hand-rolled `Executors.*` usages in app code — use the named entries below. (A few pre-existing raw `Dispatchers.IO` usages remain in the rewind screen — do NOT opportunistically migrate them unless the user asks.)
+All named threads/dispatchers in the app come from `NzikDispatchers` (`app.n_zik.android.utils.coroutines`) — the single source of truth for threading (issue #606). NEVER add new raw `Dispatchers.IO` / `Dispatchers.Default` / `Dispatchers.Main` / hand-rolled `Executors.*` usages in app code — use the named entries below. (A few pre-existing raw `Dispatchers.IO` usages — plus one `Dispatchers.Main.immediate` — remain in the rewind screen — do NOT opportunistically migrate them unless the user asks.)
 
 | Entry point                                            | Threads                       | Use for                                                                                                                        |
 | ------------------------------------------------------ | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |

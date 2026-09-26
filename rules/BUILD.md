@@ -75,7 +75,7 @@ The entry keyword for Done.txt follows the template's sections — it is not aut
 | `foss`  | `assembleFoss`  | Full build without auto-updater (suitable for alternative stores) |
 | `beta`  | `assembleBeta`  | Beta build (unsigned locally, signed in CI) |
 
-Other build types (see `ComposeN-Zik/build.gradle.kts`): `full`, `minified` (R8 minify + shrinkResources), `full32`, `minified32`, `beta32`, `dev`, `dev32`. The `release` build type is explicitly **disabled** (`assembleRelease` does not exist). Some build types have dedicated `res` source sets (`src/debug/`, `src/dev/`, `src/dev32/`, `src/foss/`). A custom `assembleFossRelease` task exists as an alias of `assembleFoss`.
+Other build types (see `ComposeN-Zik/build.gradle.kts`): `full`, `minified` (R8 minify + shrinkResources), `full32`, `minified32`, `beta32`, `dev`, `dev32`. The `release` build type is explicitly **disabled** (`assembleRelease` does not exist). Dedicated per-buildType source sets exist under `ComposeN-Zik/src/`: `src/debug/` holds its own `AndroidManifest.xml` (Compose test-harness activity — see Done.txt), while `src/dev/`, `src/dev32/`, `src/foss/` exist but are currently empty. A custom `assembleFossRelease` task exists as an alias of `assembleFoss`.
 
 ## Proguard/R8
 

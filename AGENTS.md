@@ -89,16 +89,17 @@
 ```
 N-Zik/                     ← git repo root (run gradlew/git from here)
 ├── ComposeN-Zik/src/
-│   ├── androidMain/           AndroidManifest.xml + res (values, values-*) + kotlin/app/n_zik/android/ ★ NEW code
+│   ├── androidMain/           AndroidManifest.xml + res (values, values-*, drawable, mipmap, font, raw, xml…) + kotlin/ (app/n_zik/android/ ★ NEW code + legacy `app.it.*`/`app.kreate.*` read-only)
 │   ├── commonMain/            KMP shared logic (effectively one file — `app/it/fast4x/rimusic/Utils.kt`)
 │   ├── main/                  res (drawables, mipmap) + proto/listentogether.proto (protobuf source set for Listen Together)
-│   └── test/                  Tests
+│   ├── test/                  Tests
+│   └── debug/ + dev/ + dev32/ + foss/   Per-buildType source sets (`debug` holds its own AndroidManifest.xml; the others are currently empty — see rules/BUILD.md)
 ├── extensions/              API Gradle modules (innertube → module `:oldtube`, kugou, lrclib, musicbrainz, invidious, ktor-client-brotli, lastfm — module names in `settings.gradle.kts`); `piped/` removed entirely (v75)
 ├── modules/                 Feature submodules — `betterlyrics`, `discordrpc`, `nextvisualizer` are **git submodules**: after a fresh clone run `git submodule update --init --recursive` or Gradle sync fails
 ├── gradle/libs.versions.toml  Version catalog
 ├── assets/notes/              Done.txt + Changelog_Template.txt + TODO.txt (repo-root working files — NOT an Android assets source set)
 ├── fastlane/ + Updater/       changelogs by versionCode (released)
-└── (WORKSPACE ROOT, one level above N-Zik/: `docs/` reference projects, Reference READ-ONLY · `N-Zik-Website/` separate project — NOT part of this repo · `db/` + `*.sqlite` DB/log artifacts referenced by Done.txt)
+└── (WORKSPACE ROOT, one level above N-Zik/: `docs/` reference projects, Reference READ-ONLY · `N-Zik-Website/` separate project — NOT part of this repo · `db/` log captures + `*.sqlite` DB dumps at the root — artifacts referenced by Done.txt)
 ```
 
 | What         | Where                                      |

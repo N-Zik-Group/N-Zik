@@ -33,14 +33,15 @@
 ```
 _bmad/
 ├── _config/                    # Installer metadata (manifest.yaml, CSVs)
-├── config.toml                 # Central config — TEAM layer
+├── config.toml                 # Central config — installer-managed (team overrides live in custom/config.toml)
 ├── config.user.toml            # Central config — USER layer
 ├── custom/                     # Human-authored overrides
-│   ├── config.toml             # Team overrides (committed)
-│   └── config.user.toml        # User overrides (gitignored)
+│   ├── config.toml             # Team overrides (committed; currently comment-only)
+│   ├── config.user.toml        # User overrides (gitignored via custom/.gitignore)
+│   └── .gitignore              # Ignores *.user.toml
 ├── scripts/                    # resolve_config.py, resolve_customization.py, render_skill.py, memlog.py, config_utils.py
 ├── core/config.yaml            # Core module config
-├── <module>/config.yaml        # Per-module config (bmm, cis, bmb, tea, bmad-loop)
+├── <module>/config.yaml        # Per-module config (bmm, cis, bmb, tea, bmad-loop; module dirs also carry module-help.csv / v6-shims/)
 └── render/                     # Rendered skill outputs (runtime)
 ```
 

@@ -218,7 +218,7 @@ Example for `bmad-build` with OpenCode: `{project-root}/.agents/skills/bmad-buil
 **Enforcement — during the workflow:**
 
 - Before each action, announce the current step — THREE formats only: `[Step X/8: <name>]` for the 8-step wrapper workflow (at every transition), `[BMAD Step X/N: <step name>]` for the loaded BMAD skill's internal steps, and `[Step 8x: <name>]` for the Step 8 sub-steps (e.g. `[Step 8b: Code Review Proposal]`, `[Step 8d: Commit]`)
-- After each step, present the checkpoint options DEFINED BY THE LOADED SKILL (CIS skills use `[a] [c] [p] [y]`; `bmad-build` uses its own `### CHECKPOINT N` sections — present them verbatim). If the skill defines no option list, present its checkpoint message verbatim — NEVER invent options, and NEVER just ask "Step X complete. Proceed to step Y?"
+- After each step, present the checkpoint options DEFINED BY THE LOADED SKILL (CIS skills use `[a] [c] [p] [y]`; `bmad-build` uses `### CHECKPOINT` sections — one per step file that defines one; currently only `### CHECKPOINT 1` in `step-02-plan.md` — present them verbatim). If the skill defines no option list, present its checkpoint message verbatim — NEVER invent options, and NEVER just ask "Step X complete. Proceed to step Y?"
 - Before implementing, verify: "All N steps complete. Ready to implement?"
 - If you cannot name the current step → HALT, you are lost
 
