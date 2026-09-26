@@ -534,7 +534,6 @@
     <string name="info_translation">Çeviri</string>
     <string name="info_find_the_song_that_is_playing">Şu anda çalan şarkıyı göster</string>
     <string name="info_smart_recommendation">Akıllı öneriler</string>
-    <string name="info_clean_cached_congs">Önbelleğe alınmış şarkıları temizle</string>
     <string name="info_pin_unpin_playlist">Çalma listesini sabitle/kaldır</string>
     <string name="info_lock_unlock_reorder_songs">Şarkıları kilitle/aç ve yeniden sırala</string>
     <string name="info_add_in_playlist">Çalma listesine ekle</string>
@@ -795,8 +794,8 @@
     <string name="translate_to_other_language">Başka bir dile çevir</string>
     <string name="action_bar_show_video_button">Video düğmesini göster</string>
     <string name="update">Güncelle</string>
+    <string name="updated_songs_count">Updated %1$d songs</string>
     <string name="update_waveform">Waveform\'u güncelle</string>
-    <string name="update_song">Bu şarkıyı gerçekten yeniden getirmek istiyor musunuz? Çalma süresi ve önbelleğe alınan veriler silinecek.\nBu işlem geri alınamaz.</string>
     <string name="player_pause_listen_history_info">İstatistikler, geçmiş ve hızlı resimlerdeki öneriler için kullanılan çalma olaylarını kaydetmez</string>
     <string name="sleep_timer_ended">Uyku zamanlayıcısı sona erdi</string>
     <string name="account_login">Giriş yap</string>
@@ -1086,9 +1085,10 @@
     <string name="failed_to_fetch_artist">Sanatçı getirilemedi</string>
     <string name="looking_up_album_from_the_internet">Albüm internetten aranıyor</string>
     <string name="failed_to_fetch_album">Albüm getirilemedi</string>
-    <string name="info_open_reset_dialog">Sıfırlama iletişim kutusunu aç</string>
-    <string name="title_reset_title">Başlığı sıfırla</string>
-    <string name="title_reset_authors">Yazarları sıfırla</string>
+    <string name="info_open_update_dialog">Open update dialog</string>
+    <string name="update_title_from_ytm">Update title from YouTube Music</string>
+    <string name="update_authors_from_ytm">Update authors from YouTube Music</string>
+    <string name="update_thumbnail_from_ytm">Update thumbnail from YouTube Music</string>
     <string name="title_reset_total_play_time">Toplam çalma süresini sıfırla</string>
     <string name="title_name_your_export">Dışa aktarmanıza isim verin</string>
     <string name="export_cached">Önbelleğe alınanı dışa aktar</string>
@@ -1308,6 +1308,7 @@
     <string name="section_lyrics_actions">Eylemler</string>
     <string name="toast_preference_saved">Tercih Kaydedildi</string>
     <string name="db_artist_link_cleanup_toast">%d adet yanlış sanatçı bağlantısı kaldırıldı</string>
+    <string name="same_name_artists_dedup_toast">Merged %d duplicate artist(s) with the right artist</string>
     <string name="txt_width">genişlik</string>
     <string name="cd_blurred_background">blurred_background</string>
     <string name="cd_rename_dialog_text_box_icon">Yeniden Adlandırma iletişim kutusundaki metin kutusu simgesi</string>
@@ -1357,7 +1358,6 @@
     <string name="lyrics_unsynced">Düz metin</string>
     <string name="lyrics_karaoke">Karaoke (kelime düzeyinde)</string>
     <string name="no_lyrics">Şarkı sözü yok</string>
-    <string name="clear_cache_count">%d şarkının önbelleğini temizlemek ister misiniz?</string>
     <string name="no_items_found">Hiçbir öğe bulunamadı</string>
     <string name="no_new_releases">Favori sanatçılarınızın yeni albümleri yok</string>
     <string name="not_selectable">Seçilemez</string>
