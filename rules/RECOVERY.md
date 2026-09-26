@@ -1,6 +1,6 @@
 # Error Recovery & Rollback Rules
 
-**Version:** 1.3.0 | **Last updated:** 2026-09-23
+**Version:** 1.5.0 | **Last updated:** 2026-09-26
 
 **HALT semantics (applies to every HALT in every rule file):** HALT = stop ALL autonomous work (no edits, no builds, no commits, no skills). Present the required report, then wait for an explicit user instruction before resuming. The only exception is when the HALT rule itself prescribes follow-up actions — run them, then HALT again.
 
@@ -52,6 +52,18 @@ MIGRATION FAILURE:
 3. Identify what broke
 4. Fix incrementally, testing after each change
 5. If unable to fix → HALT, report to user with diagnosis
+
+## Git Submodule Failure (missing / stale `modules/*`)
+
+Symptom: Gradle sync or build fails before compilation with unresolved module errors (`betterlyrics`, `discordrpc`, `nextvisualizer`).
+
+1. From the repo root `N-Zik/`: `git submodule update --init --recursive`
+2. Rebuild
+3. If a submodule pointer itself changed unexpectedly (not by the user) → HALT, report to user
+
+## Known Flaky Tests
+
+`RescueScreenProcessStatusTest` is a known pre-existing flaky test (noted repeatedly in `Done.txt`). A failure there on otherwise-green code → do NOT burn the 3-attempt build counter chasing it: re-run once, and if it fails again → HALT and report as the known flaky case instead of treating it as a regression.
 
 ## Network / Dependency Errors
 

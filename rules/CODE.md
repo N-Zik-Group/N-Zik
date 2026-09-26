@@ -1,6 +1,6 @@
 # Code Quality Rules
 
-**Version:** 1.4.0 | **Last updated:** 2026-09-26
+**Version:** 1.5.0 | **Last updated:** 2026-09-26
 
 ## Naming Conventions
 
@@ -64,10 +64,10 @@ LazyColumn {
 Rules:
 
 - NEVER use `GlobalScope` — use `viewModelScope`, `lifecycleScope`, or structured scopes
-- NEVER use `runBlocking` in production code (use suspend functions). In JVM unit tests prefer `runTest` (kotlinx-coroutines-test) over `runBlocking`
+- NEVER use `runBlocking` in production code (use suspend functions). A few pre-existing production usages carry a justification comment (e.g. ExoPlayer sync APIs) — any NEW one must carry an equivalent comment. In JVM unit tests the established convention is `runBlocking` (100+ existing tests) — match it; `runTest` is not used in this codebase
 - NEVER use `collectAsState()` — use `collectAsStateWithLifecycle()`
 - NEVER do a read-modify-write (`_state.value = _state.value.copy(...)`) — use `_state.update { it.copy(...) }`. Direct assignment (`_state.value = …`) is allowed only to set the initial state
-- Use `StateFlow` over `LiveData` — expose single sealed `UiState` class
+- Use `StateFlow` over `LiveData` — expose a single `data class *UiState` per feature (sealed state class only when states are mutually exclusive, e.g. `FindUiState`)
 - Data params to children: annotate with `@Stable` or `@Immutable`
 - No IO/DB/network in composition body
 - LazyColumn/LazyRow must have `key` + `contentType`
@@ -98,16 +98,16 @@ New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app
 | Component type                 | Location                                           |
 | ------------------------------ | -------------------------------------------------- |
 | Generic reusable dialogs       | `components/dialog/`                               |
-| Domain-specific dialogs        | `components.{domain}/`                             |
+| Domain-specific dialogs        | `components/dialog/{domain}/` (e.g. `dialog/song/`, `dialog/album/`) |
 | Domain menus                   | `components/menu.{domain}/`                        |
 | Page-level screens             | `components.ui.screens.{screen}/`                  |
-| ViewModels                     | co-located with their screen, in `components.ui.screens.{screen}/` |
+| ViewModels                     | co-located with their screen (`components/ui/screens/{screen}/`, or the domain screen package, e.g. `components/musicbrainz/insights/`) |
 | Repositories                   | collocated with their domain package (one repository per domain, e.g. `ShazamRepository` in `recognition/`) |
 | Player UI + lyrics             | `components/player/` + `components/player/lyrics/` |
 | Settings components            | `components/settings/`                             |
 | Enums                          | `enums/`                                           |
 | Extensions (optional features) | package `extensions/{feature}/` under `app.n_zik.android` (the Gradle subprojects in `N-Zik/extensions/` are separate API modules — see `settings.gradle.kts`) |
-| Database tables & migrations   | `core/database/` (migrations in `core/database/migration/`; note: `core/migration/` holds settings-only migrations) |
+| Database tables & migrations   | `core/database/` (migrations in `core/database/migration/`; note: `core/migration/` holds 3 launch-time cleanup objects — NOT Room migrations) |
 | Network layer                  | `core/network/`                                    |
 | Services (player, download)    | `playback/services/`, `download/services/`         |
 | Dependency injection           | plain constructor injection (no DI framework in the app module) |
@@ -163,6 +163,8 @@ suspend fun fetchLyrics(songId: String, artistName: String, songTitle: String): 
 ## Logging — Timber ONLY
 
 NEVER use `println`, `Log.d`, `System.out`, `e.printStackTrace()`. Use Timber with tags.
+
+> **Sanctioned exception:** `utils/logging/FileLoggingTree.kt` is itself a Timber `Tree` implementation and may use `android.util.Log` internally — do not flag or "fix" it.
 
 ```kotlin
 import timber.log.Timber
@@ -224,7 +226,8 @@ Rules:
 - NEVER cancel process-lifetime scopes from component lifecycle code (`onDestroy()` of an Activity/Service) — same reason as the executor rule above
 - `NzikDispatchers` is a process-lifetime singleton with daemon threads — NEVER `shutdown()` its executors or close them from an `onDestroy()`/service scope: that kills the pools for the rest of the process
 - Use `withContext(NzikDispatchers.X)` to move work between named dispatchers; cancel regular coroutines in `onCleared()` / `DisposableEffect`
-- Unit tests may still use `Dispatchers.setMain()`/`Dispatchers.resetMain()` and `runTest`
+- Flow collection off the main thread: `collectAsStateWithLifecycle(..., context = NzikDispatchers.DATA)` is the established pattern — use it, do not collect on `UI`
+- Unit tests may still use `Dispatchers.setMain()`/`Dispatchers.resetMain()`; the established test style is `runBlocking` (see Testing)
 
 ## UI — Jetpack Compose + Material 3
 
@@ -265,14 +268,15 @@ NEVER edit schema without explicit instruction. Never add, remove, or rename col
 
 ### Room Patterns
 
-- Entity naming: plural table names (`songs`, `playlists`)
-- DAO suffix: `SongDao`, `PlaylistDao`
+- Table naming: **singular** (`Song`, `Playlist`) — all 13 existing tables are singular
+- DAO suffix: **`*Table`** (`SongTable`, `PlaylistTable`) — 13 DAO interfaces, none named `*Dao`
+- Every DAO carries `@RewriteQueriesToDropUnusedColumns` — new DAOs must too
 - Use `@Insert(onConflict = OnConflictStrategy.IGNORE)` for insert-or-ignore
 - Use `@Upsert` for insert-or-update
 - Use `@Query` with `Flow<T>` for reactive queries
 - Use `@Transaction` for multi-step operations
 - All DAO methods `suspend` (except Flow-returning queries)
-- Migration testing required before reporting
+- Migration testing required before reporting — schema JSON exports live in `ComposeN-Zik/src/test/resources/schemas/app.n_zik.android.core.database.DatabaseInitializer/` (used by the `From*To*MigrationTest` suite)
 
 ### Migration Safety
 
@@ -291,10 +295,16 @@ NEVER edit schema without explicit instruction. Never add, remove, or rename col
 
 ## Network Resilience
 
-- Handle `UnknownHostException` and `SocketTimeoutException`
+- Handle `UnknownHostException` (network down) — the exception actually handled across the new code
 - Implement retry with exponential backoff for transient failures
 - Cache responses where appropriate
 - Show user-friendly error for offline state
+
+## Testing Conventions
+
+- Test method names are backtick descriptive sentences (`` fun `shuffle should return list of same size`() ``) — match this style
+- **Off-main tests** (name suffix `*OffMainTest`, ~29 existing): assert that offloaded work actually lands on a named `NzikDispatchers` thread (thread-name assertion, e.g. `nzik-media-1`). Any new work moved off the main thread gets one — this is the verification pillar of issue #606
+- Tests of legacy classes go under `app.n_zik.android.legacyoffmain.<mirror>` — never under the legacy namespace (see rules/BUILD.md, incl. the 3 grandfathered exceptions)
 
 ## Compose UI Testing
 
@@ -320,7 +330,8 @@ class LyricsScreenTest {
 
 ## Navigation
 
-- Use sealed class for routes
+- Routes are a legacy `enum class NavRoutes` (`app/it/fast4x/rimusic/enums/NavRoutes.kt`, READ-ONLY) plus string route helpers (e.g. `rewindDeckRoute(year, month)` in `MainActivity`) — no sealed route class exists; do NOT invent one without explicit instruction
+- `core/navigation/` holds interceptors (e.g. `MiniPlayerQueueInterceptor`), NOT route definitions
 - No deep links without validation
 
 ## Translations (Crowdin)

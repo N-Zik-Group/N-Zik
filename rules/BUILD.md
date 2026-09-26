@@ -1,6 +1,6 @@
 # Build & Test Rules
 
-**Version:** 1.3.0 | **Last updated:** 2026-09-23
+**Version:** 1.5.0 | **Last updated:** 2026-09-26
 
 ## Gradle Version Catalog
 
@@ -29,7 +29,7 @@ If a needed library isn't in the catalog → HALT and ask user before adding to 
 ```
 
 > **Windows:** use `gradlew.bat` instead of `./gradlew` (e.g. `gradlew.bat :ComposeN-Zik:assembleDebug`).
-> **CWD:** all `gradlew` and `git` commands run from the repo root `N-Zik/` — the workspace root (`N-Zik-Projet/`) is **not** a git repo (BMAD files live there, outside the repo).
+> **CWD:** all `gradlew` and `git` commands run from the repo root `N-Zik/` — the workspace root (the parent of `N-Zik/`) is **not** a git repo (BMAD files live there, outside the repo).
 
 ## Verification
 
@@ -61,17 +61,21 @@ When committing, update `Done.txt` using its own template (`Changelog_Template.t
 
 Include full issue link (use `issue https://...` to avoid auto-closing).
 Entries are grouped under the section headers defined by the template (`Hotfix:` / `Added:` / `Changed:` / `Improved:` / `Fixed:` / `Refactor:` / `Removed:` / `Deprecated:` / `Other:`) — place each entry under the matching section.
-The entry keyword for Done.txt follows the template's sections — it is NOT a commit type: e.g. `change(...)` or `improve(...)` is a valid Done.txt entry but NOT a valid commit message type (see Commit Convention).
+The entry keyword for Done.txt follows the template's sections — it is not automatically a commit type: e.g. `change(...)` is a valid Done.txt entry but NOT a valid commit message type; `improve(...)` is valid in both (see Commit Convention).
+
+## Git Submodules
+
+`modules/betterlyrics`, `modules/discordrpc`, `modules/nextvisualizer` are **git submodules** (see `.gitmodules`) and are included in `settings.gradle.kts`. After a fresh clone, run `git submodule update --init --recursive` BEFORE any Gradle command — sync fails without them (CI always checks out with submodules). A changed submodule pointer in a diff → HALT and ask before touching it.
 
 ## Build Types
 
 | Type    | Command         | Notes                         |
 | ------- | --------------- | ----------------------------- |
 | `debug` | `assembleDebug` | Primary development build     |
-| `foss`  | `assembleFoss`  | No proprietary dependencies   |
+| `foss`  | `assembleFoss`  | Full build without auto-updater (suitable for alternative stores) |
 | `beta`  | `assembleBeta`  | Beta build (unsigned locally, signed in CI) |
 
-Other build types (see `ComposeN-Zik/build.gradle.kts`): `full`, `minified` (R8 minify + shrinkResources), `full32`, `minified32`, `beta32`, `dev`, `dev32`. The `release` build type is explicitly disabled.
+Other build types (see `ComposeN-Zik/build.gradle.kts`): `full`, `minified` (R8 minify + shrinkResources), `full32`, `minified32`, `beta32`, `dev`, `dev32`. The `release` build type is explicitly **disabled** (`assembleRelease` does not exist). Some build types have dedicated `res` source sets (`src/debug/`, `src/dev/`, `src/dev32/`, `src/foss/`). A custom `assembleFossRelease` task exists as an alias of `assembleFoss`.
 
 ## Proguard/R8
 
@@ -92,6 +96,7 @@ Format: `type(scope): short description`
 | `docs`     | Documentation changes only                 |
 | `test`     | Adding or updating tests                   |
 | `perf`     | Performance improvement                    |
+| `improve`  | Incremental improvement/refinement of existing behavior (used widely in this repo's history) |
 
 Examples:
 
@@ -144,13 +149,14 @@ New features/bug fixes should include at least one test. If no test framework is
 
 ## CI Expectations
 
-- No pre-commit hooks are configured in this repo — do not wait for hook signals; run lint/build with the commands in this file
+- No pre-commit hooks are configured in this repo — do not wait for hook signals; run build with the commands in this file
+- **No CI workflow runs the unit test suite** — tests are local-only; always run them yourself before reporting
+- CI signs the unsigned APKs in GitHub Actions via `secrets.RELEASE_KEYSTORE*` (beta manual, weekly all-flavors, dev nightly + on-push gated to the maintainer)
 - If CI pipeline fails after push → HALT, investigate, fix
 
 ## Code Formatting
 
-- Run ktlint/detekt if configured in the project
+- ktlint/detekt are **NOT configured** in this project — no lint task exists; do not search for one
 - Use Android Studio auto-format for consistent style
 - Follow existing file formatting patterns
 - No trailing whitespace, newline at end of file
-- If ktlint/detekt fails → HALT, fix formatting before continuing

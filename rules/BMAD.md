@@ -1,6 +1,6 @@
 # BMAD Technical Reference
 
-**Version:** 1.3.0 | **Last updated:** 2026-09-23
+**Version:** 1.5.0 | **Last updated:** 2026-09-26
 
 **MANDATORY: Read this file before executing any BMAD skill.**
 
@@ -13,6 +13,8 @@
 > **Important for this project:** `_bmad/` and `.agents/` live at the **parent** of `N-Zik/`. If your CWD is `N-Zik/`, go **up one level** to find `{project-root}`. The actual path is `../` relative to `N-Zik/`.
 
 > **Re-installation is NOT defined in this workspace** — no installer command is documented in these rules. If a re-install is needed (see RECOVERY.md), HALT and ask the user for the re-installation procedure; the upstream documentation is the reference (https://docs.bmad-method.org/).
+
+**Installed version** (per `_bmad/_config/manifest.yaml`): BMAD **6.12.0** (installed 2026-09-11, last updated 2026-09-14) — modules: `core` 6.12.0, `bmm` 6.12.0, `bmb` v2.2.2, `cis` v0.3.2, `tea` v1.26.0, `bmad-loop` v0.11.1; IDEs installed: `claude-code`, `antigravity`, `opencode`. **57 skills** are installed in each IDE directory (`.agents/skills/`, `.agent/skills/`, `.claude/skills/`). Stray non-BMAD files at the `_bmad/` root (e.g. `lt-1.png`) are NOT part of the installation — do not treat them as config.
 
 **Skills are NOT in `_bmad/`** — they are in IDE-specific directories at `{project-root}`:
 

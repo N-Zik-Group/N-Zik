@@ -1,6 +1,6 @@
 # AGENTS.md — NZik
 
-**Version:** 1.4.0 | **Last updated:** 2026-09-26
+**Version:** 1.5.0 | **Last updated:** 2026-09-26
 
 **MANDATORY: Read this file + rules/*.md before any task.**
 
@@ -52,7 +52,7 @@
 
 ## Skill Discovery
 
-**`{project-root}`** = the directory containing both `_bmad/` and `.agents/` folders (if only one exists, prefer `_bmad/`). This is the **workspace root** (`N-Zik-Projet/`), NOT the `N-Zik/` subdirectory where this AGENTS.md lives. Go **up one level** from `N-Zik/` to find it.
+**`{project-root}`** = the directory containing both `_bmad/` and `.agents/` folders (if only one exists, prefer `_bmad/`). This is the **workspace root** — the directory containing `_bmad/` — NOT the `N-Zik/` subdirectory where this AGENTS.md lives. Go **up one level** from `N-Zik/` to find it.
 
 > **OpenCode path resolution:** Scripts are at `{project-root}/_bmad/scripts/`. If you're running from `N-Zik/`, use `../_bmad/scripts/` or resolve to workspace root first.
 
@@ -90,14 +90,13 @@
 N-Zik/                     ← git repo root (run gradlew/git from here)
 ├── ComposeN-Zik/src/
 │   ├── androidMain/           AndroidManifest.xml + res (values, values-*) + kotlin/app/n_zik/android/ ★ NEW code
-│   ├── commonMain/            KMP shared logic
-│   ├── main/                  res only (drawables, mipmap)
+│   ├── commonMain/            KMP shared logic (effectively one file — `app/it/fast4x/rimusic/Utils.kt`)
+│   ├── main/                  res (drawables, mipmap) + proto/listentogether.proto (protobuf source set for Listen Together)
 │   └── test/                  Tests
-├── extensions/              API Gradle modules (innertube → module `:oldtube`, kugou, lrclib, musicbrainz, invidious, ktor-client-brotli, lastfm — module names in `settings.gradle.kts`); `piped/` present but NOT in settings.gradle.kts
-├── modules/                 Feature submodules
-├── composeApp/              DEAD folder — NOT a gradle module (excluded from settings.gradle.kts); orphaned sources + stale build artifacts → ignore, never build/modify
+├── extensions/              API Gradle modules (innertube → module `:oldtube`, kugou, lrclib, musicbrainz, invidious, ktor-client-brotli, lastfm — module names in `settings.gradle.kts`); `piped/` removed entirely (v75)
+├── modules/                 Feature submodules — `betterlyrics`, `discordrpc`, `nextvisualizer` are **git submodules**: after a fresh clone run `git submodule update --init --recursive` or Gradle sync fails
 ├── gradle/libs.versions.toml  Version catalog
-├── assets/notes/              Done.txt + Changelog_Template.txt (repo-root working files — NOT an Android assets source set)
+├── assets/notes/              Done.txt + Changelog_Template.txt + TODO.txt (repo-root working files — NOT an Android assets source set)
 ├── fastlane/ + Updater/       changelogs by versionCode (released)
 └── (docs/ lives at the WORKSPACE ROOT, one level above N-Zik/ — Reference, READ-ONLY)
 ```
@@ -123,7 +122,7 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 ./gradlew :ComposeN-Zik:testDebugUnitTest --tests "app.n_zik.android.SomeTest"  # Single test
 ```
 
-> **Windows:** run `gradlew.bat …` from the repo root `N-Zik/` (e.g. `gradlew.bat :ComposeN-Zik:assembleDebug`). The workspace root (`N-Zik-Projet/`, where `_bmad/` lives) is **not** a git/gradle project — all `git` and `gradlew` commands run from `N-Zik/`.
+> **Windows:** run `gradlew.bat …` from the repo root `N-Zik/` (e.g. `gradlew.bat :ComposeN-Zik:assembleDebug`). The workspace root (the parent of `N-Zik/`, where `_bmad/` lives) is **not** a git/gradle project — all `git` and `gradlew` commands run from `N-Zik/`.
 
 HALT after 3 failed build attempts → report with full error log.
 

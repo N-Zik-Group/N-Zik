@@ -1,6 +1,6 @@
 # Security Rules
 
-**Version:** 1.3.0 | **Last updated:** 2026-09-23
+**Version:** 1.5.0 | **Last updated:** 2026-09-26
 
 ## Secrets & API Keys
 
@@ -9,7 +9,7 @@
 - Use `BuildConfig` fields for build-time secrets
 - NEVER log sensitive data (tokens, passwords, user data)
 
-> **Documented exception — `N-Zik/build.properties`:** the Last.fm API key/secret in this file are **intentionally committed** (F-Droid builds from tagged source without environment variables, so public values must live in source — official F-Droid practice; they are already embedded in every released APK, so committing them exposes nothing new). The random canary entries (10-char random names, e.g. `Qx7Kd2Wm9P=…`) are **decoy values, NOT real keys**. Do NOT flag `build.properties` as a secret leak, and do NOT move, gitignore or "clean" these values. A real secret (keystore, signing key, private token) appearing anywhere else still triggers the HALT rules below.
+> **Documented exception — `N-Zik/build.properties`:** the Last.fm API key/secret in this file are **intentionally committed** (F-Droid builds from tagged source without environment variables, so public values must live in source — official F-Droid practice; they are already embedded in every released APK, so committing them exposes nothing new). The random canary entries (10-char random names, e.g. `Qx7Kd2Wm9P=…`) are **decoy values, NOT real keys**. Do NOT flag `build.properties` as a secret leak, and do NOT move, gitignore or "clean" these values. The `shazam_proxy_api_key` is intentionally left empty in public builds (kept out on purpose per the file's comments). A real secret (keystore, signing key, private token) appearing anywhere else still triggers the HALT rules below.
 
 ## Input Validation
 
@@ -32,6 +32,8 @@
 - Clear sensitive data when user logs out
 - Use HTTPS for all network communications
 - Do not store credentials in plain text
+
+> **Deliberate exception:** `res/xml/network_security_config.xml` permits cleartext for `localhost` / `127.0.0.1` only (Listen Together local dev servers; production uses `wss://`). Do NOT "fix" this exception — it is intentional.
 
 ## Signing & Keystore
 
