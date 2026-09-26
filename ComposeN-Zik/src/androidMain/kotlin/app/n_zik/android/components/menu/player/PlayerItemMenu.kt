@@ -48,7 +48,6 @@ import androidx.navigation.NavController
 import app.n_zik.android.R
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.nextPage
-import it.fast4x.innertube.requests.song
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
@@ -64,7 +63,6 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Clickable
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Menu
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.it.fast4x.rimusic.ui.components.themed.ConfirmationDialog
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.it.fast4x.rimusic.ui.components.themed.InProgressDialog
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
@@ -102,6 +100,7 @@ import app.n_zik.android.components.song.GoToAlbum
 import app.n_zik.android.components.song.GoToArtist
 import app.n_zik.android.components.dialog.export.ExportCacheDialog
 import app.n_zik.android.components.dialog.song.RenameSongDialog
+import app.n_zik.android.components.dialog.song.UpdateSongDialog
 import app.n_zik.android.components.dialog.tab.DeleteSongDialog
 import app.n_zik.android.components.tab.LikeComponent
 import app.n_zik.android.components.tab.Radio
@@ -354,6 +353,7 @@ class PlayerItemMenu private constructor(
         val changeAuthor = ChangeAuthorDialog { song }
         val changeCover = ChangeCoverDialog { song }
         val editMetadata = EditMetadataDialog { song }
+        val updateDialog = UpdateSongDialog( song )
         val startRadio = Radio { listOf(song) }
         val addToFavorite = LikeComponent { listOf(song) }
         
@@ -389,22 +389,6 @@ class PlayerItemMenu private constructor(
                         Toaster.w(R.string.info_not_find_application_audio)
                     }
                     menuState.hide()
-                }
-                override fun onLongClick() {}
-            }
-        }
-
-        // Custom "Refetch" / "Update Song" button (from PlayerMenu logic)
-        var showRefetchDialog by remember { mutableStateOf(false) }
-        val refetchButton = remember {
-            object : MenuIcon, Descriptive, Clickable {
-                override val iconId: Int = R.drawable.refresh
-                override val messageId: Int = R.string.update
-                @get:Composable
-                override val menuIconTitle: String get() = stringResource(messageId)
-                
-                override fun onShortClick() {
-                    showRefetchDialog = true
                 }
                 override fun onLongClick() {}
             }
@@ -670,7 +654,7 @@ class PlayerItemMenu private constructor(
                     add(sleepTimerButton)    // 7
                     add(addToFavorite)       // 8
                     add(addToPlaylist)       // 9
-                    add(refetchButton)       // 10
+                    add(updateDialog)       // 10
                     
                     add(changeAlbumId)       // 11
                     add(changeArtistId)      // 12
@@ -793,47 +777,12 @@ class PlayerItemMenu private constructor(
             changeAuthor.Render()
             changeCover.Render()
             deleteSongDialog.Render()
+            updateDialog.Render()
         }
         
         changeAlbumId.Render()
         changeArtistId.Render()
         
-        if (showRefetchDialog) {
-            ConfirmationDialog(
-                text = stringResource(R.string.update_song),
-                onDismiss = { showRefetchDialog = false },
-                onConfirm = {
-                    showRefetchDialog = false
-                    menuState.hide()
-                    binder.cache.removeResource(mediaItem.mediaId)
-                    binder.downloadCache.removeResource(mediaItem.mediaId)
-                    val videoId = mediaItem.mediaId.split("/").lastOrNull() ?: mediaItem.mediaId
-                    coroutineScope.launch(NzikDispatchers.DATA) {
-                        Database.asyncTransaction {
-                            Database.songTable.updateTotalPlayTime(mediaItem.mediaId, 0)
-                        }
-                        val songItem = Innertube.song(videoId)?.getOrNull()
-                        if (songItem != null) {
-                            Database.asyncTransaction {
-                                val fetchedSong = songItem.asSong
-                                val dbSong = Database.songTable.findByIdDirect(videoId)
-                                if (dbSong != null && fetchedSong != null) {
-                                    Database.songTable.updateReplace(dbSong.copy(
-                                        title = fetchedSong.title ?: dbSong.title,
-                                        artistsText = fetchedSong.artistsText ?: dbSong.artistsText,
-                                        thumbnailUrl = fetchedSong.thumbnailUrl ?: dbSong.thumbnailUrl,
-                                        durationText = fetchedSong.durationText ?: dbSong.durationText,
-                                        likedAt = dbSong.likedAt,
-                                        totalPlayTimeMs = dbSong.totalPlayTimeMs,
-                                        position = dbSong.position
-                                    ))
-                                }
-                            }
-                        }
-                    }
-                }
-            )
-        }
 
         if (showListenOnDialog) {
              ListenOnDialog(

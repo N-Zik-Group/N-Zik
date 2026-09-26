@@ -107,7 +107,7 @@ import app.n_zik.android.components.dialog.export.ExportCacheDialog
 import app.n_zik.android.components.song.GoToAlbum
 import app.n_zik.android.components.song.GoToArtist
 import app.n_zik.android.components.dialog.song.RenameSongDialog
-import app.n_zik.android.components.dialog.song.ResetSongDialog
+import app.n_zik.android.components.dialog.song.UpdateSongDialog
 import app.n_zik.android.components.dialog.tab.DeleteSongDialog
 import app.n_zik.android.components.dialog.album.ChangeAlbumBrowseIdDialog
 import app.n_zik.android.components.dialog.artist.ChangeArtistBrowseIdDialog
@@ -207,7 +207,7 @@ class SongItemMenu private constructor(
             buttons.filterIsInstance<ChangeArtistBrowseIdDialog>().firstOrNull()?.let { it.ListMenuItem() }
             buttons.getOrNull(7)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(8)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            buttons.filterIsInstance<ResetSongDialog>().firstOrNull()?.let { it.ListMenuItem() }
+            buttons.filterIsInstance<UpdateSongDialog>().firstOrNull()?.let { it.ListMenuItem() }
             buttons.filterIsInstance<DeleteSongDialog>().firstOrNull()?.let { it.ListMenuItem() }
             buttons.filterIsInstance<ExportCacheDialog>().firstOrNull()?.let { it.ListMenuItem() }
             refreshBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -216,7 +216,7 @@ class SongItemMenu private constructor(
             SectionTitle(stringResource(R.string.navigation))
             for (i in 9 until buttons.size - lastFmSectionSize) {
                 val btn = buttons.getOrNull(i)
-                if (btn is ChangeAlbumBrowseIdDialog || btn is ChangeArtistBrowseIdDialog || btn is ResetSongDialog || btn is DeleteSongDialog || btn is ExportCacheDialog) continue
+                if (btn is ChangeAlbumBrowseIdDialog || btn is ChangeArtistBrowseIdDialog || btn is UpdateSongDialog || btn is DeleteSongDialog || btn is ExportCacheDialog) continue
                 btn?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
 
@@ -293,7 +293,7 @@ class SongItemMenu private constructor(
             buttons.filterIsInstance<ChangeArtistBrowseIdDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             buttons.getOrNull(7)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(8)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            buttons.filterIsInstance<ResetSongDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
+            buttons.filterIsInstance<UpdateSongDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             buttons.filterIsInstance<DeleteSongDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             buttons.filterIsInstance<ExportCacheDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             refreshBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -304,7 +304,7 @@ class SongItemMenu private constructor(
             }
             for (i in 9 until buttons.size - lastFmSectionSize) {
                 val btn = buttons.getOrNull(i)
-                if (btn is ChangeAlbumBrowseIdDialog || btn is ChangeArtistBrowseIdDialog || btn is ResetSongDialog || btn is DeleteSongDialog || btn is ExportCacheDialog) continue
+                if (btn is ChangeAlbumBrowseIdDialog || btn is ChangeArtistBrowseIdDialog || btn is UpdateSongDialog || btn is DeleteSongDialog || btn is ExportCacheDialog) continue
                 btn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
 
@@ -469,7 +469,7 @@ class SongItemMenu private constructor(
         val goToAlbum = remember {
             GoToAlbum( navController, song, menuState )
         }
-        val resetDialog = ResetSongDialog( song )
+        val updateDialog = UpdateSongDialog( song )
         val exportCacheDialog = ExportCacheDialog( binder ) { song }
 
         val changeAlbumId = ChangeAlbumBrowseIdDialog(menuState = menuState) { albumForInfo }
@@ -617,7 +617,7 @@ class SongItemMenu private constructor(
                 }
                 add( changeAlbumId )
                 add( changeArtistId )
-                add( resetDialog )
+                add( updateDialog )
             }
             if (!song.isLocal) {
                 add( deleteSongDialog )
@@ -665,7 +665,7 @@ class SongItemMenu private constructor(
             changeArtistId.Render()
             deleteSongDialog.Render()
         }
-        resetDialog.Render()
+        updateDialog.Render()
         exportCacheDialog.Render()
 
         if (exportCacheDialog.isExporting.value) {

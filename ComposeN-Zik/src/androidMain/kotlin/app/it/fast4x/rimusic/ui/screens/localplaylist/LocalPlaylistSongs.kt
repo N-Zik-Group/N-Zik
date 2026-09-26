@@ -179,7 +179,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import app.it.fast4x.rimusic.utils.ExternalUris
-import app.n_zik.android.components.ResetCache
+import app.n_zik.android.components.dialog.song.UpdateSongDialog
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.playlist.PinPlaylist
 import app.n_zik.android.core.database.LikeStateManager
@@ -920,7 +920,7 @@ fun LocalPlaylistSongs(
         binder?.player?.pause()
         uriHandler.openUri( ExternalUris.youtubePlaylist(browseId ?: "") )
     }
-    val resetCache = ResetCache( ::getSongs )
+    val updateSongsDialog = UpdateSongDialog( batchTargets = ::getSongs )
 
     fun openEditThumbnailPicker() {
         editThumbnailLauncher.launch("image/*")
@@ -1116,6 +1116,7 @@ fun LocalPlaylistSongs(
     downloadAllDialog.Render()
     deleteDownloadsDialog.Render()
     importMenu.Render()
+    updateSongsDialog.Render()
 
     val playlistThumbnailSizeDp = Dimensions.thumbnails.playlist
     val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
@@ -1375,7 +1376,7 @@ fun LocalPlaylistSongs(
                             "export" -> add( exportDialog )
                             "thumbnail_picker" -> add( thumbnailPicker )
                             "reset_thumbnail" -> add( resetThumbnail )
-                            "reset_cache" -> add( resetCache )
+                            "update" -> add( updateSongsDialog )
                         }
                     }
                 }

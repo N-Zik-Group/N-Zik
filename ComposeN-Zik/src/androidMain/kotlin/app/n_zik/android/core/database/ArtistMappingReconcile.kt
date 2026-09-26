@@ -1,6 +1,7 @@
 package app.n_zik.android.core.database
 
 import it.fast4x.innertube.Innertube
+import it.fast4x.innertube.models.ArtistConjunctions
 import it.fast4x.innertube.models.NavigationEndpoint
 
 /**
@@ -17,6 +18,33 @@ import it.fast4x.innertube.models.NavigationEndpoint
  * names-only or partial list must never erase mappings it cannot rewrite.
  */
 object ArtistMappingReconcile {
+
+    /** Matches entries that are nothing but separators ("&", ",", "&&", …). */
+    private val SEPARATOR_ONLY_REGEX = Regex("^[,&]+$")
+
+    /**
+     * Parses a YTM author list into (cleaned name, browseId) pairs, one per entry.
+     *
+     * Shared by [app.n_zik.android.core.database.Database.upsert] and the song update
+     * dialog so the entry rules never diverge: names are trimmed and NBSP-normalized,
+     * pure-separator entries and standalone conjunction entries are skipped (one
+     * author entry = one artist - the entry name is kept whole, never split).
+     *
+     * @param authors raw author entries from a YTM response (may be null).
+     * @return the surviving entries as name-to-browseId pairs (browseId is null when
+     * the entry carries no browse endpoint).
+     */
+    fun parseAuthorEntries(
+        authors: List<Innertube.Info<NavigationEndpoint.Endpoint.Browse>>?,
+    ): List<Pair<String, String?>> {
+        return authors.orEmpty().mapNotNull { author ->
+            val name = author.name?.trim()?.replace('\u00a0', ' ')
+            if (name.isNullOrBlank()) return@mapNotNull null
+            if (name.matches(SEPARATOR_ONLY_REGEX)) return@mapNotNull null
+            if (ArtistConjunctions.conjunctions.any { name.equals(it, ignoreCase = true) }) return@mapNotNull null
+            name to author.endpoint?.browseId
+        }
+    }
 
     /**
      * @param parsedNames artist names parsed from the fresh YTM author list.

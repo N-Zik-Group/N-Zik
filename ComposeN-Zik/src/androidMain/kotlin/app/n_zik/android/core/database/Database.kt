@@ -16,7 +16,6 @@ import androidx.room.TypeConverters
 import androidx.room.withTransaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.models.ArtistConjunctions
 import it.fast4x.innertube.requests.searchPage
 import it.fast4x.innertube.requests.albumPage
 import it.fast4x.innertube.utils.from
@@ -133,13 +132,7 @@ object Database {
         // + junk row per split part on every playback (device captures
         // 2026-09-26 12:11 / 12:18: added=2 -> dropped=2 loop). Entry names are
         // kept whole; the channel page stays the table of truth for the name.
-        val artistEntries = songItem.authors.orEmpty().mapNotNull { author ->
-            val name = author.name?.trim()?.replace('\u00a0', ' ')
-            if (name.isNullOrBlank()) return@mapNotNull null
-            if (name.matches(Regex("^[,&]+$"))) return@mapNotNull null
-            if (ArtistConjunctions.conjunctions.any { name.equals(it, ignoreCase = true) }) return@mapNotNull null
-            name to author.endpoint?.browseId
-        }
+        val artistEntries = ArtistMappingReconcile.parseAuthorEntries( songItem.authors )
         val artistNames = artistEntries.map { it.first }
         val artistDataList = mutableListOf<Triple<String, String?, Artist?>>() // name -> browseId -> existing DB artist
 
@@ -248,12 +241,8 @@ object Database {
             // ever seen. A names-only/partial list keeps the legacy add-only path.
             if (ArtistMappingReconcile.isCompleteAuthorList(artistNames, songItem.authors)) {
                 logReconcileDrops(songArtistMapTable, artistTable, song.id, finalSong.title)
-                val dropped = songArtistMapTable.deleteBySongId(song.id)
                 val reconcileArtists = artistDataList.mapNotNull { it.third }
-                artistTable.upsert(reconcileArtists)
-                reconcileArtists.forEach { artist ->
-                    songArtistMapTable.insertIgnore(SongArtistMap(song.id, artist.id))
-                }
+                val dropped = reconcileArtistLinks( song.id, reconcileArtists )
                 Timber.tag("Database").d(
                     "upsert RECONCILE song=%s dropped=%d latestList=%d artists",
                     song.id, dropped, artistNames.size
@@ -317,6 +306,39 @@ object Database {
                 mapIgnore(fetchedAlbum, song)
             }
         }
+    }
+
+    /**
+     * Replaces a song's artist links with [artists]: every existing
+     * [SongArtistMap] row of [songId] is deleted, then the given artists are
+     * upserted and re-mapped to the song.
+     *
+     * **Contract - complete list only:** the caller must only invoke this when the
+     * fresh author list is complete, i.e. it passes
+     * [ArtistMappingReconcile.isCompleteAuthorList] (every parsed name backed by a
+     * browse ID). A names-only/partial list must never erase the mapping it cannot
+     * rewrite - gate on [ArtistMappingReconcile.isCompleteAuthorList] before calling.
+     *
+     * Transaction semantics depend on the caller: [upsert] calls it from
+     * inside a Room transaction, so the delete + re-insert is atomic there.
+     * The song update dialog calls it from `asyncTransaction` (an executor
+     * thread with NO surrounding Room transaction): each statement autocommits
+     * on its own, so the delete + re-insert is best-effort there - a failure
+     * between the delete and the re-insert would briefly leave the song
+     * without artist links until the next reconcile heals it. No logging in
+     * here - the caller logs.
+     *
+     * @param songId song side of the replaced links
+     * @param artists the complete fresh artist list the links are rebuilt from
+     * @return number of stale links deleted before the re-insert
+     */
+    fun reconcileArtistLinks( songId: String, artists: List<Artist> ): Int {
+        val dropped = songArtistMapTable.deleteBySongId( songId )
+        artistTable.upsert( artists )
+        artists.forEach { artist ->
+            songArtistMapTable.insertIgnore( SongArtistMap( songId, artist.id ) )
+        }
+        return dropped
     }
 
     /**
