@@ -27,7 +27,7 @@ object LocalPlaylistToolbarSettingsDialog : Dialog {
         "play_next", "enqueue", "add_to_favorite", "add_to_playlist",
         "sync", "listen_on_yt",
         "import_menu", "rename", "delete", "export",
-        "thumbnail_picker", "reset_thumbnail", "reset_cache"
+        "thumbnail_picker", "reset_thumbnail", "update"
     )
 
     override val dialogTitle: String @Composable get() = stringResource(R.string.playlists) + " - Toolbar"
@@ -90,7 +90,7 @@ object LocalPlaylistToolbarSettingsDialog : Dialog {
         val deleteLabel = stringResource(R.string.delete)
         val thumbnailLabel = stringResource(R.string.edit_thumbnail)
         val resetThumbnailLabel = stringResource(R.string.reset_thumbnail)
-        val resetCacheLabel = stringResource(R.string.title_reset_cache)
+        val updateLabel = stringResource(R.string.update)
         val pinLabel = stringResource(R.string.info_pin_unpin_playlist)
         val searchLabel = stringResource(R.string.search)
         val renumberLabel = stringResource(R.string.renumber_songs_positions)
@@ -121,7 +121,7 @@ object LocalPlaylistToolbarSettingsDialog : Dialog {
                 "export" -> ToggleItem(uid, R.drawable.export_outline, exportDialogLabel, pk, true)
                 "thumbnail_picker" -> ToggleItem(uid, R.drawable.image, thumbnailLabel, pk, true)
                 "reset_thumbnail" -> ToggleItem(uid, R.drawable.image, resetThumbnailLabel, pk, true)
-                "reset_cache" -> ToggleItem(uid, R.drawable.refresh_circle, resetCacheLabel, pk, true)
+                "update" -> ToggleItem(uid, R.drawable.refresh, updateLabel, pk, true)
                 else -> null
             }
         }.filterNotNull()

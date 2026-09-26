@@ -38,7 +38,7 @@ object HomeSongsToolbarSettingsDialog : Dialog {
         "download_all", "delete_downloads",
         "shuffle", "smart_shuffle", "item_selector",
         "play_next", "enqueue", "add_to_favorite", "add_to_playlist",
-        "import_menu", "export_dialog", "export_cache", "smart_trash"
+        "import_menu", "export_dialog", "export_cache", "update", "smart_trash"
     )
 
     val tabAvailableIds = mapOf(
@@ -47,7 +47,7 @@ object HomeSongsToolbarSettingsDialog : Dialog {
         BuiltInPlaylist.Offline to allButtonIds.filter { it != "import_menu" && it != "sync_ytm_likes" },
         BuiltInPlaylist.Downloaded to allButtonIds.filter { it != "import_menu" && it != "sync_ytm_likes" },
         BuiltInPlaylist.Top to allButtonIds.filter { it != "import_menu" && it != "position_lock" && it != "export_cache" && it != "sync_ytm_likes" },
-        BuiltInPlaylist.OnDevice to allButtonIds.filter { it !in setOf("import_menu", "export_dialog", "export_cache", "smart_trash", "match", "download_all", "delete_downloads", "sync_ytm_likes") },
+        BuiltInPlaylist.OnDevice to allButtonIds.filter { it !in setOf("import_menu", "export_dialog", "export_cache", "smart_trash", "match", "download_all", "delete_downloads", "sync_ytm_likes", "update") },
         BuiltInPlaylist.Disliked to allButtonIds.filter { it != "export_cache" && it != "sync_ytm_likes" && it != "import_menu" }
     )
 
@@ -137,6 +137,7 @@ object HomeSongsToolbarSettingsDialog : Dialog {
         val positionLockLabel = stringResource(R.string.info_lock_unlock_reorder_songs)
         val downloadAllLabel = stringResource(R.string.info_download_all_songs)
         val deleteDownloadsLabel = stringResource(R.string.info_remove_all_downloaded_songs)
+        val updateLabel = stringResource(R.string.update)
         val searchLabel = stringResource(R.string.search)
         val locatorLabel = stringResource(R.string.info_find_the_song_that_is_playing)
         val shuffleLabel = stringResource(R.string.info_shuffle)
@@ -179,6 +180,7 @@ object HomeSongsToolbarSettingsDialog : Dialog {
                 "locator" -> ToggleItem(uid, R.drawable.locate, locatorLabel, pk, true)
                 "download_all" -> ToggleItem(uid, R.drawable.downloaded, downloadAllLabel, pk, true)
                 "delete_downloads" -> ToggleItem(uid, R.drawable.download, deleteDownloadsLabel, pk, true)
+                "update" -> ToggleItem(uid, R.drawable.refresh, updateLabel, pk, true)
                 "shuffle" -> ToggleItem(uid, R.drawable.shuffle, shuffleLabel, pk, true)
                 "smart_shuffle" -> ToggleItem(uid, R.drawable.smart_shuffle, smartShuffleLabel, pk, true)
                 "item_selector" -> ToggleItem(uid, R.drawable.checked_filled, itemSelectorLabel, pk, true)
