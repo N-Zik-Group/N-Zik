@@ -1,6 +1,6 @@
 # AGENTS.md — NZik
 
-**Version:** 1.3.0 | **Last updated:** 2026-09-23
+**Version:** 1.4.0 | **Last updated:** 2026-09-26
 
 **MANDATORY: Read this file + rules/*.md before any task.**
 
@@ -18,6 +18,7 @@
 
 - Code → `app.n_zik.android.*` ONLY — legacy packages (`app.it.fast4x.rimusic.*` / `app.kreate.android.*`) are READ-ONLY: no new files there; MODIFYING an existing legacy file is allowed ONLY when a bug fix cannot be expressed outside it AND ONLY after explicit user approval — prefer implementing the fix in `app.n_zik.android.*` (wrapper/overlay)
 - Use Timber with tags (no println/Log.d)
+- Dispatch coroutines on `NzikDispatchers` named dispatchers only (`UI`, `PLAYBACK`, `VISUALIZER`, `MEDIA`, `DATA` + Room executors); fire-and-forget scopes via `NzikDispatchers.fireAndForget()` (see rules/CODE.md "Coroutines & Dispatchers")
 - Use version catalog refs (`libs.versions.toml`)
 - Verify build passes after changes (`./gradlew :ComposeN-Zik:assembleDebug`)
 - New features/bug fixes include at least one test
@@ -42,6 +43,7 @@
 - Skip the Step 8b code-review gate, or edit `fastlane/`/`Updater/`/`Done.txt` before the user chose a commit mode (Step 8d) — exception: doc-only edits (rules/WORKFLOW.md "Doc-Only Exception") follow their own commit-approval flow and are NOT subject to the Step 8d mode question
 - Commit without human approval
 - Use `GlobalScope`, `runBlocking`, `collectAsState()` (use `collectAsStateWithLifecycle()`)
+- Introduce new raw `Dispatchers.IO`/`Dispatchers.Default`/`Dispatchers.Main` usages in app code (use `NzikDispatchers`), use a bare `Job()` for fire-and-forget/process-lifetime scopes (use `SupervisorJob` via `NzikDispatchers.fireAndForget()`), or `shutdown()`/close `NzikDispatchers` executors (process-lifetime, daemon threads — see rules/CODE.md "Coroutines & Dispatchers")
 - Use `!!` operator unless justified with comment explaining why
 - Edit `_bmad/` internals manually
 - Force push or delete committed history
@@ -142,7 +144,7 @@ HALT after 3 failed build attempts → report with full error log.
 
 | File                  | Purpose                                               |
 | --------------------- | ----------------------------------------------------- |
-| `rules/CODE.md`       | Code quality, Kotlin/Compose patterns, file placement |
+| `rules/CODE.md`       | Code quality, Kotlin/Compose patterns, dispatchers, file placement |
 | `rules/SECURITY.md`   | Secrets, input validation, license checks             |
 | `rules/RECOVERY.md`   | Build failures, skill failures, rollback              |
 | `rules/BUILD.md`      | Gradle commands, commit convention, testing           |

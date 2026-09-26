@@ -1,6 +1,6 @@
 # Code Quality Rules
 
-**Version:** 1.3.0 | **Last updated:** 2026-09-23
+**Version:** 1.4.0 | **Last updated:** 2026-09-26
 
 ## Naming Conventions
 
@@ -195,13 +195,36 @@ NEVER swallow exceptions silently. ALWAYS log with Timber.
 
 ## Performance
 
-- Use `Dispatchers.IO` for network/disk, `Dispatchers.Default` for CPU, `Dispatchers.Main` for UI
-- Use `withContext` to switch dispatchers
+- Use `NzikDispatchers` named dispatchers only — see **Coroutines & Dispatchers** below (raw `Dispatchers.*` is allowed inside `NzikDispatchers` itself, nowhere else new)
+- Use `withContext` to switch between named dispatchers
 - Cancel coroutines in `onCleared()` or `DisposableEffect`
 - Avoid holding Activity/Context references in long-lived objects
 - Use Coil for image loading
 - Profile startup and rendering performance
 - Avoid ANR: never block main thread for >5 seconds
+
+## Coroutines & Dispatchers — NzikDispatchers (MANDATORY)
+
+All named threads/dispatchers in the app come from `NzikDispatchers` (`app.n_zik.android.utils.coroutines`) — the single source of truth for threading (issue #606). NEVER add new raw `Dispatchers.IO` / `Dispatchers.Default` / `Dispatchers.Main` / hand-rolled `Executors.*` usages in app code — use the named entries below. (A few pre-existing raw `Dispatchers.IO` usages remain in the rewind screen — do NOT opportunistically migrate them unless the user asks.)
+
+| Entry point                                            | Threads                       | Use for                                                                                                                        |
+| ------------------------------------------------------ | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `NzikDispatchers.UI`                                   | `Dispatchers.Main`            | UI & gestures; the ONLY place to touch ExoPlayer `player.*`                                                                     |
+| `NzikDispatchers.PLAYBACK`                             | single `nzik-playback`        | Audio & playback work — single thread guarantees ordering                                                                       |
+| `NzikDispatchers.VISUALIZER`                           | single `nzik-visualizer`      | Visualizer FFT capture — serializes access to the native `Visualizer` (shared per sessionId)                                    |
+| `NzikDispatchers.MEDIA`                                | pool of 2 `nzik-media-*`      | CPU-bound media work: queue conversion at playback start, palette extraction, LRC/TTML parsing, bitmap circling, challenge JSON parsing |
+| `NzikDispatchers.DATA`                                 | `Dispatchers.IO`              | Network & disk IO: album art, song info, DB changes, downloads                                                                  |
+| `NzikDispatchers.ROOM_QUERY_EXECUTOR` / `ROOM_TX_EXECUTOR` | 4-thread `nzik-room-query-*` / `nzik-room-tx-*` | Pass to Room's `queryExecutor` / `transactionExecutor` — same off-main behavior as Room's default, visible by name in ANR/profiler traces |
+
+Rules:
+
+- Fire-and-forget scopes (deliberately never cancelled): build them with `NzikDispatchers.fireAndForget(dispatcher)` (or the `CoroutineContext` overload) — it adds a `SupervisorJob` + a Timber `CoroutineExceptionHandler`, so one exception can no longer cancel siblings or crash the process. The helper NEVER cancels the scope: callers that used to cancel their scope keep doing so on the returned `CoroutineScope`
+- NEVER use a bare `Job()` for a scope that must survive individual failures (fire-and-forget / process-lifetime scopes): with a plain `Job`, one unhandled exception cancels the whole scope and its siblings — `SupervisorJob` is the only correct cancellation root here (the `fireAndForget` helpers provide it; if assembling a context by hand, use `SupervisorJob()` + `CoroutineName` for traceability)
+- When the scope's context already carries a parent `Job` that must stay the cancellation root (e.g. a lifecycle-scoped child), use the `CoroutineContext` overload — it keeps that Job as the cancellation root and only adds a `SupervisorJob` when the context carries no Job
+- NEVER cancel process-lifetime scopes from component lifecycle code (`onDestroy()` of an Activity/Service) — same reason as the executor rule above
+- `NzikDispatchers` is a process-lifetime singleton with daemon threads — NEVER `shutdown()` its executors or close them from an `onDestroy()`/service scope: that kills the pools for the rest of the process
+- Use `withContext(NzikDispatchers.X)` to move work between named dispatchers; cancel regular coroutines in `onCleared()` / `DisposableEffect`
+- Unit tests may still use `Dispatchers.setMain()`/`Dispatchers.resetMain()` and `runTest`
 
 ## UI — Jetpack Compose + Material 3
 
