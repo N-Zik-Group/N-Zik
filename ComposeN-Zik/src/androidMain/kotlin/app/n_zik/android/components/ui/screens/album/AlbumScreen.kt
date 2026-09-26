@@ -301,7 +301,6 @@ fun AlbumScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(colorPalette().background0)
-            .navigationBarsPadding()
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
             val topPadding = if (UiType.ViMusic.isCurrent()) 30.dp else 0.dp
