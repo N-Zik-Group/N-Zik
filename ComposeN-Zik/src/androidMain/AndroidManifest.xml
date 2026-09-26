@@ -247,6 +247,19 @@
             android:name="app.n_zik.android.playback.services.PlayerServiceModern$NotificationDismissReceiver"
             android:exported="false" />
 
+        <!-- Listen Together (spec-listen-together): notification actions approve/reject join
+             requests and song suggestions; delivered by the app itself, never exported -->
+        <receiver
+            android:name="app.n_zik.android.listentogether.ListenTogetherActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="app.n_zik.android.LISTEN_TOGETHER_APPROVE_JOIN" />
+                <action android:name="app.n_zik.android.LISTEN_TOGETHER_REJECT_JOIN" />
+                <action android:name="app.n_zik.android.LISTEN_TOGETHER_APPROVE_SUGGESTION" />
+                <action android:name="app.n_zik.android.LISTEN_TOGETHER_REJECT_SUGGESTION" />
+            </intent-filter>
+        </receiver>
+
         <meta-data android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc"/>
 

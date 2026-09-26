@@ -93,6 +93,13 @@ private fun HamburgerMenu(
                 R.string.rewind
             ) { onItemClick( NavRoutes.rewindHome ) }
         )
+    // Listen Together button (spec-listen-together)
+    menu.add(
+        DropdownMenu.Item(
+            R.drawable.people,
+            R.string.listen_together
+        ) { onItemClick( NavRoutes.listenTogether ) }
+    )
     // Picture in picture button
     if (isPipSupported && enablePictureInPicture)
         menu.add(

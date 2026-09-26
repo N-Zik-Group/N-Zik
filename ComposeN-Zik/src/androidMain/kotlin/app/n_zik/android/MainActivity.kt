@@ -1284,13 +1284,16 @@ class MainActivity :
 
             val currentRoute by app.n_zik.android.extensions.discord.DiscordUiState.currentRoute.collectAsStateWithLifecycle()
             
+            // Listen Together scrolls its cards list, so it joins the scroll-hide routes:
+            // the header and the floating bar / mini-player slide on scroll there too.
             val isScrollableRoute = currentRoute == "home" ||
                     currentRoute?.startsWith("artist") == true ||
                     currentRoute?.startsWith("album") == true ||
                     currentRoute?.startsWith("playlist") == true ||
                     currentRoute?.startsWith("localPlaylist") == true ||
                     currentRoute?.startsWith("searchResults") == true ||
-                    currentRoute?.startsWith("settings") == true
+                    currentRoute?.startsWith("settings") == true ||
+                    currentRoute == "listenTogether"
                     
             LaunchedEffect(isLandscape, isLandscapeBarless, isViMusic, isScrollableRoute, density, safeDrawingInsets) {
                 topBarOffset = 0f
@@ -1678,15 +1681,28 @@ class MainActivity :
                             // tappable strip stays at the bottom of the screen.
                             val currentMediaId by (binder?.player?.currentMediaItemIdAsState() ?: remember { mutableStateOf<String?>(null) })
 
+                            // Debounced media presence: Listen Together replaces the whole queue on
+                            // every track change (setMediaItems), which briefly clears the current
+                            // media item. Reacting to that transient null would close the player
+                            // sheet on each track change (user-reported), so "no media" is only
+                            // accepted once the absence persists.
+                            var mediaPresent by remember(binder) {
+                                mutableStateOf(binder?.player?.currentMediaItem != null)
+                            }
+
                             // Keyed on the sheet too: a rebuilt sheet (rotation, insets) starts from
                             // its last anchor and must be re-checked against the current media
                             LaunchedEffect(currentMediaId, playerSheetState) {
                                 if (currentMediaId == null) {
+                                    delay(400)
+                                    if (binder?.player?.currentMediaItem != null) return@LaunchedEffect
+                                    mediaPresent = false
                                     if (!playerSheetState.isDismissed) {
                                         playerSheetState.snapTo(playerSheetState.dismissedBound)
                                     }
                                     showQueueOverlay = false
                                 } else {
+                                    mediaPresent = true
                                     // After recreate() the player service is not bound yet, so media
                                     // reads as absent and the sheet is dismissed above; bring the
                                     // mini-player back once media returns
@@ -1712,7 +1728,7 @@ class MainActivity :
                                 label = "rewindSheetDismiss"
                             )
 
-                            if (currentMediaId != null) {
+                            if (mediaPresent) {
                                 Box(
                                     // Top anchor follows the header through topPadding instead
                                     modifier = Modifier.fillMaxSize()

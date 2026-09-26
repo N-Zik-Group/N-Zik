@@ -51,6 +51,8 @@ import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.network.client.Store
 import app.n_zik.android.core.rescue.RescueProcess
 import app.n_zik.android.extensions.audiobar.VisualizerCaptureCoordinator
+import app.n_zik.android.listentogether.ListenTogetherClient
+import app.n_zik.android.listentogether.ListenTogetherManager
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.logging.FileLoggingTree
 import app.n_zik.android.utils.logging.flushThenDelegate
@@ -129,6 +131,17 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         app.n_zik.android.shortcuts.registerAppShortcuts(this)
 
         Dependencies.init(this)
+
+        // Listen Together (spec-listen-together): create the WebSocket client and the sync
+        // manager, bind the player bridge and auto-reconnect to a fresh persisted session
+        // when one exists. Failure must not block app startup.
+        runCatching {
+            val listenTogetherClient = ListenTogetherClient(this)
+            val listenTogetherManager = ListenTogetherManager(listenTogetherClient, this)
+            listenTogetherManager.initialize()
+        }.onFailure { t ->
+            Timber.tag("MainApplication").e(t, "Listen Together init failed")
+        }
 
         // Route InnertubeLogger (JVM module) to Timber (Android debug log)
         InnertubeLogger.addListener { tag, level, message, throwable ->

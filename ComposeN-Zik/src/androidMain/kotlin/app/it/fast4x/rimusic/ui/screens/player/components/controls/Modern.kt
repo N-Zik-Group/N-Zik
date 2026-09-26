@@ -418,17 +418,22 @@ fun ControlsModern(
         animationSpec = tween(durationMillis = 200), label = ""
     )
     var jumpPrevious by rememberPreference(jumpPreviousKey, "3")
+    // Listen Together guest lock (spec-listen-together): guests in a room cannot
+    // skip tracks; play/pause stays available
+    val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
 
   if (playerPlayButtonType != PlayerPlayButtonType.Disabled) {
       CustomElevatedButton(
           backgroundColor = colorPalette().background2.copy(0.95f),
           onClick = {
-              if (jumpPrevious == "") jumpPrevious = "0"
-              if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && binder.player.currentPosition > jumpPrevious.toInt()*1000)){
-                  binder.player.seekTo(0)
+              if (!listenTogetherGuestLock) {
+                  if (jumpPrevious == "") jumpPrevious = "0"
+                  if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && binder.player.currentPosition > jumpPrevious.toInt()*1000)){
+                      binder.player.seekTo(0)
+                  }
+                  else binder.player.playPrevious()
+                  if (effectRotationEnabled) isRotated = !isRotated
               }
-              else binder.player.playPrevious()
-              if (effectRotationEnabled) isRotated = !isRotated
           },
           modifier = Modifier
               .size(55.dp)
@@ -607,9 +612,11 @@ fun ControlsModern(
     CustomElevatedButton(
         backgroundColor = colorPalette().background2.copy(0.95f),
         onClick = {
-            //binder.player.forceSeekToNext()
-            binder.player.playNext()
-            if (effectRotationEnabled) isRotated = !isRotated
+            if (!listenTogetherGuestLock) {
+                //binder.player.forceSeekToNext()
+                binder.player.playNext()
+                if (effectRotationEnabled) isRotated = !isRotated
+            }
         },
         modifier = Modifier
             .size(55.dp)
@@ -663,12 +670,14 @@ fun ControlsModern(
                           interactionSource = null,
                           indication = null,
                           onClick = {
-                              if (jumpPrevious == "") jumpPrevious = "0"
-                              if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && binder.player.currentPosition > jumpPrevious.toInt()*1000)){
-                                  binder.player.seekTo(0)
+                              if (!listenTogetherGuestLock) {
+                                  if (jumpPrevious == "") jumpPrevious = "0"
+                                  if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && binder.player.currentPosition > jumpPrevious.toInt()*1000)){
+                                      binder.player.seekTo(0)
+                                  }
+                                  else binder.player.playPrevious()
+                                  if (effectRotationEnabled) isRotated = !isRotated
                               }
-                              else binder.player.playPrevious()
-                              if (effectRotationEnabled) isRotated = !isRotated
                           },
                           onLongClick = {}
                       )
@@ -740,9 +749,11 @@ fun ControlsModern(
                           interactionSource = null,
                           indication = null,
                           onClick = {
-                              //binder.player.forceSeekToNext()
-                              binder.player.playNext()
-                              if (effectRotationEnabled) isRotated = !isRotated
+                              if (!listenTogetherGuestLock) {
+                                  //binder.player.forceSeekToNext()
+                                  binder.player.playNext()
+                                  if (effectRotationEnabled) isRotated = !isRotated
+                              }
                           },
                           onLongClick = {}
                       )

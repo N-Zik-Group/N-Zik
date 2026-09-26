@@ -30,6 +30,9 @@ import app.n_zik.android.enums.DownloadQualityFormat
 import app.it.fast4x.rimusic.enums.AudioQualityFormat
 import app.it.fast4x.rimusic.models.Format
 import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.listentogether.ListenTogetherClient
+import app.n_zik.android.listentogether.ListenTogetherPlayerBridge
+import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.playback.exceptions.UnplayableException
 import app.n_zik.android.playback.exceptions.UnmatchedSongException
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -710,15 +713,20 @@ private suspend fun resolveStreamUriViaInnerTubeX(
                     )
                     PlaybackDataStore.saveStreamClient(appContext(), videoId, playbackData.streamClient)
 
-                    // Upsert song format in background
-                    scope.launch(NzikDispatchers.PLAYBACK) {
-                        upsertSongFormat(
-                            videoId,
-                            playbackData.format,
-                            playbackData.audioConfig?.perceptualLoudnessDb,
-                            playbackData.playbackTracking?.videostatsPlaybackUrl?.baseUrl,
-                            playbackData.audioConfig?.loudnessDb
-                        )
+                    // Upsert song format in background — skipped for Listen Together
+                    // items: no Format row and no blank Song placeholder in the user's
+                    // library (the item's library rows must not be created by playback;
+                    // the in-memory StreamUrlCache still covers re-resolution).
+                    if (!ListenTogetherPlayerBridge.isListenTogetherVideo(videoId)) {
+                        scope.launch(NzikDispatchers.PLAYBACK) {
+                            upsertSongFormat(
+                                videoId,
+                                playbackData.format,
+                                playbackData.audioConfig?.perceptualLoudnessDb,
+                                playbackData.playbackTracking?.videostatsPlaybackUrl?.baseUrl,
+                                playbackData.audioConfig?.loudnessDb
+                            )
+                        }
                     }
 
                     val contentLength = playbackData.format.contentLength ?: 1_000_000L
@@ -961,7 +969,24 @@ fun PlayerServiceModern.createDataSourceFactory(): DataSource.Factory {
 
         if (isLocal) return@Factory dataSpec
 
-        scope.launch(NzikDispatchers.PLAYBACK) { upsertSongInfo(videoId) }
+        // Listen Together streams run the same metadata flow as every other
+        // stream (user: "si ça vient de listen together, check avant de upsert"),
+        // but only when the user enabled the "Local history" option for LT —
+        // with it off, LT streams stay fully library-agnostic. upsertSongInfo
+        // checks the track against YouTube (nextPage) first and persists only
+        // that verified data. The host app's (Metrolist) queue payload — literal
+        // "Titre" bylines, title-as-album, comma-joined channel bylines — never
+        // enters the library through this path. The other LT gates
+        // (upsertSongFormat below, the host-payload insertIgnore in
+        // PlayerServiceModern, the history placeholder) still keep the host's
+        // metadata out of the library.
+        val isLtVideo = ListenTogetherPlayerBridge.isListenTogetherVideo(videoId)
+        if (ListenTogetherPlayerBridge.shouldRunStreamInfoUpsert(
+            isLtVideo,
+            DataStoreUtils.getBoolean(appContext(), ListenTogetherClient.PREF_HISTORY, false)
+        )) {
+            scope.launch(NzikDispatchers.PLAYBACK) { upsertSongInfo(videoId) }
+        }
 
         dataSpec.process(videoId, audioQualityFormat, applicationContext.isConnectionMetered())
             .buildUpon()

@@ -21,6 +21,9 @@ plugins {
 
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.kotlin.serialization)
+
+    // Protobuf (Listen Together wire format — Metrolist port)
+    alias(libs.plugins.protobuf)
 }
 
 repositories {
@@ -340,6 +343,21 @@ room {
     schemaDirectory("$projectDir/schemas")
 }
 
+// Listen Together protocol (Metrolist port): protobuf-lite, generated in the
+// `main` source set (src/main/proto). Mirrors the Metrolist app module config.
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${libs.versions.protobufVersion.get()}"
+    }
+    generateProtoTasks {
+        all().configureEach {
+            builtins {
+                create("java") { option("lite") }
+            }
+        }
+    }
+}
+
 dependencies {
     implementation(libs.compose.activity)
     implementation(libs.compose.foundation)
@@ -404,6 +422,7 @@ dependencies {
     annotationProcessor(libs.lombok)
     implementation(libs.jetbrains.annotations)
     implementation(libs.okhttp3.okhttp)
+    implementation(libs.protobuf.java)
 
     // Debug only
     debugImplementation(libs.ui.tooling.preview.android)

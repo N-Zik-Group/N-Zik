@@ -79,6 +79,8 @@ webkit = "1.17.0"
 koin = "4.2.2"
 kermit = "2.2.0"
 kotlinx-serialization = "1.11.0"
+protobufVersion = "4.36.0"
+protobuf-gradle-plugin = "0.10.0"
 composeReorderable = "3.1.0"
 work = "2.11.2"
 carapp = "1.4.0"
@@ -158,6 +160,11 @@ ksoup-entities = { group = "com.mohamedrejeb.ksoup", name = "ksoup-entities", ve
 hypnoticcanvas = { group = "com.mikepenz.hypnoticcanvas", name = "hypnoticcanvas", version.ref = "hypnoticcanvas" }
 hypnoticcanvas-shaders = { group = "com.mikepenz.hypnoticcanvas", name = "hypnoticcanvas-shaders", version.ref = "hypnoticcanvas" }
 
+# Protobuf (Listen Together wire format — Metrolist port). Full runtime: the
+# MetrolistExtractor JitPack dep (via :oldtube) already ships protobuf-java, and
+# the full runtime is a superset of the lite one (avoids duplicate classes).
+protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobufVersion" }
+
 # Koin
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin" }
 koin-core = { module = "io.insert-koin:koin-core" }
@@ -218,6 +225,7 @@ room = { id = "androidx.room", version.ref = "room" }
 
 # Others
 kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "kotlin-ksp" }
+protobuf = { id = "com.google.protobuf", version.ref = "protobuf-gradle-plugin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin"}
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin"}
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

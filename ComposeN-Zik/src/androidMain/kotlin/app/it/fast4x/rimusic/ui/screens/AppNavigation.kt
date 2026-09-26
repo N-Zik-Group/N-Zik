@@ -81,6 +81,7 @@ import app.n_zik.android.components.ui.screens.album.AlbumScreen
 import app.n_zik.android.components.ui.screens.artist.ArtistScreen
 import app.it.fast4x.rimusic.ui.screens.history.HistoryScreen
 import app.n_zik.android.components.ui.screens.home.HomeScreen
+import app.n_zik.android.components.ui.screens.listentogether.ListenTogetherScreen
 import app.it.fast4x.rimusic.ui.screens.localplaylist.LocalPlaylistScreen
 import app.it.fast4x.rimusic.ui.screens.mood.MoodScreen
 import app.it.fast4x.rimusic.ui.screens.mood.MoodsPageScreen
@@ -530,6 +531,14 @@ fun AppNavigation(
         // Rewind home: yearly/monthly entry point to the deck
         composable(route = NavRoutes.rewindHome.name) {
             RewindHomeScreen(
+                navController = navController,
+                miniPlayer = miniPlayer,
+            )
+        }
+
+        // Listen Together room screen (spec-listen-together)
+        composable(route = NavRoutes.listenTogether.name) {
+            ListenTogetherScreen(
                 navController = navController,
                 miniPlayer = miniPlayer,
             )

@@ -154,6 +154,16 @@ private fun OutlinedText( text: String, outlineColor: Color ) {
     )
 }
 
+/**
+ * Remaining song time to display. While the stream is loading the player may report an
+ * unknown duration (C.DURATION_UNSET = Long.MIN_VALUE, observed on Listen Together host
+ * track changes); `duration - position` would overflow signed 64-bit and flash a huge
+ * garbage value (2026-09-26). Returns -1 ("unknown", displayed as "--:--") when the
+ * duration is not positive, otherwise the clamped remaining time.
+ */
+internal fun timeRemainingOf(duration: Long, position: Long): Long =
+    if (duration <= 0) -1L else (duration - position).coerceAtLeast( 0 )
+
 @UnstableApi
 @Composable
 fun DurationIndicator(
@@ -213,7 +223,10 @@ fun DurationIndicator(
                     binder.player.positionAndDurationState(active = LocalPlayerSheetState.current.progress > PLAYER_SHEET_HANDOVER_PROGRESS)
                 val timeRemainingState = remember {
                     derivedStateOf {
-                        (positionAndDurationState.value.second - positionAndDurationState.value.first).coerceAtLeast( 0 )
+                        timeRemainingOf(
+                            positionAndDurationState.value.second,
+                            positionAndDurationState.value.first,
+                        )
                     }
                 }
                 val timeRemaining by timeRemainingState
@@ -222,7 +235,7 @@ fun DurationIndicator(
                 val pauseBetweenSongs by rememberPreference(pauseBetweenSongsKey, PauseBetweenSongs.`0`)
                 if(pauseBetweenSongs != PauseBetweenSongs.`0`)
                     LaunchedEffect(timeRemaining) {
-                        if(timeRemaining < 500) {
+                        if(timeRemaining >= 0 && timeRemaining < 500) {
                             isPaused = true
                             binder.player.pause()
                             delay(pauseBetweenSongs.asMillis)
@@ -234,7 +247,7 @@ fun DurationIndicator(
                 if(isPaused) return@Box
 
                 val toDisplay by remember {
-                    derivedStateOf { formatAsDuration(timeRemaining) }
+                    derivedStateOf { if (timeRemaining < 0) "--:--" else formatAsDuration(timeRemaining) }
                 }
                 OutlinedText( toDisplay, outlineColor )
             }

@@ -2,9 +2,12 @@ package app.n_zik.android.playback.services
 
 import app.n_zik.android.playback.services.automotive.session.AutoSessionCallback
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.listentogether.ListenTogetherClient
+import app.n_zik.android.listentogether.ListenTogetherPlayerBridge
 import app.kreate.android.me.knighthat.sync.YouTubeSync
 
 import app.n_zik.android.MainApplication
+import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.coroutines.runPeriodically
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.delay
@@ -709,15 +712,31 @@ class PlayerServiceModern : MediaLibraryService(),
 
             val pauseHistory = preferences.getBoolean(pauseListenHistoryKey, false)
 
-            // Local DB history (gated by pauseListenHistoryKey)
-            if (!pauseHistory) {
+            // Local DB history (gated by pauseListenHistoryKey; Listen Together items are
+            // recorded only when the user enabled the LT history option — their metadata
+            // belongs to the host app, so only a browseId-only placeholder Song row is
+            // written for the Event foreign key, no host metadata)
+            val isListenTogether = ListenTogetherPlayerBridge.isListenTogetherItem(mediaItem)
+            val listenTogetherHistoryEnabled =
+                DataStoreUtils.getBoolean(this, ListenTogetherClient.PREF_HISTORY, false)
+
+            if (ListenTogetherPlayerBridge.shouldRecordLocalHistory(
+                    isListenTogether, pauseHistory, listenTogetherHistoryEnabled
+                )
+            ) {
                 Database.asyncTransaction {
                     if ( totalPlayTimeMs > 5000 ) {
                         songTable.updateTotalPlayTime( songId, totalPlayTimeMs, true )
                     }
 
                     if ( totalPlayTimeMs > minTimeForEvent.asMillis ) {
-                        insertIgnore(mediaItem)
+                        if (isListenTogether) {
+                            // Event has an FK to Song: ensure a browseId-only row exists
+                            // (the app's own metadata repair fills in the names later)
+                            songTable.insertIgnore( Song.makePlaceholder( songId ) )
+                        } else {
+                            insertIgnore(mediaItem)
+                        }
 
                         eventTable.insertIgnore(
                             Event(
@@ -954,7 +973,14 @@ class PlayerServiceModern : MediaLibraryService(),
         // This seeds the Song row with real data (title, artist, thumbnail)
         // before StreamResolver can insert a blank placeholder for FK satisfaction.
         // insertIgnore uses merge logic that preserves existing non-empty fields.
-        mediaItem?.let { item ->
+        // Listen Together items are excluded: they carry the host app's (Metrolist)
+        // metadata, which can differ from N-Zik's YouTube resolution (e.g. a literal
+        // "Titre" byline) — persisting it, and the YTM auto-fix that would follow,
+        // would pollute the library with garbage Artist/Album rows. Their metadata
+        // reaches the library through StreamResolver.upsertSongInfo instead: the
+        // track is checked against YouTube first, and only the verified data is
+        // upserted (the same flow as every regular stream).
+        mediaItem?.takeUnless { ListenTogetherPlayerBridge.isListenTogetherItem(it) }?.let { item ->
             try {
                 // Background Auto-Fix: Fetch missing album/artist metadata silently
                 // Uses the service's coroutineScope so it gets cancelled properly on service destroy

@@ -30,6 +30,7 @@ enum class NavRoutes {
     artistAlbums,
     artistVideos,
     artistPlaylists,
+    listenTogether,
     updater;
 
     companion object {
