@@ -534,7 +534,6 @@
     <string name="info_translation">Traduction</string>
     <string name="info_find_the_song_that_is_playing">Trouver le titre qui est en cours de lecture</string>
     <string name="info_smart_recommendation">Recommandations Intelligentes</string>
-    <string name="info_clean_cached_congs">Nettoyer les titres en cache</string>
     <string name="info_pin_unpin_playlist">Épingler/Désépingler la playlist</string>
     <string name="info_lock_unlock_reorder_songs">Verrouiller / Déverrouiller la réorganisation des titres</string>
     <string name="info_add_in_playlist">Ajouter à la playlist</string>
@@ -796,8 +795,8 @@ Volume BAS : titre précédent</string>
     <string name="translate_to_other_language">Traduire en une autre langue</string>
     <string name="action_bar_show_video_button">Bouton « Vidéo »</string>
     <string name="update">Mettre à jour</string>
+    <string name="updated_songs_count">Updated %1$d songs</string>
     <string name="update_waveform">Mettre à jour la forme d\'onde</string>
-    <string name="update_song">Voulez-vous vraiment récupérer ce titre ? La durée d\'écoute et les données mises en cache seront effacées.\nCette action est irréversible.</string>
     <string name="player_pause_listen_history_info">N\'enregistre pas les événements de lecture utilisés pour les statistiques, l\'historique et les suggestions dans la « Sélection Rapide »</string>
     <string name="sleep_timer_ended">Minuterie de veille terminée</string>
     <string name="account_login">Se connecter</string>
@@ -1087,9 +1086,10 @@ Volume BAS : titre précédent</string>
     <string name="failed_to_fetch_artist">Impossible de récupérer l\'artiste</string>
     <string name="looking_up_album_from_the_internet">Recherche d\'album sur Internet</string>
     <string name="failed_to_fetch_album">Échec de la récupération de l\'album</string>
-    <string name="info_open_reset_dialog">Ouvrir la boîte de dialogue de réinitialisation</string>
-    <string name="title_reset_title">Réinitialiser le titre</string>
-    <string name="title_reset_authors">Réinitialiser les auteurs</string>
+    <string name="info_open_update_dialog">Open update dialog</string>
+    <string name="update_title_from_ytm">Update title from YouTube Music</string>
+    <string name="update_authors_from_ytm">Update authors from YouTube Music</string>
+    <string name="update_thumbnail_from_ytm">Update thumbnail from YouTube Music</string>
     <string name="title_reset_total_play_time">Réinitialiser le temps de lecture total</string>
     <string name="title_name_your_export">Nommez votre exportation</string>
     <string name="export_cached">Exporter en cache</string>
@@ -1309,6 +1309,7 @@ Volume BAS : titre précédent</string>
     <string name="section_lyrics_actions">Actions</string>
     <string name="toast_preference_saved">Préférence enregistrée</string>
     <string name="db_artist_link_cleanup_toast">Removed %d incorrect artist link(s)</string>
+    <string name="same_name_artists_dedup_toast">Merged %d duplicate artist(s) with the right artist</string>
     <string name="txt_width">width</string>
     <string name="cd_blurred_background">arrière-plan flou</string>
     <string name="cd_rename_dialog_text_box_icon">Renommer l\'icône de la boîte de texte</string>
@@ -1358,7 +1359,6 @@ Volume BAS : titre précédent</string>
     <string name="lyrics_unsynced">Texte brut</string>
     <string name="lyrics_karaoke">Karaoké (au niveau des mots)</string>
     <string name="no_lyrics">Pas de paroles</string>
-    <string name="clear_cache_count">Vider le cache pour %d titres ?</string>
     <string name="no_items_found">Aucun élément trouvé</string>
     <string name="no_new_releases">Il n\'y a pas de nouvelles versions pour vos artistes préférés</string>
     <string name="not_selectable">Non sélectionnable</string>
