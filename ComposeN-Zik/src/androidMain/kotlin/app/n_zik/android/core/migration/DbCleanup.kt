@@ -4,7 +4,6 @@ import android.content.Context
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.models.SongArtistMap
-import app.it.fast4x.rimusic.utils.splitArtistNames
 import app.n_zik.android.R
 import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.Database
@@ -127,8 +126,22 @@ object DbCleanup {
         // No source of truth for this song (no artist text) -> keep every link.
         if (songArtistsText.isNullOrBlank()) return false
         if (artistName.isNullOrBlank()) return false
-        val songArtists = cleanPrefix(songArtistsText).splitArtistNames()
-        if (songArtists.isEmpty()) return false
-        return songArtists.none { it.equals(artistName, ignoreCase = true) }
+        val cleaned = cleanPrefix(songArtistsText)
+        // The artist name must appear in the stored list as a whole phrase delimited
+        // by non-letter characters (list separators, punctuation, start/end of the
+        // string). The previous split-based matching (splitArtistNames) destroyed
+        // legitimate names carrying a delimiter or a localized conjunction substring
+        // - "COOL&CREATE" broke into ["COOL", "CREATE"], and "Grand Corps Malade" was
+        // cut at the "and" inside "Grand" (the localized conjunction word on the
+        // device) - so the sweep removed those links on every launch (device captures
+        // 2026-09-26: 11:40 / 11:59 / 12:02). A raw substring match would be too
+        // permissive (junk fragments), so both ends of the name are pinned against
+        // Unicode letters (\p{L}). Java's \b word boundary does not exist around CJK
+        // characters, so letter-category anchors are used instead: CJK names still
+        // match, while accented-name fragments ("gr" inside "Grégoire") do not. The
+        // rule is locale-independent: it no longer depends on the localized
+        // conjunction list at all.
+        val phrase = Regex("(?<!\\p{L})" + Regex.escape(artistName) + "(?!\\p{L})", RegexOption.IGNORE_CASE)
+        return !phrase.containsMatchIn(cleaned)
     }
 }

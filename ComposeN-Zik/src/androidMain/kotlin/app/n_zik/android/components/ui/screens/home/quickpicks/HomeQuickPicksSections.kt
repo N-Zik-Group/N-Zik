@@ -40,6 +40,7 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.core.database.BookmarkStateManager
+import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
@@ -1232,7 +1233,7 @@ fun GenericYtmSections(
                             AlbumItem(
                                 thumbnailUrl = item.thumbnail?.url,
                                 title = item.info?.name,
-                                authors = item.authors.parseArtists().joinToString(", "),
+                                authors = item.authors.artistEntryNames().joinToString(", "),
                                 year = null,
                                 thumbnailSizePx = albumThumbnailSizePx,
                                 thumbnailSizeDp = albumThumbnailSizeDp,

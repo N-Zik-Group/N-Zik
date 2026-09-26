@@ -31,7 +31,10 @@ object ArtistMappingReconcile {
         if (parsedNames.isEmpty() || authors == null) return false
         return parsedNames.all { name ->
             authors.any { author ->
-                author.name == name && !author.endpoint?.browseId.isNullOrBlank()
+                // Names are compared normalized (trim + NBSP): the upsert passes
+                // cleaned entry names, while the raw author names may carry
+                // whitespace quirks from the YTM payload.
+                author.name?.trim()?.replace('\u00a0', ' ') == name && !author.endpoint?.browseId.isNullOrBlank()
             }
         }
     }

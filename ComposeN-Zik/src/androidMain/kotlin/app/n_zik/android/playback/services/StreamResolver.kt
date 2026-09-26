@@ -39,7 +39,7 @@ import app.it.fast4x.rimusic.utils.okHttpDataSourceFactory
 import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.playback.exceptions.ExplicitContentException
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
-import app.it.fast4x.rimusic.utils.parseArtists
+import app.n_zik.android.core.database.artistEntryNames
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -346,7 +346,7 @@ private suspend fun fetchAndSaveAlbumSongs(albumId: String): Int {
                     Database.albumTable.upsert(existingAlbum.copy(
                         title = PropUtils.retainIfModified(existingAlbum.title, albumPage.title),
                         thumbnailUrl = PropUtils.retainIfModified(existingAlbum.thumbnailUrl, albumPage.thumbnail?.url),
-                        authorsText = PropUtils.retainIfModified(existingAlbum.authorsText, albumPage.authors?.parseArtists()?.joinToString(", ")?.takeIf { it.isNotBlank() }),
+                        authorsText = PropUtils.retainIfModified(existingAlbum.authorsText, albumPage.authors?.artistEntryNames()?.joinToString(", ")?.takeIf { it.isNotBlank() }),
                         year = PropUtils.retainIfModified(existingAlbum.year, albumPage.year),
                         shareUrl = PropUtils.retainIfModified(existingAlbum.shareUrl, onlineAlbum.url),
                         lastFetch = System.currentTimeMillis()
@@ -364,7 +364,7 @@ private suspend fun fetchAndSaveAlbumSongs(albumId: String): Int {
                                 Database.albumTable.upsert(existingAlbum.copy(
                                     title = PropUtils.retainIfModified(existingAlbum.title, albumPage.title),
                                     thumbnailUrl = PropUtils.retainIfModified(existingAlbum.thumbnailUrl, albumPage.thumbnail?.url),
-                                    authorsText = PropUtils.retainIfModified(existingAlbum.authorsText, albumPage.authors?.parseArtists()?.joinToString(", ")?.takeIf { it.isNotBlank() }),
+                                    authorsText = PropUtils.retainIfModified(existingAlbum.authorsText, albumPage.authors?.artistEntryNames()?.joinToString(", ")?.takeIf { it.isNotBlank() }),
                                     year = PropUtils.retainIfModified(existingAlbum.year, albumPage.year),
                                     shareUrl = PropUtils.retainIfModified(existingAlbum.shareUrl, onlineAlbum.url),
                                     lastFetch = System.currentTimeMillis()

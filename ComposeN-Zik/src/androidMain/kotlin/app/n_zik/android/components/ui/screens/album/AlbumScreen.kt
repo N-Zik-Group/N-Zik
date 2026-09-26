@@ -127,7 +127,7 @@ import app.it.fast4x.rimusic.utils.isLandscape
 import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.otherLanguageAppAlbumKey
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
-import app.it.fast4x.rimusic.utils.parseArtists
+import app.n_zik.android.core.database.artistEntryNames
 import app.it.fast4x.rimusic.utils.playerPositionKey
 import app.it.fast4x.rimusic.utils.playlistSwipeLeftActionKey
 import app.it.fast4x.rimusic.utils.playlistSwipeRightActionKey
@@ -217,7 +217,7 @@ fun AlbumScreen(
         YtMusic.getAlbum(cleanedBrowseId, true, onProgress = { loadedSongsCount = it })
             .onSuccess { online ->
                 val onlineAlbum = online.album
-                val authorsText: String? = onlineAlbum.authors.parseArtists().joinToString(", ")
+                val authorsText: String? = onlineAlbum.authors.artistEntryNames().joinToString(", ")
 
                 Database.asyncTransaction {
                     val now = System.currentTimeMillis()

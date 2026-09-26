@@ -48,7 +48,7 @@ import app.it.fast4x.rimusic.ui.components.themed.TextPlaceholder
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.shimmer
 import app.it.fast4x.rimusic.utils.conditional
-import app.it.fast4x.rimusic.utils.parseArtists
+import app.n_zik.android.core.database.artistEntryNames
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
@@ -134,7 +134,7 @@ fun AlbumItem(
     AlbumItem(
         thumbnailUrl = album.thumbnail?.url,
         title = album.info?.name,
-        authors = album.authors.parseArtists().joinToString(", "),
+        authors = album.authors.artistEntryNames().joinToString(", "),
         year = album.year,
         yearCentered = yearCentered,
         thumbnailSizePx = thumbnailSizePx,

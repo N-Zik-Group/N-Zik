@@ -64,6 +64,7 @@ import app.n_zik.android.components.tab.*
 
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.core.database.ext.FormatWithSong
 import app.it.fast4x.rimusic.utils.autosyncLikesKey
@@ -406,7 +407,7 @@ fun HomeSongs(
                                             // raw videoId + "e:" title prefix, as in Innertube.SongItem.asSong
                                             id = videoId,
                                             title = (if (songItem.explicit) EXPLICIT_PREFIX else "") + (info.name ?: ""),
-                                            artistsText = songItem.authors.parseArtists().joinToString(", "),
+                                            artistsText = songItem.authors.artistEntryNames().joinToString(", "),
                                             durationText = songItem.durationText,
                                             thumbnailUrl = songItem.thumbnail?.url
                                         )

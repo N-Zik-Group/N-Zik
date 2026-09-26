@@ -86,6 +86,11 @@ class DatabaseInsertIgnoreReconcileTest {
         every { Database.songArtistMapTable } returns mapTable
         every { songTable.findByIdDirect("s1") } returns existingSong()
         every { artistTable.findByNameDirect(any()) } returns null
+        // A relaxed mock returns a child mock (not null) for findByIdDirect - pin the
+        // default to null: in those fixtures the row is (re)created under the context
+        // name, so the alignment read-back falls back to the context name. Tests that
+        // need an existing row under a different name stub the specific id explicitly.
+        every { artistTable.findByIdDirect(any()) } returns null
         every { Database.insertIgnore(any(), false) } answers { callOriginal() }
     }
 
@@ -149,6 +154,121 @@ class DatabaseInsertIgnoreReconcileTest {
 
         verify(exactly = 0) { mapTable.deleteBySongId(any()) }
         verify(exactly = 0) { mapTable.insertIgnore(any<SongArtistMap>()) }
+    }
+
+    // ---- artistsText alignment: one source of truth for the mapping + display ----
+    //
+    // The startup sweep (DbCleanup) judges links by name equality against artistsText,
+    // so whenever the mapping is (re)written from this context's author list, the
+    // displayed artistsText must be aligned to the same names. `modified:` values are
+    // never overwritten and an unchanged value skips the write.
+
+    private fun existingSongWithArtists(artistsText: String) = Song(
+        id = "s1", title = "Song", artistsText = artistsText,
+        durationText = null, thumbnailUrl = null
+    )
+
+    @Test
+    fun reinsertWithAuthorIdsAlignsArtistsTextToMappedNames() {
+        val upserted = mutableListOf<Song>()
+        every { songTable.upsert(any<Song>()) } answers { upserted += firstArg<Song>() }
+        // stored display text is JP, the fresh context author list is romaji
+        every { songTable.findByIdDirect("s1") } returns existingSongWithArtists("稲葉曇")
+        val item = mediaItemWithAuthors(listOf("Inabakumori"), listOf("UC_INABA"))
+
+        Database.insertIgnore(item, autoFix = false)
+
+        // final upsert carries the romaji join (single source of truth)
+        assertEquals("Inabakumori", upserted.last().artistsText)
+        // mapping is unchanged: delete strictly before insert
+        verify(exactly = 1) { mapTable.deleteBySongId("s1") }
+        verify(exactly = 1) { mapTable.insertIgnore(any<SongArtistMap>()) }
+    }
+
+    @Test
+    fun reinsertWithAuthorIdsKeepsModifiedArtistsText() {
+        val upserted = mutableListOf<Song>()
+        every { songTable.upsert(any<Song>()) } answers { upserted += firstArg<Song>() }
+        every { songTable.findByIdDirect("s1") } returns existingSongWithArtists("modified: Custom")
+        val item = mediaItemWithAuthors(listOf("Inabakumori"), listOf("UC_INABA"))
+
+        Database.insertIgnore(item, autoFix = false)
+
+        // a `modified:` value is never overwritten: only the baseline upsert, no aligning write
+        assertEquals(1, upserted.size)
+        assertEquals("modified: Custom", upserted.last().artistsText)
+    }
+
+    @Test
+    fun reinsertWithNamesOnlyAlignsArtistsTextToMappedNames() {
+        val upserted = mutableListOf<Song>()
+        every { songTable.upsert(any<Song>()) } answers { upserted += firstArg<Song>() }
+        every { songTable.findByIdDirect("s1") } returns existingSongWithArtists("稲葉曇")
+        every { artistTable.findByNameDirect("Inabakumori") } returns Artist(id = "UC_INABA", name = "Inabakumori")
+        val item = mediaItemWithNamesOnly(listOf("Inabakumori"))
+
+        Database.insertIgnore(item, autoFix = false)
+
+        assertEquals("Inabakumori", upserted.last().artistsText)
+        verify(exactly = 1) { mapTable.deleteBySongId("s1") }
+        verify(exactly = 1) { mapTable.insertIgnore(any<SongArtistMap>()) }
+    }
+
+    @Test
+    fun reinsertWithoutAuthorInfoKeepsArtistsText() {
+        val upserted = mutableListOf<Song>()
+        every { songTable.upsert(any<Song>()) } answers { upserted += firstArg<Song>() }
+        every { songTable.findByIdDirect("s1") } returns existingSongWithArtists("稲葉曇")
+        val metadata = MediaMetadata.Builder().build()
+        val item = MediaItem.Builder()
+            .setMediaId("s1")
+            .setMediaMetadata(metadata)
+            .build()
+        mockkStatic("app.it.fast4x.rimusic.utils.UtilsKt")
+        every { any<MediaItem>().asSong } returns existingSong()
+
+        Database.insertIgnore(item, autoFix = false)
+
+        // no author list -> the alignment never runs, only the baseline upsert
+        assertEquals(1, upserted.size)
+        assertEquals("稲葉曇", upserted.last().artistsText)
+    }
+
+    @Test
+    fun freshSongWithAuthorIdsAlignsArtistsTextToMappedNames() {
+        val upserted = mutableListOf<Song>()
+        every { songTable.upsert(any<Song>()) } answers { upserted += firstArg<Song>() }
+        // Fresh song: no DB row, so the stored artistsText starts blank
+        every { songTable.findByIdDirect("s1") } returns null
+        val item = mediaItemWithAuthors(listOf("Inabakumori"), listOf("UC_INABA"))
+
+        Database.insertIgnore(item, autoFix = false)
+
+        // The alignment also runs for fresh songs: the play→sweep loop must not be
+        // created on the very first play (mapping and display share one source of truth)
+        assertEquals("Inabakumori", upserted.last().artistsText)
+        verify(exactly = 0) { mapTable.deleteBySongId(any()) }
+    }
+
+    @Test
+    fun reinsertWithAuthorIdsAlignsArtistsTextToStoredRowName() {
+        val upserted = mutableListOf<Song>()
+        every { songTable.upsert(any<Song>()) } answers { upserted += firstArg<Song>() }
+        // Stored display text and the fresh context author list are romaji, but the
+        // artist row already exists under its JP spelling with the same channel id
+        every { songTable.findByIdDirect("s1") } returns existingSongWithArtists("Shaito")
+        every { artistTable.findByNameDirect("Shaito") } returns null
+        every { artistTable.findByIdDirect("UC_SHAITO") } returns Artist(id = "UC_SHAITO", name = "しゃいと")
+        val item = mediaItemWithAuthors(listOf("Shaito"), listOf("UC_SHAITO"))
+
+        Database.insertIgnore(item, autoFix = false)
+
+        // artistsText follows the row the link actually points to: findByNameDirect
+        // missed the existing row and the insertIgnore no-op must not rename it -
+        // the startup sweep compares that stored row name against artistsText
+        assertEquals("しゃいと", upserted.last().artistsText)
+        verify(exactly = 1) { mapTable.deleteBySongId("s1") }
+        verify(exactly = 1) { mapTable.insertIgnore(any<SongArtistMap>()) }
     }
 
     // ---- diagnostics logging: per-pair detail before the delete (I/O matrix rows) ----

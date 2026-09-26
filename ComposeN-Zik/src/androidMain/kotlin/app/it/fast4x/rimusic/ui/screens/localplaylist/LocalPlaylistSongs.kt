@@ -145,7 +145,7 @@ import app.it.fast4x.rimusic.utils.recommendationsNumberKey
 import app.it.fast4x.rimusic.ui.components.themed.TextFieldDialog
 import androidx.core.net.toUri
 import app.it.fast4x.rimusic.utils.asSong
-import app.it.fast4x.rimusic.utils.parseArtists
+import app.n_zik.android.core.database.artistEntryNames
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.localPlaylistToolbarOrderKey
 import app.it.fast4x.rimusic.utils.preferences
@@ -999,7 +999,7 @@ fun LocalPlaylistSongs(
                             // raw videoId + "e:" title prefix, as in Innertube.SongItem.asSong
                             id = songItem.info!!.endpoint!!.videoId!!,
                             title = (if (songItem.explicit) EXPLICIT_PREFIX else "") + (songItem.info!!.name ?: ""),
-                            artistsText = songItem.authors.parseArtists().joinToString(", "),
+                            artistsText = songItem.authors.artistEntryNames().joinToString(", "),
                             durationText = songItem.durationText,
                             thumbnailUrl = songItem.thumbnail?.url
                         )

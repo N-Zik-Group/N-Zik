@@ -51,6 +51,64 @@ class DbCleanupTest {
     }
 
     @Test
+    fun artistNameCarryingDelimiterMatchesRawList() {
+        // "COOL&CREATE" contains the "&" delimiter: the whole-phrase match must
+        // recognize the exact name as one phrase, not break it into parts
+        // (device capture 2026-09-26: the link was removed although the names were identical)
+        assertFalse(DbCleanup.isSuspiciousArtistLink("COOL&CREATE", "COOL&CREATE"))
+        assertFalse(DbCleanup.isSuspiciousArtistLink("cool&create", "COOL&CREATE"))
+    }
+
+    @Test
+    fun phraseMatchOnlyShieldsWholePhrases() {
+        // Neither a whole-phrase match nor a contained fragment -> still stale
+        assertTrue(DbCleanup.isSuspiciousArtistLink("CREATE BAND", "COOL&CREATE"))
+        assertTrue(DbCleanup.isSuspiciousArtistLink("E.T", "Tanchiky, siromaru"))
+    }
+
+    @Test
+    fun artistNameContainingConjunctionSubstringIsKept() {
+        // The old split matched the localized conjunction word ("and") as a substring
+        // inside "Grand", destroying "Grand Corps Malade" into junk parts and removing
+        // the link on every launch (device capture 2026-09-26 12:02). The whole-phrase
+        // match keeps it, in both positions of the list.
+        assertFalse(DbCleanup.isSuspiciousArtistLink("Grand Corps Malade", "Grand Corps Malade, Kimberose"))
+        assertFalse(DbCleanup.isSuspiciousArtistLink("Kimberose", "Grand Corps Malade, Kimberose"))
+    }
+
+    @Test
+    fun conjunctionFragmentsAreStillRemoved() {
+        // The junk parts the old split produced out of "Grand Corps Malade" must
+        // still be judged stale - the phrase ends are pinned against letters.
+        assertTrue(DbCleanup.isSuspiciousArtistLink("G", "Grand Corps Malade, Kimberose"))
+        assertTrue(DbCleanup.isSuspiciousArtistLink("r", "Grand Corps Malade, Kimberose"))
+        assertTrue(DbCleanup.isSuspiciousArtistLink("and", "Grand Corps Malade, Kimberose"))
+    }
+
+    @Test
+    fun cjkNamesMatchWithoutWordBoundaries() {
+        // CJK characters carry no \b word boundary in Java regex; the letter-only
+        // anchors let CJK names match at string start and before a space.
+        assertFalse(DbCleanup.isSuspiciousArtistLink("雨良", "雨良 Amala"))
+        assertFalse(DbCleanup.isSuspiciousArtistLink("Amala", "雨良 Amala"))
+    }
+
+    @Test
+    fun nameThatIsAPrefixOfAnotherNameIsStillRemoved() {
+        // The trailing letter pin stops partial names from matching inside longer names.
+        assertTrue(DbCleanup.isSuspiciousArtistLink("Mik", "MIKA"))
+        assertTrue(DbCleanup.isSuspiciousArtistLink("Tanchik", "Tanchiky, siromaru"))
+    }
+
+    @Test
+    fun accentedNameMatchesWholeAndRejectsFragment() {
+        // \p{L} anchors cover accented letters: the full name matches, but a
+        // prefix ending before an accented letter is still a fragment.
+        assertFalse(DbCleanup.isSuspiciousArtistLink("Grégoire", "Grégoire, X"))
+        assertTrue(DbCleanup.isSuspiciousArtistLink("gr", "Grégoire, X"))
+    }
+
+    @Test
     fun customArtistNameIsNeverTouched() {
         assertFalse(DbCleanup.isSuspiciousArtistLink("modified:Whatever", "Tanchiky, siromaru"))
     }

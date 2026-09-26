@@ -84,7 +84,9 @@ val Innertube.AlbumItem.asAlbum: Album
         title = info?.name,
         thumbnailUrl = thumbnail?.url,
         year = year,
-        authorsText = authors.parseArtists().joinToString(", "),
+        // One YTM author entry = one artist: keep entry names whole (no
+        // parseArtists split) so the display matches the stored row name.
+        authorsText = authors.artistEntryNames().joinToString(", "),
         //shareUrl =
     )
 
@@ -124,14 +126,16 @@ val Innertube.SongItem.asMediaItem: MediaItem
                 .setTitle(
                     (if (explicit) "\uD83C\uDD74 " else "") + info?.name
                 )
-                .setArtist(authors.parseArtists().joinToString(", "))
+                .setArtist(authors.artistEntryNames().joinToString(", "))
                 .setAlbumTitle(album?.name)
                 .setArtworkUri(thumbnail?.url?.toUri())
                 .setExtras(
                     bundleOf(
                         "albumId" to album?.endpoint?.browseId,
                         "durationText" to durationText,
-                        "artistNames" to ArrayList(authors.parseArtists()),
+                        // Whole entry names (one entry = one artist) so the
+                        // name->id zip stays aligned with artistIds.
+                        "artistNames" to ArrayList(authors.artistEntryNames()),
                         "artistIds" to ArrayList(authors?.mapNotNull { it.endpoint?.browseId } ?: emptyList()),
                         EXPLICIT_BUNDLE_TAG to explicit,
                         EXTRAS_KEY_IS_EXPLICIT to explicit,
@@ -187,12 +191,19 @@ fun List<Innertube.Info<*>?>?.parseArtists(): List<String> {
 /**
  * Split a stored artistsText string into individual artist names.
  * Handles ",", "&", and locale-aware conjunctions (e.g. "et", "and").
+ *
+ * The localized conjunction word is matched as a whole word (\b boundaries):
+ * it may appear as a substring inside a name ("and" inside "Grand", "et"
+ * inside "Petit"), and a boundary-less split destroys legitimate names into
+ * junk fragments (device capture 2026-09-26: "Grand Corps Malade" ->
+ * ["G", "r", "Corps Malade"]). "&" and "," are delimiters, not words, and
+ * stay boundary-less.
  */
 fun String?.splitArtistNames(): List<String> {
     if (this.isNullOrBlank()) return emptyList()
     val conjunctions = ArtistConjunctions.conjunctions
     val pattern = if (conjunctions.isNotEmpty()) {
-        Regex("\\s*(${conjunctions.joinToString("|") { Regex.escape(it) }}|&|,)\\s*", RegexOption.IGNORE_CASE)
+        Regex("\\s*(\\b(?:" + conjunctions.joinToString("|") { Regex.escape(it) } + ")\\b|&|,)\\s*", RegexOption.IGNORE_CASE)
     } else {
         Regex("\\s*(&|,)\\s*", RegexOption.IGNORE_CASE)
     }
@@ -203,7 +214,9 @@ val Innertube.SongItem.asSong: Song
     get() = Song (
         id = key,
         title = (if( explicit ) EXPLICIT_PREFIX else "").plus( info?.name ?: "" ),
-        artistsText = authors.parseArtists().joinToString(", "),
+        // One YTM author entry = one artist: keep entry names whole (no
+        // parseArtists split) so the live display matches the stored row name.
+        artistsText = authors.artistEntryNames().joinToString(", "),
         durationText = durationText,
         thumbnailUrl = thumbnail?.url
     )
@@ -217,12 +230,14 @@ val Innertube.VideoItem.asMediaItem: MediaItem
         .setMediaMetadata(
             MediaMetadata.Builder()
                 .setTitle(info?.name)
-                .setArtist(authors.parseArtists().joinToString(", "))
+                .setArtist(authors.artistEntryNames().joinToString(", "))
                 .setArtworkUri(thumbnail?.url?.toUri())
                 .setExtras(
                     bundleOf(
                         "durationText" to durationText,
-                        "artistNames" to ArrayList(authors.parseArtists()),
+                        // Whole entry names (one entry = one artist) so the
+                        // name->id zip stays aligned with artistIds.
+                        "artistNames" to ArrayList(authors.artistEntryNames()),
                         "artistIds" to ArrayList(authors?.mapNotNull { it.endpoint?.browseId } ?: emptyList()),
                         "isOfficialMusicVideo" to isOfficialMusicVideo,
                         "isUserGeneratedContent" to isUserGeneratedContent,
@@ -343,7 +358,9 @@ val Innertube.VideoItem.asSong: Song
     get() = Song (
         id = key,
         title = info?.name ?: "",
-        artistsText = authors.parseArtists().joinToString(", "),
+        // One YTM author entry = one artist: keep entry names whole (no
+        // parseArtists split) so the live display matches the stored row name.
+        artistsText = authors.artistEntryNames().joinToString(", "),
         durationText = durationText,
         thumbnailUrl = thumbnail?.url
     )

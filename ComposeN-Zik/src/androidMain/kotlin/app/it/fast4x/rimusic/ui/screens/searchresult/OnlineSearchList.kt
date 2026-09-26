@@ -43,7 +43,7 @@ import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.items.AlbumItemListPlaceholder
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.conditional
-import app.it.fast4x.rimusic.utils.parseArtists
+import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
@@ -351,7 +351,7 @@ fun OnlineSearchList(
                                 .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                         )
                         if (item is Innertube.AlbumItem) {
-                            item.authors.parseArtists().joinToString(", ").let { authors ->
+                            item.authors.artistEntryNames().joinToString(", ").let { authors ->
                                 if (authors.isNotBlank()) {
                                     BasicText(
                                         text = authors,

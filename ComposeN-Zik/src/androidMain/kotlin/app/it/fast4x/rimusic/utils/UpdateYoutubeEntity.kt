@@ -97,7 +97,7 @@ fun UpdateYoutubeAlbum (browseId: String) {
                                             title = PropUtils.retainIfModified(album?.title, currentAlbumPage.title),
                                             thumbnailUrl = PropUtils.retainIfModified(album?.thumbnailUrl, currentAlbumPage.thumbnail?.url),
                                             year = currentAlbumPage.year,
-                                            authorsText = PropUtils.retainIfModified(album?.authorsText, currentAlbumPage.authors.parseArtists().joinToString(", ").takeIf { it.isNotBlank() }),
+                                            authorsText = PropUtils.retainIfModified(album?.authorsText, currentAlbumPage.authors.artistEntryNames().joinToString(", ").takeIf { it.isNotBlank() }),
                                             shareUrl = currentAlbumPage.url,
                                             timestamp = System.currentTimeMillis(),
                                             bookmarkedAt = album?.bookmarkedAt,
