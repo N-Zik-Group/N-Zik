@@ -112,6 +112,34 @@ class RescueScreenProcessStatusTest {
 
     private fun aliveMarker(): File = File(context.filesDir, RescueProcess.ALIVE_MARKER_NAME)
 
+    /**
+     * Drives the compose clock forward one polling period at a time until the status row shows
+     * [expectedText] — bounded, so a state that never arrives still fails the test.
+     *
+     * Why not a fixed advanceTimeBy + waitForIdle: the poll loop reads liveness on the real
+     * [NzikDispatchers.DATA] thread, which the fake main clock and waitForIdle do not control.
+     * They can return before the tick's state update lands (the update arrives when the real
+     * thread hands back — slower under full-suite JVM load), which made fixed-timing
+     * assertions flaky: the status row then still showed the previous state. Waiting for the
+     * observed state keeps the assertion deterministic while still proving the poll
+     * establishes the state within a few ticks.
+     */
+    private fun awaitStatus(expectedText: String) {
+        composeRule.waitForIdle()
+        repeat(10) {
+            composeRule.mainClock.advanceTimeBy(1_500)
+            composeRule.waitForIdle()
+            try {
+                composeRule.onNodeWithText(expectedText).assertIsDisplayed()
+                return
+            } catch (e: AssertionError) {
+                // State not there yet: give the next polling period a chance.
+            }
+        }
+        // Failed to observe the state within the bound: report the standard assertion error.
+        composeRule.onNodeWithText(expectedText).assertIsDisplayed()
+    }
+
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
@@ -128,18 +156,12 @@ class RescueScreenProcessStatusTest {
         // The pre-seed planted a pending flag (a request recorded while the probe still saw
         // the process alive): the trustworthy probe says dead, so the poll must discard it,
         // show "stopped", and leave the kill button disabled.
-        composeRule.waitForIdle()
-        composeRule.mainClock.advanceTimeBy(1_500)
-        composeRule.waitForIdle()
-
+        awaitStatus(context.getString(R.string.rescue_status_main_process_stopped))
         assertFalse(
             "the trustworthy probe saw the main process dead: the pending flag must be " +
                 "discarded so the next healthy launch does not self-kill",
             RescueProcess.hasKillRequest(context)
         )
-        composeRule
-            .onNodeWithText(context.getString(R.string.rescue_status_main_process_stopped))
-            .assertIsDisplayed()
         composeRule.onNodeWithText(killTitle).assertIsNotEnabled()
     }
 
@@ -152,27 +174,16 @@ class RescueScreenProcessStatusTest {
             RescueProcess.hasKillRequest(context)
         )
 
-        composeRule.waitForIdle()
-        composeRule.mainClock.advanceTimeBy(1_500)
-        composeRule.waitForIdle()
-
+        awaitStatus(context.getString(R.string.rescue_status_main_process_stopping))
         assertTrue(
             "from 31 on 'not running' is not proof of death: the flag must not be cancelled",
             RescueProcess.hasKillRequest(context)
         )
-        composeRule
-            .onNodeWithText(context.getString(R.string.rescue_status_main_process_stopping))
-            .assertIsDisplayed()
         composeRule.onNodeWithText(killTitle).assertIsEnabled()
 
         // Simulate the kill landing: the main process receiver consumed the flag.
         RescueProcess.consumeKillRequest(context)
-        composeRule.mainClock.advanceTimeBy(1_500)
-        composeRule.waitForIdle()
-
-        composeRule
-            .onNodeWithText(context.getString(R.string.rescue_status_main_process_stopped))
-            .assertIsDisplayed()
+        awaitStatus(context.getString(R.string.rescue_status_main_process_stopped))
     }
 
     @Test
@@ -184,13 +195,7 @@ class RescueScreenProcessStatusTest {
             RescueProcess.hasKillRequest(context)
         )
 
-        composeRule.waitForIdle()
-        composeRule.mainClock.advanceTimeBy(1_500)
-        composeRule.waitForIdle()
-
-        composeRule
-            .onNodeWithText(context.getString(R.string.rescue_status_main_process_stopping))
-            .assertIsDisplayed()
+        awaitStatus(context.getString(R.string.rescue_status_main_process_stopping))
         composeRule.onNodeWithText(killTitle).assertIsEnabled()
     }
 
@@ -201,13 +206,7 @@ class RescueScreenProcessStatusTest {
         // the dead state, discard the pending flag, and grey out the kill button.
         aliveMarker().delete()
 
-        composeRule.waitForIdle()
-        composeRule.mainClock.advanceTimeBy(1_500)
-        composeRule.waitForIdle()
-
-        composeRule
-            .onNodeWithText(context.getString(R.string.rescue_status_main_process_stopped))
-            .assertIsDisplayed()
+        awaitStatus(context.getString(R.string.rescue_status_main_process_stopped))
         composeRule.onNodeWithText(killTitle).assertIsNotEnabled()
         assertFalse(
             "a dead main process has no pending kill: the flag must be discarded so the " +
@@ -224,13 +223,7 @@ class RescueScreenProcessStatusTest {
         // OS never deletes it).
         aliveMarker().setLastModified(System.currentTimeMillis() - 30_000)
 
-        composeRule.waitForIdle()
-        composeRule.mainClock.advanceTimeBy(1_500)
-        composeRule.waitForIdle()
-
-        composeRule
-            .onNodeWithText(context.getString(R.string.rescue_status_main_process_stopped))
-            .assertIsDisplayed()
+        awaitStatus(context.getString(R.string.rescue_status_main_process_stopped))
         composeRule.onNodeWithText(killTitle).assertIsNotEnabled()
         assertFalse(
             "the orphan flag must be cancelled: a dead process has no pending kill",
@@ -246,9 +239,7 @@ class RescueScreenProcessStatusTest {
     fun `the kill the app action re-sends the kill request`() {
         // Let the poll establish the "alive" state first (the pre-seeded marker keeps the
         // process alive): the kill button is active only while the process is running.
-        composeRule.waitForIdle()
-        composeRule.mainClock.advanceTimeBy(1_500)
-        composeRule.waitForIdle()
+        awaitStatus(context.getString(R.string.rescue_status_main_process_stopping))
         composeRule.onNodeWithText(killTitle).assertIsEnabled()
 
         // The request recorded by the activity's onCreate is still pending: remember its
