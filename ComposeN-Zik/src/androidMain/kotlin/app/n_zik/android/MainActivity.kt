@@ -163,6 +163,7 @@ import app.n_zik.android.enums.OnboardingStep
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.PlayerAwareInsetsTracker
+import app.n_zik.android.utils.appNavBarPresentForRoute
 import app.n_zik.android.utils.shouldRecreateActivity
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
@@ -1398,7 +1399,12 @@ class MainActivity :
                 val isFloatingNavBar = NavigationBarPosition.BottomFloating.isCurrent()
                 val isIconOnlyNav = app.it.fast4x.rimusic.enums.NavigationBarType.IconOnly.isCurrent()
                 val navBarBottomPad = Dimensions.navBarBottomPadding(isFloatingNavBar)
-                val hasNavBar = !areBarsHidden
+                // Route-aware: only screens that actually render the app nav bar reserve its
+                // height under the mini-player, so it drops to the screen edge on bar-less pages.
+                // Sourced from the nav controller rather than DiscordUiState so layout never
+                // depends on the RPC feature's destination listener
+                val playerRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+                val hasNavBar = !areBarsHidden && appNavBarPresentForRoute(playerRoute)
 
                 val playerPos by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
                 val targetPlayerPadBottom = if (playerPos == PlayerPosition.Bottom) {
