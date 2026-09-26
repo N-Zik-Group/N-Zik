@@ -47,6 +47,7 @@ import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.migration.DbCleanup
 import app.n_zik.android.core.migration.MonthlyPlaylistCleanup
 import app.n_zik.android.core.migration.RemovedSettingsMigration
+import app.n_zik.android.core.migration.SameNameArtistDedup
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.network.client.Store
 import app.n_zik.android.core.rescue.RescueProcess
@@ -210,6 +211,12 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // heals links that reappear through database imports
         runCatching { DbCleanup.run(this) }
             .onFailure { Timber.tag("MainApplication").w(it, "Artist link cleanup failed") }
+        // Dedup of same-name artist rows accumulated by YTM's per-context
+        // attribution (rate-limited network pass, no per-launch cap, background)
+        // — re-runs on every launch, so it also heals duplicates that reappear
+        // through YTM/YT syncs
+        runCatching { SameNameArtistDedup.run(this) }
+            .onFailure { Timber.tag("MainApplication").w(it, "Same-name artist dedup failed") }
         InnerTubeXPlayer.initialize(this)
 
         // Setup session BEFORE prewarm — ensures session is stable when IO thread starts

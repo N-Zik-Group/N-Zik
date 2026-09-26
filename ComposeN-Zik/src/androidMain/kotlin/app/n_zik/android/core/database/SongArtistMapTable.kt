@@ -101,6 +101,20 @@ interface SongArtistMapTable {
     fun updateArtistId(oldId: String, newId: String)
 
     /**
+     * Delete the (song, :newId) links of every song that also holds a
+     * (song, :oldId) link, so a following [updateArtistId] cannot violate the
+     * (songId, artistId) primary key for songs already linked to the target.
+     *
+     * @return number of rows affected by this operation
+     */
+    @Query("""
+        DELETE FROM SongArtistMap
+        WHERE artistId = :newId
+        AND songId IN ( SELECT songId FROM SongArtistMap WHERE artistId = :oldId )
+    """)
+    fun dropLinksAlreadyOn(oldId: String, newId: String): Int
+
+    /**
      * Delete all mappings for a specific song
      *
      * @param songId the song ID to delete mappings for

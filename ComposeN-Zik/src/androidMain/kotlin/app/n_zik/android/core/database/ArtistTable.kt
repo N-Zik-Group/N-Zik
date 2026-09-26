@@ -118,6 +118,27 @@ interface ArtistTable {
     fun findByNameDirect( name: String ): Artist?
 
     /**
+     * @param name artist name to search for (case-insensitive)
+     * @return all [Artist] rows that match the name
+     */
+    @Query("SELECT DISTINCT * FROM Artist WHERE name = :name COLLATE NOCASE")
+    fun allByNameIgnoreCase( name: String ): List<Artist>
+
+    /**
+     * @return one representative name per group of artists stored under the same
+     * name (case-insensitive) with more than one row — the candidate groups of
+     * the same-name artist dedup sweep
+     */
+    @Query("""
+        SELECT MAX( name )
+        FROM Artist
+        WHERE name IS NOT NULL AND name != ''
+        GROUP BY name COLLATE NOCASE
+        HAVING COUNT( * ) > 1
+    """)
+    fun sameNameGroups(): List<String>
+
+    /**
      * @param mbId of a MusicBrainz artist
      * @return [Artist] that has [Artist.mbId] matches [mbId]
      */
