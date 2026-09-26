@@ -534,7 +534,6 @@
     <string name="info_translation">Překlad</string>
     <string name="info_find_the_song_that_is_playing">Vyhledat přehrávanou skladbu</string>
     <string name="info_smart_recommendation">Chytré doporučení</string>
-    <string name="info_clean_cached_congs">Vyčistit skladby v mezipaměti</string>
     <string name="info_pin_unpin_playlist">Připnout/Odepnout playlist</string>
     <string name="info_lock_unlock_reorder_songs">Zamknout/odemknout přeřazené skladby</string>
     <string name="info_add_in_playlist">Přidat do playlistu</string>
@@ -795,8 +794,8 @@
     <string name="translate_to_other_language">Přeložit do jiného jazyka</string>
     <string name="action_bar_show_video_button">Zobrazit tlačítko video</string>
     <string name="update">Aktualizace</string>
+    <string name="updated_songs_count">Updated %1$d songs</string>
     <string name="update_waveform">Update waveform</string>
-    <string name="update_song">Do you really want to refetch this song? Playback time and cached data will be wiped.\nThis action is irreversible.</string>
     <string name="player_pause_listen_history_info">Neukládat přehrávané záznamy, které se používají pro statistiky, historii a návrhy v rychlém výběru</string>
     <string name="sleep_timer_ended">Časovač spánku ukončen</string>
     <string name="account_login">Log in</string>
@@ -1086,9 +1085,10 @@
     <string name="failed_to_fetch_artist">Failed to fetch aritst</string>
     <string name="looking_up_album_from_the_internet">Looking up album from the internet</string>
     <string name="failed_to_fetch_album">Failed to fetch album</string>
-    <string name="info_open_reset_dialog">Open reset dialog</string>
-    <string name="title_reset_title">Reset title</string>
-    <string name="title_reset_authors">Reset authors</string>
+    <string name="info_open_update_dialog">Open update dialog</string>
+    <string name="update_title_from_ytm">Update title from YouTube Music</string>
+    <string name="update_authors_from_ytm">Update authors from YouTube Music</string>
+    <string name="update_thumbnail_from_ytm">Update thumbnail from YouTube Music</string>
     <string name="title_reset_total_play_time">Reset total play time</string>
     <string name="title_name_your_export">Name your export</string>
     <string name="export_cached">Export cached</string>
@@ -1308,6 +1308,7 @@
     <string name="section_lyrics_actions">Actions</string>
     <string name="toast_preference_saved">Nastavení uloženo</string>
     <string name="db_artist_link_cleanup_toast">Removed %d incorrect artist link(s)</string>
+    <string name="same_name_artists_dedup_toast">Merged %d duplicate artist(s) with the right artist</string>
     <string name="txt_width">width</string>
     <string name="cd_blurred_background">rozmazané_pozadí</string>
     <string name="cd_rename_dialog_text_box_icon">Přejmenovat ikonu dialogového políčka</string>
@@ -1357,7 +1358,6 @@
     <string name="lyrics_unsynced">Plain text</string>
     <string name="lyrics_karaoke">Karaoke (word-level)</string>
     <string name="no_lyrics">No lyrics</string>
-    <string name="clear_cache_count">Clear cache for %d songs?</string>
     <string name="no_items_found">Nebyly nalezeny žádné položky</string>
     <string name="no_new_releases">Neexistují žádné nové verze pro vaše oblíbené umělce</string>
     <string name="not_selectable">Nevybratelné</string>
