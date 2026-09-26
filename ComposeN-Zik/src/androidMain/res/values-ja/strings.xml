@@ -534,7 +534,6 @@
     <string name="info_translation">翻訳</string>
     <string name="info_find_the_song_that_is_playing">再生中の曲を表示</string>
     <string name="info_smart_recommendation">スマートレコメンデーション</string>
-    <string name="info_clean_cached_congs">キャッシュされた曲を削除</string>
     <string name="info_pin_unpin_playlist">プレイリストのピン留め/ピン留め解除</string>
     <string name="info_lock_unlock_reorder_songs">曲の並び順をロック/ロック解除</string>
     <string name="info_add_in_playlist">プレイリストに追加</string>
@@ -795,8 +794,8 @@
     <string name="translate_to_other_language">他の言語に翻訳</string>
     <string name="action_bar_show_video_button">動画ボタンを表示</string>
     <string name="update">更新</string>
+    <string name="updated_songs_count">Updated %1$d songs</string>
     <string name="update_waveform">Update waveform</string>
-    <string name="update_song">本当にこの曲を修正しますか？再生時間とキャッシュされたデータは消去されます。\nこの操作は元に戻せません。</string>
     <string name="player_pause_listen_history_info">統計、履歴、提案に使用される再生イベントを保存しない</string>
     <string name="sleep_timer_ended">スリープタイマー終了</string>
     <string name="account_login">Log in</string>
@@ -1086,9 +1085,10 @@
     <string name="failed_to_fetch_artist">Failed to fetch aritst</string>
     <string name="looking_up_album_from_the_internet">Looking up album from the internet</string>
     <string name="failed_to_fetch_album">Failed to fetch album</string>
-    <string name="info_open_reset_dialog">Open reset dialog</string>
-    <string name="title_reset_title">Reset title</string>
-    <string name="title_reset_authors">Reset authors</string>
+    <string name="info_open_update_dialog">Open update dialog</string>
+    <string name="update_title_from_ytm">Update title from YouTube Music</string>
+    <string name="update_authors_from_ytm">Update authors from YouTube Music</string>
+    <string name="update_thumbnail_from_ytm">Update thumbnail from YouTube Music</string>
     <string name="title_reset_total_play_time">Reset total play time</string>
     <string name="title_name_your_export">Name your export</string>
     <string name="export_cached">Export cached</string>
@@ -1308,6 +1308,7 @@
     <string name="section_lyrics_actions">Actions</string>
     <string name="toast_preference_saved">設定を保存しました</string>
     <string name="db_artist_link_cleanup_toast">Removed %d incorrect artist link(s)</string>
+    <string name="same_name_artists_dedup_toast">Merged %d duplicate artist(s) with the right artist</string>
     <string name="txt_width">width</string>
     <string name="cd_blurred_background">blurred_background</string>
     <string name="cd_rename_dialog_text_box_icon">ダイアログテキストボックスのアイコンの名前を変更</string>
@@ -1357,7 +1358,6 @@
     <string name="lyrics_unsynced">Plain text</string>
     <string name="lyrics_karaoke">Karaoke (word-level)</string>
     <string name="no_lyrics">No lyrics</string>
-    <string name="clear_cache_count">Clear cache for %d songs?</string>
     <string name="no_items_found">アイテムが見つかりません</string>
     <string name="no_new_releases">お気に入りのアーティストの新しいリリースはありません。</string>
     <string name="not_selectable">選択不可</string>
