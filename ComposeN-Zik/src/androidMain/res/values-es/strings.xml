@@ -534,7 +534,6 @@
     <string name="info_translation">Traducción</string>
     <string name="info_find_the_song_that_is_playing">Encuentra la canción que se está reproduciendo</string>
     <string name="info_smart_recommendation">Recomendación inteligente</string>
-    <string name="info_clean_cached_congs">Limpiar canciones en caché</string>
     <string name="info_pin_unpin_playlist">Fijar/desfijar lista de reproducción</string>
     <string name="info_lock_unlock_reorder_songs">Bloquear/desbloquear reordenar canciones</string>
     <string name="info_add_in_playlist">Añadir a lista de reproducción</string>
@@ -796,7 +795,6 @@
     <string name="action_bar_show_video_button">Mostrar botón vídeo</string>
     <string name="update">Actualización</string>
     <string name="update_waveform">Update waveform</string>
-    <string name="update_song">Do you really want to refetch this song? Playback time and cached data will be wiped.\nThis action is irreversible.</string>
     <string name="player_pause_listen_history_info">No guarda los eventos de reproducción utilizados para estadísticas, historial y sugerencias en selecciones rápidas</string>
     <string name="sleep_timer_ended">El temporizador de apagado ha finalizado</string>
     <string name="social_discord">Discordia</string>
@@ -1084,9 +1082,6 @@
     <string name="failed_to_fetch_artist">Error al buscar el artista</string>
     <string name="looking_up_album_from_the_internet">Buscar álbum en Internet</string>
     <string name="failed_to_fetch_album">Error al buscar el álbum</string>
-    <string name="info_open_reset_dialog">Abrir diálogo de restablecimiento</string>
-    <string name="title_reset_title">Restablecer título</string>
-    <string name="title_reset_authors">Restablecer autores</string>
     <string name="title_reset_total_play_time">Restablecer tiempo de reproducción total</string>
     <string name="title_name_your_export">Nombra tu exportación</string>
     <string name="export_cached">Exportar en caché</string>
@@ -1354,7 +1349,6 @@
     <string name="lyrics_unsynced">Plain text</string>
     <string name="lyrics_karaoke">Karaoke (word-level)</string>
     <string name="no_lyrics">No lyrics</string>
-    <string name="clear_cache_count">Clear cache for %d songs?</string>
     <string name="no_items_found">No hay elementos</string>
     <string name="no_new_releases">No hay nuevas versiones para tus artistas favoritos</string>
     <string name="not_selectable">No seleccionable</string>

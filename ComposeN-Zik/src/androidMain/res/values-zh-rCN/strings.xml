@@ -369,7 +369,6 @@
 <string name="info_translation">翻译</string>
 <string name="info_find_the_song_that_is_playing">查找正在播放的歌曲</string>
 <string name="info_smart_recommendation">智能推荐</string>
-<string name="info_clean_cached_congs">清理缓存中的歌曲</string>
 <string name="info_pin_unpin_playlist">固定/取消固定播放列表</string>
 <string name="info_lock_unlock_reorder_songs">锁定/解锁重新排序音乐</string>
 <string name="info_add_in_playlist">添加到歌单</string>
@@ -580,7 +579,6 @@
 <string name="translate_to_other_language">翻译到其他语言</string>
 <string name="action_bar_show_video_button">显示视频按钮</string>
 <string name="update">更新</string>
-<string name="update_song">Do you really want to refetch this song? Playback time and cached data will be wiped.\nThis action is irreversible.</string>
 <string name="player_pause_listen_history_info">不会保存用于统计、历史和建议的快速播放历史</string>
 <string name="sleep_timer_ended">睡眠计时器已结束</string>
 <string name="social_discord">Discord</string>
@@ -744,9 +742,6 @@
 <string name="failed_to_fetch_artist">Failed to fetch aritst</string>
 <string name="looking_up_album_from_the_internet">Looking up album from the internet</string>
 <string name="failed_to_fetch_album">Failed to fetch album</string>
-<string name="info_open_reset_dialog">Open reset dialog</string>
-<string name="title_reset_title">Reset title</string>
-<string name="title_reset_authors">Reset authors</string>
 <string name="title_reset_total_play_time">Reset total play time</string>
 <string name="title_name_your_export">Name your export</string>
 <string name="export_cached">Export cached</string>

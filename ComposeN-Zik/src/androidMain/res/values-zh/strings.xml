@@ -534,7 +534,6 @@
     <string name="info_translation">翻譯</string>
     <string name="info_find_the_song_that_is_playing">尋找正在播放的歌曲</string>
     <string name="info_smart_recommendation">智慧建議</string>
-    <string name="info_clean_cached_congs">清除暫存歌曲</string>
     <string name="info_pin_unpin_playlist">釘選/取消釘選 播放清單</string>
     <string name="info_lock_unlock_reorder_songs">鎖定/解鎖 重新排序歌曲</string>
     <string name="info_add_in_playlist">加入播放清單</string>
@@ -796,7 +795,6 @@
     <string name="action_bar_show_video_button">顯示影片按鈕</string>
     <string name="update">更新</string>
     <string name="update_waveform">Update waveform</string>
-    <string name="update_song">Do you really want to refetch this song? Playback time and cached data will be wiped.\nThis action is irreversible.</string>
     <string name="player_pause_listen_history_info">不保存用於統計、記錄和縮圖建議的播放事件</string>
     <string name="sleep_timer_ended">睡眠計時結束</string>
     <string name="social_discord">Discord</string>
@@ -1084,9 +1082,6 @@
     <string name="failed_to_fetch_artist">Failed to fetch aritst</string>
     <string name="looking_up_album_from_the_internet">Looking up album from the internet</string>
     <string name="failed_to_fetch_album">Failed to fetch album</string>
-    <string name="info_open_reset_dialog">Open reset dialog</string>
-    <string name="title_reset_title">Reset title</string>
-    <string name="title_reset_authors">Reset authors</string>
     <string name="title_reset_total_play_time">Reset total play time</string>
     <string name="title_name_your_export">Name your export</string>
     <string name="export_cached">Export cached</string>
@@ -1354,7 +1349,6 @@
     <string name="lyrics_unsynced">Plain text</string>
     <string name="lyrics_karaoke">Karaoke (word-level)</string>
     <string name="no_lyrics">No lyrics</string>
-    <string name="clear_cache_count">Clear cache for %d songs?</string>
     <string name="no_items_found">未找到项目</string>
     <string name="no_new_releases">您最喜欢的艺术家没有新的发布</string>
     <string name="not_selectable">不可选择</string>

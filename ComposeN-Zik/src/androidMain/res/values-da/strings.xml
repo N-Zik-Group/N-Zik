@@ -534,7 +534,6 @@
     <string name="info_translation">Oversættelse</string>
     <string name="info_find_the_song_that_is_playing">Find sangen, der bliver afspillet</string>
     <string name="info_smart_recommendation">Smart anbefaling</string>
-    <string name="info_clean_cached_congs">Rens cachelagrede sange</string>
     <string name="info_pin_unpin_playlist">Fastgør/frigør playliste</string>
     <string name="info_lock_unlock_reorder_songs">Lås/oplås omarrangering af sange</string>
     <string name="info_add_in_playlist">Tilføj i playliste</string>
@@ -796,7 +795,6 @@
     <string name="action_bar_show_video_button">Vis Video-knap</string>
     <string name="update">Opdater</string>
     <string name="update_waveform">Update waveform</string>
-    <string name="update_song">Do you really want to refetch this song? Playback time and cached data will be wiped.\nThis action is irreversible.</string>
     <string name="player_pause_listen_history_info">Gemmer ikke afspilningshændelser til statistikker, historik eller forslag i Hurtige Valg</string>
     <string name="sleep_timer_ended">Søvntimer afsluttet</string>
     <string name="social_discord">Discord</string>
@@ -1084,9 +1082,6 @@
     <string name="failed_to_fetch_artist">Kunne ikke hente kunstner</string>
     <string name="looking_up_album_from_the_internet">Slår album op på internettet</string>
     <string name="failed_to_fetch_album">Kunne ikke hente album</string>
-    <string name="info_open_reset_dialog">Åbn nulstil-dialogboks</string>
-    <string name="title_reset_title">Nulstil titel</string>
-    <string name="title_reset_authors">Nulstil forfattere</string>
     <string name="title_reset_total_play_time">Nulstil samlet afspilningstid</string>
     <string name="title_name_your_export">Navngiv din eksport</string>
     <string name="export_cached">Eksport cachelagret</string>
@@ -1354,7 +1349,6 @@
     <string name="lyrics_unsynced">Plain text</string>
     <string name="lyrics_karaoke">Karaoke (word-level)</string>
     <string name="no_lyrics">No lyrics</string>
-    <string name="clear_cache_count">Clear cache for %d songs?</string>
     <string name="no_items_found">Ingen elementer fundet</string>
     <string name="no_new_releases">Der er ingen nye udgivelser til dine foretrukne kunstnere</string>
     <string name="not_selectable">Kan ikke vælges</string>

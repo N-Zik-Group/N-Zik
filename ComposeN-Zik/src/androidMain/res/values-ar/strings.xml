@@ -534,7 +534,6 @@
     <string name="info_translation">Translation</string>
     <string name="info_find_the_song_that_is_playing">Find the song that is playing</string>
     <string name="info_smart_recommendation">Smart recommendation</string>
-    <string name="info_clean_cached_congs">Clean cached congs</string>
     <string name="info_pin_unpin_playlist">Pin/Unpin playlist</string>
     <string name="info_lock_unlock_reorder_songs">Lock/Unlock reorder songs</string>
     <string name="info_add_in_playlist">Add in playlist</string>
@@ -796,7 +795,6 @@
     <string name="action_bar_show_video_button">Show video button</string>
     <string name="update">Update</string>
     <string name="update_waveform">Update waveform</string>
-    <string name="update_song">Do you really want to refetch this song? Playback time and cached data will be wiped.\nThis action is irreversible.</string>
     <string name="player_pause_listen_history_info">Does not save playback events used for statistics, history and suggestions in quick pics</string>
     <string name="sleep_timer_ended">Sleep timer ended</string>
     <string name="social_discord">Discord</string>
@@ -1084,9 +1082,6 @@
     <string name="failed_to_fetch_artist">Failed to fetch aritst</string>
     <string name="looking_up_album_from_the_internet">Looking up album from the internet</string>
     <string name="failed_to_fetch_album">Failed to fetch album</string>
-    <string name="info_open_reset_dialog">Open reset dialog</string>
-    <string name="title_reset_title">Reset title</string>
-    <string name="title_reset_authors">Reset authors</string>
     <string name="title_reset_total_play_time">Reset total play time</string>
     <string name="title_name_your_export">Name your export</string>
     <string name="export_cached">Export cached</string>
@@ -1354,7 +1349,6 @@
     <string name="lyrics_unsynced">Plain text</string>
     <string name="lyrics_karaoke">Karaoke (word-level)</string>
     <string name="no_lyrics">No lyrics</string>
-    <string name="clear_cache_count">Clear cache for %d songs?</string>
     <string name="no_items_found">لم يتم العثور على عناصر</string>
     <string name="no_new_releases">لا توجد إصدارات جديدة للفنانين المفضلين لديك</string>
     <string name="not_selectable">غير قابل للتحديد</string>
