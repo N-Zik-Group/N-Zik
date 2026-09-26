@@ -15,8 +15,11 @@ import io.mockk.unmockkAll
 import io.mockk.verify
 import io.mockk.verifyOrder
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import timber.log.Timber
 
 /**
  * Contract for artist↔song mapping reconciliation in [Database.insertIgnore]
@@ -146,5 +149,107 @@ class DatabaseInsertIgnoreReconcileTest {
 
         verify(exactly = 0) { mapTable.deleteBySongId(any()) }
         verify(exactly = 0) { mapTable.insertIgnore(any<SongArtistMap>()) }
+    }
+
+    // ---- diagnostics logging: per-pair detail before the delete (I/O matrix rows) ----
+
+    private class DatabaseCaptureTree(val captured: MutableList<String>) : Timber.Tree() {
+        override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+            if (tag == "Database") captured += message
+        }
+    }
+
+    @Test
+    fun reconcileIdsLogsOneLinePerDroppedPair() {
+        val captured = mutableListOf<String>()
+        val captureTree = DatabaseCaptureTree(captured)
+        Timber.plant(captureTree)
+        try {
+            every { mapTable.pairsBySongIdDirect("s1") } returns listOf(
+                SongArtistMap("s1", "UC_A"), SongArtistMap("s1", "UC_B")
+            )
+            every { artistTable.findByIdDirect("UC_A") } returns Artist(id = "UC_A", name = "A")
+            every { artistTable.findByIdDirect("UC_B") } returns Artist(id = "UC_B", name = "B")
+            val item = mediaItemWithAuthors(listOf("C", "D"), listOf("UC_C", "UC_D"))
+
+            Database.insertIgnore(item, autoFix = false)
+
+            assertEquals(2, captured.count { it.startsWith("reconcile dropped link:") })
+            assertTrue(
+                "expected per-pair detail with song title + artist names, got: $captured",
+                captured.any {
+                    it.startsWith("reconcile dropped link: song=s1") &&
+                        it.contains("\"Song\"") &&
+                        it.contains("artist=\"A\"")
+                } && captured.any {
+                    it.startsWith("reconcile dropped link: song=s1") &&
+                        it.contains("\"Song\"") &&
+                        it.contains("artist=\"B\"")
+                }
+            )
+            // per-pair detail comes before the existing summary, which stays untouched
+            assertTrue(
+                "per-pair lines must precede the summary, got: $captured",
+                captured.indexOfFirst { it.startsWith("insertIgnore RECONCILE ids") } >
+                    captured.indexOfLast { it.startsWith("reconcile dropped link:") }
+            )
+            assertTrue(captured.any { it.startsWith("insertIgnore RECONCILE ids song=s1 dropped=0") })
+            // targeted query only — no full-table scan
+            verify(exactly = 1) { mapTable.pairsBySongIdDirect("s1") }
+            verify(exactly = 0) { mapTable.allPairsDirect() }
+        } finally {
+            Timber.uproot(captureTree)
+        }
+    }
+
+    @Test
+    fun reconcileNamesOnlyLogsOneLinePerDroppedPair() {
+        val captured = mutableListOf<String>()
+        val captureTree = DatabaseCaptureTree(captured)
+        Timber.plant(captureTree)
+        try {
+            every { mapTable.pairsBySongIdDirect("s1") } returns listOf(
+                SongArtistMap("s1", "UC_A"), SongArtistMap("s1", "UC_GHOST")
+            )
+            every { artistTable.findByIdDirect("UC_A") } returns Artist(id = "UC_A", name = "A")
+            // UC_GHOST has no artist row (orphan link): must log as artist="null"
+            // (a relaxed mock returns a child mock by default, so pin null explicitly)
+            every { artistTable.findByIdDirect("UC_GHOST") } returns null
+            every { artistTable.findByNameDirect("C") } returns Artist(id = "UC_C", name = "C")
+            val item = mediaItemWithNamesOnly(listOf("C"))
+
+            Database.insertIgnore(item, autoFix = false)
+
+            assertEquals(2, captured.count { it.startsWith("reconcile dropped link:") })
+            assertTrue(captured.any { it.startsWith("reconcile dropped link: song=s1") && it.contains("artist=\"A\"") })
+            assertTrue(
+                "orphan artist row must log as artist=\"null\", got: $captured",
+                captured.any {
+                    it.startsWith("reconcile dropped link: song=s1") &&
+                        it.contains("artist=\"null\"")
+                }
+            )
+            assertTrue(captured.any { it.startsWith("insertIgnore RECONCILE names song=s1 dropped=0") })
+        } finally {
+            Timber.uproot(captureTree)
+        }
+    }
+
+    @Test
+    fun noStaleLinksMeansNoPerPairLines() {
+        val captured = mutableListOf<String>()
+        val captureTree = DatabaseCaptureTree(captured)
+        Timber.plant(captureTree)
+        try {
+            every { mapTable.pairsBySongIdDirect("s1") } returns emptyList()
+            val item = mediaItemWithAuthors(listOf("A", "B"), listOf("UC_A", "UC_B"))
+
+            Database.insertIgnore(item, autoFix = false)
+
+            assertTrue(captured.none { it.startsWith("reconcile dropped link:") })
+            assertTrue(captured.any { it.startsWith("insertIgnore RECONCILE ids song=s1 dropped=0") })
+        } finally {
+            Timber.uproot(captureTree)
+        }
     }
 }

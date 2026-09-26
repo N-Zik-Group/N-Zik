@@ -224,6 +224,7 @@ object Database {
             // reflect the latest playback context, not the union of every context
             // ever seen. A names-only/partial list keeps the legacy add-only path.
             if (ArtistMappingReconcile.isCompleteAuthorList(artistNames, songItem.authors)) {
+                logReconcileDrops(songArtistMapTable, artistTable, song.id, finalSong.title)
                 val dropped = songArtistMapTable.deleteBySongId(song.id)
                 val reconcileArtists = artistDataList.mapNotNull { it.second }
                 artistTable.upsert(reconcileArtists)
@@ -409,6 +410,7 @@ object Database {
             // id-bearing path reconciles — a names-only/local re-insert must never
             // wipe existing mappings.
             if (dbSong != null) {
+                logReconcileDrops(songArtistMapTable, artistTable, cleanSongId, mergedSong.title)
                 val dropped = songArtistMapTable.deleteBySongId(cleanSongId)
                 Timber.tag("Database").d(
                     "insertIgnore RECONCILE ids song=%s dropped=%d latestList=%s",
@@ -432,6 +434,7 @@ object Database {
             // context, so the same reconcile rule applies: stale rows from other
             // contexts must not survive it. Guarded like above: existing song only.
             if (dbSong != null) {
+                logReconcileDrops(songArtistMapTable, artistTable, cleanSongId, mergedSong.title)
                 val dropped = songArtistMapTable.deleteBySongId(cleanSongId)
                 Timber.tag("Database").d(
                     "insertIgnore RECONCILE names song=%s dropped=%d latestList=%s",
@@ -464,6 +467,34 @@ object Database {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Diagnostic helper for reconcile cleanup: right before a reconciliation
+     * drops a song's stale artist links, log one line per about-to-be-dropped
+     * pair (song id + title, artist name) so the drop can be read back from
+     * logcat. Pure logging — no behavior change. Runs only on the delete
+     * paths, never on the add-only one.
+     *
+     * @param mapTable source of the stale pairs (targeted by [songId])
+     * @param artistTable name lookup for each dropped pair
+     * @param songId song side of the dropped pairs
+     * @param songTitle title of the song for the log line
+     *
+     * A missing artist row (orphan link) is logged as `artist="null"`.
+     */
+    internal fun logReconcileDrops(
+        mapTable: SongArtistMapTable,
+        artistTable: ArtistTable,
+        songId: String,
+        songTitle: String,
+    ) {
+        for (pair in mapTable.pairsBySongIdDirect(songId)) {
+            Timber.tag("Database").d(
+                "reconcile dropped link: song=%s \"%s\" artist=\"%s\"",
+                songId, songTitle, artistTable.findByIdDirect(pair.artistId)?.name
+            )
         }
     }
 

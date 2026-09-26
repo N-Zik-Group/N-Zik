@@ -117,6 +117,15 @@ interface SongArtistMapTable {
     fun allPairsDirect(): List<SongArtistMap>
 
     /**
+     * @param songId the song side of the pair
+     *
+     * @return every (songId, artistId) pair for this song, used by reconcile
+     * logging that names the stale links right before they are deleted
+     */
+    @Query("SELECT songId, artistId FROM SongArtistMap WHERE songId = :songId")
+    fun pairsBySongIdDirect(songId: String): List<SongArtistMap>
+
+    /**
      * Delete a single mapping
      *
      * @param songId song side of the pair
