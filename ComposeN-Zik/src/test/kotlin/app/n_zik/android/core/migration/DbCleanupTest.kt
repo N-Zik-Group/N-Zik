@@ -11,6 +11,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
+import timber.log.Timber
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -124,5 +125,73 @@ class DbCleanupTest {
 
         assertEquals(0, removed)
         verify(exactly = 0) { mapTable.deletePairDirect(any(), any()) }
+    }
+
+    // ---- diagnostics logging (I/O matrix rows: sweep with removals / clean sweep) ----
+
+    private class DbCleanupCaptureTree(val captured: MutableList<String>) : Timber.Tree() {
+        override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+            if (tag == "DbCleanup") captured += message
+        }
+    }
+
+    @Test
+    fun removedStaleLinkLogsPerPairDetail() {
+        val captured = mutableListOf<String>()
+        val captureTree = DbCleanupCaptureTree(captured)
+        Timber.plant(captureTree)
+        try {
+            runBlocking {
+                every { mapTable.allPairsDirect() } returns listOf(
+                    SongArtistMap("s1", "UC_T"), SongArtistMap("s1", "UC_ET")
+                )
+                every { songTable.all() } returns flowOf(listOf(song("s1", "Tanchiky, siromaru")))
+                every { artistTable.findByIdDirect("UC_T") } returns Artist(id = "UC_T", name = "Tanchiky")
+                every { artistTable.findByIdDirect("UC_ET") } returns Artist(id = "UC_ET", name = "E.T")
+
+                val removed = DbCleanup.runClean(songTable, artistTable, mapTable)
+
+                assertEquals(1, removed)
+                // per-pair detail: song id + title, removed artist name, stored artistsText
+                assertTrue(
+                    "expected per-pair detail log, got: $captured",
+                    captured.any {
+                        it.startsWith("stale link removed: song=s1") &&
+                            it.contains("\"Song s1\"") &&
+                            it.contains("artist=\"E.T\"") &&
+                            it.contains("artistsText=\"Tanchiky, siromaru\"")
+                    }
+                )
+                // existing summary line still present
+                assertTrue(captured.any { it == "Artist link cleanup: removed 1 stale link(s)" })
+            }
+        } finally {
+            Timber.uproot(captureTree)
+        }
+    }
+
+    @Test
+    fun cleanDatabaseLogsSummaryOnlyWithoutPerPairLines() {
+        val captured = mutableListOf<String>()
+        val captureTree = DbCleanupCaptureTree(captured)
+        Timber.plant(captureTree)
+        try {
+            runBlocking {
+                every { mapTable.allPairsDirect() } returns listOf(
+                    SongArtistMap("s1", "UC_T"), SongArtistMap("s1", "UC_S")
+                )
+                every { songTable.all() } returns flowOf(listOf(song("s1", "Tanchiky, siromaru")))
+                every { artistTable.findByIdDirect("UC_T") } returns Artist(id = "UC_T", name = "Tanchiky")
+                every { artistTable.findByIdDirect("UC_S") } returns Artist(id = "UC_S", name = "siromaru")
+
+                val removed = DbCleanup.runClean(songTable, artistTable, mapTable)
+
+                assertEquals(0, removed)
+                assertTrue(captured.none { it.startsWith("stale link removed:") })
+                assertTrue(captured.any { it == "Artist link cleanup: removed 0 stale link(s)" })
+            }
+        } finally {
+            Timber.uproot(captureTree)
+        }
     }
 }

@@ -235,6 +235,13 @@ object Database {
                     song.id, dropped, artistNames.size
                 )
             } else {
+                // Only path that leaves stale links behind: an incomplete author list must
+                // never erase the mapping it cannot rewrite, so legacy add-only keeps the
+                // previous context's rows — the startup sweep used to catch them silently.
+                Timber.tag("Database").d(
+                    "upsert ADD-ONLY song=%s names=%d authors=%d added=%d (stale links may remain until the next reconcile)",
+                    song.id, artistNames.size, songItem.authors?.size ?: 0, artistsToMap.size
+                )
                 artistsToMap.forEach { mapIgnore(it, song) }
             }
 

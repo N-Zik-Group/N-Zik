@@ -96,7 +96,12 @@ object DbCleanup {
         var removed = 0
         for (pair in pairs) {
             val song = songs[pair.songId] ?: continue // no stored artist list: nothing to judge against
-            if (isSuspiciousArtistLink(artistName(pair.artistId), song.artistsText)) {
+            val name = artistName(pair.artistId)
+            if (isSuspiciousArtistLink(name, song.artistsText)) {
+                Timber.tag(TAG).d(
+                    "stale link removed: song=%s \"%s\" artist=\"%s\" artistsText=\"%s\"",
+                    pair.songId, song.title, name, song.artistsText
+                )
                 mapTable.deletePairDirect(pair.songId, pair.artistId)
                 removed++
             }
