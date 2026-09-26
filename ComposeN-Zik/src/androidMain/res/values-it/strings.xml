@@ -534,7 +534,6 @@
     <string name="info_translation">Traduzione</string>
     <string name="info_find_the_song_that_is_playing">Mostra il brano in riproduzione</string>
     <string name="info_smart_recommendation">Raccomandazioni intelligenti</string>
-    <string name="info_clean_cached_congs">Pulisce i brani nella cache</string>
     <string name="info_pin_unpin_playlist">Fissa/Sblocca playlist</string>
     <string name="info_lock_unlock_reorder_songs">Blocca/Sblocca riordina i brani</string>
     <string name="info_add_in_playlist">Aggiungi alla playlist</string>
@@ -795,8 +794,8 @@
     <string name="translate_to_other_language">Traduci in un\'altra lingua</string>
     <string name="action_bar_show_video_button">Mostra pulsante Video</string>
     <string name="update">Aggiornamento</string>
+    <string name="updated_songs_count">Updated %1$d songs</string>
     <string name="update_waveform">Update waveform</string>
-    <string name="update_song">Vuoi davvero riprovare questa canzone? Il tempo di riproduzione e i dati memorizzati nella cache verranno cancellati.\nQuesta azione è irreversibile.</string>
     <string name="player_pause_listen_history_info">Non salva gli eventi di riproduzione usati per statistiche, cronologia e suggerimenti nelle scelte rapide</string>
     <string name="sleep_timer_ended">Timer spegnimento terminato</string>
     <string name="account_login">Log in</string>
@@ -1086,9 +1085,10 @@
     <string name="failed_to_fetch_artist">Impossibile recuperare l\'artista</string>
     <string name="looking_up_album_from_the_internet">Cercando l\'album da internet</string>
     <string name="failed_to_fetch_album">Impossibile recuperare l\'album</string>
-    <string name="info_open_reset_dialog">Apri la finestra di ripristino</string>
-    <string name="title_reset_title">Reimposta titolo</string>
-    <string name="title_reset_authors">Reimposta autori</string>
+    <string name="info_open_update_dialog">Open update dialog</string>
+    <string name="update_title_from_ytm">Update title from YouTube Music</string>
+    <string name="update_authors_from_ytm">Update authors from YouTube Music</string>
+    <string name="update_thumbnail_from_ytm">Update thumbnail from YouTube Music</string>
     <string name="title_reset_total_play_time">Reimposta il tempo totale di riproduzione</string>
     <string name="title_name_your_export">Assegna un nome all\'esportazione</string>
     <string name="export_cached">Esportazione memorizzata nella cache</string>
@@ -1308,6 +1308,7 @@
     <string name="section_lyrics_actions">Actions</string>
     <string name="toast_preference_saved">Preferenze Salvate</string>
     <string name="db_artist_link_cleanup_toast">Removed %d incorrect artist link(s)</string>
+    <string name="same_name_artists_dedup_toast">Merged %d duplicate artist(s) with the right artist</string>
     <string name="txt_width">width</string>
     <string name="cd_blurred_background">sfocato_sfondo</string>
     <string name="cd_rename_dialog_text_box_icon">Rinomina icona della finestra di testo</string>
@@ -1357,7 +1358,6 @@
     <string name="lyrics_unsynced">Plain text</string>
     <string name="lyrics_karaoke">Karaoke (word-level)</string>
     <string name="no_lyrics">No lyrics</string>
-    <string name="clear_cache_count">Clear cache for %d songs?</string>
     <string name="no_items_found">Nessun elemento trovato</string>
     <string name="no_new_releases">Non ci sono nuove uscite per i tuoi artisti preferiti</string>
     <string name="not_selectable">Non selezionabile</string>
