@@ -1308,6 +1308,7 @@ Volume BAS : titre précédent</string>
     <string name="section_lyrics_translation">Traduction</string>
     <string name="section_lyrics_actions">Actions</string>
     <string name="toast_preference_saved">Préférence enregistrée</string>
+    <string name="db_artist_link_cleanup_toast">Removed %d incorrect artist link(s)</string>
     <string name="txt_width">width</string>
     <string name="cd_blurred_background">arrière-plan flou</string>
     <string name="cd_rename_dialog_text_box_icon">Renommer l\'icône de la boîte de texte</string>
