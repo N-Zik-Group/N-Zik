@@ -19,6 +19,7 @@ import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.searchPage
 import it.fast4x.innertube.requests.albumPage
 import it.fast4x.innertube.utils.from
+import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.models.Event
@@ -209,8 +210,17 @@ object Database {
             // of truth), the entry name for rows that don't exist yet (they
             // converge to the page name at the next background fetch). The split
             // join ("Bigflo, OLi") used to feed the in-app "two artists" view.
+            // A storage marker must never be copied into a display copy: a
+            // renamed row is stored as "modified:X" on the row only, so clean
+            // each existing row name before the join - otherwise every playback
+            // re-embeds the prefix mid-string in a natural (non-custom) copy,
+            // which retainIfModified below cannot cut (it only protects custom
+            // copies).
+            // A row name that cleans down to empty (a bare storage marker) is
+            // dropped instead of leaving an empty slot ("A, , B") in the join.
             val fetchedArtistsText = artistDataList
-                .map { entry -> entry.third?.name ?: entry.first }
+                .map { entry -> entry.third?.name?.let { cleanPrefix(it).trim() } ?: entry.first }
+                .filter { it.isNotBlank() }
                 .joinToString(", ")
                 .takeIf { it.isNotBlank() }
             val finalArtistsText = when {
@@ -539,10 +549,22 @@ object Database {
         // be a different spelling of the same row) is what breaks the
         // "map on play, drop on restart" loop. `modified:` values are never overwritten,
         // and an already-aligned value skips the write.
+        // Every resolved name is a STORAGE value (context extras raw from the prefetch,
+        // or the stored row name, which carries `modified:` when the row was pinned or
+        // renamed): clean each one before the join, exactly like fetchedArtistsText
+        // above. cleanPrefix only cuts at the head, so an uncleaned row name embedded
+        // here would survive mid-string in the natural copy and re-appear in the song
+        // list right after each playback (the "after the stream it shows modified:X"
+        // bug - 3rd write path of the leak).
         if (resolvedArtistNames.isNotEmpty()) {
-            val alignedArtistsText =
-                PropUtils.retainIfModified(mergedSong.artistsText, resolvedArtistNames.joinToString(", "))
-            if (alignedArtistsText != mergedSong.artistsText) {
+            val alignedJoin = resolvedArtistNames
+                .map { cleanPrefix(it).trim() }
+                .filter { it.isNotBlank() }
+                .joinToString(", ")
+            val alignedArtistsText = alignedJoin
+                .takeIf { it.isNotBlank() }
+                ?.let { PropUtils.retainIfModified(mergedSong.artistsText, it) }
+            if (alignedArtistsText != null && alignedArtistsText != mergedSong.artistsText) {
                 songTable.upsert(mergedSong.copy(artistsText = alignedArtistsText))
             }
         }
@@ -733,6 +755,28 @@ object Database {
         val db = this
         _internal.withTransaction {
             db.block()
+        }
+    }
+
+    /**
+     * Synchronous atomic transaction for the non-suspend write paths (dialog
+     * save bodies running inside [asyncTransaction], which retries on lock
+     * exceptions but does not group the writes atomically on its own): the
+     * row rename and every propagated copy commit or abort together.
+     *
+     * Uses the classic three-call transaction API because it is the only
+     * synchronous one Room offers: the suspend `RoomDatabase.withTransaction`
+     * cannot be called from the non-suspend dialog paths, and the block must
+     * stay inside [asyncTransaction] to keep its lock retries.
+     */
+    @Suppress("DEPRECATION")
+    fun syncTransaction( block: Database.() -> Unit ) {
+        _internal.beginTransaction()
+        try {
+            block()
+            _internal.setTransactionSuccessful()
+        } finally {
+            _internal.endTransaction()
         }
     }
 

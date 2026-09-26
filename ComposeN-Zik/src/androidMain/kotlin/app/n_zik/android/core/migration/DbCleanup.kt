@@ -40,7 +40,8 @@ import timber.log.Timber
  * database yields zero deletions, so re-running it on every launch is safe
  * and also means a failed run heals itself on the next launch.
  *
- * Wired in [MainApplication] onCreate, right after [MonthlyPlaylistCleanup.run].
+ * Wired in [MainApplication] onCreate as the FIRST pass of the sequential
+ * artist-data boot chain (`DbCleanup` -> same-name dedup -> name convergence).
  */
 object DbCleanup {
     private const val TAG = "DbCleanup"
@@ -51,24 +52,31 @@ object DbCleanup {
      */
     fun run(context: Context) {
         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-            runCatching {
-                val removed = runClean(Database.songTable, Database.artistTable, Database.songArtistMapTable)
-                if (removed > 0) {
-                    // The mapping feeds the Rewind deck: recompute its playlists from the healed data
-                    RewindPostImportRegenerationWorker.schedule(context)
-                    withContext(NzikDispatchers.UI) {
-                        // Format the message here: `Toaster.s(Int, Int)` would bind an Int
-                        // count to the `duration` parameter of the no-vararg overload,
-                        // leaving the `%d` format specifier unfilled.
-                        runCatching {
-                            Toaster.s(context.getString(R.string.db_artist_link_cleanup_toast, removed))
-                        }.onFailure { e ->
-                            Timber.tag(TAG).w(e, "Cleanup succeeded but toast failed")
-                        }
-                    }
+            runCatching { runPass(context) }
+                .onFailure { e ->
+                    Timber.tag(TAG).e(e, "Artist link cleanup failed (will retry on next launch)")
                 }
-            }.onFailure { e ->
-                Timber.tag(TAG).e(e, "Artist link cleanup failed (will retry on next launch)")
+        }
+    }
+
+    /**
+     * The cleanup pass, called from the sequential boot chain in [MainApplication]
+     * (`DbCleanup` -> same-name dedup -> name convergence) or from [run].
+     */
+    internal suspend fun runPass(context: Context) {
+        val removed = runClean(Database.songTable, Database.artistTable, Database.songArtistMapTable)
+        if (removed > 0) {
+            // The mapping feeds the Rewind deck: recompute its playlists from the healed data
+            RewindPostImportRegenerationWorker.schedule(context)
+            withContext(NzikDispatchers.UI) {
+                // Format the message here: `Toaster.s(Int, Int)` would bind an Int
+                // count to the `duration` parameter of the no-vararg overload,
+                // leaving the `%d` format specifier unfilled.
+                runCatching {
+                    Toaster.s(context.getString(R.string.db_artist_link_cleanup_toast, removed))
+                }.onFailure { e ->
+                    Timber.tag(TAG).w(e, "Cleanup succeeded but toast failed")
+                }
             }
         }
     }

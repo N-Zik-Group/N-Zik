@@ -72,6 +72,23 @@ interface SongAlbumMapTable {
     fun allSongsOfDirect( albumId: String, limit: Int = Int.MAX_VALUE ): List<Song>
 
     /**
+     * @param artistId of artist to look for
+     *
+     * @return every [Album] that contains at least one song mapped to the
+     * artist — the album-level copies that a rename of the artist row must
+     * reach (synchronous, usable inside a transaction)
+     */
+    @Query("""
+        SELECT DISTINCT A.*
+        FROM Album A
+        JOIN SongAlbumMap SAM ON SAM.albumId = A.id
+        JOIN Song S ON S.id = SAM.songId
+        JOIN SongArtistMap SA ON SA.songId = S.id
+        WHERE SA.artistId = :artistId
+    """)
+    fun albumsOfArtistDirect( artistId: String ): List<Album>
+
+    /**
      * All songs of the album ranked by play time (desc), i.e. the album's
      * tracklist reordered by popularity instead of disc position.
      */

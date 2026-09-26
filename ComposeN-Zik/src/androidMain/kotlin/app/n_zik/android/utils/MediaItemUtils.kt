@@ -42,14 +42,59 @@ fun MediaItem.titleWithFallback(): String {
 @Composable
 fun MediaItem.artistIdsWithFallback(): List<Info> {
     val ids = mediaMetadata.extras?.getStringArrayList("artistIds")
-    if (!ids.isNullOrEmpty()) {
+    val infos = if (!ids.isNullOrEmpty()) {
         val names = mediaMetadata.extras?.getStringArrayList("artistNames")
-        return ids.mapIndexed { i, id -> Info(id, names?.getOrNull(i)) }
+        ids.mapIndexed { i, id -> Info(id, names?.getOrNull(i)) }
+    } else {
+        val dbArtists by remember(mediaId) {
+            Database.artistTable.findBySongId(mediaId)
+        }.collectAsStateWithLifecycle(initialValue = emptyList(), context = NzikDispatchers.DATA)
+        dbArtists.map { Info(it.id, it.name) }
     }
-    val dbArtists by remember(mediaId) {
-        Database.artistTable.findBySongId(mediaId)
-    }.collectAsStateWithLifecycle(initialValue = emptyList(), context = NzikDispatchers.DATA)
-    return dbArtists.map { Info(it.id, it.name) }
+    // The links (and the extras built from them) carry no display order: SQLite
+    // returns them in an arbitrary order, so the profile-photo pager used to
+    // disagree with the artist text shown in the player. Follow the displayed
+    // text order instead (see alignInfosToDisplayOrder for the doubt rule).
+    return alignInfosToDisplayOrder(infos, artistTextWithFallback())
+}
+
+/**
+ * Reorders [infos] so they follow the artist order of [displayText] — the artist
+ * line the player actually displays — instead of the arbitrary order the link
+ * query (or the extras built from it) happens to return.
+ *
+ * Rules (doubt → nothing moves):
+ * - [displayText] is tokenized with the [cleanPrefix]-then-split-on-"," convention
+ *   (same as the rest of the name-convergence code), each token trimmed;
+ * - every token picks the FIRST still-unmatched info whose cleaned name equals it
+ *   (whole token, ignore case) — names are matched, ids are never guessed;
+ * - infos no token claimed are appended at the end, keeping their relative order;
+ * - when not a single token matches (unknown artist text, all names null) the
+ *   original order is returned untouched.
+ *
+ * Pure and non-suspend: unit-testable, no DB access.
+ *
+ * @param infos the artists of the current media item, in link/extra order
+ * @param displayText the artist line displayed in the player (already cleaned)
+ * @return the infos ordered like the displayed artist line
+ */
+internal fun alignInfosToDisplayOrder(infos: List<Info>, displayText: String?): List<Info> {
+    if (infos.size < 2 || displayText.isNullOrBlank()) return infos
+    val tokens = cleanPrefix(displayText).split(",")
+        .map { cleanPrefix(it.trim()).trim() }
+        .filter { it.isNotBlank() }
+    if (tokens.isEmpty()) return infos
+    val remaining = infos.toMutableList()
+    val ordered = ArrayList<Info>(infos.size)
+    for (token in tokens) {
+        val index = remaining.indexOfFirst { info ->
+            info.name?.let { cleanPrefix(it).trim() }?.equals(token, ignoreCase = true) == true
+        }
+        if (index >= 0) ordered.add(remaining.removeAt(index))
+    }
+    if (ordered.isEmpty()) return infos // nothing matched: doubt → nothing moves
+    ordered.addAll(remaining)
+    return ordered
 }
 
 @Composable

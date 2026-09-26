@@ -46,6 +46,7 @@ import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.migration.DbCleanup
 import app.n_zik.android.core.migration.MonthlyPlaylistCleanup
+import app.n_zik.android.core.migration.NameConvergence
 import app.n_zik.android.core.migration.RemovedSettingsMigration
 import app.n_zik.android.core.migration.SameNameArtistDedup
 import app.n_zik.android.core.network.client.NetworkClientFactory
@@ -206,17 +207,22 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // on-the-fly generation mechanism (flag-guarded, idempotent, background)
         runCatching { MonthlyPlaylistCleanup.run(this) }
             .onFailure { Timber.tag("MainApplication").w(it, "Monthly playlists cleanup failed") }
-        // Cleanup of polluted artist↔song links accumulated by the old add-only
-        // mapping (idempotent, background) — re-runs on every launch, so it also
-        // heals links that reappear through database imports
-        runCatching { DbCleanup.run(this) }
-            .onFailure { Timber.tag("MainApplication").w(it, "Artist link cleanup failed") }
-        // Dedup of same-name artist rows accumulated by YTM's per-context
-        // attribution (rate-limited network pass, no per-launch cap, background)
-        // — re-runs on every launch, so it also heals duplicates that reappear
-        // through YTM/YT syncs
-        runCatching { SameNameArtistDedup.run(this) }
-            .onFailure { Timber.tag("MainApplication").w(it, "Same-name artist dedup failed") }
+        // Artist-data boot chain: strictly sequential in one coroutine, one pass
+        // after the other (each pass sees the committed state of the previous
+        // one): cleanup of polluted artist↔song links (idempotent) -> dedup of
+        // same-name artist rows (rate-limited network pass, no per-launch cap) ->
+        // convergence of the denormalized artist-name copies from the links
+        // (offline, idempotent). All re-run on every launch, so they also heal
+        // data that reappears through database imports or YTM/YT syncs; a failing
+        // pass does not block the next (runCatching per pass, logged as warning).
+        NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+            runCatching { DbCleanup.runPass(this@MainApplication) }
+                .onFailure { Timber.tag("MainApplication").e(it, "Artist link cleanup failed (retry on next launch)") }
+            runCatching { SameNameArtistDedup.runPass(this@MainApplication) }
+                .onFailure { Timber.tag("MainApplication").e(it, "Same-name artist dedup failed (retry on next launch)") }
+            runCatching { NameConvergence.runPass() }
+                .onFailure { Timber.tag("MainApplication").e(it, "Name convergence failed (retry on next launch)") }
+        }
         InnerTubeXPlayer.initialize(this)
 
         // Setup session BEFORE prewarm — ensures session is stable when IO thread starts

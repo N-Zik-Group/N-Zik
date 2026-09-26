@@ -75,7 +75,8 @@ import timber.log.Timber
  * database converges in a single launch; the runs are idempotent, so a launch
  * with nothing to do is a cheap no-op.
  *
- * Wired in [MainApplication] onCreate, right after [DbCleanup.run].
+ * Wired in [MainApplication] onCreate as the SECOND pass of the sequential
+ * artist-data boot chain (`DbCleanup` -> same-name dedup -> name convergence).
  */
 object SameNameArtistDedup {
     private const val TAG = "SameNameArtistDedup"
@@ -89,30 +90,37 @@ object SameNameArtistDedup {
      */
     fun run(context: Context) {
         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-            runCatching {
-                val result = runDedup(
-                    artistTable = Database.artistTable,
-                    mapTable = Database.songArtistMapTable,
-                    resolver = InnertubeArtistSearchResolver(),
-                    skipStore = PrefsSkipStore(context),
-                    online = NetworkQualityHelper.isNetworkAvailable(context),
-                )
-                Timber.tag(TAG).i(
-                    "Same-name artist dedup: groups=%d resolved=%d merged=%d flagged=%d skipped=%d deferred=%d localKept=%d",
-                    result.groups, result.resolved, result.merged, result.flagged,
-                    result.skipped, result.deferred, result.localKept,
-                )
-                if (result.merged > 0) {
-                    withContext(NzikDispatchers.UI) {
-                        runCatching {
-                            Toaster.s(context.getString(R.string.same_name_artists_dedup_toast, result.merged))
-                        }.onFailure { e ->
-                            Timber.tag(TAG).w(e, "Dedup succeeded but toast failed")
-                        }
-                    }
+            runCatching { runPass(context) }
+                .onFailure { e ->
+                    Timber.tag(TAG).e(e, "Same-name artist dedup failed (will retry on next launch)")
                 }
-            }.onFailure { e ->
-                Timber.tag(TAG).e(e, "Same-name artist dedup failed (will retry on next launch)")
+        }
+    }
+
+    /**
+     * The dedup pass, called from the sequential boot chain in [MainApplication]
+     * (`DbCleanup` -> same-name dedup -> name convergence) or from [run].
+     */
+    internal suspend fun runPass(context: Context) {
+        val result = runDedup(
+            artistTable = Database.artistTable,
+            mapTable = Database.songArtistMapTable,
+            resolver = InnertubeArtistSearchResolver(),
+            skipStore = PrefsSkipStore(context),
+            online = NetworkQualityHelper.isNetworkAvailable(context),
+        )
+        Timber.tag(TAG).i(
+            "Same-name artist dedup: groups=%d resolved=%d merged=%d flagged=%d skipped=%d deferred=%d localKept=%d",
+            result.groups, result.resolved, result.merged, result.flagged,
+            result.skipped, result.deferred, result.localKept,
+        )
+        if (result.merged > 0) {
+            withContext(NzikDispatchers.UI) {
+                runCatching {
+                    Toaster.s(context.getString(R.string.same_name_artists_dedup_toast, result.merged))
+                }.onFailure { e ->
+                    Timber.tag(TAG).w(e, "Dedup succeeded but toast failed")
+                }
             }
         }
     }

@@ -271,6 +271,63 @@ class DatabaseInsertIgnoreReconcileTest {
         verify(exactly = 1) { mapTable.insertIgnore(any<SongArtistMap>()) }
     }
 
+    // ---- leak of the `modified:` storage marker into the aligned display copy ----
+    //
+    // The resolved names are STORAGE values (raw context extras, or the stored row
+    // name which carries `modified:` when the row was pinned/renamed): they must be
+    // cleaned before the join, otherwise the marker is embedded MID-STRING in the
+    // natural copy (cleanPrefix only cuts at the head) and re-appears in the song
+    // list after each playback — the "after the stream it shows modified:X" bug.
+
+    @Test
+    fun alignmentCleansTheModifiedPrefixOfResolvedRowNames() {
+        val upserted = mutableListOf<Song>()
+        every { songTable.upsert(any<Song>()) } answers { upserted += firstArg<Song>() }
+        every { songTable.findByIdDirect("s1") } returns existingSongWithArtists("Yunosuke")
+        // the extras carry the pinned row names verbatim (raw prefetch of the row names)
+        val item = mediaItemWithAuthors(
+            listOf("Yunosuke", "modified:Hatsune Miku"),
+            listOf("UC_YUNOSUKE", "UC_MIKU")
+        )
+
+        Database.insertIgnore(item, autoFix = false)
+
+        assertEquals("Yunosuke, Hatsune Miku", upserted.last().artistsText)
+    }
+
+    @Test
+    fun alignmentCleansTheModifiedPrefixReadBackFromTheRow() {
+        val upserted = mutableListOf<Song>()
+        every { songTable.upsert(any<Song>()) } answers { upserted += firstArg<Song>() }
+        every { songTable.findByIdDirect("s1") } returns existingSongWithArtists("Yunosuke")
+        every { artistTable.findByNameDirect("Hatsune Miku") } returns null
+        // the link resolves to an existing row stored under its pinned name
+        every { artistTable.findByIdDirect("UC_MIKU") } returns Artist(id = "UC_MIKU", name = "modified:Hatsune Miku")
+        val item = mediaItemWithAuthors(
+            listOf("Hatsune Miku"),
+            listOf("UC_MIKU")
+        )
+
+        Database.insertIgnore(item, autoFix = false)
+
+        assertEquals("Hatsune Miku", upserted.last().artistsText)
+    }
+
+    @Test
+    fun alignmentKeepsCustomModifiedCopyUntouchedByTheCleaning() {
+        val upserted = mutableListOf<Song>()
+        every { songTable.upsert(any<Song>()) } answers { upserted += firstArg<Song>() }
+        // a custom copy is never overwritten: cleaning the resolved names must not
+        // change that rule (only one write: the baseline upsert)
+        every { songTable.findByIdDirect("s1") } returns existingSongWithArtists("modified: Custom")
+        val item = mediaItemWithAuthors(listOf("modified:Hatsune Miku"), listOf("UC_MIKU"))
+
+        Database.insertIgnore(item, autoFix = false)
+
+        assertEquals(1, upserted.size)
+        assertEquals("modified: Custom", upserted.last().artistsText)
+    }
+
     // ---- diagnostics logging: per-pair detail before the delete (I/O matrix rows) ----
 
     private class DatabaseCaptureTree(val captured: MutableList<String>) : Timber.Tree() {
