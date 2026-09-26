@@ -85,7 +85,7 @@ If `./gradlew` fails or is corrupted:
 ## KMP Compilation Issues
 
 1. Check `commonMain` for Android-specific imports
-2. Verify `expect/actual` declarations match
+2. If `expect/actual` declarations are used, verify they match across source sets (none exist in this module currently)
 3. Check source set configuration
 4. If unresolved → HALT, report with full compilation output
 

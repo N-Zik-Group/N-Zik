@@ -68,7 +68,7 @@
 | Claude Code          | `{project-root}/.claude/skills/{skill-name}/SKILL.md` | Direct read                     |
 | Cursor               | `{project-root}/.agents/skills/{skill-name}/SKILL.md` | Direct read                     |
 | Codex                | `{project-root}/.agents/skills/{skill-name}/SKILL.md` | Direct read                     |
-| Other tools (~40 total) | See `rules/BMAD-TOOLS.md`                          | See `rules/BMAD-TOOLS.md`       |
+| Other tools (42 total) | See `rules/BMAD-TOOLS.md`                          | See `rules/BMAD-TOOLS.md`       |
 
 **When to use which skill:**
 

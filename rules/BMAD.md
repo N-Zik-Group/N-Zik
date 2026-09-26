@@ -26,6 +26,8 @@
 
 **`_bmad/` contains:** config, scripts, modules, rendered outputs — NOT skills.
 
+> **`_bmad-output/`** (workspace root, sibling of `_bmad/` — NOT part of the installation) is BMAD's output directory: planning/implementation/test artifacts, `problem-solution-*.md` reports, and `DONTREAD/` (archive of older outputs — respect it, do not delete or reorganize). It is separate from the protected `_bmad/` installation.
+
 ---
 
 ## Installation Structure
@@ -72,6 +74,8 @@ _bmad/
 uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key agent
 uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key workflow
 ```
+
+(`--project-root {project-root}` is an optional accepted flag — the CIS skills pass it in their activation sequence.)
 
 > **Path tip:** If running from `N-Zik/`, `{project-root}` resolves to the parent directory. Use `..` or resolve the absolute path to the workspace root (the directory containing `_bmad/`) before running scripts.
 

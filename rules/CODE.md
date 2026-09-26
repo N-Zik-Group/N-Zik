@@ -97,10 +97,10 @@ New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app
 
 | Component type                 | Location                                           |
 | ------------------------------ | -------------------------------------------------- |
-| Generic reusable dialogs       | `components/dialog/`                               |
+| Generic reusable dialogs       | `components/dialog/common/`                        |
 | Domain-specific dialogs        | `components/dialog/{domain}/` (e.g. `dialog/song/`, `dialog/album/`) |
 | Domain menus                   | `components/menu.{domain}/`                        |
-| Page-level screens             | `components/ui/screens/{screen}/` (exceptions: `components/onboarding/`, `updater/ui/UpdateScreen`) |
+| Page-level screens             | `components/ui/screens/{screen}/` (exceptions: `components/onboarding/`, `updater/ui/UpdateScreen`, domain screen packages e.g. `components/musicbrainz/insights/`) |
 | ViewModels                     | co-located with their screen (`components/ui/screens/{screen}/`, or the domain screen package, e.g. `components/musicbrainz/insights/`) |
 | Repositories                   | collocated with their domain package (one repository per domain, e.g. `ShazamRepository` in `recognition/`) |
 | Player UI + lyrics             | `components/player/` + `components/player/lyrics/` |
@@ -308,6 +308,7 @@ NEVER edit schema without explicit instruction. Never add, remove, or rename col
 
 ## Compose UI Testing
 
+- Compose `createComposeRule()` tests run under the **JUnit 4 vintage engine** (Robolectric) — write them JUnit 4 even though the module uses the JUnit Platform/JUnit 5 everywhere else
 - Use `createComposeRule()` for Compose tests
 - Test state changes with `onNodeWithTag` / `onNodeWithText`
 - Use `SemanticsMatcher` for accessibility checks

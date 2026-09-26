@@ -46,16 +46,15 @@
 - [ ] **Commit Format**: Commits strictly follow the `type(scope): description` convention in English, NO period at the end.
 - [ ] **Changelogs**: `assets/notes/Done.txt` updated (format: `type(scope): message (issue)`).
 - [ ] **Release Notes**: `fastlane/.../changelogs/{version}.txt` and `Updater/changelogs/{version}.txt` updated.
-- [ ] **Pre-commit**: Any CI/pre-commit hooks passed successfully before pushing.
+- [ ] **Local Build**: Build verified locally before pushing (no pre-commit hooks are configured in this repo — see `BUILD.md`).
 
 ### 🏗️ 2. Architecture & File Placement (`CODE.md` & `AGENTS.md`)
 - [ ] **Location**: New code is strictly in `app.n_zik.android.*` (or `ComposeN-Zik/src/test/`).
 - [ ] **Legacy Rules**: NO files created/edited under `app.it.fast4x.rimusic.*` or `app.kreate.android.*`.
 - [ ] **String Resources**: ONLY `values/strings.xml` was edited (NEVER `values-*/strings.xml` — those are Crowdin-managed, see below).
-- [ ] **ViewModels/Repositories**: ViewModels co-located with their screen; Repositories in `core/data/`.
-- [ ] **DI & Navigation**: DI modules in `core/di/`; new routes use sealed classes in `core/navigation/`.
-- [ ] **KMP Modularity**: No Android-specific imports in `commonMain`. `expect/actual` used correctly.
-- [ ] **Navigation**: Sealed classes are used for routes.
+- [ ] **ViewModels/Repositories**: ViewModels co-located with their screen; Repositories collocated with their domain package (no central `core/data/` exists).
+- [ ] **DI & Navigation**: Plain constructor injection (NO DI framework in the app module); routing stays on the legacy `NavRoutes` enum + string route helpers (no sealed route class — see `CODE.md` Navigation).
+- [ ] **KMP Modularity**: No Android-specific imports in `commonMain`.
 
 ### 🌍 2b. Translations (`CODE.md`)
 - [ ] **Source of Truth**: New/changed strings added ONLY to `values/strings.xml`, never to a `values-*/strings.xml` locale file.
@@ -64,9 +63,9 @@
 
 ### 💻 3. Kotlin & Core Patterns (`CODE.md`)
 - [ ] **Coroutines**: Used `viewModelScope` / `lifecycleScope` (NO `GlobalScope` or `runBlocking`).
-- [ ] **Dispatchers**: Used appropriate dispatchers (`IO` for network/disk, `Default` for CPU, `Main` for UI).
+- [ ] **Dispatchers**: Used `NzikDispatchers` named dispatchers only (`UI`/`PLAYBACK`/`VISUALIZER`/`MEDIA`/`DATA` + Room executors) — no new raw `Dispatchers.*`; fire-and-forget scopes built with `NzikDispatchers.fireAndForget()`.
 - [ ] **State Updates**: Used atomic updates (`_state.update { ... }`), NOT `_state.value = ...`.
-- [ ] **StateFlow**: Prefer `StateFlow` over `LiveData`, exposing a single sealed `UiState` class.
+- [ ] **StateFlow**: Prefer `StateFlow` over `LiveData`, exposing a single `data class *UiState` per feature.
 - [ ] **Null-Safety**: NO `!!` operators used (or a clear comment justifies it). Prefer `requireNotNull()`/`checkNotNull()`.
 - [ ] **Naming**: PascalCase for classes, camelCase for functions/vars, UPPER_SNAKE_CASE for constants.
 - [ ] **TODOs**: Marked specifically as `// TODO(author): description`.
@@ -83,13 +82,13 @@
 ### 📝 5. Code Quality & Error Handling (`CODE.md`)
 - [ ] **Timber Only**: Used `Timber` with tags (NO `println`, `Log.d`, `System.out`, or `printStackTrace()`).
 - [ ] **Error Catching**: Used `runCatching { ... }` for risky operations. Exceptions are NOT swallowed silently.
-- [ ] **Network**: Handled `UnknownHostException` / `SocketTimeoutException` with exponential backoff if applicable.
+- [ ] **Network**: Handled `UnknownHostException` (network down) where network work happens.
 - [ ] **Documentation**: KDoc is used for public APIs. Internal comments explain *why*, not *what*.
-- [ ] **Clean Code**: No dead code, no commented-out code blocks, and no unused imports (ktlint/detekt passed).
+- [ ] **Clean Code**: No dead code, no commented-out code blocks, and no unused imports.
 
 ### 🗄️ 6. Database & Data (`CODE.md` & `AGENTS.md`)
 - [ ] **Schema Integrity**: Database schema was NOT edited (unless explicitly authorized).
-- [ ] **Room Patterns**: Tables use plural names (`songs`), DAOs have `Dao` suffix (`SongDao`).
+- [ ] **Room Patterns**: Tables use singular names (`Song`), DAOs use the `Table` suffix (`SongTable`); new DAOs carry `@RewriteQueriesToDropUnusedColumns`.
 - [ ] **Room Annotations**: DAO methods are `suspend` (except Flows) with `@Insert(onConflict=IGNORE)` or `@Upsert`.
 - [ ] **Migration Safety**: If a migration was made, it was tested on realistic data volumes.
 
@@ -103,7 +102,7 @@
 
 ### 🧪 8. Build & Testing (`BUILD.md`)
 - [ ] **Build Success**: Verified that `./gradlew :ComposeN-Zik:assembleDebug` builds successfully.
-- [ ] **Unit Tests**: Added at least one test (JUnit 5 + MockK or `createComposeRule()`) for new features/bug fixes.
+- [ ] **Unit Tests**: Added at least one test (JUnit 5/Jupiter, JUnit 4 vintage for `createComposeRule()` Compose tests + MockK) for new features/bug fixes.
 - [ ] **Tests Pass**: Ran `./gradlew :ComposeN-Zik:test` and all tests pass locally.
 
 ### 🗒️ 9. Additional notes
