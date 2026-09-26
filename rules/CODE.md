@@ -4,7 +4,7 @@
 
 ## Naming Conventions
 
-- **Classes/PascalCase**: `MusicDatabase`, `PlayerService`, `LyricsScreen`
+- **Classes/PascalCase**: `Database`/`DatabaseInitializer`, `PlayerServiceModern`, `LyricsScreen`
 - **Functions/camelCase**: `getSongById`, `updatePlaylist`, `handlePlaybackError`
 - **Constants/UPPER_SNAKE_CASE**: `LOCAL_KEY_PREFIX`, `MAX_RETRY_COUNT`
 - **Variables/camelCase**: `songList`, `isPlaying`, `currentPosition`
@@ -64,10 +64,10 @@ LazyColumn {
 Rules:
 
 - NEVER use `GlobalScope` — use `viewModelScope`, `lifecycleScope`, or structured scopes
-- NEVER use `runBlocking` in production code (use suspend functions). A few pre-existing production usages carry a justification comment (e.g. ExoPlayer sync APIs) — any NEW one must carry an equivalent comment. In JVM unit tests the established convention is `runBlocking` (100+ existing tests) — match it; `runTest` is not used in this codebase
+- NEVER use `runBlocking` in production code (use suspend functions). A few pre-existing production usages carry a justification comment (e.g. ExoPlayer sync APIs) — any NEW one must carry an equivalent comment. In JVM unit tests both `runBlocking` (dominant, 100+ usages) and `runTest` (~23 files) are used — mirror the neighboring tests
 - NEVER use `collectAsState()` — use `collectAsStateWithLifecycle()`
 - NEVER do a read-modify-write (`_state.value = _state.value.copy(...)`) — use `_state.update { it.copy(...) }`. Direct assignment (`_state.value = …`) is allowed only to set the initial state
-- Use `StateFlow` over `LiveData` — expose a single `data class *UiState` per feature (sealed state class only when states are mutually exclusive, e.g. `FindUiState`)
+- Use `StateFlow` over `LiveData` — expose a single `data class *UiState` per feature (sealed state class/interface only when states are mutually exclusive, e.g. `FindUiState`)
 - Data params to children: annotate with `@Stable` or `@Immutable`
 - No IO/DB/network in composition body
 - LazyColumn/LazyRow must have `key` + `contentType`
@@ -111,7 +111,7 @@ New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app
 | Network layer                  | `core/network/`                                    |
 | Services (player, download)    | `playback/services/`, `download/services/`         |
 | Dependency injection           | plain constructor injection (no DI framework in the app module) |
-| Navigation (sealed route defs) | `core/navigation/`                                 |
+| Navigation (interceptors only — routes are the legacy `NavRoutes` enum + strings; see **Navigation** below) | `core/navigation/` |
 | Utilities                      | `utils/`                                           |
 
 ## Imports
@@ -276,7 +276,7 @@ NEVER edit schema without explicit instruction. Never add, remove, or rename col
 - Use `@Query` with `Flow<T>` for reactive queries
 - Use `@Transaction` for multi-step operations
 - All DAO methods `suspend` (except Flow-returning queries)
-- Migration testing required before reporting — schema JSON exports live in `ComposeN-Zik/src/test/resources/schemas/app.n_zik.android.core.database.DatabaseInitializer/` (used by the `From*To*MigrationTest` suite)
+- Migration testing required before reporting — frozen schema JSON fixtures live in `ComposeN-Zik/src/test/resources/schemas/app.n_zik.android.core.database.DatabaseInitializer/` (40-42.json, used by the `From*To*MigrationTest` suite); the LIVE Room export directory is `ComposeN-Zik/schemas/` (`schemaDirectory`) — new version JSONs land there after a DB change
 
 ### Migration Safety
 

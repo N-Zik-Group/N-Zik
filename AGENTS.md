@@ -98,7 +98,7 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 ├── gradle/libs.versions.toml  Version catalog
 ├── assets/notes/              Done.txt + Changelog_Template.txt + TODO.txt (repo-root working files — NOT an Android assets source set)
 ├── fastlane/ + Updater/       changelogs by versionCode (released)
-└── (docs/ lives at the WORKSPACE ROOT, one level above N-Zik/ — Reference, READ-ONLY)
+└── (WORKSPACE ROOT, one level above N-Zik/: `docs/` reference projects, Reference READ-ONLY · `N-Zik-Website/` separate project — NOT part of this repo · `db/` + `*.sqlite` DB/log artifacts referenced by Done.txt)
 ```
 
 | What         | Where                                      |
