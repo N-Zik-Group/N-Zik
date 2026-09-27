@@ -93,7 +93,9 @@ val Context.encryptedPreferences: SharedPreferences
 fun Context.getEncryptedSharedPreferencesResult(): Result<SharedPreferences> = runCatching {
         EncryptedSharedPreferences.create(
             applicationContext,
-            "secure_preferences",
+            getActiveProfile(applicationContext).let { profile ->
+                "secure_preferences${if (profile != "default") "_$profile" else ""}"
+            },
             MasterKey.Builder(applicationContext, MasterKey.DEFAULT_MASTER_KEY_ALIAS)
                 .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
                 .build(),
