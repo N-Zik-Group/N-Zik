@@ -13,7 +13,6 @@ import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
 import app.it.fast4x.rimusic.utils.discordUsernameKey
 import app.it.fast4x.rimusic.utils.enableYouTubeLoginKey
 import app.it.fast4x.rimusic.utils.enableYouTubeSyncKey
-import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.isDiscordBrowsingEnabledKey
 import app.it.fast4x.rimusic.utils.isDiscordPresenceEnabledKey
 import app.it.fast4x.rimusic.utils.proxyPasswordEncryptedKey
@@ -25,7 +24,6 @@ import app.it.fast4x.rimusic.utils.ytAccountThumbnailKey
 import app.it.fast4x.rimusic.utils.ytCookieKey
 import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
 import app.it.fast4x.rimusic.utils.ytVisitorDataKey
-import app.n_zik.android.appContext
 import app.n_zik.android.extensions.discord.discordAdvancedSettingKeys
 import app.n_zik.android.extensions.lastfm.isLastfmNowPlayingEnabledKey
 import app.n_zik.android.extensions.lastfm.isLastfmScrobbleEnabledKey
@@ -58,22 +56,7 @@ import java.io.OutputStream
 object RescueFiles {
 
     private const val TAG = "RescueFiles"
-
-
-    @Volatile
-    private var rescueProfile: String? = null
-
-    private val profileSuffix: String
-        get() {
-            val profile = checkNotNull(rescueProfile) {
-                "RescueFiles.initialize(context) must be called first"
-            }
-
-            return if (profile != "default") "_$profile" else ""
-        }
-    private val DB_FILE_NAME: String
-        get() = "data$profileSuffix.db"
-
+    private const val DB_FILE_NAME = "data.db"
     private const val RESCUE_BACKUPS_DIR = "rescue_backups"
     private const val CRASH_LOG_FILE = "N-Zik_crash_log.txt"
     private const val DEBUG_LOG_FILE = "N-Zik_log.txt"
@@ -85,15 +68,10 @@ object RescueFiles {
     private const val DOWNLOAD_CACHE_DIR = "exo_downloads" // PROTECTED — never delete
     private const val DOWNLOAD_DB_FILE = "exoplayer_internal.db" // PROTECTED — never delete
 
-    private val PREFS_NAME: String
-        get() = "preferences$profileSuffix"
-
-    private val ENCRYPTED_PREFS_NAME: String
-        get() = "secure_preferences$profileSuffix"
-    private val SHARED_PREFS_DIR: String
-        get() = "shared_prefs$profileSuffix"
-    private val SETTINGS_FILE_NAMES: List<String>
-        get() = listOf("$PREFS_NAME.xml", "$ENCRYPTED_PREFS_NAME.xml")
+    private const val PREFS_NAME = "preferences"
+    private const val ENCRYPTED_PREFS_NAME = "secure_preferences"
+    private const val SHARED_PREFS_DIR = "shared_prefs"
+    private val SETTINGS_FILE_NAMES = listOf("$PREFS_NAME.xml", "$ENCRYPTED_PREFS_NAME.xml")
 
     /** Suffixes of the files that make up one SQLite database, main file first. */
     private val DB_FILE_SUFFIXES = listOf("", "-wal", "-shm", "-journal")
@@ -136,16 +114,6 @@ object RescueFiles {
     // Every key that lives in the encrypted prefs: import routing must send each one to the
     // encrypted editor, never to the plain preferences.
     internal val ALL_ENCRYPTED_KEYS = YTB_KEYS + DISCORD_KEYS + LASTFM_KEYS + PROXY_KEYS
-
-    fun initialize(context: Context) {
-        if (rescueProfile != null) return
-
-        synchronized(this) {
-            if (rescueProfile == null) {
-                rescueProfile = getActiveProfile(context)
-            }
-        }
-    }
 
     /**
      * CSV rows for [PROXY_KEYS] present in [encryptedPrefs]; empty when the password was

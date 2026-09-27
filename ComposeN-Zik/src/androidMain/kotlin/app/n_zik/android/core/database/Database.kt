@@ -82,12 +82,9 @@ import app.n_zik.android.core.backup.BackupManager
 import androidx.room.InvalidationTracker
 import timber.log.Timber
 import android.database.sqlite.SQLiteDatabaseLockedException
-import app.it.fast4x.rimusic.utils.getActiveProfile
 
 object Database {
-    val FILE_NAME = getActiveProfile(appContext()).let { profile ->
-        "data${if (profile != "default") "_$profile" else ""}.db"
-    }
+    const val FILE_NAME = "data.db"
 
     private val _internal: DatabaseInitializer
         get() = DatabaseInitializer.Instance

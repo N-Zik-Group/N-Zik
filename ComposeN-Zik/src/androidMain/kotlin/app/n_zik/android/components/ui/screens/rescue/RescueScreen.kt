@@ -119,8 +119,6 @@ fun RescueScreen() {
     val scope = rememberCoroutineScope()
     val date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
-    RescueFiles.initialize(context)
-
     // Encrypted prefs Result (safe, no throw). Opened lazily and off the main thread, only when an
     // action awaits it: Keystore work must not run in composition, and the database and log
     // actions never need it.
