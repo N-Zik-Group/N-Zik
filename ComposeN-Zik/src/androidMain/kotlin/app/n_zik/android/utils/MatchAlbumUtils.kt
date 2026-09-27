@@ -118,6 +118,9 @@ suspend fun getAlbumVersionFromVideoGlobal(song: Song, mergedCounter: AtomicInte
                 playlistMappings.forEach { mapping ->
                     songPlaylistMapTable.mapAtPosition(existingSong.id, mapping.playlistId, mapping.position)
                 }
+                val purgedArtistPairs = songArtistMapTable.clearConflictingPairs(song.id, existingSong.id)
+                val purgedAlbumPairs = songAlbumMapTable.clearConflictingPairs(song.id, existingSong.id)
+                Timber.tag("MatchGlobal").d("MERGE: purged $purgedArtistPairs artist + $purgedAlbumPairs album conflicting pairs before redirect")
                 songArtistMapTable.updateSongId(song.id, existingSong.id)
                 songAlbumMapTable.updateSongId(song.id, existingSong.id)
                 eventTable.updateSongId(song.id, existingSong.id)
@@ -306,6 +309,9 @@ suspend fun getAlbumVersionFromVideo(song: Song, playlistId: Long, position: Int
                 playlistMappings.forEach { mapping ->
                     songPlaylistMapTable.mapAtPosition(existingSong.id, mapping.playlistId, mapping.position)
                 }
+                val purgedArtistPairs = songArtistMapTable.clearConflictingPairs(song.id, existingSong.id)
+                val purgedAlbumPairs = songAlbumMapTable.clearConflictingPairs(song.id, existingSong.id)
+                Timber.tag("MatchPlaylist").d("MERGE: purged $purgedArtistPairs artist + $purgedAlbumPairs album conflicting pairs before redirect")
                 songArtistMapTable.updateSongId(song.id, existingSong.id)
                 songAlbumMapTable.updateSongId(song.id, existingSong.id)
                 eventTable.updateSongId(song.id, existingSong.id)

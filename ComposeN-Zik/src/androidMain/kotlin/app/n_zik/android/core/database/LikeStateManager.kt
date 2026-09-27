@@ -2,8 +2,9 @@ package app.n_zik.android.core.database
 
 import app.n_zik.android.core.database.Database
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flowOf
 
 /**
  * Data class for like state query results from Room.
@@ -28,25 +29,40 @@ data class SongLikeState(
 object LikeStateManager {
 
     /**
+     * Maximum number of song IDs per SQL `IN` clause. SQLite versions below
+     * 3.32 (most legacy devices, e.g. Android 10) cap
+     * SQLITE_MAX_VARIABLE_NUMBER at 999; 500 keeps a safe margin below it.
+     *
+     * Trade-off: each invalidation of the tracked table re-runs one query per
+     * chunk (ceil(N/500) queries for N ids, all small and index-friendly),
+     * instead of a single oversized query.
+     */
+    private const val CHUNK_SIZE = 500
+
+    /**
      * Get like states for a list of song IDs as a Flow.
      * Returns Map<songId, likeState?> where:
      * - true = liked
      * - false = disliked
      * - null = neutral
      *
-     * This is MUCH more efficient than querying each song individually.
-     * One SQL query for N songs instead of N SQL queries.
+     * The requested IDs are split into chunks of [CHUNK_SIZE] so no single
+     * query exceeds the SQLite bind-parameter limit, then composed back into
+     * a single reactive Flow. This is MUCH more efficient than querying each
+     * song individually.
      */
     fun getLikeStates(songIds: List<String>): Flow<Map<String, Boolean?>> {
         if (songIds.isEmpty()) {
-            return kotlinx.coroutines.flow.flowOf(emptyMap())
+            return flowOf(emptyMap())
         }
 
-        return Database.songTable
-            .getLikeStatesForSongs(songIds)
+        val chunkFlows = songIds.chunked(CHUNK_SIZE).map { chunk ->
+            Database.songTable.getLikeStatesForSongs(chunk)
+        }
+
+        return combine(chunkFlows) { chunks ->
+            chunks.flatMap { it }.associate { it.songId to it.likeState }
+        }
             .distinctUntilChanged()
-            .map { list ->
-                list.associate { it.songId to it.likeState }
-            }
     }
 }
