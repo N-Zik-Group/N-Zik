@@ -39,6 +39,12 @@ interface ArtistTable {
     fun allFollowing( limit: Int = Int.MAX_VALUE ): Flow<List<Artist>>
 
     /**
+     * @return the total number of rows in this table
+     */
+    @Query("SELECT COUNT(*) FROM Artist")
+    suspend fun countAll(): Int
+
+    /**
      * @return artists that have their songs mapped to at least 1 playlist
      */
     @Query("""
@@ -116,6 +122,27 @@ interface ArtistTable {
 
     @Query("SELECT DISTINCT * FROM Artist WHERE name = :name COLLATE NOCASE LIMIT 1")
     fun findByNameDirect( name: String ): Artist?
+
+    /**
+     * @param name artist name to search for (case-insensitive)
+     * @return all [Artist] rows that match the name
+     */
+    @Query("SELECT DISTINCT * FROM Artist WHERE name = :name COLLATE NOCASE")
+    fun allByNameIgnoreCase( name: String ): List<Artist>
+
+    /**
+     * @return one representative name per group of artists stored under the same
+     * name (case-insensitive) with more than one row — the candidate groups of
+     * the same-name artist dedup sweep
+     */
+    @Query("""
+        SELECT MAX( name )
+        FROM Artist
+        WHERE name IS NOT NULL AND name != ''
+        GROUP BY name COLLATE NOCASE
+        HAVING COUNT( * ) > 1
+    """)
+    fun sameNameGroups(): List<String>
 
     /**
      * @param mbId of a MusicBrainz artist
@@ -390,6 +417,19 @@ interface ArtistTable {
         WHERE id = :artistId
     """)
     fun rotateLikeState( artistId: String ): Int
+
+    /**
+     * Reset the artist-page fetch TTL ([Artist.lastFetch] → NULL) so the next
+     * playback re-fetches the artist page (name + thumbnail). Called by the
+     * song « Update » action: the song's metadata was just refreshed, so the
+     * cached artist page is stale.
+     *
+     * @param artistId artist to have its fetch TTL reset
+     *
+     * @return number of artists affected by this operation
+     */
+    @Query("UPDATE Artist SET lastFetch = NULL WHERE id = :artistId")
+    fun resetFetchTtl( artistId: String ): Int
 
     @Query("""
         UPDATE Artist

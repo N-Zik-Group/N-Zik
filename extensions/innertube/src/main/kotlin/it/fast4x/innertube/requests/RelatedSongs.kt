@@ -14,20 +14,19 @@ import it.fast4x.innertube.utils.runCatchingNonCancellable
 suspend fun Innertube.relatedSongs(videoId: String) = runCatchingNonCancellable {
     val nextResponse = next(videoId = videoId).body<NextResponse>()
 
-    val browseId = nextResponse
+    val tabs = nextResponse
         .contents
         ?.singleColumnMusicWatchNextResultsRenderer
         ?.tabbedRenderer
         ?.watchNextTabbedResultsRenderer
         ?.tabs
-        ?.getOrNull(2)
-        ?.tabRenderer
-        ?.endpoint
-        ?.browseEndpoint
-        ?.browseId
+
+    val browseId = tabs?.let(::findSimilarTabBrowseId)
         ?: return@runCatchingNonCancellable null
 
-    val response = browse(browseId = browseId).body<BrowseResponse>()
+    // Pin hl=en so the "You might also like" shelf title is never localized,
+    // which would break the exact title match below on non-English devices
+    val response = browse(browseId = browseId, hl = "en").body<BrowseResponse>()
 
     val sectionListRenderer = response
         .contents
@@ -42,3 +41,20 @@ suspend fun Innertube.relatedSongs(videoId: String) = runCatchingNonCancellable 
             ?.mapNotNull(Innertube.SongItem::from)
     )
 }
+
+/**
+ * Finds the browseId of the "Related" tab by its stable `MPTR` prefix.
+ *
+ * YouTube inserted a "Lyrics" tab at index 1 of the `next()` response, which
+ * shifted the related tab (formerly at index 2) to index 3; matching on the
+ * browseId prefix is robust to tab order.
+ *
+ * @param tabs tabs from the `next()` response
+ * @return the browseId of the first tab whose browseId starts with "MPTR", or null
+ */
+internal fun findSimilarTabBrowseId(
+    tabs: List<NextResponse.Contents.SingleColumnMusicWatchNextResultsRenderer
+        .TabbedRenderer.WatchNextTabbedResultsRenderer.Tab>
+): String? = tabs
+    .mapNotNull { it.tabRenderer?.endpoint?.browseEndpoint?.browseId }
+    .firstOrNull { it.startsWith("MPTR") }

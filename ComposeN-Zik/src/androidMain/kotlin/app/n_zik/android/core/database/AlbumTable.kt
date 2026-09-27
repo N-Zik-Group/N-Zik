@@ -32,6 +32,12 @@ interface AlbumTable {
     fun all( limit: Int = Int.MAX_VALUE ): Flow<List<Album>>
 
     /**
+     * @return the total number of rows in this table
+     */
+    @Query("SELECT COUNT(*) FROM Album")
+    suspend fun countAll(): Int
+
+    /**
      * @return all albums from this table that are bookmarked by user
      */
     @Query("""
@@ -364,6 +370,19 @@ interface AlbumTable {
         WHERE id = :albumId
     """)
     fun rotateLikeState( albumId: String ): Int
+
+    /**
+     * Reset the album-page fetch TTL ([Album.lastFetch] → NULL) so the next
+     * playback re-fetches the album page. Called by the song « Update »
+     * action: the song's metadata was just refreshed, so the cached album
+     * page is stale.
+     *
+     * @param albumId album to have its fetch TTL reset
+     *
+     * @return number of albums affected by this operation
+     */
+    @Query("UPDATE Album SET lastFetch = NULL WHERE id = :albumId")
+    fun resetFetchTtl( albumId: String ): Int
 
     /**
      * @return like state of album: true = bookmarked, false = disliked, null = neutral

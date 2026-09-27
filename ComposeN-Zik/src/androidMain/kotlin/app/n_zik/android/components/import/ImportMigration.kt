@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.ImportFromFile
 import app.n_zik.android.components.dialog.common.RestartAppDialog
+import app.n_zik.android.core.rewind.RewindPostImportRegenerationWorker
 import app.kreate.android.me.knighthat.utils.Toaster
 import timber.log.Timber
 import java.io.File
@@ -160,6 +161,11 @@ class ImportMigration private constructor(
                                            }
                                        }
                                    }
+
+                            // The full-backup import replaced the database (and the app is
+                            // about to restart): recompute every existing rewind-* playlist
+                            // from the imported history (one-shot job, silent, not gated — spec 2)
+                            RewindPostImportRegenerationWorker.schedule(context)
 
                             RestartAppDialog.showDialog()
                         }

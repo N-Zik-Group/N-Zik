@@ -32,7 +32,8 @@ fun RewindTopPlaylistsCard(
     page: Int,
     pageCount: Int,
     active: Boolean,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null
 ) {
     val topFive = playlists.take(5)
     // Same bright-slide treatment as the Deep Cuts slide.
@@ -42,7 +43,8 @@ fun RewindTopPlaylistsCard(
         pageCount = pageCount,
         background = rewindColors.value.cream,
         progressColor = onSlide,
-        onNext = onNext
+        onNext = onNext,
+        onShareSlide = onShareSlide
     ) {
         if (topFive.isEmpty()) {
             Column(

@@ -1,6 +1,8 @@
 # Error Recovery & Rollback Rules
 
-**Version:** 1.3.0 | **Last updated:** 2026-09-23
+**Version:** 1.5.0 | **Last updated:** 2026-09-26
+
+**HALT semantics (applies to every HALT in every rule file):** HALT = stop ALL autonomous work (no edits, no builds, no commits, no skills). Present the required report, then wait for an explicit user instruction before resuming. The only exception is when the HALT rule itself prescribes follow-up actions — run them, then HALT again.
 
 ## Build Failure Recovery
 
@@ -21,9 +23,9 @@ Attempt 3 → HALT → Report to user with error log
 If a BMAD skill fails or gets stuck:
 
 1. **Skill not found** → Search the IDE-specific skills directory for the user's IDE (see `rules/BMAD-TOOLS.md` table — most IDEs use `{project-root}/.agents/skills/`). Remember: `{project-root}` is the parent of `N-Zik/` where `_bmad/` and `.agents/` live.
-2. If still not found → HALT, inform user, suggest re-running BMAD installer
+2. If still not found → HALT, inform user, and ask how to re-run the BMAD installer (no installer command is defined in these rules — see BMAD.md "Installation Location")
 3. **SKILL.md malformed** → HALT, report error, suggest `bmad-module-builder` to rebuild
-4. **Skill execution error** → Fallback to `bmad-build` for implementation tasks
+4. **Skill execution error** → HALT, report the error, then ask the user via question tool: (1) retry the skill, (2) switch to `bmad-build` (implementation tasks only — user's explicit choice), (3) stop. Never switch skills without the user's answer.
 5. **Agent stuck in loop** → HALT after 5 iterations, ask user
 
 ## Database Migration Failure
@@ -51,6 +53,20 @@ MIGRATION FAILURE:
 4. Fix incrementally, testing after each change
 5. If unable to fix → HALT, report to user with diagnosis
 
+## Git Submodule Failure (missing / stale `modules/*`)
+
+Symptom: Gradle sync or build fails before compilation with unresolved module errors (`betterlyrics`, `discordrpc`, `nextvisualizer`).
+
+1. From the repo root `N-Zik/`: `git submodule update --init --recursive`
+2. Rebuild
+3. If a submodule pointer itself changed unexpectedly (not by the user) → HALT, report to user
+
+> **Config caveat:** `.git/config` also carries a legacy `upstream` remote (`knighthat/Kreate`) and a stale `[submodule "discord"]` section that no longer exists in `.gitmodules`. `git remote -v` / `git submodule` output will show them — ignore them, and do NOT delete or act on them without explicit instruction.
+
+## Known Flaky Tests
+
+`RescueScreenProcessStatusTest` is a known pre-existing flaky test (noted repeatedly in `Done.txt`). A failure there on otherwise-green code → do NOT burn the 3-attempt build counter chasing it: re-run once, and if it fails again → HALT and report as the known flaky case instead of treating it as a regression.
+
 ## Network / Dependency Errors
 
 1. Check internet connection
@@ -71,14 +87,14 @@ If `./gradlew` fails or is corrupted:
 ## KMP Compilation Issues
 
 1. Check `commonMain` for Android-specific imports
-2. Verify `expect/actual` declarations match
+2. If `expect/actual` declarations are used, verify they match across source sets (none exist in this module currently)
 3. Check source set configuration
 4. If unresolved → HALT, report with full compilation output
 
 ## Corrupted \_bmad/ Directory
 
 1. **NEVER** manually edit `_bmad/` internals
-2. Before deleting: back up `_bmad/custom/` (human-authored overrides) to a temp folder, then delete `_bmad/` and re-run the installer, then restore `_bmad/custom/`
+2. Before deleting: back up `_bmad/custom/` (human-authored overrides) to a temp folder, then delete `_bmad/`, ask the user for the re-installation procedure (no installer command is defined in these rules — see BMAD.md "Installation Location"), and restore `_bmad/custom/` after
 3. Verify with `bmad-bmb-setup` skill
 
 ## Loop Detection
@@ -93,6 +109,7 @@ If you notice yourself repeating the same action:
 ## General Rollback
 
 - `git log --oneline -5` — find safe rollback point
+- **Reflog caveat:** this repo's reflog is dense with historical `reset`/`amend`/`rebase` churn (hundreds of entries, loose subjects like "temporary push") — use `git log` for rollback targets, not the reflog, unless the user asks specifically about a recent reset
 - `git reset --soft HEAD~1` — undo last commit but keep changes staged (only if not pushed)
 - **NEVER** force push without explicit user instruction
 - **NEVER** delete committed history

@@ -57,6 +57,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.playlist.RenamePlaylistDialog
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
@@ -476,7 +477,10 @@ class LocalPlaylistItemMenu private constructor(
             
 
             if (playlistPreview.playlist.isEditable) {
-                list.add(rename)
+                // Spec 2: generated rewind-* playlists keep their language-neutral name — no rename
+                if (!RewindPlaylists.isRewind(playlistPreview.playlist.name)) {
+                    list.add(rename)
+                }
                 if (playlistPreview.playlist.isYoutubePlaylist || playlistPreview.playlist.browseId?.startsWith(MODIFIED_PREFIX) == true || playlistPreview.playlist.browseId?.startsWith("VL") == true) {
                     list.add(changePlaylistId)
                 }

@@ -369,7 +369,6 @@
 <string name="info_translation">翻譯</string>
 <string name="info_find_the_song_that_is_playing">尋找正在播放的歌曲</string>
 <string name="info_smart_recommendation">智慧建議</string>
-<string name="info_clean_cached_congs">清除暫存歌曲</string>
 <string name="info_pin_unpin_playlist">釘選/取消釘選 播放清單</string>
 <string name="info_lock_unlock_reorder_songs">鎖定/解鎖 重新排序歌曲</string>
 <string name="info_add_in_playlist">加入播放清單</string>
@@ -389,7 +388,6 @@
 <string name="te_slide_horizontal">水平滑動</string>
 <string name="info_wait_it_may_take_a_few_minutes">請稍後，可能需要數分鐘...</string>
 <string name="album_alternative_versions">其他版本</string>
-<string name="monthly_playlists">每月播放清單</string>
 <string name="month_january_s">一月 %s</string>
 <string name="month_february_s">二月 %s</string>
 <string name="month_march_s">三月 %s</string>
@@ -415,7 +413,6 @@
 <string name="bg_colors_gradient_background_from_theme">根據主題的漸層背景</string>
 <string name="vimusic_show_search_button_in_navigation_bar">在導航列中顯示搜尋按鈕</string>
 <string name="vismusic_only_in_left_right_navigation_bar">Only for ViMusic ui mode in left/right navigation bar</string>
-<string name="enable_monthly_playlists_creation">啟用建立每月播放清單</string>
 <string name="info_no_songs_yet">尚無歌曲</string>
 <string name="theme_customized">自訂</string>
 <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">Do you really want to reset the custom light theme colors?</string>
@@ -582,13 +579,10 @@
 <string name="translate_to_other_language">翻譯成其他語言</string>
 <string name="action_bar_show_video_button">顯示影片按鈕</string>
 <string name="update">更新</string>
-<string name="update_song">Do you really want to refetch this song? Playback time and cached data will be wiped.\nThis action is irreversible.</string>
 <string name="player_pause_listen_history_info">不保存用於統計、記錄和縮圖建議的播放事件</string>
 <string name="sleep_timer_ended">睡眠計時結束</string>
 <string name="social_discord">Discord</string>
 <string name="discord_enable_rich_presence">啟用 Discord 狀態 (RPC)</string>
-<string name="discord_disconnect">中斷連接</string>
-<string name="discord_connect">連接</string>
 <string name="discord_connected_to_discord_account">已連接至 Discord 帳戶</string>
 <string name="settings_reset">重置</string>
 <string name="settings_restore_default_settings">恢復預設設定</string>
@@ -748,9 +742,6 @@
 <string name="failed_to_fetch_artist">Failed to fetch aritst</string>
 <string name="looking_up_album_from_the_internet">Looking up album from the internet</string>
 <string name="failed_to_fetch_album">Failed to fetch album</string>
-<string name="info_open_reset_dialog">Open reset dialog</string>
-<string name="title_reset_title">Reset title</string>
-<string name="title_reset_authors">Reset authors</string>
 <string name="title_reset_total_play_time">Reset total play time</string>
 <string name="title_name_your_export">Name your export</string>
 <string name="export_cached">Export cached</string>
@@ -777,8 +768,6 @@
     <string name="account_info">Account info</string>
     <string name="quick_selection">%s recommended song</string>
     <string name="discord_token_text_invalid">Your Discord token is invalid, please login again</string>
-    <string name="youtube_disconnect">Disconnect</string>
-    <string name="youtube_connect">Connect</string>
     <string name="youtube_login_successful">YouTube login successful</string>
     <string name="save_visualizer_state">Save visualizer state</string>
     <string name="save_visualizer_state_description">Keep visualizer state between sessions</string>

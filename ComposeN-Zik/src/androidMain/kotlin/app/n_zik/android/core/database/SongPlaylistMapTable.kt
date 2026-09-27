@@ -380,6 +380,9 @@ interface SongPlaylistMapTable {
         PlaylistSongSortBy.RelativePlayTime -> sortSongsByRelativePlayTime( playlistId )
         PlaylistSongSortBy.PlayCount        -> sortSongsByPlayCount( playlistId )
         PlaylistSongSortBy.Custom           -> sortSongsByPosition( playlistId )
+        // Spec 2: "Rewind Top" of a generated rewind-* playlist = the top order snapshot
+        // written at generation time (no new query — same source as Custom)
+        PlaylistSongSortBy.RewindTop        -> sortSongsByPosition( playlistId )
         PlaylistSongSortBy.Title            -> sortSongsByTitle( playlistId )
         PlaylistSongSortBy.Duration         -> sortSongsByDuration( playlistId )
         PlaylistSongSortBy.DateLiked        -> sortSongsByLikedAt( playlistId )

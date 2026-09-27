@@ -41,7 +41,8 @@ fun RewindDiscoveryCard(
     page: Int,
     pageCount: Int,
     active: Boolean,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null
 ) {
     val universe = remember { Animatable(0f) }
     LaunchedEffect(active) {
@@ -58,6 +59,7 @@ fun RewindDiscoveryCard(
         background = rewindColors.value.ink,
         progressColor = rewindColors.value.cream,
         onNext = onNext,
+        onShareSlide = onShareSlide,
         backgroundArt = {
             Canvas(Modifier.fillMaxSize()) {
                 repeat(24) { index ->

@@ -74,7 +74,7 @@
 <img src="assets/design/warning-rounded.png" width="50%">
 <br>
 
-<h1>⏳ Only <a href="https://keepandroidopen.org"><img src="https://img.shields.io/badge/J--99-red?style=flat-round&logo=android&logoColor=white" alt="Android Lockdown"/></a> days remaining until Android Lockdown</h1>
+<h1>⏳ Only <a href="https://keepandroidopen.org"><img src="https://img.shields.io/badge/J--95-red?style=flat-round&logo=android&logoColor=white" alt="Android Lockdown"/></a> days remaining until Android Lockdown</h1>
 
 Starting in **~~September 2026~~ January 2027** [See why the date changed here](https://keepandroidopen.org/en/faq/), Google will require **identity verification for all Android developers**, including those distributing applications **outside of Google Play**.
 
@@ -347,7 +347,6 @@ New:
 - [**compose-reorderable**](https://github.com/Calvin-LL/Reorderable): Drag & drop reorderable lists in Compose.
 - [**kotlin-csv**](https://github.com/jsoizo/kotlin-csv): CSV reading/writing for playlist import/export.
 - [**Brotli**](https://github.com/google/brotli): Brotli compression for HTTP responses.
-- [**FreeDroidWarn**](https://github.com/woheller69/FreeDroidWarn): Customizable warning dialogs.
 - [**Jetpack Palette**](https://developer.android.com/develop/ui/views/graphics/palette-colors): Color extraction from album artwork.
 - [**Jetpack Navigation Compose**](https://developer.android.com/develop/ui/compose/navigation): Type-safe navigation for Compose.
 - [**Room**](https://developer.android.com/training/data-storage/room): Local database with SQLite abstraction.

@@ -20,7 +20,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,7 +39,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.screens.rewind.RewindData
+import app.n_zik.android.components.ui.screens.rewind.rewindShareCaptureActive
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
+/**
+ * Finale slide of the Rewind deck.
+ *
+ * Export actions live at the bottom as two explicitly labelled pills — "export this page"
+ * (single-PNG system share of the displayed slide, [onShareSlide]) and "export all pages"
+ * (16-image folder export, [onShare]) — instead of the top-right per-slide share icon the
+ * other slides carry.
+ *
+ * Regeneration actions (spec 2) also live in the interactive branch only, so captured
+ * frames never carry them: Month/Year decks offer [onRegeneratePlaylist] (delete-then-
+ * recreate of the deck's own playlist, which also covers the current month) and the
+ * Global deck offers [onRegenerateAlltime] (the unique `rewind-alltime` snapshot). Each
+ * callback returns the number of songs written; the pill label flips to "PLAYLIST
+ * UPDATED" for 2 s only on a successful write (count > 0) — an empty window is a silent
+ * no-op.
+ */
 @Composable
 fun RewindFinaleCard(
     data: RewindData,
@@ -45,13 +68,21 @@ fun RewindFinaleCard(
     active: Boolean,
     shareMode: Boolean,
     onShare: () -> Unit,
-    onRestart: () -> Unit
+    onRestart: () -> Unit,
+    onShareSlide: (() -> Unit)? = null,
+    onRegeneratePlaylist: (suspend () -> Int)? = null,
+    onRegenerateAlltime: (suspend () -> Int)? = null
 ) {
     val topArtist = data.topArtists.firstOrNull()
     val topSong = data.topSongs.firstOrNull()
     val topAlbum = data.topAlbums.firstOrNull()
     val topPlaylist = data.topPlaylists.firstOrNull()
     val badge = calculateListenerBadge(data)
+    // Regeneration pill state (spec 2): the label flips to "PLAYLIST UPDATED" for 2 s
+    // after a successful write (count > 0); an empty window (count 0) changes nothing.
+    var regenConfirmed by remember { mutableStateOf(false) }
+    val regenScope = rememberCoroutineScope()
+    val onRegenerate = onRegeneratePlaylist ?: onRegenerateAlltime
     // Solid tile/card surfaces are not scrimmed, so contrast must be judged on the surface
     // itself (flatTextOn) instead of the scrim-darkened slide background (textOn).
     val onLime = rewindColors.value.flatTextOn(rewindColors.value.lime)
@@ -66,6 +97,9 @@ fun RewindFinaleCard(
         background = rewindColors.value.ink,
         progressColor = rewindColors.value.cream,
         onNext = null,
+        // The finale shows no top-right share icon: its export actions live at the bottom as
+        // two explicitly labelled pills (export this page / export all pages).
+        onShareSlide = null,
         showProgress = !shareMode,
         showBrand = true,
         backgroundArt = {
@@ -208,9 +242,10 @@ fun RewindFinaleCard(
                     }
                 }
                 Spacer(Modifier.height(if (compact) 8.dp else 10.dp))
-                // In shareMode the footer signature already carries the badge + index, so the
-                // big row is hidden there to avoid showing it twice in the shared image.
-                if (!shareMode) {
+                // In shareMode — and while any capture is in flight — the footer signature
+                // already carries the badge + index, so the big row is hidden there to
+                // avoid showing it twice in the shared image.
+                if (!shareMode && !rewindShareCaptureActive.value) {
                     RewindReveal(active, 740, scaleFrom = 0.94f) {
                         Row(
                             modifier = Modifier
@@ -332,7 +367,10 @@ fun RewindFinaleCard(
                     }
                 }
                 Spacer(Modifier.weight(1f))
-                if (shareMode) {
+                // The brand footer is the "exported" look of the finale: the 16-image deck
+                // export shows it on this page, and a single-page capture of the finale must
+                // produce the same frame — identical content, no interactive pills.
+                if (shareMode || rewindShareCaptureActive.value) {
                     RewindReveal(active, 1_060) {
                         Column(
                             modifier = Modifier.fillMaxWidth(),
@@ -374,11 +412,108 @@ fun RewindFinaleCard(
                         }
                     }
                 } else {
+                    // Interactive UI: the export pills only exist in the live deck — any
+                    // captured frame (per-slide share, deck export) renders the brand footer
+                    // above instead, so shared images never carry clickable chrome.
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        RewindReveal(active, 1_080) {
+                        // Two distinct export actions (on-device feedback): the single-page
+                        // share of the displayed slide and the full-deck folder export.
+                        if (onShareSlide != null) {
+                            RewindReveal(active, 1_080) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(
+                                            rewindColors.value.cream.copy(alpha = 0.10f),
+                                            RoundedCornerShape(100.dp)
+                                        )
+                                        .border(
+                                            1.dp,
+                                            rewindColors.value.cream.copy(alpha = 0.45f),
+                                            RoundedCornerShape(100.dp)
+                                        )
+                                        .clickable(onClick = onShareSlide, indication = null, interactionSource = remember { MutableInteractionSource() })
+                                        .padding(vertical = 8.dp),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.share_social),
+                                        contentDescription = null,
+                                        tint = rewindColors.value.cream,
+                                        modifier = Modifier.size(13.dp)
+                                    )
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(
+                                        text = stringResource(R.string.rw_finale_export_page),
+                                        color = rewindColors.value.cream,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Black,
+                                        letterSpacing = 0.8.sp
+                                    )
+                                }
+                            }
+                        }
+                        // Regeneration pill (spec 2): only in the interactive branch — the
+                        // share/capture swap above renders the brand footer instead, so no
+                        // captured frame ever carries it.
+                        if (onRegenerate != null) {
+                            RewindReveal(active, 1_115) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(
+                                            rewindColors.value.cream.copy(alpha = 0.10f),
+                                            RoundedCornerShape(100.dp)
+                                        )
+                                        .border(
+                                            1.dp,
+                                            rewindColors.value.cream.copy(alpha = 0.45f),
+                                            RoundedCornerShape(100.dp)
+                                        )
+                                        .clickable(
+                                            onClick = {
+                                                regenScope.launch {
+                                                    val count = onRegenerate()
+                                                    if (count > 0) {
+                                                        regenConfirmed = true
+                                                        delay(2_000)
+                                                        regenConfirmed = false
+                                                    }
+                                                }
+                                            },
+                                            indication = null,
+                                            interactionSource = remember { MutableInteractionSource() }
+                                        )
+                                        .padding(vertical = 8.dp),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.refresh),
+                                        contentDescription = null,
+                                        tint = rewindColors.value.cream,
+                                        modifier = Modifier.size(13.dp)
+                                    )
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(
+                                        text = stringResource(
+                                            if (regenConfirmed) R.string.rw_finale_regen_done
+                                            else if (onRegeneratePlaylist != null) R.string.rw_finale_regen_playlist
+                                            else R.string.rw_finale_regen_alltime
+                                        ),
+                                        color = rewindColors.value.cream,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Black,
+                                        letterSpacing = 0.8.sp
+                                    )
+                                }
+                            }
+                        }
+                        RewindReveal(active, 1_150) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -404,7 +539,7 @@ fun RewindFinaleCard(
                                 )
                             }
                         }
-                        RewindReveal(active, 1_150) {
+                        RewindReveal(active, 1_220) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()

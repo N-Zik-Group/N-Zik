@@ -41,6 +41,12 @@ interface SongTable {
     ): Flow<List<Song>>
 
     /**
+     * @return the total number of rows in this table
+     */
+    @Query("SELECT COUNT(*) FROM Song")
+    suspend fun countAll(): Int
+
+    /**
      * @return all records that have [Song.id] start with [LOCAL_KEY_PREFIX]
      */
     @Query("""

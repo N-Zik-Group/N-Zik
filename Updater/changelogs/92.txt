@@ -1,0 +1,35 @@
+Added:
+- A new "Maintenance" screen: a hamburger menu item and a settings card that open a full sheet of the app's state — the last launch passes (same-name artist dedup, name convergence, artist link cleanup) with expandable details, library counts, database size, caches, downloads, scheduled jobs, the live subsystems (YouTube session, MusicBrainz, Listen Together, Discord, Last.fm, backup, updates, battery), the log export, and the crash log (auto-wiped after two clean launches).
+- Listen Together (guest): join a friend's room with an 8-character code or an invite link; your player follows the host's queue, pause/play, seek and volume, with the server clock difference compensated. Hosting is not available yet — the Meowery server has to approve the app first. (hosting issue https://github.com/MetrolistGroup/metroserver/issues/6)
+- Rewind background music: every card of the Rewind deck has its own background track, softly crossfaded from one card to the next, that yields to the main player when you play something. Toggle and volume in the Rewind settings. (issue https://github.com/N-Zik-Group/N-Zik/issues/275)
+- First-launch onboarding: a 4-step flow for fresh installs — permissions, optional restore of the database and/or settings from a backup file, name, then accounts (Last.fm / Discord). The display name shown in the app now comes from your YouTube account or a custom name, switchable in the settings. (issue https://github.com/N-Zik-Group/N-Zik/issues/275)
+- Rewind settings: a master switch, per-type toggles (monthly / yearly / all-time) and per-notification toggles, applied in real time. (issue https://github.com/N-Zik-Group/N-Zik/issues/275)
+- "Rewind" playlists category in the Playlists tab: the old "Monthly playlists" is retired, replaced by auto-generated Rewind playlists — monthly, yearly and all-time top lists, generated automatically at the end of each period, protected (no rename / pin / add-to) — with a YTM-style Month / Year / All filter. (issue https://github.com/N-Zik-Group/N-Zik/issues/275)
+- Yearly Rewind reminder: a "Your <year> rewind is ready" notification on January 1st (the monthly worker gets the same firing-time fix). (issue https://github.com/N-Zik-Group/N-Zik/issues/275)
+- Unified song "Update": one dialog with checkboxes (title / artists / thumbnail / playtime / cache) replaces the player's all-or-nothing refetch and the song-menu "Reset"; a batch "Update" button in the Home Songs toolbar applies it to the selected songs (rate-limited).
+- Same-name artist dedup fallback: artist groups that YouTube Music's search cannot find are now identified through their songs' bylines, with cross-proofs before anything merges.
+- Artist names converge everywhere: renaming an artist (or editing a song / album's authors) updates every stored copy, and a launch sweep cleans the rest; one YouTube Music author entry now always means one artist (no more "Bigflo, Oli" split in two).
+- The global mini-player now sits flush at the screen edge on pages without the app's navigation bar (album, playlists, history, …). (issue https://github.com/N-Zik-Group/N-Zik/issues/832)
+- Videos played from the library get an artist: when the queue brings no authors and no artist link exists yet, the video's channel is copied as its artist after a verified identity check.
+
+Improved:
+- The "in playlist" state of every song row is now computed with one indexed database query per screen instead of one reactive query per song.
+
+Fixed:
+- A reactive "DEBUG" badge in the header (hidden while off, tap toggles) and width-capped marquee labels for the header badges and the burger "Enable / Disable debug logs" item.
+- The Rescue Center now kills the main app process automatically when it opens, so the database export and the other rescue write actions work without force-stopping the app in Android settings first.
+- The Rescue Center "Import settings" / "Import database" pickers now accept the same file types as the app's own imports (CSV was hidden before).
+- The Last.fm login sheet now opens above the keyboard instead of hiding the username / password fields behind it.
+- Onboarding: the connect buttons use a single "Log in / Log off" label for every service, and the YouTube button is reactive (shows "Log off" when logged in, and logs off when tapped); a successful restore no longer completes the onboarding — the flow resumes at the next step with the restored data live.
+- The Rewind artist spotlight bio now reads the stored in-app description instead of a by-name web lookup (an unrelated same-named article was rendered for the "E.T" case).
+- Artist to song mapping pollution fixed at the source: the mapping is reconciled on every insert / upsert from a complete author list, and a launch sweep removes stale links (the root cause of the "E.T" Rewind top-artist bug).
+- The album details page content now extends under the transparent system navigation bar, like every other page.
+- Global same-name artist dedup at launch: one real artist spread over several same-name rows (topic pages, dead channels) is merged using the YouTube Music search result as the arbiter, with a persistent skip store and self-healing on every launch.
+- An empty artist / album page fetch no longer wipes the stored name, thumbnail, title or year (headerless channels lost their artist on every playback).
+- The song "Update" no longer wipes the artist text on videos, and the artist / album / lyrics refresh timers are only reset on a successful fetch.
+- Importing a song that already maps the same artist no longer fails with a primary key conflict (the import now keeps the target song's mappings).
+- Libraries over 999 songs no longer crash with "too many SQL variables" (the membership queries are now batched in chunks of 500).
+- Smart Shuffle "Related" recommendations restored: the related tab is found by its stable id instead of a hard-coded position (YouTube had inserted a new tab in front of it), always in English.
+
+Other:
+- Detailed Timber logs across the whole artist-mapping cycle (play-time reconcile, launch cleanup) — logs only, zero behavior change.

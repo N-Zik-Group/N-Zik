@@ -42,7 +42,8 @@ fun RewindPeakTimeCard(
     page: Int,
     pageCount: Int,
     active: Boolean,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null
 ) {
     val peakHour = data.stats.mostActiveHour?.hour?.substringBefore(':')?.toIntOrNull() ?: 0
     val hand = remember(peakHour) { Animatable(0f) }
@@ -64,7 +65,8 @@ fun RewindPeakTimeCard(
         pageCount = pageCount,
         background = rewindColors.value.purple,
         progressColor = rewindColors.value.cream,
-        onNext = onNext
+        onNext = onNext,
+        onShareSlide = onShareSlide
     ) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val compact = maxHeight < 700.dp
@@ -189,6 +191,10 @@ private fun DailyBars(
 ) {
     val stats = data.dailyStats.take(7)
     val max = stats.maxOfOrNull { it.minutes }?.coerceAtLeast(1L) ?: 1L
+    // Highlight the peak by position, not data-class equality: ties must not light several
+    // bars (spec GH-275, patch "Peak highlighting by data-class equality").
+    val peakMinutes = stats.maxOfOrNull { it.minutes }?.takeIf { it > 0 }
+    val peakIndex = peakMinutes?.let { peak -> stats.indexOfFirst { it.minutes == peak } } ?: -1
     Column(modifier = Modifier.fillMaxWidth()) {
         Canvas(
             modifier = Modifier
@@ -203,7 +209,7 @@ private fun DailyBars(
                 val height = size.height * ratio * local
                 val left = index * (barWidth + gap)
                 drawRoundRect(
-                    color = if (stat == data.stats.mostActiveDay) rewindColors.value.lime else rewindColors.value.pink,
+                    color = if (index == peakIndex) rewindColors.value.lime else rewindColors.value.pink,
                     topLeft = Offset(left, size.height - height),
                     size = androidx.compose.ui.geometry.Size(barWidth, height),
                     cornerRadius = androidx.compose.ui.geometry.CornerRadius(4.dp.toPx())

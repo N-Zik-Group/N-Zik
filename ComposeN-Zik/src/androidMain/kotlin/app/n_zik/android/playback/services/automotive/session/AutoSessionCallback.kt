@@ -56,7 +56,6 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.it.fast4x.rimusic.repository.QuickPicksRepository
 import kotlinx.coroutines.*
-import app.it.fast4x.rimusic.MONTHLY_PREFIX
 import app.it.fast4x.rimusic.PINNED_PREFIX
 
 import app.it.fast4x.rimusic.LOCAL_KEY_PREFIX
@@ -67,8 +66,6 @@ import app.n_zik.android.playback.services.automotive.session.AutoSessionConstan
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants.ID_ALBUMS_LIBRARY
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants.ID_ARTISTS_FAVORITES
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants.ID_ARTISTS_LIBRARY
-import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants.ID_PLAYLISTS_LOCAL
-import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants.ID_PLAYLISTS_MONTHLY
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants.ID_PLAYLISTS_PINNED
 
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants.ID_PLAYLISTS_YT
@@ -78,7 +75,6 @@ import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsCustomValueKey
 import app.it.fast4x.rimusic.utils.parseArtists
 import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.asSong
-import app.it.fast4x.rimusic.utils.showMonthlyPlaylistsKey
 
 import app.it.fast4x.rimusic.utils.showPinnedPlaylistsKey
 import app.it.fast4x.rimusic.utils.showFavoritesPlaylistKey
@@ -347,7 +343,7 @@ val allSongs = database.formatTable.sortAllWithSongs(sortBy, sortOrder).first().
             if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song) }, 0, 0)
         }
         if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_LOCAL_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_LOCAL_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val allSongs = database.playlistTable.allAsPreview().first().filter { !it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX, true) && !it.playlist.name.startsWith(MONTHLY_PREFIX, true) }.flatMap { preview -> database.songPlaylistMapTable.allSongsOf(preview.playlist.id).first() }.distinctBy { song -> song.id }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
+            val allSongs = database.playlistTable.allAsPreview().first().filter { !it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX, true) }.flatMap { preview -> database.songPlaylistMapTable.allSongsOf(preview.playlist.id).first() }.distinctBy { song -> song.id }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
             if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song) }, 0, 0)
         }
         if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_YT_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_YT_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
@@ -357,10 +353,6 @@ val allSongs = database.formatTable.sortAllWithSongs(sortBy, sortOrder).first().
 
         if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_PINNED_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_PINNED_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
             val allSongs = database.playlistTable.allAsPreview().first().filter { it.playlist.name.startsWith(PINNED_PREFIX, true) }.flatMap { preview -> database.songPlaylistMapTable.allSongsOf(preview.playlist.id).first() }.distinctBy { song -> song.id }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song) }, 0, 0)
-        }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_MONTHLY_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_MONTHLY_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val allSongs = database.playlistTable.allAsPreview().first().filter { it.playlist.name.startsWith(MONTHLY_PREFIX, true) }.flatMap { preview -> database.songPlaylistMapTable.allSongsOf(preview.playlist.id).first() }.distinctBy { song -> song.id }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
             if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song) }, 0, 0)
         }
         if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLIST_SHUFFLE) {

@@ -828,6 +828,10 @@ private fun MiniPlayerSlotButton(
 ) {
     if (button == null) return
 
+    // Listen Together guest lock (spec-listen-together): guests in a room cannot
+    // skip tracks or shuffle; play/pause stays available
+    val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
+
     val modifier = Modifier
         .rotate(rotationAngle)
         .padding(horizontal = 2.dp, vertical = 8.dp)
@@ -839,8 +843,10 @@ private fun MiniPlayerSlotButton(
                 icon = R.drawable.play_skip_back,
                 color = controlsColorText,
                 onClick = {
-                    binder.player.playPrevious()
-                    if (effectRotationEnabled) onRotatedChange(!isRotated)
+                    if (!listenTogetherGuestLock) {
+                        binder.player.playPrevious()
+                        if (effectRotationEnabled) onRotatedChange(!isRotated)
+                    }
                 },
                 modifier = modifier
             )
@@ -850,8 +856,10 @@ private fun MiniPlayerSlotButton(
                 icon = R.drawable.play_skip_forward,
                 color = controlsColorText,
                 onClick = {
-                    binder.player.playNext()
-                    if (effectRotationEnabled) onRotatedChange(!isRotated)
+                    if (!listenTogetherGuestLock) {
+                        binder.player.playNext()
+                        if (effectRotationEnabled) onRotatedChange(!isRotated)
+                    }
                 },
                 modifier = modifier
             )
@@ -861,8 +869,10 @@ private fun MiniPlayerSlotButton(
                 icon = R.drawable.shuffle,
                 color = controlsColorText,
                 onClick = {
-                    binder.player.shuffleQueue()
-                    if (effectRotationEnabled) onRotatedChange(!isRotated)
+                    if (!listenTogetherGuestLock) {
+                        binder.player.shuffleQueue()
+                        if (effectRotationEnabled) onRotatedChange(!isRotated)
+                    }
                 },
                 modifier = modifier
             )

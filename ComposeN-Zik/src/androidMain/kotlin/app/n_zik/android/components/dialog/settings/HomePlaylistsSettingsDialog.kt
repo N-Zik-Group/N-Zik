@@ -21,7 +21,7 @@ import app.kreate.android.me.knighthat.utils.Toaster
 import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import android.content.Context
-private val playlistsDefaultOrder = listOf("all", "pinned_playlists", "monthly_playlists", "yt_playlists")
+private val playlistsDefaultOrder = listOf("all", "pinned_playlists", "rewind", "yt_playlists")
 
 object HomePlaylistsSettingsDialog : Dialog {
     override val dialogTitle: String @Composable get() = stringResource(R.string.home_playlists_settings)
@@ -42,7 +42,7 @@ object HomePlaylistsSettingsDialog : Dialog {
         val prefKeys = mapOf(
             "yt_playlists" to showYtPlaylistsKey,
             "pinned_playlists" to showPinnedPlaylistsKey,
-            "monthly_playlists" to showMonthlyPlaylistsKey
+            "rewind" to showMonthlyPlaylistsKey
         )
 
         var workingToggles by remember {
@@ -58,7 +58,7 @@ object HomePlaylistsSettingsDialog : Dialog {
         val ytLabel = stringResource(R.string.yt_playlists)
 
         val pinnedLabel = stringResource(R.string.pinned_playlists)
-        val monthlyLabel = stringResource(R.string.monthly_playlists)
+        val rewindLabel = stringResource(R.string.rewind)
 
         val lazyListState = rememberLazyListState()
         val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
@@ -72,7 +72,7 @@ object HomePlaylistsSettingsDialog : Dialog {
                 "yt_playlists" -> ToggleItem(id, R.drawable.logo_youtube, ytLabel, showYtPlaylistsKey, true)
 
                 "pinned_playlists" -> ToggleItem(id, R.drawable.pin_filled, pinnedLabel, showPinnedPlaylistsKey, true)
-                "monthly_playlists" -> ToggleItem(id, R.drawable.calendar, monthlyLabel, showMonthlyPlaylistsKey, true)
+                "rewind" -> ToggleItem(id, R.drawable.calendar, rewindLabel, showMonthlyPlaylistsKey, true)
                 else -> null
             }
         }.filterNotNull()

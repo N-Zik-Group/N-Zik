@@ -34,7 +34,8 @@ fun RewindListenerBadgeCard(
     page: Int,
     pageCount: Int,
     active: Boolean,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null
 ) {
     val badge = calculateListenerBadge(data)
     val tierNames = listOf(
@@ -54,6 +55,7 @@ fun RewindListenerBadgeCard(
         background = rewindColors.value.ink,
         progressColor = rewindColors.value.cream,
         onNext = onNext,
+        onShareSlide = onShareSlide,
         backgroundArt = {
             Canvas(Modifier.fillMaxSize()) {
                 drawCircle(

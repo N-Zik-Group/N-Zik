@@ -56,7 +56,7 @@ import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.asSong
 import app.it.fast4x.rimusic.utils.forcePlay
-import app.it.fast4x.rimusic.utils.parseArtists
+import app.n_zik.android.core.database.artistEntryNames
 import app.it.fast4x.rimusic.utils.playVideo
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.components.SongItem
@@ -265,7 +265,7 @@ fun YtmSectionItems(
                                 AlbumItem(
                                     thumbnailUrl = item.thumbnail?.url,
                                     title = item.info?.name,
-                                    authors = item.authors?.parseArtists()?.joinToString(", "),
+                                    authors = item.authors?.artistEntryNames()?.joinToString(", "),
                                     year = null,
                                     thumbnailSizePx = albumThumbnailSizePx,
                                     thumbnailSizeDp = albumThumbnailSizeDp,

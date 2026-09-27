@@ -32,7 +32,8 @@ fun RewindTopArtistsCard(
     page: Int,
     pageCount: Int,
     active: Boolean,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null
 ) {
     val topFive = artists.take(5)
     val top = topFive.firstOrNull()
@@ -42,7 +43,8 @@ fun RewindTopArtistsCard(
         pageCount = pageCount,
         background = rewindColors.value.cream,
         progressColor = onSlide,
-        onNext = onNext
+        onNext = onNext,
+        onShareSlide = onShareSlide
     ) {
         if (top == null) {
             Column(

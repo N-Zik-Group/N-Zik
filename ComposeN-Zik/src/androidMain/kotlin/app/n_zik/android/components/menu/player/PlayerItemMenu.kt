@@ -48,7 +48,6 @@ import androidx.navigation.NavController
 import app.n_zik.android.R
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.nextPage
-import it.fast4x.innertube.requests.song
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
@@ -64,7 +63,6 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Clickable
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Menu
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.it.fast4x.rimusic.ui.components.themed.ConfirmationDialog
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.it.fast4x.rimusic.ui.components.themed.InProgressDialog
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
@@ -84,6 +82,7 @@ import app.n_zik.android.extensions.lastfm.isLastfmScrobblingEnabledKey
 import app.n_zik.android.extensions.lastfm.lastfmSessionKey
 import app.n_zik.android.extensions.lastfm.LastFmActions
 import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
+import app.it.fast4x.rimusic.utils.durationTextToMillis
 import app.it.fast4x.rimusic.enums.DislikeMode
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -91,6 +90,9 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.ui.screens.listentogether.ListenTogetherMenu
+import app.n_zik.android.listentogether.ListenTogetherManager
+import app.n_zik.android.listentogether.TrackInfo
 import app.n_zik.android.components.dialog.song.ChangeAuthorDialog
 import app.n_zik.android.components.dialog.song.ChangeCoverDialog
 import app.n_zik.android.components.dialog.song.EditMetadataDialog
@@ -98,6 +100,7 @@ import app.n_zik.android.components.song.GoToAlbum
 import app.n_zik.android.components.song.GoToArtist
 import app.n_zik.android.components.dialog.export.ExportCacheDialog
 import app.n_zik.android.components.dialog.song.RenameSongDialog
+import app.n_zik.android.components.dialog.song.UpdateSongDialog
 import app.n_zik.android.components.dialog.tab.DeleteSongDialog
 import app.n_zik.android.components.tab.LikeComponent
 import app.n_zik.android.components.tab.Radio
@@ -162,6 +165,9 @@ class PlayerItemMenu private constructor(
     lateinit var lastFmLoveButton: MenuIcon
     lateinit var lastFmUnloveButton: MenuIcon
     private var showLastFmSection = false
+    private var showListenTogetherSection = false
+    private var listenTogetherDialogBtn: Button? = null
+    private var listenTogetherBtn: Button? = null
     override var menuStyle: MenuStyle by styleState
 
     @Composable
@@ -199,6 +205,11 @@ class PlayerItemMenu private constructor(
             buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(6)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(7)?.let { if (it is MenuIcon) it.ListMenuItem() }
+
+            // Section: Listen Together (room menu, then suggest-to-host for guests in a room)
+            SectionTitle(stringResource(R.string.listen_together))
+            listenTogetherDialogBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
+            listenTogetherBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
 
             SectionTitle(stringResource(R.string.management))
             if (playerTimelineType == PlayerTimelineType.AudioWaves) {
@@ -272,6 +283,13 @@ class PlayerItemMenu private constructor(
             buttons.getOrNull(6)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(7)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
+            // Section: Listen Together (room menu, then suggest-to-host for guests in a room)
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                SectionTitle(stringResource(R.string.listen_together))
+            }
+            listenTogetherDialogBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            listenTogetherBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SectionTitle(stringResource(R.string.management))
             }
@@ -335,6 +353,7 @@ class PlayerItemMenu private constructor(
         val changeAuthor = ChangeAuthorDialog { song }
         val changeCover = ChangeCoverDialog { song }
         val editMetadata = EditMetadataDialog { song }
+        val updateDialog = UpdateSongDialog( song )
         val startRadio = Radio { listOf(song) }
         val addToFavorite = LikeComponent { listOf(song) }
         
@@ -370,22 +389,6 @@ class PlayerItemMenu private constructor(
                         Toaster.w(R.string.info_not_find_application_audio)
                     }
                     menuState.hide()
-                }
-                override fun onLongClick() {}
-            }
-        }
-
-        // Custom "Refetch" / "Update Song" button (from PlayerMenu logic)
-        var showRefetchDialog by remember { mutableStateOf(false) }
-        val refetchButton = remember {
-            object : MenuIcon, Descriptive, Clickable {
-                override val iconId: Int = R.drawable.refresh
-                override val messageId: Int = R.string.update
-                @get:Composable
-                override val menuIconTitle: String get() = stringResource(messageId)
-                
-                override fun onShortClick() {
-                    showRefetchDialog = true
                 }
                 override fun onLongClick() {}
             }
@@ -565,6 +568,64 @@ class PlayerItemMenu private constructor(
             }
         }
 
+        // Listen Together: guests in a room can suggest tracks to the host
+        // (remote songs only — the host resolves YouTube ids to play).
+        val ltManager = ListenTogetherManager.getInstance()
+        showListenTogetherSection = !song.isLocal &&
+            ltManager?.let { it.isInRoom && !it.isHost } == true
+
+        listenTogetherBtn = if (showListenTogetherSection) {
+            remember {
+                object : MenuIcon, Descriptive, Clickable {
+                    override val iconId: Int = R.drawable.musical_notes
+                    override val messageId: Int = R.string.listen_together_suggest
+                    @get:Composable
+                    override val menuIconTitle: String get() = stringResource(R.string.listen_together_suggest)
+
+                    override fun onShortClick() {
+                        // Suggest is a lightweight room action, not a navigation: the
+                        // player sheet stays open (same behavior as SongItemMenu).
+                        menuState.hide()
+                        val manager = ListenTogetherManager.getInstance() ?: return
+                        if (!manager.isInRoom || manager.isHost) return
+                        val durationMs = song.durationText
+                            ?.let { durationTextToMillis(it) }
+                            ?.takeIf { it > 0 }
+                            ?: 180000L
+                        manager.suggestTrack(
+                            TrackInfo(
+                                id = song.id,
+                                title = song.cleanTitle(),
+                                artist = song.cleanArtistsText(),
+                                duration = durationMs,
+                                thumbnail = song.thumbnailUrl.orEmpty(),
+                            )
+                        )
+                    }
+                    override fun onLongClick() {}
+                }
+            }
+        } else null
+
+        // Listen Together room dialog (Metrolist PlayerMenu dialog port): opens the
+        // create/join/manage room popup through the shared menu state. Shown for every
+        // song regardless of room state or role — it is the menu entry point to a room.
+        listenTogetherDialogBtn = remember {
+            object : MenuIcon, Descriptive, Clickable {
+                override val iconId: Int = R.drawable.people
+                override val messageId: Int = R.string.listen_together
+                @get:Composable
+                override val menuIconTitle: String get() = stringResource(R.string.listen_together)
+
+                override fun onShortClick() {
+                    menuState.display {
+                        ListenTogetherMenu()
+                    }
+                }
+                override fun onLongClick() {}
+            }
+        }
+
         // Re-order to match SongItemMenu layout exactly
         buttons = remember(song, albumData, artistsData) {
             mutableListOf<Button>().apply {
@@ -593,7 +654,7 @@ class PlayerItemMenu private constructor(
                     add(sleepTimerButton)    // 7
                     add(addToFavorite)       // 8
                     add(addToPlaylist)       // 9
-                    add(refetchButton)       // 10
+                    add(updateDialog)       // 10
                     
                     add(changeAlbumId)       // 11
                     add(changeArtistId)      // 12
@@ -716,47 +777,12 @@ class PlayerItemMenu private constructor(
             changeAuthor.Render()
             changeCover.Render()
             deleteSongDialog.Render()
+            updateDialog.Render()
         }
         
         changeAlbumId.Render()
         changeArtistId.Render()
         
-        if (showRefetchDialog) {
-            ConfirmationDialog(
-                text = stringResource(R.string.update_song),
-                onDismiss = { showRefetchDialog = false },
-                onConfirm = {
-                    showRefetchDialog = false
-                    menuState.hide()
-                    binder.cache.removeResource(mediaItem.mediaId)
-                    binder.downloadCache.removeResource(mediaItem.mediaId)
-                    val videoId = mediaItem.mediaId.split("/").lastOrNull() ?: mediaItem.mediaId
-                    coroutineScope.launch(NzikDispatchers.DATA) {
-                        Database.asyncTransaction {
-                            Database.songTable.updateTotalPlayTime(mediaItem.mediaId, 0)
-                        }
-                        val songItem = Innertube.song(videoId)?.getOrNull()
-                        if (songItem != null) {
-                            Database.asyncTransaction {
-                                val fetchedSong = songItem.asSong
-                                val dbSong = Database.songTable.findByIdDirect(videoId)
-                                if (dbSong != null && fetchedSong != null) {
-                                    Database.songTable.updateReplace(dbSong.copy(
-                                        title = fetchedSong.title ?: dbSong.title,
-                                        artistsText = fetchedSong.artistsText ?: dbSong.artistsText,
-                                        thumbnailUrl = fetchedSong.thumbnailUrl ?: dbSong.thumbnailUrl,
-                                        durationText = fetchedSong.durationText ?: dbSong.durationText,
-                                        likedAt = dbSong.likedAt,
-                                        totalPlayTimeMs = dbSong.totalPlayTimeMs,
-                                        position = dbSong.position
-                                    ))
-                                }
-                            }
-                        }
-                    }
-                }
-            )
-        }
 
         if (showListenOnDialog) {
              ListenOnDialog(

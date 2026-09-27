@@ -4,11 +4,9 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
@@ -24,10 +22,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.header.DebugLogsBadge
+import app.n_zik.android.components.ui.header.HeaderVersionBadge
 import app.kreate.android.drawable.APP_ICON_IMAGE_BITMAP
-import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.themed.Button
@@ -35,7 +33,6 @@ import app.it.fast4x.rimusic.utils.bold
 import app.it.fast4x.rimusic.utils.semiBold
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.uiRoundnessShape
-import app.n_zik.android.updater.services.Updater
 
 private fun appIconClickAction(
     navController: NavController,
@@ -125,40 +122,8 @@ fun AppTitle(
         AppLogo(navController, context)
         AppLogoText(navController)
 
-        // Version badge
-        val versionSuffix = Updater.extractVersionSuffix(BuildConfig.VERSION_NAME)
-        val isFoss = BuildConfig.BUILD_TYPE.equals("foss", ignoreCase = true)
-        
-        if (isFoss || (versionSuffix.isNotEmpty() && versionSuffix != "f")) {
-            Box(
-                modifier = Modifier
-                    .background(
-                        color = colorPalette().accent.copy(alpha = 0.2f),
-                        shape = uiRoundnessShape()
-                    )
-                    .padding(horizontal = 4.dp, vertical = 1.dp)
-            ) {
-                val badgeText = if (isFoss) "FOSS" else when (versionSuffix) {
-                    "b" -> stringResource(R.string.beta_title)
-                    "m" -> stringResource(R.string.minified_title)
-                    "b32" -> "${stringResource(R.string.beta_title)} 32"
-                    "m32" -> "${stringResource(R.string.minified_title)} 32"
-                    "f32" -> "${stringResource(R.string.full_title)} 32"
-                    "debug" -> stringResource(R.string.debug_title)
-                    "dev" -> stringResource(R.string.dev_title)
-                    "dev32" -> "${stringResource(R.string.dev_title)} 32"
-                    else -> versionSuffix.uppercase()
-                }
-                BasicText(
-                    text = badgeText,
-                    style = TextStyle(
-                        fontSize = typography().xxs.bold.fontSize,
-                        fontWeight = typography().xxs.bold.fontWeight,
-                        color = colorPalette().accent
-                    )
-                )
-            }
-        }
+        // Version badge (n_zik): width capped at the "DEBUG" badge width, marquee on overflow
+        HeaderVersionBadge()
 
         if (Preference.parentalControl())
             Button(
@@ -168,29 +133,9 @@ fun AppTitle(
                 size = 20.dp
             ).Draw()
 
-        if (Preference.debugLog())
-            Box(
-                modifier = Modifier
-                    .background(
-                        color = colorPalette().red.copy(alpha = 0.2f),
-                        shape = uiRoundnessShape()
-                    )
-                    .clip(uiRoundnessShape())
-                    .clickable {
-                        Toaster.s(R.string.info_debug_mode_is_enabled)
-                        navController.navigate(NavRoutes.settings.name)
-                    }
-                    .padding(horizontal = 4.dp, vertical = 1.dp)
-            ) {
-                BasicText(
-                    text = "DEBUG",
-                    style = TextStyle(
-                        fontSize = typography().xxs.bold.fontSize,
-                        fontWeight = typography().xxs.bold.fontWeight,
-                        color = colorPalette().red
-                    )
-                )
-            }
+        // Reactive debug badge (n_zik): live preference state, tap toggles the debug logs
+        // with the burger menu's side effects, title scrolls in a marquee
+        DebugLogsBadge()
     }
 // END
 }

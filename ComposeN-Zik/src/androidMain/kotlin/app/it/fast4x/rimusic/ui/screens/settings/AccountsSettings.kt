@@ -96,6 +96,7 @@ import app.n_zik.android.extensions.discord.DiscordRpcError
 import app.n_zik.android.extensions.discord.DiscordRpcErrorState
 import app.n_zik.android.extensions.discord.DiscordTemplateFieldActions
 import app.n_zik.android.extensions.discord.DiscordTemplateRenderer
+import app.n_zik.android.components.settings.DisplayNameSettingsCard
 import app.n_zik.android.components.settings.LastFmSettingsCard
 import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
 import app.n_zik.android.thumbnailShape
@@ -338,6 +339,8 @@ fun AccountsSettings() {
 
         /* Removed Spacer */
 
+        DisplayNameSettingsCard()
+
         // YouTube Music Section
         AnimatedVisibility(
             visible = true,
@@ -557,7 +560,7 @@ fun AccountsSettings() {
 
                             if (search.inputValue.isBlank() || true) {
                                 OtherSettingsEntry(
-                                    title = if (isLoggedIn) stringResource(R.string.youtube_disconnect) else stringResource(R.string.youtube_connect),
+                                    title = if (isLoggedIn) stringResource(R.string.account_logoff) else stringResource(R.string.account_login),
                                     text = "",
                                     icon = if (isLoggedIn) R.drawable.logout else R.drawable.person,
                                     onClick = {
@@ -1261,9 +1264,9 @@ fun AccountsSettings() {
                                     }
                                 }
 
-                                if (search.inputValue.isBlank() || stringResource(R.string.discord_connect).contains(search.inputValue, true) || stringResource(R.string.discord_disconnect).contains(search.inputValue, true)) {
+                                if (search.inputValue.isBlank() || stringResource(R.string.account_login).contains(search.inputValue, true) || stringResource(R.string.account_logoff).contains(search.inputValue, true)) {
                                     OtherSettingsEntry(
-                                        title = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.discord_disconnect) else stringResource(R.string.discord_connect),
+                                        title = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.account_logoff) else stringResource(R.string.account_login),
                                         text = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.discord_connected_to_discord_account) else "",
                                         icon = R.drawable.logout,
                                         onClick = {
@@ -1415,9 +1418,9 @@ fun AccountsSettings() {
                                     cookieManager.flush()
                                     WebStorage.getInstance().deleteAllData()
                                     if (cleared) {
-                                        Toaster.s(R.string.youtube_disconnect)
+                                        Toaster.s(R.string.account_logoff)
                                     } else {
-                                        Toaster.w(R.string.youtube_disconnect)
+                                        Toaster.w(R.string.account_logoff)
                                     }
                                 }
                             }

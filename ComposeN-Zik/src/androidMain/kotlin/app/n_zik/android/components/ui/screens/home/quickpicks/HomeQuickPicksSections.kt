@@ -40,10 +40,12 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.core.database.BookmarkStateManager
+import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
 import app.n_zik.android.components.menu.artist.OnlineArtistItemMenu
+import app.n_zik.android.components.menu.playlist.LocalPlaylistItemMenu
 import app.n_zik.android.components.menu.playlist.OnlinePlaylistItemMenu
 import app.n_zik.android.components.menu.song.SongItemMenu
 import app.n_zik.android.components.menu.video.VideoItemMenu
@@ -59,6 +61,7 @@ import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.PlayEventsType
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.models.Artist
+import app.it.fast4x.rimusic.models.PlaylistPreview
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.themed.*
 import app.it.fast4x.rimusic.ui.items.AlbumItem
@@ -71,7 +74,6 @@ import app.it.fast4x.rimusic.ui.styling.overlay
 import app.it.fast4x.rimusic.utils.*
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.HomePage
-import app.it.fast4x.rimusic.models.PlaylistPreview
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import timber.log.Timber
 import androidx.compose.material3.CircularProgressIndicator
@@ -643,55 +645,6 @@ fun SimilarArtistsSection(
 @OptIn(ExperimentalFoundationApi::class)
 @UnstableApi
 @Composable
-fun MonthlyPlaylistsSection(
-    showMonthlyPlaylistInQuickPicks: Boolean,
-    monthlyPlaylists: List<PlaylistPreview>,
-    navController: NavController,
-    endPaddingValues: PaddingValues,
-    playlistThumbnailSizeDp: Dp,
-    playlistThumbnailSizePx: Int,
-    disableScrollingText: Boolean
-) {
-    if (showMonthlyPlaylistInQuickPicks) {
-        if (monthlyPlaylists.isNotEmpty()) {
-            Timber.tag("HomeQuickPicksSections").d("Local Section found: Monthly Playlists (${monthlyPlaylists.size} items)")
-            Column {
-                BasicText(
-                    text = stringResource(R.string.monthly_playlists),
-                    style = typography().l.semiBold,
-                    modifier = Modifier
-                        .padding(horizontal = 12.dp)
-                        .padding(top = 16.dp, bottom = 8.dp)
-                )
-
-                LazyRow(contentPadding = endPaddingValues) {
-                    items(
-                        items = monthlyPlaylists.distinctBy { it.playlist.id },
-                        key = { it.playlist.id },
-                        contentType = { "playlist" }
-                    ) { playlist ->
-                        PlaylistItem(
-                            playlist = playlist,
-                            thumbnailSizeDp = playlistThumbnailSizeDp,
-                            thumbnailSizePx = playlistThumbnailSizePx,
-                            alternative = true,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(uiRoundnessShape()).clickable(onClick = { navController.navigate(route = "${NavRoutes.localPlaylist.name}/${playlist.playlist.id}") }).animateItem(),
-                            disableScrollingText = disableScrollingText,
-                            isYoutubePlaylist = playlist.playlist.isYoutubePlaylist,
-                            isEditable = playlist.playlist.isEditable
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@UnstableApi
-@Composable
 fun MyTopSection(
     showMyTopPlaylist: Boolean,
     myTopSongs: List<Song>,
@@ -735,6 +688,71 @@ fun MyTopSection(
                     modifier = Modifier.width(itemInHorizontalGridWidth).animateItem(),
                         )
                 }
+                }
+            } // Column
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@UnstableApi
+@Composable
+fun RewindSection(
+    showRewind: Boolean,
+    rewindPlaylists: List<PlaylistPreview>,
+    navController: NavController,
+    endPaddingValues: PaddingValues,
+    sectionTextModifier: Modifier,
+    itemInHorizontalGridWidth: Dp,
+    playlistThumbnailSizePx: Int,
+    playlistThumbnailSizeDp: Dp,
+    disableScrollingText: Boolean
+) {
+    val menuState = LocalMenuState.current
+    // Spec 2: the generated rewind-* playlists as a local section — auto-hidden when none
+    // exist (same pattern as the other local sections).
+    if (showRewind) {
+        if (rewindPlaylists.isNotEmpty()) {
+            Timber.tag("HomeQuickPicksSections").d("Local Section found: Rewind (${rewindPlaylists.size} items)")
+            Column {
+                BasicText(
+                    text = stringResource(R.string.rewind),
+                    style = typography().l.semiBold,
+                    modifier = sectionTextModifier
+                )
+
+                LazyRow(contentPadding = endPaddingValues) {
+                    items(
+                        items = rewindPlaylists.distinctBy { it.playlist.id },
+                        key = { it.playlist.id },
+                        contentType = { "rewindPlaylist" }
+                    ) { preview ->
+                        PlaylistItem(
+                            playlist = preview,
+                            thumbnailSizePx = playlistThumbnailSizePx,
+                            thumbnailSizeDp = playlistThumbnailSizeDp,
+                            modifier = Modifier
+                                .width(itemInHorizontalGridWidth)
+                                .clip(uiRoundnessShape())
+                                .combinedClickable(
+                                    onClick = {
+                                        navController.navigate("${NavRoutes.localPlaylist.name}/${preview.playlist.id}")
+                                    },
+                                    onLongClick = {
+                                        menuState.display {
+                                            LocalPlaylistItemMenu(
+                                                navController = navController,
+                                                playlistPreview = preview
+                                            ).MenuComponent()
+                                        }
+                                    }
+                                )
+                                .animateItem(),
+                            disableScrollingText = disableScrollingText,
+                            isYoutubePlaylist = false,
+                            isEditable = preview.playlist.isEditable
+                        )
+                    }
                 }
             } // Column
         }
@@ -1215,7 +1233,7 @@ fun GenericYtmSections(
                             AlbumItem(
                                 thumbnailUrl = item.thumbnail?.url,
                                 title = item.info?.name,
-                                authors = item.authors.parseArtists().joinToString(", "),
+                                authors = item.authors.artistEntryNames().joinToString(", "),
                                 year = null,
                                 thumbnailSizePx = albumThumbnailSizePx,
                                 thumbnailSizeDp = albumThumbnailSizeDp,

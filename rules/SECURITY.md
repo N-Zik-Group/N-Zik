@@ -1,15 +1,16 @@
 # Security Rules
 
-**Version:** 1.3.0 | **Last updated:** 2026-09-23
+**Version:** 1.5.0 | **Last updated:** 2026-09-26
 
 ## Secrets & API Keys
 
 - NEVER commit secrets, API keys, or tokens
 - Use `local.properties` for local secrets (gitignored)
 - Use `BuildConfig` fields for build-time secrets
+- API-key resolution chain (see `build.gradle.kts`, Last.fm as reference): `local.properties` → committed `build.properties` (public values only — see exception below) → environment variables (e.g. `LASTFM_API_KEY`/`LASTFM_API_SECRET`) → empty string. Mirror this chain when adding a new API key
 - NEVER log sensitive data (tokens, passwords, user data)
 
-> **Documented exception — `N-Zik/build.properties`:** the Last.fm API key/secret in this file are **intentionally committed** (F-Droid builds from tagged source without environment variables, so public values must live in source — official F-Droid practice; they are already embedded in every released APK, so committing them exposes nothing new). The random canary entries (10-char random names, e.g. `Qx7Kd2Wm9P=…`) are **decoy values, NOT real keys**. Do NOT flag `build.properties` as a secret leak, and do NOT move, gitignore or "clean" these values. A real secret (keystore, signing key, private token) appearing anywhere else still triggers the HALT rules below.
+> **Documented exception — `N-Zik/build.properties`:** the Last.fm API key/secret in this file are **intentionally committed** (F-Droid builds from tagged source without environment variables, so public values must live in source — official F-Droid practice; they are already embedded in every released APK, so committing them exposes nothing new). The random canary entries (10-char random names, e.g. `Qx7Kd2Wm9P=…`) are **decoy values, NOT real keys**. Do NOT flag `build.properties` as a secret leak, and do NOT move, gitignore or "clean" these values. The `shazam_proxy_api_key` is intentionally left empty in public builds (kept out on purpose per the file's comments). A real secret (keystore, signing key, private token) appearing anywhere else still triggers the HALT rules below.
 
 ## Input Validation
 
@@ -33,10 +34,12 @@
 - Use HTTPS for all network communications
 - Do not store credentials in plain text
 
+> **Deliberate exception:** `res/xml/network_security_config.xml` permits cleartext for `localhost` / `127.0.0.1` only (Listen Together local dev servers; production uses `wss://`). Do NOT "fix" this exception — it is intentional.
+
 ## Signing & Keystore
 
 - NEVER commit a keystore file (`.jks`, `.keystore`) or its passwords, under any build variant
-- Release/Beta/Foss signing credentials are referenced via `local.properties` or CI secrets (GitHub Actions secrets) — NEVER hardcoded in `build.gradle.kts`
+- Release/Beta/Foss signing credentials come from GitHub Actions secrets only (CI) — NEVER hardcoded in `build.gradle.kts`; `local.properties` is NOT consulted for signing in this repo
 - Only the `debug` build type uses debug signing locally; `beta`/`foss`/release APKs are unsigned locally and signed in CI via GitHub Actions secrets — do NOT add a local signing config for non-debug build types without explicit instruction
 - NEVER modify signing config blocks (`signingConfigs {}`) without explicit instruction — a wrong signing config can invalidate the Play Store / F-Droid update chain (mismatched signature blocks app updates for all existing users)
 - If a keystore or signing secret is found in a diff, commit, or log output → HALT immediately, treat as a leaked secret (same escalation as "Secrets found in code" below)
@@ -60,4 +63,4 @@ When using code from external sources (web, GitHub, StackOverflow, AI):
 | SQL injection risk         | HALT, verify Room parameterized queries, report                     |
 | Hardcoded credentials      | HALT, remove credentials, use BuildConfig or local.properties       |
 | Insecure network call      | HALT, switch to HTTPS, verify certificate pinning                   |
-| User data leak             | HALT, identify leak source, report to user, fix immediately         |
+| User data leak             | HALT, identify leak source, report to user (fix only after user confirmation)  |

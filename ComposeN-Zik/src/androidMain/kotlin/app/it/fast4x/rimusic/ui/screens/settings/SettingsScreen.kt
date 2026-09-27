@@ -1,9 +1,14 @@
 package app.it.fast4x.rimusic.ui.screens.settings
 
 import android.content.Context
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -746,82 +751,89 @@ fun SettingsSectionCard(
     icon: Int,
     content: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    description: String? = null
+    description: String? = null,
+    visible: Boolean = true
 ) {
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
     
-    Column(modifier = modifier.fillMaxWidth()) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .shadow(
-                    elevation = 4.dp,
-                    shape = uiRoundnessShape(),
-                    spotColor = colorPalette().accent.copy(alpha = 0.2f)
+    AnimatedVisibility(
+        visible = visible,
+        enter = expandVertically(animationSpec = tween(400)) + fadeIn(animationSpec = tween(400)),
+        exit = shrinkVertically(animationSpec = tween(200)) + fadeOut(animationSpec = tween(200))
+    ) {
+        Column(modifier = modifier.fillMaxWidth()) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .shadow(
+                        elevation = 4.dp,
+                        shape = uiRoundnessShape(),
+                        spotColor = colorPalette().accent.copy(alpha = 0.2f)
+                    ),
+                shape = uiRoundnessShape(),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (colorPalette() === PureBlackColorPalette || colorPalette() === ModernBlackColorPalette || colorPaletteMode == ColorPaletteMode.PitchBlack) {
+                        Color(0xFF1A1A1A) // Gray dark for pitch black themes
+                    } else {
+                        colorPalette().background1
+                    }
                 ),
-            shape = uiRoundnessShape(),
-            colors = CardDefaults.cardColors(
-                containerColor = if (colorPalette() === PureBlackColorPalette || colorPalette() === ModernBlackColorPalette || colorPaletteMode == ColorPaletteMode.PitchBlack) {
-                    Color(0xFF1A1A1A) // Gray dark for pitch black themes
-                } else {
-                    colorPalette().background1
-                }
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                // Section Header
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = 12.dp)
+                Column(
+                    modifier = Modifier.padding(16.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(
-                                color = colorPalette().accent.copy(alpha = 0.1f),
-                                shape = uiRoundnessShape()
-                            ),
-                        contentAlignment = Alignment.Center
+                    // Section Header
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(bottom = 12.dp)
                     ) {
-                        Icon(
-                            painter = painterResource(icon),
-                            tint = colorPalette().accent,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(
+                                    color = colorPalette().accent.copy(alpha = 0.1f),
+                                    shape = uiRoundnessShape()
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(icon),
+                                tint = colorPalette().accent,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.width(12.dp))
+                        
+                        BasicText(
+                            text = title,
+                            style = typography().xs.semiBold.copy(
+                                color = colorPalette().accent
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
-                    
-                    Spacer(modifier = Modifier.width(12.dp))
-                    
-                    BasicText(
-                        text = title,
-                        style = typography().xs.semiBold.copy(
-                            color = colorPalette().accent
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+        
+                    if (description != null) {
+                        BasicText(
+                            text = description,
+                            style = typography().xxs.copy(
+                                color = colorPalette().textSecondary
+                            ),
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                    }
+        
+                    // Content
+                    content()
                 }
-    
-                if (description != null) {
-                    BasicText(
-                        text = description,
-                        style = typography().xxs.copy(
-                            color = colorPalette().textSecondary
-                        ),
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                }
-    
-                // Content
-                content()
             }
+            Spacer(modifier = Modifier.height(16.dp))
         }
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 

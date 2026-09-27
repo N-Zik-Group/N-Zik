@@ -7,7 +7,7 @@ import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import app.it.fast4x.rimusic.utils.asSong
-import app.it.fast4x.rimusic.utils.parseArtists
+import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
@@ -77,7 +77,7 @@ class SearchBrowseHandler : BrowseHandler {
                     }
                     val items = resultPage?.items ?: emptyList()
                     AutoSearchState.searchedAlbums = (AutoSearchState.searchedAlbums + items).distinctBy { it.key }
-                    allMapped.addAll(items.map { ali -> SessionMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, ali.key ?: "", ali.info?.name ?: "", ali.authors.parseArtists().joinToString(", "), ali.thumbnail?.url, actualParentId) })
+                    allMapped.addAll(items.map { ali -> SessionMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, ali.key ?: "", ali.info?.name ?: "", ali.authors.artistEntryNames().joinToString(", "), ali.thumbnail?.url, actualParentId) })
                     cont = resultPage?.continuation
                 } while (cont != null && allMapped.size < 150)
                 allMapped
@@ -140,7 +140,7 @@ class SearchBrowseHandler : BrowseHandler {
                     }
                     val items = resultPage?.items ?: emptyList()
                     AutoSearchState.searchedAlbums = (AutoSearchState.searchedAlbums + items).distinctBy { it.key }
-                    allMapped.addAll(items.map { ali -> SessionMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, ali.key ?: "", ali.info?.name ?: "", ali.authors.parseArtists().joinToString(", "), ali.thumbnail?.url, actualParentId) })
+                    allMapped.addAll(items.map { ali -> SessionMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, ali.key ?: "", ali.info?.name ?: "", ali.authors.artistEntryNames().joinToString(", "), ali.thumbnail?.url, actualParentId) })
                     cont = resultPage?.continuation
                 } while (cont != null && allMapped.size < 150)
                 allMapped

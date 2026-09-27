@@ -60,6 +60,7 @@ import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import it.fast4x.innertube.Innertube
@@ -410,7 +411,7 @@ class OnlineAlbumItemMenu private constructor(
         var songs by remember { mutableStateOf<List<Song>?>(null) }
 
         var displayTitle by remember { mutableStateOf(album.title ?: album.info?.name) }
-        var displayAuthors by remember { mutableStateOf(album.authors.parseArtists().joinToString(", ")) }
+        var displayAuthors by remember { mutableStateOf(album.authors.artistEntryNames().joinToString(", ")) }
         var displayYear by remember { mutableStateOf(album.year) }
         var displayThumbnailUrl by remember { mutableStateOf(album.thumbnail?.url) }
 
@@ -440,7 +441,7 @@ class OnlineAlbumItemMenu private constructor(
                 val result = Innertube.albumPage(browseId = album.key.removePrefix(MODIFIED_PREFIX))?.getOrNull()
                 if (result != null) {
                     displayTitle = result.title.takeIf { !it.isNullOrBlank() } ?: displayTitle
-                    displayAuthors = result.authors.parseArtists().joinToString(", ").takeIf { it.isNotBlank() } ?: displayAuthors
+                    displayAuthors = result.authors.artistEntryNames().joinToString(", ").takeIf { it.isNotBlank() } ?: displayAuthors
                     displayYear = result.year.takeIf { !it.isNullOrBlank() } ?: displayYear
                     displayThumbnailUrl = result.thumbnail?.url.takeIf { !it.isNullOrBlank() } ?: displayThumbnailUrl
                     songs = result.songsPage?.items?.mapNotNull { it.asSong } ?: emptyList()

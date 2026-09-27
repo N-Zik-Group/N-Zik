@@ -33,7 +33,8 @@ fun RewindTotalTimeCard(
     page: Int,
     pageCount: Int,
     active: Boolean,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null
 ) {
     val onOrange = rewindColors.value.textOn(rewindColors.value.orange)
     val onLime = rewindColors.value.textOn(rewindColors.value.lime)
@@ -42,7 +43,8 @@ fun RewindTotalTimeCard(
         pageCount = pageCount,
         background = rewindColors.value.orange,
         progressColor = onOrange,
-        onNext = onNext
+        onNext = onNext,
+        onShareSlide = onShareSlide
     ) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val compact = maxHeight < 700.dp

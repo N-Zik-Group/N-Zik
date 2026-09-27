@@ -8,7 +8,7 @@ import androidx.media3.common.MediaItem
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.asSong
-import app.it.fast4x.rimusic.utils.parseArtists
+import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
@@ -63,7 +63,7 @@ class AlbumDetailHandler : BrowseHandler {
         val online = YtMusic.getAlbum(cleanAlbumId, true).getOrNull()
         if (online != null) {
             val onlineAlbum = online.album
-            val authorsText: String? = onlineAlbum.authors.parseArtists().joinToString(", ")
+            val authorsText: String? = onlineAlbum.authors.artistEntryNames().joinToString(", ")
             onlineSongs = online.songs.map { it.asSong }
             
             NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {

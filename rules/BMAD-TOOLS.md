@@ -1,16 +1,20 @@
 # BMAD IDE Skill Directories
 
-**Version:** 1.3.0 | **Last updated:** 2026-09-23
+**Version:** 1.5.0 | **Last updated:** 2026-09-26
 
 Reference only — read only when configuring IDE tooling. Skim for your tool, skip the rest. Full reference: upstream BMAD-METHOD repo, `tools/installer/ide/platform-codes.yaml` (NOT present in this workspace).
 
-## Preferred Tools (Installed)
+## Preferred Tools
+
+⭐ = preferred (asked first). **Preferred ≠ installed:** the IDEs in the installer manifest (`_bmad/_config/manifest.yaml`) are `claude-code`, `antigravity`, `opencode` — Copilot is preferred but NOT in the manifest (it still loads the shared `.agents/skills/` dir); Claude Code is installed but listed under "All Other Tools".
 
 | Tool                     | Skills dir        | Global dir                      | Commands dir          |
 | ------------------------ | ----------------- | ------------------------------- | --------------------- |
 | **OpenCode** ⭐           | `.agents/skills/` | `~/.agents/skills/`             | `.opencode/commands/` |
 | **GitHub Copilot** ⭐     | `.agents/skills/` | `~/.agents/skills/`             | `.github/agents/` (upstream convention — none installed here) |
 | **Google Antigravity** ⭐ | `.agent/skills/`  | `~/.gemini/antigravity/skills/` | —                     |
+
+> **This machine:** only the **project-local** dirs above are actually installed (57 skills each). The `Global dir` column documents the upstream conventions — they are **NOT present here** (no `~/.agents/skills`, no `~/.gemini/antigravity/skills`; `~/.claude/skills` exists but holds only non-BMAD `synced/` skills; a global `~/.bmad/cache` — BMAD's own cache — does exist).
 
 ## All Other Tools
 

@@ -21,6 +21,9 @@ plugins {
 
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.kotlin.serialization)
+
+    // Protobuf (Listen Together wire format — Metrolist port)
+    alias(libs.plugins.protobuf)
 }
 
 repositories {
@@ -314,6 +317,14 @@ android {
     androidResources {
         generateLocaleConfig = true
     }
+
+    testOptions {
+        // Unit tests (Robolectric) must be able to resolve app resources such as strings
+        // and drawables (e.g. the rewind reminder worker reads its notification strings)
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 java {
@@ -330,6 +341,21 @@ compose.resources {
 
 room {
     schemaDirectory("$projectDir/schemas")
+}
+
+// Listen Together protocol (Metrolist port): protobuf-lite, generated in the
+// `main` source set (src/main/proto). Mirrors the Metrolist app module config.
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${libs.versions.protobufVersion.get()}"
+    }
+    generateProtoTasks {
+        all().configureEach {
+            builtins {
+                create("java") { option("lite") }
+            }
+        }
+    }
 }
 
 dependencies {
@@ -379,7 +405,6 @@ dependencies {
     implementation(projects.musicbrainz)
     implementation(projects.lastfm)
     implementation(projects.betterlyrics)
-    implementation(libs.freedroidwarn)
 
 
     coreLibraryDesugaring(libs.desugaring.nio)
@@ -397,6 +422,7 @@ dependencies {
     annotationProcessor(libs.lombok)
     implementation(libs.jetbrains.annotations)
     implementation(libs.okhttp3.okhttp)
+    implementation(libs.protobuf.java)
 
     // Debug only
     debugImplementation(libs.ui.tooling.preview.android)

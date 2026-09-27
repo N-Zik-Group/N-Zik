@@ -35,8 +35,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.it.fast4x.compose.persist.persistList
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
+import app.it.fast4x.rimusic.PINNED_PREFIX
 import app.n_zik.android.MainApplication
-import app.it.fast4x.rimusic.MONTHLY_PREFIX
 import app.it.fast4x.rimusic.enums.*
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.models.PlaylistPreview
@@ -53,6 +53,7 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.typography
 import app.n_zik.android.playback.utils.Shuffler
 import it.fast4x.innertube.Innertube
@@ -290,17 +291,28 @@ fun HomeQuickPicks(
                 }.orEmpty()
             }
 
-            val monthlyPlaylistsState = persistList<PlaylistPreview>("home/quickpicks/local/monthlyPlaylists")
-            val monthlyPlaylists by remember {
-                Database.playlistTable.allAsPreview().distinctUntilChanged().map { list -> list.filter { it.playlist.name.startsWith(MONTHLY_PREFIX, true) } }
-            }.collectAsStateWithLifecycle(monthlyPlaylistsState.value, context = NzikDispatchers.DATA)
-            LaunchedEffect(monthlyPlaylists) { monthlyPlaylistsState.value = monthlyPlaylists }
-
             val maxTopPlaylistItems by rememberPreference(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`)
             val maxTopPlaylistItemsCustomValue by rememberPreference(MaxTopPlaylistItemsCustomValueKey, 10)
             val myTopSongsState = persistList<Song>("home/quickpicks/local/myTopSongs")
             val myTopSongs by remember { Database.eventTable.findSongsMostPlayedBetween(from = 0L, limit = maxTopPlaylistItems.toInt(maxTopPlaylistItemsCustomValue)) }.collectAsStateWithLifecycle(myTopSongsState.value, context = NzikDispatchers.DATA)
             LaunchedEffect(myTopSongs) { myTopSongsState.value = myTopSongs }
+
+            // Spec 2: local rewind-* playlists for the Quick Picks "Rewind" section —
+            // direct data, no HomeQuickPicksState detour. The toggle reuses the legacy
+            // showMonthlyPlaylistsKey (spec 1 kept the persisted user preference).
+            val showRewind by rememberPreference(showMonthlyPlaylistsKey, true)
+            val rewindPlaylists by remember {
+                Database.playlistTable
+                    .sortPreviewsByName()
+                    .map { list ->
+                        list.filter { preview ->
+                            !preview.playlist.isYoutubePlaylist &&
+                                !preview.playlist.name.startsWith(PINNED_PREFIX, true) &&
+                                RewindPlaylists.isRewind(preview.playlist.name)
+                        }
+                    }
+                    .distinctUntilChanged()
+            }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
 
             val sectionOrder = rememberQuickPicksSectionOrder()
             val showCharts by rememberPreference(showChartsKey, true)
@@ -310,7 +322,6 @@ fun HomeQuickPicks(
             val showNewAlbums by rememberPreference(showNewAlbumsKey, true)
             val showPlaylistMightLike by rememberPreference(showPlaylistMightLikeKey, true)
             val showMoodsAndGenres by rememberPreference(showMoodsAndGenresKey, true)
-            val showMonthlyPlaylists by rememberPreference(showMonthlyPlaylistInQuickPicksKey, true)
             val showMyTop by rememberPreference(showMyTopPlaylistKey, true)
             val showFreshFindsOldFavorites by rememberPreference(showFreshFindsOldFavoritesKey, true)
             val showMixedForYou by rememberPreference(showMixedForYouKey, true)
@@ -489,19 +500,21 @@ fun HomeQuickPicks(
                                 }
                             }
                         }
-                        "monthly_playlists" -> {
-                            val hasMonthlyPlaylists = monthlyPlaylists.isNotEmpty()
-                            item(key = "monthly_playlists") {
-                                AnimatedVisibility(visible = showMonthlyPlaylists && hasMonthlyPlaylists, modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    MonthlyPlaylistsSection(showMonthlyPlaylists, monthlyPlaylists, navController, endPaddingValues, playlistThumbnailSizeDp, playlistThumbnailSizePx, disableScrollingText)
-                                }
-                            }
-                        }
                         "my_top" -> {
                             val hasMyTop = myTopSongs.isNotEmpty()
                             item(key = "my_top") {
                                 AnimatedVisibility(visible = showMyTop && hasMyTop, modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
                                     MyTopSection(showMyTop, myTopSongs, navController, endPaddingValues, sectionTextModifier, itemInHorizontalGridWidth)
+                                }
+                            }
+                        }
+                        "rewind" -> {
+                            // Spec 2: generated rewind-* playlists — hidden when the toggle
+                            // is off or no playlist exists yet (auto-hide pattern)
+                            val hasRewind = rewindPlaylists.isNotEmpty()
+                            item(key = "rewind") {
+                                AnimatedVisibility(visible = showRewind && hasRewind, modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                    RewindSection(showRewind, rewindPlaylists, navController, endPaddingValues, sectionTextModifier, itemInHorizontalGridWidth, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText)
                                 }
                             }
                         }
@@ -697,8 +710,8 @@ private val defaultQuickPicksSectionOrder = listOf(
     "new_albums",
     "albums_for_you",
     "related_albums",
-    "monthly_playlists",
     "my_top",
+    "rewind",
     "similar_artists",
     "todays_biggest_hits",
     "all_hits",

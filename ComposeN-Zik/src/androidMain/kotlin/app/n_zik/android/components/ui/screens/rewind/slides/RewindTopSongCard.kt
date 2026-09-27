@@ -53,6 +53,7 @@ internal fun RewindTopSongShow(
     pageCount: Int,
     active: Boolean,
     onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null,
     kickerId: Int,
     headingId: Int,
     emptyTitleId: Int,
@@ -88,6 +89,7 @@ internal fun RewindTopSongShow(
         background = rewindColors.value.pink,
         progressColor = onPink,
         onNext = if (phase >= 2 || winner == null) onNext else null,
+        onShareSlide = onShareSlide,
         backgroundArt = {
             // The final artwork lives in a frame, so the page itself stays flat and editorial.
             Box(
@@ -140,7 +142,7 @@ internal fun RewindTopSongShow(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = if (phase == 0) stringResource(R.string.rw_top_song_teaser_ten) else stringResource(R.string.rw_top_song_teaser_winner),
+                                text = if (phase == 0) stringResource(R.string.rw_top_song_teaser, contenders.size) else stringResource(R.string.rw_top_song_teaser_winner),
                                 color = onPink,
                                 fontSize = if (compact) 35.sp else 42.sp,
                                 lineHeight = if (compact) 33.sp else 39.sp,
@@ -309,7 +311,8 @@ fun RewindTopSongCard(
     page: Int,
     pageCount: Int,
     active: Boolean,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null
 ) {
     RewindTopSongShow(
         songs = songs,
@@ -318,6 +321,7 @@ fun RewindTopSongCard(
         pageCount = pageCount,
         active = active,
         onNext = onNext,
+        onShareSlide = onShareSlide,
         kickerId = R.string.rw_top_song_kicker,
         headingId = R.string.rw_top_song_heading,
         emptyTitleId = R.string.rw_top_song_empty_title,

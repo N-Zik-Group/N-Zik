@@ -45,6 +45,7 @@ import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.it.fast4x.rimusic.MONTHLY_PREFIX
 import app.it.fast4x.rimusic.PINNED_PREFIX
+import app.n_zik.android.core.rewind.RewindPlaylists
 
 import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.colorPalette
@@ -209,6 +210,8 @@ fun PlaylistsItemMenu(
                 val unpinnedPlaylists = playlistPreviews.filter {
                     !it.playlist.name.startsWith(PINNED_PREFIX, 0, true) &&
                             !it.playlist.name.startsWith(MONTHLY_PREFIX, 0, true) &&
+                            // Spec 2: generated rewind-* playlists are never add-to targets
+                            !RewindPlaylists.isRewind(it.playlist.name) &&
                             !it.playlist.isYoutubePlaylist
                 }
 

@@ -44,11 +44,27 @@ import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
 import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
 import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.maintenance.MaintenanceConvergenceState
+import app.n_zik.android.core.maintenance.MaintenanceDbCleanupState
+import app.n_zik.android.core.maintenance.MaintenanceDedupState
+import app.n_zik.android.core.maintenance.MaintenanceStateStore
+import app.n_zik.android.core.migration.DbCleanup
+import app.n_zik.android.components.maintenance.countCrashBlocks
+import app.n_zik.android.core.migration.MonthlyPlaylistCleanup
+import app.n_zik.android.core.migration.NameConvergence
 import app.n_zik.android.core.migration.RemovedSettingsMigration
+import app.n_zik.android.core.migration.SameNameArtistDedup
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.network.client.Store
+import app.n_zik.android.core.rescue.RescueProcess
 import app.n_zik.android.extensions.audiobar.VisualizerCaptureCoordinator
+import app.n_zik.android.listentogether.ListenTogetherClient
+import app.n_zik.android.listentogether.ListenTogetherManager
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.debug.CRASH_CLEAN_BOOT_STREAK_KEY
+import app.n_zik.android.utils.debug.CRASH_LAST_SEEN_COUNT_KEY
+import app.n_zik.android.utils.debug.crashLogFile
+import app.n_zik.android.utils.debug.crashLogWipeDecision
 import app.n_zik.android.utils.logging.FileLoggingTree
 import app.n_zik.android.utils.logging.flushThenDelegate
 import me.knighthat.invidious.Invidious
@@ -67,6 +83,10 @@ import it.fast4x.innertube.utils.InnertubeLogger
 import it.fast4x.innertube.models.ArtistConjunctions
 import it.fast4x.invidious.utils.InvidiousLogger
 import app.n_zik.android.extensions.musicbrainz.workers.MbBackfillWorker
+import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
+import app.n_zik.android.components.ui.screens.rewind.RewindYearlyReminderWorker
+import app.n_zik.android.core.rewind.RewindMonthlyPlaylistWorker
+import app.n_zik.android.core.rewind.RewindYearlyPlaylistWorker
 import app.n_zik.android.musicbrainz.MBCircuitBreakerPersistence
 import app.n_zik.android.musicbrainz.MBLogger
 import app.n_zik.android.musicbrainz.MBNetwork
@@ -87,11 +107,52 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // that process claim WebView's data directory and crash the next main-process WebView.
         if (!isMainProcess()) return
 
+        // Rescue Center safety net: the Rescue writes a kill-request flag when its hot kill
+        // (broadcast) may be lost (main process dead or fully frozen). Consume it BEFORE any
+        // heavy initialization and end this process. The flag was consumed before the kill,
+        // so the next launch cannot self-kill again (no kill loop). If the flag cannot even be
+        // read at boot, do not kill: a stale flag is preferable to a broken launch loop.
+        // A leftover flag older than the max age (left by an older app version, which
+        // recorded the kill request on every Rescue Center open even while the process was
+        // alive) is discarded WITHOUT killing — only a fresh request justifies it.
+        if (runCatching { RescueProcess.discardStaleKillRequest(this) }.getOrDefault(false)) {
+            return
+        }
+
+        if (runCatching { RescueProcess.consumeKillRequest(this) }.getOrDefault(false)) {
+            // killProcess is the public API for ending a process from inside (the framework's
+            // exitProcess is @hide and not part of the SDK).
+            Process.killProcess(Process.myPid())
+            return
+        }
+
+        // Same Rescue Center: register the receiver that ends this process on demand. Early,
+        // BEFORE Dependencies.init, so the receiver exists even if initialization crashes below
+        // (same rationale as the shortcuts registration just below).
+        RescueProcess.registerKillMainReceiver(this)
+
+        // Same Rescue Center: start the alive-marker updater — the only reliable liveness
+        // signal the `:rescue` process can see from API 31 on (the process probe is then
+        // restricted to the calling process). Background thread: the marker stays fresh even
+        // while the main thread is frozen, and it is never stopped (it lives with the process).
+        RescueProcess.startAliveMarkerUpdater(this)
+
         // Register app shortcuts early, BEFORE Dependencies.init, so that the Rescue
         // shortcut exists even if initialization crashes below.
         app.n_zik.android.shortcuts.registerAppShortcuts(this)
 
         Dependencies.init(this)
+
+        // Listen Together (spec-listen-together): create the WebSocket client and the sync
+        // manager, bind the player bridge and auto-reconnect to a fresh persisted session
+        // when one exists. Failure must not block app startup.
+        runCatching {
+            val listenTogetherClient = ListenTogetherClient(this)
+            val listenTogetherManager = ListenTogetherManager(listenTogetherClient, this)
+            listenTogetherManager.initialize()
+        }.onFailure { t ->
+            Timber.tag("MainApplication").e(t, "Listen Together init failed")
+        }
 
         // Route InnertubeLogger (JVM module) to Timber (Android debug log)
         InnertubeLogger.addListener { tag, level, message, throwable ->
@@ -151,6 +212,73 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         migrateCredentialsToEncrypted()
         runCatching { RemovedSettingsMigration.run(preferences) }
             .onFailure { Timber.tag("MainApplication").w(it, "Removed settings migration failed") }
+        // One-shot cleanup of the legacy `monthly:YYYYMM` playlists, abandoned with the
+        // on-the-fly generation mechanism (flag-guarded, idempotent, background)
+        runCatching { MonthlyPlaylistCleanup.run(this) }
+            .onFailure { Timber.tag("MainApplication").w(it, "Monthly playlists cleanup failed") }
+        // Artist-data boot chain: strictly sequential in one coroutine, one pass
+        // after the other (each pass sees the committed state of the previous
+        // one): cleanup of polluted artist↔song links (idempotent) -> dedup of
+        // same-name artist rows (rate-limited network pass, no per-launch cap) ->
+        // convergence of the denormalized artist-name copies from the links
+        // (offline, idempotent). All re-run on every launch, so they also heal
+        // data that reappears through database imports or YTM/YT syncs; a failing
+        // pass does not block the next (runCatching per pass, logged as warning).
+        //
+        // Maintenance state (spec "Maintenance — état de l'app en un regard"):
+        // each successful pass persists its last result (one key per pass in
+        // app_settings) so the Maintenance sheet can show it. A failing pass
+        // never writes — the previously persisted state is kept and the pass
+        // retries on the next launch, exactly like today.
+        NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+            runCatching { DbCleanup.runPass(this@MainApplication) }
+                .onSuccess { result ->
+                    // The persistence itself is isolated too: a failing write must not
+                    // cancel the launch block and skip the two remaining passes
+                    runCatching {
+                        MaintenanceStateStore.saveDbCleanup(
+                            this@MainApplication,
+                            MaintenanceDbCleanupState(
+                                System.currentTimeMillis(),
+                                result.removed,
+                                result.removedLinks,
+                            ),
+                        )
+                    }.onFailure { Timber.tag("MainApplication").w(it, "Could not persist the artist link cleanup state") }
+                }
+                .onFailure { Timber.tag("MainApplication").e(it, "Artist link cleanup failed (retry on next launch)") }
+            runCatching { SameNameArtistDedup.runPass(this@MainApplication) }
+                .onSuccess { result ->
+                    runCatching {
+                        MaintenanceStateStore.saveDedup(
+                            this@MainApplication,
+                            MaintenanceDedupState(
+                                timestamp = System.currentTimeMillis(),
+                                groups = result.groups,
+                                resolved = result.resolved,
+                                songResolved = result.songResolved,
+                                merged = result.merged,
+                                flagged = result.flagged,
+                                skipped = result.skipped,
+                                deferred = result.deferred,
+                                localKept = result.localKept,
+                                records = result.records,
+                            ),
+                        )
+                    }.onFailure { Timber.tag("MainApplication").w(it, "Could not persist the same-name dedup state") }
+                }
+                .onFailure { Timber.tag("MainApplication").e(it, "Same-name artist dedup failed (retry on next launch)") }
+            runCatching { NameConvergence.runPass() }
+                .onSuccess { summary ->
+                    runCatching {
+                        MaintenanceStateStore.saveConvergence(
+                            this@MainApplication,
+                            MaintenanceConvergenceState(System.currentTimeMillis(), summary),
+                        )
+                    }.onFailure { Timber.tag("MainApplication").w(it, "Could not persist the name convergence state") }
+                }
+                .onFailure { Timber.tag("MainApplication").e(it, "Name convergence failed (retry on next launch)") }
+        }
         InnerTubeXPlayer.initialize(this)
 
         // Setup session BEFORE prewarm — ensures session is stable when IO thread starts
@@ -253,6 +381,18 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // Enrich artist/album MusicBrainz metadata in background (first run after 1h)
         MbBackfillWorker.schedule(this)
 
+        // Monthly rewind reminder (next 1st of the month, WorkManager, self-rescheduling)
+        RewindReminderWorker.schedule(this)
+
+        // Yearly rewind reminder (next 1st of January, WorkManager, self-rescheduling)
+        RewindYearlyReminderWorker.schedule(this)
+
+        // Rewind monthly playlist (next 1st of the month, WorkManager, self-rescheduling)
+        RewindMonthlyPlaylistWorker.schedule(this)
+
+        // Rewind yearly playlist (next 1st of January, WorkManager, self-rescheduling)
+        RewindYearlyPlaylistWorker.schedule(this)
+
         /**** LOG *********/
         val logEnabled = preferences.getBoolean(logDebugEnabledKey, false)
         
@@ -265,6 +405,28 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // Always set up crash handler regardless of debug mode
         val crashCapture = CaptureCrash(dir.absolutePath, this)
         Thread.setDefaultUncaughtExceptionHandler(crashCapture)
+
+        // Crash log auto-wipe (spec-maintenance-dialog): after 2 consecutive boots
+        // without a NEW crash block, the crash log is wiped (the Maintenance "Last
+        // crash" row falls back to "None"; the crash dialog's Clear button stays the
+        // manual path). The small startup read happens before any UI can read the file
+        runCatching {
+            val crashLogFile = crashLogFile(dir)
+            val currentCrashCount =
+                if (crashLogFile.exists()) countCrashBlocks(crashLogFile.readText()) else 0
+            val decision = crashLogWipeDecision(
+                currentCrashCount = currentCrashCount,
+                lastSeenCrashCount = preferences.getInt(CRASH_LAST_SEEN_COUNT_KEY, 0),
+                cleanBootStreak = preferences.getInt(CRASH_CLEAN_BOOT_STREAK_KEY, 0),
+            )
+            if (decision.wipe) crashLogFile.delete()
+            preferences.edit()
+                .putInt(CRASH_CLEAN_BOOT_STREAK_KEY, decision.cleanBootStreak)
+                .putInt(CRASH_LAST_SEEN_COUNT_KEY, decision.lastSeenCrashCount)
+                .apply()
+        }.onFailure {
+            Timber.tag("MainApplication").w(it, "Crash log auto-wipe evaluation failed")
+        }
         
         if (logEnabled) {
             val fileLoggingTree = FileLoggingTree(File(dir, "N-Zik_log.txt"))
@@ -376,7 +538,19 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 setShowBadge(false)
             }
 
-            notificationManager.createNotificationChannels(listOf(playerChannel, sleepTimerChannel, downloadChannel, syncChannel))
+            // Channel for the monthly rewind reminder
+            val rewindChannel = NotificationChannel(
+                RewindReminderWorker.CHANNEL_ID,
+                applicationContext.getString(R.string.rw_channel),
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = applicationContext.getString(R.string.rw_channel)
+                setShowBadge(false)
+            }
+
+            notificationManager.createNotificationChannels(
+                listOf(playerChannel, sleepTimerChannel, downloadChannel, syncChannel, rewindChannel)
+            )
         }
     }
 

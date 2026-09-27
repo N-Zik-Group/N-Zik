@@ -22,13 +22,10 @@ import app.n_zik.android.core.database.ext.PlaylistListeningStat
 
 @Dao
 @RewriteQueriesToDropUnusedColumns
-interface EventTable {
+interface EventTable : RewindEventSource {
 
     @Query("SELECT COUNT(*) FROM Event")
     fun countAll(): Flow<Long>
-
-    @Query("SELECT MAX(timestamp) FROM Event")
-    suspend fun latestTimestamp(): Long?
 
     @Transaction
     @Query("SELECT DISTINCT * FROM Event LIMIT :limit")
@@ -101,6 +98,21 @@ interface EventTable {
         limit: Int = Int.MAX_VALUE
     ): Flow<List<Artist>>
 
+    /**
+     * Return artists whose songs were listened to within `[from, to]`, with the windowed
+     * total play time and distinct song count.
+     *
+     * Same contract as [RewindEventSource.findSongListeningStatsBetween]: disliked artists
+     * are excluded, results are ordered by total play time, then song count, then id, and
+     * trimmed to [limit] — the deck's Top Artists slide reads this query directly
+     * (spec GH-275, re-review: disliked exclusion aligned with the sibling queries).
+     *
+     * @param from beginning of period to query in epoch millis format
+     * @param to the end of period to query in epoch millis format
+     * @param limit trim result to have maximum size of this value
+     *
+     * @return [ArtistListeningStat]s for every artist played at least once in the period
+     */
     @Query("""
         SELECT A.*, SUM(E.playtime) AS playTimeMs, COUNT(DISTINCT E.songId) AS songCount
         FROM Artist A
@@ -111,6 +123,7 @@ interface EventTable {
             WHERE "timestamp" BETWEEN :from AND :to
             GROUP BY songId, timestamp, playtime
         ) E ON E.songId = SAM.songId
+        WHERE (A.dislikedAt IS NULL)
         GROUP BY A.id
         ORDER BY playTimeMs DESC, songCount DESC, A.id ASC
         LIMIT :limit
@@ -155,6 +168,21 @@ interface EventTable {
         limit: Int = Int.MAX_VALUE
     ): Flow<List<Album>>
 
+    /**
+     * Return albums whose songs were listened to within `[from, to]`, with the windowed
+     * total play time and distinct song count.
+     *
+     * Same contract as [RewindEventSource.findSongListeningStatsBetween]: disliked albums
+     * are excluded, results are ordered by total play time, then song count, then id, and
+     * trimmed to [limit] — the deck's Top Albums slide reads this query directly
+     * (spec GH-275, re-review: disliked exclusion aligned with the sibling queries).
+     *
+     * @param from beginning of period to query in epoch millis format
+     * @param to the end of period to query in epoch millis format
+     * @param limit trim result to have maximum size of this value
+     *
+     * @return [AlbumListeningStat]s for every album played at least once in the period
+     */
     @Query("""
         SELECT A.*, SUM(E.playtime) AS playTimeMs, COUNT(DISTINCT E.songId) AS songCount
         FROM Album A
@@ -165,6 +193,7 @@ interface EventTable {
             WHERE "timestamp" BETWEEN :from AND :to
             GROUP BY songId, timestamp, playtime
         ) E ON E.songId = SAM.songId
+        WHERE (A.dislikedAt IS NULL)
         GROUP BY A.id
         ORDER BY playTimeMs DESC, songCount DESC, A.id ASC
         LIMIT :limit
@@ -215,6 +244,13 @@ interface EventTable {
      * Same join as [findPlaylistMostPlayedBetweenAsPreview] but also aggregates the
      * total play time so callers can rank and display real minutes per playlist.
      *
+     * The generated `rewind-*` playlists are excluded (user decision, 2026-09-24):
+     * they contain the user's most-played songs and would always rank first, making
+     * the Rewind deck's top-playlist story self-referential. All three generated name
+     * forms share the `rewind-` prefix (`rewind-monthly:`, `rewind-yearly:`,
+     * `rewind-alltime`); SQLite's LIKE is case-insensitive over ASCII, matching the
+     * ignoreCase predicate of `RewindPlaylists.isRewind`.
+     *
      * @param from beginning of period to query in epoch millis format
      * @param to the end of period to query in epoch millis format
      * @param limit trim result to have maximum size of this value
@@ -227,6 +263,7 @@ interface EventTable {
         JOIN SongPlaylistMap SPM ON SPM.playlistId = P.id
         JOIN Event E ON E.songId = SPM.songId
         WHERE E."timestamp" BETWEEN :from AND :to
+        AND P.name NOT LIKE 'rewind-%'
         GROUP BY P.id
         ORDER BY playTimeMs DESC, songCount DESC, P.id ASC
         LIMIT :limit
@@ -296,6 +333,14 @@ interface EventTable {
      */
     @Query("SELECT COUNT(DISTINCT E.songId) FROM Event E WHERE E.timestamp BETWEEN :from AND :to")
     fun countDistinctSongsPlayedBetween(from: Long, to: Long = System.currentTimeMillis()): Flow<Int>
+
+    /**
+     * Return the number of library songs listened to at least once: the distinct songs of
+     * the Song table owning at least one playback event (orphan events for songs removed
+     * from the library do not count).
+     */
+    @Query("SELECT COUNT(DISTINCT E.songId) FROM Event E JOIN Song S ON S.id = E.songId")
+    suspend fun countListenedSongs(): Int
 
     /**
      * Return the total playtime for specific songs over a given period.

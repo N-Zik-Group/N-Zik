@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu
 
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
@@ -31,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -52,9 +54,9 @@ import app.n_zik.android.topUiRoundnessShape
 object ListMenu {
 
     @Composable
-    fun Menu( showDragHandle: Boolean = true, title: String? = null, content: @Composable ColumnScope.() -> Unit ) {
+    fun Menu( showDragHandle: Boolean = true, title: String? = null, headerTrailing: (@Composable RowScope.() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit ) {
         val screenHeight = LocalConfiguration.current.screenHeightDp
-        val hasHeader = showDragHandle || title != null
+        val hasHeader = showDragHandle || title != null || headerTrailing != null
 
         Column(
             Modifier.heightIn( max = (screenHeight * CONTENT_HEIGHT_FRACTION).dp )
@@ -82,12 +84,46 @@ object ListMenu {
                             )
                         }
 
-                        title?.let {
-                            Text(
-                                text = it,
-                                style = typography().m.copy(color = colorPalette().text),
-                                modifier = Modifier.padding(top = 5.dp, bottom = 10.dp)
-                            )
+                        if (headerTrailing != null) {
+                            // Trailing action next to the title (e.g. refresh): an invisible
+                            // mirror of the action on the left balances its exact width, so
+                            // the title is truly centered on the screen (equal spacers alone
+                            // would center it in the space left of the action). The mirror is
+                            // alpha(0f) and semantics-cleared: invisible to the eye and to
+                            // TalkBack. The trailing composable is composed twice — it is
+                            // side-effect free in its current use (an IconButton), so this is
+                            // safe. Without a trailing, the else branch renders the original
+                            // block — pixel-identical for every existing menu.
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .alpha(0f)
+                                        .clearAndSetSemantics {}
+                                ) {
+                                    headerTrailing()
+                                }
+                                Spacer(modifier = Modifier.weight(1f))
+                                title?.let {
+                                    Text(
+                                        text = it,
+                                        style = typography().m.copy(color = colorPalette().text),
+                                        modifier = Modifier.padding(top = 5.dp, bottom = 10.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.weight(1f))
+                                headerTrailing()
+                            }
+                        } else {
+                            title?.let {
+                                Text(
+                                    text = it,
+                                    style = typography().m.copy(color = colorPalette().text),
+                                    modifier = Modifier.padding(top = 5.dp, bottom = 10.dp)
+                                )
+                            }
                         }
 
                         HorizontalDivider(Modifier.height(1.dp))

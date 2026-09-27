@@ -1,6 +1,6 @@
 # Build & Test Rules
 
-**Version:** 1.3.0 | **Last updated:** 2026-09-23
+**Version:** 1.5.0 | **Last updated:** 2026-09-26
 
 ## Gradle Version Catalog
 
@@ -29,7 +29,7 @@ If a needed library isn't in the catalog → HALT and ask user before adding to 
 ```
 
 > **Windows:** use `gradlew.bat` instead of `./gradlew` (e.g. `gradlew.bat :ComposeN-Zik:assembleDebug`).
-> **CWD:** all `gradlew` and `git` commands run from the repo root `N-Zik/` — the workspace root (`N-Zik-Projet/`) is **not** a git repo (BMAD files live there, outside the repo).
+> **CWD:** all `gradlew` and `git` commands run from the repo root `N-Zik/` — the workspace root (the parent of `N-Zik/`) is **not** a git repo (BMAD files live there, outside the repo).
 
 ## Verification
 
@@ -38,7 +38,7 @@ ALWAYS verify changes compile before reporting. If build fails:
 1. Read error messages
 2. Fix the first error (often cascading)
 3. Rebuild
-4. **HALT after 3 failed attempts** — report to user with full error log
+4. **HALT after 3 failed attempts** — report to user with full error log (the 3-attempt counter is per autonomous cycle — it resets when the user gives a new explicit direction after a HALT)
 
 ```
 BUILD FAILURE ESCALATION:
@@ -49,30 +49,33 @@ Attempt 3 → HALT → Report to user with error log
 
 ### Done.txt Format
 
-File: `assets/notes/Done.txt`
+File: `N-Zik/assets/notes/Done.txt` — repo root (NOT an Android `assets/` source set); same folder holds `Changelog_Template.txt`
 
 When committing, update `Done.txt` using its own template (`Changelog_Template.txt` in same folder):
 
 ```
 <keyword>(<scope>): <short summary> (issue ref)
-
-- Technical detail 1
-- Technical detail 2
+  - Technical detail 1
+  - Technical detail 2
 ```
 
 Include full issue link (use `issue https://...` to avoid auto-closing).
 Entries are grouped under the section headers defined by the template (`Hotfix:` / `Added:` / `Changed:` / `Improved:` / `Fixed:` / `Refactor:` / `Removed:` / `Deprecated:` / `Other:`) — place each entry under the matching section.
-The entry keyword for Done.txt follows the template's sections — it is NOT a commit type: e.g. `change(...)` or `improve(...)` is a valid Done.txt entry but NOT a valid commit message type (see Commit Convention).
+The entry keyword for Done.txt follows the template's sections — it is not automatically a commit type: e.g. `change(...)` is a valid Done.txt entry but NOT a valid commit message type; `improve(...)` is valid in both (see Commit Convention).
+
+## Git Submodules
+
+`modules/betterlyrics`, `modules/discordrpc`, `modules/nextvisualizer` are **git submodules** (see `.gitmodules`) and are included in `settings.gradle.kts`. After a fresh clone, run `git submodule update --init --recursive` BEFORE any Gradle command — sync fails without them (CI always checks out with submodules). A changed submodule pointer in a diff → HALT and ask before touching it.
 
 ## Build Types
 
 | Type    | Command         | Notes                         |
 | ------- | --------------- | ----------------------------- |
 | `debug` | `assembleDebug` | Primary development build     |
-| `foss`  | `assembleFoss`  | No proprietary dependencies   |
+| `foss`  | `assembleFoss`  | Full build without auto-updater (suitable for alternative stores) |
 | `beta`  | `assembleBeta`  | Beta build (unsigned locally, signed in CI) |
 
-Other build types (see `ComposeN-Zik/build.gradle.kts`): `full`, `minified` (R8 minify + shrinkResources), `full32`, `minified32`, `beta32`, `dev`, `dev32`. The `release` build type is explicitly disabled.
+Other build types (see `ComposeN-Zik/build.gradle.kts`): `full`, `minified` (R8 minify + shrinkResources), `full32`, `minified32`, `beta32`, `dev`, `dev32`. The `release` build type is explicitly **disabled** (`assembleRelease` does not exist). Dedicated per-buildType source sets exist under `ComposeN-Zik/src/`: `src/debug/` holds its own `AndroidManifest.xml` (Compose test-harness activity — see Done.txt), while `src/dev/`, `src/dev32/`, `src/foss/` exist but are currently empty. A custom `assembleFossRelease` task exists as an alias of `assembleFoss`. Variant behavioral differences (see `build.gradle.kts` + CI): `*32` types build with `ENABLE_FFMPEG=false`; `dev`/`dev32` get a dated `versionNameSuffix` (CI passes `-PdevDate`); `foss` sets `IS_AUTOUPDATE=false` and a `.foss` applicationId suffix.
 
 ## Proguard/R8
 
@@ -93,6 +96,7 @@ Format: `type(scope): short description`
 | `docs`     | Documentation changes only                 |
 | `test`     | Adding or updating tests                   |
 | `perf`     | Performance improvement                    |
+| `improve`  | Incremental improvement/refinement of existing behavior (used widely in this repo's history) |
 
 Examples:
 
@@ -110,6 +114,7 @@ Rules:
 - Scope optional but recommended
 - No period at end
 - Include GitHub issue URL when applicable — use `issue https://...` (avoid keywords that auto-close issues like "fixes" or "closes")
+- The table is the single source of truth — some historical subjects (e.g. "Agents : Updates rules") predate the convention and are NOT a pattern to follow
 
 ## Branching
 
@@ -117,7 +122,9 @@ Rules:
 - Branch naming: `feat/<name>`, `fix/<name>`, `chore/<name>`
 - If merge conflict → HALT, report to user
 
-## Testing — JUnit 5 + MockK
+## Testing — JUnit 5 (Jupiter) + JUnit 4 (vintage engine, incl. Compose `createComposeRule` tests) + MockK
+
+Both run on the JUnit Platform (`useJUnitPlatform()` + `junit-vintage-engine`). For a new test, mirror the framework of the test files it belongs to (check neighboring imports).
 
 ```kotlin
 import io.mockk.every
@@ -136,20 +143,22 @@ class ShufflerTest {
 }
 ```
 
-Test files: `ComposeN-Zik/src/test/kotlin/` — mirror source package structure, EXCEPT tests of legacy code (`app.it.fast4x.rimusic.*` / `app.kreate.android.*`): those MUST live under `app.n_zik.android.legacyoffmain.<mirror>` (existing convention — NEVER under the legacy namespace itself, per AGENTS.md and the Step 6 guard check). Grandfathering: 3 pre-existing test files live under the legacy namespace (`app/it/fast4x/rimusic/models/PlaylistTest.kt`, `app/it/fast4x/rimusic/utils/InvincibleServiceTest.kt`, `app/it/fast4x/rimusic/utils/LandscapeBarsTest.kt`) — do NOT move or rewrite them; every NEW legacy test goes under `legacyoffmain`.
+Test files: `ComposeN-Zik/src/test/kotlin/` — mirror source package structure, EXCEPT tests of legacy code (`app.it.fast4x.rimusic.*` / `app.kreate.android.*`): those MUST live under `app.n_zik.android.legacyoffmain.<mirror>` (existing convention — NEVER under the legacy namespace itself, per AGENTS.md and the Step 6 guard check). Grandfathering: 3 pre-existing test files live under the legacy namespace (`app/it/fast4x/rimusic/models/PlaylistTest.kt`, `app/it/fast4x/rimusic/utils/InvincibleServiceTest.kt`, `app/it/fast4x/rimusic/utils/LandscapeBarsTest.kt`) — do NOT move, rewrite or modify them; every NEW legacy test goes under `legacyoffmain`. If one of the 3 fails or no longer compiles → HALT and ask the user for an explicit decision (the Step 6 guard check flags any legacy path in the diff — quote the approval in the report). Also grandfathered: the top-level test packages `test/kotlin/utils/` and `test/kotlin/painters/`, and the packages `app/n_zik/android/database/` (source in `core/database/`) and `app/n_zik/android/lyrics/` (no matching main package) — all predate the mirroring rule, do NOT move them; new tests follow the mirroring rule.
 
 New features/bug fixes should include at least one test. If no test framework is available → HALT and note it.
 
 ## CI Expectations
 
-- Pre-commit hooks may run lint and build checks
-- If pre-commit hook fails → fix before committing
+- No pre-commit hooks are configured in this repo — do not wait for hook signals; run build with the commands in this file
+- **No CI workflow runs the unit test suite** — tests are local-only; always run them yourself before reporting (the only workflow that would run tests, `code-coverage.yml`, is disabled via its `.disabled` extension — if it is ever re-enabled, this line must be revisited)
+- CI signs the unsigned APKs in GitHub Actions via `secrets.RELEASE_KEYSTORE*` (beta manual, weekly all-flavors, dev nightly + manual, test manual full-only — an author gate for the maintainer `NEVARLeVrai` exists in `build-dev.yml` but no `push` trigger is configured, so it is currently unreachable)
+- `cache-builder.yaml` is another **active** Gradle workflow: it runs builds for cache warming only (`assembleBeta`/`Full`/`Minified --build-cache`) on 3 triggers — `push` (path-filtered to `**/*.gradle*` + wrapper), weekly `schedule` (Friday 16:00) and manual `workflow_dispatch` — it neither signs nor releases
+- The remaining 9 **active** workflows in `.github/workflows/` are repo-automation bots, NOT Gradle builds: `sync-crowdin-translations.yaml` (edits `values-*/strings.xml` — exempt per CODE.md Translations), `metrics.yml` (auto-commits stats on a 2h cadence + on release), `weekly-update-contributors.yaml` (rewrites `res/raw/contributors.json` weekly), `update-android-lockdown-countdown.yml`, `house-keeper.yaml`, `add-labels.yaml`, `auto-assign-issues.yml`, `close-stale-tickets.yaml`, `comment-on-label.yaml`. Bot commits on `main` from these are expected traffic, not rule violations — do NOT manually edit their targets (`res/raw/contributors.json`, `values-*/`) in a feature commit without flagging it
 - If CI pipeline fails after push → HALT, investigate, fix
 
 ## Code Formatting
 
-- Run ktlint/detekt if configured in the project
+- ktlint/detekt are **NOT configured** in this project — no lint task exists; do not search for one
 - Use Android Studio auto-format for consistent style
 - Follow existing file formatting patterns
 - No trailing whitespace, newline at end of file
-- If ktlint/detekt fails → HALT, fix formatting before continuing

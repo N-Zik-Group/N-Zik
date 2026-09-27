@@ -22,16 +22,17 @@ class DebugLogsTest {
     }
 
     @Test
-    fun `purgeDebugLogs deletes the log files and returns their count`() {
+    fun `purgeDebugLogs deletes only the debug log and leaves the crash log intact`() {
         File(logsDir, "N-Zik_log.txt").createNewFile()
         File(logsDir, "N-Zik_crash_log.txt").createNewFile()
         File(logsDir, "other.txt").createNewFile()
 
         val deleted = purgeDebugLogs(logsDir)
 
-        assertEquals(2, deleted)
+        assertEquals(1, deleted)
         assertFalse(File(logsDir, "N-Zik_log.txt").exists())
-        assertFalse(File(logsDir, "N-Zik_crash_log.txt").exists())
+        // The crash log is captured independently of the debug switch and must survive
+        assertTrue(File(logsDir, "N-Zik_crash_log.txt").exists())
         assertTrue(File(logsDir, "other.txt").exists())
     }
 

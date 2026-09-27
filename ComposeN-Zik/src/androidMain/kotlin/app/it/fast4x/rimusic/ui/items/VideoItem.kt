@@ -32,7 +32,7 @@ import app.it.fast4x.rimusic.ui.styling.onOverlay
 import app.it.fast4x.rimusic.ui.styling.overlay
 
 import app.it.fast4x.rimusic.utils.color
-import app.it.fast4x.rimusic.utils.parseArtists
+import app.n_zik.android.core.database.artistEntryNames
 import app.it.fast4x.rimusic.utils.conditional
 import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.secondary
@@ -64,7 +64,7 @@ fun VideoItem(
         thumbnailUrl = video.thumbnail?.url,
         duration = video.durationText,
         title = video.info?.name,
-        uploader = video.authors.parseArtists().joinToString(", "),
+        uploader = video.authors.artistEntryNames().joinToString(", "),
         views = video.viewsText,
         thumbnailHeightDp = thumbnailHeightDp,
         thumbnailWidthDp = thumbnailWidthDp,

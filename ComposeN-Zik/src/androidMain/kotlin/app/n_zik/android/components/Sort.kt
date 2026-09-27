@@ -95,7 +95,7 @@ open class Sort<T: Enum<T>> (
     override fun onLongClick() = openMenu()
 
     @Suppress("UNCHECKED_CAST")
-    private fun getEnumConstants(): List<T> {
+    protected open fun getEnumConstants(): List<T> {
         return (sortBy.javaClass.enumConstants as? Array<T>)?.toList() ?: emptyList()
     }
 

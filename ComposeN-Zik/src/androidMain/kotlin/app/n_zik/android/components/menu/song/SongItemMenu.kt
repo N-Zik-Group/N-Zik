@@ -107,12 +107,16 @@ import app.n_zik.android.components.dialog.export.ExportCacheDialog
 import app.n_zik.android.components.song.GoToAlbum
 import app.n_zik.android.components.song.GoToArtist
 import app.n_zik.android.components.dialog.song.RenameSongDialog
-import app.n_zik.android.components.dialog.song.ResetSongDialog
+import app.n_zik.android.components.dialog.song.UpdateSongDialog
 import app.n_zik.android.components.dialog.tab.DeleteSongDialog
 import app.n_zik.android.components.dialog.album.ChangeAlbumBrowseIdDialog
 import app.n_zik.android.components.dialog.artist.ChangeArtistBrowseIdDialog
 import app.n_zik.android.components.tab.LikeComponent
 import app.n_zik.android.components.tab.Radio
+import app.n_zik.android.components.ui.screens.listentogether.ListenTogetherMenu
+import app.n_zik.android.listentogether.ListenTogetherManager
+import app.n_zik.android.listentogether.TrackInfo
+import app.it.fast4x.rimusic.utils.durationTextToMillis
 import app.kreate.android.me.knighthat.sync.YouTubeSync
 import timber.log.Timber
 import java.util.Optional
@@ -146,6 +150,9 @@ class SongItemMenu private constructor(
     lateinit var buttons: List<Button>
     var refreshBtn: Button? = null
     private var showLastFmSection = false
+    private var showListenTogetherSection = false
+    private var listenTogetherBtn: Button? = null
+    private var listenTogetherDialogBtn: Button? = null
     override var menuStyle: MenuStyle by styleState
 
     @Composable
@@ -186,6 +193,11 @@ class SongItemMenu private constructor(
             buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(6)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
+            // Section: Listen Together (room menu, then suggest-to-host for guests in a room)
+            SectionTitle(stringResource(R.string.listen_together))
+            listenTogetherDialogBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
+            listenTogetherBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
+
             // Section: Management
             SectionTitle(stringResource(R.string.management))
             buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -195,7 +207,7 @@ class SongItemMenu private constructor(
             buttons.filterIsInstance<ChangeArtistBrowseIdDialog>().firstOrNull()?.let { it.ListMenuItem() }
             buttons.getOrNull(7)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(8)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            buttons.filterIsInstance<ResetSongDialog>().firstOrNull()?.let { it.ListMenuItem() }
+            buttons.filterIsInstance<UpdateSongDialog>().firstOrNull()?.let { it.ListMenuItem() }
             buttons.filterIsInstance<DeleteSongDialog>().firstOrNull()?.let { it.ListMenuItem() }
             buttons.filterIsInstance<ExportCacheDialog>().firstOrNull()?.let { it.ListMenuItem() }
             refreshBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -204,7 +216,7 @@ class SongItemMenu private constructor(
             SectionTitle(stringResource(R.string.navigation))
             for (i in 9 until buttons.size - lastFmSectionSize) {
                 val btn = buttons.getOrNull(i)
-                if (btn is ChangeAlbumBrowseIdDialog || btn is ChangeArtistBrowseIdDialog || btn is ResetSongDialog || btn is DeleteSongDialog || btn is ExportCacheDialog) continue
+                if (btn is ChangeAlbumBrowseIdDialog || btn is ChangeArtistBrowseIdDialog || btn is UpdateSongDialog || btn is DeleteSongDialog || btn is ExportCacheDialog) continue
                 btn?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
 
@@ -263,6 +275,13 @@ class SongItemMenu private constructor(
             buttons.getOrNull(5)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(6)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
+            // Section: Listen Together (room menu, then suggest-to-host for guests in a room)
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                SectionTitle(stringResource(R.string.listen_together))
+            }
+            listenTogetherDialogBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            listenTogetherBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+
             // Section: Management
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SectionTitle(stringResource(R.string.management))
@@ -274,7 +293,7 @@ class SongItemMenu private constructor(
             buttons.filterIsInstance<ChangeArtistBrowseIdDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             buttons.getOrNull(7)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(8)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            buttons.filterIsInstance<ResetSongDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
+            buttons.filterIsInstance<UpdateSongDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             buttons.filterIsInstance<DeleteSongDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             buttons.filterIsInstance<ExportCacheDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             refreshBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -285,7 +304,7 @@ class SongItemMenu private constructor(
             }
             for (i in 9 until buttons.size - lastFmSectionSize) {
                 val btn = buttons.getOrNull(i)
-                if (btn is ChangeAlbumBrowseIdDialog || btn is ChangeArtistBrowseIdDialog || btn is ResetSongDialog || btn is DeleteSongDialog || btn is ExportCacheDialog) continue
+                if (btn is ChangeAlbumBrowseIdDialog || btn is ChangeArtistBrowseIdDialog || btn is UpdateSongDialog || btn is DeleteSongDialog || btn is ExportCacheDialog) continue
                 btn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
 
@@ -450,7 +469,7 @@ class SongItemMenu private constructor(
         val goToAlbum = remember {
             GoToAlbum( navController, song, menuState )
         }
-        val resetDialog = ResetSongDialog( song )
+        val updateDialog = UpdateSongDialog( song )
         val exportCacheDialog = ExportCacheDialog( binder ) { song }
 
         val changeAlbumId = ChangeAlbumBrowseIdDialog(menuState = menuState) { albumForInfo }
@@ -463,6 +482,62 @@ class SongItemMenu private constructor(
             lastfmSession.isNotEmpty() &&
             BuildConfig.LASTFM_API_KEY.isNotEmpty() &&
             BuildConfig.LASTFM_API_SECRET.isNotEmpty()
+
+        // Listen Together: guests in a room can suggest tracks to the host
+        // (remote songs only — the host resolves YouTube ids to play).
+        val ltManager = ListenTogetherManager.getInstance()
+        showListenTogetherSection = !song.isLocal &&
+            ltManager?.let { it.isInRoom && !it.isHost } == true
+
+        listenTogetherBtn = if (showListenTogetherSection) {
+            remember {
+                object : MenuIcon, Descriptive, Clickable {
+                    override val iconId: Int = R.drawable.musical_notes
+                    override val messageId: Int = R.string.listen_together_suggest
+                    @get:Composable
+                    override val menuIconTitle: String get() = stringResource(R.string.listen_together_suggest)
+
+                    override fun onShortClick() {
+                        menuState.hide()
+                        val manager = ListenTogetherManager.getInstance() ?: return
+                        if (!manager.isInRoom || manager.isHost) return
+                        val durationMs = song.durationText
+                            ?.let { durationTextToMillis(it) }
+                            ?.takeIf { it > 0 }
+                            ?: 180000L
+                        manager.suggestTrack(
+                            TrackInfo(
+                                id = song.id,
+                                title = song.cleanTitle(),
+                                artist = song.cleanArtistsText(),
+                                duration = durationMs,
+                                thumbnail = song.thumbnailUrl.orEmpty(),
+                            )
+                        )
+                    }
+                    override fun onLongClick() {}
+                }
+            }
+        } else null
+
+        // Listen Together room dialog (Metrolist PlayerMenu dialog port): opens the
+        // create/join/manage room popup through the shared menu state. Shown for every
+        // song regardless of room state or role — it is the menu entry point to a room.
+        listenTogetherDialogBtn = remember {
+            object : MenuIcon, Descriptive, Clickable {
+                override val iconId: Int = R.drawable.people
+                override val messageId: Int = R.string.listen_together
+                @get:Composable
+                override val menuIconTitle: String get() = stringResource(R.string.listen_together)
+
+                override fun onShortClick() {
+                    menuState.display {
+                        ListenTogetherMenu()
+                    }
+                }
+                override fun onLongClick() {}
+            }
+        }
 
         buttons = mutableListOf<Button>().apply {
             add( infoButton )
@@ -542,7 +617,7 @@ class SongItemMenu private constructor(
                 }
                 add( changeAlbumId )
                 add( changeArtistId )
-                add( resetDialog )
+                add( updateDialog )
             }
             if (!song.isLocal) {
                 add( deleteSongDialog )
@@ -590,7 +665,7 @@ class SongItemMenu private constructor(
             changeArtistId.Render()
             deleteSongDialog.Render()
         }
-        resetDialog.Render()
+        updateDialog.Render()
         exportCacheDialog.Render()
 
         if (exportCacheDialog.isExporting.value) {

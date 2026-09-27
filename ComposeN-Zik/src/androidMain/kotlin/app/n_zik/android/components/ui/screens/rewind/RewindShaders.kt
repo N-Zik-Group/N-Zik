@@ -33,10 +33,6 @@ internal val rewindSlideShaders: List<Shader> = listOf(
     Stage,               // 11 Top album
     Stripy(),            // 12 Albums
     OilFlow,             // 13 Top playlists
-    Heat(),              // 14 Song achievement
-    InkFlow,             // 15 Album achievement
-    Stage,               // 16 Artist achievement
-    PurpleLiquid,        // 17 Playlist achievement
-    InkFlow,             // 18 Monthly
-    BlackCherryCosmos    // 19 Finale
+    Heat(),              // 14 Monthly / days / years
+    BlackCherryCosmos    // 15 Finale
 )

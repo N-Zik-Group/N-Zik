@@ -38,6 +38,11 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -146,11 +151,19 @@ import app.it.fast4x.rimusic.enums.PlayerBackgroundColors
 import app.it.fast4x.rimusic.extensions.pip.PipEventContainer
 import app.it.fast4x.rimusic.extensions.pip.PipModuleContainer
 import app.it.fast4x.rimusic.extensions.pip.PipModuleCover
+import app.n_zik.android.components.onboarding.OnboardingAccountsScreen
+import app.n_zik.android.components.onboarding.OnboardingImportScreen
+import app.n_zik.android.components.onboarding.OnboardingNameScreen
+import app.n_zik.android.components.onboarding.OnboardingScreen
 import app.n_zik.android.components.ui.screens.home.OPEN_SEARCH_SHORTCUT
 import app.n_zik.android.components.ui.screens.home.initialShortcutAction
+import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.enums.OnboardingStep
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.PlayerAwareInsetsTracker
+import app.n_zik.android.utils.appNavBarPresentForRoute
 import app.n_zik.android.utils.shouldRecreateActivity
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
@@ -245,6 +258,7 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.proxyHostnameKey
 import app.it.fast4x.rimusic.utils.proxyModeKey
 import app.it.fast4x.rimusic.utils.proxyPortKey
+import app.it.fast4x.rimusic.enums.TransitionEffect
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.restartActivityKey
 import app.it.fast4x.rimusic.utils.hideStatusBarKey
@@ -276,7 +290,6 @@ import java.util.Locale
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import app.it.fast4x.rimusic.enums.UiType
-import org.woheller69.freeDroidWarn.FreeDroidWarn
 import app.it.fast4x.rimusic.ui.styling.BoundedCornerSize
 import app.n_zik.android.core.navigation.MiniPlayerQueueInterceptor
 import app.n_zik.android.core.network.client.NetworkClientFactory
@@ -305,6 +318,43 @@ import kotlinx.coroutines.Job
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.unit.IntOffset
 import kotlin.math.roundToInt
+
+/**
+ * Decodes the deck target carried by a rewind reminder's content intent: a valid year with a
+ * month 1..12 yields the finished `(year, month)` pair (monthly reminder); a valid year with
+ * the month extra missing (default 0) or explicitly 0 yields the yearly target `(year, 0)`
+ * (yearly reminder — its content intent carries the year extra only). Anything else (missing
+ * year, out-of-range values, restored process instance) yields null so the app starts without
+ * a forced deck open. Top-level so the parse contract is unit-testable without launching the
+ * activity (spec GH-275, re-review: consumer side untested).
+ */
+internal fun rewindDeckTargetFromIntent(intent: Intent?, isRestoredInstance: Boolean): Pair<Int, Int>? {
+    if (isRestoredInstance) return null
+    val year = intent?.getIntExtra(RewindReminderWorker.EXTRA_DECK_YEAR, 0) ?: 0
+    val month = intent?.getIntExtra(RewindReminderWorker.EXTRA_DECK_MONTH, 0) ?: 0
+    return when {
+        year !in 2000..2100 -> null
+        month in 1..12 -> year to month
+        // Yearly sentinel: the yearly reminder posts the year extra only, so the missing
+        // month extra (default 0) selects the finished-year deck
+        month == 0 -> year to month
+        else -> null
+    }
+}
+
+/**
+ * Builds the deck route for a decoded target (spec GH-275): the monthly target (month 1..12)
+ * carries both arguments, while the yearly target (month = 0 intent sentinel) omits the month
+ * argument — the route's default month=-1 then maps to `rewindMonth = null` in
+ * `RewindScreen`, i.e. the year-only deck. Top-level so the monthly/yearly branch is
+ * unit-testable without launching the activity.
+ */
+internal fun rewindDeckRoute(year: Int, month: Int): String =
+    if (month == 0) {
+        "${NavRoutes.rewind.name}?year=$year"
+    } else {
+        "${NavRoutes.rewind.name}?year=$year&month=$month"
+    }
 
 @UnstableApi
 class MainActivity :
@@ -337,6 +387,58 @@ class MainActivity :
     // Not re-seeded from the launch intent when the activity is recreated (theme change, settings
     // import): the shortcut was already consumed and would otherwise pop the back stack to home.
     private var shortcutIntentAction by mutableStateOf<String?>(null)
+
+    // Finished month (or finished year, month = 0 yearly sentinel) carried by a rewind
+    // reminder's content intent. Set on cold start (startApp) and warm start (onNewIntent),
+    // consumed once by the navigation effect that opens the deck on that month — or the
+    // yearly deck on that year.
+    private var rewindDeckTarget by mutableStateOf<Pair<Int, Int>?>(null)
+
+    // Current step of the first-launch onboarding flow, held by the activity so a
+    // recreation (rotation) resumes the flow at the right step; null means the flow
+    // is complete and the main navigation renders instead. The step is persisted in
+    // prefs on every transition (see advanceOnboarding), so a process restart —
+    // post-import restart or process death — resumes at the right step too. The
+    // onboardingComplete flag is written only when the flow is fully done (or when the
+    // accounts step leaves with a Discord token set) — a successful restore never
+    // writes it: the flow advances to the next step before the restart, so the restart
+    // lands on that step, keeping the user inside onboarding — and a mid-flow crash
+    // never marks it as finished.
+    private var onboardingStep by mutableStateOf<OnboardingStep?>(null)
+
+    /**
+     * Advances the onboarding flow to the next step ([OnboardingStep.advance]). The step is
+     * persisted first so a process restart (post-import restart, process death) resumes at
+     * that step instead of replaying the flow. When the flow completes, the
+     * onboarding-complete flag is written and the persisted step cleared.
+     */
+    private fun advanceOnboarding() {
+        val current = onboardingStep ?: return
+        val next = current.advance()
+        if (next == null) {
+            DataStoreUtils.saveBoolean(this, DataStoreUtils.KEY_ONBOARDING_COMPLETE, true)
+            DataStoreUtils.saveString(this, DataStoreUtils.KEY_ONBOARDING_STEP, "")
+            Timber.tag("MainActivity").i("Onboarding complete, flag written, step cleared")
+        } else {
+            DataStoreUtils.saveString(this, DataStoreUtils.KEY_ONBOARDING_STEP, next.name)
+            Timber.tag("MainActivity").d("Onboarding step: ${current.name} -> ${next.name}")
+        }
+        onboardingStep = next
+    }
+
+    /**
+     * Marks the onboarding as complete without leaving the current step. Used by the
+     * accounts step (leaving the step with a Discord token set restarts the app): the
+     * restart must land directly in the main app, so the flag is written and the
+     * persisted step cleared now — the step field stays put until the restart
+     * happens. A successful restore never uses this: it restarts the app without
+     * writing the flag, and the flow resumes at the persisted step.
+     */
+    private fun completeOnboarding() {
+        DataStoreUtils.saveBoolean(this, DataStoreUtils.KEY_ONBOARDING_COMPLETE, true)
+        DataStoreUtils.saveString(this, DataStoreUtils.KEY_ONBOARDING_STEP, "")
+        Timber.tag("MainActivity").i("Onboarding completed before restart, flag written, step cleared")
+    }
 
     override val persistMap = PersistMap()
 
@@ -372,7 +474,6 @@ class MainActivity :
     @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        FreeDroidWarn.showWarningOnUpgrade(this, BuildConfig.VERSION_CODE)
         MonetCompat.enablePaletteCompat()
 
         enableEdgeToEdge(
@@ -529,6 +630,14 @@ class MainActivity :
 
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
         shortcutIntentAction = initialShortcutAction(intent.action, isRestoredInstance)
+        rewindDeckTarget = rewindDeckTargetFromIntent(intent, isRestoredInstance)
+        onboardingStep = OnboardingStep.resolveStartupStep(
+            complete = DataStoreUtils.getBoolean(this, DataStoreUtils.KEY_ONBOARDING_COMPLETE, false),
+            // Resume at the persisted step after a post-import restart or process death
+            // (a restore never completes the onboarding, so this covers it too); fresh
+            // installs have nothing persisted and fall back to the first step
+            persistedStepName = DataStoreUtils.getString(this, DataStoreUtils.KEY_ONBOARDING_STEP, ""),
+        )
 
         with(preferences) {
             if (getBoolean(isKeepScreenOnEnabledKey, false)) {
@@ -1175,13 +1284,16 @@ class MainActivity :
 
             val currentRoute by app.n_zik.android.extensions.discord.DiscordUiState.currentRoute.collectAsStateWithLifecycle()
             
+            // Listen Together scrolls its cards list, so it joins the scroll-hide routes:
+            // the header and the floating bar / mini-player slide on scroll there too.
             val isScrollableRoute = currentRoute == "home" ||
                     currentRoute?.startsWith("artist") == true ||
                     currentRoute?.startsWith("album") == true ||
                     currentRoute?.startsWith("playlist") == true ||
                     currentRoute?.startsWith("localPlaylist") == true ||
                     currentRoute?.startsWith("searchResults") == true ||
-                    currentRoute?.startsWith("settings") == true
+                    currentRoute?.startsWith("settings") == true ||
+                    currentRoute == "listenTogether"
                     
             LaunchedEffect(isLandscape, isLandscapeBarless, isViMusic, isScrollableRoute, density, safeDrawingInsets) {
                 topBarOffset = 0f
@@ -1290,7 +1402,12 @@ class MainActivity :
                 val isFloatingNavBar = NavigationBarPosition.BottomFloating.isCurrent()
                 val isIconOnlyNav = app.it.fast4x.rimusic.enums.NavigationBarType.IconOnly.isCurrent()
                 val navBarBottomPad = Dimensions.navBarBottomPadding(isFloatingNavBar)
-                val hasNavBar = !areBarsHidden
+                // Route-aware: only screens that actually render the app nav bar reserve its
+                // height under the mini-player, so it drops to the screen edge on bar-less pages.
+                // Sourced from the nav controller rather than DiscordUiState so layout never
+                // depends on the RPC feature's destination listener
+                val playerRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+                val hasNavBar = !areBarsHidden && appNavBarPresentForRoute(playerRoute)
 
                 val playerPos by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
                 val targetPlayerPadBottom = if (playerPos == PlayerPosition.Bottom) {
@@ -1426,6 +1543,24 @@ class MainActivity :
                     }
                 }
 
+                // Rewind reminder notification: open the deck on the finished month (monthly)
+                // or the yearly deck on the finished year (yearly, month = 0 sentinel — extras
+                // set in startApp / onNewIntent). Consumed from an effect, like the shortcut
+                // above, so the navigation happens once the graph is composed. The gate is
+                // part of the key: while onboarding is up the NavHost is not composed (empty
+                // graph — navigating would crash), so the target is held until the flow
+                // completes and the effect re-runs.
+                LaunchedEffect(rewindDeckTarget, onboardingStep == null) {
+                    if (onboardingStep != null) return@LaunchedEffect
+                    rewindDeckTarget?.let { (year, month) ->
+                        // rewindDeckRoute omits the month argument for the yearly target:
+                        // the route's default month=-1 maps to rewindMonth = null in
+                        // RewindScreen, i.e. the year-only deck
+                        navController.navigate(rewindDeckRoute(year, month))
+                        rewindDeckTarget = null
+                    }
+                }
+
                         CrossfadeContainer(state = pipState.value) { isCurrentInPip ->
                             Timber.tag("MainActivity").d("pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
                             val pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
@@ -1470,11 +1605,72 @@ class MainActivity :
                             LocalBottomBarOffset provides bottomBarOffsetState
                             //LocalInternetConnected provides internetConnected
                         ) {
-                            AppNavigation(
-                                navController = navController,
-                                miniPlayer = {},
-                                openTabFromShortcut = openTabFromShortcut
-                            )
+                            // First-launch onboarding: rendered instead of the main
+                            // navigation while the flag is false. Page changes (permissions ->
+                            // restore -> name -> accounts -> main app) animate with the user's chosen
+                            // transition effect, same spec as AppNavigation
+                            val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Fade)
+                            AnimatedContent(
+                                targetState = onboardingStep,
+                                transitionSpec = {
+                                    when (transitionEffect) {
+                                        TransitionEffect.None ->
+                                            EnterTransition.None togetherWith ExitTransition.None
+
+                                        TransitionEffect.Expand ->
+                                            scaleIn(animationSpec = tween(350), initialScale = 2.0f) togetherWith
+                                            scaleOut(animationSpec = tween(350), targetScale = 2.0f)
+
+                                        TransitionEffect.Fade ->
+                                            fadeIn(animationSpec = tween(350)) togetherWith
+                                            fadeOut(animationSpec = tween(350))
+
+                                        TransitionEffect.Scale ->
+                                            scaleIn(animationSpec = tween(350)) togetherWith
+                                            scaleOut(animationSpec = tween(350))
+
+                                        TransitionEffect.SlideVertical ->
+                                            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up) togetherWith
+                                            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+
+                                        TransitionEffect.SlideHorizontal ->
+                                            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) togetherWith
+                                            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+                                    }
+                                },
+                                label = "onboardingPhase"
+                            ) { phase ->
+                                when (phase) {
+                                    null -> AppNavigation(
+                                        navController = navController,
+                                        miniPlayer = {},
+                                        openTabFromShortcut = openTabFromShortcut
+                                    )
+
+                                    // Step transitions, the step persistence and the flag timing
+                                    // are all handled by advanceOnboarding() + OnboardingStep.advance()
+                                    OnboardingStep.PERMISSIONS -> OnboardingScreen(
+                                        onComplete = { advanceOnboarding() }
+                                    )
+
+                                    OnboardingStep.IMPORT -> OnboardingImportScreen(
+                                        // "Skip" and a successful restore both advance to
+                                        // the name step; a restore additionally restarts
+                                        // the app (flag unwritten), so the restart lands
+                                        // on the next step — the user stays inside onboarding
+                                        onComplete = { advanceOnboarding() }
+                                    )
+
+                                    OnboardingStep.NAME -> OnboardingNameScreen(
+                                        onComplete = { advanceOnboarding() }
+                                    )
+
+                                    OnboardingStep.ACCOUNTS -> OnboardingAccountsScreen(
+                                        onComplete = { advanceOnboarding() },
+                                        onDiscordConnected = { completeOnboarding() }
+                                    )
+                                }
+                            }
 
                             val disableClosingPlayerSwipingDown by rememberPreference(disableClosingPlayerSwipingDownKey, false)
         checkIfAppIsRunningInBackground()
@@ -1485,15 +1681,28 @@ class MainActivity :
                             // tappable strip stays at the bottom of the screen.
                             val currentMediaId by (binder?.player?.currentMediaItemIdAsState() ?: remember { mutableStateOf<String?>(null) })
 
+                            // Debounced media presence: Listen Together replaces the whole queue on
+                            // every track change (setMediaItems), which briefly clears the current
+                            // media item. Reacting to that transient null would close the player
+                            // sheet on each track change (user-reported), so "no media" is only
+                            // accepted once the absence persists.
+                            var mediaPresent by remember(binder) {
+                                mutableStateOf(binder?.player?.currentMediaItem != null)
+                            }
+
                             // Keyed on the sheet too: a rebuilt sheet (rotation, insets) starts from
                             // its last anchor and must be re-checked against the current media
                             LaunchedEffect(currentMediaId, playerSheetState) {
                                 if (currentMediaId == null) {
+                                    delay(400)
+                                    if (binder?.player?.currentMediaItem != null) return@LaunchedEffect
+                                    mediaPresent = false
                                     if (!playerSheetState.isDismissed) {
                                         playerSheetState.snapTo(playerSheetState.dismissedBound)
                                     }
                                     showQueueOverlay = false
                                 } else {
+                                    mediaPresent = true
                                     // After recreate() the player service is not bound yet, so media
                                     // reads as absent and the sheet is dismissed above; bring the
                                     // mini-player back once media returns
@@ -1519,7 +1728,7 @@ class MainActivity :
                                 label = "rewindSheetDismiss"
                             )
 
-                            if (currentMediaId != null) {
+                            if (mediaPresent) {
                                 Box(
                                     // Top anchor follows the header through topPadding instead
                                     modifier = Modifier.fillMaxSize()
@@ -1736,7 +1945,11 @@ class MainActivity :
                 }
             }
 
-            LaunchedEffect(intentUriData) {
+            // Same gate guard as the rewind reminder effect above: the NavHost is only
+            // composed once onboarding is done — a shared / deep-linked URL must not
+            // navigate into an empty graph while the gate is up
+            LaunchedEffect(intentUriData, onboardingStep == null) {
+                if (onboardingStep != null) return@LaunchedEffect
                 val uri = intentUriData ?: return@LaunchedEffect
 
                 Toaster.n(
@@ -1842,6 +2055,7 @@ class MainActivity :
         setIntent(intent)
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
         shortcutIntentAction = intent.action
+        rewindDeckTarget = rewindDeckTargetFromIntent(intent, isRestoredInstance = false)
     }
 
     override fun onStop() {

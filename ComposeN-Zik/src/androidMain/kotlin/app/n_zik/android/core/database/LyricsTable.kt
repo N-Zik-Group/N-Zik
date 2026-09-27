@@ -34,6 +34,19 @@ interface LyricsTable {
      */
     @Upsert
     fun upsert( lyrics: Lyrics ): Long
+
+    /**
+     * Reset the lyrics fetch TTL for every row of the song
+     * ([Lyrics.lastFetchedAt] → NULL) so the lyrics are fetched again. Called
+     * by the song « Update » action: the metadata the lyrics lookup is based
+     * on (title / artists) was just refreshed.
+     *
+     * @param songId song to have its lyrics fetch TTL reset
+     *
+     * @return number of lyrics rows affected by this operation
+     */
+    @Query("UPDATE Lyrics SET lastFetchedAt = NULL WHERE songId = :songId")
+    fun resetFetchTtlBySongId( songId: String ): Int
 }
 
 

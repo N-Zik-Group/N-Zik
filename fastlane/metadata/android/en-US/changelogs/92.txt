@@ -1,0 +1,3 @@
+Added: Maintenance dialog, Listen Together (guest), Rewind background music + auto playlists, onboarding flow, artist dedup & name convergence, unified song "Update" dialog.
+Improved: batch playlist-membership queries.
+Fixed: artist mapping corruption, Rescue Center auto-kill + CSV import, Last.fm sheet above keyboard, onboarding restore, >999-songs crash, empty-page data wipe, miniplayer edge placement.

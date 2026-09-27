@@ -81,6 +81,7 @@ import app.n_zik.android.components.ui.screens.album.AlbumScreen
 import app.n_zik.android.components.ui.screens.artist.ArtistScreen
 import app.it.fast4x.rimusic.ui.screens.history.HistoryScreen
 import app.n_zik.android.components.ui.screens.home.HomeScreen
+import app.n_zik.android.components.ui.screens.listentogether.ListenTogetherScreen
 import app.it.fast4x.rimusic.ui.screens.localplaylist.LocalPlaylistScreen
 import app.it.fast4x.rimusic.ui.screens.mood.MoodScreen
 import app.it.fast4x.rimusic.ui.screens.mood.MoodsPageScreen
@@ -536,20 +537,31 @@ fun AppNavigation(
             )
         }
 
+        // Listen Together room screen (spec-listen-together)
+        composable(route = NavRoutes.listenTogether.name) {
+            ListenTogetherScreen(
+                navController = navController,
+                miniPlayer = miniPlayer,
+            )
+        }
+
         composable(
-            route = "${NavRoutes.rewind.name}?year={year}&month={month}",
+            route = "${NavRoutes.rewind.name}?year={year}&month={month}&scope={scope}",
             arguments = listOf(
                 navArgument("year") { type = NavType.IntType; defaultValue = 0 },
                 navArgument("month") { type = NavType.IntType; defaultValue = -1 },
+                navArgument("scope") { type = NavType.StringType; defaultValue = "" },
             )
         ) { backStackEntry ->
             val year = backStackEntry.arguments?.getInt("year", 0) ?: 0
             val month = backStackEntry.arguments?.getInt("month", -1) ?: -1
+            val scope = backStackEntry.arguments?.getString("scope", "") ?: ""
             RewindScreen(
                 navController = navController,
                 miniPlayer = miniPlayer,
                 rewindYear = if (year > 0) year else null,
                 rewindMonth = if (month > 0) month else null,
+                rewindScope = scope,
             )
         }
 

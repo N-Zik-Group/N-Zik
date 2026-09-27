@@ -89,6 +89,7 @@ import app.kreate.android.themed.rimusic.component.playlist.PositionLock
 import app.n_zik.android.components.dialog.settings.HomeSongsToolbarSettingsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
+import app.n_zik.android.components.dialog.song.UpdateSongDialog
 import app.n_zik.android.components.song.PeriodSelector
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.enums.SongSortBy
@@ -457,6 +458,7 @@ fun HomeSongsScreen(navController: NavController ) {
     val topPlaylists = PeriodSelector( Preference.HOME_SONGS_TOP_PLAYLIST_PERIOD, homeSongsTopSortMenuOrderKey, "top" )
     val downloadAllDialog = DownloadAllSongsDialog( ::getSongs )
     val deleteDownloadsDialog = DeleteAllDownloadedSongsDialog( ::getSongs )
+    val updateSongsDialog = UpdateSongDialog( batchTargets = ::getSongs )
 
     val hasUnmatchedSongs by remember {
         derivedStateOf {
@@ -539,6 +541,7 @@ fun HomeSongsScreen(navController: NavController ) {
                 "locator" -> add( locator )
                 "download_all" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( downloadAllDialog )
                 "delete_downloads" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( deleteDownloadsDialog )
+                "update" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( updateSongsDialog )
                 "shuffle" -> add( shuffle )
                 "smart_shuffle" -> add( smartShuffle )
                 "item_selector" -> add( itemSelector )
@@ -656,6 +659,7 @@ fun HomeSongsScreen(navController: NavController ) {
 
                     downloadAllDialog.Render()
                     deleteDownloadsDialog.Render()
+                    updateSongsDialog.Render()
                     smartTrash.Render()
 
                     TabToolBar.Buttons( buttons, disableAnimation = true )

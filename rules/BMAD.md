@@ -1,6 +1,6 @@
 # BMAD Technical Reference
 
-**Version:** 1.3.0 | **Last updated:** 2026-09-23
+**Version:** 1.5.0 | **Last updated:** 2026-09-26
 
 **MANDATORY: Read this file before executing any BMAD skill.**
 
@@ -12,6 +12,10 @@
 
 > **Important for this project:** `_bmad/` and `.agents/` live at the **parent** of `N-Zik/`. If your CWD is `N-Zik/`, go **up one level** to find `{project-root}`. The actual path is `../` relative to `N-Zik/`.
 
+> **Re-installation is NOT defined in this workspace** — no installer command is documented in these rules. If a re-install is needed (see RECOVERY.md), HALT and ask the user for the re-installation procedure; the upstream documentation is the reference (https://docs.bmad-method.org/).
+
+**Installed version** (per `_bmad/_config/manifest.yaml`): BMAD **6.12.0** (installed 2026-09-11, last updated 2026-09-14) — modules: `core` 6.12.0, `bmm` 6.12.0, `bmb` v2.2.2, `cis` v0.3.2, `tea` v1.26.0, `bmad-loop` v0.11.1; IDEs installed: `claude-code`, `antigravity`, `opencode`. **57 skills** are installed in each IDE directory (`.agents/skills/`, `.agent/skills/`, `.claude/skills/`). Stray non-BMAD files at the `_bmad/` root (e.g. `lt-1.png`) are NOT part of the installation — do not treat them as config.
+
 **Skills are NOT in `_bmad/`** — they are in IDE-specific directories at `{project-root}`:
 
 | IDE                                                    | Skills Directory                 |
@@ -22,6 +26,8 @@
 
 **`_bmad/` contains:** config, scripts, modules, rendered outputs — NOT skills.
 
+> **`_bmad-output/`** (workspace root, sibling of `_bmad/` — NOT part of the installation) is BMAD's output directory: planning/implementation/test artifacts, `problem-solution-*.md` reports, and `DONTREAD/` (archive of older outputs — respect it, do not delete or reorganize). It is separate from the protected `_bmad/` installation. Artifacts currently live in `implementation/` and `DONTREAD/`; `planning/` and `test/` are empty — do NOT infer "never produced" (older outputs may be archived in `DONTREAD/`).
+
 ---
 
 ## Installation Structure
@@ -29,14 +35,15 @@
 ```
 _bmad/
 ├── _config/                    # Installer metadata (manifest.yaml, CSVs)
-├── config.toml                 # Central config — TEAM layer
+├── config.toml                 # Central config — installer-managed (team overrides live in custom/config.toml)
 ├── config.user.toml            # Central config — USER layer
 ├── custom/                     # Human-authored overrides
-│   ├── config.toml             # Team overrides (committed)
-│   └── config.user.toml        # User overrides (gitignored)
+│   ├── config.toml             # Team overrides (committed; currently comment-only)
+│   ├── config.user.toml        # User overrides (gitignored via custom/.gitignore)
+│   └── .gitignore              # Ignores *.user.toml
 ├── scripts/                    # resolve_config.py, resolve_customization.py, render_skill.py, memlog.py, config_utils.py
 ├── core/config.yaml            # Core module config
-├── <module>/config.yaml        # Per-module config (bmm, cis, bmb, tea, bmad-loop)
+├── <module>/config.yaml        # Per-module config (bmm, cis, bmb, tea, bmad-loop; module dirs carry module-help.csv — v6-shims/ exists ONLY in core/ and bmm/, README-only, shims disabled globally via installShims: false)
 └── render/                     # Rendered skill outputs (runtime)
 ```
 
@@ -68,7 +75,9 @@ uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root
 uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key workflow
 ```
 
-> **Path tip:** If running from `N-Zik/`, `{project-root}` resolves to the parent directory. Use `..` or resolve the absolute path to `N-Zik-Projet/` before running scripts.
+(`--project-root {project-root}` is an optional accepted flag — the CIS skills pass it in their activation sequence.)
+
+> **Path tip:** If running from `N-Zik/`, `{project-root}` resolves to the parent directory. Use `..` or resolve the absolute path to the workspace root (the directory containing `_bmad/`) before running scripts.
 
 **`{skill-root}`** = `{project-root}/{target_dir}/{skill-name}` where `target_dir` depends on your IDE:
 - **Cursor/Copilot/Codex/OpenCode/Windsurf:** `{project-root}/.agents/skills/{skill-name}`
@@ -81,7 +90,7 @@ uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root
 2. `{project-root}/_bmad/custom/{skill-name}.toml` (team)
 3. `{project-root}/_bmad/custom/{skill-name}.user.toml` (personal)
 
-**Merge rules:** Scalars override, tables deep-merge, keyed arrays merge by `code` or `id`, other arrays append. **No removal mechanism** — to suppress a default, override by `code` with no-op.
+**Merge rules:** Scalars override, tables deep-merge, arrays of tables keyed by `code` or `id` → the matching entry is REPLACED (not field-merged) by the higher-priority one, unmatched entries keep; other arrays append. **No removal mechanism** — to suppress a default, override by `code` with no-op.
 
 **Key files:**
 
@@ -112,7 +121,7 @@ uv run {project-root}/_bmad/scripts/memlog.py append --workspace {doc_workspace}
 uv run {project-root}/_bmad/scripts/memlog.py set --workspace {doc_workspace} --key status --value complete
 ```
 
-**Types:** decision, constraint, capability, assumption, question, direction, note, event
+**Types:** free-form (`--type` is not validated by the script) — use the vocabulary of the skill that calls memlog (common values: decision, direction, assumption, question, note, event)
 
 **Rules:**
 

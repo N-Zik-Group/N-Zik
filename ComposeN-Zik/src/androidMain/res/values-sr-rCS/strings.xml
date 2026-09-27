@@ -369,7 +369,6 @@
 <string name="info_translation">Prevod</string>
 <string name="info_find_the_song_that_is_playing">Pronađi pesmu koja svira</string>
 <string name="info_smart_recommendation">Pametna preporuka</string>
-<string name="info_clean_cached_congs">Očisti keširane pesme</string>
 <string name="info_pin_unpin_playlist">Zakači/Otkači plejlistu</string>
 <string name="info_lock_unlock_reorder_songs">Zaključaj/otključaj redosled pesama</string>
 <string name="info_add_in_playlist">Dodaj na plejlistu</string>
@@ -389,7 +388,6 @@
 <string name="te_slide_horizontal">Horizontalni Slajd</string>
 <string name="info_wait_it_may_take_a_few_minutes">Sačekajte, može potrajati nekoliko minuta...</string>
 <string name="album_alternative_versions">Alternativne verzije</string>
-<string name="monthly_playlists">Mesečne plejliste</string>
 <string name="month_january_s">Januar %s</string>
 <string name="month_february_s">Februar %s</string>
 <string name="month_march_s">Mart %s</string>
@@ -415,7 +413,6 @@
 <string name="bg_colors_gradient_background_from_theme">Prelazna boja pozadine od teme</string>
 <string name="vimusic_show_search_button_in_navigation_bar">Prikaži dugme za pretragu na traci za navigaciju</string>
 <string name="vismusic_only_in_left_right_navigation_bar">Samo za ViMusic korisnički interfejs na levoj/desnoj navigacionoj traci</string>
-<string name="enable_monthly_playlists_creation">Omogućite kreiranje mesečnih plejlista</string>
 <string name="info_no_songs_yet">Još uvek nema pesama</string>
 <string name="theme_customized">Prilagođena</string>
 <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">Da li zaista želite da resetujete prilagođene boje svetle teme?</string>
@@ -582,13 +579,10 @@
 <string name="translate_to_other_language">Traslate to other language</string>
 <string name="action_bar_show_video_button">Show video button</string>
 <string name="update">Update</string>
-<string name="update_song">Do you really want to refetch this song? Playback time and cached data will be wiped.\nThis action is irreversible.</string>
 <string name="player_pause_listen_history_info">Does not save playback events used for statistics, history and suggestions in quick pics</string>
 <string name="sleep_timer_ended">Sleep timer ended</string>
 <string name="social_discord">Discord</string>
 <string name="discord_enable_rich_presence">Enable Rich Presence</string>
-<string name="discord_disconnect">Disconnect</string>
-<string name="discord_connect">Connect</string>
 <string name="discord_connected_to_discord_account">Connected to Discord Account</string>
 <string name="settings_reset">Reset</string>
 <string name="settings_restore_default_settings">Restore default settings</string>
@@ -748,9 +742,6 @@
 <string name="failed_to_fetch_artist">Failed to fetch aritst</string>
 <string name="looking_up_album_from_the_internet">Looking up album from the internet</string>
 <string name="failed_to_fetch_album">Failed to fetch album</string>
-<string name="info_open_reset_dialog">Open reset dialog</string>
-<string name="title_reset_title">Reset title</string>
-<string name="title_reset_authors">Reset authors</string>
 <string name="title_reset_total_play_time">Reset total play time</string>
 <string name="title_name_your_export">Name your export</string>
 <string name="export_cached">Export cached</string>
@@ -777,8 +768,6 @@
     <string name="account_info">Account info</string>
     <string name="quick_selection">%s recommended song</string>
     <string name="discord_token_text_invalid">Your Discord token is invalid, please login again</string>
-    <string name="youtube_disconnect">Disconnect</string>
-    <string name="youtube_connect">Connect</string>
     <string name="youtube_login_successful">YouTube login successful</string>
     <string name="save_visualizer_state">Save visualizer state</string>
     <string name="save_visualizer_state_description">Keep visualizer state between sessions</string>

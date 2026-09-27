@@ -45,14 +45,19 @@ fun RewindDaysCard(
     page: Int,
     pageCount: Int,
     active: Boolean,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onShareSlide: (() -> Unit)? = null
 ) {
     val chart = remember { Animatable(0f) }
     // One bar per calendar day of the month; days without stats (data not loaded) render at zero.
     val days = (1..data.daysInPeriod).map { day ->
         data.calendarDayStats.firstOrNull { stat -> stat.day == day } ?: CalendarDayStat(day, 0L, 0)
     }
-    val peak = days.maxByOrNull { it.minutes }?.takeIf { it.minutes > 0 }
+    // Highlight the peak by position, not data-class equality: ties must not light several
+    // bars (spec GH-275, patch "Peak highlighting by data-class equality").
+    val peakMinutes = days.maxOfOrNull { it.minutes }?.takeIf { it > 0 }
+    val peakIndex = peakMinutes?.let { peak -> days.indexOfFirst { it.minutes == peak } } ?: -1
+    val peak = days.getOrNull(peakIndex)
     LaunchedEffect(active) {
         if (!active) {
             chart.snapTo(0f)
@@ -67,7 +72,8 @@ fun RewindDaysCard(
         pageCount = pageCount,
         background = rewindColors.value.cream,
         progressColor = onSlide,
-        onNext = onNext
+        onNext = onNext,
+        onShareSlide = onShareSlide
     ) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val compact = maxHeight < 700.dp
@@ -129,7 +135,7 @@ fun RewindDaysCard(
                                 val x = index * (barWidth + gapPx)
                                 drawRoundRect(
                                     color = when {
-                                        day == peak -> rewindColors.value.lime
+                                        index == peakIndex -> rewindColors.value.lime
                                         index % 3 == 0 -> rewindColors.value.purple
                                         index % 3 == 1 -> rewindColors.value.pink
                                         else -> rewindColors.value.orange
@@ -147,10 +153,10 @@ fun RewindDaysCard(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(2.dp)
                         ) {
-                            days.forEach { day ->
+                            days.forEachIndexed { index, day ->
                                 Text(
                                     text = day.day.toString(),
-                                    color = if (day == peak) rewindColors.value.lime else rewindColors.value.cream.copy(alpha = 0.50f),
+                                    color = if (index == peakIndex) rewindColors.value.lime else rewindColors.value.cream.copy(alpha = 0.50f),
                                     fontSize = 7.sp,
                                     fontWeight = FontWeight.Black,
                                     textAlign = TextAlign.Center,

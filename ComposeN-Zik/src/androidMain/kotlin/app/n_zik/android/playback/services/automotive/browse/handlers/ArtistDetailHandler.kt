@@ -7,7 +7,7 @@ import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import app.it.fast4x.rimusic.utils.asSong
-import app.it.fast4x.rimusic.utils.parseArtists
+import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -96,7 +96,7 @@ class ArtistDetailHandler : BrowseHandler {
                                 fetched.distinctBy { it.key }.forEach { item ->
                                     when (item) {
                                         is Innertube.SongItem -> { val song = item.asSong; AutoSearchState.searchedSongs = (AutoSearchState.searchedSongs + song).distinctBy { s -> s.id }; sectionItems.add(SessionMediaItemMapper.mapSongToMediaItem(song, actualParentId)) }
-                                        is Innertube.AlbumItem -> sectionItems.add(SessionMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, item.key ?: "", item.info?.name ?: "", item.authors.parseArtists().joinToString(", "), item.thumbnail?.url))
+                                        is Innertube.AlbumItem -> sectionItems.add(SessionMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, item.key ?: "", item.info?.name ?: "", item.authors.artistEntryNames().joinToString(", "), item.thumbnail?.url))
                                         is Innertube.VideoItem -> { val s = item.asSong; AutoSearchState.searchedVideos = (AutoSearchState.searchedVideos + item).distinctBy { it.key }; sectionItems.add(SessionMediaItemMapper.mapSongToMediaItem(s, parentId)) }
                                         is Innertube.PlaylistItem -> sectionItems.add(browsableMediaItem("${PlayerServiceModern.PLAYLIST}/${item.key}", item.info?.name ?: "", null, item.thumbnail?.url?.toUri(), MediaMetadata.MEDIA_TYPE_PLAYLIST, parentId))
                                         is Innertube.ArtistItem -> sectionItems.add(SessionMediaItemMapper.mapArtistToMediaItem(PlayerServiceModern.ARTIST, item.key ?: "", item.info?.name ?: "", item.thumbnail?.url, item.subscribersCountText, parentId))
@@ -112,7 +112,7 @@ class ArtistDetailHandler : BrowseHandler {
                         section.items.forEach { item ->
                             when (item) {
                                 is Innertube.SongItem -> { val song = item.asSong; AutoSearchState.searchedSongs = (AutoSearchState.searchedSongs + song).distinctBy { s -> s.id }; sectionItems.add(SessionMediaItemMapper.mapSongToMediaItem(song, actualParentId)) }
-                                is Innertube.AlbumItem -> sectionItems.add(SessionMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, item.key ?: "", item.info?.name ?: "", item.authors.parseArtists().joinToString(", "), item.thumbnail?.url))
+                                is Innertube.AlbumItem -> sectionItems.add(SessionMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, item.key ?: "", item.info?.name ?: "", item.authors.artistEntryNames().joinToString(", "), item.thumbnail?.url))
                                 is Innertube.VideoItem -> { val s = item.asSong; AutoSearchState.searchedVideos = (AutoSearchState.searchedVideos + item).distinctBy { it.key }; sectionItems.add(SessionMediaItemMapper.mapSongToMediaItem(s, parentId)) }
                                 is Innertube.PlaylistItem -> sectionItems.add(browsableMediaItem("${PlayerServiceModern.PLAYLIST}/${item.key}", item.info?.name ?: "", null, item.thumbnail?.url?.toUri(), MediaMetadata.MEDIA_TYPE_PLAYLIST, parentId))
                                 is Innertube.ArtistItem -> sectionItems.add(SessionMediaItemMapper.mapArtistToMediaItem(PlayerServiceModern.ARTIST, item.key ?: "", item.info?.name ?: "", item.thumbnail?.url, item.subscribersCountText, parentId))

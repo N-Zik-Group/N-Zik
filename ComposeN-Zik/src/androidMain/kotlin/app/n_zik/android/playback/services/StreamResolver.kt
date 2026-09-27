@@ -30,6 +30,9 @@ import app.n_zik.android.enums.DownloadQualityFormat
 import app.it.fast4x.rimusic.enums.AudioQualityFormat
 import app.it.fast4x.rimusic.models.Format
 import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.listentogether.ListenTogetherClient
+import app.n_zik.android.listentogether.ListenTogetherPlayerBridge
+import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.playback.exceptions.UnplayableException
 import app.n_zik.android.playback.exceptions.UnmatchedSongException
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -39,7 +42,7 @@ import app.it.fast4x.rimusic.utils.okHttpDataSourceFactory
 import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.playback.exceptions.ExplicitContentException
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
-import app.it.fast4x.rimusic.utils.parseArtists
+import app.n_zik.android.core.database.artistEntryNames
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -187,6 +190,24 @@ fun getFailedClientNames(videoId: String): Set<String> {
 @set:Synchronized
 private var justInserted: String = ""
 
+/**
+ * Merges a fetched page value into the stored value for the artist/album
+ * cache upserts (single merge point of both caches).
+ *
+ * A null or blank [fetched] means "no data" (e.g. a classic channel page
+ * without a music header — `artistPage(name = null)`) and is NOT an empty
+ * value to write: the [stored] value is kept as-is. Only a non-blank
+ * [fetched] overwrites [stored], and even then a stored value prefixed
+ * `modified:` (manual user edit) is always retained, via
+ * [PropUtils.retainIfModified].
+ *
+ * [stored] null + [fetched] non-blank therefore restores a wiped row
+ * (recovery); a non-empty page always wins for unmodified values.
+ */
+internal fun mergePageValue(stored: String?, fetched: String?): String? =
+    if (fetched.isNullOrBlank()) stored
+    else PropUtils.retainIfModified(stored, fetched) ?: fetched
+
 suspend fun upsertSongInfo(videoId: String) {
     if (videoId == justInserted) return
     if (!fetchingSongInfos.add(videoId)) {
@@ -215,6 +236,27 @@ suspend fun upsertSongInfo(videoId: String) {
                 artistIdsFromDb = Database.songArtistMapTable.findArtistsOf(videoId).firstOrNull().orEmpty()
                 albumFromDb = Database.songAlbumMapTable.findAlbumOf(videoId).firstOrNull()
                 if (artistIdsFromDb.isNotEmpty() || albumFromDb != null) break
+                // First attempt only: the queue brought no artist (the video case —
+                // a video's byline channel is never a YTM artist) and no link
+                // exists yet, so identify the video's channel through a YTM video
+                // search and copy it as the artist. A link already in the DB
+                // breaks the loop above, so the search never runs for audio or
+                // already-linked videos.
+                if (attempt == 1 && songItem.authors.isNullOrEmpty()) {
+                    val storedSong = Database.songTable.findByIdDirect(videoId)
+                    resolveVideoArtistFallback(
+                        videoId = videoId,
+                        queueTitle = songItem.info?.name,
+                        dbTitle = storedSong?.title,
+                        storedThumbnailUrl = storedSong?.thumbnailUrl
+                    )
+                    // The fallback commits in a suspending transaction before
+                    // the re-read, so a new link (if any) is already visible:
+                    // re-read the IDs before continuing the retry loop.
+                    artistIdsFromDb = Database.songArtistMapTable.findArtistsOf(videoId).firstOrNull().orEmpty()
+                    albumFromDb = Database.songAlbumMapTable.findAlbumOf(videoId).firstOrNull()
+                    if (artistIdsFromDb.isNotEmpty() || albumFromDb != null) break
+                }
                 Timber.tag(TAG).d("[IDs] attempt $attempt/3: no artist/album IDs for $videoId, retrying...")
             }
             if (artistIdsFromDb.isEmpty() && albumFromDb == null) {
@@ -245,9 +287,18 @@ suspend fun upsertSongInfo(videoId: String) {
                                     Database.asyncTransaction {
                                         val existing = Database.artistTable.findByIdDirect(artistId)
                                         if (existing != null) {
+                                            if (artistPage.name.isNullOrBlank()) {
+                                                // Page is empty (classic channel, no music header): stored
+                                                // name/thumbnail are kept, lastFetch still updated so the
+                                                // TTL (30 days) does not re-trigger the fetch on every
+                                                // playback. Only logged here — inside the existing-row guard —
+                                                // because that is where the write actually happens (a row
+                                                // deleted between the TTL check and the fetch is a no-op).
+                                                Timber.tag(TAG).d("[Artist Cache] $artistId page empty — keeping stored name/thumbnail, lastFetch updated")
+                                            }
                                             Database.artistTable.upsert(existing.copy(
-                                                name = PropUtils.retainIfModified(existing.name, artistPage.name) ?: artistPage.name,
-                                                thumbnailUrl = PropUtils.retainIfModified(existing.thumbnailUrl, artistPage.thumbnail?.url),
+                                                name = mergePageValue(existing.name, artistPage.name),
+                                                thumbnailUrl = mergePageValue(existing.thumbnailUrl, artistPage.thumbnail?.url),
                                                 lastFetch = System.currentTimeMillis()
                                             ))
                                         }
@@ -344,11 +395,11 @@ private suspend fun fetchAndSaveAlbumSongs(albumId: String): Int {
             try {
                 Database.albumTable.findByIdDirect(albumId)?.let { existingAlbum ->
                     Database.albumTable.upsert(existingAlbum.copy(
-                        title = PropUtils.retainIfModified(existingAlbum.title, albumPage.title),
-                        thumbnailUrl = PropUtils.retainIfModified(existingAlbum.thumbnailUrl, albumPage.thumbnail?.url),
-                        authorsText = PropUtils.retainIfModified(existingAlbum.authorsText, albumPage.authors?.parseArtists()?.joinToString(", ")?.takeIf { it.isNotBlank() }),
-                        year = PropUtils.retainIfModified(existingAlbum.year, albumPage.year),
-                        shareUrl = PropUtils.retainIfModified(existingAlbum.shareUrl, onlineAlbum.url),
+                        title = mergePageValue(existingAlbum.title, albumPage.title),
+                        thumbnailUrl = mergePageValue(existingAlbum.thumbnailUrl, albumPage.thumbnail?.url),
+                        authorsText = mergePageValue(existingAlbum.authorsText, albumPage.authors?.artistEntryNames()?.joinToString(", ")?.takeIf { it.isNotBlank() }),
+                        year = mergePageValue(existingAlbum.year, albumPage.year),
+                        shareUrl = mergePageValue(existingAlbum.shareUrl, onlineAlbum.url),
                         lastFetch = System.currentTimeMillis()
                     ))
                 }
@@ -362,11 +413,11 @@ private suspend fun fetchAndSaveAlbumSongs(albumId: String): Int {
                         Database.asyncTransaction {
                             Database.albumTable.findByIdDirect(albumId)?.let { existingAlbum ->
                                 Database.albumTable.upsert(existingAlbum.copy(
-                                    title = PropUtils.retainIfModified(existingAlbum.title, albumPage.title),
-                                    thumbnailUrl = PropUtils.retainIfModified(existingAlbum.thumbnailUrl, albumPage.thumbnail?.url),
-                                    authorsText = PropUtils.retainIfModified(existingAlbum.authorsText, albumPage.authors?.parseArtists()?.joinToString(", ")?.takeIf { it.isNotBlank() }),
-                                    year = PropUtils.retainIfModified(existingAlbum.year, albumPage.year),
-                                    shareUrl = PropUtils.retainIfModified(existingAlbum.shareUrl, onlineAlbum.url),
+                                    title = mergePageValue(existingAlbum.title, albumPage.title),
+                                    thumbnailUrl = mergePageValue(existingAlbum.thumbnailUrl, albumPage.thumbnail?.url),
+                                    authorsText = mergePageValue(existingAlbum.authorsText, albumPage.authors?.artistEntryNames()?.joinToString(", ")?.takeIf { it.isNotBlank() }),
+                                    year = mergePageValue(existingAlbum.year, albumPage.year),
+                                    shareUrl = mergePageValue(existingAlbum.shareUrl, onlineAlbum.url),
                                     lastFetch = System.currentTimeMillis()
                                 ))
                             }
@@ -710,15 +761,20 @@ private suspend fun resolveStreamUriViaInnerTubeX(
                     )
                     PlaybackDataStore.saveStreamClient(appContext(), videoId, playbackData.streamClient)
 
-                    // Upsert song format in background
-                    scope.launch(NzikDispatchers.PLAYBACK) {
-                        upsertSongFormat(
-                            videoId,
-                            playbackData.format,
-                            playbackData.audioConfig?.perceptualLoudnessDb,
-                            playbackData.playbackTracking?.videostatsPlaybackUrl?.baseUrl,
-                            playbackData.audioConfig?.loudnessDb
-                        )
+                    // Upsert song format in background — skipped for Listen Together
+                    // items: no Format row and no blank Song placeholder in the user's
+                    // library (the item's library rows must not be created by playback;
+                    // the in-memory StreamUrlCache still covers re-resolution).
+                    if (!ListenTogetherPlayerBridge.isListenTogetherVideo(videoId)) {
+                        scope.launch(NzikDispatchers.PLAYBACK) {
+                            upsertSongFormat(
+                                videoId,
+                                playbackData.format,
+                                playbackData.audioConfig?.perceptualLoudnessDb,
+                                playbackData.playbackTracking?.videostatsPlaybackUrl?.baseUrl,
+                                playbackData.audioConfig?.loudnessDb
+                            )
+                        }
                     }
 
                     val contentLength = playbackData.format.contentLength ?: 1_000_000L
@@ -961,7 +1017,24 @@ fun PlayerServiceModern.createDataSourceFactory(): DataSource.Factory {
 
         if (isLocal) return@Factory dataSpec
 
-        scope.launch(NzikDispatchers.PLAYBACK) { upsertSongInfo(videoId) }
+        // Listen Together streams run the same metadata flow as every other
+        // stream (user: "si ça vient de listen together, check avant de upsert"),
+        // but only when the user enabled the "Local history" option for LT —
+        // with it off, LT streams stay fully library-agnostic. upsertSongInfo
+        // checks the track against YouTube (nextPage) first and persists only
+        // that verified data. The host app's (Metrolist) queue payload — literal
+        // "Titre" bylines, title-as-album, comma-joined channel bylines — never
+        // enters the library through this path. The other LT gates
+        // (upsertSongFormat below, the host-payload insertIgnore in
+        // PlayerServiceModern, the history placeholder) still keep the host's
+        // metadata out of the library.
+        val isLtVideo = ListenTogetherPlayerBridge.isListenTogetherVideo(videoId)
+        if (ListenTogetherPlayerBridge.shouldRunStreamInfoUpsert(
+            isLtVideo,
+            DataStoreUtils.getBoolean(appContext(), ListenTogetherClient.PREF_HISTORY, false)
+        )) {
+            scope.launch(NzikDispatchers.PLAYBACK) { upsertSongInfo(videoId) }
+        }
 
         dataSpec.process(videoId, audioQualityFormat, applicationContext.isConnectionMetered())
             .buildUpon()
@@ -989,6 +1062,57 @@ fun PlayerServiceModern.createDataSourceFactory(): DataSource.Factory {
             }
         }
         fetchFormatIfMissing(videoId)
+        dataSpec.buildUpon().setKey(videoId).build()
+    }
+}
+
+/**
+ * Data source factory dedicated to the Rewind deck's hidden background-music players
+ * (spec "Deck Rewind — musique de fond"): pure stream resolution only — resolve the stream
+ * URL, serve it from the stream LRU cache, fall back to the download cache,
+ * parental-control gate included.
+ *
+ * Unlike [createDataSourceFactory], it launches **no metadata maintenance**: no
+ * [upsertSongInfo] (no Innertube `nextPage` call, no artist/album page pre-caching) and no
+ * [fetchFormatIfMissing] (no format row upserts) — the background players must only read
+ * the music, never feed the library caches (spec: the deck's stats stay untouched).
+ */
+@UnstableApi
+fun PlayerServiceModern.createBackgroundMusicDataSourceFactory(): DataSource.Factory {
+    val upstreamFactory = appContext().okHttpDataSourceFactory
+
+    val resolvingDataSourceFactory = ResolvingDataSource.Factory(upstreamFactory) { dataSpec ->
+        val videoId = dataSpec.uri.toString().substringAfter("watch?v=")
+        val isLocal = dataSpec.uri.scheme == ContentResolver.SCHEME_CONTENT ||
+                      dataSpec.uri.scheme == ContentResolver.SCHEME_FILE
+
+        if (isLocal) return@Factory dataSpec
+
+        dataSpec.process(videoId, audioQualityFormat, applicationContext.isConnectionMetered())
+            .buildUpon()
+            .setKey(videoId)
+            .build()
+    }
+
+    val lruCacheFactory = CacheDataSource.Factory()
+        .setCache(cache)
+        .setUpstreamDataSourceFactory(resolvingDataSourceFactory)
+
+    val finalCacheFactory = CacheDataSource.Factory()
+        .setCache(downloadCache)
+        .setUpstreamDataSourceFactory(lruCacheFactory)
+        .setCacheWriteDataSinkFactory(null)
+        .setFlags(FLAG_IGNORE_CACHE_ON_ERROR)
+
+    return ResolvingDataSource.Factory(finalCacheFactory) { dataSpec ->
+        val videoId = dataSpec.key ?: dataSpec.uri.toString().substringAfter("watch?v=")
+        val parentalControlEnabled = appContext().preferences.getBoolean(parentalControlEnabledKey, false)
+        if (parentalControlEnabled) {
+            val isExplicit = Database.songTable.findByIdDirect(videoId)?.title?.startsWith(EXPLICIT_PREFIX, true) == true
+            if (isExplicit) {
+                throw ExplicitContentException()
+            }
+        }
         dataSpec.buildUpon().setKey(videoId).build()
     }
 }
@@ -1051,6 +1175,8 @@ private fun DataSpec.processForDownload(
     videoId: String,
     downloadQualityFormat: DownloadQualityFormat
 ): DataSpec {
+    // runBlocking is necessary because ExoPlayer's ResolvingDataSource expects a synchronous return
+    // (same hard constraint as DataSpec.process above) - the download DataSpec callback cannot be suspend.
     return try {
         runBlocking(NzikDispatchers.DATA) {
             val parentalControlEnabled = appContext().preferences.getBoolean(parentalControlEnabledKey, false)

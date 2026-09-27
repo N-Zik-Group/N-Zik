@@ -24,7 +24,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.n_zik.android.R
+import app.n_zik.android.components.dialog.logs.CopyLogsDialog
+import app.n_zik.android.components.dialog.logs.CrashLogDialog
+import app.n_zik.android.components.dialog.logs.DebugLogDialog
 import app.n_zik.android.components.menu.header.DebugLogsMenuItem
+import app.n_zik.android.components.menu.header.MaintenanceMenuItem
+import app.n_zik.android.components.maintenance.MaintenanceSheet
 import app.n_zik.android.components.ui.screens.rescue.RescueActivity
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.colorPalette
@@ -44,6 +49,8 @@ import app.it.fast4x.rimusic.utils.ytCookieKey
 import app.it.fast4x.rimusic.utils.enableYouTubeLoginKey
 import app.it.fast4x.rimusic.utils.encryptedPreferences
 import app.it.fast4x.rimusic.utils.rememberEncryptedPreference
+import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.utils.rememberDataStoreBooleanPreference
 import it.fast4x.innertube.utils.parseCookieString
 
 @Composable
@@ -57,6 +64,16 @@ private fun HamburgerMenu(
     val context = LocalContext.current
     val enablePictureInPicture by rememberPreference(enablePictureInPictureKey, false)
     val pipHandler = rememberPipHandler()
+    // Rewind master switch (spec GH-275): while off, the menu item below is hidden —
+    // same conditional pattern as the PiP item. Live preference read: this header stays
+    // composed across the whole session, so a one-shot remember read would keep a stale
+    // value after a flip in the settings
+    val rewindEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_ENABLED, true)
+    // Maintenance sheet (spec-maintenance-dialog): the state lives at the HamburgerMenu
+    // body level (NOT inside the DropdownMenu content) because opening the sheet calls
+    // onItemConsumed() which dismisses the menu — a remember inside the menu content
+    // could be destroyed on dismissal. The header stays composed for the whole session.
+    var showMaintenanceSheet by remember { mutableStateOf(false) }
 
     val menu = DropdownMenu(
         expanded = expanded,
@@ -77,12 +94,21 @@ private fun HamburgerMenu(
             R.string.statistics
         ) { onItemClick( NavRoutes.statistics ) }
     )
-    // Rewind button (Cubic-style yearly listening recap, issue #275)
+    // Rewind button (Cubic-style yearly listening recap, issue #275); hidden while the
+    // feature is disabled in the settings (spec GH-275)
+    if (rewindEnabled)
+        menu.add(
+            DropdownMenu.Item(
+                R.drawable.sparkles,
+                R.string.rewind
+            ) { onItemClick( NavRoutes.rewindHome ) }
+        )
+    // Listen Together button (spec-listen-together)
     menu.add(
         DropdownMenu.Item(
-            R.drawable.sparkles,
-            R.string.rewind
-        ) { onItemClick( NavRoutes.rewindHome ) }
+            R.drawable.people,
+            R.string.listen_together
+        ) { onItemClick( NavRoutes.listenTogether ) }
     )
     // Profiles button
     menu.add(
@@ -118,6 +144,18 @@ private fun HamburgerMenu(
             onConsume = onItemConsumed
         )
     }
+    // Maintenance button (spec-maintenance-dialog): short tap opens the app-state
+    // sheet, long press opens the Misc settings directly on the Maintenance card
+    menu.add {
+        MaintenanceMenuItem(
+            onOpen = { showMaintenanceSheet = true },
+            onLongClick = {
+                navController.navigate("${NavRoutes.settings.name}?tab=7&focus=maintenance")
+                onItemConsumed()
+            },
+            onConsume = onItemConsumed
+        )
+    }
     // Rescue Center button (opens the :rescue process activity, same intent as the launcher shortcut)
     menu.add(
         DropdownMenu.Item(
@@ -131,6 +169,24 @@ private fun HamburgerMenu(
         }
     )
     menu.Draw()
+    // Maintenance sheet (spec-maintenance-dialog): composed as a SIBLING of the
+    // Popup (never inside the menu content), driven by the body-level state above.
+    // renderLogsDialog = false: the single CopyLogsDialog.Render() host for the whole
+    // app lives just below — this header stays composed for the entire session (it is
+    // the AppNavigation topBar), so it is alive on every screen and both sheet entry
+    // points (burger + Misc settings card) share it. Render() is a singleton: a second
+    // Render() would stack a second dialog on top of the first.
+    MaintenanceSheet(
+        showSheet = showMaintenanceSheet,
+        onDismissRequest = { showMaintenanceSheet = false },
+        renderLogsDialog = false,
+    )
+    CopyLogsDialog.Render()
+    // Crash + debug log dialog hosts (spec-maintenance-dialog): same singleton-host
+    // rule as CopyLogsDialog above — this persistent header is the single Render()
+    // host for the whole app, so both sheet entry points share it.
+    CrashLogDialog.Render()
+    DebugLogDialog.Render()
 }
 
 // START

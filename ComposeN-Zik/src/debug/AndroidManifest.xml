@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug-only manifest: declares the activity that createComposeRule() launches by default
+     (androidx.activity.ComponentActivity) so Robolectric can resolve it in unit tests — the
+     unit-test manifest merge alone is not seen by the Robolectric sandbox, so the declaration
+     has to land in the app's debug manifest (works around robolectric PR #4736). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <activity
+            android:name="androidx.activity.ComponentActivity"
+            android:exported="false" />
+    </application>
+</manifest>

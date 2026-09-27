@@ -2,6 +2,7 @@ package app.n_zik.android.components.ui.screens.rescue
 
 import android.app.Activity
 import android.net.Uri
+import android.os.Build
 import android.os.Process
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -50,6 +51,7 @@ import app.it.fast4x.rimusic.utils.getEncryptedSharedPreferencesResult
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.core.rescue.RescueFiles
+import app.n_zik.android.core.rescue.RescueProcess
 import kotlinx.coroutines.CoroutineStart
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.async
@@ -74,6 +76,34 @@ import androidx.compose.foundation.text.BasicText
 
 /** Time left to read the confirmation toast before the `:rescue` process is ended. */
 private const val PROCESS_EXIT_DELAY_MS = 1_500L
+
+/**
+ * MIME types accepted by the Rescue "Import settings" picker.
+ *
+ * A rescue-local copy of the app's `ImportSettings.supportedMimes` — the `:rescue` process must
+ * stay independent of `components.import` (this screen exists for when the app is in a bad
+ * state), so the list is duplicated here instead of referenced. The previous text/csv +
+ * text/plain list missed text/comma-separated-values, so a settings file reported under that
+ * MIME was hidden in the picker and could not be selected.
+ */
+private val IMPORT_SETTINGS_MIMES: Array<String> = arrayOf(
+    "text/csv",
+    "text/comma-separated-values",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
+
+/**
+ * MIME types accepted by the Rescue "Import database" picker.
+ *
+ * A rescue-local copy of the app's `ImportDatabase.supportedMimes` (same independence rationale
+ * as [IMPORT_SETTINGS_MIMES]).
+ */
+private val IMPORT_DATABASE_MIMES: Array<String> = arrayOf(
+    "application/vnd.sqlite3",
+    "application/x-sqlite3",
+    "application/octet-stream"
+)
 
 /**
  * Main UI composable for the Rescue Center.
@@ -127,6 +157,67 @@ fun RescueScreen() {
         }
     }
 
+    // Status of the main process, which the process guard (guardWrite) watches. Poll every
+    // second while it is alive: the kill request sent when the Rescue Center opened usually
+    // lands within a few seconds, so the status moves from "stopping" to "stopped" without
+    // the user doing anything.
+    //
+    // Liveness comes from RescueProcess.isMainProcessLikelyAlive: below 31 the
+    // getRunningAppProcesses() probe is trustworthy; from 31 on it is restricted to the
+    // calling process, so the alive marker (refreshed by the main process itself every ~5 s)
+    // decides. When the process is observed dead — trustworthy probe below 31, stale marker
+    // from 31 on — the pending kill request is discarded: a dead process has no pending kill,
+    // and a stale flag would make the next healthy launch end itself at startup. From 31 on
+    // there is one more "stopped" signal: the flag consumed by the kill receiver (the kill
+    // landed) — the status turns to "stopped" at that instant, even while the marker is
+    // still fresh (the marker stays fresh for up to 15 s after the process dies).
+    // A new kill request (danger zone) restarts the polling via killRequestGeneration.
+    var mainProcessRunning by remember { mutableStateOf<Boolean?>(null) }
+    var killRequestGeneration by remember { mutableIntStateOf(0) }
+    LaunchedEffect(killRequestGeneration) {
+        while (true) {
+            val likelyAlive = runCatching {
+                withContext(NzikDispatchers.DATA) { RescueProcess.isMainProcessLikelyAlive(context) }
+            }.getOrNull()
+            when {
+                // Detection failed: keep the last known state and retry — never cancel on unknown.
+                likelyAlive == null -> Unit
+                likelyAlive -> {
+                    // From 31 on the marker alone is not enough: the kill may have landed
+                    // already — the flag is gone once the kill receiver consumed it, while the
+                    // marker is still fresh for up to 15 s. Unknown flag state → still pending.
+                    val killPending =
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            runCatching {
+                                withContext(NzikDispatchers.DATA) { RescueProcess.hasKillRequest(context) }
+                            }.getOrDefault(true)
+                        } else {
+                            true
+                        }
+                    if (killPending) {
+                        mainProcessRunning = true
+                    } else {
+                        // The kill request was consumed: the kill landed — nothing left to stop.
+                        mainProcessRunning = false
+                        break
+                    }
+                }
+                else -> {
+                    // The main process is observed dead: discard the pending kill request so it
+                    // never leaks into the next launch and makes a healthy app end itself at
+                    // startup (below 31 the trustworthy probe says dead; from 31 on the stale
+                    // marker does — covering a process that died without consuming the flag).
+                    runCatching {
+                        withContext(NzikDispatchers.DATA) { RescueProcess.cancelKillRequest(context) }
+                    }
+                    mainProcessRunning = false
+                    break
+                }
+            }
+            delay(1_000L)
+        }
+    }
+
     // Helper to show result
     fun showResult(result: Result<*>, successMsg: String? = null) {
         fileStateVersion++
@@ -161,7 +252,10 @@ fun RescueScreen() {
     fun guardWrite(action: () -> Unit) {
         // A write now would commit this process's stale in-memory preferences over the restored files.
         if (exitPending) return
-        if (RescueFiles.isMainProcessRunning(context)) {
+        // Likely-alive, not raw probe: from 31 on the probe is restricted to the calling
+        // process and would always say "not running", letting a live main process through. The
+        // DB-busy guard (checkpointWal) stays the last resort when the marker misleads.
+        if (RescueProcess.isMainProcessLikelyAlive(context)) {
             Toasty.warning(context, context.getString(R.string.rescue_main_process_running), Toast.LENGTH_LONG, true).show()
         } else {
             action()
@@ -340,6 +434,33 @@ fun RescueScreen() {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
+            // Main process status: "stopping" while the kill request is pending, "stopped"
+            // once it landed (the process guard is then released).
+            mainProcessRunning?.let { running ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(if (running) R.drawable.loader else R.drawable.checkmark),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        stringResource(
+                            if (running) R.string.rescue_status_main_process_stopping
+                            else R.string.rescue_status_main_process_stopped
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             // ─── DATA & BACKUP ───
@@ -363,11 +484,7 @@ fun RescueScreen() {
                 onClick = {
                     guardWrite {
                         confirmAction = ConfirmAction(R.string.rescue_confirm_import_database) {
-                            importDbLauncher.launch(arrayOf(
-                                "application/vnd.sqlite3",
-                                "application/x-sqlite3",
-                                "application/octet-stream"
-                            ))
+                            importDbLauncher.launch(IMPORT_DATABASE_MIMES)
                         }
                     }
                 }
@@ -389,7 +506,7 @@ fun RescueScreen() {
                 onClick = {
                     guardWrite {
                         confirmAction = ConfirmAction(R.string.rescue_confirm_import_settings) {
-                            importSettingsLauncher.launch(arrayOf("text/csv", "text/plain"))
+                            importSettingsLauncher.launch(IMPORT_SETTINGS_MIMES)
                         }
                     }
                 }
@@ -475,6 +592,31 @@ fun RescueScreen() {
 
             // ─── DANGER ZONE ───
             RescueCategoryHeader(stringResource(R.string.rescue_category_danger))
+
+            // Kill the app: re-sends the kill request when the automatic one (sent when this
+            // screen opened) failed — broadcast lost, main thread fully frozen. Gated on the
+            // process being (still) alive: once it is stopped there is nothing to kill, and a
+            // request sent to a dead process would only record a stale flag that the next
+            // healthy launch consumes as a self-kill. Not gated by guardWrite: its whole
+            // purpose is to release the guard, and it writes nothing (while the process is
+            // alive — which is exactly when this button is enabled).
+            RescueActionCard(
+                iconRes = R.drawable.logout,
+                title = stringResource(R.string.rescue_kill_app),
+                description = stringResource(R.string.rescue_kill_app_description),
+                enabled = mainProcessRunning == true,
+                onClick = {
+                    confirmAction = ConfirmAction(R.string.rescue_confirm_kill_app) {
+                        scope.launch {
+                            withContext(NzikDispatchers.DATA) {
+                                RescueProcess.requestKillMain(context)
+                            }
+                        }
+                        // Restart the status polling so "stopping" → "stopped" is visible again.
+                        killRequestGeneration++
+                    }
+                }
+            )
 
             // Reset database
             RescueActionCard(

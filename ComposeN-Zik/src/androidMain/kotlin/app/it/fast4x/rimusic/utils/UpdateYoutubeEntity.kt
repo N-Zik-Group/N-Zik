@@ -18,13 +18,13 @@ import app.n_zik.android.core.database.Database
 import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.models.SongAlbumMap
+import app.n_zik.android.playback.services.mergePageValue
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.kreate.android.me.knighthat.utils.PropUtils
 
 @Composable
 fun UpdateYoutubeArtist(browseId: String) {
@@ -52,8 +52,11 @@ fun UpdateYoutubeArtist(browseId: String) {
                                     Database.artistTable.upsert(
                                         Artist(
                                             id = browseId,
-                                            name = PropUtils.retainIfModified(currentArtist?.name, currentArtistPage.name) ?: currentArtistPage.name,
-                                            thumbnailUrl = PropUtils.retainIfModified(currentArtist?.thumbnailUrl, currentArtistPage.thumbnail?.url),
+                                            // Empty-page guard (approved legacy fix): a channel page without
+                                            // a music header returns null/blank values; mergePageValue keeps
+                                            // the stored name/thumbnail instead of clobbering them.
+                                            name = mergePageValue(currentArtist?.name, currentArtistPage.name),
+                                            thumbnailUrl = mergePageValue(currentArtist?.thumbnailUrl, currentArtistPage.thumbnail?.url),
                                             timestamp = System.currentTimeMillis(),
                                             bookmarkedAt = currentArtist?.bookmarkedAt,
                                             dislikedAt = currentArtist?.dislikedAt,
@@ -94,11 +97,13 @@ fun UpdateYoutubeAlbum (browseId: String) {
                                     Database.albumTable.upsert(
                                         Album(
                                             id = browseId,
-                                            title = PropUtils.retainIfModified(album?.title, currentAlbumPage.title),
-                                            thumbnailUrl = PropUtils.retainIfModified(album?.thumbnailUrl, currentAlbumPage.thumbnail?.url),
-                                            year = currentAlbumPage.year,
-                                            authorsText = PropUtils.retainIfModified(album?.authorsText, currentAlbumPage.authors.parseArtists().joinToString(", ").takeIf { it.isNotBlank() }),
-                                            shareUrl = currentAlbumPage.url,
+                                            // Empty-page guard (approved legacy fix): mergePageValue keeps
+                                            // the stored value whenever the fetched page value is null/blank.
+                                            title = mergePageValue(album?.title, currentAlbumPage.title),
+                                            thumbnailUrl = mergePageValue(album?.thumbnailUrl, currentAlbumPage.thumbnail?.url),
+                                            year = mergePageValue(album?.year, currentAlbumPage.year),
+                                            authorsText = mergePageValue(album?.authorsText, currentAlbumPage.authors.artistEntryNames().joinToString(", ").takeIf { it.isNotBlank() }),
+                                            shareUrl = mergePageValue(album?.shareUrl, currentAlbumPage.url),
                                             timestamp = System.currentTimeMillis(),
                                             bookmarkedAt = album?.bookmarkedAt,
                                             dislikedAt = album?.dislikedAt

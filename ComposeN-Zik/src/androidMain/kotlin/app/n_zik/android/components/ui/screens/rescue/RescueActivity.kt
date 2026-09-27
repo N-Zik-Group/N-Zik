@@ -26,6 +26,7 @@ import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setDefaultPalette
 import app.n_zik.android.BuildConfig
+import app.n_zik.android.core.rescue.RescueProcess
 import com.kieronquinn.monetcompat.core.MonetCompat
 import timber.log.Timber
 
@@ -50,6 +51,23 @@ class RescueActivity : ComponentActivity() {
             Timber.plant(Timber.DebugTree())
         }
         Timber.tag(TAG).i("Rescue Center started in process %d", Process.myPid())
+
+        // The Rescue Center exists precisely so its write actions can run without the main
+        // process: ask it to end itself the moment the screen opens (broadcast + safety-net
+        // flag), whatever the entry point (launcher shortcut or in-app menu).
+        //
+        // But only when the main process is (likely) alive. When it is already dead (alive
+        // marker stale or absent, or the trustworthy probe says so below 31) no kill request
+        // is recorded at all: a stale flag would make the next healthy launch end itself at
+        // startup — the unexpected self-kill this guard removes. The status line shows
+        // "stopped" immediately in that case and the kill button stays disabled.
+        if (RescueProcess.isMainProcessLikelyAlive(this)) {
+            RescueProcess.requestKillMain(this)
+        } else {
+            Timber.tag(TAG).i(
+                "Main process not alive (marker stale/absent): no kill request recorded on open"
+            )
+        }
 
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(scrim = AndroidColor.TRANSPARENT),

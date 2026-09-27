@@ -19,6 +19,7 @@ import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.searchPage
 import it.fast4x.innertube.requests.albumPage
 import it.fast4x.innertube.utils.from
+import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.models.Event
@@ -33,7 +34,6 @@ import app.it.fast4x.rimusic.models.SongArtistMap
 import app.it.fast4x.rimusic.models.SongPlaylistMap
 import app.it.fast4x.rimusic.models.SortedSongPlaylistMap
 import app.it.fast4x.rimusic.utils.asSong
-import app.it.fast4x.rimusic.utils.parseArtists
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -127,30 +127,30 @@ object Database {
         // Phase 1: Read existing data from DB (no lock held)
         val dbSong = songTable.findByIdDirect(song.id)
 
-        val artistNames = songItem.authors.parseArtists().filter { name ->
-            name.isNotBlank() &&
-            !name.matches(Regex("^[,&]+$")) &&
-            !name.equals("et", ignoreCase = true) &&
-            !name.equals("and", ignoreCase = true)
-        }
-        val artistDataList = mutableListOf<Pair<String, Artist?>>() // name -> existing DB artist
+        // One author entry = one artist: the channel's browseId is the identity and
+        // the row name converges to the channel page name (background fetch,
+        // retainIfModified). The previous split of a single entry's display name
+        // (parseArtists: "Bigflo & OLi" -> "Bigflo" + "OLi") lost the browseId,
+        // failed the completeness check below (split names no longer equal the
+        // entry names) and fell back to the add-only path with one online search
+        // + junk row per split part on every playback (device captures
+        // 2026-09-26 12:11 / 12:18: added=2 -> dropped=2 loop). Entry names are
+        // kept whole; the channel page stays the table of truth for the name.
+        val artistEntries = ArtistMappingReconcile.parseAuthorEntries( songItem.authors )
+        val artistNames = artistEntries.map { it.first }
+        val artistDataList = mutableListOf<Triple<String, String?, Artist?>>() // name -> browseId -> existing DB artist
 
-        for (artistName in artistNames) {
-            val originalAuthor = songItem.authors?.find { it.name == artistName }
-            val browseId = originalAuthor?.endpoint?.browseId
-
+        for ((artistName, browseId) in artistEntries) {
             if (browseId != null) {
-                val dbArtist = artistTable.findByIdDirect(browseId)
-                val artist = dbArtist?.copy(
-                    name = PropUtils.retainIfModified(dbArtist.name, artistName)
-                ) ?: Artist(
-                    id = browseId,
-                    name = artistName
-                )
-                artistDataList.add(artistName to artist)
+                // The row name is owned by the channel page: an existing row keeps
+                // its stored name (page name or user-modified), a new row starts
+                // from the entry name and converges to the page name at the next
+                // background fetch.
+                val artist = artistTable.findByIdDirect(browseId) ?: Artist(id = browseId, name = artistName)
+                artistDataList.add(Triple(artistName, browseId, artist))
             } else {
                 val dbArtistByName = artistTable.findByNameDirect(artistName)
-                artistDataList.add(artistName to dbArtistByName)
+                artistDataList.add(Triple(artistName, null, dbArtistByName))
             }
         }
 
@@ -159,14 +159,22 @@ object Database {
         // Phase 2: Network calls (NO lock held)
         val artistsToUpsert = mutableListOf<Artist>()
         val artistsToMap = mutableListOf<Artist>()
-        for ((artistName, existingArtist) in artistDataList) {
+        for ((artistName, browseId, existingArtist) in artistDataList) {
             if (existingArtist != null) {
-                val retainedName = PropUtils.retainIfModified(existingArtist.name, artistName)
-                if (existingArtist.name != retainedName) {
-                    val updatedArtist = existingArtist.copy(name = retainedName)
-                    artistsToUpsert.add(updatedArtist)
-                    artistsToMap.add(updatedArtist)
+                if (browseId == null) {
+                    // No channel identity: keep syncing the row name from the fresh
+                    // YTM response (previous behavior for name-only rows).
+                    val retainedName = PropUtils.retainIfModified(existingArtist.name, artistName)
+                    if (existingArtist.name != retainedName) {
+                        val updatedArtist = existingArtist.copy(name = retainedName)
+                        artistsToUpsert.add(updatedArtist)
+                        artistsToMap.add(updatedArtist)
+                    } else {
+                        artistsToMap.add(existingArtist)
+                    }
                 } else {
+                    // Channel row: the stored name is the page name (or a
+                    // user-modified name) - the raw entry name must not clobber it.
                     artistsToMap.add(existingArtist)
                 }
             } else {
@@ -200,9 +208,27 @@ object Database {
                 song.title.isNullOrBlank() && !dbSong?.title.isNullOrBlank() -> dbSong.title
                 else -> PropUtils.retainIfModified(dbSong?.title, song.title)
             }
+            // The stored artist list follows the resolved names: the row name when
+            // the channel row already exists (page name / user-modified - the table
+            // of truth), the entry name for rows that don't exist yet (they
+            // converge to the page name at the next background fetch). The split
+            // join ("Bigflo, OLi") used to feed the in-app "two artists" view.
+            // A storage marker must never be copied into a display copy: a
+            // renamed row is stored as "modified:X" on the row only, so clean
+            // each existing row name before the join - otherwise every playback
+            // re-embeds the prefix mid-string in a natural (non-custom) copy,
+            // which retainIfModified below cannot cut (it only protects custom
+            // copies).
+            // A row name that cleans down to empty (a bare storage marker) is
+            // dropped instead of leaving an empty slot ("A, , B") in the join.
+            val fetchedArtistsText = artistDataList
+                .map { entry -> entry.third?.name?.let { cleanPrefix(it).trim() } ?: entry.first }
+                .filter { it.isNotBlank() }
+                .joinToString(", ")
+                .takeIf { it.isNotBlank() }
             val finalArtistsText = when {
-                song.artistsText.isNullOrBlank() && !dbSong?.artistsText.isNullOrBlank() -> dbSong.artistsText
-                else -> PropUtils.retainIfModified(dbSong?.artistsText, song.artistsText)
+                fetchedArtistsText.isNullOrBlank() && !dbSong?.artistsText.isNullOrBlank() -> dbSong.artistsText
+                else -> PropUtils.retainIfModified(dbSong?.artistsText, fetchedArtistsText)
             }
             val finalSong = Song(
                 id = song.id,
@@ -222,7 +248,28 @@ object Database {
             if (artistsToUpsert.isNotEmpty()) {
                 artistTable.upsert(artistsToUpsert)
             }
-            artistsToMap.forEach { mapIgnore(it, song) }
+            // Reconcile the artist mapping from this fresh YTM response when it is
+            // complete (every parsed artist is backed by a browse ID): the map must
+            // reflect the latest playback context, not the union of every context
+            // ever seen. A names-only/partial list keeps the legacy add-only path.
+            if (ArtistMappingReconcile.isCompleteAuthorList(artistNames, songItem.authors)) {
+                logReconcileDrops(songArtistMapTable, artistTable, song.id, finalSong.title)
+                val reconcileArtists = artistDataList.mapNotNull { it.third }
+                val dropped = reconcileArtistLinks( song.id, reconcileArtists )
+                Timber.tag("Database").d(
+                    "upsert RECONCILE song=%s dropped=%d latestList=%d artists",
+                    song.id, dropped, artistNames.size
+                )
+            } else {
+                // Only path that leaves stale links behind: an incomplete author list must
+                // never erase the mapping it cannot rewrite, so legacy add-only keeps the
+                // previous context's rows — the startup sweep used to catch them silently.
+                Timber.tag("Database").d(
+                    "upsert ADD-ONLY song=%s names=%d authors=%d added=%d (stale links may remain until the next reconcile)",
+                    song.id, artistNames.size, songItem.authors?.size ?: 0, artistsToMap.size
+                )
+                artistsToMap.forEach { mapIgnore(it, song) }
+            }
 
             // Upsert album
             songItem.album?.let {
@@ -231,14 +278,14 @@ object Database {
                     dbAlbum.copy(
                         title = PropUtils.retainIfModified(dbAlbum.title, it.name),
                         thumbnailUrl = PropUtils.retainIfModified(dbAlbum.thumbnailUrl, song.thumbnailUrl),
-                        authorsText = PropUtils.retainIfModified(dbAlbum.authorsText, songItem.authors.parseArtists().joinToString(", ").takeIf { it.isNotBlank() })
+                        authorsText = PropUtils.retainIfModified(dbAlbum.authorsText, artistNames.joinToString(", ").takeIf { it.isNotBlank() })
                     )
                 } else {
                     Album(
                         id = browseId,
                         title = it.name,
                         thumbnailUrl = song.thumbnailUrl,
-                        authorsText = songItem.authors.parseArtists().joinToString(", ").takeIf { it.isNotBlank() }
+                        authorsText = artistNames.joinToString(", ").takeIf { it.isNotBlank() }
                     )
                 }
                 if (dbAlbum != fetchedAlbum) {
@@ -256,7 +303,7 @@ object Database {
                                             title = PropUtils.retainIfModified(fetchedAlbum.title, albumPage.title.takeIf { !it.isNullOrBlank() }) ?: fetchedAlbum.title,
                                             thumbnailUrl = PropUtils.retainIfModified(fetchedAlbum.thumbnailUrl, albumPage.thumbnail?.url.takeIf { !it.isNullOrBlank() }) ?: fetchedAlbum.thumbnailUrl,
                                             year = albumPage.year,
-                                            authorsText = PropUtils.retainIfModified(fetchedAlbum.authorsText, albumPage.authors.parseArtists().joinToString(", ").takeIf { it.isNotBlank() }) ?: fetchedAlbum.authorsText,
+                                            authorsText = PropUtils.retainIfModified(fetchedAlbum.authorsText, albumPage.authors.artistEntryNames().joinToString(", ").takeIf { it.isNotBlank() }) ?: fetchedAlbum.authorsText,
                                             shareUrl = PropUtils.retainIfModified(fetchedAlbum.shareUrl, albumPage.url) ?: fetchedAlbum.shareUrl,
                                             timestamp = System.currentTimeMillis()
                                         )
@@ -272,6 +319,39 @@ object Database {
                 mapIgnore(fetchedAlbum, song)
             }
         }
+    }
+
+    /**
+     * Replaces a song's artist links with [artists]: every existing
+     * [SongArtistMap] row of [songId] is deleted, then the given artists are
+     * upserted and re-mapped to the song.
+     *
+     * **Contract - complete list only:** the caller must only invoke this when the
+     * fresh author list is complete, i.e. it passes
+     * [ArtistMappingReconcile.isCompleteAuthorList] (every parsed name backed by a
+     * browse ID). A names-only/partial list must never erase the mapping it cannot
+     * rewrite - gate on [ArtistMappingReconcile.isCompleteAuthorList] before calling.
+     *
+     * Transaction semantics depend on the caller: [upsert] calls it from
+     * inside a Room transaction, so the delete + re-insert is atomic there.
+     * The song update dialog calls it from `asyncTransaction` (an executor
+     * thread with NO surrounding Room transaction): each statement autocommits
+     * on its own, so the delete + re-insert is best-effort there - a failure
+     * between the delete and the re-insert would briefly leave the song
+     * without artist links until the next reconcile heals it. No logging in
+     * here - the caller logs.
+     *
+     * @param songId song side of the replaced links
+     * @param artists the complete fresh artist list the links are rebuilt from
+     * @return number of stale links deleted before the re-insert
+     */
+    fun reconcileArtistLinks( songId: String, artists: List<Artist> ): Int {
+        val dropped = songArtistMapTable.deleteBySongId( songId )
+        artistTable.upsert( artists )
+        artists.forEach { artist ->
+            songArtistMapTable.insertIgnore( SongArtistMap( songId, artist.id ) )
+        }
+        return dropped
     }
 
     /**
@@ -357,7 +437,7 @@ object Database {
                                         title = PropUtils.retainIfModified(mergedAlbum.title, albumPage.title.takeIf { !it.isNullOrBlank() }) ?: mergedAlbum.title,
                                         thumbnailUrl = PropUtils.retainIfModified(mergedAlbum.thumbnailUrl, albumPage.thumbnail?.url.takeIf { !it.isNullOrBlank() }) ?: mergedAlbum.thumbnailUrl,
                                         year = albumPage.year,
-                                        authorsText = PropUtils.retainIfModified(mergedAlbum.authorsText, albumPage.authors.parseArtists().joinToString(", ").takeIf { it.isNotBlank() }) ?: mergedAlbum.authorsText,
+                                        authorsText = PropUtils.retainIfModified(mergedAlbum.authorsText, albumPage.authors.artistEntryNames().joinToString(", ").takeIf { it.isNotBlank() }) ?: mergedAlbum.authorsText,
                                         shareUrl = PropUtils.retainIfModified(mergedAlbum.shareUrl, albumPage.url) ?: mergedAlbum.shareUrl,
                                         timestamp = System.currentTimeMillis()
                                     )
@@ -376,20 +456,66 @@ object Database {
         // Insert artist
         val artistsNames = mediaItem.mediaMetadata.extras?.getStringArrayList("artistNames").orEmpty()
         val artistsIds = mediaItem.mediaMetadata.extras?.getStringArrayList("artistIds").orEmpty()
-        
+
+        // Names of the artist rows the mapping below actually points to - the alignment
+        // target for artistsText (see the alignment block at the end of this function).
+        val resolvedArtistNames = mutableListOf<String>()
+
         if (artistsIds.isNotEmpty()) {
-            // Normal case: zip names with IDs
+            // Reconcile before re-mapping: the mapping must reflect the latest YTM author
+            // list, not the union of every list ever seen. YTM author lists vary by
+            // playback context (a channel playlist/radio credits the channel as an
+            // author), so insert-only accumulation pollutes SongArtistMap over time
+            // (bug: a channel-derived artist row collected hundreds of plays of
+            // unrelated songs and ranked as a top artist in the Rewind deck).
+            // Guarded: only an existing song has stale rows to drop, and only the
+            // id-bearing path reconciles — a names-only/local re-insert must never
+            // wipe existing mappings.
+            if (dbSong != null) {
+                logReconcileDrops(songArtistMapTable, artistTable, cleanSongId, mergedSong.title)
+                val dropped = songArtistMapTable.deleteBySongId(cleanSongId)
+                Timber.tag("Database").d(
+                    "insertIgnore RECONCILE ids song=%s dropped=%d latestList=%s",
+                    cleanSongId, dropped, artistsIds
+                )
+            }
+            // Normal case: zip names with IDs. `resolvedArtistNames` tracks the name of
+            // the row each link actually points to, because the startup sweep (DbCleanup)
+            // compares that stored name against artistsText - not the raw context name,
+            // which can be a different spelling (JP vs romaji) of the same row.
             artistsNames.zip(artistsIds).forEach { (name, id) ->
                 val existingArtist = artistTable.findByNameDirect(name)
                 val targetArtistId = if (existingArtist != null) {
+                    // Row resolved by name: its stored name IS the context name.
+                    resolvedArtistNames += name
                     existingArtist.id
                 } else {
+                    // insertIgnore is a no-op when the row already exists under another
+                    // spelling - it does NOT rename it - so read the stored name back:
+                    // the link points to that existing row.
                     artistTable.insertIgnore(Artist(id, name))
+                    resolvedArtistNames += artistTable.findByIdDirect(id)?.name ?: name
                     id
                 }
                 songArtistMapTable.insertIgnore(SongArtistMap(cleanSongId, targetArtistId))
             }
         } else if (artistsNames.isNotEmpty()) {
+            // A names-only author list (search results often carry names without
+            // browse IDs) is still the latest authoritative answer for this
+            // context, so the same reconcile rule applies: stale rows from other
+            // contexts must not survive it. Guarded like above: existing song only.
+            // Rows are resolved by name here, so the stored row name equals the
+            // context name for every link written synchronously (the async background
+            // search prefers an exact-name match) - the context names are the target.
+            resolvedArtistNames += artistsNames
+            if (dbSong != null) {
+                logReconcileDrops(songArtistMapTable, artistTable, cleanSongId, mergedSong.title)
+                val dropped = songArtistMapTable.deleteBySongId(cleanSongId)
+                Timber.tag("Database").d(
+                    "insertIgnore RECONCILE names song=%s dropped=%d latestList=%s",
+                    cleanSongId, dropped, artistsNames
+                )
+            }
             // No browse IDs but we have names: try database by name first
             artistsNames.forEach { name ->
                 val existingArtist = artistTable.findByNameDirect(name)
@@ -416,6 +542,62 @@ object Database {
                     }
                 }
             }
+        }
+
+        // Single source of truth for the artist display: once the mapping has been
+        // (re)written from this context's author list, align artistsText to the names of
+        // the rows those links actually point to. The startup sweep (DbCleanup) judges
+        // links by name equality against artistsText, so the two must carry the same
+        // names - aligning to the stored row names (not the raw context names, which can
+        // be a different spelling of the same row) is what breaks the
+        // "map on play, drop on restart" loop. `modified:` values are never overwritten,
+        // and an already-aligned value skips the write.
+        // Every resolved name is a STORAGE value (context extras raw from the prefetch,
+        // or the stored row name, which carries `modified:` when the row was pinned or
+        // renamed): clean each one before the join, exactly like fetchedArtistsText
+        // above. cleanPrefix only cuts at the head, so an uncleaned row name embedded
+        // here would survive mid-string in the natural copy and re-appear in the song
+        // list right after each playback (the "after the stream it shows modified:X"
+        // bug - 3rd write path of the leak).
+        if (resolvedArtistNames.isNotEmpty()) {
+            val alignedJoin = resolvedArtistNames
+                .map { cleanPrefix(it).trim() }
+                .filter { it.isNotBlank() }
+                .joinToString(", ")
+            val alignedArtistsText = alignedJoin
+                .takeIf { it.isNotBlank() }
+                ?.let { PropUtils.retainIfModified(mergedSong.artistsText, it) }
+            if (alignedArtistsText != null && alignedArtistsText != mergedSong.artistsText) {
+                songTable.upsert(mergedSong.copy(artistsText = alignedArtistsText))
+            }
+        }
+    }
+
+    /**
+     * Diagnostic helper for reconcile cleanup: right before a reconciliation
+     * drops a song's stale artist links, log one line per about-to-be-dropped
+     * pair (song id + title, artist name) so the drop can be read back from
+     * logcat. Pure logging — no behavior change. Runs only on the delete
+     * paths, never on the add-only one.
+     *
+     * @param mapTable source of the stale pairs (targeted by [songId])
+     * @param artistTable name lookup for each dropped pair
+     * @param songId song side of the dropped pairs
+     * @param songTitle title of the song for the log line
+     *
+     * A missing artist row (orphan link) is logged as `artist="null"`.
+     */
+    internal fun logReconcileDrops(
+        mapTable: SongArtistMapTable,
+        artistTable: ArtistTable,
+        songId: String,
+        songTitle: String,
+    ) {
+        for (pair in mapTable.pairsBySongIdDirect(songId)) {
+            Timber.tag("Database").d(
+                "reconcile dropped link: song=%s \"%s\" artist=\"%s\"",
+                songId, songTitle, artistTable.findByIdDirect(pair.artistId)?.name
+            )
         }
     }
 
@@ -576,6 +758,28 @@ object Database {
         val db = this
         _internal.withTransaction {
             db.block()
+        }
+    }
+
+    /**
+     * Synchronous atomic transaction for the non-suspend write paths (dialog
+     * save bodies running inside [asyncTransaction], which retries on lock
+     * exceptions but does not group the writes atomically on its own): the
+     * row rename and every propagated copy commit or abort together.
+     *
+     * Uses the classic three-call transaction API because it is the only
+     * synchronous one Room offers: the suspend `RoomDatabase.withTransaction`
+     * cannot be called from the non-suspend dialog paths, and the block must
+     * stay inside [asyncTransaction] to keep its lock retries.
+     */
+    @Suppress("DEPRECATION")
+    fun syncTransaction( block: Database.() -> Unit ) {
+        _internal.beginTransaction()
+        try {
+            block()
+            _internal.setTransactionSuccessful()
+        } finally {
+            _internal.endTransaction()
         }
     }
 

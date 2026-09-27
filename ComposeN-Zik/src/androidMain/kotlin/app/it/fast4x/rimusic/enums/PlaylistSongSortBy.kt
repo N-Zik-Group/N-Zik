@@ -37,7 +37,11 @@ enum class PlaylistSongSortBy(
 
     Downloaded( R.string.sort_downloaded, R.drawable.downloaded ),
 
-    Custom( R.string.sort_custom_order, R.drawable.position );
+    Custom( R.string.sort_custom_order, R.drawable.position ),
+
+    // Spec 2: only shown for generated `rewind-*` playlists (filtered in PlaylistSongsSort);
+    // sorts by the top order written at generation time (a live sort never rewrites it)
+    RewindTop( R.string.rewind_top_sort, R.drawable.position );
 
     override val text: String
         @Composable
