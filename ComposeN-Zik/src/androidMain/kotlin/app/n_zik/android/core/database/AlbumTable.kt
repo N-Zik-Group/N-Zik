@@ -372,6 +372,19 @@ interface AlbumTable {
     fun rotateLikeState( albumId: String ): Int
 
     /**
+     * Reset the album-page fetch TTL ([Album.lastFetch] → NULL) so the next
+     * playback re-fetches the album page. Called by the song « Update »
+     * action: the song's metadata was just refreshed, so the cached album
+     * page is stale.
+     *
+     * @param albumId album to have its fetch TTL reset
+     *
+     * @return number of albums affected by this operation
+     */
+    @Query("UPDATE Album SET lastFetch = NULL WHERE id = :albumId")
+    fun resetFetchTtl( albumId: String ): Int
+
+    /**
      * @return like state of album: true = bookmarked, false = disliked, null = neutral
      */
     @Query("""

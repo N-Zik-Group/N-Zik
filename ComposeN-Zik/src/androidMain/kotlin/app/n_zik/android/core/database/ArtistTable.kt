@@ -418,6 +418,19 @@ interface ArtistTable {
     """)
     fun rotateLikeState( artistId: String ): Int
 
+    /**
+     * Reset the artist-page fetch TTL ([Artist.lastFetch] → NULL) so the next
+     * playback re-fetches the artist page (name + thumbnail). Called by the
+     * song « Update » action: the song's metadata was just refreshed, so the
+     * cached artist page is stale.
+     *
+     * @param artistId artist to have its fetch TTL reset
+     *
+     * @return number of artists affected by this operation
+     */
+    @Query("UPDATE Artist SET lastFetch = NULL WHERE id = :artistId")
+    fun resetFetchTtl( artistId: String ): Int
+
     @Query("""
         UPDATE Artist
         SET bookmarkedAt = CASE

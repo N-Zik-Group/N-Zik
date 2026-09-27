@@ -1,15 +1,19 @@
 package app.n_zik.android.components.dialog.song
 
 import android.content.Context
+import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.models.SongArtistMap
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.appContext
+import app.n_zik.android.core.database.AlbumTable
 import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.core.database.FormatTable
+import app.n_zik.android.core.database.LyricsTable
+import app.n_zik.android.core.database.SongAlbumMapTable
 import app.n_zik.android.core.database.SongArtistMapTable
 import app.n_zik.android.core.database.SongTable
 import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
@@ -57,6 +61,9 @@ class RunSongUpdateTest {
     private val artistTable = mockk<ArtistTable>(relaxed = true)
     private val mapTable = mockk<SongArtistMapTable>(relaxed = true)
     private val formatTable = mockk<FormatTable>(relaxed = true)
+    private val albumMapTable = mockk<SongAlbumMapTable>(relaxed = true)
+    private val albumTable = mockk<AlbumTable>(relaxed = true)
+    private val lyricsTable = mockk<LyricsTable>(relaxed = true)
     private val internal = mockk<DatabaseInitializer>(relaxed = true)
 
     private val cache = mockk<Cache>(relaxed = true)
@@ -128,6 +135,9 @@ class RunSongUpdateTest {
         every { Database.artistTable } returns artistTable
         every { Database.songArtistMapTable } returns mapTable
         every { Database.formatTable } returns formatTable
+        every { Database.songAlbumMapTable } returns albumMapTable
+        every { Database.albumTable } returns albumTable
+        every { Database.lyricsTable } returns lyricsTable
 
         // asyncTransaction runs its block on the Room transactionExecutor: keep
         // the real (lazy) Room database out of the JVM and run the block inline.
@@ -182,6 +192,27 @@ class RunSongUpdateTest {
         assertEquals("Stored title", updated.captured.title)
         // no authors box -> no reconcile
         verify(exactly = 0) { mapTable.deleteBySongId(any()) }
+        verify(exactly = 1) { Toaster.done() }
+    }
+
+    @Test
+    fun playtimeOnlyUpdateResetsNoFetchTtls() {
+        // A playtime-only update has needsFetch == false, so no YTM fetch
+        // happened and no metadata was refreshed: the 30-day fetch TTLs of
+        // the artists, album and lyrics must NOT be invalidated (the
+        // relaxed mocks would silently absorb a stray resetFetchTtl, so the
+        // never-called assertions are what pin the guard).
+        every { songTable.findByIdDirect("video_1") } returns storedRow
+
+        runBlocking {
+            runSongUpdate(binder, entry, SongUpdateSelection(playtime = true))
+            coVerify(exactly = 0) { Innertube.song(any()) }
+        }
+
+        verify(exactly = 1) { songTable.updateReplace(any()) }
+        verify(exactly = 0) { artistTable.resetFetchTtl(any()) }
+        verify(exactly = 0) { albumTable.resetFetchTtl(any()) }
+        verify(exactly = 0) { lyricsTable.resetFetchTtlBySongId(any()) }
         verify(exactly = 1) { Toaster.done() }
     }
 
@@ -426,8 +457,96 @@ class RunSongUpdateTest {
     }
 
     @Test
+    fun blankFetchedArtistsKeepTheStoredValue() {
+        every { songTable.findByIdDirect("video_1") } returns storedRow
+        // the video queue fetch returns an empty author list (the channel
+        // byline is filtered out): fetched artistsText is ""
+        val item = songItem("Fetched title", emptyList())
+
+        runBlocking {
+            coEvery { Innertube.song("video_1") } returns fetchResult(Result.success(item))
+            runSongUpdate(binder, entry, SongUpdateSelection(authors = true))
+        }
+
+        val updated = slot<Song>()
+        verify(exactly = 1) { songTable.updateReplace(capture(updated)) }
+        // the stored value survives the blank fetch
+        assertEquals("Stored artist", updated.captured.artistsText)
+        assertEquals("Stored title", updated.captured.title)
+        // an empty list reconciles nothing
+        verify(exactly = 0) { mapTable.deleteBySongId(any()) }
+        verify(exactly = 0) { mapTable.insertIgnore(any<SongArtistMap>()) }
+        verify(exactly = 0) { artistTable.upsert(any<List<Artist>>()) }
+    }
+
+    @Test
+    fun nonBlankFetchedArtistsStillOverwriteTheStoredValue() {
+        every { songTable.findByIdDirect("video_1") } returns storedRow
+        val item = songItem("Fetched title", listOf(author("Tanchiky", "UC_A")))
+
+        runBlocking {
+            coEvery { Innertube.song("video_1") } returns fetchResult(Result.success(item))
+            runSongUpdate(binder, entry, SongUpdateSelection(authors = true))
+        }
+
+        val updated = slot<Song>()
+        verify(exactly = 1) { songTable.updateReplace(capture(updated)) }
+        // the blank-fetch guard must not fire on a real fetch
+        assertEquals("Tanchiky", updated.captured.artistsText)
+        verify(exactly = 1) { mapTable.deleteBySongId("video_1") }
+        verify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("video_1", "UC_A")) }
+    }
+
+    @Test
+    fun modifiedStoredArtistsTextSurvivesABlankFetch() {
+        every { songTable.findByIdDirect("video_1") } returns storedRow.copy(artistsText = "modified:Custom")
+        val item = songItem("Fetched title", emptyList())
+
+        runBlocking {
+            coEvery { Innertube.song("video_1") } returns fetchResult(Result.success(item))
+            runSongUpdate(binder, entry, SongUpdateSelection(authors = true))
+        }
+
+        val updated = slot<Song>()
+        verify(exactly = 1) { songTable.updateReplace(capture(updated)) }
+        // the custom value is authoritative even against a blank fetch
+        assertEquals("modified:Custom", updated.captured.artistsText)
+        verify(exactly = 0) { mapTable.deleteBySongId(any()) }
+        verify(exactly = 0) { mapTable.insertIgnore(any<SongArtistMap>()) }
+    }
+
+    @Test
+    fun updateResetsTheArtistAlbumAndLyricsFetchTtls() {
+        every { songTable.findByIdDirect("video_1") } returns storedRow
+        every { mapTable.findArtistsOfDirect("video_1") } returns
+            listOf( Artist( id = "UC_A", name = "A" ), Artist( id = "UC_B", name = "B" ) )
+        // A song can be mapped to several albums: every mapped album's TTL is
+        // reset, not just one arbitrary row (findAlbumsOfDirect, no LIMIT 1).
+        every { albumMapTable.findAlbumsOfDirect("video_1") } returns
+            listOf( Album( id = "ALB_1" ), Album( id = "ALB_2" ) )
+        val item = songItem( "Fetched title", emptyList() )
+
+        runBlocking {
+            coEvery { Innertube.song("video_1") } returns fetchResult( Result.success( item ) )
+            runSongUpdate( binder, entry, SongUpdateSelection( authors = true ) )
+        }
+
+        // the 30-day fetch TTLs are reset so the next playback re-fetches
+        verify( exactly = 1 ) { artistTable.resetFetchTtl( "UC_A" ) }
+        verify( exactly = 1 ) { artistTable.resetFetchTtl( "UC_B" ) }
+        verify( exactly = 1 ) { albumTable.resetFetchTtl( "ALB_1" ) }
+        verify( exactly = 1 ) { albumTable.resetFetchTtl( "ALB_2" ) }
+        verify( exactly = 1 ) { lyricsTable.resetFetchTtlBySongId( "video_1" ) }
+    }
+
+    @Test
     fun fetchFailureWritesNoFetchedField() {
         every { songTable.findByIdDirect("video_1") } returns storedRow
+        // Mapped rows must exist for the TTL assertions below to be able to
+        // fail: a failed fetch must not reset them (the gate is
+        // `fetchedItem != null`, not "a fetch was requested").
+        every { mapTable.findArtistsOfDirect("video_1") } returns listOf(Artist(id = "UC_A", name = "A"))
+        every { albumMapTable.findAlbumsOfDirect("video_1") } returns listOf(Album(id = "ALB_1"))
 
         runBlocking {
             coEvery { Innertube.song("video_1") } returns
@@ -441,5 +560,10 @@ class RunSongUpdateTest {
         assertEquals("Stored artist", updated.captured.artistsText)
         assertEquals("https://stored/thumb", updated.captured.thumbnailUrl)
         verify(exactly = 0) { mapTable.deleteBySongId(any()) }
+        // nothing was re-fetched, so the cached pages are still as fresh as
+        // before: no TTL invalidation on a failed fetch.
+        verify(exactly = 0) { artistTable.resetFetchTtl(any()) }
+        verify(exactly = 0) { albumTable.resetFetchTtl(any()) }
+        verify(exactly = 0) { lyricsTable.resetFetchTtlBySongId(any()) }
     }
 }

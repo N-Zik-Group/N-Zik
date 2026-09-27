@@ -114,6 +114,20 @@ interface SongAlbumMapTable {
     """)
     fun findAlbumOf( songId: String, limit: Int = Int.MAX_VALUE ): Flow<Album?>
 
+    /**
+     * @return every [Album] that the song belongs to (synchronous, usable
+     * inside a transaction) - a song mapped to several albums yields every
+     * distinct album row, not one arbitrary mapping (the previous `LIMIT 1`
+     * picked a nondeterministic album when a song was mapped twice)
+     */
+    @Query("""
+        SELECT DISTINCT A.*
+        FROM Album A
+        JOIN SongAlbumMap SAM ON SAM.albumId = A.id
+        WHERE SAM.songId = :songId
+    """)
+    fun findAlbumsOfDirect( songId: String ): List<Album>
+
     @Query("""
         SELECT position FROM SongAlbumMap
         WHERE songId = :songId

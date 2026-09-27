@@ -401,6 +401,11 @@ internal data class SongUpdateSelection(
  * (`retainIfModified` itself returns null for a null fetch, so the per-field
  * null guard is mandatory). A null [fetchedSong] (fetch failed) writes no fetched
  * field at all. Only [Song.totalPlayTimeMs] is reset - `playCount` is never touched.
+ *
+ * The artistsText merge additionally treats a BLANK fetched value as "no data"
+ * instead of "no artist" - see [mergeFetchedArtistsText] (the video queue
+ * fetch returns an empty author list; overwriting the stored value with `""`
+ * would clobber the metadata).
  */
 internal fun applySongUpdate(
     storedRow: Song,
@@ -412,7 +417,7 @@ internal fun applySongUpdate(
     if( fetched != null ) {
         updated = updated.copy(
             title = if( selection.title ) PropUtils.retainIfModified( storedRow.title, fetched.title ) ?: storedRow.title else storedRow.title,
-            artistsText = if( selection.authors ) PropUtils.retainIfModified( storedRow.artistsText, fetched.artistsText ) ?: storedRow.artistsText else storedRow.artistsText,
+            artistsText = if( selection.authors ) mergeFetchedArtistsText( storedRow.id, storedRow.artistsText, fetched.artistsText ) else storedRow.artistsText,
             thumbnailUrl = if( selection.thumbnail ) PropUtils.retainIfModified( storedRow.thumbnailUrl, fetched.thumbnailUrl ) ?: storedRow.thumbnailUrl else storedRow.thumbnailUrl
         )
     }
@@ -426,6 +431,35 @@ internal fun applySongUpdate(
         updated.playCount = storedRow.playCount
     }
     return updated
+}
+
+/**
+ * Merges the fetched artistsText onto the stored value for the Update action.
+ *
+ * A BLANK (null or empty) fetched value is "no data", not "no artist": for a
+ * music video the queue mono-id fetch (`Innertube.song(videoId)` →
+ * `playlistPanelVideoRenderer`) carries the channel byline only, which
+ * `SongItem.parse` filters out (artist-only) - the authors list comes back
+ * empty and the fetched artistsText is `""`. Overwriting a non-blank stored
+ * value with that blank would destroy the metadata, so the stored value is
+ * kept - same predicate as the `Database.insertIgnore` merge (blank fetch +
+ * non-blank stored → stored value). A non-blank fetch overwrites as before,
+ * and a `modified:` stored value stays authoritative through
+ * [PropUtils.retainIfModified].
+ */
+internal fun mergeFetchedArtistsText(
+    songId: String,
+    storedArtistsText: String?,
+    fetchedArtistsText: String?
+): String? {
+    if( fetchedArtistsText.isNullOrBlank() && !storedArtistsText.isNullOrBlank() ) {
+        Timber.tag( "Database" ).d(
+            "update keep stored artistsText song=%s value=%s (blank fetch)",
+            songId, storedArtistsText
+        )
+        return storedArtistsText
+    }
+    return PropUtils.retainIfModified( storedArtistsText, fetchedArtistsText ) ?: storedArtistsText
 }
 
 /**
@@ -526,6 +560,28 @@ internal suspend fun runSongUpdateCore(
             Timber.tag("Database").d(
                 "update RECONCILE song=%s dropped=%d latestList=%d artists",
                 entry.id, dropped, parsedEntries.size
+            )
+        }
+
+        // Only a successful fetch refreshed this song's metadata: reset the
+        // 30-day fetch TTLs of its artist pages, album pages and lyrics so
+        // the next playback re-fetches them with the fresh data (lastFetch →
+        // NULL = TTL expired for the StreamResolver / lyrics decision
+        // makers). A skipped (playtime/cache-only) or failed fetch must NOT
+        // invalidate the TTLs: nothing was re-fetched, so the cached pages
+        // are still as fresh as before.
+        if( fetchedItem != null ) {
+            val ttlArtistIds = songArtistMapTable.findArtistsOfDirect( entry.id ).map { it.id }
+            ttlArtistIds.forEach { artistTable.resetFetchTtl( it ) }
+            // A song can be mapped to several albums: reset every mapped
+            // album's TTL, not just one arbitrary row.
+            val ttlAlbums = songAlbumMapTable.findAlbumsOfDirect( entry.id )
+                .filter { !it.id.isNullOrBlank() }
+            ttlAlbums.forEach { albumTable.resetFetchTtl( it.id ) }
+            val lyricsTtlRows = lyricsTable.resetFetchTtlBySongId( entry.id )
+            Timber.tag( "Database" ).d(
+                "update TTL reset song=%s artists=%d album=%d lyricsRows=%d",
+                entry.id, ttlArtistIds.size, ttlAlbums.size, lyricsTtlRows
             )
         }
     }
