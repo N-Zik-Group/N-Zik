@@ -28,6 +28,7 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.utils.debug.debugLogFiles
 import org.junit.After
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -112,9 +113,10 @@ class DebugLogsBadgeTest {
         composeRule.waitForIdle()
 
         assertFalse("tap should switch the preference off", prefs.getBoolean(logDebugEnabledKey, true))
-        debugLogFiles(logsDir).forEach { file ->
-            assertFalse("log file should be purged on disable: $file", file.exists())
-        }
+        // The debug log is purged on disable; the crash log survives (crash capture is
+        // independent of the debug switch, the Maintenance sheet reads it unconditionally)
+        assertFalse("debug log should be purged on disable", File(logsDir, "N-Zik_log.txt").exists())
+        assertTrue("crash log must survive the debug-log purge", File(logsDir, "N-Zik_crash_log.txt").exists())
         composeRule.onNodeWithText("DEBUG").assertDoesNotExist()
     }
 

@@ -2,8 +2,10 @@ package app.n_zik.android.components.dialog.logs
 
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -75,6 +77,28 @@ class ReadLogContentTest {
         dir.debugLog("debug line")
 
         assertNull(readLogContent(dir, 3))
+    }
+
+    @Test
+    fun `debug and both options grey out with the debug log except the crash option`() {
+        // Debug on: every option is selectable
+        assertFalse(isLogExportOptionDisabled(0, true))
+        assertFalse(isLogExportOptionDisabled(1, true))
+        assertFalse(isLogExportOptionDisabled(2, true))
+        // Debug off: the debug log and the combined export are meaningless, the crash
+        // option stays available
+        assertTrue(isLogExportOptionDisabled(0, false))
+        assertFalse(isLogExportOptionDisabled(1, false))
+        assertTrue(isLogExportOptionDisabled(2, false))
+    }
+
+    @Test
+    fun `logExportFileName maps each option to its export file name`() {
+        assertEquals("N-Zik_debug_log.txt", logExportFileName(0))
+        assertEquals("N-Zik_crash_log.txt", logExportFileName(1))
+        // "both" (2) and any unknown option fall back to the combined name
+        assertEquals("N-Zik_logs.txt", logExportFileName(2))
+        assertEquals("N-Zik_logs.txt", logExportFileName(7))
     }
 
     @Test

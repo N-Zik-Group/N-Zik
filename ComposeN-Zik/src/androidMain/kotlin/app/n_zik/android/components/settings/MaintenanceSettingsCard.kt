@@ -28,14 +28,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.exoplayer.offline.Download
+import app.it.fast4x.rimusic.ui.screens.settings.ImportantSettingsDescription
 import app.it.fast4x.rimusic.ui.screens.settings.OtherSettingsEntry
+import app.it.fast4x.rimusic.ui.screens.settings.OtherSwitchSettingEntry
 import app.it.fast4x.rimusic.ui.screens.settings.SettingsSectionCard
+import app.it.fast4x.rimusic.utils.logDebugEnabledKey
+import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
+import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.dialog.logs.CopyLogsDialog
 import app.n_zik.android.components.maintenance.MaintenanceHealth
 import app.n_zik.android.components.maintenance.MaintenanceSheet
 import app.n_zik.android.components.maintenance.MaintenanceSnapshot
@@ -51,16 +58,22 @@ import app.n_zik.android.extensions.discord.DiscordRpcErrorState
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.updater.services.UpdateDownloadManager
 import app.n_zik.android.typography
+import app.n_zik.android.utils.debug.purgeDebugLogs
 import timber.log.Timber
 
 /**
- * Minimal Maintenance settings card (Misc tab, spec "Maintenance — état de l'app en un
- * regard"): the approved card WITHOUT any toggle — a section header with the shield
- * icon, a pass table in the exact Network/Quality status cards pattern
- * ([OtherInfoSettingsEntry] layout: icon + title, trailing status underneath — one row
- * per boot pass with the sheet's "date · status" trailing, plus a live-subsystems health
- * row), and an "Open" entry that opens the SAME [MaintenanceSheet] as the burger
- * "Maintenance" item.
+ * Maintenance settings card (Misc tab, spec "Maintenance — état de l'app en un regard"):
+ * a section header with the shield icon, two categories (user decision, post-approval
+ * iteration):
+ * - **Stats**: a pass table in the exact Network/Quality status cards pattern
+ *   ([OtherInfoSettingsEntry] layout: icon + title, trailing status underneath — one row
+ *   per boot pass with the sheet's "date · status" trailing, plus a live-subsystems health
+ *   row), then an "Open" entry that opens the SAME [MaintenanceSheet] as the burger
+ *   "Maintenance" item.
+ * - **Debug**: the debug-log switch (moved here from the removed legacy Debug card — the
+ *   single source of truth for the switch) with the restart note, then the ALWAYS-visible
+ *   "Export logs" entry (the [CopyLogsDialog] greys out the "Debug log" / "Both logs"
+ *   options while the switch is off).
  *
  * The pass rows are a one-shot read at composition (the snapshot loader dispatches its
  * disk I/O to the DATA dispatcher and guards every chunk); the Discord error, the update
@@ -105,6 +118,11 @@ fun MaintenanceSettingsCard(
     }
     val healthColor = if (health is MaintenanceHealth.NeedsAttention) palette.red else palette.textSecondary
 
+    // The debug-log switch moved from the (removed) legacy Debug card into this card —
+    // it is the single source of truth for the switch; the Export entry below it stays
+    // always visible (the dialog greys out the debug-dependent options when it is off)
+    var logDebugEnabled by rememberPreference(logDebugEnabledKey, false)
+
     // The boot-pass table shares the sheet's chevron rows trailing status (the same
     // "date · status" cell, minus the chevron and the expansion)
     val dedup = snapshot?.dedup
@@ -117,6 +135,8 @@ fun MaintenanceSettingsCard(
         description = stringResource(R.string.maintenance_card_desc),
         modifier = modifier,
         content = {
+            // STATS category: the boot-pass table + the live health row
+            CardCategoryLabel(stringResource(R.string.maintenance_stats))
             MaintenancePassRow(
                 title = stringResource(R.string.maintenance_dedup),
                 status = lastRunLine(
@@ -150,12 +170,39 @@ fun MaintenanceSettingsCard(
                 statusColor = healthColor,
                 icon = R.drawable.shield_checkmark,
             )
-            Spacer(modifier = Modifier.height(8.dp))
             OtherSettingsEntry(
                 title = stringResource(R.string.maintenance_open),
                 text = stringResource(R.string.maintenance_open_desc),
                 icon = R.drawable.chevron_forward,
                 onClick = { showSheet = true },
+            )
+            // DEBUG category: the switch (moved here from the removed legacy Debug card)
+            // + the restart note + the ALWAYS-visible export entry (the dialog greys out
+            // the debug-dependent options while the switch is off)
+            CardCategoryLabel(stringResource(R.string.debug))
+            OtherSwitchSettingEntry(
+                title = stringResource(R.string.enable_log_debug),
+                text = stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors),
+                isChecked = logDebugEnabled,
+                onCheckedChange = {
+                    logDebugEnabled = it
+                    if (!it) {
+                        // Only the debug log is purged — the crash log is captured
+                        // independently of this switch (always installed at startup)
+                        // and wipes itself after two clean boots (CrashLogAutoWipe)
+                        purgeDebugLogs(context.filesDir.resolve("logs"))
+                    } else {
+                        Toaster.i(R.string.restarting_rimusic_is_required)
+                    }
+                },
+                icon = R.drawable.information,
+            )
+            ImportantSettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
+            OtherSettingsEntry(
+                title = stringResource(R.string.export_logs),
+                text = stringResource(R.string.export_debug_log_description),
+                icon = R.drawable.copy,
+                onClick = { CopyLogsDialog.showDialog() },
             )
             // The same sheet as the burger item (composed here so the card is self-contained).
             // renderLogsDialog = false: the single CopyLogsDialog.Render() host lives in
@@ -167,6 +214,24 @@ fun MaintenanceSettingsCard(
                 renderLogsDialog = false,
             )
         },
+    )
+}
+
+/**
+ * Accent category label inside the card (the sheet's MenuSectionTitle pattern, compact
+ * 8dp vertical padding for the card layout).
+ */
+@Composable
+private fun CardCategoryLabel(label: String) {
+    BasicText(
+        text = label,
+        style = typography().xxs.semiBold.copy(
+            color = colorPalette().accent,
+            textAlign = TextAlign.Start,
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 4.dp),
     )
 }
 

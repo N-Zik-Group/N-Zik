@@ -2014,6 +2014,7 @@
     <!-- Boot passes (persisted last successful run) -->
     <string name="maintenance_dedup">Same-name artist dedup</string>
     <string name="maintenance_dedup_summary">%1$d groups · %2$d resolved · %3$d skipped</string>
+    <string name="maintenance_dedup_clean">Nothing to dedup</string>
     <string name="maintenance_dedup_no_groups">No same-name groups detected</string>
     <string name="maintenance_dedup_merged">Merged %d row(s)</string>
     <string name="maintenance_dedup_flagged">Flagged %d row(s)</string>
@@ -2103,6 +2104,10 @@
     <string name="maintenance_battery_warn">Battery optimization on</string>
     <string name="maintenance_last_crash">Last crash</string>
     <string name="maintenance_crash_none">None</string>
+    <string name="maintenance_crash_occurred_count">A crash occurred (%d)</string>
+    <string name="maintenance_log_view">View</string>
+    <string name="maintenance_copy">Copy</string>
+    <string name="maintenance_stats">Stats</string>
     <string name="maintenance_debug_logs">Debug logs</string>
     <string name="maintenance_debug_on">On</string>
     <string name="maintenance_debug_off">Off</string>

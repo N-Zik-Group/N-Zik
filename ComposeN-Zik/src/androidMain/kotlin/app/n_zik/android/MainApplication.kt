@@ -49,6 +49,7 @@ import app.n_zik.android.core.maintenance.MaintenanceDbCleanupState
 import app.n_zik.android.core.maintenance.MaintenanceDedupState
 import app.n_zik.android.core.maintenance.MaintenanceStateStore
 import app.n_zik.android.core.migration.DbCleanup
+import app.n_zik.android.components.maintenance.countCrashBlocks
 import app.n_zik.android.core.migration.MonthlyPlaylistCleanup
 import app.n_zik.android.core.migration.NameConvergence
 import app.n_zik.android.core.migration.RemovedSettingsMigration
@@ -60,6 +61,10 @@ import app.n_zik.android.extensions.audiobar.VisualizerCaptureCoordinator
 import app.n_zik.android.listentogether.ListenTogetherClient
 import app.n_zik.android.listentogether.ListenTogetherManager
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.debug.CRASH_CLEAN_BOOT_STREAK_KEY
+import app.n_zik.android.utils.debug.CRASH_LAST_SEEN_COUNT_KEY
+import app.n_zik.android.utils.debug.crashLogFile
+import app.n_zik.android.utils.debug.crashLogWipeDecision
 import app.n_zik.android.utils.logging.FileLoggingTree
 import app.n_zik.android.utils.logging.flushThenDelegate
 import me.knighthat.invidious.Invidious
@@ -400,6 +405,28 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // Always set up crash handler regardless of debug mode
         val crashCapture = CaptureCrash(dir.absolutePath, this)
         Thread.setDefaultUncaughtExceptionHandler(crashCapture)
+
+        // Crash log auto-wipe (spec-maintenance-dialog): after 2 consecutive boots
+        // without a NEW crash block, the crash log is wiped (the Maintenance "Last
+        // crash" row falls back to "None"; the crash dialog's Clear button stays the
+        // manual path). The small startup read happens before any UI can read the file
+        runCatching {
+            val crashLogFile = crashLogFile(dir)
+            val currentCrashCount =
+                if (crashLogFile.exists()) countCrashBlocks(crashLogFile.readText()) else 0
+            val decision = crashLogWipeDecision(
+                currentCrashCount = currentCrashCount,
+                lastSeenCrashCount = preferences.getInt(CRASH_LAST_SEEN_COUNT_KEY, 0),
+                cleanBootStreak = preferences.getInt(CRASH_CLEAN_BOOT_STREAK_KEY, 0),
+            )
+            if (decision.wipe) crashLogFile.delete()
+            preferences.edit()
+                .putInt(CRASH_CLEAN_BOOT_STREAK_KEY, decision.cleanBootStreak)
+                .putInt(CRASH_LAST_SEEN_COUNT_KEY, decision.lastSeenCrashCount)
+                .apply()
+        }.onFailure {
+            Timber.tag("MainApplication").w(it, "Crash log auto-wipe evaluation failed")
+        }
         
         if (logEnabled) {
             val fileLoggingTree = FileLoggingTree(File(dir, "N-Zik_log.txt"))

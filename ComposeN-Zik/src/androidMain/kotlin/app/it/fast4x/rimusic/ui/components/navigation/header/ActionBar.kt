@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.logs.CopyLogsDialog
+import app.n_zik.android.components.dialog.logs.CrashLogDialog
+import app.n_zik.android.components.dialog.logs.DebugLogDialog
 import app.n_zik.android.components.menu.header.DebugLogsMenuItem
 import app.n_zik.android.components.menu.header.MaintenanceMenuItem
 import app.n_zik.android.components.maintenance.MaintenanceSheet
@@ -173,6 +175,11 @@ private fun HamburgerMenu(
         renderLogsDialog = false,
     )
     CopyLogsDialog.Render()
+    // Crash + debug log dialog hosts (spec-maintenance-dialog): same singleton-host
+    // rule as CopyLogsDialog above — this persistent header is the single Render()
+    // host for the whole app, so both sheet entry points share it.
+    CrashLogDialog.Render()
+    DebugLogDialog.Render()
 }
 
 // START

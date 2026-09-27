@@ -78,6 +78,8 @@ import app.n_zik.android.MainApplication
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.logs.CopyLogsDialog
+import app.n_zik.android.components.dialog.logs.CrashLogDialog
+import app.n_zik.android.components.dialog.logs.DebugLogDialog
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.settings.settingsEntryEnter
 import app.n_zik.android.components.settings.settingsEntryExit
@@ -181,12 +183,19 @@ internal fun dbCleanupEmptyRes(state: MaintenanceDbCleanupState?): Pair<Int, Int
 
 /**
  * The trailing status of the "Same-name artist dedup" boot-pass row, as string
- * resource + its counter arguments (null args = the argumentless "No data"): shared by
- * the sheet's chevron row and the settings card's pass table so the two can never drift.
+ * resource + its counter arguments: "No data" without a state, the "N groups · M
+ * resolved · K skipped" counters when groups were detected, the "Nothing to dedup"
+ * clean sentence on an empty run (the "Nothing to clean" pattern of the cleanup row).
+ * Shared by the sheet's chevron row and the settings card's pass table so the two can
+ * never drift.
  */
 internal fun dedupStatusRes(state: MaintenanceDedupState?): Pair<Int, IntArray?> =
-    state?.let { R.string.maintenance_dedup_summary to intArrayOf(it.groups, it.resolved, it.skipped) }
-        ?: (R.string.maintenance_no_data to null)
+    when {
+        state == null -> R.string.maintenance_no_data to null
+        state.groups > 0 ->
+            R.string.maintenance_dedup_summary to intArrayOf(state.groups, state.resolved, state.skipped)
+        else -> R.string.maintenance_dedup_clean to null
+    }
 
 /**
  * The trailing status of the "Name convergence" boot-pass row (see [dedupStatusRes]):
@@ -480,20 +489,20 @@ internal fun updateRow(
 internal fun mbCooldownMinutes(seconds: Long): Long = if (seconds <= 0L) 0L else (seconds + 59L) / 60L
 
 /**
- * The Debug logs row display, aligned with the app's actual state: the Export action is
- * only available when debug is enabled AND the log file already exists with content (the
- * file is created at startup when debug is enabled, so an enabled-but-not-restarted app
- * shows "On · restart needed" without an Export button).
+ * The Debug logs row display, aligned with the app's actual state: off, on, or
+ * on-but-restart-needed (the log file is created at startup when debug is enabled, so an
+ * enabled-but-not-restarted app shows "On · restart needed"). The View + Export buttons
+ * show whenever the switch is ON (the dialogs handle the missing-file state —
+ * "Log unavailable" until the restart creates the log file).
  */
 internal data class DebugLogsRow(
     val baseResId: Int,
     val restartNeeded: Boolean = false,
-    val exportVisible: Boolean = false,
 )
 
 internal fun debugLogsRow(debugEnabled: Boolean, logFileAvailable: Boolean): DebugLogsRow = when {
     !debugEnabled -> DebugLogsRow(R.string.maintenance_debug_off)
-    logFileAvailable -> DebugLogsRow(R.string.maintenance_debug_on, exportVisible = true)
+    logFileAvailable -> DebugLogsRow(R.string.maintenance_debug_on)
     else -> DebugLogsRow(R.string.maintenance_debug_on, restartNeeded = true)
 }
 
@@ -601,6 +610,25 @@ internal fun parseLastCrashBlock(content: String): Pair<String, String>? {
 }
 
 /**
+ * The number of COMPLETE crash blocks in a `N-Zik_crash_log.txt` content — the same
+ * completeness rule as [parseLastCrashBlock] (a timestamp line followed by the
+ * `Stacktrace:` marker), so the count never includes a block cut off by a brutal
+ * process death.
+ */
+internal fun countCrashBlocks(content: String): Int {
+    val lines = content.lines()
+    var count = 0
+    for (i in lines.indices) {
+        if (CRASH_TIMESTAMP_REGEX.containsMatchIn(lines[i])) {
+            val markerIndex = (i + 1 until lines.size)
+                .firstOrNull { lines[it].trim() == CRASH_STACKTRACE_MARKER }
+            if (markerIndex != null) count++
+        }
+    }
+    return count
+}
+
+/**
  * The widest realistic cache result line ("9.3 GB used (100%)" — the largest custom cache
  * max with a full usage): the second reference of the shared status column width.
  */
@@ -686,6 +714,8 @@ internal data class MaintenanceSnapshot(
     val batteryOptimizationsIgnored: Boolean = false,
     /** (timestamp line, first stacktrace line) of the last crash block, null when none. */
     val lastCrash: Pair<String, String>? = null,
+    /** the number of complete crash blocks in the log file (0 = no crash ever recorded). */
+    val crashCount: Int = 0,
     val debugLogsEnabled: Boolean = false,
     /** true when debug is enabled and the log file exists with content (Export is available). */
     val debugLogFileAvailable: Boolean = false,
@@ -805,12 +835,15 @@ internal suspend fun loadMaintenanceSnapshot(context: Context): MaintenanceSnaps
         val batteryOptimizationsIgnored =
             runCatching { app.isIgnoringBatteryOptimizations }.getOrDefault(false)
 
-        // Last crash: read the log file and keep only the last block
-        val lastCrash = runCatching {
+        // Last crash: read the log file once — the row shows the LAST complete block's
+        // presence (not its content) plus the total number of complete crash blocks
+        val crashLogContent = runCatching {
             File(app.filesDir.resolve("logs"), "N-Zik_crash_log.txt")
                 .takeIf { it.exists() && it.length() > 0 }
-                ?.let { parseLastCrashBlock(it.readText()) }
+                ?.readText()
         }.getOrNull()
+        val lastCrash = crashLogContent?.let { parseLastCrashBlock(it) }
+        val crashCount = crashLogContent?.let { countCrashBlocks(it) } ?: 0
 
         val debugLogsEnabled =
             runCatching { preferences.getBoolean(logDebugEnabledKey, false) }.getOrDefault(false)
@@ -845,6 +878,7 @@ internal suspend fun loadMaintenanceSnapshot(context: Context): MaintenanceSnaps
             discordTokenConfigured = discordTokenConfigured,
             batteryOptimizationsIgnored = batteryOptimizationsIgnored,
             lastCrash = lastCrash,
+            crashCount = crashCount,
             debugLogsEnabled = debugLogsEnabled,
             debugLogFileAvailable = debugLogFileAvailable,
             lastfmSessionAvailable = lastfmSessionAvailable,
@@ -1187,12 +1221,17 @@ fun MaintenanceSheet(
     val batteryStatus = stringResource(if (batteryOk) R.string.maintenance_battery_ok else R.string.maintenance_battery_warn)
     val batteryColor = if (batteryOk) palette.textSecondary else palette.blue
     val crash = snap?.lastCrash
+    // The row is always present: "None" without a crash, "A crash occurred (N)" with one
+    // (N = the number of complete crash blocks in the log — the details live in the
+    // View dialog, not in the one-line status)
     val crashStatus = if (crash == null) {
         stringResource(R.string.maintenance_crash_none)
     } else {
-        "${crash.first} · ${crash.second}"
+        stringResource(R.string.maintenance_crash_occurred_count, snap?.crashCount ?: 0)
     }
     val crashColor = if (crash == null) palette.textSecondary else palette.red
+    // The View + Export buttons show only when a crash block exists (no empty slot)
+    val crashViewVisible = crash != null
     val debugRow = debugLogsRow(
         snap?.debugLogsEnabled == true,
         snap?.debugLogFileAvailable == true,
@@ -1252,11 +1291,16 @@ fun MaintenanceSheet(
         batteryColor = batteryColor,
         crashStatus = crashStatus,
         crashColor = crashColor,
+        crashViewVisible = crashViewVisible,
         debugStatus = debugStatus,
-        debugExportVisible = debugRow.exportVisible,
+        debugButtonsVisible = snap?.debugLogsEnabled == true,
+        onViewDebug = { DebugLogDialog.showDialog() },
         lastfmStatus = lastfmStatus,
         lastfmColor = lastfmColor,
         onExportLogs = { CopyLogsDialog.showDialog() },
+        onViewCrash = { CrashLogDialog.showDialog() },
+        // The export dialog opens pre-selected on the crash option (the row's context)
+        onExportCrash = { CopyLogsDialog.showDialogFor(1) },
     )
 
     // Opens and grows exactly like the main menu sheet (SongItemMenu — MainActivity):
@@ -1370,8 +1414,14 @@ private class MaintenanceMenuContent(
     val batteryColor: Color,
     val crashStatus: String,
     val crashColor: Color,
+    val crashViewVisible: Boolean,
+    val onViewCrash: () -> Unit,
+    val onExportCrash: () -> Unit,
     val debugStatus: String,
-    val debugExportVisible: Boolean,
+    // The debug row's View + Export buttons show only while the debug switch is ON
+    // (off → no buttons; on but not restarted → the dialogs answer "Log unavailable")
+    val debugButtonsVisible: Boolean,
+    val onViewDebug: () -> Unit,
     val lastfmStatus: String,
     val lastfmColor: Color,
     val onExportLogs: () -> Unit,
@@ -1812,12 +1862,38 @@ private fun ColumnScope.MaintenanceListContent(
         icon = { SettingIcon(R.drawable.battery_opti, palette.accent) },
         trailingContent = { StatusTrailing(content.batteryStatus, content.batteryColor, statusColumnWidth) },
     )
+    // Last crash: View + Export live in the entry's trailing slot (the debug-logs
+    // pattern) — View opens the crash log dialog (full content + copy + export +
+    // clear), Export the shared export dialog pre-selected on the crash option; both
+    // show only when a crash block exists (no empty slot otherwise)
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_last_crash),
         icon = { SettingIcon(R.drawable.bugs, palette.accent) },
-        trailingContent = { StatusTrailing(content.crashStatus, content.crashColor, statusColumnWidth) },
+        trailingContent = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                StatusTrailing(content.crashStatus, content.crashColor, statusColumnWidth)
+                if (content.crashViewVisible) {
+                    TextButton(onClick = content.onViewCrash) {
+                        Text(
+                            text = stringResource(R.string.maintenance_log_view),
+                            color = palette.accent,
+                        )
+                    }
+                    TextButton(onClick = content.onExportCrash) {
+                        Text(
+                            text = stringResource(R.string.export_logs),
+                            color = palette.accent,
+                        )
+                    }
+                }
+            }
+        },
     )
-    // Debug logs: the Export button lives in the entry's trailing slot (the LT pattern)
+    // Debug logs: View + Export live in the entry's trailing slot (the LT pattern) —
+    // shown only while the debug switch is ON
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_debug_logs),
         icon = { SettingIcon(R.drawable.export_outline, palette.accent) },
@@ -1846,9 +1922,16 @@ private fun ColumnScope.MaintenanceListContent(
                             basicMarquee(iterations = Int.MAX_VALUE)
                         },
                 )
-                // Export only when the log file exists with content (debug off, or enabled
-                // but not restarted yet, hides the button — no empty slot)
-                if (content.debugExportVisible) {
+                // View + Export show only while the debug switch is ON (off → no
+                // buttons at all; on but not restarted → the dialogs answer "Log
+                // unavailable" until the restart creates the log file)
+                if (content.debugButtonsVisible) {
+                    TextButton(onClick = content.onViewDebug) {
+                        Text(
+                            text = stringResource(R.string.maintenance_log_view),
+                            color = palette.accent,
+                        )
+                    }
                     TextButton(onClick = content.onExportLogs) {
                         Text(
                             text = stringResource(R.string.export_logs),

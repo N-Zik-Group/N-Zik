@@ -205,7 +205,7 @@ class MaintenanceSheetMappingTest {
     // ---- shared pass-status cells (the settings card's table reuses them) ----
 
     @Test
-    fun dedupStatusResMapsSummaryCountersAndNoData() {
+    fun dedupStatusResMapsSummaryCountersCleanAndNoData() {
         val noData = dedupStatusRes(null)
         assertEquals(R.string.maintenance_no_data, noData.first)
         assertNull(noData.second)
@@ -226,6 +226,25 @@ class MaintenanceSheetMappingTest {
         )
         assertEquals(R.string.maintenance_dedup_summary, pair.first)
         assertArrayEquals(intArrayOf(4, 2, 1), pair.second)
+
+        // An empty run answers the clean sentence (the "Nothing to clean" pattern),
+        // not a "0 groups · 0 resolved · 0 skipped" counter line
+        val clean = dedupStatusRes(
+            MaintenanceDedupState(
+                timestamp = 1L,
+                groups = 0,
+                resolved = 0,
+                songResolved = 0,
+                merged = 0,
+                flagged = 0,
+                skipped = 0,
+                deferred = 0,
+                localKept = 0,
+                records = emptyList(),
+            ),
+        )
+        assertEquals(R.string.maintenance_dedup_clean, clean.first)
+        assertNull(clean.second)
     }
 
     @Test
@@ -459,33 +478,30 @@ class MaintenanceSheetMappingTest {
         assertEquals(2L, mbCooldownMinutes(120L))
     }
 
-    // ---- debug logs row (export availability) ----
+    // ---- debug logs row (state mapping: off / on / on-but-restart-needed) ----
 
     @Test
-    fun debugLogsOffHidesExport() {
+    fun debugLogsOffMapsToOff() {
         val row = debugLogsRow(false, false)
 
         assertEquals(R.string.maintenance_debug_off, row.baseResId)
         assertFalse(row.restartNeeded)
-        assertFalse(row.exportVisible)
     }
 
     @Test
-    fun debugLogsOnWithLogFileShowsExport() {
+    fun debugLogsOnWithLogFileMapsToPlainOn() {
         val row = debugLogsRow(true, true)
 
         assertEquals(R.string.maintenance_debug_on, row.baseResId)
         assertFalse(row.restartNeeded)
-        assertTrue(row.exportVisible)
     }
 
     @Test
-    fun debugLogsOnWithoutLogFileHidesExportAndFlagsRestartNeeded() {
+    fun debugLogsOnWithoutLogFileFlagsRestartNeeded() {
         val row = debugLogsRow(true, false)
 
         assertEquals(R.string.maintenance_debug_on, row.baseResId)
         assertTrue(row.restartNeeded)
-        assertFalse(row.exportVisible)
     }
 
     // ---- downloads detail line (state mapping) ----
@@ -611,6 +627,33 @@ class MaintenanceSheetMappingTest {
         }
 
         assertNull(parseLastCrashBlock(content))
+    }
+
+    @Test
+    fun countCrashBlocksCountsEveryCompleteBlock() {
+        val content = crashBlock("2026-09-01T10:00:00.000", "java.lang.RuntimeException: First") +
+            crashBlock("2026-09-26T14:30:45.123", "java.lang.IllegalStateException: Second")
+
+        assertEquals(2, countCrashBlocks(content))
+    }
+
+    @Test
+    fun countCrashBlocksIgnoresABlockCutOffWithoutStacktrace() {
+        // A timestamp flushed by a brutal kill but the Stacktrace: marker missing:
+        // the truncated block is not a complete crash record
+        val content = crashBlock("2026-09-01T10:00:00.000", "java.lang.RuntimeException: First") +
+            buildString {
+                appendLine("2026-09-26T14:30:45.123")
+                appendLine()
+                appendLine("N-Zik Crash Report")
+            }
+
+        assertEquals(1, countCrashBlocks(content))
+    }
+
+    @Test
+    fun countCrashBlocksIsZeroForEmptyContent() {
+        assertEquals(0, countCrashBlocks(""))
     }
 
     // A trailing block cut off by a brutal process death must not hide the previous
