@@ -559,7 +559,9 @@ inline fun <reified T : Enum<T>> SharedPreferences.Editor.putEnum(
     putString(key, value.name)
 
 val Context.preferences: SharedPreferences
-    get() = getSharedPreferences("preferences", Context.MODE_PRIVATE)
+    get() = getSharedPreferences(getActiveProfile(applicationContext).let { profile ->
+        "preferences${if (profile != "default") "_$profile" else ""}"
+    }, Context.MODE_PRIVATE)
 
 
 @Composable
