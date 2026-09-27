@@ -98,7 +98,7 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 ├── modules/                 Feature submodules — `betterlyrics`, `discordrpc`, `nextvisualizer` are **git submodules**: after a fresh clone run `git submodule update --init --recursive` or Gradle sync fails
 ├── gradle/libs.versions.toml  Version catalog
 ├── assets/notes/              Done.txt + Changelog_Template.txt + TODO.txt (repo-root working files — NOT an Android assets source set)
-├── fastlane/                  Store metadata (~25 locales: short/full descriptions, en-US title + tvBanner) + released changelogs by versionCode in `fastlane/metadata/en-US/changelogs/`
+├── fastlane/                  Store metadata (~25 locales: short/full descriptions, en-US title + tvBanner) + released changelogs by versionCode in `fastlane/metadata/android/en-US/changelogs/`
 ├── Updater/                   Released changelogs by versionCode in `Updater/changelogs/` (auto-updater)
 └── (WORKSPACE ROOT, one level above N-Zik/: `docs/` reference projects, Reference READ-ONLY · `N-Zik-Website/` separate project — NOT part of this repo · `db/` log captures + `*.sqlite` DB dumps at the root — artifacts referenced by Done.txt)
 ```

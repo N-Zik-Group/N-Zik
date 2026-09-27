@@ -1,109 +1,60 @@
 ## 📋 Description
-<!-- Describe your changes in detail. What is the problem? How does this PR solve it? -->
-<!-- Include relevant context, technical decisions, and any alternative approaches you considered. -->
-<!-- Before submitting, check the open issues and pull requests for related work https://github.com/N-Zik-Group/N-Zik/issues/views. If another contributor has already implemented the same or a similar fix, mention it here and explain how this PR differs, if applicable. -->
+<!-- What is the problem and how does this PR solve it? Include relevant context, technical decisions and alternative approaches considered. Before submitting, check open issues/PRs for related work (https://github.com/N-Zik-Group/N-Zik/issues/views) — if similar work exists, link it and explain how this PR differs. -->
 
 ## 🔗 Related Issues
-<!-- Link to the issue here. Use "issue https://..." format as per BUILD.md rules to prevent auto-closing if necessary, or follow project conventions. -->
-- Issue: 
+<!-- Use the `issue https://...` format — never auto-closing keywords like "fixes"/"closes" (see rules/BUILD.md). -->
+- Issue:
 
 ## 🚀 Type of Change
-<!-- Check all that apply -->
-- [ ] 🐛 Bug fix (`fix`)
+<!-- Aligned with the commit types in rules/BUILD.md — pick the one(s) this PR maps to -->
 - [ ] ✨ New feature (`feat`)
-- [ ] 🎨 UI/Design update
-- [ ] ⚡ Performance improvement (`perf`)
-- [ ] 🧹 Code refactoring (`refactor`)
-- [ ] 🤖 Automated/Agentic update (BMAD workflow)
-- [ ] 📖 Documentation update (`docs`)
-- [ ] 🛠️ Tooling/Build/Chore (`chore`)
+- [ ] 🐛 Bug fix (`fix`)
+- [ ] 📈 Improvement of existing behavior (`improve`)
+- [ ] ⚡ Performance (`perf`)
+- [ ] 🧹 Refactor, no behavior change (`refactor`)
+- [ ] 🧪 Tests only (`test`)
+- [ ] 📖 Documentation only (`docs`)
+- [ ] 🛠️ Build / tooling / dependency (`chore`)
 
 ## 📸 Screenshots / Video
-<!-- Include before/after screenshots or a short video (MP4/GIF) to demonstrate visual or flow changes. -->
+<!-- Before/after for visual or flow changes (image, GIF or MP4). Leave empty if not applicable. -->
 | Before | After |
 | ------ | ----- |
-| <!-- [Image] --> | <!-- [Image] --> |
+|        |       |
 
-## 🧪 Verification Plan
-<!-- How should a reviewer or QA verify these changes? Please list steps. -->
-1. 
-2. 
-3. 
+## ✅ Verification & Evidence
+<!-- How can a reviewer/QA verify this? List the steps, then provide CONCRETE evidence (diffs, build/test output, screenshots) — never just "done". -->
+1.
+2.
 
 ---
 
-## 🛠️ The Ultimate Project Checklist 
-> **MANDATORY**: You must check all applicable boxes. Leave unchecked if NOT applicable, but do not delete them.
+## 🛠️ PR Checklist
+> Check every applicable box; leave the rest unchecked (do not delete). Full details live in `AGENTS.md` + `rules/*.md` at the repo root — the boxes below are the hard gates only.
 
-### 🤖 1. Git, Workflow & Commits (`WORKFLOW.md`, `BUILD.md` & `AGENTS.md`)
-- [ ] **Workflow Complete**: I have completed all 8 steps of the BMAD workflow (including `bmad-code-review`), OR this PR qualifies for the doc-only exception (see below).
-- [ ] **Doc-Only Exception**: If used, confirm this PR touches ONLY prose/comments/changelogs — zero `.kt`/`.xml`/`.toml`/`.gradle.kts`/schema changes.
-- [ ] **Human Approval**: Human testing and explicit approval was obtained before committing.
-- [ ] **Evidence**: Concrete evidence provided (diffs, test output, screenshots), not just claiming it's "done".
-- [ ] **No `_bmad/` Edits**: I did NOT manually edit any `_bmad/` internals.
-- [ ] **Git History**: I did NOT force push or delete any committed history.
-- [ ] **Branch Naming**: Branch is named correctly (`feat/`, `fix/`, or `chore/`).
-- [ ] **Commit Format**: Commits strictly follow the `type(scope): description` convention in English, NO period at the end.
-- [ ] **Changelogs**: `assets/notes/Done.txt` updated (format: `type(scope): message (issue)`).
-- [ ] **Release Notes**: `fastlane/.../changelogs/{version}.txt` and `Updater/changelogs/{version}.txt` updated.
-- [ ] **Local Build**: Build verified locally before pushing (no pre-commit hooks are configured in this repo — see `BUILD.md`).
+### 🤖 Workflow & Commits (`WORKFLOW.md`, `BUILD.md`)
+- [ ] BMAD workflow complete (all 8 steps, including the 8b code-review gate) — **OR** the doc-only exception applies (`.md`/`.txt` prose only; zero `.kt`/`.xml`/`.toml`/`.gradle.kts`/schema changes, and no edits to code files — a comment change inside a code file is NOT doc-only)
+- [ ] Human testing + explicit approval obtained before committing
+- [ ] No manual edits under `_bmad/`; no force push / deleted history
+- [ ] Branch named `feat/…` / `fix/…` / `chore/…`; commits follow `type(scope): description` — English, imperative, under 72 chars, no trailing period, issue links as `issue https://...`
+- [ ] Build verified locally before pushing (`gradlew :ComposeN-Zik:assembleDebug`; `gradlew.bat` on Windows — no pre-commit hooks in this repo)
 
-### 🏗️ 2. Architecture & File Placement (`CODE.md` & `AGENTS.md`)
-- [ ] **Location**: New code is strictly in `app.n_zik.android.*` (or `ComposeN-Zik/src/test/`).
-- [ ] **Legacy Rules**: NO files created under `app.it.fast4x.rimusic.*` or `app.kreate.android.*`; an existing legacy file was edited ONLY with the user's explicit approval (AGENTS.md legacy rule / WORKFLOW.md Step 6 exception) — the approval is quoted in the description.
-- [ ] **String Resources**: ONLY `values/strings.xml` was edited (NEVER `values-*/strings.xml` — those are Crowdin-managed, see below).
-- [ ] **ViewModels/Repositories**: ViewModels co-located with their screen; Repositories collocated with their domain package (no central `core/data/` exists).
-- [ ] **DI & Navigation**: Plain constructor injection (NO DI framework in the app module); routing stays on the legacy `NavRoutes` enum + string route helpers (no sealed route class — see `CODE.md` Navigation).
-- [ ] **KMP Modularity**: No Android-specific imports in `commonMain`.
+### 📝 Changelogs (Step 8d commit mode)
+- [ ] **Done+commit:** `assets/notes/Done.txt` updated using its template (`<keyword>(<scope>): short summary (issue ref)`, grouped under the section headers)
+- [ ] **Bump+commit:** `fastlane/metadata/android/en-US/changelogs/{versionCode}.txt` (max 500 chars) + `Updater/changelogs/{versionCode}.txt` (no limit, full issue link) written **in English** from the Done.txt entries, and `Done.txt` emptied
 
-### 🌍 2b. Translations (`CODE.md`)
-- [ ] **Source of Truth**: New/changed strings added ONLY to `values/strings.xml`, never to a `values-*/strings.xml` locale file.
-- [ ] **Crowdin Sync**: If this PR is a bot-authored Crowdin sync (touches only `values-*/strings.xml`), it's exempt from BMAD workflow and code review — note this explicitly in the description above.
-- [ ] **Key Removal Check**: If a string key was removed/renamed, usages were checked across the codebase first.
+### 🏗️ Code placement & hard rules (`AGENTS.md`, `CODE.md`)
+- [ ] New code strictly in `app.n_zik.android.*` — NO new files under legacy `app.it.fast4x.rimusic.*` / `app.kreate.android.*`; any existing legacy file was edited ONLY with the user's explicit approval (quote it in the description above)
+- [ ] New/changed strings added ONLY to `values/strings.xml` — never to `values-*/strings.xml` (Crowdin-managed); if this IS a bot-authored Crowdin sync PR, it is exempt from BMAD workflow + code review — state that in the description above
+- [ ] Coroutines: `NzikDispatchers` named dispatchers only + `NzikDispatchers.fireAndForget()` for fire-and-forget scopes — no `GlobalScope`, no new raw `Dispatchers.*`, no `runBlocking` without a justification comment
+- [ ] Compose: `collectAsStateWithLifecycle()` (never `collectAsState()`), atomic `_state.update { ... }` for state changes, `LazyColumn`/`LazyRow` with `key` + `contentType`
+- [ ] No `!!` without a justification comment; Timber with tags ONLY (no `println`/`Log.d`/`System.out`); risky ops wrapped in `runCatching` with failures logged (never swallowed silently)
+- [ ] Database schema untouched (or explicitly authorized); Room conventions kept (singular table names, `*Table` DAOs, `@RewriteQueriesToDropUnusedColumns`)
+- [ ] No new dependency outside `libs.versions.toml` (ask first); no secrets/keys/keystores in the diff; external code is MIT/Apache-licensed with source cited in a comment
 
-### 💻 3. Kotlin & Core Patterns (`CODE.md`)
-- [ ] **Coroutines**: Used `viewModelScope` / `lifecycleScope` (NO `GlobalScope`; `runBlocking` only with a justification comment — see CODE.md).
-- [ ] **Dispatchers**: Used `NzikDispatchers` named dispatchers only (`UI`/`PLAYBACK`/`VISUALIZER`/`MEDIA`/`DATA` + Room executors) — no new raw `Dispatchers.*`; fire-and-forget scopes built with `NzikDispatchers.fireAndForget()`.
-- [ ] **State Updates**: Used atomic updates (`_state.update { ... }`), NOT `_state.value = ...`.
-- [ ] **StateFlow**: Prefer `StateFlow` over `LiveData`, exposing a single `data class *UiState` per feature.
-- [ ] **Null-Safety**: NO `!!` operators used (or a clear comment justifies it). Prefer `requireNotNull()`/`checkNotNull()`.
-- [ ] **Naming**: PascalCase for classes, camelCase for functions/vars, UPPER_SNAKE_CASE for constants.
-- [ ] **TODOs**: Marked specifically as `// TODO(author): description`.
+### 🧪 Build & Testing (`BUILD.md`)
+- [ ] `./gradlew :ComposeN-Zik:assembleDebug` succeeds
+- [ ] At least one test added for the new feature/bug fix (JUnit 5, or JUnit 4 vintage for Compose `createComposeRule()` tests); `./gradlew :ComposeN-Zik:test` passes locally
 
-### 🎨 4. Jetpack Compose Quality (`CODE.md`)
-- [ ] **Flows**: Used `collectAsStateWithLifecycle()` exclusively (NO `collectAsState()`).
-- [ ] **Compose Lists**: `LazyColumn`/`LazyRow` implement both `key` and `contentType`.
-- [ ] **Side-Effects**: No IO/DB/network operations run directly in the composition body.
-- [ ] **Parameters**: Data params to children are annotated with `@Stable` or `@Immutable`.
-- [ ] **Animations**: All UI animations are under 300ms. BottomSheet hide animations complete BEFORE state changes.
-- [ ] **Accessibility**: Images/icons have `contentDescription` and touch targets are at least 48dp.
-- [ ] **Images**: Used Coil for image loading.
-
-### 📝 5. Code Quality & Error Handling (`CODE.md`)
-- [ ] **Timber Only**: Used `Timber` with tags (NO `println`, `Log.d`, `System.out`, or `printStackTrace()`).
-- [ ] **Error Catching**: Used `runCatching { ... }` for risky operations. Exceptions are NOT swallowed silently.
-- [ ] **Network**: Handled `UnknownHostException` (network down) where network work happens.
-- [ ] **Documentation**: KDoc is used for public APIs. Internal comments explain *why*, not *what*.
-- [ ] **Clean Code**: No dead code, no commented-out code blocks, and no unused imports.
-
-### 🗄️ 6. Database & Data (`CODE.md` & `AGENTS.md`)
-- [ ] **Schema Integrity**: Database schema was NOT edited (unless explicitly authorized).
-- [ ] **Room Patterns**: Tables use singular names (`Song`), DAOs use the `Table` suffix (`SongTable`); new DAOs carry `@RewriteQueriesToDropUnusedColumns`.
-- [ ] **Room Annotations**: DAO methods are `suspend` (except Flows) with `@Insert(onConflict=IGNORE)` or `@Upsert`.
-- [ ] **Migration Safety**: If a migration was made, it was tested on realistic data volumes.
-
-### 🔒 7. Security & Dependencies (`SECURITY.md` & `BUILD.md`)
-- [ ] **Secrets**: No API keys, tokens, or hardcoded credentials committed (`local.properties` or `BuildConfig` used).
-- [ ] **Signing/Keystore**: No `.jks`/`.keystore` file or signing password committed; `signingConfigs {}` untouched unless explicitly instructed.
-- [ ] **Sensitive Data**: Used `EncryptedSharedPreferences` for sensitive local storage; HTTPS enforced.
-- [ ] **Validation**: User input and URLs are validated/sanitized before display or navigation.
-- [ ] **Dependencies**: New dependencies are in `libs.versions.toml` (NO hardcoded versions).
-- [ ] **Licenses**: External code respects MIT/Apache licenses (NO proprietary). Source cited in comments.
-
-### 🧪 8. Build & Testing (`BUILD.md`)
-- [ ] **Build Success**: Verified that `./gradlew :ComposeN-Zik:assembleDebug` builds successfully.
-- [ ] **Unit Tests**: Added at least one test (JUnit 5/Jupiter, JUnit 4 vintage for `createComposeRule()` Compose tests + MockK) for new features/bug fixes.
-- [ ] **Tests Pass**: Ran `./gradlew :ComposeN-Zik:test` and all tests pass locally.
-
-### 🗒️ 9. Additional notes
-- Notes: 
+## 🗒️ Additional notes
+-
