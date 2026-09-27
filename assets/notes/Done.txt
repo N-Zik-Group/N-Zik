@@ -1,0 +1,10 @@
+Added:
+- feat(profiles): add multi-profile support with per-profile database and preferences (PR https://github.com/N-Zik-Group/N-Zik/pull/851, `fc401f3b3d`)
+  - New `ProfilePreferences.kt` (`profile_preferences` shared prefs) storing the active profile via `getActiveProfile()` / `setActiveProfile()`, default profile is `default`
+  - `Context.preferences` (Preferences.kt) and `getEncryptedSharedPreferencesResult()` (EncryptedPreferences.kt) now resolve per-profile files `preferences_<profile>` / `secure_preferences_<profile>`; the default profile keeps the original file names, so existing installs are unaffected
+  - `Database.FILE_NAME` (Database.kt) now resolves to `data_<profile>.db`, giving each profile its own Room database; shared data such as downloads/cache stays accessible across profiles
+  - New `ProfilesScreen.kt` (Settings → Profiles) to create, switch and delete profiles, with an app-restart prompt required when switching (string `profile_restart_required`)
+  - Profile switcher entry added in `ActionBar.kt`, new `NavRoutes` entry, and navigation wiring in `AppNavigation.kt`
+  - Rescue mode: `RescueFiles.kt` / `RescueScreen.kt` now handle dynamic files per active profile
+  - 6 new strings added to `values/strings.xml` (profiles, add_profile, enter_profile_name, remove_profile, this_profile_alreaty_exist, profile_restart_required)
+  - Credit: yrrrad8 (https://github.com/yrrrad8) — original upstream: https://github.com/knighthat/Kreate/pull/1089
