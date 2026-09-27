@@ -6,6 +6,7 @@ import app.it.fast4x.rimusic.models.SongArtistMap
 import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.SongArtistMapTable
 import app.n_zik.android.core.database.SongTable
+import app.n_zik.android.core.maintenance.DbCleanupLinkRecord
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -136,9 +137,10 @@ class DbCleanupTest {
     fun emptyDatabaseRemovesNothing() = runBlocking {
         every { mapTable.allPairsDirect() } returns emptyList()
 
-        val removed = DbCleanup.runClean(songTable, artistTable, mapTable)
+        val result = DbCleanup.runClean(songTable, artistTable, mapTable)
 
-        assertEquals(0, removed)
+        assertEquals(0, result.removed)
+        assertTrue(result.removedLinks.isEmpty())
         verify(exactly = 0) { songTable.all() }
         verify(exactly = 0) { mapTable.deletePairDirect(any(), any()) }
     }
@@ -152,9 +154,10 @@ class DbCleanupTest {
         every { artistTable.findByIdDirect("UC_T") } returns Artist(id = "UC_T", name = "Tanchiky")
         every { artistTable.findByIdDirect("UC_S") } returns Artist(id = "UC_S", name = "siromaru")
 
-        val removed = DbCleanup.runClean(songTable, artistTable, mapTable)
+        val result = DbCleanup.runClean(songTable, artistTable, mapTable)
 
-        assertEquals(0, removed)
+        assertEquals(0, result.removed)
+        assertTrue(result.removedLinks.isEmpty())
         verify(exactly = 0) { mapTable.deletePairDirect(any(), any()) }
     }
 
@@ -167,9 +170,12 @@ class DbCleanupTest {
         every { artistTable.findByIdDirect("UC_T") } returns Artist(id = "UC_T", name = "Tanchiky")
         every { artistTable.findByIdDirect("UC_ET") } returns Artist(id = "UC_ET", name = "E.T")
 
-        val removed = DbCleanup.runClean(songTable, artistTable, mapTable)
+        val result = DbCleanup.runClean(songTable, artistTable, mapTable)
 
-        assertEquals(1, removed)
+        assertEquals(1, result.removed)
+        // The per-link record carries the song title + the removed artist name (the
+        // sheet lists it in the expanded "Artist link cleanup" row)
+        assertEquals(listOf(DbCleanupLinkRecord("Song s1", "E.T")), result.removedLinks)
         verify(exactly = 1) { mapTable.deletePairDirect("s1", "UC_ET") }
         verify(exactly = 0) { mapTable.deletePairDirect("s1", "UC_T") }
     }
@@ -179,9 +185,9 @@ class DbCleanupTest {
         every { mapTable.allPairsDirect() } returns listOf(SongArtistMap("s2", "UC_X"))
         every { songTable.all() } returns flowOf(listOf(song("s1", "Tanchiky")))
 
-        val removed = DbCleanup.runClean(songTable, artistTable, mapTable)
+        val result = DbCleanup.runClean(songTable, artistTable, mapTable)
 
-        assertEquals(0, removed)
+        assertEquals(0, result.removed)
         verify(exactly = 0) { mapTable.deletePairDirect(any(), any()) }
     }
 
@@ -207,9 +213,9 @@ class DbCleanupTest {
                 every { artistTable.findByIdDirect("UC_T") } returns Artist(id = "UC_T", name = "Tanchiky")
                 every { artistTable.findByIdDirect("UC_ET") } returns Artist(id = "UC_ET", name = "E.T")
 
-                val removed = DbCleanup.runClean(songTable, artistTable, mapTable)
+                val result = DbCleanup.runClean(songTable, artistTable, mapTable)
 
-                assertEquals(1, removed)
+                assertEquals(1, result.removed)
                 // per-pair detail: song id + title, removed artist name, stored artistsText
                 assertTrue(
                     "expected per-pair detail log, got: $captured",
@@ -242,9 +248,9 @@ class DbCleanupTest {
                 every { artistTable.findByIdDirect("UC_T") } returns Artist(id = "UC_T", name = "Tanchiky")
                 every { artistTable.findByIdDirect("UC_S") } returns Artist(id = "UC_S", name = "siromaru")
 
-                val removed = DbCleanup.runClean(songTable, artistTable, mapTable)
+                val result = DbCleanup.runClean(songTable, artistTable, mapTable)
 
-                assertEquals(0, removed)
+                assertEquals(0, result.removed)
                 assertTrue(captured.none { it.startsWith("stale link removed:") })
                 assertTrue(captured.any { it == "Artist link cleanup: removed 0 stale link(s)" })
             }

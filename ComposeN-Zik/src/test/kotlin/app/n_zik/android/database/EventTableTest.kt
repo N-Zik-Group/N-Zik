@@ -2,6 +2,9 @@ package app.n_zik.android.database
 
 import android.content.Context
 import androidx.room.Room
+import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.sqlite.db.SupportSQLiteOpenHelper
+import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.models.Artist
@@ -257,6 +260,68 @@ class EventTableTest {
 
         // song_B's only play is outside the window
         assertEquals(1, count)
+    }
+
+    // ---- Maintenance sheet (spec-maintenance-dialog): listened-songs count ----
+
+    @Test
+    fun `countListenedSongs counts distinct library songs and excludes orphan events`() = runBlocking {
+        // runBlocking: JUnit 4 test methods cannot be suspend; the DAO API is.
+        //
+        // An orphan row can only be written with foreign_keys OFF (Event.songId FK to Song,
+        // CASCADE), and the PRAGMA is per-connection: Room keeps its own connection, so the
+        // test uses a FILE database plus a second raw connection (same pattern as the
+        // schema-migration tests) to inject the orphan.
+        //
+        // The file is seeded with the v42 schema BEFORE Room opens it: Room's build() opens
+        // lazily, so a raw connection opened first would otherwise create an empty
+        // version-42 file that fails Room's schema validation.
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val dbName = "event_listened_fk_test"
+        val helper = FrameworkSQLiteOpenHelperFactory().create(
+            SupportSQLiteOpenHelper.Configuration.builder(context)
+                .name(dbName)
+                .callback(object : SupportSQLiteOpenHelper.Callback(42) {
+                    override fun onCreate(db: SupportSQLiteDatabase) = applySchemaFixture(db, loadSchemaFixture(42))
+                    override fun onUpgrade(db: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) =
+                        error("unexpected upgrade")
+                })
+                .build()
+        )
+        val rawDb = helper.writableDatabase
+        rawDb.execSQL("PRAGMA user_version = 42")
+
+        val fileDb = Room.databaseBuilder(context, DatabaseInitializer::class.java, dbName)
+            .openHelperFactory(FrameworkSQLiteOpenHelperFactory())
+            .allowMainThreadQueries()
+            .build()
+
+        try {
+            fileDb.songTable.upsert(Song.makePlaceholder("song_A"))
+            fileDb.songTable.upsert(Song.makePlaceholder("song_B"))
+            fileDb.eventTable.insertIgnore(Event(songId = "song_A", timestamp = 1_000L, playTime = 10_000L))
+            fileDb.eventTable.insertIgnore(Event(songId = "song_A", timestamp = 1_100L, playTime = 10_000L)) // same song twice
+            fileDb.eventTable.insertIgnore(Event(songId = "song_B", timestamp = 1_200L, playTime = 10_000L))
+            // Orphan event: its song was removed from the library (FK off on this connection only)
+            rawDb.execSQL("PRAGMA foreign_keys = OFF")
+            rawDb.execSQL("INSERT INTO Event (songId, \"timestamp\", playTime) VALUES ('song_GHOST', 1300, 10000)")
+            rawDb.execSQL("PRAGMA foreign_keys = ON")
+
+            // song_A (2 events) counts once; the orphan event does not count at all
+            assertEquals(2, fileDb.eventTable.countListenedSongs())
+        } finally {
+            rawDb.close()
+            helper.close()
+            fileDb.close()
+            context.getDatabasePath(dbName).delete()
+        }
+    }
+
+    @Test
+    fun `countListenedSongs is zero on an empty library`() = runBlocking {
+        val count = eventDao.countListenedSongs()
+
+        assertEquals(0, count)
     }
 
     // ---- Rewind (GH-275, re-review) windowed stats queries ----

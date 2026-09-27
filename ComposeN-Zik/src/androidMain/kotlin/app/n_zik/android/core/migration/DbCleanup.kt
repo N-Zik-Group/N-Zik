@@ -9,6 +9,7 @@ import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.SongArtistMapTable
 import app.n_zik.android.core.database.SongTable
+import app.n_zik.android.core.maintenance.DbCleanupLinkRecord
 import app.n_zik.android.core.rewind.RewindPostImportRegenerationWorker
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.kreate.android.me.knighthat.utils.Toaster
@@ -47,6 +48,16 @@ object DbCleanup {
     private const val TAG = "DbCleanup"
 
     /**
+     * The outcome of one successful artist link cleanup pass: the number of stale links
+     * removed plus the per-link records the boot chain persists (the Maintenance sheet
+     * lists them in the expanded "Artist link cleanup" row).
+     */
+    internal data class DbCleanupResult(
+        val removed: Int,
+        val removedLinks: List<DbCleanupLinkRecord>,
+    )
+
+    /**
      * Schedules the cleanup on [NzikDispatchers.DATA] and logs failures.
      * Runs on every launch, so a failed attempt retries on the next one.
      */
@@ -62,10 +73,13 @@ object DbCleanup {
     /**
      * The cleanup pass, called from the sequential boot chain in [MainApplication]
      * (`DbCleanup` -> same-name dedup -> name convergence) or from [run].
+     *
+     * @return the [DbCleanupResult] of the pass (removed counter + per-link records)
+     * so the boot chain can persist the last successful run
      */
-    internal suspend fun runPass(context: Context) {
-        val removed = runClean(Database.songTable, Database.artistTable, Database.songArtistMapTable)
-        if (removed > 0) {
+    internal suspend fun runPass(context: Context): DbCleanupResult {
+        val result = runClean(Database.songTable, Database.artistTable, Database.songArtistMapTable)
+        if (result.removed > 0) {
             // The mapping feeds the Rewind deck: recompute its playlists from the healed data
             RewindPostImportRegenerationWorker.schedule(context)
             withContext(NzikDispatchers.UI) {
@@ -73,27 +87,29 @@ object DbCleanup {
                 // count to the `duration` parameter of the no-vararg overload,
                 // leaving the `%d` format specifier unfilled.
                 runCatching {
-                    Toaster.s(context.getString(R.string.db_artist_link_cleanup_toast, removed))
+                    Toaster.s(context.getString(R.string.db_artist_link_cleanup_toast, result.removed))
                 }.onFailure { e ->
                     Timber.tag(TAG).w(e, "Cleanup succeeded but toast failed")
                 }
             }
         }
+        return result
     }
 
     /**
      * The cleanup core, parameterized by the DAOs so it can be exercised in
      * unit tests with mocks.
      *
-     * @return the number of stale links removed (0 when nothing matched)
+     * @return the [DbCleanupResult] of the sweep (removed counter + per-link records,
+     * empty when nothing matched)
      */
     internal suspend fun runClean(
         songTable: SongTable,
         artistTable: ArtistTable,
         mapTable: SongArtistMapTable,
-    ): Int {
+    ): DbCleanupResult {
         val pairs = mapTable.allPairsDirect()
-        if (pairs.isEmpty()) return 0
+        if (pairs.isEmpty()) return DbCleanupResult(0, emptyList())
 
         val songs = songTable.all().first().associateBy { it.id }
         val artistNameCache = HashMap<String, String?>()
@@ -101,6 +117,7 @@ object DbCleanup {
             artistNameCache.getOrPut(artistId) { artistTable.findByIdDirect(artistId)?.name }
 
         var removed = 0
+        val removedLinks = mutableListOf<DbCleanupLinkRecord>()
         for (pair in pairs) {
             val song = songs[pair.songId] ?: continue // no stored artist list: nothing to judge against
             val name = artistName(pair.artistId)
@@ -111,11 +128,12 @@ object DbCleanup {
                 )
                 mapTable.deletePairDirect(pair.songId, pair.artistId)
                 removed++
+                removedLinks += DbCleanupLinkRecord(song.title, name)
             }
         }
 
         Timber.tag(TAG).i("Artist link cleanup: removed %d stale link(s)", removed)
-        return removed
+        return DbCleanupResult(removed, removedLinks)
     }
 
     /**

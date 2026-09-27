@@ -39,6 +39,12 @@ interface ArtistTable {
     fun allFollowing( limit: Int = Int.MAX_VALUE ): Flow<List<Artist>>
 
     /**
+     * @return the total number of rows in this table
+     */
+    @Query("SELECT COUNT(*) FROM Artist")
+    suspend fun countAll(): Int
+
+    /**
      * @return artists that have their songs mapped to at least 1 playlist
      */
     @Query("""

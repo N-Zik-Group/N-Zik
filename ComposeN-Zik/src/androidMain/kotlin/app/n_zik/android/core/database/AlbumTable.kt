@@ -32,6 +32,12 @@ interface AlbumTable {
     fun all( limit: Int = Int.MAX_VALUE ): Flow<List<Album>>
 
     /**
+     * @return the total number of rows in this table
+     */
+    @Query("SELECT COUNT(*) FROM Album")
+    suspend fun countAll(): Int
+
+    /**
      * @return all albums from this table that are bookmarked by user
      */
     @Query("""

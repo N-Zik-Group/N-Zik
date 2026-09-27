@@ -88,6 +88,12 @@ interface PlaylistTable {
     fun allAsPreview( limit: Int = Int.MAX_VALUE ): Flow<List<PlaylistPreview>>
 
     /**
+     * @return the total number of rows in this table
+     */
+    @Query("SELECT COUNT(*) FROM Playlist")
+    suspend fun countAll(): Int
+
+    /**
      * @param browseId of playlist to look for
      * @return [Playlist] that has [Playlist.browseId] matches [browseId]
      */

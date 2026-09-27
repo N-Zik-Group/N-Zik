@@ -281,37 +281,7 @@ object MyDownloadHelper {
                     object : DownloadManager.Listener {
 
                         override fun onInitialized(downloadManager: DownloadManager) {
-                            val downloads = downloadManager.currentDownloads
-                            if (downloads.isNotEmpty() && batchTotal == 0) {
-                                startBatchDownload(downloads.size)
-                            }
-
-                            if (downloadManager.downloadsPaused && downloads.isNotEmpty()) {
-                                
-                                val intent = android.content.Intent(context, app.n_zik.android.download.services.MyDownloadService::class.java).setAction(DownloadService.ACTION_RESUME_DOWNLOADS)
-                                val pendingIntent = android.app.PendingIntent.getService(context, 0, intent, android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE)
-                                val resumeAction = androidx.core.app.NotificationCompat.Action(app.n_zik.android.R.drawable.play, context.getString(app.n_zik.android.R.string.snake_resume), pendingIntent)
-
-                                val cancelOngoingIntent = android.content.Intent(context, app.n_zik.android.download.services.MyDownloadService::class.java).setAction(app.n_zik.android.download.services.MyDownloadService.ACTION_CANCEL_ONGOING)
-                                val cancelOngoingPendingIntent = android.app.PendingIntent.getService(context, 1, cancelOngoingIntent, android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE)
-                                val cancelAction = androidx.core.app.NotificationCompat.Action(app.n_zik.android.R.drawable.close, context.getString(app.n_zik.android.R.string.cancel), cancelOngoingPendingIntent)
-                                
-                                val deleteAllIntent = android.content.Intent(context, app.n_zik.android.download.services.MyDownloadService::class.java).setAction(DownloadService.ACTION_REMOVE_ALL_DOWNLOADS)
-                                val deleteAllPendingIntent = android.app.PendingIntent.getService(context, 2, deleteAllIntent, android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE)
-                                val deleteAllAction = androidx.core.app.NotificationCompat.Action(app.n_zik.android.R.drawable.trash, context.getString(app.n_zik.android.R.string.delete), deleteAllPendingIntent)
-                                
-                                val message = context.getString(app.n_zik.android.R.string.download_in_progress, downloads.size)
-                                val notification = androidx.core.app.NotificationCompat.Builder(context, DOWNLOAD_NOTIFICATION_CHANNEL_ID)
-                                    .setSmallIcon(app.n_zik.android.R.drawable.download_progress)
-                                    .setContentTitle(context.getString(app.n_zik.android.R.string.download))
-                                    .setContentText(message)
-                                    .setOngoing(false)
-                                    .addAction(resumeAction)
-                                    .addAction(cancelAction)
-                                    .addAction(deleteAllAction)
-                                    .build()
-                                androidx.media3.common.util.NotificationUtil.setNotification(context, app.n_zik.android.download.services.FOREGROUND_NOTIFICATION_ID + 2, notification)
-                            }
+                            wipeStuckDownloadsOnStart(downloadManager)
                         }
 
                         override fun onDownloadChanged(
@@ -389,6 +359,22 @@ object MyDownloadHelper {
             }
             getDownloads()
         }
+    }
+
+    /**
+     * The startup download cleanup (run from the DownloadManager `onInitialized`
+     * listener): the stuck (non-terminal) records are removed one by one — queued,
+     * in progress or canceled downloads can never resume across a restart because
+     * the stream URLs they were built from are expired. The completed (offline)
+     * library is NEVER touched: [DownloadManager.getCurrentDownloads] excludes the
+     * terminal states (completed / failed) by contract, and a full
+     * `removeAllDownloads()` would destroy the downloaded data with them.
+     */
+    internal fun wipeStuckDownloadsOnStart(downloadManager: DownloadManager) {
+        val ids = downloadManager.currentDownloads.map { it.request.id }
+        if (ids.isEmpty()) return
+        Timber.tag("MyDownloadHelper").d("Removing the ${ids.size} stuck download record(s) on app start")
+        ids.forEach { id -> downloadManager.removeDownload(id) }
     }
 
     @Synchronized

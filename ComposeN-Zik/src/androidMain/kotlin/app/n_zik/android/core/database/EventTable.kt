@@ -335,6 +335,14 @@ interface EventTable : RewindEventSource {
     fun countDistinctSongsPlayedBetween(from: Long, to: Long = System.currentTimeMillis()): Flow<Int>
 
     /**
+     * Return the number of library songs listened to at least once: the distinct songs of
+     * the Song table owning at least one playback event (orphan events for songs removed
+     * from the library do not count).
+     */
+    @Query("SELECT COUNT(DISTINCT E.songId) FROM Event E JOIN Song S ON S.id = E.songId")
+    suspend fun countListenedSongs(): Int
+
+    /**
      * Return the total playtime for specific songs over a given period.
      * This is much more efficient than querying each song individually.
      * @param songIds list of song IDs to calculate playtime for

@@ -5,8 +5,11 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.models.Song
+import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.it.fast4x.rimusic.models.SongArtistMap
 import app.n_zik.android.core.database.DatabaseInitializer
+import app.n_zik.android.core.maintenance.DedupGroupStatus
+import app.n_zik.android.core.maintenance.DedupSkipReason
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -1530,5 +1533,186 @@ class SameNameArtistDedupTest {
 
         assertNull(InnertubeSongTruthResolver().resolveSongs("Darby", truthRow, listOf(truthSong)))
         coVerify(exactly = 0) { Innertube.artistPage(any()) }
+    }
+
+    // ---- per-group records (maintenance persistence, spec-maintenance-dialog) ----
+
+    @Test
+    fun resolvedGroupRecordCarriesMergedAndFlaggedCounts() = runTest {
+        insertSong("s1")
+        insertSong("s2")
+        insertArtist("MATCHES_TRUTH", "Getty", thumbnail = "T")
+        insertArtist("DIFFERS_FROM_TRUTH", "Getty", thumbnail = "OTHER")
+        insertArtist("TRUTH_ID", "Getty", thumbnail = "T")
+        insertLink("s1", "MATCHES_TRUTH")
+        insertLink("s2", "DIFFERS_FROM_TRUTH")
+
+        val result = run(FakeResolver(mapOf("Getty" to resolved("TRUTH_ID", "Getty", "SEARCH_THUMB"))))
+
+        val record = result.records.single()
+        assertEquals("Getty", record.name)
+        assertEquals(DedupGroupStatus.RESOLVED, record.status)
+        assertEquals(1, record.mergedRows)
+        assertEquals(1, record.flaggedRows)
+        assertNull(record.skipReason)
+    }
+
+    @Test
+    fun songResolvedGroupRecordCarriesMergedCount() = runTest {
+        insertArtist("ROW_A", "Darby", thumbnail = "T")
+        insertArtist("ROW_B", "Darby", thumbnail = "T")
+
+        val songResolver = FakeSongTruthResolver(
+            mapOf(
+                "ROW_A" to resolved("Z", "Darby"),
+                "ROW_B" to resolved("Z", "Darby"),
+            )
+        )
+        val result = run(FakeResolver(emptyMap()), songResolver)
+
+        assertEquals(1, result.songResolved)
+        val record = result.records.single()
+        assertEquals("Darby", record.name)
+        assertEquals(DedupGroupStatus.SONG_RESOLVED, record.status)
+        assertEquals(2, record.mergedRows)
+        assertEquals(0, record.flaggedRows)
+        assertNull(record.skipReason)
+    }
+
+    @Test
+    fun customNameGroupRecordCarriesTheCustomNameReason() = runTest {
+        insertArtist("ROW_A", "${MODIFIED_PREFIX}Camellia")
+        insertArtist("ROW_B", "${MODIFIED_PREFIX}Camellia")
+
+        val result = run(FakeResolver(emptyMap()))
+
+        val record = result.records.single()
+        assertEquals("${MODIFIED_PREFIX}Camellia", record.name)
+        assertEquals(DedupGroupStatus.SKIPPED, record.status)
+        assertEquals(DedupSkipReason.CUSTOM_NAME, record.skipReason)
+    }
+
+    @Test
+    fun offlineGroupRecordCarriesTheOfflineReason() = runTest {
+        insertArtist("ROW_A", "Darby")
+        insertArtist("ROW_B", "Darby")
+
+        val result = run(FakeResolver(emptyMap()), online = false)
+
+        val record = result.records.single()
+        assertEquals("Darby", record.name)
+        assertEquals(DedupGroupStatus.SKIPPED, record.status)
+        assertEquals(DedupSkipReason.OFFLINE, record.skipReason)
+    }
+
+    @Test
+    fun deferredGroupRecordHasNoReasonNorCounters() = runTest {
+        insertArtist("ROW_A", "Darby", thumbnail = "T")
+        insertArtist("ROW_B", "Darby", thumbnail = "T")
+
+        val store = FakeSkipStore(mapOf("Darby" to RememberedComposition(setOf("ROW_A", "ROW_B"))))
+        val result = run(FakeResolver(emptyMap()), skipStore = store)
+
+        assertEquals(1, result.deferred)
+        val record = result.records.single()
+        assertEquals("Darby", record.name)
+        assertEquals(DedupGroupStatus.DEFERRED, record.status)
+        assertNull(record.skipReason)
+        assertEquals(0, record.mergedRows)
+        assertEquals(0, record.flaggedRows)
+    }
+
+    @Test
+    fun unprovableRowRecordCarriesTheNoUnanimousReason() = runTest {
+        insertArtist("ROW_A", "Darby", thumbnail = "T")
+        insertArtist("ROW_B", "Darby", thumbnail = "T")
+
+        // ROW_A proves a candidate, ROW_B no song can prove (absent from the
+        // fake's table): no unanimity -> skipped with its composition remembered
+        val songResolver = FakeSongTruthResolver(mapOf("ROW_A" to resolved("Z", "Darby")))
+        val store = FakeSkipStore()
+        val result = run(FakeResolver(emptyMap()), songResolver, skipStore = store)
+
+        assertEquals(1, result.skipped)
+        val record = result.records.single()
+        assertEquals("Darby", record.name)
+        assertEquals(DedupGroupStatus.SKIPPED, record.status)
+        assertEquals(DedupSkipReason.NO_UNANIMOUS_CANDIDATE, record.skipReason)
+    }
+
+    @Test
+    fun networkFailureGroupRecordCarriesTheNetworkFailureReason() = runTest {
+        insertArtist("ROW_A", "Darby", thumbnail = "T")
+        insertArtist("ROW_B", "Darby", thumbnail = "T")
+
+        val result = run(FakeResolver(emptyMap(), failures = setOf("Darby")))
+
+        val record = result.records.single()
+        assertEquals("Darby", record.name)
+        assertEquals(DedupGroupStatus.SKIPPED, record.status)
+        assertEquals(DedupSkipReason.NETWORK_FAILURE, record.skipReason)
+    }
+
+    @Test
+    fun runWithoutDedupableGroupsYieldsNoRecords() = runTest {
+        // A lone row is not a group: nothing is judged, nothing is recorded
+        insertArtist("ALONE", "Camellia")
+
+        val result = run(FakeResolver(emptyMap()))
+
+        assertEquals(0, result.groups)
+        assertTrue(result.records.isEmpty())
+    }
+
+    @Test
+    fun oneRecordPerJudgedGroupCoversEveryTerminalBranch() = runTest {
+        // One group per terminal branch of the sweep loop, in a single run:
+        // the records must hold one entry per judged group with the matching
+        // status/reason (the groups' iteration order is not part of the contract)
+        insertArtist("ALPHA_A", "Alpha", thumbnail = "T")
+        insertArtist("ALPHA_B", "Alpha", thumbnail = "T")
+        insertArtist("BETA_A", "Beta", thumbnail = "T")
+        insertArtist("BETA_B", "Beta", thumbnail = "T")
+        insertArtist("GAMMA_A", "Gamma", thumbnail = "T")
+        insertArtist("GAMMA_B", "Gamma", thumbnail = "T")
+        insertArtist("DELTA_A", "Delta", thumbnail = "T")
+        insertArtist("DELTA_B", "Delta", thumbnail = "T")
+        insertArtist("ECHO_A", "${MODIFIED_PREFIX}Echo")
+        insertArtist("ECHO_B", "${MODIFIED_PREFIX}Echo")
+        insertArtist("FOXTROT_A", "Foxtrot", thumbnail = "T")
+        insertArtist("FOXTROT_B", "Foxtrot", thumbnail = "T")
+
+        val store = FakeSkipStore(mapOf("Foxtrot" to RememberedComposition(setOf("FOXTROT_A", "FOXTROT_B"))))
+        val songResolver = FakeSongTruthResolver(
+            mapOf(
+                "BETA_A" to resolved("Z_B", "Beta"),
+                "BETA_B" to resolved("Z_B", "Beta"),
+                "GAMMA_A" to resolved("Z_G", "Gamma"),
+            )
+        )
+        val result = run(
+            FakeResolver(
+                mapOf("Alpha" to resolved("Z_A", "Alpha", "T")),
+                failures = setOf("Delta"),
+            ),
+            songResolver,
+            skipStore = store,
+        )
+
+        // Six judged groups, one record each
+        assertEquals(6, result.records.size)
+        assertEquals(
+            setOf("Alpha", "Beta", "Gamma", "Delta", "${MODIFIED_PREFIX}Echo", "Foxtrot"),
+            result.records.map { it.name }.toSet(),
+        )
+        val byName = result.records.associateBy { it.name }
+        assertEquals(DedupGroupStatus.RESOLVED, byName["Alpha"]?.status)
+        assertEquals(2, byName["Alpha"]?.mergedRows)
+        assertEquals(DedupGroupStatus.SONG_RESOLVED, byName["Beta"]?.status)
+        assertEquals(2, byName["Beta"]?.mergedRows)
+        assertEquals(DedupSkipReason.NO_UNANIMOUS_CANDIDATE, byName["Gamma"]?.skipReason)
+        assertEquals(DedupSkipReason.NETWORK_FAILURE, byName["Delta"]?.skipReason)
+        assertEquals(DedupSkipReason.CUSTOM_NAME, byName["${MODIFIED_PREFIX}Echo"]?.skipReason)
+        assertEquals(DedupGroupStatus.DEFERRED, byName["Foxtrot"]?.status)
     }
 }

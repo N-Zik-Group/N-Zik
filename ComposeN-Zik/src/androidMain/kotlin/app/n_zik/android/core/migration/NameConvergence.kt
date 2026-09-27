@@ -78,9 +78,12 @@ object NameConvergence {
      * Suspend: the chain is one sequential coroutine on the pool thread; the thread
      * is released while the network-bound dedup pass before it awaits its searches,
      * and this pass starts only once that one has finished.
+     *
+     * @return the sweep summary (the 8 counters) so the boot chain can persist it
+     * (spec "Maintenance — état de l'app en un regard")
      */
-    internal suspend fun runPass() {
-        runSweep(
+    internal suspend fun runPass(): ConvergenceSummary {
+        return runSweep(
             songTable = Database.songTable,
             artistTable = Database.artistTable,
             albumTable = Database.albumTable,
@@ -116,7 +119,8 @@ object NameConvergence {
      * fully converged database logs zero change lines and zero unbacked/unlinked
      * skips.
      *
-     * @return the number of copies rewritten (0 on a converged database)
+     * @return the [ConvergenceSummary] of the run (the rewritten-copy count plus
+     * the per-reason skip counters; zero on a converged database)
      */
     internal suspend fun runSweep(
         songTable: SongTable,
@@ -124,7 +128,7 @@ object NameConvergence {
         albumTable: AlbumTable,
         songArtistMapTable: SongArtistMapTable,
         songAlbumMapTable: SongAlbumMapTable,
-    ): Int {
+    ): ConvergenceSummary {
         // songId -> cleaned+trimmed names of its linked rows (one cached lookup
         // per row id; trimmed because the live database has row names with
         // trailing spaces)
@@ -254,7 +258,16 @@ object NameConvergence {
             unlinkedAlbums, inconsistentAlbums, countMismatchAlbums, customAlbums
         )
 
-        return changed
+        return ConvergenceSummary(
+            changed = changed,
+            unbackedSongs = unbackedSongs,
+            unlinkedSongs = unlinkedSongs,
+            customSongs = customSongs,
+            unlinkedAlbums = unlinkedAlbums,
+            inconsistentAlbums = inconsistentAlbums,
+            countMismatchAlbums = countMismatchAlbums,
+            customAlbums = customAlbums,
+        )
     }
 
     /**
@@ -548,3 +561,29 @@ object NameConvergence {
 
     private const val SEPARATOR = ", "
 }
+
+/**
+ * The sweep summary: the number of rewritten copies plus the per-reason skip
+ * counters (the same 8 numbers the one-line summary log reports). Returned by
+ * [NameConvergence.runSweep] so the boot chain can persist the last successful
+ * run (spec "Maintenance — état de l'app en un regard").
+ *
+ * @param changed copies rewritten (0 on a converged database)
+ * @param unbackedSongs song skips: a token without a linked row
+ * @param unlinkedSongs song skips: no linked rows at all
+ * @param customSongs song skips: custom `modified:` copies (untouchable)
+ * @param unlinkedAlbums album skips: a song has no linked rows
+ * @param inconsistentAlbums album skips: the songs disagree on linked names
+ * @param countMismatchAlbums album skips: name count differs from the links
+ * @param customAlbums album skips: custom `modified:` copies (untouchable)
+ */
+data class ConvergenceSummary(
+    val changed: Int,
+    val unbackedSongs: Int,
+    val unlinkedSongs: Int,
+    val customSongs: Int,
+    val unlinkedAlbums: Int,
+    val inconsistentAlbums: Int,
+    val countMismatchAlbums: Int,
+    val customAlbums: Int,
+)

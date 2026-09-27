@@ -52,6 +52,7 @@ import app.it.fast4x.rimusic.ui.components.themed.StringListDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
 import app.n_zik.android.components.dialog.logs.CopyLogsDialog
+import app.n_zik.android.components.settings.MaintenanceSettingsCard
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -192,17 +193,23 @@ fun OtherSettings(
     var extraspace by rememberPreference(extraspaceKey, false)
 
     // Scroll to the Debug card when the screen was opened with focus=debug
-    // (long press on the Debug entry in the hamburger menu)
+    // (long press on the Debug entry in the hamburger menu); same for the
+    // Maintenance card with focus=maintenance (spec-maintenance-dialog)
     val scrollState = rememberScrollState()
     var containerTopY by remember { mutableFloatStateOf(-1f) }
     var debugCardTopY by remember { mutableFloatStateOf(-1f) }
+    var maintenanceCardTopY by remember { mutableFloatStateOf(-1f) }
 
     LaunchedEffect(focus) {
-        if (focus != "debug") return@LaunchedEffect
-        // The card may be off-screen but is still laid out: wait until its position is measured
+        if (focus != "debug" && focus != "maintenance") return@LaunchedEffect
+        // The card may be off-screen but is still laid out: wait until its position is
+        // measured. The card's top Y must be read INSIDE snapshotFlow — reading it once
+        // here would capture the initial -1f sentinel (the states are only filled by
+        // onGloballyPositioned after layout) and suspend forever on `first`.
         val offset = snapshotFlow {
-            if (debugCardTopY < 0f || containerTopY < 0f) -1f
-            else debugCardTopY - containerTopY + scrollState.value
+            val cardTopY = if (focus == "maintenance") maintenanceCardTopY else debugCardTopY
+            if (cardTopY < 0f || containerTopY < 0f) -1f
+            else cardTopY - containerTopY + scrollState.value
         }.first { it >= 0f }
         scrollState.animateScrollTo(offset.roundToInt())
     }
@@ -657,8 +664,9 @@ fun OtherSettings(
                     title = stringResource(R.string.debug),
                     icon = R.drawable.bugs,
                 content = {
-                    CopyLogsDialog.Render()
-
+                    // The Export action's CopyLogsDialog is rendered by the single
+                    // always-composed host in the persistent header (ActionBar.kt) — a
+                    // second Render() here would stack a second dialog on top of the first
                     if (search.inputValue.isBlank() || stringResource(R.string.enable_log_debug).contains(search.inputValue, true) || stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
                             title = stringResource(R.string.enable_log_debug),
@@ -695,6 +703,23 @@ fun OtherSettings(
                     }
                 }
             )
+            }
+        }
+
+        // Maintenance section (spec-maintenance-dialog): the minimal card that opens
+        // the same Maintenance sheet as the burger item; the deep link from the burger
+        // long press (focus=maintenance) scrolls to it. Same search-filter + enter
+        // spec as the sibling cards (the card must not stay visible on unrelated searches)
+        val searchCtx_Maintenance = search.inputValue.isBlank() || stringResource(R.string.maintenance).contains(search.inputValue, true) || stringResource(R.string.maintenance_open).contains(search.inputValue, true)
+        AnimatedVisibility(
+            visible = searchCtx_Maintenance,
+            enter = fadeIn(animationSpec = tween(1100)) + scaleIn(
+                animationSpec = tween(1100),
+                initialScale = 0.9f
+            )
+        ) {
+            Box(modifier = Modifier.onGloballyPositioned { maintenanceCardTopY = it.positionInRoot().y }) {
+                MaintenanceSettingsCard()
             }
         }
 

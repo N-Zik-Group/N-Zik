@@ -8,6 +8,9 @@ import app.n_zik.android.R
 import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.SongArtistMapTable
+import app.n_zik.android.core.maintenance.DedupGroupRecord
+import app.n_zik.android.core.maintenance.DedupGroupStatus
+import app.n_zik.android.core.maintenance.DedupSkipReason
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.kreate.android.me.knighthat.utils.Toaster
@@ -130,8 +133,11 @@ object SameNameArtistDedup {
     /**
      * The dedup pass, called from the sequential boot chain in [MainApplication]
      * (`DbCleanup` -> same-name dedup -> name convergence) or from [run].
+     *
+     * @return the [DedupResult] of the run (counters + the per-group records) so
+     * the boot chain can persist the last successful run
      */
-    internal suspend fun runPass(context: Context) {
+    internal suspend fun runPass(context: Context): DedupResult {
         val result = runDedup(
             artistTable = Database.artistTable,
             mapTable = Database.songArtistMapTable,
@@ -154,6 +160,7 @@ object SameNameArtistDedup {
                 }
             }
         }
+        return result
     }
 
     /**
@@ -185,6 +192,10 @@ object SameNameArtistDedup {
         var skipped = 0
         var deferred = 0
         var localKept = 0
+        // Per-group outcome captured in every terminal branch (name, status, merge/flag
+        // counters or skip reason) so the boot chain can persist it — the per-group
+        // detail exists only in the Timber logs otherwise.
+        val records = mutableListOf<DedupGroupRecord>()
 
         for (groupName in groupNames) {
             val rows = artistTable.allByNameIgnoreCase(groupName)
@@ -203,11 +214,13 @@ object SameNameArtistDedup {
             // A whole group renamed by the user is custom data: untouchable.
             if (groupName.startsWith(MODIFIED_PREFIX)) {
                 skipped++
+                records += DedupGroupRecord(groupName, DedupGroupStatus.SKIPPED, skipReason = DedupSkipReason.CUSTOM_NAME)
                 Timber.tag(TAG).d("group '%s': skipped (custom name)", groupName)
                 continue
             }
             if (!online) {
                 skipped++
+                records += DedupGroupRecord(groupName, DedupGroupStatus.SKIPPED, skipReason = DedupSkipReason.OFFLINE)
                 Timber.tag(TAG).d("group '%s': skipped (offline)", groupName)
                 continue
             }
@@ -223,6 +236,7 @@ object SameNameArtistDedup {
                     .mapTo(mutableSetOf()) { it.id }
                 if (remembered.rows == rowIds && (remembered.songs == null || remembered.songs == songIds)) {
                     deferred++
+                    records += DedupGroupRecord(groupName, DedupGroupStatus.DEFERRED)
                     Timber.tag(TAG).d(
                         "group '%s': deferred (already judged, composition unchanged, no search)",
                         groupName,
@@ -237,6 +251,10 @@ object SameNameArtistDedup {
                     resolved++
                     merged += outcome.merged
                     flagged += outcome.flagged
+                    records += DedupGroupRecord(
+                        groupName, DedupGroupStatus.RESOLVED,
+                        mergedRows = outcome.merged, flaggedRows = outcome.flagged,
+                    )
                     rememberRemainingComposition(groupName, artistTable, mapTable, skipStore, fallbackJudged = false)
                     return@runCatching
                 }
@@ -265,6 +283,10 @@ object SameNameArtistDedup {
                     // composition is remembered like flagged rows — a pure
                     // network failure is NOT remembered (onFailure below).
                     skipped++
+                    records += DedupGroupRecord(
+                        groupName, DedupGroupStatus.SKIPPED,
+                        skipReason = DedupSkipReason.NO_UNANIMOUS_CANDIDATE,
+                    )
                     rememberRemainingComposition(groupName, artistTable, mapTable, skipStore, fallbackJudged = true)
                     Timber.tag(TAG).d(
                         "group '%s': song fallback without unanimous candidate, skipped",
@@ -276,10 +298,18 @@ object SameNameArtistDedup {
                 songResolved++
                 merged += outcome.merged
                 flagged += outcome.flagged
+                records += DedupGroupRecord(
+                    groupName, DedupGroupStatus.SONG_RESOLVED,
+                    mergedRows = outcome.merged, flaggedRows = outcome.flagged,
+                )
                 rememberRemainingComposition(groupName, artistTable, mapTable, skipStore, fallbackJudged = true)
                 Timber.tag(TAG).d("group '%s': songResolved, unanimous browse id %s", groupName, truth.browseId)
             }.onFailure { e ->
                 skipped++
+                records += DedupGroupRecord(
+                    groupName, DedupGroupStatus.SKIPPED,
+                    skipReason = DedupSkipReason.NETWORK_FAILURE,
+                )
                 Timber.tag(TAG).w(e, "group '%s': resolution failed, skipped (retried on next launch)", groupName)
             }
             // Random gap between two searches (same pattern as HomeSyncService),
@@ -290,6 +320,7 @@ object SameNameArtistDedup {
         return DedupResult(
             groupNames.size, resolved, songResolved, merged, flagged,
             skipped, deferred, localKept,
+            records,
         )
     }
 
@@ -858,6 +889,9 @@ internal class PrefsSkipStore(context: Context) : SkipStore {
  * search is not a direct skip, it enters the fallback)
  * @param deferred groups skipped because already judged with an unchanged composition
  * @param localKept `LOCAL_ARTIST_` rows excluded from the merge
+ * @param records per-group outcome captured in every terminal branch (name,
+ * status, merge/flag counters or skip reason) — persisted by the boot chain so
+ * the Maintenance sheet can show the last run's detail
  */
 internal data class DedupResult(
     val groups: Int,
@@ -868,6 +902,7 @@ internal data class DedupResult(
     val skipped: Int,
     val deferred: Int,
     val localKept: Int,
+    val records: List<DedupGroupRecord> = emptyList(),
 )
 
 /** Per-group merge outcome. */

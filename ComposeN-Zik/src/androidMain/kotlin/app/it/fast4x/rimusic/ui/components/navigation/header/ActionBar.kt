@@ -24,7 +24,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.n_zik.android.R
+import app.n_zik.android.components.dialog.logs.CopyLogsDialog
 import app.n_zik.android.components.menu.header.DebugLogsMenuItem
+import app.n_zik.android.components.menu.header.MaintenanceMenuItem
+import app.n_zik.android.components.maintenance.MaintenanceSheet
 import app.n_zik.android.components.ui.screens.rescue.RescueActivity
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.colorPalette
@@ -64,6 +67,11 @@ private fun HamburgerMenu(
     // composed across the whole session, so a one-shot remember read would keep a stale
     // value after a flip in the settings
     val rewindEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_ENABLED, true)
+    // Maintenance sheet (spec-maintenance-dialog): the state lives at the HamburgerMenu
+    // body level (NOT inside the DropdownMenu content) because opening the sheet calls
+    // onItemConsumed() which dismisses the menu — a remember inside the menu content
+    // could be destroyed on dismissal. The header stays composed for the whole session.
+    var showMaintenanceSheet by remember { mutableStateOf(false) }
 
     val menu = DropdownMenu(
         expanded = expanded,
@@ -127,6 +135,18 @@ private fun HamburgerMenu(
             onConsume = onItemConsumed
         )
     }
+    // Maintenance button (spec-maintenance-dialog): short tap opens the app-state
+    // sheet, long press opens the Misc settings directly on the Maintenance card
+    menu.add {
+        MaintenanceMenuItem(
+            onOpen = { showMaintenanceSheet = true },
+            onLongClick = {
+                navController.navigate("${NavRoutes.settings.name}?tab=7&focus=maintenance")
+                onItemConsumed()
+            },
+            onConsume = onItemConsumed
+        )
+    }
     // Rescue Center button (opens the :rescue process activity, same intent as the launcher shortcut)
     menu.add(
         DropdownMenu.Item(
@@ -140,6 +160,19 @@ private fun HamburgerMenu(
         }
     )
     menu.Draw()
+    // Maintenance sheet (spec-maintenance-dialog): composed as a SIBLING of the
+    // Popup (never inside the menu content), driven by the body-level state above.
+    // renderLogsDialog = false: the single CopyLogsDialog.Render() host for the whole
+    // app lives just below — this header stays composed for the entire session (it is
+    // the AppNavigation topBar), so it is alive on every screen and both sheet entry
+    // points (burger + Misc settings card) share it. Render() is a singleton: a second
+    // Render() would stack a second dialog on top of the first.
+    MaintenanceSheet(
+        showSheet = showMaintenanceSheet,
+        onDismissRequest = { showMaintenanceSheet = false },
+        renderLogsDialog = false,
+    )
+    CopyLogsDialog.Render()
 }
 
 // START

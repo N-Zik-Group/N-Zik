@@ -44,6 +44,10 @@ import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
 import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
 import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.maintenance.MaintenanceConvergenceState
+import app.n_zik.android.core.maintenance.MaintenanceDbCleanupState
+import app.n_zik.android.core.maintenance.MaintenanceDedupState
+import app.n_zik.android.core.maintenance.MaintenanceStateStore
 import app.n_zik.android.core.migration.DbCleanup
 import app.n_zik.android.core.migration.MonthlyPlaylistCleanup
 import app.n_zik.android.core.migration.NameConvergence
@@ -215,12 +219,59 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // (offline, idempotent). All re-run on every launch, so they also heal
         // data that reappears through database imports or YTM/YT syncs; a failing
         // pass does not block the next (runCatching per pass, logged as warning).
+        //
+        // Maintenance state (spec "Maintenance — état de l'app en un regard"):
+        // each successful pass persists its last result (one key per pass in
+        // app_settings) so the Maintenance sheet can show it. A failing pass
+        // never writes — the previously persisted state is kept and the pass
+        // retries on the next launch, exactly like today.
         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
             runCatching { DbCleanup.runPass(this@MainApplication) }
+                .onSuccess { result ->
+                    // The persistence itself is isolated too: a failing write must not
+                    // cancel the launch block and skip the two remaining passes
+                    runCatching {
+                        MaintenanceStateStore.saveDbCleanup(
+                            this@MainApplication,
+                            MaintenanceDbCleanupState(
+                                System.currentTimeMillis(),
+                                result.removed,
+                                result.removedLinks,
+                            ),
+                        )
+                    }.onFailure { Timber.tag("MainApplication").w(it, "Could not persist the artist link cleanup state") }
+                }
                 .onFailure { Timber.tag("MainApplication").e(it, "Artist link cleanup failed (retry on next launch)") }
             runCatching { SameNameArtistDedup.runPass(this@MainApplication) }
+                .onSuccess { result ->
+                    runCatching {
+                        MaintenanceStateStore.saveDedup(
+                            this@MainApplication,
+                            MaintenanceDedupState(
+                                timestamp = System.currentTimeMillis(),
+                                groups = result.groups,
+                                resolved = result.resolved,
+                                songResolved = result.songResolved,
+                                merged = result.merged,
+                                flagged = result.flagged,
+                                skipped = result.skipped,
+                                deferred = result.deferred,
+                                localKept = result.localKept,
+                                records = result.records,
+                            ),
+                        )
+                    }.onFailure { Timber.tag("MainApplication").w(it, "Could not persist the same-name dedup state") }
+                }
                 .onFailure { Timber.tag("MainApplication").e(it, "Same-name artist dedup failed (retry on next launch)") }
             runCatching { NameConvergence.runPass() }
+                .onSuccess { summary ->
+                    runCatching {
+                        MaintenanceStateStore.saveConvergence(
+                            this@MainApplication,
+                            MaintenanceConvergenceState(System.currentTimeMillis(), summary),
+                        )
+                    }.onFailure { Timber.tag("MainApplication").w(it, "Could not persist the name convergence state") }
+                }
                 .onFailure { Timber.tag("MainApplication").e(it, "Name convergence failed (retry on next launch)") }
         }
         InnerTubeXPlayer.initialize(this)

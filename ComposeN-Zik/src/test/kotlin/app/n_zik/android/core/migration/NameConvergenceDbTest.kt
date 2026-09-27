@@ -36,7 +36,8 @@ import org.robolectric.annotation.Config
  * copy, custom `modified:` copies untouched, unlinked copies untouched, albums
  * judged by the shared set of their songs' links) — a converged database
  * yields zero writes, and a second run over a converged database writes
- * nothing.
+ * nothing (the per-reason skip counters of the returned [ConvergenceSummary]
+ * are asserted per scenario).
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
@@ -98,7 +99,7 @@ class NameConvergenceDbTest {
     private fun albumAuthors(id: String): String? = db.albumTable.findByIdDirect(id)?.authorsText
 
     /** Runs the real sweep core against the in-memory DAOs. */
-    private suspend fun sweep(): Int =
+    private suspend fun sweep(): ConvergenceSummary =
         NameConvergence.runSweep(
             songTable = db.songTable,
             artistTable = db.artistTable,
@@ -203,7 +204,15 @@ class NameConvergenceDbTest {
         insertAlbum("al1", "Aran")
         linkSongToAlbum("s1", "al1")
 
-        assertEquals(0, sweep())
+        val summary = sweep()
+        assertEquals(0, summary.changed) // a converged database: zero writes
+        assertEquals(0, summary.unbackedSongs)
+        assertEquals(0, summary.unlinkedSongs)
+        assertEquals(0, summary.customSongs)
+        assertEquals(0, summary.unlinkedAlbums)
+        assertEquals(0, summary.inconsistentAlbums)
+        assertEquals(0, summary.countMismatchAlbums)
+        assertEquals(0, summary.customAlbums)
 
         assertEquals("Aran", songArtists("s1"))
         assertEquals("Aran, B", songArtists("s2"))
@@ -216,7 +225,7 @@ class NameConvergenceDbTest {
         insertSong("s1", "ARAN")
         insertLink("s1", "UC1")
 
-        assertEquals(1, sweep())
+        assertEquals(1, sweep().changed)
 
         assertEquals("Aran", songArtists("s1"))
     }
@@ -229,7 +238,9 @@ class NameConvergenceDbTest {
         insertSong("s1", "Aran, NoAki")
         insertLink("s1", "UC1")
 
-        assertEquals(0, sweep())
+        val summary = sweep()
+        assertEquals(0, summary.changed)
+        assertEquals(1, summary.unbackedSongs) // "NoAki" has no linked row
 
         assertEquals("Aran, NoAki", songArtists("s1"))
     }
@@ -244,7 +255,7 @@ class NameConvergenceDbTest {
         insertLink("s1", "UC1")
         insertLink("s1", "UC2")
 
-        assertEquals(1, sweep())
+        assertEquals(1, sweep().changed)
 
         assertEquals("Yunosuke, Hatsune Miku", songArtists("s1"))
     }
@@ -258,7 +269,7 @@ class NameConvergenceDbTest {
         insertLink("s1", "UC1")
         insertLink("s1", "UC2")
 
-        assertEquals(1, sweep())
+        assertEquals(1, sweep().changed)
 
         assertEquals("Aran, B", songArtists("s1"))
     }
@@ -274,7 +285,7 @@ class NameConvergenceDbTest {
         insertLink("s1", "UC_M")
         insertLink("s1", "UC_H")
 
-        assertEquals(1, sweep())
+        assertEquals(1, sweep().changed)
 
         assertEquals("Miyamori Bungaku, Hatsune Miku", songArtists("s1"))
     }
@@ -290,11 +301,11 @@ class NameConvergenceDbTest {
         insertLink("s1", "UC_B1")
         insertLink("s1", "UC_B2")
 
-        assertEquals(1, sweep())
+        assertEquals(1, sweep().changed)
 
         assertEquals("BlackY", songArtists("s1"))
         // idempotent: a second sweep over the repaired copy writes nothing
-        assertEquals(0, sweep())
+        assertEquals(0, sweep().changed)
     }
 
     @Test
@@ -303,7 +314,9 @@ class NameConvergenceDbTest {
         insertSong("s1", "modified:Aran")
         insertLink("s1", "UC1")
 
-        assertEquals(0, sweep())
+        val summary = sweep()
+        assertEquals(0, summary.changed)
+        assertEquals(1, summary.customSongs) // counted, never touched
 
         assertEquals("modified:Aran", songArtists("s1"))
     }
@@ -313,7 +326,9 @@ class NameConvergenceDbTest {
         insertArtist("UC1", "Aran")
         insertSong("s1", "Aran") // no SongArtistMap row for s1
 
-        assertEquals(0, sweep())
+        val summary = sweep()
+        assertEquals(0, summary.changed)
+        assertEquals(1, summary.unlinkedSongs) // no link: nothing to converge against
 
         assertEquals("Aran", songArtists("s1"))
     }
@@ -330,7 +345,7 @@ class NameConvergenceDbTest {
         linkSongToAlbum("s2", "al1", position = 1)
         linkSongToAlbum("s3", "al1", position = 2)
 
-        assertEquals(1, sweep()) // only the album copy is stale
+        assertEquals(1, sweep().changed) // only the album copy is stale
 
         assertEquals("Aran (UK)", albumAuthors("al1"))
     }
@@ -351,7 +366,9 @@ class NameConvergenceDbTest {
         linkSongToAlbum("s2", "al1", position = 1)
         linkSongToAlbum("s3", "al1", position = 2)
 
-        assertEquals(0, sweep())
+        val summary = sweep()
+        assertEquals(0, summary.changed)
+        assertEquals(1, summary.inconsistentAlbums) // the songs disagree on linked names
 
         assertEquals("Aran", albumAuthors("al1"))
     }
@@ -366,7 +383,9 @@ class NameConvergenceDbTest {
         linkSongToAlbum("s1", "al1")
         linkSongToAlbum("s2", "al1", position = 1)
 
-        assertEquals(0, sweep())
+        val summary = sweep()
+        assertEquals(0, summary.changed)
+        assertEquals(1, summary.unlinkedAlbums) // one song has no linked rows
 
         assertEquals("Aran", albumAuthors("al1"))
     }
@@ -377,9 +396,9 @@ class NameConvergenceDbTest {
         insertSong("s1", "ARAN")
         insertLink("s1", "UC1")
 
-        assertEquals(1, sweep())
+        assertEquals(1, sweep().changed)
         assertEquals("Aran", songArtists("s1"))
-        assertEquals(0, sweep()) // converged: the second run writes nothing
+        assertEquals(0, sweep().changed) // converged: the second run writes nothing
         assertEquals("Aran", songArtists("s1"))
     }
 }
