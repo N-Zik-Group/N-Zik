@@ -693,8 +693,9 @@ fun ArtistOverview(
                                                 var shufflerWillClear = false
                                                 try {
                                                     val allMediaItems = mutableListOf<MediaItem>()
-                                                    if (section.items.fastAll { it is Innertube.SongItem } && section.moreEndpoint?.browseId != null) {
-                                                        YtMusic.getPlaylist(section.moreEndpoint!!.browseId!!).getOrNull()?.songs?.map { it.asMediaItem }?.let { allMediaItems.addAll(it) }
+                                                    val moreBrowseId = section.moreEndpoint?.browseId
+                                                    if (section.items.fastAll { it is Innertube.SongItem } && moreBrowseId != null) {
+                                                        YtMusic.getPlaylist(moreBrowseId).getOrNull()?.songs?.map { it.asMediaItem }?.let { allMediaItems.addAll(it) }
                                                     }
                                                     if (allMediaItems.isEmpty()) {
                                                         section.items.forEach { item ->
@@ -736,8 +737,9 @@ fun ArtistOverview(
                                                 sectionLoadingId = sectionId
                                                 try {
                                                     val allMediaItems = mutableListOf<MediaItem>()
-                                                    if (section.items.fastAll { it is Innertube.SongItem } && section.moreEndpoint?.browseId != null) {
-                                                        YtMusic.getPlaylist(section.moreEndpoint!!.browseId!!).getOrNull()?.songs?.map { it.asMediaItem }?.let { allMediaItems.addAll(it) }
+                                                    val moreBrowseId = section.moreEndpoint?.browseId
+                                                    if (section.items.fastAll { it is Innertube.SongItem } && moreBrowseId != null) {
+                                                        YtMusic.getPlaylist(moreBrowseId).getOrNull()?.songs?.map { it.asMediaItem }?.let { allMediaItems.addAll(it) }
                                                     }
                                                     if (allMediaItems.isEmpty()) {
                                                         section.items.forEach { item ->

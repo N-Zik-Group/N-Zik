@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -22,6 +23,7 @@ data class ImportSong(
 )
 
 @Dao
+@RewriteQueriesToDropUnusedColumns
 interface ImportSongTable {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(importSong: ImportSong)

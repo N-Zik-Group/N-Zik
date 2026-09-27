@@ -787,6 +787,8 @@ class PlayerServiceModern : MediaLibraryService(),
                     Timber.tag("PlayerServiceModern").d("registerPlayback for $songId: streamClient=$streamClient, url=${playbackUrl?.take(120)}...")
                     runCatching {
                         Timber.tag("PlayerServiceModern").d("onPlaybackStatsReady: calling Innertube.registerPlayback for $songId")
+                        // playbackUrl is guaranteed non-null here: originalUrl was null-checked above (return@launch),
+                        // and the WEB_REMIX re-fetch only reassigns it when remixUrl != null
                         val response = Innertube.registerPlayback(url = playbackUrl!!, cpn = "")
                         val statusCode = response.status.value
                         if (statusCode !in 200..299) {

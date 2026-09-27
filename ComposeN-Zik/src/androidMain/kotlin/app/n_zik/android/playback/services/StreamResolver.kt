@@ -1175,6 +1175,8 @@ private fun DataSpec.processForDownload(
     videoId: String,
     downloadQualityFormat: DownloadQualityFormat
 ): DataSpec {
+    // runBlocking is necessary because ExoPlayer's ResolvingDataSource expects a synchronous return
+    // (same hard constraint as DataSpec.process above) - the download DataSpec callback cannot be suspend.
     return try {
         runBlocking(NzikDispatchers.DATA) {
             val parentalControlEnabled = appContext().preferences.getBoolean(parentalControlEnabledKey, false)
