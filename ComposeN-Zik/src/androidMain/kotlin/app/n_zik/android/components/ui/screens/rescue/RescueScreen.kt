@@ -78,6 +78,34 @@ import androidx.compose.foundation.text.BasicText
 private const val PROCESS_EXIT_DELAY_MS = 1_500L
 
 /**
+ * MIME types accepted by the Rescue "Import settings" picker.
+ *
+ * A rescue-local copy of the app's `ImportSettings.supportedMimes` — the `:rescue` process must
+ * stay independent of `components.import` (this screen exists for when the app is in a bad
+ * state), so the list is duplicated here instead of referenced. The previous text/csv +
+ * text/plain list missed text/comma-separated-values, so a settings file reported under that
+ * MIME was hidden in the picker and could not be selected.
+ */
+private val IMPORT_SETTINGS_MIMES: Array<String> = arrayOf(
+    "text/csv",
+    "text/comma-separated-values",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
+
+/**
+ * MIME types accepted by the Rescue "Import database" picker.
+ *
+ * A rescue-local copy of the app's `ImportDatabase.supportedMimes` (same independence rationale
+ * as [IMPORT_SETTINGS_MIMES]).
+ */
+private val IMPORT_DATABASE_MIMES: Array<String> = arrayOf(
+    "application/vnd.sqlite3",
+    "application/x-sqlite3",
+    "application/octet-stream"
+)
+
+/**
  * Main UI composable for the Rescue Center.
  *
  * Lists the recovery actions by category (data, maintenance, danger zone), with confirmation
@@ -454,11 +482,7 @@ fun RescueScreen() {
                 onClick = {
                     guardWrite {
                         confirmAction = ConfirmAction(R.string.rescue_confirm_import_database) {
-                            importDbLauncher.launch(arrayOf(
-                                "application/vnd.sqlite3",
-                                "application/x-sqlite3",
-                                "application/octet-stream"
-                            ))
+                            importDbLauncher.launch(IMPORT_DATABASE_MIMES)
                         }
                     }
                 }
@@ -480,7 +504,7 @@ fun RescueScreen() {
                 onClick = {
                     guardWrite {
                         confirmAction = ConfirmAction(R.string.rescue_confirm_import_settings) {
-                            importSettingsLauncher.launch(arrayOf("text/csv", "text/plain"))
+                            importSettingsLauncher.launch(IMPORT_SETTINGS_MIMES)
                         }
                     }
                 }
