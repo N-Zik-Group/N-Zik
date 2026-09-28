@@ -1,5 +1,8 @@
 package app.n_zik.android.components.ui.screens.rewind.slides
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -29,7 +32,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -225,58 +228,97 @@ fun RewindTopArtistSpotlightCard(
                 if (!bio.isNullOrBlank()) {
                     // The bio block takes whatever vertical space is left after the
                     // photo/name/badge/metrics. A long bio auto-drifts slowly on its own —
-                    // down, hold, back up, hold, in an endless palindrome — so the whole
-                    // text is readable on a small screen with no input. There is deliberately
-                    // NO manual scroll zone: a swipeable area leaks into the deck's swipe
-                    // and reloads the card, so the drift is the only way the text moves.
-                    // The "disable scrolling text" setting stops the drift, and a running
-                    // capture freezes the bio at its top within one frame so shared images
-                    // are stable. A bio that fits renders exactly as before (nothing moves).
+                    // constant speed, top to bottom; at the bottom it fades out, the
+                    // offset wraps back to the top while invisible, and it fades back in:
+                    // an endless loop with no stops and no visible jump — so the whole
+                    // text is readable on a small screen with no input. There is
+                    // deliberately NO manual scroll zone: a swipeable area leaks into the
+                    // deck's swipe and reloads the card, so the drift is the only way the
+                    // text moves. The "disable scrolling text" setting stops the drift,
+                    // and a running capture freezes the bio at its top within one frame so
+                    // shared images are stable. A bio that fits renders exactly as before
+                    // (nothing moves).
                     val density = LocalDensity.current
-                    var contentHeightPx by remember { mutableStateOf(0) }
-                    var blockHeightPx by remember { mutableStateOf(0) }
-                    val overflowPx = (contentHeightPx - blockHeightPx).coerceAtLeast(0)
-                    var driftOffset by remember { mutableStateOf(0f) } // px down from the top
+                    // The travel distance is read from the rendered geometry: the block's
+                    // global bottom vs. the bio's last element's global bottom (via
+                    // localToWindow — the positionIn* accessors are gone in Compose 1.12).
+                    // The Column's wrapContentHeight(unbounded = true) is what makes this
+                    // measurable: in 1.12 a capped Column squashes its children to the
+                    // remaining space, so without it the last element would land exactly
+                    // on the block's bottom and the overflow would always read zero —
+                    // which is precisely why the drift never started on device. Pinned by
+                    // RewindBioDriftMeasurementTest.
+                    var blockBottomPx by remember { mutableStateOf(0) }
+                    var contentBottomPx by remember { mutableStateOf(0) }
+                    // driftOffset: 0f = top of the bio visible; negative = the content
+                    // moved up by that many px (the lower lines scroll into view, like
+                    // reading). driftAlpha: fades the bio out at the bottom of the pass
+                    // and back in at the top, so the loop's wrap happens while invisible
+                    // — the text never jumps. Both are Animatables driven by the compose
+                    // frame clock: the same smooth interpolation as the deck's marquees
+                    // (a manual delay loop steps out of sync with vsync and jumps).
+                    val driftOffset = remember { Animatable(0f) }
+                    val driftAlpha = remember { Animatable(1f) }
                     val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
-                    LaunchedEffect(active, isScrollingTextDisabled, overflowPx) {
-                        if (!active || isScrollingTextDisabled || overflowPx <= 0) {
-                            driftOffset = 0f
-                            return@LaunchedEffect
-                        }
-                        // Drift speed in px per second (20 dp/s, density-scaled), and the
-                        // one-frame step (≈ 16 ms) in px.
+                    // The loop is deliberately NOT keyed on the measured overflow: the
+                    // measurement is re-read every iteration, so a wobble in it (layout
+                    // settle, pager offset, rounding) can never cancel a running pass.
+                    // If the effect is cancelled for any other reason, the Animatables
+                    // keep their value and the relaunched loop simply resumes the pass
+                    // from the current position — the bio can never freeze mid-drift.
+                    LaunchedEffect(active, isScrollingTextDisabled) {
                         val speedPxPerSecond = BIO_DRIFT_DP_PER_SECOND * density.density
-                        val stepPx = speedPxPerSecond * (BIO_DRIFT_STEP_MILLIS / 1000f)
-                        val totalMillis = ((overflowPx.toFloat() / speedPxPerSecond) * 1000f).toLong()
                         while (true) {
-                            if (rewindShareCaptureActive.value) {
-                                // Capture in progress: freeze at the top — shared frames must
-                                // be static and show the start of the bio.
-                                driftOffset = 0f
-                                delay(250)
+                            val overflowPx = (contentBottomPx - blockBottomPx).coerceAtLeast(0)
+                            if (!active || isScrollingTextDisabled || overflowPx <= 0) {
+                                driftOffset.snapTo(0f)
+                                driftAlpha.snapTo(1f)
+                                delay(500)
                                 continue
                             }
-                            // Drift down slowly (per-frame steps, so a capture can freeze
-                            // the bio within one frame).
-                            var elapsed = 0L
-                            while (elapsed < totalMillis) {
-                                if (rewindShareCaptureActive.value) break
-                                driftOffset += stepPx
-                                delay(BIO_DRIFT_STEP_MILLIS)
-                                elapsed += BIO_DRIFT_STEP_MILLIS
+                            while (rewindShareCaptureActive.value) {
+                                // Capture in progress: wait at the top — shared frames must
+                                // be static and show the start of the bio.
+                                driftOffset.snapTo(0f)
+                                driftAlpha.snapTo(1f)
+                                delay(250)
                             }
-                            driftOffset = overflowPx.toFloat()
-                            delay(BIO_DRIFT_HOLD_MILLIS)
-                            // Drift back up slowly, then hold at the top, then loop.
-                            elapsed = 0L
-                            while (elapsed < totalMillis) {
-                                if (rewindShareCaptureActive.value) break
-                                driftOffset -= stepPx
-                                delay(BIO_DRIFT_STEP_MILLIS)
-                                elapsed += BIO_DRIFT_STEP_MILLIS
+                            // Constant-speed pass, top to bottom, like the deck's marquees:
+                            // the content moves UP (translationY 0 -> -overflow) so the
+                            // lower lines scroll into view. The duration covers only the
+                            // REMAINING distance, so if the effect is relaunched mid-pass
+                            // (any cancellation) the drift resumes at the same constant
+                            // speed instead of restarting the full pass or freezing.
+                            val targetOffset = -overflowPx.toFloat()
+                            val remainingPx = (driftOffset.value - targetOffset).coerceAtLeast(0f)
+                            if (remainingPx < 2f) {
+                                driftOffset.snapTo(targetOffset)
+                            } else {
+                                val totalMillis = ((remainingPx / speedPxPerSecond) * 1000f).toInt()
+                                driftOffset.animateTo(
+                                    targetOffset,
+                                    animationSpec = tween(totalMillis, easing = LinearEasing)
+                                )
                             }
-                            driftOffset = 0f
-                            delay(BIO_DRIFT_HOLD_MILLIS)
+                            if (rewindShareCaptureActive.value) {
+                                driftOffset.snapTo(0f)
+                                driftAlpha.snapTo(1f)
+                                continue
+                            }
+                            // Bottom reached: fade the bio out, wrap the offset back to the
+                            // top while it is invisible, fade back in, start the next pass —
+                            // a constant loop with no stop and no visible jump.
+                            driftAlpha.animateTo(0f, animationSpec = tween(BIO_DRIFT_FADE_MILLIS))
+                            driftOffset.snapTo(0f)
+                            driftAlpha.animateTo(1f, animationSpec = tween(BIO_DRIFT_FADE_MILLIS))
+                        }
+                    }
+                    // A running capture must freeze the bio at its top instantly, even
+                    // mid-tween: snapTo cancels the running animation within one frame.
+                    LaunchedEffect(rewindShareCaptureActive.value) {
+                        if (rewindShareCaptureActive.value) {
+                            driftOffset.snapTo(0f)
+                            driftAlpha.snapTo(1f)
                         }
                     }
                     RewindReveal(
@@ -289,18 +331,25 @@ fun RewindTopArtistSpotlightCard(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .onSizeChanged { blockHeightPx = it.height }
+                                .onGloballyPositioned { coords ->
+                                    blockBottomPx =
+                                        coords.localToWindow(Offset(0f, coords.size.height.toFloat())).y.toInt()
+                                }
                                 .clip(RoundedCornerShape(0.dp))
                         ) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    // Measured at its natural height even when taller than
-                                    // the block (default maxHeight = infinity), so the
-                                    // drift knows how far to travel.
-                                    .wrapContentHeight()
-                                    .onSizeChanged { contentHeightPx = it.height }
-                                    .graphicsLayer { translationY = driftOffset }
+                                    // Measured at its natural height despite the block's
+                                    // bounded constraint (unbounded = true), top-aligned
+                                    // within it: the children lay out at their natural
+                                    // offsets, so the last element's global position below
+                                    // the block's bottom is the drift's travel distance.
+                                    .wrapContentHeight(align = Alignment.Top, unbounded = true)
+                                    .graphicsLayer {
+                                        translationY = driftOffset.value
+                                        alpha = driftAlpha.value
+                                    }
                             ) {
                             Text(
                                 text = stringResource(R.string.rw_artist_spotlight_about),
@@ -324,13 +373,19 @@ fun RewindTopArtistSpotlightCard(
                             )
                             Spacer(Modifier.height(5.dp))
                             Text(
+                                // Last element of the bio block — its global bottom defines
+                                // the drift's travel distance (see the measurement above).
                                 text = stringResource(R.string.rw_artist_spotlight_innertube),
                                 color = rewindColors.value.cream.copy(alpha = 0.35f),
                                 fontSize = textScale.size(8.sp),
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = textScale.letterSpacing(0.8.sp),
                                 maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.onGloballyPositioned { coords ->
+                                    contentBottomPx =
+                                        coords.localToWindow(Offset(0f, coords.size.height.toFloat())).y.toInt()
+                                }
                             )
                             }
                         }
@@ -377,13 +432,15 @@ private fun SpotlightMetric(
 
 /**
  * Slow auto-drift of the artist bio, in dp per second — the owner wants the description
- * to slide by itself, slowly ("haut en bas tout seul lent"). ≈ 1.3 lines/s at the deck
- * bio line height, a readable pace.
+ * to slide by itself ("haut en bas tout seul lent") but 20 dp/s read as "trop lent" on
+ * device, so it was doubled. ≈ 2.6 lines/s at the deck bio line height: still relaxed
+ * reading, no longer glacial.
  */
-private const val BIO_DRIFT_DP_PER_SECOND = 20f
+private const val BIO_DRIFT_DP_PER_SECOND = 40f
 
-/** One drift step, in ms (≈ one frame at 20 dp/s). */
-private const val BIO_DRIFT_STEP_MILLIS = 16L
-
-/** How long the bio holds at each end before drifting back, in ms — the edges stay readable. */
-private const val BIO_DRIFT_HOLD_MILLIS = 1_800L
+/**
+ * Fade duration at each loop wrap, in ms — the bio fades out at the bottom, the offset
+ * wraps back to the top while it is invisible, and the bio fades back in: the endless
+ * loop never stops and never jumps.
+ */
+private const val BIO_DRIFT_FADE_MILLIS = 400
