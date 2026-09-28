@@ -12,6 +12,11 @@ Added:
 - feat(settings): Listen Together settings card now reachable from the Settings page (Accounts tab)
   - `ListenTogetherSettingsCard()` (server URL, username, auto-approval toggles, sync volume, local history, logs, blocked users) was only rendered inside the room screen; it is now integrated next to `LastFmSettingsCard()` in `AccountsSettings.kt` (legacy file — user-approved modification per spec 2026-09-28), same integration-card pattern as LastFm/Rewind
   - The manager is initialized at process start (`MainApplication`), so the card works outside any room; no new strings, no new dependencies
+- feat(header): collapse the N-ZIK title and badges behind the logo when horizontal space runs short
+  - New `CollapsingAppTitle.kt` (`app.n_zik.android.components.ui.header`): when the width actually available in the header drops below the row's ideal width, the "N-ZIK" text, version badge, DEBUG badge and parental-control shield slide left behind the logo (250ms FastOutSlowIn: translation + quadratic fade + retracted layout width + moving clip; the logo stays on top via `zIndex(1f)` and keeps its full 36dp) — the action bar (search + burger) is never compressed; the reverse animation re-expands them when space returns
+  - Collapse decision comes from `constraints.maxWidth` captured in a `layout` modifier (never from the measured width, which would track the animation and deadlock the re-expansion); the ideal extras width is measured at natural width (unconstrained) at all times, so the clip/retraction can never feed back into the decision
+  - Legacy `AppHeader.kt` (user-approved 2026-09-28, renegotiated 2026-09-29): the `AppTitle(...)` call is replaced by `CollapsingAppTitle(navController, context, Modifier.weight(1f))` and the legacy `Spacer(Modifier.weight(1f))` is removed — the weighted spacer used to steal half the remaining space (title permanently collapsed on home, action buttons no longer pinned right); the title now takes the full remaining width (fill)
+  - Tests: new `CollapsingAppTitleTest` (6 tests — 4 pure threshold cases + 2 Robolectric layout tests: extras fully expanded at 300dp, fully retracted at 200dp behind 48dp+96dp stand-ins, logo kept at exactly 36dp while collapsed)
 
 Changed:
 - change(settings): app language selection now applies live, without an app restart (behavior copied from the RiPlay reference)

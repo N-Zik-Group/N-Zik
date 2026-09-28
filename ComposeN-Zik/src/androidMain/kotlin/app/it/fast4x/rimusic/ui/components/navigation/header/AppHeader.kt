@@ -13,7 +13,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -49,6 +48,7 @@ import app.it.fast4x.rimusic.utils.VoiceSearchState
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.disableNavigationBackStackKey
 import app.n_zik.android.LocalTopBarOffset
+import app.n_zik.android.components.ui.header.CollapsingAppTitle
 import timber.log.Timber
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.animation.core.animateDpAsState
@@ -168,11 +168,12 @@ class AppHeader(
                     }
                 }
     
-                // Logo + Title — shifts right smoothly as back button expands
-                AppTitle(navController, context)
-    
-                Spacer(modifier = Modifier.weight(1f))
-    
+                // Logo + Title — shifts right smoothly as back button expands. Takes the
+                // full remaining width (weight, fill) so its extras can collapse behind
+                // the logo instead of compressing the action bar, which stays pinned to
+                // the right edge.
+                CollapsingAppTitle(navController, context, Modifier.weight(1f))
+
                 // Action icons (search, settings…)
                 ActionBar(navController)
             }
