@@ -84,7 +84,7 @@ protobuf-gradle-plugin = "0.10.0"
 composeReorderable = "3.1.0"
 work = "2.11.2"
 carapp = "1.4.0"
-innertubex = "v0.7.0"
+innertubex = "v0.7.1"
 
 [libraries]
 # Kotlinx
