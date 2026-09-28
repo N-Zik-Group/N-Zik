@@ -1790,6 +1790,7 @@
 <string name="rw_artist_spotlight_empty_body">Your #1 artist will appear here once there is enough listening history.</string>
 <string name="rw_artist_spotlight_kicker">YOUR #1 ARTIST • %1$s</string>
 <string name="rw_artist_spotlight_about">ABOUT</string>
+<string name="rw_artist_spotlight_see_more">SEE MORE</string>
 <string name="rw_artist_spotlight_wikipedia">WIKIPEDIA</string>
 <string name="rw_artist_spotlight_innertube">INNER TUBE</string>
 <string name="rw_top_album_empty_title">NO ALBUM OF THE YEAR YET</string>
@@ -1827,6 +1828,7 @@
 <string name="rw_finale_top_album">TOP ALBUM</string>
 <string name="rw_finale_top_playlist">TOP PLAYLIST</string>
 <string name="rw_finale_brand">N-ZIK REWIND %1$s</string>
+<string name="rw_finale_export_options">EXPORT OPTIONS</string>
 <string name="rw_finale_share">EXPORT ALL PAGES</string>
 <string name="rw_finale_export_page">EXPORT THIS PAGE</string>
 <string name="rw_finale_play_again">PLAY AGAIN</string>

@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,11 +16,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,7 +36,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -39,9 +47,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.it.fast4x.rimusic.enums.MenuStyle
+import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
+import app.it.fast4x.rimusic.utils.menuStyleKey
+import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.R
+import app.n_zik.android.colorPalette
+import app.n_zik.android.components.menu.GridMenu
+import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.ui.screens.rewind.RewindData
 import app.n_zik.android.components.ui.screens.rewind.rewindShareCaptureActive
+import app.n_zik.android.uiRoundnessShape
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -61,6 +77,7 @@ import kotlinx.coroutines.launch
  * UPDATED" for 2 s only on a successful write (count > 0) — an empty window is a silent
  * no-op.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RewindFinaleCard(
     data: RewindData,
@@ -86,6 +103,9 @@ fun RewindFinaleCard(
     var regenConfirmed by remember { mutableStateOf(false) }
     val regenScope = rememberCoroutineScope()
     val onRegenerate = onRegeneratePlaylist ?: onRegenerateAlltime
+    // Export options menu (app-standard sheet, like the song item menu): the single
+    // bottom pill is the only live-deck chrome; the individual actions live inside.
+    var showExportMenu by remember { mutableStateOf(false) }
     // Solid tile/card surfaces are not scrimmed, so contrast must be judged on the surface
     // itself (flatTextOn) instead of the scrim-darkened slide background (textOn).
     val onLime = rewindColors.value.flatTextOn(rewindColors.value.lime)
@@ -139,7 +159,10 @@ fun RewindFinaleCard(
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val compact = maxHeight < 700.dp
             // Scaled at the definition: the tiles read it as-is (fontSize = valueSize).
-            val statSize = textScale.size(if (compact) 19.sp else 23.sp)
+            // Kept deliberately small (device: at 23/19sp the numbers were still
+            // compressed on a tight screen — the adaptive tile then shrank them further):
+            // the smaller base means the fit clamp kicks in later and reads larger.
+            val statSize = textScale.size(if (compact) 14.sp else 17.sp)
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
                     RewindKicker(stringResource(R.string.rw_finale_kicker, data.periodLabel), rewindColors.value.lime)
@@ -151,8 +174,8 @@ fun RewindFinaleCard(
                     Text(
                         text = stringResource(R.string.rw_finale_heading, data.periodLabel),
                         color = rewindColors.value.cream,
-                        fontSize = textScale.size(if (compact) 40.sp else 48.sp),
-                        lineHeight = textScale.size(if (compact) 37.sp else 44.sp),
+                        fontSize = textScale.size(if (compact) 34.sp else 42.sp),
+                        lineHeight = textScale.size(if (compact) 32.sp else 38.sp),
                         letterSpacing = textScale.letterSpacing((-2.4).sp),
                         fontWeight = FontWeight.Black,
                         maxLines = 2,
@@ -166,23 +189,24 @@ fun RewindFinaleCard(
                     Text(
                         text = username,
                         color = rewindColors.value.lime,
-                        fontSize = textScale.size(10.sp),
+                        fontSize = textScale.size(9.sp),
                         fontWeight = FontWeight.Black,
                         letterSpacing = textScale.letterSpacing(0.8.sp),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.rewindMarqueeOnly()
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
                 Spacer(Modifier.height(if (compact) 8.dp else 12.dp))
                 // The stats grid is the slide's shrinkable block: at the reference it renders
                 // at its natural height, and on a tight screen (narrow + enlarged font) it
-                // yields vertical space row by row so the export pills below always stay
-                // visible — the deck has no scrolling.
+                // yields vertical space row by row so the export action below always stays
+                // visible — the deck has no scrolling. It outweights the bottom spacer 2:1
+                // so the slack goes to the grid before it is compressed, and the tiles adapt
+                // their text to whatever height they get (FinaleStatTile).
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f, fill = false),
+                        .weight(2f, fill = false),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Row(
@@ -293,24 +317,22 @@ fun RewindFinaleCard(
                                 Text(
                                     text = stringResource(badge.titleId),
                                     color = rewindColors.value.ink,
-                                    fontSize = textScale.size(15.sp),
+                                    fontSize = textScale.size(13.sp),
                                     fontWeight = FontWeight.Black,
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.rewindMarqueeOnly()
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                             Text(
                                 text = badge.index.toString(),
                                 color = onLime,
-                                fontSize = textScale.size(17.sp),
+                                fontSize = textScale.size(15.sp),
                                 fontWeight = FontWeight.Black,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier
                                     .background(rewindColors.value.lime, CircleShape)
                                     .padding(horizontal = 10.dp, vertical = 7.dp)
-                                    .rewindMarqueeOnly()
                             )
                         }
                     }
@@ -452,224 +474,264 @@ fun RewindFinaleCard(
                         }
                     }
                 } else {
-                    // Interactive UI: the export pills only exist in the live deck — any
-                    // captured frame (per-slide share, deck export) renders the brand footer
-                    // above instead, so shared images never carry clickable chrome.
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        // Two distinct export actions (on-device feedback): the single-page
-                        // share of the displayed slide and the full-deck folder export.
-                        if (onShareSlide != null) {
-                            RewindReveal(active, 1_080) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(
-                                            rewindColors.value.cream.copy(alpha = 0.10f),
-                                            RoundedCornerShape(100.dp)
-                                        )
-                                        .border(
-                                            1.dp,
-                                            rewindColors.value.cream.copy(alpha = 0.45f),
-                                            RoundedCornerShape(100.dp)
-                                        )
-                                        .clickable(onClick = onShareSlide, indication = null, interactionSource = remember { MutableInteractionSource() })
-                                        .padding(vertical = 8.dp),
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.share_social),
-                                        contentDescription = null,
-                                        tint = rewindColors.value.cream,
-                                        modifier = Modifier.size(13.dp)
-                                    )
-                                    Spacer(Modifier.width(6.dp))
-                                    Text(
-                                        text = stringResource(R.string.rw_finale_export_page),
-                                        color = rewindColors.value.cream,
-                                        fontSize = textScale.size(10.sp),
-                                        fontWeight = FontWeight.Black,
-                                        letterSpacing = textScale.letterSpacing(0.8.sp),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
-                            }
-                        }
-                        // Regeneration pill (spec 2): only in the interactive branch — the
-                        // share/capture swap above renders the brand footer instead, so no
-                        // captured frame ever carries it.
-                        if (onRegenerate != null) {
-                            RewindReveal(active, 1_115) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(
-                                            rewindColors.value.cream.copy(alpha = 0.10f),
-                                            RoundedCornerShape(100.dp)
-                                        )
-                                        .border(
-                                            1.dp,
-                                            rewindColors.value.cream.copy(alpha = 0.45f),
-                                            RoundedCornerShape(100.dp)
-                                        )
-                                        .clickable(
-                                            onClick = {
-                                                regenScope.launch {
-                                                    val count = onRegenerate()
-                                                    if (count > 0) {
-                                                        regenConfirmed = true
-                                                        delay(2_000)
-                                                        regenConfirmed = false
-                                                    }
-                                                }
-                                            },
-                                            indication = null,
-                                            interactionSource = remember { MutableInteractionSource() }
-                                        )
-                                        .padding(vertical = 8.dp),
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.refresh),
-                                        contentDescription = null,
-                                        tint = rewindColors.value.cream,
-                                        modifier = Modifier.size(13.dp)
-                                    )
-                                    Spacer(Modifier.width(6.dp))
-                                    Text(
-                                        text = stringResource(
-                                            if (regenConfirmed) R.string.rw_finale_regen_done
-                                            else if (onRegeneratePlaylist != null) R.string.rw_finale_regen_playlist
-                                            else R.string.rw_finale_regen_alltime
-                                        ),
-                                        color = rewindColors.value.cream,
-                                        fontSize = textScale.size(10.sp),
-                                        fontWeight = FontWeight.Black,
-                                        letterSpacing = textScale.letterSpacing(0.8.sp),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
-                            }
-                        }
-                        RewindReveal(active, 1_150) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(rewindColors.value.lime, RoundedCornerShape(100.dp))
-                                    .clickable(onClick = onShare, indication = null, interactionSource = remember { MutableInteractionSource() })
-                                    .padding(vertical = 10.dp),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.share_social),
-                                    contentDescription = null,
-                                    tint = onLime,
-                                    modifier = Modifier.size(14.dp)
+                    // Interactive UI: a single "EXPORT OPTIONS" toggle only exists in the live
+                    // deck — any captured frame (per-slide share, deck export) renders the brand
+                    // footer above instead, so shared images never carry clickable chrome.
+                    // The tap opens the app-standard menu (CustomModalBottomSheet + ListMenu,
+                    // same pattern as the song item menu) holding the individual actions —
+                    // identical on every screen size.
+                    RewindReveal(active, 1_080) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(rewindColors.value.lime, RoundedCornerShape(100.dp))
+                                .clickable(
+                                    onClick = { showExportMenu = true },
+                                    indication = null,
+                                    interactionSource = remember { MutableInteractionSource() }
                                 )
-                                Spacer(Modifier.width(6.dp))
-                                Text(
-                                    text = stringResource(R.string.rw_finale_share),
-                                    color = onLime,
-                                    fontSize = textScale.size(12.sp),
-                                    fontWeight = FontWeight.Black,
-                                    letterSpacing = textScale.letterSpacing(0.7.sp),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        }
-                        RewindReveal(active, 1_220) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        rewindColors.value.cream.copy(alpha = 0.10f),
-                                        RoundedCornerShape(100.dp)
-                                    )
-                                    .border(
-                                        1.dp,
-                                        rewindColors.value.cream.copy(alpha = 0.45f),
-                                        RoundedCornerShape(100.dp)
-                                    )
-                                    .clickable(onClick = onRestart, indication = null, interactionSource = remember { MutableInteractionSource() })
-                                    .padding(vertical = 8.dp),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.refresh),
-                                    contentDescription = null,
-                                    tint = rewindColors.value.cream,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Spacer(Modifier.width(6.dp))
-                                Text(
-                                    text = stringResource(R.string.rw_finale_play_again),
-                                    color = rewindColors.value.cream,
-                                    fontSize = textScale.size(10.sp),
-                                    fontWeight = FontWeight.Black,
-                                    letterSpacing = textScale.letterSpacing(0.8.sp),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.share_social),
+                                contentDescription = null,
+                                tint = onLime,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                text = stringResource(R.string.rw_finale_export_options),
+                                color = onLime,
+                                fontSize = textScale.size(11.sp),
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = textScale.letterSpacing(0.7.sp),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
                     }
                 }
             }
         }
     }
+
+    // The export menu reuses the app-standard sheet recipe (same as the song item menu):
+    // transparent container, top-only roundness, statusBarsPadding,
+    // skipPartiallyExpanded = false (opens at its content height, draggable to full
+    // screen). ListMenu.Menu draws its own background, its own top clip and its own
+    // drag handle. Capture-safe: it stays closed while a share capture is in flight.
+    CustomModalBottomSheet(
+        showSheet = showExportMenu && !rewindShareCaptureActive.value,
+        onDismissRequest = { showExportMenu = false },
+        modifier = Modifier.statusBarsPadding(),
+        containerColor = Color.Transparent,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false),
+        shape = (uiRoundnessShape() as? RoundedCornerShape)?.let {
+            RoundedCornerShape(
+                topStart = it.topStart,
+                topEnd = it.topEnd,
+                bottomStart = CornerSize(0.dp),
+                bottomEnd = CornerSize(0.dp)
+            )
+        } ?: uiRoundnessShape(),
+        dragHandle = {}
+    ) {
+        // The same style toggle as the song item menu (settings: list or grid) — the
+        // entries are defined once and rendered in whichever layout the user picked.
+        val menuStyle by rememberPreference(menuStyleKey, MenuStyle.List)
+        val exportTitle = stringResource(R.string.rw_finale_export_options)
+        val regenLabel = stringResource(
+            if (regenConfirmed) R.string.rw_finale_regen_done
+            else if (onRegeneratePlaylist != null) R.string.rw_finale_regen_playlist
+            else R.string.rw_finale_regen_alltime
+        )
+        val onExportPage: (() -> Unit)? = onShareSlide?.let {
+            {
+                showExportMenu = false
+                it()
+            }
+        }
+        val onRegenerateAction: (() -> Unit)? = onRegenerate?.let {
+            {
+                regenScope.launch {
+                    val count = it()
+                    if (count > 0) {
+                        regenConfirmed = true
+                        delay(2_000)
+                        regenConfirmed = false
+                    }
+                }
+            }
+        }
+        if (menuStyle == MenuStyle.List) {
+            ListMenu.Menu(title = exportTitle) {
+                if (onExportPage != null) {
+                    ListMenu.Entry(
+                        text = stringResource(R.string.rw_finale_export_page),
+                        icon = { ExportMenuIcon(R.drawable.share_social) },
+                        onClick = onExportPage
+                    )
+                }
+                if (onRegenerateAction != null) {
+                    ListMenu.Entry(
+                        text = regenLabel,
+                        icon = { ExportMenuIcon(R.drawable.refresh) },
+                        onClick = onRegenerateAction
+                    )
+                }
+                ListMenu.Entry(
+                    text = stringResource(R.string.rw_finale_share),
+                    icon = { ExportMenuIcon(R.drawable.share_social) },
+                    onClick = {
+                        showExportMenu = false
+                        onShare()
+                    }
+                )
+                ListMenu.Entry(
+                    text = stringResource(R.string.rw_finale_play_again),
+                    icon = { ExportMenuIcon(R.drawable.refresh) },
+                    onClick = {
+                        showExportMenu = false
+                        onRestart()
+                    }
+                )
+            }
+        } else {
+            GridMenu.Menu(title = exportTitle) {
+                if (onExportPage != null) {
+                    item {
+                        GridMenu.Entry(
+                            text = stringResource(R.string.rw_finale_export_page),
+                            icon = { ExportMenuIcon(R.drawable.share_social) },
+                            onClick = onExportPage
+                        )
+                    }
+                }
+                if (onRegenerateAction != null) {
+                    item {
+                        GridMenu.Entry(
+                            text = regenLabel,
+                            icon = { ExportMenuIcon(R.drawable.refresh) },
+                            onClick = onRegenerateAction
+                        )
+                    }
+                }
+                item {
+                    GridMenu.Entry(
+                        text = stringResource(R.string.rw_finale_share),
+                        icon = { ExportMenuIcon(R.drawable.share_social) },
+                        onClick = {
+                            showExportMenu = false
+                            onShare()
+                        }
+                    )
+                }
+                item {
+                    GridMenu.Entry(
+                        text = stringResource(R.string.rw_finale_play_again),
+                        icon = { ExportMenuIcon(R.drawable.refresh) },
+                        onClick = {
+                            showExportMenu = false
+                            onRestart()
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * The icon chip of the export-options menu, styled exactly like the song item menu's
+ * MenuIcon.SettingIcon: a 32dp rounded chip (accent @ 10%) with an 18dp accent icon —
+ * the "coloured button + logo" look of the app-standard menus. Wrapped by the Entry
+ * icon lambdas of both the list and the grid variant.
+ */
+@Composable
+private fun ExportMenuIcon(iconRes: Int) {
+    Box(
+        modifier = Modifier
+            .size(32.dp)
+            .background(
+                colorPalette().accent.copy(alpha = 0.1f),
+                uiRoundnessShape()
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = null,
+            tint = colorPalette().accent,
+            modifier = Modifier.size(18.dp)
+        )
+    }
 }
 
 @Composable
-private fun FinaleStatTile(
+internal fun FinaleStatTile(
     label: String,
     value: String,
-    background: androidx.compose.ui.graphics.Color,
-    foreground: androidx.compose.ui.graphics.Color,
+    background: Color,
+    foreground: Color,
     valueSize: TextUnit,
     active: Boolean,
     delayMillis: Int,
     modifier: Modifier = Modifier
 ) {
     val textScale = LocalRewindTextScale.current
-    RewindReveal(active, delayMillis, scaleFrom = 0.86f, modifier = modifier) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                // fillMaxHeight + clip: when the row above is capped by the tight-screen
-                // weight, the tile is capped with it instead of spilling over the next row.
-                .fillMaxHeight()
-                .background(background, RoundedCornerShape(10.dp))
-                .clip(RoundedCornerShape(10.dp))
-                .padding(horizontal = 12.dp, vertical = 9.dp)
-        ) {
-            Text(
-                text = value,
-                color = foreground,
-                fontSize = valueSize,
-                lineHeight = valueSize,
-                fontWeight = FontWeight.Black,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.rewindMarqueeOnly()
-            )
-            Text(
-                text = label,
-                color = foreground.copy(alpha = 0.66f),
-                fontSize = textScale.size(8.sp),
-                fontWeight = FontWeight.Black,
-                letterSpacing = textScale.letterSpacing(0.7.sp),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+    val density = LocalDensity.current
+    BoxWithConstraints(modifier = modifier) {
+        // Natural height at the reference sizes: value line + label line + v-padding.
+        // 1sp ≈ 1dp for layout purposes: the TextUnit/Dp unit converters are not
+        // available in this Compose version, so the comparison runs on raw values.
+        val naturalDp = valueSize.value.dp + textScale.size(8.sp).value.dp + 18.dp
+        val tileHeightDp = with(density) { constraints.maxHeight.toDp() }
+        // Compressed = the grid yielded vertical space on a tight screen. The tile height
+        // is constraint-driven (fillMaxHeight below), so this decision can never feed back
+        // into its own size — no oscillation is possible.
+        val compressed = tileHeightDp < naturalDp
+        // Compressed tile: drop the label and fit the value line into the inner height
+        // (tile minus the vertical padding), so the number stays readable instead of
+        // clipping top/bottom.
+        val fittedValueSize = if (compressed) {
+            (tileHeightDp - 18.dp).coerceAtLeast(6.dp).value.sp
+        } else {
+            valueSize
+        }
+        RewindReveal(active, delayMillis, scaleFrom = 0.86f, modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    // fillMaxHeight + clip: when the row above is capped by the tight-screen
+                    // weight, the tile is capped with it instead of spilling over the next row.
+                    .fillMaxHeight()
+                    .background(background, RoundedCornerShape(10.dp))
+                    .clip(RoundedCornerShape(10.dp))
+                    .padding(horizontal = 12.dp, vertical = 9.dp)
+            ) {
+                Text(
+                    text = value,
+                    color = foreground,
+                    fontSize = fittedValueSize,
+                    lineHeight = fittedValueSize,
+                    fontWeight = FontWeight.Black,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                if (!compressed) {
+                    Text(
+                        text = label,
+                        color = foreground.copy(alpha = 0.66f),
+                        fontSize = textScale.size(8.sp),
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = textScale.letterSpacing(0.7.sp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
         }
     }
 }
@@ -703,7 +765,7 @@ private fun FinaleFeature(
                 artistName = artistName,
                 primaryUrl = imageUrl,
                 preferWikipedia = true,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(36.dp)
             )
         } else if (playlistId != null) {
             // No cover field on the DB playlist: use the exact same mosaic as the top
@@ -716,14 +778,14 @@ private fun FinaleFeature(
                 name = playlistName,
                 browseId = playlistBrowseId,
                 isYoutubePlaylist = playlistIsYoutube,
-                sizeDp = 40.dp,
-                modifier = Modifier.size(40.dp)
+                sizeDp = 36.dp,
+                modifier = Modifier.size(36.dp)
             )
         } else {
             RewindArtworkWithFallback(
                 imageUrl = imageUrl,
                 title = title,
-                modifier = Modifier.size(40.dp),
+                modifier = Modifier.size(36.dp),
                 circular = circular,
                 background = rewindColors.value.ink,
                 foreground = rewindColors.value.cream
@@ -742,8 +804,8 @@ private fun FinaleFeature(
             RewindAdaptiveTitle(
                 text = title,
                 color = rewindColors.value.flatTextOn(background),
-                fontSize = textScale.size(11.sp),
-                lineHeight = textScale.size(13.sp),
+                fontSize = textScale.size(10.sp),
+                lineHeight = textScale.size(12.sp),
                 fontWeight = FontWeight.Black
             )
             Text(
@@ -751,8 +813,7 @@ private fun FinaleFeature(
                 color = rewindColors.value.flatTextOn(background).copy(alpha = 0.56f),
                 fontSize = textScale.size(8.sp),
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.rewindMarqueeOnly()
+                overflow = TextOverflow.Ellipsis
             )
         }
     }

@@ -21,22 +21,23 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 /**
- * Layout-semantics tests for the artist-bio auto-drift's overflow measurement
+ * Layout-semantics tests for the artist-bio overflow measurement
  * ([RewindTopArtistSpotlightCard]).
  *
- * The drift measures its travel distance from the rendered geometry: the clipping
- * block's window-space bottom vs. the bio's LAST element's window-space bottom, via
- * [onGloballyPositioned] + `LayoutCoordinates.localToWindow` (the window position
- * accessors — `positionInRoot` / `positionInWindow` — are gone in Compose 1.12).
+ * The bio's overflow detection (the "SEE MORE" pill decision — the auto-drift has been
+ * removed) compares two measurements: the bio area's height and the bio's NATURAL
+ * height, read from a hidden full-text copy inside the same box. That hidden copy
+ * must be measured past the box's bounded constraint, via
+ * `wrapContentHeight(align = Top, unbounded = true)` — these tests pin the same
+ * [onGloballyPositioned]-based geometry invariant with fixed-size boxes (no text
+ * metrics — fully deterministic), so a future Compose behavior change fails loudly
+ * instead of silently reporting zero overflow.
  *
- * In Compose 1.12 a Column capped by a bounded constraint SQUASHES its children
- * instead of letting them overflow (each child is measured with the remaining main-axis
- * space), so the last element's bottom never goes past the column's top + max — the
- * overflow would always measure as zero and the drift would never start. The bio
- * column therefore carries `wrapContentHeight(align = Top, unbounded = true)`: the only
- * case where the content is measured past the incoming max constraint. These tests pin
- * that invariant with fixed-size boxes (no text metrics — fully deterministic), so a
- * future Compose behavior change fails loudly instead of silently stopping the drift.
+ * Background (why the unbounded measurement is mandatory): in Compose 1.12 a Column
+ * capped by a bounded constraint SQUASHES its children instead of letting them
+ * overflow (each child is measured with the remaining main-axis space), so a hidden
+ * copy measured the naive way would always read as fitting and the SEE MORE pill
+ * would never appear.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class, qualifiers = "w360dp-h640dp")
@@ -47,11 +48,11 @@ class RewindBioDriftMeasurementTest {
 
     @Test
     fun unboundedColumnKeepsItsChildrenAtNaturalOffsetsWhenItOverflows() {
-        // Mimics the drift's measurement: a capped block (the clipping Box) containing
-        // a top-aligned unbounded Column whose total child height (60 + 80 = 140dp)
-        // exceeds the block (100dp). The last element must land at its natural offset
-        // (140dp from the block top), i.e. 40dp below the block's bottom — that 40dp is
-        // the drift's travel distance.
+        // Mimics the bio's hidden-copy measurement: a capped block (the bio area Box)
+        // containing a top-aligned unbounded Column whose total child height
+        // (60 + 80 = 140dp) exceeds the block (100dp). The last element must land at
+        // its natural offset (140dp from the block top), i.e. 40dp below the block's
+        // bottom — that 40dp is the natural overflow the SEE MORE decision reads.
         val blockBottom = arrayOf(0)
         val lastElementBottom = arrayOf(0)
         composeRule.mainClock.autoAdvance = false
@@ -92,10 +93,10 @@ class RewindBioDriftMeasurementTest {
 
     @Test
     fun cappedColumnSquashesItsLastChildInsteadOfOverflowing() {
-        // The counterfactual the drift must never fall into: a plain capped Column
-        // squashes its children to the remaining space, so the last element's bottom
-        // stays on the block's bottom and the overflow would measure as zero — the
-        // exact failure that kept the drift from ever starting on device.
+        // The counterfactual the hidden copy must never fall into: a plain capped
+        // Column squashes its children to the remaining space, so the last element's
+        // bottom stays on the block's bottom and the overflow would measure as zero —
+        // the exact failure that would keep the SEE MORE pill from ever appearing.
         val blockBottom = arrayOf(0)
         val lastElementBottom = arrayOf(0)
         composeRule.mainClock.autoAdvance = false
@@ -133,9 +134,10 @@ class RewindBioDriftMeasurementTest {
 
     @Test
     fun overflowIsZeroWhenTheContentFitsTheBlock() {
-        // A bio that fits must not report any overflow: the last element's bottom
-        // stays at or above the block's bottom, so the drift guard (overflow <= 0)
-        // keeps the text still — nothing moves, exactly as before.
+        // A bio that fits must not report any overflow: the hidden copy's bottom
+        // stays at or above the block's bottom, so the overflow decision
+        // (natural > area) stays false — the pill never appears, the text is
+        // rendered in full with no clamp.
         val blockBottom = arrayOf(0)
         val lastElementBottom = arrayOf(0)
         composeRule.mainClock.autoAdvance = false
