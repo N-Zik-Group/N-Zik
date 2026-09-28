@@ -9,6 +9,9 @@ Added:
   - Rescue mode: `RescueFiles.kt` / `RescueScreen.kt` now handle dynamic files per active profile
   - 6 new strings added to `values/strings.xml` (profiles, add_profile, enter_profile_name, remove_profile, this_profile_alreaty_exist, profile_restart_required)
   - Credit: yrrrad8 (https://github.com/yrrrad8) — original upstream: https://github.com/knighthat/Kreate/pull/1089
+- feat(settings): Listen Together settings card now reachable from the Settings page (Accounts tab)
+  - `ListenTogetherSettingsCard()` (server URL, username, auto-approval toggles, sync volume, local history, logs, blocked users) was only rendered inside the room screen; it is now integrated next to `LastFmSettingsCard()` in `AccountsSettings.kt` (legacy file — user-approved modification per spec 2026-09-28), same integration-card pattern as LastFm/Rewind
+  - The manager is initialized at process start (`MainApplication`), so the card works outside any room; no new strings, no new dependencies
 
 Changed:
 - change(settings): app language selection now applies live, without an app restart (behavior copied from the RiPlay reference)
@@ -58,3 +61,8 @@ Fixed:
   - Artist spotlight: the bio wraps fully (no cap, no marquee) in a block that takes the leftover vertical space, and auto-drifts slowly on its own when it overflows — 20 dp/s palindrome with 1.8 s end holds, driven in per-frame steps so a live capture freezes it at the top within one frame; deliberately no manual swipe zone (a swipeable area leaked into the deck's swipe and reloaded the card); the "disable scrolling text" setting stops the drift; the hero photo scales with `layoutFactor²` so it yields room for the bio exactly where the text shrinks
   - Finale card: the stats grid became the slide's shrinkable block (grid Column + its 3 rows `weight(1f, fill = false)`, tiles `fillMaxHeight` + rounded clip) — at the reference it renders at its natural height, on a tight screen it yields vertical space row by row so the bottom export pills always stay visible (no scrolling anywhere in the deck)
   - Tests: new `RewindTextScaleTest` (59-value deck inventory + the I1–I4 calibration invariants) and `RewindSlideTextFitTest` (4 Robolectric layout tests, incl. a deterministic two-line design pin for the adaptive title); the overflow→marquee flip stays a device gate (Robolectric text metrics are nondeterministic between runs); full build green 1615/0
+- fix(listen-together): « Sync volume » setting now persists across app restarts
+  - `ListenTogetherManager.syncHostVolumeEnabled` was in-memory only (`MutableStateFlow(true)`): toggling it off and restarting the app silently re-enabled host-volume sync for guests, while every other LT setting (server, username, auto-approval ×2, local history, blocked users) already persisted via `DataStoreUtils` (`app_settings`)
+  - New `PREF_SYNC_HOST_VOLUME` (`listen_together_sync_volume`) key persisted through `DataStoreUtils`; the StateFlow is now seeded from it at construction and `setSyncHostVolumeEnabled` writes it back — both UI call sites (room-screen settings card + song/video item menu) already route through the setter, so no UI change was needed
+  - Default stays ON (`true`) = pre-fix behavior, zero regression on existing installs
+  - Tests: new `SyncVolumePreferencePersistenceTest` (Robolectric, 3 tests — seed from persisted value, missing-preference default ON, write-back read by a fresh manager instance as a simulated restart); LT suite 30/30 green

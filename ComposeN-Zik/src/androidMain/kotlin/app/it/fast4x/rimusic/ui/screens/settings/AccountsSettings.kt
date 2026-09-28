@@ -98,6 +98,7 @@ import app.n_zik.android.extensions.discord.DiscordTemplateFieldActions
 import app.n_zik.android.extensions.discord.DiscordTemplateRenderer
 import app.n_zik.android.components.settings.DisplayNameSettingsCard
 import app.n_zik.android.components.settings.LastFmSettingsCard
+import app.n_zik.android.components.settings.ListenTogetherSettingsCard
 import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
 import app.n_zik.android.thumbnailShape
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
@@ -972,6 +973,9 @@ fun AccountsSettings() {
 
         // Last.fm Section
         LastFmSettingsCard()
+
+        // Listen Together Section (reuses the room-screen settings card, same pattern)
+        ListenTogetherSettingsCard()
 
         // Discord Section
         if (isAtLeastAndroid7) {

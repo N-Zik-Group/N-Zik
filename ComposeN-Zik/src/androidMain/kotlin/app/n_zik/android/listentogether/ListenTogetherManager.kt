@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import timber.log.Timber
 
@@ -67,6 +68,9 @@ class ListenTogetherManager(
     companion object {
         private const val TAG = "ListenTogetherManager"
 
+        /** Persisted "Sync volume" setting key (guests apply the host's volume); defaults ON. */
+        const val PREF_SYNC_HOST_VOLUME = "listen_together_sync_volume"
+
         private const val SOFT_SYNC_THRESHOLD_MS = 50L
         private const val HARD_SYNC_THRESHOLD_MS = 750L
         private const val DRIFT_CORRECTION_SPEED = 0.02f
@@ -97,12 +101,20 @@ class ListenTogetherManager(
     private var guestLockJob: Job? = null
     private var playerListenerRegistered = false
 
-    /** Host volume sync toggle (settings card); guests apply the host volume only when enabled. */
-    val syncHostVolumeEnabled = MutableStateFlow(true)
+    /**
+     * Host volume sync toggle (settings card + room menu); guests apply the host volume
+     * only when enabled. Seeded from the persisted preference (default ON = pre-fix
+     * behavior) so the user's choice survives an app restart, and written back on every
+     * change through [setSyncHostVolumeEnabled] — both UI call sites go through it.
+     */
+    val syncHostVolumeEnabled =
+        MutableStateFlow(DataStoreUtils.getBoolean(context, PREF_SYNC_HOST_VOLUME, true))
     private var lastSyncedVolume: Float? = null
 
     fun setSyncHostVolumeEnabled(enabled: Boolean) {
         syncHostVolumeEnabled.value = enabled
+        DataStoreUtils.saveBoolean(context, PREF_SYNC_HOST_VOLUME, enabled)
+        Timber.tag(TAG).i("Sync host volume -> $enabled")
     }
 
     private var lastRole: RoomRole = RoomRole.NONE
