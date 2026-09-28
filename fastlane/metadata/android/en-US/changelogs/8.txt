@@ -1,30 +1,12 @@
-Changed: 
-- Updated the changelog pop-up.
-- The new app name and size are now visible, and you can open the latest changelog directly in-app.
-- You can now view the changelog for the currently installed version from Settings > About.
-- Updated the app icon to a monochrome version in the player.
-- Added new translations.
-- Changed the default green to purple to match the N-Zik palette.
-- Extension of the swipe gestures for stats screen and history screen
-- Reintroduced the old RiMusic local artist library system, now integrated with the new Artist UI.
-
-
-Optimizations:
-- Improved color transitions in the action bar; playlist icon not following the color.
-- Optimized notifications for Android 12 and above.
-- Moved fetch song's info out of getFormatUrl.
-- Extracted duration indicator to separate function.
-- Extracted skip time button to separate function.
-- Extracted text with outline to separate function.
-- Added locator button to queue actions.
-- shorten call + improve readability of code in MainActivity.kt
+Changed:
+- Changelog pop-up updated: shows name/size, opens latest in-app
+- Monochrome app icon in player
+- New translations
+- Default color changed from green to purple
+- Reintroduced local artist library with new Artist UI
 
 Bug Fixes:
-- Fixed various crashes caused by missing notification permissions.
-- A permission prompt for notifications now appears on first launch.
-- Added a fallback to ensure notification channels are created at app startup to prevent crashes.
-- Shortcuts (long press on app icon) are now working properly.
-- Fixes knighthat#338 - remaining time shows despite disabled.
-- Fixes knighthat#333 - forward/rewind buttons act weird after a few clicks.
-- Prevent remaining time from showing large negative numbers.
-- Removed player release when deleting a song from queue.
+- Fixed notification permission crashes; prompt on first launch
+- App shortcuts (long press icon) now working
+- Fixed remaining time showing when disabled or negative
+- Fixed forward/rewind buttons acting weird after clicks

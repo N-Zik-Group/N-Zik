@@ -2,14 +2,10 @@ Bug Fixes:
 - Fixed menu showing incorrect song when opened from bottom player panel
 - Fixed app crash when swiping to delete songs from queue
 - Fixed app crash when scrolling lyrics or seeking during playback
-- Fixed swipe right gesture in queue now correctly positions song to play next instead of playing immediately
-- Improved queue deletion to handle edge cases and prevent crashes with large queues
-- Added safety checks for pointer input handlers to prevent crashes when views are detached
+- Swipe right in queue now positions song to play next instead of playing immediately
 
 Improvements:
 - Queue menu now always displays the currently playing song
-- Enhanced error handling for media item operations
-- Better handling of layout coordinate operations during view transitions
 
 Updated:
-- Somes depedencies
+- Some dependencies

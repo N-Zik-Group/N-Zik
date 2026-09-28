@@ -1,10 +1,9 @@
 Improved:
-- To bypass recent YouTube streaming restrictions and avoid long loading times, the player now memorizes the last successful client and prioritizes it for future sessions.
+- Player now memorizes the last successful YouTube client to bypass recent streaming restrictions and avoid long loading times
 
 Fixed:
-- Fixed a bug where the Github button in OTA screen was redirecting to a 404 page due to a wrong url prefix
-- Fixed an issue with playback jumping to next song even when the 'Skip on error' option is disabled. Added more retry attempts before throwing an error.
+- Fixed GitHub button in OTA screen redirecting to a 404 page
+- Fixed playback skipping to next song when "Skip on error" is disabled; more retries before error
 
 Refactored:
-- Renamed DataspecServices to StreamResolver and restructured the app.n_zik.android.core.playback package
-- Cleaned up project namespace from app.kreate.android to app.n_zik.android without affecting the user-facing application ID
+- Reworked playback package internals (internal only, no user-facing changes)

@@ -1,57 +1,69 @@
-﻿<b>N-Zik</b> zure YouTube Music bezero eleaniztun eta kode irekiko Androiderako.
+Androiderako YouTube Music bezero eleaniztuna: errendimendua, UI/UX, funtzioak eta epe luzeko laguntza.
 
-<a href="https://github.com/knighthat/Kreate">Kreate</a>-ren fork bat, errendimenduan, interfazearen hobekuntzan, akatsen konponketan eta epe luzerako laguntzan zentratua.
+<b>N-Zik</b> <a href="https://github.com/knighthat/Kreate">Kreate</a>-ren kode irekiko fork bat da.
 
-<b>Oharra:</b> N-Zik proiektu pertsonal gisa hasi zen. Aukera helduagoak ikusteko, begiratu <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> edo <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Oharra:</b> N-Zik hasi zen proiektu pertsonal gisa. Aukera helduagoak: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> edo <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>AA erabilera:</b> AA sortzailea erabiltzen dut koderako (<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD metodoa</a>), dena berrikusi eta probatu egiten da argitaratu aurretik.
+<b>AA erabilera:</b> AA sortzailea erabiltzen dut kodo, <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a> bidez; dena berrikusi eta probatua.
 
-Entzule arrunta edo audiofiloa izan, N-Zik-ek zure musikaren gaineko kontrol osoa ematen dizu pribatutasuna arriskuan jarri gabe.
+Entzule arrunta edo audiofiloa, N-Zik-ek zure musikaren kontrola ematen dizu, pribatutasun-kontzesiorik gabe.
 
-✨ <b>ZERGATIK N-ZIK?</b> Iragarkirik gabe, atzeko planoko erreprodukzioa, lineaz kanpoko cachea eta interfaze pertsonalizagarria; doan, beti.
+✨ <b>ZERGATIK N-ZIK?</b> Iragarkirik gabe, atzeko erreprodukzioa, lineaz kanpoko cachea, interfaze pertsonalizagarria - doan, beti.
 
 🎨 <b>Interfaze pertsonalizagarria</b>
-- Jetpack Compose ViMusic modu klasikoarekin
+- Jetpack Compose, ViMusic modu klasikoaren aldagailuarekin
 - Gaiak: AMOLED, Deep Dark, Crisp Light + kolore-ukutuak
-- 3D Carousel erreproduzitzailea, hasierako pantailako widget pertsonalizagarriak
-- Artisten profilak, albisteen jarioa, widget esperimentalak
+- 3D Carousel erreproduzitzailea, hasierako widgetak, erreproduzitzaile unifikatua
+- Artisten profilak, aurkikuntzak eta "moods", goiburu tolestgarriak
 
 🎵 <b>Audio esperientzia</b>
-- Kalitate handiko audioa YouTube Music Premium bidez 
-- Letra sinkronizatuak edizioarekin eta denbora errealeko itzulpenarekin
-- Denbora errealeko audio bisualizatzailea eta kontrol profesionalak: abiadura, tonua, normalizazioa, crossfade-a, bolumen indartzea, erreburbu, baxu indartzea, musika ezagutzea (Shazam antzekoa), ahots-bilaketa
+- Kalitate premiuma YouTube Music Premium bidez, automatikoa
+- Letra sinkronizatuak, edizioa eta denbora errealeko itzulpena
+- Abestiak ezagutzea (Shazam antzekoa), ahots-bilaketa, audio bisualizatzailea
+- Kontrol profesionalak: abiadura, tonua, normalizazioa, crossfade-a, bolumena, baxua, erreburbu
+- Audio Bar seekbara, navigazio zehatzeko
 
 💾 <b>Lineaz kanpo, metadatuak eta pribatutasuna</b>
-- Lineaz kanpoko cache adimentsua eta deskargak abesti eta erreprodukzio-zerrendentzat
-- FFmpeg bidezko esportazioa metadatu osoekin (64 bitekoak soilik)
+- Abesti eta zerrendentzako cache adimentsua, deskargak kalitate aukeragarriz
+- FFmpeg esportazioa metadatu osoekin (64-bit soilik)
 - Metadatuen editorea aplikazioan (AAC/Opus, azala)
-- Entzute estatistikak eta historia %100 lokalean
-- Babeskopia automatikoa tarte eta mantentze pertsonalizatuekin
+- Entzute-estatistikak eta historia lokalak
+- Babeskopia automatikoa, tarte eta mantentze pertsonalizatuak
 
 🔗 <b>Integrazioak</b>
-- YouTube saio-hasiera gomendioak eta audio/bideo aldaketarako
-- Invidious irekikoko edukientzat
-- Discord Rich Presence
-- Erreprodukzio-zerrenden inportazioa/esportazioa: RiPlay, Spotify, YouTube Music, N-Zik
+- YouTube saio-hasiera gomendioak eta bideoarentzat, bi norabidetako sinkronizazio esperimental bidez
+- Last.fm scrobbling, Now Playing eta love/unlove
+- MusicBrainz artisten eta albumen datuak
+- Discord Rich Presence, modu aurreratua aurrebista zuzenarekin
+- Invidious, YouTube streaming alternatiboarentzat
+- Playlist inportazioa/esportazioa: RiPlay, Spotify, YouTube Music, N-Zik
+
+👥 <b>Entzun batera</b>
+- Beste N-Zik erabiltzaile baten entzute-sesio zuzenari, kode edo gonbidapen bidea
+
+🗓️ <b>Rewind</b>
+- Urteko eta hilabeteko entzute laburpenak, Rewind playlistak automatikoki
 
 📱 <b>Erreproduzitu edonon:</b> Android Auto, Automotive, TV eta tabletak
 
 🛠️ <b>Funtzio aurreratuak</b>
-- Testu eta ahots bidezko bilaketa
-- GitHub bidezko OTA eguneratzeak
-- Lo-tenporizadorea eta atzeko planoko erreprodukzioa
-- Bluetooth bidezko berrekin automatikoa, ilara iraunkorra, aut betetzea, zakarrontzi adimentsua, ezkutuko abestiak, gurasoen kontrolea, albumeko azaleko horma-papera, Invidious, proxy, sare egokitu
+- Profil anitz: datu-base eta ezarpen bereziak profilioz
+- Bluetooth konektatzean automatikoki jarraitu, ilara iraunkorra, auto-betetzea
+- Zakarrontzi adimentsua, ezkutuko abestiak, ez-gustatu sistema, gurasoen kontrola
+- Proxy euskarria, sare-kalitateko egokitzapena, log esportazioa
+- Rescue Center, mantentze-pantaila, sarrera-gida, lasterbideak
+- OTA eguneratzeak GitHubetik, lo-tenporizadorea, atzeko erreprodukzioa
 
-🛡️ %100 kode irekikoa (FOSS). Baimen nagusiak: INTERNET, RECORD_AUDIO (bisualizatzailerako soilik), STORAGE (esportazioak/babeskopiak), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
+🛡️ %100 kode irekikoa (FOSS). Baimen nagusiak: INTERNET, RECORD_AUDIO (bisualizaziorako soilik), STORAGE (esportazioak/babeskopiak), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Bertsio eskuragarriak</b>
-- Full/Beta: Bertsio osoa (64 bitekoak soilik)
-- Full32/Beta32: FFmpeg gabe (32/64 bitekoak)
-- Minified: Arina, gama baxuko gailuentzat (64 bitekoak soilik)
-- Minified32: Arina FFmpeg gabe (32/64 bitekoak)
-- FOSS: Eguneratzaile automatikorik gabe, F-Droid-erako (64 bitekoak soilik)
+- Full/Beta: Bertsio osoa (64-bit)
+- Full32/Beta32: FFmpeg gabe (32/64-bit)
+- Minified: Arina, gama baxuko gailuentzat (64-bit)
+- Minified32: Arina FFmpeg gabe (32/64-bit)
+- FOSS: Eguneratzaile automatikorik gabe, F-Droid-erako (64-bit)
 - Dev/Dev32: Garapen bertsioak, probetarako soilik
 
-Bertsio estandarrak 64 bitekoak dira (FFmpeg); „32" bertsioek FFmpeg kentzen dute bi arkitekturetan. FOSS soilik dago F-Droid-en.
+Bertsio estandarrak 64-bit (FFmpeg); "32" bertsioak FFmpeg kentzen dute bi arkitekturetan. FOSS soilik dago F-Droid-en.
 
-<b>2027ko urtarriletik</b> aurrera, Google-k nortasun egiaztapena eskatuko die garatzaile guztiei. FOSS proiektu gisa, N-Zik honek aurka dago. <a href="https://keepandroidopen.org">Informazio gehiago</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Sinatu eskaera</a>
+<b>2027ko urtarriletik</b>, Google-k nortasun egiaztapena eskatuko die garatzaile guztiei; N-Zik FOSS gisa aurka dago. <a href="https://keepandroidopen.org">Informazio gehiago</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Sinatu eskaera</a>

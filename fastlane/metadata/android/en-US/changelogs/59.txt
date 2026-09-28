@@ -1,30 +1,10 @@
 Fixed:
-- Bottom floating bar/mini player hiding content in ArtistLocalSongs.kt (local tab, modern + legacy) and StatisticsPage.kt (contentPadding on LazyVerticalGrid, removed misplaced Spacer) — same pattern as ArtistDetails.kt
-- YouTube Music metadata bug for songs with combined authors (e.g. "Bebe Rexha & David Guetta", single run with no navigationEndpoint) — Innertube.kt/FromMusicResponsiveListItemRenderer.kt no longer drop runs without navigationEndpoint so parseArtists() can split them; AlbumPage.kt falls back to album.authors when song.authors is empty; Utils.kt parseArtists() splits on " & "/"," and dedupes case-insensitively
-- Artist name wipe after play -> back to album — Database.upsert(SongItem)/insertIgnore(MediaItem) now keep the existing DB value if the new one is blank/null, search online for missing browse IDs by exact name match before falling back to the first result, and run that search in a background coroutine so album load isn't blocked
-- Songs with multiple artists (e.g. "Say My Name" — David Guetta, Bebe Rexha, J Balvin) showing only 1 artist on first play — full metadata is pre-fetched before playback (StreamResolver.upsertSongInfo, Player.forcePlayAtIndex) and Database.upsert(SongItem) made synchronous (runBlocking + withTransaction) so the search completes before the DB is read
-- "More of [artist]" button in song/video/search menus — SongItemMenu.kt/VideoItemMenu.kt/SearchItemMenu.kt check the DB by name first, fall back to Innertube nextPage, dispatch via NavRoutes.artist.navigateHere() on the Main thread (fixes crash when called from Dispatchers.IO)
-- ImageCacheFactory default fallback changed from R.drawable.ic_launcher_box to R.drawable.loader (Thumbnail/Painter/AsyncImage) — null/empty URL now shows the loader instead of the no-image icon; real errors still show ic_launcher_box; affects albums, songs, artists, playlists, podcasts app-wide
-- Home Quick Picks ShimmerHost appearing too low during loading — 16dp spacer now only emits inside the else block instead of in every state
-
+- Bottom floating bar/mini player hiding content on local artist and statistics screens
+- YouTube Music metadata for songs with combined authors
+- Artist name wiped after playing a song and going back to the album
+- Crash in the "More of [artist]" button in song/video/search menus
 Added:
 - Option to enable/disable Discord browsing
-- ImageCacheFactory.SubcomposeImage composable for artist thumbnails — spinner while URL is null/loading, image once loaded, fallback only on actual error
-
-Changed:
-- All section spacing uniformized to 16dp — removed Title.kt's built-in top=5dp padding; Title calls 12dp->16dp; TitleMiniSection callers top 14dp->16dp
-
-Refactor:
-- Home Screen: moved all home screen files from app.it.fast4x.rimusic.ui.screens.home to app.n_zik.android.components.ui.screens.home
-- Home Screen: split HomeQuickPicks.kt into HomeQuickPicks.kt, HomeQuickPicksState.kt, HomeQuickPicksSections.kt, HomeQuickPicksComponents.kt
-
-Improved:
-- Home Screen Navigation Persistence: loadedQuickPicks, loadedData, and local lists (Artists, Monthly Playlists, Top Songs) now use the persist utility — instant back navigation, no flickering/re-loaders
-- Home Screen: top Quick Picks grid given its own independent state (ytmQuickPicks) and fast disk cache (quickPicsYtmQuickPicksKey), separate from bottom YouTube sections
-- Home Screen: added fast YtMusic.getQuickPicks() fetch that populates the top grid seconds before the full Home page arrives
-- Home Screen: removed the 21-item limit for Quick Picks — grid now Fair-Shuffles all available items from Local, YouTube Quick Picks, and Related sources
-- Home Screen: cleaned up logs — removed noisy section-specific empty/found logs, added high-level source-completion indicators and a precise Quick Picks assembly breakdown (Local vs YTM Related vs YouTube QuickPicks)
-
 Other:
-- Home page section titles temporarily untranslated (English only) due to the manual reorganization with hardcoded entries — only main category titles are translated for now
+- Home page section titles temporarily in English only
 - Check discussion if you want to help: https://github.com/orgs/N-Zik-Group/discussions/607

@@ -1,1 +1,1 @@
-Moderner YouTube-Music-Client für Android mit Offline-Support.
+Mehrsprachiger YT Music Client

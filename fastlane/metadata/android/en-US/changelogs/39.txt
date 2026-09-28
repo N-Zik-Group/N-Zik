@@ -1,22 +1,17 @@
 New:
-- New OTA (Over-The-Air) update mechanism directly inside NZik
-- New automatic installation for downloaded updates (requires user permission)
-- New wavy progress loader in the Update screen
-- New "Download again" button in the Updater menu to easily re-download the currently installed version
-- New "GitHub" button in the Updater to easily view the release page of your current or upcoming version
+- OTA updates directly inside NZik
+- Automatic update installation (with permission)
+- Wavy loader on the Update screen
+- "Download again" and "GitHub" buttons
 
 Improved:
-- Improved the Update Screen to better handle unknown statuses and avoid flashing obsolete changelogs
-- Improved by disabling the intrusive changelog popup that used to appear on every startup
-- Improved by localizing missing texts in the updater module and refactoring constants for better maintainability
-- Improved layout of the "Update Available" dialog to show buttons side-by-side
-- Improved the Update Screen by not displaying the file size when the app is already up to date
-- Improved the Beta updates toggle logic to automatically disable itself on minified builds
+- Startup changelog popup removed
+- Better handling of unknown statuses
 
 Fixed:
-- Fixed a bug where the Explicit badge would not show up in Android Auto
-- Fixed a bug where the notification player would unnecessarily display "e: e:"
-- Fixed an issue where downloading updates from NZik was getting stuck (now utilizing native download progress)
-- Fixed an issue where the "Clear Cache" option in the updater didn't force a fresh download
-- Fixed a bug where reinstalling an update incorrectly showed the changelog of the upcoming version instead of the current one
-- Fixed a bug where the "Major Update" warning incorrectly showed up on a fresh installation
+- Fixed Explicit badge on Android Auto
+- Fixed notification player "e: e:" text
+- Fixed stuck update downloads
+- Fixed "Clear Cache" not forcing re-download
+- Fixed wrong changelog after reinstall
+- Fixed "Major Update" warning on install

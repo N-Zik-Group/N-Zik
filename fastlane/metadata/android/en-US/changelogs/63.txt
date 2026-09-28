@@ -1,66 +1,13 @@
 Added:
-- Karaoke lyrics: smooth scrolling and progressive wave effect for long notes (>500ms) — word rises, oscillates left-to-right, fills with accent color; short notes keep character bounce
-- Resizable queue panel with drag handle, toolbar animation, and overscroll-to-close
-- Pull-to-Refresh sync for Home views (Albums, Artists, Playlists) with real metadata fetch from Innertube
-- Detailed syncing progress UI in Home pages with marquee scrolling, progress count, and error indicators
-- Pre-fetch full song metadata (browse IDs) before playback for better reliability
-- SubcomposeImage with loading indicator for artist images
-- YouTube Music Quick Picks to Android Auto with split Local/YouTube sources
-- Virtual pagination for Android Auto folders exceeding 200 items (subfolder by page)
-- 'Play All' and 'Shuffle' buttons to all Android Auto folders
-- Option to disable Discord RPC browsing status
-- Localization for sync states with visual toaster feedback
-- Home page revamped Quick Picks with Chip model from YouTube Music
-- Beta/Minified badge in app header
+- Karaoke lyrics with smooth scrolling
+- Resizable queue panel; pull-to-refresh sync with progress UI
+- Quick Picks on Android Auto (pagination, Play All, Shuffle)
 
 Changed:
-- Replaced arrow drag handle with white bar in all menus and dialogs
-- Android Auto tabs order now matches app predefined order (Songs: All/Favorites/Cached/Downloaded/Top/OnDevice, Artists: Favorites/Library, Albums: Favorites/Library, Playlists: Local/Pinned/Monthly/Piped/YT)
-- Android Auto sort order respects user preferences for all sections
-- Android Auto playlist songs sort order respects per-playlist preferences
-- Android Auto artwork sizes optimized: 1200px for player, 250px for library lists to reduce data/RAM
-- CustomColor updates live without app restart
-- Removed UI roundness from full-screen player, queue, and search bottom sheets
-- Set Karaoke as default lyrics type on fresh install
-
-Improved:
-- BetterLyrics overhaul: parse agent/bg tags for chat alignment, force re-fetch on mode switch (Karaoke/Sync/Unsync), keep existing synced when karaoke not found, cleanPrefix on artistName, toast for all lyrics sources
-- Android Auto album tracklist fetches from network first (for complete lists) before falling back to local DB
-- Update local database metadata when fetching albums in Android Auto
-- ArtistDetails fetches all songs for global shuffle/play-next/enqueue instead of only top 5, with loading indicators on dice and global toolbar
-- Queue performance on Android Auto
-- Grid Menu text no longer cut off with intelligent roundness capping at 15% of item size
-- Home page improvements (Quick Picks shimmer, section matching for Fresh finds/Featured playlists)
+- Android Auto order/sort matches app preferences
+- Live custom color updates; Karaoke default on fresh install
 
 Fixed:
-- Home Page loading for anonymous users
-- 'Stuck' data issue by removing disk persistence for dynamic YouTube sections
-- Login for radio, discover, autofill
-- Authenticate Radio and NextPage requests to use personalized recommendations
-- Explicit badge not showing when playing from Android Auto
-- Android Auto queue scrolling refresh bug by disabling periodic position updates
-- Auto-saved Albums missing artwork, artist name, and year during playback
-- Duplicated Artists in database by merging based on exact name match during auto-insertion
-- Duplicate white bar drag handle in Home sort order menu
-- Duplicate keys crash in Compose LazyGrids
-- Artist name wipe in Database.upsert(SongItem) — preserve author names with null browse endpoints
-- 'More of [artist]' button crash (navController.navigate from IO thread) and now works for songs without browse IDs
-- Song.asMediaItem falls back to database if artistsText is null
-- Artist/album fallback applied to Player, SongItem, MiniPlayer, Controls
-- Bottom floating bar masking content in artist local tab and stats page
-- YTM section matching (Fresh finds, Featured playlists) + standardized section padding
-- Restore original caching guards for YTM API calls
-- Podcasts not showing up in Home and was broken in search
-
-Refactor:
-- Centralized all shuffle operations into Shuffler.kt with toast notifications showing item count
-- Refactored Discover feature: Radio/Discover behavior logic, string states, standardized Discover button UI (ActionBar & Queue) to match settings
-- Refactored Android Auto artist browse tree to mirror ArtistDetails with dynamic sections from YtMusic.getArtistPage() — handles all section types with proper moreEndpoint browse handling. Fixes #498
-- Refactored Android Auto package structure into dedicated session, models, and browse sub-packages
-- Replaced all println(...) logs across the project with proper Timber statements (Error→Timber.e, warnings→Timber.w, standard→Timber.d)
-- Artist name parsing fixed across entire app with parseArtists() for MediaItem extras
-
-Other:
-- Updated Gradle plugins and dependencies (Compose 1.11.3, Material3, Ktor 3.5.1, JUnit5 6.1.1, Hilt 2.60)
-- Updated people icon for Android Auto
-- In-app contributors list updated
+- Home loading for anonymous users; radio/discover login
+- Android Auto: explicit badge, queue scroll, album artwork
+- Artist name wipe; "More of" crash; podcasts in Home/search

@@ -1,70 +1,10 @@
 Added:
-- Voice search with Google native SpeechRecognizer (auto language detection, works with any language)
-- Voice search overlay with FM waveform visualizer that reacts to speech
-- Voice search retry/cancel buttons and RECORD_AUDIO permission handling
-- RiPlay & Exportify CSV Import option with automatic Match Album
-- Smart Trash: dynamic bin for cleaning up songs (clear favorites, cache, downloads, play history, delete from DB)
-- Smart Trash: clean orphaned artists and albums after deleting songs
-- Independent sort preferences per tab (HomeSongs, HomeAlbum, HomeArtist, HomeLibrary)
-- Per-playlist sort order instead of global
-- Cancel button to stop background matching jobs from the progress dialog
-- Lyrics: full fallback chain for Karaké, Syncé, and Unsynced modes
-- Lyrics: LrcLib unsynced support via plainLyrics field
-- Lyrics: "no lyrics available" message with retry/edit buttons when all sources fail
-- Lyrics: logical toast messages showing each step in the fallback chain
-- Block playback of unmatched songs (toast warning + safety net in StreamResolver)
-- Spotify Import: fallback search (title-only) when initial query returns 0 results
-- Spotify Import: random delay (1-5s) between YouTube searches to avoid bot detection
-- Matching: skip duplicate matches instead of deleting (prevents song count loss)
-- Import from Favorites tab: auto-add imported songs to favorites
-
-Changed:
-- Set default lyrics color to White
-- Rename BuiltInPlaylist "Songs" to "All"
-- Rename ImportSongsFromSpotifyCSV to ImportSongsFromServices
-- YouTube Music icon detection via browseId starts with VL (gray, not red)
-- N-Zik playlists show N-Zik icon instead of YouTube Music icon
-- RiPlay import: create playlist, force 00:00 duration, detect unmatched songs
-- Remove 44 hardcoded user-facing strings, add 21 new string resources
-- Changelog: load from cache first, fetch network async, update cache on success
-- Lyrics: all source names use string resources (no hardcoded strings)
-- Lyrics: default font size set to Large
-
-Improved:
-- Search bar UI: larger size, centered text, smooth animations for mic/close buttons
-- Search bar rounded corners matching bottom floating bar
-- Match system reliability (duration tolerance, robust ID length checks)
-- Preserve custom sorting order when importing playlists via Spotify CSV
-- Hide 'Match Album' button when all songs are fully matched
-- Custom order auto-switch on import
-- Match button reactivity using derivedStateOf
-- Lyrics: centering in synced/karaoke/unsynced views with multi-line detection
-- Lyrics: tune size and opacity animations (1.08x/0.92x scale, 400ms)
-- Lyrics: Karaoke glow effect denser and tighter for dark backgrounds
-
+- Voice search with Google SpeechRecognizer (any language, auto detection)
+- RiPlay & Exportify CSV import with automatic Match Album
+- Smart Trash: bin to clear favorites, cache, downloads and history
+- Independent sort preferences per tab and per playlist
+- Cancel button to stop background matching jobs
+- Lyrics: full fallback chain for Karaoke, Synced and Unsynced modes
+- Block playback of unmatched songs (warning toast)
 Fixed:
-- Fix missing queue button on UI presets (#520)
-- Fix carousel view background/color not changing when swiping
-- YouTube Import: VL prefix for Innertube browseId, totalPlayTimeMs=1L bypass
-- Match from Playlist: fix songTable update with merged properties
-- Match from Playlist: fix effectivePosition calculation before DB changes
-- Fix position loss after match in LocalPlaylist (SQL string literal bug)
-- Fix sync() wiping playlist on API failure
-- Fix match losing playlist mappings due to CASCADE delete
-- Fix '-b-b' suffix duplication in updater notification
-- Fix beta button visible in minified builds
-- Fix notification errors being silently swallowed
-- Fix completed notification not showing
-- Fix changelog not fetched on re-download
-- Lyrics: fix bootloop when YouTube/Innertube returns empty lyrics
-- Lyrics: fix outline inversion between None and Glow
-- Smart Trash: delete songArtistMap and songAlbumMap entries on song delete
-
-Refactor:
-- Centralize YouTubeLinkImportDialog
-- Centralize MatchResultsDialog with retry button
-- ConfirmationDialog unified with InteractiveDialog pattern
-- Sort LaunchedEffect only runs once on first open
-- Toolbar button ordering: locator after search, download after locator
-- Matching: log position, duplicate, and match status for debugging
-- Remove debug Timber logs from match and import
+- Missing queue button on UI presets

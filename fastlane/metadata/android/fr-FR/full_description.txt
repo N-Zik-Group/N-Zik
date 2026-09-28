@@ -1,58 +1,69 @@
-﻿<b>N-Zik</b> est votre client YouTube Music open-source et multilingue pour Android.
+Interface YouTube Music multilingue pour Android, axée performance, raffinement UI/UX, extension des fonctions et support long terme.
 
-Un fork de <a href="https://github.com/knighthat/Kreate">Kreate</a> axé sur la performance, le polissage de l'interface, la correction de bugs et le support à long terme.
+<b>N-Zik</b> est un fork open source de <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Note :</b> N-Zik a commencé comme projet personnel. Pour des alternatives plus matures, consultez <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> ou <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Note :</b> N-Zik est né comme projet personnel. Pour alternatives plus matures, voir <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> ou <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Utilisation de l'IA :</b> J'utilise l'IA générative pour le code (via la <a href="https://github.com/bmad-code-org/BMAD-METHOD">méthode BMAD</a>), tout est révisé et testé avant publication.
+<b>Utilisation de l'IA :</b> J'utilise l'IA générative pour le code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), révisé et testé avant publication.
 
-Que vous soyez auditeur occasionnel ou audiophile, N-Zik vous donne un contrôle total sur votre musique sans compromettre votre vie privée.
+Auditeur occasionnel ou audiophile, N-Zik vous donne le contrôle total de votre musique, sans nuire à la vie privée.
 
-✨ <b>POURQUOI N-ZIK ?</b> Pas de publicité, lecture en arrière-plan, mise en cache hors ligne et interface personnalisable — gratuit, toujours.
+✨ <b>POURQUOI N-ZIK ?</b> Sans publicité, lecture en arrière-plan, cache hors ligne, UI personnalisable - gratuit, toujours.
 
-🎨 <b>Interface personnalisable</b>
-- Jetpack Compose avec bouton pour le mode classique ViMusic
+🎨 <b>UI personnalisable</b>
+- Jetpack Compose avec bascule du mode classique ViMusic
 - Thèmes : AMOLED, Deep Dark, Crisp Light + accents colorés
-- Lecteur en carrousel 3D, widgets d'écran d'accueil personnalisables
-- Profils d'artistes, flux d'actualités, widgets expérimentaux
+- Carrousel 3D, widgets d'accueil, lecteur unifié et mini-lecteur
+- Profils d'artistes, Discovery et ambiances, en-têtes repliables
 
 🎵 <b>Expérience audio</b>
-- Qualité premium via YouTube Music Premium 
+- Qualité premium via YouTube Music Premium, auto-appliquée
 - Paroles synchronisées avec édition et traduction en temps réel
-- Reconnaissance musicale (type Shazam), recherche vocale et visualiseur audio
-- Commandes pro : vitesse, hauteur, normalisation, crossfade, amplification du volume, bass boost, réverbération
+- Reconnaissance musicale (type Shazam), recherche vocale, visualiseur audio
+- Contrôles pro : vitesse, pitch, normalisation, crossfade, boost volume, bass boost, réverbération
+- Barre ondulée Audio Bar pour une navigation précise
 
 💾 <b>Hors ligne, métadonnées et confidentialité</b>
-- Mise en cache intelligente et téléchargements pour les pistes et playlists
-- Exportation FFmpeg avec métadonnées complètes (uniquement 64 bits)
+- Cache intelligent et téléchargements pistes/playlist, qualité au choix
+- Export FFmpeg avec métadonnées complètes (64-bit uniquement)
 - Éditeur de métadonnées intégré (AAC/Opus, pochette)
-- Statistiques d'écoute et historique 100 % locaux
-- Sauvegarde automatique avec intervalles et conservation personnalisés
+- Statistiques d'écoute et historiques locaux
+- Sauvegarde auto, intervalles et rétention personnalisés
 
 🔗 <b>Intégrations</b>
-- Connexion YouTube pour les recommandations et le basculement audio/vidéo
-- Intégration Invidious pour le streaming YouTube alternatif
-- Discord Rich Presence
+- Connexion YouTube : recommandations, vidéo, moteur de synchro bidirectionnel expérimental
+- Scrobbling Last.fm avec Now Playing et aimer/retirer
+- Analyses MusicBrainz des artistes et des albums
+- Discord Rich Presence, mode avancé avec aperçu en direct
+- Invidious pour le streaming YouTube alternatif
 - Import/export de playlists : RiPlay, Spotify, YouTube Music, N-Zik
+
+👥 <b>Écouter ensemble</b>
+- Rejoignez une session d'écoute live d'un utilisateur N-Zik via code ou lien d'invitation
+
+🗓️ <b>Rewind</b>
+- Récapitulatifs annuels et mensuels d'écoute, playlists Rewind auto-générées
 
 📱 <b>Écoutez n'importe où :</b> Android Auto, Automotive, TV et tablettes
 
 🛠️ <b>Fonctionnalités avancées</b>
-- Reprise auto. sur connexion BT, file d'attente persistante, auto-remplissage
-- Smart trash, morceaux cachés, contrôle parental, fond d'écran depuis la cover
-- Intégration Invidious, support proxy, adaptation qualité réseau
-- Mises à jour OTA, minuteur, lecture en arrière-plan
+- Multi-profils : base de données et réglages distincts
+- Reprise auto Bluetooth, file persistante et auto-remplie
+- Corbeille intelligente, morceaux cachés, non-aimés, contrôle parental
+- Proxy, adaptation qualité réseau, export des journaux
+- Rescue Center, écran de maintenance, onboarding, raccourcis app
+- Mises à jour OTA GitHub, minuteur, lecture en arrière-plan
 
-🛡️ 100 % open-source (FOSS). Autorisations clés : INTERNET, RECORD_AUDIO (visualiseur uniquement), STORAGE (exports/sauvegardes), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
+🛡️ 100 % open source (FOSS). Autorisations : INTERNET, RECORD_AUDIO (visualiseur uniquement), STORAGE (exports/sauvegardes), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Builds disponibles</b>
-- Full/Beta : Build complet (64 bits uniquement)
-- Full32/Beta32 : Sans FFmpeg (32/64 bits)
-- Minified : Léger, pour appareils bas de gamme (64 bits uniquement)
-- Minified32 : Léger sans FFmpeg (32/64 bits)
-- FOSS : Sans mise à jour auto, pour F-Droid (64 bits uniquement)
+- Full/Beta : Build complet (64-bit)
+- Full32/Beta32 : Sans FFmpeg (32/64-bit)
+- Minified : Léger, pour appareils bas de gamme (64-bit)
+- Minified32 : Léger sans FFmpeg (32/64-bit)
+- FOSS : Sans auto-updater, pour F-Droid (64-bit)
 - Dev/Dev32 : Builds de développement, tests uniquement
 
-Les builds standards sont en 64 bits (FFmpeg) ; les builds « 32 » suppriment FFmpeg pour les deux architectures. Seul FOSS est sur F-Droid.
+Les builds standards sont 64-bit (FFmpeg) ; les "32" suppriment FFmpeg (2 architectures). Seul FOSS est sur F-Droid.
 
-À partir de <b>janvier 2027</b>, Google exigera une vérification d'identité pour tous les développeurs. En tant que projet FOSS, N-Zik s'y oppose. <a href="https://keepandroidopen.org">En savoir plus</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Signer la pétition</a>
+À partir de <b>janvier 2027</b>, Google exigera la vérification d'identité pour tous les développeurs. En tant que FOSS, N-Zik s'y oppose. <a href="https://keepandroidopen.org">En savoir plus</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Signer la pétition</a>

@@ -1,39 +1,11 @@
 BETA:
-- Beta discussion link: https://github.com/orgs/N-Zik-Group/discussions/555
-
+- Beta discussion: https://github.com/orgs/N-Zik-Group/discussions/555
 Added:
-- Grid and list view options for the lyrics menu
+- Grid and list views for the lyrics menu
 - Karaoke lyrics view with word-level syncing
-- Global offset dialog accessible from Lyrics settings menu to correct lyrics synchronization
-- Recenter button when user manually scrolls lyrics (disables auto-scroll temporarily)
-
-Changed:
-- Moved "Show thumbnail for lyrics" switch to the Lyrics section in Appearance Settings
-
-Improved:
-- Smooth "pop" animation for sung characters in Karaoke mode, with soft ease-in/out scaling and bouncing
-- Extended the "pop" animation to translated lyrics via linear interpolation
-- Karaoke glow effect is now much denser and tighter around the text (reduced blur radius, doubled opacity) for better visibility on dark backgrounds
-- Recenter button now uses the 'locate' icon and sits on the LyricsScreen next to settings
-- Automatically try fetching Karaoke lyrics when switching lyrics mode if they're missing word timings
-- SyncedLyricsView accent color now correctly follows user LyricsColor settings
-
+- Global offset dialog to correct synchronization
+- Recenter button when manually scrolling lyrics
 Fixed:
-- Severe stuttering / performance drops on long karaoke lines and translations by implementing `getFastPathForRange` logic
-- Character bounce bleeding and overlapping lines/words through precise geometric Rect clipping
-- Seamless fallback to synced lyrics (LrcLib) when BetterLyrics returns unsynced/basic LRCs without word tags
-- Intelligent rendering of dual-opacity background text when displaying translations under original lyrics
-- Reset lyrics on track change to prevent old lyrics from showing
-- Compilation errors in LyricsFetcher and KaraokeLyricsView caused by variable duplication and missing imports
-- Automatically refetch standard lyrics (LrcLib) when switching from Karaoke mode to Synced mode
-- Restored the ShowOffsetDialog UI to use the app's custom colorPalette() for correct contrast and dark/light mode support
-- Playback crash
-- Tiny thumbnail image on player screen
-- Modern player control buttons
-- Lyrics recenter button eclipsing the settings icon
-- Empty playlist on artist page
-- Empty live performances on artist page
-- YouTube API missing items in Artist Live Performances and Videos by dynamically fetching visitorData
-
-Refactor:
-- Refactored ShowOffsetDialog to use InteractiveDialog
+- Stuttering on long karaoke lines and translations
+- Fallback to synced lyrics (LrcLib) when BetterLyrics has no word tags
+- Playback crash, tiny thumbnail, modern player control buttons

@@ -1,40 +1,15 @@
 New:
-- Upgraded to Material 3 Expressive design system
-- Added Floating Bottom Navigation Bar
-- Added Filter section and persistent Sorting (Grid/List) in online search
-- Added artist video category under artist page
-- Revamped Listen On, Sleep Timer, and AlbumItems UI
-- Added AlbumItems UI across the whole app
-- Added kotlinx-serialization and MetrolistExtractor support
-- Added a warning dialog for major updates
-- Added a warning dialog for build transition
+- Material 3 Expressive design and floating nav bar
+- Revamped Listen On, Sleep Timer, AlbumItems UI
+- Artist video category, update warning dialogs
 
 Improved:
-- Implemented Progressive Adaptive Image Cache (LOW/MEDIUM/HIGH)
-- Added Network Quality Status and Manual Quality Overrides in Settings
-- Optimized ImageCacheFactory performance and metadata saving
-- Improved Home/Quick Picks stability and refresh/shuffle logic
-- Modernized Settings UI with smoother transitions and clearer labels
-- Implemented Expressive Loader placeholders across all main sections
-- Improved performance of the player and optimized visualizer
-- Enhanced Android Auto UI with more search tabs and improved artist pages
-- Added smooth transition for the mini queue
-- Harmonized thumbnail sizes and grid layouts across Home, Artist, and Library
-- Updated build system to Gradle 9.2.1 and NewPipe Extractor to v0.25.2
+- Adaptive image cache, quality controls
+- Modernized Settings UI with expressive loaders
+- Faster player, better Android Auto
 
 Fixed:
-- Fixed crashes in Album, Podcast, and Home Artist sections
-- Fixed Pip mode functionality
-- Fixed Home screen state persistence and navigation resets
-- Fixed background color consistency and player transparency issues
-- Fixed default presets, wavy timeline, and player positioning
-- Fixed Monthly playlist tab visibility and hidden playlists filtering
-- Fixed various update issues (Stats for nerds, Audio/Network quality, Top Charts, Mini Queue)
-- Fixed Android Auto synchronization and "On device play" issues
-- Resolved critical ClassCastException and data corruption via standardized persist tags
-- Fixed STABLE and BETA string in changelog not working properly
-
-Refactored:
-- Refactored Network Logic
-- Completed ImageCacheFactory implementation
-- Improved project structure and dependencies organization
+- Fixed crashes and persist-tag data corruption
+- Fixed Pip mode, Home state, player transparency
+- Fixed Monthly playlists, Top Charts, mini queue
+- Fixed Android Auto sync and On-device play

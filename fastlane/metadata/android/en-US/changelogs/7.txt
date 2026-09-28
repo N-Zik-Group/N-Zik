@@ -1,36 +1,15 @@
 Changed:
-- Added the new N-Zik icon: Monochrome, Main, and Material You
-- Added the new banner
-- Fixed missing content in the project
-- Added new update from Kreate to N-Zik, improving stability
-- Added missing string in `strings.xml`
-- Updated icons for Playlist, Add, Add to Queue, Featured, and Video
-- Added a warning message in Settings that appears when changing the player or UI appearance, prompting the user to restart the app
-- Added more albums in artist page
-- Added single, double, and long tap to forward/rewind timeline
-- Added documentation website in About
-- Added social media links in About
-- Hide navigation bar when there's less than 2 items to navigate
-- Number of paths shown in address bar in "On device"
+- New N-Zik icons (Monochrome, Main, Material You)
+- Update from Kreate, improving stability
+- Timeline taps (single/double/long) to forward/rewind
+- More albums on the artist page
+- Documentation website and social media links in About
 
 Optimization:
-- Improved layout recomposition in search results to reduce UI flickering and enhance responsiveness
-- Optimized app icons for better performance
-- Enhanced language detection logic
-- System language is now prioritized
-- The toggle now defaults to the system language on first install
-- Vynil icon
+- System language now prioritized
 
 Bug Fixes:
-- Fixed a crash when changing the app language due to a null locale reference in `AppCompatDelegate.getApplicationLocales()`
-- Added proper null checks to prevent `NullPointerException` when retrieving the current system locale
-- Fixed app crash after logging out of YT account
-- Fixed issue where cover disappeared occasionally
-- Fixed "modified:" showing in media control
-- Fixed song's total play time resetting on each play
-- Fixed song's like state resetting on each play
-- Fixed backdrop not applying
-- Fixed local songs not showing up on older Android versions
-- Fixed app crash when permission to view local files is denied on older Android versions
-- Fixed immediate play when persistent queue is enabled
-- Fixed Language
+- Fixed crashes: language change, YT logout
+- Fixed cover, backdrop, "modified:" in media controls
+- Fixed play time and like state resetting on each play
+- Fixed local songs on older Android

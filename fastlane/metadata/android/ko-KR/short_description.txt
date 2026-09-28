@@ -1,1 +1,1 @@
-Android용 다국어 YouTube Music 클라이언트.
+다국어 YT Music 클라이언트

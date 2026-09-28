@@ -1,50 +1,14 @@
 Hotfix:
-- Fixed changelog not showing up, here the changelog!
-
+- Fixed changelog not showing up
 Added:
-- Information about android lockdown mode, after update.
-- New Visualizer options and moved them to a dedicated Settings section.
-- Custom colors and icons for 'Refactor' and 'Other' sections in the Changelog.
-- Option to show/hide skip time buttons (rewind/forward) in player appearance settings.
-- New flat wave visualizer option to NextVisualizer.
-- Visualizer background now smoothly fades out when music is paused.
-- Option to hide the android status bar globally across the app.
-- Audio crossfade feature between songs (disabled by default in settings).
-- Option to disable navigation backstack to return directly to the Home screen on back press.
-- Loudness amplification (Volume boost level) setting on top of loudness normalization (#236).
-- Loudness sliders in the Playback parameters dialog (long-press play) synced with General Settings.
-- Option to change player controls color based on album cover or theme (#436).
-
+- New visualizer options moved to a dedicated Settings section
+- New flat wave visualizer in NextVisualizer
+- Audio crossfade between songs (disabled by default)
+- Volume boost level (on top of loudness normalization)
+- Option to show/hide skip time buttons in the player
 Changed:
-- Visualizer settings dialog is now accessed via a settings gear icon that appears alongside the visualizer controls, instead of a long-press.
-- Default UI Roundness changed to 25.
-- Default thumbnail roundness changed to 20 to match the user preference default.
-- Error screen no longer displays the retry and exit buttons.
-- Player image layout set to take 90% of screen width and default thumbnail radius set to 12.
-- Default startup song from Måneskin's Beggin to The Weeknd's Blinding Lights.
-
-Improved:
-- NextVisualizer implementation, customizing default themes, removing unnecessary options, adjusting WfmAnalog thickness, and fixing color generation logic.
-- Visualizer controls are now conditionally compressed to stay within the circle when the cover is set to be fully rounded (CircleShape).
-- The lyrics menu icon was changed to a settings gear for better consistency.
-- Snake game completely rebuilt with Canvas for smoother performance and better scaling.
-
+- Default roundness: UI 25, thumbnail 20
 Fixed:
-- Visualizer settings (like line thickness) now update in real-time across the app without needing to reopen the view.
-- Line thickness setting correctly activates for visualizers containing the FM wave (index 0 and 20).
-- Pacman game layout and scaling issues completely resolved.
-- Translation feature in Playlist screen now works correctly.
-- Corrupted text strings (incorrect quotation marks) in translation popups on Artist, Album, and Playlist screens.
-- Thumbnail crossfade visual glitch where previous track artwork incorrectly loaded the new track's artwork.
-- Top bar back button and title now animate smoothly with sliding and fading transitions.
-- Burger menu dropdown correctly anchors to the right side of the action bar.
-- Removed double bottom padding from the global Scaffold to restore the floating bar's correct position at the bottom of the screen.
-- Real-time UI updates for Player control colors without requiring app restart.
-- Player horizontal swipe gesture sensitivity. Added a new UI setting to adjust the swipe threshold (Low, Medium, High, Very High).
-
-Refactor:
-- Games have been properly consolidated in the 'games' directory with strings moved to resources.
-- Global AppHeader implemented to be static across the app, fixing transition losses when navigating and reducing unnecessary recompositions.
-
+- Visualizer settings now update in real time
 Removed:
-- Old and unused visualizers.
+- Old and unused visualizers

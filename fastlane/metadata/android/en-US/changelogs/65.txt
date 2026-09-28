@@ -1,58 +1,13 @@
 Added:
-- New unified settings dialogs: Player Action Bar buttons (drag-to-reorder), Quick Picks sections, and Library playlist visibility
-- New shake sensitivity options for track switching and for the M3E theme background animation
-- New "Morphing" gradient type for the M3E animated background
-- Unified Export and Import dialogs (choose Database, Settings, or Both)
-- Unified debug log copy dialog (Debug, Crash, or Both)
-- Renamed "Refresh Fake Audio Bar" to "update waveform!" with clearer states, error messages, and reorganized player menu buttons
-- Video thumbnails are now cropped to a 1:1 square by default for a cleaner look
-- Home Quick Picks sections now load progressively instead of waiting for everything at once
+- New unified settings dialogs (action bar, Quick Picks)
+- Shake sensitivity options; "Morphing" M3E background
 
 Changed:
-- Export/import file names now use ISO date format for easier sorting in file managers
-- Softened M3E background explosion animations for a gentler, less jarring effect
-- Pull-to-refresh indicators across Home and Artist screens now use the new Material 3 Expressive loader with theme-aware colors
+- Export/import file names use ISO date format
+- Softer M3E animations; Material 3 Expressive refresh loaders
 
 Fixed:
-- Fixed wavy timeline and scrubber jumping to the end during loading/buffering
-- Fixed seekbars showing underneath the loading indicator during buffering
-- Queue panel no longer closes unexpectedly while scrolling
-- Fixed player becoming unresponsive when the M3E theme was active
-- M3E background explosion now correctly triggers every time the player opens
-- Shake detection is now horizontal-only, preventing false triggers from vertical movement
-- Fixed overlapping settings entries in Appearance Settings
-- Fixed a shortcut that broke after a recent file reorganization
-- Fixed navigation bar background and spacing across player, queue, and menus
-- Fixed "Go back to home directly" setting not working correctly
-- Fixed blank screen glitches when exiting Settings
-- Fixed audio bar losing bitrate/size info after removing a download
-- Fixed player missing its closing animation when manually dismissed
-- Fixed switching from Video to Audio sometimes getting stuck
-- Menu now closes properly on navigation
-- Fixed a rare crash when lyrics were fetched right after a song started playing
-- Fixed erratic scrolling for multi-line synced lyrics
-- Fixed lyrics view recentering issues
-- Fixed lyrics scroll offset when background vocals are shown
-- Fixed "Go to Album" not working when the album couldn't be found directly
-- Fixed duplicate explicit badge showing in search suggestions
-- Fixed explicit content badge not showing correctly across the app, notifications, and Android Auto
-- Fixed a delay when tapping songs in lists before playback started
-- Fixed download-on-like race condition and a double-tap bug
-- Fixed export progress dialog showing "0/0" and replaced hardcoded error messages with translatable strings
-- Fixed sync issues between YouTube and local library items running concurrently
-- Fixed rare crashes when viewing lyrics due to stale text layouts
-- Fixed lyrics scroll position not resetting when switching lyrics type
-- Fixed a crash when opening lyrics with a custom cover image
-- Fixed album tracks sometimes showing in the wrong order or with stale cached data
-- Fixed modal menus drawing behind the status bar
-- Fixed visualizer timeline resetting during crossfade
-- Fixed background sync crashes
-- Fixed navigation bar layout and colors for edge-to-edge display
-
-Refactor:
-- Improved visualizer settings menu layout to match the lyrics menu
-- Cleaned up internal code imports project-wide
-
-Other:
-- Updated internal project documentation for AI coding agents
-- Added automated tests for the lyrics system
+- Player: buffering, timeline jumps, M3E unresponsiveness
+- Queue panel no longer closes while scrolling
+- Lyrics: scroll, recentering, and crash fixes
+- "Go to Album" fallback; explicit badges; nav bar layout

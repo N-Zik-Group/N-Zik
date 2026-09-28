@@ -1,30 +1,14 @@
 New:
-- Revamp Listen On and Sleep Timer UI
-- Revamp AlbumItems UI
-- Add AlbumItems UI everywhere
+- Revamped Listen On, Sleep Timer, and AlbumItems UI app-wide
 
 Improved:
-- Improved floating bar logic
-- Improved Performance of the player
-- Improved settings UI with clearer labels ("Show Monthly Playlists in Library") and better icons
-- Harmonized HomeAlbum, homeArtist and HomeLibrary thumbnail size and grid
-- Changed values for small, medium and big size for Home and Artist
-- Loader is now centered with floating bottom bar
+- Better floating bar logic and player performance
+- Clearer settings labels and icons
+- Harmonized thumbnails and grids on Home and Artist
 
 Fixed:
-- Fixed default presets
-- Fixed wavy timeline
-- Fixed player position on non-floating nav bar
-- Fixed weird transparency on the player when the nav bar was floating
-- Fixed Monthly playlist tab visibility and reorganized related settings
-- Filtered hidden playlists (Monthly, Pinned, Piped) from the Library's general "Playlists" tab
-- Fixed Grid in homeArtist and HomeAlbum
-- Fixed AlbumItem thumbnail size
-- Added loader to new album category
-- Fixed Home screen state persistence (Top Charts, Discovery, etc. no longer reset on navigation)
-- Fixed critical ClassCastException crash on Home Artist tab (tag collision with Home Album)
-- Fixed empty persist tag in HomeArtist.kt (was causing silent data corruption)
-- Fixed type collision between NewAlbums and NewAlbumsFromArtists (shared tag with different types)
-- Standardized all persist tags project-wide to a structured [screen/context]/[variable] naming convention
-- Fixed empty persist tag in PlaylistSongList.kt
-- Standardized persist tags in MoodsPage and MoodList (removed incorrect home/ and playlist/ prefixes)
+- Fixed presets, wavy timeline and player transparency
+- Monthly playlist tab visible; hidden playlists hidden from Library
+- Fixed grid issues on Home and Artist
+- Home screen no longer resets on navigation
+- Fixed Home Artist crash and persist-tag data corruption

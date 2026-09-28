@@ -2,14 +2,14 @@ NEW:
 - New UI for Ask related to updater
 
 Improved:
-- AutoUpdate is now enabled by default.
-- Beta builds now have Beta updates enabled by default. You can disable it if you prefer to receive only one beta and then switch to stable.
-- Removed the “no update available” message at startup.
-- Show BETA or STABLE as an indication on the Update available pop up
+- AutoUpdate is now enabled by default
+- Beta builds now have Beta updates enabled by default (can be disabled)
+- Removed the "no update available" message at startup
+- Update popup now shows BETA or STABLE
 
 Fixed:
-- Various known bugs.
-- General tabs now display the correct values.
-- Fixed changelog icon not working properly on Android versions below 12.
-- Fixed updater issue where it didn’t handle 4-digit versions correctly. It now pads with a `0` if a version only has 3 digits to ensure the latest release is selected properly.
+- Various known bugs
+- General tabs now display the correct values
+- Fixed changelog icon on Android versions below 12
+- Fixed updater not handling 4-digit versions (now pads with 0)
 - Minified build have updater working now

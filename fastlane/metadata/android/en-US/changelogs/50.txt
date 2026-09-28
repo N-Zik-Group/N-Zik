@@ -1,12 +1,5 @@
-Hotfix:
-- Fixed crossfade issues (equal-power fade, increased steps, removed pause during transition) in PlayerServiceModern
-- Removed unused `metrolist-innertube` submodule and cleaned up its dependencies
-- Removed unused `scripts/strings-modifier` submodule
-- Removed unused `modules/innertube` submodule (the app uses `extensions/innertube` instead)
-- Migrated `modules/discordrpc` into a standalone GitHub repository and re-added it as a submodule
-- Updated project references and submodule URLs for the move to the N-Zik-Group organization
-- Fixed crossfade buffering using a 0-volume preload hack and added crossfade cancellation on manual skip/seek
-- Implemented gapless crossfade using player role reversal and seamless audio handoff
-- Refined crossfade to use the stunt double technique so the UI updates instantly while keeping playback gapless
-- Fixed UI components (Thumbnail, Player HorizontalPager, MiniPlayer, and MainActivity dynamic palette) to properly update and animate when the active player instance is swapped during crossfade
-- Fixed reversed text labels for Essential and Modern player UI types
+Fixed:
+- Crossfade between songs is now gapless with equal-power fades and no pause during transition
+- UI updates instantly during crossfade (thumbnails, mini player, palette)
+- Crossfade now cancels properly on manual skip/seek
+- Reversed text labels for Essential and Modern player UI types

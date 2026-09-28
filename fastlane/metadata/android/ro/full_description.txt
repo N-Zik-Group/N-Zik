@@ -1,58 +1,69 @@
-﻿<b>N-Zik</b> este clientul tău YouTube Music, open-source și multilingv pentru Android.
+Frontend YouTube Music multilingv pentru Android, concentrat pe performanță, rafinarea UI/UX, funcții noi și suport pe termen lung.
 
-Un fork al <a href="https://github.com/knighthat/Kreate">Kreate</a> concentrat pe performanță, rafinarea interfeței, corectarea erorilor și suport pe termen lung.
+<b>N-Zik</b> este un fork open-source al <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Notă:</b> N-Zik a început ca un proiect personal. Pentru alternative mai mature, vezi <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> sau <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Notă:</b> N-Zik a început ca proiect personal. Alternative mai mature: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> sau <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Utilizarea AI:</b> Folosesc AI generativ pentru cod (prin <a href="https://github.com/bmad-code-org/BMAD-METHOD">Metoda BMAD</a>), revizuit și testat înainte de lansare.
+<b>Utilizarea AI:</b> Folosesc AI generativ pentru cod (prin <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), revizuit și testat înainte de lansare.
 
-Fie că ești ascultător ocazional sau audiofil, N-Zik îți oferă control absolut asupra muzicii fără a-ți compromite confidențialitatea.
+Ascultător ocazional sau audiofil, N-Zik îți oferă control total asupra muzicii, fără a-ți compromite confidențialitatea.
 
-✨ <b>DE CE SĂ ALEGI N-ZIK?</b> Fără reclame, redare în fundal, cache offline și interfață complet personalizabilă — gratuit, întotdeauna.
+✨ <b>DE CE N-ZIK?</b> Fără reclame, redare în fundal, cache offline și interfață personalizabilă - gratuit, întotdeauna.
 
 🎨 <b>Interfață personalizabilă</b>
-- Jetpack Compose cu comutator pentru modul clasic ViMusic
+- Jetpack Compose cu comutator modul clasic ViMusic
 - Teme: AMOLED, Deep Dark, Crisp Light + accente colorate
-- Player carusel 3D, widget-uri personalizabile pentru ecranul de pornire
-- Profiluri de artiști, flux de știri și widget-uri experimentale
+- Player carusel 3D, widget-uri pe ecranul principal, player și mini-player unificate
+- Profiluri de artiști, Discovery și stări de spirit, anteturi pliate
 
 🎵 <b>Experiență audio</b>
-- Calitate premium prin YouTube Music Premium 
+- Calitate premium prin YouTube Music Premium, aplicată automat
 - Versuri sincronizate cu editare și traducere în timp real
-- Recunoaștere muzicală (tip Shazam), căutare vocală și vizualizator audio
-- Comenzi profesionale: viteză, înălțime, normalizare, crossfade, amplificare volum, boost bas, reverberație
+- Recunoaștere muzicală (tip Shazam), căutare vocală, vizualizator audio
+- Comenzi pro: viteză, ton, normalizare, crossfade, amplificare volum, boost bas, reverberație
+- Bara Audio cu seekbar de undă pentru navigare
 
 💾 <b>Offline, Metadate și Confidențialitate</b>
-- Cache offline inteligent și descărcări pentru piese și liste de redare
-- Export FFmpeg cu metadate complete (doar 64-bit)
+- Cache inteligent și descărcări de piese și liste de redare, cu calitate alegibilă
+- Export prin FFmpeg cu metadate complete (doar 64-bit)
 - Editor de metadate în aplicație (AAC/Opus, copertă)
-- Statistici de ascultare și istoric 100% locale
-- Backup automat cu intervale și retenție personalizate
+- Statistici de ascultare și istoric locale
+- Backup automat cu intervale și retenție alese
 
 🔗 <b>Integrări</b>
-- Conectare YouTube pentru recomandări și comutare audio/video
-- Integrație Invidious pentru streaming YouTube alternativ
-- Discord Rich Presence
+- Conectare YouTube pentru recomandări și video, plus motor experimental de sincronizare bidirecțională
+- Scrobbling Last.fm cu Now Playing și apreciere/deapreciere
+- Profiluri de artiști și albume MusicBrainz
+- Discord Rich Presence, inclusiv modul avansat cu previzualizare live
+- Integrare Invidious pentru streaming alternativ YouTube
 - Import/export liste de redare: RiPlay, Spotify, YouTube Music, N-Zik
 
-📱 <b>Redă oriunde:</b> Android Auto, Automotive, TV și tablete
+👥 <b>Ascultă împreună</b>
+- Alătură-te unei sesiuni live, găzduite de alt utilizator N-Zik, prin cod sau link de invitație
+
+🗓️ <b>Rewind</b>
+- Recapitulări lunare și anuale de ascultare cu liste de redare Rewind generate automat
+
+📱 <b>Redă oriunde:</b> Android Auto, Automotive, TV și Tablets
 
 🛠️ <b>Funcții pentru utilizatori avansați</b>
-- Repornire automată la conectare BT, coadă persistență, auto-fill
-- Smart Trash, piese ascunse, control parental, fundal din copertă
-- Integrație Invidious, suport proxy, adaptare calitate rețea
-- Actualizări OTA, temporizator, redare în fundal
+- Multi-profil: bază de date și setări izolate pe profil
+- Reluare automată la conectare Bluetooth, coadă persistentă, auto-umplere
+- Coș inteligent, piese ascunse, dezaprecieri, control parental
+- Suport proxy, adaptarea calității rețelei, export de jurnale
+- Centrul de salvaj, ecran de mentenanță, onboarding, scurtături
+- Actualizări OTA de pe GitHub, temporizator de somn, redare în fundal
 
-🛡️ N-Zik este 100% open-source (FOSS). Permisiuni cheie: INTERNET, RECORD_AUDIO (doar vizualizator), STORAGE (exporturi/backup), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
+🛡️ 100% open-source (FOSS). Permisiuni cheie: INTERNET, RECORD_AUDIO (doar vizualizator), STORAGE (exporturi/backup), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
-📦 <b>Versiuni disponibile</b>
+📦 <b>Builds disponibile</b>
 - Full/Beta: Completă (64-bit)
 - Full32/Beta32: Fără FFmpeg (32/64-bit)
 - Minified: Ușoară, pentru dispozitive slabe (64-bit)
 - Minified32: Ușoară fără FFmpeg (32/64-bit)
-- FOSS: Fără actualizator automat, pentru F-Droid (64-bit)
+- FOSS: Fără auto-updater, pentru F-Droid (64-bit)
 - Dev/Dev32: Dezvoltare, doar pentru testare
 
-Versiunile standard sunt 64-bit (cu FFmpeg); variantele „32" renunță la FFmpeg pentru compatibilitate. Doar FOSS este pe F-Droid.
+Buildurile standard sunt 64-bit (FFmpeg); buildurile "32" fără FFmpeg pe ambele arhitecturi. Doar FOSS pe F-Droid.
 
-Începând cu <b>ianuarie 2027</b>, Google va solicita verificarea identității pentru toți dezvoltatorii. Ca proiect FOSS, N-Zik se opune acestei cerințe. <a href="https://keepandroidopen.org">Află mai multe</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Semnează petiția</a>
+Începând cu <b>ianuarie 2027</b>, Google va cere verificarea identității tuturor dezvoltatorilor. Ca FOSS, N-Zik se opune. <a href="https://keepandroidopen.org">Află mai multe</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Semnează petiția</a>

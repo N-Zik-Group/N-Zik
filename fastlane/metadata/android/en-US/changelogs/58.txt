@@ -1,54 +1,12 @@
 Hotfix:
-- Fix match dialog showing wrong matched/failed count
-- Fix merged count not showing when all songs matched
-- Fix merged count showing twice in dialog
-- Fix match dialog not showing on cancel
-- Fix SmartTrash not cleaning ImportSong table
-- Fix SmartTrash not deleting playlists
-- Fix match dialog not showing on cancel in LocalPlaylist (auto and manual)
-- Fix match transaction not waiting for commit (cleanup saw stale state)
-- Fix dialog buttons cut off (Box+weight instead of fillMaxWidth+weight)
-
+- Match dialog shows correct matched/failed/merged counts
+- Smart Trash now cleans import data and deletes playlists properly
 Added:
-- ImportSong table to preserve import positions for match system
-- Match: create album and artist mappings from Innertube result (fixes lyrics showing 'N/A' for album)
-- Match: merge duplicate songs instead of skipping (transfers playlist/album/artist mappings)
-- Match: pre-calculate positions from ImportSong table before parallel matches
-- Match: increase delays to 2-8s to avoid YouTube rate limiting
-- Match: wrap search requests in runCatching with error logging
-- Block playback of unmatched songs with toast warning
-- UnmatchedSongException (fatal, no recovery retries)
-- Match cancel now shows results dialog with matched/failed/merged counts and cleans ImportSong
-- Database.transaction (suspending) using Room's withTransaction so the match function
-  waits for the commit before cleanup runs
-- Real cancellable matchJob/matchJobExt state - cancel actually stops running jobs
-  at next suspension point instead of just skipping new ones
-- Cleanup uses ImportSong entries (not stillUnmatched fallback) to count matched/failed
-  accurately, even when songs have duration='00:00' after match
-- Riplay-aware duration check: if a song has a valid YouTube ID but duration='00:00',
-  it's counted as failed (Riplay CSVs have empty Duration column)
-- Comprehensive Timber logs with tags (Import, MatchGlobal, MatchPlaylist) for
-  match/merge/cleanup/added/BDD operations
-
+- ImportSong table preserves import positions for the match system
+- Match: duplicate songs are merged instead of skipped
+- Match: increased delays to avoid YouTube rate limiting
+- Cancel now stops running jobs and shows a results dialog
 Changed:
-- Match dialog now correctly counts matched/failed/merged songs
-- Karaoke lyrics mode is now default on fresh install
-- Match LaunchedEffect decoupled from dialog state via matchRunning flag (cancel no longer kills the work)
-- Match function now uses suspending Database.transaction (was fire-and-forget
-  asyncTransaction which caused cleanup to see stale state)
-- Dialog content wrapped in verticalScroll with heightIn(max=600dp) so buttons
-  stay visible on small screens
-- Button row uses Box+weight(1f) with Arrangement.spacedBy(8dp) instead of
-  conflicting fillMaxWidth(0.98f)+weight(1f)
-
+- Karaoke lyrics mode is now the default on fresh install
 Fixed:
-- Match position: songs no longer get shuffled after matching from HomeSongs
-- Match album: lyrics fetcher now gets album info from matched songs
-- Match artist: artist logo/name updates correctly after matching
-- Remove debug Timber logs from match and import functions
-- LocalPlaylist match: cancel now properly shows results and cleans ImportSong entries
-- LocalPlaylist match: support for merged counter in match function
-- Riplay import: YouTube ID is preserved and duration is updated from YouTube
-  on match
-- Count is no longer wrong because of stillUnmatched fallback to duration='00:00'
-  songs
+- Songs no longer shuffled after matching

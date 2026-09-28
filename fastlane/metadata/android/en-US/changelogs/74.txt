@@ -1,11 +1,7 @@
 Fixed:
-- Lyrics: Prevent getting stuck on Karaoke when switching to Synced mode.
-- Lyrics: Fallback to LrcLib/KuGou if BetterLyrics provides word-by-word Karaoke timings for Synced.
-- Lyrics: "Fetch lyrics again" in Auto mode no longer causes infinite shimmer.
+- Lyrics: no longer stuck on Karaoke when switching to Synced
+- Lyrics: fall back to LrcLib/KuGou when BetterLyrics gives Karaoke timings for Synced
+- Lyrics: "Fetch lyrics again" in Auto mode no longer shows infinite shimmer
 
 Improved:
-- Lyrics: Real-time UI state updates in settings menu with crossfade animation.
-- Lyrics: Auto mode retains loading Shimmer and fallback Toasts across sources.
-
-Other:
-- chore(deps): bump androidx.work:work-runtime-ktx from 2.9.0 to 2.11.2 (#705)
+- Lyrics: real-time settings updates with crossfade

@@ -2,6 +2,5 @@ Hotfix:
 - Fixes for inconveniences from v7.2.5
 
 Fixed:
-- Resolve missing Discord token on export and fix integer settings import
-  - Optimized `ExportSettingsDialog` to call `context.encryptedPreferences.all` exactly once. Calling `.all[key]` inside a loop previously caused the Android Keystore to rate-limit decryption requests, which silently dropped the Discord token during export.
-  - Fixed an issue in `ImportSettings` where integer preferences were skipped due to a missing `"integer"` case in type parsing.
+- Discord token silently dropped during export (Keystore rate-limiting)
+- Integer settings skipped during import

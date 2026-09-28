@@ -1,42 +1,11 @@
 Added:
-- Grid and list view for lyrics menu
-- Karaoke lyrics view with word‑level syncing
-- Global offset dialog accessible from Lyrics settings to correct synchronization
-- Recenter button when user manually scrolls lyrics (temporarily disables auto‑scroll)
+- Grid and list view for the lyrics menu
+- Karaoke lyrics view with word-level syncing
+- Global offset dialog from Lyrics settings to correct sync
+- Recenter button when manually scrolling lyrics
 - "Information" action button on video menus
-- Display monthly listener count alongside subscriber count in Artist headers
-- Updated Git submodules (DiscordRPC, Next‑Visualizer, Better‑Lyrics)
-
-Improved:
-- Smooth "pop" animation for sung characters in Karaoke mode, with soft ease‑in/out scaling and bounce
-- Karaoke glow effect denser and tighter (reduced blur, doubled opacity) for dark backgrounds
-- Smooth "pop" animation for translated lyrics via linear interpolation
-- Dual‑opacity background text rendering for translations under original lyrics
-- Refactored VideoOrSongInfoScreen to display as an inline bottom sheet instead of a new overlay
-- Refactored Artist, Album, and Playlist headers to move descriptions to the top with an expandable "Show more/less" toggle
-- SongItem pill background removed in menus for seamless blending with header color
-- Use "locate" icon for recenter button and move it next to settings in LyricsScreen
-- Refactored ShowOffsetDialog to use InteractiveDialog and custom colorPalette for proper contrast
-- SyncedLyricsView accent color now follows user LyricsColor settings
-
+- Monthly listener count in Artist headers
 Fixed:
-- Severe stuttering / performance drops on long karaoke lines and translations (implemented getFastPathForRange logic)
-- Character bounce bleeding and overlapping lines/words via precise Rect clipping
-- Seamless fallback to synced lyrics (LrcLib) when BetterLyrics returns unsynced/basic LRCs
-- Intelligent rendering of dual‑opacity background text for translations
-- Reset lyrics on track change to prevent old lyrics from showing
-- Automatic fetching of Karaoke lyrics when switching modes if missing word timings
-- Compilation errors in LyricsFetcher and KaraokeLyricsView due to variable duplication and missing imports
-- Automatic refetch of standard lyrics (LrcLib) when switching from Karaoke to Synced mode
-- Playback crashes
-- Tiny thumbnail image on player screen
-- Modern player control buttons
-- Lyrics recenter button eclipsing settings icon
-- Empty playlist on artist page
-- Empty live performances on artist page
-- YouTube API missing items in Artist Live Performances and Videos (dynamic visitorData fetch)
-- Fixed BetterLyrics API fetching logic (prevented API spam, added local DB fallback for album title, allowed Synced lyrics fallback)
-- App crash on language selection due to string format corruption
-
-Refactor:
-- Minor code clean‑up and variable deduplication in LyricsFetcher
+- Stuttering on long karaoke lines and translations
+- Fallback to synced lyrics (LrcLib) when BetterLyrics returns unsynced LRCs
+- Playback crashes, tiny player thumbnail, modern player buttons

@@ -1,10 +1,8 @@
 New:
-- Added UI Roundness setting, allowing you to control the roundness of the entire app
-- Added preview for thumbnail size, roundness, and UI roundness in settings
-
+- UI Roundness setting to control the roundness of the entire app
+- Preview for thumbnail size, roundness, and UI roundness in settings
 Fixed:
-- Fixed slider step dots being clipped or misaligned — now accurately positioned over the track using a precise Canvas implementation
-
+- Slider step dots clipped or misaligned - now positioned accurately over the track
 Improved:
-- Redesigned the slider component with a Material 3 Expressive "Jelly" spring animation on the thumb
-- Implemented a continuous sliding experience with a seamless magnetic snap for preset values
+- Slider redesigned with a Material 3 Expressive "Jelly" spring animation on the thumb
+- Continuous sliding with seamless magnetic snap to preset values

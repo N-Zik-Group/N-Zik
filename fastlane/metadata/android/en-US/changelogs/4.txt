@@ -1,20 +1,9 @@
 New:
-- New Crowdin updates by @NEVARLeVrai in #24
-- New Crowdin updates by @NEVARLeVrai in #31
+- New Crowdin updates by @NEVARLeVrai in #24 and #31
 
 Improvements
-- Removed all usages of ShimmerHost in favor of dedicated placeholder components for shimmer/loading effects.
-- Consistent loading animation: All content types now display 8 placeholders during loading for a unified experience.
-
-Code Structure:
-- Common logic extracted: Main page layout, header display, and loading logic are now handled by reusable functions (ItemsPage, ItemsGridPage).
-- Placeholders are passed as parameters to these functions to reduce code duplication and improve maintainability.
+- Consistent loading animation: all content types now show placeholder items during loading.
+- Header stays visible during loading.
 
 Search UI:
-- Songs: Loading state now shows 8 SongItemPlaceholder components in a column.
-- Albums: Unified shimmer effect using PlaylistItemPlaceholder in both grid and list views.
-- Artists: Loading state shows 8 ArtistItemPlaceholder components filling the screen.
-- Videos: Displays multiple VideoItemPlaceholder components during loading.
-- Playlists, Featured, Podcasts: Use 8 PlaylistItemPlaceholder components for consistent shimmer animation.
-- Header is always visible during loading (title, search bar, filters, etc.).
-- Fixed unresolved reference errors: playlistItemContentGrid and playlistItemContentList functions are now defined locally per tab.
+- Unified shimmer/loading placeholders across songs, albums, artists, videos, playlists, featured, and podcasts.

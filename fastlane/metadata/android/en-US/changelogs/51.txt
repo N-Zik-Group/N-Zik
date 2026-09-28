@@ -1,66 +1,11 @@
 Added:
 - Real-time audio wave visualization in the seekbar
-- True static waveform timeline extraction and display based on MediaExtractor (for cached songs)
-- Automatic cleanup for waveform cache when clearing song downloads, offline cache, or listen history
-- Flat line animation when paused/stopped and current position thumb indicator for static timelines
-- Full long-click context menu support for AlbumItem and VideoItem in HomeQuickPicks
-- "More from this artist" navigation option in OnlineAlbumItemMenu and VideoItemMenu
-- Long-click context menu support for Album, Playlist, Video and Song items across HomeDiscovery, HomeLibrary, OnlineSearchGrid, and OnlineSearchList
-- LocalArtistItemMenu and OnlineArtistItemMenu support for ArtistItem across HomeQuickPicks, HomePage, MoodList, OnlineSearchGrid, and OnlineSearchList
-- Bookmark toggle support for Local and Online Artist menus
-- Ability to change covers for Songs and Videos
-- Custom reorder support for songs in local playlist
-- Custom reorder support for songs in Home songs, home albums, home artists and home library
-
+- Static waveform timeline for cached songs
+- Long-click menus for songs, albums, playlists, videos and artists in Home
+- Change covers for songs and videos
+- Custom reordering of songs in local playlists and Home
 Fixed:
-- Concurrent execution with NextVisualizer by implementing a shared visualizer system
-- App crash on background playback due to ForegroundServiceStartNotAllowedException in PlayerServiceModern
-- IllegalArgumentException crash in SeekBarStaticAudioWaves on Canvas initialization with zero dimensions
-- Reverted GetSeekBarType.kt to use binder.player.isPlaying and introduced internal isPlayerPlaying DisposableEffect inside SeekBarStaticAudioWaves to accurately track ExoPlayer playback state independent of parent recomposition
-- Race condition in SeekBarStaticAudioWaves where isPlaying state transition was missed if ExoPlayer started instantly from cache
-- SeekBarVisualizer stuck as flat line on cached songs by adding internal ExoPlayer listener instead of relying on stale parent state
-- Stale closure bug in SeekBarVisualizer by preserving MutableState instance across recompositions on layout changes
-- Widespread bug where combinedClickable on IconButton intercepted clicks and made songs unclickable across the app
-- Layout bug where minimumInteractiveComponentSize on inline indicator icons (e.g. explicit "E") forced a 48dp size, crushing the UI in song items
-- Swapped inverted icons in DownloadAllSongsDialog and DeleteAllDownloadedSongsDialog
-- Back navigation from local playlist returning to QuickPicks instead of the last selected tab
-- Data loss bug in Database where downloading a song overwrote its position, likedAt, and totalPlayTimeMs data by mistakenly replacing the DB entity
-- ConcurrentModificationException and lag in Custom sorting by debouncing database position updates to onDragStopped instead of continuous onMove updates
-- Duplicate and stale sorting lock icons caused by List reference invalidation during Compose recomposition
-- Random 'no items' text flash in HomeSongs while database items were synchronizing to UI
-- Online menus (Album and Video) not rendering content in HomeQuickPicks and ArtistDetails due to missing .MenuComponent() invocation
-- Missing long-click menus and completely missing items (Songs, Videos) in Moods discovery page
-- LocalPlaylistItemMenu and OnlinePlaylistItemMenu compilation errors and missing author info
-- OnlineAlbumItemMenu state variables to preserve album metadata edits and display correctly after initial metadata fetch
-- Missing long-click context menus for Artist items across Home screens by migrating to combinedClickable
-- Thumbnail disappearing bug in Online Artist/Album/Playlist menus caused by empty API strings overriding valid image URLs
-
-Improved:
-- Static waveform visualization aesthetics (real & fake) with dynamic amplitudes and removed unnecessary extraction logs
-- Seekbars properly handle transparent mode background colors
-- Unclassified library items (position = -1) are now strictly ordered at the bottom of the list for all Custom sorting screens, preserving users manual ordering
-- Smooth AnimatedContent transition for toolbar buttons (TabToolBar)
-
-Changed:
-- Moved renumber dialog icon next to position lock in local playlist
-
-Refactor:
-- Extracted nextvisualizer into an independent git submodule, flattened its structure and removed its R class dependencies
-- Renamed the main application module from composeApp to ComposeN-Zik
-- LocalPlaylistScreen now uses Skeleton like all other screens for consistent layout and mini-player positioning
-- Replaced old drag-and-drop library with sh.calvin.reorderable for local playlist songs
-- Custom sorting visibility logic applied to LocalPlaylistSongs
-- Centralized and migrated context menus and SongItem components to the new kreate architecture in Statistics, Quick Picks, and Artist Details pages
-- Moved menu directory from temporary kreate namespace to the permanent app.n_zik.android.components.menu package across the entire application
-- Migrated the remaining screens (HistoryList, LocalSongSearch, Podcast, StatisticsPage) to use the new app.n_zik item menus
-- Migrated PlayerMenu and PlayerItemMenu to the new app.n_zik namespace, finalizing the menu architecture transition
-- Replaced temporary inline InputTextDialog logic with a modular ChangeCoverDialog for Songs and Videos across SongItemMenu, VideoItemMenu, and PlayerItemMenu
-- Migrated Album and Artist metadata editing (Title, Authors, Cover) from inline InputTextDialog into dedicated modular dialog components (ChangeAlbumTitleDialog, ChangeAlbumAuthorsDialog, ChangeAlbumCoverDialog, ChangeArtistTitleDialog, ChangeArtistCoverDialog)
-- Removed all legacy inline InputTextDialog calls from Item Menus; created ImportPlaylistDialog for importing and reused NewPlaylistDialog for standard creations, ensuring 100% modularization of context menus
-- Removed the legacy InputTextDialog component; migrated all usages in settings to the new SettingsInputDialog and dedicated modular Dialogs
-
-Removed:
-- Deprecated "Fake Audio Bar" logic, fully replaced with dynamic and static Audio Waves
-- Entirely deleted old app.it.fast4x.compose.reordering package
-- Entirely eliminated legacy item menu imports outside of their definition file (MediaItemMenu.kt)
-- Entirely deleted the legacy MediaItemMenu.kt and MediaItemGridMenu.kt files
+- Crash on background playback
+- Songs unclickable across the app
+- Downloading a song no longer overwrites its position, likes and playtime
+- Lag when reordering with custom sort

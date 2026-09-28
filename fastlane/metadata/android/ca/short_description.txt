@@ -1,1 +1,1 @@
-Client modern i multilingüe de YouTube Music per a Android.
+Client YT Music multilingüe

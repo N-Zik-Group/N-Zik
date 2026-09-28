@@ -1,26 +1,19 @@
 Fixed:
-- Crash due to widget in Android 17 (moved files to app.n_zik.android.widget)
-- RPC being stuck on "browsing" while listening to music
-- Status bar being black while on pitch black mode
-- Crash on textClassifier for A7 on Minified build
-- Added missing description on player appearance page
-- Settings page search function not showing proper results
-- Weird spacing on some settings pages, same for search
-- Title and description being misaligned in settings pages
-- Non UTF-8 chars in the app due to copy paste from scripts while moving up files
-- Added "No items" texts on pages that were empty
+- Widget crash on Android 17
+- RPC stuck on "browsing" while listening
+- Black status bar in pitch black mode
+- Crash on Minified build
+- Missing description on appearance page
+- Settings search showing proper results
+- Non UTF-8 characters in the app
 
 Improved:
-- Visualizer performance, now butter smooth on low-end devices
-- Playback speed can go to 10x
-- Settings Search Functionality
-- Search now showing proper music infos
+- Smoother visualizer on low-end devices
+- Playback speed can go up to 10x
+- Better settings search results
 
 Added:
 - Search in AI Recommendation Settings
 
-Refactored:
-- Visualizer code to app.n_zik.android.extensions.nextvisualizer
-
 Removed:
-- Old showPlaybackSpeedButtonKey (hold play button to change speed instead)
+- Old speed button key (hold play to change speed)

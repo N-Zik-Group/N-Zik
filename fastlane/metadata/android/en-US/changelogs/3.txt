@@ -1,18 +1,13 @@
 Optimizations:
--Implemented rememberSaveable to persist view mode across tabs, ensuring consistent user experience.
-- Optimized layout recomposition in search results to reduce UI flicker and improve responsiveness.
-- Enhanced scrolling performance in both grid and list views, enabling fluid browsing even with large datasets.
+- View mode is now remembered across tabs.
+- Smoother scrolling in grid and list views.
+- Reduced UI flicker in search results.
 
 Bug Fixes:
-- Fixed app crash triggered by accessing the album context menu (3-dot menu).
-- Corrected inconsistent icon display in the view mode toggle button.
-- Resolved layout glitches occurring during view mode transitions, ensuring seamless UI updates.
+- Fixed crash when opening the album context menu.
+- Fixed inconsistent icon in the view mode toggle button.
+- Fixed layout glitches during view mode transitions.
 
 Technical Updates:
-- Migrated state persistence to rememberSaveable for better reliability.
-- Improved state management when switching tabs, maintaining user context without disruption.
-- Enhanced error handling within search results, improving stability and user feedback.
-- New Crowdin updates by @NEVARLeVrai in #8
-- New Crowdin updates by @NEVARLeVrai in #9
-- Update from Kreate by @NEVARLeVrai in #13
-- New Crowdin updates by @NEVARLeVrai in #12
+- New Crowdin translation updates by @NEVARLeVrai.
+- Update from Kreate by @NEVARLeVrai.

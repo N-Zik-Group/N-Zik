@@ -1,20 +1,15 @@
 Changed:
-- Adaptive smart recommendations that scale with playlist size (10-120 recommendations) Settings > User Interface > Smart recommendations
+- Adaptive smart recommendations that scale with playlist size (10-120)
 - Smart Shuffle icon
 - Removed the warning message asking for a soft restart
 
 Added:
-- Ability to choose the display order during a search in Settings > User Interface > Online search order
-- Added back smart shuffle to Home songs tab !
-
-Optimizations:
-- Star icon was showing on wrong song in QuickPicks
+- Choose the display order for searches in Settings
+- Added back smart shuffle to Home songs tab
 
 Bug Fixes:
-- Caption not showing in the Video mode
-- Backward icon wasn't working after exiting video mode
-- Video text in Player > Video was showing behind status bar
-- Discord RPC broken url images
-- Crash when importing songs thought backup system
-- Added a waiting time when launching the app to be sure that everything is loaded up
-- Now if you change what page should load toolbar should be functional
+- Fixed: Caption not showing in Video mode
+- Fixed: Backward icon after exiting video mode
+- Fixed: Video text showing behind status bar
+- Fixed: Discord RPC broken image URLs
+- Fixed: Crash when importing songs from backup

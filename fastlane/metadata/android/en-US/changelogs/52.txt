@@ -1,13 +1,9 @@
 Hotfix & Features:
-- Added a warning dialog to remind users to backup their database and settings before installing an update.
-- Added inline change cover dialog for songs and videos.
-- Fixed the physical back button behavior inside the "Add to Playlist" menu so it correctly returns to the previous menu instead of closing the entire panel.
-- Fixed drag-and-drop reordering functionality.
-- Blocked drag-and-drop reordering when the list sort order is set to Descending to prevent inconsistencies.
-- Fixed toolbar UI blinking issues when changing tabs.
-- Fixed synchronization of all songs in private YouTube playlists.
-- Restored missing navigation bar background and padding on the Album screen.
-- Refactored player menus and updated translations (Chinese Traditional and Simplified).
-- Fixed layout alignment and symmetric padding constraints for adaptive thumbnails.
-- Added and corrected YouTube Music logo indicators for synced local playlists in the Home Library and online playlists.
-- Updated the modern player UI to show a single person icon when there is only one artist, and a group icon for multiple artists.
+- Warning dialog to back up your database and settings before updating
+- Inline change cover dialog for songs and videos
+- Fixed back button in the "Add to Playlist" menu
+- Fixed drag-and-drop reordering (blocked when sort is Descending)
+- Fixed sync of all songs in private YouTube playlists
+- Refactored player menus; updated Chinese translations
+- YouTube Music logo indicators fixed for synced playlists
+- Modern player: person icon for a single artist

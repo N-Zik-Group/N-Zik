@@ -1,58 +1,69 @@
-﻿<b>N-Zik</b>, Android için açık kaynaklı ve çok dilli YouTube Music istemcinizdir.
+Android için çok dilli YouTube Music ön yüzü: performans, UI/UX iyileştirmeleri, özellik genişletme ve uzun vadeli destek.
 
-<a href="https://github.com/knighthat/Kreate">Kreate</a>'in performansa, arayüz iyileştirmelerine, hata düzeltmelerine ve uzun süreli destekli yeni özelliklere odaklanan bir çatalıdır.
+<b>N-Zik</b>, <a href="https://github.com/knighthat/Kreate">Kreate</a>'nin açık kaynaklı bir çatalıdır.
 
 <b>Not:</b> N-Zik bir yan proje olarak başladı. Daha olgun alternatifler için <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> veya <a href="https://github.com/fast4x/RiPlay">RiPlay</a>'e göz atın.
 
-<b>AI Kullanımı:</b> Kod için üretken AI kullanıyorum (<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Yöntemi</a> aracılığıyla), her şey yayınlanmadan önce gözden geçirilir ve test edilir.
+<b>AI Kullanımı:</b> Kod için üretken AI kullanıyorum (<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a> aracılığıyla), her şey yayına alınmadan önce incelenir ve test edilir.
 
-Sıradan bir dinleyici ya da odyofil olun, N-Zik gizliliğinizden ödün vermeden müziğiniz üzerinde tam kontrol sağlar.
+Sıradan dinleyici ya da odyofil olun, N-Zik gizliliğinizden ödün vermeden müziğiniz üzerinde tam kontrol sağlar.
 
-✨ <b>NEDEN N-ZIK?</b> Reklam yok, arka plan oynatma, çevrimdışı önbellek ve tamamen ayarlanabilir arayüz — her zaman ücretsiz.
+✨ <b>NEDEN N-ZIK?</b> Reklamsız, arka plan oynatma, çevrimdışı önbellekleme, ayarlanabilir arayüz - her zaman ücretsiz.
 
 🎨 <b>Ayarlanabilir Arayüz</b>
-- Klasik ViMusic modu geçişli Jetpack Compose
+- Klasik ViMusic modu anahtarlı Jetpack Compose
 - Temalar: AMOLED, Deep Dark, Crisp Light + renkli vurgular
-- 3D Carousel Oynatıcı ve özelleştirilebilir ana ekran widget'ları
-- Sanatçı profilleri, Haber Akışı ve deneysel widget'lar
+- 3D Carousel Player, ana ekran widget'ları, birleşik ve mini-oynatıcı
+- Sanatçı profilleri, Keşif/ruh halleri, katlanabilir ana ekran başlıkları
 
 🎵 <b>Ses Deneyimi</b>
-- YouTube Music Premium  aracılığıyla birinci sınıf ses
-- Düzenleme ve gerçek zamanlı çeviri ile senkronize şarkı sözleri
-- Şarkı tanıma (Shazam benzeri), sesli arama ve ses görselleştirici
-- Profesyonel kontroller: hız, perde, normalleştirme, crossfade, ses artırma, bas geliştirme, yankı
+- YouTube Music Premium aracılığıyla premium ses, otomatik uygulanır
+- Düzenleme, gerçek zamanlı çeviriyle senkronize sözler
+- Şarkı tanıma (Shazam benzeri), sesli arama, görselleştirici
+- Pro kontroller: hız, perde, normalleştirme, crossfade, ses/bas artırma, yankı
+- Kesin navigasyon için Audio Bar dalga formu arama çubuğu
 
 💾 <b>Çevrimdışı, Meta Veriler ve Gizlilik</b>
-- Parçalar ve çalma listeleri için akıllı çevrimdışı önbellekleme ve indirme
-- Tam meta verilerle FFmpeg destekli dışa aktarma (yalnızca 64-bit)
-- Uygulama içi meta veri düzenleyici (AAC/Opus, kapak resmi)
+- Parçalar ve listeler için akıllı önbellekleme/indirme, seçilebilir indirme kalitesi
+- Tam meta veriyle FFmpeg destekli dışa aktarma (yalnız 64-bit)
+- Uygulama içi meta veri düzenleyici (AAC/Opus, kapak)
 - Yerel dinleme istatistikleri ve geçmişi
-- Özel aralıklar ile otomatik yedekleme
+- Özel aralıklı ve saklama süreli otomatik yedekleme
 
 🔗 <b>Entegrasyonlar</b>
-- YouTube girişi ile öneriler ve ses/video geçişi
-- Alternatif YouTube akışı için Invidious entegrasyonu
-- Discord Rich Presence
+- Öneriler ve video oynatma için YouTube girişi; deneysel çift yönlü senkronizasyon motoru
+- Last.fm scrobbling: Now Playing, beğen/beğenme kaldırma
+- MusicBrainz sanatçı ve albüm bilgileri
+- Discord Rich Presence; canlı önizlemeli gelişmiş mod
+- Alternatif YouTube akışı için Invidious
 - Çalma listesi içe/dışa aktarma: RiPlay, Spotify, YouTube Music, N-Zik
+
+👥 <b>Birlikte Dinleyin</b>
+- Başka bir N-Zik kullanıcısının sunduğu canlı dinleme oturumuna kod veya davet bağlantısıyla katılın
+
+🗓️ <b>Rewind</b>
+- Otomatik Rewind listeleriyle yıllık/aylık dinleme özetleri
 
 📱 <b>Her Yerde Oynatın:</b> Android Auto, Automotive, TV ve Tabletler
 
-🛠️ <b>Gelişmiş Özellikler</b>
-- BT bağlantısında otomatik devam, kalıcı kuyruk, otomatik doldurma
-- Akıllı çöp, gizli şarkılar, ebeveyn denetimi, kapaktan duvar kağıdı
-- Invidious entegrasyonu, proxy desteği, ağ kalitesi uyarlama
-- OTA güncellemeleri, uyku zamanlayıcısı, arka planda oynatma
+🛠️ <b>Gelişmiş Kullanıcı Özellikleri</b>
+- Çoklu profil: profil başına izole veritabanı ve ayarlar
+- Bluetooth bağlantısında otomatik devam, kalıcı kuyruk, otomatik doldurma
+- Akıllı çöp, gizli şarkılar, beğenmeme sistemi, ebeveyn denetimi
+- Proxy desteği, ağ kalitesi uyarlama, günlük dışa aktarma
+- Rescue Center, bakım ekranı, başlangıç rehberi, uygulama kısayolları
+- GitHub'dan OTA güncellemeleri, uyku zamanlayıcısı, arka plan oynatma
 
-🛡️ N-Zik %100 açık kaynaklıdır (FOSS). Temel izinler: İNTERNET, RECORD_AUDIO (yalnızca görselleştirici), STORAGE (dışa aktarma/yedekleme), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
+🛡️ %100 açık kaynaklı (FOSS). Temel izinler: INTERNET, RECORD_AUDIO (yalnızca görselleştirici), STORAGE (dışa aktarma/yedekleme), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Mevcut Yapılar</b>
-- Full/Beta: Tam (64-bit)
+- Full/Beta: Tam yapı (64-bit)
 - Full32/Beta32: FFmpeg içermeyen (32/64-bit)
-- Minified: Düşük kaliteli cihazlar için hafif (64-bit)
+- Minified: Düşük özellikli cihazlar için hafif (64-bit)
 - Minified32: FFmpeg içermeyen hafif (32/64-bit)
 - FOSS: Otomatik güncelleyici içermeyen, F-Droid için (64-bit)
-- Dev/Dev32: Geliştirme yapıları, yalnızca test amaçlı
+- Dev/Dev32: Geliştirme yapıları, yalnızca test için
 
-Standart yapılar 64-bit (FFmpeg ile); "32" yapılar FFmpeg'i kaldırır. Yalnızca FOSS F-Droid üzerindedir.
+Standart yapılar 64-bit (FFmpeg); "32" yapılar her iki mimaride de FFmpeg'i çıkartır. F-Droid'de yalnızca FOSS var.
 
-<b>Ocak 2027</b>'den itibaren Google tüm geliştiricilerden kimlik doğrulaması isteyecektir. FOSS projesi olarak N-Zik buna karşı çıkmaktadır. <a href="https://keepandroidopen.org">Daha fazla bilgi</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Petisyonu imzalayın</a>
+<b>Ocak 2027</b>'den itibaren Google, tüm geliştiricilerden kimlik doğrulaması gerektiriyor. FOSS olarak N-Zik buna karşı çıkıyor. <a href="https://keepandroidopen.org">Daha fazla bilgi</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Petisyonu imzalayın</a>

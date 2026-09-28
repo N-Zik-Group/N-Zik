@@ -1,25 +1,15 @@
 Changed:
-- Added Remember visualizer and Lyrics states (enable in settings)
-- Updated Library icon
-- Restored star logo in Recommendation
-- Disabled checkboxes when switching category
-- Update section hidden on non-updatable builds
-- Tap & hold to enable checkbox now selects all
+- Remember visualizer and lyrics states
+- Checkbox tap & hold to enable now selects all
 - Long tap now supported in menus
 
 Optimizations:
 - Improved Discord RPC handling (play, pause, kill)
-- Adjusted padding for online artists in Library
 - Enhanced Video UI
 
 Bug Fixes:
 - Visualizer color button working correctly
 - "On Device" folders now visible again
-- Fixed "e:" showing in explicit song titles
-- Discord RPC no longer spams errors or runs when disabled
-- No more repeated fail messages without internet
-- Video UI controls now functional
-- Loader no longer hides recommended songs on refresh
+- Discord RPC no longer spams errors when disabled
 - Fixed local songs not playing in Android Auto
-- Fixed crash with (swipe to) play next in queue
-- (Swipe to) play next now plays correct song
+- Fixed crash with (swipe to) play next in queue; now plays correct song

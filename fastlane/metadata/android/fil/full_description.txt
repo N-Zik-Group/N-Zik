@@ -1,66 +1,69 @@
-﻿Ang <b>N-Zik</b> ay ang iyong open-source, multilingual na YouTube Music client para sa Android.
+Multilingual na YouTube Music frontend para sa Android: performance, UI/UX refinements, features, at pangmatagalang suporta.
 
-Isang fork ng <a href="https://github.com/knighthat/Kreate">Kreate</a> na nakatuon sa performance, pagpapaganda ng UI, pag-aayos ng mga bug, at pangmatagalang suporta.
+<b>N-Zik</b> ay isang open-source fork ng <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Tandaan:</b> Nagsimula ang N-Zik bilang isang side project. Para sa mas mature na alternatibo, tingnan ang <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, o <a href="https://github.com/fast4x/RiPlay">RiPlay</a>
+<b>Tandaan:</b> N-Zik, side project. Mas mature na alternatibo: tingnan ang <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, o <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Paggamit ng AI:</b> Gumagamit ako ng generative AI para sa code (sa pamamagitan ng <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), sinusuri at sinusubok bago ilabas.
+<b>Paggamit ng AI:</b> Gumagamit ako ng generative AI para sa code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), sinusuri at sinusubok bago ilabas.
 
-Maging kaswal na tagapakinig man o audiophile, binibigyan ka ng N-Zik ng ganap na kontrol sa iyong musika nang hindi isinasakripisyo ang privacy.
+Kaswal na tagapakinig man o audiophile, nagbibigay ang N-Zik ng ganap na kontrol sa musika mo nang walang kompromise sa privacy.
 
-✨ <b>BAKIT N-ZIK?</b> Walang ads, background playback, offline caching, at customizable na interface — libre, palagi.
+✨ <b>BAKIT N-ZIK?</b> Walang ads, background playback, offline caching, at customizable na UI - libre, palagi.
 
 🎨 <b>Customizable na UI</b>
 - Jetpack Compose na may Classic ViMusic mode toggle
 - Mga tema: AMOLED, Deep Dark, Crisp Light + tinted accents
-- 3D Carousel Player at customizable na home widgets
-- Mga artist profile, News Feed, experimental na widget
+- 3D Carousel Player, home widgets, pagsamahang player at mini-player
+- Mga artist profile, Discovery at moods, na-collapsible na home headers
 
 🎵 <b>Karanasan sa Audio</b>
-- Premium quality audio sa YouTube Music Premium 
+- Premium quality via YouTube Music Premium, awtomatikong inaplikar
 - Synced lyrics na may editing at real-time translation
-- Audio visualizer at pro controls: speed, pitch, normalization, crossfade, volume boost, music recognition (Shazam-like), voice search, bass boost, reverb
+- Pagkilala ng kanta (Shazam na parang), voice search, audio visualizer
+- Pro controls: speed, pitch, normalization, crossfade, volume boost, bass boost, reverb
+- Audio Bar waveform seekbar para sa eksaktong navigation
 
 💾 <b>Offline, Metadata at Privacy</b>
-- Matalinong caching at downloads para sa mga track at playlist
-- FFmpeg-powered export na may buong metadata (64-bit builds lamang)
+- Matalinong caching at downloads para sa track at playlist, na may pinipiling download quality
+- FFmpeg-powered export na may buong metadata (64-bit lang)
 - In-app metadata editor (AAC/Opus, cover art)
-- 100% lokal na listening stats at history
+- Lokal na listening stats at history
 - Auto-backup na may custom na intervals at retention
 
 🔗 <b>Mga Integrasyon</b>
-- YouTube sign-in para sa mga rekomendasyon at audio/video switching
-- Invidious integration
-- Discord Rich Presence
+- YouTube sign-in para sa rekomendasyon at video, kasama ang eksperimental na two-way sync engine
+- Last.fm scrobbling na may Now Playing at love/unlove
+- MusicBrainz artist at album insights
+- Discord Rich Presence, kasama ang advanced mode na may live preview
+- Invidious integration para sa alternatibong YouTube streaming
 - Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
+
+👥 <b>Magpakinig nang Sabay</b>
+- Sumali sa live na pakikinig na inu-host ng ibang N-Zik user via code o invite link
+
+🗓️ <b>Rewind</b>
+- Taunang at buwang recap ng pakikinig na may auto-generated na Rewind playlists
 
 📱 <b>Mag-play Kahit Saan:</b> Android Auto, Automotive, TV, at Tablets
 
 🛠️ <b>Mga Feature para sa Power User</b>
-- Text at voice search
-- OTA updates mula sa GitHub
-- Sleep timer at background playback
-- Auto-resume sa BT
-- Persistent queue
-- Auto-fill
-- Smart trash
-- Hidden songs
-- Parental control
-- Wallpaper mula sa album art
-- Invidious integration
-- Proxy
-- Network adaptation
+- Multi-profile: hiwalay na database at settings per profile
+- Auto-resume sa pagkonekta ng Bluetooth, persistent na queue, auto-fill na queue
+- Smart trash, nakatagong mga awitin, dislike system, parental control
+- Proxy support, network quality adaptation, log export
+- Rescue Center, maintenance screen, onboarding, app shortcuts
+- OTA updates mula sa GitHub, sleep timer, background playback
 
 🛡️ 100% open-source (FOSS). Mga pangunahing pahintulot: INTERNET, RECORD_AUDIO (visualizer lamang), STORAGE (exports/backups), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Mga Available na Build</b>
-- Full/Beta: Kumpletong build (64-bit lamang)
+- Full/Beta: Kumpletong build (64-bit)
 - Full32/Beta32: Walang FFmpeg (32/64-bit)
-- Minified: Lightweight, para sa mga low-end device (64-bit lamang)
+- Minified: Lightweight, para sa low-end device (64-bit)
 - Minified32: Lightweight na walang FFmpeg (32/64-bit)
-- FOSS: Walang auto-updater, para sa F-Droid (64-bit lamang)
-- Dev/Dev32: Development builds, para sa testing lamang
+- FOSS: Walang auto-updater, para sa F-Droid (64-bit)
+- Dev/Dev32: Development builds, testing lamang
 
-Ang mga standard build ay 64-bit (FFmpeg); ang mga "32" build ay walang FFmpeg para sa parehong architecture. FOSS lang ang nasa F-Droid.
+Standard build: 64-bit (FFmpeg); "32" build ay walang FFmpeg. FOSS lang ang nasa F-Droid.
 
-Simula <b>Enero 2027</b>, hihilingin ng Google ang pagpapatunay ng pagkakakilanlan para sa lahat ng developer. Bilang FOSS project, tumututol ang N-Zik dito. <a href="https://keepandroidopen.org">Matuto pa</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Lagdaan ang petisyon</a>
+Simula <b>Enero 2027</b>, hihilingin ng Google ang identity verification para sa lahat ng developer. Bilang FOSS project, tumututol ang N-Zik. <a href="https://keepandroidopen.org">Matuto pa</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Lagdaan ang petisyon</a>

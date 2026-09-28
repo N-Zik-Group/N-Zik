@@ -1,47 +1,18 @@
 New:
-- New Logo (removed music logo, added N-Zik name)
-- New Settings UI (partially complete, Player UI still missing)
-- New Changelogs UI
-- New Update UI with Ask-related improvements
-- New Network Settings categorization
-- Centralized image management through ImageCacheFactory for consistent behavior
-- Android 6+ (API 23) is now the minimum supported version for better network API compatibility
+- New Logo (added N-Zik name)
+- New Settings UI, Changelogs UI, Update UI
+- Android 6+ (API 23) now minimum
 
 Changed:
-- Updated dependencies
 - Moved Update section to About
-- Quickpicks settings renamed to AI recommendations (now includes all AI settings)
-- Renamed RiMusic logs → N-Zik logs
-- Renamed RiMusic interface → N-Zik
-- Translated Easter eggs messages
+- Quickpicks renamed to AI recommendations
+- RiMusic renamed to N-Zik (logs and interface)
 
 Improved:
-- AutoUpdate enabled by default
-- Beta builds automatically update to the most recent BETA or FULL version (minified builds excluded)
-- Beta updates enabled by default on Beta builds (can be disabled to switch to stable)
-- Removed the "no update available" message at startup
-- Update popup now shows BETA or STABLE indicator
-- Enhanced dynamic theme system with improved color extraction from album artwork
-- Theme selection now works without restart
-- Optimized image loading and caching for better performance
-- Coil updated from v2 → v3 with support for system or private cache
-- Improved cache factory implementation
-- Default purple color slightly lighter for better readability in dark areas
-- Improved clarity of some Settings UI elements
-- Discord RPC now uses a new system to upload artwork → better performance (thanks to KnightHat)
+- AutoUpdate and Beta updates enabled by default
+- Removed "no update available" message at startup
+- Enhanced dynamic theme; no restart needed
 
 Fixed:
-- Various known bugs
-- General tabs now display correct values
-- Fixed changelog icon not working on Android < 12
-- Fixed updater issue with 4-digit versions (now pads with 0 for correct release selection)
-- Updater now works properly on minified builds
-- Fixed dynamic theme sticking to old colors when no music is playing
-- Fixed image loading issues on poor networks (intelligent cache/network strategy)
-- Fixed notification player images (fallback to app logo)
-- Fixed player thumbnails (fallback to app logo instead of banner)
-- Fixed all AsyncImage components to use centralized ImageCacheFactory
-- Removed debug logging from image caching system for cleaner performance
-- Fixed crash logs not being reported
-- Fixed Discord RPC not working for some users
-- Fixed division by 0 in data tabs
+- Updater: 4-digit versions and minified builds fixed
+- Crash logs now working

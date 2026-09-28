@@ -1,48 +1,13 @@
-Hotfix:
-- Added a Retry Sync dialog for Home tabs (Artist, Album, Library) to easily restart failed synchronizations.
-- Added background notifications for failed syncs with a clickable intent to reopen the app.
-
 Added:
-- Added real-time progress notifications for Home tabs synchronizations (Artists, Albums, Playlists).
-- Added success notifications for completed synchronizations.
-- History: fine-grained date grouping (e.g. "x days ago", "this month", "last year") instead of capping at "last week".
-- History: sorting dropdown menu (Date, Alphabetical, Artist) next to the search icon.
-- Search: long press menus to album, artist, playlist, and video suggestions.
+- Sync progress and failure notifications, plus Retry Sync dialog
+- History: fine-grained dates and sorting (Date, A-Z, Artist)
+- Search: long-press menus for album, artist, playlist, video suggestions
 
 Improved:
-- Increased ImageCacheFactory loader fallback delay from 3s to 10s to prevent premature fallback icons on slow connections.
-- History: date sticky header background color to accent color.
-- History: center the History/YTM buttons and search icon, and change search icon color to white.
-- History: horizontal padding to date sticky headers so they align with list items.
-- Home: improve refresh matching and thumbnail fallback (show loader for 3s then fallback to ic_launcher_box, verify name/ID match before accepting YouTube search results).
-- Accounts: add status bar padding to YouTube and Discord login sheet drag handles.
+- Home refresh and image loading improved on slow connections
 
 Fixed:
-- History: remove hardcoded fillMaxWidth from ButtonsRow so it doesn't push the search icon off-screen.
-- History: remove top WindowInset padding from LazyColumn to eliminate the large gap above the list.
-- Shuffle: change default max songs in queue from 500 to Unlimited to allow shuffling all songs.
-- Home: quick picks loader for dice and play all.
-- Search: more of in album menu not showing up.
-- Player: smooth scrim fade when closing queue panel (alpha follows panel height fraction).
-- Queue: remove top padding from first item in queue.
-- Accounts: fix Piped instance menu infinite open/close loop by wrapping menuState.display in LaunchedEffect.
-- Menu: remove Title with chevron_down from YouTube and Discord login webviews.
-- Menu: add header with handle bar to ImportPlaylistsMenu, remove duplicate titles.
-- Menu: remove title from all item menus (song, album, artist, playlist, video, player).
-- Menu: fix double header in Sort.kt MenuComponent.
-- Menu: skip header in ListMenu/GridMenu when title=null and no handle bar.
-- Menu: respect Color.Unspecified in SettingIcon for logo icons (Spotify, RiPlay, NZik, YouTube Music).
-- Karaoke: increase line multiplier for 3-4+ lines to prevent lyrics being too high.
-- Karaoke: allow lyrics to go backwards when seeking.
-- Lyrics: limit LyricsSettingsMenu height to 50% of screen.
-- Lyrics: fix compilation errors in LyricsSettingsMenu.
-- Lyrics: fix lrclib string resource reference.
-
-Refactor:
-- Search: remove SearchItemMenu, replace with SongItemMenu.
-- Lyrics: rewamp LyricsSettingsMenu with SongItem style (New SongItem-like design with icon, title, subtitle, action; Add missing settings: showlyricsthumbnail, showButtonPlayerLyrics, lyricsCustomColor; Organized into sections: Display Mode, Text Style, Behavior, Translation, Actions).
-- Lyrics: add handle bar header to LyricsSettingsMenu.
-
-Other:
-- Home: Add detailed Timber logs for all refresh operations.
-- Lyrics: remove unused imports.
+- Shuffle queue now unlimited (was 500 songs)
+- Search "More of" in album menu; queue spacing fixes
+- Karaoke: lyrics position and backward seeking
+- Lyrics settings menu redesign and layout fixes

@@ -1,57 +1,60 @@
-﻿<b>N-Zik</b> adalah klien YouTube Music sumber terbuka multibahasa untuk Android.
+Frontend YouTube Music multibahasa untuk Android, berfokus pada performa, polesan UI/UX, perluasan fitur dan dukungan jangka panjang.
 
-Fork dari <a href="https://github.com/knighthat/Kreate">Kreate</a> yang berfokus pada performa, polesan UI, perbaikan bug, dan dukungan jangka panjang.
+<b>N-Zik</b> adalah fork sumber terbuka dari <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
 <b>Catatan:</b> N-Zik dimulai sebagai proyek sampingan. Untuk alternatif yang lebih matang, lihat <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, atau <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
 <b>Penggunaan AI:</b> Saya menggunakan AI generatif untuk kode (melalui <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), ditinjau dan diuji sebelum dirilis.
 
-Baik pendengar kasual maupun audiofil, N-Zik memberi Anda kendali penuh atas musik tanpa mengorbankan privasi.
+Pendengar kasual maupun audiofil, N-Zik memberi Anda kendali penuh atas musik tanpa mengorbankan privasi.
 
-✨ <b>MENGAPA N-ZIK?</b> Tanpa iklan, pemutaran latar belakang, caching offline, dan UI yang sepenuhnya dapat disesuaikan — gratis, selalu.
+✨ <b>MENGAPA N-ZIK?</b> Tanpa iklan, pemutaran latar belakang, caching offline, UI dapat disesuaikan - gratis, selalu.
 
 🎨 <b>UI yang Dapat Disesuaikan</b>
 - Jetpack Compose dengan toggle mode ViMusic Klasik
 - Tema: AMOLED, Deep Dark, Crisp Light + aksen warna
-- 3D Carousel Player, widget home yang dapat disesuaikan
-- Profil artis, News Feed, widget eksperimental
+- 3D Carousel Player, widget home, pemain terpadu dan mini-pemain
+- Profil artis, Discovery dan mood, header home yang dapat dilipat
 
 🎵 <b>Pengalaman Audio</b>
-- Kualitas premium via YouTube Music Premium 
-- Lirik sinkron dengan pengeditan & terjemahan real-time
-- Visualisator audio dan kontrol pro: kecepatan, nada, normalisasi, crossfade, peningkatan volume, pengenalan musik (seperti Shazam), pencarian suara, penguat bass, gema
+- Kualitas premium via YouTube Music Premium, diterapkan otomatis
+- Lirik sinkron dengan pengeditan dan terjemahan real-time
+- Pengenalan lagu (seperti Shazam), pencarian suara, visualisator audio
+- Kontrol pro: kecepatan, nada, normalisasi, crossfade, peningkatan volume, penguat bass, gema
+- Bar waveform Audio Bar untuk navigasi presisi
 
 💾 <b>Offline, Metadata & Privasi</b>
-- Caching offline cerdas & unduhan untuk lagu dan daftar putar
-- Ekspor FFmpeg dengan metadata lengkap (hanya 64-bit)
+- Caching cerdas dan unduhan untuk lagu dan daftar putar, kualitas unduhan dapat dipilih
+- Ekspor bertenaga FFmpeg dengan metadata lengkap (hanya 64-bit)
 - Editor metadata dalam app (AAC/Opus, sampul album)
-- Statistik mendengarkan & riwayat 100% lokal
-- Cadangan otomatis dengan interval & retensi khusus
+- Statistik mendengarkan dan riwayat lokal
+- Cadangan otomatis dengan interval dan retensi khusus
 
 🔗 <b>Integrasi</b>
-- Login YouTube untuk rekomendasi & peralihan audio/video
-- Integrasi Invidious
-- Discord Rich Presence
+- Login YouTube untuk rekomendasi dan video, plus mesin sinkronisasi dua arah eksperimental
+- Scrobbling Last.fm dengan Now Playing dan suka/tidak suka
+- Wawasan artis dan album MusicBrainz
+- Discord Rich Presence, termasuk mode lanjutan dengan pratinjau langsung
+- Integrasi Invidious untuk streaming YouTube alternatif
 - Impor/ekspor daftar putar: RiPlay, Spotify, YouTube Music, N-Zik
+
+👥 <b>Dengar Bersama</b>
+- Bergabung ke sesi dengar langsung oleh pengguna N-Zik lain via kode atau tautan undangan
+
+🗓️ <b>Rewind</b>
+- Rekap mendengarkan tahunan dan bulanan dengan playlist Rewind otomatis
 
 📱 <b>Main di Mana Saja:</b> Android Auto, Automotive, TV, dan Tablet
 
 🛠️ <b>Fitur Power User</b>
-- Pencarian teks & suara
-- Pembaruan OTA dari GitHub
-- Timer tidur & pemutaran latar belakang
-- Lanjutkan otomatis di BT
-- Antrian persisten
-- Isi otomatis
-- Sampah cerdas
-- Lagu tersembunyi
-- Kontrol orang tua
-- Wallpaper dari sampul album
-- Integrasi Invidious
-- Proxy
-- Adaptasi jaringan
+- Multi-profil: database dan pengaturan terisolasi per profil
+- Lanjut otomatis saat BT terhubung, antrean persisten, isi otomatis antrean
+- Sampah cerdas, lagu tersembunyi, sistem tidak suka, kontrol orang tua
+- Dukungan proxy, adaptasi kualitas jaringan, ekspor log
+- Rescue Center, layar pemeliharaan, onboarding, pintasan app
+- Pembaruan OTA dari GitHub, timer tidur, pemutaran latar belakang
 
-🛡️ 100% sumber terbuka (FOSS). Izin utama: INTERNET, RECORD_AUDIO (visualisator saja), STORAGE (ekspor/cadangan), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
+🛡️ 100% sumber terbuka (FOSS). Izin utama: INTERNET, RECORD_AUDIO (hanya visualisator), STORAGE (ekspor/cadangan), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Build yang Tersedia</b>
 - Full/Beta: Build lengkap (64-bit)

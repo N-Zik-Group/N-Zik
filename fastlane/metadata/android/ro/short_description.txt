@@ -1,1 +1,1 @@
-Un client YouTube Music modern și multilingv pentru Android, cu suport offline.
+Client YT Music multilingv

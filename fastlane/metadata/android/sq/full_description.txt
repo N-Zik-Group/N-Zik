@@ -1,66 +1,69 @@
-﻿<b>N-Zik</b> është klienti juaj YouTube Music me burim të hapur dhe shumëgjuhësh për Android.
+Frontend shumëgjuhësh i YouTube Music për Android: performancë, përmirësime UI/UX, zgjerim veçorish, mbështetje afatgjatë.
 
-Një fork i <a href="https://github.com/knighthat/Kreate">Kreate</a> i fokusuar në performancë, përmirësimin e ndërfaqes, ndreqjen e gabimeve dhe mbështetje afatgjatë.
+<b>N-Zik</b> është fork me burim të hapur i <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
 <b>Shënim:</b> N-Zik filloi si një projekt anësor. Për alternativa më të pjekura, shikoni <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> ose <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Përdorimi i AI:</b> Përdor AI gjenerative për kodin (përmes <a href="https://github.com/bmad-code-org/BMAD-METHOD">Metodës BMAD</a>), çdo gjë rishikohet dhe testohet përpara dërgimit.
+<b>Përdorimi i AI:</b> Përdor AI gjenerative për kodin (përmes <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), shqyrtohet dhe testohet përpara dërgimit.
 
-Pavarësisht nëse jeni dëgjues i rastësishëm apo audiofil, N-Zik ju jep kontroll absolut mbi muzikën tuaj pa cenuar privatësinë.
+Jeni dëgjues i rastësishëm apo audiofil, N-Zik ju jep kontroll të plotë mbi muzikën pa cenuar privatësinë.
 
-✨ <b>PSE N-ZIK?</b> Pa reklama, riprodhim në sfond, ruajtje jashtë linje dhe ndërfaqe plotësisht e personalizueshme — falas, gjithmonë.
+✨ <b>PSE N-ZIK?</b> Pa reklama, riprodhim në sfond, ruajtje jashtë linje, ndërfaqe e personalizueshme - falas, gjithmonë.
 
 🎨 <b>Ndërfaqe e personalizueshme</b>
-- Jetpack Compose me çelës për modalitetin klasik ViMusic
+- Jetpack Compose me modalitetin klasik ViMusic
 - Tema: AMOLED, Deep Dark, Crisp Light + thekse me ngjyra
-- Player me karusel 3D dhe widget të personalizueshëm për ekranin fillestar
-- Profile të detajuara artistësh, News Feed dhe widget eksperimentale
+- 3D Carousel Player, widget-e të ekranit kryesor, player i unifikuar dhe mini-player
+- Profile artistësh, Discovery dhe mood, koka të palosshme
 
-🎵 <b>Përvoja e Audios</b>
-- Audio me cilësi premium përmes YouTube Music Premium 
-- Tekste këngësh të sinkronizuara me redaktim dhe përkthim në kohë reale
-- Vizualizues audio dhe kontrolle pro: shpejtësia, lartësia e zërit, normalizimi, crossfade, rritja e volumit, njohja e muzikës (si Shazam), kërkim me zë, rritja e basit, reverb
+🎵 <b>Përvoja e audios</b>
+- Cilësi premium përmes YouTube Music Premium, automatikisht
+- Tekste të sinkronizuara me redaktim dhe përkthim në kohë reale
+- Njohje këngësh (si Shazam), kërkim me zë, vizualizues audio
+- Pro kontrolle: shpejtësia, lartësia e zërit, normalizimi, crossfade, rritja e volumit, rritja e basit, reverb
+- Shirit kërkimi me waveform të Audio Bar për navigim të saktë
 
-💾 <b>Jashtë linje, Metadatat dhe Privatësia</b>
-- Ruajtje jashtë linje inteligjente dhe shkarkime për këngët dhe listat
+💾 <b>Jashtë linje, metadatat dhe privatësia</b>
+- Ruajtje inteligjente jashtë linje dhe shkarkime këngësh/listash, me cilësi të zgjidhshme
 - Eksport FFmpeg me metadata të plota (vetëm 64-bit)
-- Redaktues i metadatave brenda aplikacionit (AAC/Opus, kopertina)
-- Statistikat e dëgjimit dhe historia 100% lokale
-- Rezervim automatik me intervale dhe mbajtje të personalizuara
+- Redaktues metadatesh në aplikacion (AAC/Opus, kopertina)
+- Statistikat dhe historia e dëgjimit lokale
+- Rezervim automatik me intervale dhe mbajtje të cilësuara
 
 🔗 <b>Integrimet</b>
-- Identifikimi në YouTube për rekomandime dhe kalimin audio/video
-- Integrimi Invidious
-- Discord Rich Presence
-- Import/eksport i listave të dëgjimit: RiPlay, Spotify, YouTube Music, N-Zik
+- Identifikim në YouTube për rekomandime dhe video, motor eksperimental sinkronizimi dydrejtimësh
+- Last.fm scrobbling me Now Playing dhe like/unlike
+- MusicBrainz për detaje artistësh dhe albume
+- Discord Rich Presence me modalitet të avancuar, parashikim në kohë reale
+- Invidious për streaming alternativ të YouTube
+- Import/eksport i listave: RiPlay, Spotify, YouTube Music, N-Zik
 
-📱 <b>Luaj kudo:</b> Android Auto, Automotive, TV dhe Tabletë
+👥 <b>Dëgjoni së bashku</b>
+- Bashkohuni seancës dëgjimi live të përdoruesit tjetër N-Zik, me kod ose link ftesë
 
-🛠️ <b>Veçori për Përdoruesit e Avancuar</b>
-- Kërkim me tekst dhe zë
-- Përditësime OTA nga GitHub
-- Kohëmatësi i gjumit dhe luajtja në sfond
-- Vazhdimi automatik në BT
-- Radhë e përhershme
-- Plotësim automatik
-- Hedhurinë e mençur
-- Këngë të fshehura
-- Kontroll prindëror
-- Imazh fondi nga kopertina e albumit
-- Integrimi Invidious
-- Proxy
-- Përshtatje rrjeti
+🗓️ <b>Rewind</b>
+- Përmbledhje vjetore/mujore dëgjimi me lista Rewind të gjeneruara automatikisht
 
-🛡️ N-Zik është 100% me burim të hapur (FOSS). Lejet kryesore: INTERNET, RECORD_AUDIO (vetëm vizualizuesi), STORAGE (eksporte/rezervime), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
+📱 <b>Luaj kudo:</b> Android Auto, Automotive, TV dhe tabletë
+
+🛠️ <b>Veçori për përdoruesit e avancuar</b>
+- Multi-profil: bazë dhe cilësime të izoluar për profil
+- Vazhdim automatik me Bluetooth, rresht i përhershëm, mbushje e rreshtit
+- Kosh i mençur, këngë të fshehura, dislike, kontroll prindëror
+- Mbështetje proxy, përshtatje cilësie rrjeti, eksport logjesh
+- Rescue Center, ekran i mirëmbajtjes, udhëzim fillestar, shkurtore
+- Përditësime OTA nga GitHub, kohëmatës gjumi, riprodhim në sfond
+
+🛡️ 100% burim i hapur (FOSS). Lejet kryesore: INTERNET, RECORD_AUDIO (vetëm vizualizuesi), STORAGE (eksporte/rezervime), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Versionet e disponueshme</b>
 - Full/Beta: I plotë (64-bit)
 - Full32/Beta32: Pa FFmpeg (32/64-bit)
-- Minified: I lehtë, për pajisje me performancë të ulët (64-bit)
+- Minified: I lehtë për pajisje me performancë të ulët (64-bit)
 - Minified32: I lehtë pa FFmpeg (32/64-bit)
 - FOSS: Pa përditësues automatik, për F-Droid (64-bit)
 - Dev/Dev32: Versione zhvillimi, vetëm për testim
 
-Versionet standarde janë 64-bit (me FFmpeg); versionet „32" heqin FFmpeg. Vetëm versioni FOSS është në F-Droid.
+Versionet standarde janë 64-bit (FFmpeg); "32" hiqin FFmpeg për të dyja arkitekturat. Në F-Droid vetëm FOSS.
 
-Duke filluar nga <b>janari 2027</b>, Google do të kërkojë verifikimin e identitetit për të gjithë zhvilluesit. Si projekt FOSS, N-Zik kundërshton këtë kërkesë. <a href="https://keepandroidopen.org">Mësoni më shumë</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Nënshkruani peticionin</a>
+Nga <b>janari 2027</b>, Google kërkon verifikim identiteti për zhvilluesit. Si FOSS, N-Zik kundërshton këtë. <a href="https://keepandroidopen.org">Mësoni më shumë</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Nënshkruani peticionin</a>

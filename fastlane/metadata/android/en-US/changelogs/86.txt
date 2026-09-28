@@ -1,16 +1,14 @@
 Added:
-- Batch export cached songs with full metadata and lyrics.
-- Pause on headphone disconnect setting (General Settings).
-- Top playlist period selector with custom order/visibility.
+- Batch export cached songs with full metadata and lyrics
+- Pause on headphone disconnect setting
+- Top playlist period selector with custom order/visibility
 
 Improved:
-- Stream resolution: fixed infinite retry, better error messages.
-- Cookie expiry detection with toast warning on startup.
-- Download All skips already-downloaded songs, accurate progress.
-- Crash logs with full device info, 30+ error code names.
+- Stream resolution: no infinite retry, better errors
+- Cookie expiry toast on startup
+- Download All skips existing downloads, accurate progress
 
 Fixed:
-- Swapped download/delete toolbar icons (#587).
-- Multi-select respects active selection across all screens.
-- Queue shuffle/delete no longer crashes.
-- Playlist deletion dialogs clarified.
+- Swapped download/delete toolbar icons (#587)
+- Multi-select keeps active selection across screens
+- Queue shuffle/delete no longer crashes

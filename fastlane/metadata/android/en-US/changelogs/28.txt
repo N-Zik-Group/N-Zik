@@ -1,16 +1,15 @@
 New:
-- Upgraded to Material 3 Expressive design system
-- Added Filter section in online search (Songs, Albums, Artists, and Videos)
-- Implemented persistent Sorting (Grid/List) in online search
+- Material 3 Expressive design system
+- Filter section (Songs, Albums, Artists, Videos) and persistent Grid/List sorting in online search
 
 Improved:
-- Finished Settings UI page transition to modern design
-- Replaced download progress with new Wavy Material 3 Expressive icon
-- Implemented Expressive Loader placeholders across multiple sections (Home, Search, History, Playlist, Album, Artist, Podcast, Mood)
-- Optimized search results loading performance
-- Added loader icon on player/miniplayer play buttons during music loading
+- Settings UI transition to modern design
+- Wavy Material 3 download progress icon
+- Expressive loader placeholders across main sections
+- Faster search results loading
+- Loader icon on play buttons while music loads
 
 Fixed:
-- Fixed podcast loading issues
-- Fixed Stats page issue where download button remained in pending state
-- Fixed search results description not loading correctly
+- Podcast loading issues
+- Stats page download button stuck in pending state
+- Search results description not loading

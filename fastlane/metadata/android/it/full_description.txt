@@ -1,49 +1,60 @@
-﻿<b>N-Zik</b> è il tuo client YouTube Music open source e multilingue per Android.
+Frontend multilingue di YouTube Music per Android, focalizzato su prestazioni, UI/UX, espansione delle funzioni e supporto a lungo termine.
 
-Un fork di <a href="https://github.com/knighthat/Kreate">Kreate</a> focalizzato su prestazioni, pulizia dell'interfaccia, correzione di bug e supporto a lungo termine.
+<b>N-Zik</b> è un fork open source di <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Nota:</b> N-Zik è nato come progetto personale. Per alternative più mature, dai un'occhiata a <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> o <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Nota:</b> N-Zik è nato come progetto personale. Per alternative più mature, consulta <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> o <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Uso dell'IA:</b> Utilizzo IA generativa per il codice (tramite <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), revisionato e testato prima del rilascio.
+<b>Uso dell'IA:</b> Uso IA generativa per il codice (tramite <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), revisionato e testato prima del rilascio.
 
-Che tu sia un ascoltatore occasionale o un audiofilo, N-Zik ti offre il controllo totale della tua musica senza compromettere la tua privacy.
+Ascoltatore occasionale o audiofilo, N-Zik offre il controllo totale della tua musica senza compromettere la privacy.
 
-✨ <b>PERCHÉ N-ZIK?</b> Niente pubblicità, riproduzione in background, caching offline e interfaccia completamente personalizzabile — gratis, sempre.
+✨ <b>PERCHÉ N-ZIK?</b> Niente pubblicità, riproduzione in background, caching offline, UI personalizzabile - gratis, sempre.
 
 🎨 <b>Interfaccia Personalizzabile</b>
-- Jetpack Compose con toggle per la modalità classica ViMusic
+- Jetpack Compose con toggle modalità classica ViMusic
 - Temi: AMOLED, Deep Dark, Crisp Light + accenti colorati
-- 3D Carousel Player, widget home personalizzabili
-- Profili artisti, News Feed, widget sperimentali
+- 3D Carousel Player, widget home, player e mini-player unificati
+- Profili artisti, Discovery e mood, intestazioni richiudibili
 
 🎵 <b>Esperienza Audio</b>
-- Qualità premium tramite YouTube Music Premium 
+- Qualità premium via YouTube Music Premium, applicata automaticamente
 - Testi sincronizzati con modifica e traduzione in tempo reale
-- Riconoscimento musicale (Shazam-like), ricerca vocale e visualizzatore audio
+- Riconoscimento musicale (Shazam-like), ricerca vocale, visualizzatore audio
 - Controlli pro: velocità, intonazione, normalizzazione, crossfade, aumento volume, bass boost, riverbero
+- Barra waveform Audio Bar per una navigazione precisa
 
 💾 <b>Offline, Metadati e Privacy</b>
-- Caching offline intelligente e download per brani e playlist
+- Caching intelligente e download di brani/playlist, qualità selezionabile
 - Esportazione FFmpeg con metadati completi (solo 64-bit)
 - Editor metadati in-app (AAC/Opus, copertina)
-- Statistiche di ascolto e cronologia 100% locali
+- Statistiche d'ascolto e cronologia locali
 - Backup automatico con intervalli e conservazione personalizzati
 
 🔗 <b>Integrazioni</b>
-- Accesso a YouTube per consigli e passaggio audio/video
-- Integrazione Invidious per lo streaming YouTube alternativo
-- Discord Rich Presence
+- Accesso YouTube per consigli e video, più motore sperimentale di sincronizzazione bidirezionale
+- Scrobbling Last.fm con Now Playing e like/unlike
+- Informazioni su artisti e album di MusicBrainz
+- Discord Rich Presence, modalità avanzata con anteprima live
+- Invidious per lo streaming YouTube alternativo
 - Importazione/esportazione playlist: RiPlay, Spotify, YouTube Music, N-Zik
+
+👥 <b>Ascolta Insieme</b>
+- Unisciti a una sessione live di ascolto di un utente N-Zik, tramite codice o link di invito
+
+🗓️ <b>Rewind</b>
+- Riepiloghi annuali e mensili di ascolto, playlist Rewind auto-generate
 
 📱 <b>Riproduci Ovunque:</b> Android Auto, Automotive, TV e tablet
 
 🛠️ <b>Funzionalità Avanzate</b>
-- Ripresa automatica su connessione BT, coda persistente, auto-fill
-- Smart trash, brani nascosti, controllo parentale, sfondo da copertina
-- Integrazione Invidious, supporto proxy, adattamento qualità rete
-- Aggiornamenti OTA, timer, riproduzione in background
+- Multi-profilo: database e impostazioni isolate
+- Ripresa auto su BT, coda persistente, coda auto-compilata
+- Smart trash, brani nascosti, sistema di dislike, controllo parentale
+- Supporto proxy, adattamento qualità rete, export log
+- Rescue Center, schermo di manutenzione, onboarding, scorciatoie app
+- Aggiornamenti OTA da GitHub, timer di sonno, riproduzione in background
 
-🛡️ 100% open source (FOSS). Autorizzazioni principali: INTERNET, RECORD_AUDIO (solo visualizzatore), STORAGE (esportazioni/backup), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
+🛡️ 100% open source (FOSS). Autorizzazioni: INTERNET, RECORD_AUDIO (solo visualizzatore), STORAGE (esportazioni/backup), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Build Disponibili</b>
 - Full/Beta: Build completa (64-bit)
@@ -53,6 +64,6 @@ Che tu sia un ascoltatore occasionale o un audiofilo, N-Zik ti offre il controll
 - FOSS: Senza auto-updater, per F-Droid (64-bit)
 - Dev/Dev32: Build di sviluppo, solo per test
 
-Le build standard sono 64-bit (FFmpeg); le build "32" escludono FFmpeg per entrambe le architetture. Solo FOSS è su F-Droid.
+Le build standard sono 64-bit (FFmpeg); le "32" escludono FFmpeg per entrambe le architetture. Solo FOSS è su F-Droid.
 
-A partire da <b>gennaio 2027</b>, Google richiederà la verifica dell'identità per tutti gli sviluppatori. Come progetto FOSS, N-Zik si oppone a questo. <a href="https://keepandroidopen.org">Scopri di più</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Firma la petizione</a>
+A partire da <b>gennaio 2027</b>, Google richiederà la verifica dell'identità per tutti gli sviluppatori. Come FOSS, N-Zik si oppone. <a href="https://keepandroidopen.org">Scopri di più</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Firma la petizione</a>

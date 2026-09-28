@@ -1,13 +1,10 @@
 New:
-- Added Floating Bottom Navigation Bar
-- Changed default preset
+- Floating Bottom Navigation Bar
+- New default preset: bar defaults to Bottom Floating position with Icon Only style
 
 Improved:
-- Improved Default position: The bar is now set to BottomFloating (Floating at the bottom) by default.
-- Improved Default style: The bar style is set to IconOnly (Icons only) by default.
-- Improved mini player and bottom float bar to be more rounded and compact
-- Improved bottom float bar to be more compact
+- More rounded, compact mini player and bottom float bar
 - Improved settings for the bottom float bar
 
 Fixed:
-- Fixed crash when setting music cache to unlimited
+- Crash when setting music cache to unlimited

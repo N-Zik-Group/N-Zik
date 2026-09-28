@@ -1,18 +1,15 @@
 New:
-- bump min sdk to 24
-- bump target sdk to 37
+- Min SDK 24, target SDK 37
 
 Improved:
-- Completely centralized HTTP network architecture using NetworkClientFactory
-- Upgraded YouTube streaming stability with PoToken generation and PlayerJs extractor
-- Improved detailed ExoPlayer error logging for debugging (PLAYER_STATUS)
-- Updated dependencies
+- Centralized HTTP network architecture (NetworkClientFactory)
+- More stable YouTube streaming (PoToken + PlayerJs extractor)
 
 Fixed:
-- Fixed server restriction (HTTP 403) infinite retry loops in ExoPlayer
-- Fixed missing UI warning messages for restricted and unplayable tracks
-- Removed obsolete newpipe-extractor dependency causing conflicts
-- Fixed Youtube login not being used on some part of the app
+- Fixed infinite retry loops on HTTP 403 (server restriction)
+- Fixed missing warnings for restricted/unplayable tracks
+- Removed obsolete newpipe-extractor dependency
+- Fixed YouTube login not used in parts of the app
 
 Special Thanks:
-- https://github.com/MetrolistGroup for the Metrolist source code that help me find the problem and fix it !
+- Metrolist source code helped fix the issues: https://github.com/MetrolistGroup

@@ -1,27 +1,19 @@
 New:
-- Added a "Browsing" status to Discord Rich Presence when navigating the app
-- Added back YouTube login information
-- Completely redesigned and finished the Appearance settings UI
+- Discord Rich Presence "Browsing" status
+- YouTube login restored
+- New Appearance settings UI
 
 Improved:
-- Optimized Discord RPC network performance by removing redundant token validations
-- Improved YouTube login and datastore handling
-- Improved playback reliability
-- Improved Toaster error messages
-- Improved metadata fetching for tracks
+- Optimized Discord RPC, better login and playback
 
 Fixed:
-- Fixed Discord RPC logout issues
-- Fixed a cookie and error-handling mistake in ExoPlayer
-- Fixed a playback crash occurring on first login
-- Fixed Quick Picks when logged in
-- Fixed anonymous mode when logged out
-- Fixed streaming failures caused by YouTube's PoToken generation requirements
-- Fixed 400 Bad Request errors on fallback YouTube clients (Android/iOS) by correctly passing the API key
-- Fixed HTTP 403 streaming errors by automatically refreshing streams
-- Fixed Discord Rich Presence timestamp calculations to properly sync with track playback
-- Translated some missed toaster messages
-- Fixed status bar color issues when the bottom sheet is open
+- Fixed Discord RPC logout, timestamps
+- Fixed ExoPlayer cookie handling
+- Fixed crash on first login
+- Fixed Quick Picks and playback logged out
+- Fixed PoToken and 400 errors
+- Streams auto-refresh on HTTP 403
+- Fixed status bar color on sheets
 
 Special Thanks:
-- Thanks to the Metrolist source code for helping identify and resolve several of these issues: https://github.com/MetrolistGroup
+- Thanks to the Metrolist team: https://github.com/MetrolistGroup

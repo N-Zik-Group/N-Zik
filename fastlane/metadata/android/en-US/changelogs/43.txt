@@ -1,24 +1,13 @@
 New:
-- Added dice icon to Home Quick Picks to play random songs
-- Added Play and Shuffle buttons directly at the top of the Artist page
-- Added option to clear history from the History page in Data Settings
- 
+- Dice icon in Home Quick Picks to play random songs
+- Play and Shuffle buttons on the Artist page
+- Option to clear history in Data Settings
 Improved:
-- Floating action arrow no longer overlaps with the mini player in the queue
-- Search bar no longer overlaps with the mini player in the queue
-- Online search no longer hangs when scrolling quickly to the end of the page
-- Replaced old arrow icon in Home Quick Picks with a settings icon
-- Added empty state message in History when no history is found
-- Added empty state message on Home page when no items are available
-- Added toast notification when a download fails
-- Added artist profile picture in Android Auto
-- Added "No Thumbnail" placeholder for on-device music in Android Auto to prevent stretched or deformed covers
-- Improved thumbnail quality for songs and albums in Android Auto
-- Fixed settings strings that were displayed in UPPERCASE, now using Title Case
- 
+- Floating arrow and search bar no longer overlap the mini player
+- Empty state messages on History and Home pages
+- Artist picture and better thumbnails in Android Auto
 Fixed:
-- Fixed explicit unicode character appearing in artist name on Stats page
-- Fixed parental controls not working
-- Fixed duplicated error throws in the player
-- Fixed missing thumbnails for on-device music in Android Auto
-- Fixed wrong timestamp values in Android Auto when playing local songs
+- Parental controls fixed
+- Explicit unicode char in artist name on Stats page
+- Wrong timestamps for local songs in Android Auto
+- Toast when a download fails

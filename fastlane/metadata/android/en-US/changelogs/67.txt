@@ -1,5 +1,5 @@
 Hotfix:
-- Fixes for inconveniences from v7.1.0
+- Fixes from v7.1.0
 
 Added:
 - Playback settings menu (speed, pitch, volume, bass boost) via long-press on play
@@ -13,5 +13,5 @@ Fixed:
 - Crash on minified builds
 - Infinite buffering on stream decoding
 - Playlists/albums over 100 songs not loading fully
-- Memory leak with local images (~16x less RAM)
+- Memory leak with local images
 - Minor lyrics, UI and translation fixes

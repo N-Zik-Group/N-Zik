@@ -1,6 +1,6 @@
-<b>N-Zik</b> is your open-source, multilingual YouTube Music client for Android.
+A multilingual YouTube Music frontend for Android, focused on performance, UI/UX refinements, feature expansion, and long-term support.
 
-A fork of <a href="https://github.com/knighthat/Kreate">Kreate</a> focused on performance, UI polish, bug fixes, and long-term support.
+<b>N-Zik</b> is an open-source fork of <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
 <b>Note:</b> N-Zik started as a side project. For more mature alternatives, check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
@@ -8,39 +8,50 @@ A fork of <a href="https://github.com/knighthat/Kreate">Kreate</a> focused on pe
 
 Whether casual listener or audiophile, N-Zik gives you full control over your music without compromising privacy.
 
-✨ <b>WHY N-ZIK?</b> No ads, background playback, offline caching, customizable UI — free, always.
+✨ <b>WHY N-ZIK?</b> No ads, background playback, offline caching, customizable UI - free, always.
 
 🎨 <b>Customizable UI</b>
 - Jetpack Compose with Classic ViMusic mode toggle
 - Themes: AMOLED, Deep Dark, Crisp Light + tinted accents
-- 3D Carousel Player, customizable home widgets
-- Artist profiles, News Feed, experimental widgets
+- 3D Carousel Player, home widgets, unified player and mini-player
+- Artist profiles, Discovery and moods, collapsible home headers
 
 🎵 <b>Audio Experience</b>
-- Premium quality via YouTube Music Premium
+- Premium quality via YouTube Music Premium, applied automatically
 - Synced lyrics with editing and real-time translation
-- Song recognition (Shazam-like), voice search, and audio visualizer
+- Song recognition (Shazam-like), voice search, audio visualizer
 - Pro controls: speed, pitch, normalization, crossfade, volume boost, bass boost, reverb
+- Audio Bar waveform seekbar for precise navigation
 
 💾 <b>Offline, Metadata & Privacy</b>
-- Smart caching and downloads for tracks and playlists
+- Smart caching and downloads for tracks and playlists, with selectable download quality
 - FFmpeg-powered export with full metadata (64-bit only)
 - In-app metadata editor (AAC/Opus, cover art)
 - Local listening stats and history
 - Auto-backup with custom intervals and retention
 
 🔗 <b>Integrations</b>
-- YouTube sign-in for recommendations and audio/video switching
+- YouTube sign-in for recommendations and video playback, plus an experimental two-way sync engine
+- Last.fm scrobbling with Now Playing and love/unlove
+- MusicBrainz artist and album insights
+- Discord Rich Presence, including advanced mode with live preview
 - Invidious integration for alternative YouTube streaming
-- Discord Rich Presence
 - Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
+
+👥 <b>Listen Together</b>
+- Join a live listening session hosted by another N-Zik user via code or invite link
+
+🗓️ <b>Rewind</b>
+- Yearly and monthly listening recaps with auto-generated Rewind playlists
 
 📱 <b>Play Anywhere:</b> Android Auto, Automotive, TV, and Tablets
 
 🛠️ <b>Power User Features</b>
+- Multi-profile: isolated database and settings per profile
 - Auto-resume on Bluetooth connect, persistent queue, auto-fill queue
-- Smart trash, hidden songs, parental control, wallpaper from album art
-- Invidious integration, proxy support, network quality adaptation
+- Smart trash, hidden songs, dislike system, parental control
+- Proxy support, network quality adaptation, log export
+- Rescue Center, maintenance screen, onboarding, app shortcuts
 - OTA updates from GitHub, sleep timer, background playback
 
 🛡️ 100% open-source (FOSS). Key permissions: INTERNET, RECORD_AUDIO (visualizer only), STORAGE (exports/backups), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.

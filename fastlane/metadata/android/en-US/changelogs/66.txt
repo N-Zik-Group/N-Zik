@@ -1,21 +1,12 @@
 Added:
-- Playback settings menu accessible via long-press on play button (speed, pitch, volume, bass boost, loudness, etc.)
-- Quality tracking logs for network, audio, and image in player transitions
+- Playback settings menu (speed, pitch, volume, bass boost) via long-press on play
 - Waveform cover gradient (M3E Morphing) now default for new installs
 
 Changed:
-- PlaybackParamsDialog replaced by inline PlaybackSettingsMenu (list/grid modes)
-- Dialog files reorganized into categorized subdirectories (album, artist, menu, player, playlist, settings, song, tab)
+- PlaybackParamsDialog replaced by inline PlaybackSettingsMenu
 
 Fixed:
-- Fixed crash on minified build caused by R8 bytecode verification error (VerifyError on kotlin.math.MathKt and GlanceThemeKt)
-- Fixed infinite buffering caused by missing timeout in cipher deobfuscation (stream never falling back to other clients)
-- Fixed cipher deobfuscation cancellation buffering loop
-- Fixed long click on Rectangular play button not opening playback settings in Modern controls
-- Fixed playlists/albums exceeding 100 items not loading all songs (gh-661)
-- Fixed lyrics refetching all types instead of only the selected one
-- Fixed lyrics menu layout issues
-
-Other:
-- Aligned stream/download/cipher architecture with Metrolist (RequestSlot, failAsRendererGone, withinWindow cooldowns)
-- Updated internal project documentation for AI coding agents
+- Crash on minified builds
+- Infinite buffering on stream decoding
+- Playlists/albums over 100 songs not loading fully
+- Lyrics menu layout and refetch fixes

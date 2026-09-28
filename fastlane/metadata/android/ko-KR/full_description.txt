@@ -1,58 +1,69 @@
-﻿<b>N-Zik</b>은 Android를 위한 오픈 소스 다국어 YouTube Music 클라이언트입니다.
+Android용 다국어 YouTube Music 프론트엔드. 성능, UI/UX 개선, 기능 확장 및 장기 지원에 초점을 맞춥니다.
 
-<a href="https://github.com/knighthat/Kreate">Kreate</a>의 포크로, 성능, UI 개선, 버그 수정 및 장기 지원에 중점을 두고 있습니다.
+<b>N-Zik</b>은 <a href="https://github.com/knighthat/Kreate">Kreate</a>의 오픈 소스 포크입니다.
 
-<b>참고:</b> N-Zik은 사이드 프로젝트로 시작되었습니다. 더 성숙한 옵션은 <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, <a href="https://github.com/fast4x/RiPlay">RiPlay</a>를 확인해 보세요.
+<b>참고:</b> N-Zik은 사이드 프로젝트로 시작되었습니다. 더 성숙한 대안은 <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, <a href="https://github.com/fast4x/RiPlay">RiPlay</a>를 확인해 보세요.
 
-<b>AI 사용:</b> 코드 작성을 위해 생성형 AI를 사용합니다(<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>). 모든 코드는 배포 전 검토 및 테스트를 거칩니다.
+<b>AI 사용:</b> 코드 작성을 위해 생성형 AI를 사용합니다(<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>). 배포 전 검토 및 테스트를 거칩니다.
 
-가벼운 리스너든 오디오필이든, N-Zik은 개인 정보를 침해하지 않으면서 음악에 대한 완전한 제어권을 제공합니다.
+가벼운 리스너든 오디오필이든, N-Zik은 프라이버시를 해치지 않으면서 음악에 대한 완전한 제어를 제공합니다.
 
-✨ <b>왜 N-ZIK?</b> 광고 없음, 백그라운드 재생, 오프라인 캐싱, 완전히 맞춤 설정 가능한 UI — 항상 무료.
+✨ <b>왜 N-ZIK?</b> 광고 없음, 백그라운드 재생, 오프라인 캐싱, 맞춤 설정 가능한 UI - 항상 무료.
 
 🎨 <b>맞춤 설정 가능한 UI</b>
 - 클래식 ViMusic 모드 토글이 있는 Jetpack Compose
-- 테마: AMOLED, Deep Dark, Crisp Light + 강조 색상
-- 3D 캐러셀 플레이어, 맞춤 설정 가능한 홈 위젯
-- 아티스트 프로필, 뉴스 피드, 실험용 위젯
+- 테마: AMOLED, Deep Dark, Crisp Light + 색상 강조
+- 3D 캐러셀 플레이어, 홈 위젯, 통합 플레이어와 미니 플레이어
+- 아티스트 프로필, Discovery와 무드, 접이식 홈 헤더
 
 🎵 <b>오디오 경험</b>
-- YouTube Music Premium을 통한 프리미엄 품질 오디오
-- 편집 및 실시간 번역 기능이 있는 동기화 가사
-- 음악 인식 (Shazam 유사), 음성 검색 및 오디오 시각화
+- YouTube Music Premium을 통한 프리미엄 품질, 자동 적용
+- 편집 및 실시간 번역이 가능한 동기화 가사
+- 음악 인식 (Shazam 유사), 음성 검색, 오디오 시각화
 - 프로 컨트롤: 속도, 피치, 정규화, 크로스페이드, 볼륨 부스트, 베이스 부스트, 리버브
+- 정밀한 탐색을 위한 Audio Bar 웨이브폼 시크바
 
-💾 <b>오프라인, 메타데이터 및 개인 정보 보호</b>
-- 트랙 및 재생 목록을 위한 스마트 오프라인 캐싱 및 다운로드
-- 전체 메타데이터가 포함된 FFmpeg 기반 내보내기 (64비트 전용)
+💾 <b>오프라인, 메타데이터 및 프라이버시</b>
+- 트랙 및 재생 목록용 스마트 캐싱 및 다운로드, 다운로드 품질 선택 가능
+- 전체 메타데이터가 포함된 FFmpeg 기반 내보내기 (64-bit 전용)
 - 앱 내 메타데이터 편집기 (AAC/Opus, 커버 아트)
-- 100% 로컬 청취 통계 및 기록
+- 로컬 청취 통계 및 기록
 - 맞춤 간격 및 보존 기간의 자동 백업
 
 🔗 <b>통합</b>
-- 추천 및 오디오/비디오 전환을 위한 YouTube 로그인
-- 대체 YouTube 스트리밍을 위한 Invidious 통합
-- Discord Rich Presence
+- 추천 및 비디오 재생을 위한 YouTube 로그인, 실험적 양방향 동기화 엔진 포함
+- Now Playing과 좋아요/취소를 갖춘 Last.fm 스크로블링
+- MusicBrainz 아티스트 및 앨범 정보
+- Discord Rich Presence, 라이브 미리보기가 있는 고급 모드 포함
+- 대체 YouTube 스트리밍용 Invidious 통합
 - 재생 목록 가져오기/내보내기: RiPlay, Spotify, YouTube Music, N-Zik
+
+👥 <b>함께 듣기</b>
+- 코드 또는 초대 링크로 다른 N-Zik 사용자가 호스트하는 라이브 청취 세션에 참여하세요
+
+🗓️ <b>Rewind</b>
+- 자동 생성되는 Rewind 재생 목록이 있는 연간 및 월간 청취 회고
 
 📱 <b>어디서나 재생:</b> Android Auto, Automotive, TV 및 태블릿
 
 🛠️ <b>파워 유저 기능</b>
-- BT 연결 시 자동 재개, 지속 큐, 자동 채우기
-- 스마트 휴지통, 숨겨진 노래, 부모 제어, 커버 아트에서 배경화면
-- Invidious 통합, 프록시 지원, 네트워크 품질 적응
-- OTA 업데이트, 취침 타이머, 백그라운드 재생
+- 멀티 프로필: 프로필별 독립된 데이터베이스 및 설정
+- Bluetooth 연결 시 자동 재개, 지속 큐, 큐 자동 채우기
+- 스마트 휴지통, 숨겨진 노래, 싫음 시스템, 부모 제어
+- 프록시 지원, 네트워크 품질 적응, 로그 내보내기
+- Rescue Center, 유지보수 화면, 온보딩, 앱 바로가기
+- GitHub에서의 OTA 업데이트, 수면 타이머, 백그라운드 재생
 
 🛡️ 100% 오픈 소스 (FOSS). 주요 권한: INTERNET, RECORD_AUDIO (시각화 전용), STORAGE (내보내기/백업), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>사용 가능한 빌드</b>
-- Full/Beta: 전체 빌드 (64비트 전용)
-- Full32/Beta32: FFmpeg 없는 전체 빌드 (32/64비트)
-- Minified: 경량 빌드, 저사양 기기용 (64비트 전용)
-- Minified32: FFmpeg 없는 경량 빌드 (32/64비트)
-- FOSS: 자동 업데이트 없는 빌드, F-Droid용 (64비트 전용)
+- Full/Beta: 전체 빌드 (64-bit)
+- Full32/Beta32: FFmpeg 미포함 (32/64-bit)
+- Minified: 경량 빌드, 저사양 기기용 (64-bit)
+- Minified32: FFmpeg 없는 경량 빌드 (32/64-bit)
+- FOSS: 자동 업데이트 없음, F-Droid용 (64-bit)
 - Dev/Dev32: 개발 빌드, 테스트 전용
 
-표준 빌드는 FFmpeg 포함 64비트 전용. "32" 빌드는 FFmpeg 제거로 두 아키텍처 지원. FOSS만 F-Droid에 있음.
+표준 빌드는 64-bit (FFmpeg)이며, "32" 빌드는 두 아키텍처 모두에서 FFmpeg를 생략합니다. F-Droid에는 FOSS만 있습니다.
 
-<b>2027년 1월</b>부터 Google은 모든 Android 개발자에게 신원 확인을 요구합니다. FOSS 프로젝트로서 N-Zik은 이에 반대합니다. <a href="https://keepandroidopen.org">자세히 알아보기</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">청원 서명하기</a>
+<b>2027년 1월</b>부터 Google은 모든 개발자에게 신원 확인을 요구합니다. FOSS 프로젝트로서 N-Zik은 이에 반대합니다. <a href="https://keepandroidopen.org">자세히 알아보기</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">청원 서명하기</a>
