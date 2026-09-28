@@ -1874,6 +1874,12 @@ Volume BAS : titre précédent</string>
     <string name="rw_listening_days_without">%1$s jours sans écouter de musique.</string>
     <string name="rw_meta_plays">%1$s lectures</string>
     <string name="rw_meta_songs">%1$s titres</string>
+    <string name="profiles">Profiles</string>
+    <string name="add_profile">Add profile</string>
+    <string name="enter_profile_name">Enter profile name</string>
+    <string name="remove_profile">Remove profile</string>
+    <string name="this_profile_alreaty_exist">This profile aleady exist</string>
+    <string name="profile_restart_required">This required a restart of the app</string>
     <string name="rw_settings_title">Rétrospective</string>
     <string name="rw_settings_notifications">Notifications rétrospectives</string>
     <string name="rw_settings_playlists_title">Playlists rétrospectives</string>
@@ -1909,7 +1915,6 @@ Volume BAS : titre précédent</string>
     <string name="rw_finale_regen_done">PLAYLIST MISE À JOUR</string>
     <string name="rewind_top_sort">Meilleures Rétrospectives</string>
     <string name="rewind_alltime_name">De tous les temps</string>
-    <!-- Listen Together (ported from Metrolist) -->
     <string name="listen_together">Écoutons Ensemble</string>
     <string name="listen_together_description">Écoutez de la musique avec vos amis en temps réel. Créez une salle pour accueillir d\'autres utilisateurs, ou rejoignez une salle existante à l\'aide d\'un code.</string>
     <string name="listen_together_server_url">URL du serveur</string>
@@ -1997,7 +2002,6 @@ Volume BAS : titre précédent</string>
     <string name="listen_together_room">Salle</string>
     <string name="approve">Approuver</string>
     <string name="reject">Refuser</string>
-    <!-- Maintenance (app state at a glance: last boot passes + live subsystems) -->
     <string name="maintenance">Maintenance</string>
     <string name="maintenance_card_desc">Aperçu de l\'état de l\'application : tests de démarrage réussis et sous-systèmes actifs</string>
     <string name="maintenance_all_systems_ok">Tous les systèmes sont opérationnels</string>
@@ -2009,7 +2013,6 @@ Volume BAS : titre précédent</string>
     <string name="maintenance_open_desc">Ouvrir la fiche d\'entretien complète</string>
     <string name="maintenance_refresh">Actualiser</string>
     <string name="maintenance_no_data">Aucune donnée</string>
-    <!-- Boot passes (persisted last successful run) -->
     <string name="maintenance_dedup">Suppression des doublons d\'artistes portant le même nom</string>
     <string name="maintenance_dedup_summary">%1$d groupes · %2$d résolus · %3$d ignorés</string>
     <string name="maintenance_dedup_clean">Rien à dédupliquer</string>
@@ -2042,7 +2045,6 @@ Volume BAS : titre précédent</string>
     <string name="maintenance_db_cleanup_detail_removed">Lors de la dernière exécution, %d lien(s) obsolète(s) a (ont) été supprimé(s)</string>
     <string name="maintenance_db_cleanup_detail_clean">La dernière analyse n\'a rien détecté à nettoyer</string>
     <string name="maintenance_migration_done">Terminé</string>
-    <!-- Live subsystems -->
     <string name="maintenance_live_subsystems">Sous-systèmes en temps réel</string>
     <string name="maintenance_sync_ytm">Synchronisation YouTube Music</string>
     <string name="maintenance_sync_ytm_running">Synchronisation en cours</string>
@@ -2111,7 +2113,6 @@ Volume BAS : titre précédent</string>
     <string name="maintenance_debug_restart_needed">redémarrage nécessaire</string>
     <string name="maintenance_lastfm">Last.fm</string>
     <string name="maintenance_lastfm_active">Session active</string>
-    <!-- Maintenance (added with the sheet: section headers + states not covered above) -->
     <string name="maintenance_section_database">Base de données</string>
     <string name="maintenance_section_library_sync">Bibliothèque &amp; Synchronisation</string>
     <string name="maintenance_section_caches_downloads">Caches &amp; Téléchargements</string>
