@@ -59,10 +59,14 @@ class CoverPaletteExtractorAchromaticTest {
     private fun M3ECoverColors.swatches(): List<Int> =
         listOf(dominant, vibrant, lightVibrant, darkVibrant, muted, lightMuted, darkMuted)
 
-    /** The 7 swatches as extracted without the guard (independent reference, pre-guard parity). */
+    /**
+     * The 7 swatches as extracted without the guard (independent reference, pre-guard parity) —
+     * on the same RiPlay-based extraction base as the extractor: capped 8 palette
+     * (`maximumColorCount(8)`), each role falling back to the dynamic palette's accent.
+     */
     private fun preGuardSwatches(bitmap: Bitmap, isDark: Boolean): M3ECoverColors? {
         val palette = dynamicColorPaletteOf(bitmap, isDark) ?: return null
-        val swatchPalette = Palette.from(bitmap).generate()
+        val swatchPalette = Palette.from(bitmap).maximumColorCount(8).generate()
         val fallback = palette.accent.toArgb()
         return M3ECoverColors(
             dominant = swatchPalette.getDominantColor(fallback),

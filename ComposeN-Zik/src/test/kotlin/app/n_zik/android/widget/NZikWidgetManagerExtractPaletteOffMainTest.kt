@@ -3,14 +3,17 @@ package app.n_zik.android.widget
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -22,10 +25,12 @@ import org.robolectric.annotation.Config
  * work (scaling, rounding, circling) in `withContext(NzikDispatchers.MEDIA)` instead of running
  * inline on whatever dispatcher the caller used (`Dispatchers.Main` for the idle widget path via
  * the `AppWidgetProvider`s, raw `Dispatchers.IO` for the playing path via
- * `PlayerServiceModern.updateWidgets()`). `extractPalette` itself (widened from `private` to
- * `internal` purely for testability) is untouched, so this test only asserts the offload: the
- * same bitmap yields the same palette whether called directly or dispatched to MEDIA, and the
- * dispatched call actually runs on a `nzik-media-*` thread.
+ * `PlayerServiceModern.updateWidgets()`). `extractPalette` (widened from `private` to
+ * `internal` for testability) now delegates its fallback to the app's shared M3E extraction
+ * `m3eDynamicColorPaletteOf` (RiPlay-based, achromatic neutralization included), so this test
+ * asserts both the offload (the same bitmap yields the same palette whether called directly or
+ * dispatched to MEDIA, and the dispatched call actually runs on a `nzik-media-*` thread) and
+ * the app/widget palette parity of the fallback path.
  *
  * Robolectric is required (not a plain JVM unit test) because [NZikWidgetManager.extractPalette]
  * reads `Context.resources.configuration` and `Context.getSharedPreferences`, which need a real
@@ -131,5 +136,37 @@ class NZikWidgetManagerExtractPaletteOffMainTest {
         val offloaded = withContext(NzikDispatchers.MEDIA) { NZikWidgetManager.extractPalette(context, null) }
 
         assertEquals(direct, offloaded)
+    }
+
+    /**
+     * App/widget parity (acceptance criterion 3): with no palette saved by the app (fresh
+     * Robolectric prefs), `extractPalette` must take the fallback path and return exactly the
+     * app's shared M3E extraction `m3eDynamicColorPaletteOf` for the same bitmap — RiPlay-based
+     * (capped 8 palette, dominant swatch) including the achromatic neutralization.
+     *
+     * Uses the same solid blue cover as [app.n_zik.android.components.player.CoverPaletteExtractorTest]:
+     * in this Robolectric environment androidx.palette yields no swatch for solid warm-color
+     * bitmaps (dominantSwatch is null), so the shared extraction would return null here — a
+     * test-environment artifact, not a product regression (the app and widget both call the
+     * same function, which is what this parity assertion covers).
+     */
+    @Test
+    fun `extractPalette fallback equals the app m3eDynamicColorPaletteOf for the same bitmap`() = runBlocking {
+        val bitmap = solidBitmap(Color.rgb(30, 120, 200))
+        val isSystemInDarkMode =
+            context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
+                Configuration.UI_MODE_NIGHT_YES
+
+        val expected = m3eDynamicColorPaletteOf(bitmap, isSystemInDarkMode)
+        assertNotNull("expected a non-null palette from the app's shared extraction", expected)
+
+        // No `widget_palette_*` prefs under Robolectric -> `extractPalette` takes the fallback.
+        val actual = NZikWidgetManager.extractPalette(context, bitmap)
+
+        assertEquals(
+            "the widget fallback must be the app's shared M3E extraction for the same cover",
+            expected,
+            actual,
+        )
     }
 }

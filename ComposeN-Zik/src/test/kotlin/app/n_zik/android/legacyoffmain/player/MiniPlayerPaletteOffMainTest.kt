@@ -2,8 +2,6 @@ package app.n_zik.android.legacyoffmain.player
 
 import android.graphics.Bitmap
 import android.graphics.Color
-import androidx.core.graphics.ColorUtils.colorToHSL
-import androidx.palette.graphics.Palette
 import app.it.fast4x.rimusic.ui.screens.player.computeMiniPlayerPalette
 import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
 import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
@@ -12,6 +10,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -24,9 +23,10 @@ import org.robolectric.annotation.Config
  * (CPU-bound `Palette` extraction) inline, on whatever dispatcher that effect resumes on (Main,
  * since it follows `getBitmapFromUrl`'s suspension). That call is now extracted, unchanged, to
  * [computeMiniPlayerPalette] (declared `internal` in `MiniPlayer.kt`, `app.it.fast4x.rimusic.*`,
- * legacy) and dispatched via `withContext(NzikDispatchers.MEDIA)`. The palette is now built from
- * the vibrant swatch via `m3eDynamicColorPaletteOf` (shared M3E cover extraction) instead of the
- * dominant swatch.
+ * legacy) and dispatched via `withContext(NzikDispatchers.MEDIA)`. The palette is built from
+ * the dominant swatch via `m3eDynamicColorPaletteOf` (shared M3E cover extraction, RiPlay-based:
+ * capped 8 palette, dominant swatch, achromatic neutralization -- spec
+ * `spec-fix-palette-extractor-riplay-reference`).
  *
  * This test file itself lives under `app.n_zik.android.*` -- not the legacy package -- per the
  * gh-606 Lot 2 spec's "no new file under app.it.fast4x.rimusic.*" boundary; `internal` visibility
@@ -49,16 +49,18 @@ class MiniPlayerPaletteOffMainTest {
     }
 
     @Test
-    fun `computeMiniPlayerPalette returns the same vibrant-based result as m3eDynamicColorPaletteOf directly`() = runBlocking {
+    fun `computeMiniPlayerPalette returns the same dominant-based result as m3eDynamicColorPaletteOf directly`() = runBlocking {
         val bitmap = solidBitmap(Color.rgb(200, 60, 60))
 
-        val vibrant = Palette.from(bitmap).generate().getVibrantColor(0)
-        val vibrantHsl = FloatArray(3).apply { colorToHSL(vibrant, this) }
+        // For a colored cover the app's palette is the RiPlay reference (dominant-based); on a
+        // solid bitmap the dominant and vibrant swatches coincide, so the reference is exact.
+        val reference = dynamicColorPaletteOf(bitmap, false)
 
         val direct = m3eDynamicColorPaletteOf(bitmap, false)
         val extracted = computeMiniPlayerPalette(bitmap, false)
 
-        assertEquals(dynamicColorPaletteOf(vibrantHsl, false), extracted)
+        assertNotNull("expected a palette from the RiPlay reference", reference)
+        assertEquals(reference, extracted)
         assertEquals(direct, extracted)
     }
 

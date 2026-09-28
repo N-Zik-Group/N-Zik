@@ -1118,9 +1118,10 @@ private fun MiniPlayerSlotButton(
  * .ColorPalette.kt`, legacy read-only) inline, on whatever dispatcher that `LaunchedEffect` resumes
  * on -- Main, since it follows `getBitmapFromUrl`'s suspension. Extracted here, unchanged, so the
  * composable can dispatch it via `withContext(NzikDispatchers.MEDIA)` and so it is unit-testable
- * without instantiating the composable. The palette is now built from the vibrant swatch via
- * `m3eDynamicColorPaletteOf` (shared M3E cover extraction) instead of the dominant swatch.
- * `internal` (not `private`) purely so
+ * without instantiating the composable. The palette is built from the dominant swatch via
+ * `m3eDynamicColorPaletteOf` (shared M3E cover extraction, RiPlay-based: capped 8 palette,
+ * dominant swatch, achromatic neutralization -- spec
+ * `spec-fix-palette-extractor-riplay-reference`). `internal` (not `private`) purely so
  * `MiniPlayerPaletteOffMainTest` can call it directly -- it adds no new public legacy API.
  */
 internal suspend fun computeMiniPlayerPalette(bitmap: Bitmap, dark: Boolean): ColorPalette? =

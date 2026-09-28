@@ -182,7 +182,10 @@ fun NextVisualizer() {
                     try {
                         val coverColors = extractM3ECoverColors(bitmapCover, isDarkTheme)
                         if (coverColors != null) {
-                            dominantColor = m3eCoverForegroundArgb(coverColors.vibrant, !isDarkTheme)
+                            // OQ2=B (spec `spec-fix-palette-extractor-riplay-reference`): the "cover"
+                            // color renders the dominant swatch, the same hue the app's dynamic
+                            // accent is built from (RiPlay reference).
+                            dominantColor = m3eCoverForegroundArgb(coverColors.dominant, !isDarkTheme)
                         } else {
                             val palette = Palette.from(bitmapCover).generate()
                             dominantColor = palette.getDominantColor(android.graphics.Color.WHITE)

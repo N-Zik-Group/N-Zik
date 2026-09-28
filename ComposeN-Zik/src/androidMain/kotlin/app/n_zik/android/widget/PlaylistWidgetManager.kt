@@ -22,13 +22,13 @@ import coil3.request.allowHardware
 import coil3.toBitmap
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.it.fast4x.rimusic.ui.styling.colorPaletteOf
-import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
 import app.it.fast4x.rimusic.enums.ColorPaletteName
 import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import androidx.compose.ui.graphics.toArgb
 import android.content.res.Configuration
 import app.n_zik.android.MainActivity
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
@@ -267,7 +267,16 @@ object PlaylistWidgetManager {
         }
     }
 
-    internal fun extractPalette(context: Context, bitmap: Bitmap?): ColorPalette {
+    /**
+     * Resolves the palette the playlist widget renders for [bitmap]: the palette saved by the
+     * app (same bitmap = same colors) when the system theme matches it, otherwise the shared M3E
+     * extraction `m3eDynamicColorPaletteOf` — the app's single source of cover-color extraction
+     * (RiPlay-based: capped 8 palette, dominant swatch, achromatic neutralization) — so the
+     * widget stays in full parity with what the app displays, including the `NEUTRAL_COVER`
+     * case. Suspend: the extraction is CPU-bound, and every call site already runs inside
+     * `withContext(NzikDispatchers.MEDIA)`.
+     */
+    internal suspend fun extractPalette(context: Context, bitmap: Bitmap?): ColorPalette {
         val isSystemInDarkMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
         val defaultPalette = colorPaletteOf(
             ColorPaletteName.Dynamic,
@@ -298,9 +307,10 @@ object PlaylistWidgetManager {
             }
         }
 
-        // Fallback: extract from bitmap
+        // Fallback: extract from bitmap with the app's shared M3E extraction (RiPlay-based,
+        // achromatic neutralization included) — same result as the app for the same cover.
         return if (bitmap != null) {
-            dynamicColorPaletteOf(bitmap, isSystemInDarkMode)
+            m3eDynamicColorPaletteOf(bitmap, isSystemInDarkMode)
                 ?: defaultPalette
         } else {
             defaultPalette

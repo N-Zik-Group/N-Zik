@@ -9,9 +9,11 @@ import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
 
 /**
- * The 7 raw swatches of an album cover extracted from the full [Palette]
- * (no `maximumColorCount`, no filter) — the same extraction the `M3EMorphingCover` player
- * background performs in `computePlayerDynamicPalette` (`Player.kt`, legacy).
+ * The 7 raw swatches of an album cover extracted from the capped [Palette]
+ * (`maximumColorCount(8)`) — the same RiPlay-based extraction the legacy reference
+ * `dynamicColorPaletteOf(bitmap, isDark)` uses. This extractor is the app's single source of
+ * cover-color extraction (player, mini-player, app-wide dynamic theme, lyrics, visualizer,
+ * home-widget fallbacks).
  *
  * All values are ARGB `Int`s.
  */
@@ -53,14 +55,18 @@ internal fun channelDelta(rgb: Int): Float {
 /**
  * Extracts the 7 M3E morphing cover swatches from [bitmap].
  *
- * Identical extraction to `computePlayerDynamicPalette`: `Palette.from(bitmap).generate()`
- * (full palette, no `maximumColorCount`, no filter) with each `get*Color` falling back to the
- * dynamic palette's accent.
+ * The app's single source of cover-color extraction, rebased on the RiPlay reference:
+ * `Palette.from(bitmap).maximumColorCount(8).generate()` (capped at 8 swatches) with each
+ * `get*Color` falling back to the dynamic palette's accent. The null gate is the legacy
+ * reference `dynamicColorPaletteOf(bitmap, isDark)` itself, so `null` means exactly "no
+ * dominant swatch".
  *
  * Nearly achromatic covers (maximum swatch channel spread below
  * [ACHROMATIC_CHANNEL_DELTA_THRESHOLD]) are neutralized via [m3eNeutralizeIfAchromatic]
  * before being returned: every downstream surface then renders a neutral gray following the
- * cover instead of the legacy mid-tone fallback's faint tint.
+ * cover instead of the legacy mid-tone fallback's faint tint. The neutralization is
+ * evaluated on the capped swatches before any low-saturation rescue, so an achromatic cover
+ * is never re-tinted by the rescue.
  *
  * @param bitmap the cover bitmap
  * @param isDark whether the extraction targets a dark theme
@@ -69,7 +75,7 @@ internal fun channelDelta(rgb: Int): Float {
  */
 suspend fun extractM3ECoverColors(bitmap: Bitmap, isDark: Boolean): M3ECoverColors? {
     val palette = dynamicColorPaletteOf(bitmap, isDark) ?: return null
-    val swatchPalette = Palette.from(bitmap).generate()
+    val swatchPalette = Palette.from(bitmap).maximumColorCount(8).generate()
     val fallback = palette.accent.toArgb()
     return M3ECoverColors(
         dominant = swatchPalette.getDominantColor(fallback),
@@ -100,12 +106,13 @@ suspend fun extractM3ECoverColors(bitmap: Bitmap, isDark: Boolean): M3ECoverColo
  * following the cover"). Covers with any swatch at or above the threshold are returned
  * unchanged (strict M3E parity).
  *
- * Shared by [extractM3ECoverColors] and the player's `computePlayerDynamicPalette` so that
- * every cover-based surface (player background and animated gradients, morphing shapes,
- * `ColorPalette` stripes, lyrics, visualizer, mini-player, app-wide dynamic theme) renders
- * the same neutral result.
+ * Applied inside [extractM3ECoverColors] -- the app's single source of cover-color extraction --
+ * so every cover-based surface (player background and animated gradients, morphing shapes,
+ * `ColorPalette` stripes, lyrics, visualizer, mini-player, app-wide dynamic theme, home-widget
+ * fallbacks) renders the same neutral result.
  *
- * @param swatchPalette the full `Palette.from(bitmap).generate()` the swatches came from
+ * @param swatchPalette the capped `Palette.from(bitmap).maximumColorCount(8).generate()`
+ *  the swatches came from
  * @param fallbackArgb the dynamic accent ARGB used as each swatch's fallback
  * @return this instance neutralized when achromatic, unchanged otherwise
  */
@@ -152,35 +159,56 @@ val M3ECoverColors.allAchromatic: Boolean
         .all { channelDelta(it) < ACHROMATIC_CHANNEL_DELTA_THRESHOLD }
 
 /**
- * Builds the dynamic [ColorPalette] consumed by the mini-player and the app-wide dynamic theme,
- * from the M3E cover extraction: the HSL of the vibrant swatch (identical extraction to
- * [extractM3ECoverColors]) is injected into the existing capped construction
- * [dynamicColorPaletteOf] -- same saturation caps (<=0.1/0.3/0.4/0.5) and fixed lightnesses.
- * Unlike the legacy dominant-based path, it reads the vibrant swatch's HSL directly (no 8-color
- * cap, no low-saturation rescue).
+ * Builds the dynamic [ColorPalette] consumed by the mini-player, the app-wide dynamic theme and
+ * the player's local palette, rebased on the RiPlay reference: the palette is built from the
+ * **dominant** swatch, not the vibrant one.
  *
- * Nearly achromatic (neutralized) covers pick the palette's tone (dark or light ramp) from the
- * cover's dominant lightness instead of [isDark] (renegotiated `NEUTRAL_COVER` case,
- * 2026-09-19), so the theme renders a gray of the cover's family instead of staying light in
- * light mode or dark in dark mode regardless of the cover; the ramp/text pairing of the chosen
- * tone keeps the legacy contrast.
+ * Colored covers delegate directly to the legacy reference `dynamicColorPaletteOf(bitmap,
+ * isDark)` -- bit-identical result (capped 8 palette, dominant swatch, same saturation caps
+ * <=0.1/0.3/0.4/0.5 and fixed lightnesses, S<0.08 rescue to the most saturated non-zero
+ * swatch), without duplicating the caps/rescue logic.
+ *
+ * Nearly achromatic (neutralized) covers instead take the neutral ramp from the neutralized
+ * dominant swatch, with the tone (dark or light ramp) chosen from the cover's dominant
+ * lightness instead of [isDark] (renegotiated `NEUTRAL_COVER` case, 2026-09-19): the theme
+ * renders a gray of the cover's family instead of staying light in light mode or dark in dark
+ * mode regardless of the cover. The reference's low-saturation rescue must NOT run on them, as
+ * it would re-inject the faint hue the neutralization removed (the neutralization is
+ * evaluated before the rescue).
  *
  * @param bitmap the cover bitmap
  * @param isDark whether the palette targets a dark theme
- * @return the vibrant-based dynamic palette, or `null` when the bitmap yields no dominant swatch
+ * @return the dominant-based dynamic palette, or `null` when the bitmap yields no dominant swatch
  */
-suspend fun m3eDynamicColorPaletteOf(bitmap: Bitmap, isDark: Boolean): ColorPalette? {
-    val colors = extractM3ECoverColors(bitmap, isDark) ?: return null
-    val vibrantHsl = FloatArray(3)
-    colorToHSL(colors.vibrant, vibrantHsl)
-    val toneIsDark = if (colors.allAchromatic) {
+suspend fun m3eDynamicColorPaletteOf(bitmap: Bitmap, isDark: Boolean): ColorPalette? =
+    extractM3ECoverColors(bitmap, isDark)?.let { m3eDominantDynamicPaletteOf(it, bitmap, isDark) }
+
+/**
+ * The dominant-based dynamic [ColorPalette] for an already-extracted cover [colors]:
+ * achromatic (neutralized) covers get the neutral ramp from the neutralized dominant (tone from
+ * its lightness); colored covers delegate to the legacy reference
+ * `dynamicColorPaletteOf(bitmap, isDark)` -- bit-identical to the RiPlay reference, rescue
+ * included.
+ *
+ * Shared by [m3eDynamicColorPaletteOf] and the player's `computePlayerDynamicPalette` (legacy)
+ * so both build the same dominant-based palette from the same extraction, without
+ * re-extracting the swatches.
+ */
+internal fun m3eDominantDynamicPaletteOf(
+    colors: M3ECoverColors,
+    bitmap: Bitmap,
+    isDark: Boolean,
+): ColorPalette {
+    if (colors.allAchromatic) {
         val dominantHsl = FloatArray(3)
         colorToHSL(colors.dominant, dominantHsl)
-        dominantHsl[2] < 0.5f
-    } else {
-        isDark
+        return dynamicColorPaletteOf(dominantHsl, dominantHsl[2] < 0.5f)
     }
-    return dynamicColorPaletteOf(vibrantHsl, toneIsDark)
+    // Non-null by construction: [colors] came from extractM3ECoverColors, whose null gate is
+    // this very dynamicColorPaletteOf call on the same bitmap.
+    return requireNotNull(dynamicColorPaletteOf(bitmap, isDark)) {
+        "dominant swatch disappeared between extraction and palette build"
+    }
 }
 
 /**
@@ -196,26 +224,27 @@ fun lyricsThemeColor(palette: ColorPalette, onAccentBackground: Boolean = false)
     if (onAccentBackground) palette.text else palette.accent
 
 /**
- * The flat "Match song cover" player background color (`Player.kt`, `CoverColor`): the same
- * expression as the `M3EMorphingCover` shapes' vibrant parameter, so both render the cover's
- * vibrant hue.
+ * The flat "Match song cover" player background color (`Player.kt`, `CoverColor`): the
+ * dominant swatch with the same saturate transformation as the player background, so the
+ * surface renders the cover's dominant hue -- the same hue the app's dynamic accent is built
+ * from (RiPlay reference).
  *
- * @param vibrant the vibrant swatch as an ARGB `Int` (see [M3ECoverColors.vibrant])
+ * @param dominant the dominant swatch as an ARGB `Int` (see [M3ECoverColors.dominant])
  * @param lightTheme whether the current theme is light
  */
-fun m3eCoverBackgroundColor(vibrant: Int, lightTheme: Boolean): Color =
-    m3eSaturate(vibrant, lightTheme).m3eDarkenBy(lightTheme)
+fun m3eCoverBackgroundColor(dominant: Int, lightTheme: Boolean): Color =
+    m3eSaturate(dominant, lightTheme).m3eDarkenBy(lightTheme)
 
 /**
  * The "cover" foreground color used by the lyrics screen and the visualizer when their cover
- * color option is selected: the vibrant swatch with the same saturate transformation as the
- * player background -- `m3eSaturate(vibrant).toArgb()`.
+ * color option is selected: the dominant swatch with the same saturate transformation as the
+ * player background -- `m3eSaturate(dominant).toArgb()`.
  *
- * @param vibrant the vibrant swatch as an ARGB `Int` (see [M3ECoverColors.vibrant])
+ * @param dominant the dominant swatch as an ARGB `Int` (see [M3ECoverColors.dominant])
  * @param lightTheme whether the current theme is light
  */
-fun m3eCoverForegroundArgb(vibrant: Int, lightTheme: Boolean): Int =
-    m3eSaturate(vibrant, lightTheme).toArgb()
+fun m3eCoverForegroundArgb(dominant: Int, lightTheme: Boolean): Int =
+    m3eSaturate(dominant, lightTheme).toArgb()
 
 /**
  * Pure (non-composable) copy of `Player.saturate()`: adds 0.35 to the saturation in dark theme
