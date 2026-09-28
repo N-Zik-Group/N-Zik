@@ -37,6 +37,7 @@ fun RewindAlbumsCard(
     onNext: () -> Unit,
     onShareSlide: (() -> Unit)? = null
 ) {
+    val textScale = LocalRewindTextScale.current
     val topFive = albums.take(5)
     RewindStoryShell(
         page = page,
@@ -70,12 +71,12 @@ fun RewindAlbumsCard(
                 }
                 Spacer(Modifier.height(9.dp))
                 RewindReveal(active, 100, direction = RewindRevealDirection.Left) {
-                    Text(
+                    RewindAdaptiveTitle(
                         text = stringResource(R.string.rw_albums_heading),
                         color = rewindColors.value.cream,
-                        fontSize = if (compact) 31.sp else 37.sp,
-                        lineHeight = if (compact) 29.sp else 34.sp,
-                        letterSpacing = (-1.8).sp,
+                        fontSize = textScale.size(if (compact) 31.sp else 37.sp),
+                        lineHeight = textScale.size(if (compact) 29.sp else 34.sp),
+                        letterSpacing = textScale.letterSpacing((-1.8).sp),
                         fontWeight = FontWeight.Black
                     )
                 }
@@ -135,8 +136,10 @@ fun RewindAlbumsCard(
                                 Text(
                                     text = rank.toString(),
                                     color = if (isNumberOne) rewindColors.value.ink else rewindColors.value.cream,
-                                    fontSize = if (isNumberOne) 14.sp else 10.sp,
+                                    fontSize = textScale.size(if (isNumberOne) 14.sp else 10.sp),
                                     fontWeight = FontWeight.Black,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier
                                         .align(Alignment.BottomEnd)
                                         .background(if (isNumberOne) rewindColors.value.lime else rewindColors.value.ink)
@@ -160,10 +163,12 @@ fun RewindAlbumsCard(
                         Text(
                             text = "1",
                             color = rewindColors.value.lime,
-                            fontSize = if (compact) 42.sp else 50.sp,
-                            lineHeight = if (compact) 40.sp else 48.sp,
+                            fontSize = textScale.size(if (compact) 42.sp else 50.sp),
+                            lineHeight = textScale.size(if (compact) 40.sp else 48.sp),
                             fontWeight = FontWeight.Black,
-                            letterSpacing = (-2.2).sp
+                            letterSpacing = textScale.letterSpacing((-2.2).sp),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                         RewindArtworkWithFallback(
                             imageUrl = numberOne.album.thumbnailUrl,
@@ -177,16 +182,20 @@ fun RewindAlbumsCard(
                             Text(
                                 text = firstNonBlank(numberOne.album.cleanAuthorsText(), stringResource(R.string.rw_unknown_artist)),
                                 color = rewindColors.value.cream.copy(alpha = 0.48f),
-                                fontSize = 9.sp,
+                                fontSize = textScale.size(9.sp),
                                 maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.rewindMarqueeOnly()
                             )
                         }
                         Text(
                             text = stringResource(R.string.rw_minutes_compact, formatRewindNumber(numberOne.minutes)),
                             color = rewindColors.value.cream.copy(alpha = 0.65f),
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = textScale.size(9.sp),
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.rewindMarqueeOnly()
                         )
                     }
                 }
@@ -220,9 +229,11 @@ fun RewindAlbumsCard(
                                 Text(
                                     text = rank.toString(),
                                     color = rowOn,
-                                    fontSize = 18.sp,
-                                    lineHeight = 18.sp,
+                                    fontSize = textScale.size(18.sp),
+                                    lineHeight = textScale.size(18.sp),
                                     fontWeight = FontWeight.Black,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier.width(24.dp)
                                 )
                                 RewindArtworkWithFallback(
@@ -236,25 +247,30 @@ fun RewindAlbumsCard(
                                     Text(
                                         text = album.album.cleanTitle(),
                                         color = rowOn,
-                                        fontSize = 12.sp,
-                                        lineHeight = 13.sp,
+                                        fontSize = textScale.size(12.sp),
+                                        lineHeight = textScale.size(13.sp),
                                         fontWeight = FontWeight.Black,
                                         maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.rewindMarqueeOnly()
                                     )
                                     Text(
                                         text = firstNonBlank(album.album.cleanAuthorsText(), stringResource(R.string.rw_unknown_artist)),
                                         color = rowOn.copy(alpha = 0.40f),
-                                        fontSize = 8.sp,
+                                        fontSize = textScale.size(8.sp),
                                         maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.rewindMarqueeOnly()
                                     )
                                 }
                                 Text(
                                     text = stringResource(R.string.rw_minutes_compact, formatRewindNumber(album.minutes)),
                                     color = rowOn.copy(alpha = 0.62f),
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontSize = textScale.size(9.sp),
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.rewindMarqueeOnly()
                                 )
                             }
                         }
@@ -270,6 +286,7 @@ private fun DropCapAlbumTitle(
     title: String,
     compact: Boolean
 ) {
+    val textScale = LocalRewindTextScale.current
     val untitled = stringResource(R.string.rw_untitled)
     val clean = title.trim().ifBlank { untitled }
     val first = clean.take(1).uppercase()
@@ -278,20 +295,26 @@ private fun DropCapAlbumTitle(
         Text(
             text = first,
             color = rewindColors.value.lime,
-            fontSize = if (compact) 26.sp else 31.sp,
-            lineHeight = if (compact) 25.sp else 30.sp,
+            fontSize = textScale.size(if (compact) 26.sp else 31.sp),
+            lineHeight = textScale.size(if (compact) 25.sp else 30.sp),
             fontWeight = FontWeight.Black,
-            letterSpacing = (-1.5).sp
+            letterSpacing = textScale.letterSpacing((-1.5).sp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         Text(
+            // Drop-cap rest: single line — the drop-cap letter above stays static while
+            // a long title scrolls in a marquee within the remaining row width.
             text = rest,
             color = rewindColors.value.cream,
-            fontSize = if (compact) 12.sp else 14.sp,
-            lineHeight = if (compact) 13.sp else 15.sp,
+            fontSize = textScale.size(if (compact) 12.sp else 14.sp),
+            lineHeight = textScale.size(if (compact) 13.sp else 15.sp),
             fontWeight = FontWeight.Black,
-            maxLines = 2,
+            maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .weight(1f)
+                .rewindMarqueeOnly()
         )
     }
 }

@@ -23,6 +23,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.n_zik.android.R
@@ -37,6 +38,7 @@ fun RewindListenerBadgeCard(
     onNext: () -> Unit,
     onShareSlide: (() -> Unit)? = null
 ) {
+    val textScale = LocalRewindTextScale.current
     val badge = calculateListenerBadge(data)
     val tierNames = listOf(
         R.string.rw_badge_tier_0_name,
@@ -80,12 +82,12 @@ fun RewindListenerBadgeCard(
                 }
                 Spacer(Modifier.height(12.dp))
                 RewindReveal(active, 120, direction = RewindRevealDirection.Left) {
-                    Text(
+                    RewindAdaptiveTitle(
                         text = stringResource(R.string.rw_badge_heading),
                         color = rewindColors.value.cream,
-                        fontSize = if (compact) 31.sp else 37.sp,
-                        lineHeight = if (compact) 29.sp else 34.sp,
-                        letterSpacing = (-1.8).sp,
+                        fontSize = textScale.size(if (compact) 31.sp else 37.sp),
+                        lineHeight = textScale.size(if (compact) 29.sp else 34.sp),
+                        letterSpacing = textScale.letterSpacing((-1.8).sp),
                         fontWeight = FontWeight.Black
                     )
                 }
@@ -108,9 +110,12 @@ fun RewindListenerBadgeCard(
                                 Text(
                                     text = stringResource(R.string.rw_badge_index_label),
                                     color = rewindColors.value.cream.copy(alpha = 0.55f),
-                                    fontSize = 11.sp,
+                                    fontSize = textScale.size(11.sp),
                                     fontWeight = FontWeight.Black,
-                                    letterSpacing = 1.0.sp
+                                    letterSpacing = textScale.letterSpacing(1.0.sp),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.rewindMarqueeOnly()
                                 )
                                 RewindAnimatedNumber(
                                     value = badge.index.toLong(),
@@ -123,9 +128,12 @@ fun RewindListenerBadgeCard(
                                 Text(
                                     text = stringResource(R.string.rw_badge_index_sublabel),
                                     color = rewindColors.value.cream,
-                                    fontSize = 11.sp,
+                                    fontSize = textScale.size(11.sp),
                                     fontWeight = FontWeight.Black,
-                                    letterSpacing = 0.8.sp
+                                    letterSpacing = textScale.letterSpacing(0.8.sp),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.rewindMarqueeOnly()
                                 )
                             }
                         }
@@ -135,19 +143,22 @@ fun RewindListenerBadgeCard(
                     Text(
                         text = stringResource(badge.titleId),
                         color = rewindColors.value.lime,
-                        fontSize = if (compact) 30.sp else 36.sp,
-                        lineHeight = if (compact) 29.sp else 34.sp,
-                        letterSpacing = (-1.5).sp,
-                        fontWeight = FontWeight.Black
+                        fontSize = textScale.size(if (compact) 30.sp else 36.sp),
+                        lineHeight = textScale.size(if (compact) 29.sp else 34.sp),
+                        letterSpacing = textScale.letterSpacing((-1.5).sp),
+                        fontWeight = FontWeight.Black,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.rewindMarqueeOnly()
                     )
                 }
                 Spacer(Modifier.height(5.dp))
                 RewindReveal(active, 830) {
-                    Text(
+                    RewindAdaptiveTitle(
                         text = stringResource(badge.subtitleId),
                         color = rewindColors.value.cream.copy(alpha = 0.68f),
-                        fontSize = 12.sp,
-                        lineHeight = 16.sp,
+                        fontSize = textScale.size(12.sp),
+                        lineHeight = textScale.size(16.sp),
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -189,11 +200,15 @@ fun RewindListenerBadgeCard(
                                         reached -> rewindColors.value.cream.copy(alpha = 0.76f)
                                         else -> rewindColors.value.cream.copy(alpha = 0.28f)
                                     },
-                                    fontSize = if (current) 11.sp else 9.sp,
+                                    fontSize = textScale.size(if (current) 11.sp else 9.sp),
                                     fontWeight = FontWeight.Black,
-                                    letterSpacing = 0.5.sp,
+                                    letterSpacing = textScale.letterSpacing(0.5.sp),
                                     textAlign = TextAlign.End,
-                                    modifier = Modifier.fillMaxWidth(0.32f)
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.32f)
+                                        .rewindMarqueeOnly()
                                 )
                             }
                         }

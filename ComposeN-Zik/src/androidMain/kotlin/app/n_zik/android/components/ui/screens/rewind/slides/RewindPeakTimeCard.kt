@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.n_zik.android.R
@@ -45,6 +46,7 @@ fun RewindPeakTimeCard(
     onNext: () -> Unit,
     onShareSlide: (() -> Unit)? = null
 ) {
+    val textScale = LocalRewindTextScale.current
     val peakHour = data.stats.mostActiveHour?.hour?.substringBefore(':')?.toIntOrNull() ?: 0
     val hand = remember(peakHour) { Animatable(0f) }
     val bars = remember { Animatable(0f) }
@@ -77,12 +79,12 @@ fun RewindPeakTimeCard(
                 }
                 Spacer(Modifier.height(11.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
-                    Text(
+                    RewindAdaptiveTitle(
                         text = stringResource(R.string.rw_peak_time_heading),
                         color = rewindColors.value.cream,
-                        fontSize = if (compact) 35.sp else 41.sp,
-                        lineHeight = if (compact) 33.sp else 38.sp,
-                        letterSpacing = (-1.9).sp,
+                        fontSize = textScale.size(if (compact) 35.sp else 41.sp),
+                        lineHeight = textScale.size(if (compact) 33.sp else 38.sp),
+                        letterSpacing = textScale.letterSpacing((-1.9).sp),
                         fontWeight = FontWeight.Black
                     )
                 }
@@ -147,15 +149,20 @@ fun RewindPeakTimeCard(
                                 Text(
                                     text = formatHourLabel(data.stats.mostActiveHour?.hour),
                                     color = rewindColors.value.cream,
-                                    fontSize = if (compact) 26.sp else 31.sp,
-                                    fontWeight = FontWeight.Black
+                                    fontSize = textScale.size(if (compact) 26.sp else 31.sp),
+                                    fontWeight = FontWeight.Black,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.rewindMarqueeOnly()
                                 )
                                 Text(
                                     text = stringResource(R.string.rw_peak_time_peak_hour),
                                     color = rewindColors.value.lime,
-                                    fontSize = 8.sp,
+                                    fontSize = textScale.size(8.sp),
                                     fontWeight = FontWeight.Black,
-                                    letterSpacing = 0.9.sp
+                                    letterSpacing = textScale.letterSpacing(0.9.sp),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }
@@ -171,9 +178,11 @@ fun RewindPeakTimeCard(
                         Text(
                             text = stringResource(R.string.rw_peak_time_by_day),
                             color = rewindColors.value.lime,
-                            fontSize = 9.sp,
+                            fontSize = textScale.size(9.sp),
                             fontWeight = FontWeight.Black,
-                            letterSpacing = 0.8.sp
+                            letterSpacing = textScale.letterSpacing(0.8.sp),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                         Spacer(Modifier.height(9.dp))
                         DailyBars(data = data, progress = bars.value)
@@ -189,6 +198,7 @@ private fun DailyBars(
     data: RewindData,
     progress: Float
 ) {
+    val textScale = LocalRewindTextScale.current
     val stats = data.dailyStats.take(7)
     val max = stats.maxOfOrNull { it.minutes }?.coerceAtLeast(1L) ?: 1L
     // Highlight the peak by position, not data-class equality: ties must not light several
@@ -225,8 +235,10 @@ private fun DailyBars(
                 Text(
                     text = stat.dayOfWeek.take(1).uppercase(),
                     color = rewindColors.value.cream.copy(alpha = 0.55f),
-                    fontSize = 8.sp,
-                    fontWeight = FontWeight.Black
+                    fontSize = textScale.size(8.sp),
+                    fontWeight = FontWeight.Black,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }

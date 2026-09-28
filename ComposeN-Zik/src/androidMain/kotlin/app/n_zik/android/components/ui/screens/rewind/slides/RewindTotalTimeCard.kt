@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.n_zik.android.R
@@ -36,6 +37,7 @@ fun RewindTotalTimeCard(
     onNext: () -> Unit,
     onShareSlide: (() -> Unit)? = null
 ) {
+    val textScale = LocalRewindTextScale.current
     val onOrange = rewindColors.value.textOn(rewindColors.value.orange)
     val onLime = rewindColors.value.textOn(rewindColors.value.lime)
     RewindStoryShell(
@@ -60,12 +62,12 @@ fun RewindTotalTimeCard(
                 }
                 Spacer(Modifier.height(11.dp))
                 RewindReveal(active, 130, direction = RewindRevealDirection.Left) {
-                    Text(
+                    RewindAdaptiveTitle(
                         text = stringResource(R.string.rw_totals_heading),
                         color = onOrange,
-                        fontSize = if (compact) 33.sp else 39.sp,
-                        lineHeight = if (compact) 31.sp else 36.sp,
-                        letterSpacing = (-1.9).sp,
+                        fontSize = textScale.size(if (compact) 33.sp else 39.sp),
+                        lineHeight = textScale.size(if (compact) 31.sp else 36.sp),
+                        letterSpacing = textScale.letterSpacing((-1.9).sp),
                         fontWeight = FontWeight.Black
                     )
                 }
@@ -74,8 +76,10 @@ fun RewindTotalTimeCard(
                     Text(
                         text = stringResource(R.string.rw_totals_subheading),
                         color = onOrange.copy(alpha = 0.67f),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = textScale.size(12.sp),
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
                 Box(
@@ -98,9 +102,11 @@ fun RewindTotalTimeCard(
                                 Text(
                                     text = stringResource(R.string.rw_totals_heading),
                                     color = rewindColors.value.cream.copy(alpha = 0.58f),
-                                    fontSize = 9.sp,
+                                    fontSize = textScale.size(9.sp),
                                     fontWeight = FontWeight.Black,
-                                    letterSpacing = 1.0.sp
+                                    letterSpacing = textScale.letterSpacing(1.0.sp),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                                 Spacer(Modifier.height(8.dp))
                                 RewindAnimatedNumber(
@@ -114,9 +120,11 @@ fun RewindTotalTimeCard(
                                 Text(
                                     text = stringResource(R.string.rw_label_minutes),
                                     color = rewindColors.value.cream,
-                                    fontSize = 14.sp,
+                                    fontSize = textScale.size(14.sp),
                                     fontWeight = FontWeight.Black,
-                                    letterSpacing = 1.8.sp
+                                    letterSpacing = textScale.letterSpacing(1.8.sp),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }
@@ -163,6 +171,7 @@ private fun TotalMetric(
     foreground: androidx.compose.ui.graphics.Color,
     modifier: Modifier = Modifier
 ) {
+    val textScale = LocalRewindTextScale.current
     Column(
         modifier = modifier
             .background(background, RoundedCornerShape(8.dp))
@@ -171,17 +180,21 @@ private fun TotalMetric(
         Text(
             text = value,
             color = foreground,
-            fontSize = 20.sp,
-            lineHeight = 21.sp,
+            fontSize = textScale.size(20.sp),
+            lineHeight = textScale.size(21.sp),
             fontWeight = FontWeight.Black,
-            maxLines = 1
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.rewindMarqueeOnly()
         )
         Text(
             text = label,
             color = foreground.copy(alpha = 0.65f),
-            fontSize = 8.sp,
+            fontSize = textScale.size(8.sp),
             fontWeight = FontWeight.Black,
-            letterSpacing = 0.7.sp
+            letterSpacing = textScale.letterSpacing(0.7.sp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

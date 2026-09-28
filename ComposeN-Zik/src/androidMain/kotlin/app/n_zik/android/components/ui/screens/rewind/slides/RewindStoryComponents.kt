@@ -16,6 +16,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,6 +37,7 @@ import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -67,6 +69,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mikepenz.hypnoticcanvas.shaderBackground
@@ -80,6 +83,9 @@ import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.utils.checkFileExists
+import app.it.fast4x.rimusic.utils.conditional
+import app.it.fast4x.rimusic.utils.disableScrollingTextKey
+import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.components.ui.screens.rewind.RewindData
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -435,6 +441,7 @@ internal fun RewindBrandBug(
     foreground: Color,
     modifier: Modifier = Modifier
 ) {
+    val textScale = LocalRewindTextScale.current
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -450,10 +457,10 @@ internal fun RewindBrandBug(
         Text(
             text = "N-ZIK",
             color = foreground.copy(alpha = 0.68f),
-            fontSize = 8.sp,
-            lineHeight = 9.sp,
+            fontSize = textScale.size(8.sp),
+            lineHeight = textScale.size(9.sp),
             fontWeight = FontWeight.Black,
-            letterSpacing = 0.9.sp
+            letterSpacing = textScale.letterSpacing(0.9.sp)
         )
     }
 }
@@ -565,14 +572,20 @@ internal fun RewindAnimatedNumber(
             }
         }
     }
+    // The sizing policy scales the base size; the line height is derived from the scaled
+    // size so both stay in ratio (the deck's tight display lines never re-wrap).
+    val textScale = LocalRewindTextScale.current
+    val size = textScale.size(fontSize.sp)
     Text(
         text = formatRewindNumber(anim.value.toLong()),
         color = color,
-        fontSize = fontSize.sp,
-        lineHeight = (fontSize * 0.90f).sp,
-        letterSpacing = (-3.2).sp,
+        fontSize = size,
+        lineHeight = size * 0.90f,
+        letterSpacing = textScale.letterSpacing((-3.2).sp),
         fontWeight = FontWeight.Black,
-        modifier = modifier
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = modifier.rewindMarqueeOnly()
     )
 }
 
@@ -611,10 +624,11 @@ internal fun RewindArtworkWithFallback(
             .background(background),
         contentAlignment = Alignment.Center
     ) {
+        val textScale = LocalRewindTextScale.current
         Text(
             text = title.trim().take(2).uppercase().ifBlank { "♪" },
             color = foreground.copy(alpha = 0.70f),
-            fontSize = 18.sp,
+            fontSize = textScale.size(18.sp),
             fontWeight = FontWeight.Black
         )
         RewindArtwork(
@@ -744,7 +758,7 @@ internal fun RewindPlaylistArtwork(
                 Text(
                     text = title.trim().take(2).uppercase().ifBlank { "♪" },
                     color = rewindColors.value.cream.copy(alpha = 0.70f),
-                    fontSize = 18.sp,
+                    fontSize = LocalRewindTextScale.current.size(18.sp),
                     fontWeight = FontWeight.Black
                 )
             thumbnails.toSet().size == 1 ->
@@ -1045,6 +1059,92 @@ private object WikipediaArtistMetadataResolver {
     }
 }
 
+/**
+ * Single-line display-text guard for the deck's hero lines: fills the available width and,
+ * when the line is wider than the slide, scrolls it in a marquee — honoring the global
+ * "disable scrolling text" setting, which falls back to ellipsis alone (same convention
+ * as the header badges and the onboarding cards).
+ *
+ * For hero display texts (display name, N°1, slide titles, empty-state title). Every hero
+ * in the deck pairs it with `maxLines = 1` + `TextOverflow.Ellipsis` so the marquee is
+ * the only behavior that changes when the line fits.
+ *
+ * Order contract: apply any width cap OUTSIDE this helper (e.g. the intro display name's
+ * `fillMaxWidth(0.90f)`); the marquee scrolls within the final width it is given.
+ */
+@Composable
+internal fun Modifier.rewindHeroLine(): Modifier = this
+    .fillMaxWidth()
+    .rewindMarqueeOnly()
+
+/**
+ * Marquee variant for wrap-content display texts (row names, stat values, badge labels)
+ * that are capped with `maxLines = 1` + `TextOverflow.Ellipsis` but must keep their
+ * natural width — [rewindHeroLine]'s `fillMaxWidth` would stretch the line and change
+ * the layout. The text stays wrap-content: nothing moves when it fits, and the marquee
+ * (honoring the global "disable scrolling text" setting) only activates where the
+ * ellipsis would otherwise appear. It also stays dormant while the page is inactive
+ * ([LocalRewindActive]), so off-screen slides never pump the animation.
+ */
+@Composable
+internal fun Modifier.rewindMarqueeOnly(): Modifier {
+    val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
+    val active = LocalRewindActive.current
+    return this.conditional(!isScrollingTextDisabled && active) {
+        basicMarquee(iterations = Int.MAX_VALUE)
+    }
+}
+
+/**
+ * Title discipline of the deck slides ("two lines max, then marquee"): the text keeps its
+ * design line breaks and may occupy up to two lines; when it would not fit in two lines
+ * (narrow screen, enlarged font, long content) it degrades to a single scrolling marquee
+ * line — honoring the global "disable scrolling text" setting, which falls back to the
+ * ellipsis — instead of being cut with "…". Nothing moves when the text fits.
+ *
+ * Used for the slide titles and the variable content titles (artist / song / album
+ * names, taglines, empty-state texts). Single-line labels and stat values keep using
+ * [rewindMarqueeOnly] directly; the artist bio stays fully wrapped (no cap, no marquee)
+ * and auto-drifts slowly on its own when it overflows its block — deliberately no manual
+ * swipe zone (a swipeable area leaks into the deck's swipe and reloads the card), and
+ * the "disable scrolling text" setting stops the drift.
+ */
+@Composable
+internal fun RewindAdaptiveTitle(
+    text: String,
+    color: Color,
+    fontSize: TextUnit,
+    modifier: Modifier = Modifier,
+    lineHeight: TextUnit = fontSize,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    fontWeight: FontWeight = FontWeight.Normal,
+    textAlign: TextAlign = TextAlign.Start
+) {
+    val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
+    val active = LocalRewindActive.current
+    var marqueeLine by remember { mutableStateOf(false) }
+    Text(
+        // Marquee fallback: flatten the design line breaks so the line scrolls cleanly.
+        text = if (marqueeLine) text.replace('\n', ' ') else text,
+        color = color,
+        fontSize = fontSize,
+        lineHeight = lineHeight,
+        letterSpacing = letterSpacing,
+        fontWeight = fontWeight,
+        textAlign = textAlign,
+        maxLines = if (marqueeLine) 1 else 2,
+        overflow = TextOverflow.Ellipsis,
+        onTextLayout = { result ->
+            // Two-line mode: an ellipsis on the last visible line means the text would
+            // need a third line — degrade to the single-line marquee (sticky).
+            if (!marqueeLine && result.isLineEllipsized(result.lineCount - 1)) marqueeLine = true
+        },
+        modifier = modifier.conditional(marqueeLine && !isScrollingTextDisabled && active) {
+            basicMarquee(iterations = Int.MAX_VALUE)
+        }
+    )
+}
+
 @Composable
 internal fun RewindKicker(
     text: String,
@@ -1054,16 +1154,20 @@ internal fun RewindKicker(
     foreground: Color = rewindColors.value.flatTextOn(background),
     modifier: Modifier = Modifier
 ) {
+    val textScale = LocalRewindTextScale.current
     Text(
         text = text.uppercase(),
         color = foreground,
-        fontSize = 10.sp,
-        lineHeight = 11.sp,
+        fontSize = textScale.size(10.sp),
+        lineHeight = textScale.size(11.sp),
         fontWeight = FontWeight.Black,
-        letterSpacing = 1.0.sp,
+        letterSpacing = textScale.letterSpacing(1.0.sp),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
         modifier = modifier
             .background(background, RoundedCornerShape(2.dp))
             .padding(horizontal = 9.dp, vertical = 6.dp)
+            .rewindMarqueeOnly()
     )
 }
 
@@ -1104,13 +1208,16 @@ internal fun RewindRankRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            val textScale = LocalRewindTextScale.current
             Text(
                 text = rank.toString(),
                 color = accent,
-                fontSize = 25.sp,
-                lineHeight = 26.sp,
+                fontSize = textScale.size(25.sp),
+                lineHeight = textScale.size(26.sp),
                 fontWeight = FontWeight.Black,
-                modifier = Modifier.width(27.dp),
+                // widthIn (not a fixed width) so a two-digit rank ("10") widens the slot
+                // instead of wrapping on an enlarged font; single digits keep the 27dp slot
+                modifier = Modifier.widthIn(min = 27.dp),
                 textAlign = TextAlign.Center
             )
             RewindArtworkWithFallback(
@@ -1125,25 +1232,27 @@ internal fun RewindRankRow(
                 Text(
                     text = cleanPrefix(title).ifBlank { "—" },
                     color = foreground,
-                    fontSize = 13.sp,
-                    lineHeight = 15.sp,
+                    fontSize = textScale.size(13.sp),
+                    lineHeight = textScale.size(15.sp),
                     fontWeight = FontWeight.Black,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.rewindMarqueeOnly()
                 )
                 Text(
                     text = cleanPrefix(subtitle).ifBlank { "—" },
                     color = foreground.copy(alpha = 0.62f),
-                    fontSize = 10.sp,
-                    lineHeight = 13.sp,
+                    fontSize = textScale.size(10.sp),
+                    lineHeight = textScale.size(13.sp),
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.rewindMarqueeOnly()
                 )
             }
             Text(
                 text = meta,
                 color = foreground.copy(alpha = 0.72f),
-                fontSize = 10.sp,
+                fontSize = textScale.size(10.sp),
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.End,
                 modifier = Modifier.width(60.dp),
@@ -1166,36 +1275,40 @@ internal fun RewindLevelBadge(
     pillForeground: Color,
     modifier: Modifier = Modifier
 ) {
+    val textScale = LocalRewindTextScale.current
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = stringResource(R.string.rw_label_your_level),
             color = foreground.copy(alpha = 0.62f),
-            fontSize = 8.sp,
-            lineHeight = 10.sp,
+            fontSize = textScale.size(8.sp),
+            lineHeight = textScale.size(10.sp),
             fontWeight = FontWeight.Black,
-            letterSpacing = 1.0.sp
+            letterSpacing = textScale.letterSpacing(1.0.sp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         Spacer(Modifier.height(5.dp))
         Text(
             text = stringResource(level.nameId),
             color = pillForeground,
-            fontSize = 10.sp,
-            lineHeight = 12.sp,
+            fontSize = textScale.size(10.sp),
+            lineHeight = textScale.size(12.sp),
             fontWeight = FontWeight.Black,
-            letterSpacing = 0.7.sp,
+            letterSpacing = textScale.letterSpacing(0.7.sp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .background(pillBackground, RoundedCornerShape(100.dp))
                 .padding(horizontal = 11.dp, vertical = 6.dp)
+                .rewindMarqueeOnly()
         )
         Spacer(Modifier.height(5.dp))
-        Text(
+        RewindAdaptiveTitle(
             text = stringResource(level.taglineId),
             color = foreground.copy(alpha = 0.72f),
-            fontSize = 10.sp,
-            lineHeight = 13.sp,
-            fontWeight = FontWeight.Bold,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
+            fontSize = textScale.size(10.sp),
+            lineHeight = textScale.size(13.sp),
+            fontWeight = FontWeight.Bold
         )
     }
 }
@@ -1208,24 +1321,25 @@ internal fun RewindEmptyState(
     accent: Color,
     modifier: Modifier = Modifier
 ) {
+    val textScale = LocalRewindTextScale.current
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         RewindKicker(stringResource(R.string.rw_empty_state_kicker), accent)
-        Text(
+        RewindAdaptiveTitle(
             text = title,
             color = foreground,
-            fontSize = 34.sp,
-            lineHeight = 34.sp,
-            fontWeight = FontWeight.Black,
-            letterSpacing = (-1.7).sp
+            fontSize = textScale.size(34.sp),
+            lineHeight = textScale.size(34.sp),
+            letterSpacing = textScale.letterSpacing((-1.7).sp),
+            fontWeight = FontWeight.Black
         )
-        Text(
+        RewindAdaptiveTitle(
             text = body,
             color = foreground.copy(alpha = 0.66f),
-            fontSize = 13.sp,
-            lineHeight = 18.sp
+            fontSize = textScale.size(13.sp),
+            lineHeight = textScale.size(18.sp)
         )
     }
 }

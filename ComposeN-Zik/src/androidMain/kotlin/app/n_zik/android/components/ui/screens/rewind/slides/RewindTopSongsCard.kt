@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.n_zik.android.R
@@ -28,6 +29,7 @@ fun RewindTopSongsCard(
     onNext: () -> Unit,
     onShareSlide: (() -> Unit)? = null
 ) {
+    val textScale = LocalRewindTextScale.current
     val topFive = songs.take(5)
     val onAccent = rewindColors.value.textOn(rewindColors.value.lime)
     RewindStoryShell(
@@ -67,12 +69,12 @@ fun RewindTopSongsCard(
             }
             Spacer(Modifier.height(11.dp))
             RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
-                Text(
+                RewindAdaptiveTitle(
                     text = stringResource(R.string.rw_top_songs_heading),
                     color = onAccent,
-                    fontSize = 35.sp,
-                    lineHeight = 33.sp,
-                    letterSpacing = (-1.9).sp,
+                    fontSize = textScale.size(35.sp),
+                    lineHeight = textScale.size(33.sp),
+                    letterSpacing = textScale.letterSpacing((-1.9).sp),
                     fontWeight = FontWeight.Black
                 )
             }
@@ -107,9 +109,12 @@ fun RewindTopSongsCard(
                     Text(
                         text = stringResource(R.string.rw_top_songs_next, minOf(songs.size, 10)),
                         color = onAccent.copy(alpha = 0.62f),
-                        fontSize = 11.sp,
-                        lineHeight = 15.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = textScale.size(11.sp),
+                        lineHeight = textScale.size(15.sp),
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.rewindMarqueeOnly()
                     )
                 }
             }

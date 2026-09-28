@@ -89,6 +89,8 @@ import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.ui.screens.rewind.slides.LocalRewindActive
+import app.n_zik.android.components.ui.screens.rewind.slides.LocalRewindTextScale
+import app.n_zik.android.components.ui.screens.rewind.slides.rememberRewindScale
 import app.n_zik.android.components.ui.screens.rewind.slides.rewindColors
 import app.n_zik.android.core.rewind.GenerateMode
 import app.n_zik.android.core.rewind.RewindPlaylists
@@ -462,7 +464,8 @@ fun RewindScreen(
                 }
                 CompositionLocalProvider(
                     LocalRewindActive provides active,
-                    LocalRewindShaderWarm provides shaderWarm
+                    LocalRewindShaderWarm provides shaderWarm,
+                    LocalRewindTextScale provides rememberRewindScale()
                 ) {
                     when (page) {
                         0 -> RewindIntroCard(data, username, page, RewindDeckPageCount, active, next, onShareSlide)

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +36,7 @@ fun RewindTopArtistsCard(
     onNext: () -> Unit,
     onShareSlide: (() -> Unit)? = null
 ) {
+    val textScale = LocalRewindTextScale.current
     val topFive = artists.take(5)
     val top = topFive.firstOrNull()
     val onSlide = rewindColors.value.textOn(rewindColors.value.cream)
@@ -71,12 +73,12 @@ fun RewindTopArtistsCard(
                 }
                 Spacer(Modifier.height(10.dp))
                 RewindReveal(active, 120, direction = RewindRevealDirection.Left) {
-                    Text(
+                    RewindAdaptiveTitle(
                         text = stringResource(R.string.rw_top_artists_heading),
                         color = onSlide,
-                        fontSize = if (compact) 34.sp else 40.sp,
-                        lineHeight = if (compact) 32.sp else 37.sp,
-                        letterSpacing = (-1.9).sp,
+                        fontSize = textScale.size(if (compact) 34.sp else 40.sp),
+                        lineHeight = textScale.size(if (compact) 32.sp else 37.sp),
+                        letterSpacing = textScale.letterSpacing((-1.9).sp),
                         fontWeight = FontWeight.Black
                     )
                 }
@@ -103,26 +105,30 @@ fun RewindTopArtistsCard(
                             Text(
                                 text = "01",
                                 color = rewindColors.value.lime,
-                                fontSize = 38.sp,
-                                lineHeight = 36.sp,
+                                fontSize = textScale.size(38.sp),
+                                lineHeight = textScale.size(36.sp),
                                 fontWeight = FontWeight.Black,
-                                letterSpacing = (-2.0).sp
+                                letterSpacing = textScale.letterSpacing((-2.0).sp),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
-                            Text(
+                            // The name is the slide hero — two lines max, then marquee
+                            RewindAdaptiveTitle(
                                 text = top.artist.cleanName(),
                                 color = rewindColors.value.cream,
-                                fontSize = if (compact) 18.sp else 21.sp,
-                                lineHeight = if (compact) 19.sp else 22.sp,
-                                fontWeight = FontWeight.Black,
-                                maxLines = 3,
-                                overflow = TextOverflow.Ellipsis
+                                fontSize = textScale.size(if (compact) 18.sp else 21.sp),
+                                lineHeight = textScale.size(if (compact) 19.sp else 22.sp),
+                                fontWeight = FontWeight.Black
                             )
                             Spacer(Modifier.height(7.dp))
                             Text(
                                 text = stringResource(R.string.rw_minutes_compact, formatRewindNumber(top.minutes)),
                                 color = rewindColors.value.cream.copy(alpha = 0.50f),
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
+                                fontSize = textScale.size(10.sp),
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.rewindMarqueeOnly()
                             )
                         }
                     }
@@ -158,10 +164,12 @@ fun RewindTopArtistsCard(
                                 Text(
                                     text = rank.toString().padStart(2, '0'),
                                     color = rewindColors.value.lime,
-                                    fontSize = 18.sp,
-                                    lineHeight = 18.sp,
+                                    fontSize = textScale.size(18.sp),
+                                    lineHeight = textScale.size(18.sp),
                                     fontWeight = FontWeight.Black,
-                                    modifier = Modifier.width(29.dp)
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.widthIn(min = 29.dp)
                                 )
                                 RewindArtistArtwork(
                                     artistName = artist.artist.cleanName(),
@@ -174,17 +182,20 @@ fun RewindTopArtistsCard(
                                     Text(
                                         text = artist.artist.cleanName(),
                                         color = rowOn,
-                                        fontSize = 12.sp,
-                                        lineHeight = 14.sp,
+                                        fontSize = textScale.size(12.sp),
+                                        lineHeight = textScale.size(14.sp),
                                         fontWeight = FontWeight.Black,
                                         maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.rewindMarqueeOnly()
                                     )
                                     Text(
                                         text = stringResource(R.string.rw_minutes_compact, formatRewindNumber(artist.minutes)),
                                         color = rowOn.copy(alpha = 0.42f),
-                                        fontSize = 9.sp,
-                                        maxLines = 1
+                                        fontSize = textScale.size(9.sp),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.rewindMarqueeOnly()
                                     )
                                 }
                             }

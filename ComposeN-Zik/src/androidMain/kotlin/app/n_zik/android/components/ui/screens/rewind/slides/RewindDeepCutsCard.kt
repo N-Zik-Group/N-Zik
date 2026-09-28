@@ -37,6 +37,7 @@ fun RewindDeepCutsCard(
     onNext: () -> Unit,
     onShareSlide: (() -> Unit)? = null
 ) {
+    val textScale = LocalRewindTextScale.current
     val deepCuts = songs.drop(5).take(5)
     val onSlide = rewindColors.value.textOn(rewindColors.value.cream)
     RewindStoryShell(
@@ -70,10 +71,12 @@ fun RewindDeepCutsCard(
                 Text(
                     text = stringResource(R.string.rw_deep_cuts_heading, 5 + deepCuts.size),
                     color = onSlide,
-                    fontSize = 34.sp,
-                    lineHeight = 32.sp,
-                    letterSpacing = (-1.8).sp,
-                    fontWeight = FontWeight.Black
+                    fontSize = textScale.size(34.sp),
+                    lineHeight = textScale.size(32.sp),
+                    letterSpacing = textScale.letterSpacing((-1.8).sp),
+                    fontWeight = FontWeight.Black,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
             Spacer(Modifier.height(18.dp))
@@ -104,8 +107,10 @@ fun RewindDeepCutsCard(
                             Text(
                                 text = rank.toString().padStart(2, '0'),
                                 color = rewindColors.value.lime,
-                                fontSize = 24.sp,
+                                fontSize = textScale.size(24.sp),
                                 fontWeight = FontWeight.Black,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.graphicsLayer { rotationZ = if (index % 2 == 0) -2f else 2f }
                             )
                             RewindArtworkWithFallback(
@@ -119,25 +124,30 @@ fun RewindDeepCutsCard(
                                 Text(
                                     text = song.song.cleanTitle(),
                                     color = rowOn,
-                                    fontSize = 12.sp,
-                                    lineHeight = 14.sp,
+                                    fontSize = textScale.size(12.sp),
+                                    lineHeight = textScale.size(14.sp),
                                     fontWeight = FontWeight.Black,
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.rewindMarqueeOnly()
                                 )
                                 Text(
                                     text = firstNonBlank(song.song.cleanArtistsText(), stringResource(R.string.rw_unknown_artist)),
                                     color = rowOn.copy(alpha = 0.58f),
-                                    fontSize = 9.sp,
+                                    fontSize = textScale.size(9.sp),
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.rewindMarqueeOnly()
                                 )
                             }
                             Text(
                                 text = "${formatRewindNumber(song.playCount.toLong())}×",
                                 color = rowOn.copy(alpha = 0.76f),
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Black
+                                fontSize = textScale.size(10.sp),
+                                fontWeight = FontWeight.Black,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.rewindMarqueeOnly()
                             )
                         }
                     }
@@ -148,9 +158,12 @@ fun RewindDeepCutsCard(
                 Text(
                     text = stringResource(R.string.rw_deep_cuts_sub),
                     color = onSlide.copy(alpha = 0.60f),
-                    fontSize = 11.sp,
-                    lineHeight = 15.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = textScale.size(11.sp),
+                    lineHeight = textScale.size(15.sp),
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.rewindMarqueeOnly()
                 )
             }
         }

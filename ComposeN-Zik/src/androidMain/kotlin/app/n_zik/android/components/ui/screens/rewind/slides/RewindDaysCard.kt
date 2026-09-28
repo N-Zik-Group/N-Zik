@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.n_zik.android.R
@@ -48,6 +49,7 @@ fun RewindDaysCard(
     onNext: () -> Unit,
     onShareSlide: (() -> Unit)? = null
 ) {
+    val textScale = LocalRewindTextScale.current
     val chart = remember { Animatable(0f) }
     // One bar per calendar day of the month; days without stats (data not loaded) render at zero.
     val days = (1..data.daysInPeriod).map { day ->
@@ -84,12 +86,12 @@ fun RewindDaysCard(
                 }
                 Spacer(Modifier.height(11.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
-                    Text(
+                    RewindAdaptiveTitle(
                         text = stringResource(R.string.rw_days_heading),
                         color = onSlide,
-                        fontSize = if (compact) 35.sp else 41.sp,
-                        lineHeight = if (compact) 33.sp else 38.sp,
-                        letterSpacing = (-1.9).sp,
+                        fontSize = textScale.size(if (compact) 35.sp else 41.sp),
+                        lineHeight = textScale.size(if (compact) 33.sp else 38.sp),
+                        letterSpacing = textScale.letterSpacing((-1.9).sp),
                         fontWeight = FontWeight.Black
                     )
                 }
@@ -98,9 +100,12 @@ fun RewindDaysCard(
                     Text(
                         text = peak?.let { stringResource(R.string.rw_days_peak_sub, it.day) } ?: stringResource(R.string.rw_days_default_sub),
                         color = onSlide,
-                        fontSize = 11.sp,
+                        fontSize = textScale.size(11.sp),
                         fontWeight = FontWeight.Black,
-                        letterSpacing = 0.7.sp
+                        letterSpacing = textScale.letterSpacing(0.7.sp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.rewindMarqueeOnly()
                     )
                 }
                 Box(
@@ -157,9 +162,11 @@ fun RewindDaysCard(
                                 Text(
                                     text = day.day.toString(),
                                     color = if (index == peakIndex) rewindColors.value.lime else rewindColors.value.cream.copy(alpha = 0.50f),
-                                    fontSize = 7.sp,
+                                    fontSize = textScale.size(7.sp),
                                     fontWeight = FontWeight.Black,
                                     textAlign = TextAlign.Center,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier.weight(1f)
                                 )
                             }
@@ -200,6 +207,7 @@ private fun DayMetric(
     foreground: Color,
     modifier: Modifier = Modifier
 ) {
+    val textScale = LocalRewindTextScale.current
     Column(
         modifier = modifier
             .background(background, RoundedCornerShape(9.dp))
@@ -208,16 +216,21 @@ private fun DayMetric(
         Text(
             text = value,
             color = foreground,
-            fontSize = 19.sp,
-            lineHeight = 20.sp,
-            fontWeight = FontWeight.Black
+            fontSize = textScale.size(19.sp),
+            lineHeight = textScale.size(20.sp),
+            fontWeight = FontWeight.Black,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.rewindMarqueeOnly()
         )
         Text(
             text = label,
             color = foreground.copy(alpha = 0.62f),
-            fontSize = 8.sp,
+            fontSize = textScale.size(8.sp),
             fontWeight = FontWeight.Black,
-            letterSpacing = 0.7.sp
+            letterSpacing = textScale.letterSpacing(0.7.sp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

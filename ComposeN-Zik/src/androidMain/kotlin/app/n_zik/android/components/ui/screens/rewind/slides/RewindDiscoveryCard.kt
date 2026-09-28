@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.n_zik.android.R
@@ -44,6 +45,7 @@ fun RewindDiscoveryCard(
     onNext: () -> Unit,
     onShareSlide: (() -> Unit)? = null
 ) {
+    val textScale = LocalRewindTextScale.current
     val universe = remember { Animatable(0f) }
     LaunchedEffect(active) {
         if (!active) {
@@ -88,12 +90,12 @@ fun RewindDiscoveryCard(
                 }
                 Spacer(Modifier.height(11.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
-                    Text(
+                    RewindAdaptiveTitle(
                         text = stringResource(R.string.rw_discovery_heading),
                         color = rewindColors.value.cream,
-                        fontSize = if (compact) 34.sp else 40.sp,
-                        lineHeight = if (compact) 32.sp else 37.sp,
-                        letterSpacing = (-1.9).sp,
+                        fontSize = textScale.size(if (compact) 34.sp else 40.sp),
+                        lineHeight = textScale.size(if (compact) 32.sp else 37.sp),
+                        letterSpacing = textScale.letterSpacing((-1.9).sp),
                         fontWeight = FontWeight.Black
                     )
                 }
@@ -156,9 +158,11 @@ fun RewindDiscoveryCard(
                     Text(
                         text = stringResource(R.string.rw_label_unique_songs),
                         color = rewindColors.value.lime,
-                        fontSize = 10.sp,
+                        fontSize = textScale.size(10.sp),
                         fontWeight = FontWeight.Black,
-                        letterSpacing = 1.0.sp
+                        letterSpacing = textScale.letterSpacing(1.0.sp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
                 Spacer(Modifier.weight(1f))
@@ -184,6 +188,7 @@ private fun DiscoveryMetric(
     color: androidx.compose.ui.graphics.Color,
     modifier: Modifier = Modifier
 ) {
+    val textScale = LocalRewindTextScale.current
     val foreground = if (color == rewindColors.value.pink || color == rewindColors.value.orange) rewindColors.value.ink else rewindColors.value.cream
     Column(
         modifier = modifier
@@ -193,16 +198,21 @@ private fun DiscoveryMetric(
         Text(
             text = formatRewindNumber(value.toLong()),
             color = foreground,
-            fontSize = 18.sp,
-            lineHeight = 19.sp,
-            fontWeight = FontWeight.Black
+            fontSize = textScale.size(18.sp),
+            lineHeight = textScale.size(19.sp),
+            fontWeight = FontWeight.Black,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.rewindMarqueeOnly()
         )
         Text(
             text = label,
             color = foreground.copy(alpha = 0.62f),
-            fontSize = 7.sp,
+            fontSize = textScale.size(7.sp),
             fontWeight = FontWeight.Black,
-            letterSpacing = 0.5.sp
+            letterSpacing = textScale.letterSpacing(0.5.sp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

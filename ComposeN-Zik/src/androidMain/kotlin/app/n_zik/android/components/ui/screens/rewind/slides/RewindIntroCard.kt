@@ -58,6 +58,7 @@ fun RewindIntroCard(
     onNext: () -> Unit,
     onShareSlide: (() -> Unit)? = null
 ) {
+    val textScale = LocalRewindTextScale.current
     var revealComplete by remember { mutableStateOf(false) }
     LaunchedEffect(active) {
         revealComplete = false
@@ -110,11 +111,11 @@ fun RewindIntroCard(
             val compact = maxHeight < 700.dp
             // The username is the hero of the slide: it must stay larger than the
             // "THIS IS YOUR" line even for long names.
-            val nameSize = when {
+            val nameSize = textScale.size(when {
                 displayName.length > 18 -> if (compact) 36.sp else 42.sp
                 displayName.length > 12 -> if (compact) 42.sp else 49.sp
                 else -> if (compact) 48.sp else 56.sp
-            }
+            })
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 50, direction = RewindRevealDirection.Left, distance = 18.dp) {
                     RewindKicker(stringResource(R.string.rw_intro_kicker, data.periodLabel), rewindColors.value.lime)
@@ -126,11 +127,14 @@ fun RewindIntroCard(
                         color = rewindColors.value.cream,
                         fontSize = nameSize,
                         lineHeight = nameSize,
-                        letterSpacing = (-1.8).sp,
+                        letterSpacing = textScale.letterSpacing((-1.8).sp),
                         fontWeight = FontWeight.Black,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.fillMaxWidth(0.90f)
+                        // Hero display name: marquee honors the "disable scrolling text" setting.
+                        // The 0.90f width cap is kept (not a standalone fillMaxWidth), so the
+                        // marquee scrolls within it.
+                        modifier = Modifier.fillMaxWidth(0.90f).rewindHeroLine()
                     )
                 }
                 Spacer(Modifier.height(4.dp))
@@ -138,10 +142,12 @@ fun RewindIntroCard(
                     Text(
                         text = stringResource(R.string.rw_intro_this_is_your),
                         color = rewindColors.value.cream,
-                        fontSize = if (compact) 37.sp else 44.sp,
-                        lineHeight = if (compact) 36.sp else 42.sp,
-                        letterSpacing = (-2.1).sp,
-                        fontWeight = FontWeight.Black
+                        fontSize = textScale.size(if (compact) 37.sp else 44.sp),
+                        lineHeight = textScale.size(if (compact) 36.sp else 42.sp),
+                        letterSpacing = textScale.letterSpacing((-2.1).sp),
+                        fontWeight = FontWeight.Black,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
                 RewindReveal(active, 650, direction = RewindRevealDirection.Right, distance = 46.dp) {
@@ -149,19 +155,23 @@ fun RewindIntroCard(
                         Text(
                             text = data.periodLabel,
                             color = rewindColors.value.cream,
-                            fontSize = if (compact) 78.sp else 94.sp,
-                            lineHeight = if (compact) 70.sp else 84.sp,
-                            letterSpacing = (-6.2).sp,
+                            fontSize = textScale.size(if (compact) 78.sp else 94.sp),
+                            lineHeight = textScale.size(if (compact) 70.sp else 84.sp),
+                            letterSpacing = textScale.letterSpacing((-6.2).sp),
                             fontWeight = FontWeight.Black,
-                            modifier = Modifier.graphicsLayer {
-                                scaleX = 0.88f
-                            }
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .graphicsLayer {
+                                    scaleX = 0.88f
+                                }
+                                .rewindMarqueeOnly()
                         )
                         Text(
                             text = ".",
                             color = rewindColors.value.pink,
-                            fontSize = if (compact) 66.sp else 78.sp,
-                            lineHeight = if (compact) 64.sp else 76.sp,
+                            fontSize = textScale.size(if (compact) 66.sp else 78.sp),
+                            lineHeight = textScale.size(if (compact) 64.sp else 76.sp),
                             fontWeight = FontWeight.Black
                         )
                     }
@@ -170,10 +180,12 @@ fun RewindIntroCard(
                     Text(
                         text = stringResource(R.string.rw_intro_reword),
                         color = rewindColors.value.cream,
-                        fontSize = if (compact) 48.sp else 57.sp,
-                        lineHeight = if (compact) 45.sp else 53.sp,
-                        letterSpacing = (-3.0).sp,
-                        fontWeight = FontWeight.Black
+                        fontSize = textScale.size(if (compact) 48.sp else 57.sp),
+                        lineHeight = textScale.size(if (compact) 45.sp else 53.sp),
+                        letterSpacing = textScale.letterSpacing((-3.0).sp),
+                        fontWeight = FontWeight.Black,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
                 Spacer(Modifier.height(if (compact) 16.dp else 24.dp))
@@ -187,7 +199,7 @@ fun RewindIntroCard(
                 }
                 Spacer(Modifier.weight(1f))
                 RewindReveal(active, 1_900, direction = RewindRevealDirection.Up) {
-                    Text(
+                    RewindAdaptiveTitle(
                         text = stringResource(
                             when (data.period) {
                                 is RewindPeriod.Year -> R.string.rw_intro_tagline
@@ -196,8 +208,8 @@ fun RewindIntroCard(
                             }
                         ),
                         color = rewindColors.value.cream,
-                        fontSize = 13.sp,
-                        lineHeight = 17.sp,
+                        fontSize = textScale.size(13.sp),
+                        lineHeight = textScale.size(17.sp),
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -224,17 +236,17 @@ fun RewindIntroCard(
                             Text(
                                 text = stringResource(R.string.rw_intro_start),
                                 color = onLime,
-                                fontSize = 12.sp,
+                                fontSize = textScale.size(12.sp),
                                 fontWeight = FontWeight.Black,
-                                letterSpacing = 0.9.sp
+                                letterSpacing = textScale.letterSpacing(0.9.sp)
                             )
                         }
                         Text(
                             text = if (revealComplete) stringResource(R.string.rw_intro_tap_to_begin) else stringResource(R.string.rw_intro_opening),
                             color = rewindColors.value.cream.copy(alpha = 0.52f),
-                            fontSize = 9.sp,
+                            fontSize = textScale.size(9.sp),
                             fontWeight = FontWeight.Black,
-                            letterSpacing = 1.0.sp,
+                            letterSpacing = textScale.letterSpacing(1.0.sp),
                             textAlign = TextAlign.End
                         )
                     }

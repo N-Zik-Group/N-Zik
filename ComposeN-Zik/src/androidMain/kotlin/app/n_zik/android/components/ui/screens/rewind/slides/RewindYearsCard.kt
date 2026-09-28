@@ -26,6 +26,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.n_zik.android.R
@@ -47,6 +48,7 @@ fun RewindYearsCard(
     onNext: () -> Unit,
     onShareSlide: (() -> Unit)? = null
 ) {
+    val textScale = LocalRewindTextScale.current
     val chart = remember { Animatable(0f) }
     val years = data.monthlyStats
     // Highlight the peak by position, not data-class equality: ties must not light several
@@ -81,12 +83,12 @@ fun RewindYearsCard(
                 }
                 Spacer(Modifier.height(11.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
-                    Text(
+                    RewindAdaptiveTitle(
                         text = stringResource(R.string.rw_years_heading),
                         color = onSlide,
-                        fontSize = if (compact) 35.sp else 41.sp,
-                        lineHeight = if (compact) 33.sp else 38.sp,
-                        letterSpacing = (-1.9).sp,
+                        fontSize = textScale.size(if (compact) 35.sp else 41.sp),
+                        lineHeight = textScale.size(if (compact) 33.sp else 38.sp),
+                        letterSpacing = textScale.letterSpacing((-1.9).sp),
                         fontWeight = FontWeight.Black
                     )
                 }
@@ -95,9 +97,12 @@ fun RewindYearsCard(
                     Text(
                         text = peak?.let { stringResource(R.string.rw_years_peak_sub, it.month.uppercase()) } ?: stringResource(R.string.rw_years_default_sub),
                         color = onSlide,
-                        fontSize = 11.sp,
+                        fontSize = textScale.size(11.sp),
                         fontWeight = FontWeight.Black,
-                        letterSpacing = 0.7.sp
+                        letterSpacing = textScale.letterSpacing(0.7.sp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.rewindMarqueeOnly()
                     )
                 }
                 Box(
@@ -151,8 +156,10 @@ fun RewindYearsCard(
                                 Text(
                                     text = year.month.takeLast(2),
                                     color = if (index == peakIndex) rewindColors.value.lime else rewindColors.value.cream.copy(alpha = 0.50f),
-                                    fontSize = 8.sp,
-                                    fontWeight = FontWeight.Black
+                                    fontSize = textScale.size(8.sp),
+                                    fontWeight = FontWeight.Black,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }
@@ -192,6 +199,7 @@ private fun YearsMetric(
     foreground: androidx.compose.ui.graphics.Color,
     modifier: Modifier = Modifier
 ) {
+    val textScale = LocalRewindTextScale.current
     Column(
         modifier = modifier
             .background(background, RoundedCornerShape(9.dp))
@@ -200,16 +208,21 @@ private fun YearsMetric(
         Text(
             text = value,
             color = foreground,
-            fontSize = 19.sp,
-            lineHeight = 20.sp,
-            fontWeight = FontWeight.Black
+            fontSize = textScale.size(19.sp),
+            lineHeight = textScale.size(20.sp),
+            fontWeight = FontWeight.Black,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.rewindMarqueeOnly()
         )
         Text(
             text = label,
             color = foreground.copy(alpha = 0.62f),
-            fontSize = 8.sp,
+            fontSize = textScale.size(8.sp),
             fontWeight = FontWeight.Black,
-            letterSpacing = 0.7.sp
+            letterSpacing = textScale.letterSpacing(0.7.sp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

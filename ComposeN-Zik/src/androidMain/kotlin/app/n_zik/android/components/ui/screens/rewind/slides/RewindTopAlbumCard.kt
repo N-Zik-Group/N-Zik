@@ -56,6 +56,7 @@ internal fun RewindTopAlbumShow(
     emptyTitleId: Int,
     emptyBodyId: Int
 ) {
+    val textScale = LocalRewindTextScale.current
     val titleIn = remember { Animatable(0f) }
     LaunchedEffect(active) {
         titleIn.snapTo(0f)
@@ -100,12 +101,12 @@ internal fun RewindTopAlbumShow(
                 }
                 Spacer(Modifier.height(11.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
-                    Text(
+                    RewindAdaptiveTitle(
                         text = stringResource(headingId),
                         color = onYellow,
-                        fontSize = if (compact) 34.sp else 40.sp,
-                        lineHeight = if (compact) 32.sp else 37.sp,
-                        letterSpacing = (-1.9).sp,
+                        fontSize = textScale.size(if (compact) 34.sp else 40.sp),
+                        lineHeight = textScale.size(if (compact) 32.sp else 37.sp),
+                        letterSpacing = textScale.letterSpacing((-1.9).sp),
                         fontWeight = FontWeight.Black
                     )
                 }
@@ -131,8 +132,10 @@ internal fun RewindTopAlbumShow(
                         Text(
                             text = stringResource(R.string.rw_top_album_aoty),
                             color = onPink,
-                            fontSize = 18.sp,
+                            fontSize = textScale.size(18.sp),
                             fontWeight = FontWeight.Black,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
                                 .background(rewindColors.value.pink, RoundedCornerShape(100.dp))
                                 .padding(horizontal = 13.dp, vertical = 10.dp)
@@ -151,10 +154,11 @@ internal fun RewindTopAlbumShow(
                     Text(
                         text = firstNonBlank(topAlbum.album.cleanAuthorsText(), stringResource(R.string.rw_unknown_artist)),
                         color = onYellow.copy(alpha = 0.62f),
-                        fontSize = 12.sp,
+                        fontSize = textScale.size(12.sp),
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.rewindMarqueeOnly()
                     )
                 }
                 Spacer(Modifier.height(6.dp))
@@ -291,6 +295,7 @@ private fun AlbumTitleSwipe(
     progress: Float,
     compact: Boolean
 ) {
+    val textScale = LocalRewindTextScale.current
     val textProgress = ((progress - 0.34f) / 0.66f).coerceIn(0f, 1f)
     Box(
         modifier = Modifier
@@ -304,15 +309,13 @@ private fun AlbumTitleSwipe(
                 .height(if (compact) 43.dp else 51.dp)
                 .background(rewindColors.value.pink, RoundedCornerShape(2.dp))
         )
-        Text(
+        RewindAdaptiveTitle(
             text = title,
             color = rewindColors.value.textOn(rewindColors.value.yellow),
-            fontSize = if (compact) 24.sp else 29.sp,
-            lineHeight = if (compact) 24.sp else 29.sp,
+            fontSize = textScale.size(if (compact) 24.sp else 29.sp),
+            lineHeight = textScale.size(if (compact) 24.sp else 29.sp),
             fontWeight = FontWeight.Black,
-            letterSpacing = (-1.3).sp,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
+            letterSpacing = textScale.letterSpacing((-1.3).sp),
             modifier = Modifier
                 .padding(horizontal = 8.dp)
                 .graphicsLayer {
@@ -329,6 +332,7 @@ private fun AlbumMetric(
     value: String,
     modifier: Modifier = Modifier
 ) {
+    val textScale = LocalRewindTextScale.current
     Column(
         modifier = modifier
             .background(rewindColors.value.ink, RoundedCornerShape(9.dp))
@@ -337,16 +341,21 @@ private fun AlbumMetric(
         Text(
             text = value,
             color = rewindColors.value.cream,
-            fontSize = 19.sp,
-            lineHeight = 20.sp,
-            fontWeight = FontWeight.Black
+            fontSize = textScale.size(19.sp),
+            lineHeight = textScale.size(20.sp),
+            fontWeight = FontWeight.Black,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.rewindMarqueeOnly()
         )
         Text(
             text = label,
             color = rewindColors.value.pink,
-            fontSize = 8.sp,
+            fontSize = textScale.size(8.sp),
             fontWeight = FontWeight.Black,
-            letterSpacing = 0.7.sp
+            letterSpacing = textScale.letterSpacing(0.7.sp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

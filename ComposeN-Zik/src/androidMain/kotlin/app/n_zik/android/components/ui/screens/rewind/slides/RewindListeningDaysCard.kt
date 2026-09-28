@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.n_zik.android.R
@@ -40,6 +41,7 @@ fun RewindListeningDaysCard(
     onNext: () -> Unit,
     onShareSlide: (() -> Unit)? = null
 ) {
+    val textScale = LocalRewindTextScale.current
     val daysInPeriod = data.daysInPeriod
     // The all-time period has no fixed length; with an empty history its data span is zero —
     // the ratio is 0 instead of 0/0 = NaN (spec GH-275, patch "Stale string key name").
@@ -69,12 +71,12 @@ fun RewindListeningDaysCard(
                 }
                 Spacer(Modifier.height(11.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
-                    Text(
+                    RewindAdaptiveTitle(
                         text = stringResource(R.string.rw_listening_days_heading),
                         color = rewindColors.value.cream,
-                        fontSize = if (compact) 34.sp else 40.sp,
-                        lineHeight = if (compact) 32.sp else 37.sp,
-                        letterSpacing = (-1.9).sp,
+                        fontSize = textScale.size(if (compact) 34.sp else 40.sp),
+                        lineHeight = textScale.size(if (compact) 32.sp else 37.sp),
+                        letterSpacing = textScale.letterSpacing((-1.9).sp),
                         fontWeight = FontWeight.Black
                     )
                 }
@@ -96,10 +98,12 @@ fun RewindListeningDaysCard(
                         Text(
                             text = stringResource(R.string.rw_label_days),
                             color = rewindColors.value.lime,
-                            fontSize = 25.sp,
-                            lineHeight = 25.sp,
+                            fontSize = textScale.size(25.sp),
+                            lineHeight = textScale.size(25.sp),
                             fontWeight = FontWeight.Black,
-                            letterSpacing = 1.0.sp
+                            letterSpacing = textScale.letterSpacing(1.0.sp),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -118,15 +122,20 @@ fun RewindListeningDaysCard(
                             Text(
                                 text = stringResource(R.string.rw_listening_days_heading),
                                 color = rewindColors.value.cream.copy(alpha = 0.55f),
-                                fontSize = 9.sp,
+                                fontSize = textScale.size(9.sp),
                                 fontWeight = FontWeight.Black,
-                                letterSpacing = 0.8.sp
+                                letterSpacing = textScale.letterSpacing(0.8.sp),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                             Text(
                                 text = stringResource(R.string.rw_listening_days_percent_of_period, (ratio * 100f).roundToInt()),
                                 color = rewindColors.value.lime,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Black
+                                fontSize = textScale.size(12.sp),
+                                fontWeight = FontWeight.Black,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.rewindMarqueeOnly()
                             )
                         }
                         Spacer(Modifier.height(10.dp))
@@ -144,11 +153,11 @@ fun RewindListeningDaysCard(
                             )
                         }
                         Spacer(Modifier.height(10.dp))
-                        Text(
+                        RewindAdaptiveTitle(
                             text = stringResource(R.string.rw_listening_days_without, formatRewindNumber((daysInPeriod - data.daysWithMusic).coerceAtLeast(0).toLong())),
                             color = rewindColors.value.cream.copy(alpha = 0.52f),
-                            fontSize = 10.sp,
-                            lineHeight = 14.sp,
+                            fontSize = textScale.size(10.sp),
+                            lineHeight = textScale.size(14.sp),
                             fontWeight = FontWeight.Bold
                         )
                     }

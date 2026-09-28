@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.res.painterResource
@@ -73,6 +75,7 @@ fun RewindFinaleCard(
     onRegeneratePlaylist: (suspend () -> Int)? = null,
     onRegenerateAlltime: (suspend () -> Int)? = null
 ) {
+    val textScale = LocalRewindTextScale.current
     val topArtist = data.topArtists.firstOrNull()
     val topSong = data.topSongs.firstOrNull()
     val topAlbum = data.topAlbums.firstOrNull()
@@ -135,20 +138,25 @@ fun RewindFinaleCard(
     ) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val compact = maxHeight < 700.dp
-            val statSize = if (compact) 19.sp else 23.sp
+            // Scaled at the definition: the tiles read it as-is (fontSize = valueSize).
+            val statSize = textScale.size(if (compact) 19.sp else 23.sp)
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
                     RewindKicker(stringResource(R.string.rw_finale_kicker, data.periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(10.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
+                    // Fixed 2-line closing headline ("YOUR %1$s\nREWIND.") — not variable user
+                    // content, so no hero marquee despite the size.
                     Text(
                         text = stringResource(R.string.rw_finale_heading, data.periodLabel),
                         color = rewindColors.value.cream,
-                        fontSize = if (compact) 40.sp else 48.sp,
-                        lineHeight = if (compact) 37.sp else 44.sp,
-                        letterSpacing = (-2.4).sp,
-                        fontWeight = FontWeight.Black
+                        fontSize = textScale.size(if (compact) 40.sp else 48.sp),
+                        lineHeight = textScale.size(if (compact) 37.sp else 44.sp),
+                        letterSpacing = textScale.letterSpacing((-2.4).sp),
+                        fontWeight = FontWeight.Black,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
                 // The badge title is already showcased by the LISTENER LEVEL row below (and by
@@ -158,15 +166,29 @@ fun RewindFinaleCard(
                     Text(
                         text = username,
                         color = rewindColors.value.lime,
-                        fontSize = 10.sp,
+                        fontSize = textScale.size(10.sp),
                         fontWeight = FontWeight.Black,
-                        letterSpacing = 0.8.sp
+                        letterSpacing = textScale.letterSpacing(0.8.sp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.rewindMarqueeOnly()
                     )
                 }
                 Spacer(Modifier.height(if (compact) 8.dp else 12.dp))
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                // The stats grid is the slide's shrinkable block: at the reference it renders
+                // at its natural height, and on a tight screen (narrow + enlarged font) it
+                // yields vertical space row by row so the export pills below always stay
+                // visible — the deck has no scrolling.
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f, fill = false),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f, fill = false),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         FinaleStatTile(
@@ -191,7 +213,9 @@ fun RewindFinaleCard(
                         )
                     }
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f, fill = false),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         FinaleStatTile(
@@ -216,7 +240,9 @@ fun RewindFinaleCard(
                         )
                     }
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f, fill = false),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         FinaleStatTile(
@@ -258,25 +284,33 @@ fun RewindFinaleCard(
                                 Text(
                                     text = stringResource(R.string.rw_finale_listener_level),
                                     color = rewindColors.value.ink.copy(alpha = 0.54f),
-                                    fontSize = 8.sp,
+                                    fontSize = textScale.size(8.sp),
                                     fontWeight = FontWeight.Black,
-                                    letterSpacing = 0.8.sp
+                                    letterSpacing = textScale.letterSpacing(0.8.sp),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                                 Text(
                                     text = stringResource(badge.titleId),
                                     color = rewindColors.value.ink,
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Black
+                                    fontSize = textScale.size(15.sp),
+                                    fontWeight = FontWeight.Black,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.rewindMarqueeOnly()
                                 )
                             }
                             Text(
                                 text = badge.index.toString(),
                                 color = onLime,
-                                fontSize = 17.sp,
+                                fontSize = textScale.size(17.sp),
                                 fontWeight = FontWeight.Black,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier
                                     .background(rewindColors.value.lime, CircleShape)
                                     .padding(horizontal = 10.dp, vertical = 7.dp)
+                                    .rewindMarqueeOnly()
                             )
                         }
                     }
@@ -380,9 +414,11 @@ fun RewindFinaleCard(
                             Text(
                                 text = stringResource(R.string.rw_finale_brand, data.periodLabel),
                                 color = rewindColors.value.lime,
-                                fontSize = 10.sp,
+                                fontSize = textScale.size(10.sp),
                                 fontWeight = FontWeight.Black,
-                                letterSpacing = 1.0.sp
+                                letterSpacing = textScale.letterSpacing(1.0.sp),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                             // Same pill as the live listener-level row: a solid surface keeps
                             // the badge readable on the slide background in the exported image,
@@ -396,14 +432,18 @@ fun RewindFinaleCard(
                                 Text(
                                     text = stringResource(badge.titleId),
                                     color = rewindColors.value.ink,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Black
+                                    fontSize = textScale.size(11.sp),
+                                    fontWeight = FontWeight.Black,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                                 Text(
                                     text = badge.index.toString(),
                                     color = onLime,
-                                    fontSize = 12.sp,
+                                    fontSize = textScale.size(12.sp),
                                     fontWeight = FontWeight.Black,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier
                                         .background(rewindColors.value.lime, CircleShape)
                                         .padding(horizontal = 8.dp, vertical = 5.dp)
@@ -450,9 +490,11 @@ fun RewindFinaleCard(
                                     Text(
                                         text = stringResource(R.string.rw_finale_export_page),
                                         color = rewindColors.value.cream,
-                                        fontSize = 10.sp,
+                                        fontSize = textScale.size(10.sp),
                                         fontWeight = FontWeight.Black,
-                                        letterSpacing = 0.8.sp
+                                        letterSpacing = textScale.letterSpacing(0.8.sp),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
                             }
@@ -506,9 +548,11 @@ fun RewindFinaleCard(
                                             else R.string.rw_finale_regen_alltime
                                         ),
                                         color = rewindColors.value.cream,
-                                        fontSize = 10.sp,
+                                        fontSize = textScale.size(10.sp),
                                         fontWeight = FontWeight.Black,
-                                        letterSpacing = 0.8.sp
+                                        letterSpacing = textScale.letterSpacing(0.8.sp),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
                             }
@@ -533,9 +577,11 @@ fun RewindFinaleCard(
                                 Text(
                                     text = stringResource(R.string.rw_finale_share),
                                     color = onLime,
-                                    fontSize = 12.sp,
+                                    fontSize = textScale.size(12.sp),
                                     fontWeight = FontWeight.Black,
-                                    letterSpacing = 0.7.sp
+                                    letterSpacing = textScale.letterSpacing(0.7.sp),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }
@@ -567,9 +613,11 @@ fun RewindFinaleCard(
                                 Text(
                                     text = stringResource(R.string.rw_finale_play_again),
                                     color = rewindColors.value.cream,
-                                    fontSize = 10.sp,
+                                    fontSize = textScale.size(10.sp),
                                     fontWeight = FontWeight.Black,
-                                    letterSpacing = 0.8.sp
+                                    letterSpacing = textScale.letterSpacing(0.8.sp),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }
@@ -591,11 +639,16 @@ private fun FinaleStatTile(
     delayMillis: Int,
     modifier: Modifier = Modifier
 ) {
+    val textScale = LocalRewindTextScale.current
     RewindReveal(active, delayMillis, scaleFrom = 0.86f, modifier = modifier) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                // fillMaxHeight + clip: when the row above is capped by the tight-screen
+                // weight, the tile is capped with it instead of spilling over the next row.
+                .fillMaxHeight()
                 .background(background, RoundedCornerShape(10.dp))
+                .clip(RoundedCornerShape(10.dp))
                 .padding(horizontal = 12.dp, vertical = 9.dp)
         ) {
             Text(
@@ -605,14 +658,17 @@ private fun FinaleStatTile(
                 lineHeight = valueSize,
                 fontWeight = FontWeight.Black,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.rewindMarqueeOnly()
             )
             Text(
                 text = label,
                 color = foreground.copy(alpha = 0.66f),
-                fontSize = 8.sp,
+                fontSize = textScale.size(8.sp),
                 fontWeight = FontWeight.Black,
-                letterSpacing = 0.7.sp
+                letterSpacing = textScale.letterSpacing(0.7.sp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
@@ -633,6 +689,7 @@ private fun FinaleFeature(
     playlistBrowseId: String? = null,
     playlistIsYoutube: Boolean = false
 ) {
+    val textScale = LocalRewindTextScale.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -676,25 +733,26 @@ private fun FinaleFeature(
             Text(
                 text = label,
                 color = labelColor,
-                fontSize = 7.sp,
+                fontSize = textScale.size(7.sp),
                 fontWeight = FontWeight.Black,
-                letterSpacing = 0.7.sp
+                letterSpacing = textScale.letterSpacing(0.7.sp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-            Text(
+            RewindAdaptiveTitle(
                 text = title,
                 color = rewindColors.value.flatTextOn(background),
-                fontSize = 11.sp,
-                lineHeight = 13.sp,
-                fontWeight = FontWeight.Black,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                fontSize = textScale.size(11.sp),
+                lineHeight = textScale.size(13.sp),
+                fontWeight = FontWeight.Black
             )
             Text(
                 text = subtitle,
                 color = rewindColors.value.flatTextOn(background).copy(alpha = 0.56f),
-                fontSize = 8.sp,
+                fontSize = textScale.size(8.sp),
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.rewindMarqueeOnly()
             )
         }
     }

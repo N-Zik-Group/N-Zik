@@ -59,6 +59,7 @@ internal fun RewindTopSongShow(
     emptyTitleId: Int,
     emptyBodyId: Int
 ) {
+    val textScale = LocalRewindTextScale.current
     val contenders = remember(songs) { songs.take(10).shuffled() }
     val winner = songs.firstOrNull()
     var phase by remember { mutableStateOf(0) }
@@ -144,10 +145,12 @@ internal fun RewindTopSongShow(
                             Text(
                                 text = if (phase == 0) stringResource(R.string.rw_top_song_teaser, contenders.size) else stringResource(R.string.rw_top_song_teaser_winner),
                                 color = onPink,
-                                fontSize = if (compact) 35.sp else 42.sp,
-                                lineHeight = if (compact) 33.sp else 39.sp,
-                                letterSpacing = (-2.0).sp,
+                                fontSize = textScale.size(if (compact) 35.sp else 42.sp),
+                                lineHeight = textScale.size(if (compact) 33.sp else 39.sp),
+                                letterSpacing = textScale.letterSpacing((-2.0).sp),
                                 fontWeight = FontWeight.Black,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Spacer(Modifier.height(26.dp))
@@ -170,24 +173,23 @@ internal fun RewindTopSongShow(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalAlignment = Alignment.CenterHorizontally
                                         ) {
-                                            Text(
+                                            RewindAdaptiveTitle(
                                                 text = contender.song.cleanTitle(),
                                                 color = rewindColors.value.cream,
-                                                fontSize = if (compact) 24.sp else 29.sp,
-                                                lineHeight = if (compact) 24.sp else 29.sp,
+                                                fontSize = textScale.size(if (compact) 24.sp else 29.sp),
+                                                lineHeight = textScale.size(if (compact) 24.sp else 29.sp),
                                                 fontWeight = FontWeight.Black,
-                                                textAlign = TextAlign.Center,
-                                                maxLines = 2,
-                                                overflow = TextOverflow.Ellipsis
+                                                textAlign = TextAlign.Center
                                             )
                                             Spacer(Modifier.height(7.dp))
                                             Text(
                                                 text = firstNonBlank(contender.song.cleanArtistsText(), stringResource(R.string.rw_unknown_artist)),
                                                 color = rewindColors.value.lime,
-                                                fontSize = 11.sp,
+                                                fontSize = textScale.size(11.sp),
                                                 fontWeight = FontWeight.Black,
                                                 maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
+                                                overflow = TextOverflow.Ellipsis,
+                                                modifier = Modifier.rewindMarqueeOnly()
                                             )
                                         }
                                     }
@@ -196,9 +198,9 @@ internal fun RewindTopSongShow(
                                 Text(
                                     text = "#1",
                                     color = rewindColors.value.lime,
-                                    fontSize = if (compact) 92.sp else 116.sp,
-                                    lineHeight = if (compact) 84.sp else 104.sp,
-                                    letterSpacing = (-7).sp,
+                                    fontSize = textScale.size(if (compact) 92.sp else 116.sp),
+                                    lineHeight = textScale.size(if (compact) 84.sp else 104.sp),
+                                    letterSpacing = textScale.letterSpacing((-7).sp),
                                     fontWeight = FontWeight.Black,
                                     modifier = Modifier
                                         .background(rewindColors.value.ink, RoundedCornerShape(8.dp))
@@ -211,12 +213,12 @@ internal fun RewindTopSongShow(
                 }
 
                 RewindReveal(active, 0, direction = RewindRevealDirection.Left) {
-                    Text(
+                    RewindAdaptiveTitle(
                         text = stringResource(headingId),
                         color = onPink,
-                        fontSize = if (compact) 34.sp else 40.sp,
-                        lineHeight = if (compact) 32.sp else 37.sp,
-                        letterSpacing = (-1.9).sp,
+                        fontSize = textScale.size(if (compact) 34.sp else 40.sp),
+                        lineHeight = textScale.size(if (compact) 32.sp else 37.sp),
+                        letterSpacing = textScale.letterSpacing((-1.9).sp),
                         fontWeight = FontWeight.Black
                     )
                 }
@@ -247,9 +249,9 @@ internal fun RewindTopSongShow(
                         Text(
                             text = "#1",
                             color = onLime,
-                            fontSize = 34.sp,
-                            lineHeight = 34.sp,
-                            letterSpacing = (-2.0).sp,
+                            fontSize = textScale.size(34.sp),
+                            lineHeight = textScale.size(34.sp),
+                            letterSpacing = textScale.letterSpacing((-2.0).sp),
                             fontWeight = FontWeight.Black,
                             modifier = Modifier
                                 .background(rewindColors.value.lime, RoundedCornerShape(4.dp))
@@ -260,22 +262,21 @@ internal fun RewindTopSongShow(
                 }
                 RewindReveal(active, 670) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(
+                        RewindAdaptiveTitle(
                             text = winner.song.cleanTitle(),
                             color = onPink,
-                            fontSize = if (compact) 24.sp else 28.sp,
-                            lineHeight = if (compact) 24.sp else 28.sp,
-                            fontWeight = FontWeight.Black,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
+                            fontSize = textScale.size(if (compact) 24.sp else 28.sp),
+                            lineHeight = textScale.size(if (compact) 24.sp else 28.sp),
+                            fontWeight = FontWeight.Black
                         )
                         Text(
                             text = firstNonBlank(winner.song.cleanArtistsText(), stringResource(R.string.rw_unknown_artist)),
                             color = onPink.copy(alpha = 0.66f),
-                            fontSize = 12.sp,
+                            fontSize = textScale.size(12.sp),
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.rewindMarqueeOnly()
                         )
                     }
                 }
@@ -340,6 +341,7 @@ internal fun TopSongWallFrame(
     frameWidth: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier
 ) {
+    val textScale = LocalRewindTextScale.current
     Column(
         modifier = modifier
             .width(frameWidth)
@@ -375,22 +377,25 @@ internal fun TopSongWallFrame(
                     Text(
                         text = stringResource(R.string.rw_top_song_most_played),
                         color = rewindColors.value.lime,
-                        fontSize = 8.sp,
+                        fontSize = textScale.size(8.sp),
                         fontWeight = FontWeight.Black,
-                        letterSpacing = 0.8.sp
+                        letterSpacing = textScale.letterSpacing(0.8.sp)
                     )
                     Text(
                         text = periodLabel,
                         color = rewindColors.value.cream,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Black
+                        fontSize = textScale.size(12.sp),
+                        fontWeight = FontWeight.Black,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.rewindMarqueeOnly()
                     )
                 }
                 Text(
                     text = "01",
                     color = rewindColors.value.cream,
-                    fontSize = 18.sp,
-                    lineHeight = 18.sp,
+                    fontSize = textScale.size(18.sp),
+                    lineHeight = textScale.size(18.sp),
                     fontWeight = FontWeight.Black
                 )
             }
@@ -404,6 +409,7 @@ private fun TopSongStat(
     value: String,
     modifier: Modifier = Modifier
 ) {
+    val textScale = LocalRewindTextScale.current
     Column(
         modifier = modifier
             .background(rewindColors.value.ink, RoundedCornerShape(9.dp))
@@ -412,16 +418,19 @@ private fun TopSongStat(
         Text(
             text = value,
             color = rewindColors.value.cream,
-            fontSize = 21.sp,
-            lineHeight = 22.sp,
-            fontWeight = FontWeight.Black
+            fontSize = textScale.size(21.sp),
+            lineHeight = textScale.size(22.sp),
+            fontWeight = FontWeight.Black,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.rewindMarqueeOnly()
         )
         Text(
             text = label,
             color = rewindColors.value.lime,
-            fontSize = 8.sp,
+            fontSize = textScale.size(8.sp),
             fontWeight = FontWeight.Black,
-            letterSpacing = 0.8.sp
+            letterSpacing = textScale.letterSpacing(0.8.sp)
         )
     }
 }
