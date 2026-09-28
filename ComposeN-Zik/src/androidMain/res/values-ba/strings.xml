@@ -1873,6 +1873,12 @@
     <string name="rw_listening_days_without">%1$s days without listening.</string>
     <string name="rw_meta_plays">%1$s plays</string>
     <string name="rw_meta_songs">%1$s songs</string>
+    <string name="profiles">Profiles</string>
+    <string name="add_profile">Add profile</string>
+    <string name="enter_profile_name">Enter profile name</string>
+    <string name="remove_profile">Remove profile</string>
+    <string name="this_profile_alreaty_exist">This profile aleady exist</string>
+    <string name="profile_restart_required">This required a restart of the app</string>
     <string name="rw_settings_title">Rewind</string>
     <string name="rw_settings_notifications">Rewind notifications</string>
     <string name="rw_settings_playlists_title">Rewind playlists</string>
@@ -1908,7 +1914,6 @@
     <string name="rw_finale_regen_done">PLAYLIST UPDATED</string>
     <string name="rewind_top_sort">Rewind Top</string>
     <string name="rewind_alltime_name">All-time</string>
-    <!-- Listen Together (ported from Metrolist) -->
     <string name="listen_together">Listen Together</string>
     <string name="listen_together_description">Listen to music with your friends in real time. Create a room to host, or join an existing room with a code</string>
     <string name="listen_together_server_url">Server URL</string>
@@ -1996,7 +2001,6 @@
     <string name="listen_together_room">Room</string>
     <string name="approve">Approve</string>
     <string name="reject">Reject</string>
-    <!-- Maintenance (app state at a glance: last boot passes + live subsystems) -->
     <string name="maintenance">Maintenance</string>
     <string name="maintenance_card_desc">App state at a glance: last boot passes and live subsystems</string>
     <string name="maintenance_all_systems_ok">All systems operational</string>
@@ -2007,7 +2011,6 @@
     <string name="maintenance_open_desc">Open the full maintenance sheet</string>
     <string name="maintenance_refresh">Refresh</string>
     <string name="maintenance_no_data">No data</string>
-    <!-- Boot passes (persisted last successful run) -->
     <string name="maintenance_dedup">Same-name artist dedup</string>
     <string name="maintenance_dedup_summary">%1$d groups · %2$d resolved · %3$d skipped</string>
     <string name="maintenance_dedup_clean">Nothing to dedup</string>
@@ -2040,7 +2043,6 @@
     <string name="maintenance_db_cleanup_detail_removed">Last run removed %d stale link(s)</string>
     <string name="maintenance_db_cleanup_detail_clean">Last run found nothing to clean</string>
     <string name="maintenance_migration_done">Done</string>
-    <!-- Live subsystems -->
     <string name="maintenance_live_subsystems">Live subsystems</string>
     <string name="maintenance_sync_ytm">YTM sync</string>
     <string name="maintenance_sync_ytm_running">Sync in progress</string>
@@ -2109,7 +2111,6 @@
     <string name="maintenance_debug_restart_needed">restart needed</string>
     <string name="maintenance_lastfm">Last.fm</string>
     <string name="maintenance_lastfm_active">Session active</string>
-    <!-- Maintenance (added with the sheet: section headers + states not covered above) -->
     <string name="maintenance_section_database">Database</string>
     <string name="maintenance_section_library_sync">Library &amp; sync</string>
     <string name="maintenance_section_caches_downloads">Caches &amp; downloads</string>
