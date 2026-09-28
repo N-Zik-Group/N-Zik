@@ -1791,6 +1791,7 @@ Volume BAS : titre précédent</string>
     <string name="rw_artist_spotlight_empty_body">Votre artiste n° 1 apparaîtra ici dès que vous aurez suffisamment d\'historique d\'écoute.</string>
     <string name="rw_artist_spotlight_kicker">VOTRE ARTISTE N° 1 • %1$s</string>
     <string name="rw_artist_spotlight_about">À PROPOS</string>
+    <string name="rw_artist_spotlight_see_more">SEE MORE</string>
     <string name="rw_artist_spotlight_wikipedia">WIKIPEDIA</string>
     <string name="rw_artist_spotlight_innertube">INNER TUBE</string>
     <string name="rw_top_album_empty_title">PAS ENCORE D\'ALBUM DE L\'ANNÉE</string>
@@ -1828,6 +1829,7 @@ Volume BAS : titre précédent</string>
     <string name="rw_finale_top_album">MEILLEUR ALBUM</string>
     <string name="rw_finale_top_playlist">MEILLEURE PLAYLIST</string>
     <string name="rw_finale_brand">RÉTROSPECTIVE N-ZIK %1$s</string>
+    <string name="rw_finale_export_options">EXPORT OPTIONS</string>
     <string name="rw_finale_share">EXPORTER TOUTES LES PAGES</string>
     <string name="rw_finale_export_page">EXPORTER CETTE PAGE</string>
     <string name="rw_finale_play_again">REJOUER</string>
