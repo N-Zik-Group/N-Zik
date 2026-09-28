@@ -108,11 +108,11 @@ Join the N-Zik Discord:
 # 🎧 Features
 
 - 🌍 **Multilingual Support** – Available in English, Italian, German, Russian, French, Spanish, Czech, Turkish, Romanian, and more. Contributions are always welcome!
-- 🔊 **High Quality Audio** — Connect a YouTube Music Premium account to unlock Premium streaming quality on N-Zik.
+- 🔊 **High Quality Audio** — Pick your preferred stream client (Web, Web Remix, Android VR, …): the Web Remix client unlocks premium streaming quality on N-Zik.
 - 🎨 **Modern and Intuitive UI**
 - 🌓 **UI Mode Toggle** – Switch between the **N-Zik** experience and the classic **ViMusic** interface.
 - 💾 **Smart Offline Caching** – Automatically cache songs for offline playback with customizable cache limits.
-- 📥 **Downloads** – Download individual tracks or entire playlists for permanent offline access.
+- 📥 **Downloads** – Download individual tracks or entire playlists for permanent offline access, with a dedicated download quality (Auto/High/Low) and a batch "Update downloads" action.
 - ▶️ **Background Playback** – Keep your music playing while using other apps.
 - 🎵 **NZik Radio** – Algorithmic radio mode that auto-queues related songs based on the current track.
 - 📊 **Listening Statistics** – Track your habits, favorite artists, and playback trends.
@@ -122,7 +122,7 @@ Join the N-Zik Discord:
 > [!NOTE]
 > 🎤 The audio visualizer requires **microphone permission** and must be enabled in the settings.
 
-- 🕹️ **Discord Rich Presence** – Display your currently playing track directly on your Discord profile.
+- 🕹️ **Discord Rich Presence** – Display your currently playing track directly on your Discord profile. An advanced mode adds custom text templates, activity type, up to 2 custom buttons, pause-presence, and a live interactive preview card.
 
 <p align="left">
   <img width="280" height="100" src="https://github.com/user-attachments/assets/aa8a8b94-f451-4f8f-ade0-b86a1e9d8924" alt="Discord Rich Presence Preview 1"/> <img width="280" height="100" src="https://github.com/user-attachments/assets/573e23ea-bd2e-4717-a6be-e830be28e56b" alt="Discord Rich Presence Preview 2"/> <br>
@@ -130,7 +130,7 @@ Join the N-Zik Discord:
 
 </p>
 
-- 📰 **News Feed** – Explore moods, genres, releases, and albums from your favorite artists.
+- 📰 **Discovery** – Explore moods, genres, releases, and albums from your favorite artists, plus trending picks.
 - 🔄 **Playlist Import & Export** – Easily back up, share, and restore playlists, you can import from Riplay, Spotify ([Exportify](https://exportify.net/)), Youtube Music and N-Zik
 - ✍️ **Advanced Lyrics Support** – Fetch, display word by word, sync and unsync lyrics with smart fallback mechanisms, edit, and translate them in real-time via Google Translate with source language detection.
 - 🎭 **Custom Themes** – Personalize the app with multiple theme options.
@@ -156,20 +156,31 @@ Join the N-Zik Discord:
 
 - 📤 **Media Export** – Export cached or downloaded music to external storage with full metadata (title, artist, album, cover art, copyright, etc.) powered by FFmpeg. _(Note: Not available on 32-bit builds as they drop FFmpeg)_
 - ✏️ **Metadata Editor** – Edit song metadata (title, artist, album, genre, year, cover art, and more) directly in-app. Supports both AAC and Opus codecs with automatic cover art embedding.
-- ⚙️ **Settings & Database Auto-Backup** – Save, restore, and automatically back up your complete app configuration and database with customizable intervals, retention limits, and optional YouTube/Discord credential inclusion.
+- ⚙️ **Settings & Database Auto-Backup** – Save, restore, and automatically back up your complete app configuration and database with customizable intervals, retention limits, and optional YouTube/Discord/Last.fm credential inclusion.
 - 📡 **Offline First** – Enjoy your music library even without an internet connection.
-- ▶️ **YouTube Integration (Early Access)** – Recommendations and profile-related content are already synchronized from your YouTube account. Full synchronization is currently in development.
+- 🔁 **YouTube Sync** – Recommendations and profile-related content are synchronized from your YouTube account, plus a new two-way sync engine (experimental — currently enabled in debug/dev builds) that keeps your likes and synced items aligned between N-Zik and YouTube Music.
 - 🔄 **Auto-Resume on Device Connect** – Automatically resume playback when Bluetooth headphones or speakers connect.
 - 💾 **Persistent Queue** – Your queue is saved and restored across app sessions.
 - 🔀 **Auto-fill Queue** – Automatically adds more songs when the queue is nearly empty.
 - 🗑️ **Smart Trash** – Intelligent cleanup of songs based on listen count thresholds.
 - 🔇 **Hidden Songs** – Hide or unhide songs from your library view.
 - 👨‍👩‍👧‍👦 **Parental Control** – Block explicit content based on your settings.
-- 🖼️ **Wallpaper from Album Art** – Set your device wallpaper directly from the currently playing track's cover art.
 - 🔗 **Invidious Integration** – Use an alternative YouTube frontend for streaming.
 - 🌐 **Proxy Support** – Configurable proxy for YouTube API requests.
 - 📶 **Network Quality Adaptation** – Adaptive streaming based on your connection quality.
-- 📋 **Copy Logs** – Copy app logs to clipboard for easy debugging and reporting.
+- 📋 **Log Export** – Export app logs to a file, or copy them to the clipboard, for easy debugging and reporting.
+- 👤 **Multi-Profile** – Switch between multiple isolated profiles (per-profile database and preferences) from the settings or the main-menu switcher.
+- 👥 **Listen Together** – Join a live listening session hosted by another N-Zik user via an 8-character code or invite link.
+- 🎼 **Last.fm Integration** – Scrobble what you listen to: Now Playing, love/unlove, and configurable scrobbling options.
+- 🧠 **MusicBrainz Insights** – Rich artist and album information, community data, and external links.
+- 🚫 **Dislike System** – Dislike songs, artists, and albums to keep them out of your recommendations, with dedicated "Disliked" tabs.
+- ⏯️ **Unified Player** – The full player and the mini-player are one experience; long-press the mini-player to open the in-app queue overlay.
+- 🗓️ **Rewind** – Yearly and monthly listening recaps ("My Rewind"), auto-generated Rewind playlists, background music, and deck image export.
+- 🚑 **Rescue Center** – Recover your app even if it won't start: a dedicated launcher shortcut exports and restores your database and settings.
+- 🛠️ **Maintenance Screen** – Inspect the app state and its live subsystems, and export logs or crash reports.
+- 🚪 **First-Launch Onboarding** – A guided 4-step flow (display name, playlist import, account setup).
+- ⚡ **App Shortcuts** – Dynamically registered home-screen shortcuts (search, albums, artists, library, rescue).
+- 📈 **Audio Bar** – A visual waveform seekbar for precise track navigation.
 
 # 📷 Screenshots & Videos
 
@@ -339,7 +350,6 @@ New:
 - [**OkHttp**](https://github.com/square/okhttp): HTTP & HTTP/2 client.
 - [**Jetpack Glance**](https://developer.android.com/develop/ui/compose/glance): Home screen widgets framework.
 - [**Android YouTube Player**](https://github.com/PierfrancescoSoffritti/android-youtube-player): Lightweight YouTube player integration.
-- [**Koin**](https://github.com/InsertKoinIO/koin): Pragmatic dependency injection framework.
 - [**Toasty**](https://github.com/GrenderG/Toasty): Custom styled Android toast messages.
 - [**Timber**](https://github.com/JakeWharton/timber): Extensible logging utility.
 - [**KSoup**](https://github.com/MohamedRejeb/Ksoup): Multiplatform HTML parser.
