@@ -108,7 +108,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import androidx.core.os.LocaleListCompat
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -166,6 +165,7 @@ import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.PlayerAwareInsetsTracker
 import app.n_zik.android.utils.appNavBarPresentForRoute
+import app.n_zik.android.utils.localeListForAppLanguage
 import app.n_zik.android.utils.shouldRecreateActivity
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
@@ -971,13 +971,15 @@ class MainActivity :
                         when (key) {
 
                             languageAppKey -> {
+                                // AppCompat recreates the activity to apply the new locale (locale is not in the
+                                // activity-level configChanges), so the language switches live without a restart.
                                 val lang = sharedPreferences.getEnum( languageAppKey, Languages.System )
-                                val languageTag: String = lang.code.ifEmpty {
-                                    AppCompatDelegate.getApplicationLocales()[0]?.toLanguageTag().orEmpty()
+                                if (shouldRecreateActivity(Database.isClosed)) {
+                                    AppCompatDelegate.setApplicationLocales( localeListForAppLanguage( lang ) )
+                                    Timber.tag("MainActivity").d("Language changed: $lang")
+                                } else {
+                                    Timber.tag("MainActivity").w("Language changed: $lang — locale apply skipped, database closed")
                                 }
-                                AppCompatDelegate.setApplicationLocales(
-                                    LocaleListCompat.forLanguageTags( languageTag )
-                                )
                             }
 
                             effectRotationKey, playerThumbnailSizeKey,

@@ -10,6 +10,13 @@ Added:
   - 6 new strings added to `values/strings.xml` (profiles, add_profile, enter_profile_name, remove_profile, this_profile_alreaty_exist, profile_restart_required)
   - Credit: yrrrad8 (https://github.com/yrrrad8) — original upstream: https://github.com/knighthat/Kreate/pull/1089
 
+Changed:
+- change(settings): app language selection now applies live, without an app restart (behavior copied from the RiPlay reference)
+  - Removed the `RestartAppDialog.showDialog()` call and its orphan import from the language `onValueSelected` in `GeneralSettings.kt` (legacy file — edit covered by the spec approval): picking a language no longer stops `PlayerServiceModern`/`MyDownloadService` and kills the process; `RestartAppDialog` itself stays intact for the other flows (onboarding, imports, accounts, UI settings)
+  - New `localeListForAppLanguage(Languages)` helper in `app/n_zik/android/utils/AppLanguageLocale.kt`: `System` → explicit empty `LocaleListCompat` (deterministic reset to the system locale, replacing the old invalid `forLanguageTags("system")` tag), every other language → `forLanguageTags(language.code)`
+  - The existing `languageAppKey` SharedPreferences listener in `MainActivity.kt` now uses the helper (AppCompat recreates the Activity to apply the locale, since `locale` is not in the activity-level `configChanges`); the dead `ifEmpty`/`getApplicationLocales()[0]` fallback and the orphan `LocaleListCompat` import were removed; the branch is now guarded by `shouldRecreateActivity(Database.isClosed)` like its sibling branches, so a language change during a database import cannot recreate the Activity over a closed DB
+  - Tests: new `AppLanguageLocaleTest` (5 tests: System → empty list, `fr` / `zh-CN` / `pt-BR` single-tag mapping, exhaustive pass over all 50 non-system languages)
+
 Fixed:
 - fix(miniplayer): drop to screen edge on home when only one tab is active (issue https://github.com/N-Zik-Group/N-Zik/issues/832)
   - `appNavBarPresentForRoute` (AppNavBar.kt) now takes `activeHomeTabCount`; the home branch reports the bar only with two or more active tabs, matching the legacy `Skeleton` draw condition (`buttonList.size >= 2`) — previously the route-only check kept reserving the bar space as a phantom gap when a single tab remained

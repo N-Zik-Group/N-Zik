@@ -112,7 +112,6 @@ import app.it.fast4x.rimusic.utils.volumeNormalizationKey
 import app.it.fast4x.rimusic.utils.volumeBoostLevelKey
 import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
-import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.components.tab.Search
 import app.it.fast4x.rimusic.utils.crossfadeDurationKey
 import androidx.compose.animation.core.tween
@@ -338,7 +337,6 @@ fun GeneralSettings(
                 selectedValue = languageApp,
                 onValueSelected = {
                     languageApp = it
-                    RestartAppDialog.showDialog()
                 },
                               valueText = { it.text },
                               values = Languages.values().toList(),
