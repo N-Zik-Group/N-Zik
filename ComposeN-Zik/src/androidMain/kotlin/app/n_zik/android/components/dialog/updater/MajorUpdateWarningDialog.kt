@@ -64,6 +64,10 @@ object MajorUpdateWarningDialog {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
+                    // Cap the column on wide screens (landscape phones, portrait tablets)
+                    // so the dialog does not span the full window; narrow portrait phones
+                    // are below the cap, so fillMaxWidth() still fills them
+                    .widthIn(max = 420.dp)
                     .fillMaxWidth()
                     .padding(8.dp)
             ) {

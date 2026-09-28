@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Card
@@ -85,6 +86,10 @@ object CheckForUpdateDialog {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
+                    // Cap the column on wide screens (landscape phones, portrait tablets)
+                    // so the dialog does not span the full window; narrow portrait phones
+                    // are below the cap, so fillMaxWidth() still fills them
+                    .widthIn(max = 420.dp)
                     .fillMaxWidth()
                     .padding(8.dp)
             ) {

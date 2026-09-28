@@ -18,6 +18,11 @@ Changed:
   - Tests: new `AppLanguageLocaleTest` (5 tests: System → empty list, `fr` / `zh-CN` / `pt-BR` single-tag mapping, exhaustive pass over all 50 non-system languages)
 
 Fixed:
+- fix(updater): cap the update dialogs' width in landscape
+  - The 4 updater dialogs (`NewUpdateAvailableDialog`, `CheckForUpdateDialog`, `MajorUpdateWarningDialog`, `BuildTransitionWarningDialog`) had a root `Column` on `fillMaxWidth()` only inside their Compose `Dialog` — in landscape the dialog stretched across the full screen width
+  - Each root `Column` now carries `.widthIn(max = 420.dp)` before `.fillMaxWidth()` — `widthIn` caps the constraint `fillMaxWidth` receives (landscape width = min(screen, 420dp), centered by the `Dialog` window); on portrait phones (narrower than 420dp) the cap is a no-op
+  - `NewUpdateAvailableDialog` root column carries a `testTag("updateDialogColumn")` for the width assertion
+  - Tests: new `NewUpdateAvailableDialogLandscapeWidthTest` (2 tests — column capped at 420dp on a w900dp-h500dp landscape screen, still filling the window width on a w393dp-h851dp portrait screen), Robolectric + the repo's mockk'd `MainApplication` wiring convention (`MediaItemUtilsTest`); object state (`Updater.build`, `NewUpdateAvailableDialog.isCancelled`) saved/restored around the test
 - fix(miniplayer): drop to screen edge on home when only one tab is active (issue https://github.com/N-Zik-Group/N-Zik/issues/832)
   - `appNavBarPresentForRoute` (AppNavBar.kt) now takes `activeHomeTabCount`; the home branch reports the bar only with two or more active tabs, matching the legacy `Skeleton` draw condition (`buttonList.size >= 2`) — previously the route-only check kept reserving the bar space as a phantom gap when a single tab remained
   - New shared `activeHomeTabIds` in `HomeScreen.kt` (same per-tab filter + quickpicks fallback as the previous inline logic), so the active tab list is computed once and reused
