@@ -17,8 +17,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Alignment
 import app.n_zik.android.uiRoundnessShape
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
-import app.it.fast4x.rimusic.utils.colorPaletteModeKey
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.colorPalette
@@ -53,10 +51,6 @@ internal class Preference {
         @Composable
         fun parentalControl(): Boolean =
             rememberPreference( parentalControlEnabledKey, false ).value
-
-        @Composable
-        fun colorTheme(): ColorPaletteMode =
-            rememberPreference( colorPaletteModeKey, ColorPaletteMode.Dark ).value
     }
 }
 
@@ -66,12 +60,9 @@ internal class AppBar {
 
         @Composable
         fun contentColor(): Color =
-             when(Preference.colorTheme()) {
-                ColorPaletteMode.Light, ColorPaletteMode.System -> colorPalette().text
-                else -> Color.White
-            }
+            // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap):
+            // the palette's own text is always readable on its backgrounds, including
+            // PitchBlack, whose override forces text = Color.White.
+            colorPalette().text
     }
 }
-
-
-

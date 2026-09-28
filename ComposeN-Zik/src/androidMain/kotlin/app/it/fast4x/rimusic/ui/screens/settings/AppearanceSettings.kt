@@ -572,8 +572,8 @@ fun DefaultAppearanceSettings() {
     var colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
     colorPaletteName = ColorPaletteName.Dynamic
 
-    var colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
-    colorPaletteMode = ColorPaletteMode.Dark
+    var colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.System)
+    colorPaletteMode = ColorPaletteMode.System
 
     var swipeAnimationNoThumbnail by rememberPreference(swipeAnimationsNoThumbnailKey, SwipeAnimationNoThumbnail.Sliding)
     swipeAnimationNoThumbnail = SwipeAnimationNoThumbnail.Sliding

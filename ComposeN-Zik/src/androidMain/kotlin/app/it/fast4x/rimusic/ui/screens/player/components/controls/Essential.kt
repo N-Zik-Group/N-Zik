@@ -17,7 +17,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -106,6 +105,9 @@ import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.n_zik.android.enums.PlayerControlsColors
 import androidx.compose.ui.platform.LocalDensity
 import app.it.fast4x.rimusic.utils.playerControlsColorsKey
+import app.n_zik.android.components.player.monochromeControlsColor
+import app.n_zik.android.components.player.placeholderCompositeBase
+import app.n_zik.android.components.player.textOutlineColor
 
 
 @UnstableApi
@@ -126,7 +128,6 @@ fun InfoAlbumAndArtistEssential(
     disableScrollingText: Boolean = false
 ) {
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
-    val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
     var effectRotationEnabled by rememberPreference(effectRotationKey, false)
     var showthumbnail by rememberPreference(showthumbnailKey, true)
     var isRotated by rememberSaveable { mutableStateOf(false) }
@@ -219,12 +220,9 @@ fun InfoAlbumAndArtistEssential(
                                 color = if (albumId == null)
                                 /*if (showthumbnail) colorPalette().textDisabled else if (colorPaletteMode == ColorPaletteMode.Light) colorPalette().textDisabled.copy(0.5f).compositeOver(Color.Black) else colorPalette().textDisabled.copy(0.35f).compositeOver(Color.White)
                                 else colorPalette().text,*/
-                                    if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) colorPalette().textDisabled.copy(
-                                        0.35f
-                                    )
-                                        .compositeOver(Color.Black) else colorPalette().textDisabled.copy(
-                                        0.35f
-                                    ).compositeOver(Color.White)
+                                    // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
+                                    colorPalette().textDisabled.copy(0.35f)
+                                        .compositeOver(placeholderCompositeBase(colorPalette().isDark))
                                 else colorPalette().text,
                                 fontStyle = typography().l.bold.fontStyle,
                                 fontWeight = typography().l.bold.fontWeight,
@@ -238,10 +236,8 @@ fun InfoAlbumAndArtistEssential(
                             style = TextStyle(
                                 drawStyle = Stroke(width = 1.5f, join = StrokeJoin.Round),
                                 textAlign = TextAlign.Center,
-                                color = if (!textoutline) Color.Transparent else if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) Color.White.copy(
-                                    0.5f
-                                )
-                                else Color.Black,
+                                color = if (!textoutline) Color.Transparent
+                                else textOutlineColor(colorPalette().isDark, 0.5f),
                                 fontStyle = typography().l.bold.fontStyle,
                                 fontWeight = typography().l.bold.fontWeight,
                                 fontSize = typography().l.bold.fontSize,
@@ -349,7 +345,9 @@ fun InfoAlbumAndArtistEssential(
                     color = if (artistIds?.isEmpty() == true)
                         /*if (showthumbnail) colorPalette().textDisabled else if (colorPaletteMode == ColorPaletteMode.Light) colorPalette().textDisabled.copy(0.5f).compositeOver(Color.Black) else colorPalette().textDisabled.copy(0.35f).compositeOver(Color.White)
                             else colorPalette().text,*/
-                        if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) colorPalette().textDisabled.copy(0.35f).compositeOver(Color.Black) else colorPalette().textDisabled.copy(0.35f).compositeOver(Color.White)
+                        // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
+                        colorPalette().textDisabled.copy(0.35f)
+                            .compositeOver(placeholderCompositeBase(colorPalette().isDark))
                         else colorPalette().text,
                     fontStyle = typography().m.bold.fontStyle,
                     fontSize = typography().m.bold.fontSize,
@@ -366,8 +364,8 @@ fun InfoAlbumAndArtistEssential(
                 style = TextStyle(
                     drawStyle = Stroke(width = 1.5f, join = StrokeJoin.Round),
                     textAlign = TextAlign.Center,
-                    color = if (!textoutline) Color.Transparent else if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) Color.White.copy(0.5f)
-                    else Color.Black,
+                    color = if (!textoutline) Color.Transparent
+                    else textOutlineColor(colorPalette().isDark, 0.5f),
                     fontStyle = typography().m.bold.fontStyle,
                     fontSize = typography().m.bold.fontSize,
                     //fontWeight = typography().m.bold.fontWeight,
@@ -403,7 +401,9 @@ fun ControlsEssential(
     val playerControlsColors by rememberPreference(playerControlsColorsKey, PlayerControlsColors.Monochrome)
     val controlsColor = when (playerControlsColors) {
         PlayerControlsColors.Cover -> dynamicColorPalette.accent
-        PlayerControlsColors.Monochrome -> Color.White
+        // Monochrome follows the effective palette tone, not a hardcoded white
+        // (spec-achromatic-ramp-luminance-cap)
+        PlayerControlsColors.Monochrome -> monochromeControlsColor(colorPalette())
         else -> colorPalette().accent
     }
     val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)

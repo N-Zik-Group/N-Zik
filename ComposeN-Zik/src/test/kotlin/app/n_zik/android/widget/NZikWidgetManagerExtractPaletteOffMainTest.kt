@@ -6,7 +6,9 @@ import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.test.core.app.ApplicationProvider
+import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.runBlocking
@@ -168,5 +170,54 @@ class NZikWidgetManagerExtractPaletteOffMainTest {
             expected,
             actual,
         )
+    }
+
+    /**
+     * Arithmetic mean of the three RGB channels, normalized to [0, 1] — a cheap tone check for
+     * the pure ARGB helpers below. NOT a WCAG/perceptual luminance (no gamma correction).
+     */
+    private fun relativeLuminance(argb: Int): Float {
+        val r = (argb shr 16) and 0xFF
+        val g = (argb shr 8) and 0xFF
+        val b = argb and 0xFF
+        return (r + g + b) / 3f / 255f
+    }
+
+    /** A synthetic gray ramp pinned per-field, so the ARGB helpers can be asserted on tone. */
+    private fun syntheticPalette(toneIsDark: Boolean): ColorPalette {
+        fun gray(lightness: Float) = androidx.compose.ui.graphics.Color.hsl(0f, 0f, lightness)
+        return ColorPalette(
+            background0 = gray(if (toneIsDark) 0.1f else 0.925f),
+            background1 = gray(if (toneIsDark) 0.15f else 0.9f),
+            background2 = gray(if (toneIsDark) 0.2f else 0.85f),
+            background3 = gray(if (toneIsDark) 0.3f else 0.955f),
+            background4 = gray(if (toneIsDark) 0.2f else 0.955f),
+            accent = gray(0.5f),
+            onAccent = if (toneIsDark) androidx.compose.ui.graphics.Color.White else androidx.compose.ui.graphics.Color.Black,
+            text = gray(if (toneIsDark) 0.88f else 0.12f),
+            textSecondary = gray(if (toneIsDark) 0.65f else 0.4f),
+            textDisabled = gray(if (toneIsDark) 0.4f else 0.65f),
+            isDark = toneIsDark,
+            iconButtonPlayer = gray(if (toneIsDark) 0.88f else 0.12f),
+        )
+    }
+
+    @Test
+    fun `widgetTextArgb and widgetIconTintArgb follow the effective palette tone, not the system theme`() {
+        val lightTone = syntheticPalette(toneIsDark = false)
+        val darkTone = syntheticPalette(toneIsDark = true)
+
+        // The pure helpers resolve exactly the palette's own fields.
+        assertEquals(lightTone.text.toArgb(), widgetTextArgb(lightTone))
+        assertEquals(darkTone.text.toArgb(), widgetTextArgb(darkTone))
+        assertEquals(lightTone.iconButtonPlayer.toArgb(), widgetIconTintArgb(lightTone))
+        assertEquals(darkTone.iconButtonPlayer.toArgb(), widgetIconTintArgb(darkTone))
+
+        // A light tone must yield dark ARGBs and a dark tone light ARGBs -- no hardcoded
+        // black/white keyed on isSystemInDarkMode (spec-achromatic-ramp-luminance-cap).
+        assertTrue("light-tone text must be a dark ARGB", relativeLuminance(widgetTextArgb(lightTone)) < 0.5f)
+        assertTrue("dark-tone text must be a light ARGB", relativeLuminance(widgetTextArgb(darkTone)) > 0.5f)
+        assertTrue("light-tone icon tint must be a dark ARGB", relativeLuminance(widgetIconTintArgb(lightTone)) < 0.5f)
+        assertTrue("dark-tone icon tint must be a light ARGB", relativeLuminance(widgetIconTintArgb(darkTone)) > 0.5f)
     }
 }

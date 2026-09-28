@@ -7,6 +7,7 @@ import androidx.core.graphics.ColorUtils.colorToHSL
 import androidx.palette.graphics.Palette
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
+import timber.log.Timber
 
 /**
  * The 7 raw swatches of an album cover extracted from the capped [Palette]
@@ -40,6 +41,21 @@ data class M3ECoverColors(
  * dark grays Δ≈0.03) while keeping genuinely colored/pastel covers (Δ ≥ 0.10) untouched.
  */
 const val ACHROMATIC_CHANNEL_DELTA_THRESHOLD = 0.10f
+
+/**
+ * The lightness ceiling of the lightest background (bg0–bg4) of an achromatic ramp rendered in a
+ * dark theme (spec-achromatic-ramp-luminance-cap, 2026-09-28). A near-white cover in dark mode
+ * would otherwise leave the whole app near-white (bg3/4 ≈ L 0.955, inherited from the default
+ * light palette).
+ */
+const val ACHROMATIC_RAMP_LIGHT_TONE_MAX_LIGHTNESS = 0.80f
+
+/**
+ * The lightness floor of the darkest background (bg0–bg4) of an achromatic ramp rendered in a
+ * light theme (spec-achromatic-ramp-luminance-cap, 2026-09-28) — the mirror case: a near-black
+ * cover in light mode would otherwise leave the whole app near-black (bg0 L 0.10).
+ */
+const val ACHROMATIC_RAMP_DARK_TONE_MIN_LIGHTNESS = 0.30f
 
 /**
  * The normalized channel spread (max − min of the R/G/B channels) of an ARGB color, in
@@ -186,7 +202,9 @@ suspend fun m3eDynamicColorPaletteOf(bitmap: Bitmap, isDark: Boolean): ColorPale
 /**
  * The dominant-based dynamic [ColorPalette] for an already-extracted cover [colors]:
  * achromatic (neutralized) covers get the neutral ramp from the neutralized dominant (tone from
- * its lightness); colored covers delegate to the legacy reference
+ * its lightness), then the ramp's five backgrounds are capped/floored by
+ * [m3eCapAchromaticBackgrounds] when that tone mismatches [isDark] (the lightness ceiling of the
+ * spec-achromatic-ramp-luminance-cap); colored covers delegate to the legacy reference
  * `dynamicColorPaletteOf(bitmap, isDark)` -- bit-identical to the RiPlay reference, rescue
  * included.
  *
@@ -202,13 +220,79 @@ internal fun m3eDominantDynamicPaletteOf(
     if (colors.allAchromatic) {
         val dominantHsl = FloatArray(3)
         colorToHSL(colors.dominant, dominantHsl)
-        return dynamicColorPaletteOf(dominantHsl, dominantHsl[2] < 0.5f)
+        val toneIsDark = dominantHsl[2] < 0.5f
+        return dynamicColorPaletteOf(dominantHsl, toneIsDark)
+            .m3eCapAchromaticBackgrounds(themeIsDark = isDark, toneIsDark = toneIsDark)
     }
     // Non-null by construction: [colors] came from extractM3ECoverColors, whose null gate is
     // this very dynamicColorPaletteOf call on the same bitmap.
     return requireNotNull(dynamicColorPaletteOf(bitmap, isDark)) {
         "dominant swatch disappeared between extraction and palette build"
     }
+}
+
+/**
+ * Caps (light tone in a dark theme) / floors (dark tone in a light theme) the five background
+ * lightnesses of an achromatic dynamic ramp when the ramp's tone mismatches the theme it renders
+ * in (spec-achromatic-ramp-luminance-cap, 2026-09-28): a near-white cover in dark mode must not
+ * leave the whole app near-white, and the mirror case (near-black cover, light theme) must not
+ * leave it near-black.
+ *
+ * The shift is uniform across bg0–bg4 and keyed on the REAL max (cap) / min (floor) lightness of
+ * the five backgrounds — bg3/4 are inherited from the default palettes and are the lightest
+ * surfaces of a light-tone ramp (≈ L 0.955, lighter than bg0's 0.925) — so the relative spacing
+ * and the hierarchy are preserved, and the lightest/darkest background lands exactly on the
+ * ceiling ([ACHROMATIC_RAMP_LIGHT_TONE_MAX_LIGHTNESS]) / floor
+ * ([ACHROMATIC_RAMP_DARK_TONE_MIN_LIGHTNESS]). Matching tones (dark+dark, light+light) and
+ * tones already in range return the very same instance (bit-identical, no log). [ColorPalette.text],
+ * [ColorPalette.textSecondary], [ColorPalette.textDisabled] and [ColorPalette.accent] are
+ * untouched.
+ *
+ * The single choke point for dynamic palettes: applied on the achromatic branch of
+ * [m3eDominantDynamicPaletteOf] (app theme, mini-player, player's local palette, widgets), and
+ * re-applied on a restored dynamic palette via `m3eRecapRestoredDynamicPalette` (loopback 2,
+ * EC-1 — the Saver `ColorPalette.Companion` rebuilds the ramp without the cap).
+ *
+ * @param themeIsDark whether the ramp renders in a dark theme
+ * @param toneIsDark the tone of this palette ([ColorPalette.isDark])
+ * @return the capped/floored palette, or the same instance when no shift is needed
+ */
+internal fun ColorPalette.m3eCapAchromaticBackgrounds(
+    themeIsDark: Boolean,
+    toneIsDark: Boolean,
+): ColorPalette {
+    val lightnesses = listOf(background0, background1, background2, background3, background4)
+        .map { background ->
+            val hsl = FloatArray(3)
+            colorToHSL(background.toArgb(), hsl)
+            hsl[2]
+        }
+    val delta = when {
+        themeIsDark && !toneIsDark ->
+            lightnesses.max() - ACHROMATIC_RAMP_LIGHT_TONE_MAX_LIGHTNESS
+        !themeIsDark && toneIsDark ->
+            ACHROMATIC_RAMP_DARK_TONE_MIN_LIGHTNESS - lightnesses.min()
+        else -> 0f
+    }
+    if (delta <= 0f) return this
+
+    Timber.tag("CoverPaletteExtractor")
+        .d("Achromatic ramp tone/theme mismatch: shifting bg0-bg4 lightness by $delta")
+
+    fun shift(background: Color): Color {
+        val hsl = FloatArray(3)
+        colorToHSL(background.toArgb(), hsl)
+        hsl[2] = (hsl[2] + if (toneIsDark) delta else -delta).coerceIn(0f, 1f)
+        return Color.hsl(hsl[0], hsl[1], hsl[2])
+    }
+
+    return copy(
+        background0 = shift(background0),
+        background1 = shift(background1),
+        background2 = shift(background2),
+        background3 = shift(background3),
+        background4 = shift(background4),
+    )
 }
 
 /**

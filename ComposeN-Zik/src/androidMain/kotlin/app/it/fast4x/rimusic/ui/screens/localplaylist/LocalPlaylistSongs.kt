@@ -1267,16 +1267,17 @@ fun LocalPlaylistSongs(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
+                                    // Keyed on the effective tone, not a hardcoded white (spec-achromatic-ramp-luminance-cap)
                                     Icon(
                                         painter = painterResource(R.drawable.smart_shuffle),
                                         contentDescription = null,
-                                        tint = Color.White,
+                                        tint = colorPalette().text,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(16.dp),
                                         strokeWidth = 2.dp,
-                                        color = Color.White
+                                        color = colorPalette().text
                                     )
                                 }
                             } else {

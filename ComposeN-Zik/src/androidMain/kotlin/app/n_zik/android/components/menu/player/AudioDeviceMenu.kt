@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
@@ -346,10 +347,12 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                             .padding(32.dp),
                         contentAlignment = Alignment.Center
                     ) {
+                        // The app's theming does not remap the M3 colorScheme tokens (spec-achromatic-ramp-luminance-cap):
+                        // key on the effective palette instead, so the spinner stays readable in both tones
                         CircularProgressIndicator(
                             modifier = Modifier.size(48.dp),
                             strokeWidth = 3.dp,
-                            color = MaterialTheme.colorScheme.primary
+                            color = colorPalette().text
                         )
                     }
                 } else if (error != null) {
@@ -359,17 +362,20 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                             .padding(32.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        // Readable red keyed on the effective tone: M3 error tokens are not remapped by the
+                        // app's theming (spec-achromatic-ramp-luminance-cap)
                         Icon(
                             imageVector = Icons.Outlined.Error,
                             contentDescription = null,
                             modifier = Modifier.size(48.dp),
-                            tint = MaterialTheme.colorScheme.error
+                            tint = Color.hsl(0f, 0.8f, if (colorPalette().isDark) 0.65f else 0.35f)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
+                        // Keyed on the effective tone, not the un-remapped M3 onSurface token
                         Text(
                             text = error ?: "",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
+                            color = colorPalette().text,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(16.dp))

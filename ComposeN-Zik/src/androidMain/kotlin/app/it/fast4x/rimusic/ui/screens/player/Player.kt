@@ -289,6 +289,7 @@ import app.n_zik.android.components.player.BlurAdjuster
 import app.n_zik.android.components.player.extractM3ECoverColors
 import app.n_zik.android.components.player.m3eDarkenBy
 import app.n_zik.android.components.player.m3eDominantDynamicPaletteOf
+import app.n_zik.android.components.player.textOutlineColor
 import app.n_zik.android.components.player.m3eSaturate
 import app.kreate.android.me.knighthat.utils.Toaster
 import kotlin.Float.Companion.POSITIVE_INFINITY
@@ -2289,12 +2290,9 @@ fun Player(
                                                 width = 1f,
                                                 join = StrokeJoin.Round
                                             ),
+                                            // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
                                             color = if (!textoutline) Color.Transparent
-                                            else if (colorPaletteMode == ColorPaletteMode.Light ||
-                                                (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
-                                            )
-                                                Color.White.copy(0.5f)
-                                            else Color.Black,
+                                            else textOutlineColor(colorPalette().isDark, 0.5f),
                                         )
                                     ),
                                     maxLines = 1,
@@ -2494,7 +2492,8 @@ fun Player(
                                 .width(40.dp)
                                 .height(4.dp)
                                 .clip(RoundedCornerShape(2.dp))
-                                .background(Color.White)
+                                // Keyed on the effective tone, not a hardcoded white (spec-achromatic-ramp-luminance-cap)
+                                .background(colorPalette().textSecondary)
                         )
                     }
 

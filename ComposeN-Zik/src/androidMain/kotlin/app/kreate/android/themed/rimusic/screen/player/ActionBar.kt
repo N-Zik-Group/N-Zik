@@ -18,7 +18,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material3.minimumInteractiveComponentSize
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -79,7 +78,6 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.colorPalette
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.it.fast4x.rimusic.enums.ColorPaletteName
 import app.it.fast4x.rimusic.enums.PlayerBackgroundColors
 import app.it.fast4x.rimusic.enums.PlayerType
@@ -91,12 +89,12 @@ import app.n_zik.android.components.menu.player.AddToPlaylistPlayerMenu
 import app.it.fast4x.rimusic.ui.components.themed.DownloadStateIconButton
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.n_zik.android.components.menu.player.PlayerMenu
+import app.n_zik.android.components.player.textOutlineColor
 import app.it.fast4x.rimusic.utils.DisposableListener
 import app.it.fast4x.rimusic.utils.actionspacedevenlyKey
 import app.it.fast4x.rimusic.utils.addNext
 import app.it.fast4x.rimusic.utils.autoLoadSongsInQueueKey
 import app.it.fast4x.rimusic.utils.blackgradientKey
-import app.it.fast4x.rimusic.utils.colorPaletteModeKey
 import app.it.fast4x.rimusic.utils.colorPaletteNameKey
 import app.it.fast4x.rimusic.utils.conditional
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
@@ -371,7 +369,6 @@ fun BoxScope.ActionBar(
                                     .height(40.dp)
                                     .fillMaxWidth()
                             ) {
-                                val colorPaletteMode by rememberPreference( colorPaletteModeKey, ColorPaletteMode.Dark )
                                 val textOutline by rememberPreference( textoutlineKey, false )
 
                                 //<editor-fold defaultstate="collapsed" desc="Title">
@@ -398,11 +395,9 @@ fun BoxScope.ActionBar(
                                                 width = 0.25f,
                                                 join = StrokeJoin.Round
                                             ),
+                                            // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
                                             color = if (!textOutline) Color.Transparent
-                                            else if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) Color.White.copy(
-                                                0.65f
-                                            )
-                                            else Color.Black,
+                                            else textOutlineColor(colorPalette().isDark, 0.65f),
                                             fontSize = typography().xxxs.semiBold.fontSize,
                                         ),
                                         maxLines = 1,
@@ -434,16 +429,9 @@ fun BoxScope.ActionBar(
                                                 width = 0.25f,
                                                 join = StrokeJoin.Round
                                             ),
-                                            color =
-                                                if ( !textOutline )
-                                                    Color.Transparent
-                                                else if (
-                                                    colorPaletteMode == ColorPaletteMode.Light
-                                                    || (colorPaletteMode == ColorPaletteMode.System && !isSystemInDarkTheme())
-                                                )
-                                                    Color.White.copy( 0.65f )
-                                                else
-                                                    Color.Black,
+                                            // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
+                                            color = if ( !textOutline ) Color.Transparent
+                                            else textOutlineColor( colorPalette().isDark, 0.65f ),
                                             fontSize = typography().xxxs.semiBold.fontSize,
                                         ),
                                         maxLines = 1,
@@ -458,7 +446,8 @@ fun BoxScope.ActionBar(
                     if ( showSongsState.value == SongsNumber.`1` )
                         IconButton(
                             icon = R.drawable.trash,
-                            color = Color.White,
+                            // Keyed on the effective tone, not a hardcoded white (spec-achromatic-ramp-luminance-cap)
+                            color = colorPalette().text,
                             enabled = true,
                             onClick = {
                                 binder.player.removeMediaItem( nextIndex )

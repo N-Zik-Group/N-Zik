@@ -170,6 +170,7 @@ import app.n_zik.android.components.player.WithDoubledTouchSlop
 import app.n_zik.android.components.player.isMiniPlayerSwipeEnabled
 import app.n_zik.android.components.player.miniPlayerSwipeAction
 import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
+import app.n_zik.android.components.player.monochromeControlsColor
 import androidx.compose.foundation.isSystemInDarkTheme
 import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.it.fast4x.rimusic.utils.colorPaletteModeKey
@@ -392,7 +393,9 @@ fun MiniPlayer(
     val playerControlsColors by rememberPreference(playerControlsColorsKey, PlayerControlsColors.Monochrome)
     val controlsColorText = when (playerControlsColors) {
         PlayerControlsColors.Cover -> dynamicColorPalette.accent
-        PlayerControlsColors.Monochrome -> Color.White
+        // Monochrome follows the effective palette tone, not a hardcoded white
+        // (spec-achromatic-ramp-luminance-cap)
+        PlayerControlsColors.Monochrome -> monochromeControlsColor(colorPalette())
         else -> colorPalette().accent
     }
 

@@ -186,6 +186,7 @@ import app.n_zik.android.components.player.TOP_NAV_BAR_HEIGHT
 import app.n_zik.android.components.player.showMiniplayerIfDismissed
 import app.n_zik.android.components.player.PaletteFade
 import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
+import app.n_zik.android.components.player.m3eRecapRestoredDynamicPalette
 import app.n_zik.android.components.player.presentMiniplayerThenExpand
 import app.n_zik.android.components.theme.AnimatedAppearance
 import app.n_zik.android.components.theme.withColor
@@ -764,6 +765,33 @@ class MainActivity :
             fun updateAppearance(newAppearance: Appearance, animateGlobal: Boolean = false) {
                 if (animateGlobal) fadeFromAppearance = appearance
                 appearance = newAppearance
+            }
+
+            // Re-cap the restored dynamic palette once at startup (spec-achromatic-ramp-luminance-cap,
+            // loopback 2, EC-1): the Saver ColorPalette.Companion persists only accent + isDark and
+            // rebuilds through the legacy non-capped dynamicColorPaletteOf, so a process death can
+            // restore an uncapped achromatic ramp (near-white app in dark mode, or the mirror)
+            // until the next extraction. No-op same-instance for matching/in-range tones, and
+            // skipped entirely for static palettes (saved name != Dynamic).
+            LaunchedEffect(Unit) {
+                val savedColorPaletteName =
+                    preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
+                if (savedColorPaletteName == ColorPaletteName.Dynamic) {
+                    val themeIsDark =
+                        colorPaletteMode == ColorPaletteMode.Dark ||
+                                colorPaletteMode == ColorPaletteMode.PitchBlack ||
+                                (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
+                    val recapped =
+                        appearance.colorPalette.m3eRecapRestoredDynamicPalette(savedColorPaletteName, themeIsDark)
+                    if (recapped !== appearance.colorPalette) {
+                        updateAppearance(
+                            appearance.copy(
+                                colorPalette = recapped,
+                                typography = appearance.typography.withColor(recapped.text)
+                            )
+                        )
+                    }
+                }
             }
 
             fun setDynamicPalette(url: String?, animateTheme: Boolean = false) {

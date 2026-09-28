@@ -17,7 +17,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -122,7 +121,6 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.colorPalette
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.it.fast4x.rimusic.enums.ValidationType
 import app.n_zik.android.isBassBoostEnabled
 import app.it.fast4x.rimusic.models.Album
@@ -149,7 +147,6 @@ import app.it.fast4x.rimusic.utils.blurDarkenFactorKey
 import app.it.fast4x.rimusic.utils.blurStrengthKey
 import app.it.fast4x.rimusic.utils.bold
 import app.it.fast4x.rimusic.utils.center
-import app.it.fast4x.rimusic.utils.colorPaletteModeKey
 import app.it.fast4x.rimusic.utils.drawCircle
 import app.it.fast4x.rimusic.utils.expandedplayerKey
 import app.it.fast4x.rimusic.utils.fadingedgeKey
@@ -185,6 +182,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
+import app.n_zik.android.components.player.textOutlineColor
 import androidx.compose.material3.CircularWavyProgressIndicator
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.n_zik.android.thumbnailShape
@@ -672,7 +670,6 @@ inline fun SelectorArtistsDialog(
         ) {
             if (values != null) {
                 val pagerState = rememberPagerState(pageCount = { values.size })
-                val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
 
                 Box {
                     HorizontalPager(state = pagerState) { idArtist ->
@@ -738,8 +735,8 @@ inline fun SelectorArtistsDialog(
                                     text = cleanPrefix(it1),
                                     style = typography().xs.medium.merge(TextStyle(
                                         drawStyle = Stroke(width = 1.0f, join = StrokeJoin.Round),
-                                        color = if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) Color.White.copy(0.5f)
-                                        else Color.Black
+                                        // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
+                                        color = textOutlineColor(colorPalette().isDark, 0.5f)
                                     )),
                                     maxLines = 3,
                                     overflow = TextOverflow.Ellipsis,

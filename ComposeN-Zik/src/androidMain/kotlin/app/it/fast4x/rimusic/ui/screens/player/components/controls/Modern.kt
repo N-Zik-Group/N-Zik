@@ -13,7 +13,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -56,7 +55,6 @@ import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.colorPalette
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.PlayerBackgroundColors
 import app.it.fast4x.rimusic.enums.PlayerControlsType
@@ -71,7 +69,6 @@ import app.it.fast4x.rimusic.ui.components.themed.SelectorArtistsDialog
 import app.it.fast4x.rimusic.ui.screens.player.bounceClick
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.bold
-import app.it.fast4x.rimusic.utils.colorPaletteModeKey
 import app.it.fast4x.rimusic.utils.doubleShadowDrop
 import app.it.fast4x.rimusic.utils.dropShadow
 import app.it.fast4x.rimusic.utils.effectRotationKey
@@ -98,6 +95,9 @@ import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.n_zik.android.enums.PlayerControlsColors
 import androidx.compose.ui.platform.LocalDensity
 import app.it.fast4x.rimusic.utils.playerControlsColorsKey
+import app.n_zik.android.components.player.monochromeControlsColor
+import app.n_zik.android.components.player.placeholderCompositeBase
+import app.n_zik.android.components.player.textOutlineColor
 
 
 @UnstableApi
@@ -117,7 +117,6 @@ fun InfoAlbumAndArtistModern(
     onCollapse: () -> Unit,
     disableScrollingText: Boolean = false
 ) {
-    val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     var showthumbnail by rememberPreference(showthumbnailKey, true)
     var effectRotationEnabled by rememberPreference(effectRotationKey, false)
@@ -207,7 +206,9 @@ fun InfoAlbumAndArtistModern(
                         color = if (albumId == null)
                             /*if (showthumbnail) colorPalette().textDisabled else if (colorPaletteMode == ColorPaletteMode.Light) colorPalette().textDisabled.copy(0.35f).compositeOver(Color.Black) else colorPalette().textDisabled.copy(0.35f).compositeOver(Color.White)
                         else colorPalette().text,*/
-                            if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) colorPalette().textDisabled.copy(0.35f).compositeOver(Color.Black) else colorPalette().textDisabled.copy(0.35f).compositeOver(Color.White)
+                            // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
+                            colorPalette().textDisabled.copy(0.35f)
+                                .compositeOver(placeholderCompositeBase(colorPalette().isDark))
                         else colorPalette().text,
                         fontStyle = typography().l.bold.fontStyle,
                         fontWeight = typography().l.bold.fontWeight,
@@ -221,8 +222,8 @@ fun InfoAlbumAndArtistModern(
                     text = cleanPrefix(title ?: ""),
                     style = TextStyle(
                         drawStyle = Stroke(width = 1.5f, join = StrokeJoin.Round),
-                        color = if (!textoutline) Color.Transparent else if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) Color.White.copy(0.5f)
-                        else Color.Black,
+                        color = if (!textoutline) Color.Transparent
+                        else textOutlineColor(colorPalette().isDark, 0.5f),
                         fontStyle = typography().l.bold.fontStyle,
                         fontWeight = typography().l.bold.fontWeight,
                         fontSize = typography().l.bold.fontSize,
@@ -353,7 +354,9 @@ fun InfoAlbumAndArtistModern(
                     color = if (albumId == null)
                         /*if (showthumbnail) colorPalette().textDisabled else if (colorPaletteMode == ColorPaletteMode.Light) colorPalette().textDisabled.copy(0.35f).compositeOver(Color.Black) else colorPalette().textDisabled.copy(0.35f).compositeOver(Color.White)
                     else colorPalette().text,*/
-                        if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) colorPalette().textDisabled.copy(0.35f).compositeOver(Color.Black) else colorPalette().textDisabled.copy(0.35f).compositeOver(Color.White)
+                        // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap)
+                        colorPalette().textDisabled.copy(0.35f)
+                            .compositeOver(placeholderCompositeBase(colorPalette().isDark))
                     else colorPalette().text,
                     fontStyle = typography().m.bold.fontStyle,
                     fontSize = typography().m.bold.fontSize,
@@ -368,8 +371,8 @@ fun InfoAlbumAndArtistModern(
                 text = artist ?: "",
                 style = TextStyle(
                     drawStyle = Stroke(width = 1.5f, join = StrokeJoin.Round),
-                    color = if (!textoutline) Color.Transparent else if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) Color.White.copy(0.5f)
-                    else Color.Black,
+                    color = if (!textoutline) Color.Transparent
+                    else textOutlineColor(colorPalette().isDark, 0.5f),
                     fontStyle = typography().m.bold.fontStyle,
                     fontSize = typography().m.bold.fontSize,
                     fontWeight = typography().m.bold.fontWeight,
@@ -403,12 +406,16 @@ fun ControlsModern(
     val playerControlsColors by rememberPreference(playerControlsColorsKey, PlayerControlsColors.Monochrome)
     val controlsColorText = when (playerControlsColors) {
         PlayerControlsColors.Cover -> dynamicColorPalette.accent
-        PlayerControlsColors.Monochrome -> Color.White
+        // Monochrome follows the effective palette tone, not a hardcoded white
+        // (spec-achromatic-ramp-luminance-cap)
+        PlayerControlsColors.Monochrome -> monochromeControlsColor(colorPalette())
         else -> colorPalette().accent
     }
     val controlsColorAccent = when (playerControlsColors) {
         PlayerControlsColors.Cover -> dynamicColorPalette.accent
-        PlayerControlsColors.Monochrome -> Color.White
+        // Monochrome follows the effective palette tone, not a hardcoded white
+        // (spec-achromatic-ramp-luminance-cap)
+        PlayerControlsColors.Monochrome -> monochromeControlsColor(colorPalette())
         else -> colorPalette().accent
     }
     var effectRotationEnabled by rememberPreference(effectRotationKey, false)

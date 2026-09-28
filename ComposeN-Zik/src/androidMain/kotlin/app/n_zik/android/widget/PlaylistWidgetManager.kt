@@ -472,7 +472,7 @@ object PlaylistWidgetManager {
             }
         }
         
-        applyWidgetTheme(context, views, palette, titleIds, cardIds)
+        applyWidgetTheme(views, palette, titleIds, cardIds)
         return views
     }
 
@@ -559,13 +559,12 @@ object PlaylistWidgetManager {
         val currentPosition: Long,
     )
 
-    private fun applyWidgetTheme(context: Context, views: RemoteViews, palette: ColorPalette, titleIds: List<Int>, cardIds: List<Int>) {
-        val isSystemInDarkMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
-        val black = android.graphics.Color.BLACK
-        val textPrimaryArgb = if (isSystemInDarkMode) palette.text.toArgb() else black
-        val textSecondaryArgb = if (isSystemInDarkMode) palette.textSecondary.toArgb() else black
+    private fun applyWidgetTheme(views: RemoteViews, palette: ColorPalette, titleIds: List<Int>, cardIds: List<Int>) {
         val bgArgb = palette.background1.toArgb()
-        val iconTintArgb = if (isSystemInDarkMode) android.graphics.Color.WHITE else black
+        // Keyed on the effective palette tone, not isSystemInDarkMode (spec-achromatic-ramp-luminance-cap)
+        val textPrimaryArgb = widgetTextArgb(palette)
+        val textSecondaryArgb = widgetSecondaryTextArgb(palette)
+        val iconTintArgb = widgetIconTintArgb(palette)
         
         // Background
         views.setInt(R.id.widget_bg_image, "setColorFilter", bgArgb)

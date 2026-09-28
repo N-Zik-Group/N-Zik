@@ -4,10 +4,10 @@ import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.PLAYER_SHEET_HANDOVER_PROGRESS
+import app.n_zik.android.components.player.durationOutlineColorOf
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -44,14 +44,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.colorPalette
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.it.fast4x.rimusic.enums.PauseBetweenSongs
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.typography
 import app.n_zik.android.LocalPlayerSheetState
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.DURATION_INDICATOR_HEIGHT
-import app.it.fast4x.rimusic.utils.colorPaletteModeKey
 import app.it.fast4x.rimusic.utils.formatAsDuration
 import app.it.fast4x.rimusic.utils.pauseBetweenSongsKey
 import app.it.fast4x.rimusic.utils.positionAndDurationState
@@ -112,18 +110,17 @@ private fun RowScope.SkipTimeButton(
 
 @Composable
 private fun outlineColorState(): State<Color> {
-    val colorPaletteMode by rememberPreference( colorPaletteModeKey, ColorPaletteMode.Dark )
     val textOutline by rememberPreference( textoutlineKey, false )
-    val isDarkTheme = isSystemInDarkTheme()
+    // Read the palette in the composable scope: `colorPalette()` is @Composable and the
+    // derivedStateOf lambda below is not a composable context
+    val palette = colorPalette()
 
+    // The decision is pinned by the pure helper (spec-achromatic-ramp-luminance-cap, loopback 2,
+    // VG-3): keyed on the effective tone, and the text-outline opt-out now applies in light
+    // mode too (the legacy light-mode branch ignored it).
     return remember {
         derivedStateOf {
-            if ( colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && !isDarkTheme) )
-                Color.White.copy( 0.5f )
-            else if( !textOutline )
-                Color.Transparent
-            else
-                Color.Black
+            durationOutlineColorOf( textOutline, palette )
         }
     }
 }

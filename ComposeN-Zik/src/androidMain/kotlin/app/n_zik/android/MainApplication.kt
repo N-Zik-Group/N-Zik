@@ -57,6 +57,7 @@ import app.n_zik.android.core.migration.SameNameArtistDedup
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.network.client.Store
 import app.n_zik.android.core.rescue.RescueProcess
+import app.n_zik.android.core.settings.ensureDefaultColorPaletteMode
 import app.n_zik.android.extensions.audiobar.VisualizerCaptureCoordinator
 import app.n_zik.android.listentogether.ListenTogetherClient
 import app.n_zik.android.listentogether.ListenTogetherManager
@@ -142,6 +143,12 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         app.n_zik.android.shortcuts.registerAppShortcuts(this)
 
         Dependencies.init(this)
+
+        // Default theme mode (spec-achromatic-ramp-luminance-cap, scope extension 2026-09-28):
+        // fresh install / data wipe / profile switch leave `colorPaletteMode` absent from the
+        // profile's prefs, where every pre-existing read site falls back to Dark. Seed the
+        // default ("Theme mode" = System) before the first composition.
+        ensureDefaultColorPaletteMode(preferences)
 
         // Listen Together (spec-listen-together): create the WebSocket client and the sync
         // manager, bind the player bridge and auto-reconnect to a fresh persisted session

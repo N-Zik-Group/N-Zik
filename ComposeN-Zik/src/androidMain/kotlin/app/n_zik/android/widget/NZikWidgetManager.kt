@@ -288,7 +288,7 @@ object NZikWidgetManager {
         views.setOnClickPendingIntent(R.id.widget_prev_container, getPreviousIntent(context))
         views.setOnClickPendingIntent(R.id.widget_next_container, getNextIntent(context))
         
-        applyWidgetTheme(context, views, palette)
+        applyWidgetTheme(views, palette)
 
         return views
     }
@@ -379,7 +379,7 @@ object NZikWidgetManager {
         views.setOnClickPendingIntent(R.id.widget_compact_prev_container, getPreviousIntent(context))
         views.setOnClickPendingIntent(R.id.widget_compact_next_container, getNextIntent(context))
 
-        applyWidgetTheme(context, views, palette)
+        applyWidgetTheme(views, palette)
 
         return views
     }
@@ -417,7 +417,7 @@ object NZikWidgetManager {
         views.setOnClickPendingIntent(R.id.widget_wide_prev_container, getPreviousIntent(context))
         views.setOnClickPendingIntent(R.id.widget_wide_next_container, getNextIntent(context))
 
-        applyWidgetTheme(context, views, palette)
+        applyWidgetTheme(views, palette)
 
         return views
     }
@@ -462,7 +462,7 @@ object NZikWidgetManager {
         views.setOnClickPendingIntent(R.id.widget_turntable_next_button, getTurntableNextIntent(context))
         views.setOnClickPendingIntent(R.id.widget_turntable_like_button, getLikeIntent(context))
 
-        applyWidgetTheme(context, views, palette)
+        applyWidgetTheme(views, palette)
 
         return views
     }
@@ -660,16 +660,13 @@ object NZikWidgetManager {
         }
     }
 
-    private fun applyWidgetTheme(context: Context, views: RemoteViews, palette: ColorPalette) {
-        val isSystemInDarkMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
-
+    private fun applyWidgetTheme(views: RemoteViews, palette: ColorPalette) {
         val bgArgb = palette.background1.toArgb()
         val accentArgb = palette.accent.toArgb()
-        val black = android.graphics.Color.BLACK
-        val white = android.graphics.Color.WHITE
 
-        val iconTintArgb = if (isSystemInDarkMode) white else black
-        val textArgb = if (isSystemInDarkMode) white else black
+        // Keyed on the effective palette tone, not isSystemInDarkMode (spec-achromatic-ramp-luminance-cap)
+        val iconTintArgb = widgetIconTintArgb(palette)
+        val textArgb = widgetTextArgb(palette)
 
         // Text colors - full-size widget
         views.setTextColor(R.id.widget_song_title, textArgb)
