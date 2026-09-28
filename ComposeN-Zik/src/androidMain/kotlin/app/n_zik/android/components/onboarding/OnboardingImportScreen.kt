@@ -2,7 +2,6 @@ package app.n_zik.android.components.onboarding
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,10 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
@@ -111,6 +110,9 @@ fun OnboardingImportScreen(
             // behavior — background full-bleed, content clear of the system bars
             .statusBarsPadding()
             .navigationBarsPadding()
+            // Small screens / enlarged fonts: header + both cards + the note can exceed
+            // the viewport — the whole step scrolls instead of clipping
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -143,52 +145,15 @@ fun OnboardingImportScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = uiRoundnessShape(),
-            colors = CardDefaults.cardColors(containerColor = colorPalette().background1)
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth()
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .background(colorPalette().accent.copy(alpha = 0.1f), shape = uiRoundnessShape()),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.server),
-                            contentDescription = null,
-                            tint = colorPalette().accent,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Column {
-                        Text(
-                            text = stringResource(R.string.import_backup),
-                            style = typography().s,
-                            fontWeight = FontWeight.SemiBold,
-                            color = colorPalette().text
-                        )
-                        Text(
-                            text = stringResource(R.string.import_backup_description),
-                            style = typography().xxs,
-                            color = colorPalette().textSecondary
-                        )
-                    }
-                }
-
+        OnboardingActionCard(
+            icon = R.drawable.server,
+            title = stringResource(R.string.import_backup),
+            description = stringResource(R.string.import_backup_description),
+            extraContent = {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // The three restore options — same layout as ImportBackupDialog
-                options.forEach { (index, title, description) ->
+                options.forEach { (index, optionTitle, optionDescription) ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -211,13 +176,13 @@ fun OnboardingImportScreen(
 
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = title,
+                                text = optionTitle,
                                 style = typography().xs,
                                 fontWeight = FontWeight.SemiBold,
                                 color = colorPalette().text
                             )
                             Text(
-                                text = description,
+                                text = optionDescription,
                                 style = typography().xxs,
                                 color = colorPalette().textSecondary
                             )
@@ -247,53 +212,15 @@ fun OnboardingImportScreen(
                     Text(stringResource(R.string.import_button))
                 }
             }
-        }
+        )
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = uiRoundnessShape(),
-            colors = CardDefaults.cardColors(containerColor = colorPalette().background1)
-        ) {
-            Row(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(colorPalette().accent.copy(alpha = 0.1f), shape = uiRoundnessShape()),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.settings),
-                        contentDescription = null,
-                        tint = colorPalette().accent,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.onboard_restore_skip),
-                        style = typography().s,
-                        fontWeight = FontWeight.SemiBold,
-                        color = colorPalette().text
-                    )
-                    Text(
-                        text = stringResource(R.string.onboard_restore_skip_desc),
-                        style = typography().xxs,
-                        color = colorPalette().textSecondary
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
+        OnboardingActionCard(
+            icon = R.drawable.settings,
+            title = stringResource(R.string.onboard_restore_skip),
+            description = stringResource(R.string.onboard_restore_skip_desc),
+            action = {
                 Button(
                     onClick = {
                         Timber.tag("Onboarding").i("Restore step skipped, onboarding continues")
@@ -305,10 +232,11 @@ fun OnboardingImportScreen(
                     ),
                     shape = uiRoundnessShape()
                 ) {
-                    Text(stringResource(R.string.onboard_restore_skip_button))
+                    // Bounded label: never pushes the card off-screen on small screens / large fonts
+                    OnboardingActionLabel(stringResource(R.string.onboard_restore_skip_button))
                 }
             }
-        }
+        )
 
         Spacer(modifier = Modifier.height(12.dp))
 

@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,14 +13,12 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -168,6 +165,9 @@ fun OnboardingAccountsScreen(
             // behavior — background full-bleed, content clear of the system bars
             .statusBarsPadding()
             .navigationBarsPadding()
+            // Small screens / enlarged fonts: header + cards + the skip button can exceed
+            // the viewport — the whole step scrolls instead of clipping
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -200,60 +200,63 @@ fun OnboardingAccountsScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.weight(1f)
-        ) {
+        // Plain Column: two cards at most, no recycling needed — and the screen
+        // column scrolls, so a nested lazy list would fight it for the gesture
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             if (lastfmConfigured) {
-                item(key = "lastfm") {
-                    OnboardingAccountCard(
-                        icon = R.drawable.logo_lastfm,
-                        title = stringResource(R.string.social_lastfm),
-                        description = if (lastfmSession.isNotEmpty()) {
-                            stringResource(R.string.lastfm_connected)
-                        } else {
-                            stringResource(R.string.social_lastfm_info)
-                        },
-                        actionLabel = stringResource(onboardingAccountButtonResId(lastfmSession.isNotEmpty())),
-                        onAction = {
-                            if (lastfmSession.isNotEmpty()) {
-                                lastfmSession = ""
-                                lastfmUsername = ""
-                                lastfmAvatarUrl = ""
-                                LastFm.sessionKey = null
-                                Timber.tag("Onboarding").i("Last.fm account disconnected, card reset")
+                OnboardingActionCard(
+                    icon = R.drawable.logo_lastfm,
+                    title = stringResource(R.string.social_lastfm),
+                    description = if (lastfmSession.isNotEmpty()) {
+                        stringResource(R.string.lastfm_connected)
+                    } else {
+                        stringResource(R.string.social_lastfm_info)
+                    },
+                    action = {
+                        OnboardingAccountActionButton(
+                            label = stringResource(onboardingAccountButtonResId(lastfmSession.isNotEmpty())),
+                            onClick = {
+                                if (lastfmSession.isNotEmpty()) {
+                                    lastfmSession = ""
+                                    lastfmUsername = ""
+                                    lastfmAvatarUrl = ""
+                                    LastFm.sessionKey = null
+                                    Timber.tag("Onboarding").i("Last.fm account disconnected, card reset")
+                                } else {
+                                    loginLastfm = true
+                                }
+                            }
+                        )
+                    }
+                )
+            }
+
+            OnboardingActionCard(
+                icon = R.drawable.logo_discord,
+                title = stringResource(R.string.social_discord),
+                description = if (discordToken.isNotEmpty()) {
+                    stringResource(R.string.discord_connected_to_discord_account)
+                } else {
+                    stringResource(R.string.onboard_accounts_discord_desc)
+                },
+                action = {
+                    OnboardingAccountActionButton(
+                        label = stringResource(onboardingAccountButtonResId(discordToken.isNotEmpty())),
+                        onClick = {
+                            if (discordToken.isNotEmpty()) {
+                                discordToken = ""
+                                discordUsername = ""
+                                discordAvatar = ""
+                                // No restart prompt here either — the user leaves the step
+                                // with the skip button, which re-evaluates the token state
+                                Timber.tag("Onboarding").i("Discord account disconnected, card reset")
                             } else {
-                                loginLastfm = true
+                                loginDiscord = true
                             }
                         }
                     )
                 }
-            }
-
-            item(key = "discord") {
-                OnboardingAccountCard(
-                    icon = R.drawable.logo_discord,
-                    title = stringResource(R.string.social_discord),
-                    description = if (discordToken.isNotEmpty()) {
-                        stringResource(R.string.discord_connected_to_discord_account)
-                    } else {
-                        stringResource(R.string.onboard_accounts_discord_desc)
-                    },
-                    actionLabel = stringResource(onboardingAccountButtonResId(discordToken.isNotEmpty())),
-                    onAction = {
-                        if (discordToken.isNotEmpty()) {
-                            discordToken = ""
-                            discordUsername = ""
-                            discordAvatar = ""
-                            // No restart prompt here either — the user leaves the step
-                            // with the skip button, which re-evaluates the token state
-                            Timber.tag("Onboarding").i("Discord account disconnected, card reset")
-                        } else {
-                            loginDiscord = true
-                        }
-                    }
-                )
-            }
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -398,70 +401,20 @@ fun OnboardingAccountsScreen(
 }
 
 /**
- * One onboarding account card (same pattern as the permission cards): the account,
- * its current status as description, and the connect/disconnect action.
+ * Action button of an onboarding account card (same look as the other onboarding
+ * buttons): the label is bounded by [OnboardingActionLabel] so it can never push
+ * the card off-screen on small screens / large fonts.
  */
 @Composable
-private fun OnboardingAccountCard(
-    icon: Int,
-    title: String,
-    description: String,
-    actionLabel: String,
-    onAction: () -> Unit,
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = uiRoundnessShape(),
-        colors = CardDefaults.cardColors(containerColor = colorPalette().background1)
+private fun OnboardingAccountActionButton(label: String, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = colorPalette().accent,
+            contentColor = colorPalette().textSecondary
+        ),
+        shape = uiRoundnessShape()
     ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .background(colorPalette().accent.copy(alpha = 0.1f), shape = uiRoundnessShape()),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(icon),
-                    contentDescription = null,
-                    tint = colorPalette().accent,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = typography().s,
-                    fontWeight = FontWeight.SemiBold,
-                    color = colorPalette().text
-                )
-                Text(
-                    text = description,
-                    style = typography().xxs,
-                    color = colorPalette().textSecondary
-                )
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Button(
-                onClick = onAction,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorPalette().accent,
-                    contentColor = colorPalette().textSecondary
-                ),
-                shape = uiRoundnessShape()
-            ) {
-                Text(actionLabel)
-            }
-        }
+        OnboardingActionLabel(label)
     }
 }

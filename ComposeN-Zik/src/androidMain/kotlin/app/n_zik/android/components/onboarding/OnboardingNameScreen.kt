@@ -3,7 +3,6 @@ package app.n_zik.android.components.onboarding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,12 +11,11 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -40,6 +38,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
@@ -166,6 +165,9 @@ fun OnboardingNameScreen(
             // behavior — background full-bleed, content clear of the system bars
             .statusBarsPadding()
             .navigationBarsPadding()
+            // Small screens / enlarged fonts: header + both cards + the guest field can
+            // exceed the viewport — the whole step scrolls instead of clipping
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -198,53 +200,15 @@ fun OnboardingNameScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = uiRoundnessShape(),
-            colors = CardDefaults.cardColors(containerColor = colorPalette().background1)
-        ) {
-            Row(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(colorPalette().accent.copy(alpha = 0.1f), shape = uiRoundnessShape()),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.logo_youtube),
-                        contentDescription = null,
-                        tint = colorPalette().accent,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.onboard_name_youtube),
-                        style = typography().s,
-                        fontWeight = FontWeight.SemiBold,
-                        color = colorPalette().text
-                    )
-                    Text(
-                        text = if (ytLoggedIn && ytName.isNotBlank()) {
-                            stringResource(R.string.onboard_name_youtube_account, ytName)
-                        } else {
-                            stringResource(R.string.onboard_name_youtube_desc)
-                        },
-                        style = typography().xxs,
-                        color = colorPalette().textSecondary
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
+        OnboardingActionCard(
+            icon = R.drawable.logo_youtube,
+            title = stringResource(R.string.onboard_name_youtube),
+            description = if (ytLoggedIn && ytName.isNotBlank()) {
+                stringResource(R.string.onboard_name_youtube_account, ytName)
+            } else {
+                stringResource(R.string.onboard_name_youtube_desc)
+            },
+            action = {
                 Button(
                     onClick = {
                         if (ytLoggedIn) logOffYouTube() else loginYouTube = true
@@ -256,55 +220,19 @@ fun OnboardingNameScreen(
                     shape = uiRoundnessShape()
                 ) {
                     // Same generic login/logoff pair as the other onboarding menus
-                    Text(stringResource(onboardingAccountButtonResId(ytLoggedIn)))
+                    // Bounded label: never pushes the card off-screen on small screens / large fonts
+                    OnboardingActionLabel(stringResource(onboardingAccountButtonResId(ytLoggedIn)))
                 }
             }
-        }
+        )
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = uiRoundnessShape(),
-            colors = CardDefaults.cardColors(containerColor = colorPalette().background1)
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth()
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .background(colorPalette().accent.copy(alpha = 0.1f), shape = uiRoundnessShape()),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.person),
-                            contentDescription = null,
-                            tint = colorPalette().accent,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Column {
-                        Text(
-                            text = stringResource(R.string.onboard_name_guest),
-                            style = typography().s,
-                            fontWeight = FontWeight.SemiBold,
-                            color = colorPalette().text
-                        )
-                        Text(
-                            text = stringResource(R.string.onboard_name_guest_desc),
-                            style = typography().xxs,
-                            color = colorPalette().textSecondary
-                        )
-                    }
-                }
-
+        OnboardingActionCard(
+            icon = R.drawable.person,
+            title = stringResource(R.string.onboard_name_guest),
+            description = stringResource(R.string.onboard_name_guest_desc),
+            extraContent = {
                 // stringResource is @Composable: hoisted out of the non-composable
                 // semantics lambda
                 val fieldHint = stringResource(R.string.onboard_name_field_hint)
@@ -344,10 +272,16 @@ fun OnboardingNameScreen(
                         .fillMaxWidth()
                         .padding(top = 12.dp)
                 ) {
-                    Text(stringResource(R.string.onboard_name_continue))
+                    // Single line: the button is full width, so an enlarged font must not
+                    // wrap the label onto a second line
+                    Text(
+                        stringResource(R.string.onboard_name_continue),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
-        }
+        )
 
         CustomModalBottomSheet(
             showSheet = loginYouTube,

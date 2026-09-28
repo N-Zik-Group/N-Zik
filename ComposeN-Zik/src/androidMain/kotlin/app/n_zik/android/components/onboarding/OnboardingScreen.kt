@@ -11,9 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,13 +20,10 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
@@ -46,7 +41,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -279,6 +273,9 @@ fun OnboardingScreen(
             // behavior — background full-bleed, content clear of the system bars
             .statusBarsPadding()
             .navigationBarsPadding()
+            // Small screens / enlarged fonts: the card list and the fixed header can
+            // exceed the viewport — the whole step scrolls instead of clipping
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -308,16 +305,18 @@ fun OnboardingScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.weight(1f)
-        ) {
-            items(
-                items = cards,
-                key = { it.id },
-                contentType = { "onboarding_permission" }
-            ) { card ->
-                OnboardingPermissionCard(card)
+        // Plain Column: five cards at most, no recycling needed — and the screen
+        // column scrolls, so a nested lazy list would fight it for the gesture
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            cards.forEach { card ->
+                OnboardingActionCard(
+                    icon = card.icon,
+                    title = card.title,
+                    description = card.description,
+                    action = {
+                        OnboardingActionButton(status = card.status, onClick = card.onRequest)
+                    }
+                )
             }
         }
 
@@ -347,79 +346,6 @@ private fun Context.shouldShowRationale(permission: String): Boolean =
     else (this as? Activity)?.shouldShowRequestPermissionRationale(permission) ?: true
 
 @Composable
-private fun OnboardingSectionCard(title: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = uiRoundnessShape(),
-        colors = CardDefaults.cardColors(containerColor = colorPalette().background1)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = title,
-                style = typography().s,
-                fontWeight = FontWeight.SemiBold,
-                color = colorPalette().accent
-            )
-        }
-    }
-}
-
-@Composable
-private fun OnboardingPermissionCard(item: OnboardingItem) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = uiRoundnessShape(),
-        colors = CardDefaults.cardColors(containerColor = colorPalette().background1)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .background(colorPalette().accent.copy(alpha = 0.1f), shape = uiRoundnessShape()),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(item.icon),
-                    contentDescription = null,
-                    tint = colorPalette().accent,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = item.title,
-                    style = typography().s,
-                    fontWeight = FontWeight.SemiBold,
-                    color = colorPalette().text
-                )
-                Text(
-                    text = item.description,
-                    style = typography().xxs,
-                    color = colorPalette().textSecondary
-                )
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            OnboardingActionButton(status = item.status, onClick = item.onRequest)
-        }
-    }
-}
-
-@Composable
 private fun OnboardingActionButton(status: PermissionStatus, onClick: () -> Unit) {
     when (status) {
         PermissionStatus.GRANTED -> Icon(
@@ -439,14 +365,15 @@ private fun OnboardingActionButton(status: PermissionStatus, onClick: () -> Unit
                 colorPalette().textSecondary
             )
         ) {
-            Text(stringResource(R.string.onboard_permission_grant))
+            // Bounded label: never pushes the card off-screen on small screens / large fonts
+            OnboardingActionLabel(stringResource(R.string.onboard_permission_grant))
         }
 
         PermissionStatus.PERMANENTLY_DENIED -> TextButton(
             onClick = onClick,
             colors = ButtonDefaults.buttonColors(contentColor = colorPalette().text)
         ) {
-            Text(stringResource(R.string.onboard_permission_settings))
+            OnboardingActionLabel(stringResource(R.string.onboard_permission_settings))
         }
     }
 }
