@@ -108,7 +108,7 @@ Join the N-Zik Discord:
 # 🎧 Features
 
 - 🌍 **Multilingual Support** – Available in English, Italian, German, Russian, French, Spanish, Czech, Turkish, Romanian, and more. Contributions are always welcome!
-- 🔊 **High Quality Audio** — Pick your preferred stream client (Web, Web Remix, Android VR, …): the Web Remix client unlocks premium streaming quality on N-Zik.
+- 🔊 **High Quality Audio** - Premium streaming quality is unlocked automatically - just connect your YouTube Music Premium account.
 - 🎨 **Modern and Intuitive UI**
 - 🌓 **UI Mode Toggle** – Switch between the **N-Zik** experience and the classic **ViMusic** interface.
 - 💾 **Smart Offline Caching** – Automatically cache songs for offline playback with customizable cache limits.
@@ -158,7 +158,7 @@ Join the N-Zik Discord:
 - ✏️ **Metadata Editor** – Edit song metadata (title, artist, album, genre, year, cover art, and more) directly in-app. Supports both AAC and Opus codecs with automatic cover art embedding.
 - ⚙️ **Settings & Database Auto-Backup** – Save, restore, and automatically back up your complete app configuration and database with customizable intervals, retention limits, and optional YouTube/Discord/Last.fm credential inclusion.
 - 📡 **Offline First** – Enjoy your music library even without an internet connection.
-- 🔁 **YouTube Sync** – Recommendations and profile-related content are synchronized from your YouTube account, plus a new two-way sync engine (experimental — currently enabled in debug/dev builds) that keeps your likes and synced items aligned between N-Zik and YouTube Music.
+- 🔁 **YouTube Sync** – Recommendations and profile-related content are synchronized from your YouTube account, plus a new two-way sync engine (experimental - currently enabled in debug/dev builds) that keeps your likes and synced items aligned between N-Zik and YouTube Music.
 - 🔄 **Auto-Resume on Device Connect** – Automatically resume playback when Bluetooth headphones or speakers connect.
 - 💾 **Persistent Queue** – Your queue is saved and restored across app sessions.
 - 🔀 **Auto-fill Queue** – Automatically adds more songs when the queue is nearly empty.
