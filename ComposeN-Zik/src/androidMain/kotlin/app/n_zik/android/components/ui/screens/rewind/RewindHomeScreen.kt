@@ -251,7 +251,9 @@ private fun RewindHomeContent(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
+        // No top padding — the page header sits flush under the app header, the same
+        // as the settings / Listen Together pages (the header brings its own 8dp).
+        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 10.dp)
     ) {
         // Brand hero — same recipe as the Listen Together page: the app logo and the
         // title centered as a group (HeaderWithIcon pattern, xxl bold), the tagline
