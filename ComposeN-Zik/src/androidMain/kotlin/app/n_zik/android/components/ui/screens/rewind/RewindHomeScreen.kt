@@ -51,8 +51,10 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,13 +64,16 @@ import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.SortOrder
 import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
+import app.it.fast4x.rimusic.ui.screens.settings.SettingsDescription
 import app.it.fast4x.rimusic.ui.styling.Dimensions
+import app.it.fast4x.rimusic.utils.bold
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindArtwork
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindPlaylistArtwork
 import app.n_zik.android.components.ui.screens.rewind.slides.formatRewindNumber
+import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.rememberDataStoreBooleanPreference
@@ -251,25 +256,45 @@ private fun RewindHomeContent(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
     ) {
-        // Brand hero
+        // Brand hero — same recipe as the Listen Together page: the app logo and the
+        // title centered as a group (HeaderWithIcon pattern, xxl bold), the tagline
+        // centered below (SettingsDescription pattern).
         item(key = "hero") {
-            Text(
-                text = stringResource(R.string.rw_home_title),
-                color = palette.text,
-                fontSize = 24.sp,
-                lineHeight = 25.sp,
-                letterSpacing = (-0.8).sp,
-                fontWeight = FontWeight.Black
-            )
-            Spacer(Modifier.height(6.dp))
-            Text(
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                // The monochrome logo — the black & white one the player's media
+                // notification uses (ic_launcher_monochrome, a white vector), tinted to
+                // the app text color so it stays monochrome on the dark background.
+                Icon(
+                    painter = painterResource(R.drawable.ic_launcher_monochrome),
+                    contentDescription = stringResource(R.string.cd_app_s_icon),
+                    tint = palette.text,
+                    modifier = Modifier.size(36.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.rw_home_title),
+                    style = TextStyle(
+                        fontSize = typography().xxl.bold.fontSize,
+                        fontWeight = typography().xxl.bold.fontWeight,
+                        color = palette.text,
+                        textAlign = TextAlign.Start
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            SettingsDescription(
                 text = stringResource(R.string.rw_home_tagline),
-                color = palette.textSecondary,
-                fontSize = 11.5.sp,
-                fontWeight = FontWeight.SemiBold,
-                letterSpacing = 0.4.sp
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
             )
-            Spacer(Modifier.height(26.dp))
+            Spacer(Modifier.height(18.dp))
         }
 
         // ALL TIME — the lifetime totals, above the years: tap opens the all-time deck

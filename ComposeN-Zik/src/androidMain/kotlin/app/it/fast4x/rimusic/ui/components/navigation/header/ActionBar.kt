@@ -95,11 +95,13 @@ private fun HamburgerMenu(
         ) { onItemClick( NavRoutes.statistics ) }
     )
     // Rewind button (Cubic-style yearly listening recap, issue #275); hidden while the
-    // feature is disabled in the settings (spec GH-275)
+    // feature is disabled in the settings (spec GH-275). Uses the monochrome logo
+    // (ic_launcher_monochrome — the black & white one the player's media notification
+    // uses) instead of a generic icon.
     if (rewindEnabled)
         menu.add(
             DropdownMenu.Item(
-                R.drawable.sparkles,
+                R.drawable.ic_launcher_monochrome,
                 R.string.rewind
             ) { onItemClick( NavRoutes.rewindHome ) }
         )
