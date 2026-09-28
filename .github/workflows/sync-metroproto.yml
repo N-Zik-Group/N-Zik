@@ -1,0 +1,74 @@
+name: Sync Listen Together proto from metroproto
+
+env:
+  TZ: Europe/Paris
+
+on:
+  schedule:
+    - cron: '0 4 * * 1'  # Every Monday at 4 AM
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-proto:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download canonical schema and apply N-Zik options
+        run: |
+          set -euo pipefail
+          curl -fsSL https://raw.githubusercontent.com/MetrolistGroup/metroproto/master/listentogether.proto -o /tmp/canonical.proto
+          TARGET=ComposeN-Zik/src/main/proto/listentogether.proto
+          {
+            echo '// Listen Together wire protocol.'
+            echo '// Canonical schema: https://github.com/MetrolistGroup/metroproto (auto-synced by CI, do not edit by hand).'
+            echo '// Server: MetrolistGroup/metroserver (GPL-3.0), protobuf + gzip envelopes.'
+            grep -v 'option go_package' /tmp/canonical.proto |
+              sed 's|option java_package = ".*"|option java_package = "app.n_zik.android.listentogether.proto"|'
+          } > "$TARGET"
+
+      - name: Detect drift
+        id: drift
+        run: |
+          if git diff --quiet -- ComposeN-Zik/src/main/proto/listentogether.proto; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No drift - listentogether.proto is up to date with MetrolistGroup/metroproto"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff -- ComposeN-Zik/src/main/proto/listentogether.proto | tee /tmp/proto-diff.txt
+          fi
+
+      - name: Open or update sync PR
+        if: steps.drift.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B chore/metroproto-sync
+          git add ComposeN-Zik/src/main/proto/listentogether.proto
+          git commit -m "chore: sync listentogether.proto from MetrolistGroup/metroproto"
+          git push -f origin chore/metroproto-sync
+          {
+            echo "Automatic proto sync detected drift between the canonical schema (MetrolistGroup/metroproto) and the in-tree copy."
+            echo ""
+            echo "Diff:"
+            echo ""
+            echo '```diff'
+            cat /tmp/proto-diff.txt
+            echo '```'
+            echo ""
+            echo '> **Review before merging:** if upstream added or removed messages/fields, `Protocol.kt` (and possibly the Listen Together client) needs a manual follow-up.'
+          } > /tmp/pr-body.md
+          if [ -n "$(gh pr list --head chore/metroproto-sync --state open --json number -q '.[0].number')" ]; then
+            echo "PR already open for chore/metroproto-sync - branch updated"
+          else
+            gh pr create --base main --head chore/metroproto-sync \
+              --title "chore: sync listentogether.proto from MetrolistGroup/metroproto" \
+              --body-file /tmp/pr-body.md
+          fi
