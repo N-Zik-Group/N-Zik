@@ -1,69 +1,69 @@
-Frontend multilingüe de YouTube Music para Android, centrado no rendemento, UI/UX, novas funcións e soporte a longo prazo.
+Frontend multilingüe de YouTube Music para Android: rendemento, refinamentos UI/UX, expansión de funcións e soporte a longo prazo.
 
-<b>N-Zik</b> é un fork de código aberto de <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+<b>N-Zik</b> é un furcado de código aberto de <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Nota:</b> N-Zik naceu como proxecto persoal. Para alternativas maduras, consulta <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> ou <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Nota:</b> N-Zik comezou como proxecto secundario. Alternativas máis maduras: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> ou <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Uso de IA:</b> Uso IA xenerativa para o código (a través do <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), revisado e probado antes de saír.
+<b>Uso de IA:</b> IA xeradora no código (a través de <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), revisada e probada antes de publicar.
 
-Ointe ocasional ou audiófilo, N-Zik dáche control total da túa música sen comprometer a privacidade.
+Sexas escoitador ocasional ou audiófilo, N-Zik dáche control total da túa música sen perda de privacidade.
 
-✨ <b>POR QUE N-ZIK?</b> Sen anuncios, reprodución en segundo plano, caché offline, UI personalizábel - de balde, sempre.
+✨ <b>Por que N-ZIK?</b> Sen anuncios, reprodución en segundo plano, caché offline, UI personalizable - gratis, sempre.
 
-🎨 <b>UI personalizábel</b>
-- Jetpack Compose con interruptor de modo clásico ViMusic
-- Temas: AMOLED, Deep Dark, Crisp Light + acentos de cor
-- Carusel 3D, widgets de inicio, reprodutor e mini-reprodutor unificados
-- Perfís de artistas, Descoberta e estados de ánimo, cabeceiras plegables
+🎨 <b>UI personalizable</b>
+- Jetpack Compose, alternancia do modo clásico de ViMusic
+- Temas: AMOLED, Deep Dark, Crisp Light + acentos tonificados
+- 3D Carousel Player, widgets, reprodutor e mini-reprodutor unificados
+- Perfís de artista, Descuberta e estados de ánimo, cabeceiras plegables
 
 🎵 <b>Experiencia de audio</b>
-- Calidade premium vía YouTube Music Premium, aplicación auto
-- Letras sincronizadas con edición e tradución en tempo real
-- Recoñecemento musical (tipo Shazam), busca por voz, visualizador de audio
-- Controis pro: velocidade, ton, normalización, crossfade, reforzo volume e graves, reverb
-- Barra Audio Bar con onda para unha navegación precisa
+- Calidade premium vía YouTube Music Premium, automática
+- Letras sincronizadas con edición e tradución en directo
+- Recoñecemento de cancións (tipo Shazam), busca por voz, visualizador
+- Controis Pro: velocidade, tono, normalización, fundido cruzado, reforzo de volume e graves, reverb
+- Seekbar de forma de onda de Audio Bar, navegación precisa
 
-💾 <b>Fóra de liña, metadatos e privacidade</b>
-- Caché intelixente e descargas cancións/listas, calidade escollible
-- Exportación con FFmpeg e metadatos completos (só 64-bit)
+💾 <b>Sen conexión, metadatos e privacidade</b>
+- Caché intelixente e descargas de cancións e listas, con calidade de descarga escollible
+- Exportación FFmpeg con metadatos completos (só 64-bit)
 - Editor de metadatos na app (AAC/Opus, portada)
-- Estatísticas de escoita e historial locais
-- Copia de seguranza automática, intervalos e retención personalizables
+- Estatísticas de escoita locais e histórico
+- Copia de seguridade automática, intervalos e retención a medida
 
 🔗 <b>Integracións</b>
-- Sesión YouTube: recomendacións e vídeo, máis sincronización bidireccional experimental
-- Scrobbling Last.fm con Now Playing e gustar/deixar
-- Información de artistas e álbums de MusicBrainz
-- Discord Rich Presence, modo avanzado con vista previa en directo
-- Invidious para streaming alternativo de YouTube
-- Importación/exportación de listas: RiPlay, Spotify, YouTube Music, N-Zik
+- Sesión en YouTube para recomendacións e vídeo; sincronización bidireccional experimental
+- Scrobbling de Last.fm con Now Playing e love/unlove
+- Información de MusicBrainz de artistas e álbums
+- Discord Rich Presence, con modo avanzado e vista previa en directo
+- Integración Invidious para streaming alternativo de YouTube
+- Importar/exportar listas: RiPlay, Spotify, YouTube Music, N-Zik
 
-👥 <b>Escutar xuntos</b>
-- Uneche a unha sesión de escoita live doutro usuario de N-Zik, (código ou ligazón de invitación)
+👥 <b>Escoitar xuntos</b>
+- Unirse ou crear sesións en directo, por código ou ligazón de invitación
 
 🗓️ <b>Rewind</b>
-- Resumos anuais e mensuais de escoita, listas Rewind xeradas automaticamente
+- Resumos anuais e mensuais de escoita con listas de Rewind automáticas
 
-📱 <b>Reproduce en calquera lugar:</b> Android Auto, Automotive, TV e tabletas
+📱 <b>Reproducir en calquera lugar:</b> Android Auto, Automotive, TV e Tablets
 
-🛠️ <b>Funcións avanzadas</b>
-- Multi-perfil: base de datos e axustes separados
-- Retomada auto ao conectar BT, cola persistente e auto-enchido
-- Papeleira intelixente, cancións ocultas, desgustos, control parental
-- Proxy, adaptación de calidade de rede, exportación de rexistros
-- Rescue Center, pantalla de mantemento, onboarding, atallos da app
-- Actualizacións OTA de GitHub, temporizador de sono, reprodución en segundo plano
+🛠️ <b>Funcións de usuario avanzado</b>
+- Multi-perfil: base de datos e axustes illados por perfil
+- Reanudar ao conectar Bluetooth, cola persistente e recheo automático
+- Papeleira intelixente, cancións ocultas, desgusto, control parental
+- Proxy, adaptación á calidade da rede, exportar rexistros
+- Rescue Center, pantalla de mantemento, onboarding, atallos
+- OTA desde GitHub, temporizador de sono, reprodución en segundo plano
 
-🛡️ 100% código aberto (FOSS). Permisos clave: INTERNET, RECORD_AUDIO (só visualizador), STORAGE (exportacións/copias de seguridade), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
+🛡️ 100% código aberto (FOSS). Permisos principais: INTERNET, RECORD_AUDIO (só visualizador), STORAGE (exportacións/copias), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
-📦 <b>Versións dispoñibles</b>
+📦 <b>Compilacións dispoñibles</b>
 - Full/Beta: Versión completa (64-bit)
 - Full32/Beta32: Sen FFmpeg (32/64-bit)
-- Minified: Lixeira, para dispositivos de gama baixa (64-bit)
-- Minified32: Lixeira sen FFmpeg (32/64-bit)
-- FOSS: Sen auto-updater, para F-Droid (64-bit)
-- Dev/Dev32: Versións de desenvolvemento, só para probas
+- Minified: Ligera, para equipos de gama baixa (64-bit)
+- Minified32: Ligera sen FFmpeg (32/64-bit)
+- FOSS: Sen actualizador automático (64-bit, para F-Droid)
+- Dev/Dev32: Versións de desenvolvemento, só probas
 
-As versións estándar son 64-bit (FFmpeg); as "32" eliminan FFmpeg (ambas arquitecturas). só FOSS en F-Droid.
+As compilacións estándar son de 64-bit (FFmpeg); as "32" sen FFmpeg nas dúas arquitecturas. Só FOSS está en F-Droid.
 
-A partir de <b>xaneiro de 2027</b>, Google esixirá verificación de identidade para todo desenvolvementor. Como FOSS, N-Zik opónse. <a href="https://keepandroidopen.org">Máis información</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Asina a petición</a>
+Desde <b>xaneiro de 2027</b>, Google exixirá verificación de identidade a cada desenvolvedor. Como FOSS, N-Zik opónse. <a href="https://keepandroidopen.org">Saber máis</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Asina a petición</a>

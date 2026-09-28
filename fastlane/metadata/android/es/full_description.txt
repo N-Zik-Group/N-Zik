@@ -25,13 +25,13 @@ Ya seas oyente casual o audiófilo, N-Zik te da control total sobre tu música s
 
 💾 <b>Offline, metadatos y privacidad</b>
 - Caché y descargas inteligentes de canciones y playlists, con calidad seleccionable
-- FFmpeg export con metadatos completos (solo 64-bit)
+- Exportación FFmpeg con metadatos (solo 64-bit)
 - Editor de metadatos en app (AAC/Opus, portada)
 - Stats e historial de escucha locales
 - Auto-backup con intervalos y retención personalizables
 
 🔗 <b>Integraciones</b>
-- YouTube sign-in para recomendaciones y video, más sync bidireccional experimental
+- Acceso de YouTube para recomendaciones y video, más sync bidireccional
 - Last.fm scrobbling con Now Playing y love/unlove
 - MusicBrainz: datos de artistas y álbumes
 - Discord Rich Presence, con modo avanzado y vista previa en vivo
@@ -39,19 +39,19 @@ Ya seas oyente casual o audiófilo, N-Zik te da control total sobre tu música s
 - Import/export de playlists: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Escucha en grupo</b>
-- Únete a sesiones en vivo de otros usuarios de N-Zik con código o enlace
+- Únete o organiza sesiones de escucha en vivo, con código o enlace de invitación
 
 🗓️ <b>Rewind</b>
 - Resúmenes anuales y mensuales de escucha con playlists Rewind automáticas
 
-📱 <b>Reproduce en cualquier lugar:</b> Android Auto, Automotive, TV y tabletas
+📱 <b>Reproduce en cualquier lugar:</b> Android Auto, Automotive, TV y Tablets
 
 🛠️ <b>Funciones para usuarios avanzados</b>
-- Multi-perfiles: BD y ajustes por perfil
+- Multi-perfiles: base de datos y ajustes por perfil
 - Reanudación al conectar Bluetooth, cola persistente, cola auto-completada
 - Smart Trash, canciones ocultas, sistema de dislike, control parental
 - Soporte proxy, adaptación a la calidad de red, exportación de logs
-- Rescue Center, pantalla de mantenimiento, onboarding, accesos directos de app
+- Rescue Center, pantalla de mantenimiento, onboarding, accesos directos de la app
 - OTA desde GitHub, temporizador de sueño, reproducción en segundo plano
 
 🛡️ 100% código abierto (FOSS). Permisos clave: INTERNET, RECORD_AUDIO (solo visualizador), STORAGE (exportaciones/backups), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.

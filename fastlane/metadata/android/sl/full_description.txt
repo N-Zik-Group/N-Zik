@@ -8,12 +8,12 @@ Večjezični YouTube Music frontend za Android, usmerjen v zmogljivost, izboljš
 
 Ali ste priložnostni poslušalec ali audiofil, N-Zik vam daje popoln nadzor nad glasbo brez kompromisov pri zasebnosti.
 
-✨ <b>ZAKAJ N-ZIK?</b> Brez oglasov, predvajanje v ozadju, offline predpomnjenje, prilagodljiv vmesnik - vedno brezplačno.
+✨ <b>ZAKAJ N-ZIK?</b> Brez oglasov, predvajanje v ozadju, offline predpomnilnik, prilagodljiv vmesnik - vedno brezplačno.
 
 🎨 <b>Prilagodljiv vmesnik</b>
 - Jetpack Compose s preklopom na klasični način ViMusic
 - Teme: AMOLED, Deep Dark, Crisp Light + barvni poudarki
-- 3D Carousel Player, gradniki domačice, enotni in mini-player
+- 3D Carousel Player, gradniki domačice, enotni predvajalnik in mini-player
 - Profili izvajalcev, Discovery in razpoloženja, zložljive glave domačice
 
 🎵 <b>Zvočna izkušnja</b>
@@ -32,19 +32,19 @@ Ali ste priložnostni poslušalec ali audiofil, N-Zik vam daje popoln nadzor nad
 
 🔗 <b>Integracije</b>
 - Prijava v YouTube za priporočila in predvajanje videa ter eksperimentalni dvosmerni sync
-- Last.fm scrobbling z Now Playing in všečkami
+- Last.fm scrobbling z Now Playing in love/unlove
 - Uvid v izvajalce in albume prek MusicBrainz
 - Discord Rich Presence z naprednim načinom in predogledom v živo
 - Invidious integracija za alternativno YouTube pretakanje
 - Uvoz/izvoz playlistov: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Predvajajte skupaj</b>
-- Pridružite se v živo poslušanju drugega uporabnika N-Zik prek kode ali povabilne povezave
+- Pridružite se ali gostite žive seje z drugimi prek kode ali povabilne povezave
 
 🗓️ <b>Rewind</b>
 - Letni in mesečni povzetki poslušanja s samodejnimi Rewind playlisti
 
-📱 <b>Predvajajte kjerkoli:</b> Android Auto, Automotive, TV in tablični računalniki
+📱 <b>Predvajajte kjerkoli:</b> Android Auto, Automotive, TV in Tablets
 
 🛠️ <b>Funkcije za napredne uporabnike</b>
 - Več profilov: ločena baza in nastavitve na profil

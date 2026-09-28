@@ -19,7 +19,7 @@ Dù là người nghe thông thường hay tín đồ âm thanh, N-Zik mang đ�
 🎵 <b>Trải nghiệm âm thanh</b>
 - Chất lượng cao cấp qua YouTube Music Premium, tự động
 - Lời bài hát đồng bộ với chỉnh sửa và dịch thời gian thực
-- Nhận diện bài hát (giống Shazam), tìm giọng nói, trực quan hóa âm thanh
+- Nhận diện bài hát (giống Shazam), tìm kiếm bằng giọng nói, trực quan hóa âm thanh
 - Điều khiển chuyên nghiệp: tốc độ, cao độ, chuẩn hóa, crossfade, tăng âm lượng/trầm, tiếng vang
 - Thanh tìm kiếm dạng sóng Audio Bar để điều hướng chính xác
 
@@ -32,23 +32,23 @@ Dù là người nghe thông thường hay tín đồ âm thanh, N-Zik mang đ�
 
 🔗 <b>Tích hợp</b>
 - Đăng nhập YouTube để nhận đề xuất và phát video, cùng bộ đồng bộ hai chiều thử nghiệm
-- Last.fm scrobbling: Now Playing, yêu thích/bỏ yêu thích
+- Last.fm scrobbling: Now Playing, love/unlove
 - Insight nghệ sĩ/album từ MusicBrainz
 - Discord Rich Presence; chế độ nâng cao, xem trước trực tiếp
 - Invidious cho stream YouTube thay thế
 - Nhập/xuất danh sách phát: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Nghe cùng nhau</b>
-- Tham gia phiên nghe trực tiếp của người dùng N-Zik khác qua mã hoặc link mời
+- Tham gia hoặc chủ trì phiên nghe trực tiếp cùng người dùng khác qua mã hoặc link mời
 
 🗓️ <b>Rewind</b>
 - Tổng kết năm/tháng với danh sách phát Rewind tạo tự động
 
-📱 <b>Phát ở mọi nơi:</b> Android Auto, Automotive, TV và Máy tính bảng
+📱 <b>Phát ở mọi nơi:</b> Android Auto, Automotive, TV và Tablets
 
 🛠️ <b>Tính năng cho người dùng nâng cao</b>
 - Đa hồ sơ: CSDL và cài đặt riêng cho từng hồ sơ
-- Tự động tiếp tục khi kết nối Bluetooth, hàng đợi lâu, tự lấp đầy
+- Tự động tiếp tục khi kết nối Bluetooth, hàng đợi được giữ, tự lấp đầy
 - Thùng rác thông minh, bài hát ẩn, hệ thống bỏ thích, kiểm soát của phụ huynh
 - Hỗ trợ proxy, thích ứng chất lượng mạng, xuất nhật ký
 - Rescue Center, màn hình bảo trì, hướng dẫn ban đầu, phím tắt ứng dụng

@@ -13,7 +13,7 @@ Ob Gelegenheitshörer oder Audiophile: N-Zik gibt dir volle Kontrolle über dein
 🎨 <b>Anpassbare UI</b>
 - Jetpack Compose mit Classic ViMusic-Modus-Umschalter
 - Themes: AMOLED, Deep Dark, Crisp Light + eingefärbte Akzente
-- 3D-Carousel-Player, Home-Widgets, einheitlicher Player und Mini-Player
+- 3D Carousel Player, Home-Widgets, einheitlicher Player und Mini-Player
 - Künstlerprofile, Discovery und Moods, einklappbare Home-Header
 
 🎵 <b>Audioerlebnis</b>
@@ -21,7 +21,7 @@ Ob Gelegenheitshörer oder Audiophile: N-Zik gibt dir volle Kontrolle über dein
 - Synchronisierte Songtexte mit Bearbeitung und Echtzeit-Übersetzung
 - Musikerkennung (Shazam-artig), Sprachsuche, Audio-Visualizer
 - Pro-Steuerung: Tempo, Tonhöhe, Normalisierung, Crossfade, Lautstärke-Boost, Bass-Boost, Hall
-- Audio-Bar-Wellenform-Seekbar für präzise Navigation
+- Audio Bar-Wellenform-Seekbar für präzise Navigation
 
 💾 <b>Offline, Metadaten & Privatsphäre</b>
 - Intelligentes Caching und Downloads für Titel und Playlists, mit wählbarer Download-Qualität
@@ -39,7 +39,7 @@ Ob Gelegenheitshörer oder Audiophile: N-Zik gibt dir volle Kontrolle über dein
 - Playlist-Import/Export: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Gemeinsam hören</b>
-- Tritt einer Live-Hör-Session bei, die ein anderer N-Zik-Nutzer per Code oder Einladungslink hostet
+- Live-Hör-Sessions mit anderen Nutzern beitreten oder selbst hosten, per Code oder Einladungslink
 
 🗓️ <b>Rewind</b>
 - Jahres- und Monatsbilanzen mit automatisch generierten Rewind-Playlists

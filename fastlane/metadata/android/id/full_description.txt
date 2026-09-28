@@ -1,8 +1,8 @@
-Frontend YouTube Music multibahasa untuk Android, berfokus pada performa, polesan UI/UX, perluasan fitur dan dukungan jangka panjang.
+Frontend YouTube Music multibahasa untuk Android, berfokus pada performa, perbaikan UI/UX, perluasan fitur dan dukungan jangka panjang.
 
 <b>N-Zik</b> adalah fork sumber terbuka dari <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Catatan:</b> N-Zik dimulai sebagai proyek sampingan. Untuk alternatif yang lebih matang, lihat <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, atau <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Catatan:</b> N-Zik dimulai sebagai proyek pribadi. Untuk alternatif yang lebih matang, lihat <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, atau <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
 <b>Penggunaan AI:</b> Saya menggunakan AI generatif untuk kode (melalui <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), ditinjau dan diuji sebelum dirilis.
 
@@ -14,7 +14,7 @@ Pendengar kasual maupun audiofil, N-Zik memberi Anda kendali penuh atas musik ta
 - Jetpack Compose dengan toggle mode ViMusic Klasik
 - Tema: AMOLED, Deep Dark, Crisp Light + aksen warna
 - 3D Carousel Player, widget home, pemain terpadu dan mini-pemain
-- Profil artis, Discovery dan mood, header home yang dapat dilipat
+- Profil artis, Discovery dan mood, header home yang bisa dilipat
 
 🎵 <b>Pengalaman Audio</b>
 - Kualitas premium via YouTube Music Premium, diterapkan otomatis
@@ -32,24 +32,24 @@ Pendengar kasual maupun audiofil, N-Zik memberi Anda kendali penuh atas musik ta
 
 🔗 <b>Integrasi</b>
 - Login YouTube untuk rekomendasi dan video, plus mesin sinkronisasi dua arah eksperimental
-- Scrobbling Last.fm dengan Now Playing dan suka/tidak suka
+- Scrobbling Last.fm dengan Now Playing dan love/unlove
 - Wawasan artis dan album MusicBrainz
 - Discord Rich Presence, termasuk mode lanjutan dengan pratinjau langsung
 - Integrasi Invidious untuk streaming YouTube alternatif
 - Impor/ekspor daftar putar: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Dengar Bersama</b>
-- Bergabung ke sesi dengar langsung oleh pengguna N-Zik lain via kode atau tautan undangan
+- Bergabung atau selenggarakan sesi dengar langsung dengan pengguna lain via kode atau undangan
 
 🗓️ <b>Rewind</b>
 - Rekap mendengarkan tahunan dan bulanan dengan playlist Rewind otomatis
 
-📱 <b>Main di Mana Saja:</b> Android Auto, Automotive, TV, dan Tablet
+📱 <b>Main di Mana Saja:</b> Android Auto, Automotive, TV, dan Tablets
 
 🛠️ <b>Fitur Power User</b>
 - Multi-profil: database dan pengaturan terisolasi per profil
-- Lanjut otomatis saat BT terhubung, antrean persisten, isi otomatis antrean
-- Sampah cerdas, lagu tersembunyi, sistem tidak suka, kontrol orang tua
+- Lanjut auto saat Bluetooth terhubung, antrean persisten, isi otomatis antrean
+- Tempat sampah cerdas, lagu tersembunyi, sistem tidak suka, kontrol orang tua
 - Dukungan proxy, adaptasi kualitas jaringan, ekspor log
 - Rescue Center, layar pemeliharaan, onboarding, pintasan app
 - Pembaruan OTA dari GitHub, timer tidur, pemutaran latar belakang

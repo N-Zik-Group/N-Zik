@@ -13,7 +13,7 @@ Ouvinte casual ou audiófilo, o N-Zik dá controlo total sobre a música, sem co
 🎨 <b>Interface Personalizável</b>
 - Jetpack Compose com alternância do modo clássico ViMusic
 - Temas: AMOLED, Deep Dark, Crisp Light + acentos coloridos
-- Player carrossel 3D, widgets de ecrã inicial, player e mini-player unificados
+- 3D Carousel Player, widgets de ecrã inicial, player e mini-player unificados
 - Perfis de artistas, Discovery e humores, cabeçalhos recolhíveis
 
 🎵 <b>Experiência de Áudio</b>
@@ -21,7 +21,7 @@ Ouvinte casual ou audiófilo, o N-Zik dá controlo total sobre a música, sem co
 - Letras sincronizadas com edição e tradução em tempo real
 - Reconhecimento musical (tipo Shazam), pesquisa por voz e visualizador de áudio
 - Controlos pro: velocidade, tom, normalização, crossfade, boost de volume e graves, reverberação
-- Barra de áudio com seekbar de onda para navegação
+- Audio Bar com seekbar de onda para navegação
 
 💾 <b>Offline, Metadados e Privacidade</b>
 - Cache inteligente e downloads de faixas/playlists, com qualidade selecionável
@@ -31,15 +31,15 @@ Ouvinte casual ou audiófilo, o N-Zik dá controlo total sobre a música, sem co
 - Backup automático com intervalos e retenção próprios
 
 🔗 <b>Integrações</b>
-- Login do YouTube para recomendações e vídeo, mais motor experimental de sync bidirecional
-- Scrobbling no Last.fm com Now Playing e gostei/não gostei
+- Login do YouTube para recomendações e vídeo, mais um motor experimental de sync bidirecional
+- Scrobbling no Last.fm com Now Playing e love/unlove
 - Informações de artistas e álbuns do MusicBrainz
 - Discord Rich Presence, incluindo modo avançado com pré-visualização ao vivo
 - Invidious para streaming alternativo do YouTube
 - Importação/exportação de playlists: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Ouvir Juntos</b>
-- Junte-se a uma sessão ao vivo de outro utilizador do N-Zik, por código ou link de convite
+- Junte-se ou crie sessões ao vivo com outros utilizadores, por código ou link de convite
 
 🗓️ <b>Rewind</b>
 - Resumos anuais e mensais de audição, com playlists Rewind automáticas
@@ -51,7 +51,7 @@ Ouvinte casual ou audiófilo, o N-Zik dá controlo total sobre a música, sem co
 - Retoma automática ao ligar Bluetooth, fila persistente, auto-preenchimento
 - Lixeira inteligente, músicas ocultas, descurtir, controlo parental
 - Suporte a proxy, adaptação da rede, exportação de registos
-- Centro de resgate, ecrã de manutenção, onboarding, atalhos da app
+- Rescue Center, ecrã de manutenção, onboarding, atalhos da app
 - Atualizações OTA do GitHub, temporizador de sono, reprodução em segundo plano
 
 🛡️ 100% open-source (FOSS). Permissões principais: INTERNET, RECORD_AUDIO (apenas visualizador), STORAGE (exportações/backups), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
@@ -66,4 +66,4 @@ Ouvinte casual ou audiófilo, o N-Zik dá controlo total sobre a música, sem co
 
 Builds padrão: 64-bit (FFmpeg); builds "32" sem FFmpeg em ambas as arquiteturas. Só FOSS no F-Droid.
 
-A partir de <b>janho de 2027</b>, o Google exigirá verificação de identidade de todos os devs. Como FOSS, o N-Zik opõe-se. <a href="https://keepandroidopen.org">Saiba mais</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Assine a petição</a>
+A partir de <b>janeiro de 2027</b>, o Google exigirá verificação de identidade dos devs. Como FOSS, o N-Zik opõe-se. <a href="https://keepandroidopen.org">Saiba mais</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Assine a petição</a>

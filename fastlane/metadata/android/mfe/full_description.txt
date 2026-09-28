@@ -1,69 +1,69 @@
-Enn frontend YouTube Music multiling ek open-source pou Android, ki fokus lor performans, raffinazasion UI/UX, nout fonksyon ek sipor alon-term.
+Enn frontend YouTube Music multiling pou Android, ki fok lor performans, rafinman UI/UX, agrandisman fonksyon ek swivi long-lerm.
 
 <b>N-Zik</b> se enn fork open-source de <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Nouet:</b> N-Zik ti koumans kouma enn proze latéral. Pou lezot opsyon pli mature: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> ouswa <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Nouet:</b> N-Zik ti koumans kouma enn proze kote. Pou le zot opsyon pli mature, verifie <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> ouswa <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Lirilizasion IA:</b> Mo servi IA generatif pou kod (atraver <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), revize ek teste avan larg.
+<b>Utilizasion IA:</b> Mo servi IA jenaratif pou kod (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), ki revize ek teste avan livrezon.
 
-Ki to sinp skouter ouswa enn fane mizik, N-Zik donn twa kontrol tou koupe lor to mizik san konpromet to konfidansialite.
+Si to enn senp lekouter ouswa enn audiophile, N-Zik donn to kontrol koupe lor to mizik, san konpromet to konfidansyalite.
 
-✨ <b>KIFER N-ZIK?</b> Pa piblisite, lekout an background, kaching offline ek interfass kastomize - gratis, toultan.
+✨ <b>KIFER N-ZIK?</b> Pa piblisite, lekout an bann, kaching offline, interfass ki to kapav kastomize - gratis, toultan.
 
 🎨 <b>Interfass Kastomizab</b>
-- Jetpack Compose avek bouton pou mod ViMusic Klasik
-- Tem: AMOLED, Deep Dark, Crisp Light + bann kouler accent
-- 3D Carousel Player, widget pou lakaz, player unifie ek mini-player
-- Profil artis, Discovery ek moman, tèt lakaz ki kapav replie
+- Jetpack Compose avek enn basil pou mod ViMusic Klasik
+- Tem: AMOLED, Deep Dark, Crisp Light + bann aksan kouloure
+- 3D Carousel Player, widget pou lakaz, player inifie ek mini-player
+- Profil artis, Discovery ek mood, tet lakaz ki kapav pliye
 
 🎵 <b>Eksperians Audio</b>
-- Kalite premium atraver YouTube Music Premium, aplike otomatik
-- Parol sinkronize avek edite ek tradiksion tan real
-- Rekonesans mizik (kom Shazam), recherc par lavwa, vizualizater audio
-- Kontro pro: vitess, pitch, normalizasion, crossfade, ogmantasion volim, ogmantasion bass, reverb
-- Bar Audio avek seekbar waveform pou navigasion presiz
+- Kalite premium via YouTube Music Premium, ki aplik otomatikman
+- Parol ki sinkronize, avek edision ek tradiksion an tan real
+- Rekonesans mizik (kom Shazam), serch par lavwa, vizualizater audio
+- Kontrol pro: vites, pitch, normalizasion, crossfade, boost volim, boost bas, reverb
+- Audio Bar avek seekbar waveform pou navigasion presize
 
-💾 <b>Offline, Metadonne ek Konfidansialite</b>
-- Kaching intelizan ek download pou morso ek playlist, avek kalite download ki to kapav swazi
-- Eksportasion FFmpeg avek bann metadonne konple (64-bit selman)
-- Editer metadonne dan l'app (AAC/Opus, cover art)
-- Statistik lekout ek l'istwar 100% lokal
-- Back-up otomatik avek interval ek retansion kastomize
+💾 <b>Offline, Metadone ek Konfidansyalite</b>
+- Kaching zintel ek download pou morsò ek playlist, avek kalite download ki to kapav swazir
+- Eksportasion avek FFmpeg ek metadone koupe (64-bit selman)
+- Editer metadone dan l'app (AAC/Opus, cover art)
+- Statistik lekout ek l'istwar, tou lokal
+- Back-up otomatik avek interval ek retansyon kastomizab
 
 🔗 <b>Integrasion</b>
-- Sign-in YouTube pou rekomandasion ek sanzman video, plis enn motor sink bilatéral eksperimental
+- Sign-in YouTube pou rekomandasion ek zwe video, plis enn motè sink dwouryon eksperimental
 - Scrobbling Last.fm avek Now Playing ek love/unlove
-- MusicBrainz pou profil artis ek album
+- MusicBrainz pou plis detay lor artis ek album
 - Discord Rich Presence, avek mod avanse ek preview an dirèk
-- Integrasion Invidious pou streaming alternatif YouTube
+- Integrasion Invidious pou streaming YouTube alternatir
 - Import/eksport playlist: RiPlay, Spotify, YouTube Music, N-Zik
 
-👥 <b>Skoute Ansam</b>
-- Zwenn enn sesion lekout an dirèk hosté par enn lot itilizater N-Zik, avek enn kod ouswa lien invitesyon
+👥 <b>Lekout Ansam</b>
+- Zwenn ouswa host enn sesion lekout an dirèk avek lot itilizater, par enn kod ouswa enn lien invitasion
 
 🗓️ <b>Rewind</b>
-- Rekòman annual ek mizielor lekout, avek bann playlist Rewind ki kree otomatik
+- Rekòman lekout lor lane ek lor mwa, avek bann playlist Rewind ki kreye otomatikman
 
-📱 <b>Zwe Partou:</b> Android Auto, Automotive, TV ek Tablette
+📱 <b>Jwe Partou:</b> Android Auto, Automotive, TV ek Tablets
 
-🛠️ <b>Fonsionnalite Power User</b>
-- Multi-profils: bazdone ek paramèt izole par profil
-- Rekomans otomatik lor koneksion Bluetooth, file rezistan, otomatik ranpli file
-- Poubel inteligant, morso kipi, sistèm deplis, kontrol paranol
+🛠️ <b>Fonksyonalite Pou Power User</b>
+- Multi-profils: baz done ek paramèt separe par profil
+- Reprise otomatik lor koneksion Bluetooth, file persistan, file ki ranpli otomatik
+- Poubel zintel, morsò kaché, sistèm dislike, kontrol parantral
 - Sipor proxy, adaptasion kalite rezo, eksportasion log
 - Rescue Center, ekran mantenans, onboarding, shortcut app
-- Update OTA depi GitHub, timer pou somer, lekout an background
+- Update OTA depi GitHub, timer pou dòmi, lekout an bann
 
-🛡️ 100% open-source (FOSS). Bann permision kle: INTERNET, RECORD_AUDIO (pou vizualizater selman), STORAGE (eksport/backup), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
+🛡️ 100% open-source (FOSS). Bann permision kle: INTERNET, RECORD_AUDIO (pou vizualizater selman), STORAGE (eksport/back-up), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Bann Build Disponib</b>
-- Full/Beta: Build konple (64-bit)
+- Full/Beta: Build koupe (64-bit)
 - Full32/Beta32: San FFmpeg (32/64-bit)
-- Minified: Build leze, pou bann masinn ki pa tro for (64-bit)
+- Minified: Build leze, pou bann aparé molè (64-bit)
 - Minified32: Build leze san FFmpeg (32/64-bit)
 - FOSS: San auto-updater, pou F-Droid (64-bit)
 - Dev/Dev32: Bann build devlopman, pou test selman
 
-Bann build standar se 64-bit (FFmpeg); bann build "32" san FFmpeg, pou tou le 2 arkitektir. Selman build FOSS ki lor F-Droid.
+Bann build standar se 64-bit (avek FFmpeg); bann build "32" san FFmpeg, pou tou 2 arkitektir. Se build FOSS selman ki lor F-Droid.
 
-Koumans <b>Zanvie 2027</b>, Google pou demann verifikasion l'idantite pou tou bann devlopper. Kouma enn proze FOSS, N-Zik kont sa. <a href="https://keepandroidopen.org">Aprann plis</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Sign sa petision-la</a>
+Koumans <b>Zantrie 2027</b>, Google va mande verifikasion idantite pou tou bann devlope. Kom enn proze FOSS, N-Zik kont sa. <a href="https://keepandroidopen.org">Aprann plis</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Swign sa petision la</a>

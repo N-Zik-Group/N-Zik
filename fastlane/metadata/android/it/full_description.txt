@@ -20,8 +20,8 @@ Ascoltatore occasionale o audiofilo, N-Zik offre il controllo totale della tua m
 - Qualità premium via YouTube Music Premium, applicata automaticamente
 - Testi sincronizzati con modifica e traduzione in tempo reale
 - Riconoscimento musicale (Shazam-like), ricerca vocale, visualizzatore audio
-- Controlli pro: velocità, intonazione, normalizzazione, crossfade, aumento volume, bass boost, riverbero
-- Barra waveform Audio Bar per una navigazione precisa
+- Controlli pro: velocità, intonazione, normalizzazione, crossfade, boost volume, bass boost, riverbero
+- Seekbar a forma d'onda Audio Bar per navigazione precisa
 
 💾 <b>Offline, Metadati e Privacy</b>
 - Caching intelligente e download di brani/playlist, qualità selezionabile
@@ -32,27 +32,27 @@ Ascoltatore occasionale o audiofilo, N-Zik offre il controllo totale della tua m
 
 🔗 <b>Integrazioni</b>
 - Accesso YouTube per consigli e video, più motore sperimentale di sincronizzazione bidirezionale
-- Scrobbling Last.fm con Now Playing e like/unlike
+- Scrobbling Last.fm con Now Playing e love/unlove
 - Informazioni su artisti e album di MusicBrainz
 - Discord Rich Presence, modalità avanzata con anteprima live
 - Invidious per lo streaming YouTube alternativo
 - Importazione/esportazione playlist: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Ascolta Insieme</b>
-- Unisciti a una sessione live di ascolto di un utente N-Zik, tramite codice o link di invito
+- Unisciti o crea sessioni di ascolto live con altri utenti tramite codice o link di invito
 
 🗓️ <b>Rewind</b>
 - Riepiloghi annuali e mensili di ascolto, playlist Rewind auto-generate
 
-📱 <b>Riproduci Ovunque:</b> Android Auto, Automotive, TV e tablet
+📱 <b>Riproduci Ovunque:</b> Android Auto, Automotive, TV e Tablets
 
 🛠️ <b>Funzionalità Avanzate</b>
 - Multi-profilo: database e impostazioni isolate
-- Ripresa auto su BT, coda persistente, coda auto-compilata
-- Smart trash, brani nascosti, sistema di dislike, controllo parentale
+- Ripresa auto su Bluetooth, coda persistente e auto-riempimento
+- Cestino smart, brani nascosti, sistema di dislike, controllo parentale
 - Supporto proxy, adattamento qualità rete, export log
 - Rescue Center, schermo di manutenzione, onboarding, scorciatoie app
-- Aggiornamenti OTA da GitHub, timer di sonno, riproduzione in background
+- Aggiornamenti OTA da GitHub, sleep timer, riproduzione in background
 
 🛡️ 100% open source (FOSS). Autorizzazioni: INTERNET, RECORD_AUDIO (solo visualizzatore), STORAGE (esportazioni/backup), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 

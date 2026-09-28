@@ -1,69 +1,69 @@
-Daugiakaalbis YouTube Music klientas Android, orientuotas į našumą, sąsają, funkcijų plėtrą ir ilgalaikį palaikymą.
+Daugiakalbė YouTube Music sąsaja Androidui: našumas, UI/UX tobulinimas, funkcijų pletra, ilgalaikis palaikymas.
 
 <b>N-Zik</b> yra atvirojo kodo <a href="https://github.com/knighthat/Kreate">Kreate</a> atšaka.
 
-<b>Pastaba:</b> N-Zik prasidėjo kaip šalutinis projektas. Brandesnės alternatyvos: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> arba <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Pastaba:</b> N-Zik - šalutinis projektas. Brandesnės alternatyvos: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> arba <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>AI naudojimas:</b> Naudoju generatyvinį AI kodui (per <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), viskas peržiūrima ir išbandyta prieš išleidžiant.
+<b>AI naudojimas:</b> Naudoju generatyvųjį AI kodui (per <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), prieš išleidžiant, viskas peržiūrima ir išbandoma.
 
-Klausotokas ar melomanas, N-Zik suteikia pilną muzikos kontrolę, neaukojant privatumo.
+Klausytojas ar melomanas - N-Zik suteikia pilną kontrolę jūsų muzikos be privatumo pažeidimo.
 
-✨ <b>KODĖL N-ZIK?</b> Jokių reklamų, atkūrimas fone, offline podėlis, pritaikoma sąsaja - nemokamai, visada.
+✨ <b>KODĖL N-ZIK?</b> Jokių reklamų, atkūrimas fone, offline kešas, pritaikoma sąsaja - nemokamai, visada.
 
 🎨 <b>Pritaikoma sąsaja</b>
 - Jetpack Compose su klasikinio ViMusic režimo perjungikliu
-- Temos: AMOLED, Deep Dark, Crisp Light + spalvoti akcentai
-- 3D karuselinis grotuvas, pagrindinio ekrano valdikliai, vieningas grotuvas + mini
-- Atlikėjų profiliai, Discovery ir nuotaikos, sulankstomi pagrindinio ekrano antraščiai
+- Temos: AMOLED, Deep Dark, Crisp Light + spalvinti akcentai
+- 3D Carousel Player, namų widget'ai, vieningas grotuvas su mini grotuvu
+- Atlikėjų profiliai, Discovery ir nuotaikos, sulankstomi antraščiai
 
 🎵 <b>Garso patirtis</b>
-- Aukščiausia kokybė per YouTube Music Premium, taikoma automatiškai
-- Sinchronizuoti žodžiai su redagavimu ir vertimu realiuoju laiku
-- Muzikos atpažinimas (Shazam tipo), balso paieška, garso vizualizatorius
-- Pro valdikliai: greitis, tonas, normalizavimas, crossfade, garo ir bosų stiprinimas, reverbas
-- Audio Bar bangos juosta tiksliam navigavimui
+- Premium kokybė per YouTube Music Premium, taikoma automatiškai
+- Sinchronizuoti tekstai su redagavimu ir vertimu realiu laiku
+- Dainų atpažinimas (kaip Shazam), balsinė paieška, garso vizualizatorius
+- Pro valdikliai: greitis, tono aukštis, normalizavimas, crossfade, garsumo ir basų stiprinimas, reverb
+- Audio Bar bangų slankiklis tiksliam navigavimui
 
-💾 <b>Neprisijungus, metaduomenys ir privatumas</b>
-- Išmanusis podėlis, dainų/grojaraščių atsisiuntimas, pasirinktina kokybė
-- Eksportavimas per FFmpeg, visi metaduomenys (tik 64-bit)
-- Metaduomenų redaktorius (AAC/Opus, viršelis)
-- Vietinė klausymosi statistika ir istorija
-- Automatinės atsarginės kopijos, pasirinktiniai intervalai, trukmė
+💾 <b>Be interneto, metaduomenys ir privatumas</b>
+- Išmanusis kešas, dainų ir grojaraščių atsisiuntimas, pasirinktina kokybė
+- Eksportavimas per FFmpeg su visais metaduomenimis (tik 64-bit)
+- Metaduomenų redaktorius programoje (AAC/Opus, albumo viršelis)
+- Vietinė klausymo statistika ir istorija
+- Automatinės atsarginės kopijos: pasirinktiniai intervalai, trukmė
 
 🔗 <b>Integracijos</b>
-- Prisijungimas prie YouTube: rekomendacijos, vaizdo atkūrimas, eksperimentinis dvikryptis sinchronizavimas
-- Last.fm skrobliavimas: Now Playing, patinka/nepatinka
-- MusicBrainz atlikėjų ir albumų informacija
-- Discord Rich Presence: pažengusysis režimas, gyva apžvalga
-- Invidious alternatyviam YouTube srautiniam perdavimui
+- Prisijungimas prie YouTube: rekomendacijos, vaizdo atkūrimas, eksperimentinis abipusis sinchronizavimo variklis
+- Last.fm scrobblingas su Now Playing ir love/unlove
+- Atlikėjų ir albumų informacija iš MusicBrainz
+- Discord Rich Presence, pažengusis režimas su gyva apžvalga
+- Invidious integracija alternatyviam YouTube srautiniam perdavimui
 - Grojaraščių importas/eksportas: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Klausykitės kartu</b>
-- Gyvas klausymosi seansas kito N-Zik vartotojo, per kodą ar nuorodą
+- Surengkite arba prisijunkite prie gyvo klausymo su kitais per kodą ar kvietimo nuorodą
 
 🗓️ <b>Rewind</b>
 - Metinės ir mėnesinės apžvalgos su automatiniais Rewind grojaraščiais
 
-📱 <b>Klausykitės bet kur:</b> Android Auto, Automotive, TV ir planšetėse
+📱 <b>Groti bet kur:</b> Android Auto, Automotive, TV ir Tablets
 
-🛠️ <b>Pažengusiems vartotojams</b>
-- Keli profiliai: atskira duomenų bazė ir nustatymai
-- Automatinis atkūrimas prisijungus Bluetooth, nuolatinė ir automatiškai pilama eilė
-- Išmanusis šiukšlinas, paslėptos dainos, nepatinkančių sistema, tėvų kontrolė
-- Proxy, tinklo kokybės pritaikymas, žurnalo eksportavimas
-- Rescue Center, priežiūros ekranas, vedlys naujokams, trumpiniai
+🛠️ <b>Funkcijos pažengusiems naudotojams</b>
+- Keli profiliai: atskira duomenų bazė ir nustatymai per profilį
+- Automatinis atkūrimas prijungus Bluetooth, nuolatinė eilė, automatinis eilės pilimas
+- Išmanioji šiukšliadėžė, paslėptos dainos, nepatiktų dainų sistema, tėvų kontrolė
+- Proxy palaikymas, tinklo kokybės adaptacija, žurnalo eksportavimas
+- Rescue Center, priežiūros ekranas, naujokų vedlys, trumpiniai
 - OTA atnaujinimai iš GitHub, miego laikmatis, atkūrimas fone
 
-🛡️ 100% atvirojo kodo (FOSS). Pagrindiniai leidimai: INTERNET, RECORD_AUDIO (tik vizualizatoriui), STORAGE (eksportas/atsarginės kopijos), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
+🛡️ 100% atviro kodo (FOSS). Pagrindiniai leidimai: INTERNET, RECORD_AUDIO (tik vizualizatoriui), STORAGE (eksportas/kopijos), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Galimos versijos</b>
 - Full/Beta: Pilna versija (64-bit)
 - Full32/Beta32: Be FFmpeg (32/64-bit)
 - Minified: Lengva, silpnesniems įrenginiams (64-bit)
-- Minified32: Lengva be FFmpeg (32/64-bit)
+- Minified32: Lengva versija be FFmpeg (32/64-bit)
 - FOSS: Be automatinio atnaujinimo, skirta F-Droid (64-bit)
 - Dev/Dev32: Kūrimo versijos, tik testavimui
 
-Standartinės versijos 64-bit (su FFmpeg); „32“ versijose FFmpeg atsisakyta abiem architektūroms. Tik FOSS - F-Droid.
+Standartinės versijos: 64-bit (FFmpeg); „32" - be FFmpeg abiem architektūroms. Tik FOSS - F-Droid.
 
-Nuo <b>2027 m. sausio</b> Google reikalaus tapatybės patvirtinimo iš visų kūrėjų. Kaip FOSS projektas, N-Zik prieštarauja tam. <a href="https://keepandroidopen.org">Sužinokite daugiau</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Pasirašykite peticiją</a>
+Nuo <b>2027 m. sausio</b> Google reikalaus kūrėjų tapatybės patvirtinimo; N-Zik, kaip FOSS, prieštarauja. <a href="https://keepandroidopen.org">Sužinokite daugiau</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Pasirašykite peticiją</a>

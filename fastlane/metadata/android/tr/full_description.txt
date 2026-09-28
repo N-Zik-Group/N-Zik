@@ -1,4 +1,4 @@
-Android için çok dilli YouTube Music ön yüzü: performans, UI/UX iyileştirmeleri, özellik genişletme ve uzun vadeli destek.
+Android için çok dilli YouTube Music frontend'i: performans, UI/UX iyileştirmeleri, özellik genişletme ve uzun vadeli destek.
 
 <b>N-Zik</b>, <a href="https://github.com/knighthat/Kreate">Kreate</a>'nin açık kaynaklı bir çatalıdır.
 
@@ -11,7 +11,7 @@ Sıradan dinleyici ya da odyofil olun, N-Zik gizliliğinizden ödün vermeden m�
 ✨ <b>NEDEN N-ZIK?</b> Reklamsız, arka plan oynatma, çevrimdışı önbellekleme, ayarlanabilir arayüz - her zaman ücretsiz.
 
 🎨 <b>Ayarlanabilir Arayüz</b>
-- Klasik ViMusic modu anahtarlı Jetpack Compose
+- Klasik ViMusic modu geçişli Jetpack Compose
 - Temalar: AMOLED, Deep Dark, Crisp Light + renkli vurgular
 - 3D Carousel Player, ana ekran widget'ları, birleşik ve mini-oynatıcı
 - Sanatçı profilleri, Keşif/ruh halleri, katlanabilir ana ekran başlıkları
@@ -21,7 +21,7 @@ Sıradan dinleyici ya da odyofil olun, N-Zik gizliliğinizden ödün vermeden m�
 - Düzenleme, gerçek zamanlı çeviriyle senkronize sözler
 - Şarkı tanıma (Shazam benzeri), sesli arama, görselleştirici
 - Pro kontroller: hız, perde, normalleştirme, crossfade, ses/bas artırma, yankı
-- Kesin navigasyon için Audio Bar dalga formu arama çubuğu
+- Kesin navigasyon için Audio Bar dalga formu kaydırma çubuğu
 
 💾 <b>Çevrimdışı, Meta Veriler ve Gizlilik</b>
 - Parçalar ve listeler için akıllı önbellekleme/indirme, seçilebilir indirme kalitesi
@@ -32,24 +32,24 @@ Sıradan dinleyici ya da odyofil olun, N-Zik gizliliğinizden ödün vermeden m�
 
 🔗 <b>Entegrasyonlar</b>
 - Öneriler ve video oynatma için YouTube girişi; deneysel çift yönlü senkronizasyon motoru
-- Last.fm scrobbling: Now Playing, beğen/beğenme kaldırma
+- Last.fm scrobbling: Now Playing, love/unlove
 - MusicBrainz sanatçı ve albüm bilgileri
 - Discord Rich Presence; canlı önizlemeli gelişmiş mod
 - Alternatif YouTube akışı için Invidious
 - Çalma listesi içe/dışa aktarma: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Birlikte Dinleyin</b>
-- Başka bir N-Zik kullanıcısının sunduğu canlı dinleme oturumuna kod veya davet bağlantısıyla katılın
+- Kod veya davet bağlantısıyla canlı dinleme oturumlarına katılın ya da ev sahipliği yapın
 
 🗓️ <b>Rewind</b>
 - Otomatik Rewind listeleriyle yıllık/aylık dinleme özetleri
 
-📱 <b>Her Yerde Oynatın:</b> Android Auto, Automotive, TV ve Tabletler
+📱 <b>Her Yerde Oynatın:</b> Android Auto, Automotive, TV ve Tablets
 
 🛠️ <b>Gelişmiş Kullanıcı Özellikleri</b>
 - Çoklu profil: profil başına izole veritabanı ve ayarlar
 - Bluetooth bağlantısında otomatik devam, kalıcı kuyruk, otomatik doldurma
-- Akıllı çöp, gizli şarkılar, beğenmeme sistemi, ebeveyn denetimi
+- Akıllı çöp kutusu, gizli şarkılar, beğenmeme sistemi, ebeveyn denetimi
 - Proxy desteği, ağ kalitesi uyarlama, günlük dışa aktarma
 - Rescue Center, bakım ekranı, başlangıç rehberi, uygulama kısayolları
 - GitHub'dan OTA güncellemeleri, uyku zamanlayıcısı, arka plan oynatma

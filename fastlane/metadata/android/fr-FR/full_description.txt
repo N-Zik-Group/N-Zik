@@ -2,7 +2,7 @@ Interface YouTube Music multilingue pour Android, axée performance, raffinement
 
 <b>N-Zik</b> est un fork open source de <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Note :</b> N-Zik est né comme projet personnel. Pour alternatives plus matures, voir <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> ou <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Note :</b> N-Zik est né comme un projet personnel. Pour des alternatives plus matures, voir <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> ou <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
 <b>Utilisation de l'IA :</b> J'utilise l'IA générative pour le code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), révisé et testé avant publication.
 
@@ -13,8 +13,8 @@ Auditeur occasionnel ou audiophile, N-Zik vous donne le contrôle total de votre
 🎨 <b>UI personnalisable</b>
 - Jetpack Compose avec bascule du mode classique ViMusic
 - Thèmes : AMOLED, Deep Dark, Crisp Light + accents colorés
-- Carrousel 3D, widgets d'accueil, lecteur unifié et mini-lecteur
-- Profils d'artistes, Discovery et ambiances, en-têtes repliables
+- 3D Carousel Player, widgets d'accueil, lecteur unifié + mini-lecteur
+- Profils d'artistes, Discovery et ambiances, en-têtes pliables
 
 🎵 <b>Expérience audio</b>
 - Qualité premium via YouTube Music Premium, auto-appliquée
@@ -32,24 +32,24 @@ Auditeur occasionnel ou audiophile, N-Zik vous donne le contrôle total de votre
 
 🔗 <b>Intégrations</b>
 - Connexion YouTube : recommandations, vidéo, moteur de synchro bidirectionnel expérimental
-- Scrobbling Last.fm avec Now Playing et aimer/retirer
+- Scrobbling Last.fm avec Now Playing et love/unlove
 - Analyses MusicBrainz des artistes et des albums
 - Discord Rich Presence, mode avancé avec aperçu en direct
-- Invidious pour le streaming YouTube alternatif
+- Invidious pour streaming YouTube alternatif
 - Import/export de playlists : RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Écouter ensemble</b>
-- Rejoignez une session d'écoute live d'un utilisateur N-Zik via code ou lien d'invitation
+- Rejoignez ou créez des sessions d'écoute live via code ou lien d'invitation
 
 🗓️ <b>Rewind</b>
 - Récapitulatifs annuels et mensuels d'écoute, playlists Rewind auto-générées
 
-📱 <b>Écoutez n'importe où :</b> Android Auto, Automotive, TV et tablettes
+📱 <b>Écoutez n'importe où :</b> Android Auto, Automotive, TV et Tablets
 
 🛠️ <b>Fonctionnalités avancées</b>
 - Multi-profils : base de données et réglages distincts
 - Reprise auto Bluetooth, file persistante et auto-remplie
-- Corbeille intelligente, morceaux cachés, non-aimés, contrôle parental
+- Corbeille intelligente, morceaux cachés, système de dislike, contrôle parental
 - Proxy, adaptation qualité réseau, export des journaux
 - Rescue Center, écran de maintenance, onboarding, raccourcis app
 - Mises à jour OTA GitHub, minuteur, lecture en arrière-plan

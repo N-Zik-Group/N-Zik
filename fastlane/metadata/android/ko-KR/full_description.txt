@@ -6,14 +6,14 @@ Android용 다국어 YouTube Music 프론트엔드. 성능, UI/UX 개선, 기능
 
 <b>AI 사용:</b> 코드 작성을 위해 생성형 AI를 사용합니다(<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>). 배포 전 검토 및 테스트를 거칩니다.
 
-가벼운 리스너든 오디오필이든, N-Zik은 프라이버시를 해치지 않으면서 음악에 대한 완전한 제어를 제공합니다.
+캐주얼한 리스너든 오디오필이든, N-Zik은 프라이버시를 해치지 않으면서 음악에 대한 완전한 제어를 제공합니다.
 
 ✨ <b>왜 N-ZIK?</b> 광고 없음, 백그라운드 재생, 오프라인 캐싱, 맞춤 설정 가능한 UI - 항상 무료.
 
 🎨 <b>맞춤 설정 가능한 UI</b>
 - 클래식 ViMusic 모드 토글이 있는 Jetpack Compose
 - 테마: AMOLED, Deep Dark, Crisp Light + 색상 강조
-- 3D 캐러셀 플레이어, 홈 위젯, 통합 플레이어와 미니 플레이어
+- 3D Carousel Player, 홈 위젯, 통합 플레이어와 미니 플레이어
 - 아티스트 프로필, Discovery와 무드, 접이식 홈 헤더
 
 🎵 <b>오디오 경험</b>
@@ -21,7 +21,7 @@ Android용 다국어 YouTube Music 프론트엔드. 성능, UI/UX 개선, 기능
 - 편집 및 실시간 번역이 가능한 동기화 가사
 - 음악 인식 (Shazam 유사), 음성 검색, 오디오 시각화
 - 프로 컨트롤: 속도, 피치, 정규화, 크로스페이드, 볼륨 부스트, 베이스 부스트, 리버브
-- 정밀한 탐색을 위한 Audio Bar 웨이브폼 시크바
+- 정밀한 탐색용 Audio Bar 웨이브폼 시크바
 
 💾 <b>오프라인, 메타데이터 및 프라이버시</b>
 - 트랙 및 재생 목록용 스마트 캐싱 및 다운로드, 다운로드 품질 선택 가능
@@ -32,19 +32,19 @@ Android용 다국어 YouTube Music 프론트엔드. 성능, UI/UX 개선, 기능
 
 🔗 <b>통합</b>
 - 추천 및 비디오 재생을 위한 YouTube 로그인, 실험적 양방향 동기화 엔진 포함
-- Now Playing과 좋아요/취소를 갖춘 Last.fm 스크로블링
+- Now Playing과 love/unlove를 갖춘 Last.fm 스크로블링
 - MusicBrainz 아티스트 및 앨범 정보
 - Discord Rich Presence, 라이브 미리보기가 있는 고급 모드 포함
 - 대체 YouTube 스트리밍용 Invidious 통합
 - 재생 목록 가져오기/내보내기: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>함께 듣기</b>
-- 코드 또는 초대 링크로 다른 N-Zik 사용자가 호스트하는 라이브 청취 세션에 참여하세요
+- 다른 사용자와 코드 또는 초대 링크로 라이브 청취 세션에 참여하거나 호스트하세요
 
 🗓️ <b>Rewind</b>
-- 자동 생성되는 Rewind 재생 목록이 있는 연간 및 월간 청취 회고
+- 자동 생성되는 Rewind 재생 목록이 있는 연간 및 월간 청취 요약
 
-📱 <b>어디서나 재생:</b> Android Auto, Automotive, TV 및 태블릿
+📱 <b>어디서나 재생:</b> Android Auto, Automotive, TV 및 Tablets
 
 🛠️ <b>파워 유저 기능</b>
 - 멀티 프로필: 프로필별 독립된 데이터베이스 및 설정

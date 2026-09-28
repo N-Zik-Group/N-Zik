@@ -1,69 +1,69 @@
-Multilingual na YouTube Music frontend para sa Android: performance, UI/UX refinements, features, at pangmatagalang suporta.
+Multilingual na YouTube Music frontend para sa Android: performance, pagpapabuti ng UI/UX, feature expansion, matagalang suporta.
 
-<b>N-Zik</b> ay isang open-source fork ng <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+<b>N-Zik</b> ay open-source fork ng <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Tandaan:</b> N-Zik, side project. Mas mature na alternatibo: tingnan ang <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, o <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Tandaan:</b> Nagsimula bilang side project ang N-Zik. Mas matatag na alternatibo: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, o <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Paggamit ng AI:</b> Gumagamit ako ng generative AI para sa code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), sinusuri at sinusubok bago ilabas.
+<b>Paggamit ng AI:</b> Gumagamit ako ng generative AI sa code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), sinusuri at sinusubok bago ipalabas.
 
-Kaswal na tagapakinig man o audiophile, nagbibigay ang N-Zik ng ganap na kontrol sa musika mo nang walang kompromise sa privacy.
+Kaswal man o audiophile, ibibigay ng N-Zik ang buong kontrol sa musika mo walang kompromiso sa privacy.
 
-✨ <b>BAKIT N-ZIK?</b> Walang ads, background playback, offline caching, at customizable na UI - libre, palagi.
+✨ <b>BAKIT N-ZIK?</b> Walang ad, background playback, offline caching, customizable UI - libre, palagi.
 
-🎨 <b>Customizable na UI</b>
+🎨 <b>Personalisadong UI</b>
 - Jetpack Compose na may Classic ViMusic mode toggle
-- Mga tema: AMOLED, Deep Dark, Crisp Light + tinted accents
-- 3D Carousel Player, home widgets, pagsamahang player at mini-player
-- Mga artist profile, Discovery at moods, na-collapsible na home headers
+- Mga tema: AMOLED, Deep Dark, Crisp Light + mga accent na may tint
+- 3D Carousel Player, widget sa home, unified player at mini-player
+- Profile ng artist, Discovery at mood, collapsible na header sa home
 
 🎵 <b>Karanasan sa Audio</b>
-- Premium quality via YouTube Music Premium, awtomatikong inaplikar
-- Synced lyrics na may editing at real-time translation
-- Pagkilala ng kanta (Shazam na parang), voice search, audio visualizer
-- Pro controls: speed, pitch, normalization, crossfade, volume boost, bass boost, reverb
-- Audio Bar waveform seekbar para sa eksaktong navigation
+- Premium kalidad via YouTube Music Premium, awtomatikong itinatag
+- Naka-sync na lyrics na may editing at pagsasalin sa real-time
+- Pagkilala sa awit (parang Shazam), voice search, audio visualizer
+- Pro na kontrol: bilis, pitch, normalization, crossfade, volume boost, bass boost, reverb
+- Audio Bar waveform seekbar para sa eksaktong navigasyon
 
 💾 <b>Offline, Metadata at Privacy</b>
-- Matalinong caching at downloads para sa track at playlist, na may pinipiling download quality
-- FFmpeg-powered export na may buong metadata (64-bit lang)
-- In-app metadata editor (AAC/Opus, cover art)
-- Lokal na listening stats at history
-- Auto-backup na may custom na intervals at retention
+- Matalinong caching at download ng track/playlist, piling kalidad
+- Export gamit ang FFmpeg na may buong metadata (64-bit lang)
+- Editor ng metadata sa loob ng app (AAC/Opus, cover art)
+- Mga local na istatistika at history ng pakikinig
+- Auto-backup na may piling interval at retention
 
 🔗 <b>Mga Integrasyon</b>
-- YouTube sign-in para sa rekomendasyon at video, kasama ang eksperimental na two-way sync engine
-- Last.fm scrobbling na may Now Playing at love/unlove
-- MusicBrainz artist at album insights
+- Sign-in sa YouTube para sa rekomendasyon at video playback, may eksperimental na two-way sync engine
+- Scrobbling sa Last.fm na may Now Playing at love/unlove
+- Insights mula sa MusicBrainz para sa artist at album
 - Discord Rich Presence, kasama ang advanced mode na may live preview
-- Invidious integration para sa alternatibong YouTube streaming
-- Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
+- Integrasyon ng Invidious para sa alternatibong YouTube streaming
+- Import/export ng playlist: RiPlay, Spotify, YouTube Music, N-Zik
 
-👥 <b>Magpakinig nang Sabay</b>
-- Sumali sa live na pakikinig na inu-host ng ibang N-Zik user via code o invite link
+👥 <b>Pakingin nang Sabay</b>
+- Sumali o mag-host ng live na pakikinig kasama ng ibang user gamit ang code o invite link
 
 🗓️ <b>Rewind</b>
-- Taunang at buwang recap ng pakikinig na may auto-generated na Rewind playlists
+- Taunang at buwang na recap ng pakikinig, may auto-generated Rewind playlist
 
-📱 <b>Mag-play Kahit Saan:</b> Android Auto, Automotive, TV, at Tablets
+📱 <b>I-play Kahit Saan:</b> Android Auto, Automotive, TV, at Tablets
 
-🛠️ <b>Mga Feature para sa Power User</b>
-- Multi-profile: hiwalay na database at settings per profile
-- Auto-resume sa pagkonekta ng Bluetooth, persistent na queue, auto-fill na queue
-- Smart trash, nakatagong mga awitin, dislike system, parental control
-- Proxy support, network quality adaptation, log export
+🛠️ <b>Mga Feature ng Power User</b>
+- Multi-profile: hiwalay na database at settings bawat profile
+- Auto-resume sa koneksyon ng Bluetooth, persistent queue, auto-fill ng queue
+- Matalinong trash, natagong awit, dislike system, parental control
+- Suporta sa proxy, pag-aangkop sa kalidad ng network, pag-export ng log
 - Rescue Center, maintenance screen, onboarding, app shortcuts
 - OTA updates mula sa GitHub, sleep timer, background playback
 
-🛡️ 100% open-source (FOSS). Mga pangunahing pahintulot: INTERNET, RECORD_AUDIO (visualizer lamang), STORAGE (exports/backups), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
+🛡️ 100% open-source (FOSS). Pangunahing pahintulot: INTERNET, RECORD_AUDIO (visualizer lamang), STORAGE (export/backup), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Mga Available na Build</b>
 - Full/Beta: Kumpletong build (64-bit)
 - Full32/Beta32: Walang FFmpeg (32/64-bit)
-- Minified: Lightweight, para sa low-end device (64-bit)
-- Minified32: Lightweight na walang FFmpeg (32/64-bit)
+- Minified: Magaan, para sa low-end na device (64-bit)
+- Minified32: Magaan, walang FFmpeg (32/64-bit)
 - FOSS: Walang auto-updater, para sa F-Droid (64-bit)
-- Dev/Dev32: Development builds, testing lamang
+- Dev/Dev32: Development build, testing lamang
 
-Standard build: 64-bit (FFmpeg); "32" build ay walang FFmpeg. FOSS lang ang nasa F-Droid.
+Standard build: 64-bit (FFmpeg); "32" na build: walang FFmpeg sa parehong architecture. FOSS lang sa F-Droid.
 
-Simula <b>Enero 2027</b>, hihilingin ng Google ang identity verification para sa lahat ng developer. Bilang FOSS project, tumututol ang N-Zik. <a href="https://keepandroidopen.org">Matuto pa</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Lagdaan ang petisyon</a>
+Simula <b>Enero 2027</b>, hihilingin ng Google ang identity verification ng lahat ng developer; tumututol ang N-Zik bilang FOSS. <a href="https://keepandroidopen.org">Matuto pa</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Lagadan ang petisyon</a>

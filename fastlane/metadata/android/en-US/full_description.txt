@@ -39,7 +39,7 @@ Whether casual listener or audiophile, N-Zik gives you full control over your mu
 - Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Listen Together</b>
-- Join a live listening session hosted by another N-Zik user via code or invite link
+- Join or host live listening sessions with other users via code or invite link
 
 🗓️ <b>Rewind</b>
 - Yearly and monthly listening recaps with auto-generated Rewind playlists

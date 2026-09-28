@@ -1,69 +1,69 @@
-Androiderako YouTube Music bezero eleaniztuna: errendimendua, UI/UX, funtzioak eta epe luzeko laguntza.
+YouTube Musiceko frontenda, hainbat hizkuntzan, Androiderako: errendimendua, UI/UX, funtzio hedapena, epe luzeko babesa.
 
-<b>N-Zik</b> <a href="https://github.com/knighthat/Kreate">Kreate</a>-ren kode irekiko fork bat da.
+<b>N-Zik</b> <a href="https://github.com/knighthat/Kreate">Kreate</a>-ren iturburu irekiko fork bat da.
 
-<b>Oharra:</b> N-Zik hasi zen proiektu pertsonal gisa. Aukera helduagoak: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> edo <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Oharra:</b> N-Zik alde-proiektu gisa hasi zen. Alternatiba helduagoak: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> edo <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>AA erabilera:</b> AA sortzailea erabiltzen dut kodo, <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a> bidez; dena berrikusi eta probatua.
+<b>AI erabilera:</b> AI generatiboa erabiltzen dut kodetarako (<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a> bidez), aurretik aztertu eta probatuta.
 
-Entzule arrunta edo audiofiloa, N-Zik-ek zure musikaren kontrola ematen dizu, pribatutasun-kontzesiorik gabe.
+Entzule arrunta edo audiophile, N-Zik-ek musikaren kontrol osoa ematen dizu, pribatutasuna kaltetatu gabe.
 
-✨ <b>ZERGATIK N-ZIK?</b> Iragarkirik gabe, atzeko erreprodukzioa, lineaz kanpoko cachea, interfaze pertsonalizagarria - doan, beti.
+✨ <b>Zergatik N-ZIK?</b> Iragarkirik gabe, hondo-erreprodukzioa, cache offline, UI pertsonalizagarria - doan, beti.
 
-🎨 <b>Interfaze pertsonalizagarria</b>
-- Jetpack Compose, ViMusic modu klasikoaren aldagailuarekin
-- Gaiak: AMOLED, Deep Dark, Crisp Light + kolore-ukutuak
-- 3D Carousel erreproduzitzailea, hasierako widgetak, erreproduzitzaile unifikatua
-- Artisten profilak, aurkikuntzak eta "moods", goiburu tolestgarriak
+🎨 <b>UI pertsonalizagarria</b>
+- Jetpack Compose, ViMusic modu klasikoaren toggle
+- Gaiak: AMOLED, Deep Dark, Crisp Light + akzentu tonatuak
+- 3D Carousel Player, hasierako widgetak, jokalari + mini-jokalari bateratuak
+- Artista profilak, Discovery eta moodak, hasierako goiburu ezkutagarriak
 
-🎵 <b>Audio esperientzia</b>
-- Kalitate premiuma YouTube Music Premium bidez, automatikoa
-- Letra sinkronizatuak, edizioa eta denbora errealeko itzulpena
-- Abestiak ezagutzea (Shazam antzekoa), ahots-bilaketa, audio bisualizatzailea
-- Kontrol profesionalak: abiadura, tonua, normalizazioa, crossfade-a, bolumena, baxua, erreburbu
-- Audio Bar seekbara, navigazio zehatzeko
+🎵 <b>Soinu-esperientzia</b>
+- Kalitate premiuma YouTube Music Premium bidez, automatikoki
+- Letrak sinkronizatuak, editatzea eta denbora errealeko itzulpena
+- Abesti-errekonoztea (Shazam bezala), ahots-bilaketa, soinu-visualizagailua
+- Pro kontrolak: abiadura, tonua, normalizazioa, crossfade, bolumen- eta baxu-igoera, reverb
+- Audio Bar uhin-seekbar, navigazio zehatzarako
 
-💾 <b>Lineaz kanpo, metadatuak eta pribatutasuna</b>
-- Abesti eta zerrendentzako cache adimentsua, deskargak kalitate aukeragarriz
-- FFmpeg esportazioa metadatu osoekin (64-bit soilik)
-- Metadatuen editorea aplikazioan (AAC/Opus, azala)
+💾 <b>Offline, metadatuak eta pribatutasuna</b>
+- Pisten eta playlisten cache adimenduna, deskargak aukeragarriko kalitatez
+- FFmpeg bidezko esportazioa, metadatu osoekin (64-bit bakarrik)
+- Metadatu editorea aplikazioan (AAC/Opus, azal-arteak)
 - Entzute-estatistikak eta historia lokalak
-- Babeskopia automatikoa, tarte eta mantentze pertsonalizatuak
+- Babeskopia automatikoa, tarteen eta mantentzeen arabera
 
 🔗 <b>Integrazioak</b>
-- YouTube saio-hasiera gomendioak eta bideoarentzat, bi norabidetako sinkronizazio esperimental bidez
+- YouTube sarrera gomendio eta bideo-erreprodukziorako, bi noranzkoko sinkronizazio-motor esperimentala
 - Last.fm scrobbling, Now Playing eta love/unlove
-- MusicBrainz artisten eta albumen datuak
-- Discord Rich Presence, modu aurreratua aurrebista zuzenarekin
-- Invidious, YouTube streaming alternatiboarentzat
-- Playlist inportazioa/esportazioa: RiPlay, Spotify, YouTube Music, N-Zik
+- MusicBrainz artisten eta albumen informazioa
+- Discord Rich Presence, modu aurreratua eta aurrebista bizia
+- Invidious, YouTube streaming alternatiborako
+- Playlisten inportazio/esportazioa: RiPlay, Spotify, YouTube Music, N-Zik
 
-👥 <b>Entzun batera</b>
-- Beste N-Zik erabiltzaile baten entzute-sesio zuzenari, kode edo gonbidapen bidea
+👥 <b>Bateran entzutea</b>
+- Saio bizian parte hartu edo antolatu beste erabiltzaileekin, kodetik edo gonbidapen-estekatik
 
 🗓️ <b>Rewind</b>
-- Urteko eta hilabeteko entzute laburpenak, Rewind playlistak automatikoki
+- Urteko eta hilabeteroko laburpenak, auto-sortutako Rewind playlistak
 
-📱 <b>Erreproduzitu edonon:</b> Android Auto, Automotive, TV eta tabletak
+📱 <b>Non-erron erreproduzitu:</b> Android Auto, Automotive, TV eta Tablets
 
-🛠️ <b>Funtzio aurreratuak</b>
-- Profil anitz: datu-base eta ezarpen bereziak profilioz
-- Bluetooth konektatzean automatikoki jarraitu, ilara iraunkorra, auto-betetzea
-- Zakarrontzi adimentsua, ezkutuko abestiak, ez-gustatu sistema, gurasoen kontrola
-- Proxy euskarria, sare-kalitateko egokitzapena, log esportazioa
-- Rescue Center, mantentze-pantaila, sarrera-gida, lasterbideak
-- OTA eguneratzeak GitHubetik, lo-tenporizadorea, atzeko erreprodukzioa
+🛠️ <b>Erabiltzaile aurreratuentzat</b>
+- Profil anitzak: datu-base eta ezarpen bananduak profil bakoitzeko
+- Bluetooth konektatzean berrabiarazte automatikoa, ilara iraunkorra, auto-betearaztea
+- Zurrunbilo adimenduna, euskatutako abestiak, ez gustuko sistema, guraso-kontrola
+- Proxy euskarria, sare-kalitate egokitzapena, erregistro-esportazioa
+- Rescue Center, mantentze-pantaila, onboarding, app lasterrbideak
+- OTA eguneratzeak GitHub-etik, lo-timera, hondo-erreprodukzioa
 
-🛡️ %100 kode irekikoa (FOSS). Baimen nagusiak: INTERNET, RECORD_AUDIO (bisualizaziorako soilik), STORAGE (esportazioak/babeskopiak), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
+🛡️ 100% iturburu irekia (FOSS). Baimenak: INTERNET, RECORD_AUDIO (visualizagailurako), STORAGE (esportazio/kopia), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
-📦 <b>Bertsio eskuragarriak</b>
-- Full/Beta: Bertsio osoa (64-bit)
+📦 <b>Eraikun eskuragarriak</b>
+- Full/Beta: Eraikun osoa (64-bit)
 - Full32/Beta32: FFmpeg gabe (32/64-bit)
-- Minified: Arina, gama baxuko gailuentzat (64-bit)
-- Minified32: Arina FFmpeg gabe (32/64-bit)
-- FOSS: Eguneratzaile automatikorik gabe, F-Droid-erako (64-bit)
-- Dev/Dev32: Garapen bertsioak, probetarako soilik
+- Minified: Arina, gailu ahulentzat (64-bit)
+- Minified32: Arina, FFmpeg gabe (32/64-bit)
+- FOSS: Eguneratzaile automatikorik gabe, F-Droiderako (64-bit)
+- Dev/Dev32: Garapen-eraikunak, probatzeko soilik
 
-Bertsio estandarrak 64-bit (FFmpeg); "32" bertsioak FFmpeg kentzen dute bi arkitekturetan. FOSS soilik dago F-Droid-en.
+Eraikun estandarrak 64-bit (FFmpeg); "32"-ak FFmpeg gabe, bi arkitekturan. FOSS bakarrik F-Droiden.
 
-<b>2027ko urtarriletik</b>, Google-k nortasun egiaztapena eskatuko die garatzaile guztiei; N-Zik FOSS gisa aurka dago. <a href="https://keepandroidopen.org">Informazio gehiago</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Sinatu eskaera</a>
+<b>2027ko urtarriletik</b> Googlek identitate-egiaztapena eskatuko du garatzaile guztiei; FOSS gisa, N-Zik kontrako dago. <a href="https://keepandroidopen.org">Jakitu gehiago</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Sinatu petizioa</a>

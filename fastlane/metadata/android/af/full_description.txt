@@ -1,69 +1,69 @@
-'n Meertalige YouTube Music-frontend vir Android, gefokus op werkverrigting, UI/UX-afwerking, funksie-uitbreiding en langtermynondersteuning.
+'n Meertalige YouTube Music front-end vir Android: werkverrigting, UI/UX, funksie-uitbreiding en langtermynondersteuning.
 
-<b>N-Zik</b> is 'n oopbron-vurk van <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+<b>N-Zik</b> is 'n oopbronvurk van <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Nota:</b> N-Zik het as 'n byprojek begin. Vir meer volwasse alternatiewes, kyk na <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> of <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Nota:</b> N-Zik het as 'n nevensaak begin. Vir volwasse alternatiewe, sien <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> of <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>KI-gebruik:</b> Ek gebruik generatiewe KI vir kode (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), hersien en getoets voor versending.
+<b>KI-gebruik:</b> Ek gebruik generatiewe KI vir kode (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), alles hersien en getoets voor vrygawe.
 
-Of jy nou 'n toevallige luisteraar of 'n ouditief is, N-Zik gee jou volle beheer oor jou musiek sonder om privaatheid prys te gee.
+Gemiddelde luisteraar of audiofil: N-Zik gee jou volle beheer oor jou musiek sonder privaatheidskompromisse.
 
-✨ <b>WAAROM N-ZIK?</b> Geen advertensies nie, agtergrondspeling, vanlyn kasberging, aanpasbare UI - gratis, altyd.
+✨ <b>WAAROM N-ZIK?</b> Geen advertensies, agtergrondspeling, offline-stasiegeheue, aanpasbare koppelvlak - altyd gratis.
 
-🎨 <b>Aanpasbare UI</b>
+🎨 <b>Aanpasbare koppelvlak</b>
 - Jetpack Compose met klassieke ViMusic-modusskakelaar
 - Temas: AMOLED, Deep Dark, Crisp Light + getinte aksente
-- 3D Karrouselspeler, tuisskermwidgets, speler en minispieler
-- Kunstenaarsprofiele, Discovery en moods, opvoubare tuis-kopstukke
+- 3D Carousel Player, tuiswidgets, verenigde speler plus minispieler
+- Kunstenaarsprofiele, Ontdekking en buie, opvoubare tuisbladafdelings
 
 🎵 <b>Klankervaring</b>
-- Premium kwaliteit via YouTube Music Premium, outomaties toegepas
-- Gesinkroniseerde lirieke met redigering en intydse vertaling
-- Musiekherkenning (Shazam-agtig), stemsoektog, klankvisualiseerder
-- Pro-kontroles: spoed, toonhoogte, normalisering, oorkruisdoof, volumeverhoging, basversterking, weerkaatsing
-- Audio Bar-golfvorm-seekbalk vir presiese navigasie
+- Premium kwaliteit via YouTube Music Premium, outomaties
+- Gesinchroniseerde lirieke met redigering en real-time vertaling
+- Liedjiesherkenning (soos Shazam), stemsoektog en klankvisualiseerder
+- Professionele kontroles: tempo, toonhoogte, normalisering, crossfade, volume- en basversterking, reverb
+- Audio Bar-golfgestaltebalk vir presiese navigasie
 
-💾 <b>Vanlyn, Metadata & Privaatheid</b>
-- Slim kasberging en aflaaie vir snitte en speellyste, met keiesbare aflaaikwaliteit
-- FFmpeg-aangedrewe uitvoer met volledige metadata (slegs 64-bis)
-- In-app metadata-redigeerder (AAC/Opus, omslagkuns)
+💾 <b>Offline, Metadata & Privaatheid</b>
+- Slim stasiegeheue en laaie vir snitte en speellyste, met keesbare laaikwaliteit
+- FFmpeg-eksport met volledige metadata (slegs 64-bit)
+- In-app metadata-redigeerder (AAC/Opus, omslagbeelde)
 - Plaaslike luisterstatistieke en geskiedenis
-- Outomatiese rugsteun met pasgemaakte intervalle en behoud
+- Outomatiese rugsteun met verstelbare intervalle en opbewaringstyd
 
 🔗 <b>Integrasies</b>
-- YouTube-aanmelding vir aanbevelings en videospelery, plus 'n eksperimentele twee-weg-sink-enjin
-- Last.fm-scrobbling met Now Playing en lief/hat
-- MusicBrainz-kunstenaar- en albuminligting
-- Discord Rich Presence, insluitende gevorderde modus met lewendige voorskou
-- Invidious-integrasie vir alternatiewe YouTube-streaming
-- Speellys-invoer/-uitvoer: RiPlay, Spotify, YouTube Music, N-Zik
+- YouTube-inlog vir aanbevelings en video-afspeeling, plus eksperimentele twee-weg-sinchroniseringsmeganisme
+- Last.fm-scrobbling met Now Playing en love/unlove
+- MusicBrainz-inligting oor kunstenaars en albomme
+- Discord Rich Presence, met gevorderde modus en lewendige voorskou
+- Invidious vir alternatiewe YouTube-streaming
+- Speellys-invoer en -eksport: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Luister Saam</b>
-- Sluit by 'n lewende luissessie aan wat deur 'n ander N-Zik-gebruiker aangebied word, via kode of uitnodigingskoppeling
+- Lewendige luistersessies: sluit by gebruikers aan of begin jou eie via kode of uitnodigingskoppeling
 
 🗓️ <b>Rewind</b>
-- Jaarlikse en maandelikse luisteropsomminge met outogegenereerde Rewind-speellyste
+- Jaarlikse en maandelikse luisteropsomminge met outomaties gegenereerde Rewind-speellyste
 
 📱 <b>Speel Oral:</b> Android Auto, Automotive, TV en Tablets
 
-🛠️ <b>Kraggebruiker-Kenmerke</b>
-- Multi-profiel: geïsoleerde databasis en instellings per profiel
-- Outo-hervatting by Bluetooth-aansluiting, volgehoue tou, outo-vul tou
-- Slim asb, verskuilde snitte, afkeur-stelsel, ouerbeheer
-- Proksy-ondersteuning, netwerk-kwaliteit-aanpassing, log-uitvoer
-- Reddingsentrum, onderhoudsskerm, instap, app-snoers
-- OTA-opdaterings vanaf GitHub, slaaptimer, agtergrondspeling
+🛠️ <b>Funksies vir Gevorderde Gebruikers</b>
+- Meervoudige profiele: afgeskepte databasis en instellings per profiel
+- Outomatiese hervatting by Bluetooth-aansluiting, volgehou opvolging, outomatiese opvulling
+- Slim asb, verborge snitte, afkeurstelsel, ouerbeheer
+- Proksi-ondersteuning, netwerkskwaliteit-aanpassing, log-eksport
+- Rescue Center, onderhoudsskerm, gebruikersindagting, app-kortpaaie
+- OTA-opdaterings van GitHub, slaaptimer, agtergrondspeling
 
-🛡️ 100% oopbron (FOSS). Sleuteltoestemmings: INTERNET, RECORD_AUDIO (slegs visualiseerder), STORAGE (uitvoere/rugsteun), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
+🛡️ 100% oopbron (FOSS). Belangrikke toestemmings: INTERNET, RECORD_AUDIO (slegs visualiseerder), STORAGE (eksport/rugsteun), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Beskikbare Builds</b>
-- Full/Beta: Volledige build (64-bis)
-- Full32/Beta32: Sonder FFmpeg (32/64-bis)
-- Minified: Liggewig, vir lae-gevorderde toestelle (64-bis)
-- Minified32: Liggewig sonder FFmpeg (32/64-bis)
-- FOSS: Sonder outo-opdateerder, vir F-Droid (64-bis)
+- Full/Beta: Volledige build (64-bit)
+- Full32/Beta32: Sonder FFmpeg (32/64-bit)
+- Minified: Liggewig vir swak toestelle (64-bit)
+- Minified32: Liggewig sonder FFmpeg (32/64-bit)
+- FOSS: Sonder outomatiese opdateerder vir F-Droid (64-bit)
 - Dev/Dev32: Ontwikkelingsbuilds, slegs vir toetsing
 
-Standaard builds is 64-bis (FFmpeg); "32"-builds laat FFmpeg weg. Slegs FOSS is op F-Droid.
+Standaard builds: 64-bit (FFmpeg); "32"-builds laat FFmpeg weg in beide argitekture. Slegs FOSS op F-Droid.
 
-Vanaf <b>Januarie 2027</b> vereis Google identiteitsverifikasie vir alle ontwikkelaars. As FOSS, is N-Zik teen hierdie. <a href="https://keepandroidopen.org">Leer meer</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Teken die petisie</a>
+Vanaf <b>Januarie 2027</b> vereis Google identiteitsverifikasie van alle ontwikkelaars; as FOSS is N-Zik daarteen. <a href="https://keepandroidopen.org">Leer meer</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Teken die petisie</a>

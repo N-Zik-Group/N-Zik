@@ -14,14 +14,14 @@ Ať už jste příležitostný posluchač či audiofil, N-Zik vám dává plnou 
 - Jetpack Compose s přepínačem klasického režimu ViMusic
 - Témata: AMOLED, Deep Dark, Crisp Light + barevné akcenty
 - 3D Carousel Player, widgety na domovskou obrazovku, sjednocený player a mini-player
-- Profily umělců, Discovery a moods, sbalitelné hlavičky domovské obrazovky
+- Profily umělců, Discovery a moods, sbalitelné hlavičky na domovské obrazovce
 
 🎵 <b>Audio zážitek</b>
 - Prvotřídní kvalita přes YouTube Music Premium, aplikovaná automaticky
 - Synchronizované texty s úpravami a překladem v reálném čase
 - Rozpoznávání skladeb (jako Shazam), hlasové vyhledávání, audio vizualizér
 - Pro ovládání: rychlost, výška tónu, normalizace, prolínání, zesílení zvuku, basový boost, reverb
-- Vlnový seekbar Audio Bar pro přesnou navigaci
+- Audio Bar s vlnovým seekbarem pro přesnou navigaci
 
 💾 <b>Offline, metadata a soukromí</b>
 - Inteligentní ukládání a stahování skladeb a playlistů, s volitelnou kvalitou stahování
@@ -39,19 +39,19 @@ Ať už jste příležitostný posluchač či audiofil, N-Zik vám dává plnou 
 - Import/export playlistů: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Poslouchat společně</b>
-- Připojte se k živé seanci hostované jiným uživatelem N-Zik, přes kód nebo odkaz na pozvání
+- Připojte se k živým seancím, nebo si je sami hostujte s ostatními, přes kód nebo odkaz
 
 🗓️ <b>Rewind</b>
 - Roční a měsíční shrnutí poslechu s automaticky generovanými playlisty Rewind
 
-📱 <b>Přehrávejte kdekoli:</b> Android Auto, Automotive, TV a tablety
+📱 <b>Přehrávejte kdekoli:</b> Android Auto, Automotive, TV a Tablets
 
 🛠️ <b>Funkce pro pokročilé</b>
 - Více profilů: izolovaná databáze a nastavení pro každý profil
 - Auto-pokračování při připojení Bluetooth, perzistentní fronta, auto-doplňování fronty
 - Smart trash, skryté skladby, dislike systém, rodičovská kontrola
 - Podpora proxy, adaptace kvality sítě, export logů
-- Rescue Center, údržbová obrazovka, onboarding, app zkratky
+- Rescue Center, údržbová obrazovka, onboarding, zkratky aplikace
 - OTA aktualizace z GitHub, spánkový časovač, přehrávání na pozadí
 
 🛡️ 100% open-source (FOSS). Klíčová oprávnění: INTERNET, RECORD_AUDIO (pouze vizualizér), STORAGE (exporty/zálohy), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.

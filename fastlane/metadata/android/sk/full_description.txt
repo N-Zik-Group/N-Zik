@@ -1,45 +1,45 @@
-Viacjazyčný open-source frontend YouTube Music pre Android, zameraný na výkon, vyladenie UI/UX, nové funkcie a dlhodobú podporu.
+Viacjazyčný YouTube Music frontend pre Android: výkon, vyladenie UI/UX, rozširovanie funkcií, dlhodobá podpora.
 
 <b>N-Zik</b> je open-source fork <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Poznámka:</b> N-Zik začal ako vedľajší projekt. Vyspelejšie alternatívy: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> alebo <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Poznámka:</b> N-Zik začal ako vedľajší projekt. Zrelšie alternatívy: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> alebo <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Využívanie AI:</b> Používam generatívnu AI na kód (cez <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), všetko je pred vydaním skontrolované a otestované.
+<b>Využívanie AI:</b> Na kód používam generatívnu AI (cez <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), pred vydaním všetko preverím a otestujem.
 
-Príležitostný poslucháč alebo audiofil - N-Zik dáva plnú kontrolu nad hudbou bez kompromisov v súkromí.
+Príležitostný posluchateľ či audiofil - N-Zik vám dáva plnú kontrolu nad hudbou bez kompromisu v súkromí.
 
-✨ <b>PREČO N-ZIK?</b> Žiadne reklamy, prehrávanie na pozadí, offline cache a plne prispôsobiteľné rozhranie - vždy zadarmo.
+✨ <b>PREČO N-ZIK?</b> Žiadne reklamy, prehrávanie na pozadí, offline cache, prispôsobiteľné rozhranie - vždy zadarmo.
 
 🎨 <b>Prispôsobiteľné rozhranie</b>
 - Jetpack Compose s prepínačom klasického režimu ViMusic
 - Témy: AMOLED, Deep Dark, Crisp Light + farebné akcenty
 - 3D Carousel Player, domovské widgety, jednotný prehrávač a mini prehrávač
-- Profily umelcov, Discovery a nálady, skrývateľné hlavičky
+- Profily umelcov, Discovery a nálady, skrývateľné domovské hlavičky
 
-🎵 <b>Audio zážitok</b>
-- Prvotriedna kvalita cez YouTube Music Premium, aplikovaná automaticky
+🎵 <b>Zvukový zážitok</b>
+- Prvotriedna kvalita vďaka YouTube Music Premium, aplikovaná automaticky
 - Synchronizované texty s úpravami a prekladom v reálnom čase
-- Rozpoznávanie hudby (ako Shazam), hlasové vyhľadávanie, audio vizualizér
-- Pro ovládanie: rýchlosť, výška tónu, normalizácia, crossfade, zosilnenie hlasitosti, zosilnenie basov, ozvena
-- Audio Bar vlnová seekbar pre navigáciu
+- Rozpoznávanie skladieb (ako Shazam), hlasové vyhľadávanie, audio vizualizátor
+- Pro ovládanie: rýchlosť, výška tónu, normalizácia, crossfade, zosilnenie hlasitosti aj basov, ozvena
+- Audio Bar s vlnovým posuvníkom pre presnú navigáciu
 
 💾 <b>Offline, metadáta a súkromie</b>
-- Inteligentné offline ukladanie a sťahovanie skladieb a zoznamov, s voľbou kvality
+- Inteligentné cache a sťahovanie skladieb a playlistov s voľbou kvality
 - Export cez FFmpeg s úplnými metadátami (iba 64-bit)
 - Editor metadát v aplikácii (AAC/Opus, obal albumu)
-- Miestne štatistiky počúvania a história
-- Automatické zálohovanie s vlastnými intervalmi a uchovávaním
+- Lokálne štatistiky počúvania a história
+- Automatické zálohovanie s vlastnými intervalmi a dobou uchovávania
 
 🔗 <b>Integrácie</b>
-- Prihlásenie do YouTube pre odporúčania a video, plus experimentálny obojsmerný sync engine
-- Scrobbling Last.fm s Now Playing a like/unlike
-- Informácie o umelcoch a albumoch MusicBrainz
+- Prihlásenie do YouTube pre odporúčania a prehrávanie videa, plus experimentálny obojsmerný sync engine
+- Scrobbling na Last.fm s Now Playing a love/unlove
+- Informácie o umelcoch a albumoch z MusicBrainz
 - Discord Rich Presence, vrátane pokročilého režimu s živou ukážkou
 - Integrácia Invidious pre alternatívny YouTube streaming
 - Import/export zoznamov skladieb: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Počúvajte spolu</b>
-- Pripojte sa k live relácii hostovanej iným používateľom N-Zik cez kód alebo pozvánkový odkaz
+- Pripojte sa alebo hostujte živé relácie s inými používateľmi cez kód alebo pozvánkový odkaz
 
 🗓️ <b>Rewind</b>
 - Ročné a mesačné zhrnutia počúvania s automaticky generovanými playlistmi Rewind
@@ -47,23 +47,23 @@ Príležitostný poslucháč alebo audiofil - N-Zik dáva plnú kontrolu nad hud
 📱 <b>Prehrávajte kdekoľvek:</b> Android Auto, Automotive, TV a Tablets
 
 🛠️ <b>Funkcie pre pokročilých používateľov</b>
-- Viac profilov: izolovaná databáza a nastavenia
-- Automatické obnovenie pri pripojení Bluetooth, trvalá fronta, auto-vyplnenie
-- Inteligentný kôš, skryté skladby, systém odlike, rodičovská kontrola
+- Viac profilov: izolovaná databáza a nastavenia pre každý profil
+- Autoobnovenie pri pripojení Bluetooth, trvalá fronta, automatické vyplnenie fronty
+- Inteligentný kôš, skryté skladby, neobľúbené skladby, rodičovská kontrola
 - Podpora proxy, prispôsobenie kvality siete, export logov
-- Rescue Center, obrazovka údržby, onboarding, skratky
-- OTA aktualizácie z GitHubu, časovač spánku, prehrávanie na pozadí
+- Rescue Center, obrazovka údržby, sprievodca začiatočníkov, skratky
+- OTA aktualizácie z GitHub, časovač spánku, prehrávanie na pozadí
 
-🛡️ 100% open-source (FOSS). Kľúčové povolenia: INTERNET, RECORD_AUDIO (iba vizualizér), STORAGE (exporty/zálohy), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
+🛡️ 100% open-source (FOSS). Kľúčové povolenia: INTERNET, RECORD_AUDIO (iba pre vizualizátor), STORAGE (exporty/zálohy), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
-📦 <b>Dostupné zostavy</b>
-- Full/Beta: Kompletná (64-bit)
+📦 <b>Dostupné verzie</b>
+- Full/Beta: Kompletná verzia (64-bit)
 - Full32/Beta32: Bez FFmpeg (32/64-bit)
-- Minified: Odľahčená, pre slabšie zariadenia (64-bit)
-- Minified32: Odľahčená bez FFmpeg (32/64-bit)
+- Minified: Odľahčená verzia, pre slabšie zariadenia (64-bit)
+- Minified32: Odľahčená verzia bez FFmpeg (32/64-bit)
 - FOSS: Bez automatického aktualizátora, pre F-Droid (64-bit)
-- Dev/Dev32: Vývojové, len na testovanie
+- Dev/Dev32: Vývojové verzie, len na testovanie
 
-Štandardné zostavy sú 64-bit (FFmpeg); "32" zostavy bez FFmpeg pre obe architektúry. Iba FOSS je na F-Droid.
+Štandardné verzie: 64-bit (FFmpeg); „32" bez FFmpeg pre obe architektúry. Na F-Droid len FOSS.
 
-Od <b>januára 2027</b> bude Google vyžadovať overenie identity od všetkých vývojárov. Ako FOSS sa N-Zik bráni proti tomuto. <a href="https://keepandroidopen.org">Dozvedieť sa viac</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Podpíšte petíciu</a>
+Od <b>januára 2027</b> bude Google vyžadovať overenie identity všetkých vývojárov. N-Zik ako FOSS je proti. <a href="https://keepandroidopen.org">Dozvedieť sa viac</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Podpíšte petíciu</a>

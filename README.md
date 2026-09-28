@@ -170,7 +170,7 @@ Join the N-Zik Discord:
 - 📶 **Network Quality Adaptation** – Adaptive streaming based on your connection quality.
 - 📋 **Log Export** – Export app logs to a file, or copy them to the clipboard, for easy debugging and reporting.
 - 👤 **Multi-Profile** – Switch between multiple isolated profiles (per-profile database and preferences) from the settings or the main-menu switcher.
-- 👥 **Listen Together** – Join a live listening session hosted by another N-Zik user via an 8-character code or invite link.
+- 👥 **Listen Together** – Join or host live listening sessions with other users via an 8-character code or invite link. Runs on Metrolist's [MetroServer](https://github.com/MetrolistGroup/metroserver) infrastructure (N-Zik is an officially supported host), and you can point it at your own custom server in the settings.
 - 🎼 **Last.fm Integration** – Scrobble what you listen to: Now Playing, love/unlove, and configurable scrobbling options.
 - 🧠 **MusicBrainz Insights** – Rich artist and album information, community data, and external links.
 - 🚫 **Dislike System** – Dislike songs, artists, and albums to keep them out of your recommendations, with dedicated "Disliked" tabs.
@@ -334,6 +334,7 @@ New:
 - [**compose-markdown**](https://github.com/jeziellago/compose-markdown): Markdown rendering in app.
 - [**HypnoticCanvas**](https://mikepenz.github.io/HypnoticCanvas/): Shader effects for Compose.
 - [**Metrolist**](https://github.com/metrolistgroup/metrolist): Has helped a lot with bug fixes and feature expansion!
+- [**MetroServer**](https://github.com/MetrolistGroup/metroserver): Listen Together server infrastructure, with N-Zik officially supported as a hosting client.
 - [**ZemerTeam/zemer-cipher**](https://github.com/ZemerTeam/zemer-cipher): Cipher configs
 - [**Invidious**](https://github.com/iv-org/invidious): Alternative YouTube frontend used as a streaming source.
 
@@ -387,7 +388,8 @@ New:
 [![Comment or close on label](https://github.com/N-Zik-Group/N-Zik/actions/workflows/comment-on-label.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/comment-on-label.yaml)  
 [![CodeQL](https://github.com/N-Zik-Group/N-Zik/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/github-code-scanning/codeql)  
 [![Update Project Stats and Chart](https://github.com/N-Zik-Group/N-Zik/actions/workflows/metrics.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/metrics.yml)  
-[![Update Android Lockdown Countdown](https://github.com/N-Zik-Group/N-Zik/actions/workflows/update-android-lockdown-countdown.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/update-android-lockdown-countdown.yml)
+[![Update Android Lockdown Countdown](https://github.com/N-Zik-Group/N-Zik/actions/workflows/update-android-lockdown-countdown.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/update-android-lockdown-countdown.yml)  
+[![Sync Listen Together proto from metroproto](https://github.com/N-Zik-Group/N-Zik/actions/workflows/sync-metroproto.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/sync-metroproto.yml)
 
 ## 🌐 Localization
 

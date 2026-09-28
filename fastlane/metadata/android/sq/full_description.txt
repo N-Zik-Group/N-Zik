@@ -12,7 +12,7 @@ Jeni dëgjues i rastësishëm apo audiofil, N-Zik ju jep kontroll të plotë mbi
 
 🎨 <b>Ndërfaqe e personalizueshme</b>
 - Jetpack Compose me modalitetin klasik ViMusic
-- Tema: AMOLED, Deep Dark, Crisp Light + thekse me ngjyra
+- Tema: AMOLED, Deep Dark, Crisp Light + theks të ngjyrosur
 - 3D Carousel Player, widget-e të ekranit kryesor, player i unifikuar dhe mini-player
 - Profile artistësh, Discovery dhe mood, koka të palosshme
 
@@ -28,23 +28,23 @@ Jeni dëgjues i rastësishëm apo audiofil, N-Zik ju jep kontroll të plotë mbi
 - Eksport FFmpeg me metadata të plota (vetëm 64-bit)
 - Redaktues metadatesh në aplikacion (AAC/Opus, kopertina)
 - Statistikat dhe historia e dëgjimit lokale
-- Rezervim automatik me intervale dhe mbajtje të cilësuara
+- Kopje rezervë automatike me intervale dhe ruajtje zgjidhshme
 
 🔗 <b>Integrimet</b>
-- Identifikim në YouTube për rekomandime dhe video, motor eksperimental sinkronizimi dydrejtimësh
-- Last.fm scrobbling me Now Playing dhe like/unlike
+- Kyçja në YouTube për rekomandime dhe video, motor eksperimental sinkronizimi dydrejtimësh
+- Last.fm scrobbling me Now Playing dhe love/unlove
 - MusicBrainz për detaje artistësh dhe albume
-- Discord Rich Presence me modalitet të avancuar, parashikim në kohë reale
+- Discord Rich Presence me modalitet të avancuar, paraqitje e drejtpërdrejtë
 - Invidious për streaming alternativ të YouTube
 - Import/eksport i listave: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Dëgjoni së bashku</b>
-- Bashkohuni seancës dëgjimi live të përdoruesit tjetër N-Zik, me kod ose link ftesë
+- Bashkohuni ose organizoni seanca dëgjimi live me përdorues, me kod ose link ftesë
 
 🗓️ <b>Rewind</b>
 - Përmbledhje vjetore/mujore dëgjimi me lista Rewind të gjeneruara automatikisht
 
-📱 <b>Luaj kudo:</b> Android Auto, Automotive, TV dhe tabletë
+📱 <b>Luaj kudo:</b> Android Auto, Automotive, TV dhe Tablets
 
 🛠️ <b>Veçori për përdoruesit e avancuar</b>
 - Multi-profil: bazë dhe cilësime të izoluar për profil
@@ -54,7 +54,7 @@ Jeni dëgjues i rastësishëm apo audiofil, N-Zik ju jep kontroll të plotë mbi
 - Rescue Center, ekran i mirëmbajtjes, udhëzim fillestar, shkurtore
 - Përditësime OTA nga GitHub, kohëmatës gjumi, riprodhim në sfond
 
-🛡️ 100% burim i hapur (FOSS). Lejet kryesore: INTERNET, RECORD_AUDIO (vetëm vizualizuesi), STORAGE (eksporte/rezervime), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
+🛡️ 100% burim i hapur (FOSS). Lejet kryesore: INTERNET, RECORD_AUDIO (vetëm vizualizuesi), STORAGE (eksporte/kopje rezervë), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
 
 📦 <b>Versionet e disponueshme</b>
 - Full/Beta: I plotë (64-bit)
