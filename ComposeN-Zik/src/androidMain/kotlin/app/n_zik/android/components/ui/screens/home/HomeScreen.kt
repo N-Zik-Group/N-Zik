@@ -130,6 +130,45 @@ internal fun shouldSwitchTabFromShortcut(openTabFromShortcut: Int): Boolean =
 internal fun initialShortcutAction(action: String?, isRestoredInstance: Boolean): String? =
     if (isRestoredInstance) null else action
 
+/**
+ * The active home tab ids in the user's configured [order], filtered by the per-tab
+ * enable flags.
+ *
+ * Home always shows at least one tab: when every tab is disabled it falls back to a
+ * single quickpicks tab, so the result is never empty. The bottom nav bar is only
+ * drawn with two or more buttons, which is why `appNavBarPresentForRoute` takes the
+ * size of this list for the home route (issue
+ * https://github.com/N-Zik-Group/N-Zik/issues/832).
+ *
+ * @param order The tab ids in display order, as parsed from `homeTabsOrderKey`.
+ * @param quickPicks Whether the quickpicks tab is enabled.
+ * @param songs Whether the songs tab is enabled.
+ * @param artists Whether the artists tab is enabled.
+ * @param albums Whether the albums tab is enabled.
+ * @param playlists Whether the playlists tab is enabled.
+ * @return The active tab ids, never empty.
+ */
+fun activeHomeTabIds(
+    order: List<String>,
+    quickPicks: Boolean,
+    songs: Boolean,
+    artists: Boolean,
+    albums: Boolean,
+    playlists: Boolean
+): List<String> {
+    val filtered = order.filter { id ->
+        when (id) {
+            "quickpicks" -> quickPicks
+            "songs" -> songs
+            "artists" -> artists
+            "albums" -> albums
+            "playlists" -> playlists
+            else -> false
+        }
+    }
+    return if (filtered.isEmpty()) listOf("quickpicks") else filtered
+}
+
 @RequiresApi(Build.VERSION_CODES.O)
 @ExperimentalMaterial3Api
 @ExperimentalTextApi
@@ -168,17 +207,7 @@ fun HomeScreen(
     }
 
     val activeTabs = remember(tabOrder, enableQuickPicksPage, enableSongsTab, enableArtistsTab, enableAlbumsTab, enablePlaylistsTab) {
-        val filtered = tabOrder.filter { id ->
-            when (id) {
-                "quickpicks" -> enableQuickPicksPage
-                "songs" -> enableSongsTab
-                "artists" -> enableArtistsTab
-                "albums" -> enableAlbumsTab
-                "playlists" -> enablePlaylistsTab
-                else -> false
-            }
-        }
-        if (filtered.isEmpty()) listOf("quickpicks") else filtered
+        activeHomeTabIds(tabOrder, enableQuickPicksPage, enableSongsTab, enableArtistsTab, enableAlbumsTab, enablePlaylistsTab)
     }
 
     val initialtabIndex = run {

@@ -1,4 +1,5 @@
 Added:
+- feat(listen-together): hosting enabled on the default MetroServer - MetroServer commit 9da6f9d (https://github.com/MetrolistGroup/metroserver/commit/9da6f9da1f3ec92183a26dc8f6fbf9c8b3f0ede8) added `com.nevar.nzik` and `com.nevar.nzik.debug` to the default User-Agent allowlist, so N-Zik users can now host rooms (v92 was guest-only)
 - feat(profiles): add multi-profile support with per-profile database and preferences (PR https://github.com/N-Zik-Group/N-Zik/pull/851, `fc401f3b3d`)
   - New `ProfilePreferences.kt` (`profile_preferences` shared prefs) storing the active profile via `getActiveProfile()` / `setActiveProfile()`, default profile is `default`
   - `Context.preferences` (Preferences.kt) and `getEncryptedSharedPreferencesResult()` (EncryptedPreferences.kt) now resolve per-profile files `preferences_<profile>` / `secure_preferences_<profile>`; the default profile keeps the original file names, so existing installs are unaffected
@@ -8,3 +9,10 @@ Added:
   - Rescue mode: `RescueFiles.kt` / `RescueScreen.kt` now handle dynamic files per active profile
   - 6 new strings added to `values/strings.xml` (profiles, add_profile, enter_profile_name, remove_profile, this_profile_alreaty_exist, profile_restart_required)
   - Credit: yrrrad8 (https://github.com/yrrrad8) — original upstream: https://github.com/knighthat/Kreate/pull/1089
+
+Fixed:
+- fix(miniplayer): drop to screen edge on home when only one tab is active (issue https://github.com/N-Zik-Group/N-Zik/issues/832)
+  - `appNavBarPresentForRoute` (AppNavBar.kt) now takes `activeHomeTabCount`; the home branch reports the bar only with two or more active tabs, matching the legacy `Skeleton` draw condition (`buttonList.size >= 2`) — previously the route-only check kept reserving the bar space as a phantom gap when a single tab remained
+  - New shared `activeHomeTabIds` in `HomeScreen.kt` (same per-tab filter + quickpicks fallback as the previous inline logic), so the active tab list is computed once and reused
+  - `MainActivity` reactively reads the home tab preferences (`homeTabsOrderKey`, `enableQuickPicksPageKey`, `hometab_*_enabled`) and passes the real count, so toggling a tab in the home tabs settings moves the mini-player live (the existing `playerPadBottom` tween animates the drop)
+  - Tests: new `HomeTabsTest` (6 tests) + `AppNavBarRouteTest` updated with the home tab-count cases

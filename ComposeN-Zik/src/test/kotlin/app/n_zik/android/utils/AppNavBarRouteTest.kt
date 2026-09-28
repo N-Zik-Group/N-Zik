@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test
 
 class AppNavBarRouteTest {
 
+    // The home tab count is irrelevant for every non-home route; 5 is the realistic full set.
+    private val fullHomeTabCount = 5
+
     @Test
     fun `routes without a navigation bar report no bar`() {
         val routes = listOf(
@@ -38,9 +41,9 @@ class AppNavBarRouteTest {
             "videoOrSongInfo",
         )
         routes.forEach { route ->
-            assertFalse(appNavBarPresentForRoute(route), "expected no bar for route=$route")
+            assertFalse(appNavBarPresentForRoute(route, fullHomeTabCount), "expected no bar for route=$route")
         }
-        assertFalse(appNavBarPresentForRoute(null))
+        assertFalse(appNavBarPresentForRoute(null, fullHomeTabCount))
     }
 
     @Test
@@ -54,17 +57,27 @@ class AppNavBarRouteTest {
             "statistics",
         )
         routes.forEach { route ->
-            assertTrue(appNavBarPresentForRoute(route), "expected bar for route=$route")
+            assertTrue(appNavBarPresentForRoute(route, fullHomeTabCount), "expected bar for route=$route")
         }
     }
 
     @Test
     fun `artist and search prefixes do not leak into lookalike routes`() {
-        assertTrue(appNavBarPresentForRoute("artist/{id}"))
-        assertFalse(appNavBarPresentForRoute("artistInsights/{id}"))
-        assertFalse(appNavBarPresentForRoute("artistAlbums/{id}?params={params}"))
-        assertTrue(appNavBarPresentForRoute("search?text={text}"))
-        assertTrue(appNavBarPresentForRoute("searchResults/{query}"))
-        assertFalse(appNavBarPresentForRoute("searchFoo/x"))
+        assertTrue(appNavBarPresentForRoute("artist/{id}", fullHomeTabCount))
+        assertFalse(appNavBarPresentForRoute("artistInsights/{id}", fullHomeTabCount))
+        assertFalse(appNavBarPresentForRoute("artistAlbums/{id}?params={params}", fullHomeTabCount))
+        assertTrue(appNavBarPresentForRoute("search?text={text}", fullHomeTabCount))
+        assertTrue(appNavBarPresentForRoute("searchResults/{query}", fullHomeTabCount))
+        assertFalse(appNavBarPresentForRoute("searchFoo/x", fullHomeTabCount))
+    }
+
+    @Test
+    fun `home only reports the bar with two or more active tabs`() {
+        // The bar is only drawn with two or more tab buttons, so a single remaining
+        // tab (incl. the all-disabled quickpicks fallback) must not reserve its space.
+        assertFalse(appNavBarPresentForRoute("home", 0))
+        assertFalse(appNavBarPresentForRoute("home", 1))
+        assertTrue(appNavBarPresentForRoute("home", 2))
+        assertTrue(appNavBarPresentForRoute("home", 5))
     }
 }

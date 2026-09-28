@@ -155,7 +155,9 @@ import app.n_zik.android.components.onboarding.OnboardingAccountsScreen
 import app.n_zik.android.components.onboarding.OnboardingImportScreen
 import app.n_zik.android.components.onboarding.OnboardingNameScreen
 import app.n_zik.android.components.onboarding.OnboardingScreen
+import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
 import app.n_zik.android.components.ui.screens.home.OPEN_SEARCH_SHORTCUT
+import app.n_zik.android.components.ui.screens.home.activeHomeTabIds
 import app.n_zik.android.components.ui.screens.home.initialShortcutAction
 import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -231,10 +233,12 @@ import app.it.fast4x.rimusic.utils.currentMediaItemIdAsState
 import app.it.fast4x.rimusic.utils.disableClosingPlayerSwipingDownKey
 import app.it.fast4x.rimusic.utils.disablePlayerHorizontalSwipeKey
 import app.it.fast4x.rimusic.utils.effectRotationKey
+import app.it.fast4x.rimusic.utils.enableQuickPicksPageKey
 import app.it.fast4x.rimusic.utils.fontTypeKey
 import app.it.fast4x.rimusic.utils.forcePlay
 import app.it.fast4x.rimusic.utils.forcePlayFromBeginning
 import app.it.fast4x.rimusic.utils.getEnum
+import app.it.fast4x.rimusic.utils.homeTabsOrderKey
 import app.it.fast4x.rimusic.utils.intent
 import app.it.fast4x.rimusic.utils.invokeOnReady
 import app.it.fast4x.rimusic.utils.isAtLeastAndroid6
@@ -1407,7 +1411,26 @@ class MainActivity :
                 // Sourced from the nav controller rather than DiscordUiState so layout never
                 // depends on the RPC feature's destination listener
                 val playerRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-                val hasNavBar = !areBarsHidden && appNavBarPresentForRoute(playerRoute)
+                // Home draws one nav bar button per active tab and only shows the bar with two
+                // or more, so pass the real tab count: the same preferences HomeScreen reads,
+                // kept reactive so a tab toggled in settings moves the mini-player live.
+                val quickPicksTabEnabled by rememberPreference(enableQuickPicksPageKey, true)
+                val songsTabEnabled by rememberPreference("hometab_songs_enabled", true)
+                val artistsTabEnabled by rememberPreference("hometab_artists_enabled", true)
+                val albumsTabEnabled by rememberPreference("hometab_albums_enabled", true)
+                val playlistsTabEnabled by rememberPreference("hometab_playlists_enabled", true)
+                val homeTabsOrderSerialized by rememberPreference(homeTabsOrderKey, "")
+                val activeHomeTabCount = remember(homeTabsOrderSerialized, quickPicksTabEnabled, songsTabEnabled, artistsTabEnabled, albumsTabEnabled, playlistsTabEnabled) {
+                    activeHomeTabIds(
+                        HomeTabsSettingsDialog.parseOrder(homeTabsOrderSerialized),
+                        quickPicksTabEnabled,
+                        songsTabEnabled,
+                        artistsTabEnabled,
+                        albumsTabEnabled,
+                        playlistsTabEnabled,
+                    ).size
+                }
+                val hasNavBar = !areBarsHidden && appNavBarPresentForRoute(playerRoute, activeHomeTabCount)
 
                 val playerPos by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
                 val targetPlayerPadBottom = if (playerPos == PlayerPosition.Bottom) {
