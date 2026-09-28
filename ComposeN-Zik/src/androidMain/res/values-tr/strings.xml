@@ -2015,7 +2015,7 @@
     <string name="maintenance_dedup">Aynı isimli sanatçıların tekrarlanması</string>
     <string name="maintenance_dedup_summary">%1$d grup · %2$d çözüldü · %3$d atlandı</string>
     <string name="maintenance_dedup_clean">Tekrarlardan temizlenecek bir şey yok</string>
-    <string name="maintenance_dedup_no_groups">Aynı adlı gruplar bulunamadı</string>
+    <string name="maintenance_dedup_no_groups">Aynı adlı grup bulunamadı</string>
     <string name="maintenance_dedup_merged">%d satır birleştirildi</string>
     <string name="maintenance_dedup_flagged">%d satır işaretlendi</string>
     <string name="maintenance_dedup_merged_flagged">%1$d satır birleştirildi · %2$d satır işaretlendi</string>
@@ -2100,7 +2100,7 @@
     <string name="maintenance_battery">Pil</string>
     <string name="maintenance_battery_ok">Pil optimizasyonu kapalı</string>
     <string name="maintenance_battery_warn">Pil optimizasyonu açık</string>
-    <string name="maintenance_last_crash">Son hata</string>
+    <string name="maintenance_last_crash">Son çökme</string>
     <string name="maintenance_crash_none">Yok</string>
     <string name="maintenance_crash_occurred_count">Bir hata oluştu (%d)</string>
     <string name="maintenance_log_view">Görüntüle</string>
