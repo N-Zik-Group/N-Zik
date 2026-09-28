@@ -85,9 +85,21 @@ import android.database.sqlite.SQLiteDatabaseLockedException
 import app.it.fast4x.rimusic.utils.getActiveProfile
 
 object Database {
-    val FILE_NAME = getActiveProfile(appContext()).let { profile ->
-        "data${if (profile != "default") "_$profile" else ""}.db"
+    /**
+     * Database file name for the active profile.
+     *
+     * Resolved on first access and cached for the process: when no application
+     * is initialized (unit tests that don't boot it, non-main processes) there
+     * is no profile preference to read, so the name resolves to the default
+     * profile file.
+     */
+    val FILE_NAME: String by lazy {
+        fileNameForProfile(if (Dependencies.isInitialized) getActiveProfile(appContext()) else "default")
     }
+
+    /** Database file name for [profile]: `data.db` for the default profile, `data_<profile>.db` otherwise. */
+    internal fun fileNameForProfile(profile: String): String =
+        "data${if (profile != "default") "_$profile" else ""}.db"
 
     private val _internal: DatabaseInitializer
         get() = DatabaseInitializer.Instance

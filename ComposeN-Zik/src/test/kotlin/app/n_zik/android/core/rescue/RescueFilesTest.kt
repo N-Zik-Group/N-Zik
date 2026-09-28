@@ -1,5 +1,6 @@
 package app.n_zik.android.core.rescue
 
+import android.content.Context
 import android.content.SharedPreferences
 import app.n_zik.android.extensions.discord.discordAdvancedShowStateKey
 import app.n_zik.android.extensions.discord.discordAdvancedStateTemplateKey
@@ -13,17 +14,20 @@ import app.n_zik.android.extensions.lastfm.lastfmMinTrackDurationSecondsKey
 import app.n_zik.android.extensions.lastfm.lastfmScrobbleThresholdPercentKey
 import app.n_zik.android.extensions.lastfm.lastfmSessionKey
 import app.n_zik.android.extensions.lastfm.lastfmUsernameKey
+import app.it.fast4x.rimusic.utils.activeProfileKey
 import app.it.fast4x.rimusic.utils.discordAvatarKey
 import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
 import app.it.fast4x.rimusic.utils.discordUsernameKey
 import app.it.fast4x.rimusic.utils.isDiscordBrowsingEnabledKey
 import app.it.fast4x.rimusic.utils.isDiscordPresenceEnabledKey
 import app.it.fast4x.rimusic.utils.proxyPasswordEncryptedKey
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.ByteArrayInputStream
@@ -39,6 +43,26 @@ import java.io.File
  * file-based cores of the destructive actions (clear cache, delete downloads) on temp dirs.
  */
 class RescueFilesTest {
+
+    /**
+     * File names are profile-aware (Profiles feature), so the file-based
+     * operations require [RescueFiles.initialize] first. It is one-shot per JVM
+     * (no reset hook): the first test class to call it pins the profile for the
+     * whole run, so the default profile is pinned here with a mock context whose
+     * profile preference is empty. The exact keys (not `any()`) are stubbed so a
+     * renamed preference key or file name fails loudly instead of silently
+     * falling back. No other test class initializes [RescueFiles] yet — if one
+     * ever does with a non-default profile, the file-based expectations in this
+     * suite must be revisited.
+     */
+    @BeforeEach
+    fun initializeProfile() {
+        val prefs = mockk<SharedPreferences>()
+        every { prefs.getString(activeProfileKey, "default") } returns null
+        val context = mockk<Context>()
+        every { context.getSharedPreferences("profile_preferences", Context.MODE_PRIVATE) } returns prefs
+        RescueFiles.initialize(context)
+    }
 
     // ──────────────────────────────────────────────────────────────────────
     // SQLite header validation
