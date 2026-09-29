@@ -32,6 +32,7 @@ enum class NavRoutes {
     artistPlaylists,
     profiles,
     listenTogether,
+    bridgeServer,
     updater;
 
     companion object {

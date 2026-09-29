@@ -13,6 +13,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <!-- Local PC bridge: Android 17 local network protection (spec-n-zik-pc-bridge) -->
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
@@ -231,6 +233,11 @@
         </service>
 
         <service android:name=".components.ui.screens.home.HomeSyncService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <!-- Local PC bridge server -->
+        <service android:name="app.n_zik.android.bridge.BridgeServerService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 

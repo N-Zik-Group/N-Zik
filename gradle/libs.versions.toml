@@ -139,6 +139,13 @@ ktor-serialization-json = { group = "io.ktor", name = "ktor-serialization-kotlin
 ktor-serialization-kotlinx-xml = { group = "io.ktor", name = "ktor-serialization-kotlinx-xml", version.ref = "ktor" }
 ktor-serialization-kotlinx-protobuf = { group = "io.ktor", name = "ktor-serialization-kotlinx-protobuf", version.ref = "ktor" }
 
+# Local PC bridge server
+ktor-server-core = { group = "io.ktor", name = "ktor-server-core", version.ref = "ktor" }
+ktor-server-cio = { group = "io.ktor", name = "ktor-server-cio", version.ref = "ktor" }
+ktor-server-websockets = { group = "io.ktor", name = "ktor-server-websockets", version.ref = "ktor" }
+ktor-server-content-negotiation = { group = "io.ktor", name = "ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-server-test-host = { group = "io.ktor", name = "ktor-server-test-host", version.ref = "ktor" }
+
 # Jetbrains Compose
 navigation-kmp = {  group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "navigationKMP" }
 

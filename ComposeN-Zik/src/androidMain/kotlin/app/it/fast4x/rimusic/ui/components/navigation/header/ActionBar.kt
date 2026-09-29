@@ -112,6 +112,13 @@ private fun HamburgerMenu(
             R.string.listen_together
         ) { onItemClick( NavRoutes.listenTogether ) }
     )
+    // PC server button
+    menu.add(
+        DropdownMenu.Item(
+            R.drawable.devices,
+            R.string.bridge_server
+        ) { onItemClick( NavRoutes.bridgeServer ) }
+    )
     // Profiles button
     menu.add(
         DropdownMenu.Item(

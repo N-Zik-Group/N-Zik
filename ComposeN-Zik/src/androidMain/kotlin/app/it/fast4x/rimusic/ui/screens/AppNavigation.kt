@@ -82,6 +82,7 @@ import app.n_zik.android.components.ui.screens.artist.ArtistScreen
 import app.it.fast4x.rimusic.ui.screens.history.HistoryScreen
 import app.n_zik.android.components.ui.screens.home.HomeScreen
 import app.n_zik.android.components.ui.screens.listentogether.ListenTogetherScreen
+import app.n_zik.android.components.ui.screens.bridge.BridgeServerScreen
 import app.it.fast4x.rimusic.ui.screens.localplaylist.LocalPlaylistScreen
 import app.it.fast4x.rimusic.ui.screens.mood.MoodScreen
 import app.it.fast4x.rimusic.ui.screens.mood.MoodsPageScreen
@@ -540,6 +541,14 @@ fun AppNavigation(
         // Listen Together room screen (spec-listen-together)
         composable(route = NavRoutes.listenTogether.name) {
             ListenTogetherScreen(
+                navController = navController,
+                miniPlayer = miniPlayer,
+            )
+        }
+
+        // Local PC bridge server page
+        composable(route = NavRoutes.bridgeServer.name) {
+            BridgeServerScreen(
                 navController = navController,
                 miniPlayer = miniPlayer,
             )

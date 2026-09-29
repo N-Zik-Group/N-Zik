@@ -56,6 +56,14 @@ kotlin {
             implementation(libs.androidx.webkit)
             implementation(libs.androidx.graphics.shapes)
             implementation(libs.ktor.okhttp)
+
+            // Local PC bridge server
+            implementation(libs.ktor.server.core)
+            implementation(libs.ktor.server.cio)
+            implementation(libs.ktor.server.websockets)
+            implementation(libs.ktor.server.content.negotiation)
+            implementation(libs.ktor.serialization.json)
+            
             implementation(projects.discordrpc)
             implementation(projects.nextvisualizer)
 
@@ -416,6 +424,7 @@ dependencies {
     testImplementation(libs.room.testing)
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.compose.ui.test)
+    testImplementation(libs.ktor.server.test.host)
     testRuntimeOnly(libs.junit.platform)
     testRuntimeOnly(libs.junit.vintage.engine)
     compileOnly(libs.lombok)
