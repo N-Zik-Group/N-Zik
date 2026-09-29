@@ -1961,6 +1961,7 @@
     <string name="listen_together_new_host">New host: %1$s</string>
     <string name="listen_together_connection_lost">Connection to the room was lost</string>
     <string name="listen_together_reconnected">Reconnected to the room</string>
+    <string name="listen_together_guest_blocked">The host controls playback</string>
     <string name="listen_together_join_request_notification">%1$s wants to join the room</string>
     <string name="listen_together_notification_channel_name">Listen Together</string>
     <string name="listen_together_notification_channel_desc">Notifications for Listen Together events</string>
@@ -2130,4 +2131,20 @@
     <string name="maintenance_lt_guest">Guest</string>
     <string name="maintenance_downloads_paused">Paused</string>
     <string name="maintenance_work_cancelled">Cancelled</string>
+    <string name="bridge_server">PC server</string>
+    <string name="bridge_server_description">Let N-Zik Desktop Compagnon control your library from a PC on the same Wi-Fi network</string>
+    <string name="bridge_server_status">Server status</string>
+    <string name="bridge_server_start">Start</string>
+    <string name="bridge_server_stop">Oprește</string>
+    <string name="bridge_server_starting">Pornire…</string>
+    <string name="bridge_server_state_running">Running</string>
+    <string name="bridge_server_state_stopping">Stopping…</string>
+    <string name="bridge_server_stopped">PC server stopped</string>
+    <string name="bridge_server_running_address">Listening on %1$s:%2$d</string>
+    <string name="bridge_server_stopped_user">Stopped from the phone</string>
+    <string name="bridge_server_stopped_timeout">Android background time limit reached, restart it from the app</string>
+    <string name="bridge_server_stopped_wifi">No Wi-Fi network or hotspot</string>
+    <string name="bridge_server_via_hotspot">Through this phone\'s hotspot</string>
+    <string name="bridge_server_failed">The server could not start</string>
+    <string name="bridge_server_permission_denied">Allow access to devices on the local network to start the PC server</string>
 </resources>
