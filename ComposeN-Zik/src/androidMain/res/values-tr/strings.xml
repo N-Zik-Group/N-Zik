@@ -1961,6 +1961,7 @@
     <string name="listen_together_new_host">Yeni sunucu: %1$s</string>
     <string name="listen_together_connection_lost">Odayla bağlantı kesildi</string>
     <string name="listen_together_reconnected">Odaya yeniden bağlandı</string>
+    <string name="listen_together_guest_blocked">The host controls playback</string>
     <string name="listen_together_join_request_notification">%1$s odaya katılmak istiyor</string>
     <string name="listen_together_notification_channel_name">Birlikte Dinle</string>
     <string name="listen_together_notification_channel_desc">Birlikte Dinle etkinlikleri için bildirimler</string>
