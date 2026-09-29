@@ -1387,18 +1387,17 @@ fun AppearanceSettings(
                             )
                         }
                         
-                    if (search.inputValue.isBlank() || stringResource(R.string.crop_video_thumbnails).contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                            icon = R.drawable.images_sharp,
-                            title = stringResource(R.string.crop_video_thumbnails),
-                            text = "",
-                            isChecked = cropVideoThumbnails,
-                            onCheckedChange = { cropVideoThumbnails = it },
-                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
-                        )
-                    }
+                }
 
-
+                if (search.inputValue.isBlank() || stringResource(R.string.crop_video_thumbnails).contains(search.inputValue, true)) {
+                    OtherSwitchSettingEntry(
+                        icon = R.drawable.images_sharp,
+                        title = stringResource(R.string.crop_video_thumbnails),
+                        text = "",
+                        isChecked = cropVideoThumbnails,
+                        onCheckedChange = { cropVideoThumbnails = it },
+                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                    )
                 }
 
                 if (search.inputValue.isBlank() || stringResource(R.string.show_cover_thumbnail_animation).contains(

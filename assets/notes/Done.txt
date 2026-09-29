@@ -1,4 +1,8 @@
 Added:
+- feat(settings): "Crop video thumbnails" option now available for both player types (previously Essential-only)
+  - In `AppearanceSettings.kt` (legacy file — user-approved change per spec `spec-crop-video-thumbnails-both-players.md`): the toggle was moved out of the `if (playerType == PlayerType.Essential)` block — the setting itself was already applied by `Thumbnail.kt` regardless of the player type, but the option was only rendered for the Essential player, leaving Modern players with an applied setting they could not change
+  - "Thumbnail pause" stays Essential-only; the toggle keeps its position in the list, search filter and padding behavior unchanged
+  - Tests: new `CropVideoThumbnailsSettingTest` (2 Robolectric Compose tests — the row is composed with both `playerType = Modern` and `Essential`; `assertExists` used since the row sits below the Robolectric test viewport)
 - feat(listen-together): hosting enabled on the default MetroServer - MetroServer commit 9da6f9d (https://github.com/MetrolistGroup/metroserver/commit/9da6f9da1f3ec92183a26dc8f6fbf9c8b3f0ede8) added `com.nevar.nzik` and `com.nevar.nzik.debug` to the default User-Agent allowlist, so N-Zik users can now host rooms (v92 was guest-only)
 - feat(profiles): add multi-profile support with per-profile database and preferences (PR https://github.com/N-Zik-Group/N-Zik/pull/851, `fc401f3b3d`)
   - New `ProfilePreferences.kt` (`profile_preferences` shared prefs) storing the active profile via `getActiveProfile()` / `setActiveProfile()`, default profile is `default`
