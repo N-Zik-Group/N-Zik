@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
+import app.n_zik.android.core.backup.ProfileStateArchive
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertArrayEquals
@@ -471,5 +472,29 @@ class RescueFilesProfileStateTest {
         val entries = RescueFiles.readProfileStateEntries(context, stateUri)
 
         assertTrue(entries.isEmpty(), "an unreadable file must not crash the dialog")
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // hasState
+    // ──────────────────────────────────────────────────────────────────────
+
+    @Test
+    fun hasStateIsTrueWhenOnlyTheBaseWasRenamed() {
+        // No list file, no face: the renamed base's custom display name alone is
+        // archivable state (it lives in the prefs store, never in the list file).
+        store["displayName_default"] = "Moi"
+
+        assertTrue(ProfileStateArchive.hasState(context))
+    }
+
+    @Test
+    fun hasStateIsTrueWhenOnlyAFaceExists() {
+        // No list file, no custom name: a stored face alone is archivable state.
+        File(filesDir, "profiles/default/avatar.jpg").apply {
+            parentFile?.mkdirs()
+            writeBytes(jpeg)
+        }
+
+        assertTrue(ProfileStateArchive.hasState(context))
     }
 }

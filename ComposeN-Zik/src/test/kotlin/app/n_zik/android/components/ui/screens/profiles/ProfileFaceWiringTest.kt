@@ -2,6 +2,8 @@ package app.n_zik.android.components.ui.screens.profiles
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.ApplicationInfo
+import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.discordAvatarKey
 import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
 import app.it.fast4x.rimusic.utils.discordUsernameKey
@@ -124,5 +126,37 @@ class ProfileFaceWiringTest {
 
         assertEquals("Danie", face.name)
         assertEquals(FaceAvatar.Photo(photo.absolutePath), face.avatar)
+    }
+
+    @Test
+    fun theBaseProfileFaceResolvesFromTheUnsuffixedPrefs() {
+        // The base profile's plain prefs are the un-suffixed "preferences" file.
+        every { context.getSharedPreferences("preferences", Context.MODE_PRIVATE) } returns plainPrefs
+        every { profileSecurePrefs(any(), DEFAULT_PROFILE_ID) } returns securePrefs
+        every { plainPrefs.getString(faceNameSourceKey, FACE_SOURCE_PROFILE) } returns FACE_SOURCE_PROFILE
+        every { plainPrefs.getString(faceAvatarSourceKey, FACE_SOURCE_PROFILE) } returns FACE_SOURCE_PROFILE
+
+        val face = loadProfileFace(context, DEFAULT_PROFILE_ID, defaultName)
+
+        // No display name is stored for the base: it falls back to the app default name.
+        assertEquals(defaultName, face.name)
+        assertEquals(FaceAvatar.Initials(defaultName), face.avatar)
+    }
+
+    @Test
+    fun theProfilePrefsFileMappingCoversBothTheBaseAndTheSuffixedNames() {
+        val dataDir = File(files, "data").apply { mkdirs() }
+        // A real instance: dataDir is a public field, not a method — mockk cannot stub it.
+        val appInfo = ApplicationInfo().apply { this.dataDir = dataDir.absolutePath }
+        every { context.applicationInfo } returns appInfo
+
+        assertEquals(
+            File(dataDir, "shared_prefs/preferences.xml"),
+            profilePrefsFile(context, DEFAULT_PROFILE_ID)
+        )
+        assertEquals(
+            File(dataDir, "shared_prefs/preferences_work.xml"),
+            profilePrefsFile(context, "work")
+        )
     }
 }

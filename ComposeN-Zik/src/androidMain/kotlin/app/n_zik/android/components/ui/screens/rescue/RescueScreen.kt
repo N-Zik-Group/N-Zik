@@ -64,7 +64,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.getEncryptedSharedPreferencesResult
+import app.n_zik.android.components.ui.screens.profiles.profileSecurePrefs
 import app.it.fast4x.rimusic.utils.profileDisplayName
 import app.it.fast4x.rimusic.utils.readProfileIds
 import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
@@ -164,12 +164,16 @@ fun RescueScreen() {
     var targetProfile by remember { mutableStateOf(getActiveProfile(context)) }
     var profileOptions by remember { mutableStateOf<List<ProfileOption>>(emptyList()) }
 
-    // Encrypted prefs Result (safe, no throw). Opened lazily and off the main thread, only when an
-    // action awaits it: Keystore work must not run in composition, and the database and log
-    // actions never need it.
-    val encryptedPrefs = remember(scope) {
+    // The per-profile secure prefs of the rescue TARGET — not the active profile's:
+    // the per-profile settings actions (export / import / reset) operate on the
+    // selected profile, and its credentials live in its own encrypted store
+    // (the active profile's store must never be read, cleared or overwritten by
+    // an action aimed at another profile). Opened lazily and off the main
+    // thread, only when an action awaits it: keystore work must not run in
+    // composition, and the database and log actions never need it.
+    val encryptedPrefs = remember(scope, targetProfile) {
         scope.async(NzikDispatchers.DATA, start = CoroutineStart.LAZY) {
-            context.getEncryptedSharedPreferencesResult()
+            runCatching { profileSecurePrefs(context, targetProfile) }
         }
     }
 

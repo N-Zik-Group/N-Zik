@@ -99,8 +99,16 @@ fun OnboardingImportScreen(
     var pendingState by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     // A picked file tagged with a profile other than its import target: confirm
-    // before importing it. Triple: (tag, target profile ID, proceed action).
-    var crossProfilePending by remember { mutableStateOf<Triple<String, String, () -> Unit>?>(null) }
+    // before importing it. Saveable DATA (tag + target id), not a lambda: the
+    // pending URIs are saveable, so a rotation must re-offer the half-finished
+    // chain instead of dropping the warning while the stale picks stay pending
+    // (the proceed action is rebuilt from the target id).
+    var crossProfilePending by rememberSaveable { mutableStateOf<Pair<String, String>?>(null) }
+
+    // The state-only import's cross-profile warning: the import runs straight on
+    // the confirm (nothing is pending), so a rotation just means re-picking the
+    // file — no saveable state needed. Triple: (tag, target profile ID, proceed).
+    var stateCrossProfilePending by remember { mutableStateOf<Triple<String, String, () -> Unit>?>(null) }
 
     // Flips off when the screen leaves the composition: a target dialog must never be
     // flipped on by a read that finishes after the user left the step (its Render()
@@ -151,7 +159,7 @@ fun OnboardingImportScreen(
                 // it in is deliberate).
                 val stateTag = pendingState?.let { profileTagOf(it) }
                 if (stateTag != null && stateTag != target) {
-                    crossProfilePending = Triple(stateTag, target, { startImportChain(target) })
+                    crossProfilePending = stateTag to target
                 } else {
                     startImportChain(target)
                 }
@@ -201,7 +209,7 @@ fun OnboardingImportScreen(
             onComplete()
         }
     ) { tag, proceed ->
-        crossProfilePending = Triple(tag, getActiveProfile(context), proceed)
+        stateCrossProfilePending = Triple(tag, getActiveProfile(context), proceed)
     }
 
     // Deferred state picker of the all chain: the file is captured, not imported —
@@ -406,11 +414,16 @@ fun OnboardingImportScreen(
     // lands — self-gates on its own isActive
     ImportTargetProfileDialog.Render()
 
-    // Cross-profile warning: the picked file was created for a profile other than
-    // its import target
-    crossProfilePending?.let { (tag, targetId, proceed) ->
+    // Cross-profile warning of the chain: the picked file was created for a
+    // profile other than its import target. Dismissing it abandons the half
+    // chain — the pending picks are dropped, so they cannot leak into the
+    // next attempt.
+    crossProfilePending?.let { (tag, targetId) ->
         AlertDialog(
-            onDismissRequest = { crossProfilePending = null },
+            onDismissRequest = {
+                crossProfilePending = null
+                abortChain()
+            },
             text = {
                 Text(
                     stringResource(
@@ -428,6 +441,56 @@ fun OnboardingImportScreen(
                 Button(
                     onClick = {
                         crossProfilePending = null
+                        startImportChain(targetId)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorPalette().accent,
+                        contentColor = colorPalette().textSecondary
+                    )
+                ) {
+                    Text(stringResource(R.string.import_button))
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        crossProfilePending = null
+                        abortChain()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorPalette().background0,
+                        contentColor = colorPalette().textSecondary
+                    )
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    // Cross-profile warning of the state-only import: the file was created for a
+    // profile other than the active one. The import runs on the confirm (nothing
+    // is pending), so dismissing just drops the question.
+    stateCrossProfilePending?.let { (tag, targetId, proceed) ->
+        AlertDialog(
+            onDismissRequest = { stateCrossProfilePending = null },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.rescue_cross_profile_confirm,
+                        tag,
+                        resolveProfileDisplayName(
+                            targetId,
+                            context.profileDisplayName(targetId),
+                            stringResource(R.string.profile_base_name)
+                        )
+                    )
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        stateCrossProfilePending = null
                         proceed()
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -440,7 +503,7 @@ fun OnboardingImportScreen(
             },
             dismissButton = {
                 Button(
-                    onClick = { crossProfilePending = null },
+                    onClick = { stateCrossProfilePending = null },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colorPalette().background0,
                         contentColor = colorPalette().textSecondary

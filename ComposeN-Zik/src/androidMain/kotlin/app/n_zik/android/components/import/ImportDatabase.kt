@@ -63,11 +63,30 @@ class ImportDatabase private constructor(
                 .contentResolver
                 .openInputStream(uri)
                 ?: error("Failed to open input stream for $uri")
-            inStream.use {
-                FileOutputStream(dbFile).use { outStream ->
-                    val bytes = it.copyTo(outStream)
-                    Timber.tag("ImportDatabase").d("Import complete, target: ${dbFile.absolutePath}, bytes written: $bytes")
+            // The copy goes to a temp file that is then atomically renamed over the
+            // target: a mid-copy failure leaves the existing database intact instead
+            // of truncated (the target is only open by this process when the profile
+            // is the active one, and it was closed above).
+            val tmp = File(dbFile.parentFile, dbFile.name + ".tmp")
+            try {
+                inStream.use { input ->
+                    FileOutputStream(tmp).use { outStream ->
+                        val bytes = input.copyTo(outStream)
+                        Timber.tag("ImportDatabase").d("Import complete, target: ${dbFile.absolutePath}, bytes written: $bytes")
+                    }
                 }
+            } catch (e: Exception) {
+                // The copy failed: the target database is intact, remove the partial temp.
+                tmp.delete()
+                throw e
+            }
+            // renameTo replaces the destination on Android (POSIX rename) but fails
+            // when it exists on the JVM file systems: delete-then-rename fallback,
+            // same pattern as writeProfileEntries.
+            val replaced = tmp.renameTo(dbFile) || (dbFile.delete() && tmp.renameTo(dbFile))
+            if (!replaced) {
+                tmp.delete()
+                error("Database import failed: could not replace ${dbFile.name}")
             }
 
             if (isActive) {
@@ -117,9 +136,9 @@ class ImportDatabase private constructor(
                             importTo(context, uri, getActiveProfile(context))
                         }
                         withContext(NzikDispatchers.UI) {
-                            // Reset cookie status after import — fresh start
-                            app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
-                            context.getSharedPreferences("preferences", Context.MODE_PRIVATE).edit().remove("ytCookieExpired").apply()
+                            // Reset cookie status after import — fresh start (the active
+                            // profile's own prefs store, never the base-only file)
+                            resetLoginStateAfterDatabaseImport(context)
                             if (onImportComplete != null) {
                                 onImportComplete()
                             } else {

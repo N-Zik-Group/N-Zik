@@ -5,10 +5,12 @@ import android.net.Uri
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.currentProfileEntries
 import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.profileDisplayName
 import app.it.fast4x.rimusic.utils.readProfileIds
 import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
 import app.it.fast4x.rimusic.utils.writeProfileEntries
+import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
 import app.n_zik.android.MainApplication
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
@@ -194,9 +196,7 @@ object ImportChainRunner {
                 // The active profile's live database was just replaced: reset the login
                 // state so the app starts fresh after the restart (the same reset the
                 // immediate import performs).
-                MainApplication.cookieStatus = MainApplication.CookieStatus.NOT_LOGGED_IN
-                context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
-                    .edit().remove("ytCookieExpired").apply()
+                resetLoginStateAfterDatabaseImport(context)
             }
             onCompleted()
             if (importDb || importSettingsPart) {
@@ -213,4 +213,15 @@ object ImportChainRunner {
             }
         }
     }
+}
+
+/**
+ * Resets the login state after a live database replacement: the imported database no
+ * longer matches the stored session, so the app starts unlogged — and the expired-cookie
+ * flag is dropped from the ACTIVE profile's own plain prefs (the per-profile store the
+ * flag is written and read in, never the base-only `preferences` file).
+ */
+internal fun resetLoginStateAfterDatabaseImport(context: Context) {
+    MainApplication.cookieStatus = MainApplication.CookieStatus.NOT_LOGGED_IN
+    context.preferences.edit().remove(ytCookieExpiredKey).apply()
 }

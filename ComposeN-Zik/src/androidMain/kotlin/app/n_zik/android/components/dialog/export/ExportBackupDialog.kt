@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,7 +57,11 @@ object ExportBackupDialog : Dialog {
         val exportSettingsDialog = ExportSettingsDialog(context)
         val exportProfileStateDialog = ExportProfileStateDialog(context)
 
-        var selectedOption by remember { mutableIntStateOf(0) }
+        // The flow state survives a rotation mid-dialog (same as the import
+        // counterpart): a rotation must keep the chosen option and the credential
+        // toggles — plain remember would reset them and silently change what the
+        // export button exports.
+        var selectedOption by rememberSaveable { mutableIntStateOf(0) }
 
         val databaseLabel = stringResource(R.string.database)
         val databaseDescription = stringResource(R.string.export_database_description)
@@ -79,10 +84,10 @@ object ExportBackupDialog : Dialog {
             Triple(R.drawable.server, allLabel, allDescription)
         )
 
-        var includeYtbCredentials by remember { mutableStateOf(false) }
-        var includeDiscordCredentials by remember { mutableStateOf(false) }
-        var includeLastfmCredentials by remember { mutableStateOf(false) }
-        var includeProxyCredentials by remember { mutableStateOf(false) }
+        var includeYtbCredentials by rememberSaveable { mutableStateOf(false) }
+        var includeDiscordCredentials by rememberSaveable { mutableStateOf(false) }
+        var includeLastfmCredentials by rememberSaveable { mutableStateOf(false) }
+        var includeProxyCredentials by rememberSaveable { mutableStateOf(false) }
 
         Column(
             modifier = Modifier.fillMaxWidth()

@@ -113,13 +113,17 @@ fun isProfileIdSafe(name: String): Boolean =
 
 /**
  * Validates a new profile display name (creation and rename share the rule): the
- * trimmed candidate must be non-blank, file-name safe and not taken by
- * [takenNames] (compared trimmed and case-insensitively, so " Work " and "work"
- * both collide with "Work"). Pure (unit-tested without Android).
+ * trimmed candidate must be non-blank, file-name safe, free of line breaks (the
+ * names file, the state archive and the rescue face capture are line-based — a
+ * break would split the profile's line, truncating the name and registering a
+ * phantom profile out of the spilled part) and not taken by [takenNames]
+ * (compared trimmed and case-insensitively, so " Work " and "work" both collide
+ * with "Work"). Pure (unit-tested without Android).
  */
 fun isProfileNameValid(name: String, takenNames: Collection<String>): Boolean {
     val candidate = name.trim()
     return candidate.isNotBlank() && isProfileIdSafe(candidate) &&
+        candidate.none { it == '\n' || it == '\r' } &&
         takenNames.none { it.trim().equals(candidate, ignoreCase = true) }
 }
 

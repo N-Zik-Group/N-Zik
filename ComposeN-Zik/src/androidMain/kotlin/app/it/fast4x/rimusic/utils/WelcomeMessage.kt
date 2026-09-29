@@ -16,6 +16,7 @@ import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.it.fast4x.rimusic.ui.components.themed.TitleMiniSection
 import app.n_zik.android.components.ui.screens.profiles.loadActiveProfileFace
+import app.n_zik.android.components.ui.screens.profiles.profileFaceUpdateTrigger
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -49,7 +50,10 @@ fun WelcomeMessage(){
     // When no name was ever chosen, the greeting falls back to the default app name
     val defaultName = stringResource(R.string.profile_base_name)
 
-    LaunchedEffect(baseMessage) {
+    // The greeting re-resolves on every face change, like the header and the
+    // accounts card (the same trigger sum they key on) — not only on the
+    // time-of-day bucket change.
+    LaunchedEffect(baseMessage, encryptedPreferencesUpdateTrigger + profileFaceUpdateTrigger) {
         withContext(NzikDispatchers.DATA) {
             // The greeting follows the active profile's face name
             // (spec-profiles-page-face): its display name or a logged-in account

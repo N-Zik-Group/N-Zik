@@ -188,7 +188,11 @@ object ProfileStateArchive {
                 error("Could not write $PROFILE_NAMES_FILE_NAME")
             }
             archive.entries.forEach { (id, name) ->
+                // A profile listed WITHOUT a name must be un-renamed locally too: the
+                // imported state is the state, and a stale stored name would be
+                // re-mirrored into the names file (and re-exported) on the next write.
                 if (name.isNotEmpty()) context.saveProfileDisplayName(id, name)
+                else context.saveProfileDisplayName(id, "")
             }
         }
         val restorable = archive.entries.mapTo(mutableSetOf<String>()) { it.first }.also { it += DEFAULT_PROFILE_ID }

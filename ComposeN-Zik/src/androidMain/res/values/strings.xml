@@ -1946,7 +1946,7 @@
 <string name="add_profile_description">Create a new profile with its own database and settings</string>
 <string name="enter_profile_name">Enter profile name</string>
 <string name="remove_profile">Remove profile</string>
-<string name="this_profile_alreaty_exist">This profile already exists</string>
+<string name="profile_name_invalid_or_taken">This name is invalid or already taken</string>
 <string name="profile_restart_required">This required a restart of the app</string>
 <string name="profile_active">Active</string>
 <string name="profile_base_name">N-Zik Fan</string>

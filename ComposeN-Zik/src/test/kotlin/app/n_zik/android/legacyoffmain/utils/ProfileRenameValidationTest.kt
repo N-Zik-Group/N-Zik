@@ -64,6 +64,15 @@ class ProfileRenameValidationTest {
     }
 
     @Test
+    fun aNameWithALineBreakIsRejected() {
+        // The names file, the state archive and the rescue face capture are line-based:
+        // a break would split the profile's line (truncating the name and registering
+        // a phantom profile out of the spilled part).
+        assertFalse(isProfileNameValid("a\nb", creationTaken))
+        assertFalse(isProfileNameValid("a\rb", creationTaken))
+    }
+
+    @Test
     fun aFreshSafeNameIsAccepted() {
         assertTrue(isProfileNameValid("Danie", creationTaken))
     }

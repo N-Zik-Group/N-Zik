@@ -392,7 +392,7 @@ fun ProfileScreen(
             modifier = Modifier
         ) {
             BasicText(
-                text = stringResource(R.string.this_profile_alreaty_exist),
+                text = stringResource(R.string.profile_name_invalid_or_taken),
                 style = typography().xs.medium.center,
                 modifier = Modifier
                     .padding(all = 16.dp)

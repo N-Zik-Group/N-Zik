@@ -2,6 +2,7 @@ package app.n_zik.android.components.import
 
 import android.content.Context
 import android.content.SharedPreferences
+import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.ytCookieKey
 import app.n_zik.android.components.ui.screens.profiles.profileSecurePrefs
 import io.mockk.every
@@ -91,5 +92,26 @@ class ImportSettingsProfileTargetTest {
         verify { targetSecureEditor.putString(ytCookieKey, "SID=abc") }
         verify { targetSecureEditor.commit() }
         verify(exactly = 0) { targetPlainEditor.putString(any(), any()) }
+    }
+
+    @Test
+    fun anImportIntoTheBaseWritesIntoTheBasePlainPrefs() {
+        val csv = """
+            Type,Key,Value
+            string,greet,hello
+        """.trimIndent().toByteArray(StandardCharsets.UTF_8)
+        // The base profile's plain prefs are the un-suffixed "preferences" file, and
+        // the secure store is resolved for the base target too.
+        val baseEditor = mockk<SharedPreferences.Editor>()
+        every { baseEditor.commit() } returns true
+        every { basePlain.edit() } returns baseEditor
+        every { profileSecurePrefs(any(), DEFAULT_PROFILE_ID) } returns targetSecure
+
+        ImportSettings.onImport(context, ByteArrayInputStream(csv), DEFAULT_PROFILE_ID)
+
+        verify { baseEditor.putString("greet", "hello") }
+        verify { baseEditor.commit() }
+        verify { targetSecureEditor.commit() }
+        verify(exactly = 0) { targetPlain.edit() }
     }
 }

@@ -68,7 +68,9 @@ import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
 import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.saveFaceAvatarSource
 import app.it.fast4x.rimusic.utils.saveFaceNameSource
+import app.it.fast4x.rimusic.utils.currentProfileEntries
 import app.it.fast4x.rimusic.utils.saveProfileDisplayName
+import app.it.fast4x.rimusic.utils.writeProfileEntries
 import app.it.fast4x.rimusic.utils.takenProfileNames
 import app.it.fast4x.rimusic.utils.ytCookieKey
 import app.n_zik.android.R
@@ -499,6 +501,10 @@ fun ProfileFaceCard(modifier: Modifier = Modifier) {
                                 .filterNot { it.trim().equals(profileName.trim(), ignoreCase = true) }
                             if (isProfileNameValid(name, taken)) {
                                 app.saveProfileDisplayName(activeId, name.trim())
+                                // The names file is the backup format: mirror the new display
+                                // name into it (same contract as the Profiles page rename),
+                                // so an export never carries a stale name.
+                                app.writeProfileEntries(app.currentProfileEntries())
                                 faceVersion++
                                 // The initials can change: let the header re-resolve the face.
                                 profileFaceUpdateTrigger++
@@ -520,7 +526,7 @@ fun ProfileFaceCard(modifier: Modifier = Modifier) {
                     modifier = Modifier
                 ) {
                     BasicText(
-                        text = stringResource(R.string.this_profile_alreaty_exist),
+                        text = stringResource(R.string.profile_name_invalid_or_taken),
                         style = typography().xs.medium.center,
                         modifier = Modifier
                             .padding(all = 16.dp)

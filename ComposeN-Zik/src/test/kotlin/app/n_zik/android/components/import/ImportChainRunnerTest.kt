@@ -66,6 +66,9 @@ class ImportChainRunnerTest {
         files = Files.createTempDirectory("nzik-import-chain").toFile()
         context = mockk()
         every { context.filesDir } returns files
+        // The profile-aware prefs extension resolves the active profile via the
+        // application context.
+        every { context.applicationContext } returns context
         // The profile store: the base profile is active, no display names.
         profilePrefs = mockk()
         every { profilePrefs.getString(any(), any()) } answers { secondArg<String?>() }
@@ -212,6 +215,28 @@ class ImportChainRunnerTest {
         // The replaced live database means the login state is stale: fresh start.
         assertEquals(MainApplication.CookieStatus.NOT_LOGGED_IN, MainApplication.cookieStatus)
         verify { plainEditor.remove("ytCookieExpired") }
+        verify { onCompleted() }
+        assertTrue(RestartAppDialog.isActive)
+    }
+
+    @Test
+    fun aDatabaseImportIntoAnActiveNonBaseProfileResetsTheFlagInTheProfilesOwnPrefs() = runBlocking {
+        val dbUri = mockUri()
+        // "work" is the active profile: the expired-cookie flag lives in its own
+        // preferences_work store — never the base-only "preferences" file.
+        every { profilePrefs.getString(any(), any()) } returns "work"
+        val workPlain = mockk<SharedPreferences>()
+        val workEditor = mockk<SharedPreferences.Editor>(relaxed = true)
+        every { workPlain.edit() } returns workEditor
+        every { context.getSharedPreferences("preferences_work", Context.MODE_PRIVATE) } returns workPlain
+        coEvery { ImportDatabase.importTo(context, dbUri, "work") } just Runs
+        MainApplication.cookieStatus = MainApplication.CookieStatus.VALID
+
+        ImportChainRunner.runChain(context, "work", dbUri, null, null, onCompleted)
+
+        assertEquals(MainApplication.CookieStatus.NOT_LOGGED_IN, MainApplication.cookieStatus)
+        verify { workEditor.remove("ytCookieExpired") }
+        verify(exactly = 0) { plainEditor.remove("ytCookieExpired") }
         verify { onCompleted() }
         assertTrue(RestartAppDialog.isActive)
     }

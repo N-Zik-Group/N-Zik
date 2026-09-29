@@ -19,10 +19,12 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
+import java.io.IOException
 import java.io.File
 import java.nio.file.Files
 
@@ -126,5 +128,26 @@ class ImportDatabaseImportToTest {
         verify(exactly = 1) { Database.checkpoint() }
         verify(exactly = 1) { Database.close() }
         verify(exactly = 1) { RewindPostImportRegenerationWorker.schedule(context) }
+    }
+
+    @Test
+    fun aFailedCopyLeavesTheExistingDatabaseIntact() = runBlocking {
+        val baseDb = dbPath("data.db")
+        baseDb.writeBytes(byteArrayOf(9))
+        // The source stream fails mid-copy (I/O error on the source).
+        val failing = object : ByteArrayInputStream(byteArrayOf(1, 2)) {
+            override fun read(b: ByteArray, off: Int, len: Int): Int = throw IOException("source revoked")
+        }
+        every { resolver.openInputStream(uri) } returns failing
+
+        val error = runCatching { ImportDatabase.importTo(context, uri, "default") }.exceptionOrNull()
+
+        assertNotNull(error, "the failure must surface to the caller")
+        assertArrayEquals(
+            byteArrayOf(9),
+            baseDb.readBytes(),
+            "a mid-copy failure must leave the existing database intact, not truncated"
+        )
+        assertFalse(File(files, "data.db.tmp").exists(), "the partial temp file is cleaned up")
     }
 }
