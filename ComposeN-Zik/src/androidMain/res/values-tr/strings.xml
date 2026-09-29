@@ -1790,6 +1790,7 @@
     <string name="rw_artist_spotlight_empty_body">#1 numaralı sanatçınız yeterli dinleme geçmişi oluştuğunda burada görünecektir.</string>
     <string name="rw_artist_spotlight_kicker">#1 NUMARALI SANATÇINIZ • %1$s</string>
     <string name="rw_artist_spotlight_about">HAKKINDA</string>
+    <string name="rw_artist_spotlight_see_more">SEE MORE</string>
     <string name="rw_artist_spotlight_wikipedia">WIKIPEDIA</string>
     <string name="rw_artist_spotlight_innertube">INNER TUBE</string>
     <string name="rw_top_album_empty_title">HENÜZ YILIN ALBÜMÜ SEÇİLMEDİ</string>
@@ -1827,6 +1828,7 @@
     <string name="rw_finale_top_album">EN POPÜLER ALBÜM</string>
     <string name="rw_finale_top_playlist">EN POPÜLER ÇALMA LİSTESİ</string>
     <string name="rw_finale_brand">N-ZIK GERİ SARMA %1$s</string>
+    <string name="rw_finale_export_options">EXPORT OPTIONS</string>
     <string name="rw_finale_share">TÜM SAYFALARI DIŞA AKTAR</string>
     <string name="rw_finale_export_page">BU SAYFAYI DIŞA AKTAR</string>
     <string name="rw_finale_play_again">TEKRAR OYNAT</string>
