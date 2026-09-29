@@ -20,6 +20,7 @@ import app.it.fast4x.rimusic.utils.discordUsernameKey
 import app.it.fast4x.rimusic.utils.enableYouTubeLoginKey
 import app.it.fast4x.rimusic.utils.enableYouTubeSyncKey
 import app.it.fast4x.rimusic.utils.encryptedPreferences
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.isDiscordBrowsingEnabledKey
 import app.it.fast4x.rimusic.utils.isDiscordPresenceEnabledKey
@@ -33,6 +34,7 @@ import app.it.fast4x.rimusic.utils.proxyPortKey
 import app.it.fast4x.rimusic.utils.proxyUsernameKey
 import app.it.fast4x.rimusic.utils.proxyPasswordKey
 import app.it.fast4x.rimusic.utils.regionOverrideKey
+import app.it.fast4x.rimusic.utils.saveProfileLastUsed
 import app.it.fast4x.rimusic.utils.useLoginForBrowseKey
 import app.it.fast4x.rimusic.utils.useYtLoginOnlyForBrowseKey
 import app.it.fast4x.rimusic.utils.ytAccountChannelHandleKey
@@ -149,6 +151,15 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // profile's prefs, where every pre-existing read site falls back to Dark. Seed the
         // default ("Theme mode" = System) before the first composition.
         ensureDefaultColorPaletteMode(preferences)
+
+        // Profile "last used" (spec-profiles-page-face): the active profile counts as
+        // used on every app start (switches record it themselves) — the Profiles page
+        // shows it as a relative time. Failure must not block app startup.
+        runCatching {
+            saveProfileLastUsed(getActiveProfile(this), System.currentTimeMillis())
+        }.onFailure { t ->
+            Timber.tag("MainApplication").w(t, "Could not record the active profile last use")
+        }
 
         // Listen Together (spec-listen-together): create the WebSocket client and the sync
         // manager, bind the player bridge and auto-reconnect to a fresh persisted session

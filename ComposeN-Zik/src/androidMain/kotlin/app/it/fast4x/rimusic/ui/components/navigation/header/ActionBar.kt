@@ -1,15 +1,13 @@
 package app.it.fast4x.rimusic.ui.components.navigation.header
 
 import android.content.Intent
-import app.n_zik.android.uiRoundnessShape
+import androidx.compose.ui.res.stringResource
+import timber.log.Timber
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,38 +18,34 @@ import androidx.compose.runtime.setValue
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.n_zik.android.R
+import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.components.dialog.logs.CopyLogsDialog
 import app.n_zik.android.components.dialog.logs.CrashLogDialog
 import app.n_zik.android.components.dialog.logs.DebugLogDialog
 import app.n_zik.android.components.menu.header.DebugLogsMenuItem
 import app.n_zik.android.components.menu.header.MaintenanceMenuItem
 import app.n_zik.android.components.maintenance.MaintenanceSheet
+import app.n_zik.android.components.ui.screens.profiles.ProfileFaceAvatar
+import app.n_zik.android.components.ui.screens.profiles.loadActiveProfileFace
+import app.n_zik.android.components.ui.screens.profiles.profileFaceUpdateTrigger
 import app.n_zik.android.components.ui.screens.rescue.RescueActivity
-import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.colorPalette
+import app.n_zik.android.utils.ProfileFace
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.extensions.pip.isPipSupported
 import app.it.fast4x.rimusic.extensions.pip.rememberPipHandler
 import app.it.fast4x.rimusic.ui.components.themed.DropdownMenu
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.enablePictureInPictureKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.shortcuts.ACTION_RESCUE
-import app.n_zik.android.ytAccountThumbnail
-import androidx.compose.ui.draw.clip
-import app.n_zik.android.thumbnailShape
-import app.it.fast4x.rimusic.utils.ytAccountThumbnailKey
-import app.it.fast4x.rimusic.utils.ytCookieKey
-import app.it.fast4x.rimusic.utils.enableYouTubeLoginKey
-import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.it.fast4x.rimusic.utils.rememberEncryptedPreference
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.rememberDataStoreBooleanPreference
-import it.fast4x.innertube.utils.parseCookieString
 
 @Composable
 private fun HamburgerMenu(
@@ -206,41 +200,47 @@ fun ActionBar(
     var expanded by remember { mutableStateOf(false) }
 
     val context = androidx.compose.ui.platform.LocalContext.current
-    val trigger = app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger
-    val prefs = context.encryptedPreferences
-    var cookie by remember { mutableStateOf("") }
-    var isLoginEnabled by remember { mutableStateOf(false) }
-    var accountThumbnail by remember { mutableStateOf("") }
+    val defaultName = stringResource(R.string.profile_base_name)
 
-    LaunchedEffect(trigger) {
-        withContext(NzikDispatchers.DATA) {
-            cookie = prefs.getString(app.it.fast4x.rimusic.utils.ytCookieKey, "") ?: ""
-            isLoginEnabled = prefs.getBoolean(app.it.fast4x.rimusic.utils.enableYouTubeLoginKey, false)
-            accountThumbnail = prefs.getString(app.it.fast4x.rimusic.utils.ytAccountThumbnailKey, "") ?: ""
+    // Active profile face (spec-profiles-page-face): it takes the burger icon's place — and
+    // the YouTube account thumbnail's, which used to replace the burger only while logged in
+    // — because the profile manages its own face: the header always shows whatever the
+    // active profile resolved (its photo, a logged-in account's avatar when the profile
+    // picked that source, or the deterministic initials). The trigger keys re-resolve it
+    // on a profile switch, an account-state change or any face edit (the header never
+    // leaves composition, so a one-shot read would go stale).
+    val activeProfile = getActiveProfile(context)
+    val faceTrigger = app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger + profileFaceUpdateTrigger
+    var activeFace by remember { mutableStateOf<ProfileFace?>(null) }
+    LaunchedEffect(activeProfile, faceTrigger, defaultName) {
+        activeFace = withContext(NzikDispatchers.DATA) {
+            runCatching { loadActiveProfileFace(context, defaultName) }
+                .onFailure { Timber.tag("ActionBar").e(it, "Failed to resolve the active profile face") }
+                .getOrNull()
         }
-    }
-
-    val isLoggedIn = remember(cookie, isLoginEnabled) {
-        isLoginEnabled && ("SAPISID" in parseCookieString(cookie))
     }
 
     // Search Icon
     HeaderIcon( R.drawable.search) { navController.navigate(NavRoutes.search.name) }
 
     Box {
-        if (isLoggedIn) {
-            if (accountThumbnail.isNotEmpty())
-                ImageCacheFactory.AsyncImage(
-                    thumbnailUrl = accountThumbnail,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(end = 10.dp)
-                        .size(32.dp)
-                        .clip(uiRoundnessShape())
-                        .clickable { expanded = !expanded }
-                )
-            else HeaderIcon( R.drawable.ytmusic, size = 30.dp ) { expanded = !expanded }
-        } else HeaderIcon( R.drawable.burger ) { expanded = !expanded }
+        val face = activeFace
+        if (face != null)
+            ProfileFaceAvatar(
+                avatar = face.avatar,
+                faceName = face.name,
+                size = 32.dp,
+                // The clip sits BEFORE the clickable so the click ripple follows the
+                // artist shape (a square outline would otherwise flash around it) —
+                // the same treatment as the old YT logo here.
+                modifier = Modifier
+                    .padding(end = 10.dp)
+                    .clip(artistThumbnailShape())
+                    .clickable { expanded = !expanded }
+            )
+        // The burger is the first-frame placeholder until the first face load settles
+        // (the menu stays reachable either way).
+        else HeaderIcon( R.drawable.burger ) { expanded = !expanded }
     
         // Define actions for when item inside menu clicked,
         // and when user clicks on places other than the menu (dismiss)

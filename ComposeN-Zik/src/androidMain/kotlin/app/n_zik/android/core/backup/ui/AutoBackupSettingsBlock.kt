@@ -85,14 +85,18 @@ fun AutoBackupSettingsBlock() {
         text = when (autoBackupTarget) {
             BackupManager.TARGET_DATABASE -> stringResource(R.string.database)
             BackupManager.TARGET_SETTINGS -> stringResource(R.string.settings)
-            BackupManager.TARGET_BOTH -> stringResource(R.string.export_both)
+            BackupManager.TARGET_BOTH -> stringResource(R.string.database_and_settings)
+            // The profile-state target — labeled "Profiles" like everywhere else
+            // (the import/export dialogs, the Profiles page).
+            BackupManager.TARGET_ACCOUNTS -> stringResource(R.string.profiles)
+            BackupManager.TARGET_ALL -> stringResource(R.string.export_all)
             else -> stringResource(R.string.database)
         },
         icon = R.drawable.server,
         onClick = { showTargetDialog = true }
     )
 
-    AnimatedVisibility(visible = autoBackupTarget == BackupManager.TARGET_SETTINGS || autoBackupTarget == BackupManager.TARGET_BOTH) {
+    AnimatedVisibility(visible = autoBackupTarget == BackupManager.TARGET_SETTINGS || autoBackupTarget == BackupManager.TARGET_BOTH || autoBackupTarget == BackupManager.TARGET_ALL) {
         Column {
             OtherSwitchSettingEntry(
                 title = stringResource(R.string.include_youtube_credentials),
@@ -378,7 +382,9 @@ fun AutoBackupSettingsBlock() {
             values = listOf(
                 BackupManager.TARGET_DATABASE,
                 BackupManager.TARGET_SETTINGS,
-                BackupManager.TARGET_BOTH
+                BackupManager.TARGET_BOTH,
+                BackupManager.TARGET_ACCOUNTS,
+                BackupManager.TARGET_ALL
             ),
             onValueSelected = {
                 autoBackupTarget = it
@@ -388,7 +394,11 @@ fun AutoBackupSettingsBlock() {
                 when (it) {
                     BackupManager.TARGET_DATABASE -> stringResource(R.string.database)
                     BackupManager.TARGET_SETTINGS -> stringResource(R.string.settings)
-                    BackupManager.TARGET_BOTH -> stringResource(R.string.export_both)
+                    BackupManager.TARGET_BOTH -> stringResource(R.string.database_and_settings)
+                    // The profile-state target — labeled "Profiles" like everywhere else
+            // (the import/export dialogs, the Profiles page).
+            BackupManager.TARGET_ACCOUNTS -> stringResource(R.string.profiles)
+                    BackupManager.TARGET_ALL -> stringResource(R.string.export_all)
                     else -> stringResource(R.string.database)
                 }
             },

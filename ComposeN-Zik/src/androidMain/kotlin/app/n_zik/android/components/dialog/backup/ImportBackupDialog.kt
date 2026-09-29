@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.backup
 
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.RadioButton
@@ -21,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,17 +31,28 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.medium
+import app.it.fast4x.rimusic.utils.profileDisplayName
+import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
 import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.components.dialog.backup.ImportTargetProfileDialog
+import app.n_zik.android.components.import.ImportChainRunner
 import app.n_zik.android.components.import.ImportDatabase
+import app.n_zik.android.components.import.ImportProfileState
 import app.n_zik.android.components.import.ImportSettings
+import app.n_zik.android.components.import.buildProfileTargetOptions
+import app.n_zik.android.core.rescue.RescueFiles
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import app.n_zik.android.components.dialog.common.Dialog
-import app.n_zik.android.components.dialog.common.RestartAppDialog
 
 object ImportBackupDialog : Dialog {
 
@@ -51,41 +65,179 @@ object ImportBackupDialog : Dialog {
     @Composable
     override fun DialogBody() {
         val context = LocalContext.current
-        var selectedOption by remember { mutableIntStateOf(0) }
-        var isBothMode by remember { mutableStateOf(false) }
+        // The flow state survives a rotation mid-flow (same as the onboarding import
+        // screen): a rotation must keep the chosen option, the chain mode and the
+        // already-picked files — plain remember would reset them and silently drop
+        // the user's selections.
+        var selectedOption by rememberSaveable { mutableIntStateOf(0) }
+        // 0 = single option, 1 = both (database -> settings), 2 = all (database -> settings -> profile state)
+        var importMode by rememberSaveable { mutableIntStateOf(0) }
 
-        // Settings import callback - called after settings import completes
-        val importSettings = ImportSettings(context) {
-            Timber.tag("ImportBackupDialog").d("Settings import complete, isBothMode: $isBothMode")
-            hideDialog()
-            RestartAppDialog.showDialog()
+        // A picked file tagged with a profile other than its import target: confirm
+        // before importing it. Triple: (tag, target profile ID, proceed action).
+        var crossProfilePending by remember { mutableStateOf<Triple<String, String, () -> Unit>?>(null) }
+
+        // Deferred per-profile chain: the picked files wait for the target-profile
+        // choice before anything is written (ImportChainRunner).
+        var pendingDb by rememberSaveable { mutableStateOf<Uri?>(null) }
+        var pendingSettings by rememberSaveable { mutableStateOf<Uri?>(null) }
+        var pendingState by rememberSaveable { mutableStateOf<Uri?>(null) }
+
+        // The profile tag carried by a picked file name (null when untagged / unreadable).
+        fun profileTagOf(uri: Uri): String? =
+            RescueFiles.documentDisplayName(context, uri)
+                ?.let { RescueFiles.backupProfileTagOf(it, BuildConfig.APP_NAME) }
+
+        fun abortChain() {
+            // Nothing was written yet: drop every pick so the flow can start over.
+            pendingDb = null
+            pendingSettings = null
+            pendingState = null
         }
 
-        // Database import callback - called after database import completes
-        val importDatabase = ImportDatabase(context) {
-            Timber.tag("ImportBackupDialog").d("Database import complete, isBothMode: $isBothMode")
-            if (isBothMode) {
-                // If both mode, launch settings import next
-                Timber.tag("ImportBackupDialog").d("Launching settings import (both mode)...")
-                importSettings.onShortClick()
+        fun startImportChain(target: String) {
+            val db = pendingDb
+            val settings = pendingSettings
+            val state = pendingState
+            pendingDb = null
+            pendingSettings = null
+            pendingState = null
+            ImportChainRunner.start(
+                context = context,
+                target = target,
+                databaseUri = db,
+                settingsUri = settings,
+                stateUri = state,
+                onCompleted = { hideDialog() }
+            )
+        }
+
+        fun showTargetDialog(preselect: String?, imported: List<Pair<String, String>>) {
+            ImportTargetProfileDialog.show(
+                options = buildProfileTargetOptions(
+                    context,
+                    imported,
+                    context.getString(R.string.profile_base_name)
+                ),
+                preselectedId = preselect,
+                onTarget = { target ->
+                    // The all chain's state file must carry a tag matching the chosen
+                    // target — otherwise confirm first (the state is global, so mixing
+                    // it in is deliberate).
+                    val stateTag = pendingState?.let { profileTagOf(it) }
+                    if (stateTag != null && stateTag != target) {
+                        crossProfilePending = Triple(stateTag, target, { startImportChain(target) })
+                    } else {
+                        startImportChain(target)
+                    }
+                },
+                onDismiss = { abortChain() }
+            )
+        }
+
+        // Every per-profile import (database / settings / both / all) asks where it
+        // lands before anything is written — the restart only applies when the chosen
+        // target is the active profile. In all mode the state file's profile list is
+        // read first so the dialog offers every profile the bundle carries.
+        fun openTargetDialog() {
+            val stateUri = pendingState
+            if (stateUri == null) {
+                // Single / both: the database (else settings) file tag is the only
+                // imported profile — show the question right away.
+                val preselect = (pendingDb ?: pendingSettings)?.let { profileTagOf(it) }
+                showTargetDialog(preselect, preselect?.let { listOf(it to it) } ?: emptyList())
             } else {
-                // If database only, show restart dialog
-                hideDialog()
-                RestartAppDialog.showDialog()
+                // All: read the state file to offer the profiles it carries (plus the
+                // database tag when the list omits it).
+                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                    val preselect = (pendingDb ?: pendingSettings)?.let { profileTagOf(it) }
+                    val imported = RescueFiles.readProfileStateEntries(context, stateUri)
+                    val withTag = if (preselect != null && imported.none { it.first == preselect }) {
+                        listOf(preselect to preselect) + imported
+                    } else {
+                        imported
+                    }
+                    withContext(NzikDispatchers.UI) {
+                        // The host may have been dismissed while the state file was
+                        // being read: its Render() is no longer composed, so the target
+                        // dialog must not be flipped on behind its back (a stale
+                        // isActive would surface on the next composition).
+                        if (isActive) {
+                            showTargetDialog(preselect, withTag)
+                        }
+                    }
+                }
             }
         }
+
+        // Profiles only — the global profile state (list + faces): no target-profile
+        // question (the state is shared by every profile) and no restart on its own.
+        val importProfileState = ImportProfileState(
+            context,
+            onImportComplete = {
+                hideDialog()
+            }
+        ) { tag, proceed ->
+            crossProfilePending = Triple(tag, getActiveProfile(context), proceed)
+        }
+
+        // Deferred state picker of the all chain: the file is captured, not imported —
+        // the import runs later, into the chosen profile (ImportChainRunner).
+        val importProfileStateDeferred = ImportProfileState(
+            context,
+            onFilePicked = { uri ->
+                pendingState = uri
+                openTargetDialog()
+            },
+            onCancelled = {
+                // The state pick was skipped: nothing was written, the chain restarts.
+                abortChain()
+            }
+        ) { _, _ -> }
+
+        // Settings pick: in the all chain the state picker runs next, otherwise the
+        // target-profile question.
+        val importSettings = ImportSettings(context, onFilePicked = { uri ->
+            pendingSettings = uri
+            if (importMode == 2) {
+                Timber.tag("ImportBackupDialog").d("Chaining the profile state pick (all mode)")
+                importProfileStateDeferred.onShortClick()
+            } else {
+                openTargetDialog()
+            }
+        })
+
+        // Database pick: in the both/all chain the settings picker runs next,
+        // otherwise the target-profile question.
+        val importDatabase = ImportDatabase(context, onFilePicked = { uri ->
+            pendingDb = uri
+            if (importMode == 1 || importMode == 2) {
+                Timber.tag("ImportBackupDialog").d("Chaining the settings pick (mode: $importMode)")
+                importSettings.onShortClick()
+            } else {
+                openTargetDialog()
+            }
+        })
 
         val databaseLabel = stringResource(R.string.database)
         val databaseDescription = stringResource(R.string.import_database_description)
         val settingsLabel = stringResource(R.string.settings)
         val settingsDescription = stringResource(R.string.import_settings_description)
-        val bothLabel = stringResource(R.string.import_both)
+        val bothLabel = stringResource(R.string.database_and_settings)
         val bothDescription = stringResource(R.string.import_both_description)
+        // The option is the profile state (the list + every face), not the login
+        // accounts: labeled "Profiles" like everywhere else in the app.
+        val profilesLabel = stringResource(R.string.profiles)
+        val profilesDescription = stringResource(R.string.import_accounts_description)
+        val allLabel = stringResource(R.string.import_all)
+        val allDescription = stringResource(R.string.import_all_description)
 
         val options = listOf(
             Triple(R.drawable.server, databaseLabel, databaseDescription),
             Triple(R.drawable.settings, settingsLabel, settingsDescription),
-            Triple(R.drawable.server, bothLabel, bothDescription)
+            Triple(R.drawable.server, bothLabel, bothDescription),
+            Triple(R.drawable.person, profilesLabel, profilesDescription),
+            Triple(R.drawable.server, allLabel, allDescription)
         )
 
         Column(
@@ -136,20 +288,78 @@ object ImportBackupDialog : Dialog {
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Target-profile question (NZik dialog frame): where the picked per-profile
+            // data lands — self-gates on its own isActive
+            ImportTargetProfileDialog.Render()
+
+            // Cross-profile warning: the picked file was created for a profile other
+            // than its import target
+            crossProfilePending?.let { (tag, targetId, proceed) ->
+                AlertDialog(
+                    onDismissRequest = { crossProfilePending = null },
+                    text = {
+                        Text(
+                            stringResource(
+                                R.string.rescue_cross_profile_confirm,
+                                tag,
+                                resolveProfileDisplayName(
+                                    targetId,
+                                    context.profileDisplayName(targetId),
+                                    stringResource(R.string.profile_base_name)
+                                )
+                            )
+                        )
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                crossProfilePending = null
+                                proceed()
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorPalette().accent,
+                                contentColor = colorPalette().textSecondary
+                            )
+                        ) {
+                            Text(stringResource(R.string.import_button))
+                        }
+                    },
+                    dismissButton = {
+                        Button(
+                            onClick = { crossProfilePending = null },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorPalette().background0,
+                                contentColor = colorPalette().textSecondary
+                            )
+                        ) {
+                            Text(stringResource(R.string.cancel))
+                        }
+                    }
+                )
+            }
+
             Button(
                 onClick = {
                     Timber.tag("ImportBackupDialog").d("Selected option: $selectedOption")
                     when (selectedOption) {
                         0 -> {
-                            isBothMode = false
+                            importMode = 0
                             importDatabase.onShortClick()
                         }
                         1 -> {
-                            isBothMode = false
+                            importMode = 0
                             importSettings.onShortClick()
                         }
                         2 -> {
-                            isBothMode = true
+                            importMode = 1
+                            importDatabase.onShortClick()
+                        }
+                        3 -> {
+                            // Global state only — no target-profile question, no restart
+                            importProfileState.onShortClick()
+                        }
+                        4 -> {
+                            importMode = 2
                             importDatabase.onShortClick()
                         }
                     }

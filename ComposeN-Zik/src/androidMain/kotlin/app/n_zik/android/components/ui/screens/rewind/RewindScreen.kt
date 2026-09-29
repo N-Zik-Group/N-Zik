@@ -468,7 +468,7 @@ fun RewindScreen(
                     LocalRewindTextScale provides rememberRewindScale()
                 ) {
                     when (page) {
-                        0 -> RewindIntroCard(data, username, page, RewindDeckPageCount, active, next, onShareSlide)
+                        0 -> RewindIntroCard(data, username, page, RewindDeckPageCount, active, next, onShareSlide, uiState.faceAvatar)
                         1 -> RewindListenerBadgeCard(data, page, RewindDeckPageCount, active, next, onShareSlide)
                         2 -> RewindTotalTimeCard(data, page, RewindDeckPageCount, active, next, onShareSlide)
                         3 -> RewindTopSongCard(data.topSongs, data.periodLabel, page, RewindDeckPageCount, active, next, onShareSlide)

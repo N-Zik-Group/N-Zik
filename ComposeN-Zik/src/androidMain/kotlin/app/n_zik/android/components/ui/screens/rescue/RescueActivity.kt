@@ -3,10 +3,10 @@ package app.n_zik.android.components.ui.screens.rescue
 import android.graphics.Color as AndroidColor
 import android.os.Bundle
 import android.os.Process
-import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -41,8 +41,13 @@ import timber.log.Timber
  * Timber is NOT planted in the `:rescue` process (the tree is set up in MainApplication, which
  * skips init for non-main processes), so debug builds plant a DebugTree here. Release builds
  * stay silent on purpose: this process handles credentials.
+ *
+ * An [AppCompatActivity] (not a bare [androidx.activity.ComponentActivity]): the window must be
+ * set up exactly like MainActivity's — same theme, same AppCompat sub-decor — so the edge-to-edge
+ * content stretches behind the navigation buttons the same way it does in the main app, instead of
+ * leaving a band of window background above them.
  */
-class RescueActivity : ComponentActivity() {
+class RescueActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,9 +74,14 @@ class RescueActivity : ComponentActivity() {
             )
         }
 
+        // Same system-bar setup as MainActivity: transparent bars, and the content
+        // stretches behind the navigation buttons (the screen owns its insets).
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(scrim = AndroidColor.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(scrim = AndroidColor.TRANSPARENT)
+            navigationBarStyle = SystemBarStyle.light(
+                scrim = AndroidColor.TRANSPARENT,
+                darkScrim = AndroidColor.TRANSPARENT
+            )
         )
         WindowCompat.setDecorFitsSystemWindows(window, false)
 

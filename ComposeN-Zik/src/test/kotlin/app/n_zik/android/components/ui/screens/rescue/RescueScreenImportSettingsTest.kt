@@ -59,6 +59,15 @@ class RescueScreenImportSettingsTest {
 
         // No alive marker on disk: the process guard is released, so the click surfaces the
         // confirmation dialog (if the guard were still active, the dialog would never appear).
+        //
+        // The screen opens on the All category and "Import settings" lives in the Per-profile
+        // category: switch to it first, then let the 400 ms enter transition finish.
+        composeRule
+            .onNodeWithText(context.getString(R.string.rescue_category_profile))
+            .performClick()
+        composeRule.mainClock.advanceTimeBy(500)
+        composeRule.waitForIdle()
+
         composeRule.onNodeWithText(importTitle).performScrollTo()
         composeRule.onNodeWithText(importTitle).performClick()
         composeRule.waitForIdle()

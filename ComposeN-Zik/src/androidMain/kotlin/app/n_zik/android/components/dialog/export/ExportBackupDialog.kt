@@ -54,6 +54,7 @@ object ExportBackupDialog : Dialog {
         val context = LocalContext.current
         val exportDbDialog = ExportDatabaseDialog(context)
         val exportSettingsDialog = ExportSettingsDialog(context)
+        val exportProfileStateDialog = ExportProfileStateDialog(context)
 
         var selectedOption by remember { mutableIntStateOf(0) }
 
@@ -61,13 +62,21 @@ object ExportBackupDialog : Dialog {
         val databaseDescription = stringResource(R.string.export_database_description)
         val settingsLabel = stringResource(R.string.settings)
         val settingsDescription = stringResource(R.string.export_settings_description)
-        val bothLabel = stringResource(R.string.export_both)
+        val bothLabel = stringResource(R.string.database_and_settings)
         val bothDescription = stringResource(R.string.export_both_description)
+        // The option is the profile state (the list + every face), not the login
+        // accounts: labeled "Profiles" like everywhere else in the app.
+        val profilesLabel = stringResource(R.string.profiles)
+        val profilesDescription = stringResource(R.string.export_accounts_description)
+        val allLabel = stringResource(R.string.export_all)
+        val allDescription = stringResource(R.string.export_all_description)
 
         val options = listOf(
             Triple(R.drawable.server, databaseLabel, databaseDescription),
             Triple(R.drawable.settings, settingsLabel, settingsDescription),
-            Triple(R.drawable.server, bothLabel, bothDescription)
+            Triple(R.drawable.server, bothLabel, bothDescription),
+            Triple(R.drawable.person, profilesLabel, profilesDescription),
+            Triple(R.drawable.server, allLabel, allDescription)
         )
 
         var includeYtbCredentials by remember { mutableStateOf(false) }
@@ -119,7 +128,9 @@ object ExportBackupDialog : Dialog {
                         }
                     }
                     
-                    AnimatedVisibility(visible = selectedOption == index && (index == 1 || index == 2)) {
+                    // The credential toggles belong to the settings CSV, which options
+                    // Settings / Database + Settings / All all export.
+                    AnimatedVisibility(visible = selectedOption == index && (index == 1 || index == 2 || index == 4)) {
                         Column(modifier = Modifier.padding(start = 44.dp, bottom = 8.dp)) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -192,6 +203,13 @@ object ExportBackupDialog : Dialog {
                         2 -> {
                             exportDbDialog.export()
                             exportSettingsDialog.export(includeYtbCredentials, includeDiscordCredentials, includeLastfmCredentials, includeProxyCredentials)
+                        }
+                        3 -> exportProfileStateDialog.export()
+                        4 -> {
+                            // All: the three separate export sequences, like "both" plus the profile state.
+                            exportDbDialog.export()
+                            exportSettingsDialog.export(includeYtbCredentials, includeDiscordCredentials, includeLastfmCredentials, includeProxyCredentials)
+                            exportProfileStateDialog.export()
                         }
                     }
                 },

@@ -7,18 +7,34 @@ import android.os.Process
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -26,7 +42,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -47,9 +62,15 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.getEncryptedSharedPreferencesResult
+import app.it.fast4x.rimusic.utils.profileDisplayName
+import app.it.fast4x.rimusic.utils.readProfileIds
+import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
+import app.n_zik.android.core.backup.ProfileStateArchive
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.core.rescue.RescueProcess
 import kotlinx.coroutines.CoroutineStart
@@ -60,6 +81,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import es.dmoral.toasty.Toasty
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -73,6 +95,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.Scaffold
 
 /** Time left to read the confirmation toast before the `:rescue` process is ended. */
 private const val PROCESS_EXIT_DELAY_MS = 1_500L
@@ -105,12 +128,21 @@ private val IMPORT_DATABASE_MIMES: Array<String> = arrayOf(
     "application/octet-stream"
 )
 
+/** MIME types accepted by the Rescue "Import accounts" (profile state) picker. */
+private val IMPORT_PROFILE_STATE_MIMES: Array<String> = arrayOf(
+    "text/plain",
+    "application/octet-stream"
+)
+
 /**
  * Main UI composable for the Rescue Center.
  *
- * Lists the recovery actions by category (data, maintenance, danger zone), with confirmation
- * dialogs for destructive ones.
- * Runs in the `:rescue` process — NO Room, no DI, no player, no `appContext()`.
+ * Lists the recovery actions behind two scope categories (chips): "Per profile" (the
+ * profile target is the subcategory) and "All" (app-wide actions), each grouped into
+ * section cards by sub-scope, with confirmation dialogs for destructive ones.
+ * Runs in the `:rescue` process — NO Room, no DI, no player, no `appContext()`, and no
+ * app-wide UI helpers (the screens stay on MaterialTheme so nothing app-state can crash
+ * here).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -118,8 +150,19 @@ fun RescueScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+    // Full timestamp for the profile-state export names (same shape as the auto
+    // backup names, so the cross-profile tag stays parseable on import).
+    val fullDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss"))
+    val defaultName = stringResource(R.string.profile_base_name)
 
     RescueFiles.initialize(context)
+
+    // Target profile for the data actions — the selector below the section header
+    // lets the rescue operate a profile other than the active one (its database is
+    // not open, so writing its files directly is safe). In-memory only: the app's
+    // active profile is never switched from here.
+    var targetProfile by remember { mutableStateOf(getActiveProfile(context)) }
+    var profileOptions by remember { mutableStateOf<List<ProfileOption>>(emptyList()) }
 
     // Encrypted prefs Result (safe, no throw). Opened lazily and off the main thread, only when an
     // action awaits it: Keystore work must not run in composition, and the database and log
@@ -133,12 +176,34 @@ fun RescueScreen() {
     // State for confirmation dialogs
     var confirmAction by remember { mutableStateOf<ConfirmAction?>(null) }
 
+    // A picked file tagged with a different profile: confirm before importing it.
+    var crossProfilePending by remember { mutableStateOf<CrossProfilePending?>(null) }
+
     // State for credential toggles (export settings)
     var includeYtb by remember { mutableStateOf(false) }
     var includeDiscord by remember { mutableStateOf(false) }
     var includeLastfm by remember { mutableStateOf(false) }
     var includeProxy by remember { mutableStateOf(false) }
     var showCredentialToggles by remember { mutableStateOf(false) }
+
+    // Delete profiles: the selection dialog (a checkbox per user profile — the base is
+    // never listed, it has its own reset action) and the checked IDs.
+    var deleteProfilesDialog by remember { mutableStateOf(false) }
+    var deleteSelection by remember { mutableStateOf<Set<String>>(emptySet()) }
+
+    // Reset profiles: the same selection pattern as delete, but the chosen profiles are
+    // factory-reset (kept in the list) instead of removed.
+    var resetProfilesDialog by remember { mutableStateOf(false) }
+    var resetSelection by remember { mutableStateOf<Set<String>>(emptySet()) }
+
+    // Restore profiles: the same selection pattern, but the candidates are only the
+    // profiles that carry a reset backup (the data a reset set aside before wiping).
+    var restoreProfilesDialog by remember { mutableStateOf(false) }
+    var restoreSelection by remember { mutableStateOf<Set<String>>(emptySet()) }
+
+    // Category filter: which scope of actions is shown — per-profile (with the profile
+    // target as subcategory) or the entire app. All is the default.
+    var rescueCategory by remember { mutableStateOf(RescueCategory.ALL) }
 
     // Set once restored settings are waiting for this process to end: no other write may run.
     var exitPending by remember { mutableStateOf(false) }
@@ -152,8 +217,46 @@ fun RescueScreen() {
             RescueFileState(
                 hasLogs = RescueFiles.hasLogs(context),
                 hasDatabaseBackup = RescueFiles.hasBackup(context),
-                hasSettingsBackup = RescueFiles.hasSettingsBackup(context)
+                hasSettingsBackup = RescueFiles.hasSettingsBackup(context),
+                hasProfileState = ProfileStateArchive.hasState(context),
+                profileBackups = RescueFiles.profileBackupIds(context)
             )
+        }
+        // The selector options: the active profile first, then the user profiles —
+        // labels resolved against the stored display names.
+        profileOptions = withContext(NzikDispatchers.DATA) {
+            val activeId = getActiveProfile(context)
+            (listOf(activeId) + context.readProfileIds()).distinct().map { id ->
+                ProfileOption(
+                    id = id,
+                    label = resolveProfileDisplayName(id, context.profileDisplayName(id), defaultName),
+                    isActive = id == activeId
+                )
+            }
+        }
+    }
+
+    /** Points the rescue at [id] (in-memory target; the active profile is not switched). */
+    fun selectTargetProfile(id: String) {
+        if (id == targetProfile) return
+        targetProfile = id
+        RescueFiles.setRescueProfile(id)
+        // The rescue backups and the face file are per-profile: re-read availability.
+        fileStateVersion++
+    }
+
+    /**
+     * Runs [onProceed] — behind a cross-profile confirmation when the picked file's
+     * name carries the tag of another profile (a backup taken under a different
+     * profile). Unprofiled names proceed straight away.
+     */
+    fun withCrossProfileGuard(uri: Uri, onProceed: () -> Unit) {
+        val tag = RescueFiles.documentDisplayName(context, uri)
+            ?.let { RescueFiles.backupProfileTagOf(it, BuildConfig.APP_NAME) }
+        if (tag != null && tag != targetProfile) {
+            crossProfilePending = CrossProfilePending(tag, onProceed)
+        } else {
+            onProceed()
         }
     }
 
@@ -277,10 +380,12 @@ fun RescueScreen() {
         ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri ?: return@rememberLauncherForActivityResult
-        guardWrite {
-            scope.launch {
-                val result = withContext(NzikDispatchers.DATA) { RescueFiles.importDatabase(context, uri) }
-                showResult(result)
+        withCrossProfileGuard(uri) {
+            guardWrite {
+                scope.launch {
+                    val result = withContext(NzikDispatchers.DATA) { RescueFiles.importDatabase(context, uri) }
+                    showResult(result)
+                }
             }
         }
     }
@@ -306,12 +411,52 @@ fun RescueScreen() {
         ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri ?: return@rememberLauncherForActivityResult
-        guardWrite {
-            scope.launch {
-                val result = withContext(NzikDispatchers.DATA) {
-                    RescueFiles.importSettings(context, uri, encryptedPrefs.await())
+        withCrossProfileGuard(uri) {
+            guardWrite {
+                scope.launch {
+                    val result = withContext(NzikDispatchers.DATA) {
+                        RescueFiles.importSettings(context, uri, encryptedPrefs.await())
+                    }
+                    showSettingsResult(result)
                 }
-                showSettingsResult(result)
+            }
+        }
+    }
+
+    // Profile state (list + faces) — the archive the auto backup writes
+    val exportProfileStateLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/plain")
+    ) { uri: Uri? ->
+        uri ?: return@rememberLauncherForActivityResult
+        scope.launch {
+            val result = withContext(NzikDispatchers.DATA) { RescueFiles.exportProfileState(context, uri) }
+            showResult(result, context.getString(R.string.rescue_accounts_exported))
+        }
+    }
+
+    val importProfileStateLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        uri ?: return@rememberLauncherForActivityResult
+        withCrossProfileGuard(uri) {
+            guardWrite {
+                scope.launch {
+                    val result = withContext(NzikDispatchers.DATA) { RescueFiles.importProfileState(context, uri) }
+                    showResult(
+                        result,
+                        result.getOrNull()?.let { applied ->
+                            when {
+                                applied.profiles > 0 ->
+                                    context.getString(R.string.rescue_accounts_imported_count, applied.profiles)
+                                // A base-only archive restores the base face and/or name, not a profile count.
+                                applied.faces > 0 || applied.names > 0 ->
+                                    context.getString(R.string.rescue_accounts_imported_base)
+                                else ->
+                                    context.getString(R.string.rescue_accounts_imported_count, 0)
+                            }
+                        }
+                    )
+                }
             }
         }
     }
@@ -342,6 +487,23 @@ fun RescueScreen() {
             onConfirm = {
                 val action = confirmAction
                 confirmAction = null
+                action?.onConfirm?.invoke()
+            }
+        )
+    }
+
+    // Cross-profile warning: the picked file was created under a different profile
+    crossProfilePending?.let { pending ->
+        RescueConfirmationDialog(
+            text = stringResource(
+                R.string.rescue_cross_profile_confirm,
+                pending.tag,
+                profileOptions.firstOrNull { it.id == targetProfile }?.label ?: targetProfile
+            ),
+            onDismiss = { crossProfilePending = null },
+            onConfirm = {
+                val action = crossProfilePending
+                crossProfilePending = null
                 action?.onConfirm?.invoke()
             }
         )
@@ -414,18 +576,357 @@ fun RescueScreen() {
         }
     }
 
+    // Delete profiles selection: every user profile as a checkbox row (the base is
+    // never listed — it is reset by its own action, never deleted). The confirm button
+    // is disabled until a profile is checked; the actual deletion is confirmed by the
+    // standard confirmation dialog (same pattern as the other destructive actions).
+    if (deleteProfilesDialog) {
+        val userProfiles = profileOptions.filter { it.id != DEFAULT_PROFILE_ID }
+        Dialog(
+            onDismissRequest = { deleteProfilesDialog = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        BasicText(
+                            text = stringResource(R.string.rescue_profiles_to_delete),
+                            style = TextStyle(
+                                fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            ),
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            userProfiles.forEach { option ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(
+                                        checked = deleteSelection.contains(option.id),
+                                        onCheckedChange = { checked ->
+                                            deleteSelection = if (checked)
+                                                deleteSelection + option.id
+                                            else
+                                                deleteSelection - option.id
+                                        }
+                                    )
+                                    Text(
+                                        text = option.label,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    if (option.isActive) {
+                                        Text(
+                                            text = stringResource(R.string.rescue_profile_active),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(24.dp))
+                        RescueDialogButtons(
+                            cancelText = stringResource(android.R.string.cancel),
+                            confirmText = stringResource(android.R.string.ok),
+                            confirmEnabled = deleteSelection.isNotEmpty(),
+                            onCancel = { deleteProfilesDialog = false },
+                            onConfirm = {
+                                val selected = deleteSelection
+                                deleteProfilesDialog = false
+                                deleteSelection = emptySet()
+                                guardWrite {
+                                    // The selection is the informed choice; the standard
+                                    // confirmation states the permanent consequences.
+                                    confirmAction = ConfirmAction(R.string.rescue_confirm_delete_profiles) {
+                                        scope.launch {
+                                            val activeId = getActiveProfile(context)
+                                            val result = withContext(NzikDispatchers.DATA) {
+                                                RescueFiles.deleteProfiles(context, selected.toList())
+                                            }
+                                            showResult(
+                                                result,
+                                                result.getOrNull()?.let {
+                                                    context.getString(R.string.rescue_profiles_deleted_count, it)
+                                                }
+                                            )
+                                            // Deleting the CURRENT profile switches the active slot
+                                            // to the base: the app must be relaunched to pick the
+                                            // change up (the base itself can never be deleted).
+                                            if (result.isSuccess && activeId in selected &&
+                                                activeId != DEFAULT_PROFILE_ID
+                                            ) {
+                                                Toasty.warning(
+                                                    context,
+                                                    context.getString(R.string.rescue_profiles_deleted_active_restart),
+                                                    Toast.LENGTH_LONG,
+                                                    true
+                                                ).show()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    if (resetProfilesDialog) {
+        val userProfiles = profileOptions.filter { it.id != DEFAULT_PROFILE_ID }
+        Dialog(
+            onDismissRequest = { resetProfilesDialog = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        BasicText(
+                            text = stringResource(R.string.rescue_profiles_to_reset),
+                            style = TextStyle(
+                                fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            ),
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            userProfiles.forEach { option ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(
+                                        checked = resetSelection.contains(option.id),
+                                        onCheckedChange = { checked ->
+                                            resetSelection = if (checked)
+                                                resetSelection + option.id
+                                            else
+                                                resetSelection - option.id
+                                        }
+                                    )
+                                    Text(
+                                        text = option.label,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    if (option.isActive) {
+                                        Text(
+                                            text = stringResource(R.string.rescue_profile_active),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(24.dp))
+                        RescueDialogButtons(
+                            cancelText = stringResource(android.R.string.cancel),
+                            confirmText = stringResource(android.R.string.ok),
+                            confirmEnabled = resetSelection.isNotEmpty(),
+                            onCancel = { resetProfilesDialog = false },
+                            onConfirm = {
+                                val selected = resetSelection
+                                resetProfilesDialog = false
+                                resetSelection = emptySet()
+                                guardWrite {
+                                    // The selection is the informed choice; the standard
+                                    // confirmation states the permanent consequences.
+                                    confirmAction = ConfirmAction(R.string.rescue_confirm_reset_profiles) {
+                                        scope.launch {
+                                            val result = withContext(NzikDispatchers.DATA) {
+                                                RescueFiles.resetProfiles(context, selected.toList())
+                                            }
+                                            showResult(
+                                                result,
+                                                result.getOrNull()?.let {
+                                                    context.getString(R.string.rescue_profiles_reset_count, it)
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    if (restoreProfilesDialog) {
+        // Only the profiles that carry a reset backup can be restored (the base is
+        // never listed — it has its own restore action).
+        val restorableProfiles = profileOptions.filter {
+            it.id != DEFAULT_PROFILE_ID && fileState.profileBackups.contains(it.id)
+        }
+        Dialog(
+            onDismissRequest = { restoreProfilesDialog = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        BasicText(
+                            text = stringResource(R.string.rescue_profiles_to_restore),
+                            style = TextStyle(
+                                fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            ),
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            restorableProfiles.forEach { option ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(
+                                        checked = restoreSelection.contains(option.id),
+                                        onCheckedChange = { checked ->
+                                            restoreSelection = if (checked)
+                                                restoreSelection + option.id
+                                            else
+                                                restoreSelection - option.id
+                                        }
+                                    )
+                                    Text(
+                                        text = option.label,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    if (option.isActive) {
+                                        Text(
+                                            text = stringResource(R.string.rescue_profile_active),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(24.dp))
+                        RescueDialogButtons(
+                            cancelText = stringResource(android.R.string.cancel),
+                            confirmText = stringResource(android.R.string.ok),
+                            confirmEnabled = restoreSelection.isNotEmpty(),
+                            onCancel = { restoreProfilesDialog = false },
+                            onConfirm = {
+                                val selected = restoreSelection
+                                restoreProfilesDialog = false
+                                restoreSelection = emptySet()
+                                guardWrite {
+                                    // The selection is the informed choice; the standard
+                                    // confirmation states what the restore replaces.
+                                    confirmAction = ConfirmAction(R.string.rescue_confirm_restore_profiles) {
+                                        scope.launch {
+                                            val result = withContext(NzikDispatchers.DATA) {
+                                                RescueFiles.restoreProfiles(context, selected.toList())
+                                            }
+                                            showResult(
+                                                result,
+                                                result.getOrNull()?.let {
+                                                    context.getString(R.string.rescue_profiles_restored_count, it)
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             RescueHeader(title = stringResource(R.string.rescue_center))
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        // Like the app's screens: the scaffold background stretches behind the transparent
+        // system bars (full height, no band under the nav buttons) and the content scrolls
+        // behind them — the header owns its status-bar padding.
+        contentWindowInsets = WindowInsets(0.dp)
     ) { paddingValues ->
+        // Fake bottom padding: the room the nav buttons take, appended INSIDE the scroll so
+        // the last card can settle above the transparent buttons instead of ending hidden
+        // behind them (0 on devices with a side nav bar).
+        val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+        // The 16dp margin goes INSIDE the scroll: applied before verticalScroll it shrinks the
+        // viewport itself, so the scrolling content is clipped 16dp above the screen bottom
+        // instead of running behind the transparent nav buttons.
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
@@ -463,135 +964,540 @@ fun RescueScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ─── DATA & BACKUP ───
-            RescueCategoryHeader(stringResource(R.string.rescue_category_data))
+            // Category chips: the scope of the actions. Only the selected category's cards
+            // are shown; "Per profile" adds a profile subcategory to pick the target.
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+            ) {
+                RescueCategoryChip(
+                    label = stringResource(R.string.rescue_category_all),
+                    selected = rescueCategory == RescueCategory.ALL,
+                    onSelect = { rescueCategory = RescueCategory.ALL }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                RescueCategoryChip(
+                    label = stringResource(R.string.rescue_category_profile),
+                    selected = rescueCategory == RescueCategory.PER_PROFILE,
+                    onSelect = { rescueCategory = RescueCategory.PER_PROFILE }
+                )
+            }
 
-            // Export database
-            RescueActionCard(
-                iconRes = R.drawable.server,
-                title = stringResource(R.string.rescue_export_database),
-                description = stringResource(R.string.rescue_export_database_description),
-                onClick = {
-                    exportDbLauncher.launch("${BuildConfig.APP_NAME} $date Database.sqlite")
-                }
-            )
-
-            // Import database
-            RescueActionCard(
-                iconRes = R.drawable.server,
-                title = stringResource(R.string.rescue_import_database),
-                description = stringResource(R.string.rescue_import_database_description),
-                onClick = {
-                    guardWrite {
-                        confirmAction = ConfirmAction(R.string.rescue_confirm_import_database) {
-                            importDbLauncher.launch(IMPORT_DATABASE_MIMES)
+            // ─── PER PROFILE ─── (selected category; the profile target selector below is
+            // the subcategory: it picks which profile the profile-scoped actions run on)
+            AnimatedVisibility(
+                visible = rescueCategory == RescueCategory.PER_PROFILE,
+                enter = rescueCategoryEnter,
+                exit = rescueCategoryExit,
+                label = "Per profile category"
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                // Profile target selector — the profile-scoped actions below operate on the
+                // chosen profile (its database, its settings, its face); switching is not implied.
+                Text(
+                    text = stringResource(R.string.rescue_profile_target_description),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .horizontalScroll(rememberScrollState())
+                    ) {
+                        profileOptions.forEach { option ->
+                            val selected = option.id == targetProfile
+                            Row(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(
+                                        if (selected)
+                                            MaterialTheme.colorScheme.primary
+                                        else
+                                            MaterialTheme.colorScheme.surfaceVariant
+                                    )
+                                    .clickable { selectTargetProfile(option.id) }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = option.label,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = if (selected)
+                                        MaterialTheme.colorScheme.onPrimary
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                if (option.isActive) {
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = stringResource(R.string.rescue_profile_active),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = (if (selected)
+                                            MaterialTheme.colorScheme.onPrimary
+                                        else
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                        ).copy(alpha = 0.7f)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
                         }
                     }
                 }
-            )
 
-            // Export settings
-            RescueActionCard(
-                iconRes = R.drawable.settings,
-                title = stringResource(R.string.rescue_export_settings),
-                description = stringResource(R.string.rescue_export_settings_description),
-                onClick = { showCredentialToggles = true }
-            )
-
-            // Import settings
-            RescueActionCard(
-                iconRes = R.drawable.settings,
-                title = stringResource(R.string.rescue_import_settings),
-                description = stringResource(R.string.rescue_import_settings_description),
-                onClick = {
-                    guardWrite {
-                        confirmAction = ConfirmAction(R.string.rescue_confirm_import_settings) {
-                            importSettingsLauncher.launch(IMPORT_SETTINGS_MIMES)
+                // Database — the target profile's database (export / import / reset / restore)
+                RescueSectionCard(
+                title = stringResource(R.string.rescue_group_database),
+                iconRes = R.drawable.server,
+                content = {
+                    // Export database
+                    RescueActionCard(
+                        iconRes = R.drawable.server,
+                        title = stringResource(R.string.rescue_export_database),
+                        description = stringResource(R.string.rescue_export_database_description),
+                        onClick = {
+                            exportDbLauncher.launch("${BuildConfig.APP_NAME} $date Database.sqlite")
                         }
-                    }
+                    )
+
+                    // Import database
+                    RescueActionCard(
+                        iconRes = R.drawable.server,
+                        title = stringResource(R.string.rescue_import_database),
+                        description = stringResource(R.string.rescue_import_database_description),
+                        onClick = {
+                            guardWrite {
+                                confirmAction = ConfirmAction(R.string.rescue_confirm_import_database) {
+                                    importDbLauncher.launch(IMPORT_DATABASE_MIMES)
+                                }
+                            }
+                        }
+                    )
+
+                    // Reset database
+                    RescueActionCard(
+                        iconRes = R.drawable.server,
+                        title = stringResource(R.string.rescue_reset_database),
+                        description = stringResource(R.string.rescue_reset_database_description),
+                        onClick = {
+                            guardWrite {
+                                // A second reset overwrites the only backup: say so before it happens.
+                                val message = if (fileState.hasDatabaseBackup) {
+                                    R.string.rescue_confirm_reset_database_replace_backup
+                                } else {
+                                    R.string.rescue_confirm_reset_database
+                                }
+                                confirmAction = ConfirmAction(message) {
+                                    scope.launch {
+                                        val result = withContext(NzikDispatchers.DATA) {
+                                            RescueFiles.resetDatabase(context)
+                                        }
+                                        showResult(result)
+                                    }
+                                }
+                            }
+                        }
+                    )
+
+                    // Restore database
+                    RescueActionCard(
+                        iconRes = R.drawable.restore,
+                        title = stringResource(R.string.rescue_restore_database),
+                        description = stringResource(R.string.rescue_restore_database_description),
+                        enabled = fileState.hasDatabaseBackup,
+                        disabledReason = stringResource(R.string.rescue_no_backup),
+                        onClick = {
+                            guardWrite {
+                                confirmAction = ConfirmAction(R.string.rescue_confirm_restore_database) {
+                                    scope.launch {
+                                        val result = withContext(NzikDispatchers.DATA) {
+                                            RescueFiles.restoreDatabase(context)
+                                        }
+                                        showResult(result)
+                                    }
+                                }
+                            }
+                        }
+                    )
                 }
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            // Settings — the target profile's settings (export / import / reset / restore)
+            RescueSectionCard(
+                title = stringResource(R.string.rescue_group_settings),
+                iconRes = R.drawable.settings,
+                content = {
+                    // Export settings
+                    RescueActionCard(
+                        iconRes = R.drawable.settings,
+                        title = stringResource(R.string.rescue_export_settings),
+                        description = stringResource(R.string.rescue_export_settings_description),
+                        onClick = { showCredentialToggles = true }
+                    )
 
-            // ─── MAINTENANCE ───
-            RescueCategoryHeader(stringResource(R.string.rescue_category_maintenance))
+                    // Import settings
+                    RescueActionCard(
+                        iconRes = R.drawable.settings,
+                        title = stringResource(R.string.rescue_import_settings),
+                        description = stringResource(R.string.rescue_import_settings_description),
+                        onClick = {
+                            guardWrite {
+                                confirmAction = ConfirmAction(R.string.rescue_confirm_import_settings) {
+                                    importSettingsLauncher.launch(IMPORT_SETTINGS_MIMES)
+                                }
+                            }
+                        }
+                    )
 
-            // Export logs
-            RescueActionCard(
+                    // Reset settings
+                    RescueActionCard(
+                        iconRes = R.drawable.settings,
+                        title = stringResource(R.string.rescue_reset_settings),
+                        description = stringResource(R.string.rescue_reset_settings_description),
+                        onClick = {
+                            guardWrite {
+                                // A second reset would overwrite the backup with already-cleared settings.
+                                val message = if (fileState.hasSettingsBackup) {
+                                    R.string.rescue_confirm_reset_settings_replace_backup
+                                } else {
+                                    R.string.rescue_confirm_reset_settings
+                                }
+                                confirmAction = ConfirmAction(message) {
+                                    scope.launch {
+                                        val result = withContext(NzikDispatchers.DATA) {
+                                            RescueFiles.resetSettings(context, encryptedPrefs.await())
+                                        }
+                                        showResult(result)
+                                    }
+                                }
+                            }
+                        }
+                    )
+
+                    // Restore settings
+                    RescueActionCard(
+                        iconRes = R.drawable.restore,
+                        title = stringResource(R.string.rescue_restore_settings),
+                        description = stringResource(R.string.rescue_restore_settings_description),
+                        enabled = fileState.hasSettingsBackup,
+                        disabledReason = stringResource(R.string.rescue_no_settings_backup),
+                        onClick = {
+                            guardWrite {
+                                confirmAction = ConfirmAction(R.string.rescue_confirm_restore_settings) {
+                                    scope.launch {
+                                        val result = withContext(NzikDispatchers.DATA) {
+                                            RescueFiles.restoreSettings(context)
+                                        }
+                                        showResult(result)
+                                        if (result.isSuccess) {
+                                            // The XML files were swapped behind this process's in-memory
+                                            // SharedPreferences: a later commit() would write the stale map
+                                            // back over them. End the :rescue process so nothing does. Armed
+                                            // on the main looper, not in the composition scope: leaving the
+                                            // screen or recreating the activity cannot cancel it.
+                                            exitPending = true
+                                            NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+                                                delay(PROCESS_EXIT_DELAY_MS)
+                                                // The kill must run even if finishing the task throws: the
+                                                // old Handler runnable ended the process on any exception.
+                                                try {
+                                                    (context as? Activity)?.finishAndRemoveTask()
+                                                } finally {
+                                                    Process.killProcess(Process.myPid())
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    )
+                }
+            )
+
+            // Base profile — factory-fresh the base (its database, settings, name and
+            // photo); the base is never deleted, only reset.
+            RescueSectionCard(
+                title = stringResource(R.string.rescue_group_base_profile),
+                iconRes = R.drawable.person,
+                content = {
+                    // Reset base profile
+                    RescueActionCard(
+                        iconRes = R.drawable.person,
+                        title = stringResource(R.string.rescue_reset_base_profile),
+                        description = stringResource(R.string.rescue_reset_base_profile_description),
+                        onClick = {
+                            guardWrite {
+                                confirmAction = ConfirmAction(R.string.rescue_confirm_reset_base_profile) {
+                                    scope.launch {
+                                        val result = withContext(NzikDispatchers.DATA) {
+                                            RescueFiles.resetBaseProfile(context)
+                                        }
+                                        showResult(
+                                            result,
+                                            context.getString(R.string.rescue_base_profile_reset_done)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    )
+
+                    // Restore base profile: brings back the base's last reset backup.
+                    RescueActionCard(
+                        iconRes = R.drawable.restore,
+                        title = stringResource(R.string.rescue_restore_base_profile),
+                        description = stringResource(R.string.rescue_restore_base_profile_description),
+                        enabled = fileState.profileBackups.contains(DEFAULT_PROFILE_ID),
+                        disabledReason = stringResource(R.string.rescue_no_base_profile_backup),
+                        onClick = {
+                            guardWrite {
+                                confirmAction = ConfirmAction(R.string.rescue_confirm_restore_base_profile) {
+                                    scope.launch {
+                                        val result = withContext(NzikDispatchers.DATA) {
+                                            RescueFiles.restoreBaseProfile(context)
+                                        }
+                                        showResult(
+                                            result,
+                                            context.getString(R.string.rescue_base_profile_restored)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    )
+                }
+            )
+                }
+            }
+
+            // ─── ALL ─── (selected category; the app-wide actions — no target profile)
+            AnimatedVisibility(
+                visible = rescueCategory == RescueCategory.ALL,
+                enter = rescueCategoryEnter,
+                exit = rescueCategoryExit,
+                label = "All category"
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                // Profiles — the profile state of the whole app (the list + every face) and
+            // the multi-select operations on the user profiles (the selection is made in
+            // the dialog, not in the per-profile target subcategory)
+            RescueSectionCard(
+                title = stringResource(R.string.rescue_group_profiles),
+                iconRes = R.drawable.person,
+                content = {
+                    // Export profiles (profile state: the list + every face, one .txt file)
+                    RescueActionCard(
+                        iconRes = R.drawable.person,
+                        title = stringResource(R.string.rescue_export_profiles),
+                        description = stringResource(R.string.rescue_export_profiles_description),
+                        enabled = fileState.hasProfileState,
+                        disabledReason = stringResource(R.string.rescue_no_profile_state),
+                        onClick = {
+                            exportProfileStateLauncher.launch(
+                                "${BuildConfig.APP_NAME}_${targetProfile}_${fullDate}_Profiles_Export.txt"
+                            )
+                        }
+                    )
+
+                    // Import profiles (profile state)
+                    RescueActionCard(
+                        iconRes = R.drawable.person,
+                        title = stringResource(R.string.rescue_import_profiles),
+                        description = stringResource(R.string.rescue_import_profiles_description),
+                        onClick = {
+                            guardWrite {
+                                confirmAction = ConfirmAction(R.string.rescue_confirm_import_accounts) {
+                                    importProfileStateLauncher.launch(IMPORT_PROFILE_STATE_MIMES)
+                                }
+                            }
+                        }
+                    )
+
+                    // Delete profiles: every user profile is offered as a checkbox in the
+                    // selection dialog (the base is never listed — it is reset by its own
+                    // action, never deleted). The active profile is NOT skipped: deleting it
+                    // switches the active slot to the base, and the app must be relaunched.
+                    RescueActionCard(
+                        iconRes = R.drawable.trash,
+                        title = stringResource(R.string.rescue_delete_profiles),
+                        description = stringResource(R.string.rescue_delete_profiles_description),
+                        enabled = profileOptions.any { it.id != DEFAULT_PROFILE_ID },
+                        disabledReason = stringResource(R.string.rescue_no_profiles_to_delete),
+                        onClick = {
+                            guardWrite {
+                                deleteSelection = emptySet()
+                                deleteProfilesDialog = true
+                            }
+                        }
+                    )
+
+                    // Reset profiles: every user profile is offered as a checkbox in the selection
+                    // dialog (the base is never listed — it is reset by its own action). Unlike
+                    // deletion, the profiles are kept in the list: they are simply factory-reset
+                    // (database, settings, name and photo deleted), so the active slot is untouched
+                    // and the app must be relaunched.
+                    RescueActionCard(
+                        iconRes = R.drawable.person,
+                        title = stringResource(R.string.rescue_reset_profiles),
+                        description = stringResource(R.string.rescue_reset_profiles_description),
+                        enabled = profileOptions.any { it.id != DEFAULT_PROFILE_ID },
+                        disabledReason = stringResource(R.string.rescue_no_profiles_to_reset),
+                        onClick = {
+                            guardWrite {
+                                resetSelection = emptySet()
+                                resetProfilesDialog = true
+                            }
+                        }
+                    )
+
+                    // Restore profiles: brings back the profiles reset earlier — their
+                    // last reset backup (database, settings, credentials, face and name).
+                    // The selection dialog offers only the profiles that carry a backup.
+                    RescueActionCard(
+                        iconRes = R.drawable.restore,
+                        title = stringResource(R.string.rescue_restore_profiles),
+                        description = stringResource(R.string.rescue_restore_profiles_description),
+                        enabled = fileState.profileBackups.any { it != DEFAULT_PROFILE_ID },
+                        disabledReason = stringResource(R.string.rescue_no_profiles_to_restore),
+                        onClick = {
+                            guardWrite {
+                                restoreSelection = emptySet()
+                                restoreProfilesDialog = true
+                            }
+                        }
+                    )
+                }
+            )
+
+            // Logs — export / delete the app log
+            RescueSectionCard(
+                title = stringResource(R.string.rescue_group_logs),
                 iconRes = R.drawable.bugs,
-                title = stringResource(R.string.rescue_export_logs),
-                description = stringResource(R.string.rescue_export_logs_description),
-                enabled = fileState.hasLogs,
-                disabledReason = stringResource(R.string.rescue_no_logs),
-                onClick = {
-                    exportLogsLauncher.launch("${BuildConfig.APP_NAME} $date Logs.txt")
-                }
-            )
+                content = {
+                    // Export logs
+                    RescueActionCard(
+                        iconRes = R.drawable.bugs,
+                        title = stringResource(R.string.rescue_export_logs),
+                        description = stringResource(R.string.rescue_export_logs_description),
+                        enabled = fileState.hasLogs,
+                        disabledReason = stringResource(R.string.rescue_no_logs),
+                        onClick = {
+                            exportLogsLauncher.launch("${BuildConfig.APP_NAME} $date Logs.txt")
+                        }
+                    )
 
-            // Delete logs
-            RescueActionCard(
-                iconRes = R.drawable.trash,
-                title = stringResource(R.string.rescue_delete_logs),
-                description = stringResource(R.string.rescue_delete_logs_description),
-                enabled = fileState.hasLogs,
-                disabledReason = stringResource(R.string.rescue_no_logs),
-                onClick = {
-                    guardWrite {
-                        confirmAction = ConfirmAction(R.string.rescue_confirm_delete_logs) {
-                            scope.launch {
-                                val result = withContext(NzikDispatchers.DATA) {
-                                    RescueFiles.deleteLogs(context)
+                    // Delete logs
+                    RescueActionCard(
+                        iconRes = R.drawable.trash,
+                        title = stringResource(R.string.rescue_delete_logs),
+                        description = stringResource(R.string.rescue_delete_logs_description),
+                        enabled = fileState.hasLogs,
+                        disabledReason = stringResource(R.string.rescue_no_logs),
+                        onClick = {
+                            guardWrite {
+                                confirmAction = ConfirmAction(R.string.rescue_confirm_delete_logs) {
+                                    scope.launch {
+                                        val result = withContext(NzikDispatchers.DATA) {
+                                            RescueFiles.deleteLogs(context)
+                                        }
+                                        showResult(result)
+                                    }
                                 }
-                                showResult(result)
                             }
                         }
-                    }
+                    )
                 }
             )
 
-            // Clear cache
-            RescueActionCard(
+            // Storage — the shared (non-profiled) caches, downloads and the safety copies
+            RescueSectionCard(
+                title = stringResource(R.string.rescue_group_storage),
                 iconRes = R.drawable.trash,
-                title = stringResource(R.string.rescue_clear_cache),
-                description = stringResource(R.string.rescue_clear_cache_description),
-                onClick = {
-                    guardWrite {
-                        confirmAction = ConfirmAction(R.string.rescue_confirm_clear_cache) {
-                            scope.launch {
-                                val result = withContext(NzikDispatchers.DATA) {
-                                    RescueFiles.clearCache(context)
+                content = {
+                    // Clear cache
+                    RescueActionCard(
+                        iconRes = R.drawable.trash,
+                        title = stringResource(R.string.rescue_clear_cache),
+                        description = stringResource(R.string.rescue_clear_cache_description),
+                        onClick = {
+                            guardWrite {
+                                confirmAction = ConfirmAction(R.string.rescue_confirm_clear_cache) {
+                                    scope.launch {
+                                        val result = withContext(NzikDispatchers.DATA) {
+                                            RescueFiles.clearCache(context)
+                                        }
+                                        showResult(result)
+                                    }
                                 }
-                                showResult(result)
                             }
                         }
-                    }
-                }
-            )
+                    )
 
-            // Delete downloads
-            RescueActionCard(
-                iconRes = R.drawable.trash,
-                title = stringResource(R.string.rescue_delete_downloads),
-                description = stringResource(R.string.rescue_delete_downloads_description),
-                onClick = {
-                    guardWrite {
-                        confirmAction = ConfirmAction(R.string.rescue_confirm_delete_downloads) {
-                            scope.launch {
-                                val result = withContext(NzikDispatchers.DATA) {
-                                    RescueFiles.deleteDownloads(context)
+                    // Delete downloads
+                    RescueActionCard(
+                        iconRes = R.drawable.trash,
+                        title = stringResource(R.string.rescue_delete_downloads),
+                        description = stringResource(R.string.rescue_delete_downloads_description),
+                        onClick = {
+                            guardWrite {
+                                confirmAction = ConfirmAction(R.string.rescue_confirm_delete_downloads) {
+                                    scope.launch {
+                                        val result = withContext(NzikDispatchers.DATA) {
+                                            RescueFiles.deleteDownloads(context)
+                                        }
+                                        showResult(result)
+                                    }
                                 }
-                                showResult(result)
                             }
                         }
-                    }
+                    )
+
+                    // Delete backups: removes the only safety copy
+                    RescueActionCard(
+                        iconRes = R.drawable.trash,
+                        title = stringResource(R.string.rescue_delete_backups),
+                        description = stringResource(R.string.rescue_delete_backups_description),
+                        // The action wipes the whole rescue_backups tree — database, settings
+                        // AND the profile reset backups — so any of them keeps the card on.
+                        enabled = fileState.hasDatabaseBackup ||
+                            fileState.hasSettingsBackup ||
+                            fileState.profileBackups.isNotEmpty(),
+                        disabledReason = stringResource(R.string.rescue_no_backups_to_delete),
+                        onClick = {
+                            guardWrite {
+                                confirmAction = ConfirmAction(R.string.rescue_confirm_delete_backups) {
+                                    scope.launch {
+                                        val result = withContext(NzikDispatchers.DATA) {
+                                            RescueFiles.deleteBackups(context)
+                                        }
+                                        showResult(result)
+                                    }
+                                }
+                            }
+                        }
+                    )
                 }
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // ─── DANGER ZONE ───
-            RescueCategoryHeader(stringResource(R.string.rescue_category_danger))
+            // App — end the main process
+            RescueSectionCard(
+                title = stringResource(R.string.rescue_group_app),
+                iconRes = R.drawable.logout,
+                content = {
 
             // Kill the app: re-sends the kill request when the automatic one (sent when this
             // screen opened) failed — broadcast lost, main thread fully frozen. Gated on the
@@ -600,169 +1506,144 @@ fun RescueScreen() {
             // healthy launch consumes as a self-kill. Not gated by guardWrite: its whole
             // purpose is to release the guard, and it writes nothing (while the process is
             // alive — which is exactly when this button is enabled).
-            RescueActionCard(
-                iconRes = R.drawable.logout,
-                title = stringResource(R.string.rescue_kill_app),
-                description = stringResource(R.string.rescue_kill_app_description),
-                enabled = mainProcessRunning == true,
-                onClick = {
-                    confirmAction = ConfirmAction(R.string.rescue_confirm_kill_app) {
-                        scope.launch {
-                            withContext(NzikDispatchers.DATA) {
-                                RescueProcess.requestKillMain(context)
-                            }
-                        }
-                        // Restart the status polling so "stopping" → "stopped" is visible again.
-                        killRequestGeneration++
-                    }
-                }
-            )
-
-            // Reset database
-            RescueActionCard(
-                iconRes = R.drawable.server,
-                title = stringResource(R.string.rescue_reset_database),
-                description = stringResource(R.string.rescue_reset_database_description),
-                onClick = {
-                    guardWrite {
-                        // A second reset overwrites the only backup: say so before it happens.
-                        val message = if (fileState.hasDatabaseBackup) {
-                            R.string.rescue_confirm_reset_database_replace_backup
-                        } else {
-                            R.string.rescue_confirm_reset_database
-                        }
-                        confirmAction = ConfirmAction(message) {
-                            scope.launch {
-                                val result = withContext(NzikDispatchers.DATA) {
-                                    RescueFiles.resetDatabase(context)
-                                }
-                                showResult(result)
-                            }
-                        }
-                    }
-                }
-            )
-
-            // Restore database
-            RescueActionCard(
-                iconRes = R.drawable.server,
-                title = stringResource(R.string.rescue_restore_database),
-                description = stringResource(R.string.rescue_restore_database_description),
-                enabled = fileState.hasDatabaseBackup,
-                disabledReason = stringResource(R.string.rescue_no_backup),
-                onClick = {
-                    guardWrite {
-                        confirmAction = ConfirmAction(R.string.rescue_confirm_restore_database) {
-                            scope.launch {
-                                val result = withContext(NzikDispatchers.DATA) {
-                                    RescueFiles.restoreDatabase(context)
-                                }
-                                showResult(result)
-                            }
-                        }
-                    }
-                }
-            )
-
-            // Reset settings
-            RescueActionCard(
-                iconRes = R.drawable.settings,
-                title = stringResource(R.string.rescue_reset_settings),
-                description = stringResource(R.string.rescue_reset_settings_description),
-                onClick = {
-                    guardWrite {
-                        // A second reset would overwrite the backup with already-cleared settings.
-                        val message = if (fileState.hasSettingsBackup) {
-                            R.string.rescue_confirm_reset_settings_replace_backup
-                        } else {
-                            R.string.rescue_confirm_reset_settings
-                        }
-                        confirmAction = ConfirmAction(message) {
-                            scope.launch {
-                                val result = withContext(NzikDispatchers.DATA) {
-                                    RescueFiles.resetSettings(context, encryptedPrefs.await())
-                                }
-                                showResult(result)
-                            }
-                        }
-                    }
-                }
-            )
-
-            // Restore settings
-            RescueActionCard(
-                iconRes = R.drawable.settings,
-                title = stringResource(R.string.rescue_restore_settings),
-                description = stringResource(R.string.rescue_restore_settings_description),
-                enabled = fileState.hasSettingsBackup,
-                disabledReason = stringResource(R.string.rescue_no_settings_backup),
-                onClick = {
-                    guardWrite {
-                        confirmAction = ConfirmAction(R.string.rescue_confirm_restore_settings) {
-                            scope.launch {
-                                val result = withContext(NzikDispatchers.DATA) {
-                                    RescueFiles.restoreSettings(context)
-                                }
-                                showResult(result)
-                                if (result.isSuccess) {
-                                    // The XML files were swapped behind this process's in-memory
-                                    // SharedPreferences: a later commit() would write the stale map
-                                    // back over them. End the :rescue process so nothing does. Armed
-                                    // on the main looper, not in the composition scope: leaving the
-                                    // screen or recreating the activity cannot cancel it.
-                                    exitPending = true
-                                    NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                                        delay(PROCESS_EXIT_DELAY_MS)
-                                        // The kill must run even if finishing the task throws: the
-                                        // old Handler runnable ended the process on any exception.
-                                        try {
-                                            (context as? Activity)?.finishAndRemoveTask()
-                                        } finally {
-                                            Process.killProcess(Process.myPid())
-                                        }
+                    RescueActionCard(
+                        iconRes = R.drawable.logout,
+                        title = stringResource(R.string.rescue_kill_app),
+                        description = stringResource(R.string.rescue_kill_app_description),
+                        enabled = mainProcessRunning == true,
+                        onClick = {
+                            confirmAction = ConfirmAction(R.string.rescue_confirm_kill_app) {
+                                scope.launch {
+                                    withContext(NzikDispatchers.DATA) {
+                                        RescueProcess.requestKillMain(context)
                                     }
                                 }
+                                // Restart the status polling so "stopping" → "stopped" is visible again.
+                                killRequestGeneration++
                             }
                         }
-                    }
+                    )
                 }
             )
-
-            // Delete backups: removes the only safety copy, so it lives in the danger zone
-            RescueActionCard(
-                iconRes = R.drawable.trash,
-                title = stringResource(R.string.rescue_delete_backups),
-                description = stringResource(R.string.rescue_delete_backups_description),
-                enabled = fileState.hasDatabaseBackup || fileState.hasSettingsBackup,
-                disabledReason = stringResource(R.string.rescue_no_backups_to_delete),
-                onClick = {
-                    guardWrite {
-                        confirmAction = ConfirmAction(R.string.rescue_confirm_delete_backups) {
-                            scope.launch {
-                                val result = withContext(NzikDispatchers.DATA) {
-                                    RescueFiles.deleteBackups(context)
-                                }
-                                showResult(result)
-                            }
-                        }
-                    }
                 }
-            )
+            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Fake bottom padding: the nav-buttons room (the 16dp bottom margin comes from the
+            // column padding), so the last card settles above the transparent buttons.
+            Spacer(modifier = Modifier.height(navBarBottom))
         }
     }
 }
 
+/**
+ * The scope categories of the Rescue Center. The selected category decides which action
+ * cards are shown; [PER_PROFILE] additionally exposes the profile target as a subcategory.
+ */
+private enum class RescueCategory {
+    ALL,
+    PER_PROFILE
+}
+
+/**
+ * Category block transitions: the incoming category expands + fades in (same motion as
+ * the settings cards' entry transitions), and the outgoing one is removed instantly —
+ * an animated exit would keep both categories on screen at the same time (the old one
+ * collapsing below the new one), which reads as overlapping cards.
+ */
+private val rescueCategoryEnter: EnterTransition =
+    expandVertically(animationSpec = tween(400)) + fadeIn(animationSpec = tween(400))
+private val rescueCategoryExit: ExitTransition =
+    shrinkVertically(animationSpec = tween(0)) + fadeOut(animationSpec = tween(0))
+
 @Composable
-private fun RescueCategoryHeader(title: String) {
-    Text(
-        text = title.uppercase(),
-        style = MaterialTheme.typography.labelMedium,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 4.dp, top = 8.dp, bottom = 4.dp)
-    )
+private fun RescueCategoryChip(
+    label: String,
+    selected: Boolean,
+    onSelect: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(
+                if (selected)
+                    MaterialTheme.colorScheme.primary
+                else
+                    MaterialTheme.colorScheme.surfaceVariant
+            )
+            .clickable(onClick = onSelect)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = if (selected)
+                MaterialTheme.colorScheme.onPrimary
+            else
+                MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+/**
+ * A self-contained section card (NZik-style frame: rounded card, icon + accent title
+ * header) that groups the action cards of one sub-scope (database / settings / …).
+ * Deliberately built on MaterialTheme alone — the :rescue process must not depend on
+ * app-wide helpers (theme prefs, …) or it risks crashing there.
+ */
+@Composable
+private fun RescueSectionCard(
+    title: String,
+    iconRes: Int,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Section header: icon tile + accent title
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            RoundedCornerShape(12.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(iconRes),
+                        tint = MaterialTheme.colorScheme.primary,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                content()
+            }
+        }
+    }
 }
 
 @Composable
@@ -845,11 +1726,26 @@ private data class ConfirmAction(
     val onConfirm: () -> Unit
 )
 
+/** A picked file whose name carries the tag of another profile: confirm before importing it. */
+private data class CrossProfilePending(
+    val tag: String,
+    val onConfirm: () -> Unit
+)
+
+/** A selectable rescue target profile (display label + active marker). */
+private data class ProfileOption(
+    val id: String,
+    val label: String,
+    val isActive: Boolean
+)
+
 /** Availability of the actions that depend on files present on disk. */
 private data class RescueFileState(
     val hasLogs: Boolean = false,
     val hasDatabaseBackup: Boolean = false,
-    val hasSettingsBackup: Boolean = false
+    val hasSettingsBackup: Boolean = false,
+    val hasProfileState: Boolean = false,
+    val profileBackups: Set<String> = emptySet()
 )
 
 @Composable
@@ -952,7 +1848,8 @@ private fun RescueDialogButtons(
     cancelText: String,
     confirmText: String,
     onCancel: () -> Unit,
-    onConfirm: () -> Unit
+    onConfirm: () -> Unit,
+    confirmEnabled: Boolean = true
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -966,6 +1863,7 @@ private fun RescueDialogButtons(
         }
         Button(
             onClick = onConfirm,
+            enabled = confirmEnabled,
             modifier = Modifier.weight(1f)
         ) {
             Text(text = confirmText, fontWeight = FontWeight.Medium)

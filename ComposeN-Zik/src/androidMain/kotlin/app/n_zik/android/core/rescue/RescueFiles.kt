@@ -6,8 +6,13 @@ import android.content.SharedPreferences
 import android.database.DatabaseErrorHandler
 import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
+import android.provider.DocumentsContract
 import android.os.Build
 import android.os.Process
+import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
+import app.it.fast4x.rimusic.utils.PROFILE_NAMES_FILE_NAME
+import app.it.fast4x.rimusic.utils.clearProfileFaceEntries
+import app.it.fast4x.rimusic.utils.currentProfileEntries
 import app.it.fast4x.rimusic.utils.discordAvatarKey
 import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
 import app.it.fast4x.rimusic.utils.discordUsernameKey
@@ -16,8 +21,15 @@ import app.it.fast4x.rimusic.utils.enableYouTubeSyncKey
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.isDiscordBrowsingEnabledKey
 import app.it.fast4x.rimusic.utils.isDiscordPresenceEnabledKey
+import app.it.fast4x.rimusic.utils.isProfileIdSafe
+import app.it.fast4x.rimusic.utils.profileDisplayName
+import app.it.fast4x.rimusic.utils.profileLastUsed
 import app.it.fast4x.rimusic.utils.proxyPasswordEncryptedKey
+import app.it.fast4x.rimusic.utils.saveProfileDisplayName
+import app.it.fast4x.rimusic.utils.saveProfileLastUsed
+import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.it.fast4x.rimusic.utils.useYtLoginOnlyForBrowseKey
+import app.it.fast4x.rimusic.utils.writeProfileEntries
 import app.it.fast4x.rimusic.utils.ytAccountChannelHandleKey
 import app.it.fast4x.rimusic.utils.ytAccountEmailKey
 import app.it.fast4x.rimusic.utils.ytAccountNameKey
@@ -26,6 +38,7 @@ import app.it.fast4x.rimusic.utils.ytCookieKey
 import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
 import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import app.n_zik.android.appContext
+import app.n_zik.android.core.backup.ProfileStateArchive
 import app.n_zik.android.extensions.discord.discordAdvancedSettingKeys
 import app.n_zik.android.extensions.lastfm.isLastfmNowPlayingEnabledKey
 import app.n_zik.android.extensions.lastfm.isLastfmScrobbleEnabledKey
@@ -42,6 +55,7 @@ import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -90,8 +104,13 @@ object RescueFiles {
 
     private val ENCRYPTED_PREFS_NAME: String
         get() = "secure_preferences$profileSuffix"
-    private val SHARED_PREFS_DIR: String
-        get() = "shared_prefs$profileSuffix"
+    /**
+     * The directory holding every SharedPreferences XML of the app — ALWAYS the plain
+     * `shared_prefs` dir: the profile suffix lives in the FILE name
+     * (`preferences_<id>.xml`), never in the directory. A suffixed directory does not
+     * exist on Android, which would silently back up (and restore) nothing.
+     */
+    private const val SHARED_PREFS_DIR = "shared_prefs"
     private val SETTINGS_FILE_NAMES: List<String>
         get() = listOf("$PREFS_NAME.xml", "$ENCRYPTED_PREFS_NAME.xml")
 
@@ -145,6 +164,24 @@ object RescueFiles {
                 rescueProfile = getActiveProfile(context)
             }
         }
+    }
+
+    /**
+     * Sets the rescue target profile — the profile the data actions (database and
+     * settings import/export, restore) operate on. In-memory only: nothing is moved
+     * and the app's active profile is never switched (switching stays an explicit
+     * choice in the profiles page). Call after [initialize].
+     */
+    internal fun setRescueProfile(profile: String) {
+        synchronized(this) {
+            checkNotNull(rescueProfile) { "RescueFiles.initialize(context) must be called first" }
+            rescueProfile = profile
+        }
+    }
+
+    /** The current rescue target profile (call after [initialize]). */
+    internal fun rescueTargetProfile(): String = checkNotNull(rescueProfile) {
+        "RescueFiles.initialize(context) must be called first"
     }
 
     /**
@@ -528,6 +565,437 @@ object RescueFiles {
     }
 
     // ──────────────────────────────────────────────────────────────────────
+    // Profile state (list + faces) — the archive the auto backup writes, managed
+    // here by the manual import/export
+    // ──────────────────────────────────────────────────────────────────────
+
+    /**
+     * Exports the combined profile state archive (the list + the base64 face of every
+     * profile that has one + the base's custom name when it was renamed) to the document at
+     * [uri] as a single .txt file. Errors when there is nothing to archive (no list file,
+     * no face, no renamed base: a fresh install).
+     */
+    fun exportProfileState(context: Context, uri: Uri): Result<Unit> = runCatching {
+        if (!ProfileStateArchive.hasState(context)) {
+            error("No profile state to export")
+        }
+        context.contentResolver.openOutputStream(uri)?.use { outStream ->
+            ProfileStateArchive.writeArchive(context, outStream)
+        } ?: error("Failed to open output stream for profile state export")
+        Timber.tag(TAG).i("Profile state exported")
+    }
+
+    /**
+     * Imports the combined profile state archive from the document at [uri]: the list is
+     * validated and written atomically, the display names are restored and every face is
+     * materialized after a JPEG check. A legacy list-only .txt (no face lines) is still
+     * accepted — the faces are then simply absent. Returns the restored list size plus the
+     * number of faces and names actually written (a base-only archive restores 0 profiles,
+     * its face and/or name); errors when the file carries no valid profile at all.
+     */
+    fun importProfileState(context: Context, uri: Uri): Result<ProfileStateArchive.ApplyResult> = runCatching {
+        val applied = context.contentResolver.openInputStream(uri)?.use { inStream ->
+            ProfileStateArchive.apply(context, ProfileStateArchive.readArchive(inStream))
+        } ?: error("Failed to open input stream for profile state import")
+        Timber.tag(TAG).i(
+            "Profile state imported: %d profiles, %d faces, %d names",
+            applied.profiles, applied.faces, applied.names
+        )
+        applied
+    }
+
+    /**
+     * The `(id, display name)` pairs carried by the profile state archive at [uri], read
+     * WITHOUT applying it — the import-target dialog offers these as import targets so
+     * every profile a bundle carries is visible before anything is written. The entries
+     * are already validated by [ProfileStateArchive.readArchive] (unsafe lines dropped).
+     * The base profile is never a list line, so it is only carried here when the archive
+     * explicitly holds its renamed name (the `__name__default` line). Returns an empty
+     * list when the file is unreadable or lists no valid profile.
+     */
+    internal fun readProfileStateEntries(context: Context, uri: Uri): List<Pair<String, String>> =
+        runCatching {
+            context.contentResolver.openInputStream(uri)?.use { inStream ->
+                val archive = ProfileStateArchive.readArchive(inStream)
+                archive.names[DEFAULT_PROFILE_ID]?.let { baseName ->
+                    archive.entries + (DEFAULT_PROFILE_ID to baseName)
+                } ?: archive.entries
+            } ?: emptyList()
+        }.getOrDefault(emptyList())
+
+    /**
+     * Deletes the user profiles in [ids] (the base ID is ignored — the base is never
+     * deleted): the names-file line, the profile's own settings files (plain +
+     * encrypted), its database (and its WAL/SHM/journal), its face entries (display
+     * name + last use) and its face files.
+     *
+     * When the ACTIVE profile is among [ids], the active slot is switched to the base
+     * first, so the next launch starts on a valid profile — the app must be relaunched
+     * for the deletion to take effect. The caller must ensure the main process is not
+     * running (RescueScreen.guardWrite): a live main process would commit its
+     * in-memory preferences back over the deleted files.
+     *
+     * Returns the number of profiles actually deleted.
+     */
+    internal fun deleteProfiles(context: Context, ids: List<String>): Result<Int> =
+        runCatching {
+            val toDelete = ids.distinct().filterNot { it == DEFAULT_PROFILE_ID }
+            if (toDelete.isNotEmpty()) {
+                // A deleted active profile must not be the one the next launch starts
+                // on: point the active slot at the base (the one profile that always
+                // exists — it is never a names-file line, so nothing else to update).
+                if (toDelete.contains(getActiveProfile(context))) {
+                    setActiveProfile(DEFAULT_PROFILE_ID, context)
+                }
+                // The names file first: a removed profile must not survive a crash
+                // mid-purge as a row with no files.
+                if (!context.writeProfileEntries(
+                        context.currentProfileEntries().filterNot { (id, _) -> id in toDelete }
+                    )
+                ) {
+                    throw IOException("Could not update $PROFILE_NAMES_FILE_NAME")
+                }
+                toDelete.forEach { id ->
+                    deleteProfileSettingsFiles(context, id)
+                    deleteProfileDatabaseFiles(context, id)
+                    context.clearProfileFaceEntries(id)
+                    // The profile's own files dir (its custom face photo) — the same
+                    // rule as the profiles-page deletion (ProfileCard.profileDataDir).
+                    runCatching { File(context.filesDir, "profiles/$id").deleteRecursively() }
+                        .onFailure {
+                            Timber.tag(TAG).w(it, "Could not purge the profile files of %s", id)
+                        }
+                }
+            }
+            toDelete.size
+        }
+
+    /**
+     * Resets the base profile to factory state: its database (data.db), its
+     * settings files (the unsuffixed preferences + secure_preferences), its face
+     * files (profiles/default/) and its face entries (displayName_default,
+     * lastUsed_default) are deleted — after [backupProfileData] has moved them to
+     * the base's reset-backup directory, so the reset is reversible
+     * ([restoreBaseProfile], the same pattern as the database and settings resets).
+     * The base is never a names-file line, so the profile list is untouched; the
+     * active slot is untouched too (the base always exists). The app must be
+     * relaunched afterwards, and the caller must ensure the main process is not
+     * running (RescueScreen.guardWrite).
+     */
+    internal fun resetBaseProfile(context: Context): Result<Unit> =
+        runCatching {
+            // The backup first: a failed backup aborts the reset before anything is
+            // wiped, so a base reset is always restorable.
+            backupProfileData(context, DEFAULT_PROFILE_ID)
+            deleteProfileDatabaseFiles(context, DEFAULT_PROFILE_ID)
+            deleteProfileSettingsFiles(context, DEFAULT_PROFILE_ID)
+            context.clearProfileFaceEntries(DEFAULT_PROFILE_ID)
+            runCatching { File(context.filesDir, "profiles/$DEFAULT_PROFILE_ID").deleteRecursively() }
+                .onFailure { Timber.tag(TAG).w(it, "Could not purge the base profile files") }
+            Timber.tag(TAG).i("Base profile reset to factory state")
+        }
+
+    /**
+     * Factory-resets the user profiles in [ids] (the base ID is ignored — it is reset by
+     * [resetBaseProfile]): each profile's database, its settings files (plain + encrypted,
+     * so the account credentials too), its face files and its face entries (display name +
+     * last use) are deleted — after [backupProfileData] has moved them to the profile's
+     * reset-backup directory, so the reset is reversible ([restoreProfiles], the same
+     * pattern as the database and settings resets). Unlike [deleteProfiles], the profiles
+     * are NOT removed from the list: their names-file line survives, so the profiles stay
+     * switchable — they simply start empty, with their display name back to the plain ID.
+     *
+     * Because the display names are cleared, the names file (which mirrors the store) is
+     * rewritten afterwards so the reset profiles' lines lose their name portion. The active
+     * slot is untouched: a reset profile still exists, so the next launch stays valid.
+     * The caller must ensure the main process is not running (RescueScreen.guardWrite): a
+     * live main process would commit its in-memory preferences back over the deleted files.
+     *
+     * Returns the number of profiles actually reset.
+     */
+    internal fun resetProfiles(context: Context, ids: List<String>): Result<Int> =
+        runCatching {
+            val toReset = ids.distinct().filterNot { it == DEFAULT_PROFILE_ID }
+            if (toReset.isNotEmpty()) {
+                toReset.forEach { id ->
+                    // The backup first: a failed backup aborts the reset of this profile
+                    // before anything is wiped, so a reset is always restorable.
+                    backupProfileData(context, id)
+                    deleteProfileDatabaseFiles(context, id)
+                    deleteProfileSettingsFiles(context, id)
+                    context.clearProfileFaceEntries(id)
+                    runCatching { File(context.filesDir, "profiles/$id").deleteRecursively() }
+                        .onFailure {
+                            Timber.tag(TAG).w(it, "Could not purge the profile files of %s", id)
+                        }
+                }
+                // The reset profiles' display names are gone, so the names file (which
+                // mirrors the store) is rewritten: their lines lose the name portion.
+                if (!context.writeProfileEntries(context.currentProfileEntries())) {
+                    throw IOException("Could not update $PROFILE_NAMES_FILE_NAME")
+                }
+            }
+            Timber.tag(TAG).i("Reset %d profile(s) to factory state", toReset.size)
+            toReset.size
+        }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Profile reset backups + restore (the reset is reversible, like the
+    // database and settings resets)
+    // ──────────────────────────────────────────────────────────────────────
+
+    /** The database file name of [profileId] (data.db for the base — the app's own rule). */
+    private fun profileDatabaseName(profileId: String): String =
+        "data${if (profileId != DEFAULT_PROFILE_ID) "_$profileId" else ""}.db"
+
+    /**
+     * The backup directory of one profile's last reset:
+     * `rescue_backups/profiles/<id>/`. It holds the database under its original name
+     * (side files included), the settings XMLs under their stored names, the face files
+     * (the `profile/` dir) and the face entries (`face_entries.txt`).
+     */
+    private fun profileBackupDir(context: Context, profileId: String): File =
+        File(File(context.filesDir, RESCUE_BACKUPS_DIR), "profiles/$profileId")
+
+    /** True when [profileId] carries a backup from a previous reset. */
+    fun hasProfileBackup(context: Context, profileId: String): Boolean =
+        profileBackupDir(context, profileId).let { it.exists() && it.list()?.isNotEmpty() == true }
+
+    /**
+     * The profile IDs that carry a reset backup (the non-empty
+     * `rescue_backups/profiles/` subdirectories) — the restore actions' availability.
+     */
+    fun profileBackupIds(context: Context): Set<String> =
+        runCatching {
+            File(File(context.filesDir, RESCUE_BACKUPS_DIR), "profiles")
+                .listFiles()
+                ?.filter { it.isDirectory && it.list()?.isNotEmpty() == true }
+                ?.mapTo(mutableSetOf()) { it.name }
+                ?: emptySet()
+        }.getOrDefault(emptySet())
+
+    /**
+     * Backs up [profileId]'s data to its reset-backup directory so a later
+     * [restoreProfiles] / [restoreBaseProfile] can bring it back: the database
+     * (original name, side files included), the settings XMLs (plain + encrypted — the
+     * account credentials), the face files and the face entries (display name + last
+     * use, captured BEFORE the wipe clears them).
+     *
+     * The files are MOVED, not copied: zero-copy and atomic on the same volume. Only
+     * the last reset is kept, exactly like the database and settings resets — a
+     * previous backup is replaced. A failure propagates to the caller, which must then
+     * abort the reset: nothing is wiped when the backup could not be taken.
+     */
+    private fun backupProfileData(context: Context, profileId: String) {
+        val backup = profileBackupDir(context, profileId)
+        runCatching { backup.deleteRecursively() }
+            .onFailure { Timber.tag(TAG).w(it, "Could not replace the stale backup of %s", profileId) }
+        check(backup.mkdirs()) { "Could not create the backup directory of $profileId" }
+
+        // The database under its original name — side files included.
+        val dbFile = context.getDatabasePath(profileDatabaseName(profileId))
+        if (dbFile.exists()) {
+            moveDatabaseFiles(dbFile, File(backup, dbFile.name))
+        }
+
+        // The settings XMLs (plain + encrypted) under their stored names.
+        val sharedPrefsDir = File(context.applicationInfo.dataDir, SHARED_PREFS_DIR)
+        val suffix = if (profileId == DEFAULT_PROFILE_ID) "" else "_$profileId"
+        listOf("preferences$suffix", "secure_preferences$suffix").forEach { name ->
+            val xml = File(sharedPrefsDir, "$name.xml")
+            if (xml.exists()) moveReplacing(xml, File(backup, "$name.xml"))
+        }
+
+        // The face files (the profile's own dir under filesDir).
+        val faceDir = File(context.filesDir, "profiles/$profileId")
+        if (faceDir.exists()) moveReplacing(faceDir, File(backup, "profile"))
+
+        // The face entries — captured before the wipe clears them.
+        File(backup, "face_entries.txt").writeText(
+            "name=${context.profileDisplayName(profileId).orEmpty()}\n" +
+                "lastUsed=${context.profileLastUsed(profileId) ?: 0L}\n"
+        )
+    }
+
+    /**
+     * Restores [profileId]'s data from its reset-backup directory: the database is
+     * swapped with the live one (a fresh database created since the reset becomes the
+     * new backup — the same ping-pong as [restoreDatabase]), the settings XMLs replace
+     * the live ones, the face files replace the live dir and the face entries are
+     * re-applied to the `profile_preferences` store. Errors when no backup exists.
+     */
+    private fun restoreProfileData(context: Context, profileId: String) {
+        val backup = profileBackupDir(context, profileId)
+        if (!hasProfileBackup(context, profileId)) {
+            error("No backup to restore for $profileId")
+        }
+
+        val suffix = if (profileId == DEFAULT_PROFILE_ID) "" else "_$profileId"
+
+        // The database: swap with the live one (a profile used since the reset had a
+        // fresh database — it becomes the new backup).
+        val backupDb = File(backup, profileDatabaseName(profileId))
+        if (backupDb.exists()) {
+            swapDatabaseFiles(context.getDatabasePath(profileDatabaseName(profileId)), backupDb)
+        }
+
+        // The settings XMLs replace the live ones (fresh default files created since
+        // the reset are overwritten, like the database is swapped).
+        val sharedPrefsDir = File(context.applicationInfo.dataDir, SHARED_PREFS_DIR)
+        listOf("preferences$suffix", "secure_preferences$suffix").forEach { name ->
+            val src = File(backup, "$name.xml")
+            if (src.exists()) moveReplacing(src, File(sharedPrefsDir, "$name.xml"))
+        }
+
+        // The face files: the backed-up dir replaces the live one.
+        val backupFace = File(backup, "profile")
+        if (backupFace.exists()) {
+            val faceDir = File(context.filesDir, "profiles/$profileId")
+            runCatching { faceDir.deleteRecursively() }
+            faceDir.parentFile?.mkdirs()
+            check(backupFace.renameTo(faceDir)) { "Could not restore the face files of $profileId" }
+        }
+
+        // The face entries — re-applied to the store.
+        val entries = File(backup, "face_entries.txt")
+        if (entries.exists()) {
+            var name = ""
+            var lastUsed = 0L
+            entries.readText().lineSequence().forEach { line ->
+                when {
+                    line.startsWith("name=") -> name = line.removePrefix("name=")
+                    line.startsWith("lastUsed=") -> lastUsed = line.removePrefix("lastUsed=").toLongOrNull() ?: 0L
+                }
+            }
+            if (name.isNotEmpty()) context.saveProfileDisplayName(profileId, name)
+            if (lastUsed > 0L) context.saveProfileLastUsed(profileId, lastUsed)
+        }
+    }
+
+    /**
+     * Restores the user profiles in [ids] from their reset backups (created by
+     * [resetProfiles]): their database is swapped with the live one, their settings
+     * files replace the live ones, their face files are brought back and their face
+     * entries (display name + last use) are re-applied. IDs without a backup are
+     * skipped; the base ID is ignored (it is restored by [restoreBaseProfile]). The
+     * names file is rewritten afterwards so the restored display names are mirrored
+     * again. The caller must ensure the main process is not running
+     * (RescueScreen.guardWrite).
+     *
+     * Returns the number of profiles actually restored.
+     */
+    internal fun restoreProfiles(context: Context, ids: List<String>): Result<Int> =
+        runCatching {
+            val toRestore = ids.distinct()
+                .filterNot { it == DEFAULT_PROFILE_ID }
+                .filter { hasProfileBackup(context, it) }
+            toRestore.forEach { id -> restoreProfileData(context, id) }
+            if (toRestore.isNotEmpty()) {
+                // The restored display names are back in the store: mirror them again
+                // in the names file.
+                if (!context.writeProfileEntries(context.currentProfileEntries())) {
+                    throw IOException("Could not update $PROFILE_NAMES_FILE_NAME")
+                }
+            }
+            Timber.tag(TAG).i("Restored %d profile(s) from their reset backups", toRestore.size)
+            toRestore.size
+        }
+
+    /**
+     * Restores the base profile from its reset backup (created by [resetBaseProfile]):
+     * its database is swapped with the live one, its settings files replace the live
+     * ones, its face files are brought back and its face entries (display name + last
+     * use) are re-applied. Errors when no backup exists. The base is never a
+     * names-file line, so the profile list is untouched. The caller must ensure the
+     * main process is not running (RescueScreen.guardWrite).
+     */
+    internal fun restoreBaseProfile(context: Context): Result<Unit> =
+        runCatching {
+            restoreProfileData(context, DEFAULT_PROFILE_ID)
+            Timber.tag(TAG).i("Base profile restored from its reset backup")
+        }
+
+    /**
+     * Deletes the settings files of [profileId] (plain + encrypted — the base uses
+     * the unsuffixed names, same rule as `Context.preferences`). A missing file is
+     * not an error: the profile may have never written settings.
+     */
+    private fun deleteProfileSettingsFiles(context: Context, profileId: String) {
+        val suffix = if (profileId == DEFAULT_PROFILE_ID) "" else "_$profileId"
+        // The same names the app itself uses: plain settings + encrypted settings
+        // (secure_preferences — the account credentials). Mirrors PREFS_NAME /
+        // ENCRYPTED_PREFS_NAME, computed for [profileId] instead of the active profile.
+        listOf("preferences$suffix", "secure_preferences$suffix").forEach { name ->
+            // deleteSharedPreferences (API 24+) removes the shared_prefs XML from disk.
+            if (!context.deleteSharedPreferences(name)) {
+                Timber.tag(TAG).w("Could not delete %s.xml (it may be missing)", name)
+            }
+        }
+    }
+
+    /**
+     * Deletes the database of [profileId] (+ its WAL/SHM/journal) — same naming rule
+     * as Database.fileNameForProfile (data.db for the base). A missing database is
+     * not an error: the profile may have never played anything.
+     */
+    private fun deleteProfileDatabaseFiles(context: Context, profileId: String) {
+        val dbName = "data${if (profileId != DEFAULT_PROFILE_ID) "_$profileId" else ""}.db"
+        runCatching { context.deleteDatabase(dbName) }
+            .onFailure { Timber.tag(TAG).w(it, "Could not delete the %s database", dbName) }
+        val dbFile = runCatching { context.getDatabasePath(dbName) }.getOrNull() ?: return
+        listOf(
+            dbFile,
+            File(dbFile.path + "-journal"),
+            File(dbFile.path + "-wal"),
+            File(dbFile.path + "-shm"),
+        ).forEach { f ->
+            if (f.exists() && !f.delete()) {
+                Timber.tag(TAG).w("Could not delete the database file %s", f.name)
+            }
+        }
+    }
+
+    /**
+     * The display name of the document at [uri], or `null` when it cannot be
+     * read — used to detect the profile tag carried by a backup/export file name.
+     */
+    internal fun documentDisplayName(context: Context, uri: Uri): String? =
+        runCatching {
+            context.contentResolver.query(
+                uri, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null
+            )?.use { cursor ->
+                if (cursor.moveToFirst()) cursor.getString(0) else null
+            }
+        }.getOrNull()
+
+    /**
+     * The profile tag carried by a profiled backup or export file name, `null`
+     * when the name is not one of them (legacy unprofiled names, other files).
+     *
+     * Pure (unit-tested without Android): the backup timestamp
+     * (`yyyy-MM-dd_HHmmss`) anchors the match from the end, the app name anchors
+     * the prefix — everything between them is the profile ID.
+     */
+    internal fun backupProfileTagOf(fileName: String, appName: String): String? {
+        val match = BACKUP_TAG_SUFFIX.find(fileName) ?: return null
+        val prefix = fileName.substring(0, match.range.first)
+        val appPrefix = "${appName}_"
+        if (!prefix.startsWith(appPrefix)) return null
+        val tag = prefix.substring(appPrefix.length)
+        return tag.takeIf { it.isNotEmpty() && isProfileIdSafe(it) }
+    }
+
+    /**
+     * The timestamped backup/export suffix: the auto-backup names
+     * (`…_<date>_AutoBackup.sqlite` / `…_<date>_Settings|Profiles|Face_AutoBackup.csv|txt|jpg`)
+     * and the manual profile-state export names
+     * (`…_<date>_Profiles_Export.txt` / `…_<date>_Face_Export.jpg`).
+     */
+    private val BACKUP_TAG_SUFFIX = Regex(
+        """_(\d{4}-\d{2}-\d{2}_\d{6})(?:_(?:Settings|Profiles|Face))?(?:_AutoBackup\.(?:sqlite|csv|txt|jpg)|_(?:Profiles|Face)_Export\.(?:txt|jpg))$"""
+    )
+
+    // ──────────────────────────────────────────────────────────────────────
     // Export crash logs
     // ──────────────────────────────────────────────────────────────────────
 
@@ -889,7 +1357,8 @@ object RescueFiles {
     }
 
     /**
-     * Deletes all backups (database and settings) from the rescue_backups directory.
+     * Deletes all backups (database, settings and the profile reset backups) from the
+     * rescue_backups directory.
      */
     fun deleteBackups(context: Context): Result<Unit> = runCatching {
         deleteBackupDir(File(context.filesDir, RESCUE_BACKUPS_DIR))

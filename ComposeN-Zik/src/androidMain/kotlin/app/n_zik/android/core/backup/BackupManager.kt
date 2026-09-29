@@ -12,6 +12,7 @@ import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.io.File
 import java.io.FileInputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -41,6 +42,8 @@ object BackupManager {
     const val TARGET_DATABASE = 0
     const val TARGET_SETTINGS = 1
     const val TARGET_BOTH = 2
+    const val TARGET_ACCOUNTS = 3
+    const val TARGET_ALL = 4
 
     const val INTERVAL_NONE = 0
     const val INTERVAL_HOURLY = 1
@@ -184,11 +187,16 @@ object BackupManager {
                 
                 var success = true
                 val date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss"))
+                // Every backup file carries the active profile ID in its name: a backup
+                // taken under one profile must stay recognizable as such, so it can never
+                // be mistaken for another profile's data when it is imported later.
+                val profile = getActiveProfile(context)
+                val parts = backupPartsOf(target)
 
-                if (target == TARGET_DATABASE || target == TARGET_BOTH) {
+                if (parts.database) {
                     Timber.tag("AutoBackup").d("Starting database backup...")
                     Database.checkpoint()
-                    val fileName = "${BuildConfig.APP_NAME}_${date}_AutoBackup.sqlite"
+                    val fileName = autoBackupFileName(BuildConfig.APP_NAME, profile, date, AutoBackupKind.DATABASE)
                     val docUri = DocumentsContract.buildDocumentUriUsingTree(
                         treeUri, DocumentsContract.getTreeDocumentId(treeUri)
                     )
@@ -209,9 +217,9 @@ object BackupManager {
                     }
                 }
 
-                if (target == TARGET_SETTINGS || target == TARGET_BOTH) {
+                if (parts.settings) {
                     Timber.tag("AutoBackup").d("Starting settings backup...")
-                    val fileName = "${BuildConfig.APP_NAME}_${date}_Settings_AutoBackup.csv"
+                    val fileName = autoBackupFileName(BuildConfig.APP_NAME, profile, date, AutoBackupKind.SETTINGS)
                     val docUri = DocumentsContract.buildDocumentUriUsingTree(
                         treeUri, DocumentsContract.getTreeDocumentId(treeUri)
                     )
@@ -225,6 +233,16 @@ object BackupManager {
                         Timber.tag("AutoBackup").e("Failed to create document for settings backup")
                         success = false
                     }
+
+                }
+
+                if (parts.profileState) {
+                    // The profile state that neither the database nor the settings CSV carries:
+                    // the list of profile IDs and the base64 face of every profile that has one,
+                    // in a single .txt. Nothing to archive (a fresh install) is not a failure —
+                    // the backup simply carries no copy of it.
+                    Timber.tag("AutoBackup").d("Starting profile state backup...")
+                    success = backupProfileState(context, treeUri, profile, date) && success
                 }
 
                 Timber.tag("AutoBackup").d("Enforcing retention policy...")
@@ -268,29 +286,17 @@ object BackupManager {
             )
 
             cursor?.use {
-                var dbCount = 0
-                var settingsCount = 0
+                val counts = mutableMapOf<AutoBackupKind, Int>()
                 while (it.moveToNext()) {
                     val displayName = it.getString(1) ?: ""
-                    val isDbBackup = displayName.contains("AutoBackup") && displayName.endsWith(".sqlite")
-                    val isSettingsBackup = displayName.contains("Settings_AutoBackup") && displayName.endsWith(".csv")
-                    
-                    if (isDbBackup) {
-                        dbCount++
-                        if (dbCount > maxBackups) {
-                            val docId = it.getString(0)
-                            val deleteUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId)
-                            DocumentsContract.deleteDocument(context.contentResolver, deleteUri)
-                            Timber.tag("AutoBackup").i("enforceRetentionPolicy: Deleted old DB backup: $displayName")
-                        }
-                    } else if (isSettingsBackup) {
-                        settingsCount++
-                        if (settingsCount > maxBackups) {
-                            val docId = it.getString(0)
-                            val deleteUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId)
-                            DocumentsContract.deleteDocument(context.contentResolver, deleteUri)
-                            Timber.tag("AutoBackup").i("enforceRetentionPolicy: Deleted old settings backup: $displayName")
-                        }
+                    val kind = autoBackupKindOf(displayName) ?: continue
+                    val count = (counts[kind] ?: 0) + 1
+                    counts[kind] = count
+                    if (count > maxBackups) {
+                        val docId = it.getString(0)
+                        val deleteUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId)
+                        DocumentsContract.deleteDocument(context.contentResolver, deleteUri)
+                        Timber.tag("AutoBackup").i("enforceRetentionPolicy: Deleted old %s backup: $displayName", kind.name)
                     }
                 }
             }
@@ -336,6 +342,29 @@ object BackupManager {
         }
     }
 
+    /**
+     * Writes the profile state archive (list + faces) into the backup folder as a single .txt.
+     * Nothing to archive is skipped silently: a fresh install simply carries no copy of it.
+     *
+     * @return true when the archive was written (or there was nothing to write).
+     */
+    private suspend fun backupProfileState(context: Context, treeUri: Uri, profile: String, date: String): Boolean {
+        if (!ProfileStateArchive.hasState(context)) {
+            Timber.tag("AutoBackup").d("No profile state to back up, skipping")
+            return true
+        }
+        val fileName = autoBackupFileName(BuildConfig.APP_NAME, profile, date, AutoBackupKind.PROFILE_STATE)
+        val docUri = DocumentsContract.buildDocumentUriUsingTree(
+            treeUri, DocumentsContract.getTreeDocumentId(treeUri)
+        )
+        val newDocUri = DocumentsContract.createDocument(context.contentResolver, docUri, "text/plain", fileName)
+            ?: return false
+        val outStream = context.contentResolver.openOutputStream(newDocUri) ?: return false
+        outStream.use { out -> ProfileStateArchive.writeArchive(context, out) }
+        Timber.tag("AutoBackup").i("Profile state backup successful to $fileName")
+        return true
+    }
+
     suspend fun verifyBackupLocation(context: Context) {
         val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         val uriString = prefs.getString(PREF_URI, "") ?: ""
@@ -377,4 +406,58 @@ object BackupManager {
             WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
         }
     }
+}
+
+/** Kind of an auto-backup file. The infix and the extension are part of the file name. */
+internal enum class AutoBackupKind(val infix: String, val extension: String) {
+    DATABASE("", "sqlite"),
+    SETTINGS("_Settings", "csv"),
+    PROFILE_STATE("_Profiles", "txt");
+}
+
+/**
+ * Name of an auto-backup file: app name, active profile ID, timestamp, kind. The profile ID is
+ * part of every name so a backup taken under one profile stays recognizable when it is imported
+ * later.
+ */
+internal fun autoBackupFileName(appName: String, profile: String, date: String, kind: AutoBackupKind): String =
+    "${appName}_${profile}_${date}${kind.infix}_AutoBackup.${kind.extension}"
+
+/**
+ * The kind of an existing auto-backup file name, `null` when it is not one. The legacy
+ * (unprofiled) database and settings names are still recognized, so pre-profile backups keep
+ * being counted by the retention policy; the pre-combined face auto-backup (.jpg) is counted
+ * as the profile state it belongs to.
+ */
+internal fun autoBackupKindOf(displayName: String): AutoBackupKind? {
+    if (!displayName.contains("AutoBackup")) return null
+    return when {
+        displayName.endsWith(".sqlite") -> AutoBackupKind.DATABASE
+        displayName.endsWith("Settings_AutoBackup.csv") -> AutoBackupKind.SETTINGS
+        displayName.endsWith("Profiles_AutoBackup.txt") -> AutoBackupKind.PROFILE_STATE
+        displayName.endsWith("Face_AutoBackup.jpg") -> AutoBackupKind.PROFILE_STATE
+        else -> null
+    }
+}
+
+/** The backup parts a target covers: the database, the settings CSV, the profile state. */
+internal data class BackupParts(
+    val database: Boolean,
+    val settings: Boolean,
+    val profileState: Boolean
+)
+
+/**
+ * The parts backed up for [target] (pure, unit-tested without Android): Database and Settings
+ * stay separate, Both keeps its database + settings scope, Accounts archives only the profile
+ * state (the list and the face of every profile that has one), All adds it to database +
+ * settings. An unknown target falls back to the stored default.
+ */
+internal fun backupPartsOf(target: Int): BackupParts = when (target) {
+    BackupManager.TARGET_DATABASE -> BackupParts(true, false, false)
+    BackupManager.TARGET_SETTINGS -> BackupParts(false, true, false)
+    BackupManager.TARGET_BOTH -> BackupParts(true, true, false)
+    BackupManager.TARGET_ACCOUNTS -> BackupParts(false, false, true)
+    BackupManager.TARGET_ALL -> BackupParts(true, true, true)
+    else -> BackupParts(true, false, false)
 }

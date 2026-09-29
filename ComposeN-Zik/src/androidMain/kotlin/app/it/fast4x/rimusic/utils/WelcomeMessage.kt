@@ -15,10 +15,7 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.it.fast4x.rimusic.ui.components.themed.TitleMiniSection
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
-import app.n_zik.android.utils.DataStoreUtils
-import app.n_zik.android.utils.resolveDisplayName
-import app.n_zik.android.ytAccountName
+import app.n_zik.android.components.ui.screens.profiles.loadActiveProfileFace
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -50,32 +47,21 @@ fun WelcomeMessage(){
 
     var message by remember { mutableStateOf(baseMessage) }
     // When no name was ever chosen, the greeting falls back to the default app name
-    val defaultName = stringResource(R.string.display_name_default)
+    val defaultName = stringResource(R.string.profile_base_name)
 
     LaunchedEffect(baseMessage) {
         withContext(NzikDispatchers.DATA) {
-            // The greeting follows the chosen display name (custom (guest) or YouTube):
-            // the YouTube account is only consulted when the stored source is YouTube,
-            // and nothing chosen falls back to the default app name
+            // The greeting follows the active profile's face name
+            // (spec-profiles-page-face): its display name or a logged-in account
+            // source, with the legacy custom name and the default app name as
+            // fallbacks — the name is never blank, so the greeting always renders.
             runCatching {
-                val source = DataStoreUtils.getString(
-                    appContext(),
-                    DataStoreUtils.KEY_DISPLAY_NAME_SOURCE,
-                    DataStoreUtils.DISPLAY_NAME_SOURCE_CUSTOM
-                )
-                val useYouTubeName = source == DataStoreUtils.DISPLAY_NAME_SOURCE_YOUTUBE
-                val name = resolveDisplayName(
-                    source = source,
-                    ytLoggedIn = useYouTubeName && isYouTubeLoggedIn(),
-                    ytName = if (useYouTubeName) ytAccountName() else "",
-                    customName = DataStoreUtils.getString(appContext(), DataStoreUtils.KEY_USERNAME, ""),
-                    default = defaultName
-                )
+                val name = loadActiveProfileFace(appContext(), defaultName).name
                 if (name.isNotBlank()) {
                     message = "$baseMessage, $name"
                 }
             }.onFailure {
-                Timber.tag("WelcomeMessage").e(it, "Failed to resolve the greeting display name")
+                Timber.tag("WelcomeMessage").e(it, "Failed to resolve the greeting face name")
             }
         }
     }

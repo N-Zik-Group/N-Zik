@@ -1,5 +1,6 @@
 package app.n_zik.android.components.onboarding
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -22,9 +24,11 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,13 +40,25 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.dialog.backup.ImportTargetProfileDialog
 import app.n_zik.android.components.dialog.common.RestartAppDialog
+import app.n_zik.android.components.import.ImportChainRunner
 import app.n_zik.android.components.import.ImportDatabase
+import app.n_zik.android.components.import.ImportProfileState
 import app.n_zik.android.components.import.ImportSettings
+import app.n_zik.android.components.import.buildProfileTargetOptions
+import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.it.fast4x.rimusic.utils.profileDisplayName
+import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
 import timber.log.Timber
 
 /**
@@ -51,9 +67,12 @@ import timber.log.Timber
  * (created by the app's Backup & Restore feature or by a previous version).
  *
  * Reuses the existing import pipeline ([ImportDatabase] / [ImportSettings], the same
- * components behind Settings -> Backup and restore). A successful import ends with the
- * restart prompt ([RestartAppDialog]) — its `Render()` is composed here because it is
- * normally only composed inside the settings screen, which is not alive during onboarding.
+ * components behind Settings -> Backup and restore). Every per-profile restore
+ * (database / settings / both / all) first asks which profile the data lands into
+ * ([ImportTargetProfileDialog]); a successful restore into the active profile ends
+ * with the restart prompt ([RestartAppDialog]) — its `Render()` is composed here
+ * because it is normally only composed inside the settings screen, which is not alive
+ * during onboarding.
  *
  * Two exits: "skip" calls [onComplete] (the flow moves on to the name step); a
  * successful restore advances the flow to the next step and triggers the restart
@@ -69,37 +88,167 @@ fun OnboardingImportScreen(
     val context = LocalContext.current
 
     // Default to restoring both — the most useful outcome for a first-launch restore.
-    // rememberSaveable: a rotation mid-flow must keep the chosen option and the
-    // both-mode flag (a late picker result is evaluated against it)
+    // rememberSaveable: a rotation mid-flow must keep the chosen option, the import
+    // mode and the picked files of the deferred chain (a late picker result is
+    // evaluated against them)
     var selectedOption by rememberSaveable { mutableIntStateOf(2) }
-    var bothMode by rememberSaveable { mutableStateOf(false) }
+    // 0 = single option, 1 = both (database -> settings), 2 = all (database -> settings -> profile state)
+    var importMode by rememberSaveable { mutableIntStateOf(0) }
+    var pendingDb by rememberSaveable { mutableStateOf<Uri?>(null) }
+    var pendingSettings by rememberSaveable { mutableStateOf<Uri?>(null) }
+    var pendingState by rememberSaveable { mutableStateOf<Uri?>(null) }
 
-    // Settings import finished -> advance the flow to the next step (persisted by the
-    // activity) and restart so the app re-reads every restored value; the onboarding is
-    // NOT marked complete, so the restart lands on the next step (stays in onboarding)
-    val importSettings = ImportSettings(context) {
-        Timber.tag("Onboarding").i("Restore done, advancing the onboarding before the app restart")
-        onComplete()
-        RestartAppDialog.showDialog()
+    // A picked file tagged with a profile other than its import target: confirm
+    // before importing it. Triple: (tag, target profile ID, proceed action).
+    var crossProfilePending by remember { mutableStateOf<Triple<String, String, () -> Unit>?>(null) }
+
+    // Flips off when the screen leaves the composition: a target dialog must never be
+    // flipped on by a read that finishes after the user left the step (its Render()
+    // would not be composed, and the stale state would surface on the next entry).
+    var screenActive by remember { mutableStateOf(true) }
+    DisposableEffect(Unit) { onDispose { screenActive = false } }
+
+    // The profile tag carried by a picked file name (null when untagged / unreadable).
+    fun profileTagOf(uri: Uri): String? =
+        RescueFiles.documentDisplayName(context, uri)
+            ?.let { RescueFiles.backupProfileTagOf(it, BuildConfig.APP_NAME) }
+
+    fun abortChain() {
+        // Nothing was written yet: drop every pick so the flow can start over.
+        pendingDb = null
+        pendingSettings = null
+        pendingState = null
     }
 
-    // Database import finished -> in both mode the settings import runs next,
-    // otherwise straight to the advance + restart prompt (same "stay in the flow" behavior)
-    val importDatabase = ImportDatabase(context) {
-        if (bothMode) {
-            Timber.tag("Onboarding").d("Database import done, chaining the settings import (both mode)")
-            importSettings.onShortClick()
+    fun startImportChain(target: String) {
+        val db = pendingDb
+        val settings = pendingSettings
+        val state = pendingState
+        pendingDb = null
+        pendingSettings = null
+        pendingState = null
+        ImportChainRunner.start(
+            context = context,
+            target = target,
+            databaseUri = db,
+            settingsUri = settings,
+            stateUri = state,
+            onCompleted = { onComplete() }
+        )
+    }
+
+    fun showTargetDialog(preselect: String?, imported: List<Pair<String, String>>) {
+        ImportTargetProfileDialog.show(
+            options = buildProfileTargetOptions(
+                context,
+                imported,
+                context.getString(R.string.profile_base_name)
+            ),
+            preselectedId = preselect,
+            onTarget = { target ->
+                // The all chain's state file must carry a tag matching the chosen
+                // target — otherwise confirm first (the state is global, so mixing
+                // it in is deliberate).
+                val stateTag = pendingState?.let { profileTagOf(it) }
+                if (stateTag != null && stateTag != target) {
+                    crossProfilePending = Triple(stateTag, target, { startImportChain(target) })
+                } else {
+                    startImportChain(target)
+                }
+            },
+            onDismiss = { abortChain() }
+        )
+    }
+
+    // Every per-profile restore (database / settings / both / all) asks where it
+    // lands before anything is written — the restart only applies when the chosen
+    // target is the active profile. In all mode the state file's profile list is
+    // read first so the dialog offers every profile the bundle carries.
+    fun openTargetDialog() {
+        val stateUri = pendingState
+        if (stateUri == null) {
+            // Single / both: the database (else settings) file tag is the only
+            // imported profile — show the question right away.
+            val preselect = (pendingDb ?: pendingSettings)?.let { profileTagOf(it) }
+            showTargetDialog(preselect, preselect?.let { listOf(it to it) } ?: emptyList())
         } else {
-            Timber.tag("Onboarding").i("Restore done, advancing the onboarding before the app restart")
-            onComplete()
-            RestartAppDialog.showDialog()
+            // All: read the state file to offer the profiles it carries (plus the
+            // database tag when the list omits it).
+            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                val preselect = (pendingDb ?: pendingSettings)?.let { profileTagOf(it) }
+                val imported = RescueFiles.readProfileStateEntries(context, stateUri)
+                val withTag = if (preselect != null && imported.none { it.first == preselect }) {
+                    listOf(preselect to preselect) + imported
+                } else {
+                    imported
+                }
+                withContext(NzikDispatchers.UI) {
+                    if (screenActive) {
+                        showTargetDialog(preselect, withTag)
+                    }
+                }
+            }
         }
     }
+
+    // Accounts only — the global profile state (list + faces): no target-profile
+    // question (the state is shared by every profile) and no restart on its own —
+    // the list, the names and the face are re-read on recomposition.
+    val importProfileState = ImportProfileState(
+        context,
+        onImportComplete = {
+            Timber.tag("Onboarding").i("Profile state restored, advancing the onboarding")
+            onComplete()
+        }
+    ) { tag, proceed ->
+        crossProfilePending = Triple(tag, getActiveProfile(context), proceed)
+    }
+
+    // Deferred state picker of the all chain: the file is captured, not imported —
+    // the import runs later, into the chosen profile (ImportChainRunner).
+    val importProfileStateDeferred = ImportProfileState(
+        context,
+        onFilePicked = { uri ->
+            pendingState = uri
+            openTargetDialog()
+        },
+        onCancelled = {
+            // The state pick was skipped: nothing was written, the chain restarts.
+            abortChain()
+        }
+    ) { _, _ -> }
+
+    // Settings pick: in the all chain the state picker runs next, otherwise the
+    // target-profile question.
+    val importSettings = ImportSettings(context, onFilePicked = { uri ->
+        pendingSettings = uri
+        if (importMode == 2) {
+            Timber.tag("Onboarding").d("Chaining the profile state pick (all mode)")
+            importProfileStateDeferred.onShortClick()
+        } else {
+            openTargetDialog()
+        }
+    })
+
+    // Database pick: in the both/all chain the settings picker runs next,
+    // otherwise the target-profile question.
+    val importDatabase = ImportDatabase(context, onFilePicked = { uri ->
+        pendingDb = uri
+        if (importMode == 1 || importMode == 2) {
+            Timber.tag("Onboarding").d("Chaining the settings pick (mode: $importMode)")
+            importSettings.onShortClick()
+        } else {
+            openTargetDialog()
+        }
+    })
 
     val options = listOf(
         Triple(0, stringResource(R.string.database), stringResource(R.string.import_database_description)),
         Triple(1, stringResource(R.string.settings), stringResource(R.string.import_settings_description)),
-        Triple(2, stringResource(R.string.import_both), stringResource(R.string.import_both_description))
+        Triple(2, stringResource(R.string.database_and_settings), stringResource(R.string.import_both_description)),
+        // The profile state option (the list + every face) — "Profiles", not the login accounts
+        Triple(3, stringResource(R.string.profiles), stringResource(R.string.import_accounts_description)),
+        Triple(4, stringResource(R.string.import_all), stringResource(R.string.import_all_description))
     )
 
     Column(
@@ -152,7 +301,7 @@ fun OnboardingImportScreen(
             extraContent = {
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // The three restore options — same layout as ImportBackupDialog
+                // The restore options — same layout as ImportBackupDialog
                 options.forEach { (index, optionTitle, optionDescription) ->
                     Row(
                         modifier = Modifier
@@ -192,12 +341,18 @@ fun OnboardingImportScreen(
 
                 Button(
                     onClick = {
-                        bothMode = selectedOption == 2
-                        Timber.tag("Onboarding").d("Restore started, option: $selectedOption (both: $bothMode)")
+                        importMode = when (selectedOption) {
+                            2 -> 1
+                            4 -> 2
+                            else -> 0
+                        }
+                        Timber.tag("Onboarding").d("Restore started, option: $selectedOption (importMode: $importMode)")
                         when (selectedOption) {
                             0 -> importDatabase.onShortClick()
                             1 -> importSettings.onShortClick()
-                            else -> importDatabase.onShortClick()
+                            2 -> importDatabase.onShortClick()
+                            3 -> importProfileState.onShortClick()
+                            4 -> importDatabase.onShortClick()
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -244,6 +399,56 @@ fun OnboardingImportScreen(
             text = stringResource(R.string.onboard_restore_restart_note),
             style = typography().xxs,
             color = colorPalette().textSecondary
+        )
+    }
+
+    // Target-profile question (NZik dialog frame): where the picked per-profile data
+    // lands — self-gates on its own isActive
+    ImportTargetProfileDialog.Render()
+
+    // Cross-profile warning: the picked file was created for a profile other than
+    // its import target
+    crossProfilePending?.let { (tag, targetId, proceed) ->
+        AlertDialog(
+            onDismissRequest = { crossProfilePending = null },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.rescue_cross_profile_confirm,
+                        tag,
+                        resolveProfileDisplayName(
+                            targetId,
+                            context.profileDisplayName(targetId),
+                            stringResource(R.string.profile_base_name)
+                        )
+                    )
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        crossProfilePending = null
+                        proceed()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorPalette().accent,
+                        contentColor = colorPalette().textSecondary
+                    )
+                ) {
+                    Text(stringResource(R.string.import_button))
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { crossProfilePending = null },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorPalette().background0,
+                        contentColor = colorPalette().textSecondary
+                    )
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
         )
     }
 

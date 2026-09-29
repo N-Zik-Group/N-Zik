@@ -12,6 +12,7 @@ import androidx.core.content.edit
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.HomePage
 import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.utils.FACE_SOURCE_PROFILE
 import kotlinx.serialization.json.Json
 import timber.log.Timber
 import androidx.compose.runtime.DisposableEffect
@@ -914,6 +915,27 @@ fun clearPreference(context: Context, key: String): Unit {
     } catch (e: Exception) {
         Timber.tag("Preferences").e("ClearPreference Error: ${e.stackTraceToString()}")
     }
+}
+
+// Face sources (spec-profiles-page-face): per-profile plain prefs (preferences_<p>),
+// both default to "profil" so an existing install shows its own name / photo.
+const val faceNameSourceKey = "faceNameSource"
+const val faceAvatarSourceKey = "faceAvatarSource"
+
+/** Face name source of the active profile ("profil" default). */
+val Context.faceNameSource: String
+    get() = preferences.getString(faceNameSourceKey, FACE_SOURCE_PROFILE) ?: FACE_SOURCE_PROFILE
+
+/** Face avatar source of the active profile ("profil" default). */
+val Context.faceAvatarSource: String
+    get() = preferences.getString(faceAvatarSourceKey, FACE_SOURCE_PROFILE) ?: FACE_SOURCE_PROFILE
+
+fun Context.saveFaceNameSource(source: String) {
+    preferences.edit { putString(faceNameSourceKey, source) }
+}
+
+fun Context.saveFaceAvatarSource(source: String) {
+    preferences.edit { putString(faceAvatarSourceKey, source) }
 }
 
 

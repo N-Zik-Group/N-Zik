@@ -5,13 +5,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
 import app.n_zik.android.Dependencies
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.screens.profiles.loadActiveProfileFace
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.utils.DataStoreUtils
-import app.n_zik.android.utils.resolveDisplayName
-import app.n_zik.android.ytAccountName
+import app.n_zik.android.utils.FaceAvatar
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -31,6 +29,7 @@ import timber.log.Timber
 internal data class RewindDeckUiState(
     val isLoading: Boolean = true,
     val username: String = "",
+    val faceAvatar: FaceAvatar? = null,
     val data: RewindData? = null
 )
 
@@ -59,31 +58,28 @@ internal class RewindDeckViewModel(
         loadJob = viewModelScope.launch {
             _state.value = RewindDeckUiState(isLoading = true, data = null)
             try {
-                val username = withContext(dataDispatcher) {
+                val (username, faceAvatar) = withContext(dataDispatcher) {
+                    val defaultName = application.getString(R.string.profile_base_name)
+                    // The deck shows the active profile's face: its display name or a
+                    // logged-in account source (spec-profiles-page-face), with the legacy
+                    // custom name and the default app name as fallbacks. A failing read
+                    // falls back to the default name without an avatar.
                     runCatching {
-                        // The display-name choice is custom (guest) or YouTube: the YouTube
-                        // account is only consulted when the stored source is actually YouTube
-                        val source = DataStoreUtils.getString(
-                            application,
-                            DataStoreUtils.KEY_DISPLAY_NAME_SOURCE,
-                            DataStoreUtils.DISPLAY_NAME_SOURCE_CUSTOM
-                        )
-                        val useYouTubeName = source == DataStoreUtils.DISPLAY_NAME_SOURCE_YOUTUBE
-                        resolveDisplayName(
-                            source = source,
-                            ytLoggedIn = useYouTubeName && isYouTubeLoggedIn(),
-                            ytName = if (useYouTubeName) ytAccountName() else "",
-                            customName = DataStoreUtils.getString(application, DataStoreUtils.KEY_USERNAME, ""),
-                            default = application.getString(R.string.display_name_default)
-                        )
+                        val face = loadActiveProfileFace(application, defaultName)
+                        face.name to face.avatar
                     }.getOrElse { error ->
-                        Timber.tag("Rewind").e(error, "Failed to resolve the rewind display name")
-                        application.getString(R.string.display_name_default)
+                        Timber.tag("Rewind").e(error, "Failed to resolve the rewind face")
+                        defaultName to null
                     }
                 }
                 val data = fetcher.getRewindData(period)
                 if (isActive) {
-                    _state.value = RewindDeckUiState(isLoading = false, username = username, data = data)
+                    _state.value = RewindDeckUiState(
+                        isLoading = false,
+                        username = username,
+                        faceAvatar = faceAvatar,
+                        data = data
+                    )
                 }
             } catch (e: CancellationException) {
                 throw e
@@ -93,6 +89,7 @@ internal class RewindDeckViewModel(
                     _state.value = RewindDeckUiState(
                         isLoading = false,
                         username = _state.value.username,
+                        faceAvatar = _state.value.faceAvatar,
                         data = emptyRewindData(period)
                     )
                 }

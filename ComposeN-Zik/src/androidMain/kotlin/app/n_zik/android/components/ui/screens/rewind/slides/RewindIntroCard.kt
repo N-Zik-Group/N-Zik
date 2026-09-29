@@ -39,9 +39,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.screens.profiles.ProfileFaceAvatar
 import app.n_zik.android.components.ui.screens.rewind.RewindData
 import app.n_zik.android.components.ui.screens.rewind.RewindPeriod
 import app.n_zik.android.components.ui.screens.rewind.rewindShareCaptureActive
+import app.n_zik.android.utils.FaceAvatar
 import kotlinx.coroutines.delay
 import androidx.compose.runtime.withFrameNanos
 import kotlin.math.PI
@@ -56,7 +58,8 @@ fun RewindIntroCard(
     pageCount: Int,
     active: Boolean,
     onNext: () -> Unit,
-    onShareSlide: (() -> Unit)? = null
+    onShareSlide: (() -> Unit)? = null,
+    faceAvatar: FaceAvatar? = null
 ) {
     val textScale = LocalRewindTextScale.current
     var revealComplete by remember { mutableStateOf(false) }
@@ -68,7 +71,7 @@ fun RewindIntroCard(
             revealComplete = true
         }
     }
-    val defaultUsername = stringResource(R.string.display_name_default)
+    val defaultUsername = stringResource(R.string.profile_base_name)
     val displayName = username.trim().ifBlank { defaultUsername }
     val onLime = rewindColors.value.textOn(rewindColors.value.lime)
     RewindStoryShell(
@@ -121,6 +124,18 @@ fun RewindIntroCard(
                     RewindKicker(stringResource(R.string.rw_intro_kicker, data.periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(if (compact) 14.dp else 18.dp))
+                // The face avatar reveals between the kicker (50 ms) and the hero name
+                // (220 ms); a failed face load (null avatar) still renders the
+                // deterministic initials of the (fallback) name, so the slide always
+                // renders something.
+                RewindReveal(active, 140, direction = RewindRevealDirection.Left, distance = 24.dp) {
+                    ProfileFaceAvatar(
+                        avatar = faceAvatar ?: FaceAvatar.Initials(displayName),
+                        faceName = displayName,
+                        size = 72.dp
+                    )
+                }
+                Spacer(Modifier.height(if (compact) 12.dp else 16.dp))
                 RewindReveal(active, 220, direction = RewindRevealDirection.Left, distance = 30.dp) {
                     Text(
                         text = "$displayName,",

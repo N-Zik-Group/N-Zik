@@ -36,7 +36,7 @@ object DataStoreUtils {
      */
     const val KEY_ONBOARDING_PERMISSIONS_REQUESTED = "onboarding_permissions_requested"
 
-    /** Source of the display name shown on the app (see [resolveDisplayName]). */
+    /** Source of the display name shown on the app (legacy onboarding value). */
     const val KEY_DISPLAY_NAME_SOURCE = "display_name_source"
 
     // Display name sources (values stored under [KEY_DISPLAY_NAME_SOURCE])

@@ -96,8 +96,9 @@ import app.n_zik.android.extensions.discord.DiscordRpcError
 import app.n_zik.android.extensions.discord.DiscordRpcErrorState
 import app.n_zik.android.extensions.discord.DiscordTemplateFieldActions
 import app.n_zik.android.extensions.discord.DiscordTemplateRenderer
-import app.n_zik.android.components.settings.DisplayNameSettingsCard
+import app.n_zik.android.components.settings.ProfileFaceCard
 import app.n_zik.android.components.settings.LastFmSettingsCard
+import app.n_zik.android.components.ui.screens.profiles.ProfileAccountCard
 import app.n_zik.android.components.settings.ListenTogetherSettingsCard
 import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
 import app.n_zik.android.thumbnailShape
@@ -340,7 +341,10 @@ fun AccountsSettings() {
 
         /* Removed Spacer */
 
-        DisplayNameSettingsCard()
+        // The face card owns the face edits; the profile card below shows the active
+        // profile's state (face, data, database size) without actions.
+        ProfileFaceCard()
+        ProfileAccountCard()
 
         // YouTube Music Section
         AnimatedVisibility(
