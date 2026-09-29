@@ -1961,6 +1961,7 @@
     <string name="listen_together_new_host">New host: %1$s</string>
     <string name="listen_together_connection_lost">Connection to the room was lost</string>
     <string name="listen_together_reconnected">Reconnected to the room</string>
+    <string name="listen_together_guest_blocked">The host controls playback</string>
     <string name="listen_together_join_request_notification">%1$s wants to join the room</string>
     <string name="listen_together_notification_channel_name">Listen Together</string>
     <string name="listen_together_notification_channel_desc">Notifications for Listen Together events</string>
