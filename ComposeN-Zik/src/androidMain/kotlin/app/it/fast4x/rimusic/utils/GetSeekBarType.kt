@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
@@ -46,6 +47,8 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
+import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
+import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.kreate.android.themed.rimusic.screen.player.timeline.DurationIndicator
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
@@ -88,6 +91,16 @@ fun GetSeekBar(
     }
     var transparentbar by rememberPreference(transparentbarKey, true)
     val scope = rememberCoroutineScope()
+    // Listen Together guest lock (spec-listen-together-guest-lock-hardening): a guest in a room
+    // cannot seek — the bar is fully INERT: the scrubber position is never captured (no visual
+    // jump) and no seek op is issued; every interaction attempt shows the throttled "the host
+    // controls playback" toast. The bar keeps full opacity and size — .alpha() must NOT be
+    // applied to this subtree: alpha < 1 promotes content to a compositing layer sized to the
+    // layout bounds and implicitly clips everything drawn outside them, which cut the Wavy bar's
+    // overflow drawing (15px-stroke wave + 15-20dp scrubber pill around a 6dp box) and made it
+    // look "crushed" (user feedback 2026-09-29, confirmed by the Modifier.alpha docs).
+    val ltGuestLocked = rememberListenTogetherGuestLock()
+    val ltContext = LocalContext.current
 
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -126,7 +139,13 @@ fun GetSeekBar(
                 minimumValue = 0,
                 maximumValue = duration(),
                 onDragStart = {
-                    scrubbingPosition = it
+                    // Guest lock: the seek bar is inert — capture nothing (no scrubber jump);
+                    // the interaction attempt is explained by the throttled blocked toast.
+                    if (ltGuestLocked) {
+                        ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
+                    } else {
+                        scrubbingPosition = it
+                    }
                 },
                 onDrag = { delta ->
                     scrubbingPosition = if (duration() != C.TIME_UNSET) {
@@ -151,7 +170,13 @@ fun GetSeekBar(
                 minimumValue = 0,
                 maximumValue = duration(),
                 onDragStart = {
-                    scrubbingPosition = it
+                    // Guest lock: the seek bar is inert — capture nothing (no scrubber jump);
+                    // the interaction attempt is explained by the throttled blocked toast.
+                    if (ltGuestLocked) {
+                        ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
+                    } else {
+                        scrubbingPosition = it
+                    }
                 },
                 onDrag = { delta ->
                     scrubbingPosition = if (duration() != C.TIME_UNSET) {
@@ -176,7 +201,13 @@ fun GetSeekBar(
                 minimumValue = 0,
                 maximumValue = duration(),
                 onDragStart = {
-                    scrubbingPosition = it
+                    // Guest lock: the seek bar is inert — capture nothing (no scrubber jump);
+                    // the interaction attempt is explained by the throttled blocked toast.
+                    if (ltGuestLocked) {
+                        ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
+                    } else {
+                        scrubbingPosition = it
+                    }
                 },
                 onDrag = { delta ->
                     scrubbingPosition = if (duration() != C.TIME_UNSET) {
@@ -200,7 +231,13 @@ fun GetSeekBar(
                 position = { scrubbingPosition?.toFloat() ?: position().toFloat() },
                 range = 0f..media.duration.toFloat(),
                 onSeekStarted = {
-                    scrubbingPosition = it.toLong()
+                    // Guest lock: the seek bar is inert — capture nothing (no scrubber jump);
+                    // the interaction attempt is explained by the throttled blocked toast.
+                    if (ltGuestLocked) {
+                        ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
+                    } else {
+                        scrubbingPosition = it.toLong()
+                    }
                 },
                 onSeek = { delta ->
                     scrubbingPosition = if (duration() != C.TIME_UNSET) {
@@ -229,9 +266,15 @@ fun GetSeekBar(
                 playedColor = colorPalette().accent,
                 notPlayedColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
                 waveInteraction = {
-                    scrubbingPosition = (it.value * duration().toFloat()).toLong()
-                    binder.player.seekTo(scrubbingPosition!!)
-                    scrubbingPosition = null
+                    // Guest lock: the seek bar is inert — no seek is issued; the interaction
+                    // attempt is explained by the throttled blocked toast.
+                    if (ltGuestLocked) {
+                        ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
+                    } else {
+                        scrubbingPosition = (it.value * duration().toFloat()).toLong()
+                        binder.player.seekTo(scrubbingPosition!!)
+                        scrubbingPosition = null
+                    }
                 },
                 modifier = Modifier
                     .height(50.dp)
@@ -244,7 +287,15 @@ fun GetSeekBar(
                 position = scrubbingPosition ?: position(),
                 duration = duration(),
                 isPlaying = binder.player.isPlaying,
-                onPositionChange = { scrubbingPosition = it },
+                onPositionChange = {
+                    // Guest lock: the seek bar is inert — capture nothing; the (throttled)
+                    // blocked toast explains the interaction attempt.
+                    if (ltGuestLocked) {
+                        ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
+                    } else {
+                        scrubbingPosition = it
+                    }
+                },
                 onPositionChangeFinished = {
                     scrubbingPosition?.let { binder.player.seekTo(it) }
                     scrubbingPosition = null
@@ -261,7 +312,13 @@ fun GetSeekBar(
                 minimumValue = 0,
                 maximumValue = duration(),
                 onDragStart = {
-                    scrubbingPosition = it
+                    // Guest lock: the seek bar is inert — capture nothing (no scrubber jump);
+                    // the interaction attempt is explained by the throttled blocked toast.
+                    if (ltGuestLocked) {
+                        ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
+                    } else {
+                        scrubbingPosition = it
+                    }
                 },
                 onDrag = { delta ->
                     scrubbingPosition = if (duration() != C.TIME_UNSET) {

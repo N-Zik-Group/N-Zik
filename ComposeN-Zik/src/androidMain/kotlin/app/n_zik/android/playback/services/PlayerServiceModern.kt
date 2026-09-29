@@ -3,7 +3,10 @@ package app.n_zik.android.playback.services
 import app.n_zik.android.playback.services.automotive.session.AutoSessionCallback
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.listentogether.ListenTogetherClient
+import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
+import app.n_zik.android.listentogether.ListenTogetherManager
 import app.n_zik.android.listentogether.ListenTogetherPlayerBridge
+import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.kreate.android.me.knighthat.sync.YouTubeSync
 
 import app.n_zik.android.MainApplication
@@ -43,7 +46,6 @@ import androidx.core.content.edit
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.AuxEffectInfo
 import androidx.media3.common.C
-import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
@@ -121,7 +123,6 @@ import app.it.fast4x.rimusic.models.Event
 import app.it.fast4x.rimusic.models.QueuedMediaItem
 import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.playback.utils.BitmapProvider
-import app.n_zik.android.playback.utils.SleepTimer
 import app.n_zik.android.playback.utils.NZikRadio
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.download.services.MyDownloadService
@@ -206,7 +207,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import androidx.compose.runtime.snapshotFlow
 import app.kreate.android.me.knighthat.utils.Toaster
 import timber.log.Timber
 import java.io.File
@@ -267,6 +270,19 @@ class PlayerServiceModern : MediaLibraryService(),
     private var sessionController: MediaController? = null
     lateinit var player: ExoPlayer
     val playerUpdateTrigger = MutableStateFlow(0)
+
+    /**
+     * Guarded delegation facade for every EXTERNAL entry point (UI via [Binder.player],
+     * notification buttons, MediaSession / lockscreen / automotive) — Listen Together
+     * guest-lock policy (spec-listen-together-guest-lock-hardening, spine AD-1/AD-2/AD-6).
+     * Rebuilt on every crossfade swap so the guard always tracks the current [player] (AD-5).
+     * The raw [player] is reached only by the service's internal logic and the host sync
+     * bridge [ListenTogetherPlayerBridge] (AD-4) — never by external callers.
+     */
+    private lateinit var guestGuardPlayer: ListenTogetherGuestGuardPlayer
+
+    /** Rebuilds the notification when the guest lock toggles (guest: only play/pause visible). */
+    private var guestLockObserverJob: Job? = null
     lateinit var cache: Cache
     lateinit var downloadCache: Cache
     private lateinit var audioVolumeObserver: AudioVolumeObserver
@@ -319,7 +335,6 @@ class PlayerServiceModern : MediaLibraryService(),
 
     lateinit var audioQualityFormat: AudioQualityFormat
     lateinit var imageQualityFormat: ImageQualityFormat
-    lateinit var sleepTimer: SleepTimer
     private var timerJob: TimerJob? = null
     private var widgetProgressJob: Job? = null
     lateinit var nzikRadio: NZikRadio
@@ -348,7 +363,10 @@ class PlayerServiceModern : MediaLibraryService(),
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY && isPauseOnHeadphoneDisconnectEnabled()) {
                 Timber.tag("PlayerServiceModern").d("Audio becoming noisy: pausing playback per user setting")
-                player.pause()
+                // Guarded facade: for a locked Listen Together guest the pause intent is
+                // registered, so the local pause survives the host's next PLAY heartbeat
+                // (spec-listen-together-guest-lock-hardening). Hosts / out-of-room: passthrough.
+                guestGuardPlayer.pause()
             }
         }
     }
@@ -477,13 +495,14 @@ class PlayerServiceModern : MediaLibraryService(),
             .build()
             .apply {
                 addListener(this@PlayerServiceModern)
-                sleepTimer = SleepTimer(coroutineScope, this)
-                addListener(sleepTimer)
                 addAnalyticsListener(PlaybackStatsListener(false, this@PlayerServiceModern))
             }
 
-        // Force player to add all commands available, prior to android 13
-        val forwardingPlayer = createForwardingPlayer(player)
+        // Guarded delegation facade for all external entry points (spec-listen-together-guest-lock-hardening,
+        // spine AD-1): MediaSession / lockscreen / automotive commands route through it, so a
+        // Listen Together guest can only play/pause. The "all commands" behavior (pre-Android-13
+        // compatibility) is preserved inside the guard.
+        guestGuardPlayer = createGuestGuardPlayer(player)
 
         mediaLibrarySessionCallback.apply {
             binder = this@PlayerServiceModern.binder
@@ -496,9 +515,9 @@ class PlayerServiceModern : MediaLibraryService(),
             actionSearch = ::actionSearch
         }
 
-        // Build the media library session
+        // Build the media library session on the guarded facade (AD-6)
         mediaSession =
-            MediaLibrarySession.Builder(this, forwardingPlayer, mediaLibrarySessionCallback)
+            MediaLibrarySession.Builder(this, guestGuardPlayer, mediaLibrarySessionCallback)
                 .setSessionActivity(
                     PendingIntent.getActivity(
                         this,
@@ -525,12 +544,13 @@ class PlayerServiceModern : MediaLibraryService(),
 
         player.repeatMode = preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
 
-        binder.player.playbackParameters = PlaybackParameters(
+        // Internal service init MUST bypass the guard (spine AD-7) — the raw player is used.
+        player.playbackParameters = PlaybackParameters(
             preferences.getFloat(playbackSpeedKey, 1f),
             preferences.getFloat(playbackPitchKey, 1f)
         )
-        binder.player.volume = preferences.getFloat(playbackVolumeKey, 1f)
-        binder.player.setGlobalVolume(binder.player.volume)
+        player.volume = preferences.getFloat(playbackVolumeKey, 1f)
+        player.setGlobalVolume(player.volume)
 
         // Keep a connected controller so that notification works
         val sessionToken = SessionToken(this, ComponentName(this, PlayerServiceModern::class.java))
@@ -556,7 +576,20 @@ class PlayerServiceModern : MediaLibraryService(),
         }
         MyDownloadHelper.getDownloadManager(this).addListener(downloadListener)
 
-        notificationActionReceiver = NotificationActionReceiver(player)
+        notificationActionReceiver = NotificationActionReceiver()
+
+        // Listen Together guest lock (AD-6): rebuild the notification whenever the lock toggles —
+        // a guest only sees play/pause (next/prev/shuffle hidden); the guarded available commands
+        // are re-announced so the lockscreen / automotive transport buttons follow.
+        guestLockObserverJob?.cancel()
+        guestLockObserverJob = coroutineScope.launch(NzikDispatchers.UI) {
+            snapshotFlow { listenTogetherGuestLock.value }
+                .distinctUntilChanged()
+                .collect {
+                    updateDefaultNotification()
+                    guestGuardPlayer.announceAvailableCommandsChanged()
+                }
+        }
 
         QuickPicksRepository.refreshIfNeeded()
 
@@ -840,7 +873,11 @@ class PlayerServiceModern : MediaLibraryService(),
             stopService(intent<PlayerServiceModern>())
             player.removeListener(this)
             player.stop()
-            player.release()
+            // Release through the guarded facade so its commandListeners are cleared before the
+            // raw player goes (review finding: the facade's release() was dead on teardown).
+            // The stop above stays on the raw player — internal teardown, and a fail-closed
+            // guarded stop() would block a locked guest's service shutdown.
+            guestGuardPlayer.release()
             try{
                 unregisterReceiver(notificationActionReceiver)
             } catch (e: Exception){
@@ -865,6 +902,8 @@ class PlayerServiceModern : MediaLibraryService(),
             notificationManager?.cancel(NotificationId)
             notificationManager?.cancelAll()
             notificationManager = null
+            guestLockObserverJob?.cancel()
+            guestLockObserverJob = null
             coroutineScope.cancel()
 
         }.onFailure {
@@ -1676,7 +1715,10 @@ class PlayerServiceModern : MediaLibraryService(),
 
                 override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo>) {
                     if (!player.isPlaying && addedDevices.any(::canPlayMusic)) {
-                        player.play()
+                        // Guarded facade: for a locked Listen Together guest the play intent is
+                        // registered, so the manager resyncs them to the host position
+                        // (spec-listen-together-guest-lock-hardening). Hosts / out-of-room: passthrough.
+                        guestGuardPlayer.play()
                     }
                 }
 
@@ -1774,6 +1816,10 @@ class PlayerServiceModern : MediaLibraryService(),
 
 
     private fun buildCustomCommandButtons(): MutableList<CommandButton> {
+        // Listen Together guest (AD-6): the notification shows only play/pause — the custom
+        // buttons below (like/download/repeat/shuffle/…) are hidden; next/prev are hidden via the
+        // guarded available commands. Rebuilt on every lock change (guestLockObserverJob).
+        if (listenTogetherGuestLock.value) return mutableListOf()
         val notificationPlayerFirstIcon = preferences.getEnum(notificationPlayerFirstIconKey, NotificationButtons.Download)
         val notificationPlayerSecondIcon = preferences.getEnum(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
 
@@ -2157,8 +2203,16 @@ class PlayerServiceModern : MediaLibraryService(),
         }
     }
 
-    inner class NotificationActionReceiver(private val player: Player) : BroadcastReceiver() {
+    /**
+     * Notification / widget transport buttons. Every player operation routes through the guarded
+     * facade ([guestGuardPlayer]) — read dynamically, never cached: the facade is rebuilt on each
+     * crossfade player swap (AD-5), so a reference captured at construction time would point at
+     * the released old player. For a Listen Together guest, next/prev are no-oped by the guard.
+     */
+    inner class NotificationActionReceiver : BroadcastReceiver() {
 
+        private val player: Player
+            get() = this@PlayerServiceModern.guestGuardPlayer
 
         @ExperimentalCoroutinesApi
         @FlowPreview
@@ -2169,6 +2223,10 @@ class PlayerServiceModern : MediaLibraryService(),
                 Action.playPause.value -> {
                     if (player.isPlaying) binder.gracefulPause() else binder.gracefulPlay()
                 }
+                // Full skip semantics on the facade (seek + prepare + restoreGlobalVolume +
+                // playWhenReady=true, as before the guard): unchanged for host/out-of-room users.
+                // For a locked guest the blocked seek arms the guard's 50 ms tail window, so the
+                // pass-through tail (prepare/playWhenReady) is suppressed — clean no-op + toast.
                 Action.next.value -> player.playNext()
                 Action.previous.value -> player.playPrevious()
                 Action.like.value -> {
@@ -2215,9 +2273,15 @@ class PlayerServiceModern : MediaLibraryService(),
             get() = bitmapProvider.bitmap
 
 
-        val player: ExoPlayer
-            get() = this@PlayerServiceModern.player
-            
+        /**
+         * The guarded player facade — every external entry point (UI, menus, library, widgets,
+         * notification buttons) consumes the [Player] interface through it, so a Listen Together
+         * guest can only play/pause (spine AD-1/AD-2/AD-7). The raw [ExoPlayer] is intentionally
+         * NOT exposed here; internal service logic uses `this@PlayerServiceModern.player`.
+         */
+        val player: Player
+            get() = this@PlayerServiceModern.guestGuardPlayer
+
         val playerUpdateTrigger: StateFlow<Int>
             get() = this@PlayerServiceModern.playerUpdateTrigger
 
@@ -2289,17 +2353,27 @@ class PlayerServiceModern : MediaLibraryService(),
         }
 
         fun setPreferredAudioDevice(deviceId: Int?) {
+            // External UI entry point (audio device menu). This ExoPlayer-only API cannot be
+            // expressed on the Player facade, so the guest-lock fail-closed policy (AD-2) is
+            // applied here explicitly: a locked guest's switch is a no-op + throttled toast.
+            // Checked BEFORE any state write — preferredDeviceId feeds the audio-device menu,
+            // so a blocked guest must not mutate it (review finding).
+            if (listenTogetherGuestLock.value) {
+                guestGuardPlayer.reportBlockedOp()
+                return
+            }
             preferredDeviceId = deviceId
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val am = audioManager ?: (getSystemService(AUDIO_SERVICE) as? AudioManager) ?: return
-                // Always clear first to force ExoPlayer to re-evaluate
-                player.setPreferredAudioDevice(null)
+                // Always clear first to force ExoPlayer to re-evaluate — raw player: reachable
+                // only after the guest-lock check above (AD-2).
+                this@PlayerServiceModern.player.setPreferredAudioDevice(null)
                 if (deviceId != null) {
                     val devices = am.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
                     val deviceInfo = devices.find { it.id == deviceId }
                     if (deviceInfo != null) {
                         Timber.tag("PlayerServiceModern").d("setPreferredAudioDevice: switching to id=$deviceId type=${deviceInfo.type} name=${deviceInfo.productName}")
-                        player.setPreferredAudioDevice(deviceInfo)
+                        this@PlayerServiceModern.player.setPreferredAudioDevice(deviceInfo)
                     } else {
                         Timber.tag("PlayerServiceModern").w("setPreferredAudioDevice: deviceId=$deviceId NOT FOUND. Available: ${devices.map { "id=${it.id} type=${it.type} name=${it.productName}" }}")
                     }
@@ -2315,7 +2389,13 @@ class PlayerServiceModern : MediaLibraryService(),
         @MainThread
         fun gracefulPause() {
             val duration = preferences.getEnum( playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled )
-            player.fadeOutEffect( duration.asMillis )
+            // The fade runs on the guarded facade, not the raw player: the fade uses only
+            // play/pause/volume (AD-2 pass-through ops, so host behavior is unchanged), but the
+            // facade's pause() is the observation point for the guest's pause intent
+            // (onGuestPlayPause → guestPlayPause(false) → guestLocalPause). On the raw player the
+            // flag was never set and the host's next PLAY resumed an in-app-paused guest
+            // (spec-listen-together-guest-lock-hardening).
+            this@PlayerServiceModern.guestGuardPlayer.fadeOutEffect( duration.asMillis )
         }
 
         /**
@@ -2324,7 +2404,10 @@ class PlayerServiceModern : MediaLibraryService(),
         @MainThread
         fun gracefulPlay() {
             val duration = preferences.getEnum( playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled )
-            player.fadeInEffect( duration.asMillis )
+            // Same reason as [gracefulPause]: the facade's play() registers the guest's play
+            // intent (onGuestPlayPause → guestPlayPause(true) → requestSync, resync to the host
+            // position). Raw player would resume from a stale local position without resync.
+            this@PlayerServiceModern.guestGuardPlayer.fadeInEffect( duration.asMillis )
         }
 
         /**
@@ -2353,12 +2436,16 @@ class PlayerServiceModern : MediaLibraryService(),
         }
 
         fun toggleRepeat() {
-            player.toggleRepeatMode()
+            // External command (notification / automotive): route through the guarded facade so a
+            // Listen Together guest is no-oped + toasted (spine AD-1/AD-2).
+            guestGuardPlayer.toggleRepeatMode()
             updateDefaultNotification()
         }
 
         fun toggleShuffle() {
-            player.toggleShuffleMode()
+            // External command (notification / automotive): route through the guarded facade so a
+            // Listen Together guest is no-oped + toasted (spine AD-1/AD-2).
+            guestGuardPlayer.toggleShuffleMode()
             updateDefaultNotification()
         }
 
@@ -2420,14 +2507,6 @@ class PlayerServiceModern : MediaLibraryService(),
         }
     }
 
-    private val crossfadeSyncListener = object : Player.Listener {
-        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-            if (isCrossfading && secondaryPlayer != null) {
-                secondaryPlayer?.playWhenReady = playWhenReady
-            }
-        }
-    }
-
     private fun scheduleCrossfade() {
         crossfadeTriggerJob?.cancel()
         crossfadeTriggerJob = null
@@ -2439,6 +2518,15 @@ class PlayerServiceModern : MediaLibraryService(),
         }
 
         if (!crossfadeEnabled) return
+        // Guest in a Listen Together room (spec-listen-together-guest-lock-hardening): the
+        // host drives track transitions (CHANGE_TRACK), so a local crossfade — which starts
+        // `crossfadeDuration` (3 s) before the host's own transition — would be reconciled
+        // back by the host's next PLAY heartbeat (old track) whenever that 8 s beat lands in
+        // the fade window: the fade is audibly cancelled (the old track briefly doubled)
+        // before the guest follows the host on the new track. Skip it for a locked guest:
+        // the transition becomes the deterministic auto-advance + host CHANGE_TRACK path.
+        // Hosts and out-of-room playback keep crossfade unchanged.
+        if (listenTogetherGuestLock.value) return
         if (player.duration == C.TIME_UNSET) return
         if (player.duration <= crossfadeDuration) return
         if (crossfadeGapless && isNextItemGapless()) return
@@ -2465,7 +2553,10 @@ class PlayerServiceModern : MediaLibraryService(),
         crossfadeTriggerJob =
             coroutineScope.launch(NzikDispatchers.UI) {
                 delay(delayUntilPreload)
-                if (isActive && player.isPlaying && player.currentMediaItem?.mediaId == targetMediaId) {
+                // Re-check the guest lock: a job armed before the lock turned on (a guest joining
+                // a room mid-armed) must not fire the fade — the host drives transitions for a
+                // locked guest (spec-listen-together-guest-lock-hardening).
+                if (isActive && !listenTogetherGuestLock.value && player.isPlaying && player.currentMediaItem?.mediaId == targetMediaId) {
                     preloadCrossfade(triggerTime)
                     
                     if (nextArtworkUri != null) {
@@ -2482,7 +2573,8 @@ class PlayerServiceModern : MediaLibraryService(),
                         delay(remainingDelay)
                     }
                     
-                    if (isActive && player.isPlaying && player.currentMediaItem?.mediaId == targetMediaId) {
+                    // Second line of defense for a lock that turned on after the job armed.
+                    if (isActive && !listenTogetherGuestLock.value && player.isPlaying && player.currentMediaItem?.mediaId == targetMediaId) {
                         startCrossfade()
                     }
                 }
@@ -2536,15 +2628,20 @@ class PlayerServiceModern : MediaLibraryService(),
             .build()
     }
 
-    private fun createForwardingPlayer(targetPlayer: Player): ForwardingPlayer {
-        return object : ForwardingPlayer(targetPlayer) {
-            override fun getAvailableCommands(): Player.Commands {
-                return super.getAvailableCommands()
-                    .buildUpon()
-                    .addAllCommands()
-                    .build()
-            }
+    /**
+     * Builds the guarded delegation facade for [targetPlayer]: the legacy "all commands"
+     * forwarding behavior (pre-Android-13 compatibility) plus the Listen Together guest-lock
+     * policy (spec-listen-together-guest-lock-hardening, spine AD-1/AD-2/AD-6).
+     */
+    private fun createGuestGuardPlayer(targetPlayer: Player): ListenTogetherGuestGuardPlayer {
+        val guard = ListenTogetherGuestGuardPlayer(targetPlayer, applicationContext)
+        // Guest play/pause intent (only the guest's own taps reach the guarded facade): play
+        // resyncs the guest to the host's position, pause is kept across host skips
+        // (spec-listen-together-guest-lock-hardening).
+        guard.onGuestPlayPause = { playWhenReady ->
+            ListenTogetherManager.getInstance()?.guestPlayPause(playWhenReady)
         }
+        return guard
     }
 
     private fun preloadCrossfade(triggerTime: Long) {
@@ -2600,7 +2697,6 @@ class PlayerServiceModern : MediaLibraryService(),
         
         // Unregister listeners from the old player
         fadingPlayer?.removeListener(this)
-        fadingPlayer?.removeListener(sleepTimer)
 
         // Sync play/pause state between new and fading player
         player.addListener(
@@ -2622,13 +2718,12 @@ class PlayerServiceModern : MediaLibraryService(),
         // Register listeners to the new primary player
         nextPlayer.removeListener(secondaryPlayerListener)
         nextPlayer.addListener(this)
-        nextPlayer.addListener(sleepTimer)
 
-        sleepTimer.player = player
-
-        // Update MediaSession to show the new song in the UI
+        // Update MediaSession to show the new song in the UI — the guarded facade is rebuilt and
+        // re-attached to the new player (AD-5: the guest lock must survive crossfade swaps).
         try {
-            mediaSession.player = createForwardingPlayer(player)
+            guestGuardPlayer = createGuestGuardPlayer(player)
+            mediaSession.player = guestGuardPlayer
         } catch (e: Exception) {
             Timber.tag("PlayerServiceModern").e(e, "Failed to swap player in MediaSession")
         }

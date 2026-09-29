@@ -27,6 +27,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.it.fast4x.rimusic.utils.asMediaItem
+import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
+import app.n_zik.android.listentogether.listenTogetherGuestLock
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -63,8 +65,16 @@ class NZikRadio(
 
     /**
      * Toggles the discover filter ON/OFF and shows a toast.
+     *
+     * Guest lock (spec-listen-together-guest-lock-hardening): Discover is a stateful ON/OFF
+     * control owned by the host room — a locked guest gets the shared blocked toast and no
+     * state change (no preference write, no "Discover ON/OFF" toast).
      */
     fun toggleDiscover() {
+        if (listenTogetherGuestLock.value) {
+            ListenTogetherGuestGuardPlayer.reportUiBlockedOp(context)
+            return
+        }
         if (!isRadioActive && !isAutoFillEnabled) {
             Toaster.e(R.string.state_discover_error)
             return
@@ -82,6 +92,12 @@ class NZikRadio(
 
     /**
      * Explicit Radio activation (Toggle)
+     *
+     * Guest lock (spec-listen-together-guest-lock-hardening): Radio is a stateful ON/OFF
+     * control — a locked guest gets the shared blocked toast and nothing else: no
+     * `isRadioActive` state change, no "Radio ON/OFF" toast, no `forcePlay`, no fetch/inject.
+     * (An already-active radio stays inert while locked: its queue injections are blocked by
+     * the central guard.)
      */
     fun startRadio(
         mediaItem: MediaItem,
@@ -89,6 +105,10 @@ class NZikRadio(
         endpoint: NavigationEndpoint.Endpoint.Watch? = null,
         isExplicit: Boolean = false
     ) {
+        if (listenTogetherGuestLock.value) {
+            ListenTogetherGuestGuardPlayer.reportUiBlockedOp(context)
+            return
+        }
         if (isExplicit) {
             // Toggle OFF if already active on the exact same song
             if (isRadioActive && binder.player.currentMediaItem?.mediaId == mediaItem.mediaId) {
@@ -119,6 +139,13 @@ class NZikRadio(
     }
 
     fun stopRadio(showToast: Boolean = false) {
+        // Guest lock (spec-listen-together-guest-lock-hardening): stopping the radio flips the
+        // host-owned isRadioActive and cancels the radio job — a locked guest gets the shared
+        // blocked toast and nothing else, same policy as startRadio().
+        if (listenTogetherGuestLock.value) {
+            ListenTogetherGuestGuardPlayer.reportUiBlockedOp(context)
+            return
+        }
         isLoading = false
         isRadioActive = false
         radioJob?.cancel()
@@ -133,6 +160,11 @@ class NZikRadio(
      * Silent Auto-Fill (When queue is about to end)
      */
     fun autoFillQueue() {
+        // Guest lock (spec-listen-together-guest-lock-hardening): in a room the host owns the
+        // queue. The auto-fill fetch+inject would only be no-op'd by the central guard (a
+        // throttled "host controls playback" toast + a wasted Innertube fetch and DB insert on
+        // every host-side track transition), so skip it entirely while locked.
+        if (listenTogetherGuestLock.value) return
         // If neither Radio nor AutoFill is enabled, do nothing.
         if ((!isRadioActive && !isAutoFillEnabled) || isLoading) return
         
@@ -145,9 +177,14 @@ class NZikRadio(
     fun showReminderIfNeeded() {
         if (!reminderShown) {
             reminderShown = true
-            
+
             if (isRadioActive) return // No reminder needed if they explicitly started radio
-            
+
+            // Guest lock (spec-listen-together-guest-lock-hardening): the auto-correction below
+            // mutates the host-owned Discover setting — no state change (and no toast) for a
+            // locked guest, same policy as toggleDiscover().
+            if (listenTogetherGuestLock.value) return
+
             if (isDiscoverEnabled) {
                 if (isAutoFillEnabled) {
                     Toaster.i(R.string.state_reminder_discover)

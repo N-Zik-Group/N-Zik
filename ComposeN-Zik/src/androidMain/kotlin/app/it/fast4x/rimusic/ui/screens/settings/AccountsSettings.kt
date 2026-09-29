@@ -72,7 +72,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
 import app.n_zik.android.R
@@ -2210,7 +2210,9 @@ private fun DiscordLogoSettingsEntry(
  */
 @Composable
 private fun DiscordRpcPreviewCard(
-    player: ExoPlayer?,
+    // Player (not ExoPlayer): the guarded Listen Together facade is a plain Player — this
+    // preview only reads currentMediaItem (spec-listen-together-guest-lock-hardening).
+    player: Player?,
     positionMs: Long,
     tick: Int,
     settings: DiscordAdvancedSettings,

@@ -945,6 +945,8 @@ fun Player(
                             },
                             onDragEnd = {
                                 try {
+                                    // Guest in a Listen Together room: the skip op reaches the central guard, which no-ops it
+                                    // and shows the throttled toast (spec-listen-together-guest-lock-hardening)
                                     if (!disablePlayerHorizontalSwipe && playerType == PlayerType.Essential) {
                                         if (deltaX > playerSwipeSensitivity.threshold) {
                                             binder.player.playPrevious()
@@ -1213,6 +1215,8 @@ fun Player(
                                 deltaX = 0f
                             },
                             onDragEnd = {
+                                // Guest in a Listen Together room: the skip op reaches the central guard, which no-ops it
+                                // and shows the throttled toast (spec-listen-together-guest-lock-hardening)
                                 if (!disablePlayerHorizontalSwipe && playerType == PlayerType.Essential) {
                                     if (deltaX > playerSwipeSensitivity.threshold) {
                                         binder.player.playPrevious()
@@ -1463,6 +1467,8 @@ fun Player(
                                             deltaX = 0f
                                         },
                                         onDragEnd = {
+                                            // Guest in a Listen Together room: the skip op reaches the central guard, which no-ops it
+                                            // and shows the throttled toast (spec-listen-together-guest-lock-hardening)
                                             if (!disablePlayerHorizontalSwipe && playerType == PlayerType.Essential) {
                                                 if (deltaX > playerSwipeSensitivity.threshold) {
                                                     binder.player.playPrevious()
@@ -1512,6 +1518,8 @@ fun Player(
                                                 deltaX = 0f
                                             },
                                             onDragEnd = {
+                                                // Guest in a Listen Together room: the skip op reaches the central guard, which no-ops it
+                                                // and shows the throttled toast (spec-listen-together-guest-lock-hardening)
                                                 if (!disablePlayerHorizontalSwipe) {
                                                     if (deltaX > playerSwipeSensitivity.threshold) {
                                                         binder.player.playPrevious()
@@ -1655,6 +1663,8 @@ fun Player(
                                                     deltaX = 0f
                                                 },
                                                 onDragEnd = {
+                                                    // Guest in a Listen Together room: the skip op reaches the central guard, which no-ops it
+                                                    // and shows the throttled toast (spec-listen-together-guest-lock-hardening)
                                                     if (!disablePlayerHorizontalSwipe && playerType == PlayerType.Essential) {
                                                         if (deltaX > playerSwipeSensitivity.threshold) {
                                                             binder.player.playPrevious()
@@ -2212,6 +2222,8 @@ fun Player(
                                         deltaX = 0f
                                     },
                                     onDragEnd = {
+                                        // Guest in a Listen Together room: the skip op reaches the central guard, which no-ops it
+                                        // and shows the throttled toast (spec-listen-together-guest-lock-hardening)
                                         if (!disablePlayerHorizontalSwipe) {
                                             if (deltaX > playerSwipeSensitivity.threshold) {
                                                 binder.player.playPrevious()

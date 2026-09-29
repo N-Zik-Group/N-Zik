@@ -22,6 +22,7 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Icon
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.components.tab.ItemSelector
+import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.it.fast4x.rimusic.utils.discoverKey
 import app.it.fast4x.rimusic.utils.queueLoopTypeKey
 import app.it.fast4x.rimusic.utils.rememberPreference
@@ -47,27 +48,37 @@ fun Discover(
 
     // Active state of this button
     override var isFirstColor: Boolean by rememberPreference(discoverKey, false)
-    
-    override val isEnabled: Boolean = true
+
+    // Listen Together guest lock (spec-listen-together-guest-lock-hardening): Discover is a
+    // host-owned stateful ON/OFF control — a locked guest sees it grayed (disabled) and the
+    // toggle is blocked centrally in NZikRadio.toggleDiscover.
+    private val guestLocked = rememberListenTogetherGuestLock()
+    override val isEnabled: Boolean
+        get() = !guestLocked
 
     override val color: androidx.compose.ui.graphics.Color
         @Composable
         get() = if (isDiscoverClickable) super<DynamicColor>.color else super<DynamicColor>.color.copy(alpha = 0.4f)
 
     override fun onShortClick() {
-        onDiscoverClick()
+        if (!guestLocked) onDiscoverClick()
     }
 }
 
 class Repeat private constructor(
-    private val typeState: MutableState<QueueLoopType>
+    private val typeState: MutableState<QueueLoopType>,
+    // Listen Together guest lock (spec-listen-together-guest-lock-hardening): repeat is a
+    // playback control — host-only in a room. Read at composition so the button state
+    // recomposes when the lock changes
+    private val guestLocked: Boolean
 ): MenuIcon, Descriptive {
 
     companion object {
         @JvmStatic
         @Composable
         fun init(): Repeat = Repeat(
-            rememberPreference( queueLoopTypeKey, QueueLoopType.Default )
+            rememberPreference( queueLoopTypeKey, QueueLoopType.Default ),
+            rememberListenTogetherGuestLock()
         )
     }
 
@@ -86,19 +97,22 @@ class Repeat private constructor(
         @Composable
         get() = painterResource( type.iconId )
 
+    override val isEnabled: Boolean
+        get() = !guestLocked
+
     @Composable
     override fun ToolBarButton() {
         TabToolBar.Icon(
             icon,
             color,
             TabToolBar.TOOLBAR_ICON_SIZE,
-            true,
+            isEnabled,
             androidx.compose.ui.Modifier,
             this::onShortClick
         )
     }
 
-    override fun onShortClick() { type = type.next() }
+    override fun onShortClick() { if (!guestLocked) type = type.next() }
 }
 
 @SuppressLint("ComposableNaming")
@@ -115,7 +129,13 @@ fun ShuffleQueue(
         @Composable
         get() = stringResource( messageId )
 
+    // Shuffling the queue is a playback control: host-only in a Listen Together room
+    private val guestLocked = rememberListenTogetherGuestLock()
+    override val isEnabled: Boolean
+        get() = !guestLocked
+
     override fun onShortClick() {
+        if (guestLocked) return
         coroutineScope.launch {
             lazyListState.smoothScrollToTop()
         }.invokeOnCompletion {
@@ -166,9 +186,14 @@ fun DeleteFromQueue(
                 stringResource( R.string.clean_queue_confirm )
         }
 
+    // Deleting from the queue is a playback control: host-only in a Listen Together room
+    private val guestLocked = rememberListenTogetherGuestLock()
+    override val isEnabled: Boolean
+        get() = !guestLocked
+
     override var isActive: Boolean by rememberSaveable { mutableStateOf(false) }
 
-    override fun onShortClick() { isActive = !isActive }
+    override fun onShortClick() { if (!guestLocked) isActive = !isActive }
 
     override fun onConfirm() = onDeleteConfirm()
 }

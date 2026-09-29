@@ -54,6 +54,9 @@ import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.models.Info
+import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
+import app.n_zik.android.listentogether.guestLockedAlpha
+import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.isLocal
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
@@ -454,7 +457,19 @@ class PlayerItemMenu private constructor(
                 @get:Composable
                 override val menuIconTitle: String get() = stringResource(messageId)
 
+                override val modifier: Modifier
+                    get() = Modifier.alpha(
+                        if (listenTogetherGuestLock.value) guestLockedAlpha(listenTogetherGuestLock.value) else 1f
+                    )
+
                 override fun onShortClick() {
+                    // Guest lock (spec-listen-together-guest-lock-hardening): the sleep timer
+                    // auto-stops the app — a session-level control, grayed + blocked for a
+                    // locked guest with the shared throttled toast.
+                    if (listenTogetherGuestLock.value) {
+                        ListenTogetherGuestGuardPlayer.reportUiBlockedOp(appContext())
+                        return
+                    }
                     onShowSleepTimer()
                 }
                 override fun onLongClick() {}

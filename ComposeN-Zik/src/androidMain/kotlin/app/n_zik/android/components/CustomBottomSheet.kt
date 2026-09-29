@@ -112,6 +112,19 @@ internal fun sheetFlingVelocity(velocityYPx: Float, anchoredAtTop: Boolean): Flo
     if (anchoredAtTop) velocityYPx else -velocityYPx
 
 /**
+ * Mirrors [PlayerSheetState.performFling]'s dismiss decision (velocity thresholds + the
+ * pulled-position band) so a disabled dismiss can be reported as a blocked attempt instead of a
+ * silent spring-back. Keep in sync with [PlayerSheetState.performFling].
+ */
+internal fun flingWouldDismiss(state: PlayerSheetState, velocity: Float): Boolean {
+    if (velocity > 250f) return false
+    if (velocity < -100f) return state.value <= state.collapsedBound
+    val l0 = state.dismissedBound
+    val l1 = state.dismissedBound + (state.collapsedBound - state.dismissedBound) * 0.80f
+    return state.value in l0..l1
+}
+
+/**
  * Fade-in progress of the full player content (0 = hidden, 1 = visible).
  * Starts at 0.45f, exactly when the mini-player is fully faded
  * (miniPlayerFade), so the hand-over has no pop, no overlap and no
@@ -183,6 +196,8 @@ fun CustomBottomSheet(
     collapsedEndInset: Dp = 0.dp,
     collapsedContentHeight: Dp = state.collapsedBound,
     disableDismiss: Boolean = false,
+    /** Called when a dismiss gesture is attempted while [disableDismiss] is on (blocked attempt). */
+    onDismissBlocked: (() -> Unit)? = null,
     collapsedContent: @Composable BoxScope.() -> Unit,
     isExpandable: Boolean = true,
     content: @Composable BoxScope.() -> Unit,
@@ -252,6 +267,11 @@ fun CustomBottomSheet(
                         // vertical phase that preceded it: settle with a zero velocity instead.
                         val velocity = if (aborted) 0f else sheetFlingVelocity(velocityTracker.calculateVelocity().y, anchoredAtTop)
                         velocityTracker.resetTracking()
+                        // A dismiss attempt that is disabled (e.g. the Listen Together guest lock)
+                        // is a blocked attempt, not a silent spring-back: report it.
+                        if (disableDismiss && onDismiss != null && flingWouldDismiss(state, velocity)) {
+                            onDismissBlocked?.invoke()
+                        }
                         state.performFling(velocity, if (!disableDismiss) onDismiss else null)
                     }
                 )

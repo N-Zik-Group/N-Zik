@@ -44,6 +44,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.colorPalette
+import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.it.fast4x.rimusic.enums.PauseBetweenSongs
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.typography
@@ -230,7 +231,12 @@ fun DurationIndicator(
                 var isPaused by remember { mutableStateOf(false) }
 
                 val pauseBetweenSongs by rememberPreference(pauseBetweenSongsKey, PauseBetweenSongs.`0`)
-                if(pauseBetweenSongs != PauseBetweenSongs.`0`)
+                // Guest lock (spec-listen-together-guest-lock-hardening): the automatic
+                // pause→delay→play runs through the guarded facade, where it would register
+                // spurious guest play/pause intents (pause sets guestLocalPause, play fires a
+                // requestSync the guest never caused; a backgrounded app mid-delay can leave
+                // the flag stuck). In a room the host drives track transitions, so skip it.
+                if(pauseBetweenSongs != PauseBetweenSongs.`0` && !rememberListenTogetherGuestLock())
                     LaunchedEffect(timeRemaining) {
                         if(timeRemaining >= 0 && timeRemaining < 500) {
                             isPaused = true

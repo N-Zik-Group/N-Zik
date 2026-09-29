@@ -2,6 +2,8 @@ package app.kreate.android.themed.rimusic.screen.player
 
 import app.n_zik.android.core.database.*
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.listentogether.guestLockedAlpha
+import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.it.fast4x.rimusic.utils.playerActionBarButtonOrderKey
 
 import android.content.ActivityNotFoundException
@@ -195,6 +197,12 @@ fun BoxScope.ActionBar(
     var isShowingVisualizer by showVisualizerState
     var isShowingLyrics by showLyricsState
 
+    // Listen Together guest lock (spec-listen-together-guest-lock-hardening): stateful
+    // toolbar controls (discover / loop / shuffle / radio / queue editing) are non-interactive
+    // AND visibly disabled (grayed out) for a guest — the host owns those states.
+    val ltGuestLocked = rememberListenTogetherGuestLock()
+    val guestLockAlpha = guestLockedAlpha(ltGuestLocked)
+
     Row(
         modifier = Modifier.padding( WindowInsets.navigationBars.only(WindowInsetsSides.Bottom).asPaddingValues() )
                            .align(if (isLandscape) Alignment.BottomEnd else Alignment.BottomCenter)
@@ -341,8 +349,11 @@ fun BoxScope.ActionBar(
                                     },
                                     onLongClick = {
                                         if ( index < mediaItems.size ) {
+                                            // Guest lock: addNext is a queue op — the central guard
+                                            // blocks it (and toasts); the fake "added next" toast
+                                            // must not fire for a blocked attempt.
                                             binder.player.addNext( mediaItemAtIndex )
-                                            Toaster.s( R.string.addednext )
+                                            if ( !ltGuestLocked ) Toaster.s( R.string.addednext )
                                         }
                                     }
                                 )
@@ -448,7 +459,8 @@ fun BoxScope.ActionBar(
                             icon = R.drawable.trash,
                             // Keyed on the effective tone, not a hardcoded white (spec-achromatic-ramp-luminance-cap)
                             color = colorPalette().text,
-                            enabled = true,
+                            // Guest lock: queue editing is host-only (blocked + grayed)
+                            enabled = !ltGuestLocked,
                             onClick = {
                                 binder.player.removeMediaItem( nextIndex )
                             },
@@ -456,6 +468,7 @@ fun BoxScope.ActionBar(
                                 .weight(.07f)
                                 .size(40.dp)
                                 .padding(vertical = 7.5.dp)
+                                .alpha(guestLockAlpha)
                         )
                 }
             }
@@ -486,12 +499,18 @@ fun BoxScope.ActionBar(
                             if (showButtonPlayerVideo)
                                 IconButton(
                                     icon = R.drawable.video,
-                                    color = colorPalette().accent,
+                                    color = if (ltGuestLocked) colorPalette().textDisabled else colorPalette().accent,
+                                    // Guest lock: the video button pauses playback and opens the
+                                    // video overlay — a playback-affecting control owned by the
+                                    // host, grayed for a guest.
+                                    enabled = !ltGuestLocked,
                                     onClick = {
-                                        binder.gracefulPause()
-                                        showSearchEntityState.value = true
+                                        if (!ltGuestLocked) {
+                                            binder.gracefulPause()
+                                            showSearchEntityState.value = true
+                                        }
                                     },
-                                    modifier = Modifier.size( 24.dp )
+                                    modifier = Modifier.size( 24.dp ).alpha(guestLockAlpha)
                                 )
                         }
                         "discover" -> {
@@ -503,11 +522,15 @@ fun BoxScope.ActionBar(
                                 IconButton(
                                     icon = R.drawable.discover,
                                     color = if (discoverIsEnabled && isDiscoverClickable) colorPalette().accent else Color.Gray,
+                                    // Guest lock: Discover is a stateful ON/OFF control owned by the
+                                    // host — blocked in NZikRadio.toggleDiscover + grayed here
+                                    enabled = !ltGuestLocked,
                                     onClick = { binder.service.nzikRadio.toggleDiscover() },
                                     onLongClick = { Toaster.i(R.string.discoverinfo) },
                                     modifier = Modifier
                                         .size(24.dp)
                                         .alpha(if (isDiscoverClickable) 1f else 0.4f)
+                                        .alpha(guestLockAlpha)
                                 )
                             }
                         }
@@ -577,12 +600,20 @@ fun BoxScope.ActionBar(
                                 IconButton(
                                     icon = queueLoopType.iconId,
                                     color = colorPalette().accent,
+                                    // Guest lock: repeat "loop" is a stateful control owned by the
+                                    // host — the preference write is blocked (the service applies
+                                    // it to the raw player) + the button is grayed
+                                    enabled = !ltGuestLocked,
                                     onClick = {
-                                        queueLoopType = queueLoopType.next()
-                                        if (effectRotationEnabled)
-                                            rotateState.value = !rotateState.value
+                                        if ( !ltGuestLocked ) {
+                                            queueLoopType = queueLoopType.next()
+                                            if (effectRotationEnabled)
+                                                rotateState.value = !rotateState.value
+                                        }
                                     },
-                                    modifier = Modifier.size( 24.dp )
+                                    modifier = Modifier
+                                        .size( 24.dp )
+                                        .alpha(guestLockAlpha)
                                 )
                             }
                         }
@@ -592,8 +623,13 @@ fun BoxScope.ActionBar(
                                 IconButton(
                                     icon = R.drawable.shuffle,
                                     color = colorPalette().accent,
-                                    onClick = binder.player::shuffleQueue,
-                                    modifier = Modifier.size( 24.dp )
+                                    // Guest lock: shuffle is host-only — blocked by the central
+                                    // guard (queue ops) + grayed here
+                                    enabled = !ltGuestLocked,
+                                    onClick = { if ( !ltGuestLocked ) binder.player.shuffleQueue() },
+                                    modifier = Modifier
+                                        .size( 24.dp )
+                                        .alpha(guestLockAlpha)
                                 )
                         }
                         "lyrics" -> {
@@ -635,11 +671,18 @@ fun BoxScope.ActionBar(
                                     (binder.sleepTimerMillisLeft ?: flowOf(null)).collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
                                 IconButton(
                                     icon = R.drawable.sleep,
-                                    color = if (sleepTimerMillisLeft != null) colorPalette().accent else Color.Gray,
+                                    color = if (ltGuestLocked) colorPalette().textDisabled
+                                        else if (sleepTimerMillisLeft != null) colorPalette().accent
+                                        else Color.Gray,
+                                    // Guest lock: the sleep timer auto-stops the app — a session-level
+                                    // control, grayed + disabled for a guest
+                                    // (spec-listen-together-guest-lock-hardening).
+                                    enabled = !ltGuestLocked,
                                     onClick = {
+                                        if (ltGuestLocked) return@IconButton
                                         showSleepTimerState.value = true
                                     },
-                                    modifier = Modifier.size( 24.dp )
+                                    modifier = Modifier.size( 24.dp ).alpha(guestLockAlpha)
                                 )
                             }
                         }
@@ -710,10 +753,15 @@ fun BoxScope.ActionBar(
                                 IconButton(
                                     icon = R.drawable.radio,
                                     color = if (binder.isRadioActive) colorPalette().accent else Color.Gray,
+                                    // Guest lock: Radio is a stateful ON/OFF control owned by the
+                                    // host — blocked in NZikRadio.startRadio + grayed here
+                                    enabled = !ltGuestLocked,
                                     onClick = {
                                         binder.startRadio( mediaItem, false, null, true )
                                     },
-                                    modifier = Modifier.size( 24.dp )
+                                    modifier = Modifier
+                                        .size( 24.dp )
+                                        .alpha(guestLockAlpha)
                                 )
                         }
                         "menu" -> {

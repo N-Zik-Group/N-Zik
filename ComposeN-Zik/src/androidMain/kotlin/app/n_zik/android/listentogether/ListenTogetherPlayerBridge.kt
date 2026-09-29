@@ -45,6 +45,15 @@ import timber.log.Timber
  */
 val listenTogetherGuestLock = mutableStateOf(false)
 
+/**
+ * Pure predicate for the player-UI guest lock ([listenTogetherGuestLock]): playback controls
+ * are locked only while the user is a guest in an active room. The host keeps every control
+ * (host = source of truth) and out-of-room users are never locked. Single source of the
+ * lock semantics — [ListenTogetherManager] derives the State from it.
+ */
+fun isGuestLockedForPlayback(isInRoom: Boolean, isHost: Boolean): Boolean =
+    isInRoom && !isHost
+
 object ListenTogetherPlayerBridge {
 
     private const val TAG = "LTPlayerBridge"

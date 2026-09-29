@@ -36,6 +36,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
@@ -55,6 +56,8 @@ import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.colorPalette
+import app.n_zik.android.listentogether.guestLockedAlpha
+import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.PlayerBackgroundColors
 import app.it.fast4x.rimusic.enums.PlayerControlsType
@@ -93,6 +96,7 @@ import kotlinx.coroutines.launch
 import app.kreate.android.me.knighthat.sync.YouTubeSync
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.n_zik.android.enums.PlayerControlsColors
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import app.it.fast4x.rimusic.utils.playerControlsColorsKey
 import app.n_zik.android.components.player.monochromeControlsColor
@@ -426,8 +430,11 @@ fun ControlsModern(
     )
     var jumpPrevious by rememberPreference(jumpPreviousKey, "3")
     // Listen Together guest lock (spec-listen-together): guests in a room cannot
-    // skip tracks; play/pause stays available
+    // skip tracks; play/pause stays available. Locked controls are also visibly
+    // disabled (spec-listen-together-guest-lock-hardening)
     val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
+    val context = LocalContext.current
+    val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
 
   if (playerPlayButtonType != PlayerPlayButtonType.Disabled) {
       CustomElevatedButton(
@@ -446,6 +453,7 @@ fun ControlsModern(
               .size(55.dp)
               .doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp)
               .clip(uiRoundnessShape())
+              .alpha(guestLockAlpha)
       ) {
           Image(
               painter = painterResource(R.drawable.play_skip_back),
@@ -474,7 +482,12 @@ fun ControlsModern(
                          }
                          if (effectRotationEnabled) isRotated = !isRotated
                      },
-                     onLongClick = onShowSpeedPlayerDialog
+                     // Speed dialog is a playback control: a locked guest gets the shared
+                     // blocked toast instead of a silent no-op (the play button stays)
+                     onLongClick = {
+                         if (listenTogetherGuestLock) ListenTogetherGuestGuardPlayer.reportUiBlockedOp(context)
+                         else onShowSpeedPlayerDialog()
+                     }
                  )
                  .bounceClick()
 
@@ -543,7 +556,12 @@ fun ControlsModern(
                   }
                   if (effectRotationEnabled) isRotated = !isRotated
               },
-              onLongClick = onShowSpeedPlayerDialog,
+              // Speed dialog is a playback control: a locked guest gets the shared blocked
+              // toast instead of a silent no-op (play/pause stays)
+              onLongClick = {
+                  if (listenTogetherGuestLock) ListenTogetherGuestGuardPlayer.reportUiBlockedOp(context)
+                  else onShowSpeedPlayerDialog()
+              },
               modifier = Modifier
                   .doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp)
                   .clip(uiRoundnessShape())
@@ -629,6 +647,7 @@ fun ControlsModern(
             .size(55.dp)
             .doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp)
             .clip(uiRoundnessShape())
+            .alpha(guestLockAlpha)
 
       ) {
           Image(
@@ -676,6 +695,7 @@ fun ControlsModern(
                       .clip(uiRoundnessShape()).combinedClickable(
                           interactionSource = null,
                           indication = null,
+                          enabled = !listenTogetherGuestLock,
                           onClick = {
                               if (!listenTogetherGuestLock) {
                                   if (jumpPrevious == "") jumpPrevious = "0"
@@ -688,6 +708,7 @@ fun ControlsModern(
                           },
                           onLongClick = {}
                       )
+                      .alpha(guestLockAlpha)
               )
           }
 
@@ -724,7 +745,12 @@ fun ControlsModern(
                               }
                               if (effectRotationEnabled) isRotated = !isRotated
                           },
-                          onLongClick = onShowSpeedPlayerDialog
+                          // Speed dialog is a playback control: a locked guest gets the shared
+                          // blocked toast instead of a silent no-op (the play button stays)
+                          onLongClick = {
+                              if (listenTogetherGuestLock) ListenTogetherGuestGuardPlayer.reportUiBlockedOp(context)
+                              else onShowSpeedPlayerDialog()
+                          }
                       )
               )
 
@@ -755,6 +781,7 @@ fun ControlsModern(
                       .clip(uiRoundnessShape()).combinedClickable(
                           interactionSource = null,
                           indication = null,
+                          enabled = !listenTogetherGuestLock,
                           onClick = {
                               if (!listenTogetherGuestLock) {
                                   //binder.player.forceSeekToNext()
@@ -764,6 +791,7 @@ fun ControlsModern(
                           },
                           onLongClick = {}
                       )
+                      .alpha(guestLockAlpha)
               )
           }
       }

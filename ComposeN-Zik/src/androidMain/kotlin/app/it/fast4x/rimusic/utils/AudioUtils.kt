@@ -58,7 +58,7 @@ fun MedleyMode(binder: PlayerServiceModern.Binder?, seconds: Int) {
 }
 
 @MainThread
-fun ExoPlayer.fadeInEffect( duration: Long ) {
+fun Player.fadeInEffect( duration: Long ) {
     if( isPlaying ) return
     if( duration == 0L ) {
         if( playbackState == Player.STATE_IDLE )
@@ -81,7 +81,7 @@ fun ExoPlayer.fadeInEffect( duration: Long ) {
 }
 
 @MainThread
-fun ExoPlayer.fadeOutEffect( duration: Long ) {
+fun Player.fadeOutEffect( duration: Long ) {
     if( !isPlaying && !playWhenReady && playbackState != Player.STATE_BUFFERING ) return
     if( duration == 0L || !isPlaying ) {
         pause()

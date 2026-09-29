@@ -1,11 +1,15 @@
 package app.n_zik.android.components.tab
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.listentogether.guestLockedAlpha
+import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.MenuState
@@ -31,6 +35,12 @@ class Radio private constructor(
     }
 
     override val iconId: Int = R.drawable.radio
+    // Guest lock (spec-listen-together-guest-lock-hardening): the radio is a host-owned stateful
+    // control — a locked guest sees this menu item grayed (the tap is answered by the shared
+    // blocked toast via the central startRadio() guard), consistent with the other locked sites
+    // (MiniPlayer, ActionBar, PlaylistSongList).
+    override val modifier: Modifier
+        get() = Modifier.alpha(guestLockedAlpha(listenTogetherGuestLock.value))
     override val color: androidx.compose.ui.graphics.Color
         @Composable
         get() = if (binder?.isRadioActive == true) colorPalette().accent else colorPalette().text

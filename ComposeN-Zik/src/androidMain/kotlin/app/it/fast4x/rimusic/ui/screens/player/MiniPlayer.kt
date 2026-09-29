@@ -59,6 +59,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.draw.alpha
+import app.n_zik.android.listentogether.guestLockedAlpha
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.showLyricsStateKey
 import app.it.fast4x.rimusic.utils.showVisualizerStateKey
@@ -429,6 +430,9 @@ fun MiniPlayer(
     // The callback is called again on every drag delta once the finger reaches the end anchor (it
     // never settles, as it answers false): run the action once per gesture (issue #818)
     val swipeActionLatch = remember { SwipeActionLatch() }
+    // Listen Together guest lock (spec-listen-together-guest-lock-hardening): the like swipe
+    // stays available for a guest in a room; seek swipes reach the central guard, which
+    // no-ops them and shows the throttled toast
 
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
@@ -834,6 +838,8 @@ private fun MiniPlayerSlotButton(
     // Listen Together guest lock (spec-listen-together): guests in a room cannot
     // skip tracks or shuffle; play/pause stays available
     val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
+    // Locked controls are also visibly disabled (spec-listen-together-guest-lock-hardening)
+    val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
 
     val modifier = Modifier
         .rotate(rotationAngle)
@@ -845,39 +851,42 @@ private fun MiniPlayerSlotButton(
             IconButton(
                 icon = R.drawable.play_skip_back,
                 color = controlsColorText,
+                enabled = !listenTogetherGuestLock,
                 onClick = {
                     if (!listenTogetherGuestLock) {
                         binder.player.playPrevious()
                         if (effectRotationEnabled) onRotatedChange(!isRotated)
                     }
                 },
-                modifier = modifier
+                modifier = modifier.alpha(guestLockAlpha)
             )
         }
         MiniPlayerButton.SkipForward -> {
             IconButton(
                 icon = R.drawable.play_skip_forward,
                 color = controlsColorText,
+                enabled = !listenTogetherGuestLock,
                 onClick = {
                     if (!listenTogetherGuestLock) {
                         binder.player.playNext()
                         if (effectRotationEnabled) onRotatedChange(!isRotated)
                     }
                 },
-                modifier = modifier
+                modifier = modifier.alpha(guestLockAlpha)
             )
         }
         MiniPlayerButton.Shuffle -> {
             IconButton(
                 icon = R.drawable.shuffle,
                 color = controlsColorText,
+                enabled = !listenTogetherGuestLock,
                 onClick = {
                     if (!listenTogetherGuestLock) {
                         binder.player.shuffleQueue()
                         if (effectRotationEnabled) onRotatedChange(!isRotated)
                     }
                 },
-                modifier = modifier
+                modifier = modifier.alpha(guestLockAlpha)
             )
         }
         MiniPlayerButton.Repeat -> {
@@ -886,13 +895,16 @@ private fun MiniPlayerSlotButton(
             IconButton(
                 icon = queueLoopType.iconId,
                 color = if (queueLoopType != QueueLoopType.Default) colorPalette().accent else controlsColorText,
+                enabled = !listenTogetherGuestLock,
                 onClick = {
-                    val next = queueLoopType.next()
-                    binder.player.repeatMode = next.type
-                    currentRepeatMode = next.type
-                    if (effectRotationEnabled) onRotatedChange(!isRotated)
+                    if (!listenTogetherGuestLock) {
+                        val next = queueLoopType.next()
+                        binder.player.repeatMode = next.type
+                        currentRepeatMode = next.type
+                        if (effectRotationEnabled) onRotatedChange(!isRotated)
+                    }
                 },
-                modifier = modifier
+                modifier = modifier.alpha(guestLockAlpha)
             )
         }
         MiniPlayerButton.Like -> {
@@ -963,11 +975,14 @@ private fun MiniPlayerSlotButton(
             IconButton(
                 icon = R.drawable.radio,
                 color = if (isRadioActive) colorPalette().accent else controlsColorText,
+                // Guest lock: Radio is a stateful ON/OFF control owned by the host
+                // (blocked centrally in NZikRadio.startRadio + grayed here).
+                enabled = !listenTogetherGuestLock,
                 onClick = {
-                    mediaItem?.let { binder.startRadio(it, false, null, true) }
+                    if (!listenTogetherGuestLock) mediaItem?.let { binder.startRadio(it, false, null, true) }
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
-                modifier = modifier
+                modifier = modifier.alpha(guestLockAlpha)
             )
         }
         MiniPlayerButton.AudioOutput -> {
@@ -1020,13 +1035,17 @@ private fun MiniPlayerSlotButton(
         MiniPlayerButton.SleepTimer -> {
             IconButton(
                 icon = R.drawable.sleep,
-                color = controlsColorText,
+                color = if (listenTogetherGuestLock) colorPalette().textDisabled else controlsColorText,
+                // Guest lock: the sleep timer auto-stops the app — a session-level control,
+                // grayed + disabled for a guest (spec-listen-together-guest-lock-hardening).
+                enabled = !listenTogetherGuestLock,
                 onClick = {
+                    if (listenTogetherGuestLock) return@IconButton
                     pendingAction?.value = PendingMiniPlayerAction.SleepTimer
                     onShowPlayer()
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
-                modifier = modifier
+                modifier = modifier.alpha(guestLockAlpha)
             )
         }
         MiniPlayerButton.Lyrics -> {
@@ -1086,13 +1105,17 @@ private fun MiniPlayerSlotButton(
         MiniPlayerButton.Video -> {
             IconButton(
                 icon = R.drawable.video,
-                color = controlsColorText,
+                color = if (listenTogetherGuestLock) colorPalette().textDisabled else controlsColorText,
+                // Guest lock: the video button pauses playback and opens the video overlay —
+                // a playback-affecting control owned by the host, grayed for a guest.
+                enabled = !listenTogetherGuestLock,
                 onClick = {
+                    if (listenTogetherGuestLock) return@IconButton
                     pendingAction?.value = PendingMiniPlayerAction.Video
                     onShowPlayer()
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
-                modifier = modifier
+                modifier = modifier.alpha(guestLockAlpha)
             )
         }
         MiniPlayerButton.Discover -> {
@@ -1103,12 +1126,17 @@ private fun MiniPlayerSlotButton(
             IconButton(
                 icon = R.drawable.discover,
                 color = if (discoverIsEnabled && isDiscoverClickable) colorPalette().accent else controlsColorText,
+                // Guest lock: Discover is a stateful ON/OFF control owned by the host
+                // (blocked centrally in NZikRadio.toggleDiscover + grayed here).
+                enabled = !listenTogetherGuestLock,
                 onClick = {
-                    binder.service.nzikRadio.toggleDiscover()
+                    if (!listenTogetherGuestLock) binder.service.nzikRadio.toggleDiscover()
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
                 onLongClick = { Toaster.i(R.string.discoverinfo) },
-                modifier = modifier.alpha(if (isDiscoverClickable) 1f else 0.4f)
+                modifier = modifier
+                    .alpha(if (isDiscoverClickable) 1f else 0.4f)
+                    .alpha(guestLockAlpha)
             )
         }
         else -> {}

@@ -9,8 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import app.it.fast4x.rimusic.ui.components.MusicAnimation
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.onOverlay
@@ -20,7 +20,9 @@ import app.n_zik.android.colorPalette
 @Composable
 fun NowPlayingSongIndicator (
     mediaId: String,
-    player: ExoPlayer?,
+    // Player (not ExoPlayer): the guarded Listen Together facade is a plain Player — this
+    // indicator only reads currentMediaItem (spec-listen-together-guest-lock-hardening).
+    player: Player?,
     containerSize: Dp = Dimensions.thumbnails.song
 ) {
 

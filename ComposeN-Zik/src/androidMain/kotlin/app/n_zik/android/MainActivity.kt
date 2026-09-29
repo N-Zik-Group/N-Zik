@@ -177,6 +177,8 @@ import app.it.fast4x.rimusic.ui.screens.player.components.YoutubePlayer
 import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
 import app.it.fast4x.rimusic.ui.screens.player.rememberPlayerSheetState
 import app.n_zik.android.components.CustomBottomSheet
+import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
+import app.n_zik.android.listentogether.shouldDisablePlayerSheetDismiss
 import app.n_zik.android.components.player.MiniPlayerQueueOverlay
 import app.n_zik.android.components.player.APP_HEADER_HEIGHT
 import app.n_zik.android.components.player.miniPlayerSideInset
@@ -1726,6 +1728,13 @@ class MainActivity :
                             }
 
                             val disableClosingPlayerSwipingDown by rememberPreference(disableClosingPlayerSwipingDownKey, false)
+                            // Listen Together guest lock (spec-listen-together-guest-lock-hardening,
+                            // matrix row MINIPLAYER_DISMISS_GUEST): the dismiss-swipe's onDismiss is
+                            // destructive for the room — it clears the queue synced from the host,
+                            // stops the radio and stops the player service. While a guest is locked,
+                            // the gesture itself is disabled, so the room cannot be "cleaned" from
+                            // a guest device.
+                            val ltGuestLocked by app.n_zik.android.listentogether.listenTogetherGuestLock
         checkIfAppIsRunningInBackground()
 
                             // Reactive media-item presence: the sheet (including its
@@ -1812,7 +1821,14 @@ class MainActivity :
                                             collapsedStartInset = playerStartInset,
                                             collapsedEndInset = playerEndInset,
                                             collapsedContentHeight = Dimensions.collapsedPlayer,
-                                            disableDismiss = disableClosingPlayerSwipingDown,
+                                            disableDismiss = shouldDisablePlayerSheetDismiss(disableClosingPlayerSwipingDown, ltGuestLocked),
+                                            // Guest lock: a blocked "clean the player" attempt is explained by the
+                                            // shared throttled toast (the destructive onDismiss is unreachable
+                                            // while disabled). The "disable closing swiping down" setting alone
+                                            // stays silent — it is the user's own choice.
+                                            onDismissBlocked = {
+                                                if (ltGuestLocked) ListenTogetherGuestGuardPlayer.reportUiBlockedOp(this@MainActivity)
+                                            },
                                             collapsedContent = {
                                                 MiniPlayer(
                                                     showPlayer = {

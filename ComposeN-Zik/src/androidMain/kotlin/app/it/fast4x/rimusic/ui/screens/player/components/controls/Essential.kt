@@ -40,6 +40,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -69,6 +70,8 @@ import app.it.fast4x.rimusic.enums.PlayerPlayButtonType
 import app.it.fast4x.rimusic.enums.QueueLoopType
 import app.it.fast4x.rimusic.models.Info
 import app.it.fast4x.rimusic.models.ui.UiMedia
+import app.n_zik.android.listentogether.guestLockedAlpha
+import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
@@ -103,6 +106,7 @@ import kotlinx.coroutines.launch
 import app.kreate.android.me.knighthat.sync.YouTubeSync
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.n_zik.android.enums.PlayerControlsColors
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import app.it.fast4x.rimusic.utils.playerControlsColorsKey
 import app.n_zik.android.components.player.monochromeControlsColor
@@ -406,6 +410,12 @@ fun ControlsEssential(
         PlayerControlsColors.Monochrome -> monochromeControlsColor(colorPalette())
         else -> colorPalette().accent
     }
+    // Listen Together guest lock (spec-listen-together-guest-lock-hardening): a guest in a
+    // room cannot skip, change speed, or repeat; play/pause stays available. Locked controls
+    // are non-interactive and visibly disabled
+    val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
+    val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
+    val context = LocalContext.current
     val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
     var effectRotationEnabled by rememberPreference(effectRotationKey, false)
@@ -464,19 +474,23 @@ fun ControlsEssential(
             .clip(uiRoundnessShape()).combinedClickable(
                 indication = ripple(bounded = false),
                 interactionSource = remember { MutableInteractionSource() },
+                enabled = !listenTogetherGuestLock,
                 onClick = {
-                    if (jumpPrevious == "") jumpPrevious = "0"
-                    if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && binder.player.currentPosition > jumpPrevious.toInt()*1000)){
-                        binder.player.seekTo(0)
+                    if (!listenTogetherGuestLock) {
+                        if (jumpPrevious == "") jumpPrevious = "0"
+                        if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && binder.player.currentPosition > jumpPrevious.toInt()*1000)){
+                            binder.player.seekTo(0)
+                        }
+                        else binder.player.playPrevious()
+                        if (effectRotationEnabled) isRotated = !isRotated
                     }
-                    else binder.player.playPrevious()
-                    if (effectRotationEnabled) isRotated = !isRotated
                 },
                 onLongClick = {}
             )
             .rotate(rotationAngle)
             .padding(10.dp)
             .size(26.dp)
+            .alpha(guestLockAlpha)
 
     )
 
@@ -495,7 +509,12 @@ fun ControlsEssential(
                     }
                     if (effectRotationEnabled) isRotated = !isRotated
                 },
-                onLongClick = onShowSpeedPlayerDialog
+                // Speed dialog is a playback control: a locked guest gets the shared blocked
+                // toast instead of a silent no-op (the play button itself stays available)
+                onLongClick = {
+                    if (listenTogetherGuestLock) ListenTogetherGuestGuardPlayer.reportUiBlockedOp(context)
+                    else onShowSpeedPlayerDialog()
+                }
             )
             .bounceClick()
             .clip(uiRoundnessShape())
@@ -597,24 +616,29 @@ fun ControlsEssential(
             .clip(uiRoundnessShape()).combinedClickable(
                 indication = ripple(bounded = false),
                 interactionSource = remember { MutableInteractionSource() },
+                enabled = !listenTogetherGuestLock,
                 onClick = {
-                    //binder.player.forceSeekToNext()
-                    binder.player.playNext()
-                    if (effectRotationEnabled) isRotated = !isRotated
+                    if (!listenTogetherGuestLock) {
+                        //binder.player.forceSeekToNext()
+                        binder.player.playNext()
+                        if (effectRotationEnabled) isRotated = !isRotated
+                    }
                 },
                 onLongClick = {}
             )
             .rotate(rotationAngle)
             .padding(10.dp)
             .size(26.dp)
+            .alpha(guestLockAlpha)
 
     )
 
     IconButton(
         icon = queueLoopType.iconId,
         color = colorPalette().text,
-        onClick = { queueLoopType = queueLoopType.next() },
-        modifier = Modifier.size( 26.dp )
+        enabled = !listenTogetherGuestLock,
+        onClick = { if (!listenTogetherGuestLock) queueLoopType = queueLoopType.next() },
+        modifier = Modifier.size( 26.dp ).alpha(guestLockAlpha)
     )
 }
 

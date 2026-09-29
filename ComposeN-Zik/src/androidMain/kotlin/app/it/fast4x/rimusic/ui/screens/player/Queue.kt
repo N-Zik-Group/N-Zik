@@ -127,6 +127,7 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.components.ui.screens.player.DeleteFromQueue
 import app.n_zik.android.components.ui.screens.player.Discover
+import app.n_zik.android.listentogether.guestLockedAlpha
 import app.n_zik.android.components.ui.screens.player.QueueArrow
 import app.n_zik.android.components.ui.screens.player.Repeat
 import app.n_zik.android.components.ui.screens.player.ShuffleQueue
@@ -159,6 +160,12 @@ fun Queue(
     val hapticFeedback = LocalHapticFeedback.current
 
     val rippleIndication = ripple(bounded = false)
+
+    // Listen Together guest lock (spec-listen-together-guest-lock-hardening): a guest in a
+    // room cannot edit the queue (reorder, remove, play-next swipe, clear) — it is host-owned.
+    // `by` delegation so every event-time read gets the latest lock state
+    val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
+    val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
 
     Box( Modifier.fillMaxSize() ) {
         var items by remember {
@@ -197,7 +204,9 @@ fun Queue(
             val fromIndex = windowsInQueue.indexOfFirst { it.uid.toString() == from.key }
             val toIndex = windowsInQueue.indexOfFirst { it.uid.toString() == to.key }
 
-            if (fromIndex != -1 && toIndex != -1) {
+            // Queue reorder is host-only in a Listen Together room: a locked guest's drag
+            // snaps back instead of reordering
+            if (!listenTogetherGuestLock && fromIndex != -1 && toIndex != -1) {
                 windowsInQueue = windowsInQueue.toMutableList().apply {
                     val currentDragInfo = dragInfo
                     dragInfo = if (currentDragInfo == null)
@@ -215,7 +224,8 @@ fun Queue(
                 isDragging = true
             } else {
                 dragInfo?.let { (from, to) ->
-                    player.moveMediaItem(from, to)
+                    // Queue reorder is host-only in a Listen Together room
+                    if (!listenTogetherGuestLock) player.moveMediaItem(from, to)
                     dragInfo = null
                 }
                 isDragging = false
@@ -229,6 +239,24 @@ fun Queue(
             // Setting this field to true means disable it
             if( itemSelector.isActive )
                 positionLock.isFirstIcon = true
+        }
+
+        // Guest lock (spec-listen-together-guest-lock-hardening): while a guest is locked the
+        // reorder lock ("cadena") stays forced-on — the guest cannot unlock it to reorder the
+        // shared queue. The button itself is grayed + disabled by PositionLock.isEnabled. When
+        // the lock clears (guest leaves the room), the guest's previous setting is restored
+        // (review finding: the forced-on was never rolled back).
+        var preLockReorderLock by remember { mutableStateOf<Boolean?>(null) }
+        LaunchedEffect( listenTogetherGuestLock ) {
+            if ( listenTogetherGuestLock ) {
+                if ( preLockReorderLock == null ) preLockReorderLock = positionLock.isFirstIcon
+                positionLock.isFirstIcon = true
+            } else {
+                preLockReorderLock?.let { previous ->
+                    positionLock.isFirstIcon = previous
+                    preLockReorderLock = null
+                }
+            }
         }
 
         fun getSongs() = itemSelector.ifEmpty { items }
@@ -265,22 +293,26 @@ fun Queue(
         val discover = Discover( isDiscoverClickable, onDiscoverClick )
         val repeat = Repeat.init()
         val deleteDialog = DeleteFromQueue( itemSelector ) {
-            try {
-                if( itemSelector.isEmpty() ) {
-                    player.stop()
-                    player.clearMediaItems()
-                    Toaster.s( R.string.deleted )
-                } else {
-                    val count = itemSelector.size
-                    val selectedIds = itemSelector.map { it.id }.toSet()
-                    // Remove from end to avoid index shift
-                    (player.mediaItemCount - 1 downTo 0)
-                        .filter { player.getMediaItemAt(it).mediaId in selectedIds }
-                        .forEach( player::removeMediaItem )
-                    Toaster.s( R.string.deleted_item, formatArgs = *arrayOf( "$count" ) )
+            // Deleting from the queue (including "clear all") is host-only in a Listen
+            // Together room: a locked guest's confirmation is a no-op
+            if (!listenTogetherGuestLock) {
+                try {
+                    if( itemSelector.isEmpty() ) {
+                        player.stop()
+                        player.clearMediaItems()
+                        Toaster.s( R.string.deleted )
+                    } else {
+                        val count = itemSelector.size
+                        val selectedIds = itemSelector.map { it.id }.toSet()
+                        // Remove from end to avoid index shift
+                        (player.mediaItemCount - 1 downTo 0)
+                            .filter { player.getMediaItemAt(it).mediaId in selectedIds }
+                            .forEach( player::removeMediaItem )
+                        Toaster.s( R.string.deleted_item, formatArgs = *arrayOf( "$count" ) )
+                    }
+                } catch( e: Exception ) {
+                    Timber.tag( "Queue" ).e( e, "Failed to delete from queue" )
                 }
-            } catch( e: Exception ) {
-                Timber.tag( "Queue" ).e( e, "Failed to delete from queue" )
             }
 
             itemSelector.isActive = false
@@ -418,7 +450,9 @@ fun Queue(
                                             onDragStopped = {
                                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                             }
-                                        ),
+                                        )
+                                        // Reorder handle is visibly disabled for a locked guest
+                                        .alpha( guestLockAlpha ),
                                     contentAlignment = Alignment.Center
                                 ) {
 
@@ -441,17 +475,21 @@ fun Queue(
                                 swipeLeftActionParam = queueSwipeLeftAction,
                                 swipeRightActionParam = queueSwipeRightAction,
                                 onPlayNext = {
-                                    val currentIndex = binder.player.currentMediaItemIndex
-                                    val targetIndex = currentIndex + 1
-                                    // if the song is already after the current, do nothing
-                                    if (index > currentIndex) {
-                                         // Only move if not already in the next position
-                                         if (index != targetIndex) {
+                                    // "Play next" swipes reorder the queue: host-only in a
+                                    // Listen Together room
+                                    if (!listenTogetherGuestLock) {
+                                        val currentIndex = binder.player.currentMediaItemIndex
+                                        val targetIndex = currentIndex + 1
+                                        // if the song is already after the current, do nothing
+                                        if (index > currentIndex) {
+                                             // Only move if not already in the next position
+                                             if (index != targetIndex) {
+                                                binder.player.moveMediaItem(index, targetIndex)
+                                            }
+                                        } else {
+                                            // If it's before or in the current position, move it to the next
                                             binder.player.moveMediaItem(index, targetIndex)
                                         }
-                                    } else {
-                                        // If it's before or in the current position, move it to the next
-                                        binder.player.moveMediaItem(index, targetIndex)
                                     }
                                 },
                                 onDownload = {
@@ -474,24 +512,31 @@ fun Queue(
                                          To bypass it, pass another function that requires
                                          computation to extract data.
                                      */
-                                    val actualIndex = player.findMediaItemIndexById( song.id )
-                                    if (actualIndex >= 0 && actualIndex < player.mediaItemCount) {
-                                        try {
-                                            player.removeMediaItem( actualIndex )
-                                            Toaster.s(
-                                                context.resources.getString(R.string.deleted_item, song.cleanTitle())
-                                            )
-                                        } catch (e: IllegalArgumentException) {
-                                            // Media item may have already been removed or index is invalid
-                                            Timber.tag("Queue").e(e, "Failed to remove media item at index $actualIndex")
+                                    // Removing from the queue is host-only in a Listen Together room
+                                    if (!listenTogetherGuestLock) {
+                                        val actualIndex = player.findMediaItemIndexById( song.id )
+                                        if (actualIndex >= 0 && actualIndex < player.mediaItemCount) {
+                                            try {
+                                                player.removeMediaItem( actualIndex )
+                                                Toaster.s(
+                                                    context.resources.getString(R.string.deleted_item, song.cleanTitle())
+                                                )
+                                            } catch (e: IllegalArgumentException) {
+                                                // Media item may have already been removed or index is invalid
+                                                Timber.tag("Queue").e(e, "Failed to remove media item at index $actualIndex")
+                                            }
                                         }
                                     }
                                 },
                                 onEnqueue = {
-                                    binder.player.enqueue(
-                                        mediaItem,
-                                        context
-                                    )
+                                    // Enqueue swipes modify the host-owned queue: host-only
+                                    // in a Listen Together room
+                                    if (!listenTogetherGuestLock) {
+                                        binder.player.enqueue(
+                                            mediaItem,
+                                            context
+                                        )
+                                    }
                                 }
                             ) {
                                 SongItem(

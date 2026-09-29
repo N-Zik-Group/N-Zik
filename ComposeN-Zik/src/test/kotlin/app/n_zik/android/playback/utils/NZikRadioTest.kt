@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
+import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.it.fast4x.rimusic.utils.discoverKey
 import app.it.fast4x.rimusic.utils.autoLoadSongsInQueueKey
@@ -24,6 +26,7 @@ class NZikRadioTest {
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     private lateinit var binder: PlayerServiceModern.Binder
+    private lateinit var mockPlayer: ExoPlayer
     private lateinit var nZikRadio: NZikRadio
 
     @BeforeEach
@@ -33,7 +36,7 @@ class NZikRadioTest {
         editor = mockk(relaxed = true)
         // Mock binder and player
         binder = mockk(relaxed = true)
-        val mockPlayer = mockk<ExoPlayer>(relaxed = true)
+        mockPlayer = mockk<ExoPlayer>(relaxed = true)
         every { binder.player } returns mockPlayer
         every { mockPlayer.currentMediaItem } returns null
 
@@ -44,9 +47,14 @@ class NZikRadioTest {
         every { editor.putBoolean(any(), any()) } returns editor
         every { editor.apply() } just Runs
 
+        // The blocked-op toast throttle is process-wide real-time state; reset it
+        // so each guest-lock test starts with a clean 2s window.
+        ListenTogetherGuestGuardPlayer.clearUiBlockedOpThrottleForTests()
+
         // Mock Toaster object
         mockkObject(Toaster)
         every { Toaster.i(any<Int>()) } just Runs
+        every { Toaster.i(any<String>()) } just Runs
         every { Toaster.e(any<Int>()) } just Runs
 
         nZikRadio = NZikRadio(context, binder, CoroutineScope(Dispatchers.Unconfined))
@@ -152,5 +160,83 @@ class NZikRadioTest {
         verify(exactly = 0) { Toaster.i(any<Int>()) }
         // Verifies Auto-Correction happened (Discover turned OFF)
         verify { editor.putBoolean(discoverKey, false) }
+    }
+
+    // --- GUEST LOCK (spec-listen-together-guest-lock-hardening) ---
+
+    @Test
+    fun `startRadio while guest locked is a no-op (RADIO_GUEST)`() {
+        setupState(autoFillEnabled = true, discoverEnabled = false)
+        listenTogetherGuestLock.value = true
+
+        try {
+            nZikRadio.startRadio(createMediaItem(), isExplicit = true)
+
+            assertFalse(nZikRadio.isRadioActive, "no radio state change for a locked guest")
+            // No "Radio ON" toast, only the shared blocked toast (String overload).
+            verify(exactly = 0) { Toaster.i(any<Int>()) }
+            verify { Toaster.i(any<String>()) }
+            // The blocked op stays atomic: no forcePlay, no queue injection.
+            verify(exactly = 0) { mockPlayer.setMediaItem(any()) }
+            verify(exactly = 0) { mockPlayer.addMediaItems(any()) }
+        } finally {
+            listenTogetherGuestLock.value = false
+        }
+    }
+
+    @Test
+    fun `toggleDiscover while guest locked is a no-op (DISCOVER_GUEST)`() {
+        setupState(autoFillEnabled = true, discoverEnabled = false)
+        listenTogetherGuestLock.value = true
+
+        try {
+            nZikRadio.toggleDiscover()
+
+            // No preference write, no "Discover ON/OFF" toast — only the shared blocked toast.
+            verify(exactly = 0) { editor.putBoolean(discoverKey, any()) }
+            verify(exactly = 0) { Toaster.i(any<Int>()) }
+            verify { Toaster.i(any<String>()) }
+        } finally {
+            listenTogetherGuestLock.value = false
+        }
+    }
+
+    @Test
+    fun `autoFillQueue while guest locked skips the fetch and injection (QUIET_GUEST)`() {
+        // The silent guard returns before any Innertube fetch / queue injection — in a room the
+        // host owns the queue, and the auto-fill would only be no-op'd by the central guard
+        // (a toast + a wasted fetch on every host-side track transition).
+        setupState(autoFillEnabled = true, discoverEnabled = false)
+        every { mockPlayer.currentMediaItem } returns createMediaItem()
+        listenTogetherGuestLock.value = true
+
+        try {
+            nZikRadio.autoFillQueue()
+
+            verify(exactly = 0) { mockPlayer.addMediaItems(any()) }
+            verify(exactly = 0) { mockPlayer.setMediaItem(any()) }
+            verify(exactly = 0) { Toaster.i(any<Int>()) }
+            verify(exactly = 0) { Toaster.i(any<String>()) }
+        } finally {
+            listenTogetherGuestLock.value = false
+        }
+    }
+
+    @Test
+    fun `showReminderIfNeeded while guest locked performs no auto-correction (QUIET_GUEST)`() {
+        // Discover ON + AutoFill OFF is the auto-correction case (it would flip the host-owned
+        // Discover setting off) — a locked guest must get no state change and no toast at all.
+        setupState(autoFillEnabled = false, discoverEnabled = true)
+        listenTogetherGuestLock.value = true
+
+        try {
+            nZikRadio.showReminderIfNeeded()
+
+            verify(exactly = 0) { editor.putBoolean(discoverKey, any()) }
+            verify(exactly = 0) { Toaster.i(any<Int>()) }
+            verify(exactly = 0) { Toaster.i(any<String>()) }
+        } finally {
+            listenTogetherGuestLock.value = false
+        }
     }
 }

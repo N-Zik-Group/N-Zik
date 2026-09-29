@@ -1,7 +1,10 @@
 package app.it.fast4x.rimusic.ui.screens.playlist
 
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 
+import app.n_zik.android.listentogether.guestLockedAlpha
+import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.uiRoundnessShape
 
 import app.n_zik.android.core.database.*
@@ -201,6 +204,12 @@ fun PlaylistSongList(
     val menuState = LocalMenuState.current
     val hapticFeedback = LocalHapticFeedback.current
     val lazyListState = rememberLazyListState()
+
+    // Listen Together guest lock (spec-listen-together-guest-lock-hardening): the
+    // playlist radio control is a host-owned stateful control — grayed out and
+    // non-interactive for a guest.
+    val ltGuestLocked = rememberListenTogetherGuestLock()
+    val guestLockAlpha = guestLockedAlpha(ltGuestLocked)
 
     // Settings
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
@@ -681,11 +690,11 @@ fun PlaylistSongList(
 
                             HeaderIconButton(
                                 icon = R.drawable.radio,
-                                enabled = hasNonDislikedSongs,
-                                color = if (!hasNonDislikedSongs) colorPalette().textDisabled
+                                enabled = hasNonDislikedSongs && !ltGuestLocked,
+                                color = if (ltGuestLocked || !hasNonDislikedSongs) colorPalette().textDisabled
                                         else if (binder?.isRadioActive == true) colorPalette().accent
                                         else colorPalette().text,
-                                modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
+                                modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()).alpha(guestLockAlpha),
                                         onClick = {
                                             val songs = filteredPageSongs.orEmpty()
                                             if( songs.fastAny { it.key in dislikedSongs } ) {
