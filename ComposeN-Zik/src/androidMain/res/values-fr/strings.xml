@@ -1962,6 +1962,7 @@ Volume BAS : titre précédent</string>
     <string name="listen_together_new_host">Nouvel hébergeur : %1$s</string>
     <string name="listen_together_connection_lost">La connexion avec la salle a été interrompue</string>
     <string name="listen_together_reconnected">Reconnecté à la salle</string>
+    <string name="listen_together_guest_blocked">The host controls playback</string>
     <string name="listen_together_join_request_notification">%1$s souhaite rejoindre la salle</string>
     <string name="listen_together_notification_channel_name">Écoutons Ensemble</string>
     <string name="listen_together_notification_channel_desc">Notifications concernant les événements « Écoutons Ensemble »</string>
