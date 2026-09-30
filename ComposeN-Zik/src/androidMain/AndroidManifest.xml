@@ -241,6 +241,11 @@
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 
+        <!-- PC bridge pairing: the QR scanner follows the device orientation (library default: landscape) -->
+        <activity android:name="com.journeyapps.barcodescanner.CaptureActivity"
+            android:screenOrientation="fullSensor"
+            tools:replace="screenOrientation" />
+
         <service
             android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
             android:enabled="false"

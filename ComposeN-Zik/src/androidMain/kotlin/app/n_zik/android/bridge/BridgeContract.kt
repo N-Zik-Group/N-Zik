@@ -23,12 +23,25 @@ internal object BridgeContract {
     const val STOP_TIMEOUT_MS = 4_000L
 
     const val TYPE_SERVER_STOPPED = "serverStopped"
+
+    /** Close code of the session of a revoked device (contract §4.7, §6.4). */
+    const val CLOSE_DEVICE_REVOKED: Short = 4003
+    const val CLOSE_REASON_DEVICE_REVOKED = "DEVICE_REVOKED"
+
+    /** `features` of `GET /api/v1/meta` implemented so far (contract §5). */
+    val FEATURES: List<String> = listOf("pairing.qr", "pairing.manual")
+
+    /** Length bounds of `deviceName` after trim (contract §4.5). */
+    const val DEVICE_NAME_MAX_LENGTH = 64
 }
 
 /** Error codes of contract §3 used by the server so far. */
 internal object BridgeErrorCode {
     const val UNAUTHORIZED = "UNAUTHORIZED"
     const val DEVICE_REVOKED = "DEVICE_REVOKED"
+    const val BAD_REQUEST = "BAD_REQUEST"
+    const val PAIRING_REJECTED = "PAIRING_REJECTED"
+    const val RATE_LIMITED = "RATE_LIMITED"
     const val NOT_FOUND = "NOT_FOUND"
     const val SERVER_STOPPING = "SERVER_STOPPING"
     const val INTERNAL_ERROR = "INTERNAL_ERROR"
@@ -49,6 +62,29 @@ internal data class MetaResponse(
 internal data class ErrorResponse(
     val code: String,
     val message: String,
+)
+
+/** `429 RATE_LIMITED` body: the error model plus `retryAfterMs` (contract §3). */
+@Serializable
+internal data class RateLimitedResponse(
+    val code: String,
+    val message: String,
+    val retryAfterMs: Long,
+)
+
+@Serializable
+internal data class ValidateRequest(
+    val code: String,
+    val requestId: String? = null,
+    val deviceName: String,
+)
+
+@Serializable
+internal data class ValidateResponse(
+    val deviceToken: String,
+    val deviceId: String,
+    val serverName: String,
+    val serverPort: Int,
 )
 
 @Serializable

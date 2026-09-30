@@ -44,6 +44,7 @@ sqlite = "2.7.0"
 media3 = "1.10.1"
 ffmpegkit = "6.0.1"
 ktor = "3.6.0"
+zxingAndroidEmbedded = "4.3.0"
 brotli = "0.1.2"
 palette = "1.0.0"
 desugaring = "2.1.5"
@@ -145,6 +146,8 @@ ktor-server-cio = { group = "io.ktor", name = "ktor-server-cio", version.ref = "
 ktor-server-websockets = { group = "io.ktor", name = "ktor-server-websockets", version.ref = "ktor" }
 ktor-server-content-negotiation = { group = "io.ktor", name = "ktor-server-content-negotiation", version.ref = "ktor" }
 ktor-server-test-host = { group = "io.ktor", name = "ktor-server-test-host", version.ref = "ktor" }
+# QR scan for PC bridge pairing (Apache-2.0, no GMS)
+zxing-android-embedded = { group = "com.journeyapps", name = "zxing-android-embedded", version.ref = "zxingAndroidEmbedded" }
 
 # Jetbrains Compose
 navigation-kmp = {  group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "navigationKMP" }

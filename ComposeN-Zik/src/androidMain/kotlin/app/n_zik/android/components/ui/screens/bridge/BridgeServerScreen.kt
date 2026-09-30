@@ -20,6 +20,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -41,6 +43,7 @@ import app.it.fast4x.rimusic.ui.screens.settings.SettingsDescription
 import app.it.fast4x.rimusic.ui.screens.settings.SettingsSectionCard
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.semiBold
+import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.bridge.BridgeServerController
@@ -48,11 +51,13 @@ import app.n_zik.android.bridge.BridgeState
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 /**
- * Basic "PC server" page: status of the local PC bridge, its real address and a
- * start/stop button. Same page structure as the Listen Together screen (Skeleton
- * scaffold, page header, settings-style card). The full "Manage server" screen comes later.
+ * Basic "PC server" page: status of the local PC bridge, its real address, a start/stop
+ * button, the "Pair a PC" card and the paired devices. Same page structure as the Listen
+ * Together screen (Skeleton scaffold, page header, settings-style card). The full "Manage
+ * server" screen comes later.
  */
 @Composable
 fun BridgeServerScreen(
@@ -61,6 +66,19 @@ fun BridgeServerScreen(
 ) {
     val context = LocalContext.current
     val state by BridgeServerController.state.collectAsStateWithLifecycle()
+    val pairingCode by BridgeServerController.pairingCode.collectAsStateWithLifecycle()
+    val pairedDevices by BridgeServerController.pairedDevices
+        .collectAsStateWithLifecycle(initialValue = emptyList(), context = NzikDispatchers.DATA)
+    LaunchedEffect(Unit) { BridgeServerController.loadDeviceStore(context) }
+    LaunchedEffect(Unit) {
+        BridgeServerController.pairedEvents.collect { deviceName ->
+            Toaster.s(R.string.bridge_pair_success, deviceName)
+        }
+    }
+    // Leaving the page leaves pairing mode: no code stays active (contract §4.1)
+    DisposableEffect(Unit) {
+        onDispose { BridgeServerController.closePairing() }
+    }
     var permissionDenied by rememberSaveable { mutableStateOf(false) }
     // Local network permission is asked at Start time only, never at app launch
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -122,6 +140,15 @@ fun BridgeServerScreen(
                         onStart = onStart,
                         onStop = { BridgeServerController.stop(context) },
                     )
+                }
+                val running = state as? BridgeState.Running
+                if (running != null) {
+                    item(key = "pair", contentType = "card") {
+                        PairPcCard(running = running, code = pairingCode)
+                    }
+                }
+                item(key = "devices", contentType = "card") {
+                    PairedDevicesCard(PairedDevicesUi(pairedDevices))
                 }
             }
         }

@@ -173,6 +173,8 @@ fun OnboardingScreen(
     val bluetoothDesc = stringResource(R.string.onboard_perm_bluetooth_desc)
     val micTitle = stringResource(R.string.onboard_perm_mic)
     val micDesc = stringResource(R.string.onboard_perm_mic_desc)
+    val cameraTitle = stringResource(R.string.onboard_perm_camera)
+    val cameraDesc = stringResource(R.string.onboard_perm_camera_desc)
     val batteryTitle = stringResource(R.string.onboard_perm_battery)
     val batteryDesc = stringResource(R.string.onboard_perm_battery_desc)
 
@@ -247,6 +249,23 @@ fun OnboardingScreen(
                         hasBeenRequested = microphonePermission in requestedPermissions
                     ),
                     onRequest = permissionAction(microphonePermission)
+                )
+            )
+
+            // QR scan to pair a PC with the "PC server" page (also asked at scan time if skipped here)
+            val cameraPermission = Manifest.permission.CAMERA
+            add(
+                OnboardingItem(
+                    id = "camera",
+                    title = cameraTitle,
+                    description = cameraDesc,
+                    icon = R.drawable.camera,
+                    status = permissionStatus(
+                        isGranted = context.hasPermission(cameraPermission),
+                        shouldShowRationale = context.shouldShowRationale(cameraPermission),
+                        hasBeenRequested = cameraPermission in requestedPermissions
+                    ),
+                    onRequest = permissionAction(cameraPermission)
                 )
             )
 

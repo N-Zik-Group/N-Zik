@@ -90,13 +90,14 @@ class BridgeServerService : Service() {
             return
         }
         val host = ipv4.hostAddress ?: return finish(BridgeState.Failed, getString(R.string.bridge_server_failed))
-        val core = BridgeServerCore(serverName = Build.MODEL)
+        val core = BridgeServerController.createCore(Build.MODEL, BridgeServerController.loadDeviceStore(this))
         val bridge = BridgeServer(core)
         val port = runCatching { bridge.start(host) }
             .onFailure { Timber.tag(TAG).e(it, "Bridge server failed to start") }
             .getOrNull()
             ?: return finish(BridgeState.Failed, getString(R.string.bridge_server_failed))
         server = bridge
+        BridgeServerController.attachCore(core)
         BridgeServerController.publish(BridgeState.Running(host, port, viaHotspot))
         startInForeground(getString(R.string.bridge_server_running_address, host, port))
         // Network lost or address changed: stop without the serverStopped frame (transient for clients)
@@ -121,6 +122,8 @@ class BridgeServerService : Service() {
         }
         server = null
         wifiWatch?.cancel()
+        BridgeServerController.closePairing()
+        BridgeServerController.attachCore(null)
         BridgeServerController.publish(BridgeState.Stopping)
         bridge.stop(code)
         val message = when (code) {
@@ -135,6 +138,8 @@ class BridgeServerService : Service() {
     private fun finish(state: BridgeState, message: String?) {
         wifiMonitor?.stop()
         wifiMonitor = null
+        // No server, no pairing: the code only lives while the server runs (contract §4.1)
+        BridgeServerController.closePairing()
         BridgeServerController.publish(state)
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         if (message != null) {
