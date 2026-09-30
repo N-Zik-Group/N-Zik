@@ -37,6 +37,24 @@ body:
       required: true
 
   - type: dropdown
+    id: build-type
+    attributes:
+      label: 🏗️ Build Type
+      description: Select the build type you are currently using.
+      options:
+        - Full
+        - Full32
+        - Minified
+        - Minified32
+        - Beta
+        - Beta32
+        - Dev
+        - Dev32
+        - Foss (N-Zik-Foss, com.nevar.nzik.foss)
+    validations:
+      required: true
+
+  - type: dropdown
     id: severity
     attributes:
       label: 🚨 Estimated Severity
