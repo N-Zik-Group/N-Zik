@@ -739,7 +739,6 @@
     <string name="do_not_translate">Ne pas traduire</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">Délai de mise en veille reporté à la fin du titre</string>
     <string name="lyricsbackground">Arrière-plan des paroles</string>
-    <string name="info_debug_mode_is_enabled">Le mode débogage est activé ; n\'oubliez pas de le désactiver dans les paramètres</string>
     <string name="tapqueue">Appuyer pour ouvrir la file d\'attente</string>
     <string name="header_view_top_of">Voir le top %s de …</string>
     <string name="podcast_episodes">Épisodes</string>
@@ -1087,7 +1086,6 @@ Volume BAS : titre précédent</string>
     <string name="adding_yt_to_pl_failed">Une erreur s\'est produite pour les 50 titres suivants. Ajout des titres à la playlist un par un.</string>
     <string name="songs_add_yt_success">Ajout du titre à la playlist YouTube</string>
     <string name="songs_add_yt_failed">Impossible d\'ajouter le titre à la playlist YouTube</string>
-    <string name="are_you_sure">Êtes-vous sûr ?</string>
     <string name="title_reset_cache">Réinitialiser le cache</string>
     <string name="playing_song_not_found_on_current_list">Impossible de trouver le titre en cours de lecture dans la liste actuelle</string>
     <string name="no_songs_playing">Aucun titre n\'est joué pour le moment</string>
@@ -1855,7 +1853,6 @@ Volume BAS : titre précédent</string>
     <string name="rw_artist_spotlight_kicker">VOTRE ARTISTE N° 1 • %1$s</string>
     <string name="rw_artist_spotlight_about">À PROPOS</string>
     <string name="rw_artist_spotlight_see_more">EN SAVOIR PLUS</string>
-    <string name="rw_artist_spotlight_wikipedia">WIKIPEDIA</string>
     <string name="rw_artist_spotlight_innertube">INNER TUBE</string>
     <string name="rw_top_album_empty_title">PAS ENCORE D\'ALBUM DE L\'ANNÉE</string>
     <string name="rw_top_album_empty_body">Votre album préféré s\'affichera ici dès que vous aurez suffisamment d\'historique d\'écoute.</string>

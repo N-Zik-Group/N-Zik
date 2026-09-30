@@ -739,7 +739,6 @@
     <string name="do_not_translate">Nicht übersetzen</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">Schlaf-Timer erst am Ende des Songs beenden</string>
     <string name="lyricsbackground">Songtext-Hintergrund</string>
-    <string name="info_debug_mode_is_enabled">Der Debug-Modus ist aktiviert, denke daran, diesen in den Einstellungen zu deaktivieren</string>
     <string name="tapqueue">Zum Öffnen der Warteschlange tippen</string>
     <string name="header_view_top_of">Zeige Top %s …</string>
     <string name="podcast_episodes">Episoden</string>
@@ -1086,7 +1085,6 @@
     <string name="adding_yt_to_pl_failed">Bei den nächsten 50 Titeln ist ein Fehler aufgetreten. Der Wiedergabeliste einen Titel nach dem anderen hinzufügen</string>
     <string name="songs_add_yt_success">Der Titel wurde der YouTube Wiedergabeliste hinzugefügt</string>
     <string name="songs_add_yt_failed">Hinzufügen des Titels in die YouTube Wiedergabeliste fehlgeschlagen</string>
-    <string name="are_you_sure">Bist du dir sicher?</string>
     <string name="title_reset_cache">Cache zurücksetzen</string>
     <string name="playing_song_not_found_on_current_list">Abgespielter Titel kann nicht in der aktuellen Liste gefunden werden</string>
     <string name="no_songs_playing">Im Moment wird kein Titel abgespielt</string>
@@ -1854,7 +1852,6 @@
     <string name="rw_artist_spotlight_kicker">YOUR #1 ARTIST • %1$s</string>
     <string name="rw_artist_spotlight_about">ABOUT</string>
     <string name="rw_artist_spotlight_see_more">SEE MORE</string>
-    <string name="rw_artist_spotlight_wikipedia">WIKIPEDIA</string>
     <string name="rw_artist_spotlight_innertube">INNER TUBE</string>
     <string name="rw_top_album_empty_title">NO ALBUM OF THE YEAR YET</string>
     <string name="rw_top_album_empty_body">Your top album will appear here once there is enough listening history.</string>

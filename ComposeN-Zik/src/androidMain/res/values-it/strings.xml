@@ -739,7 +739,6 @@
     <string name="do_not_translate">Non tradurre</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">Timer di spegnimento impostato alla fine di questo brano</string>
     <string name="lyricsbackground">Sfondo testo</string>
-    <string name="info_debug_mode_is_enabled">La modalità debug è abilitata, ricorda di disabilitarla nelle impostazioni</string>
     <string name="tapqueue">Tocca per aprire la coda</string>
     <string name="header_view_top_of">Top %s di …</string>
     <string name="podcast_episodes">Episodi</string>
@@ -1086,7 +1085,6 @@
     <string name="adding_yt_to_pl_failed">Si è verificato un errore per i prossimi 50 brani. Aggiunta di brani alla playlist uno alla volta</string>
     <string name="songs_add_yt_success">Aggiunta il brano alla playlist di YouTube</string>
     <string name="songs_add_yt_failed">Impossibile aggiungere il brano alla playlist di YouTube</string>
-    <string name="are_you_sure">Sei sicuro?</string>
     <string name="title_reset_cache">Cancella cache</string>
     <string name="playing_song_not_found_on_current_list">Impossibile trovare il brano in riproduzione nell\'elenco corrente</string>
     <string name="no_songs_playing">Al momento non è in riproduzione alcuna canzone</string>
@@ -1854,7 +1852,6 @@
     <string name="rw_artist_spotlight_kicker">YOUR #1 ARTIST • %1$s</string>
     <string name="rw_artist_spotlight_about">ABOUT</string>
     <string name="rw_artist_spotlight_see_more">SEE MORE</string>
-    <string name="rw_artist_spotlight_wikipedia">WIKIPEDIA</string>
     <string name="rw_artist_spotlight_innertube">INNER TUBE</string>
     <string name="rw_top_album_empty_title">NO ALBUM OF THE YEAR YET</string>
     <string name="rw_top_album_empty_body">Your top album will appear here once there is enough listening history.</string>

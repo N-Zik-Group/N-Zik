@@ -739,7 +739,6 @@
     <string name="do_not_translate">Çevirmeyin</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">Uyku zamanlayıcısı bu şarkının sonuna ayarlandı</string>
     <string name="lyricsbackground">Şarkı sözü arka planı</string>
-    <string name="info_debug_mode_is_enabled">Hata ayıklama modu etkin, ayarlardan devre dışı bırakmayı unutmayın</string>
     <string name="tapqueue">Kuyruğu açmak için dokunun</string>
     <string name="header_view_top_of">… içindeki en iyi %s</string>
     <string name="podcast_episodes">Bölümler</string>
@@ -1086,7 +1085,6 @@
     <string name="adding_yt_to_pl_failed">Sonraki 50 şarkı için hata oluştu. Şarkılar çalma listesine tek tek ekleniyor</string>
     <string name="songs_add_yt_success">Şarkı YouTube Çalma Listesine Eklendi</string>
     <string name="songs_add_yt_failed">Şarkı YouTube Çalma Listesine Eklenemedi</string>
-    <string name="are_you_sure">Emin misiniz?</string>
     <string name="title_reset_cache">Önbelleği sıfırla</string>
     <string name="playing_song_not_found_on_current_list">Mevcut listede çalan şarkı bulunamadı</string>
     <string name="no_songs_playing">Şu anda çalan şarkı yok</string>
@@ -1854,7 +1852,6 @@
     <string name="rw_artist_spotlight_kicker">#1 NUMARALI SANATÇINIZ • %1$s</string>
     <string name="rw_artist_spotlight_about">HAKKINDA</string>
     <string name="rw_artist_spotlight_see_more">DAHA FAZLASINI GÖR</string>
-    <string name="rw_artist_spotlight_wikipedia">WIKIPEDIA</string>
     <string name="rw_artist_spotlight_innertube">INNER TUBE</string>
     <string name="rw_top_album_empty_title">HENÜZ YILIN ALBÜMÜ SEÇİLMEDİ</string>
     <string name="rw_top_album_empty_body">En çok dinlediğiniz albüm yeterli dinleme geçmişi oluştuğunda burada görünecektir.</string>

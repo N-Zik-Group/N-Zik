@@ -739,7 +739,6 @@
     <string name="do_not_translate">Oversæt ikke</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">Søvntimer forsinket ved sangens slutning</string>
     <string name="lyricsbackground">Sangtekstbaggrund</string>
-    <string name="info_debug_mode_is_enabled">Fejlfindingstilstand er aktiveret. Husk at deaktivere den i indstillinger</string>
     <string name="tapqueue">Tryk for at åbne kø</string>
     <string name="header_view_top_of">Se top %s af …</string>
     <string name="podcast_episodes">Episoder</string>
@@ -1086,7 +1085,6 @@
     <string name="adding_yt_to_pl_failed">Der opstod en fejl for de næste 50 sange. Sange føjes til playlisten én ad gangen</string>
     <string name="songs_add_yt_success">Tilføjet sangen i YouTube-playlisten</string>
     <string name="songs_add_yt_failed">Kunne ikke tilføje sangen i YouTube-playlisten</string>
-    <string name="are_you_sure">Er du sikker?</string>
     <string name="title_reset_cache">Nulstil cache</string>
     <string name="playing_song_not_found_on_current_list">Kunne ikke finde afspillende sang på den aktuelle liste</string>
     <string name="no_songs_playing">Ingen sang spiller i øjeblikket</string>
@@ -1854,7 +1852,6 @@
     <string name="rw_artist_spotlight_kicker">YOUR #1 ARTIST • %1$s</string>
     <string name="rw_artist_spotlight_about">ABOUT</string>
     <string name="rw_artist_spotlight_see_more">SEE MORE</string>
-    <string name="rw_artist_spotlight_wikipedia">WIKIPEDIA</string>
     <string name="rw_artist_spotlight_innertube">INNER TUBE</string>
     <string name="rw_top_album_empty_title">NO ALBUM OF THE YEAR YET</string>
     <string name="rw_top_album_empty_body">Your top album will appear here once there is enough listening history.</string>

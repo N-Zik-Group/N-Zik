@@ -739,7 +739,6 @@
     <string name="do_not_translate">Не перекладати</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">Таймер сну встановлено в кінець цієї пісні</string>
     <string name="lyricsbackground">Тло текстів</string>
-    <string name="info_debug_mode_is_enabled">Увімкнено режим налагодження, не забудьте вимкнути його в налаштуваннях</string>
     <string name="tapqueue">Торкніться, щоб відкрити чергу</string>
     <string name="header_view_top_of">Найпопулярніший %s з …</string>
     <string name="podcast_episodes">Епізоди</string>
@@ -1086,7 +1085,6 @@
     <string name="adding_yt_to_pl_failed">Виникла помилка для наступних 50 пісень. Додавання пісень до плейлисту по одній. Додайте пісні в плейлист по одній</string>
     <string name="songs_add_yt_success">Додано пісню до плейлисту YouTube</string>
     <string name="songs_add_yt_failed">Не вдалося додати пісню до плейлисту YouTube</string>
-    <string name="are_you_sure">Are you sure?</string>
     <string name="title_reset_cache">Reset cache</string>
     <string name="playing_song_not_found_on_current_list">Could not find playing song on current list</string>
     <string name="no_songs_playing">No song is playing at the moment</string>
@@ -1854,7 +1852,6 @@
     <string name="rw_artist_spotlight_kicker">YOUR #1 ARTIST • %1$s</string>
     <string name="rw_artist_spotlight_about">ABOUT</string>
     <string name="rw_artist_spotlight_see_more">SEE MORE</string>
-    <string name="rw_artist_spotlight_wikipedia">WIKIPEDIA</string>
     <string name="rw_artist_spotlight_innertube">INNER TUBE</string>
     <string name="rw_top_album_empty_title">NO ALBUM OF THE YEAR YET</string>
     <string name="rw_top_album_empty_body">Your top album will appear here once there is enough listening history.</string>

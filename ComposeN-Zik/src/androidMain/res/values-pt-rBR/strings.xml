@@ -514,7 +514,6 @@
 <string name="do_not_translate">Não traduza</string>
 <string name="info_sleep_timer_delayed_at_end_of_song">Temporizador de sono adiado no final da música</string>
 <string name="lyricsbackground">Fundo das letras de música</string>
-<string name="info_debug_mode_is_enabled">Modo de depuração ativado, lembre-se de desativá-lo nas configurações</string>
 <string name="tapqueue">Toque para abrir a Fila</string>
 <string name="header_view_top_of">Ver principais %s de…</string>
 <string name="podcast_episodes">Episódios</string>
@@ -731,7 +730,6 @@
 <string name="adding_yt_to_pl_failed">Error occurred for the next 50 songs. Adding songs to the playlist one by one</string>
 <string name="songs_add_yt_success">Added the song in the YouTube Playlist</string>
 <string name="songs_add_yt_failed">Failed to add the song in the YouTube Playlist</string>
-<string name="are_you_sure">Are you sure?</string>
 <string name="title_reset_cache">Reset cache</string>
 <string name="playing_song_not_found_on_current_list">Could not find playing song on current list</string>
 <string name="no_songs_playing">No song is playing at the moment</string>
