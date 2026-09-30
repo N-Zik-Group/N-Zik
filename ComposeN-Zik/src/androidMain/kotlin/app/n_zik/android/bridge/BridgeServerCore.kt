@@ -1,5 +1,13 @@
 package app.n_zik.android.bridge
 
+import app.n_zik.android.bridge.audio.AudioLibrary
+import app.n_zik.android.bridge.audio.AudioOpenResult
+import app.n_zik.android.bridge.audio.AudioSourceGoneException
+import app.n_zik.android.bridge.audio.AudioStream
+import app.n_zik.android.bridge.audio.AudioTokenCheck
+import app.n_zik.android.bridge.audio.AudioTokens
+import app.n_zik.android.bridge.audio.ByteRange
+import app.n_zik.android.bridge.audio.ByteRanges
 import app.n_zik.android.bridge.command.BridgeCommandExecutor
 import app.n_zik.android.bridge.command.BridgeCommandParser
 import app.n_zik.android.bridge.command.CommandResult
@@ -25,6 +33,8 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.OutgoingContent
+import io.ktor.http.encodeURLParameter
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
@@ -35,12 +45,14 @@ import io.ktor.server.application.install
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.origin
 import io.ktor.server.request.contentLength
+import io.ktor.server.request.path
 import io.ktor.server.request.receiveChannel
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.header
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondBytes
 import io.ktor.server.routing.get
+import io.ktor.server.routing.head
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
@@ -48,7 +60,9 @@ import io.ktor.server.websocket.DefaultWebSocketServerSession
 import io.ktor.server.websocket.WebSockets
 import io.ktor.server.websocket.webSocket
 import io.ktor.util.AttributeKey
+import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.readAvailable
+import io.ktor.utils.io.writeFully
 import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
 import io.ktor.websocket.close
@@ -69,6 +83,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.longOrNull
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import timber.log.Timber
@@ -111,6 +126,12 @@ internal class BridgeServerCore(
     private val commandExecutor: BridgeCommandExecutor = BridgeCommandExecutor.UNAVAILABLE,
     /** Read-only library of contract §10; empty without a phone behind the server. */
     private val libraryProvider: LibraryProvider = LibraryProvider.EMPTY,
+    /** Audio of the phone's tracks (contract §8); nothing to serve without a phone behind the server. */
+    private val audioLibrary: AudioLibrary = AudioLibrary.EMPTY,
+    /** Signs the audio URLs of this server run: a new core draws a new key (contract §8.1). */
+    private val audioTokens: AudioTokens = AudioTokens(clock = clock),
+    /** Whether the device an audio token was forged for is still paired (contract §8.2 step 2). */
+    private val isDevicePaired: (String) -> Boolean = deviceStore::isPaired,
 ) {
     private val stopping = AtomicBoolean(false)
 
@@ -137,8 +158,12 @@ internal class BridgeServerCore(
             }
             on(CallFailed) { call, cause ->
                 if (cause is CancellationException) throw cause
-                Timber.tag(TAG).e(cause, "Unhandled error on ${call.request.local.uri}")
-                call.respondError(HttpStatusCode.InternalServerError, BridgeErrorCode.INTERNAL_ERROR, "Unexpected server error")
+                // The path only: an audio query string carries a signed token, never logged
+                Timber.tag(TAG).e(cause, "Unhandled error on ${call.request.path()}")
+                // A body already under way (audio stream) cannot turn into an error any more
+                if (!call.response.isCommitted) {
+                    call.respondError(HttpStatusCode.InternalServerError, BridgeErrorCode.INTERNAL_ERROR, "Unexpected server error")
+                }
             }
         })
 
@@ -197,6 +222,16 @@ internal class BridgeServerCore(
                     get("{trackId}") {
                         val trackId = call.parameters["trackId"].orEmpty()
                         call.respondArtwork { size -> libraryProvider.trackArtwork(trackId, size) }
+                    }
+                }
+                // Contract §8: forge under Bearer; delivery in the audio regime, where the
+                // signed token is the only credential and any Authorization header is ignored
+                route("audio/{trackId}") {
+                    get { call.handleAudio(headOnly = false) }
+                    head { call.handleAudio(headOnly = true) }
+                    route("url") {
+                        install(bearerAuth)
+                        post { call.handleForge() }
                     }
                 }
                 route("ws") {
@@ -375,6 +410,115 @@ internal class BridgeServerCore(
         }
     }
 
+    /** Contract §8.1: `{ "quality" }`, library lookup, then a URL signed for the calling device. */
+    private suspend fun ApplicationCall.handleForge() {
+        val trackId = parameters["trackId"].orEmpty()
+        val quality = receiveBoundedText(BridgeContract.MAX_AUDIO_FORGE_BODY_BYTES)?.let(::parseForgeQuality)
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid audio URL request")
+        val track = audioLibrary.track(trackId)
+            ?: return respondError(HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, "Unknown track")
+        val expiresAtMs = audioTokens.expiryFor(clock(), track.durationMs)
+        val token = audioTokens.forge(trackId, quality, attributes[DeviceIdKey], expiresAtMs)
+        // Built from the socket address and port this request reached (not the Host header):
+        // the PC always talks to the phone
+        val host = request.local.localAddress.let { if (it.contains(':') && !it.startsWith("[")) "[$it]" else it }
+        val url = "http://$host:${request.local.localPort}${BridgeContract.API_PREFIX}/audio/" +
+            "${trackId.encodeURLParameter()}?${BridgeContract.AUDIO_TOKEN_PARAM}=${token.encodeURLParameter()}"
+        respond(AudioUrlResponse(trackId, quality.wire, url, expiresAtMs, track.durationMs))
+    }
+
+    /** `quality` of a forge body, `null` when the body or the value is invalid. */
+    private fun parseForgeQuality(body: String): AudioQuality? {
+        val json = runCatching { BridgeJson.parseToJsonElement(body) as? JsonObject }.getOrNull() ?: return null
+        val quality = json["quality"] as? JsonPrimitive ?: return null
+        return if (quality.isString) AudioQuality.parse(quality.content) else null
+    }
+
+    /** Contract §8.2: the token is checked on every request, before anything is opened. */
+    private suspend fun ApplicationCall.handleAudio(headOnly: Boolean) {
+        val trackId = parameters["trackId"].orEmpty()
+        val token = request.queryParameters[BridgeContract.AUDIO_TOKEN_PARAM]
+        when (val check = audioTokens.check(token, trackId, isDevicePaired)) {
+            AudioTokenCheck.Invalid ->
+                respondAudioError(headOnly, HttpStatusCode.Forbidden, BridgeErrorCode.AUDIO_URL_INVALID, "Invalid audio URL")
+            AudioTokenCheck.Revoked ->
+                respondAudioError(headOnly, HttpStatusCode.Unauthorized, BridgeErrorCode.DEVICE_REVOKED, "Unknown or revoked device")
+            AudioTokenCheck.Expired ->
+                respondAudioError(headOnly, HttpStatusCode.Forbidden, BridgeErrorCode.AUDIO_URL_EXPIRED, "Audio URL expired")
+            is AudioTokenCheck.Valid -> serveAudio(trackId, check.quality, headOnly)
+        }
+    }
+
+    /**
+     * Whole file (`200`) or one range (`206`), with the real type; `HEAD` gets the same headers
+     * only. The range headers are set once the source is open, so an error never carries them.
+     */
+    private suspend fun ApplicationCall.serveAudio(trackId: String, quality: AudioQuality, headOnly: Boolean) {
+        val source = when (val opened = audioLibrary.open(trackId, quality)) {
+            is AudioOpenResult.Ready -> opened.source
+            AudioOpenResult.NotFound -> return respondAudioNotFound(headOnly)
+            AudioOpenResult.UpstreamFailed -> return respondUpstreamFailed(headOnly)
+        }
+        val total = source.length
+        val range = ByteRanges.resolve(request.headers[HttpHeaders.Range], total)
+        val (status, start, length) = when (range) {
+            ByteRange.Full -> Triple(HttpStatusCode.OK, 0L, total)
+            is ByteRange.Partial -> Triple(HttpStatusCode.PartialContent, range.start, range.length)
+            ByteRange.Unsatisfiable -> {
+                response.header(HttpHeaders.AcceptRanges, ByteRanges.BYTES_UNIT)
+                response.header(HttpHeaders.ContentRange, ByteRanges.unsatisfiedRange(total))
+                return respondAudioError(
+                    headOnly,
+                    HttpStatusCode.RequestedRangeNotSatisfiable,
+                    BridgeErrorCode.RANGE_NOT_SATISFIABLE,
+                    "Range outside the file",
+                )
+            }
+        }
+        val type = runCatching { ContentType.parse(source.contentType) }.getOrDefault(ContentType.Application.OctetStream)
+        if (headOnly) {
+            setRangeHeaders(range, total)
+            return respond(AudioHeadContent(status, type, length))
+        }
+        // Opened before any header leaves: a source that cannot be reached is still a clean error
+        val stream = try {
+            withContext(NzikDispatchers.DATA) { source.openStream(start, length) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: AudioSourceGoneException) {
+            Timber.tag(TAG).w(e, "Audio file of $trackId gone")
+            return respondAudioNotFound(headOnly = false)
+        } catch (e: Exception) {
+            Timber.tag(TAG).w(e, "Audio source of $trackId unavailable")
+            return respondUpstreamFailed(headOnly = false)
+        }
+        try {
+            setRangeHeaders(range, total)
+            respond(AudioBodyContent(stream, status, type, length))
+        } finally {
+            withContext(NonCancellable + NzikDispatchers.DATA) {
+                runCatching { stream.close() }.onFailure { Timber.tag(TAG).w(it, "Could not close an audio source") }
+            }
+        }
+    }
+
+    /** `Accept-Ranges` always, `Content-Range` on a `206` (contract §8.2). */
+    private fun ApplicationCall.setRangeHeaders(range: ByteRange, total: Long) {
+        response.header(HttpHeaders.AcceptRanges, ByteRanges.BYTES_UNIT)
+        if (range is ByteRange.Partial) response.header(HttpHeaders.ContentRange, ByteRanges.contentRange(range, total))
+    }
+
+    private suspend fun ApplicationCall.respondAudioNotFound(headOnly: Boolean) =
+        respondAudioError(headOnly, HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, "Unknown track")
+
+    private suspend fun ApplicationCall.respondUpstreamFailed(headOnly: Boolean) =
+        respondAudioError(headOnly, HttpStatusCode.BadGateway, BridgeErrorCode.AUDIO_UPSTREAM_FAILED, "The audio could not be obtained")
+
+    /** The error model of contract §3; a `HEAD` answer never carries a body. */
+    private suspend fun ApplicationCall.respondAudioError(headOnly: Boolean, status: HttpStatusCode, code: String, message: String) {
+        if (headOnly) respond(AudioHeadContent(status, null, null)) else respondError(status, code, message)
+    }
+
     /** The request body as text, or `null` when it exceeds [maxBytes]; never buffers more than that. */
     private suspend fun ApplicationCall.receiveBoundedText(maxBytes: Int): String? {
         val declared = request.contentLength()
@@ -529,6 +673,39 @@ internal class BridgeServerCore(
         BridgeStopCode.STOP_USER -> "Server stopped from the phone"
         BridgeStopCode.AUTO_STOP -> "Server stopped automatically"
         BridgeStopCode.TIMEOUT -> "Android background time limit reached"
+    }
+}
+
+private const val AUDIO_COPY_BUFFER_BYTES = 64 * 1_024
+
+/** Headers of an audio answer without its body (`HEAD`). */
+private class AudioHeadContent(
+    override val status: HttpStatusCode,
+    override val contentType: ContentType?,
+    override val contentLength: Long?,
+) : OutgoingContent.NoContent()
+
+/**
+ * Audio body of exactly [contentLength] bytes, copied from [stream] off the main thread
+ * through a fixed buffer: the track is never held in memory. The expiry of the URL is not
+ * checked again here, so a response under way is never cut (contract §8.2). A source that
+ * ends early fails the body instead of completing it; the caller closes [stream].
+ */
+internal class AudioBodyContent(
+    private val stream: AudioStream,
+    override val status: HttpStatusCode,
+    override val contentType: ContentType,
+    override val contentLength: Long,
+) : OutgoingContent.WriteChannelContent() {
+    override suspend fun writeTo(channel: ByteWriteChannel) = withContext(NzikDispatchers.DATA) {
+        val buffer = ByteArray(AUDIO_COPY_BUFFER_BYTES)
+        var written = 0L
+        while (written < contentLength) {
+            val read = stream.read(buffer, 0, minOf(buffer.size.toLong(), contentLength - written).toInt())
+            if (read < 0) throw IOException("Audio source ended ${contentLength - written} bytes early")
+            channel.writeFully(buffer, 0, read)
+            written += read
+        }
     }
 }
 

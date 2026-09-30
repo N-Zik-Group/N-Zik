@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.ContextCompat
 import app.it.fast4x.rimusic.utils.encryptedPreferences
+import app.n_zik.android.bridge.audio.AudioLibrary
 import app.n_zik.android.bridge.command.BridgeCommandExecutor
 import app.n_zik.android.bridge.library.LibraryProvider
 import app.n_zik.android.bridge.pairing.InMemoryPairedDeviceStorage
@@ -87,7 +88,8 @@ object BridgeServerController {
      * A successful pairing closes pairing mode: the card folds back and no code stays active.
      * [stateHub] is the player state of this run, created fresh (revision `0`) per start;
      * [commandExecutor] applies the remote commands of this run to the phone's player;
-     * [libraryProvider] serves the read-only library routes.
+     * [libraryProvider] serves the read-only library routes; [audioLibrary] the audio of contract §8,
+     * whose URLs are signed with a key drawn by the new core (a restart invalidates them).
      */
     internal fun createCore(
         serverName: String,
@@ -95,6 +97,7 @@ object BridgeServerController {
         stateHub: BridgeStateHub,
         commandExecutor: BridgeCommandExecutor = BridgeCommandExecutor.UNAVAILABLE,
         libraryProvider: LibraryProvider = LibraryProvider.EMPTY,
+        audioLibrary: AudioLibrary = AudioLibrary.EMPTY,
     ): BridgeServerCore =
         BridgeServerCore(
             serverName = serverName,
@@ -103,6 +106,7 @@ object BridgeServerController {
             stateHub = stateHub,
             commandExecutor = commandExecutor,
             libraryProvider = libraryProvider,
+            audioLibrary = audioLibrary,
             onDevicePaired = { deviceName ->
                 pairingCodes.close()
                 _pairedEvents.tryEmit(deviceName)

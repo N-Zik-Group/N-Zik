@@ -41,6 +41,9 @@ interface PairedDeviceStore {
 
     /** Forgets the device; `true` when it existed. Other devices are untouched. */
     fun revoke(deviceId: String): Boolean
+
+    /** `true` while [deviceId] is still paired (its audio URLs stay valid, contract §4.7). */
+    fun isPaired(deviceId: String): Boolean = devices.value.any { it.deviceId == deviceId }
 }
 
 /** Where [JsonPairedDeviceStore] keeps its JSON document. */

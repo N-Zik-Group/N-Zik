@@ -12,6 +12,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import app.n_zik.android.R
+import app.n_zik.android.bridge.audio.PhoneAudioLibrary
 import app.n_zik.android.bridge.command.LateFailureTracker
 import app.n_zik.android.bridge.command.PlayerCommandExecutor
 import app.n_zik.android.bridge.command.PreferencePlayerSettings
@@ -119,6 +120,7 @@ class BridgeServerService : Service() {
             stateHub = stateHub,
             commandExecutor = executor,
             libraryProvider = DatabaseLibraryProvider(this),
+            audioLibrary = PhoneAudioLibrary(this),
         )
         val bridge = BridgeServer(core)
         val port = runCatching { bridge.start(host) }

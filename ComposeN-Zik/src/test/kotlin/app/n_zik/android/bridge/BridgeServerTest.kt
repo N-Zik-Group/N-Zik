@@ -1,5 +1,8 @@
 package app.n_zik.android.bridge
 
+import app.n_zik.android.bridge.audio.AudioLibrary
+import app.n_zik.android.bridge.audio.AudioOpenResult
+import app.n_zik.android.bridge.audio.AudioTrackInfo
 import app.n_zik.android.bridge.command.BridgeCommand
 import app.n_zik.android.bridge.command.BridgeCommandExecutor
 import app.n_zik.android.bridge.command.CommandResult
@@ -96,6 +99,7 @@ class BridgeServerTest {
                 "library.albums",
                 "library.artists",
                 "artwork",
+                "audio",
                 "ws.state",
             ),
             json["features"]?.jsonArray?.map { it.jsonPrimitive.content },
@@ -483,6 +487,27 @@ class BridgeServerTest {
         val page = BridgeJson.parseToJsonElement(response.bodyAsText()).jsonObject
         assertEquals(1, page["total"]?.jsonPrimitive?.int)
         assertEquals("abc", page["items"]?.jsonArray?.firstOrNull()?.jsonObject?.get("id")?.jsonPrimitive?.content)
+    }
+
+    @Test
+    fun `core built by the controller serves the audio library of the server run`() = testApplication {
+        val store = JsonPairedDeviceStore(InMemoryPairedDeviceStorage())
+        val audio = object : AudioLibrary {
+            override suspend fun track(trackId: String): AudioTrackInfo? = AudioTrackInfo(200_000L).takeIf { trackId == "abcdefghijk" }
+            override suspend fun open(trackId: String, quality: AudioQuality): AudioOpenResult = AudioOpenResult.NotFound
+        }
+        mount(BridgeServerController.createCore("Pixel test", store, BridgeStateHub(), audioLibrary = audio))
+        val token = store.issue("PC-SALON").deviceToken
+
+        val response = client.post("/api/v1/audio/abcdefghijk/url") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody("""{"quality":"high"}""")
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        val body = BridgeJson.parseToJsonElement(response.bodyAsText()).jsonObject
+        assertEquals(200_000L, body["durationMs"]?.jsonPrimitive?.long)
     }
 
     @Test

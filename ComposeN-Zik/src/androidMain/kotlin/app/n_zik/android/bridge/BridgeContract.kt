@@ -58,6 +58,7 @@ internal object BridgeContract {
         "library.albums",
         "library.artists",
         "artwork",
+        "audio",
         "ws.state",
     )
 
@@ -96,6 +97,20 @@ internal object BridgeContract {
 
     /** Length bounds of `deviceName` after trim (contract §4.5). */
     const val DEVICE_NAME_MAX_LENGTH = 64
+
+    /** Query parameter carrying the signed audio token (contract §8.2). */
+    const val AUDIO_TOKEN_PARAM = "t"
+
+    /** Longest audio token ever issued or accepted (contract §8.1). */
+    const val AUDIO_TOKEN_MAX_LENGTH = 512
+
+    /** Audio URL lifetime: forge + min(duration + margin, max), or the fallback without a duration (contract §8.1, §14). */
+    const val AUDIO_URL_DURATION_MARGIN_MS = 120_000L
+    const val AUDIO_URL_MAX_TTL_MS = 900_000L
+    const val AUDIO_URL_UNKNOWN_DURATION_TTL_MS = 600_000L
+
+    /** Largest forge body read (`{ "quality": … }`); anything bigger is `400 BAD_REQUEST`. */
+    const val MAX_AUDIO_FORGE_BODY_BYTES = 4 * 1_024
 }
 
 /** Error codes of contract §3 used by the server so far. */
@@ -111,6 +126,9 @@ internal object BridgeErrorCode {
     const val PLAYER_UNAVAILABLE = "PLAYER_UNAVAILABLE"
     const val SERVER_STOPPING = "SERVER_STOPPING"
     const val AUDIO_UPSTREAM_FAILED = "AUDIO_UPSTREAM_FAILED"
+    const val AUDIO_URL_EXPIRED = "AUDIO_URL_EXPIRED"
+    const val AUDIO_URL_INVALID = "AUDIO_URL_INVALID"
+    const val RANGE_NOT_SATISFIABLE = "RANGE_NOT_SATISFIABLE"
     const val INTERNAL_ERROR = "INTERNAL_ERROR"
 }
 
@@ -266,6 +284,29 @@ internal data class ArtistDto(
     val name: String,
     val trackCount: Int,
     val hasArtwork: Boolean,
+)
+
+// --- Audio (contract §8) ---
+
+/** `Quality` (contract §1.1): parsed by hand so an unknown value is a `400`, never a fallback. */
+internal enum class AudioQuality(val wire: String) {
+    LOW("low"),
+    HIGH("high"),
+    AUTO("auto");
+
+    companion object {
+        fun parse(value: String?): AudioQuality? = entries.firstOrNull { it.wire == value }
+    }
+}
+
+/** `200` answer of `POST /api/v1/audio/{trackId}/url` (contract §8.1). */
+@Serializable
+internal data class AudioUrlResponse(
+    val trackId: String,
+    val quality: String,
+    val url: String,
+    val expiresAtMs: Long,
+    val durationMs: Long?,
 )
 
 /** Shared JSON setup: tolerant reader (unknown keys ignored), defaults always written. */
