@@ -1937,7 +1937,7 @@ Volume BAS : titre précédent</string>
     <string name="rw_meta_plays">%1$s lectures</string>
     <string name="rw_meta_songs">%1$s titres</string>
     <string name="profiles">Profils</string>
-    <string name="profiles_description">Each profile has its own database, settings and face. Switching profiles requires a restart</string>
+    <string name="profiles_description">Chaque profil dispose de sa propre base de données, de ses propres paramètres et de son propre thème. Le changement de profil nécessite un redémarrage.</string>
     <string name="profiles_export_profiles">Exporter des profils</string>
     <string name="profiles_import_profiles">Importer des profils</string>
     <string name="add_profile">Ajouter un profil</string>
@@ -2231,15 +2231,15 @@ Volume BAS : titre précédent</string>
     <string name="bridge_pair_code_label">Pairing code</string>
     <string name="bridge_pair_expires_in">Expires in %1$d s</string>
     <string name="bridge_pair_regenerate">Regenerate</string>
-    <string name="bridge_pair_scan">Scan QR code</string>
+    <string name="bridge_pair_scan">Scanner le QR code</string>
     <string name="bridge_pair_scan_prompt">Scan the QR code shown by N-Zik Desktop Compagnon</string>
     <string name="bridge_pair_manual_hint">Manual pairing: on the PC, enter %1$s:%2$d and the code above</string>
     <string name="bridge_pair_confirm">Pair with \"%1$s\" using code %2$s?</string>
     <string name="bridge_pair_confirm_action">Pair</string>
     <string name="bridge_pair_sending">Sending the pairing offer…</string>
-    <string name="bridge_pair_offer_sent">Offer sent to %1$s, finish pairing on the PC</string>
+    <string name="bridge_pair_offer_sent">Offre envoyée à %1$s, terminez le couplage sur le PC</string>
     <string name="bridge_pair_offer_expired">The QR code has expired, scan the new one shown by the PC</string>
-    <string name="bridge_pair_unreachable">PC unreachable. Pair manually on the PC with %1$s:%2$d and code %3$s</string>
+    <string name="bridge_pair_unreachable">PC inaccessible. Effectuez l\'appairage manuellement sur le PC avec %1$s:%2$d et le code %3$s</string>
     <string name="bridge_pair_invalid_qr">This QR code is not an N-Zik pairing code</string>
     <string name="bridge_pair_unsupported_version">Pairing version not supported, update N-Zik or the PC app</string>
     <string name="bridge_pair_invalid_payload">This pairing QR code is invalid</string>
@@ -2247,9 +2247,9 @@ Volume BAS : titre précédent</string>
     <string name="bridge_paired_devices">Paired devices</string>
     <string name="bridge_paired_devices_empty">No paired PC yet</string>
     <string name="bridge_paired_on">Paired on %1$s</string>
-    <string name="bridge_revoke">Revoke</string>
-    <string name="bridge_revoke_confirm">Revoke \"%1$s\"? It will have to be paired again.</string>
-    <string name="bridge_pair_success">Paired with %1$s</string>
+    <string name="bridge_revoke">Révoquer</string>
+    <string name="bridge_revoke_confirm">Souhaitez-vous révoquer « %1$s » ? Il faudra alors le coupler à nouveau.</string>
+    <string name="bridge_pair_success">Associé à %1$s</string>
     <string name="onboard_perm_camera">Camera</string>
     <string name="onboard_perm_camera_desc">Scan the QR code of N-Zik Desktop Compagnon to pair a PC</string>
 </resources>
