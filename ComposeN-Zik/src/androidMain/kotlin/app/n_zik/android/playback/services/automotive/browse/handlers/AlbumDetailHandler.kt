@@ -39,14 +39,13 @@ class AlbumDetailHandler : BrowseHandler {
         binder: PlayerServiceModern.Binder?
     ): List<MediaItem> {
         val parts = parentId.split("/")
-        val actualParentId = parts[0]
         val albumId = parts[1]
         var onlineSongs: List<Song>? = null
         
         if (albumId.startsWith("LOCAL_ALBUM_")) {
             val localSongs = database.songAlbumMapTable.allSongsOf(albumId).first()
             return localSongs.mapIndexed { index, song ->
-                SessionMediaItemMapper.mapSongToMediaItem(song, actualParentId).let { item ->
+                SessionMediaItemMapper.mapSongToMediaItem(song, parentId).let { item ->
                     item.buildUpon()
                         .setMediaMetadata(
                             item.mediaMetadata.buildUpon()
@@ -104,7 +103,7 @@ class AlbumDetailHandler : BrowseHandler {
         return if (!onlineSongs.isNullOrEmpty()) {
             AutoSearchState.searchedSongs = (AutoSearchState.searchedSongs + onlineSongs).distinctBy { s -> s.id }
             onlineSongs.mapIndexed { index, song ->
-                SessionMediaItemMapper.mapSongToMediaItem(song, actualParentId).let { item ->
+                SessionMediaItemMapper.mapSongToMediaItem(song, parentId).let { item ->
                     item.buildUpon()
                         .setMediaMetadata(
                             item.mediaMetadata.buildUpon()
@@ -117,7 +116,7 @@ class AlbumDetailHandler : BrowseHandler {
         } else {
             val localSongs = database.songAlbumMapTable.allSongsOf(albumId).first()
             localSongs.mapIndexed { index, song ->
-                SessionMediaItemMapper.mapSongToMediaItem(song, actualParentId).let { item ->
+                SessionMediaItemMapper.mapSongToMediaItem(song, parentId).let { item ->
                     item.buildUpon()
                         .setMediaMetadata(
                             item.mediaMetadata.buildUpon()

@@ -287,7 +287,15 @@ class AutoSessionCallback(
         startPositionMs: Long,
     ): MediaSession.MediaItemsWithStartPosition {
         if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_LUCKY_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_LUCKY_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val allSongs = (QuickPicksRepository.trendingList.value + (QuickPicksRepository.relatedPage.value?.songs?.map { it.asSong } ?: emptyList())).distinctBy { it.id }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
+            val quickPickSongs = (QuickPicksRepository.trendingList.value + (QuickPicksRepository.relatedPage.value?.songs?.map { it.asSong } ?: emptyList())).distinctBy { it.id }
+            // QuickPicks data is populated by the phone UI; in the Android Auto
+            // service context it can be empty, so fall back to the local library
+            // instead of returning an empty queue (issue #777).
+            val allSongs = if (quickPickSongs.isEmpty()) {
+                database.songTable.sortAll(SongSortBy.DateAdded, SortOrder.Descending, excludeHidden = true).first()
+            } else {
+                quickPickSongs
+            }.distinctBy { it.id }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
             if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song) }, 0, 0)
         }
         if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONG_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_ALL_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONG_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_ALL_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
@@ -355,22 +363,21 @@ val allSongs = database.formatTable.sortAllWithSongs(sortBy, sortOrder).first().
             val allSongs = database.playlistTable.allAsPreview().first().filter { it.playlist.name.startsWith(PINNED_PREFIX, true) }.flatMap { preview -> database.songPlaylistMapTable.allSongsOf(preview.playlist.id).first() }.distinctBy { song -> song.id }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
             if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song) }, 0, 0)
         }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLIST_SHUFFLE) {
-            val paths = mediaItems.first().mediaId.split("/")
-            val playlistId = paths[1]
-            val allSongs = if (playlistId.toLongOrNull() != null) {
-                database.songPlaylistMapTable.allSongsOf(playlistId.toLong()).first()
-            } else {
-                AutoSearchState.searchedSongs
-            }.shuffled()
+        // The shuffle item carries the playlist id ("PLAYLIST_SHUFFLE/{playlistId}")
+        // so the right song list can be resolved (issue #777).
+        val playlistShuffleId = AutoMediaIdContract.parsePlaylistShuffle(mediaItems.firstOrNull()?.mediaId)
+        if (playlistShuffleId != null) {
+            val allSongs = playlistSongs(playlistShuffleId).shuffled()
             if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song) }, 0, 0)
+            Timber.tag("AutoSessionCallback").w("Empty playlist shuffle queue: mediaId=%s", mediaItems.first().mediaId)
         }
 
         var queryList = emptyList<Song>()
         var startIdx = startIndex
         runCatching {
             var songId = ""
-            val paths = mediaItems.first().mediaId.split("/")
+            val mediaId = mediaItems.first().mediaId
+            val paths = mediaId.split("/")
             when (paths.first()) {
                 AutoSessionConstants.ID_QUICK_PICKS -> { 
                     songId = paths[1]
@@ -404,27 +411,64 @@ val allSongs = database.formatTable.sortAllWithSongs(sortBy, sortOrder).first().
                     queryList = database.eventTable.findSongsMostPlayedBetween(from = 0, limit = context.preferences.getEnum(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`).toInt(context.preferences.getInt(MaxTopPlaylistItemsCustomValueKey, 10))).first()
                     songId = paths[1]
                 }
-                PlayerServiceModern.ARTIST -> { songId = if (paths.size == 4) paths[3] else paths[2]; queryList = if (paths.size == 4) AutoSearchState.searchedSongs else database.songArtistMapTable.allSongsBy(paths[1]).first() }
-                PlayerServiceModern.ALBUM -> { songId = paths[2]; queryList = database.songAlbumMapTable.allSongsOf(paths[1]).first(); if (queryList.isEmpty()) queryList = AutoSearchState.searchedSongs }
+                PlayerServiceModern.ARTIST -> {
+                    // MediaId contract: "artist/{artistId}/{songId}" or
+                    // "artist/{artistId}/{section}/{songId}" (issue #777).
+                    val selection = AutoMediaIdContract.parseSongSelection(mediaId, PlayerServiceModern.ARTIST)
+                    if (selection == null) {
+                        Timber.tag("AutoSessionCallback").w("Unresolvable artist selection: mediaId=%s", mediaId)
+                    } else {
+                        songId = selection.songId
+                        queryList = if (selection.section != null) AutoSearchState.searchedSongs else database.songArtistMapTable.allSongsBy(selection.containerId).first()
+                    }
+                }
+                PlayerServiceModern.ALBUM -> {
+                    val selection = AutoMediaIdContract.parseSongSelection(mediaId, PlayerServiceModern.ALBUM)
+                    if (selection == null) {
+                        Timber.tag("AutoSessionCallback").w("Unresolvable album selection: mediaId=%s", mediaId)
+                    } else {
+                        songId = selection.songId
+                        queryList = database.songAlbumMapTable.allSongsOf(selection.containerId).first()
+                        if (queryList.isEmpty()) queryList = AutoSearchState.searchedSongs
+                    }
+                }
                 PlayerServiceModern.PLAYLIST -> {
-                    val playlistId = paths[1]; songId = paths[2]
-                    queryList = when (playlistId) {
-                        AutoSessionConstants.ID_FAVORITES -> database.songTable.allFavorites().map { it.reversed() }.first()
-                        AutoSessionConstants.ID_CACHED -> database.formatTable.allWithSongs().map { fl -> fl.fastFilter { itf -> itf.song.totalPlayTimeMs > 0 && itf.format.contentLength != null && (if (::binder.isInitialized) binder.cache.isCached(itf.song.id, 0L, itf.format.contentLength ?: 0L) else false) }.reversed().fastMap { itf -> itf.song } }.first()
-                        AutoSessionConstants.ID_TOP -> database.eventTable.findSongsMostPlayedBetween(from = 0, limit = context.preferences.getEnum(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`).toInt(context.preferences.getInt(MaxTopPlaylistItemsCustomValueKey, 10))).first()
-                        AutoSessionConstants.ID_ONDEVICE -> database.songTable.allOnDevice().first()
-                        AutoSessionConstants.ID_DOWNLOADED -> {
-                            downloadHelper.getDownloadManager(context)
-                            val downloads = downloadHelper.downloads.value
-                            database.songTable.all(excludeHidden = false).map { fl -> fl.fastFilter { s -> downloads[s.id]?.state == Download.STATE_COMPLETED }.sortedByDescending { s -> downloads[s.id]?.updateTimeMs ?: 0L } }.first()
-                        }
-                        else -> { if (playlistId.toLongOrNull() != null) database.songPlaylistMapTable.allSongsOf(playlistId.toLong()).first() else AutoSearchState.searchedSongs }
+                    val selection = AutoMediaIdContract.parseSongSelection(mediaId, PlayerServiceModern.PLAYLIST)
+                    if (selection == null) {
+                        Timber.tag("AutoSessionCallback").w("Unresolvable playlist selection: mediaId=%s", mediaId)
+                    } else {
+                        val playlistId = selection.containerId
+                        songId = selection.songId
+                        queryList = playlistSongs(playlistId)
                     }
                 }
             }
             startIdx = queryList.indexOfFirst { song -> song.id == songId }.coerceAtLeast(0)
         }
         return MediaSession.MediaItemsWithStartPosition(queryList.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song) }, startIdx, startPositionMs)
+    }
+
+    /**
+     * Resolves the song list of a playlist detail page, shared by the playlist
+     * selection branch and the playlist "Shuffle" item so the two can never
+     * drift apart (issue #777). Pseudo-playlist ids (FAVORITES, CACHED, TOP,
+     * ONDEVICE, DOWNLOADED) resolve through the local library, numeric ids
+     * through the song/playlist map, and online browse ids through the
+     * per-playlist scoped state.
+     */
+    private suspend fun playlistSongs(playlistId: String): List<Song> = when (playlistId) {
+        AutoSessionConstants.ID_FAVORITES -> database.songTable.allFavorites().map { it.reversed() }.first()
+        AutoSessionConstants.ID_CACHED -> database.formatTable.allWithSongs().map { fl -> fl.fastFilter { itf -> itf.song.totalPlayTimeMs > 0 && itf.format.contentLength != null && (if (::binder.isInitialized) binder.cache.isCached(itf.song.id, 0L, itf.format.contentLength ?: 0L) else false) }.reversed().fastMap { itf -> itf.song } }.first()
+        AutoSessionConstants.ID_TOP -> database.eventTable.findSongsMostPlayedBetween(from = 0, limit = context.preferences.getEnum(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`).toInt(context.preferences.getInt(MaxTopPlaylistItemsCustomValueKey, 10))).first()
+        AutoSessionConstants.ID_ONDEVICE -> database.songTable.allOnDevice().first()
+        AutoSessionConstants.ID_DOWNLOADED -> {
+            downloadHelper.getDownloadManager(context)
+            val downloads = downloadHelper.downloads.value
+            database.songTable.all(excludeHidden = false).map { fl -> fl.fastFilter { s -> downloads[s.id]?.state == Download.STATE_COMPLETED }.sortedByDescending { s -> downloads[s.id]?.updateTimeMs ?: 0L } }.first()
+        }
+        // Online playlists keep their songs scoped by playlist id so queues
+        // never mix previously opened playlists (issue #777).
+        else -> { if (playlistId.toLongOrNull() != null) database.songPlaylistMapTable.allSongsOf(playlistId.toLong()).first() else AutoSearchState.playlistSongsById[playlistId].orEmpty() }
     }
 
     override fun onAddMediaItems(

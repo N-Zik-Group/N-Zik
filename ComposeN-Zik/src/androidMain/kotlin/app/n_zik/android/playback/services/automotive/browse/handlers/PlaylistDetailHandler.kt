@@ -15,6 +15,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
+import app.n_zik.android.playback.services.automotive.session.AutoMediaIdContract
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.models.AutoSearchState
@@ -41,9 +42,10 @@ class PlaylistDetailHandler : BrowseHandler {
         binder: PlayerServiceModern.Binder?
     ): List<MediaItem> {
         val parts = parentId.split("/")
-        val actualParentId = parts[0]
         val playlistId = parts[1]
-        val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_PLAYLIST_SHUFFLE)
+        // The shuffle item must carry the playlist id so queue resolution can
+        // find the right song list (issue #777).
+        val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoMediaIdContract.playlistShuffle(playlistId))
         val listFlow = when (playlistId) {
             AutoSessionConstants.ID_FAVORITES -> {
                 val sortBy = context.preferences.getEnum(Preference.HOME_SONGS_FAVORITES_SORT_BY.key, SongSortBy.Title)
@@ -92,11 +94,13 @@ class PlaylistDetailHandler : BrowseHandler {
                 } else {
                     val playlistPage = Innertube.playlistPage(browseId = playlistId.removePrefix(MODIFIED_PREFIX))?.getOrNull()
                     val songs = playlistPage?.songsPage?.items?.map { item -> item.asSong } ?: emptyList()
-                    AutoSearchState.searchedSongs = (AutoSearchState.searchedSongs + songs).distinctBy { s -> s.id }
+                    // Scope the songs to their own playlist id so playback queues
+                    // never mix songs from previously opened playlists (issue #777).
+                    AutoSearchState.playlistSongsById = AutoSearchState.playlistSongsById + (playlistId to songs.distinctBy { s -> s.id })
                     kotlinx.coroutines.flow.flowOf(songs)
                 }
             }
         }
-        return listOf(shuffleItem) + listFlow.first().map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, actualParentId) }
+        return listOf(shuffleItem) + listFlow.first().map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId) }
     }
 }
