@@ -34,7 +34,7 @@ jobs:
               if (!issue) return;
 
               const labels = (issue.labels || []).map(l => l.name);
-              if (!labels.includes('bug') && !labels.includes('enhancement')) return;
+              if (!['bug', 'enhancement', 'security'].some(l => labels.includes(l))) return;
 
               const currentAssignees = (issue.assignees || []).map(u => u.login);
 
