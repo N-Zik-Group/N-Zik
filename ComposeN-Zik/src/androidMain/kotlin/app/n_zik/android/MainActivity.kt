@@ -152,8 +152,9 @@ import app.it.fast4x.rimusic.extensions.pip.PipModuleContainer
 import app.it.fast4x.rimusic.extensions.pip.PipModuleCover
 import app.n_zik.android.components.onboarding.OnboardingAccountsScreen
 import app.n_zik.android.components.onboarding.OnboardingImportScreen
-import app.n_zik.android.components.onboarding.OnboardingNameScreen
+import app.n_zik.android.components.onboarding.OnboardingProfileScreen
 import app.n_zik.android.components.onboarding.OnboardingScreen
+import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
 import app.n_zik.android.components.ui.screens.home.OPEN_SEARCH_SHORTCUT
 import app.n_zik.android.components.ui.screens.home.activeHomeTabIds
@@ -406,11 +407,11 @@ class MainActivity :
     // is complete and the main navigation renders instead. The step is persisted in
     // prefs on every transition (see advanceOnboarding), so a process restart —
     // post-import restart or process death — resumes at the right step too. The
-    // onboardingComplete flag is written only when the flow is fully done (or when the
-    // accounts step leaves with a Discord token set) — a successful restore never
-    // writes it: the flow advances to the next step before the restart, so the restart
-    // lands on that step, keeping the user inside onboarding — and a mid-flow crash
-    // never marks it as finished.
+    // onboardingComplete flag is written only when the flow is fully done (leaving
+    // the profile step, the last one) — a successful restore or a Discord-token
+    // restart from the accounts step never writes it: the flow advances to the next
+    // step before the restart, so the restart lands on that step, keeping the user
+    // inside onboarding — and a mid-flow crash never marks it as finished.
     private var onboardingStep by mutableStateOf<OnboardingStep?>(null)
 
     /**
@@ -431,20 +432,6 @@ class MainActivity :
             Timber.tag("MainActivity").d("Onboarding step: ${current.name} -> ${next.name}")
         }
         onboardingStep = next
-    }
-
-    /**
-     * Marks the onboarding as complete without leaving the current step. Used by the
-     * accounts step (leaving the step with a Discord token set restarts the app): the
-     * restart must land directly in the main app, so the flag is written and the
-     * persisted step cleared now — the step field stays put until the restart
-     * happens. A successful restore never uses this: it restarts the app without
-     * writing the flag, and the flow resumes at the persisted step.
-     */
-    private fun completeOnboarding() {
-        DataStoreUtils.saveBoolean(this, DataStoreUtils.KEY_ONBOARDING_COMPLETE, true)
-        DataStoreUtils.saveString(this, DataStoreUtils.KEY_ONBOARDING_STEP, "")
-        Timber.tag("MainActivity").i("Onboarding completed before restart, flag written, step cleared")
     }
 
     override val persistMap = PersistMap()
@@ -1662,7 +1649,7 @@ class MainActivity :
                         ) {
                             // First-launch onboarding: rendered instead of the main
                             // navigation while the flag is false. Page changes (permissions ->
-                            // restore -> name -> accounts -> main app) animate with the user's chosen
+                            // restore -> accounts -> profile -> main app) animate with the user's chosen
                             // transition effect, same spec as AppNavigation
                             val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Fade)
                             AnimatedContent(
@@ -1710,22 +1697,42 @@ class MainActivity :
 
                                     OnboardingStep.IMPORT -> OnboardingImportScreen(
                                         // "Skip" and a successful restore both advance to
-                                        // the name step; a restore additionally restarts
+                                        // the accounts step; a restore additionally restarts
                                         // the app (flag unwritten), so the restart lands
                                         // on the next step — the user stays inside onboarding
                                         onComplete = { advanceOnboarding() }
                                     )
 
-                                    OnboardingStep.NAME -> OnboardingNameScreen(
+                                    // The accounts step is no longer the last one — the
+                                    // profile step follows: leaving (even with a Discord
+                                    // token set) advances to NAME, which is persisted
+                                    // before any restart, so the restart lands on the
+                                    // profile step with the complete flag unwritten
+                                    OnboardingStep.ACCOUNTS -> OnboardingAccountsScreen(
                                         onComplete = { advanceOnboarding() }
                                     )
 
-                                    OnboardingStep.ACCOUNTS -> OnboardingAccountsScreen(
-                                        onComplete = { advanceOnboarding() },
-                                        onDiscordConnected = { completeOnboarding() }
+                                    // The profile step: the base clone's identity (name,
+                                    // face name source, photo, face avatar source) — the
+                                    // last step. The enum value stays NAME (the
+                                    // persisted step is the enum name — renaming it would
+                                    // restart an in-flight onboarding at PERMISSIONS)
+                                    OnboardingStep.NAME -> OnboardingProfileScreen(
+                                        onComplete = { advanceOnboarding() }
                                     )
                                 }
                             }
+
+                            // The restart prompt (a Discord-token restart from the
+                            // accounts step, a post-import restart) must survive the
+                            // step transition: it is composed in the onboarding
+                            // container, not in the leaving step screen — a
+                            // screen-local Render would uncompose with the
+                            // AnimatedContent exit (0 ms for TransitionEffect.None)
+                            // and the prompt would vanish before the user sees it.
+                            // Gated on the flow being alive: once complete, the
+                            // settings screen composes its own Render
+                            if (onboardingStep != null) RestartAppDialog.Render()
 
                             val disableClosingPlayerSwipingDown by rememberPreference(disableClosingPlayerSwipingDownKey, false)
                             // Listen Together guest lock (spec-listen-together-guest-lock-hardening,

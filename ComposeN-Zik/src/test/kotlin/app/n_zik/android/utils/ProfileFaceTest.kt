@@ -7,10 +7,10 @@ import org.junit.jupiter.api.Test
 /**
  * Tests the face resolution (spec-profiles-page-face): [resolveFaceName] — an account
  * source wins only while that account is logged in with a captured name, otherwise the
- * profile's own display name, then the legacy custom name, then the app default (never
- * blank); [resolveFaceAvatar] — the account photo, else the profile photo, else the
- * deterministic initials (always renders something); [faceInitials] /
- * [faceInitialsColorIndex] determinism; and the [relativeTime] bucket boundaries.
+ * profile's own display name, then the app default (never blank); [resolveFaceAvatar]
+ * — the account photo, else the profile photo, else the deterministic initials (always
+ * renders something); [faceInitials] / [faceInitialsColorIndex] determinism; and the
+ * [relativeTime] bucket boundaries.
  */
 class ProfileFaceTest {
 
@@ -25,7 +25,6 @@ class ProfileFaceTest {
         discordName: String = "",
         lastfmLoggedIn: Boolean = false,
         lastfmName: String = "",
-        legacyUsername: String = "",
     ) = resolveFaceName(
         source = source,
         profileName = profileName,
@@ -35,7 +34,6 @@ class ProfileFaceTest {
         discordName = discordName,
         lastfmLoggedIn = lastfmLoggedIn,
         lastfmName = lastfmName,
-        legacyUsername = legacyUsername,
         defaultName = defaultName
     )
 
@@ -49,8 +47,7 @@ class ProfileFaceTest {
                 source = FACE_SOURCE_PROFILE,
                 ytLoggedIn = true, ytName = "Danie YT",
                 discordLoggedIn = true, discordName = "DanieDisc",
-                lastfmLoggedIn = true, lastfmName = "danie_fm",
-                legacyUsername = "Legacy"
+                lastfmLoggedIn = true, lastfmName = "danie_fm"
             )
         )
     }
@@ -96,13 +93,8 @@ class ProfileFaceTest {
     }
 
     @Test
-    fun aBlankProfileNameFallsBackToTheLegacyCustomName() {
-        assertEquals("Legacy", resolveName(FACE_SOURCE_PROFILE, profileName = "", legacyUsername = "Legacy"))
-    }
-
-    @Test
-    fun aBlankProfileNameAndLegacyNameFallBackToTheDefaultName() {
-        assertEquals(defaultName, resolveName(FACE_SOURCE_PROFILE, profileName = "", legacyUsername = "   "))
+    fun aBlankProfileNameFallsBackToTheDefaultName() {
+        assertEquals(defaultName, resolveName(FACE_SOURCE_PROFILE, profileName = "   "))
     }
 
     @Test
@@ -115,7 +107,7 @@ class ProfileFaceTest {
         val sources = listOf(FACE_SOURCE_PROFILE, FACE_SOURCE_YOUTUBE, FACE_SOURCE_DISCORD, FACE_SOURCE_LASTFM, "unknown")
         sources.forEach { source ->
             assertTrue(
-                resolveName(source, profileName = "", ytName = "", discordName = "", lastfmName = "", legacyUsername = "").isNotBlank(),
+                resolveName(source, profileName = "", ytName = "", discordName = "", lastfmName = "").isNotBlank(),
                 "the face name must never be blank (source $source)"
             )
         }

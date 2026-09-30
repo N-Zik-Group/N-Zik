@@ -37,7 +37,7 @@ import java.nio.file.Files
  *
  * Only the keystore-backed [profileSecurePrefs] is stubbed (a JVM has no keystore);
  * every other hop runs for real — the plain profiled prefs, the profile store
- * (display name), the legacy username store and the photo source.
+ * (display name) and the photo source.
  */
 class ProfileFaceWiringTest {
 
@@ -60,8 +60,6 @@ class ProfileFaceWiringTest {
         // The profile store (the display name of "work")
         every { context.getSharedPreferences("profile_preferences", Context.MODE_PRIVATE) } returns
             stringPrefsOf("displayName_work" to "Danie")
-        // The legacy username store (no global custom name)
-        every { context.getSharedPreferences("app_settings", Context.MODE_PRIVATE) } returns stringPrefsOf()
         // No account is logged in by default — each test unlocks the ones it needs.
         every { securePrefs.getString(ytCookieKey, "") } returns ""
         every { securePrefs.getString(ytAccountNameKey, "") } returns ""

@@ -17,8 +17,6 @@ import androidx.compose.ui.platform.LocalContext
 object DataStoreUtils {
 
     // Key constants
-    const val KEY_USERNAME = "username"
-
     /** First-launch onboarding flag; the onboarding flow only runs while it is false. */
     const val KEY_ONBOARDING_COMPLETE = "onboarding_complete"
 
@@ -35,13 +33,6 @@ object DataStoreUtils {
      * PERMANENTLY_DENIED mapping survive activity recreation.
      */
     const val KEY_ONBOARDING_PERMISSIONS_REQUESTED = "onboarding_permissions_requested"
-
-    /** Source of the display name shown on the app (legacy onboarding value). */
-    const val KEY_DISPLAY_NAME_SOURCE = "display_name_source"
-
-    // Display name sources (values stored under [KEY_DISPLAY_NAME_SOURCE])
-    const val DISPLAY_NAME_SOURCE_CUSTOM = "custom"
-    const val DISPLAY_NAME_SOURCE_YOUTUBE = "youtube"
 
     // Rewind toggles (spec GH-275): all default to `true` on read, so an existing install
     // keeps the current behavior until the user flips something (zero regression)

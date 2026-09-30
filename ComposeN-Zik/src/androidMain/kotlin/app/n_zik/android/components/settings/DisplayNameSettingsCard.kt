@@ -1,6 +1,5 @@
 package app.n_zik.android.components.settings
 
-import android.content.Context
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -50,13 +49,11 @@ import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import it.fast4x.innertube.utils.parseCookieString
 import app.it.fast4x.rimusic.ui.components.themed.DefaultDialog
 import app.it.fast4x.rimusic.ui.components.themed.DialogTextButton
 import app.it.fast4x.rimusic.ui.screens.settings.OtherSettingsEntry
 import app.it.fast4x.rimusic.ui.screens.settings.SettingsSectionCard
 import app.it.fast4x.rimusic.utils.center
-import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
 import app.it.fast4x.rimusic.utils.faceAvatarSource
 import app.it.fast4x.rimusic.utils.faceNameSource
 import app.it.fast4x.rimusic.utils.getActiveProfile
@@ -72,17 +69,18 @@ import app.it.fast4x.rimusic.utils.currentProfileEntries
 import app.it.fast4x.rimusic.utils.saveProfileDisplayName
 import app.it.fast4x.rimusic.utils.writeProfileEntries
 import app.it.fast4x.rimusic.utils.takenProfileNames
-import app.it.fast4x.rimusic.utils.ytCookieKey
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.ui.screens.profiles.profileAvatarSource
+import app.n_zik.android.components.ui.screens.profiles.AccountLoginState
 import app.n_zik.android.components.ui.screens.profiles.ProfileFaceAvatar
-import app.n_zik.android.components.ui.screens.profiles.profileSecurePrefs
 import app.n_zik.android.components.ui.screens.profiles.profileFaceUpdateTrigger
 import app.n_zik.android.components.ui.screens.profiles.removeProfileAvatarFile
 import app.n_zik.android.components.ui.screens.profiles.saveProfileAvatarFromUri
-import app.n_zik.android.extensions.lastfm.lastfmSessionKey
+import app.n_zik.android.components.ui.screens.profiles.faceSourceIcon
+import app.n_zik.android.components.ui.screens.profiles.faceSourceLabel
+import app.n_zik.android.components.ui.screens.profiles.loadAccountLoginState
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.FACE_SOURCE_DISCORD
@@ -94,48 +92,6 @@ import app.n_zik.android.utils.ProfileFace
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.ui.screens.profiles.loadProfileFace
 import app.kreate.android.me.knighthat.utils.Toaster
-
-/** Login state of the active profile's accounts (one-shot read, per-profile secure prefs). */
-private data class AccountLoginState(
-    val youtube: Boolean,
-    val discord: Boolean,
-    val lastfm: Boolean,
-)
-
-/**
- * One-shot read of the active profile's account login state (the source dialog locks
- * the account options while the account is not logged in). Every chunk is guarded — a
- * failing read just locks its source, the profile source is never locked.
- */
-private fun loadAccountLoginState(app: Context, profileId: String): AccountLoginState {
-    val secure = runCatching { profileSecurePrefs(app, profileId) }.getOrNull()
-    return AccountLoginState(
-        youtube = runCatching {
-            parseCookieString(secure?.getString(ytCookieKey, "") ?: "").contains("SAPISID")
-        }.getOrDefault(false),
-        discord = secure?.getString(discordPersonalAccessTokenKey, "")?.isNotBlank() == true,
-        lastfm = secure?.getString(lastfmSessionKey, "")?.isNotBlank() == true,
-    )
-}
-
-/** Label shown for a face source (dialog rows + the "source" entries). */
-@Composable
-private fun sourceLabel(source: String): String = when (source) {
-    FACE_SOURCE_PROFILE -> stringResource(R.string.face_source_profile)
-    FACE_SOURCE_YOUTUBE -> stringResource(R.string.display_name_source_youtube)
-    FACE_SOURCE_DISCORD -> stringResource(R.string.face_source_discord)
-    FACE_SOURCE_LASTFM -> stringResource(R.string.face_source_lastfm)
-    else -> stringResource(R.string.face_source_profile)
-}
-
-/** Icon of a face source entry. */
-private fun sourceIcon(source: String): Int = when (source) {
-    FACE_SOURCE_PROFILE -> R.drawable.person
-    FACE_SOURCE_YOUTUBE -> R.drawable.logo_youtube
-    FACE_SOURCE_DISCORD -> R.drawable.logo_discord
-    FACE_SOURCE_LASTFM -> R.drawable.logo_lastfm
-    else -> R.drawable.person
-}
 
 /**
  * Face source selector of the Accounts face card: the four sources
@@ -226,7 +182,7 @@ private fun FaceSourceSelectorDialog(
                                 Spacer(modifier = Modifier.width(8.dp))
 
                                 BasicText(
-                                    text = sourceLabel(source),
+                                    text = faceSourceLabel(source),
                                     style = typography().s.copy(color = palette.text),
                                     modifier = Modifier.weight(1f)
                                 )
@@ -387,15 +343,15 @@ fun ProfileFaceCard(modifier: Modifier = Modifier) {
 
             OtherSettingsEntry(
                 title = stringResource(R.string.face_name_source),
-                text = sourceLabel(nameSource),
-                icon = sourceIcon(nameSource),
+                text = faceSourceLabel(nameSource),
+                icon = faceSourceIcon(nameSource),
                 onClick = { showNameSourceDialog = true }
             )
 
             OtherSettingsEntry(
                 title = stringResource(R.string.face_avatar_source),
-                text = sourceLabel(avatarSource),
-                icon = sourceIcon(avatarSource),
+                text = faceSourceLabel(avatarSource),
+                icon = faceSourceIcon(avatarSource),
                 onClick = { showAvatarSourceDialog = true }
             )
 

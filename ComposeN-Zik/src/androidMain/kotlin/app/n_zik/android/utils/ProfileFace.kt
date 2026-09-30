@@ -33,9 +33,8 @@ sealed interface FaceAvatar {
  * Resolves the face name of a profile.
  *
  * The selected account source wins only while that account is actually logged in AND
- * a name was captured; otherwise the profile's own display name is used, the legacy
- * global custom name ([legacyUsername]) as a last-ditch fallback (decision Q2), then
- * the app default name — the result is never blank.
+ * a name was captured; otherwise the profile's own display name is used, then the
+ * app default name — the result is never blank.
  *
  * Pure on purpose — shared by the Welcome greeting, the Rewind deck, the Accounts
  * face card and the Profiles page, and unit-tested without any Android dependency.
@@ -48,7 +47,6 @@ sealed interface FaceAvatar {
  * @param discordName Discord username (may be blank)
  * @param lastfmLoggedIn whether the Last.fm account of this profile is logged in
  * @param lastfmName Last.fm username (may be blank)
- * @param legacyUsername legacy global custom name (`username`, may be blank)
  * @param defaultName fallback name, never blank (`profile_base_name`)
  */
 fun resolveFaceName(
@@ -60,13 +58,12 @@ fun resolveFaceName(
     discordName: String,
     lastfmLoggedIn: Boolean,
     lastfmName: String,
-    legacyUsername: String,
     defaultName: String,
 ): String = when {
     source == FACE_SOURCE_YOUTUBE && ytLoggedIn && ytName.isNotBlank() -> ytName.trim()
     source == FACE_SOURCE_DISCORD && discordLoggedIn && discordName.isNotBlank() -> discordName.trim()
     source == FACE_SOURCE_LASTFM && lastfmLoggedIn && lastfmName.isNotBlank() -> lastfmName.trim()
-    else -> profileName.ifBlank { legacyUsername.ifBlank { defaultName } }
+    else -> profileName.ifBlank { defaultName }
 }
 
 /**

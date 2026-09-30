@@ -12,9 +12,9 @@ import org.robolectric.annotation.Config
 
 /**
  * Tests the onboarding persistence added to [DataStoreUtils] (spec I/O matrix,
- * FIRST_LAUNCH / RELAUNCH rows): the `onboardingComplete` flag, the current step
- * (resume after a post-import restart) and the display-name source round-trip
- * through SharedPreferences and keep their defaults when absent.
+ * FIRST_LAUNCH / RELAUNCH rows): the `onboardingComplete` flag and the current step
+ * (resume after a post-import restart) round-trip through SharedPreferences and keep
+ * their defaults when absent.
  *
  * Robolectric is required (not a plain JVM unit test) because the helpers read and write
  * a real `SharedPreferences` file that needs an Android environment to shadow.
@@ -59,33 +59,11 @@ class DataStoreUtilsOnboardingTest {
     }
 
     @Test
-    fun displayNameSourceDefaultsToCustomWhenAbsent() {
-        assertEquals(
-            DataStoreUtils.DISPLAY_NAME_SOURCE_CUSTOM,
-            DataStoreUtils.getString(context, DataStoreUtils.KEY_DISPLAY_NAME_SOURCE, DataStoreUtils.DISPLAY_NAME_SOURCE_CUSTOM)
-        )
-    }
-
-    @Test
-    fun displayNameSourceRoundTrips() {
-        DataStoreUtils.saveString(context, DataStoreUtils.KEY_DISPLAY_NAME_SOURCE, DataStoreUtils.DISPLAY_NAME_SOURCE_YOUTUBE)
-        assertEquals(
-            DataStoreUtils.DISPLAY_NAME_SOURCE_YOUTUBE,
-            DataStoreUtils.getString(context, DataStoreUtils.KEY_DISPLAY_NAME_SOURCE, DataStoreUtils.DISPLAY_NAME_SOURCE_CUSTOM)
-        )
-    }
-
-    @Test
     fun onboardingKeysStayIndependent() {
         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_ONBOARDING_COMPLETE, true)
-        DataStoreUtils.saveString(context, DataStoreUtils.KEY_DISPLAY_NAME_SOURCE, DataStoreUtils.DISPLAY_NAME_SOURCE_YOUTUBE)
-        DataStoreUtils.saveString(context, DataStoreUtils.KEY_USERNAME, "Danie")
+        DataStoreUtils.saveString(context, DataStoreUtils.KEY_ONBOARDING_STEP, "IMPORT")
 
         assertTrue(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_ONBOARDING_COMPLETE, false))
-        assertEquals(
-            DataStoreUtils.DISPLAY_NAME_SOURCE_YOUTUBE,
-            DataStoreUtils.getString(context, DataStoreUtils.KEY_DISPLAY_NAME_SOURCE, DataStoreUtils.DISPLAY_NAME_SOURCE_CUSTOM)
-        )
-        assertEquals("Danie", DataStoreUtils.getString(context, DataStoreUtils.KEY_USERNAME, ""))
+        assertEquals("IMPORT", DataStoreUtils.getString(context, DataStoreUtils.KEY_ONBOARDING_STEP, ""))
     }
 }

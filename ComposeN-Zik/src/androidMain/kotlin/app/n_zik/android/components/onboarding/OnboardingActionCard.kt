@@ -69,7 +69,7 @@ internal fun OnboardingActionLabel(text: String) {
 
 /**
  * Shared onboarding card: icon, title, description and an optional trailing action — the
- * same pattern behind every onboarding step (permissions, restore, name, accounts).
+ * same pattern behind every onboarding step (permissions, restore, profile, accounts).
  *
  * Overflow-safe by design (small screens / enlarged system font):
  * - the title is a single line capped to the text column and scrolls in a marquee when
@@ -82,7 +82,7 @@ internal fun OnboardingActionLabel(text: String) {
  * @param description card description, wrapping
  * @param action optional trailing action (button or status icon); null for header-only cards
  * @param extraContent optional content below the header row, inside the same card
- *   (restore options + button, guest name field + button)
+ *   (restore options + button, clone name field + button)
  */
 @Composable
 fun OnboardingActionCard(
@@ -172,11 +172,15 @@ private fun OnboardingCardIcon(icon: Int) {
 private fun RowScope.OnboardingCardText(title: String, description: String) {
     Column(modifier = Modifier.weight(1f)) {
         OnboardingCardTitle(title, color = colorPalette().text)
-        Text(
-            text = description,
-            style = typography().xxs,
-            color = colorPalette().textSecondary
-        )
+        // An empty description renders nothing (a blank Text would still claim
+        // layout space under the title)
+        if (description.isNotBlank()) {
+            Text(
+                text = description,
+                style = typography().xxs,
+                color = colorPalette().textSecondary
+            )
+        }
     }
 }
 

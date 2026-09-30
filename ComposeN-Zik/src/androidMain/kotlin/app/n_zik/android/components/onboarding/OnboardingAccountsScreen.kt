@@ -38,18 +38,33 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.navigation.compose.rememberNavController
+import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
+import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
 import app.it.fast4x.rimusic.utils.discordAvatarKey
 import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
 import app.it.fast4x.rimusic.utils.discordUsernameKey
+import app.it.fast4x.rimusic.utils.encryptedPreferences
+import app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger
+import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.rememberEncryptedPreference
+import app.it.fast4x.rimusic.utils.useLoginForBrowseKey
+import app.it.fast4x.rimusic.utils.ytAccountChannelHandleKey
+import app.it.fast4x.rimusic.utils.ytAccountEmailKey
+import app.it.fast4x.rimusic.utils.ytAccountNameKey
+import app.it.fast4x.rimusic.utils.ytAccountThumbnailKey
+import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
+import app.it.fast4x.rimusic.utils.ytCookieKey
+import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
+import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.BuildConfig
+import app.n_zik.android.MainApplication
 import app.n_zik.android.R
+import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.components.menu.ListMenu
@@ -60,6 +75,8 @@ import app.n_zik.android.extensions.lastfm.lastfmSessionKey
 import app.n_zik.android.extensions.lastfm.lastfmUsernameKey
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.ytAccountName
+import it.fast4x.innertube.Innertube
 import it.fast4x.lastfm.LastFm
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -72,59 +89,75 @@ enum class OnboardingAccountsStepAction {
     /** Show the step as usual. */
     SHOW,
 
-    /** Auto-advance: both accounts are already connected, nothing left to connect. */
+    /** Auto-advance: all three accounts are already connected, nothing left to connect. */
     AUTO_ADVANCE
 }
 
 /**
- * Both optional accounts already connected (e.g. restored by the import step) means
- * there is nothing left to configure: the step is skipped on its own, the same way
- * the skip button would in that state (Discord path: flag written, then the restart
- * prompt — a Discord token is only live after a restart).
+ * All three optional accounts (YouTube, Last.fm, Discord) already connected (e.g.
+ * restored by the import step) means there is nothing left to configure: the step
+ * is skipped on its own, the same way the skip button would in that state (Discord
+ * path: the restart prompt shows after the advance — a Discord token is only live
+ * after a restart, which lands on the profile step with the flag unwritten).
  */
-fun accountsStepInitialAction(lastFmConnected: Boolean, discordConnected: Boolean): OnboardingAccountsStepAction =
-    if (lastFmConnected && discordConnected) OnboardingAccountsStepAction.AUTO_ADVANCE
+fun accountsStepInitialAction(
+    youtubeConnected: Boolean,
+    lastFmConnected: Boolean,
+    discordConnected: Boolean,
+): OnboardingAccountsStepAction =
+    if (youtubeConnected && lastFmConnected && discordConnected) OnboardingAccountsStepAction.AUTO_ADVANCE
     else OnboardingAccountsStepAction.SHOW
 
 /**
- * Fourth and final step of the first-launch onboarding flow: optional account
- * connections (Last.fm scrobbling and Discord rich presence), after the name choice.
+ * Step of the first-launch onboarding flow between the import and the profile
+ * step: optional account connections (YouTube, Last.fm scrobbling and Discord
+ * rich presence). The accounts come before the clone's identity so the account
+ * face sources can already be unlocked on the profile step.
  *
  * Reuses the existing login components — the same ones behind the Accounts tab:
- * [LastFmLoginContent] in its sheet (Last.fm) and [DiscordLoginAndGetToken] in its
- * sheet (Discord) — writing to the same encrypted prefs, so the onboarding and the
- * Accounts tab observe the same state.
+ * [YouTubeLogin] in its sheet (YouTube), [LastFmLoginContent] in its sheet
+ * (Last.fm) and [DiscordLoginAndGetToken] in its sheet (Discord) — writing to the
+ * same encrypted prefs, so the onboarding and the Accounts tab observe the same
+ * state. A YouTube login applies the same side effects as the Accounts tab (cookie
+ * live immediately) and updates the card without a restart.
  *
  * Everything is optional and connecting an account never advances the flow — the
  * cards only log in (same encrypted prefs as the Accounts tab) and update their
  * status. Leaving the step is always through the skip button — labeled "Skip" while
- * nothing is connected and "I'm done" once at least one account is logged in: with
- * a Discord token set, the restart prompt ([RestartAppDialog]) shows after the flag
- * is written —
- * the presence manager is created when the player service starts, so the fresh
- * token is only picked up on a new launch, and the restart lands directly in the
- * app. Last.fm never needs a restart. Its `Render()` is composed here because the
- * restart prompt is normally only composed inside the settings screen, which is
- * not alive during onboarding.
+ * nothing is connected and "I'm done" once at least one account is logged in.
+ * Leaving advances to the profile step (persisted); with a Discord token set, the
+ * restart prompt ([RestartAppDialog]) shows after the advance — the presence
+ * manager is created when the player service starts, so the fresh token is only
+ * picked up on a new launch, and the restart lands on the profile step (the
+ * onboarding-complete flag stays unwritten). YouTube and Last.fm never need a
+ * restart. The prompt's `Render()` lives in the activity's onboarding container —
+ * it must survive the step transition, which a screen-local composition would not.
  *
- * Auto-skip: when BOTH accounts are already connected on first composition
+ * Auto-skip: when ALL THREE accounts are already connected on first composition
  * (restored by the import step, or a returning state), the step is skipped on its
  * own — the same way the skip button would in that state
- * ([accountsStepInitialAction]): the flag is written and the restart prompt shows
- * (a Discord token is only live after a restart).
+ * ([accountsStepInitialAction]): the flow advances to the profile step and the
+ * restart prompt shows (a Discord token is only live after a restart).
  *
- * @param onComplete skip pressed with no Discord token — the flow completes
- * @param onDiscordConnected skip pressed (or the auto-skip fired) while a Discord
- *   token is set — the activity must complete the onboarding (flag written) BEFORE
- *   the restart prompt
+ * @param onComplete leave the step — the flow advances to the profile step (the
+ *   activity persists it; with a Discord token set the restart prompt shows and
+ *   the restart lands on the profile step)
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OnboardingAccountsScreen(
     modifier: Modifier = Modifier,
     onComplete: () -> Unit,
-    onDiscordConnected: () -> Unit,
 ) {
+    // YouTube state — the same secure prefs as the Accounts tab card
+    var loginYoutube by remember { mutableStateOf(false) }
+    // One-shot read of the login state at first composition (a cookie restored by
+    // the import step, or a returning state): it can only change from this screen
+    // (the login / logoff below flip it explicitly), so a stale read is acceptable
+    // by contract.
+    var ytLoggedIn by remember { mutableStateOf(isYouTubeLoggedIn()) }
+    var ytName by remember { mutableStateOf(if (ytLoggedIn) ytAccountName() else "") }
+
     // Last.fm state — the same encrypted prefs as the Accounts tab card
     var lastfmSession by rememberEncryptedPreference(lastfmSessionKey, "")
     var lastfmUsername by rememberEncryptedPreference(lastfmUsernameKey, "")
@@ -143,16 +176,40 @@ fun OnboardingAccountsScreen(
     val lastfmConfigured =
         !BuildConfig.LASTFM_API_KEY.isEmpty() && !BuildConfig.LASTFM_API_SECRET.isEmpty()
 
-    // Both accounts already connected (restored by the import step, or a returning
-    // state): skip the step the same way the skip button would — the flag is written
-    // and the restart prompt shows (a Discord token is only live after a restart)
+    // Logoff: the minimal mirror of the Accounts tab logout — the destructive
+    // synced-data clear is skipped because onboarding is a fresh install, there
+    // is nothing synced to wipe
+    fun logOffYouTube() {
+        val ep = appContext().encryptedPreferences
+        ep.edit().putString(ytCookieKey, "").apply()
+        ep.edit().putString(ytAccountNameKey, "").apply()
+        ep.edit().putString(ytAccountChannelHandleKey, "").apply()
+        ep.edit().putString(ytAccountEmailKey, "").apply()
+        ep.edit().putString(ytAccountThumbnailKey, "").apply()
+        ep.edit().putString(ytVisitorDataKey, "").apply()
+        ep.edit().putString(ytDataSyncIdKey, "").apply()
+        // Force recomposition of every encrypted-prefs observer (Accounts tab pattern)
+        encryptedPreferencesUpdateTrigger++
+        appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
+        appContext().preferences.edit().putBoolean(useLoginForBrowseKey, false).apply()
+        Innertube.useLoginForBrowse = false
+        MainApplication.cookieStatus = MainApplication.CookieStatus.NOT_LOGGED_IN
+        ytLoggedIn = false
+        ytName = ""
+        Timber.tag("Onboarding").i("YouTube logged off from onboarding")
+    }
+
+    // All three accounts already connected (restored by the import step, or a
+    // returning state): skip the step the same way the skip button would —
+    // advance to the profile step, then the restart prompt (a Discord token is
+    // only live after a restart; the restart lands on the profile step)
     LaunchedEffect(Unit) {
         if (
-            accountsStepInitialAction(lastfmSession.isNotEmpty(), discordToken.isNotEmpty()) ==
+            accountsStepInitialAction(ytLoggedIn, lastfmSession.isNotEmpty(), discordToken.isNotEmpty()) ==
             OnboardingAccountsStepAction.AUTO_ADVANCE
         ) {
-            Timber.tag("Onboarding").i("Both accounts already connected, auto-skipping the accounts step")
-            onDiscordConnected()
+            Timber.tag("Onboarding").i("All accounts already connected, auto-skipping the accounts step")
+            onComplete()
             RestartAppDialog.showDialog()
         }
     }
@@ -189,20 +246,31 @@ fun OnboardingAccountsScreen(
             color = colorPalette().text
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = stringResource(R.string.onboard_accounts_desc),
-            style = typography().s,
-            color = colorPalette().textSecondary,
-            textAlign = TextAlign.Center
-        )
-
+        // No screen-level description: the three cards each carry their own, and the
+        // removed one predates the YouTube card (it only listed Last.fm + Discord)
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Plain Column: two cards at most, no recycling needed — and the screen
+        // Plain Column: three cards at most, no recycling needed — and the screen
         // column scrolls, so a nested lazy list would fight it for the gesture
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            OnboardingActionCard(
+                icon = R.drawable.logo_youtube,
+                title = stringResource(R.string.onboard_accounts_youtube),
+                description = if (ytLoggedIn && ytName.isNotBlank()) {
+                    stringResource(R.string.onboard_accounts_youtube_account, ytName)
+                } else {
+                    stringResource(R.string.onboard_accounts_youtube_desc)
+                },
+                action = {
+                    OnboardingAccountActionButton(
+                        label = stringResource(onboardingAccountButtonResId(ytLoggedIn)),
+                        onClick = {
+                            if (ytLoggedIn) logOffYouTube() else loginYoutube = true
+                        }
+                    )
+                }
+            )
+
             if (lastfmConfigured) {
                 OnboardingActionCard(
                     icon = R.drawable.logo_lastfm,
@@ -263,18 +331,21 @@ fun OnboardingAccountsScreen(
 
         Button(
             onClick = {
-                if (discordToken.isNotEmpty()) {
-                    // A Discord token is set: the presence manager is created when the
-                    // player service starts, so the restart must happen before the app
-                    // opens — the flag is written first, so the restart lands directly
-                    // in the app
-                    Timber.tag("Onboarding").i("Accounts step skipped with Discord connected, restart requested")
-                    onDiscordConnected()
-                    RestartAppDialog.showDialog()
-                } else {
-                    Timber.tag("Onboarding").i("Accounts step skipped, onboarding complete")
-                    onComplete()
-                }
+                // The accounts step no longer ends the flow — the profile step
+                // follows: advance (the step is persisted), and with a Discord
+                // token set the restart prompt shows after the advance — the
+                // presence manager is created when the player service starts,
+                // so the fresh token is only picked up on a new launch, and the
+                // restart lands on the profile step (flag unwritten)
+                Timber.tag("Onboarding").i(
+                    if (discordToken.isNotEmpty()) {
+                        "Accounts step skipped with Discord connected, restart requested"
+                    } else {
+                        "Accounts step skipped"
+                    }
+                )
+                onComplete()
+                if (discordToken.isNotEmpty()) RestartAppDialog.showDialog()
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = colorPalette().accent,
@@ -287,11 +358,51 @@ fun OnboardingAccountsScreen(
                 // "Skip" while nothing is connected, "I'm done" once at least one
                 // account is logged in — the user leaves the step either way
                 stringResource(
-                    if (lastfmSession.isNotEmpty() || discordToken.isNotEmpty()) R.string.onboard_accounts_done
+                    if (ytLoggedIn || lastfmSession.isNotEmpty() || discordToken.isNotEmpty()) R.string.onboard_accounts_done
                     else R.string.onboard_accounts_skip
                 )
             )
         }
+    }
+
+    // YouTube login sheet — the same wrapper as the old name step's sheet
+    CustomModalBottomSheet(
+        showSheet = loginYoutube,
+        onDismissRequest = {
+            loginYoutube = false
+        },
+        containerColor = colorPalette().background0,
+        contentColor = colorPalette().background0,
+        modifier = Modifier.fillMaxWidth().statusBarsPadding(),
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        shape = uiRoundnessShape(),
+        dragHandle = {
+            Box(
+                modifier = Modifier
+                    .padding(top = 18.dp, bottom = 6.dp)
+                    .size(width = 40.dp, height = 4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(Color.White)
+            )
+        }
+    ) {
+        YouTubeLogin(
+            onLogin = { cookieRetrieved ->
+                if (cookieRetrieved.contains("SAPISID")) {
+                    loginYoutube = false
+                    // Same side effects as the Accounts tab login — the cookie is
+                    // live immediately, so the card updates without a restart
+                    appContext().preferences.edit().putBoolean(ytCookieExpiredKey, false).apply()
+                    MainApplication.cookieStatus = MainApplication.CookieStatus.VALID
+                    appContext().preferences.edit().putBoolean(useLoginForBrowseKey, true).apply()
+                    Innertube.useLoginForBrowse = true
+                    ytLoggedIn = true
+                    ytName = ytAccountName()
+                    Timber.tag("Onboarding").i("YouTube account connected from onboarding")
+                    Toaster.i(R.string.youtube_login_successful)
+                }
+            }
+        )
     }
 
     // Last.fm login sheet — the same wrapper as the Accounts tab card
@@ -388,16 +499,12 @@ fun OnboardingAccountsScreen(
                 )
                 Toaster.i(R.string.discord_connected_to_discord_account)
                 // The connection only updates the card — the restart prompt is deferred
-                // to the skip button (the activity writes the flag just before it, so
-                // the restart lands directly in the app)
+                // to the skip button (the restart lands on the profile step — the
+                // onboarding-complete flag stays unwritten until the flow ends)
             }
         )
     }
 
-    // The restart prompt is normally composed inside the settings screen only —
-    // onboarding is the other context that triggers a restart, so it must be
-    // composed here for the post-Discord restart to be visible
-    RestartAppDialog.Render()
 }
 
 /**

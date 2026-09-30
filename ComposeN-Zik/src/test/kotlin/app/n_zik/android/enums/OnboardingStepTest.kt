@@ -6,13 +6,16 @@ import org.junit.jupiter.api.Test
 
 /**
  * Tests the first-launch onboarding step transitions (flow: permissions -> restore ->
- * name -> accounts).
+ * accounts -> profile). The accounts step precedes the profile step (user decision):
+ * the account face sources must be unlockable when the clone's identity is chosen.
  *
  * The restore step can restart the app, so the flow contract under test here is the
  * step sequence itself: the activity persists the current step on every transition and
  * resumes at it after a restart (see `DataStoreUtils.KEY_ONBOARDING_STEP`). A successful
  * restore never completes the flow — the complete flag stays unwritten, so the restart
- * lands back on the persisted step and the user stays inside onboarding.
+ * lands back on the persisted step and the user stays inside onboarding. The same holds
+ * for a Discord-token restart from the accounts step: it advances to the profile step
+ * (persisted) and the restart lands on it.
  */
 class OnboardingStepTest {
 
@@ -22,22 +25,22 @@ class OnboardingStepTest {
     }
 
     @Test
-    fun restoreAdvancesToName() {
-        assertEquals(OnboardingStep.NAME, OnboardingStep.IMPORT.advance())
+    fun restoreAdvancesToAccounts() {
+        assertEquals(OnboardingStep.ACCOUNTS, OnboardingStep.IMPORT.advance())
     }
 
     @Test
-    fun nameAdvancesToAccounts() {
-        assertEquals(OnboardingStep.ACCOUNTS, OnboardingStep.NAME.advance())
+    fun accountsAdvancesToProfile() {
+        assertEquals(OnboardingStep.NAME, OnboardingStep.ACCOUNTS.advance())
     }
 
     @Test
-    fun accountsCompletesTheFlow() {
-        assertNull(OnboardingStep.ACCOUNTS.advance())
+    fun profileCompletesTheFlow() {
+        assertNull(OnboardingStep.NAME.advance())
     }
 
     @Test
-    fun fullFlowSequenceIsPermissionsRestoreNameAccountsApp() {
+    fun fullFlowSequenceIsPermissionsRestoreAccountsProfileApp() {
         var step: OnboardingStep? = OnboardingStep.PERMISSIONS
         val visited = mutableListOf<OnboardingStep?>(step)
         while (step != null) {
@@ -48,8 +51,8 @@ class OnboardingStepTest {
             listOf<OnboardingStep?>(
                 OnboardingStep.PERMISSIONS,
                 OnboardingStep.IMPORT,
-                OnboardingStep.NAME,
                 OnboardingStep.ACCOUNTS,
+                OnboardingStep.NAME,
                 null
             ),
             visited

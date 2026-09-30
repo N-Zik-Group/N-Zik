@@ -86,7 +86,6 @@ import app.n_zik.android.extensions.lastfm.lastfmUsernameKey
 import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
-import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.FACE_INITIALS_COLOR_COUNT
 import app.n_zik.android.utils.FACE_SOURCE_PROFILE
 import app.n_zik.android.utils.FaceAvatar
@@ -270,7 +269,6 @@ fun loadProfileFace(context: Context, profileId: String, defaultName: String): P
     val avatarSource = prefs.getString(faceAvatarSourceKey, FACE_SOURCE_PROFILE) ?: FACE_SOURCE_PROFILE
 
     val profileName = resolveProfileDisplayName(profileId, app.profileDisplayName(profileId), defaultName)
-    val legacyUsername = DataStoreUtils.getString(app, DataStoreUtils.KEY_USERNAME, "")
 
     val secure = runCatching { profileSecurePrefs(app, profileId) }.getOrNull()
     val ytLoggedIn = runCatching {
@@ -295,7 +293,6 @@ fun loadProfileFace(context: Context, profileId: String, defaultName: String): P
             discordName = discordName,
             lastfmLoggedIn = lastfmLoggedIn,
             lastfmName = lastfmName,
-            legacyUsername = legacyUsername,
             defaultName = defaultName,
         ),
         avatar = resolveFaceAvatar(
