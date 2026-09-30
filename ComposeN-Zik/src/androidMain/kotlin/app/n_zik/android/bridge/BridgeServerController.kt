@@ -17,6 +17,7 @@ import app.n_zik.android.bridge.pairing.PairingOffer
 import app.n_zik.android.bridge.pairing.PairingOfferSender
 import app.n_zik.android.bridge.pairing.PairingQrPayload
 import app.n_zik.android.bridge.pairing.SharedPreferencesPairedDeviceStorage
+import app.n_zik.android.bridge.state.BridgeStateHub
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -82,12 +83,18 @@ object BridgeServerController {
     /**
      * Core of one server run, sharing the controller's pairing code with the pairing card.
      * A successful pairing closes pairing mode: the card folds back and no code stays active.
+     * [stateHub] is the player state of this run, created fresh (revision `0`) per start.
      */
-    internal fun createCore(serverName: String, deviceStore: PairedDeviceStore): BridgeServerCore =
+    internal fun createCore(
+        serverName: String,
+        deviceStore: PairedDeviceStore,
+        stateHub: BridgeStateHub,
+    ): BridgeServerCore =
         BridgeServerCore(
             serverName = serverName,
             deviceStore = deviceStore,
             pairingCodes = pairingCodes,
+            stateHub = stateHub,
             onDevicePaired = { deviceName ->
                 pairingCodes.close()
                 _pairedEvents.tryEmit(deviceName)

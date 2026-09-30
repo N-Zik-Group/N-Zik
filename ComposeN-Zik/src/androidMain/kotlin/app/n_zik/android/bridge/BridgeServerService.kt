@@ -12,6 +12,8 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import app.n_zik.android.R
+import app.n_zik.android.bridge.state.BridgePlayerSource
+import app.n_zik.android.bridge.state.BridgeStateHub
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
@@ -21,6 +23,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import java.util.concurrent.atomic.AtomicReference
 import timber.log.Timber
 
 private const val TAG = "BridgeServerService"
@@ -45,6 +48,8 @@ class BridgeServerService : Service() {
     private val scope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
     private var wifiMonitor: WifiNetworkMonitor? = null
     private var server: BridgeServer? = null
+    // Written on the DATA scope, released from the DATA scope or onDestroy (main thread)
+    private val playerSource = AtomicReference<BridgePlayerSource?>(null)
     private var wifiWatch: Job? = null
     private var lifecycleJob: Job? = null
 
@@ -72,6 +77,7 @@ class BridgeServerService : Service() {
 
     override fun onDestroy() {
         wifiMonitor?.stop()
+        releasePlayerSource()
         scope.cancel()
         super.onDestroy()
     }
@@ -90,12 +96,19 @@ class BridgeServerService : Service() {
             return
         }
         val host = ipv4.hostAddress ?: return finish(BridgeState.Failed, getString(R.string.bridge_server_failed))
-        val core = BridgeServerController.createCore(Build.MODEL, BridgeServerController.loadDeviceStore(this))
+        // One hub and one player source per server run: the revision starts again at 0
+        val stateHub = BridgeStateHub()
+        val source = BridgePlayerSource(this, stateHub).also { it.start() }
+        playerSource.getAndSet(source)?.stop()
+        val core = BridgeServerController.createCore(Build.MODEL, BridgeServerController.loadDeviceStore(this), stateHub)
         val bridge = BridgeServer(core)
         val port = runCatching { bridge.start(host) }
             .onFailure { Timber.tag(TAG).e(it, "Bridge server failed to start") }
             .getOrNull()
-            ?: return finish(BridgeState.Failed, getString(R.string.bridge_server_failed))
+        if (port == null) {
+            releasePlayerSource()
+            return finish(BridgeState.Failed, getString(R.string.bridge_server_failed))
+        }
         server = bridge
         BridgeServerController.attachCore(core)
         BridgeServerController.publish(BridgeState.Running(host, port, viaHotspot))
@@ -117,6 +130,7 @@ class BridgeServerService : Service() {
         val bridge = server ?: run {
             // Stop requested while still starting (or already stopped): abort the start
             lifecycleJob?.cancel()
+            releasePlayerSource()
             finish(BridgeState.Stopped, null)
             return
         }
@@ -126,12 +140,18 @@ class BridgeServerService : Service() {
         BridgeServerController.attachCore(null)
         BridgeServerController.publish(BridgeState.Stopping)
         bridge.stop(code)
+        // After the sessions are closed: serverStopped stays the last message they received
+        releasePlayerSource()
         val message = when (code) {
             BridgeStopCode.STOP_USER, BridgeStopCode.AUTO_STOP -> getString(R.string.bridge_server_stopped_user)
             BridgeStopCode.TIMEOUT -> getString(R.string.bridge_server_stopped_timeout)
             null -> getString(R.string.bridge_server_stopped_wifi)
         }
         finish(if (code == null) BridgeState.NotOnWifi else BridgeState.Stopped, message)
+    }
+
+    private fun releasePlayerSource() {
+        playerSource.getAndSet(null)?.stop()
     }
 
     /** Publishes the final [state], posts the "stopped" notification when [message] is set, and ends the service. */

@@ -5,6 +5,10 @@ import app.n_zik.android.bridge.pairing.JsonPairedDeviceStore
 import app.n_zik.android.bridge.pairing.OfferResult
 import app.n_zik.android.bridge.pairing.PairingCodeManager
 import app.n_zik.android.bridge.pairing.PairingQrPayload
+import app.n_zik.android.bridge.state.BridgeStateHub
+import app.n_zik.android.bridge.state.RepeatModeDto
+import app.n_zik.android.bridge.state.playingSample
+import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.client.request.bearerAuth
@@ -26,6 +30,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -35,6 +42,7 @@ import java.net.InetAddress
 import java.net.ServerSocket
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.concurrent.thread
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -67,7 +75,7 @@ class BridgeServerTest {
         assertEquals("1.0", json["contractVersion"]?.jsonPrimitive?.content)
         assertEquals("Pixel test", json["serverName"]?.jsonPrimitive?.content)
         assertEquals(1_790_000_000_000L, json["serverTimeMs"]?.jsonPrimitive?.long)
-        assertEquals(listOf("pairing.qr", "pairing.manual"), json["features"]?.jsonArray?.map { it.jsonPrimitive.content })
+        assertEquals(listOf("pairing.qr", "pairing.manual", "ws.state"), json["features"]?.jsonArray?.map { it.jsonPrimitive.content })
     }
 
     @Test
@@ -112,23 +120,191 @@ class BridgeServerTest {
         assertEquals(0, core.sessionCount)
     }
 
+    private suspend fun DefaultClientWebSocketSession.nextJson(): JsonObject =
+        withTimeout(5_000) { BridgeJson.parseToJsonElement((incoming.receive() as Frame.Text).readText()).jsonObject }
+
+    private fun JsonObject.type(): String? = this["type"]?.jsonPrimitive?.content
+
     @Test
-    fun `stopping sends the serverStopped frame then closes with 1001`() = testApplication {
-        val core = BridgeServerCore(serverName = "Pixel test", authenticator = acceptAll)
+    fun `stopping sends the serverStopped frame last then closes with 1001`() = testApplication {
+        val hub = BridgeStateHub()
+        val core = BridgeServerCore(serverName = "Pixel test", authenticator = acceptAll, stateHub = hub, heartbeatIntervalMs = 20)
         mount(core)
         val wsClient = createClient { install(WebSockets) }
 
         wsClient.webSocket("/api/v1/ws", request = { bearerAuth("valid-token") }) {
-            withTimeout(5_000) { while (core.sessionCount == 0) delay(10) }
+            assertEquals("snapshot", nextJson().type())
+            // State traffic right before the stop must never follow serverStopped
+            hub.submit(playingSample)
             core.shutdownSessions(BridgeStopCode.TIMEOUT)
+            hub.submit(playingSample.copy(isPlaying = false))
 
-            val frame = incoming.receive() as Frame.Text
-            val json = BridgeJson.parseToJsonElement(frame.readText()).jsonObject
-            assertEquals("serverStopped", json["type"]?.jsonPrimitive?.content)
-            assertEquals("TIMEOUT", json["code"]?.jsonPrimitive?.content)
+            val frames = mutableListOf<JsonObject>()
+            while (true) {
+                val frame = withTimeout(5_000) { incoming.receiveCatching() }.getOrNull() ?: break
+                frames += BridgeJson.parseToJsonElement((frame as Frame.Text).readText()).jsonObject
+            }
+            val last = frames.last()
+            assertEquals("serverStopped", last.type())
+            assertEquals("TIMEOUT", last["code"]?.jsonPrimitive?.content)
+            assertEquals(1, frames.count { it.type() == "serverStopped" })
 
             val reason = withTimeout(5_000) { closeReason.await() }
             assertEquals(BridgeContract.CLOSE_SERVER_STOPPED, reason?.code)
+        }
+    }
+
+    // --- State synchronisation (contract §6.3, §7) ---
+
+    @Test
+    fun `first message is the snapshot at the current revision`() = testApplication {
+        val hub = BridgeStateHub()
+        hub.submit(playingSample)
+        val core = BridgeServerCore(serverName = "Pixel test", authenticator = acceptAll, stateHub = hub)
+        mount(core)
+        val wsClient = createClient { install(WebSockets) }
+
+        wsClient.webSocket("/api/v1/ws", request = { bearerAuth("valid-token") }) {
+            val snapshot = nextJson()
+            assertEquals("snapshot", snapshot.type())
+            assertEquals(hub.currentRevision, snapshot["revision"]?.jsonPrimitive?.long)
+            assertEquals(2, snapshot["queue"]?.jsonArray?.size)
+            assertEquals("aaaaaaaaaaa", snapshot["currentTrackId"]?.jsonPrimitive?.content)
+        }
+    }
+
+    @Test
+    fun `empty player gives an empty snapshot`() = testApplication {
+        mount(BridgeServerCore(serverName = "Pixel test", authenticator = acceptAll))
+        val wsClient = createClient { install(WebSockets) }
+
+        wsClient.webSocket("/api/v1/ws", request = { bearerAuth("valid-token") }) {
+            val snapshot = nextJson()
+            assertEquals(0L, snapshot["revision"]?.jsonPrimitive?.long)
+            assertEquals(0, snapshot["queue"]?.jsonArray?.size)
+            assertEquals(-1, snapshot["currentIndex"]?.jsonPrimitive?.int)
+            assertEquals(JsonNull, snapshot["currentTrackId"])
+            assertEquals("false", snapshot["isPlaying"]?.jsonPrimitive?.content)
+        }
+    }
+
+    @Test
+    fun `ping gets an immediate pong with the client time copied`() = testApplication {
+        // Read by the session coroutines: an atomic counter, not a plain var
+        val now = AtomicLong(1_790_000_000_000L)
+        val core = BridgeServerCore(serverName = "Pixel test", authenticator = acceptAll, clock = { now.getAndIncrement() })
+        mount(core)
+        val wsClient = createClient { install(WebSockets) }
+
+        wsClient.webSocket("/api/v1/ws", request = { bearerAuth("valid-token") }) {
+            assertEquals("snapshot", nextJson().type())
+            send(Frame.Text("""{"type":"ping","clientTimeMs":123456}"""))
+
+            val pong = nextJson()
+            assertEquals("pong", pong.type())
+            assertEquals(123_456L, pong["clientTimeMs"]?.jsonPrimitive?.long)
+            val receivedAt = pong["serverReceiveTimeMs"]?.jsonPrimitive?.long ?: 0L
+            val sentAt = pong["serverSendTimeMs"]?.jsonPrimitive?.long ?: 0L
+            assertTrue(receivedAt >= 1_790_000_000_000L)
+            assertTrue(receivedAt <= sentAt)
+        }
+    }
+
+    @Test
+    fun `requestSnapshot is answered with a snapshot at the current revision`() = testApplication {
+        val hub = BridgeStateHub()
+        val core = BridgeServerCore(serverName = "Pixel test", authenticator = acceptAll, stateHub = hub)
+        mount(core)
+        val wsClient = createClient { install(WebSockets) }
+
+        wsClient.webSocket("/api/v1/ws", request = { bearerAuth("valid-token") }) {
+            assertEquals(0L, nextJson()["revision"]?.jsonPrimitive?.long)
+            hub.submit(playingSample)
+            // Skip the deltas: the client acts as if it had lost them
+            repeat(2) { nextJson() }
+
+            send(Frame.Text("""{"type":"requestSnapshot"}"""))
+
+            val snapshot = nextJson()
+            assertEquals("snapshot", snapshot.type())
+            assertEquals(hub.currentRevision, snapshot["revision"]?.jsonPrimitive?.long)
+        }
+    }
+
+    @Test
+    fun `player changes are pushed as consecutive deltas`() = testApplication {
+        val hub = BridgeStateHub()
+        hub.submit(playingSample)
+        val core = BridgeServerCore(serverName = "Pixel test", authenticator = acceptAll, stateHub = hub)
+        mount(core)
+        val wsClient = createClient { install(WebSockets) }
+
+        wsClient.webSocket("/api/v1/ws", request = { bearerAuth("valid-token") }) {
+            val base = nextJson()["revision"]?.jsonPrimitive?.long ?: -1L
+            hub.submit(playingSample.copy(isPlaying = false))
+            hub.submit(playingSample.copy(isPlaying = false, repeatMode = RepeatModeDto.ALL))
+
+            val pause = nextJson()
+            assertEquals("playbackChanged", pause.type())
+            assertEquals(base + 1, pause["revision"]?.jsonPrimitive?.long)
+            val modes = nextJson()
+            assertEquals("modesChanged", modes.type())
+            assertEquals(base + 2, modes["revision"]?.jsonPrimitive?.long)
+            assertEquals("all", modes["repeatMode"]?.jsonPrimitive?.content)
+        }
+    }
+
+    @Test
+    fun `heartbeat carries the current revision without incrementing it`() = testApplication {
+        val hub = BridgeStateHub()
+        hub.submit(playingSample)
+        val core = BridgeServerCore(serverName = "Pixel test", authenticator = acceptAll, stateHub = hub, heartbeatIntervalMs = 50)
+        mount(core)
+        val wsClient = createClient { install(WebSockets) }
+
+        wsClient.webSocket("/api/v1/ws", request = { bearerAuth("valid-token") }) {
+            assertEquals("snapshot", nextJson().type())
+            val heartbeat = nextJson()
+            assertEquals("heartbeat", heartbeat.type())
+            assertEquals(hub.currentRevision, heartbeat["revision"]?.jsonPrimitive?.long)
+            val next = nextJson()
+            assertEquals("heartbeat", next.type())
+            assertEquals(hub.currentRevision, next["revision"]?.jsonPrimitive?.long)
+        }
+    }
+
+    @Test
+    fun `silent client is closed with 4008 PING_TIMEOUT`() = testApplication {
+        val core = BridgeServerCore(serverName = "Pixel test", authenticator = acceptAll, pingTimeoutMs = 300)
+        mount(core)
+        val wsClient = createClient { install(WebSockets) }
+
+        wsClient.webSocket("/api/v1/ws", request = { bearerAuth("valid-token") }) {
+            assertEquals("snapshot", nextJson().type())
+
+            val reason = withTimeout(5_000) { closeReason.await() }
+            assertEquals(BridgeContract.CLOSE_PING_TIMEOUT, reason?.code)
+            assertEquals("PING_TIMEOUT", reason?.message)
+        }
+        withTimeout(5_000) { while (core.sessionCount != 0) delay(10) }
+    }
+
+    @Test
+    fun `unknown or invalid client messages are ignored but keep the session alive`() = testApplication {
+        val core = BridgeServerCore(serverName = "Pixel test", authenticator = acceptAll, pingTimeoutMs = 1_000)
+        mount(core)
+        val wsClient = createClient { install(WebSockets) }
+
+        wsClient.webSocket("/api/v1/ws", request = { bearerAuth("valid-token") }) {
+            assertEquals("snapshot", nextJson().type())
+            repeat(10) { i ->
+                send(Frame.Text(if (i % 2 == 0) """{"type":"somethingElse"}""" else "{not json"))
+                delay(200)
+            }
+
+            // Nothing was answered and the session is still open after 2 s (> 1 s timeout, 200 ms gaps)
+            assertNull(withTimeoutOrNull(100) { incoming.receive() })
+            assertEquals(1, core.sessionCount)
         }
     }
 
@@ -253,9 +429,25 @@ class BridgeServerTest {
     }
 
     @Test
+    fun `core built by the controller serves the hub of the server run`() = testApplication {
+        val store = JsonPairedDeviceStore(InMemoryPairedDeviceStorage())
+        val hub = BridgeStateHub()
+        hub.submit(playingSample)
+        mount(BridgeServerController.createCore("Pixel test", store, hub))
+        val token = store.issue("PC-SALON").deviceToken
+        val wsClient = createClient { install(WebSockets) }
+
+        wsClient.webSocket("/api/v1/ws", request = { bearerAuth(token) }) {
+            val snapshot = nextJson()
+            assertEquals(hub.currentRevision, snapshot["revision"]?.jsonPrimitive?.long)
+            assertEquals("aaaaaaaaaaa", snapshot["currentTrackId"]?.jsonPrimitive?.content)
+        }
+    }
+
+    @Test
     fun `QR offer from the controller carries the code the service core accepts`() = testApplication {
         val store = JsonPairedDeviceStore(InMemoryPairedDeviceStorage())
-        val core = BridgeServerController.createCore("Pixel test", store)
+        val core = BridgeServerController.createCore("Pixel test", store, BridgeStateHub())
         mount(core)
         ServerSocket(0, 1, InetAddress.getLoopbackAddress()).use { listener ->
             val offerBody = CompletableFuture<String>()
@@ -330,6 +522,7 @@ class BridgeServerTest {
         assertNull(fixture.core.authorizationFailure("Bearer ${other.deviceToken}"))
     }
 
+    // runBlocking: JUnit test entry point driving the real suspend start/stop of the CIO engine
     @Test
     fun `server falls back to the next port when the first one is taken`() = runBlocking {
         ServerSocket(0).use { occupied ->

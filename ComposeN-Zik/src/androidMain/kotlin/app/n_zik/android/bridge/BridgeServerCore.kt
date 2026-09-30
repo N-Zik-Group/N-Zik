@@ -7,6 +7,10 @@ import app.n_zik.android.bridge.pairing.PairedDeviceStore
 import app.n_zik.android.bridge.pairing.PairingCodeManager
 import app.n_zik.android.bridge.pairing.PairingRateLimiter
 import app.n_zik.android.bridge.pairing.RateLimitResult
+import app.n_zik.android.bridge.state.BridgeServerMessage
+import app.n_zik.android.bridge.state.BridgeStateHub
+import app.n_zik.android.bridge.state.PongMessage
+import app.n_zik.android.bridge.state.encodeServerMessage
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -33,10 +37,22 @@ import io.ktor.util.AttributeKey
 import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
 import io.ktor.websocket.close
+import io.ktor.websocket.readText
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.longOrNull
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import timber.log.Timber
@@ -46,10 +62,21 @@ private const val BEARER_PREFIX = "Bearer "
 private val DeviceIdKey = AttributeKey<String>("BridgeDeviceId")
 private const val MAX_VALIDATE_BODY_BYTES = 4_096L
 
+/** Outgoing frames buffered per session; beyond that a message is dropped (see [BridgeServerCore]). */
+private const val OUTGOING_BUFFER = 64
+
+/** How long a closing session may take to flush its queued frames before its last frame. */
+private const val FLUSH_TIMEOUT_MS = 500L
+
 /**
  * Engine-independent part of the bridge server: routes, authentication gate, pairing
- * validation, session registry and the stop sequence of contract §11.3. [BridgeServer]
- * mounts [install] on a CIO engine; tests mount it on Ktor's test host.
+ * validation, session registry, state synchronisation over the WebSocket (contract §6.3,
+ * §7) and the stop sequence of contract §11.3. [BridgeServer] mounts [install] on a CIO
+ * engine; tests mount it on Ktor's test host.
+ *
+ * Each session has one outgoing channel written without blocking: a message that does not
+ * fit is dropped, and the client notices the gap at the next `heartbeat` (contract §7.3)
+ * and asks for a snapshot — the server never re-sends.
  */
 internal class BridgeServerCore(
     val serverName: String,
@@ -60,11 +87,15 @@ internal class BridgeServerCore(
     private val clock: () -> Long = System::currentTimeMillis,
     /** Called with the device name once a pairing succeeded. */
     private val onDevicePaired: (String) -> Unit = {},
+    /** Player state of this server run: a new server starts again at revision `0`. */
+    private val stateHub: BridgeStateHub = BridgeStateHub(clock),
+    private val pingTimeoutMs: Long = BridgeContract.PING_TIMEOUT_MS,
+    private val heartbeatIntervalMs: Long = BridgeContract.HEARTBEAT_INTERVAL_MS,
 ) {
     private val stopping = AtomicBoolean(false)
 
-    /** Open WebSocket sessions and the `deviceId` each one authenticated with. */
-    private val sessions = ConcurrentHashMap<DefaultWebSocketServerSession, String>()
+    /** Open WebSocket sessions and their state stream (which knows the device id). */
+    private val sessions = ConcurrentHashMap<DefaultWebSocketServerSession, SessionStream>()
 
     val isStopping: Boolean get() = stopping.get()
     val sessionCount: Int get() = sessions.size
@@ -127,8 +158,10 @@ internal class BridgeServerCore(
      */
     suspend fun shutdownSessions(code: BridgeStopCode?) {
         stopping.set(true)
-        sessions.keys.toList().forEach { session ->
+        sessions.entries.toList().forEach { (session, stream) ->
             runCatching {
+                // serverStopped must stay the last message: silence the state stream first
+                stream.detach()
                 if (code != null) {
                     val frame = ServerStoppedFrame(code = code, message = stopMessage(code))
                     session.send(Frame.Text(BridgeJson.encodeToString(ServerStoppedFrame.serializer(), frame)))
@@ -148,9 +181,10 @@ internal class BridgeServerCore(
      */
     suspend fun revokeDevice(deviceId: String): Boolean {
         val removed = withContext(NzikDispatchers.DATA) { deviceStore.revoke(deviceId) }
-        sessions.filterValues { it == deviceId }.keys.forEach { session ->
+        sessions.filterValues { it.deviceId == deviceId }.forEach { (session, stream) ->
             sessions.remove(session)
             runCatching {
+                stream.detach()
                 session.close(CloseReason(BridgeContract.CLOSE_DEVICE_REVOKED, BridgeContract.CLOSE_REASON_DEVICE_REVOKED))
             }.onFailure { Timber.tag(TAG).w(it, "Failed to close the session of a revoked device") }
         }
@@ -199,7 +233,8 @@ internal class BridgeServerCore(
     }
 
     private suspend fun handleSession(session: DefaultWebSocketServerSession, deviceId: String, authorizationHeader: String?) {
-        sessions[session] = deviceId
+        val stream = SessionStream(session, deviceId)
+        sessions[session] = stream
         // A revocation between the pre-upgrade check and this registration did not see the session
         if (authenticate(authorizationHeader) !is AuthOutcome.Success) {
             sessions.remove(session)
@@ -208,11 +243,93 @@ internal class BridgeServerCore(
         }
         Timber.tag(TAG).i("Bridge session opened (${sessions.size} active)")
         try {
-            // Client messages (ping, requestSnapshot) are handled by story 5; unknown ones are ignored
-            session.incoming.consumeEach { }
+            // Contract §6.1: the snapshot is always the first message
+            stream.open()
+            while (true) {
+                // Contract §6.3: any client message, even an unknown or invalid one, is activity
+                val received = withTimeoutOrNull(pingTimeoutMs) { session.incoming.receiveCatching() }
+                if (received == null) {
+                    Timber.tag(TAG).i("No client message for $pingTimeoutMs ms, closing the session")
+                    stream.detach()
+                    runCatching {
+                        session.close(CloseReason(BridgeContract.CLOSE_PING_TIMEOUT, BridgeContract.CLOSE_REASON_PING_TIMEOUT))
+                    }.onFailure { Timber.tag(TAG).w(it, "Failed to close a silent session") }
+                    break
+                }
+                val frame = received.getOrNull() ?: break
+                stream.handleClientFrame(frame)
+            }
         } finally {
             sessions.remove(session)
+            withContext(NonCancellable) { stream.detach() }
             Timber.tag(TAG).i("Bridge session closed (${sessions.size} active)")
+        }
+    }
+
+    /**
+     * State stream of one WebSocket session: the hub subscription (snapshot then deltas),
+     * the heartbeat and the pongs, all funnelled through one non-blocking outgoing channel
+     * drained by a single writer, so frames leave in the order they were queued.
+     */
+    private inner class SessionStream(private val session: DefaultWebSocketServerSession, val deviceId: String) {
+        private val lock = Any()
+        private val outgoing = Channel<String>(OUTGOING_BUFFER)
+        private var detached = false
+        private var subscription: BridgeStateHub.Subscription? = null
+        private var writer: Job? = null
+        private var heartbeat: Job? = null
+
+        fun open() {
+            synchronized(lock) {
+                if (detached) return
+                writer = session.launch {
+                    for (text in outgoing) session.send(Frame.Text(text))
+                }
+                val sub = stateHub.subscribe(::enqueue)
+                subscription = sub
+                heartbeat = session.launch {
+                    while (isActive) {
+                        delay(heartbeatIntervalMs)
+                        sub.sendHeartbeat()
+                    }
+                }
+            }
+        }
+
+        private fun enqueue(message: BridgeServerMessage) {
+            if (outgoing.trySend(encodeServerMessage(message)).isFailure && !outgoing.isClosedForSend) {
+                Timber.tag(TAG).w("Outgoing buffer full, dropping a ${message::class.simpleName}")
+            }
+        }
+
+        /** Contract §7.8: `ping` → immediate `pong`, `requestSnapshot` → `snapshot`, anything else ignored. */
+        fun handleClientFrame(frame: Frame) {
+            val receivedAt = clock()
+            val text = (frame as? Frame.Text)?.readText() ?: return
+            val message = runCatching { BridgeJson.parseToJsonElement(text) as? JsonObject }.getOrNull() ?: return
+            when ((message["type"] as? JsonPrimitive)?.contentOrNull) {
+                BridgeContract.TYPE_PING -> {
+                    val clientTimeMs = (message["clientTimeMs"] as? JsonPrimitive)?.longOrNull ?: return
+                    enqueue(PongMessage(clientTimeMs, serverReceiveTimeMs = receivedAt, serverSendTimeMs = clock()))
+                }
+                BridgeContract.TYPE_REQUEST_SNAPSHOT -> synchronized(lock) { subscription }?.sendSnapshot()
+            }
+        }
+
+        /**
+         * Stops every state message for good and flushes what is already queued, so that a
+         * closing frame sent afterwards (`serverStopped`, `4003`, `4008`) is the last one.
+         */
+        suspend fun detach() {
+            val pendingWriter = synchronized(lock) {
+                if (detached) return
+                detached = true
+                subscription?.cancel()
+                heartbeat?.cancel()
+                outgoing.close()
+                writer
+            } ?: return
+            if (withTimeoutOrNull(FLUSH_TIMEOUT_MS) { pendingWriter.join() } == null) pendingWriter.cancelAndJoin()
         }
     }
 
