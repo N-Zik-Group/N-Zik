@@ -2248,4 +2248,7 @@
 <string name="bridge_paired_on">Paired on %1$s</string>
 <string name="bridge_revoke">Revoke</string>
 <string name="bridge_revoke_confirm">Revoke \"%1$s\"? It will have to be paired again.</string>
+<string name="bridge_pair_success">Paired with %1$s</string>
+<string name="onboard_perm_camera">Camera</string>
+<string name="onboard_perm_camera_desc">Scan the QR code of N-Zik Desktop Compagnon to pair a PC</string>
 </resources>
