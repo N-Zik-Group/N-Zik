@@ -671,51 +671,31 @@ object RescueFiles {
         }
 
     /**
-     * Resets the base profile to factory state: its database (data.db), its
-     * settings files (the unsuffixed preferences + secure_preferences), its face
-     * files (profiles/default/) and its face entries (displayName_default,
-     * lastUsed_default) are deleted — after [backupProfileData] has moved them to
-     * the base's reset-backup directory, so the reset is reversible
-     * ([restoreBaseProfile], the same pattern as the database and settings resets).
-     * The base is never a names-file line, so the profile list is untouched; the
-     * active slot is untouched too (the base always exists). The app must be
-     * relaunched afterwards, and the caller must ensure the main process is not
-     * running (RescueScreen.guardWrite).
-     */
-    internal fun resetBaseProfile(context: Context): Result<Unit> =
-        runCatching {
-            // The backup first: a failed backup aborts the reset before anything is
-            // wiped, so a base reset is always restorable.
-            backupProfileData(context, DEFAULT_PROFILE_ID)
-            deleteProfileDatabaseFiles(context, DEFAULT_PROFILE_ID)
-            deleteProfileSettingsFiles(context, DEFAULT_PROFILE_ID)
-            context.clearProfileFaceEntries(DEFAULT_PROFILE_ID)
-            runCatching { File(context.filesDir, "profiles/$DEFAULT_PROFILE_ID").deleteRecursively() }
-                .onFailure { Timber.tag(TAG).w(it, "Could not purge the base profile files") }
-            Timber.tag(TAG).i("Base profile reset to factory state")
-        }
-
-    /**
-     * Factory-resets the user profiles in [ids] (the base ID is ignored — it is reset by
-     * [resetBaseProfile]): each profile's database, its settings files (plain + encrypted,
-     * so the account credentials too), its face files and its face entries (display name +
-     * last use) are deleted — after [backupProfileData] has moved them to the profile's
-     * reset-backup directory, so the reset is reversible ([restoreProfiles], the same
-     * pattern as the database and settings resets). Unlike [deleteProfiles], the profiles
-     * are NOT removed from the list: their names-file line survives, so the profiles stay
-     * switchable — they simply start empty, with their display name back to the plain ID.
+     * Factory-resets the profiles in [ids] (the base included — it is never a
+     * names-file line, so it simply starts empty like the others, with its display
+     * name back to the app default): each profile's database, its settings files
+     * (plain + encrypted, so the account credentials too), its face files and its
+     * face entries (display name + last use) are deleted — after [backupProfileData]
+     * has moved them to the profile's reset-backup directory, so the reset is
+     * reversible ([restoreProfiles], the same pattern as the database and settings
+     * resets). Unlike [deleteProfiles], the profiles are NOT removed from the list:
+     * their names-file line survives, so the profiles stay switchable — they simply
+     * start empty.
      *
-     * Because the display names are cleared, the names file (which mirrors the store) is
-     * rewritten afterwards so the reset profiles' lines lose their name portion. The active
-     * slot is untouched: a reset profile still exists, so the next launch stays valid.
-     * The caller must ensure the main process is not running (RescueScreen.guardWrite): a
-     * live main process would commit its in-memory preferences back over the deleted files.
+     * Because the display names are cleared, the names file (which mirrors the store)
+     * is rewritten afterwards so the reset profiles' lines lose their name portion (a
+     * no-op for the base, which is never a line). The active slot is untouched: a reset
+     * profile still exists, so the next launch stays valid. The app must be relaunched
+     * afterwards (the caller shows it — the settings and the database are re-read at
+     * startup). The caller must ensure the main process is not running
+     * (RescueScreen.guardWrite): a live main process would commit its in-memory
+     * preferences back over the deleted files.
      *
      * Returns the number of profiles actually reset.
      */
     internal fun resetProfiles(context: Context, ids: List<String>): Result<Int> =
         runCatching {
-            val toReset = ids.distinct().filterNot { it == DEFAULT_PROFILE_ID }
+            val toReset = ids.distinct()
             if (toReset.isNotEmpty()) {
                 toReset.forEach { id ->
                     // The backup first: a failed backup aborts the reset of this profile
@@ -776,7 +756,7 @@ object RescueFiles {
 
     /**
      * Backs up [profileId]'s data to its reset-backup directory so a later
-     * [restoreProfiles] / [restoreBaseProfile] can bring it back: the database
+     * [restoreProfiles] can bring it back: the database
      * (original name, side files included), the settings XMLs (plain + encrypted — the
      * account credentials), the face files and the face entries (display name + last
      * use, captured BEFORE the wipe clears them).
@@ -873,21 +853,21 @@ object RescueFiles {
     }
 
     /**
-     * Restores the user profiles in [ids] from their reset backups (created by
-     * [resetProfiles]): their database is swapped with the live one, their settings
-     * files replace the live ones, their face files are brought back and their face
-     * entries (display name + last use) are re-applied. IDs without a backup are
-     * skipped; the base ID is ignored (it is restored by [restoreBaseProfile]). The
-     * names file is rewritten afterwards so the restored display names are mirrored
-     * again. The caller must ensure the main process is not running
-     * (RescueScreen.guardWrite).
+     * Restores the profiles in [ids] from their reset backups (created by
+     * [resetProfiles] — the base included): their database is swapped with the live
+     * one, their settings files replace the live ones, their face files are brought
+     * back and their face entries (display name + last use) are re-applied. IDs
+     * without a backup are skipped (the base has none until it is reset at least
+     * once). The names file is rewritten afterwards so the restored display names
+     * are mirrored again (a no-op for the base, which is never a line). The app must
+     * be relaunched afterwards (the caller shows it). The caller must ensure the main
+     * process is not running (RescueScreen.guardWrite).
      *
      * Returns the number of profiles actually restored.
      */
     internal fun restoreProfiles(context: Context, ids: List<String>): Result<Int> =
         runCatching {
             val toRestore = ids.distinct()
-                .filterNot { it == DEFAULT_PROFILE_ID }
                 .filter { hasProfileBackup(context, it) }
             toRestore.forEach { id -> restoreProfileData(context, id) }
             if (toRestore.isNotEmpty()) {
@@ -899,20 +879,6 @@ object RescueFiles {
             }
             Timber.tag(TAG).i("Restored %d profile(s) from their reset backups", toRestore.size)
             toRestore.size
-        }
-
-    /**
-     * Restores the base profile from its reset backup (created by [resetBaseProfile]):
-     * its database is swapped with the live one, its settings files replace the live
-     * ones, its face files are brought back and its face entries (display name + last
-     * use) are re-applied. Errors when no backup exists. The base is never a
-     * names-file line, so the profile list is untouched. The caller must ensure the
-     * main process is not running (RescueScreen.guardWrite).
-     */
-    internal fun restoreBaseProfile(context: Context): Result<Unit> =
-        runCatching {
-            restoreProfileData(context, DEFAULT_PROFILE_ID)
-            Timber.tag(TAG).i("Base profile restored from its reset backup")
         }
 
     /**

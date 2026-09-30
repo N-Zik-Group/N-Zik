@@ -18,11 +18,12 @@ import java.io.File
  * Tests the profile operations of the Rescue Center (spec-profiles-page-face, danger zone):
  * [RescueFiles.deleteProfiles] purges the chosen user profiles (names line, settings files,
  * database + WAL/SHM/journal, face entries, face files) and re-points the active slot to
- * the base when the active profile is deleted; [RescueFiles.resetBaseProfile] factory-freshes
- * the base (its database, settings files, face entries and face files) without touching the
- * profile list or the active slot. The context is a fresh mock — the operations run in the
- * `:rescue` process where no live database exists, so plain file operations are the whole
- * surface.
+ * the base when the active profile is deleted; [RescueFiles.resetProfiles] factory-freshes
+ * the selected profiles — the base included (its database, settings files, face entries
+ * and face files) — without touching the profile list or the active slot; and
+ * [RescueFiles.restoreProfiles] brings the backed-up data back. The context is a fresh
+ * mock — the operations run in the `:rescue` process where no live database exists, so
+ * plain file operations are the whole surface.
  */
 class RescueFilesProfileOpsTest {
 
@@ -233,21 +234,23 @@ class RescueFilesProfileOpsTest {
     }
 
     // ──────────────────────────────────────────────────────────────────────
-    // resetBaseProfile
+    // resetProfiles — the base
     // ──────────────────────────────────────────────────────────────────────
 
     @Test
-    fun resetBaseProfileWipesTheBaseDataAndKeepsTheUserProfiles() {
+    fun resetProfilesResetsTheBaseLikeAnyOtherProfile() {
         File(filesDir, "Profiles_names.txt").writeText("work\tBoulot\n")
         store["activeProfile"] = "default"
         store["displayName_default"] = "Moi"
         store["lastUsed_default"] = 42L
+        store["displayName_work"] = "Boulot"
         seedBaseFiles()
         seedProfileFiles("work", "data_work.db")
 
-        val result = RescueFiles.resetBaseProfile(context)
+        val result = RescueFiles.resetProfiles(context, listOf("default"))
 
         assertTrue(result.isSuccess)
+        assertEquals(1, result.getOrNull())
         // The base files are gone (database + WAL/journal, settings, face)
         assertFalse(File(databasesDir, "data.db").exists())
         assertFalse(File(databasesDir, "data.db-wal").exists())
@@ -268,13 +271,14 @@ class RescueFilesProfileOpsTest {
     }
 
     @Test
-    fun resetBaseProfileSucceedsOnAFreshInstallWithoutAnyBaseFiles() {
+    fun resetProfilesOnTheBaseSucceedsOnAFreshInstallWithoutAnyBaseFiles() {
         File(filesDir, "Profiles_names.txt").writeText("work\n")
         store["activeProfile"] = "work"
 
-        val result = RescueFiles.resetBaseProfile(context)
+        val result = RescueFiles.resetProfiles(context, listOf("default"))
 
         assertTrue(result.isSuccess, "missing base files are not an error")
+        assertEquals(1, result.getOrNull())
         assertEquals("work", store["activeProfile"])
         assertEquals("work", File(filesDir, "Profiles_names.txt").readText().trim())
     }
@@ -327,25 +331,6 @@ class RescueFilesProfileOpsTest {
         assertEquals("work\nhome\tHome", File(filesDir, "Profiles_names.txt").readText().trim())
         // home's display name survives
         assertEquals("Home", store["displayName_home"])
-    }
-
-    @Test
-    fun resetProfilesIgnoresTheBaseId() {
-        File(filesDir, "Profiles_names.txt").writeText("work\n")
-        store["activeProfile"] = "default"
-        store["displayName_default"] = "Moi"
-        seedBaseFiles()
-        seedProfileFiles("work", "data_work.db")
-
-        val result = RescueFiles.resetProfiles(context, listOf("default"))
-
-        assertTrue(result.isSuccess)
-        assertEquals(0, result.getOrNull(), "the base is reset by resetBaseProfile, not here")
-        // nothing was touched
-        assertTrue(File(databasesDir, "data.db").exists())
-        assertTrue(File(sharedPrefsDir, "secure_preferences.xml").exists())
-        assertTrue(File(filesDir, "profiles/default/avatar.jpg").exists())
-        assertEquals("Moi", store["displayName_default"])
     }
 
     @Test
@@ -452,7 +437,7 @@ class RescueFilesProfileOpsTest {
         seedProfileFiles("home", "data_home.db")
         assertTrue(RescueFiles.resetProfiles(context, listOf("work")).isSuccess)
 
-        // home was never reset (no backup) and the base is ignored: only work restores
+        // home and the base were never reset (no backup): only work restores
         val result = RescueFiles.restoreProfiles(context, listOf("work", "home", "default"))
 
         assertTrue(result.isSuccess)
@@ -474,12 +459,12 @@ class RescueFilesProfileOpsTest {
     }
 
     @Test
-    fun resetBaseProfileBacksUpTheBase() {
+    fun resetProfilesBacksUpTheBaseBeforeWiping() {
         store["displayName_default"] = "Moi"
         store["lastUsed_default"] = 42L
         seedBaseFiles()
 
-        val result = RescueFiles.resetBaseProfile(context)
+        val result = RescueFiles.resetProfiles(context, listOf("default"))
 
         assertTrue(result.isSuccess)
         val baseBackup = backupDir("default")
@@ -493,15 +478,16 @@ class RescueFilesProfileOpsTest {
     }
 
     @Test
-    fun restoreBaseProfileBringsTheBaseBack() {
+    fun restoreProfilesBringsTheBaseBack() {
         store["displayName_default"] = "Moi"
         store["lastUsed_default"] = 42L
         seedBaseFiles()
 
-        assertTrue(RescueFiles.resetBaseProfile(context).isSuccess)
-        val result = RescueFiles.restoreBaseProfile(context)
+        assertTrue(RescueFiles.resetProfiles(context, listOf("default")).isSuccess)
+        val result = RescueFiles.restoreProfiles(context, listOf("default"))
 
         assertTrue(result.isSuccess)
+        assertEquals(1, result.getOrNull())
         // The base data is back (database + side files, settings, face)
         assertEquals("db", File(databasesDir, "data.db").readText())
         assertEquals("wal", File(databasesDir, "data.db-wal").readText())
@@ -512,13 +498,5 @@ class RescueFilesProfileOpsTest {
         // The face entries are re-applied
         assertEquals("Moi", store["displayName_default"])
         assertEquals(42L, store["lastUsed_default"])
-    }
-
-    @Test
-    fun restoreBaseProfileErrorsWithoutABackup() {
-        // A fresh install: the base was never reset, so there is nothing to restore.
-        val result = RescueFiles.restoreBaseProfile(context)
-
-        assertTrue(result.isFailure)
     }
 }

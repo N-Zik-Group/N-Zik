@@ -250,6 +250,19 @@ fun RescueScreen() {
     }
 
     /**
+     * The base row of the reset/restore selection dialogs: the base is in
+     * [profileOptions] only while active (the names file never lists it), so when it
+     * is not active it is built from its stored display name (falling back to the
+     * app default name).
+     */
+    fun baseProfileOption(): ProfileOption =
+        profileOptions.firstOrNull { it.id == DEFAULT_PROFILE_ID } ?: ProfileOption(
+            id = DEFAULT_PROFILE_ID,
+            label = resolveProfileDisplayName(DEFAULT_PROFILE_ID, context.profileDisplayName(DEFAULT_PROFILE_ID), defaultName),
+            isActive = false,
+        )
+
+    /**
      * Runs [onProceed] — behind a cross-profile confirmation when the picked file's
      * name carries the tag of another profile (a backup taken under a different
      * profile). Unprofiled names proceed straight away.
@@ -701,7 +714,11 @@ fun RescueScreen() {
     }
 
     if (resetProfilesDialog) {
-        val userProfiles = profileOptions.filter { it.id != DEFAULT_PROFILE_ID }
+        // The base is offered like any other profile (first row, badged): the unified
+        // reset covers it too, and the result message already asks for the relaunch
+        // it requires.
+        val resettableProfiles = listOf(baseProfileOption()) +
+            profileOptions.filter { it.id != DEFAULT_PROFILE_ID }
         Dialog(
             onDismissRequest = { resetProfilesDialog = false },
             properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -738,7 +755,7 @@ fun RescueScreen() {
                                 .fillMaxWidth()
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            userProfiles.forEach { option ->
+                            resettableProfiles.forEach { option ->
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically
@@ -760,6 +777,13 @@ fun RescueScreen() {
                                     if (option.isActive) {
                                         Text(
                                             text = stringResource(R.string.rescue_profile_active),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                    if (option.id == DEFAULT_PROFILE_ID) {
+                                        Text(
+                                            text = stringResource(R.string.rescue_profile_base),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.primary
                                         )
@@ -803,9 +827,13 @@ fun RescueScreen() {
     }
 
     if (restoreProfilesDialog) {
-        // Only the profiles that carry a reset backup can be restored (the base is
-        // never listed — it has its own restore action).
-        val restorableProfiles = profileOptions.filter {
+        // Only the profiles that carry a reset backup can be restored — the base
+        // included (first row, badged) when it was reset at least once.
+        val restorableProfiles = (
+            if (fileState.profileBackups.contains(DEFAULT_PROFILE_ID))
+                listOf(baseProfileOption())
+            else emptyList()
+        ) + profileOptions.filter {
             it.id != DEFAULT_PROFILE_ID && fileState.profileBackups.contains(it.id)
         }
         Dialog(
@@ -866,6 +894,13 @@ fun RescueScreen() {
                                     if (option.isActive) {
                                         Text(
                                             text = stringResource(R.string.rescue_profile_active),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                    if (option.id == DEFAULT_PROFILE_ID) {
+                                        Text(
+                                            text = stringResource(R.string.rescue_profile_base),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.primary
                                         )
@@ -1228,60 +1263,6 @@ fun RescueScreen() {
                     )
                 }
             )
-
-            // Base profile — factory-fresh the base (its database, settings, name and
-            // photo); the base is never deleted, only reset.
-            RescueSectionCard(
-                title = stringResource(R.string.rescue_group_base_profile),
-                iconRes = R.drawable.person,
-                content = {
-                    // Reset base profile
-                    RescueActionCard(
-                        iconRes = R.drawable.person,
-                        title = stringResource(R.string.rescue_reset_base_profile),
-                        description = stringResource(R.string.rescue_reset_base_profile_description),
-                        onClick = {
-                            guardWrite {
-                                confirmAction = ConfirmAction(R.string.rescue_confirm_reset_base_profile) {
-                                    scope.launch {
-                                        val result = withContext(NzikDispatchers.DATA) {
-                                            RescueFiles.resetBaseProfile(context)
-                                        }
-                                        showResult(
-                                            result,
-                                            context.getString(R.string.rescue_base_profile_reset_done)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    )
-
-                    // Restore base profile: brings back the base's last reset backup.
-                    RescueActionCard(
-                        iconRes = R.drawable.restore,
-                        title = stringResource(R.string.rescue_restore_base_profile),
-                        description = stringResource(R.string.rescue_restore_base_profile_description),
-                        enabled = fileState.profileBackups.contains(DEFAULT_PROFILE_ID),
-                        disabledReason = stringResource(R.string.rescue_no_base_profile_backup),
-                        onClick = {
-                            guardWrite {
-                                confirmAction = ConfirmAction(R.string.rescue_confirm_restore_base_profile) {
-                                    scope.launch {
-                                        val result = withContext(NzikDispatchers.DATA) {
-                                            RescueFiles.restoreBaseProfile(context)
-                                        }
-                                        showResult(
-                                            result,
-                                            context.getString(R.string.rescue_base_profile_restored)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    )
-                }
-            )
                 }
             }
 
@@ -1349,17 +1330,15 @@ fun RescueScreen() {
                         }
                     )
 
-                    // Reset profiles: every user profile is offered as a checkbox in the selection
-                    // dialog (the base is never listed — it is reset by its own action). Unlike
-                    // deletion, the profiles are kept in the list: they are simply factory-reset
-                    // (database, settings, name and photo deleted), so the active slot is untouched
-                    // and the app must be relaunched.
+                    // Reset profiles: every profile is offered as a checkbox in the selection
+                    // dialog (the base included — first row, badged). Unlike deletion, the
+                    // profiles are kept in the list: they are simply factory-reset (database,
+                    // settings, name and photo deleted), so the active slot is untouched and
+                    // the app must be relaunched — the result message says so.
                     RescueActionCard(
                         iconRes = R.drawable.person,
                         title = stringResource(R.string.rescue_reset_profiles),
                         description = stringResource(R.string.rescue_reset_profiles_description),
-                        enabled = profileOptions.any { it.id != DEFAULT_PROFILE_ID },
-                        disabledReason = stringResource(R.string.rescue_no_profiles_to_reset),
                         onClick = {
                             guardWrite {
                                 resetSelection = emptySet()
@@ -1369,13 +1348,14 @@ fun RescueScreen() {
                     )
 
                     // Restore profiles: brings back the profiles reset earlier — their
-                    // last reset backup (database, settings, credentials, face and name).
-                    // The selection dialog offers only the profiles that carry a backup.
+                    // last reset backup (database, settings, credentials, face and name),
+                    // the base included. The selection dialog offers only the profiles
+                    // that carry a backup.
                     RescueActionCard(
                         iconRes = R.drawable.restore,
                         title = stringResource(R.string.rescue_restore_profiles),
                         description = stringResource(R.string.rescue_restore_profiles_description),
-                        enabled = fileState.profileBackups.any { it != DEFAULT_PROFILE_ID },
+                        enabled = fileState.profileBackups.isNotEmpty(),
                         disabledReason = stringResource(R.string.rescue_no_profiles_to_restore),
                         onClick = {
                             guardWrite {
