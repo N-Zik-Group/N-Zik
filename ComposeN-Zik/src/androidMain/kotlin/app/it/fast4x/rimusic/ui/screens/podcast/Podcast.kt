@@ -72,6 +72,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import app.n_zik.android.R
+import app.n_zik.android.components.radioButtonIcon
+import app.n_zik.android.components.shuffleButtonIcon
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.resize
 
@@ -477,7 +479,8 @@ fun Podcast(
                             )
 
                             HeaderIconButton(
-                                icon = R.drawable.shuffle,
+                                // Issue #866 (gh-866): app-wide shuffle confirmation flash.
+                                icon = shuffleButtonIcon(),
                                 enabled = podcastPage?.listEpisode?.isNotEmpty() == true,
                                 color = if (podcastPage?.listEpisode?.isNotEmpty() ==true) colorPalette().text else colorPalette().textDisabled,
                                 modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
@@ -486,7 +489,10 @@ fun Podcast(
                                                 val mediaItems = podcastPage?.listEpisode
                                                     ?.map(Innertube.Podcast.EpisodeItem::asMediaItem)
                                                     ?: emptyList()
-                                                binder?.let { Shuffler.play(it, mediaItems) }
+                                                binder?.let {
+                                                    it.triggerShuffleOkFlash()
+                                                    Shuffler.play(it, mediaItems)
+                                                }
                                             }
                                         },
                                         onLongClick = {
@@ -495,7 +501,9 @@ fun Podcast(
                             )
 
                             HeaderIconButton(
-                                icon = R.drawable.radio,
+                                // Issue #866 (gh-866): state icon — radio_stop while the radio
+                                // is active (the state change is the press feedback).
+                                icon = radioButtonIcon(),
                                 enabled = podcastPage?.listEpisode?.isNotEmpty() == true,
                                 color = if (podcastPage?.listEpisode?.isNotEmpty() != true) colorPalette().textDisabled 
                                         else if (binder?.isRadioActive == true) colorPalette().accent 
@@ -737,12 +745,16 @@ fun Podcast(
             if( showFloatingIcon )
             FloatingActionsContainerWithScrollToTop(
                 lazyListState = lazyListState,
-                iconId = R.drawable.shuffle,
+                // Issue #866 (gh-866): app-wide shuffle confirmation flash.
+                iconId = shuffleButtonIcon(),
                 onClick = {
                     podcastPage?.listEpisode?.let { episodes ->
                         if (episodes.isNotEmpty()) {
                             val mediaItems = episodes.map(Innertube.Podcast.EpisodeItem::asMediaItem)
-                            binder?.let { Shuffler.play(it, mediaItems) }
+                            binder?.let {
+                                it.triggerShuffleOkFlash()
+                                Shuffler.play(it, mediaItems)
+                            }
                         }
                     }
                 }

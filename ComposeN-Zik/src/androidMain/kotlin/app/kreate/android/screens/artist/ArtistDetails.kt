@@ -116,6 +116,7 @@ import kotlinx.coroutines.withContext
 import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
 import app.n_zik.android.components.SongItem
+import app.n_zik.android.components.shuffleButtonIconRes
 import app.n_zik.android.components.artist.FollowButton
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
@@ -218,7 +219,9 @@ fun ArtistDetails(
 
     val followButton = localArtist?.let { artist -> FollowButton { artist } }
     val shuffler = object: MenuIcon, Descriptive {
-        override val iconId: Int = R.drawable.shuffle
+        // Issue #866 (gh-866): app-wide shuffle confirmation flash — the icon follows the
+        // binder's flash state (shuffle_ok ~1 s), triggered in onShortClick below.
+        override val iconId: Int get() = shuffleButtonIconRes( binder )
         override val messageId: Int = R.string.info_shuffle
         override val menuIconTitle: String
             @Composable get() = stringResource(R.string.shuffle)
@@ -238,6 +241,8 @@ fun ArtistDetails(
                         val b = binder
                         if (b != null) {
                             shufflerWillClear = true
+                            // Issue #866 (gh-866): app-wide shuffle confirmation flash.
+                            b.triggerShuffleOkFlash()
                             Shuffler.play(b, allSongs, onComplete = { isGlobalLoading = false })
                         }
                     } else {

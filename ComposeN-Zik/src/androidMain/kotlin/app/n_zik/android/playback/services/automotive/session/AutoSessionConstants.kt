@@ -93,10 +93,14 @@ object AutoSessionConstants {
     const val ACTION_TOGGLE_REPEAT_MODE = "TOGGLE_REPEAT_MODE"
     const val ACTION_START_RADIO = "START_RADIO"
     const val ACTION_SEARCH = "ACTION_SEARCH"
+    // Issue #866 (gh-866): discover command button (notification + AA overflow) — toggles the
+    // discover filter (NZikRadio.toggleDiscover, guest-guarded).
+    const val ACTION_TOGGLE_DISCOVER = "TOGGLE_DISCOVER"
     val CommandToggleDownload = SessionCommand(ACTION_TOGGLE_DOWNLOAD, Bundle.EMPTY)
     val CommandToggleLike = SessionCommand(ACTION_TOGGLE_LIKE, Bundle.EMPTY)
     val CommandToggleShuffle = SessionCommand(ACTION_TOGGLE_SHUFFLE, Bundle.EMPTY)
     val CommandToggleRepeatMode = SessionCommand(ACTION_TOGGLE_REPEAT_MODE, Bundle.EMPTY)
     val CommandStartRadio = SessionCommand(ACTION_START_RADIO, Bundle.EMPTY)
     val CommandSearch = SessionCommand(ACTION_SEARCH, Bundle.EMPTY)
+    val CommandToggleDiscover = SessionCommand(ACTION_TOGGLE_DISCOVER, Bundle.EMPTY)
 }

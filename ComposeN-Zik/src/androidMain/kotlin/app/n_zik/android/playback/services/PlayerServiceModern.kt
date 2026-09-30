@@ -22,7 +22,6 @@ import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.IntentFilter
 import android.content.SharedPreferences
@@ -37,9 +36,6 @@ import android.media.audiofx.LoudnessEnhancer
 import android.media.audiofx.PresetReverb
 import android.os.Build
 import androidx.annotation.MainThread
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
@@ -53,7 +49,6 @@ import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.audio.SonicAudioProcessor
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.cache.Cache
@@ -85,10 +80,6 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionToken
 import app.it.fast4x.rimusic.repository.QuickPicksRepository
 import app.n_zik.android.R
-import app.n_zik.android.playback.services.createDataSourceFactory
-import app.n_zik.android.playback.services.streamUrlCache
-import app.n_zik.android.playback.services.markClientFailed
-import app.n_zik.android.playback.services.clearAllFailures
 
 import com.google.common.util.concurrent.MoreExecutors
 import it.fast4x.innertube.Innertube
@@ -132,7 +123,6 @@ import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.audioQualityFormatKey
 import app.it.fast4x.rimusic.utils.imageQualityFormatKey
 import app.it.fast4x.rimusic.utils.audioReverbPresetKey
-import app.it.fast4x.rimusic.utils.autoLoadSongsInQueueKey
 import app.it.fast4x.rimusic.utils.bassboostEnabledKey
 import app.it.fast4x.rimusic.utils.bassboostLevelKey
 import app.it.fast4x.rimusic.utils.broadCastPendingIntent
@@ -147,12 +137,12 @@ import app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey
 import app.it.fast4x.rimusic.utils.exoPlayerMinTimeForEventKey
 import app.it.fast4x.rimusic.utils.fadeInEffect
 import app.it.fast4x.rimusic.utils.fadeOutEffect
-import app.it.fast4x.rimusic.utils.forcePlay
 import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.intent
 import app.it.fast4x.rimusic.utils.isAtLeastAndroid10
 import app.it.fast4x.rimusic.utils.isAtLeastAndroid6
 import app.it.fast4x.rimusic.utils.isAtLeastAndroid7
+import app.it.fast4x.rimusic.utils.discoverKey
 import app.it.fast4x.rimusic.utils.isPauseOnVolumeZeroEnabledKey
 import app.it.fast4x.rimusic.utils.loudnessBaseGainKey
 import app.it.fast4x.rimusic.utils.manageDownload
@@ -169,11 +159,8 @@ import app.it.fast4x.rimusic.utils.playbackPitchKey
 import app.it.fast4x.rimusic.utils.playbackSpeedKey
 import app.it.fast4x.rimusic.utils.playbackVolumeKey
 import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.syncImportHistoryKey
 import app.it.fast4x.rimusic.utils.syncPushHistoryKey
-import app.it.fast4x.rimusic.utils.getSyncDirection
 import app.it.fast4x.rimusic.utils.isNetworkConnected
-import app.it.fast4x.rimusic.enums.SyncDirection
 import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
 import app.it.fast4x.rimusic.utils.putEnum
@@ -187,7 +174,7 @@ import app.it.fast4x.rimusic.utils.skipMediaOnErrorKey
 import app.it.fast4x.rimusic.utils.skipSilenceKey
 import app.it.fast4x.rimusic.utils.timer
 import app.it.fast4x.rimusic.utils.toggleRepeatMode
-import app.it.fast4x.rimusic.utils.toggleShuffleMode
+import app.it.fast4x.rimusic.utils.shuffleQueue
 import app.it.fast4x.rimusic.utils.volumeNormalizationKey
 import app.it.fast4x.rimusic.utils.volumeBoostLevelKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -195,7 +182,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -208,7 +194,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
 import app.kreate.android.me.knighthat.utils.Toaster
 import timber.log.Timber
@@ -219,7 +205,6 @@ import kotlin.io.path.createTempDirectory
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 import android.os.Binder as AndroidBinder
-import androidx.compose.ui.util.fastMap
 import app.it.fast4x.rimusic.utils.isDiscordPresenceEnabledKey
 import app.n_zik.android.extensions.lastfm.isLastFmConfigKey
 import app.n_zik.android.extensions.lastfm.isLastFmSetupKey
@@ -283,6 +268,22 @@ class PlayerServiceModern : MediaLibraryService(),
 
     /** Rebuilds the notification when the guest lock toggles (guest: only play/pause visible). */
     private var guestLockObserverJob: Job? = null
+    /**
+     * Issue #866 (gh-866): re-renders the command buttons (media button preferences) whenever the
+     * radio starts/stops, so its icon + label follow [NZikRadio.isRadioActive] — explicit start/stop
+     * as well as the implicit auto-fill path. Same observation pattern as [guestLockObserverJob].
+     */
+    private var radioStateObserverJob: Job? = null
+    /**
+     * Issue #866 (gh-866): transient "shuffle registered" confirmation — when any shuffle
+     * button is pressed (Android Auto / media notification / in-app UI), every shuffle
+     * button's icon shows `R.drawable.shuffle_ok` for `SHUFFLE_OK_FLASH_MS`, then the base
+     * icon is restored. Compose state so the in-app buttons re-render reactively; the AA /
+     * notification path re-renders explicitly via `updateDefaultNotification()`.
+     */
+    private val shuffleOkFlashActive = mutableStateOf(false)
+    private var shuffleOkFlashJob: Job? = null
+
     lateinit var cache: Cache
     lateinit var downloadCache: Cache
     private lateinit var audioVolumeObserver: AudioVolumeObserver
@@ -513,6 +514,8 @@ class PlayerServiceModern : MediaLibraryService(),
             startRadio = ::startRadio
             callPause = binder::gracefulPause
             actionSearch = ::actionSearch
+            // Issue #866 (gh-866): discover command button (notification + AA overflow).
+            toggleDiscover = ::toggleDiscover
         }
 
         // Build the media library session on the guarded facade (AD-6)
@@ -595,6 +598,16 @@ class PlayerServiceModern : MediaLibraryService(),
 
         nzikRadio = NZikRadio(this, binder, coroutineScope)
 
+        // Issue #866 (gh-866): observe the radio state from the service side (NZikRadio stays
+        // untouched) — re-render the command buttons on every start/stop (explicit or implicit
+        // auto-fill) so the radio button's icon + label follow NZikRadio.isRadioActive.
+        radioStateObserverJob?.cancel()
+        radioStateObserverJob = coroutineScope.launch(NzikDispatchers.UI) {
+            snapshotFlow { nzikRadio.isRadioActive }
+                .distinctUntilChanged()
+                .collect { updateDefaultNotification() }
+        }
+
         val filter = IntentFilter().apply {
             addAction(Action.play.value)
             addAction(Action.pause.value)
@@ -604,6 +617,7 @@ class PlayerServiceModern : MediaLibraryService(),
             addAction(Action.like.value)
             addAction(Action.download.value)
             addAction(Action.playradio.value)
+            addAction(Action.discover.value)
             addAction(Action.shuffle.value)
             addAction(Action.repeat.value)
             addAction(Action.search.value)
@@ -904,6 +918,10 @@ class PlayerServiceModern : MediaLibraryService(),
             notificationManager = null
             guestLockObserverJob?.cancel()
             guestLockObserverJob = null
+            radioStateObserverJob?.cancel()
+            radioStateObserverJob = null
+            shuffleOkFlashJob?.cancel()
+            shuffleOkFlashJob = null
             coroutineScope.cancel()
 
         }.onFailure {
@@ -915,6 +933,12 @@ class PlayerServiceModern : MediaLibraryService(),
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         when (key) {
+            // Issue #866 (gh-866): the discover state lives in this preference — NZikRadio
+            // .toggleDiscover (in-app buttons, AA, notification), the settings toggle, and the
+            // showReminderIfNeeded auto-correction all write it in-process, so one listener keeps
+            // the discover command button icon (discover / discover_stop) in sync on every path.
+            discoverKey -> updateDefaultNotification()
+
             persistentQueueKey -> if (sharedPreferences != null) {
                 isPersistentQueueEnabled =
                     sharedPreferences.getBoolean(key, isPersistentQueueEnabled)
@@ -1815,6 +1839,72 @@ class PlayerServiceModern : MediaLibraryService(),
     )
 
 
+    /**
+     * Issue #866 (gh-866): radio state as seen by the command buttons. `nzikRadio` is lateinit
+     * (created in onStart), so the read is guarded until it exists — mirrors the
+     * `::binder.isInitialized` pattern used in AutoSessionCallback.
+     */
+    private val isRadioActiveForCommandButtons: Boolean
+        get() = if (::nzikRadio.isInitialized) nzikRadio.isRadioActive else false
+
+    /**
+     * Issue #866 (gh-866): discover state as seen by the command buttons — the discover filter
+     * lives in the `discoverKey` preference (NZikRadio.isDiscoverEnabled reads it live), so the
+     * read is guarded until `nzikRadio` (lateinit, created in onStart) exists.
+     */
+    private val isDiscoverEnabledForCommandButtons: Boolean
+        get() = if (::nzikRadio.isInitialized) nzikRadio.isDiscoverEnabled else false
+
+    /**
+     * Issue #866 (gh-866): the radio button is state-dependent — its label follows
+     * [isRadioActiveForCommandButtons] (`start_radio` → `stop_radio`); every other button keeps
+     * its static legacy [NotificationButtons.textId].
+     */
+    private fun commandButtonLabelRes(button: NotificationButtons): Int =
+        if (button == NotificationButtons.Radio) radioCommandButtonLabelRes(isRadioActiveForCommandButtons)
+        else button.textId
+
+    /**
+     * Issue #866 (gh-866): resolve the state icon published by the command buttons. All buttons
+     * resolve through the existing legacy [NotificationButtons.getStateIcon] (like / download /
+     * repeat / shuffle states); the radio button additionally switches to the filled icon while
+     * active, so on/off is distinguishable in the Android Auto overflow and the notification.
+     */
+    private fun commandButtonIconRes(button: NotificationButtons): Int {
+        val stateIcon = button.getStateIcon(
+            button,
+            currentSong.value?.likedAt,
+            currentSongStateDownload.value,
+            player.repeatMode,
+            player.shuffleModeEnabled
+        )
+        return when {
+            button == NotificationButtons.Shuffle -> shuffleOkFlashIconRes(shuffleOkFlashActive.value, stateIcon)
+            button == NotificationButtons.Radio -> radioCommandButtonIconRes(stateIcon, isRadioActiveForCommandButtons)
+            button == NotificationButtons.Discover -> discoverCommandButtonIconRes(stateIcon, isDiscoverEnabledForCommandButtons)
+            else -> stateIcon
+        }
+    }
+
+    /**
+     * Issue #866 (gh-866): shows the transient shuffle confirmation icon (`R.drawable.shuffle_ok`)
+     * on every shuffle button — the Android Auto overflow, the media notification (via
+     * `updateDefaultNotification`) and the in-app UI (reactive Compose state) — for
+     * `SHUFFLE_OK_FLASH_MS`, then restores the base icon.
+     */
+    private fun triggerShuffleOkFlash() {
+        shuffleOkFlashJob?.cancel()
+        shuffleOkFlashActive.value = true
+        shuffleOkFlashJob = coroutineScope.launch(NzikDispatchers.UI) {
+            delay(SHUFFLE_OK_FLASH_MS)
+            shuffleOkFlashActive.value = false
+            shuffleOkFlashJob = null
+            updateDefaultNotification()
+        }
+    }
+
+
+
     private fun buildCustomCommandButtons(): MutableList<CommandButton> {
         // Listen Together guest (AD-6): the notification shows only play/pause — the custom
         // buttons below (like/download/repeat/shuffle/…) are hidden; next/prev are hidden via the
@@ -1828,19 +1918,11 @@ class PlayerServiceModern : MediaLibraryService(),
             buttons
                 .filter { it == notificationPlayerFirstIcon }
                 .map {
-                    val displayName = appContext().resources.getString( it.textId )
+                    val displayName = appContext().resources.getString( commandButtonLabelRes(it) )
 
                     CommandButton.Builder()
                         .setDisplayName( displayName )
-                        .setIconResId(
-                            it.getStateIcon(
-                                it,
-                                currentSong.value?.likedAt,
-                                currentSongStateDownload.value,
-                                player.repeatMode,
-                                player.shuffleModeEnabled
-                            )
-                        )
+                        .setIconResId( commandButtonIconRes(it) )
                         .setSessionCommand(it.sessionCommand)
                         .build()
                 }
@@ -1850,19 +1932,11 @@ class PlayerServiceModern : MediaLibraryService(),
             buttons
                 .filter { it == notificationPlayerSecondIcon }
                 .map {
-                    val displayName = appContext().resources.getString( it.textId )
+                    val displayName = appContext().resources.getString( commandButtonLabelRes(it) )
 
                     CommandButton.Builder()
                         .setDisplayName( displayName )
-                        .setIconResId(
-                            it.getStateIcon(
-                                it,
-                                currentSong.value?.likedAt,
-                                currentSongStateDownload.value,
-                                player.repeatMode,
-                                player.shuffleModeEnabled
-                            )
-                        )
+                        .setIconResId( commandButtonIconRes(it) )
                         .setSessionCommand(it.sessionCommand)
                         .build()
                 }
@@ -1872,19 +1946,11 @@ class PlayerServiceModern : MediaLibraryService(),
             buttons
                 .filterNot { it == notificationPlayerFirstIcon || it == notificationPlayerSecondIcon }
                 .map {
-                    val displayName = appContext().resources.getString( it.textId )
+                    val displayName = appContext().resources.getString( commandButtonLabelRes(it) )
 
                     CommandButton.Builder()
                         .setDisplayName( displayName )
-                        .setIconResId(
-                            it.getStateIcon(
-                                it,
-                                currentSong.value?.likedAt,
-                                currentSongStateDownload.value,
-                                player.repeatMode,
-                                player.shuffleModeEnabled
-                            )
-                        )
+                        .setIconResId( commandButtonIconRes(it) )
                         .setSessionCommand(it.sessionCommand)
                         .build()
                 }
@@ -1897,7 +1963,12 @@ class PlayerServiceModern : MediaLibraryService(),
 
     private fun updateDefaultNotification() {
         coroutineScope.launch(NzikDispatchers.UI) {
-            mediaSession.setCustomLayout( buildCustomCommandButtons() )
+            // Issue #866 (gh-866): published through setMediaButtonPreferences instead of the legacy
+            // customLayout channel (setCustomLayout) — the channel Android Auto (17.x) consumes for its
+            // overflow buttons, and the one the media notification reads via MediaNotificationManager →
+            // MediaController.getMediaButtonPreferences — so the state icons built by
+            // buildCustomCommandButtons now reach both (same channel as Kreate).
+            mediaSession.setMediaButtonPreferences( buildCustomCommandButtons() )
         }
 
     }
@@ -1920,6 +1991,13 @@ class PlayerServiceModern : MediaLibraryService(),
 
     fun startRadio() {
         player.currentMediaItem?.let { binder.startRadio(it, false, null, true) }
+    }
+
+    // Issue #866 (gh-866): discover command button (notification + AA overflow) — routed through
+    // the central NZikRadio.toggleDiscover() so its guest-lock and radio/auto-fill precheck
+    // (error toast) apply exactly as in-app.
+    fun toggleDiscover() {
+        if (::nzikRadio.isInitialized) nzikRadio.toggleDiscover()
     }
 
     private fun showSmartMessage( message: String ) = Toaster.i(message)
@@ -2239,6 +2317,9 @@ class PlayerServiceModern : MediaLibraryService(),
 
                 Action.playradio.value -> startRadio()
 
+                // Issue #866 (gh-866): discover command button (notification + AA overflow).
+                Action.discover.value -> toggleDiscover()
+
                 Action.shuffle.value -> {
                     binder.toggleShuffle()
                 }
@@ -2331,6 +2412,18 @@ class PlayerServiceModern : MediaLibraryService(),
 
         val radioActionTextRes: Int
             get() = nzikRadio.radioActionTextRes
+
+        /**
+         * Issue #866 (gh-866): app-wide shuffle confirmation flash state — read by the in-app
+         * shuffle buttons (and the AA / notification command buttons via `updateDefaultNotification`).
+         */
+        val shuffleOkFlashActive: Boolean
+            get() = this@PlayerServiceModern.shuffleOkFlashActive.value
+
+        /** Issue #866 (gh-866): transient `shuffle_ok` confirmation flash (~1 s) on every shuffle button. */
+        fun triggerShuffleOkFlash() {
+            this@PlayerServiceModern.triggerShuffleOkFlash()
+        }
 
         fun startRadio(
             mediaItem: MediaItem,
@@ -2443,16 +2536,25 @@ class PlayerServiceModern : MediaLibraryService(),
         }
 
         fun toggleShuffle() {
-            // External command (notification / automotive): route through the guarded facade so a
-            // Listen Together guest is no-oped + toasted (spine AD-1/AD-2).
-            guestGuardPlayer.toggleShuffleMode()
+            // External command (notification / automotive).
+            // Issue #866 (gh-866): shuffle the ACTUAL queue — same behavior as the in-app queue
+            // button (Shuffler.queue: current song first, rest shuffled). The previous
+            // toggleShuffleMode() only flipped the player's internal shuffle mode, which has no
+            // visible effect on N-Zik's dynamic (auto-filled) queue. Routed through the guarded
+            // facade so a Listen Together guest is no-oped + toasted (spine AD-1/AD-2).
+            guestGuardPlayer.shuffleQueue()
+            // Transient "shuffle registered" confirmation on the command buttons (Android Auto +
+            // media notification only, see triggerShuffleOkFlash) — skipped for a blocked guest,
+            // whose operation was no-oped by the guarded facade.
+            if (!listenTogetherGuestLock.value) triggerShuffleOkFlash()
             updateDefaultNotification()
         }
 
         fun actionSearch() {
+            // No FLAG_ACTIVITY_CLEAR_TASK — matches the search shortcut intent: with the singleTask MainActivity, CLEAR_TASK relaunches the task and re-delivers the stale intent, dropping action_search.
             startActivity(Intent(applicationContext, MainActivity::class.java)
                 .setAction(MainActivity.action_search)
-                .setFlags(FLAG_ACTIVITY_NEW_TASK + FLAG_ACTIVITY_CLEAR_TASK))
+                .setFlags(FLAG_ACTIVITY_NEW_TASK))
             Timber.tag("PlayerServiceModern").d("actionSearch")
         }
     }
@@ -2477,6 +2579,7 @@ class PlayerServiceModern : MediaLibraryService(),
             val like = Action("app.it.fast4x.rimusic.like")
             val download = Action("app.it.fast4x.rimusic.download")
             val playradio = Action("app.it.fast4x.rimusic.playradio")
+            val discover = Action("app.it.fast4x.rimusic.discover")
             val shuffle = Action("app.it.fast4x.rimusic.shuffle")
             val search = Action("app.it.fast4x.rimusic.search")
             val repeat = Action("app.it.fast4x.rimusic.repeat")
@@ -2797,6 +2900,10 @@ class PlayerServiceModern : MediaLibraryService(),
 
     companion object {
         var isRunning = false
+
+        // Issue #866 (gh-866): transient shuffle confirmation duration on the command buttons.
+        private const val SHUFFLE_OK_FLASH_MS = 1000L
+
         const val NotificationId = 1001
         const val NotificationChannelId = "default_channel_id"
 
@@ -2881,3 +2988,36 @@ fun getErrorCodeName(errorCode: Int): String = when (errorCode) {
     PlaybackException.ERROR_CODE_DRM_LICENSE_EXPIRED -> "DRM_LICENSE_EXPIRED"
     else -> "UNKNOWN_ERROR_$errorCode"
 }
+
+/**
+ * Issue #866 (gh-866): label of the state-dependent radio command button — pure so the
+ * state → string mapping is unit-testable without a running [PlayerServiceModern].
+ */
+internal fun radioCommandButtonLabelRes(isRadioActive: Boolean): Int =
+    if (isRadioActive) R.string.stop_radio else R.string.start_radio
+
+/**
+ * Issue #866 (gh-866): icon of the state-dependent radio command button — pure so the
+ * state → drawable mapping is unit-testable. [inactiveIconRes] is the legacy state icon
+ * resolved by `NotificationButtons.getStateIcon` (always `R.drawable.radio` for the radio).
+ */
+internal fun radioCommandButtonIconRes(inactiveIconRes: Int, isRadioActive: Boolean): Int =
+    if (isRadioActive) R.drawable.radio_stop else inactiveIconRes
+
+/**
+ * Issue #866 (gh-866): icon of the shuffle command button while the transient "shuffle
+ * registered" confirmation flash is active — pure so the flash → drawable mapping is
+ * unit-testable without a running [PlayerServiceModern].
+ */
+internal fun shuffleOkFlashIconRes(flashActive: Boolean, stateIconRes: Int): Int =
+    if (flashActive) R.drawable.shuffle_ok else stateIconRes
+
+/**
+ * Issue #866 (gh-866): icon of the state-dependent discover command button — pure so the
+ * state → drawable mapping is unit-testable. [stateIconRes] is the legacy state icon resolved
+ * by `NotificationButtons.getStateIcon` (always `R.drawable.discover` for discover); while the
+ * discover filter is active the button shows the filled `discover_stop` icon in the Android Auto
+ * overflow and the media notification, same treatment as the radio button.
+ */
+internal fun discoverCommandButtonIconRes(stateIconRes: Int, isDiscoverEnabled: Boolean): Int =
+    if (isDiscoverEnabled) R.drawable.discover_stop else stateIconRes

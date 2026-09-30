@@ -12,6 +12,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.media3.common.Player
+import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.it.fast4x.rimusic.enums.QueueLoopType
 import kotlinx.coroutines.CoroutineScope
@@ -21,6 +22,8 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.DynamicColor
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Icon
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.components.discoverButtonIconRes
+import app.n_zik.android.components.shuffleButtonIconRes
 import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.it.fast4x.rimusic.utils.discoverKey
@@ -43,7 +46,9 @@ fun Discover(
     override val menuIconTitle: String
         @Composable
         get() = stringResource( R.string.discover )
-    override val iconId: Int = R.drawable.discover
+    // Issue #866 (gh-866): state icon — discover_stop while discover mode is ON (the state
+    // change is the feedback), mapped from the same reactive state as the accent color.
+    override val iconId: Int get() = discoverButtonIconRes(isFirstColor)
     override val messageId: Int = R.string.discoverinfo
 
     // Active state of this button
@@ -123,7 +128,10 @@ fun ShuffleQueue(
     coroutineScope: CoroutineScope,
     itemSelector: ItemSelector<Song>? = null
 ): MenuIcon = object: MenuIcon, Descriptive {
-    override val iconId: Int = R.drawable.shuffle
+    // Issue #866 (gh-866): app-wide shuffle confirmation flash — the icon follows the binder's
+    // flash state (shuffle_ok ~1 s), triggered on click below.
+    private val serviceBinder = LocalPlayerServiceBinder.current
+    override val iconId: Int get() = shuffleButtonIconRes( serviceBinder )
     override val messageId: Int = R.string.shuffle
     override val menuIconTitle: String
         @Composable
@@ -136,6 +144,7 @@ fun ShuffleQueue(
 
     override fun onShortClick() {
         if (guestLocked) return
+        serviceBinder?.triggerShuffleOkFlash()
         coroutineScope.launch {
             lazyListState.smoothScrollToTop()
         }.invokeOnCompletion {

@@ -1,0 +1,43 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="#000000">
+
+  <group>
+    <clip-path
+        android:pathData="M0,0H24V24H0Z M17.07,11.2a6.2,6.2 0,1 0,0 12.4a6.2,6.2 0,1 0,0 -12.4Z" />
+
+    <group
+        android:pivotX="12"
+        android:pivotY="12"
+        android:scaleX="0.9"
+        android:scaleY="0.9">
+
+      <path
+          android:fillColor="#000000"
+          android:pathData="M18.414,7.9V9.586a1,1,0,0,0,1.707.707l3.586-3.586a1,1,0,0,0,0-1.414L20.121,1.707a1,1,0,0,0-1.707.707v2.4c-3.35.732-5.6,2.781-7.51,4.911C8.718,7.316,6.08,5.021,1.83,4.586c-.046-.01-.311-.039-.33-.039a1.5,1.5,0,0,0-.131,2.994h0c3.464.3,5.5,2.159,7.549,4.458-2.046,2.3-4.087,4.166-7.552,4.462h0A1.5,1.5,0,0,0,1.5,19.453c.038,0,.073,0,.111-.008h0C6.84,19,9.649,15.753,12.148,12.86,14.059,10.65,15.792,8.7,18.414,7.9Z"/>
+
+      <path
+          android:fillColor="#000000"
+          android:pathData="M20.121,13.707a1,1,0,0,0-1.707.707v1.7a9.186,9.186,0,0,1-3.452-2,1.466,1.466,0,0,0-2.062.157l-.025.028a1.49,1.49,0,0,0,.165,2.111A11.977,11.977,0,0,0,18.414,19.2v2.391a1,1,0,0,0,1.707.707l3.586-3.586a1,1,0,0,0,0-1.414Z"/>
+    </group>
+  </group>
+
+  <group
+      android:pivotX="12"
+      android:pivotY="12"
+      android:scaleX="0.5"
+      android:scaleY="0.5"
+      android:translateX="5.07"
+      android:translateY="5.4">
+    <path
+        android:fillColor="#000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.8"
+        android:strokeLineJoin="round"
+        android:strokeLineCap="round"
+        android:pathData="M9.99,19.898c-.262,0-.524-.069-.757-.205-.208-.122-5.124-3.022-7.946-6.903-.487-.67-.339-1.608,.331-2.096,.672-.486,1.608-.339,2.096,.331,1.852,2.547,4.905,4.706,6.299,5.616,1.77-1.134,6.53-4.662,10.152-11.724,.378-.737,1.284-1.03,2.02-.65,.737,.378,1.028,1.282,.65,2.019-4.985,9.719-11.875,13.301-12.166,13.449-.214,.108-.447,.163-.679,.163Z"/>
+  </group>
+</vector>

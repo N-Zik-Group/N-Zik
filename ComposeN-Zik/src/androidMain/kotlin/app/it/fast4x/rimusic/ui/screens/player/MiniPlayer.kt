@@ -2,6 +2,9 @@
 package app.it.fast4x.rimusic.ui.screens.player
 
 import app.n_zik.android.core.database.*
+import app.n_zik.android.components.discoverButtonIconRes
+import app.n_zik.android.components.radioButtonIcon
+import app.n_zik.android.components.shuffleButtonIcon
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.artistTextWithFallback
 import app.n_zik.android.utils.titleWithFallback
@@ -877,12 +880,14 @@ private fun MiniPlayerSlotButton(
         }
         MiniPlayerButton.Shuffle -> {
             IconButton(
-                icon = R.drawable.shuffle,
+                // Issue #866 (gh-866): app-wide shuffle confirmation flash (shuffle_ok ~1 s).
+                icon = shuffleButtonIcon(),
                 color = controlsColorText,
                 enabled = !listenTogetherGuestLock,
                 onClick = {
                     if (!listenTogetherGuestLock) {
                         binder.player.shuffleQueue()
+                        binder.triggerShuffleOkFlash()
                         if (effectRotationEnabled) onRotatedChange(!isRotated)
                     }
                 },
@@ -973,7 +978,9 @@ private fun MiniPlayerSlotButton(
         MiniPlayerButton.Radio -> {
             val isRadioActive = binder.isRadioActive
             IconButton(
-                icon = R.drawable.radio,
+                // Issue #866 (gh-866): state icon — radio_stop while the radio is active
+                // (the state change is the press feedback).
+                icon = radioButtonIcon(),
                 color = if (isRadioActive) colorPalette().accent else controlsColorText,
                 // Guest lock: Radio is a stateful ON/OFF control owned by the host
                 // (blocked centrally in NZikRadio.startRadio + grayed here).
@@ -1124,7 +1131,9 @@ private fun MiniPlayerSlotButton(
             val isDiscoverClickable = binder.service.nzikRadio.isRadioActive || isAutoFillEnabled
 
             IconButton(
-                icon = R.drawable.discover,
+                // Issue #866 (gh-866): state icon — discover_stop while discover mode is ON
+                // (the state change is the feedback).
+                icon = discoverButtonIconRes(discoverIsEnabled),
                 color = if (discoverIsEnabled && isDiscoverClickable) colorPalette().accent else controlsColorText,
                 // Guest lock: Discover is a stateful ON/OFF control owned by the host
                 // (blocked centrally in NZikRadio.toggleDiscover + grayed here).

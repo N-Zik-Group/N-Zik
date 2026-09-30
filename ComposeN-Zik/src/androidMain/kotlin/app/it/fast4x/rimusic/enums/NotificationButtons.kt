@@ -15,6 +15,7 @@ import app.n_zik.android.playback.services.automotive.session.AutoSessionConstan
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants.CommandStartRadio
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants.CommandToggleDownload
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants.CommandToggleLike
+import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants.CommandToggleDiscover
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants.CommandToggleRepeatMode
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants.CommandToggleShuffle
 import app.n_zik.android.playback.services.PlayerServiceModern
@@ -35,6 +36,11 @@ enum class NotificationButtons(
 
     Radio( R.string.start_radio, R.drawable.radio ),
 
+    // Issue #866 (gh-866): discover command button (notification + AA overflow) — joins the
+    // "other" command buttons; its active-state icon (discover_stop) is applied by
+    // PlayerServiceModern.commandButtonIconRes.
+    Discover( R.string.discover, R.drawable.discover ),
+
     Search( R.string.search, R.drawable.search );
 
     val sessionCommand: SessionCommand
@@ -44,6 +50,7 @@ enum class NotificationButtons(
         Repeat -> CommandToggleRepeatMode
         Shuffle -> CommandToggleShuffle
         Radio -> CommandStartRadio
+        Discover -> CommandToggleDiscover
         Search -> CommandSearch
     }
 
@@ -55,6 +62,7 @@ enum class NotificationButtons(
             Repeat -> PlayerServiceModern.Action.repeat.pendingIntent
             Shuffle -> PlayerServiceModern.Action.shuffle.pendingIntent
             Radio -> PlayerServiceModern.Action.playradio.pendingIntent
+            Discover -> PlayerServiceModern.Action.discover.pendingIntent
             Search -> PlayerServiceModern.Action.search.pendingIntent
         }
 
@@ -80,6 +88,7 @@ enum class NotificationButtons(
             }
             Shuffle -> if (shuffleMode) R.drawable.shuffle_filled else R.drawable.shuffle
             Radio -> R.drawable.radio
+            Discover -> R.drawable.discover
             Search -> R.drawable.search
         }
     }

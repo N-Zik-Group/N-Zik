@@ -119,6 +119,7 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.components.SongItem
+import app.n_zik.android.components.shuffleButtonIconRes
 import app.n_zik.android.components.artist.FollowButton
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
@@ -373,12 +374,15 @@ fun ArtistOverview(
 
     val followButton = localArtist?.let { artist -> FollowButton { artist } }
     val shuffler = object : MenuIcon, Descriptive {
-        override val iconId: Int = R.drawable.shuffle
+        // Issue #866 (gh-866): app-wide shuffle confirmation flash — the icon follows the
+        // binder's flash state (shuffle_ok ~1 s), triggered in onShortClick below.
+        override val iconId: Int get() = shuffleButtonIconRes(binder)
         override val messageId: Int = R.string.info_shuffle
         override val menuIconTitle: String
             @Composable get() = stringResource(R.string.shuffle)
 
         override fun onShortClick() {
+            binder?.triggerShuffleOkFlash()
             scope.launch {
                 isGlobalLoading = true
                 // Shuffler.play() is fire-and-forget (issue #606 M2): when it's actually invoked,

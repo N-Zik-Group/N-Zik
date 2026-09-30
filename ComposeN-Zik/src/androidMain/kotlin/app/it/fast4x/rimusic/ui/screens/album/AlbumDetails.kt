@@ -121,6 +121,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.SongItem
+import app.n_zik.android.components.shuffleButtonIcon
 import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.components.album.AlbumModifier
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
@@ -707,7 +708,9 @@ fun AlbumDetails(
             val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
             if ( showFloatingIcon )
                 MultiFloatingActionsContainer(
-                    iconId = R.drawable.shuffle,
+                    // Issue #866 (gh-866): app-wide shuffle confirmation flash (the click goes
+                    // through SongShuffler, which triggers the flash).
+                    iconId = shuffleButtonIcon(),
                     onClick = shuffle::onShortClick,
                     onClickSettings = onSettingsClick,
                     onClickSearch = onSearchClick

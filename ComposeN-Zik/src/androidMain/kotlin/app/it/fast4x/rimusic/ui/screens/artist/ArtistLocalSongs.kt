@@ -97,6 +97,7 @@ import app.n_zik.android.components.artist.FollowButton
 import app.n_zik.android.playback.utils.Shuffler
 import app.it.fast4x.rimusic.utils.addNext
 import app.n_zik.android.components.SongItem
+import app.n_zik.android.components.shuffleButtonIcon
 import app.it.fast4x.rimusic.models.Artist
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
@@ -250,7 +251,8 @@ fun ArtistLocalSongs(
                     onLongClick = { Toaster.i(context.resources.getString(R.string.info_enqueue_songs)) }
                 )
                 HeaderIconButton(
-                    icon = R.drawable.shuffle,
+                    // Issue #866 (gh-866): app-wide shuffle confirmation flash.
+                    icon = shuffleButtonIcon(),
                     enabled = !songs.isNullOrEmpty(),
                     color = if (!songs.isNullOrEmpty()) colorPalette().text else colorPalette().textDisabled,
                     iconSize = 24.dp,
@@ -258,7 +260,10 @@ fun ArtistLocalSongs(
                     onClick = {
                         songs?.let { songs ->
                             if (songs.isNotEmpty()) {
-                                binder?.let { Shuffler.play(it, songs) }
+                                binder?.let {
+                                    it.triggerShuffleOkFlash()
+                                    Shuffler.play(it, songs)
+                                }
                             }
                         }
                     },
@@ -594,7 +599,8 @@ fun ArtistLocalSongs(
                                         }
                             )
                             HeaderIconButton(
-                                icon = R.drawable.shuffle,
+                                // Issue #866 (gh-866): app-wide shuffle confirmation flash.
+                                icon = shuffleButtonIcon(),
                                 enabled = !songs.isNullOrEmpty(),
                                 color = if (!songs.isNullOrEmpty()) colorPalette().text else colorPalette().textDisabled,
                                 iconSize = 24.dp,
@@ -602,7 +608,10 @@ fun ArtistLocalSongs(
                                         onClick = {
                                             songs?.let { songs ->
                                                 if (songs.isNotEmpty()) {
-                                                    binder?.let { Shuffler.play(it, songs) }
+                                                    binder?.let {
+                                                        it.triggerShuffleOkFlash()
+                                                        Shuffler.play(it, songs)
+                                                    }
                                                 }
                                             }
                                         },
@@ -669,11 +678,15 @@ fun ArtistLocalSongs(
             val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
             if( showFloatingIcon )
                 MultiFloatingActionsContainer(
-                    iconId = R.drawable.shuffle,
+                    // Issue #866 (gh-866): app-wide shuffle confirmation flash.
+                    iconId = shuffleButtonIcon(),
                     onClick = {
                         songs?.let { songs ->
                             if (songs.isNotEmpty()) {
-                                binder?.let { Shuffler.play(it, songs) }
+                                binder?.let {
+                                    it.triggerShuffleOkFlash()
+                                    Shuffler.play(it, songs)
+                                }
                             }
                         }
                     },

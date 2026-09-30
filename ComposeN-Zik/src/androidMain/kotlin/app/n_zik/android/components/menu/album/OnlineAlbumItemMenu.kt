@@ -44,6 +44,7 @@ import app.it.fast4x.rimusic.utils.*
 import app.it.fast4x.rimusic.utils.showDislikedAlbumKey
 import app.it.fast4x.rimusic.utils.excludeDislikedAlbumsKey
 import app.it.fast4x.rimusic.enums.DislikeMode
+import app.n_zik.android.components.shuffleButtonIconRes
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.kreate.android.me.knighthat.utils.Toaster
@@ -554,7 +555,9 @@ class OnlineAlbumItemMenu private constructor(
         }
 
         val shuffle = object : MenuIcon, Descriptive, Clickable {
-            override val iconId: Int = R.drawable.shuffle
+            // Issue #866 (gh-866): app-wide shuffle confirmation flash — the icon follows the
+            // binder's flash state (shuffle_ok ~1 s), triggered in onShortClick below.
+            override val iconId: Int get() = shuffleButtonIconRes(binder)
             override val color: androidx.compose.ui.graphics.Color
                 @Composable
                 get() = colorPalette().text
@@ -566,6 +569,7 @@ class OnlineAlbumItemMenu private constructor(
                     Toaster.w(R.string.opening_url)
                 } else if (currentSongs.isNotEmpty()) {
                     SongShuffler.playShuffled(binder ?: return, currentSongs)
+                    binder?.triggerShuffleOkFlash()
                     menuState.hide()
                 } else {
                     Toaster.e(R.string.no_song_found)

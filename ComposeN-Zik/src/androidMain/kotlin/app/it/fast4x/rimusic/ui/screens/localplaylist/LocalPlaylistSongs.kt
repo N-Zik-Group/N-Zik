@@ -181,6 +181,7 @@ import kotlinx.coroutines.Job
 import app.it.fast4x.rimusic.utils.ExternalUris
 import app.n_zik.android.components.dialog.song.UpdateSongDialog
 import app.n_zik.android.components.SongItem
+import app.n_zik.android.components.shuffleButtonIcon
 import app.n_zik.android.components.playlist.PinPlaylist
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
@@ -1586,13 +1587,17 @@ fun LocalPlaylistSongs(
         if ( showFloatingIcon )
             FloatingActionsContainerWithScrollToTop(
                 lazyListState = lazyListState,
-                iconId = R.drawable.shuffle,
+                // Issue #866 (gh-866): app-wide shuffle confirmation flash.
+                iconId = shuffleButtonIcon(),
                 visible = !reorderingState.isAnyItemDragging,
                 onClick = {
                     getSongs().let { songs ->
                         val playableSongs = songs.filter { !it.isUnmatched }
                         if (playableSongs.isNotEmpty()) {
-                            binder?.let { Shuffler.play(it, playableSongs) }
+                            binder?.let {
+                                it.triggerShuffleOkFlash()
+                                Shuffler.play(it, playableSongs)
+                            }
                         } else {
                             Toaster.w(R.string.playback_blocked_match_first)
                         }

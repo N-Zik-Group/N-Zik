@@ -6,6 +6,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
+import app.n_zik.android.components.radioButtonIconRes
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.listentogether.guestLockedAlpha
@@ -34,7 +35,9 @@ class Radio private constructor(
             )
     }
 
-    override val iconId: Int = R.drawable.radio
+    // Issue #866 (gh-866): state icon — radio_stop while the radio is active (the state
+    // change is the press feedback).
+    override val iconId: Int get() = radioButtonIconRes(binder)
     // Guest lock (spec-listen-together-guest-lock-hardening): the radio is a host-owned stateful
     // control — a locked guest sees this menu item grayed (the tap is answered by the shared
     // blocked toast via the central startRadio() guard), consistent with the other locked sites

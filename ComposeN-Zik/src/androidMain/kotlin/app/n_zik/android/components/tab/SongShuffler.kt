@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
+import app.n_zik.android.components.shuffleButtonIconRes
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.playback.services.PlayerServiceModern
@@ -55,7 +56,9 @@ class SongShuffler private constructor(
         }
     }
 
-    override val iconId: Int = R.drawable.shuffle
+    // Issue #866 (gh-866): app-wide shuffle confirmation flash — the icon follows the binder's
+    // flash state (shuffle_ok ~1 s), triggered in onShortClick below.
+    override val iconId: Int get() = shuffleButtonIconRes( binder )
     override val messageId: Int = R.string.info_shuffle
     override val menuIconTitle: String
         @Composable
@@ -66,6 +69,7 @@ class SongShuffler private constructor(
             this.binder ?: return,
             this.songs()
         )
+        this.binder?.triggerShuffleOkFlash()
         menuState?.hide()
     }
 }

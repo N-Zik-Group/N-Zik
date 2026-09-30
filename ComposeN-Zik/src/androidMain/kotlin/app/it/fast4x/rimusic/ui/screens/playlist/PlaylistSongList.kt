@@ -166,6 +166,8 @@ import app.it.fast4x.rimusic.utils.ExternalUris
 import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
 import app.n_zik.android.components.SongItem
+import app.n_zik.android.components.radioButtonIcon
+import app.n_zik.android.components.shuffleButtonIcon
 import app.n_zik.android.LocalDownloadStatesMap
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.core.database.LikeStateManager
@@ -669,7 +671,8 @@ fun PlaylistSongList(
                             )
 
                             HeaderIconButton(
-                                icon = R.drawable.shuffle,
+                                // Issue #866 (gh-866): app-wide shuffle confirmation flash.
+                                icon = shuffleButtonIcon(),
                                 enabled = hasNonDislikedSongs,
                                 color = if (hasNonDislikedSongs) colorPalette().text else colorPalette().textDisabled,
                                 modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
@@ -679,7 +682,10 @@ fun PlaylistSongList(
                                                     ?.filter { it.asMediaItem.mediaId !in dislikedSongs }
                                                     ?.map(Innertube.SongItem::asMediaItem)
                                                     ?: emptyList()
-                                                binder?.let { Shuffler.play(it, mediaItems) }
+                                                binder?.let {
+                                                    it.triggerShuffleOkFlash()
+                                                    Shuffler.play(it, mediaItems)
+                                                }
                                             } else
                                                 Toaster.e( R.string.disliked_this_collection )
                                         },
@@ -689,7 +695,9 @@ fun PlaylistSongList(
                             )
 
                             HeaderIconButton(
-                                icon = R.drawable.radio,
+                                // Issue #866 (gh-866): state icon — radio_stop while the radio
+                                // is active (the state change is the press feedback).
+                                icon = radioButtonIcon(),
                                 enabled = hasNonDislikedSongs && !ltGuestLocked,
                                 color = if (ltGuestLocked || !hasNonDislikedSongs) colorPalette().textDisabled
                                         else if (binder?.isRadioActive == true) colorPalette().accent
@@ -1128,14 +1136,18 @@ fun PlaylistSongList(
             if( showFloatingIcon )
             FloatingActionsContainerWithScrollToTop(
                 lazyListState = lazyListState,
-                iconId = R.drawable.shuffle,
+                // Issue #866 (gh-866): app-wide shuffle confirmation flash.
+                iconId = shuffleButtonIcon(),
                 onClick = {
                     if (hasNonDislikedSongs) {
                         val mediaItems = filteredPageSongs
                             ?.filter { it.asMediaItem.mediaId !in dislikedSongs }
                             ?.map(Innertube.SongItem::asMediaItem)
                             ?: emptyList()
-                        binder?.let { Shuffler.play(it, mediaItems) }
+                        binder?.let {
+                            it.triggerShuffleOkFlash()
+                            Shuffler.play(it, mediaItems)
+                        }
                     } else
                         Toaster.e( R.string.disliked_this_collection )
                 }

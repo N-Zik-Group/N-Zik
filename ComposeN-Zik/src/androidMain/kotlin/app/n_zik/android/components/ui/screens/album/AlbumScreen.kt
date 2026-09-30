@@ -142,6 +142,7 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.components.SongItem
+import app.n_zik.android.components.shuffleButtonIcon
 import app.n_zik.android.components.album.AlbumModifier
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
@@ -880,7 +881,9 @@ fun AlbumDetails(
                 val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
                 if (showFloatingIcon)
                     MultiFloatingActionsContainer(
-                        iconId = R.drawable.shuffle,
+                        // Issue #866 (gh-866): app-wide shuffle confirmation flash (the click
+                        // goes through SongShuffler, which triggers the flash).
+                        iconId = shuffleButtonIcon(),
                         onClick = shuffle::onShortClick,
                         onClickSettings = onSettingsClick,
                         onClickSearch = onSearchClick

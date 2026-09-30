@@ -115,6 +115,8 @@ class AutoSessionCallback(
     var startRadio: () -> Unit = {}
     var callPause: () -> Unit = {}
     var actionSearch: () -> Unit = {}
+    // Issue #866 (gh-866): discover command button (notification + AA overflow).
+    var toggleDiscover: () -> Unit = {}
     
     private val autoBrowseTree = AutoBrowseTree(context, database, downloadHelper)
 
@@ -144,6 +146,7 @@ class AutoSessionCallback(
                 .add(AutoSessionConstants.CommandToggleRepeatMode)
                 .add(AutoSessionConstants.CommandStartRadio)
                 .add(AutoSessionConstants.CommandSearch)
+                .add(AutoSessionConstants.CommandToggleDiscover)
                 .build(),
             connectionResult.availablePlayerCommands.buildUpon()
                 .add(Player.COMMAND_PLAY_PAUSE)
@@ -197,6 +200,9 @@ class AutoSessionCallback(
             AutoSessionConstants.ACTION_TOGGLE_REPEAT_MODE -> toggleRepeat()
             AutoSessionConstants.ACTION_START_RADIO -> startRadio()
             AutoSessionConstants.ACTION_SEARCH -> actionSearch()
+            // Issue #866 (gh-866): discover command button — routed through the service so the
+            // central NZikRadio.toggleDiscover() guest guard + radio/auto-fill precheck apply.
+            AutoSessionConstants.ACTION_TOGGLE_DISCOVER -> toggleDiscover()
         }
         return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
     }

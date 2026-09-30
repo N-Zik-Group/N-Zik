@@ -87,6 +87,9 @@ import app.it.fast4x.rimusic.enums.QueueLoopType
 import app.it.fast4x.rimusic.enums.SongsNumber
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
+import app.n_zik.android.components.discoverButtonIconRes
+import app.n_zik.android.components.radioButtonIcon
+import app.n_zik.android.components.shuffleButtonIcon
 import app.n_zik.android.components.menu.player.AddToPlaylistPlayerMenu
 import app.it.fast4x.rimusic.ui.components.themed.DownloadStateIconButton
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
@@ -520,7 +523,9 @@ fun BoxScope.ActionBar(
                                 var discoverIsEnabled by discoverState
                                 val isDiscoverClickable = binder.service.nzikRadio.isRadioActive || isAutoFillEnabled
                                 IconButton(
-                                    icon = R.drawable.discover,
+                                    // Issue #866 (gh-866): state icon — discover_stop while
+                                    // discover mode is ON (the state change is the feedback).
+                                    icon = discoverButtonIconRes(discoverIsEnabled),
                                     color = if (discoverIsEnabled && isDiscoverClickable) colorPalette().accent else Color.Gray,
                                     // Guest lock: Discover is a stateful ON/OFF control owned by the
                                     // host — blocked in NZikRadio.toggleDiscover + grayed here
@@ -621,12 +626,13 @@ fun BoxScope.ActionBar(
                             val showButtonPlayerShuffle by rememberPreference( showButtonPlayerShuffleKey, true )
                             if (showButtonPlayerShuffle)
                                 IconButton(
-                                    icon = R.drawable.shuffle,
+                                    // Issue #866 (gh-866): app-wide shuffle confirmation flash (shuffle_ok ~1 s).
+                                    icon = shuffleButtonIcon(),
                                     color = colorPalette().accent,
                                     // Guest lock: shuffle is host-only — blocked by the central
                                     // guard (queue ops) + grayed here
                                     enabled = !ltGuestLocked,
-                                    onClick = { if ( !ltGuestLocked ) binder.player.shuffleQueue() },
+                                    onClick = { if ( !ltGuestLocked ) { binder.player.shuffleQueue(); binder.triggerShuffleOkFlash() } },
                                     modifier = Modifier
                                         .size( 24.dp )
                                         .alpha(guestLockAlpha)
@@ -751,7 +757,9 @@ fun BoxScope.ActionBar(
                             val showButtonPlayerStartRadio by rememberPreference( showButtonPlayerStartRadioKey, false )
                             if (showButtonPlayerStartRadio)
                                 IconButton(
-                                    icon = R.drawable.radio,
+                                    // Issue #866 (gh-866): state icon — radio_stop while the radio is
+                                    // active (the state change is the press feedback).
+                                    icon = radioButtonIcon(),
                                     color = if (binder.isRadioActive) colorPalette().accent else Color.Gray,
                                     // Guest lock: Radio is a stateful ON/OFF control owned by the
                                     // host — blocked in NZikRadio.startRadio + grayed here

@@ -45,6 +45,8 @@ import app.it.fast4x.rimusic.utils.showDislikedArtistKey
 import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
 import app.it.fast4x.rimusic.enums.DislikeMode
 import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.components.radioButtonIconRes
+import app.n_zik.android.components.shuffleButtonIconRes
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.R
@@ -381,7 +383,8 @@ class OnlineArtistItemMenu private constructor(
         }
 
         val playRadio = object : MenuIcon, Descriptive, Clickable {
-            override val iconId: Int = R.drawable.radio
+            // Issue #866 (gh-866): state icon — radio_stop while the radio is active.
+            override val iconId: Int get() = radioButtonIconRes(binder)
             override val color: androidx.compose.ui.graphics.Color
                 @Composable
                 get() = if (binder?.isRadioActive == true) colorPalette().accent else colorPalette().text
@@ -414,7 +417,9 @@ class OnlineArtistItemMenu private constructor(
         }
 
         val shuffle = object : MenuIcon, Descriptive, Clickable {
-            override val iconId: Int = R.drawable.shuffle
+            // Issue #866 (gh-866): app-wide shuffle confirmation flash — the icon follows the
+            // binder's flash state (shuffle_ok ~1 s), triggered in onShortClick below.
+            override val iconId: Int get() = shuffleButtonIconRes(binder)
             override val color: androidx.compose.ui.graphics.Color
                 @Composable
                 get() = colorPalette().text
@@ -436,6 +441,7 @@ class OnlineArtistItemMenu private constructor(
                     }
                     if (allMediaItems.isNotEmpty()) {
                         Shuffler.play(binder ?: return, allMediaItems)
+                        binder?.triggerShuffleOkFlash()
                         menuState.hide()
                     } else {
                         Toaster.e(R.string.no_song_found)
