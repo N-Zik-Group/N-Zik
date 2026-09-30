@@ -11,7 +11,7 @@ import kotlinx.serialization.json.Json
  * Every literal that travels on the wire lives here.
  */
 internal object BridgeContract {
-    const val CONTRACT_VERSION = "1.0"
+    const val CONTRACT_VERSION = "1.1"
     const val API_PREFIX = "/api/v1"
 
     /** Port 42420, then 42421–42429, then an OS-assigned ephemeral port (contract §11.1). */
@@ -48,7 +48,35 @@ internal object BridgeContract {
     const val TYPE_ERROR = "error"
 
     /** `features` of `GET /api/v1/meta` implemented so far (contract §5). */
-    val FEATURES: List<String> = listOf("pairing.qr", "pairing.manual", "playback", "queue", "ws.state")
+    val FEATURES: List<String> = listOf(
+        "pairing.qr",
+        "pairing.manual",
+        "playback",
+        "queue",
+        "library.songs",
+        "library.playlists",
+        "library.albums",
+        "library.artists",
+        "artwork",
+        "ws.state",
+    )
+
+    /** Pagination bounds (contract §1, §14). */
+    const val PAGE_OFFSET_DEFAULT = 0
+    const val PAGE_LIMIT_DEFAULT = 50
+    const val PAGE_LIMIT_MIN = 1
+    const val PAGE_LIMIT_MAX = 200
+
+    /** Longest `query` of `/library/songs` (contract §10). */
+    const val LIBRARY_QUERY_MAX_LENGTH = 100
+
+    /** Bounds of the artwork `size` parameter, in px (contract §10, §14). */
+    const val ARTWORK_SIZE_MIN = 64
+    const val ARTWORK_SIZE_MAX = 1200
+    const val ARTWORK_SIZE_DEFAULT = 544
+
+    /** `Cache-Control` of every artwork response (contract §10). */
+    const val ARTWORK_CACHE_CONTROL = "private, max-age=86400"
 
     /** Largest command body read (contract §9 commands); anything bigger is `400 BAD_REQUEST`. */
     const val MAX_COMMAND_BODY_BYTES = 64 * 1_024
@@ -82,6 +110,7 @@ internal object BridgeErrorCode {
     const val PLAYER_REJECTED = "PLAYER_REJECTED"
     const val PLAYER_UNAVAILABLE = "PLAYER_UNAVAILABLE"
     const val SERVER_STOPPING = "SERVER_STOPPING"
+    const val AUDIO_UPSTREAM_FAILED = "AUDIO_UPSTREAM_FAILED"
     const val INTERNAL_ERROR = "INTERNAL_ERROR"
 }
 
@@ -197,6 +226,46 @@ internal data class QueueMoveCommandBody(
     val toIndex: Int,
     val trackId: String,
     val commandId: String? = null,
+)
+
+// --- Library consultation (contract §1, §10) ---
+
+/** Paginated answer (contract §1): `total` counts every item after the filters. */
+@Serializable
+internal data class Page<T>(
+    val items: List<T>,
+    val total: Int,
+    val offset: Int,
+    val limit: Int,
+)
+
+/** `Playlist` (contract §1.1). */
+@Serializable
+internal data class PlaylistDto(
+    val id: String,
+    val name: String,
+    val trackCount: Int,
+    val artworkTrackId: String?,
+)
+
+/** `Album` (contract §1.1, since 1.1). */
+@Serializable
+internal data class AlbumDto(
+    val id: String,
+    val title: String,
+    val artists: String?,
+    val year: String?,
+    val trackCount: Int,
+    val hasArtwork: Boolean,
+)
+
+/** `Artist` (contract §1.1, since 1.1). */
+@Serializable
+internal data class ArtistDto(
+    val id: String,
+    val name: String,
+    val trackCount: Int,
+    val hasArtwork: Boolean,
 )
 
 /** Shared JSON setup: tolerant reader (unknown keys ignored), defaults always written. */

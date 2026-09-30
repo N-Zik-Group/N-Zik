@@ -399,5 +399,37 @@ interface SongPlaylistMapTable {
 
     @Query("SELECT DISTINCT songId FROM SongPlaylistMap")
     fun allMappedSongIds(): Flow<List<String>>
+
+    /**
+     * Synchronous mirror of [sortSongsByPosition] for the PC bridge: only mapped songs
+     * that exist, in playlist order.
+     */
+    @Query("""
+        SELECT S.*
+        FROM SongPlaylistMap spm
+        JOIN Song S ON S.id = spm.songId
+        WHERE spm.playlistId = :playlistId
+        ORDER BY spm.position
+    """)
+    fun songsByPositionDirect( playlistId: Long ): List<Song>
+
+    /**
+     * Read-only, for the PC bridge (contract §1.1 `Playlist.artworkTrackId`).
+     *
+     * @return every (playlist, song) pair whose song has a thumbnail, in playlist order
+     */
+    @Query("""
+        SELECT spm.playlistId AS playlistId, spm.songId AS songId
+        FROM SongPlaylistMap spm
+        JOIN Song S ON S.id = spm.songId
+        WHERE S.thumbnailUrl IS NOT NULL
+        ORDER BY spm.playlistId, spm.position
+    """)
+    fun songsWithThumbnailDirect(): List<PlaylistSongRef>
 }
 
+/** One song of one playlist; see [SongPlaylistMapTable.songsWithThumbnailDirect]. */
+data class PlaylistSongRef(
+    val playlistId: Long,
+    val songId: String
+)

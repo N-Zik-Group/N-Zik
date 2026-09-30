@@ -210,5 +210,18 @@ interface SongArtistMapTable {
      */
     @Query("DELETE FROM SongArtistMap WHERE songId = :songId AND artistId = :artistId")
     fun deletePairDirect(songId: String, artistId: String): Int
+
+    /**
+     * Read-only, for the PC bridge (contract §1.1 `Artist.trackCount`).
+     *
+     * @return the number of songs mapped to each artist that has at least one
+     */
+    @Query("""
+        SELECT sam.artistId AS id, COUNT(DISTINCT sam.songId) AS count
+        FROM SongArtistMap sam
+        JOIN Song S ON S.id = sam.songId
+        GROUP BY sam.artistId
+    """)
+    fun songCountsDirect(): List<SongCount>
 }
 

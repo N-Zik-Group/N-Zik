@@ -15,6 +15,7 @@ import app.n_zik.android.R
 import app.n_zik.android.bridge.command.LateFailureTracker
 import app.n_zik.android.bridge.command.PlayerCommandExecutor
 import app.n_zik.android.bridge.command.PreferencePlayerSettings
+import app.n_zik.android.bridge.library.DatabaseLibraryProvider
 import app.n_zik.android.bridge.state.BridgePlayerSource
 import app.n_zik.android.bridge.state.BridgeStateHub
 import app.n_zik.android.listentogether.listenTogetherGuestLock
@@ -112,7 +113,13 @@ class BridgeServerService : Service() {
             settings = PreferencePlayerSettings(this),
             guestLocked = { listenTogetherGuestLock.value },
         )
-        val core = BridgeServerController.createCore(Build.MODEL, BridgeServerController.loadDeviceStore(this), stateHub, executor)
+        val core = BridgeServerController.createCore(
+            serverName = Build.MODEL,
+            deviceStore = BridgeServerController.loadDeviceStore(this),
+            stateHub = stateHub,
+            commandExecutor = executor,
+            libraryProvider = DatabaseLibraryProvider(this),
+        )
         val bridge = BridgeServer(core)
         val port = runCatching { bridge.start(host) }
             .onFailure { Timber.tag(TAG).e(it, "Bridge server failed to start") }

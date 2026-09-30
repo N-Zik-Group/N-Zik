@@ -4,6 +4,9 @@ import app.n_zik.android.bridge.command.BridgeCommand
 import app.n_zik.android.bridge.command.BridgeCommandExecutor
 import app.n_zik.android.bridge.command.CommandResult
 import app.n_zik.android.bridge.command.PlayerAction
+import app.n_zik.android.bridge.library.LibraryProvider
+import app.n_zik.android.bridge.library.LibrarySong
+import app.n_zik.android.bridge.library.libSong
 import app.n_zik.android.bridge.pairing.InMemoryPairedDeviceStorage
 import app.n_zik.android.bridge.pairing.JsonPairedDeviceStore
 import app.n_zik.android.bridge.pairing.OfferResult
@@ -79,11 +82,22 @@ class BridgeServerTest {
 
         assertEquals(HttpStatusCode.OK, response.status)
         val json = BridgeJson.parseToJsonElement(response.bodyAsText()).jsonObject
-        assertEquals("1.0", json["contractVersion"]?.jsonPrimitive?.content)
+        assertEquals("1.1", json["contractVersion"]?.jsonPrimitive?.content)
         assertEquals("Pixel test", json["serverName"]?.jsonPrimitive?.content)
         assertEquals(1_790_000_000_000L, json["serverTimeMs"]?.jsonPrimitive?.long)
         assertEquals(
-            listOf("pairing.qr", "pairing.manual", "playback", "queue", "ws.state"),
+            listOf(
+                "pairing.qr",
+                "pairing.manual",
+                "playback",
+                "queue",
+                "library.songs",
+                "library.playlists",
+                "library.albums",
+                "library.artists",
+                "artwork",
+                "ws.state",
+            ),
             json["features"]?.jsonArray?.map { it.jsonPrimitive.content },
         )
     }
@@ -452,6 +466,23 @@ class BridgeServerTest {
             assertEquals(hub.currentRevision, snapshot["revision"]?.jsonPrimitive?.long)
             assertEquals("aaaaaaaaaaa", snapshot["currentTrackId"]?.jsonPrimitive?.content)
         }
+    }
+
+    @Test
+    fun `core built by the controller serves the library provider of the server run`() = testApplication {
+        val store = JsonPairedDeviceStore(InMemoryPairedDeviceStorage())
+        val library = object : LibraryProvider by LibraryProvider.EMPTY {
+            override suspend fun songs(): List<LibrarySong> = listOf(libSong("abc", "From the provider"))
+        }
+        mount(BridgeServerController.createCore("Pixel test", store, BridgeStateHub(), libraryProvider = library))
+        val token = store.issue("PC-SALON").deviceToken
+
+        val response = client.get("/api/v1/library/songs") { bearerAuth(token) }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        val page = BridgeJson.parseToJsonElement(response.bodyAsText()).jsonObject
+        assertEquals(1, page["total"]?.jsonPrimitive?.int)
+        assertEquals("abc", page["items"]?.jsonArray?.firstOrNull()?.jsonObject?.get("id")?.jsonPrimitive?.content)
     }
 
     @Test

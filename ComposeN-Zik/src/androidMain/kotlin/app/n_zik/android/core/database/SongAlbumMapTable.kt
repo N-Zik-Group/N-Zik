@@ -193,5 +193,23 @@ interface SongAlbumMapTable {
      */
     @Query("DELETE FROM SongAlbumMap WHERE songId = :songId")
     fun deleteBySongId(songId: String): Int
+
+    /**
+     * Read-only, for the PC bridge (contract §1.1 `Album.trackCount`).
+     *
+     * @return the number of songs mapped to each album that has at least one
+     */
+    @Query("""
+        SELECT sam.albumId AS id, COUNT(DISTINCT sam.songId) AS count
+        FROM SongAlbumMap sam
+        JOIN Song S ON S.id = sam.songId
+        GROUP BY sam.albumId
+    """)
+    fun songCountsDirect(): List<SongCount>
 }
 
+/** Number of songs mapped to the album or artist [id]; see [SongAlbumMapTable.songCountsDirect]. */
+data class SongCount(
+    val id: String,
+    val count: Int
+)

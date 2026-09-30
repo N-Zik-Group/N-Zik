@@ -4,6 +4,11 @@ import app.n_zik.android.bridge.command.BridgeCommandExecutor
 import app.n_zik.android.bridge.command.BridgeCommandParser
 import app.n_zik.android.bridge.command.CommandResult
 import app.n_zik.android.bridge.command.ParsedCommand
+import app.n_zik.android.bridge.library.ArtworkResult
+import app.n_zik.android.bridge.library.CollectionFilter
+import app.n_zik.android.bridge.library.LibraryProvider
+import app.n_zik.android.bridge.library.LibraryQueries
+import app.n_zik.android.bridge.library.PageRequest
 import app.n_zik.android.bridge.pairing.CodeValidation
 import app.n_zik.android.bridge.pairing.InMemoryPairedDeviceStorage
 import app.n_zik.android.bridge.pairing.JsonPairedDeviceStore
@@ -15,7 +20,9 @@ import app.n_zik.android.bridge.state.BridgeServerMessage
 import app.n_zik.android.bridge.state.BridgeStateHub
 import app.n_zik.android.bridge.state.PongMessage
 import app.n_zik.android.bridge.state.encodeServerMessage
+import app.n_zik.android.bridge.state.TrackDto
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
@@ -30,7 +37,9 @@ import io.ktor.server.plugins.origin
 import io.ktor.server.request.contentLength
 import io.ktor.server.request.receiveChannel
 import io.ktor.server.request.receiveText
+import io.ktor.server.response.header
 import io.ktor.server.response.respond
+import io.ktor.server.response.respondBytes
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
@@ -100,6 +109,8 @@ internal class BridgeServerCore(
     private val heartbeatIntervalMs: Long = BridgeContract.HEARTBEAT_INTERVAL_MS,
     /** Applies the commands of contract §9; without a player behind the server, always `503`. */
     private val commandExecutor: BridgeCommandExecutor = BridgeCommandExecutor.UNAVAILABLE,
+    /** Read-only library of contract §10; empty without a phone behind the server. */
+    private val libraryProvider: LibraryProvider = LibraryProvider.EMPTY,
 ) {
     private val stopping = AtomicBoolean(false)
 
@@ -151,6 +162,41 @@ internal class BridgeServerCore(
                     route(group) {
                         install(bearerAuth)
                         post("{action}") { call.handleCommand("$group/${call.parameters["action"]}") }
+                    }
+                }
+                // Contract §10: read-only library consultation, Bearer only
+                route("library") {
+                    install(bearerAuth)
+                    get("songs") { call.handleSongs() }
+                    get("playlists") { call.respondListPage { LibraryQueries.sortPlaylists(libraryProvider.playlists()) } }
+                    get("playlists/{id}/songs") {
+                        val id = LibraryQueries.parsePlaylistId(call.parameters["id"])
+                        call.respondTracks("Unknown playlist") { id?.let { libraryProvider.playlistSongs(it) } }
+                    }
+                    get("albums") { call.respondCollectionPage { LibraryQueries.sortAlbums(libraryProvider.albums(it)) } }
+                    get("albums/{id}/songs") {
+                        val id = call.parameters["id"].orEmpty()
+                        call.respondTracks("Unknown album") { libraryProvider.albumSongs(id) }
+                    }
+                    get("albums/{id}/artwork") {
+                        val id = call.parameters["id"].orEmpty()
+                        call.respondArtwork { size -> libraryProvider.albumArtwork(id, size) }
+                    }
+                    get("artists") { call.respondCollectionPage { LibraryQueries.sortArtists(libraryProvider.artists(it)) } }
+                    get("artists/{id}/songs") {
+                        val id = call.parameters["id"].orEmpty()
+                        call.respondTracks("Unknown artist") { libraryProvider.artistSongs(id) }
+                    }
+                    get("artists/{id}/artwork") {
+                        val id = call.parameters["id"].orEmpty()
+                        call.respondArtwork { size -> libraryProvider.artistArtwork(id, size) }
+                    }
+                }
+                route("artwork") {
+                    install(bearerAuth)
+                    get("{trackId}") {
+                        val trackId = call.parameters["trackId"].orEmpty()
+                        call.respondArtwork { size -> libraryProvider.trackArtwork(trackId, size) }
                     }
                 }
                 route("ws") {
@@ -274,6 +320,58 @@ internal class BridgeServerCore(
                 QueueMismatchResponse(BridgeErrorCode.QUEUE_MISMATCH, "The queue changed", result.revision),
             )
             CommandResult.NotFound -> respondError(HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, "Unknown track")
+        }
+    }
+
+    /** Contract §10 `/library/songs`: parameters, then filter, search, sort and pagination. */
+    private suspend fun ApplicationCall.handleSongs() {
+        val params = request.queryParameters
+        val query = LibraryQueries.parseSongsQuery(params["offset"], params["limit"], params["query"], params["filter"], params["sort"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid library parameters")
+        val tracks = LibraryQueries.selectSongs(libraryProvider.songs(), query).map { it.track }
+        respond(LibraryQueries.paginate(tracks, query.page))
+    }
+
+    /** Contract §1 pagination parameters, or `null` once a `400` has been answered. */
+    private suspend fun ApplicationCall.pageOrReject(): PageRequest? {
+        val page = LibraryQueries.parsePage(request.queryParameters["offset"], request.queryParameters["limit"])
+        if (page == null) respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid pagination")
+        return page
+    }
+
+    private suspend inline fun <reified T> ApplicationCall.respondListPage(load: () -> List<T>) {
+        val page = pageOrReject() ?: return
+        respond(LibraryQueries.paginate(load(), page))
+    }
+
+    /** Albums and artists: pagination plus `filter` (`library` by default, contract §10). */
+    private suspend inline fun <reified T> ApplicationCall.respondCollectionPage(load: (CollectionFilter) -> List<T>) {
+        val page = pageOrReject() ?: return
+        val filter = LibraryQueries.parseCollectionFilter(request.queryParameters["filter"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid filter")
+        respond(LibraryQueries.paginate(load(filter), page))
+    }
+
+    /** Tracks of one playlist, album or artist; [load] gives `null` when it is unknown (`404`). */
+    private suspend inline fun ApplicationCall.respondTracks(notFound: String, load: () -> List<TrackDto>?) {
+        val page = pageOrReject() ?: return
+        val tracks = load() ?: return respondError(HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, notFound)
+        respond(LibraryQueries.paginate(tracks, page))
+    }
+
+    /** Contract §10 artwork: the image bytes with their real type, `404` without one, `502` when the upstream failed. */
+    private suspend inline fun ApplicationCall.respondArtwork(load: (Int) -> ArtworkResult) {
+        val size = LibraryQueries.parseArtworkSize(request.queryParameters["size"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid artwork size")
+        when (val result = load(size)) {
+            is ArtworkResult.Image -> {
+                val type = runCatching { ContentType.parse(result.contentType) }.getOrDefault(ContentType.Image.JPEG)
+                response.header(HttpHeaders.CacheControl, BridgeContract.ARTWORK_CACHE_CONTROL)
+                respondBytes(result.bytes, type)
+            }
+            ArtworkResult.NotFound -> respondError(HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, "No artwork")
+            ArtworkResult.UpstreamFailed ->
+                respondError(HttpStatusCode.BadGateway, BridgeErrorCode.AUDIO_UPSTREAM_FAILED, "The artwork could not be fetched")
         }
     }
 
