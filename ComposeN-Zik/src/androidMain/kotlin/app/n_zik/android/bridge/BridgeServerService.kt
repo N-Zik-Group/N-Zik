@@ -12,8 +12,12 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import app.n_zik.android.R
+import app.n_zik.android.bridge.command.LateFailureTracker
+import app.n_zik.android.bridge.command.PlayerCommandExecutor
+import app.n_zik.android.bridge.command.PreferencePlayerSettings
 import app.n_zik.android.bridge.state.BridgePlayerSource
 import app.n_zik.android.bridge.state.BridgeStateHub
+import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
@@ -96,11 +100,19 @@ class BridgeServerService : Service() {
             return
         }
         val host = ipv4.hostAddress ?: return finish(BridgeState.Failed, getString(R.string.bridge_server_failed))
-        // One hub and one player source per server run: the revision starts again at 0
+        // One hub, one player source and one command executor per server run: the revision starts again at 0
         val stateHub = BridgeStateHub()
-        val source = BridgePlayerSource(this, stateHub).also { it.start() }
+        val lateFailures = LateFailureTracker(stateHub)
+        val source = BridgePlayerSource(this, stateHub, onPlayerError = lateFailures::onPlayerError).also { it.start() }
         playerSource.getAndSet(source)?.stop()
-        val core = BridgeServerController.createCore(Build.MODEL, BridgeServerController.loadDeviceStore(this), stateHub)
+        val executor = PlayerCommandExecutor(
+            player = source,
+            hub = stateHub,
+            lateFailures = lateFailures,
+            settings = PreferencePlayerSettings(this),
+            guestLocked = { listenTogetherGuestLock.value },
+        )
+        val core = BridgeServerController.createCore(Build.MODEL, BridgeServerController.loadDeviceStore(this), stateHub, executor)
         val bridge = BridgeServer(core)
         val port = runCatching { bridge.start(host) }
             .onFailure { Timber.tag(TAG).e(it, "Bridge server failed to start") }

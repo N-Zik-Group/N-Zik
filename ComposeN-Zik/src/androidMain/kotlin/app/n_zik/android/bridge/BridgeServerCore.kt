@@ -1,5 +1,9 @@
 package app.n_zik.android.bridge
 
+import app.n_zik.android.bridge.command.BridgeCommandExecutor
+import app.n_zik.android.bridge.command.BridgeCommandParser
+import app.n_zik.android.bridge.command.CommandResult
+import app.n_zik.android.bridge.command.ParsedCommand
 import app.n_zik.android.bridge.pairing.CodeValidation
 import app.n_zik.android.bridge.pairing.InMemoryPairedDeviceStorage
 import app.n_zik.android.bridge.pairing.JsonPairedDeviceStore
@@ -24,6 +28,7 @@ import io.ktor.server.application.install
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.origin
 import io.ktor.server.request.contentLength
+import io.ktor.server.request.receiveChannel
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
@@ -34,6 +39,7 @@ import io.ktor.server.websocket.DefaultWebSocketServerSession
 import io.ktor.server.websocket.WebSockets
 import io.ktor.server.websocket.webSocket
 import io.ktor.util.AttributeKey
+import io.ktor.utils.io.readAvailable
 import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
 import io.ktor.websocket.close
@@ -53,6 +59,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.longOrNull
+import java.io.ByteArrayOutputStream
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import timber.log.Timber
@@ -91,8 +98,15 @@ internal class BridgeServerCore(
     private val stateHub: BridgeStateHub = BridgeStateHub(clock),
     private val pingTimeoutMs: Long = BridgeContract.PING_TIMEOUT_MS,
     private val heartbeatIntervalMs: Long = BridgeContract.HEARTBEAT_INTERVAL_MS,
+    /** Applies the commands of contract §9; without a player behind the server, always `503`. */
+    private val commandExecutor: BridgeCommandExecutor = BridgeCommandExecutor.UNAVAILABLE,
 ) {
     private val stopping = AtomicBoolean(false)
+
+    /** Contract §2: on a Bearer route the authentication runs before any other processing. */
+    private val bearerAuth = createRouteScopedPlugin("BridgeBearerAuth") {
+        onCall { call -> call.rejectUnlessAuthenticated() }
+    }
 
     /** Open WebSocket sessions and their state stream (which knows the device id). */
     private val sessions = ConcurrentHashMap<DefaultWebSocketServerSession, SessionStream>()
@@ -132,11 +146,16 @@ internal class BridgeServerCore(
                 }
                 // Public regime (contract §2): protected by the ephemeral code and the rate-limit
                 post("pairing/validate") { call.handleValidate() }
+                // Contract §9: playback and queue commands, Bearer only
+                for (group in COMMAND_GROUPS) {
+                    route(group) {
+                        install(bearerAuth)
+                        post("{action}") { call.handleCommand("$group/${call.parameters["action"]}") }
+                    }
+                }
                 route("ws") {
                     // Contract §6.1: authentication happens before the upgrade
-                    install(createRouteScopedPlugin("BridgeWsAuth") {
-                        onCall { call -> call.rejectUnlessAuthenticated() }
-                    })
+                    install(bearerAuth)
                     webSocket {
                         handleSession(this, call.attributes[DeviceIdKey], call.request.headers[HttpHeaders.Authorization])
                     }
@@ -230,6 +249,48 @@ internal class BridgeServerCore(
                 serverPort = request.local.localPort,
             )
         )
+    }
+
+    /** Contract §9: route, body (≤ 64 KiB), then the executor, whose outcome maps to one status. */
+    private suspend fun ApplicationCall.handleCommand(route: String) {
+        if (!BridgeCommandParser.isKnown(route)) {
+            respondError(HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, "Unknown route")
+            return
+        }
+        val body = receiveBoundedText(BridgeContract.MAX_COMMAND_BODY_BYTES)
+        val parsed = body?.let { BridgeCommandParser.parse(route, it) }
+        if (parsed !is ParsedCommand.Valid) {
+            respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid command body")
+            return
+        }
+        when (val result = commandExecutor.execute(parsed.command)) {
+            is CommandResult.Applied -> respond(CommandResponse(applied = true, changed = result.changed, revision = result.revision))
+            CommandResult.Rejected ->
+                respondError(HttpStatusCode.UnprocessableEntity, BridgeErrorCode.PLAYER_REJECTED, "The player refused the command")
+            CommandResult.Unavailable ->
+                respondError(HttpStatusCode.ServiceUnavailable, BridgeErrorCode.PLAYER_UNAVAILABLE, "The phone's player is not available")
+            is CommandResult.QueueMismatch -> respond(
+                HttpStatusCode.Conflict,
+                QueueMismatchResponse(BridgeErrorCode.QUEUE_MISMATCH, "The queue changed", result.revision),
+            )
+            CommandResult.NotFound -> respondError(HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, "Unknown track")
+        }
+    }
+
+    /** The request body as text, or `null` when it exceeds [maxBytes]; never buffers more than that. */
+    private suspend fun ApplicationCall.receiveBoundedText(maxBytes: Int): String? {
+        val declared = request.contentLength()
+        if (declared != null && declared > maxBytes) return null
+        val channel = receiveChannel()
+        val out = ByteArrayOutputStream()
+        val buffer = ByteArray(8_192)
+        while (true) {
+            val read = channel.readAvailable(buffer, 0, buffer.size)
+            if (read < 0) break
+            out.write(buffer, 0, read)
+            if (out.size() > maxBytes) return null
+        }
+        return out.toString(Charsets.UTF_8.name())
     }
 
     private suspend fun handleSession(session: DefaultWebSocketServerSession, deviceId: String, authorizationHeader: String?) {
@@ -372,6 +433,9 @@ internal class BridgeServerCore(
         BridgeStopCode.TIMEOUT -> "Android background time limit reached"
     }
 }
+
+/** Route groups of the commands of contract §9: `player` and `queue` below `/api/v1`. */
+private val COMMAND_GROUPS = listOf("player", "queue")
 
 private suspend fun ApplicationCall.respondError(status: HttpStatusCode, code: String, message: String) =
     respond(status, ErrorResponse(code = code, message = message))

@@ -1,5 +1,7 @@
 package app.n_zik.android.bridge
 
+import app.n_zik.android.bridge.state.RepeatModeDto
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -42,8 +44,27 @@ internal object BridgeContract {
     const val TYPE_PING = "ping"
     const val TYPE_REQUEST_SNAPSHOT = "requestSnapshot"
 
+    /** Late failure of a confirmed command (contract §7.6). */
+    const val TYPE_ERROR = "error"
+
     /** `features` of `GET /api/v1/meta` implemented so far (contract §5). */
-    val FEATURES: List<String> = listOf("pairing.qr", "pairing.manual", "ws.state")
+    val FEATURES: List<String> = listOf("pairing.qr", "pairing.manual", "playback", "queue", "ws.state")
+
+    /** Largest command body read (contract §9 commands); anything bigger is `400 BAD_REQUEST`. */
+    const val MAX_COMMAND_BODY_BYTES = 64 * 1_024
+
+    /** Maximum length of a command's `commandId` (contract §9). */
+    const val COMMAND_ID_MAX_LENGTH = 64
+
+    /** Bounds of `/player/speed` (contract §9, §14). */
+    const val SPEED_MIN = 0.25f
+    const val SPEED_MAX = 4.0f
+
+    /** Size bounds of a `trackIds` list (contract §9, §14). */
+    const val TRACK_IDS_MAX = 500
+
+    /** A player error this soon after a command that loads a track is reported as a WS `error` (contract §7.6). */
+    const val LATE_FAILURE_WINDOW_MS = 10_000L
 
     /** Length bounds of `deviceName` after trim (contract §4.5). */
     const val DEVICE_NAME_MAX_LENGTH = 64
@@ -57,6 +78,9 @@ internal object BridgeErrorCode {
     const val PAIRING_REJECTED = "PAIRING_REJECTED"
     const val RATE_LIMITED = "RATE_LIMITED"
     const val NOT_FOUND = "NOT_FOUND"
+    const val QUEUE_MISMATCH = "QUEUE_MISMATCH"
+    const val PLAYER_REJECTED = "PLAYER_REJECTED"
+    const val PLAYER_UNAVAILABLE = "PLAYER_UNAVAILABLE"
     const val SERVER_STOPPING = "SERVER_STOPPING"
     const val INTERNAL_ERROR = "INTERNAL_ERROR"
 }
@@ -106,6 +130,73 @@ internal data class ServerStoppedFrame(
     val type: String = BridgeContract.TYPE_SERVER_STOPPED,
     val code: BridgeStopCode,
     val message: String,
+)
+
+/** `409 QUEUE_MISMATCH` body: the error model plus the current `revision` (contract §3). */
+@Serializable
+internal data class QueueMismatchResponse(
+    val code: String,
+    val message: String,
+    val revision: Long,
+)
+
+/** `200` answer of every command (contract §9). */
+@Serializable
+internal data class CommandResponse(
+    val applied: Boolean,
+    val changed: Boolean,
+    val revision: Long,
+)
+
+// --- Command bodies (contract §9); `commandId` is optional everywhere ---
+
+@Serializable
+internal data class EmptyCommandBody(val commandId: String? = null)
+
+@Serializable
+internal data class SeekCommandBody(val positionMs: Long, val commandId: String? = null)
+
+@Serializable
+internal data class SpeedCommandBody(val speed: Float, val commandId: String? = null)
+
+@Serializable
+internal data class RepeatCommandBody(val mode: RepeatModeDto, val commandId: String? = null)
+
+@Serializable
+internal data class ShuffleCommandBody(val enabled: Boolean, val commandId: String? = null)
+
+@Serializable
+internal data class QueuePlayCommandBody(
+    val trackIds: List<String>,
+    val startIndex: Int,
+    val positionMs: Long = 0L,
+    val commandId: String? = null,
+)
+
+/** Where `/queue/add` inserts (contract §9). */
+@Serializable
+internal enum class AddPosition {
+    @SerialName("next") NEXT,
+    @SerialName("end") END,
+}
+
+@Serializable
+internal data class QueueAddCommandBody(
+    val trackIds: List<String>,
+    val position: AddPosition,
+    val commandId: String? = null,
+)
+
+/** `/queue/remove` and `/queue/jump`. */
+@Serializable
+internal data class QueueItemCommandBody(val index: Int, val trackId: String, val commandId: String? = null)
+
+@Serializable
+internal data class QueueMoveCommandBody(
+    val fromIndex: Int,
+    val toIndex: Int,
+    val trackId: String,
+    val commandId: String? = null,
 )
 
 /** Shared JSON setup: tolerant reader (unknown keys ignored), defaults always written. */

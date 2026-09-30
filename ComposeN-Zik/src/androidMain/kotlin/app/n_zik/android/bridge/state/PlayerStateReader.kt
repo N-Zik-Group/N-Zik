@@ -27,16 +27,7 @@ internal object PlayerStateReader {
             Player.REPEAT_MODE_ALL -> RepeatModeDto.ALL
             else -> RepeatModeDto.OFF
         }
-        val timeline = player.currentTimeline
-        val windowCount = timeline.windowCount
-        // Contract §7.1: the queue is sent in the effective play order (shuffle order when enabled)
-        val order = buildList {
-            var index = if (windowCount == 0) C.INDEX_UNSET else timeline.getFirstWindowIndex(shuffle)
-            while (index != C.INDEX_UNSET && size < windowCount) {
-                add(index)
-                index = timeline.getNextWindowIndex(index, Player.REPEAT_MODE_OFF, shuffle)
-            }
-        }
+        val order = playOrder(player)
         val items = order.map { index ->
             val item = player.getMediaItemAt(index)
             val metadata = item.mediaMetadata
@@ -62,5 +53,32 @@ internal object PlayerStateReader {
             shuffle = shuffle,
         )
         return PlayerRead(items, sample)
+    }
+
+    /**
+     * Window indexes of [player] in the effective play order (shuffle order when enabled):
+     * position `i` of the published queue is window `playOrder(player)[i]` (contract §7.1).
+     */
+    fun playOrder(player: Player): List<Int> {
+        val shuffle = player.shuffleModeEnabled
+        val timeline = player.currentTimeline
+        val windowCount = timeline.windowCount
+        return buildList {
+            var index = if (windowCount == 0) C.INDEX_UNSET else timeline.getFirstWindowIndex(shuffle)
+            while (index != C.INDEX_UNSET && size < windowCount) {
+                add(index)
+                index = timeline.getNextWindowIndex(index, Player.REPEAT_MODE_OFF, shuffle)
+            }
+        }
+    }
+
+    /**
+     * Window index of the item a client designates by its effective-order [index] and
+     * [trackId], read from [player] right now; `null` when [index] is out of bounds or the
+     * item there is another track (contract §9 `QUEUE_MISMATCH`).
+     */
+    fun windowIndexOf(player: Player, index: Int, trackId: String): Int? {
+        val window = playOrder(player).getOrNull(index) ?: return null
+        return window.takeIf { TrackMapping.trackIdOf(player.getMediaItemAt(it).mediaId) == trackId }
     }
 }

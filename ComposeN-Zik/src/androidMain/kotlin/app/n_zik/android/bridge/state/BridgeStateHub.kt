@@ -64,6 +64,14 @@ internal class BridgeStateHub(private val clock: () -> Long = System::currentTim
             deltas
         }
 
+    /**
+     * Sends the non-revised [message] to every subscriber (contract §7.6), under the same
+     * lock as the deltas so it never splits a snapshot from its following deltas.
+     */
+    fun broadcast(message: ErrorMessage) {
+        synchronized(lock) { subscribers.forEach { it.sink.deliver(message) } }
+    }
+
     /** Full state at the current revision, position at `serverTimeMs` (contract §7.1). */
     fun snapshot(): SnapshotMessage = synchronized(lock) { buildSnapshot() }
 

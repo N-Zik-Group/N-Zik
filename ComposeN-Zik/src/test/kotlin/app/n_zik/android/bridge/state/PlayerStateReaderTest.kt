@@ -75,6 +75,28 @@ class PlayerStateReaderTest {
     }
 
     @Test
+    fun `effective index maps back to the window index of the same track`() {
+        // Shuffle order [2, 0, 1]: published queue is c, a, b
+        val shuffled = player(current = 0, shuffle = true, shuffleOrder = listOf(2, 0, 1))
+
+        assertEquals(listOf(2, 0, 1), PlayerStateReader.playOrder(shuffled))
+        assertEquals(2, PlayerStateReader.windowIndexOf(shuffled, 0, "ccccccccccc"))
+        assertEquals(0, PlayerStateReader.windowIndexOf(shuffled, 1, "aaaaaaaaaaa"))
+        assertEquals(1, PlayerStateReader.windowIndexOf(shuffled, 2, "bbbbbbbbbbb"))
+        assertEquals(1, PlayerStateReader.windowIndexOf(player(current = 0), 1, "bbbbbbbbbbb"))
+    }
+
+    @Test
+    fun `index out of bounds or another track maps to nothing`() {
+        val shuffled = player(current = 0, shuffle = true, shuffleOrder = listOf(2, 0, 1))
+
+        assertNull(PlayerStateReader.windowIndexOf(shuffled, 0, "aaaaaaaaaaa"))
+        assertNull(PlayerStateReader.windowIndexOf(shuffled, 3, "aaaaaaaaaaa"))
+        assertNull(PlayerStateReader.windowIndexOf(shuffled, -1, "aaaaaaaaaaa"))
+        assertNull(PlayerStateReader.windowIndexOf(player(current = 0, count = 0), 0, "aaaaaaaaaaa"))
+    }
+
+    @Test
     fun `repeat modes map to the contract values`() {
         assertEquals(RepeatModeDto.ONE, PlayerStateReader.read(player(0, repeatMode = Player.REPEAT_MODE_ONE), 0L).sample.repeatMode)
         assertEquals(RepeatModeDto.ALL, PlayerStateReader.read(player(0, repeatMode = Player.REPEAT_MODE_ALL), 0L).sample.repeatMode)

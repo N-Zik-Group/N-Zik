@@ -1,5 +1,6 @@
 package app.n_zik.android.bridge.state
 
+import app.n_zik.android.bridge.BridgeContract
 import app.n_zik.android.bridge.BridgeJson
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -120,6 +121,18 @@ internal data class PongMessage(
     val clientTimeMs: Long,
     val serverReceiveTimeMs: Long,
     val serverSendTimeMs: Long,
+) : BridgeServerMessage
+
+/**
+ * Late failure of a command already confirmed over REST (contract §7.6). Not revised:
+ * it never affects the revision.
+ */
+@Serializable
+@SerialName(BridgeContract.TYPE_ERROR)
+internal data class ErrorMessage(
+    val code: String,
+    val message: String,
+    val commandId: String?,
 ) : BridgeServerMessage
 
 /** Wire form of [message]: one JSON object with its `type` (contract §6.1). */

@@ -6,9 +6,12 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.bridge.BridgeContract
+import app.n_zik.android.bridge.command.PlayerAccess
+import app.n_zik.android.bridge.command.Sampled
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
@@ -21,6 +24,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
@@ -39,18 +44,26 @@ private data class TrackFlags(val isLiked: Boolean, val isDownloaded: Boolean)
  *
  * `isLiked` / `isDownloaded` are resolved off the main thread once per queue change and
  * kept until the next one: a like alone produces no delta (contract §1.1).
+ *
+ * As a [PlayerAccess], it hands the same facade to the remote commands (contract §9) and
+ * samples right after each one, serialized with the regular sampling.
  */
 internal class BridgePlayerSource(
     context: Context,
     private val hub: BridgeStateHub,
     private val clock: () -> Long = System::currentTimeMillis,
     private val resampleIntervalMs: Long = BridgeContract.HEARTBEAT_INTERVAL_MS,
-) {
+    /** Player errors, on the main thread: late failures of commands (contract §7.6). */
+    private val onPlayerError: (String) -> Unit = {},
+) : PlayerAccess {
     private val appContext = context.applicationContext
 
     // Every field below is only touched on the main thread (UI dispatcher, player callbacks)
     private val scope = NzikDispatchers.fireAndForget(NzikDispatchers.UI)
     private val sampleRequests = Channel<Unit>(Channel.CONFLATED)
+
+    /** One sample at a time: the periodic loop and the samples forced by commands never interleave. */
+    private val sampleMutex = Mutex()
     private var connection: ServiceConnection? = null
     private var binder: PlayerServiceModern.Binder? = null
     private var attachedPlayer: Player? = null
@@ -70,6 +83,10 @@ internal class BridgePlayerSource(
             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) pendingTransition = true
         }
 
+        override fun onPlayerError(error: PlaybackException) {
+            onPlayerError(error.errorCodeName)
+        }
+
         override fun onEvents(player: Player, events: Player.Events) {
             if (events.containsAny(*SAMPLED_EVENTS)) requestSample()
         }
@@ -81,7 +98,7 @@ internal class BridgePlayerSource(
             for (request in sampleRequests) {
                 // One failed sample must not stop the publishing for the rest of the run
                 try {
-                    sampleOnce()
+                    sampleMutex.withLock { sampleOnce() }
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
@@ -143,7 +160,7 @@ internal class BridgePlayerSource(
     }
 
     private fun attachListener() {
-        val player = runCatching { binder?.player }.getOrNull()
+        val player = currentPlayer()
         if (player !== attachedPlayer) {
             detachListener()
             player?.addListener(listener)
@@ -165,17 +182,41 @@ internal class BridgePlayerSource(
         sampleRequests.trySend(Unit)
     }
 
-    private suspend fun sampleOnce() {
-        val player = runCatching { binder?.player }.getOrNull()
+    /** The guarded facade, read fresh at every use (never cached across calls). */
+    private fun currentPlayer(): Player? = runCatching { binder?.player }.getOrNull()
+
+    override suspend fun <T> read(block: (Player?) -> T): T =
+        withContext(NzikDispatchers.UI) { block(currentPlayer()) }
+
+    override suspend fun <T> applyAndSample(block: (Player?) -> T): Sampled<T> =
+        sampleMutex.withLock {
+            withContext(NzikDispatchers.UI) {
+                val result = block(currentPlayer())
+                // The command is applied: a failed sample must not turn it into an error
+                val deltas = try {
+                    sampleOnce()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.tag(TAG).w(e, "Could not sample the player after a command")
+                    emptyList()
+                }
+                // Still under the sample lock: no later sample has moved the revision yet
+                Sampled(result, deltas, hub.currentRevision)
+            }
+        }
+
+    /** Reads the player and publishes the deltas it implies; call it holding [sampleMutex]. */
+    private suspend fun sampleOnce(): List<DeltaMessage> {
+        val player = currentPlayer()
         if (player == null) {
             resolvedIds = null
-            hub.submit(PlayerSample.EMPTY)
-            return
+            return hub.submit(PlayerSample.EMPTY)
         }
         // A failed read keeps the pending seek / transition for the next sample
         val read = runCatching { PlayerStateReader.read(player, clock()) }
             .onFailure { Timber.tag(TAG).w(it, "Could not read the player state") }
-            .getOrNull() ?: return
+            .getOrNull() ?: return emptyList()
         val seek = pendingSeek
         val transition = pendingTransition
         pendingSeek = false
@@ -197,7 +238,7 @@ internal class BridgePlayerSource(
                 isDownloaded = itemFlags?.isDownloaded == true,
             )
         }
-        hub.submit(read.sample.copy(queue = queue), seek = seek, transition = transition)
+        return hub.submit(read.sample.copy(queue = queue), seek = seek, transition = transition)
     }
 
     private fun resolveFlags(trackIds: List<String>): Map<String, TrackFlags> {

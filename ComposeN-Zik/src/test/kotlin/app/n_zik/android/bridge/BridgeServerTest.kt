@@ -1,11 +1,16 @@
 package app.n_zik.android.bridge
 
+import app.n_zik.android.bridge.command.BridgeCommand
+import app.n_zik.android.bridge.command.BridgeCommandExecutor
+import app.n_zik.android.bridge.command.CommandResult
+import app.n_zik.android.bridge.command.PlayerAction
 import app.n_zik.android.bridge.pairing.InMemoryPairedDeviceStorage
 import app.n_zik.android.bridge.pairing.JsonPairedDeviceStore
 import app.n_zik.android.bridge.pairing.OfferResult
 import app.n_zik.android.bridge.pairing.PairingCodeManager
 import app.n_zik.android.bridge.pairing.PairingQrPayload
 import app.n_zik.android.bridge.state.BridgeStateHub
+import app.n_zik.android.bridge.state.ErrorMessage
 import app.n_zik.android.bridge.state.RepeatModeDto
 import app.n_zik.android.bridge.state.playingSample
 import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
@@ -18,9 +23,11 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.OutgoingContent
 import io.ktor.http.contentType
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
+import io.ktor.utils.io.ByteReadChannel
 import io.ktor.websocket.Frame
 import io.ktor.websocket.readText
 import kotlinx.coroutines.CoroutineStart
@@ -75,7 +82,10 @@ class BridgeServerTest {
         assertEquals("1.0", json["contractVersion"]?.jsonPrimitive?.content)
         assertEquals("Pixel test", json["serverName"]?.jsonPrimitive?.content)
         assertEquals(1_790_000_000_000L, json["serverTimeMs"]?.jsonPrimitive?.long)
-        assertEquals(listOf("pairing.qr", "pairing.manual", "ws.state"), json["features"]?.jsonArray?.map { it.jsonPrimitive.content })
+        assertEquals(
+            listOf("pairing.qr", "pairing.manual", "playback", "queue", "ws.state"),
+            json["features"]?.jsonArray?.map { it.jsonPrimitive.content },
+        )
     }
 
     @Test
@@ -536,6 +546,157 @@ class BridgeServerTest {
             } finally {
                 server.stop(BridgeStopCode.STOP_USER)
             }
+        }
+    }
+
+    // --- Commands (contract §9) ---
+
+    private suspend fun ApplicationTestBuilder.command(route: String, body: String = "{}", token: String? = "valid-token") =
+        client.post("/api/v1/$route") {
+            token?.let { bearerAuth(it) }
+            contentType(ContentType.Application.Json)
+            setBody(body)
+        }
+
+    /** Executor answering [result] and recording what it received. */
+    private class FakeExecutor(var result: CommandResult) : BridgeCommandExecutor {
+        val received = mutableListOf<BridgeCommand>()
+        override suspend fun execute(command: BridgeCommand): CommandResult {
+            received += command
+            return result
+        }
+    }
+
+    @Test
+    fun `applied command answers applied, changed and revision`() = testApplication {
+        val executor = FakeExecutor(CommandResult.Applied(changed = true, revision = 58))
+        mount(BridgeServerCore(serverName = "Pixel test", authenticator = acceptAll, commandExecutor = executor))
+
+        val response = command("player/seek", """{"positionMs":1000,"commandId":"c-1"}""")
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        val json = BridgeJson.parseToJsonElement(response.bodyAsText()).jsonObject
+        assertEquals("true", json["applied"]?.jsonPrimitive?.content)
+        assertEquals("true", json["changed"]?.jsonPrimitive?.content)
+        assertEquals(58L, json["revision"]?.jsonPrimitive?.long)
+        assertEquals(listOf(BridgeCommand(PlayerAction.Seek(1_000L), "c-1")), executor.received)
+    }
+
+    @Test
+    fun `each executor outcome maps to its HTTP status and error code`() = testApplication {
+        val executor = FakeExecutor(CommandResult.Rejected)
+        mount(BridgeServerCore(serverName = "Pixel test", authenticator = acceptAll, commandExecutor = executor))
+
+        val rejected = command("player/next")
+        assertEquals(HttpStatusCode.UnprocessableEntity, rejected.status)
+        assertEquals("PLAYER_REJECTED", errorCode(rejected.bodyAsText()))
+
+        executor.result = CommandResult.Unavailable
+        val unavailable = command("player/play")
+        assertEquals(HttpStatusCode.ServiceUnavailable, unavailable.status)
+        assertEquals("PLAYER_UNAVAILABLE", errorCode(unavailable.bodyAsText()))
+
+        executor.result = CommandResult.QueueMismatch(revision = 12)
+        val mismatch = command("queue/remove", """{"index":3,"trackId":"aaaaaaaaaaa"}""")
+        assertEquals(HttpStatusCode.Conflict, mismatch.status)
+        val mismatchJson = BridgeJson.parseToJsonElement(mismatch.bodyAsText()).jsonObject
+        assertEquals("QUEUE_MISMATCH", mismatchJson["code"]?.jsonPrimitive?.content)
+        assertEquals(12L, mismatchJson["revision"]?.jsonPrimitive?.long)
+
+        executor.result = CommandResult.NotFound
+        val notFound = command("queue/play", """{"trackIds":["zzzzzzzzzzz"],"startIndex":0}""")
+        assertEquals(HttpStatusCode.NotFound, notFound.status)
+        assertEquals("NOT_FOUND", errorCode(notFound.bodyAsText()))
+
+        executor.result = CommandResult.Applied(changed = false, revision = 3)
+        val unchanged = BridgeJson.parseToJsonElement(command("queue/clear").bodyAsText()).jsonObject
+        assertEquals("false", unchanged["changed"]?.jsonPrimitive?.content)
+        assertEquals(3L, unchanged["revision"]?.jsonPrimitive?.long)
+    }
+
+    @Test
+    fun `invalid, oversized or unknown commands never reach the executor`() = testApplication {
+        val executor = FakeExecutor(CommandResult.Applied(changed = false, revision = 0))
+        mount(BridgeServerCore(serverName = "Pixel test", authenticator = acceptAll, commandExecutor = executor))
+
+        val malformed = command("player/play", "{not json")
+        assertEquals(HttpStatusCode.BadRequest, malformed.status)
+        assertEquals("BAD_REQUEST", errorCode(malformed.bodyAsText()))
+        assertEquals(HttpStatusCode.BadRequest, command("player/speed", """{"speed":5}""").status)
+        assertEquals(HttpStatusCode.BadRequest, command("player/repeat", """{"mode":"forever"}""").status)
+        val oversized = """{"commandId":null,"pad":"${"x".repeat(BridgeContract.MAX_COMMAND_BODY_BYTES)}"}"""
+        assertEquals(HttpStatusCode.BadRequest, command("player/play", oversized).status)
+        val unknown = command("player/stop")
+        assertEquals(HttpStatusCode.NotFound, unknown.status)
+        assertEquals("NOT_FOUND", errorCode(unknown.bodyAsText()))
+
+        assertTrue(executor.received.isEmpty())
+    }
+
+    @Test
+    fun `oversized command body streamed without Content-Length is BAD_REQUEST`() = testApplication {
+        val executor = FakeExecutor(CommandResult.Applied(changed = false, revision = 0))
+        mount(BridgeServerCore(serverName = "Pixel test", authenticator = acceptAll, commandExecutor = executor))
+        val bytes = """{"pad":"${"x".repeat(BridgeContract.MAX_COMMAND_BODY_BYTES)}"}""".toByteArray()
+
+        val response = client.post("/api/v1/player/play") {
+            bearerAuth("valid-token")
+            setBody(object : OutgoingContent.ReadChannelContent() {
+                override val contentType = ContentType.Application.Json
+                override val contentLength: Long? = null
+                override fun readFrom(): ByteReadChannel = ByteReadChannel(bytes)
+            })
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertEquals("BAD_REQUEST", errorCode(response.bodyAsText()))
+        assertTrue(executor.received.isEmpty())
+    }
+
+    @Test
+    fun `commands check the Bearer token before anything else`() = testApplication {
+        val executor = FakeExecutor(CommandResult.Applied(changed = true, revision = 1))
+        mount(BridgeServerCore(serverName = "Pixel test", commandExecutor = executor))
+
+        val missing = command("player/pause", token = null)
+        assertEquals(HttpStatusCode.Unauthorized, missing.status)
+        assertEquals("UNAUTHORIZED", errorCode(missing.bodyAsText()))
+        // Even an invalid body or an unknown command is answered 401 first
+        val revoked = command("player/stop", "{not json", token = "unknown-token")
+        assertEquals(HttpStatusCode.Unauthorized, revoked.status)
+        assertEquals("DEVICE_REVOKED", errorCode(revoked.bodyAsText()))
+        assertTrue(executor.received.isEmpty())
+    }
+
+    @Test
+    fun `server without a player answers PLAYER_UNAVAILABLE and a stopping one SERVER_STOPPING`() = testApplication {
+        val core = BridgeServerCore(serverName = "Pixel test", authenticator = acceptAll)
+        mount(core)
+
+        assertEquals("PLAYER_UNAVAILABLE", errorCode(command("queue/clear").bodyAsText()))
+        core.shutdownSessions(BridgeStopCode.STOP_USER)
+        val stopping = command("queue/clear")
+        assertEquals(HttpStatusCode.ServiceUnavailable, stopping.status)
+        assertEquals("SERVER_STOPPING", errorCode(stopping.bodyAsText()))
+    }
+
+    @Test
+    fun `late error reaches the websocket without a revision`() = testApplication {
+        val hub = BridgeStateHub()
+        hub.submit(playingSample)
+        mount(BridgeServerCore(serverName = "Pixel test", authenticator = acceptAll, stateHub = hub))
+        val wsClient = createClient { install(WebSockets) }
+
+        wsClient.webSocket("/api/v1/ws", request = { bearerAuth("valid-token") }) {
+            val revision = nextJson()["revision"]?.jsonPrimitive?.long
+            hub.broadcast(ErrorMessage("PLAYER_REJECTED", "The track could not be played", "cmd-1"))
+
+            val error = nextJson()
+            assertEquals("error", error.type())
+            assertEquals("PLAYER_REJECTED", error["code"]?.jsonPrimitive?.content)
+            assertEquals("cmd-1", error["commandId"]?.jsonPrimitive?.content)
+            assertNull(error["revision"])
+            assertEquals(revision, hub.currentRevision)
         }
     }
 }
