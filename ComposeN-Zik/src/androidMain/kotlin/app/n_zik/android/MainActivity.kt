@@ -334,7 +334,7 @@ import kotlin.math.roundToInt
  * (yearly reminder — its content intent carries the year extra only). Anything else (missing
  * year, out-of-range values, restored process instance) yields null so the app starts without
  * a forced deck open. Top-level so the parse contract is unit-testable without launching the
- * activity (spec GH-275, re-review: consumer side untested).
+ * activity (spec GH-275 — the consumer side is covered by RewindDeckDeepLinkTest).
  */
 internal fun rewindDeckTargetFromIntent(intent: Intent?, isRestoredInstance: Boolean): Pair<Int, Int>? {
     if (isRestoredInstance) return null
@@ -348,6 +348,21 @@ internal fun rewindDeckTargetFromIntent(intent: Intent?, isRestoredInstance: Boo
         month == 0 -> year to month
         else -> null
     }
+}
+
+/**
+ * One-shot consumption of the deck extras on the activity's current intent: removes
+ * [RewindReminderWorker.EXTRA_DECK_YEAR] and [RewindReminderWorker.EXTRA_DECK_MONTH] so a
+ * later singleTask relaunch decodes to null instead of re-opening the deck on the same
+ * finished month/year. singleTask re-delivers the activity's current intent on every task
+ * relaunch (recents), so a tap on the notification must strip the extras from the intent
+ * kept as the current intent — otherwise every app re-foreground re-opens the deck.
+ * Call it AFTER [rewindDeckTargetFromIntent] has consumed the target into the activity
+ * state. Top-level so the consume-then-reparse contract is unit-testable.
+ */
+internal fun consumeRewindDeckExtras(intent: Intent?) {
+    intent?.removeExtra(RewindReminderWorker.EXTRA_DECK_YEAR)
+    intent?.removeExtra(RewindReminderWorker.EXTRA_DECK_MONTH)
 }
 
 /**
@@ -624,7 +639,17 @@ class MainActivity :
 
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
         shortcutIntentAction = initialShortcutAction(intent.action, isRestoredInstance)
-        rewindDeckTarget = rewindDeckTargetFromIntent(intent, isRestoredInstance)
+        // `?: rewindDeckTarget`: startApp runs async behind monet.invokeOnReady, so an
+        // onNewIntent can land before it — that path already parsed + stripped the target
+        // off the fresh intent, and re-parsing the now-stripped activity intent here must
+        // not clobber the consumed target (the deck would be lost for that tap).
+        rewindDeckTarget = rewindDeckTargetFromIntent(intent, isRestoredInstance) ?: rewindDeckTarget
+        // One-shot deep link (same as onNewIntent): strip the deck extras from the activity's
+        // current intent. The restored-instance path is the load-bearing one: the parse
+        // deliberately returns null there, but the restored launch intent still carries the
+        // extras, which a later singleTask relaunch would re-deliver via onNewIntent and
+        // re-open the deck.
+        consumeRewindDeckExtras(intent)
         onboardingStep = OnboardingStep.resolveStartupStep(
             complete = DataStoreUtils.getBoolean(this, DataStoreUtils.KEY_ONBOARDING_COMPLETE, false),
             // Resume at the persisted step after a post-import restart or process death
@@ -2128,10 +2153,15 @@ class MainActivity :
     @UnstableApi
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        setIntent(intent)
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
         shortcutIntentAction = intent.action
         rewindDeckTarget = rewindDeckTargetFromIntent(intent, isRestoredInstance = false)
+        // One-shot deep link: singleTask re-delivers the activity's current intent on every
+        // task relaunch, so consume the deck extras off the intent BEFORE keeping it as the
+        // current intent — otherwise every app re-foreground re-opens the deck on the same
+        // finished month/year.
+        consumeRewindDeckExtras(intent)
+        setIntent(intent)
     }
 
     override fun onStop() {
