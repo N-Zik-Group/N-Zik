@@ -1,0 +1,109 @@
+name: 🔒 Security Vulnerability
+description: Report a security vulnerability found in N-Zik
+title: "[SECURITY]: "
+labels: ["security"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ****
+        ### 🔒 READ BEFORE SUBMITTING 🔒
+
+        Thanks for helping keep N-Zik safe! Please report the vulnerability as soon as possible.
+        You can also contact the developers directly on [Discord](https://discord.gg/bneHC7QRje).
+
+        ⚠️ **Never** post real secrets (tokens, passwords, cookies, API keys) in this issue.
+        ****
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: 📝 Before submitting
+      description: Please verify the following steps before submitting your report.
+      options:
+        - label: I have checked for already existing security reports.
+          required: true
+        - label: I have removed any personal data or real credentials from this report.
+          required: true
+
+  - type: input
+    id: version-number
+    attributes:
+      label: 🏷️ App Version
+      description: Please specify the exact version of N-Zik affected.
+      placeholder: "5.0.0-f Full / Full32"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: build-type
+    attributes:
+      label: 🏗️ Build Type
+      description: Select the build type you are currently using.
+      options:
+        - Full
+        - Full32
+        - Minified
+        - Minified32
+        - Beta
+        - Beta32
+        - Dev
+        - Dev32
+        - Foss (N-Zik-Foss, com.nevar.nzik.foss)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 🚨 Estimated Severity
+      description: How serious do you think this vulnerability is?
+      options:
+        - Low
+        - Medium
+        - High
+        - Critical
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 🛡️ Vulnerability Description
+      description: A clear and concise description of the vulnerability.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 🔁 Steps to Reproduce
+      description: How can the vulnerability be reproduced?
+      placeholder: |
+        1. Go to '...'
+        2. Do '...'
+        3. See '...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: 💥 Impact
+      description: What could an attacker do with this vulnerability? Which data or users are affected?
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested-fix
+    attributes:
+      label: 🔧 Suggested Fix (Optional)
+      description: If you have an idea on how to fix it, please describe it here.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ****
