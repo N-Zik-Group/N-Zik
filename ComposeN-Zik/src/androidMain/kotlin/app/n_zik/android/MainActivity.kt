@@ -161,7 +161,6 @@ import app.n_zik.android.components.ui.screens.home.activeHomeTabIds
 import app.n_zik.android.components.ui.screens.home.initialShortcutAction
 import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
 import app.n_zik.android.core.rewind.RewindPlaylists
-import app.n_zik.android.core.settings.restoreLastDynamicPalette
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.enums.OnboardingStep
 import app.n_zik.android.playback.services.PlayerServiceModern
@@ -197,7 +196,6 @@ import app.n_zik.android.components.theme.AnimatedAppearance
 import app.n_zik.android.components.theme.withColor
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.Dimensions
-import app.it.fast4x.rimusic.ui.styling.applyPitchBlack
 import app.it.fast4x.rimusic.ui.styling.colorPaletteOf
 import app.it.fast4x.rimusic.ui.styling.customColorPalette
 import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
@@ -857,17 +855,6 @@ class MainActivity :
                 var colorPalette =
                     colorPaletteOf(colorPaletteName, colorPaletteMode, !lightTheme)
 
-                // Restore the last persisted cover palette instead of the static default
-                // singleton (spec-dynamic-palette-startup-restore): cold start then shows
-                // the previous cover colors until the next extraction.
-                if (colorPaletteName == ColorPaletteName.Dynamic) {
-                    restoreLastDynamicPalette(this, !lightTheme)?.let { saved ->
-                        colorPalette = if (colorPaletteMode == ColorPaletteMode.PitchBlack)
-                            saved.applyPitchBlack
-                        else saved
-                    }
-                }
-
                 val fontType = getEnum(fontTypeKey, FontType.Rubik)
 
                 if (colorPaletteName == ColorPaletteName.MaterialYou) {
@@ -959,12 +946,7 @@ class MainActivity :
                     val isDark = colorPaletteMode == ColorPaletteMode.Dark || isPicthBlack || (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
                     
                     val violetAccent = Color(0.54509807f, 0.36078432f, 0.9647059f)
-                    // Prefer the last persisted cover palette over the static violet
-                    // default (spec-dynamic-palette-startup-restore); violet only when
-                    // nothing was ever extracted.
-                    val defaultColorPalette =
-                        restoreLastDynamicPalette(preferences, isDark)
-                                ?: dynamicColorPaletteOf(violetAccent, isDark)
+                    val defaultColorPalette = dynamicColorPaletteOf(violetAccent, isDark)
                     val targetPalette = if (!isPicthBlack) defaultColorPalette else defaultColorPalette.copy(
                         background0 = Color.Black,
                         background1 = Color.Black,
