@@ -84,6 +84,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.notifications.cancelProfileNotifications
 import app.n_zik.android.core.notifications.deleteProfileChannels
 import app.n_zik.android.core.notifications.ensureProfileChannels
+import app.n_zik.android.core.notifications.recreateProfileChannels
 import app.n_zik.android.download.services.MyDownloadService
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.typography
@@ -354,6 +355,11 @@ fun ProfileScreen(
                         // The names file is the backup format: mirror the new display
                         // name into it so a restore never carries a stale name.
                         context.writeProfileEntries(context.currentProfileEntries())
+                        // The channel labels carry the display name ("Player — Work"); Android
+                        // channel names are immutable, so the rename is applied by deleting +
+                        // re-creating the profile's 6 channels (a no-op for the base, whose
+                        // channels keep their base name) (spec per-profile-notifications).
+                        recreateProfileChannels(context, profileToRename)
                         // The initials can change: let the always-composed header re-resolve it.
                         profileFaceUpdateTrigger++
                         refresh++

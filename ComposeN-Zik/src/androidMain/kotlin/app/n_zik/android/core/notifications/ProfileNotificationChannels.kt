@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Build
 import android.service.notification.StatusBarNotification
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
+import app.it.fast4x.rimusic.utils.profileDisplayName
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.screens.home.HomeSyncService
 import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
@@ -109,23 +110,28 @@ fun profileChannelIds(profileId: String): Set<String> =
     PROFILE_CHANNEL_SPECS.mapTo(mutableSetOf()) { channelId(it.baseId, profileId) }
 
 /**
- * Creates (idempotently) the 6 channels of [profileId], each named with its base channel's own
- * display name. The 6 channels are separated by ID, never by name: the active profile is not
- * shown in the channel name (the channels of different profiles share their display name).
+ * Creates (idempotently) the 6 channels of [profileId], each named with its base channel's
+ * display name plus the profile's display name (e.g. `"Player — Work"`), so the owning profile
+ * is visible in the channel name. The channels of a profile are still separated by ID
+ * (`<base id>_<profile id>`); the name only disambiguates the owning profile. The profile's
+ * display name is the stored name when set, its ID otherwise. The base profile keeps its
+ * current names exactly (zero migration) — this is a no-op for it (see below).
  *
  * No-op for the base profile: its channels are created by MainApplication, unchanged. Called
  * at boot for the active profile and at profile switch for the incoming profile. Re-creating an
- * existing channel is a no-op on Android (its settings are never touched).
+ * existing channel is a no-op on Android, so its name — like its settings — is fixed at first
+ * creation and is not updated by a later profile rename.
  */
 fun ensureProfileChannels(context: Context, profileId: String) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
     if (profileId == DEFAULT_PROFILE_ID) return
+    val displayName = context.profileDisplayName(profileId) ?: profileId
     val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     notificationManager.createNotificationChannels(
         PROFILE_CHANNEL_SPECS.map { spec ->
             NotificationChannel(
                 channelId(spec.baseId, profileId),
-                context.getString(spec.nameRes),
+                context.getString(R.string.profile_channel_name, context.getString(spec.nameRes), displayName),
                 spec.importance,
             ).apply {
                 description = context.getString(spec.descRes)
@@ -134,6 +140,23 @@ fun ensureProfileChannels(context: Context, profileId: String) {
         },
     )
     Timber.tag(TAG).d("Ensured the 6 channels of profile '%s'", profileId)
+}
+
+/**
+ * Recreates the 6 channels of [profileId] — the last step of a profile RENAME: the channel IDs
+ * are stable across renames, but Android channel names are immutable, so the only way to reflect
+ * the new display name is to delete the channels and re-create them. The deletion also dismisses
+ * any notification currently posted on these channels (the media notification re-posts on the
+ * next playback state change). [ensureProfileChannels] then rebuilds them under the fresh name.
+ * No-op for the base profile (its channels are boot-managed; the base is never renamed).
+ */
+fun recreateProfileChannels(context: Context, profileId: String) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+    if (profileId == DEFAULT_PROFILE_ID) return
+    val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    profileChannelIds(profileId).forEach { notificationManager.deleteNotificationChannel(it) }
+    ensureProfileChannels(context, profileId)
+    Timber.tag(TAG).d("Recreated the 6 channels of profile '%s' after a rename", profileId)
 }
 
 /**

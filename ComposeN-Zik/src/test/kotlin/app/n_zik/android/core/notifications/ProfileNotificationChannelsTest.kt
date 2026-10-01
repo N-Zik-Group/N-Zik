@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
+import app.it.fast4x.rimusic.utils.saveProfileDisplayName
 import app.n_zik.android.R
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -20,7 +21,8 @@ import org.robolectric.annotation.Config
 /**
  * Pins the per-profile channel helper (spec per-profile-notifications, goal ⑩): the [channelId]
  * resolution (base unchanged / suffixed, no double suffix), the channel display names (the
- * base channel's own name — the profile is not shown in the name), the cancel selection (pure)
+ * base name plus the profile's display name — the profile is shown in the name), the cancel
+ * selection (pure)
  * and [ensureProfileChannels] (Robolectric: the 6 channels with faithful specs, base no-op,
  * idempotent) and [deleteProfileChannels] (the deletion purge — the profile's notifications
  * cancelled, its channels deleted, the base channels untouched).
@@ -136,46 +138,96 @@ class ProfileNotificationChannelsTest {
         assertNotNull(player)
         assertEquals(NotificationManager.IMPORTANCE_LOW, player?.importance)
         assertFalse(player?.canShowBadge() == true)
-        assertEquals(context.getString(R.string.player), player?.name)
+        // No rename is stored in the test context, so the profile's display name falls back
+        // to its ID ("work") — the label is "Player — work".
+        assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.player), "work"), player?.name)
         assertEquals(context.getString(R.string.player), player?.description)
 
         val sleepTimer = nm.getNotificationChannel("sleep_timer_channel_id_work")
         assertNotNull(sleepTimer)
         assertEquals(NotificationManager.IMPORTANCE_DEFAULT, sleepTimer?.importance)
         assertFalse(sleepTimer?.canShowBadge() == true)
-        assertEquals(context.getString(R.string.sleep_timer), sleepTimer?.name)
+        assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.sleep_timer), "work"), sleepTimer?.name)
         assertEquals(context.getString(R.string.sleep_timer), sleepTimer?.description)
 
         val download = nm.getNotificationChannel("download_channel_work")
         assertNotNull(download)
         assertEquals(NotificationManager.IMPORTANCE_LOW, download?.importance)
         assertFalse(download?.canShowBadge() == true)
-        assertEquals(context.getString(R.string.download), download?.name)
+        assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.download), "work"), download?.name)
         assertEquals(context.getString(R.string.download), download?.description)
 
         val sync = nm.getNotificationChannel("sync_channel_id_work")
         assertNotNull(sync)
         assertEquals(NotificationManager.IMPORTANCE_LOW, sync?.importance)
         assertFalse(sync?.canShowBadge() == true)
-        assertEquals(context.getString(R.string.sync), sync?.name)
+        assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.sync), "work"), sync?.name)
         assertEquals(context.getString(R.string.sync_notifications), sync?.description)
 
         val rewind = nm.getNotificationChannel("rewind_work")
         assertNotNull(rewind)
         assertEquals(NotificationManager.IMPORTANCE_LOW, rewind?.importance)
         assertFalse(rewind?.canShowBadge() == true)
-        assertEquals(context.getString(R.string.rw_channel), rewind?.name)
+        assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.rw_channel), "work"), rewind?.name)
         assertEquals(context.getString(R.string.rw_channel), rewind?.description)
 
         val listenTogether = nm.getNotificationChannel("listen_together_channel_work")
         assertNotNull(listenTogether)
         assertEquals(NotificationManager.IMPORTANCE_HIGH, listenTogether?.importance)
         assertTrue(listenTogether?.canShowBadge() == true) // the badge is NOT disabled (default)
-        assertEquals(context.getString(R.string.listen_together_notification_channel_name), listenTogether?.name)
+        assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.listen_together_notification_channel_name), "work"), listenTogether?.name)
         assertEquals(
             context.getString(R.string.listen_together_notification_channel_desc),
             listenTogether?.description,
         )
+    }
+
+    @Test
+    fun `ensureProfileChannels names the channels with the profile display name when renamed`() {
+        context.saveProfileDisplayName("work", "Work")
+        ensureProfileChannels(context, "work")
+
+        val nm = context.getSystemService(NotificationManager::class.java)
+        val player = nm.getNotificationChannel("default_channel_id_work")
+        assertNotNull(player)
+        // The stored display name ("Work") — not the ID — is used in the label.
+        assertEquals(
+            context.getString(R.string.profile_channel_name, context.getString(R.string.player), "Work"),
+            player?.name,
+        )
+    }
+
+    @Test
+    fun `recreateProfileChannels applies the new display name after a rename`() {
+        val nm = context.getSystemService(NotificationManager::class.java)
+        // Channels created under the current name ("Work").
+        context.saveProfileDisplayName("work", "Work")
+        ensureProfileChannels(context, "work")
+        assertEquals(
+            context.getString(R.string.profile_channel_name, context.getString(R.string.player), "Work"),
+            nm.getNotificationChannel("default_channel_id_work")?.name,
+        )
+
+        // Rename the profile; channel names are immutable, so without recreation the old name
+        // would persist. recreateProfileChannels deletes + rebuilds under the fresh name.
+        context.saveProfileDisplayName("work", "Travail")
+        recreateProfileChannels(context, "work")
+
+        assertEquals(
+            context.getString(R.string.profile_channel_name, context.getString(R.string.player), "Travail"),
+            nm.getNotificationChannel("default_channel_id_work")?.name,
+        )
+    }
+
+    @Test
+    fun `recreateProfileChannels is a no-op for the base profile`() {
+        val nm = context.getSystemService(NotificationManager::class.java)
+        // The base channels are boot-managed and the base is never renamed: nothing is touched.
+        profileChannelIds(DEFAULT_PROFILE_ID).forEach {
+            nm.createNotificationChannel(NotificationChannel(it, it, NotificationManager.IMPORTANCE_LOW))
+        }
+        recreateProfileChannels(context, DEFAULT_PROFILE_ID)
+        profileChannelIds(DEFAULT_PROFILE_ID).forEach { assertNotNull(nm.getNotificationChannel(it)) }
     }
 
     @Test
