@@ -24,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
@@ -42,7 +43,10 @@ import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.core.database.LikeStateManager
+import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.PlaylistStateManager
+import app.n_zik.android.core.rewind.RewindPlaylists
+import app.n_zik.android.core.rewind.RewindPlaylists.rewindDisplayName
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
 import app.n_zik.android.components.menu.artist.OnlineArtistItemMenu
 import app.n_zik.android.components.menu.playlist.LocalPlaylistItemMenu
@@ -86,6 +90,9 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.LocalDownloadStatesMap
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.exoplayer.offline.Download
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 
 @Composable
 fun QuickPicksHeader(
@@ -727,10 +734,52 @@ fun RewindSection(
                         key = { it.playlist.id },
                         contentType = { "rewindPlaylist" }
                     ) { preview ->
-                        PlaylistItem(
-                            playlist = preview,
+                        // User request 2026-09-30: album-format card — a single square
+                        // cover with the localized name below, instead of the
+                        // four-track video collage of the generic PlaylistItem. The
+                        // cover is the user's custom thumbnail if one was set, else
+                        // the most-played track's thumbnail (the old collage's lead).
+                        val context = LocalContext.current
+                        val cover by remember(preview.playlist.id) {
+                            val customThumbnail = checkFileExists(context, "thumbnail/playlist_${preview.playlist.id}")
+                            if (customThumbnail != null)
+                                flowOf(listOf(customThumbnail))
+                            else
+                                Database.songPlaylistMapTable
+                                    .sortSongsByPlayTime(preview.playlist.id)
+                                    .distinctUntilChanged()
+                                    .map { list -> list.mapNotNull(Song::thumbnailUrl).lastOrNull()?.let { listOf(it) } ?: emptyList() }
+                        }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
+
+                        AlbumItem(
+                            thumbnailUrl = cover.firstOrNull(),
+                            title = context.rewindDisplayName(preview.playlist.name),
+                            authors = null,
+                            year = null,
                             thumbnailSizePx = playlistThumbnailSizePx,
                             thumbnailSizeDp = playlistThumbnailSizeDp,
+                            // alternative = true: the album card layout (square cover on
+                            // top, title centered below) — the default (false) is a row
+                            // with the text to the right of the thumbnail.
+                            alternative = true,
+                            thumbnailOverlay = {
+                                // Spec 2 origin indicator kept from the old PlaylistItem
+                                // rendering: the month/year icon overlaid on the cover.
+                                val iconRes = when {
+                                    RewindPlaylists.isMonthly(preview.playlist.name) -> R.drawable.stat_month
+                                    RewindPlaylists.isYearly(preview.playlist.name) -> R.drawable.stat_year
+                                    else -> R.drawable.musical_notes // rewind-alltime
+                                }
+                                Icon(
+                                    painter = painterResource(iconRes),
+                                    contentDescription = stringResource(R.string.cd_origin_indicator),
+                                    // Accent tint as in the base PlaylistItem overlay. The white
+                                    // XML tint on these drawables targets the Android Auto
+                                    // artwork only (drawableUri, no compose tint applied).
+                                    tint = colorPalette().accent,
+                                    modifier = Modifier.size(40.dp).padding(all = 5.dp)
+                                )
+                            },
                             modifier = Modifier
                                 .width(itemInHorizontalGridWidth)
                                 .clip(uiRoundnessShape())
@@ -748,9 +797,7 @@ fun RewindSection(
                                     }
                                 )
                                 .animateItem(),
-                            disableScrollingText = disableScrollingText,
-                            isYoutubePlaylist = false,
-                            isEditable = preview.playlist.isEditable
+                            disableScrollingText = disableScrollingText
                         )
                     }
                 }
@@ -1296,24 +1343,56 @@ fun GenericYtmSections(
                             )
                         }
                         is Innertube.VideoItem -> {
-                            VideoItem(
-                                video = item,
-                                thumbnailHeightDp = albumThumbnailSizeDp,
-                                thumbnailWidthDp = (albumThumbnailSizeDp * 16 / 9),
-                                likeState = sectionVideoLikeStatesMap[item.key],
-                                disableScrollingText = disableScrollingText,
-                                alternative = true,
-                                modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
-                                    onClick = {
-                                        binder?.stopRadio()
-                                        if (isVideoEnabled())
-                                            binder?.player?.playVideo(item.asMediaItem)
-                                        else
-                                            binder?.player?.forcePlay(item.asMediaItem)
-                                    },
-                                    onLongClick = { menuState.display { VideoItemMenu(navController = navController, song = item.asSong).MenuComponent() } }
-                                ).animateItem()
-                            )
+                            // User request 2026-09-30: the YTM "Retrospective" section uses
+                            // the album format (square thumbnail, title/artist centered
+                            // below) instead of the wide video card; playback and the
+                            // long-press menu stay video-based (same as the SongItem branch).
+                            if (title.contains("retrospective", ignoreCase = true) ||
+                                title.contains("rétrospective", ignoreCase = true)
+                            ) {
+                                AlbumItem(
+                                    thumbnailUrl = item.thumbnail?.url,
+                                    title = item.info?.name,
+                                    authors = item.authors.artistEntryNames().joinToString(", "),
+                                    year = null,
+                                    thumbnailSizePx = albumThumbnailSizePx,
+                                    thumbnailSizeDp = albumThumbnailSizeDp,
+                                    alternative = true,
+                                    showAuthors = true,
+                                    modifier = Modifier
+                                        .clip(uiRoundnessShape())
+                                        .combinedClickable(
+                                            onClick = {
+                                                binder?.stopRadio()
+                                                if (isVideoEnabled())
+                                                    binder?.player?.playVideo(item.asMediaItem)
+                                                else
+                                                    binder?.player?.forcePlay(item.asMediaItem)
+                                            },
+                                            onLongClick = { menuState.display { VideoItemMenu(navController = navController, song = item.asSong).MenuComponent() } }
+                                        ).animateItem(),
+                                    disableScrollingText = disableScrollingText
+                                )
+                            } else {
+                                VideoItem(
+                                    video = item,
+                                    thumbnailHeightDp = albumThumbnailSizeDp,
+                                    thumbnailWidthDp = (albumThumbnailSizeDp * 16 / 9),
+                                    likeState = sectionVideoLikeStatesMap[item.key],
+                                    disableScrollingText = disableScrollingText,
+                                    alternative = true,
+                                    modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
+                                        onClick = {
+                                            binder?.stopRadio()
+                                            if (isVideoEnabled())
+                                                binder?.player?.playVideo(item.asMediaItem)
+                                            else
+                                                binder?.player?.forcePlay(item.asMediaItem)
+                                        },
+                                        onLongClick = { menuState.display { VideoItemMenu(navController = navController, song = item.asSong).MenuComponent() } }
+                                    ).animateItem()
+                                )
+                            }
                         }
                         null -> {}
                     }

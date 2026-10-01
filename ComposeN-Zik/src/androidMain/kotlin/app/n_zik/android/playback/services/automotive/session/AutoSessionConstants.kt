@@ -53,6 +53,23 @@ object AutoSessionConstants {
     const val ID_PLAYLISTS_LOCAL_SHUFFLE = "PLAYLISTS_LOCAL_SHUFFLE"
     const val ID_PLAYLISTS_YT_SHUFFLE = "PLAYLISTS_YT_SHUFFLE"
     const val ID_PLAYLISTS_PINNED_SHUFFLE = "PLAYLISTS_PINNED_SHUFFLE"
+    // Rewind section: root folder + 3 sub-groups (All/Month/Year) + one shuffle per sub-group.
+    const val ID_PLAYLISTS_REWIND = "PLAYLISTS_REWIND"
+    const val ID_PLAYLISTS_REWIND_ALL = "PLAYLISTS_REWIND_ALL"
+    const val ID_PLAYLISTS_REWIND_MONTH = "PLAYLISTS_REWIND_MONTH"
+    const val ID_PLAYLISTS_REWIND_YEAR = "PLAYLISTS_REWIND_YEAR"
+    const val ID_PLAYLISTS_REWIND_ALL_SHUFFLE = "PLAYLISTS_REWIND_ALL_SHUFFLE"
+    const val ID_PLAYLISTS_REWIND_MONTH_SHUFFLE = "PLAYLISTS_REWIND_MONTH_SHUFFLE"
+    const val ID_PLAYLISTS_REWIND_YEAR_SHUFFLE = "PLAYLISTS_REWIND_YEAR_SHUFFLE"
+    // Disliked category: songs folder + its shuffle item.
+    const val ID_SONGS_DISLIKED = "SONGS_DISLIKED"
+    const val ID_SONGS_DISLIKED_SHUFFLE = "SONGS_DISLIKED_SHUFFLE"
+    // Unlike (disliked) categories: albums + artists folders, each with its shuffle
+    // (songs of the disliked albums/artists) — always shown, never filtered.
+    const val ID_ALBUMS_DISLIKED = "ALBUMS_DISLIKED"
+    const val ID_ALBUMS_DISLIKED_SHUFFLE = "ALBUMS_DISLIKED_SHUFFLE"
+    const val ID_ARTISTS_DISLIKED = "ARTISTS_DISLIKED"
+    const val ID_ARTISTS_DISLIKED_SHUFFLE = "ARTISTS_DISLIKED_SHUFFLE"
     const val ID_PLAYLIST_SHUFFLE = "PLAYLIST_SHUFFLE"
     const val ID_SONGS_OTHERS = "SONGS_OTHERS"
     const val ID_ARTISTS_LIBRARY = "ARTISTS_LIBRARY"
@@ -96,6 +113,10 @@ object AutoSessionConstants {
     // Issue #866 (gh-866): discover command button (notification + AA overflow) — toggles the
     // discover filter (NZikRadio.toggleDiscover, guest-guarded).
     const val ACTION_TOGGLE_DISCOVER = "TOGGLE_DISCOVER"
+    // Unlike (dislike) the container AA is currently displaying: toggles the phone's
+    // album/artist dislike flag — the source of the triple-filter exclusion.
+    const val ACTION_DISLIKE_ALBUM = "DISLIKE_ALBUM"
+    const val ACTION_DISLIKE_ARTIST = "DISLIKE_ARTIST"
     val CommandToggleDownload = SessionCommand(ACTION_TOGGLE_DOWNLOAD, Bundle.EMPTY)
     val CommandToggleLike = SessionCommand(ACTION_TOGGLE_LIKE, Bundle.EMPTY)
     val CommandToggleShuffle = SessionCommand(ACTION_TOGGLE_SHUFFLE, Bundle.EMPTY)
@@ -103,4 +124,6 @@ object AutoSessionConstants {
     val CommandStartRadio = SessionCommand(ACTION_START_RADIO, Bundle.EMPTY)
     val CommandSearch = SessionCommand(ACTION_SEARCH, Bundle.EMPTY)
     val CommandToggleDiscover = SessionCommand(ACTION_TOGGLE_DISCOVER, Bundle.EMPTY)
+    val CommandDislikeAlbum = SessionCommand(ACTION_DISLIKE_ALBUM, Bundle.EMPTY)
+    val CommandDislikeArtist = SessionCommand(ACTION_DISLIKE_ARTIST, Bundle.EMPTY)
 }

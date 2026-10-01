@@ -518,18 +518,16 @@ class PlayerServiceModern : MediaLibraryService(),
             toggleDiscover = ::toggleDiscover
         }
 
-        // Build the media library session on the guarded facade (AD-6)
+        // Build the media library session on the guarded facade (AD-6).
+        // No sessionActivity on purpose: Android Auto launches the session
+        // activity when the user opens the app on the car — pointing it at the
+        // phone MainActivity (expanded player sheet) made AA open the in-app
+        // screen (search bar + "your selection") instead of the media library.
+        // Without it, AA falls back to the standard session UI: browse root
+        // (QuickPicks + the five categories) by default, search on demand,
+        // now-playing only while something actually plays.
         mediaSession =
             MediaLibrarySession.Builder(this, guestGuardPlayer, mediaLibrarySessionCallback)
-                .setSessionActivity(
-                    PendingIntent.getActivity(
-                        this,
-                        0,
-                        Intent(this, MainActivity::class.java)
-                            .putExtra("expandPlayerBottomSheet", true),
-                        PendingIntent.FLAG_IMMUTABLE
-                    )
-                )
                 .setBitmapLoader(
                     CoilBitmapLoader(
                         this,

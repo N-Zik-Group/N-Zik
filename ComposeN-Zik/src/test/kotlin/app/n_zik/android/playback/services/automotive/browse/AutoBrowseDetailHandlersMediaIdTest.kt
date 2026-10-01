@@ -1,6 +1,5 @@
 package app.n_zik.android.playback.services.automotive.browse
 
-import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
@@ -30,14 +29,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-
-/**
- * Test-only application: MainApplication.onCreate() migrates credentials via
- * AndroidKeyStore (MasterKey), which is not available on the Robolectric JVM.
- * MainApplication is final, so Dependencies.application is a mock wired to
- * this app's context (same pattern as `MediaItemUtilsTest`).
- */
-class TestApplication : Application()
 
 /**
  * Issue #777 — emitting-side pin of the mediaId contract: the browse detail

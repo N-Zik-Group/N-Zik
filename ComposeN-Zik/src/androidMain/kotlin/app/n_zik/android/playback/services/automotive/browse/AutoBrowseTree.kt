@@ -35,7 +35,12 @@ class AutoBrowseTree(
     ): List<MediaItem> {
         val isPagination = parentId.contains("_PAGE_")
         val actualParentId = if (isPagination) parentId.substringBefore("_PAGE_") else parentId
-        
+
+        // Every fresh navigation (non-pagination request) reloads from the source:
+        // stale entries are dropped so each tab shows current data on open.
+        // Pagination of the same parent still hits the cache.
+        if (!isPagination) cache.clear()
+
         var list: List<MediaItem> = cache.get(actualParentId) ?: emptyList()
         
         if (list.isEmpty()) {

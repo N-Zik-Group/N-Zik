@@ -41,7 +41,11 @@ class AlbumDetailHandler : BrowseHandler {
         val parts = parentId.split("/")
         val albumId = parts[1]
         var onlineSongs: List<Song>? = null
-        
+        // The detail list mirrors the phone's album detail (AlbumScreen), which shows
+        // every track of the album — no triple dislike filter (the phone filters only
+        // the playback queue via Shuffler.play, never the detail list; re-negotiation
+        // 2026-10-01 « suit l'app »).
+
         if (albumId.startsWith("LOCAL_ALBUM_")) {
             val localSongs = database.songAlbumMapTable.allSongsOf(albumId).first()
             return localSongs.mapIndexed { index, song ->

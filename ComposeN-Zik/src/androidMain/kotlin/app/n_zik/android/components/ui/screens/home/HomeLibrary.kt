@@ -396,12 +396,13 @@ fun HomeLibrary(
     val rewindMonthlyPlaylistEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true)
     val rewindYearlyPlaylistEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
     var rewindPlaylistsFilter by rememberPreference(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.Month)
-    val isSyncEnabled = isYouTubeSyncEnabled()
     val homePlaylistsOrderPref by rememberPreference(homePlaylistsOrderKey, "")
 
+    // YT playlists can come from imports (not only live sync), so the tab
+    // visibility follows the showYtPlaylists setting alone.
     val playlistsDefaultOrder = listOf("all", "pinned_playlists", "rewind", "yt_playlists")
     val toggleMap = mapOf(
-        "yt_playlists" to (showYtPlaylists && isSyncEnabled),
+        "yt_playlists" to showYtPlaylists,
         "pinned_playlists" to showPinnedPlaylists,
         "rewind" to showRewind
     )
