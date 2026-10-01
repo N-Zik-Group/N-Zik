@@ -1934,6 +1934,7 @@
     <string name="profile_restart_required">This required a restart of the app</string>
     <string name="profile_active">Active</string>
     <string name="profile_base_name">N-Zik Fan</string>
+    <string name="profile_channel_name">%1$s — %2$s</string>
     <string name="profile_data_status">Separate: database, settings, sessions · Shared: downloads, media cache</string>
     <string name="profile_database">Tietokanta</string>
     <string name="profile_no_data">No data</string>
