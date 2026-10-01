@@ -87,6 +87,7 @@ import app.n_zik.android.core.notifications.ensureProfileChannels
 import app.n_zik.android.core.notifications.recreateProfileChannels
 import app.n_zik.android.download.services.MyDownloadService
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.shortcuts.registerAppShortcuts
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.FaceAvatar
@@ -318,6 +319,10 @@ fun ProfileScreen(
                     // The new profile was never renamed: a bare ID line in the names file.
                     context.writeProfileEntries(context.currentProfileEntries() + (trimmedName to ""))
                 ) {
+                    // The new profile's direct shortcut must appear in the launcher right away
+                    // (spec-profile-shortcuts: the shortcut set is re-registered after every
+                    // profile add / rename / delete, same call as the settings dialog).
+                    registerAppShortcuts(context)
                     refresh++
                 } else {
                     // An invalid name and a failed names-file write both surface the
@@ -355,6 +360,10 @@ fun ProfileScreen(
                         // The names file is the backup format: mirror the new display
                         // name into it so a restore never carries a stale name.
                         context.writeProfileEntries(context.currentProfileEntries())
+                        // The shortcut keeps its stable ID (the rename never re-creates it);
+                        // only its label changes — re-register so the launcher shows the new
+                        // name right away (spec-profile-shortcuts).
+                        registerAppShortcuts(context)
                         // The channel labels carry the display name ("Player — Work"); Android
                         // channel names are immutable, so the rename is applied by deleting +
                         // re-creating the profile's 6 channels (a no-op for the base, whose
@@ -393,7 +402,15 @@ fun ProfileScreen(
                     // purged with the profile — no orphan channel (or notification) left
                     // behind for a profile that no longer exists.
                     deleteProfileChannels(context, removingProfile)
-                    withContext(NzikDispatchers.UI) { refresh++ }
+                    withContext(NzikDispatchers.UI) {
+                        // The deleted profile's shortcut must vanish from the launcher right
+                        // away (spec-profile-shortcuts: the shortcut set is re-registered after
+                        // every profile add / rename / delete, same call as the settings dialog).
+                        // The names file was rewritten above, so this re-registration no longer
+                        // sees the deleted profile.
+                        registerAppShortcuts(context)
+                        refresh++
+                    }
                 }
             }
         )

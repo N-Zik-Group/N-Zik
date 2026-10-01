@@ -13,6 +13,10 @@ import android.graphics.drawable.Icon
 import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
+import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
+import app.it.fast4x.rimusic.utils.currentProfileEntries
+import app.it.fast4x.rimusic.utils.profileDisplayName
+import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
 import app.n_zik.android.MainActivity
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.screens.rescue.RescueActivity
@@ -20,15 +24,66 @@ import timber.log.Timber
 
 internal const val GOOGLE_LAUNCHER_PACKAGE = "com.google.android.apps.nexuslauncher"
 
+/**
+ * The launcher's cap on a shortcut's short label (25 chars): a longer label makes
+ * `setDynamicShortcuts` throw. The framework constant `ShortcutInfo.MAX_SHORTCUT_LABEL_LENGTH`
+ * is not exposed on this compile SDK, so the documented value is inlined here.
+ */
+internal const val MAX_SHORTCUT_SHORT_LABEL_LENGTH = 25
+
 internal const val SHORTCUT_SEARCH_ID = "search"
 internal const val SHORTCUT_ALBUMS_ID = "albums"
 internal const val SHORTCUT_ARTISTS_ID = "artists"
 internal const val SHORTCUT_LIBRARY_ID = "library"
 internal const val SHORTCUT_RESCUE_ID = "rescue"
+internal const val SHORTCUT_PROFILES_ID = "profiles"
 
-/** All available shortcut IDs. */
+/**
+ * Prefix of the per-profile shortcut IDs: `profile_<stable profile ID>` (spec-profile-shortcuts).
+ * The ID is stable on purpose — a profile rename only changes the shortcut's label, never its ID.
+ */
+internal const val PROFILE_SHORTCUT_PREFIX = "profile_"
+
+/** All fixed (non-profile) shortcut IDs. */
 internal val ALL_SHORTCUT_IDS =
-    listOf(SHORTCUT_SEARCH_ID, SHORTCUT_ALBUMS_ID, SHORTCUT_ARTISTS_ID, SHORTCUT_LIBRARY_ID, SHORTCUT_RESCUE_ID)
+    listOf(SHORTCUT_SEARCH_ID, SHORTCUT_ALBUMS_ID, SHORTCUT_ARTISTS_ID, SHORTCUT_LIBRARY_ID, SHORTCUT_PROFILES_ID, SHORTCUT_RESCUE_ID)
+
+/** The per-profile shortcut ID for [profileId] (stable across renames — see [PROFILE_SHORTCUT_PREFIX]). */
+internal fun profileShortcutId(profileId: String): String = PROFILE_SHORTCUT_PREFIX + profileId
+
+/** True when [shortcutId] is a per-profile shortcut ID (and not a fixed shortcut). */
+internal fun isProfileShortcut(shortcutId: String): Boolean = shortcutId.startsWith(PROFILE_SHORTCUT_PREFIX)
+
+/** The stable profile ID carried by a per-profile shortcut ID, or null when it is not one. */
+internal fun profileIdOfShortcut(shortcutId: String): String? =
+    if (isProfileShortcut(shortcutId)) {
+        shortcutId.removePrefix(PROFILE_SHORTCUT_PREFIX).takeIf { it.isNotEmpty() }
+    } else {
+        null
+    }
+
+/**
+ * The shortcut IDs that are valid for [profileEntries] (stable profile id + display name):
+ * the fixed set plus one per user profile, plus the base profile's direct shortcut
+ * (`profile_default`) — but the base one only when there is at least one user profile (with
+ * only the base, the launcher icon already starts it). The base is never in the names file, so
+ * it is added explicitly (the defensive filter also guards a corrupt file that could list it).
+ * Pure so the base rule is unit-testable without a `Context` (spec-profile-shortcuts).
+ */
+internal fun dynamicShortcutIds(profileEntries: List<Pair<String, String>>): Set<String> {
+    val userProfiles = profileEntries.filter { (id, _) -> id != DEFAULT_PROFILE_ID }
+    val userShortcuts = userProfiles.map { (id, _) -> profileShortcutId(id) }.toSet()
+    val baseShortcut = if (userProfiles.isEmpty()) emptySet() else setOf(profileShortcutId(DEFAULT_PROFILE_ID))
+    return ALL_SHORTCUT_IDS.toSet() + userShortcuts + baseShortcut
+}
+
+/**
+ * The shortcut IDs that are valid right now, read from the live profile entries. The config
+ * CSV may carry arbitrary ids, so the "unknown id" filter (see [parseShortcutConfig]) must
+ * know the live profile ids (spec-profile-shortcuts).
+ */
+internal fun dynamicShortcutIds(context: Context): Set<String> =
+    dynamicShortcutIds(context.currentProfileEntries())
 
 /** Maximum number of active shortcuts (launcher display limit). */
 internal const val MAX_ACTIVE_SHORTCUTS = 4
@@ -71,17 +126,23 @@ internal fun homeLauncherPackage(packageManager: PackageManager): String? =
  * Single source of truth shared by the launcher registration and the settings dialog, so they
  * cannot disagree. Guarantees, whatever the stored strings contain (blank, unknown ids,
  * duplicates, missing ids):
- * - [order] holds every id of [ALL_SHORTCUT_IDS] exactly once, stored order first;
+ * - [order] holds every id of [validIds] exactly once, stored order first (a profile shortcut
+ *   whose profile was deleted drops out; a new profile's shortcut is appended);
  * - [enabled] always contains [SHORTCUT_RESCUE_ID] (locked), and falls back to
- *   [DEFAULT_ACTIVE_SHORTCUT_IDS] when nothing usable is stored.
+ *   [DEFAULT_ACTIVE_SHORTCUT_IDS] when nothing usable is stored (stored ids of deleted
+ *   profiles count as unusable — the fallback keeps the launcher in a sane state).
  */
 internal data class ShortcutConfig(val order: List<String>, val enabled: Set<String>)
 
-internal fun parseShortcutConfig(orderStr: String?, enabledStr: String?): ShortcutConfig {
-    val storedOrder = orderStr.orEmpty().split(",").filter { it in ALL_SHORTCUT_IDS }.distinct()
-    val order = storedOrder + ALL_SHORTCUT_IDS.filter { it !in storedOrder }
+internal fun parseShortcutConfig(
+    orderStr: String?,
+    enabledStr: String?,
+    validIds: Collection<String> = ALL_SHORTCUT_IDS,
+): ShortcutConfig {
+    val storedOrder = orderStr.orEmpty().split(",").filter { it in validIds }.distinct()
+    val order = storedOrder + validIds.filter { it !in storedOrder }
 
-    val storedEnabled = enabledStr.orEmpty().split(",").filter { it in ALL_SHORTCUT_IDS }
+    val storedEnabled = enabledStr.orEmpty().split(",").filter { it in validIds }
     val enabled = (storedEnabled.ifEmpty { DEFAULT_ACTIVE_SHORTCUT_IDS } + SHORTCUT_RESCUE_ID).toSet()
 
     return ShortcutConfig(order, enabled)
@@ -92,8 +153,12 @@ internal fun parseShortcutConfig(orderStr: String?, enabledStr: String?): Shortc
  * [MAX_ACTIVE_SHORTCUTS]. Rescue is locked, so when more than the maximum are enabled the other
  * shortcuts give way, never Rescue.
  */
-internal fun resolveActiveShortcutIds(orderStr: String?, enabledStr: String?): List<String> {
-    val (order, enabled) = parseShortcutConfig(orderStr, enabledStr)
+internal fun resolveActiveShortcutIds(
+    orderStr: String?,
+    enabledStr: String?,
+    validIds: Collection<String> = ALL_SHORTCUT_IDS,
+): List<String> {
+    val (order, enabled) = parseShortcutConfig(orderStr, enabledStr, validIds)
     val active = order.filter { it in enabled }
     if (active.size <= MAX_ACTIVE_SHORTCUTS) return active
 
@@ -103,13 +168,14 @@ internal fun resolveActiveShortcutIds(orderStr: String?, enabledStr: String?): L
 
 /**
  * Same as above, reading the values from the `"preferences"` file. A value of an unexpected type
- * (corrupt preferences) is treated as absent instead of failing registration.
+ * (corrupt preferences) is treated as absent instead of failing registration. The valid-id set
+ * is the dynamic one (fixed shortcuts + the user profiles that exist right now).
  */
 internal fun resolveActiveShortcutIds(context: Context): List<String> {
     val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
     val orderStr = runCatching { prefs.getString(appShortcutsOrderKey, null) }.getOrNull()
     val enabledStr = runCatching { prefs.getString(appShortcutsEnabledKey, null) }.getOrNull()
-    return resolveActiveShortcutIds(orderStr, enabledStr)
+    return resolveActiveShortcutIds(orderStr, enabledStr, dynamicShortcutIds(context))
 }
 
 /**
@@ -148,21 +214,55 @@ internal fun registerAppShortcuts(context: Context) {
 }
 
 /**
- * Label resource, icon drawable, and intent action for a shortcut id.
+ * Label resource, icon drawable, and intent action for a fixed shortcut id.
  *
  * Split out from [buildShortcut] so the id-to-resource mapping is unit-testable without a real
  * `Context` -- resource ids are compile-time constants, so this needs no Robolectric/Android
  * resources at all, unlike [buildShortcut] itself (`context.getString`) or [shortcutIcon]
  * (`ContextCompat.getDrawable`), which do.
+ *
+ * Per-profile shortcuts are NOT here: their label is the profile's display name (dynamic), so
+ * [shortcutSpec] only ever sees the fixed ids (a profile id would throw — by design).
  */
 internal fun shortcutSpec(shortcutId: String): Triple<Int, Int, String> = when (shortcutId) {
     SHORTCUT_SEARCH_ID -> Triple(R.string.search, R.drawable.shortcut_search, MainActivity.action_search)
     SHORTCUT_ALBUMS_ID -> Triple(R.string.albums, R.drawable.shortcut_albums, MainActivity.action_albums)
     SHORTCUT_ARTISTS_ID -> Triple(R.string.artists, R.drawable.shortcut_artists, MainActivity.actions_artists)
     SHORTCUT_LIBRARY_ID -> Triple(R.string.playlists, R.drawable.shortcut_library, MainActivity.action_library)
+    SHORTCUT_PROFILES_ID -> Triple(R.string.profiles, R.drawable.shortcut_profiles, MainActivity.action_profiles)
     SHORTCUT_RESCUE_ID -> Triple(R.string.rescue_center, R.drawable.shortcut_rescue, ACTION_RESCUE)
     else -> error("Unknown shortcut id $shortcutId")
 }
+
+/**
+ * The intent action of a shortcut: the fixed action of the static shortcuts,
+ * [MainActivity.action_profile] for the per-profile ones.
+ */
+internal fun shortcutIntentAction(shortcutId: String): String =
+    if (isProfileShortcut(shortcutId)) MainActivity.action_profile else shortcutSpec(shortcutId).third
+
+/**
+ * The display name labelling a profile's shortcut: the stored name when set, the app default
+ * name for the base profile (its ID is an internal value, never shown), the stable ID
+ * otherwise. Covers both the user profiles and the base (whose shortcut label is its default
+ * name, "N-Zik Fan").
+ */
+internal fun profileShortcutDisplayName(context: Context, profileId: String): String =
+    resolveProfileDisplayName(profileId, context.profileDisplayName(profileId), context.getString(R.string.profile_base_name))
+
+/**
+ * The launcher short label of a shortcut: the fixed label of the static shortcuts, the profile
+ * display name for the per-profile ones (they share one icon, so the label is what makes them
+ * readable). Truncated to [ShortcutInfo.MAX_SHORTCUT_LABEL_LENGTH] — a longer label would make
+ * the registration throw.
+ */
+internal fun shortcutShortLabel(context: Context, shortcutId: String): String =
+    if (isProfileShortcut(shortcutId)) {
+        profileShortcutDisplayName(context, profileIdOfShortcut(shortcutId).orEmpty())
+            .take(MAX_SHORTCUT_SHORT_LABEL_LENGTH)
+    } else {
+        context.getString(shortcutSpec(shortcutId).first)
+    }
 
 /** Intent action for the Rescue Center shortcut. Must match the manifest intent-filter. */
 const val ACTION_RESCUE = "app.n_zik.android.action.rescue"
@@ -176,12 +276,24 @@ internal fun shortcutTargetClass(shortcutId: String): Class<*> =
     if (shortcutId == SHORTCUT_RESCUE_ID) RescueActivity::class.java else MainActivity::class.java
 
 private fun buildShortcut(context: Context, shortcutId: String, blackIcon: Boolean): ShortcutInfo {
-    val (labelRes, drawableRes, action) = shortcutSpec(shortcutId)
+    // The per-profile shortcuts share the same icon as the generic « Profiles » one — only the
+    // label (the profile display name) distinguishes them (spec-profile-shortcuts).
+    val drawableRes = if (isProfileShortcut(shortcutId)) {
+        R.drawable.shortcut_profiles
+    } else {
+        shortcutSpec(shortcutId).second
+    }
+    val intent = Intent(context, shortcutTargetClass(shortcutId)).setAction(shortcutIntentAction(shortcutId))
+    // The direct per-profile shortcut carries the stable profile ID: the app sets it active
+    // before launch (cold) or switches to it (warm) — MainActivity consumes the extra one-shot.
+    if (isProfileShortcut(shortcutId)) {
+        intent.putExtra(MainActivity.EXTRA_PROFILE_ID, profileIdOfShortcut(shortcutId).orEmpty())
+    }
 
     return ShortcutInfo.Builder(context, shortcutId)
-        .setShortLabel(context.getString(labelRes))
+        .setShortLabel(shortcutShortLabel(context, shortcutId))
         .setIcon(shortcutIcon(context, drawableRes, blackIcon))
-        .setIntent(Intent(context, shortcutTargetClass(shortcutId)).setAction(action))
+        .setIntent(intent)
         .build()
 }
 

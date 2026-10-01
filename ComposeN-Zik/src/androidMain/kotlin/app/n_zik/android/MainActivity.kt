@@ -157,6 +157,7 @@ import app.n_zik.android.components.onboarding.OnboardingScreen
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
 import app.n_zik.android.components.ui.screens.home.OPEN_SEARCH_SHORTCUT
+import app.n_zik.android.components.ui.screens.profiles.executeProfileSwitch
 import app.n_zik.android.components.ui.screens.home.activeHomeTabIds
 import app.n_zik.android.components.ui.screens.home.initialShortcutAction
 import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
@@ -235,11 +236,13 @@ import app.it.fast4x.rimusic.utils.customThemeLight_iconButtonPlayerKey
 import app.it.fast4x.rimusic.utils.customThemeLight_textDisabledKey
 import app.it.fast4x.rimusic.utils.customThemeLight_textSecondaryKey
 import app.it.fast4x.rimusic.utils.currentMediaItemIdAsState
+import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.disableClosingPlayerSwipingDownKey
 import app.it.fast4x.rimusic.utils.disablePlayerHorizontalSwipeKey
 import app.it.fast4x.rimusic.utils.effectRotationKey
 import app.it.fast4x.rimusic.utils.enableQuickPicksPageKey
 import app.it.fast4x.rimusic.utils.fontTypeKey
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.forcePlay
 import app.it.fast4x.rimusic.utils.forcePlayFromBeginning
 import app.it.fast4x.rimusic.utils.getEnum
@@ -267,10 +270,13 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.proxyHostnameKey
 import app.it.fast4x.rimusic.utils.proxyModeKey
 import app.it.fast4x.rimusic.utils.proxyPortKey
+import app.it.fast4x.rimusic.utils.readProfileIds
 import app.it.fast4x.rimusic.enums.TransitionEffect
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.restartActivityKey
 import app.it.fast4x.rimusic.utils.hideStatusBarKey
+import app.it.fast4x.rimusic.utils.saveProfileLastUsed
+import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.it.fast4x.rimusic.utils.setDefaultPalette
 import app.it.fast4x.rimusic.utils.showButtonPlayerVideoKey
 import app.it.fast4x.rimusic.utils.showSearchTabKey
@@ -327,6 +333,7 @@ import kotlinx.coroutines.Job
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.unit.IntOffset
 import kotlin.math.roundToInt
+import kotlin.system.exitProcess
 
 /**
  * Decodes the deck target carried by a rewind reminder's content intent: a valid year with a
@@ -433,6 +440,50 @@ internal fun rewindDeckRoute(year: Int, month: Int): String =
         "${NavRoutes.rewind.name}?year=$year&month=$month"
     }
 
+/**
+ * The stable profile ID a direct profile shortcut intent points to (action
+ * [MainActivity.action_profile] + [MainActivity.EXTRA_PROFILE_ID]), or null when the intent
+ * carries no such target (missing action, or missing/absent extra). Top-level so the
+ * cold/warm decision is unit-testable without launching the activity (spec-profile-shortcuts).
+ */
+internal fun profileShortcutTarget(intent: Intent?): String? =
+    if (intent?.action == MainActivity.action_profile) {
+        intent.getStringExtra(MainActivity.EXTRA_PROFILE_ID)
+    } else {
+        null
+    }
+
+/**
+ * One-shot consumption of the profile-shortcut extra on the intent the activity keeps: a
+ * singleTask relaunch re-delivers the kept intent, so the extra must be stripped off it —
+ * the in-memory state alone cannot reach the task record (same pattern as
+ * [consumeRewindDeckExtras], spec-profile-shortcuts). The strip is unconditional: even a
+ * rejected (unknown profile) tap must not keep its extra alive for a later re-delivery.
+ */
+internal fun consumeProfileShortcutExtra(intent: Intent?) {
+    intent?.removeExtra(MainActivity.EXTRA_PROFILE_ID)
+}
+
+/**
+ * The profile a profile-shortcut tap should switch to, or null for a bare launch: a tap on
+ * the profile that is already active (no switch, no restart) or on an unknown/deleted ID
+ * (ignored — the app never points itself at a profile that does not exist) both yield null.
+ * Pure so the cold/warm decision is unit-testable without an Intent or a Context
+ * (spec-profile-shortcuts).
+ */
+internal fun profileSwitchTarget(tapId: String?, activeId: String, validIds: Collection<String>): String? =
+    tapId?.takeIf { it != activeId && it in validIds }
+
+/**
+ * True when [action] is one of the two profile-shortcut actions (generic « Profiles » or a
+ * direct per-profile one). Those are consumed by their own paths (spec-profile-shortcuts) and
+ * must NOT feed [shortcutIntentAction] — doing so would make the home-tab effect pop the back
+ * stack to home, which is not the profile shortcuts' job. Top-level so the exclusion is
+ * unit-testable without launching the activity.
+ */
+internal fun isProfileShortcutAction(action: String?): Boolean =
+    action == MainActivity.action_profiles || action == MainActivity.action_profile
+
 @UnstableApi
 class MainActivity :
 //MonetCompatActivity(),
@@ -463,7 +514,9 @@ class MainActivity :
     // reading `intent.action` directly only ever saw the launch-time intent.
     // Not re-seeded from the launch intent when the activity is recreated (theme change, settings
     // import): the shortcut was already consumed and would otherwise pop the back stack to home.
-    private var shortcutIntentAction by mutableStateOf<String?>(null)
+    // Internal (not private) so the Robolectric lifecycle tests can assert the profile-shortcut
+    // exclusion — a profile tap must never feed this state (it would pop the back stack to home).
+    internal var shortcutIntentAction by mutableStateOf<String?>(null)
 
     // Finished month (or finished year, month = 0 yearly sentinel) carried by a rewind
     // reminder's content intent. Set on cold start (onCreate) and warm start (onNewIntent),
@@ -477,6 +530,12 @@ class MainActivity :
     // and warm start (onNewIntent), consumed once by the navigation effect that opens the
     // playlist directly. Internal for the same reason as [rewindDeckTarget].
     internal var rewindPlaylistTarget by mutableStateOf<Long?>(null)
+
+    // Generic « Profiles » launcher shortcut (spec-profile-shortcuts): set on cold start
+    // (onCreate) and warm start (onNewIntent) when the intent action is [action_profiles],
+    // consumed once by the navigation effect that opens the profiles page. Internal for the
+    // same reason as [rewindDeckTarget].
+    internal var openProfilesShortcut by mutableStateOf(false)
 
     // Current step of the first-launch onboarding flow, held by the activity so a
     // recreation (rotation) resumes the flow at the right step; null means the flow
@@ -592,6 +651,64 @@ class MainActivity :
         consumeRewindPlaylistExtras(intent)
     }
 
+    /**
+     * The user profile IDs a profile shortcut may point to, read from the names file (the base
+     * profile is never listed). A read failure degrades to "no profiles" — the tap is then a
+     * bare launch — instead of crashing the cold start (spec-profile-shortcuts).
+     */
+    private fun validProfileIds(): List<String> =
+        listOf(DEFAULT_PROFILE_ID) + runCatching { readProfileIds() }.getOrDefault(emptyList())
+
+    /**
+     * Consumes the direct profile shortcut carried by [intent] — COLD path
+     * (spec-profile-shortcuts): when the tap names a valid user profile that is not the active
+     * one, the active profile is set BEFORE the app reads any per-profile state — [startApp]
+     * (and with it the first per-profile prefs/DB access) runs only later, via
+     * `monet.invokeOnReady` — so the launch lands straight in the tapped profile. A tap on the
+     * active profile, or on an unknown/deleted ID, is a bare launch (no switch, no crash).
+     * The extra is one-shot: stripped off the intent the activity keeps, so the singleTask
+     * task relaunch re-delivering it cannot re-apply the tap (same pattern as the rewind deep
+     * links — see [consumeProfileShortcutExtra]).
+     */
+    internal fun consumeProfileShortcut(intent: Intent?) {
+        val tapId = profileShortcutTarget(intent)
+        val switchTarget = profileSwitchTarget(tapId, getActiveProfile(this), validProfileIds())
+        switchTarget?.let {
+            setActiveProfile(it, this)
+            // The tapped profile counts as used from this launch (spec-profiles-page-face: the
+            // active profile is recorded as used on every app start — the boot-time record in
+            // MainApplication still names the previous profile).
+            saveProfileLastUsed(it, System.currentTimeMillis())
+            Timber.tag("MainActivity").i("Profile shortcut (cold): active profile set to $it before launch")
+        }
+        consumeProfileShortcutExtra(intent)
+    }
+
+    /**
+     * Consumes the direct profile shortcut carried by [intent] — WARM path (app already
+     * running, spec-profile-shortcuts): a tap on a different valid profile runs the whole
+     * CAP-3 switch ([executeProfileSwitch] — same wiring as the profiles page: cancel the
+     * outgoing profile's notifications, stop the services, ensure the incoming channels) and
+     * exits the process, so the relaunch reads the new profile. A tap on the active profile,
+     * or on an unknown/deleted ID, is a bare consumption — no switch, no restart.
+     * The extra is stripped BEFORE the switch, so the kept intent never carries it again
+     * (same one-shot contract as the cold path and the rewind deep links).
+     */
+    internal fun consumeProfileShortcutWarm(intent: Intent?) {
+        val tapId = profileShortcutTarget(intent)
+        val switchTarget = profileSwitchTarget(tapId, getActiveProfile(this), validProfileIds())
+        consumeProfileShortcutExtra(intent)
+        switchTarget?.let {
+            Timber.tag("MainActivity").i("Profile shortcut (warm): switching to $it, exiting the process")
+            executeProfileSwitch(it, this)
+            // exit 0, like the profiles page: the new profile's stores can only be loaded in a
+            // fresh process. The exit deliberately lives at the call site (not in
+            // executeProfileSwitch) so the switch wiring stays pinnable under Robolectric
+            // without killing the test JVM (ProfileSwitchTest).
+            exitProcess(0)
+        }
+    }
+
     @ExperimentalTextApi
     @UnstableApi
     @ExperimentalComposeUiApi
@@ -621,6 +738,19 @@ class MainActivity :
         monet.updateMonetColors()
 
         val isRestoredInstance = savedInstanceState != null
+
+        // Direct profile shortcut (spec-profile-shortcuts, cold path): the active profile is
+        // set BEFORE startApp runs (it is dispatched after onCreate returns, via
+        // monet.invokeOnReady), so the first per-profile prefs/DB access already sees the
+        // tapped profile. The generic « Profiles » shortcut only records the navigation
+        // target — the effect below opens the page once the graph is composed.
+        consumeProfileShortcut(intent)
+        // Gated on isRestoredInstance (like [shortcutIntentAction] below): a recreated/restored
+        // activity is handed the kept launch intent again, whose action_profiles cannot be
+        // stripped (it is the action, not an extra) — re-deriving the flag would re-open the
+        // profiles page on every rotation / theme change / process-death restore.
+        openProfilesShortcut = !isRestoredInstance && intent?.action == action_profiles
+
         monet.invokeOnReady {
             startApp(isRestoredInstance)
         }
@@ -761,7 +891,11 @@ class MainActivity :
         Timber.tag("MainActivity").d("onCreate launchedFromNotification: $launchedFromNotification intent ${intent.action}")
 
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
-        shortcutIntentAction = initialShortcutAction(intent.action, isRestoredInstance)
+        // The profile-shortcut actions have their own consumption (spec-profile-shortcuts,
+        // done in onCreate / onNewIntent) and must not ride the home-tab shortcut state,
+        // which would pop the back stack to home.
+        shortcutIntentAction =
+            initialShortcutAction(intent.action, isRestoredInstance)?.takeUnless { isProfileShortcutAction(it) }
         // Rewind deep links are consumed synchronously in onCreate / onNewIntent
         // (consumeRewindDeepLinks), before startApp runs — see those call sites.
         onboardingStep = OnboardingStep.resolveStartupStep(
@@ -1755,6 +1889,21 @@ class MainActivity :
                     }
                 }
 
+                // Generic « Profiles » launcher shortcut (spec-profile-shortcuts): open the
+                // profiles page once the graph is composed (cold: after the normal start).
+                // Consumed from an effect, like the rewind targets above, and gated on
+                // onboarding the same way: while onboarding is up the NavHost is not
+                // composed, so the target is held until the flow completes and the effect
+                // re-runs. The direct per-profile shortcut does NOT navigate — it only
+                // launches in (cold) or switches to (warm) its profile.
+                LaunchedEffect(openProfilesShortcut, onboardingStep == null) {
+                    if (onboardingStep != null) return@LaunchedEffect
+                    if (openProfilesShortcut) {
+                        navController.navigate(NavRoutes.profiles.name)
+                        openProfilesShortcut = false
+                    }
+                }
+
                         CrossfadeContainer(state = pipState.value) { isCurrentInPip ->
                             Timber.tag("MainActivity").d("pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
                             val pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
@@ -2281,7 +2430,17 @@ class MainActivity :
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
-        shortcutIntentAction = intent.action
+        // The profile-shortcut actions have their own consumption (spec-profile-shortcuts) and
+        // must not ride the home-tab shortcut state (which would pop the back stack to home).
+        shortcutIntentAction = intent.action?.takeUnless { isProfileShortcutAction(it) }
+        // Generic « Profiles » shortcut (warm): record the navigation target without
+        // clobbering a pending one (the navigation effect consumes it, gated on onboarding).
+        openProfilesShortcut = openProfilesShortcut || (intent.action == action_profiles)
+        // Direct profile shortcut (warm, app ON path): a different valid profile runs the full
+        // CAP-3 switch + process exit; the same/unknown one is a bare consumption — the extras
+        // are stripped before the intent is kept, so the next singleTask re-delivery decodes to
+        // nothing (same contract as onCreate and the rewind deep links).
+        consumeProfileShortcutWarm(intent)
         // Rewind notification deep links (deck / playlist): consume the fresh intent's
         // targets BEFORE keeping it as the current intent — app ON path, same contract as
         // onCreate (spec GH-275 follow-up): an unconsumed target opens, an already-consumed
@@ -2367,6 +2526,12 @@ class MainActivity :
         const val action_albums = "app.it.fast4x.rimusic.action.albums"
         const val actions_artists = "app.it.fast4x.rimusic.action.artists"
         const val action_library = "app.it.fast4x.rimusic.action.library"
+        // Profile shortcuts (spec-profile-shortcuts): the generic one opens the profiles page;
+        // the direct per-profile one carries the stable profile ID in [EXTRA_PROFILE_ID] and
+        // launches in it (cold) or switches to it (warm).
+        const val action_profiles = "app.it.fast4x.rimusic.action.profiles"
+        const val action_profile = "app.it.fast4x.rimusic.action.profile"
+        const val EXTRA_PROFILE_ID = "profileId"
     }
 
 
