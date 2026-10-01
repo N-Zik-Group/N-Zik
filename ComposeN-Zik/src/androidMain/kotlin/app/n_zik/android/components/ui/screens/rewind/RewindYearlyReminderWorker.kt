@@ -59,6 +59,15 @@ internal class RewindYearlyReminderWorker(
         // and autoCancel independently
         private const val NOTIFICATION_ID = 0x7265776C // 'rewl', stable across runs (autoCancel)
 
+        /**
+         * PendingIntent request code UNIQUE to this worker — see
+         * [RewindReminderWorker.PENDING_REQUEST_CODE]: sharing request code 0 across the four
+         * rewind workers made the last poster overwrite the other notifications' content
+         * intents. This worker must never collide with the monthly reminder (both post on
+         * January 1st).
+         */
+        private const val PENDING_REQUEST_CODE = 2
+
         // Positive-only jitter (up to 10 minutes AFTER the 1st of January, never before) so
         // installs do not all hit WorkManager at the same 1st-of-January instant without a
         // single work firing before the new year starts
@@ -168,7 +177,7 @@ internal class RewindYearlyReminderWorker(
             .putExtra(RewindReminderWorker.EXTRA_DECK_YEAR, finishedYear)
         val pending = PendingIntent.getActivity(
             applicationContext,
-            0,
+            PENDING_REQUEST_CODE,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )

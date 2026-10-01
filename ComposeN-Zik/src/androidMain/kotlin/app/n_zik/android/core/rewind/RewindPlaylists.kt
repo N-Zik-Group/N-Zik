@@ -39,6 +39,15 @@ object RewindPlaylists {
      */
     const val REWIND_PLAYLISTS_FILTER_KEY = "rewindPlaylistsFilter"
 
+    /**
+     * Extra carried by the playlist-ready notifications' content intent (spec GH-275
+     * follow-up — renegotiated: the playlist notifications deep-link to the generated
+     * 'Rewind — <period>' playlist instead of a bare app open): the database id of the
+     * created playlist. Consumed by [app.n_zik.android.MainActivity] to open the playlist
+     * directly; a missing extra falls back to the bare app open.
+     */
+    const val EXTRA_REWIND_PLAYLIST_ID = "rewind_playlist_id"
+
     /** Whether [name] is a generated monthly rewind playlist. */
     fun isMonthly(name: String): Boolean = name.startsWith(MONTHLY_PREFIX, ignoreCase = true)
 

@@ -154,7 +154,7 @@ class RewindYearlyReminderWorkerTest {
         // (MainActivity's rewindDeckTargetFromIntent) to the yearly target
         assertEquals(
             finishedYear to 0,
-            rewindDeckTargetFromIntent(contentIntent, isRestoredInstance = false)
+            rewindDeckTargetFromIntent(contentIntent)
         )
     }
 

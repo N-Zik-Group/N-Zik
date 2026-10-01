@@ -30,7 +30,9 @@ import java.util.concurrent.TimeUnit
 /**
  * Monthly rewind playlist worker (spec 2): on the 1st of the month, creates
  * `rewind-monthly:YYYYMM` from the finished month's most-played songs — if it does not
- * exist yet — and posts a notification when the notification toggle allows it.
+ * exist yet — and posts a notification when the notification toggle allows it. The
+ * notification's content intent deep-links to the created playlist (spec GH-275 follow-up
+ * — the original frozen spec 2 was a bare app open).
  *
  * Pattern copied line-for-line from [RewindReminderWorker] (same package-structure rules),
  * with two deliberate differences (frozen spec 2):
@@ -59,6 +61,14 @@ internal class RewindMonthlyPlaylistWorker(
         private const val TAG = "RewindMonthlyPlaylist"
         private const val WORK_NAME = "RewindMonthlyPlaylistWorker"
         private const val NOTIFICATION_ID = 0x7265706C // 'repl', stable across runs (autoCancel)
+
+        /**
+         * PendingIntent request code UNIQUE to this worker — see
+         * [RewindReminderWorker.PENDING_REQUEST_CODE]: all four rewind workers post content
+         * intents to the same MainActivity, and sharing request code 0 made the last poster
+         * overwrite the other notifications' content intents.
+         */
+        private const val PENDING_REQUEST_CODE = 3
 
         // Positive-only jitter so installs do not all hit WorkManager at the same
         // 1st-of-month instant: it can only push the firing later (up to +10 min), never
@@ -148,7 +158,11 @@ internal class RewindMonthlyPlaylistWorker(
                 } else {
                     val count = generateRewindPlaylist(name, window.first, window.second, GenerateMode.CreateIfMissing)
                     if (count > 0) {
-                        postCreatedNotification(finished.month.getDisplayName(TextStyle.FULL, Locale.getDefault()))
+                        // The deep link needs the playlist's database id: the creation above
+                        // already resolved the name, so one lookup is enough (spec GH-275
+                        // follow-up — the notification opens the playlist directly).
+                        val playlistId = Database.playlistTable.findByName(name).first()?.id
+                        postCreatedNotification(finished.month.getDisplayName(TextStyle.FULL, Locale.getDefault()), playlistId)
                     }
                     Result.success()
                 }
@@ -159,7 +173,7 @@ internal class RewindMonthlyPlaylistWorker(
         }
     }
 
-    private fun postCreatedNotification(finishedMonthName: String) {
+    private fun postCreatedNotification(finishedMonthName: String, playlistId: Long?) {
         if (!isMonthlyPlaylistNotificationEnabled(applicationContext)) {
             Timber.tag(TAG).i("Playlist notification toggle off: skipping the notification")
             return
@@ -176,13 +190,21 @@ internal class RewindMonthlyPlaylistWorker(
             return
         }
 
-        // The content intent opens the app without extras: the user navigates to the
-        // Playlists tab (frozen spec 2 — the playlist notification is not the deck).
+        // The content intent deep-links to the just-created playlist: a tap opens it
+        // directly (spec GH-275 follow-up — renegotiated: the playlist notification is no
+        // longer a bare app open). A missing id (the lookup raced the creation) falls back
+        // to the bare app open: the playlist exists either way, the user finds it in the
+        // Playlists tab's Rewind category.
         val intent = Intent(applicationContext, MainActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            .also { idIntent ->
+                playlistId?.let { id ->
+                    idIntent.putExtra(RewindPlaylists.EXTRA_REWIND_PLAYLIST_ID, id)
+                }
+            }
         val pending = PendingIntent.getActivity(
             applicationContext,
-            0,
+            PENDING_REQUEST_CODE,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )

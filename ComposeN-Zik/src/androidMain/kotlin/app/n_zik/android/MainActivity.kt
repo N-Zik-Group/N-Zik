@@ -160,6 +160,8 @@ import app.n_zik.android.components.ui.screens.home.OPEN_SEARCH_SHORTCUT
 import app.n_zik.android.components.ui.screens.home.activeHomeTabIds
 import app.n_zik.android.components.ui.screens.home.initialShortcutAction
 import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
+import app.n_zik.android.core.rewind.RewindPlaylists
+import app.n_zik.android.core.settings.restoreLastDynamicPalette
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.enums.OnboardingStep
 import app.n_zik.android.playback.services.PlayerServiceModern
@@ -195,6 +197,7 @@ import app.n_zik.android.components.theme.AnimatedAppearance
 import app.n_zik.android.components.theme.withColor
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.Dimensions
+import app.it.fast4x.rimusic.ui.styling.applyPitchBlack
 import app.it.fast4x.rimusic.ui.styling.colorPaletteOf
 import app.it.fast4x.rimusic.ui.styling.customColorPalette
 import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
@@ -332,15 +335,29 @@ import kotlin.math.roundToInt
  * month 1..12 yields the finished `(year, month)` pair (monthly reminder); a valid year with
  * the month extra missing (default 0) or explicitly 0 yields the yearly target `(year, 0)`
  * (yearly reminder — its content intent carries the year extra only). Anything else (missing
- * year, out-of-range values, restored process instance) yields null so the app starts without
- * a forced deck open. Top-level so the parse contract is unit-testable without launching the
- * activity (spec GH-275 — the consumer side is covered by RewindDeckDeepLinkTest).
+ * year, out-of-range values, no extras) yields null so the app starts without a forced deck
+ * open.
+ *
+ * The one-shot contract is layered (spec GH-275 + follow-up):
+ * - [consumeRewindDeckExtras] strips the extras off the intent the activity keeps, so a
+ *   singleTask relaunch re-delivering that intent decodes to null;
+ * - [lastConsumedMarker] rejects an intent whose target was already consumed. That is the
+ *   task record re-sending the ORIGINAL launch intent (extras intact) when the task is
+ *   restored after a process death — a path the in-memory strip cannot reach, which
+ *   previously re-opened the deck on every tap of any other notification (device-observed
+ *   leak, fixed 2026-10-01). A fresh notification tap still decodes to its target: the tap
+ *   is the user's intent (user decision 2026-10-01 — the tap always re-opens the deck).
+ *
+ * Top-level so the parse contract is unit-testable without launching the activity
+ * (spec GH-275 — the consumer side is covered by RewindDeckDeepLinkTest).
  */
-internal fun rewindDeckTargetFromIntent(intent: Intent?, isRestoredInstance: Boolean): Pair<Int, Int>? {
-    if (isRestoredInstance) return null
+internal fun rewindDeckTargetFromIntent(
+    intent: Intent?,
+    lastConsumedMarker: Int = 0,
+): Pair<Int, Int>? {
     val year = intent?.getIntExtra(RewindReminderWorker.EXTRA_DECK_YEAR, 0) ?: 0
     val month = intent?.getIntExtra(RewindReminderWorker.EXTRA_DECK_MONTH, 0) ?: 0
-    return when {
+    val target: Pair<Int, Int>? = when {
         year !in 2000..2100 -> null
         month in 1..12 -> year to month
         // Yearly sentinel: the yearly reminder posts the year extra only, so the missing
@@ -348,7 +365,36 @@ internal fun rewindDeckTargetFromIntent(intent: Intent?, isRestoredInstance: Boo
         month == 0 -> year to month
         else -> null
     }
+    return target?.takeUnless {
+        rewindDeckTargetMarker(it.first, it.second) == lastConsumedMarker
+    }
 }
+
+/**
+ * Encodes a decoded deck target for the persistent consumption marker
+ * ([DataStoreUtils.KEY_REWIND_DECK_LAST_CONSUMED]): `year * 100 + month`, the yearly
+ * sentinel (month 0) kept as is. A monthly target repeats only 12 cycles apart and a yearly
+ * one yearly, so the encoding is unique per notification cycle — the marker never needs
+ * resetting, only overwriting. Top-level so the encoding is unit-testable.
+ */
+internal fun rewindDeckTargetMarker(year: Int, month: Int): Int = year * 100 + month
+
+/**
+ * Decodes the rewind playlist deep link carried by a playlist-ready notification's content
+ * intent ([RewindPlaylists.EXTRA_REWIND_PLAYLIST_ID], spec GH-275 follow-up — the playlist
+ * notifications now open the generated 'Rewind — <period>' playlist directly instead of a
+ * bare app open): a positive playlist id yields it, anything else (missing extra, 0,
+ * negative) yields null so the app starts without a forced playlist open. [lastConsumedId]
+ * rejects an intent pointing at an already-opened playlist — the task record re-sends the
+ * original launch intent after a process-death restore (same guard as the deck target).
+ * Top-level so the parse contract is unit-testable without launching the activity.
+ */
+internal fun rewindPlaylistTargetFromIntent(
+    intent: Intent?,
+    lastConsumedId: Long = 0L,
+): Long? =
+    intent?.getLongExtra(RewindPlaylists.EXTRA_REWIND_PLAYLIST_ID, 0L)
+        ?.takeIf { it > 0L && it != lastConsumedId }
 
 /**
  * One-shot consumption of the deck extras on the activity's current intent: removes
@@ -363,6 +409,16 @@ internal fun rewindDeckTargetFromIntent(intent: Intent?, isRestoredInstance: Boo
 internal fun consumeRewindDeckExtras(intent: Intent?) {
     intent?.removeExtra(RewindReminderWorker.EXTRA_DECK_YEAR)
     intent?.removeExtra(RewindReminderWorker.EXTRA_DECK_MONTH)
+}
+
+/**
+ * One-shot consumption of the playlist deep link on the activity's current intent — the
+ * playlist-id twin of [consumeRewindDeckExtras] (spec GH-275 follow-up). The strip is
+ * unconditional: even a rejected (already-opened) playlist id must not stay alive in the
+ * kept intent for a later re-delivery.
+ */
+internal fun consumeRewindPlaylistExtras(intent: Intent?) {
+    intent?.removeExtra(RewindPlaylists.EXTRA_REWIND_PLAYLIST_ID)
 }
 
 /**
@@ -412,10 +468,17 @@ class MainActivity :
     private var shortcutIntentAction by mutableStateOf<String?>(null)
 
     // Finished month (or finished year, month = 0 yearly sentinel) carried by a rewind
-    // reminder's content intent. Set on cold start (startApp) and warm start (onNewIntent),
+    // reminder's content intent. Set on cold start (onCreate) and warm start (onNewIntent),
     // consumed once by the navigation effect that opens the deck on that month — or the
-    // yearly deck on that year.
-    private var rewindDeckTarget by mutableStateOf<Pair<Int, Int>?>(null)
+    // yearly deck on that year. Internal (not private) so the Robolectric lifecycle tests
+    // can assert the consumed target (spec GH-275 follow-up).
+    internal var rewindDeckTarget by mutableStateOf<Pair<Int, Int>?>(null)
+
+    // Database id of the 'Rewind — <period>' playlist carried by a playlist-ready
+    // notification's content intent (spec GH-275 follow-up). Set on cold start (onCreate)
+    // and warm start (onNewIntent), consumed once by the navigation effect that opens the
+    // playlist directly. Internal for the same reason as [rewindDeckTarget].
+    internal var rewindPlaylistTarget by mutableStateOf<Long?>(null)
 
     // Current step of the first-launch onboarding flow, held by the activity so a
     // recreation (rotation) resumes the flow at the right step; null means the flow
@@ -478,6 +541,59 @@ class MainActivity :
         }
     }
 
+    /**
+     * Consumes the rewind deep links carried by [intent] into the activity state (deck target
+     * and/or playlist id, spec GH-275 + follow-up), records each ACCEPTED target in its
+     * persistent last-consumed marker ([DataStoreUtils.KEY_REWIND_DECK_LAST_CONSUMED] /
+     * [DataStoreUtils.KEY_REWIND_PLAYLIST_LAST_CONSUMED]), then strips ALL the deep-link
+     * extras off the intent the activity keeps.
+     *
+     * A target already recorded in its marker is rejected — that is the task record
+     * re-sending the original launch intent (extras intact) when the task is restored after a
+     * process death, and the singleTask relaunch of a kept intent: the in-memory strip alone
+     * cannot reach the task record, so without the marker the deck re-opened on every tap of
+     * any other notification (device-observed leak, fixed 2026-10-01). A fresh notification
+     * tap always carries an unconsumed target, so it still opens (user decision 2026-10-01 —
+     * the tap always re-opens the deck).
+     *
+     * Runs synchronously in onCreate (app off) and onNewIntent (app on) — NOT behind
+     * monet.invokeOnReady/startApp — so the intent extras are consumed the moment the intent
+     * arrives and the contract is unit-testable on the real activity. Known edge: a target
+     * accepted while the onboarding flow is up (the navigation effect holds it) is lost if
+     * the process dies before the flow completes — the re-delivered intent is then rejected
+     * as already consumed and the deck/playlist does not open. Rare (a mid-onboarding tap
+     * plus a process death) and non-fatal: the deck/playlist stays reachable manually.
+     *
+     * Internal (not private) so the Robolectric lifecycle tests can exercise the exact
+     * consumption contract both launch paths share.
+     */
+    internal fun consumeRewindDeepLinks(intent: Intent?) {
+        val deck = rewindDeckTargetFromIntent(
+            intent,
+            DataStoreUtils.getInt(this, DataStoreUtils.KEY_REWIND_DECK_LAST_CONSUMED, 0),
+        )
+        rewindDeckTarget = deck ?: rewindDeckTarget
+        deck?.let {
+            DataStoreUtils.saveInt(
+                this,
+                DataStoreUtils.KEY_REWIND_DECK_LAST_CONSUMED,
+                rewindDeckTargetMarker(it.first, it.second),
+            )
+        }
+        val playlist = rewindPlaylistTargetFromIntent(
+            intent,
+            DataStoreUtils.getLong(this, DataStoreUtils.KEY_REWIND_PLAYLIST_LAST_CONSUMED, 0L),
+        )
+        rewindPlaylistTarget = playlist ?: rewindPlaylistTarget
+        playlist?.let {
+            DataStoreUtils.saveLong(this, DataStoreUtils.KEY_REWIND_PLAYLIST_LAST_CONSUMED, it)
+        }
+        // The strip is unconditional (not gated on a successful parse): rejected targets
+        // must not keep their extras alive in the kept intent for a later re-delivery.
+        consumeRewindDeckExtras(intent)
+        consumeRewindPlaylistExtras(intent)
+    }
+
     @ExperimentalTextApi
     @UnstableApi
     @ExperimentalComposeUiApi
@@ -510,6 +626,13 @@ class MainActivity :
         monet.invokeOnReady {
             startApp(isRestoredInstance)
         }
+
+        // Rewind notification deep links (deck / playlist): consume the launch intent's
+        // targets synchronously — app OFF path. A task restored after a process death
+        // re-sends its original launch intent here; the persistent last-consumed markers
+        // reject an already-consumed target while a fresh tap still opens (spec GH-275
+        // follow-up). The app ON path is onNewIntent, which shares the same contract.
+        consumeRewindDeepLinks(intent)
 
         checkIfAppIsRunningInBackground()
         // App shortcuts are now registered in MainApplication.onCreate (before Dependencies.init)
@@ -632,24 +755,17 @@ class MainActivity :
          */
         val launchedFromNotification: Boolean =
             intent?.extras?.let {
-                it.getBoolean("expandPlayerBottomSheet") || it.getBoolean("fromWidget")
+                // The AA "expandPlayerBottomSheet" producer (setSessionActivity) was removed —
+                // only the widget launch still sets this extra.
+                it.getBoolean("fromWidget")
             } ?: false
 
         Timber.tag("MainActivity").d("onCreate launchedFromNotification: $launchedFromNotification intent ${intent.action}")
 
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
         shortcutIntentAction = initialShortcutAction(intent.action, isRestoredInstance)
-        // `?: rewindDeckTarget`: startApp runs async behind monet.invokeOnReady, so an
-        // onNewIntent can land before it — that path already parsed + stripped the target
-        // off the fresh intent, and re-parsing the now-stripped activity intent here must
-        // not clobber the consumed target (the deck would be lost for that tap).
-        rewindDeckTarget = rewindDeckTargetFromIntent(intent, isRestoredInstance) ?: rewindDeckTarget
-        // One-shot deep link (same as onNewIntent): strip the deck extras from the activity's
-        // current intent. The restored-instance path is the load-bearing one: the parse
-        // deliberately returns null there, but the restored launch intent still carries the
-        // extras, which a later singleTask relaunch would re-deliver via onNewIntent and
-        // re-open the deck.
-        consumeRewindDeckExtras(intent)
+        // Rewind deep links are consumed synchronously in onCreate / onNewIntent
+        // (consumeRewindDeepLinks), before startApp runs — see those call sites.
         onboardingStep = OnboardingStep.resolveStartupStep(
             complete = DataStoreUtils.getBoolean(this, DataStoreUtils.KEY_ONBOARDING_COMPLETE, false),
             // Resume at the persisted step after a post-import restart or process death
@@ -740,6 +856,17 @@ class MainActivity :
 
                 var colorPalette =
                     colorPaletteOf(colorPaletteName, colorPaletteMode, !lightTheme)
+
+                // Restore the last persisted cover palette instead of the static default
+                // singleton (spec-dynamic-palette-startup-restore): cold start then shows
+                // the previous cover colors until the next extraction.
+                if (colorPaletteName == ColorPaletteName.Dynamic) {
+                    restoreLastDynamicPalette(this, !lightTheme)?.let { saved ->
+                        colorPalette = if (colorPaletteMode == ColorPaletteMode.PitchBlack)
+                            saved.applyPitchBlack
+                        else saved
+                    }
+                }
 
                 val fontType = getEnum(fontTypeKey, FontType.Rubik)
 
@@ -832,7 +959,12 @@ class MainActivity :
                     val isDark = colorPaletteMode == ColorPaletteMode.Dark || isPicthBlack || (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
                     
                     val violetAccent = Color(0.54509807f, 0.36078432f, 0.9647059f)
-                    val defaultColorPalette = dynamicColorPaletteOf(violetAccent, isDark)
+                    // Prefer the last persisted cover palette over the static violet
+                    // default (spec-dynamic-palette-startup-restore); violet only when
+                    // nothing was ever extracted.
+                    val defaultColorPalette =
+                        restoreLastDynamicPalette(preferences, isDark)
+                                ?: dynamicColorPaletteOf(violetAccent, isDark)
                     val targetPalette = if (!isPicthBlack) defaultColorPalette else defaultColorPalette.copy(
                         background0 = Color.Black,
                         background1 = Color.Black,
@@ -1612,11 +1744,11 @@ class MainActivity :
 
                 // Rewind reminder notification: open the deck on the finished month (monthly)
                 // or the yearly deck on the finished year (yearly, month = 0 sentinel — extras
-                // set in startApp / onNewIntent). Consumed from an effect, like the shortcut
-                // above, so the navigation happens once the graph is composed. The gate is
-                // part of the key: while onboarding is up the NavHost is not composed (empty
-                // graph — navigating would crash), so the target is held until the flow
-                // completes and the effect re-runs.
+                // set in onCreate / onNewIntent by consumeRewindDeepLinks). Consumed from an
+                // effect, like the shortcut above, so the navigation happens once the graph
+                // is composed. The gate is part of the key: while onboarding is up the
+                // NavHost is not composed (empty graph — navigating would crash), so the
+                // target is held until the flow completes and the effect re-runs.
                 LaunchedEffect(rewindDeckTarget, onboardingStep == null) {
                     if (onboardingStep != null) return@LaunchedEffect
                     rewindDeckTarget?.let { (year, month) ->
@@ -1625,6 +1757,19 @@ class MainActivity :
                         // RewindScreen, i.e. the year-only deck
                         navController.navigate(rewindDeckRoute(year, month))
                         rewindDeckTarget = null
+                    }
+                }
+
+                // Rewind playlist-ready notification: open the generated 'Rewind — <period>'
+                // playlist directly (spec GH-275 follow-up — renegotiated: the playlist
+                // notifications deep-link, they are no longer a bare app open). Consumed from
+                // an effect, like the deck above: the navigation happens once the graph is
+                // composed, and the onboarding gate holds the target until the flow completes.
+                LaunchedEffect(rewindPlaylistTarget, onboardingStep == null) {
+                    if (onboardingStep != null) return@LaunchedEffect
+                    rewindPlaylistTarget?.let { playlistId ->
+                        navController.navigate("${NavRoutes.localPlaylist.name}/$playlistId")
+                        rewindPlaylistTarget = null
                     }
                 }
 
@@ -2155,12 +2300,12 @@ class MainActivity :
         super.onNewIntent(intent)
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
         shortcutIntentAction = intent.action
-        rewindDeckTarget = rewindDeckTargetFromIntent(intent, isRestoredInstance = false)
-        // One-shot deep link: singleTask re-delivers the activity's current intent on every
-        // task relaunch, so consume the deck extras off the intent BEFORE keeping it as the
-        // current intent — otherwise every app re-foreground re-opens the deck on the same
-        // finished month/year.
-        consumeRewindDeckExtras(intent)
+        // Rewind notification deep links (deck / playlist): consume the fresh intent's
+        // targets BEFORE keeping it as the current intent — app ON path, same contract as
+        // onCreate (spec GH-275 follow-up): an unconsumed target opens, an already-consumed
+        // one (task record re-send / singleTask relaunch) is rejected, and the extras are
+        // stripped so the kept intent decodes to nothing on the next re-delivery.
+        consumeRewindDeepLinks(intent)
         setIntent(intent)
     }
 

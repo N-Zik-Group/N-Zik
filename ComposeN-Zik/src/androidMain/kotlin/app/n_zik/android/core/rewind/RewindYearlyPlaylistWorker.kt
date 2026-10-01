@@ -35,7 +35,9 @@ import java.util.concurrent.TimeUnit
  * dedicated `KEY_REWIND_YEARLY_PLAYLIST_ENABLED` creation gate (decoupled from the
  * master switch and the deck toggles) and creation-on-despite-denied-POST_NOTIFICATIONS
  * (the notification is the optional part). Shares the application-created "rewind"
- * notification channel (no new channel).
+ * notification channel (no new channel). The notification's content intent deep-links to
+ * the created playlist (spec GH-275 follow-up — the original frozen spec 2 was a bare
+ * app open), like [RewindMonthlyPlaylistWorker].
  */
 internal class RewindYearlyPlaylistWorker(
     context: Context,
@@ -52,6 +54,14 @@ internal class RewindYearlyPlaylistWorker(
         private const val TAG = "RewindYearlyPlaylist"
         private const val WORK_NAME = "RewindYearlyPlaylistWorker"
         private const val NOTIFICATION_ID = 0x72657079 // 'repy', stable across runs (autoCancel)
+
+        /**
+         * PendingIntent request code UNIQUE to this worker — see
+         * [RewindReminderWorker.PENDING_REQUEST_CODE]: all four rewind workers post content
+         * intents to the same MainActivity, and sharing request code 0 made the last poster
+         * overwrite the other notifications' content intents.
+         */
+        private const val PENDING_REQUEST_CODE = 4
 
         // Positive-only jitter so installs do not all hit WorkManager at the same
         // 1st-of-January instant: it can only push the firing later (up to +10 min), never
@@ -143,7 +153,11 @@ internal class RewindYearlyPlaylistWorker(
                 } else {
                     val count = generateRewindPlaylist(name, window.first, window.second, GenerateMode.CreateIfMissing)
                     if (count > 0) {
-                        postCreatedNotification(finishedYear.toString())
+                        // The deep link needs the playlist's database id: the creation above
+                        // already resolved the name, so one lookup is enough (spec GH-275
+                        // follow-up — the notification opens the playlist directly).
+                        val playlistId = Database.playlistTable.findByName(name).first()?.id
+                        postCreatedNotification(finishedYear.toString(), playlistId)
                     }
                     Result.success()
                 }
@@ -154,7 +168,7 @@ internal class RewindYearlyPlaylistWorker(
         }
     }
 
-    private fun postCreatedNotification(finishedYear: String) {
+    private fun postCreatedNotification(finishedYear: String, playlistId: Long?) {
         if (!isYearlyPlaylistNotificationEnabled(applicationContext)) {
             Timber.tag(TAG).i("Playlist notification toggle off: skipping the notification")
             return
@@ -171,13 +185,21 @@ internal class RewindYearlyPlaylistWorker(
             return
         }
 
-        // The content intent opens the app without extras: the user navigates to the
-        // Playlists tab (frozen spec 2 — the playlist notification is not the deck).
+        // The content intent deep-links to the just-created playlist: a tap opens it
+        // directly (spec GH-275 follow-up — renegotiated: the playlist notification is no
+        // longer a bare app open). A missing id (the lookup raced the creation) falls back
+        // to the bare app open: the playlist exists either way, the user finds it in the
+        // Playlists tab's Rewind category.
         val intent = Intent(applicationContext, MainActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            .also { idIntent ->
+                playlistId?.let { id ->
+                    idIntent.putExtra(RewindPlaylists.EXTRA_REWIND_PLAYLIST_ID, id)
+                }
+            }
         val pending = PendingIntent.getActivity(
             applicationContext,
-            0,
+            PENDING_REQUEST_CODE,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )

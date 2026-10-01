@@ -92,6 +92,26 @@ object DataStoreUtils {
     /** Default deck background music volume. */
     const val DEFAULT_REWIND_BGM_VOLUME = 70
 
+    // Persistent one-shot markers for the rewind notification deep links (spec GH-275
+    // follow-up). The in-memory strip (MainActivity.consumeRewindDeepLinks) cannot reach
+    // the task record, which re-sends the original launch intent (extras intact) when the
+    // task is restored after a process death — so each accepted deep link is recorded
+    // here, and a re-delivered intent carrying an already-consumed target is rejected.
+    // Targets repeat only a notification cycle apart (month id / playlist id), so the
+    // markers never need resetting, only overwriting.
+
+    /**
+     * Last deck target consumed from a reminder tap: `year * 100 + month`, month 0 = the
+     * yearly deck sentinel. 0 = nothing consumed yet.
+     */
+    const val KEY_REWIND_DECK_LAST_CONSUMED = "rewind_deck_last_consumed"
+
+    /**
+     * Last playlist opened from a playlist-ready notification deep link: the database id
+     * of the 'Rewind — <period>' playlist. 0 = nothing consumed yet.
+     */
+    const val KEY_REWIND_PLAYLIST_LAST_CONSUMED = "rewind_playlist_last_consumed"
+
     private const val PREFS_NAME = "app_settings"
 
     // Internal (not private) so the file-top-level rememberDataStoreBooleanPreference
@@ -130,6 +150,17 @@ object DataStoreUtils {
 
     fun saveInt(context: Context, key: String, value: Int) {
         prefs(context).edit().putInt(key, value).apply()
+    }
+
+    /**
+     * Read a long preference. Plain SharedPreferences read, safe to call from a
+     * coroutine on any dispatcher.
+     */
+    fun getLong(context: Context, key: String, default: Long = 0L): Long =
+        prefs(context).getLong(key, default)
+
+    fun saveLong(context: Context, key: String, value: Long) {
+        prefs(context).edit().putLong(key, value).apply()
     }
 }
 
