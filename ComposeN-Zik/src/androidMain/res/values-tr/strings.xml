@@ -1934,6 +1934,7 @@
     <string name="profile_restart_required">Bunun için uygulamanın yeniden başlatılması gerekiyor</string>
     <string name="profile_active">Etkin</string>
     <string name="profile_base_name">N-Zik Hayranı</string>
+    <string name="profile_channel_name">%1$s — %2$s</string>
     <string name="profile_data_status">Ayrı: veritabanı, ayarlar, oturumlar · Ortak: indirmeler, medya önbelleği</string>
     <string name="profile_database">Veritabanı</string>
     <string name="profile_no_data">Veri yok</string>
