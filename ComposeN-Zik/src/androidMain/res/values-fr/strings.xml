@@ -1935,6 +1935,7 @@ Volume BAS : titre précédent</string>
     <string name="profile_restart_required">Cela a nécessité un redémarrage de l\'application</string>
     <string name="profile_active">Actif</string>
     <string name="profile_base_name">Fan de N-Zik</string>
+    <string name="profile_channel_name">%1$s — %2$s</string>
     <string name="profile_data_status">Séparés : base de données, paramètres, sessions · Partagés : téléchargements, cache multimédia</string>
     <string name="profile_database">Base de données</string>
     <string name="profile_no_data">Aucune donnée</string>
