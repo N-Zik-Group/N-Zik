@@ -2209,6 +2209,7 @@
     <string name="bridge_server_stopped">PC server stopped</string>
     <string name="bridge_server_running_address">Listening on %1$s:%2$d</string>
     <string name="bridge_server_stopped_user">Stopped from the phone</string>
+    <string name="bridge_server_stopped_auto">Stopped automatically (auto-stop)</string>
     <string name="bridge_server_stopped_timeout">Android background time limit reached, restart it from the app</string>
     <string name="bridge_server_stopped_wifi">No Wi-Fi network or hotspot</string>
     <string name="bridge_server_via_hotspot">Through this phone\'s hotspot</string>
@@ -2239,6 +2240,19 @@
     <string name="bridge_revoke">Revoke</string>
     <string name="bridge_revoke_confirm">Revoke \"%1$s\"? It will have to be paired again.</string>
     <string name="bridge_pair_success">Paired with %1$s</string>
+    <string name="bridge_connected_pc">Connected PC</string>
+    <string name="bridge_disconnect">Disconnect</string>
+    <string name="bridge_disconnected">%1$s disconnected</string>
+    <string name="bridge_auto_stop">Auto-stop</string>
+    <string name="bridge_auto_stop_description">Stops the PC server on its own to save battery</string>
+    <string name="bridge_auto_stop_no_client">Stop with no PC connected</string>
+    <string name="bridge_auto_stop_inactivity">Stop after inactivity</string>
+    <string name="bridge_auto_stop_inactivity_hint">Only playback and queue commands from the PC count as activity</string>
+    <string name="bridge_auto_stop_never">Never</string>
+    <string name="bridge_auto_stop_minutes">%1$d min</string>
+    <string name="bridge_battery_title">Battery optimization</string>
+    <string name="bridge_battery_warning">Battery optimization is on: Android may stop the PC server in the background</string>
+    <string name="bridge_battery_action">Disable battery optimization</string>
     <string name="onboard_perm_camera">Camera</string>
     <string name="onboard_perm_camera_desc">Scan the QR code of N-Zik Desktop Compagnon to pair a PC</string>
 </resources>
