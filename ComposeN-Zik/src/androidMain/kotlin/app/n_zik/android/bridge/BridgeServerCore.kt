@@ -138,6 +138,8 @@ internal class BridgeServerCore(
     private val isDevicePaired: (String) -> Boolean = deviceStore::isPaired,
     /** Called after every change of [activeDevice]. */
     private val onActiveDeviceChanged: () -> Unit = {},
+    /** Called for each valid command handed to [commandExecutor]: the inactivity auto-stop tick (contract §11.2). */
+    private val onCommandAccepted: () -> Unit = {},
 ) {
     private val stopping = AtomicBoolean(false)
 
@@ -517,6 +519,7 @@ internal class BridgeServerCore(
             respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid command body")
             return
         }
+        onCommandAccepted()
         when (val result = commandExecutor.execute(parsed.command)) {
             is CommandResult.Applied -> respond(CommandResponse(applied = true, changed = result.changed, revision = result.revision))
             CommandResult.Rejected ->

@@ -54,10 +54,10 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 /**
- * Basic "PC server" page: status of the local PC bridge, its real address, a start/stop
- * button, the "Pair a PC" card and the paired devices. Same page structure as the Listen
- * Together screen (Skeleton scaffold, page header, settings-style card). The full "Manage
- * server" screen comes later.
+ * "PC server" page, the "Manage server" screen: the connected PC (Disconnect), status of the
+ * local PC bridge with its real address and a start/stop button, the battery optimization
+ * warning, the "Pair a PC" card, the auto-stop settings and the paired devices. Same page
+ * structure as the Listen Together screen (Skeleton scaffold, page header, settings-style card).
  */
 @Composable
 fun BridgeServerScreen(
@@ -67,9 +67,12 @@ fun BridgeServerScreen(
     val context = LocalContext.current
     val state by BridgeServerController.state.collectAsStateWithLifecycle()
     val pairingCode by BridgeServerController.pairingCode.collectAsStateWithLifecycle()
+    val activeDevice by BridgeServerController.activeDevice.collectAsStateWithLifecycle()
+    val autoStopSettings by BridgeServerController.autoStopSettings.collectAsStateWithLifecycle()
     val pairedDevices by BridgeServerController.pairedDevices
         .collectAsStateWithLifecycle(initialValue = emptyList(), context = NzikDispatchers.DATA)
     LaunchedEffect(Unit) { BridgeServerController.loadDeviceStore(context) }
+    LaunchedEffect(Unit) { BridgeServerController.loadAutoStopSettings(context) }
     LaunchedEffect(Unit) {
         BridgeServerController.pairedEvents.collect { deviceName ->
             Toaster.s(R.string.bridge_pair_success, deviceName)
@@ -133,6 +136,12 @@ fun BridgeServerScreen(
                         textAlign = TextAlign.Center,
                     )
                 }
+                val connected = activeDevice.takeIf { state is BridgeState.Running }
+                if (connected != null) {
+                    item(key = "connected", contentType = "card") {
+                        ConnectedPcCard(connected)
+                    }
+                }
                 item(key = "status", contentType = "card") {
                     BridgeStatusCard(
                         state = state,
@@ -141,11 +150,17 @@ fun BridgeServerScreen(
                         onStop = { BridgeServerController.stop(context) },
                     )
                 }
+                item(key = "battery", contentType = "card") {
+                    BatteryOptimizationWarning()
+                }
                 val running = state as? BridgeState.Running
                 if (running != null) {
                     item(key = "pair", contentType = "card") {
                         PairPcCard(running = running, code = pairingCode)
                     }
+                }
+                item(key = "autoStop", contentType = "card") {
+                    AutoStopCard(autoStopSettings)
                 }
                 item(key = "devices", contentType = "card") {
                     PairedDevicesCard(PairedDevicesUi(pairedDevices))

@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import app.n_zik.android.R
@@ -28,6 +29,8 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
 import java.util.concurrent.atomic.AtomicReference
 import timber.log.Timber
@@ -57,7 +60,10 @@ class BridgeServerService : Service() {
     // Written on the DATA scope, released from the DATA scope or onDestroy (main thread)
     private val playerSource = AtomicReference<BridgePlayerSource?>(null)
     private var wifiWatch: Job? = null
+    private var autoStopWatch: Job? = null
     private var lifecycleJob: Job? = null
+    // Stops come from the DATA pool (user, Wi-Fi, onTimeout, auto-stop): one at a time
+    private val stopMutex = Mutex()
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -102,6 +108,7 @@ class BridgeServerService : Service() {
             return
         }
         val host = ipv4.hostAddress ?: return finish(BridgeState.Failed, getString(R.string.bridge_server_failed))
+        BridgeServerController.loadAutoStopSettings(this)
         // One hub, one player source and one command executor per server run: the revision starts again at 0
         val stateHub = BridgeStateHub()
         val lateFailures = LateFailureTracker(stateHub)
@@ -143,20 +150,36 @@ class BridgeServerService : Service() {
                 monitor.address.drop(1).first { it != ipv4 }
             }
             Timber.tag(TAG).i("Network address changed or lost, stopping the bridge")
-            stopServer(code = null)
+            // Separate coroutine: stopServer cancels this watcher, the stop sequence must not be cancelled with it
+            scope.launch { stopServer(code = null, expected = bridge) }
+        }
+        // Contract §11.2: the settings are read live, a change applies to this run at once
+        autoStopWatch = scope.launch {
+            BridgeAutoStop.awaitExpiry(
+                settings = BridgeServerController.autoStopSettings,
+                activeDevice = core.activeDevice,
+                commandTicks = BridgeServerController.commandTicks,
+                now = SystemClock::elapsedRealtime,
+            )
+            Timber.tag(TAG).i("Auto-stop delay elapsed, stopping the bridge")
+            // Separate coroutine: stopServer cancels this watcher, the stop sequence must not be cancelled with it
+            scope.launch { stopServer(BridgeStopCode.AUTO_STOP, expected = bridge) }
         }
     }
 
-    private suspend fun stopServer(code: BridgeStopCode?) {
+    /** [expected]: stop only that run; a late stop of an already stopped run does nothing. */
+    private suspend fun stopServer(code: BridgeStopCode?, expected: BridgeServer? = null) = stopMutex.withLock {
+        if (expected != null && server !== expected) return@withLock
         val bridge = server ?: run {
             // Stop requested while still starting (or already stopped): abort the start
             lifecycleJob?.cancel()
             releasePlayerSource()
             finish(BridgeState.Stopped, null)
-            return
+            return@withLock
         }
         server = null
         wifiWatch?.cancel()
+        autoStopWatch?.cancel()
         BridgeServerController.closePairing()
         BridgeServerController.attachCore(null)
         BridgeServerController.publish(BridgeState.Stopping)
@@ -164,7 +187,8 @@ class BridgeServerService : Service() {
         // After the sessions are closed: serverStopped stays the last message they received
         releasePlayerSource()
         val message = when (code) {
-            BridgeStopCode.STOP_USER, BridgeStopCode.AUTO_STOP -> getString(R.string.bridge_server_stopped_user)
+            BridgeStopCode.STOP_USER -> getString(R.string.bridge_server_stopped_user)
+            BridgeStopCode.AUTO_STOP -> getString(R.string.bridge_server_stopped_auto)
             BridgeStopCode.TIMEOUT -> getString(R.string.bridge_server_stopped_timeout)
             null -> getString(R.string.bridge_server_stopped_wifi)
         }

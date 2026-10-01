@@ -31,6 +31,7 @@ import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
+import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.autoDownloadSongKey
@@ -160,6 +161,22 @@ fun NetworkSettings(
         search.SearchBar( this )
 
         /* Removed Spacer */
+
+        // PC server ("Manage server") entry
+        if (search.inputValue.isBlank() || stringResource(R.string.bridge_server).contains(search.inputValue, true)) {
+            SettingsSectionCard(
+                title = stringResource(R.string.bridge_server),
+                icon = R.drawable.server,
+                content = {
+                    OtherSettingsEntry(
+                        title = stringResource(R.string.bridge_server),
+                        text = stringResource(R.string.bridge_server_description),
+                        icon = R.drawable.devices,
+                        onClick = { navController.navigate(NavRoutes.bridgeServer.name) }
+                    )
+                }
+            )
+        }
 
         // Network Status Section (Informative, non-clickable)
         SettingsSectionCard(

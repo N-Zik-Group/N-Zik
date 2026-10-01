@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.ContextCompat
 import app.it.fast4x.rimusic.utils.encryptedPreferences
+import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.bridge.audio.AudioLibrary
 import app.n_zik.android.bridge.command.BridgeCommandExecutor
 import app.n_zik.android.bridge.library.LibraryProvider
@@ -23,6 +24,8 @@ import app.n_zik.android.bridge.pairing.SharedPreferencesPairedDeviceStorage
 import app.n_zik.android.bridge.state.BridgeStateHub
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +35,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -101,6 +105,22 @@ object BridgeServerController {
     /** Name of each newly paired device, for the success toast of the "PC server" page. */
     val pairedEvents: SharedFlow<String> = _pairedEvents.asSharedFlow()
 
+    // Never suspends nor drops the latest tick: only "a command happened" matters
+    private val _commandTicks = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+    /** One tick per valid command handed to the player by the running server (inactivity auto-stop). */
+    internal val commandTicks: SharedFlow<Unit> = _commandTicks.asSharedFlow()
+
+    private val autoStopLock = Any()
+
+    @Volatile
+    private var autoStopLoaded = false
+
+    private val _autoStopSettings = MutableStateFlow(AutoStopSettings())
+
+    /** Auto-stop settings of contract §11.2; defaults until [loadAutoStopSettings] has run once. */
+    val autoStopSettings: StateFlow<AutoStopSettings> = _autoStopSettings.asStateFlow()
+
     /**
      * Core of one server run, sharing the controller's pairing code with the pairing card.
      * A successful pairing closes pairing mode: the card folds back and no code stays active.
@@ -131,6 +151,7 @@ object BridgeServerController {
                 _pairedEvents.tryEmit(deviceName)
             },
             onActiveDeviceChanged = { syncActiveDevice(core) },
+            onCommandAccepted = { _commandTicks.tryEmit(Unit) },
         )
         return core
     }
@@ -149,6 +170,42 @@ object BridgeServerController {
                 JsonPairedDeviceStore(storage)
             }.also { _deviceStore.value = it }
         }
+
+    /** Reads the persisted auto-stop settings once per process, off the main thread. */
+    suspend fun loadAutoStopSettings(context: Context): AutoStopSettings {
+        if (autoStopLoaded) return _autoStopSettings.value
+        val stored = withContext(NzikDispatchers.DATA) {
+            AutoStopPreferences.read(context.applicationContext.preferences)
+        }
+        synchronized(autoStopLock) {
+            // A choice made by the user while reading wins over the stored value
+            if (!autoStopLoaded) {
+                _autoStopSettings.value = stored
+                autoStopLoaded = true
+            }
+        }
+        return _autoStopSettings.value
+    }
+
+    /** "Stop with no client connected" (contract §11.2); applies to the running server at once. */
+    fun setAutoStopNoClient(context: Context, minutes: Int) {
+        val value = AutoStopSettings.sanitize(minutes, AutoStopSettings.DEFAULT_NO_CLIENT_MINUTES)
+        synchronized(autoStopLock) {
+            _autoStopSettings.update { it.copy(noClientMinutes = value) }
+            autoStopLoaded = true
+        }
+        AutoStopPreferences.writeNoClient(context.applicationContext.preferences, value)
+    }
+
+    /** "Stop after inactivity" (contract §11.2); applies to the running server at once. */
+    fun setAutoStopInactivity(context: Context, minutes: Int) {
+        val value = AutoStopSettings.sanitize(minutes, AutoStopSettings.DEFAULT_INACTIVITY_MINUTES)
+        synchronized(autoStopLock) {
+            _autoStopSettings.update { it.copy(inactivityMinutes = value) }
+            autoStopLoaded = true
+        }
+        AutoStopPreferences.writeInactivity(context.applicationContext.preferences, value)
+    }
 
     /**
      * Android 17 (API 37) local network protection: without this runtime permission the
@@ -207,7 +264,9 @@ object BridgeServerController {
     suspend fun kick(): Boolean {
         val core = activeCore ?: return false
         val device = core.activeDevice.value ?: return false
-        return core.kick(device.deviceId)
+        // Non-cancellable: a caller leaving (e.g. the card disposed once activeDevice turns null)
+        // must not cut the 4001 close nor the audio invalidation halfway
+        return withContext(NonCancellable) { core.kick(device.deviceId) }
     }
 
     /**
