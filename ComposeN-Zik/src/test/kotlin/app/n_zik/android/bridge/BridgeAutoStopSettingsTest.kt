@@ -12,7 +12,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
-import org.robolectric.annotation.ConscryptMode
 
 /**
  * Persistence of the auto-stop settings (contract §11.2): what [AutoStopPreferences] writes and
@@ -21,8 +20,6 @@ import org.robolectric.annotation.ConscryptMode
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
-// Conscrypt would be installed JVM-wide and break javax.crypto (HMAC) for the bridge tests that follow
-@ConscryptMode(ConscryptMode.Mode.OFF)
 class BridgeAutoStopSettingsTest {
 
     private lateinit var app: Application
