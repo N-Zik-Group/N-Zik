@@ -195,18 +195,21 @@ Join the N-Zik Discord:
     <img alt="OTA Demo" src="assets/design/preview/framed_videos/ota.gif" height="300px" />
     <img alt="VZ Demo" src="assets/design/preview/framed_videos/vz.gif" height="300px" />
     <br><br>
-    <img alt="Home (Dark)" src="assets/design/preview/img/homedark.png" height="300px" />
-    <img alt="Home (White)" src="assets/design/preview/img/homewhite.png" height="300px" />
-    <img alt="Home (AMOLED)" src="assets/design/preview/img/homeamoled.png" height="300px" />
-    <img alt="Playlist" src="assets/design/preview/img/playlist.png" height="300px" />
-    <img alt="Player Queue" src="assets/design/preview/img/queue.png" height="300px" />
-    <img alt="Player Queue2" src="assets/design/preview/img/queue2.png" height="300px" />
-    <img alt="Stats" src="assets/design/preview/img/stats.png" height="300px" />
-    <img alt="History" src="assets/design/preview/img/history.png" height="300px" />
-    <img alt="YouTube Integration" src="assets/design/preview/img/compte1youtube.png" height="300px" />
-    <img alt="Discord Integration" src="assets/design/preview/img/compte2discord.png" height="300px" />
-    <img alt="Carousel" src="assets/design/preview/img/carrousel.png" height="300px" />
-    <img alt="Discord RPC" src="assets/design/preview/img/discordrpc.png" height="300px" />
+    <img alt="Home (Dark)" src="assets/design/preview/img/homedark.webp" height="300px" />
+    <img alt="Home (White)" src="assets/design/preview/img/homewhite.webp" height="300px" />
+    <img alt="Home (AMOLED)" src="assets/design/preview/img/homeamoled.webp" height="300px" />
+    <img alt="Playlist" src="assets/design/preview/img/playlist.webp" height="300px" />
+    <img alt="Player" src="assets/design/preview/img/player.webp" height="300px" />
+    <img alt="Player Queue" src="assets/design/preview/img/queue.webp" height="300px" />
+    <img alt="Player Queue2" src="assets/design/preview/img/queue2.webp" height="300px" />
+    <img alt="Stats" src="assets/design/preview/img/stats.webp" height="300px" />
+    <img alt="History" src="assets/design/preview/img/history.webp" height="300px" />
+    <img alt="Rewind" src="assets/design/preview/img/rewind.webp" height="300px" />
+    <img alt="Multi-Profile" src="assets/design/preview/img/profiles.webp" height="300px" />
+    <img alt="YouTube Integration" src="assets/design/preview/img/compte1youtube.webp" height="300px" />
+    <img alt="Discord Integration" src="assets/design/preview/img/compte2discord.webp" height="300px" />
+    <img alt="Carousel" src="assets/design/preview/img/carrousel.webp" height="300px" />
+    <img alt="Discord RPC" src="assets/design/preview/img/discordrpc.webp" height="300px" />
     <img alt="Android Auto" src="assets/design/preview/img/AndroidAuto.png" height="200px" />
     <img alt="Android Automotive" src="assets/design/preview/img/AndroidAutomotive.png" height="200px" />
     <img alt="Android TV" src="assets/design/preview/img/AndroidTV.png" height="200px" />
