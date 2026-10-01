@@ -31,6 +31,7 @@ class RescueFilesProfileOpsTest {
     lateinit var tmp: File
 
     private lateinit var filesDir: File
+    private lateinit var cacheDir: File
     private lateinit var sharedPrefsDir: File
     private lateinit var databasesDir: File
     private lateinit var context: Context
@@ -55,11 +56,16 @@ class RescueFilesProfileOpsTest {
             store.remove(firstArg<String>())
             editor
         }
+        every { editor.putBoolean(any(), any()) } answers {
+            store[firstArg<String>()] = secondArg<Boolean>()
+            editor
+        }
     }
 
     @BeforeEach
     fun setup() {
         filesDir = File(tmp, "files").apply { mkdirs() }
+        cacheDir = File(tmp, "cache").apply { mkdirs() }
         sharedPrefsDir = File(tmp, "shared_prefs").apply { mkdirs() }
         databasesDir = File(tmp, "databases").apply { mkdirs() }
         val prefs = mockk<SharedPreferences> {
@@ -67,10 +73,15 @@ class RescueFilesProfileOpsTest {
             // Reads go through the same in-memory map the editor writes to.
             every { getString(any(), any()) } answers { store[firstArg<String>()] as String? }
             every { getLong(any(), any()) } answers { (store[firstArg<String>()] as? Long) ?: secondArg() }
+            every { getBoolean(any(), any()) } answers { (store[firstArg<String>()] as? Boolean) ?: secondArg() }
         }
         context = mockk()
         every { context.filesDir } returns filesDir
-        every { context.getSharedPreferences("profile_preferences", Context.MODE_PRIVATE) } returns prefs
+        // The profile data resolver reads the profile's OWN store (preferences_<id>) for its
+        // location setting, so every store name resolves to the same mock.
+        every { context.getSharedPreferences(any(), any()) } returns prefs
+        // The location default (System) puts the caches under the cache dir.
+        every { context.cacheDir } returns cacheDir
         // deleteSharedPreferences removes the shared_prefs XML of the name (API 24+).
         every { context.deleteSharedPreferences(any()) } answers {
             val name = firstArg<String>()
@@ -89,6 +100,9 @@ class RescueFilesProfileOpsTest {
         every { context.getDatabasePath(any()) } answers {
             File(databasesDir, firstArg<String>())
         }
+        // The public entry points (clearCache / deleteDownloads) probe the external
+        // cache dir too — the unit test runs with none.
+        every { context.externalCacheDir } returns null
         // The profile backup/restore reads the settings XMLs from the data dir
         // (the plain shared_prefs dir — the profile suffix lives in the file name).
         // dataDir is a Java field, not a method: mockk cannot stub it, so it is set
@@ -128,6 +142,47 @@ class RescueFilesProfileOpsTest {
             parentFile?.mkdirs()
             writeBytes(byteArrayOf(1))
         }
+    }
+
+    // The per-profile DATA dirs (spec-profile-data-separation): the location default
+    // (System) puts the caches under the cache dir, covers + waveforms always under
+    // filesDir, the index in the databases dir.
+
+    private fun File.dirWithFile(name: String): File = apply {
+        mkdirs()
+        File(this, name).writeText("x")
+    }
+
+    /** The SEPARATE (suffixed) data of [profile], per item (images = coil + covers). */
+    private fun seedSeparateData(
+        profile: String,
+        downloads: Boolean = true,
+        mediaCache: Boolean = true,
+        images: Boolean = true,
+        waveforms: Boolean = true,
+        index: Boolean = true,
+    ) {
+        if (downloads) File(cacheDir, "exo_downloads_$profile").dirWithFile("dl.bin")
+        if (mediaCache) File(cacheDir, "exoplayer_$profile").dirWithFile("stream.bin")
+        if (images) {
+            File(cacheDir, "coil_$profile").dirWithFile("img.bin")
+            File(filesDir, "app_covers_$profile").dirWithFile("cover.jpg")
+        }
+        if (waveforms) File(filesDir, "waveforms_$profile").dirWithFile("x.json")
+        if (index) {
+            File(databasesDir, "exoplayer_internal_$profile.db").writeText("index")
+            File(databasesDir, "exoplayer_internal_$profile.db-wal").writeText("wal")
+        }
+    }
+
+    /** The base (unsuffixed) data — the shared locations every shared item maps onto. */
+    private fun seedBaseData() {
+        File(cacheDir, "exo_downloads").dirWithFile("dl.bin")
+        File(cacheDir, "exoplayer").dirWithFile("stream.bin")
+        File(cacheDir, "coil").dirWithFile("img.bin")
+        File(filesDir, "app_covers").dirWithFile("cover.jpg")
+        File(filesDir, "waveforms").dirWithFile("x.json")
+        File(databasesDir, "exoplayer_internal.db").writeText("base-index")
     }
 
     // ──────────────────────────────────────────────────────────────────────
@@ -498,5 +553,301 @@ class RescueFilesProfileOpsTest {
         // The face entries are re-applied
         assertEquals("Moi", store["displayName_default"])
         assertEquals(42L, store["lastUsed_default"])
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Per-profile data (spec-profile-data-separation: the SEPARATE data is
+    // wiped/backup'd with the profile, the SHARED items are never touched)
+    // ──────────────────────────────────────────────────────────────────────
+
+    @Test
+    fun deleteProfileDataFilesWipesTheSeparateDataAndKeepsTheBase() {
+        seedBaseData()
+        seedSeparateData("work")
+
+        val deleted = RescueFiles.deleteProfileDataFiles(context, "work")
+
+        assertTrue(deleted > 0)
+        // work's separate data is gone (the suffixed dirs + the index with its side file)
+        assertFalse(File(cacheDir, "exo_downloads_work").exists())
+        assertFalse(File(cacheDir, "exoplayer_work").exists())
+        assertFalse(File(cacheDir, "coil_work").exists())
+        assertFalse(File(filesDir, "app_covers_work").exists())
+        assertFalse(File(filesDir, "waveforms_work").exists())
+        assertFalse(File(databasesDir, "exoplayer_internal_work.db").exists())
+        assertFalse(File(databasesDir, "exoplayer_internal_work.db-wal").exists())
+        // The base keeps its unsuffixed locations (a separate cache never borrows them)
+        assertTrue(File(cacheDir, "exo_downloads/dl.bin").exists())
+        assertTrue(File(cacheDir, "exoplayer/stream.bin").exists())
+        assertTrue(File(cacheDir, "coil/img.bin").exists())
+        assertTrue(File(filesDir, "app_covers/cover.jpg").exists())
+        assertTrue(File(filesDir, "waveforms/x.json").exists())
+        assertTrue(File(databasesDir, "exoplayer_internal.db").exists())
+    }
+
+    @Test
+    fun deleteProfileDataFilesNeverTouchesTheSharedItems() {
+        store["share_downloads_work"] = true // downloads are shared with the base
+        seedBaseData()
+        seedSeparateData("work", downloads = false) // work's downloads ARE the base dir
+
+        RescueFiles.deleteProfileDataFiles(context, "work")
+
+        // The shared downloads stay with the base
+        assertTrue(File(cacheDir, "exo_downloads/dl.bin").exists())
+        // The separate items go
+        assertFalse(File(cacheDir, "exoplayer_work").exists())
+        assertFalse(File(cacheDir, "coil_work").exists())
+        assertFalse(File(filesDir, "app_covers_work").exists())
+        assertFalse(File(filesDir, "waveforms_work").exists())
+        // The media cache is separate: its index lives in the suffixed database, purged
+        assertFalse(File(databasesDir, "exoplayer_internal_work.db").exists())
+    }
+
+    @Test
+    fun deleteProfileDataFilesIsANoOpForTheBase() {
+        seedBaseData()
+
+        val deleted = RescueFiles.deleteProfileDataFiles(context, "default")
+
+        assertEquals(0, deleted, "the base locations are the unsuffixed ones: nothing to wipe")
+        assertTrue(File(cacheDir, "exo_downloads/dl.bin").exists())
+        assertTrue(File(filesDir, "waveforms/x.json").exists())
+        assertTrue(File(databasesDir, "exoplayer_internal.db").exists())
+    }
+
+    @Test
+    fun deleteProfileDataFilesWipesStaleSeparateDirsEvenWhenTheItemsAreSharedNow() {
+        // The user opted both caches into sharing: the live data is the base's, but the
+        // suffixed dirs + index left from the separate era are still the profile's own
+        store["share_downloads_work"] = true
+        store["share_media_cache_work"] = true
+        seedBaseData()
+        File(cacheDir, "exo_downloads_work").dirWithFile("old.bin")
+        File(filesDir, "exoplayer_work").dirWithFile("old.bin") // a former Private location
+        File(filesDir, "coil_work").dirWithFile("old.bin")
+        File(databasesDir, "exoplayer_internal_work.db").writeText("stale")
+        File(databasesDir, "exoplayer_internal_work.db-wal").writeText("wal")
+
+        RescueFiles.deleteProfileDataFiles(context, "work")
+
+        // The stale own-namespace data is gone (under BOTH bases, the index with its side file)
+        assertFalse(File(cacheDir, "exo_downloads_work").exists())
+        assertFalse(File(filesDir, "exo_downloads_work").exists())
+        assertFalse(File(cacheDir, "exoplayer_work").exists())
+        assertFalse(File(filesDir, "exoplayer_work").exists())
+        assertFalse(File(filesDir, "coil_work").exists())
+        assertFalse(File(databasesDir, "exoplayer_internal_work.db").exists())
+        assertFalse(File(databasesDir, "exoplayer_internal_work.db-wal").exists())
+        // The shared (base) data is untouched
+        assertTrue(File(cacheDir, "exo_downloads/dl.bin").exists())
+        assertTrue(File(cacheDir, "exoplayer/stream.bin").exists())
+        assertTrue(File(databasesDir, "exoplayer_internal.db").exists())
+    }
+
+    @Test
+    fun deleteProfilesPurgesTheSeparateDataAndForgetsTheShareFlags() {
+        File(filesDir, "Profiles_names.txt").writeText("work\n")
+        store["share_media_cache_work"] = true // the streaming cache is shared with the base
+        seedBaseData()
+        seedSeparateData("work", mediaCache = false) // work's streaming cache IS the base dir
+
+        val result = RescueFiles.deleteProfiles(context, listOf("work"))
+
+        assertTrue(result.isSuccess)
+        assertEquals(1, result.getOrNull())
+        // The separate data is purged with the profile
+        assertFalse(File(cacheDir, "exo_downloads_work").exists())
+        assertFalse(File(cacheDir, "coil_work").exists())
+        assertFalse(File(filesDir, "app_covers_work").exists())
+        assertFalse(File(filesDir, "waveforms_work").exists())
+        assertFalse(File(databasesDir, "exoplayer_internal_work.db").exists())
+        // The shared streaming cache stays with the base
+        assertTrue(File(cacheDir, "exoplayer/stream.bin").exists())
+        assertTrue(File(cacheDir, "exo_downloads/dl.bin").exists())
+        // The sharing flags are forgotten with the profile
+        assertNull(store["share_media_cache_work"])
+    }
+
+    @Test
+    fun resetProfilesBacksUpTheSeparateDataAndWipesTheCaches() {
+        File(filesDir, "Profiles_names.txt").writeText("work\n")
+        store["share_media_cache_work"] = true
+        seedBaseData()
+        seedSeparateData("work", mediaCache = false)
+
+        val result = RescueFiles.resetProfiles(context, listOf("work"))
+
+        assertTrue(result.isSuccess)
+        val backup = backupDir("work")
+        // The non-regenerable separate data is backed up (entries per spec)…
+        assertEquals("x", File(backup, "downloads/dl.bin").readText())
+        assertEquals("x", File(backup, "covers/cover.jpg").readText())
+        assertEquals("x", File(backup, "waveforms/x.json").readText())
+        // …including the suffixed index (side file included)…
+        assertEquals("index", File(backup, "exoplayer_internal_work.db").readText())
+        assertEquals("wal", File(backup, "exoplayer_internal_work.db-wal").readText())
+        // …while the regenerable caches are wiped WITHOUT backup
+        assertFalse(File(backup, "coil").exists())
+        // The live separate data is gone
+        assertFalse(File(cacheDir, "exo_downloads_work").exists())
+        assertFalse(File(cacheDir, "coil_work").exists())
+        assertFalse(File(filesDir, "app_covers_work").exists())
+        assertFalse(File(filesDir, "waveforms_work").exists())
+        assertFalse(File(databasesDir, "exoplayer_internal_work.db").exists())
+        // The shared + base data is untouched
+        assertTrue(File(cacheDir, "exoplayer/stream.bin").exists())
+        assertTrue(File(cacheDir, "exo_downloads/dl.bin").exists())
+        // The sharing flags are forgotten (the restored data is separate)
+        assertNull(store["share_media_cache_work"])
+    }
+
+    @Test
+    fun resetProfilesNeverBacksUpTheSharedItems() {
+        File(filesDir, "Profiles_names.txt").writeText("work\n")
+        store["share_downloads_work"] = true
+        store["share_waveforms_work"] = true
+        seedBaseData()
+        seedSeparateData("work", downloads = false, waveforms = false)
+
+        val result = RescueFiles.resetProfiles(context, listOf("work"))
+
+        assertTrue(result.isSuccess)
+        val backup = backupDir("work")
+        // Only the separate items are backed up
+        assertEquals("x", File(backup, "covers/cover.jpg").readText())
+        assertFalse(File(backup, "downloads").exists())
+        assertFalse(File(backup, "waveforms").exists())
+        // The suffixed index is still backed up: the media cache is separate
+        assertEquals("index", File(backup, "exoplayer_internal_work.db").readText())
+        // The shared items stay with the base
+        assertTrue(File(cacheDir, "exo_downloads/dl.bin").exists())
+        assertTrue(File(filesDir, "waveforms/x.json").exists())
+        // Both flags are forgotten
+        assertNull(store["share_downloads_work"])
+        assertNull(store["share_waveforms_work"])
+    }
+
+    @Test
+    fun restoreProfilesBringsTheSeparateDataBackAndParksTheFreshOne() {
+        File(filesDir, "Profiles_names.txt").writeText("work\n")
+        seedSeparateData("work")
+
+        assertTrue(RescueFiles.resetProfiles(context, listOf("work")).isSuccess)
+        // The profile is used again after the reset: fresh separate data appears
+        File(cacheDir, "exo_downloads_work").dirWithFile("fresh.bin")
+        File(filesDir, "app_covers_work").dirWithFile("fresh.jpg")
+        File(filesDir, "waveforms_work").dirWithFile("fresh.json")
+        File(databasesDir, "exoplayer_internal_work.db").writeText("fresh")
+
+        val result = RescueFiles.restoreProfiles(context, listOf("work"))
+
+        assertTrue(result.isSuccess)
+        assertEquals(1, result.getOrNull())
+        // The backed-up data is back live
+        assertEquals("x", File(cacheDir, "exo_downloads_work/dl.bin").readText())
+        assertEquals("x", File(filesDir, "app_covers_work/cover.jpg").readText())
+        assertEquals("x", File(filesDir, "waveforms_work/x.json").readText())
+        assertEquals("index", File(databasesDir, "exoplayer_internal_work.db").readText())
+        // The fresh data becomes the new backup (the same ping-pong as the database reset)
+        val backup = backupDir("work")
+        assertEquals(listOf("fresh.bin"), File(backup, "downloads").list()?.toList())
+        assertEquals(listOf("fresh.jpg"), File(backup, "covers").list()?.toList())
+        assertEquals(listOf("fresh.json"), File(backup, "waveforms").list()?.toList())
+        assertEquals("fresh", File(backup, "exoplayer_internal_work.db").readText())
+        // No swap parking file is left behind
+        assertFalse(File(databasesDir, "exoplayer_internal_work.db.swap").exists())
+    }
+
+    @Test
+    fun restoreProfilesSkipsTheItemsTheProfileSharesNow() {
+        File(filesDir, "Profiles_names.txt").writeText("work\n")
+        seedBaseData()
+        seedSeparateData("work")
+
+        assertTrue(RescueFiles.resetProfiles(context, listOf("work")).isSuccess)
+        // After the reset the user opts the images back into sharing: the backed-up
+        // covers must not be restored into the base location the profile now shares
+        store["share_images_work"] = true
+
+        val result = RescueFiles.restoreProfiles(context, listOf("work"))
+
+        assertTrue(result.isSuccess)
+        // The shared images are NOT restored: the base location is untouched and the
+        // profile has no separate covers of its own
+        assertTrue(File(filesDir, "app_covers/cover.jpg").exists())
+        assertFalse(File(filesDir, "app_covers_work").exists())
+        // The backup copy stays parked in the backup dir
+        assertEquals("x", File(backupDir("work"), "covers/cover.jpg").readText())
+        // The separate items are restored
+        assertEquals("x", File(cacheDir, "exo_downloads_work/dl.bin").readText())
+        assertEquals("x", File(filesDir, "waveforms_work/x.json").readText())
+        assertEquals("index", File(databasesDir, "exoplayer_internal_work.db").readText())
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Public entry points: the global cache clear / downloads delete must cover
+    // the base AND every user profile's own suffixed data
+    // (spec-profile-data-separation) — the private enumerators exercised through
+    // the public [RescueFiles.clearCache] / [RescueFiles.deleteDownloads].
+    // ──────────────────────────────────────────────────────────────────────
+
+    @Test
+    fun clearCacheCoversTheBaseAndEveryProfilesSeparateCaches() {
+        File(filesDir, "Profiles_names.txt").writeText("work\nhome\n")
+        seedBaseData()
+        seedSeparateData("work")
+        seedSeparateData("home")
+
+        val result = RescueFiles.clearCache(context)
+
+        assertTrue(result.isSuccess)
+        // The base streaming + image caches are cleared
+        assertFalse(File(cacheDir, "exoplayer").exists())
+        assertFalse(File(cacheDir, "coil").exists())
+        // Every profile's own suffixed streaming + image caches are cleared too
+        assertFalse(File(cacheDir, "exoplayer_work").exists())
+        assertFalse(File(cacheDir, "coil_work").exists())
+        assertFalse(File(cacheDir, "exoplayer_home").exists())
+        assertFalse(File(cacheDir, "coil_home").exists())
+        // The downloads (base + every profile) survive a cache clear
+        assertTrue(File(cacheDir, "exo_downloads/dl.bin").exists())
+        assertTrue(File(cacheDir, "exo_downloads_work/dl.bin").exists())
+        assertTrue(File(cacheDir, "exo_downloads_home/dl.bin").exists())
+        // Covers + waveforms (filesDir) survive a cache clear
+        assertTrue(File(filesDir, "app_covers/cover.jpg").exists())
+        assertTrue(File(filesDir, "app_covers_work/cover.jpg").exists())
+        assertTrue(File(filesDir, "waveforms/x.json").exists())
+        assertTrue(File(filesDir, "waveforms_work/x.json").exists())
+        // The index databases are never cleared
+        assertTrue(File(databasesDir, "exoplayer_internal.db").exists())
+        assertTrue(File(databasesDir, "exoplayer_internal_work.db").exists())
+    }
+
+    @Test
+    fun deleteDownloadsCoversTheBaseAndEveryProfilesSeparateDownloads() {
+        File(filesDir, "Profiles_names.txt").writeText("work\nhome\n")
+        seedBaseData()
+        seedSeparateData("work")
+        seedSeparateData("home")
+
+        val result = RescueFiles.deleteDownloads(context)
+
+        assertTrue(result.isSuccess)
+        // The base downloads + the base index (side files included) are gone
+        assertFalse(File(cacheDir, "exo_downloads").exists())
+        assertFalse(File(databasesDir, "exoplayer_internal.db").exists())
+        // Every profile's own suffixed downloads + suffixed index (+ side files) are gone
+        assertFalse(File(cacheDir, "exo_downloads_work").exists())
+        assertFalse(File(cacheDir, "exo_downloads_home").exists())
+        assertFalse(File(databasesDir, "exoplayer_internal_work.db").exists())
+        assertFalse(File(databasesDir, "exoplayer_internal_work.db-wal").exists())
+        assertFalse(File(databasesDir, "exoplayer_internal_home.db").exists())
+        // The streaming caches (base + profiles) survive a downloads delete
+        assertTrue(File(cacheDir, "exoplayer/stream.bin").exists())
+        assertTrue(File(cacheDir, "exoplayer_work/stream.bin").exists())
+        // The covers survive
+        assertTrue(File(filesDir, "app_covers/cover.jpg").exists())
+        assertTrue(File(filesDir, "app_covers_work/cover.jpg").exists())
     }
 }

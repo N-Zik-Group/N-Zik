@@ -50,20 +50,17 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import it.fast4x.innertube.utils.parseCookieString
 import app.it.fast4x.rimusic.enums.ColorPaletteMode
-import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
+import app.it.fast4x.rimusic.ui.screens.settings.OtherSwitchSettingEntry
 import app.it.fast4x.rimusic.ui.styling.ModernBlackColorPalette
 import app.it.fast4x.rimusic.ui.styling.PureBlackColorPalette
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.colorPaletteModeKey
-import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
-import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.discordAvatarKey
 import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
 import app.it.fast4x.rimusic.utils.discordUsernameKey
 import app.it.fast4x.rimusic.utils.faceAvatarSourceKey
 import app.it.fast4x.rimusic.utils.faceNameSourceKey
 import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.profileDisplayName
 import app.it.fast4x.rimusic.utils.profileLastUsed
 import app.it.fast4x.rimusic.utils.rememberPreference
@@ -78,8 +75,16 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.maintenance.formatBytes
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.download.utils.MyDownloadHelper
-import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.core.profiles.ProfileDataItem
+import app.n_zik.android.core.profiles.clearProfileShareFlags
+import app.n_zik.android.core.profiles.coilImageCacheDir
+import app.n_zik.android.core.profiles.coversDir
+import app.n_zik.android.core.profiles.downloadsDir
+import app.n_zik.android.core.profiles.mediaCacheDir
+import app.n_zik.android.core.profiles.profileSharedItems
+import app.n_zik.android.core.profiles.setProfileShares
+import app.n_zik.android.core.profiles.totalDirectorySize
+import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.extensions.lastfm.lastfmAvatarUrlKey
 import app.n_zik.android.extensions.lastfm.lastfmSessionKey
 import app.n_zik.android.extensions.lastfm.lastfmUsernameKey
@@ -114,6 +119,17 @@ fun Context.profileAvatarSource(profileId: String): String? =
 fun deleteProfileAvatar(context: Context, profileId: String) {
     runCatching { profileDataDir(context, profileId).deleteRecursively() }
         .onFailure { Timber.tag("ProfileCard").w(it, "Could not purge the profile files of %s", profileId) }
+}
+
+/**
+ * The profile-data purge run on profile deletion (spec-profile-data-separation): the
+ * profile's SEPARATE data dirs + index are wiped with it (the shared items stay with the
+ * base) and its sharing flags are forgotten. Extracted from the deletion dialog callback
+ * so the purge is unit-testable without the screen.
+ */
+fun purgeProfileData(context: Context, profileId: String) {
+    RescueFiles.deleteProfileDataFiles(context, profileId)
+    context.clearProfileShareFlags(profileId)
 }
 
 /**
@@ -216,44 +232,39 @@ private fun profileFileSuffix(profileId: String): String =
     if (profileId == DEFAULT_PROFILE_ID) "" else "_$profileId"
 
 /**
- * Sizes in bytes of the shared (app-level) data shown on every card — the same
- * numbers for every profile, since images / song cache / downloads are not
- * profile-scoped yet.
+ * Sizes in bytes of ONE profile's own data (spec-profile-data-separation): the
+ * profile's images item (Coil image cache + custom covers, merged into one toggle),
+ * its song cache and its downloads — each null ("No data") when the item is
+ * disabled (temp dir) or empty.
  */
-data class ProfileSharedSizes(
+data class ProfileDataSizes(
     val imagesBytes: Long?,
     val songCacheBytes: Long?,
     val downloadsBytes: Long?,
 )
 
 /**
- * Resolves the shared sizes with the same sources as the maintenance sheet:
- * Coil's tracked image cache, the ExoPlayer song-cache dir (walked — null when
- * the disk cache is disabled, it then lives in a temp dir) and the tracked
- * download cache. Disk IO — run on the DATA dispatcher.
+ * Resolves the data sizes of [profileId] by walking ITS OWN directories (the
+ * resolver of core/profiles — its suffixed dirs when separate, the base dirs when
+ * shared): the images item (Coil dir + covers dir), the song-cache dir (null when
+ * the disk cache is disabled — it then lives in a temp dir) and the downloads dir
+ * (same rule). Walking the dirs instead of initializing the DownloadManager keeps
+ * this off the UI's hot path. Disk IO — run on the DATA dispatcher.
  */
-fun profileSharedSizes(context: Context): ProfileSharedSizes {
+fun profileDataSizes(context: Context, profileId: String): ProfileDataSizes {
     val app = context.applicationContext
-    return ProfileSharedSizes(
-        imagesBytes = runCatching { ImageCacheFactory.getCacheSize() }.getOrNull()?.takeIf { it > 0L },
-        songCacheBytes = runCatching {
-            val base = when (app.preferences.getEnum(exoPlayerCacheLocationKey, ExoPlayerCacheLocation.System)) {
-                ExoPlayerCacheLocation.System -> app.cacheDir
-                ExoPlayerCacheLocation.Private -> app.filesDir
-            }
-            // When the disk cache is disabled the cache lives in a temp dir: the
-            // walked app dir is empty, which reads as "No data".
-            totalDirectorySize(File(base, PlayerServiceModern.CACHE_DIRNAME))
+    return ProfileDataSizes(
+        imagesBytes = runCatching {
+            totalDirectorySize(coilImageCacheDir(app, profileId)) +
+                totalDirectorySize(coversDir(app, profileId))
         }.getOrNull()?.takeIf { it > 0L },
-        downloadsBytes = runCatching { MyDownloadHelper.getDownloadCache(app).cacheSpace }
-            .getOrNull()?.takeIf { it > 0L },
+        songCacheBytes = runCatching {
+            mediaCacheDir(app, profileId)?.let { totalDirectorySize(it) }
+        }.getOrNull()?.takeIf { it > 0L },
+        downloadsBytes = runCatching {
+            downloadsDir(app, profileId)?.let { totalDirectorySize(it) }
+        }.getOrNull()?.takeIf { it > 0L },
     )
-}
-
-/** Total size in bytes of [dir] (recursive; 0 when it does not exist). */
-private fun totalDirectorySize(dir: File): Long {
-    val children = dir.listFiles() ?: return 0L
-    return children.sumOf { if (it.isDirectory) totalDirectorySize(it) else it.length() }
 }
 
 /**
@@ -423,10 +434,12 @@ fun ProfileCard(
     imagesSizeBytes: Long?,
     songCacheSizeBytes: Long?,
     downloadsSizeBytes: Long?,
+    sharedItems: Set<ProfileDataItem> = emptySet(),
     isActive: Boolean,
     onSwitch: (() -> Unit)?,
     onRename: (() -> Unit)?,
     onDelete: (() -> Unit)?,
+    onToggleShare: ((ProfileDataItem, Boolean) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -476,11 +489,37 @@ fun ProfileCard(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     BasicText(
-                        // The same status line for every profile (the base included): the
-                        // profile-scoped data (database, settings, encrypted sessions) is
-                        // separate per profile, while the app-level data (downloads, media
-                        // cache) stays shared until the opt-in sharing work lands.
-                        text = stringResource(R.string.profile_data_status),
+                        // The status line reflects the profile's sharing state
+                        // (spec-profile-data-separation): the profile-scoped data
+                        // (database, settings, encrypted sessions) is always separate,
+                        // the four heavy data items follow their sharing toggles.
+                        text = if (sharedItems.isEmpty()) {
+                            stringResource(R.string.profile_data_status_all_separate)
+                        } else {
+                            // stringResource is @Composable: the item labels cannot be resolved
+                            // inside a joinToString lambda, so each is resolved here in the
+                            // composable scope, keeping the ALL order.
+                            val downloadsLabel = stringResource(R.string.profile_data_downloads)
+                            val mediaCacheLabel = stringResource(R.string.profile_data_media_cache)
+                            val imagesLabel = stringResource(R.string.profile_data_images)
+                            val waveformsLabel = stringResource(R.string.profile_data_waveforms)
+                            fun labelsOf(items: Set<ProfileDataItem>) =
+                                (if (ProfileDataItem.DOWNLOADS in items) listOf(downloadsLabel) else emptyList()) +
+                                (if (ProfileDataItem.MEDIA_CACHE in items) listOf(mediaCacheLabel) else emptyList()) +
+                                (if (ProfileDataItem.IMAGES in items) listOf(imagesLabel) else emptyList()) +
+                                (if (ProfileDataItem.WAVEFORMS in items) listOf(waveformsLabel) else emptyList())
+                                    .joinToString(", ")
+                            // The line lists BOTH sides (spec-profile-data-separation): the
+                            // heavy items that stay separate (comma-prefixed, so the format
+                            // string keeps "database, settings, sessions" when none do) and
+                            // the shared ones.
+                            val separateHeavy = labelsOf(ProfileDataItem.ALL.toSet() - sharedItems)
+                            stringResource(
+                                R.string.profile_data_status_shared,
+                                separateHeavy.takeIf { it.isNotEmpty() }?.let { ", $it" }.orEmpty(),
+                                labelsOf(sharedItems),
+                            )
+                        },
                         style = typography().xxs.copy(color = palette.textSecondary),
                     )
                 }
@@ -532,6 +571,41 @@ fun ProfileCard(
                 label = stringResource(R.string.profile_last_used),
                 value = lastUsedRelativeText(context, lastUsed) ?: stringResource(R.string.profile_never_used),
             )
+
+            if (onToggleShare != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                // The sharing toggles (spec-profile-data-separation): one per shareable
+                // item. The location change applies at the NEXT process boot — the
+                // locations are resolved at boot, never swapped hot in process.
+                OtherSwitchSettingEntry(
+                    title = stringResource(R.string.profile_share_downloads),
+                    text = stringResource(R.string.profile_share_downloads_description),
+                    isChecked = ProfileDataItem.DOWNLOADS in sharedItems,
+                    onCheckedChange = { onToggleShare(ProfileDataItem.DOWNLOADS, it) },
+                    icon = R.drawable.download,
+                )
+                OtherSwitchSettingEntry(
+                    title = stringResource(R.string.profile_share_media_cache),
+                    text = stringResource(R.string.profile_share_media_cache_description),
+                    isChecked = ProfileDataItem.MEDIA_CACHE in sharedItems,
+                    onCheckedChange = { onToggleShare(ProfileDataItem.MEDIA_CACHE, it) },
+                    icon = R.drawable.music_file,
+                )
+                OtherSwitchSettingEntry(
+                    title = stringResource(R.string.profile_share_images),
+                    text = stringResource(R.string.profile_share_images_description),
+                    isChecked = ProfileDataItem.IMAGES in sharedItems,
+                    onCheckedChange = { onToggleShare(ProfileDataItem.IMAGES, it) },
+                    icon = R.drawable.image,
+                )
+                OtherSwitchSettingEntry(
+                    title = stringResource(R.string.profile_share_waveforms),
+                    text = stringResource(R.string.profile_share_waveforms_description),
+                    isChecked = ProfileDataItem.WAVEFORMS in sharedItems,
+                    onCheckedChange = { onToggleShare(ProfileDataItem.WAVEFORMS, it) },
+                    icon = R.drawable.sound_effect,
+                )
+            }
 
             if (onRename != null || onDelete != null) {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -609,6 +683,7 @@ private data class ActiveProfileSnapshot(
     val imagesSizeBytes: Long?,
     val songCacheSizeBytes: Long?,
     val downloadsSizeBytes: Long?,
+    val sharedItems: Set<ProfileDataItem>,
 )
 
 /**
@@ -623,17 +698,19 @@ fun ProfileAccountCard(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val defaultName = stringResource(R.string.profile_base_name)
     var snapshot by remember { mutableStateOf<ActiveProfileSnapshot?>(null) }
+    // Bumped after a sharing toggle: the sizes re-resolve against the (new) dirs
+    // the profile will use at the next boot (spec-profile-data-separation).
+    var shareRefreshTick by remember { mutableIntStateOf(0) }
 
     // Re-resolve the snapshot whenever the face state changes: a face edit on the
     // face card above (photo pick / remove, source change, rename) bumps
     // [profileFaceUpdateTrigger], and an account login can change a face sourced
     // from that account — the same trigger pair the always-composed header keys on.
-    val faceTrigger = encryptedPreferencesUpdateTrigger + profileFaceUpdateTrigger
+    val faceTrigger = encryptedPreferencesUpdateTrigger + profileFaceUpdateTrigger + shareRefreshTick
     LaunchedEffect(faceTrigger) {
         snapshot = withContext(NzikDispatchers.DATA) {
             val id = getActiveProfile(context)
-            // The shared sizes are identical for every card — one read for all.
-            val shared = profileSharedSizes(context)
+            val sizes = profileDataSizes(context, id)
             ActiveProfileSnapshot(
                 id = id,
                 face = runCatching { loadProfileFace(context, id, defaultName) }.getOrNull(),
@@ -644,9 +721,10 @@ fun ProfileAccountCard(modifier: Modifier = Modifier) {
                     context.getDatabasePath(Database.fileNameForProfile(id)).length().takeIf { it > 0L }
                 }.getOrNull(),
                 settingsSizeBytes = runCatching { profilePrefsFile(context, id).length().takeIf { it > 0L } }.getOrNull(),
-                imagesSizeBytes = shared.imagesBytes,
-                songCacheSizeBytes = shared.songCacheBytes,
-                downloadsSizeBytes = shared.downloadsBytes,
+                imagesSizeBytes = sizes.imagesBytes,
+                songCacheSizeBytes = sizes.songCacheBytes,
+                downloadsSizeBytes = sizes.downloadsBytes,
+                sharedItems = context.profileSharedItems(id),
             )
         }
     }
@@ -662,10 +740,17 @@ fun ProfileAccountCard(modifier: Modifier = Modifier) {
             imagesSizeBytes = snap.imagesSizeBytes,
             songCacheSizeBytes = snap.songCacheSizeBytes,
             downloadsSizeBytes = snap.downloadsSizeBytes,
+            sharedItems = snap.sharedItems,
             isActive = true,
             onSwitch = null,
             onRename = null,
             onDelete = null,
+            // The base is the base — its data is never "shared" or "separate", so
+            // the toggles are only offered on user profiles.
+            onToggleShare = if (snap.id == DEFAULT_PROFILE_ID) null else { item, value ->
+                context.setProfileShares(item, snap.id, value)
+                shareRefreshTick++
+            },
         )
         Spacer(modifier = Modifier.height(16.dp))
     }

@@ -2,6 +2,7 @@ package app.it.fast4x.rimusic.ui.screens.settings
 
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.core.database.*
+import app.n_zik.android.core.profiles.waveformsDir
 import android.annotation.SuppressLint
 import android.text.format.Formatter
 import androidx.compose.animation.AnimatedVisibility
@@ -48,6 +49,7 @@ import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
 import app.it.fast4x.rimusic.utils.exoPlayerCustomCacheKey
 import app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey
 import app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
 import app.it.fast4x.rimusic.utils.pauseListenHistoryKey
 import app.it.fast4x.rimusic.utils.rememberPreference
@@ -189,7 +191,7 @@ fun DataSettings() {
                         cache?.keys?.forEach { song ->
                             cache.removeResource(song)
                         }
-                        File(context.filesDir, "waveforms").deleteRecursively()
+                        waveformsDir(context, getActiveProfile(context)).deleteRecursively()
                     }
                     WaveformExtractor.refreshSignal.tryEmit(System.currentTimeMillis())
                     cacheCleanedCounter++
@@ -222,7 +224,7 @@ fun DataSettings() {
                                     }
                             }
                         }
-                        File(context.filesDir, "waveforms").deleteRecursively()
+                        waveformsDir(context, getActiveProfile(context)).deleteRecursively()
                     }
                     cacheCleanedCounter++
                 }
@@ -635,7 +637,7 @@ fun DataSettings() {
                                 }
                                 NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                                     withContext(NzikDispatchers.DATA) {
-                                        File(context.filesDir, "waveforms").deleteRecursively()
+                                        waveformsDir(context, getActiveProfile(context)).deleteRecursively()
                                     }
                                     WaveformExtractor.refreshSignal.tryEmit(System.currentTimeMillis())
                                     Toaster.done()

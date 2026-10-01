@@ -30,6 +30,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import android.content.Context
 import android.net.Uri
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.profiles.activeCoversDirName
+import app.n_zik.android.core.profiles.coversDir
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.saveImageToInternalStorage
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import androidx.compose.material3.OutlinedButton
@@ -121,13 +124,17 @@ class ChangeCoverDialog private constructor(
             ) { uri: Uri? ->
                 if (uri != null) {
                     val songId = getSong()?.id ?: return@rememberLauncherForActivityResult
-                    val oldFile = File(context.filesDir, "app_covers/cover_$songId.jpg")
+                    // The ACTIVE profile's custom covers folder (spec-profile-data-separation)
+                    val covers = coversDir(context, getActiveProfile(context))
+                    val oldFile = File(covers, "cover_$songId.jpg")
                     val oldUrl = oldFile.absolutePath
 
                     saveCoverJob.value?.cancel()
                     saveCoverJob.value = coroutineScope.launch {
                         val savedUri = withContext(NzikDispatchers.DATA) {
-                            saveCoverArt(context, uri, oldFile, "app_covers", "cover_$songId.jpg")
+                            // The ACTIVE profile's custom covers folder name
+                            // (spec-profile-data-separation)
+                            saveCoverArt(context, uri, oldFile, activeCoversDirName(context), "cover_$songId.jpg")
                         }
                         if (savedUri != null) {
                             // Clear Coil cache for this specific file URL only

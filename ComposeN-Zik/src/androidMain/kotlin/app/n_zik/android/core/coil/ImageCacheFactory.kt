@@ -39,7 +39,6 @@ import it.fast4x.innertube.models.Thumbnail
 import app.n_zik.android.appContext
 import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.enums.CoilDiskCacheMaxSize
-import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
 import app.it.fast4x.rimusic.enums.ImageQualityFormat
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
@@ -47,14 +46,16 @@ import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.core.network.models.NetworkQuality as NZikNetworkQuality
 import app.it.fast4x.rimusic.utils.coilCustomDiskCacheKey
 import app.it.fast4x.rimusic.utils.coilDiskCacheMaxSizeKey
-import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
 import app.it.fast4x.rimusic.utils.getEnum
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.imageQualityFormatKey
 import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.core.profiles.coilImageCacheDir
 import kotlinx.coroutines.flow.MutableStateFlow
 import okhttp3.OkHttpClient
 import okio.Path.Companion.toOkioPath
 // import Timber
+import java.io.File
 import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
@@ -67,14 +68,20 @@ import timber.log.Timber
 @OptIn(ExperimentalCoilApi::class)
 object ImageCacheFactory {
 
+    /**
+     * The Coil disk-cache dir of the ACTIVE profile (spec-profile-data-separation):
+     * `coil` (base) or `coil_<id>` (separate), under that profile's location setting
+     * (a shared item follows the BASE profile's setting — see [coilImageCacheDir]).
+     * Extracted from the [DISK_CACHE] lazy so the selection is unit-testable.
+     */
+    internal fun coilDiskCacheDir(context: Context): File =
+        coilImageCacheDir(context, getActiveProfile(context))
+
     val DISK_CACHE: DiskCache by lazy {
         val preferences = appContext().preferences
         val diskSize = preferences.getEnum(coilDiskCacheMaxSizeKey, CoilDiskCacheMaxSize.`128MB`)
-        val cacheLocation = preferences.getEnum(exoPlayerCacheLocationKey, ExoPlayerCacheLocation.System)
-        val cacheDir = when (cacheLocation) {
-            ExoPlayerCacheLocation.System -> appContext().cacheDir
-            ExoPlayerCacheLocation.Private -> appContext().filesDir
-        }.resolve("coil")
+        // The Coil image cache of the ACTIVE profile (spec-profile-data-separation).
+        val cacheDir = coilDiskCacheDir(appContext())
         val maxSizeBytes = when (diskSize) {
             CoilDiskCacheMaxSize.Custom -> {
                 val customSize = preferences.getInt(coilCustomDiskCacheKey, 128)

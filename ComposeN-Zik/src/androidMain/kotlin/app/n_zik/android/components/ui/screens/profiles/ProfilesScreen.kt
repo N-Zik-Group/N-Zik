@@ -82,6 +82,8 @@ import app.n_zik.android.components.import.ImportProfileState
 import app.n_zik.android.core.backup.ProfileStateArchive
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.notifications.cancelProfileNotifications
+import app.n_zik.android.core.profiles.ProfileDataItem
+import app.n_zik.android.core.profiles.profileSharedItems
 import app.n_zik.android.core.notifications.deleteProfileChannels
 import app.n_zik.android.core.notifications.ensureProfileChannels
 import app.n_zik.android.core.notifications.recreateProfileChannels
@@ -107,6 +109,12 @@ private data class ProfileRow(
     val lastUsed: Long?,
     val dbSizeBytes: Long?,
     val settingsSizeBytes: Long?,
+    /** The profile's own data sizes (its dirs — spec-profile-data-separation). */
+    val imagesSizeBytes: Long?,
+    val songCacheSizeBytes: Long?,
+    val downloadsSizeBytes: Long?,
+    /** The items the profile shares with the base (the sharing toggles' state). */
+    val sharedItems: Set<ProfileDataItem>,
 )
 
 /** Whole page state: the active profile, the base-first card rows and the export eligibility. */
@@ -114,10 +122,6 @@ private data class ProfilePageState(
     val activeId: String,
     val rows: List<ProfileRow>,
     val hasState: Boolean,
-    /** The shared (app-level) sizes — identical for every card, read once per refresh. */
-    val sharedImagesBytes: Long?,
-    val sharedSongCacheBytes: Long?,
-    val sharedDownloadsBytes: Long?,
 )
 
 @Composable
@@ -162,20 +166,17 @@ fun ProfileScreen(
     LaunchedEffect(refresh) {
         state = withContext(NzikDispatchers.DATA) {
             val ids = context.readProfileIds()
-            // The shared sizes are identical for every card — one read for all.
-            val shared = profileSharedSizes(context)
             ProfilePageState(
                 activeId = getActiveProfile(context),
                 hasState = ProfileStateArchive.hasState(context),
-                sharedImagesBytes = shared.imagesBytes,
-                sharedSongCacheBytes = shared.songCacheBytes,
-                sharedDownloadsBytes = shared.downloadsBytes,
                 rows = (listOf(DEFAULT_PROFILE_ID) + ids).map { id ->
                     val displayName = resolveProfileDisplayName(
                         id,
                         context.profileDisplayName(id),
                         defaultName
                     )
+                    // The profile's OWN data sizes (its dirs — spec-profile-data-separation).
+                    val sizes = profileDataSizes(context, id)
                     ProfileRow(
                         id = id,
                         displayName = displayName,
@@ -188,6 +189,10 @@ fun ProfileScreen(
                             context.getDatabasePath(Database.fileNameForProfile(id)).length().takeIf { it > 0L }
                         }.getOrNull(),
                         settingsSizeBytes = runCatching { profilePrefsFile(context, id).length().takeIf { it > 0L } }.getOrNull(),
+                        imagesSizeBytes = sizes.imagesBytes,
+                        songCacheSizeBytes = sizes.songCacheBytes,
+                        downloadsSizeBytes = sizes.downloadsBytes,
+                        sharedItems = context.profileSharedItems(id),
                     )
                 },
             )
@@ -240,9 +245,10 @@ fun ProfileScreen(
                         lastUsed = row.lastUsed,
                         dbSizeBytes = row.dbSizeBytes,
                         settingsSizeBytes = row.settingsSizeBytes,
-                        imagesSizeBytes = page.sharedImagesBytes,
-                        songCacheSizeBytes = page.sharedSongCacheBytes,
-                        downloadsSizeBytes = page.sharedDownloadsBytes,
+                        imagesSizeBytes = row.imagesSizeBytes,
+                        songCacheSizeBytes = row.songCacheSizeBytes,
+                        downloadsSizeBytes = row.downloadsSizeBytes,
+                        sharedItems = row.sharedItems,
                         isActive = row.id == page.activeId,
                         onSwitch = if (row.id == page.activeId) {
                             null
@@ -402,6 +408,10 @@ fun ProfileScreen(
                     // purged with the profile — no orphan channel (or notification) left
                     // behind for a profile that no longer exists.
                     deleteProfileChannels(context, removingProfile)
+                    // The profile's SEPARATE data dirs + index are purged with it
+                    // (spec-profile-data-separation) — the shared items stay with the
+                    // base, and its sharing flags are forgotten.
+                    purgeProfileData(context, removingProfile)
                     withContext(NzikDispatchers.UI) {
                         // The deleted profile's shortcut must vanish from the launcher right
                         // away (spec-profile-shortcuts: the shortcut set is re-registered after

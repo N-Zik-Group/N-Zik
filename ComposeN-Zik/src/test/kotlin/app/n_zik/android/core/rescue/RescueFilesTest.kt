@@ -469,6 +469,81 @@ class RescueFilesTest {
         assertTrue(File(cacheDir, "exoplayer/stream.bin").exists())
     }
 
+    @Test
+    fun `clear cache removes the separate profile caches as well`(@TempDir tmp: File) {
+        val cacheDir = File(tmp, "cache").apply { mkdirs() }
+        val filesDir = File(tmp, "files").apply { mkdirs() }
+
+        // The SEPARATE caches of the user profiles (their location setting picks the base dir)
+        File(cacheDir, "exoplayer_work").dirWithFile("stream.bin")
+        File(cacheDir, "coil_work").dirWithFile("img.bin")
+        File(filesDir, "exoplayer_home").dirWithFile("stream.bin")
+        // The base caches (the shared profile caches map onto these)
+        File(cacheDir, "exoplayer").dirWithFile("stream.bin")
+        File(cacheDir, "coil").dirWithFile("img.bin")
+        // Must survive: the base AND the profile's downloads, wherever they live
+        File(cacheDir, "exo_downloads").dirWithFile("song.bin")
+        File(cacheDir, "exo_downloads_work").dirWithFile("song.bin")
+
+        RescueFiles.clearCacheDirs(
+            cacheDir,
+            filesDir,
+            null,
+            listOf(File(cacheDir, "exoplayer_work"), File(cacheDir, "coil_work"), File(filesDir, "exoplayer_home")),
+        )
+
+        assertFalse(File(cacheDir, "exoplayer_work").exists())
+        assertFalse(File(cacheDir, "coil_work").exists())
+        assertFalse(File(filesDir, "exoplayer_home").exists())
+        // The base caches are cleared too
+        assertFalse(File(cacheDir, "exoplayer").exists())
+        assertFalse(File(cacheDir, "coil").exists())
+        // Downloads are never cleared by a cache clear — neither the base's nor a profile's
+        assertTrue(File(cacheDir, "exo_downloads/song.bin").exists())
+        assertTrue(File(cacheDir, "exo_downloads_work/song.bin").exists())
+    }
+
+    @Test
+    fun `delete downloads removes the separate profile download dirs and their indexes`(@TempDir tmp: File) {
+        val cacheDir = File(tmp, "cache").apply { mkdirs() }
+        val filesDir = File(tmp, "files").apply { mkdirs() }
+        val databasesDir = File(tmp, "databases").apply { mkdirs() }
+
+        File(cacheDir, "exo_downloads").dirWithFile("song.bin")
+        File(filesDir, "exo_downloads_work").dirWithFile("song.bin")
+        File(cacheDir, "exo_downloads_home").dirWithFile("song.bin")
+        val baseIndex = File(databasesDir, "exoplayer_internal.db").apply { writeText("x") }
+        val workIndex = File(databasesDir, "exoplayer_internal_work.db").apply { writeText("x") }
+        val workIndexWal = File(databasesDir, "exoplayer_internal_work.db-wal").apply { writeText("x") }
+        val homeIndex = File(databasesDir, "exoplayer_internal_home.db").apply { writeText("x") }
+
+        // Must survive: the app database and the streaming caches
+        val appDb = File(databasesDir, "data.db").apply { writeText("keep") }
+        File(cacheDir, "exoplayer").dirWithFile("stream.bin")
+        File(cacheDir, "exoplayer_work").dirWithFile("stream.bin")
+
+        RescueFiles.deleteDownloadFiles(
+            mediaBases = listOf(cacheDir, filesDir),
+            downloadDatabase = baseIndex,
+            profileDownloadDirs = listOf(File(filesDir, "exo_downloads_work"), File(cacheDir, "exo_downloads_home")),
+            profileDownloadIndexDatabases = listOf(workIndex, homeIndex),
+        )
+
+        // The base media + index go
+        assertFalse(File(cacheDir, "exo_downloads").exists())
+        assertFalse(baseIndex.exists())
+        // The SEPARATE profile media + indexes go too (side files included)
+        assertFalse(File(filesDir, "exo_downloads_work").exists())
+        assertFalse(File(cacheDir, "exo_downloads_home").exists())
+        assertFalse(workIndex.exists())
+        assertFalse(workIndexWal.exists())
+        assertFalse(homeIndex.exists())
+        // The app database and the streaming caches survive
+        assertTrue(appDb.exists())
+        assertTrue(File(cacheDir, "exoplayer/stream.bin").exists())
+        assertTrue(File(cacheDir, "exoplayer_work/stream.bin").exists())
+    }
+
     // ──────────────────────────────────────────────────────────────────────
     // Database files: reset / restore / import
     // ──────────────────────────────────────────────────────────────────────

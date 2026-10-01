@@ -1,6 +1,12 @@
 package app.n_zik.android.download.utils
 
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.profiles.ProfileDataDirNames
+import app.n_zik.android.core.profiles.cacheDatabaseProvider
+import app.n_zik.android.core.profiles.downloadsDir
+import app.n_zik.android.core.profiles.profileSharedItems
+import app.n_zik.android.core.profiles.resolveProfileDataDirNames
+import java.io.File
 
 import app.n_zik.android.download.services.MyDownloadService
 
@@ -11,7 +17,6 @@ import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.DatabaseProvider
-import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.NoOpCacheEvictor
@@ -28,7 +33,6 @@ import app.n_zik.android.playback.services.createDownloadDataSourceFactory
 
 import app.n_zik.android.enums.DownloadQualityFormat
 import app.n_zik.android.enums.downloadQualityFormatKey
-import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
 import app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize
 import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.playback.services.isLocal
@@ -40,7 +44,6 @@ import app.it.fast4x.rimusic.utils.autoDownloadSongWhenAlbumBookmarkedKey
 import app.it.fast4x.rimusic.utils.autoDownloadSongWhenLikedKey
 import app.it.fast4x.rimusic.utils.download
 import app.it.fast4x.rimusic.utils.downloadSyncedLyrics
-import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
 import app.it.fast4x.rimusic.utils.exoPlayerCustomCacheKey
 import app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey
 import app.it.fast4x.rimusic.utils.getActiveProfile
@@ -78,6 +81,19 @@ import kotlinx.coroutines.cancel
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
 
 @UnstableApi
+/**
+ * The resolved (cache dir, index DB name) of a profile's downloads
+ * (spec-profile-data-separation): [dir] is null when the download cache is Disabled —
+ * the caller then uses a process-local temp dir named [tempDirName] that deletes itself
+ * after close. [indexDbName] is the base `exoplayer_internal.db` when the downloads are
+ * shared, the suffixed `exoplayer_internal_<id>.db` when they are separate.
+ */
+internal data class DownloadCacheLocation(
+    val dir: File?,
+    val tempDirName: String,
+    val indexDbName: String,
+)
+
 object MyDownloadHelper {
     private val coroutineScope = NzikDispatchers.fireAndForget(
         NzikDispatchers.DATA +
@@ -94,7 +110,9 @@ object MyDownloadHelper {
 //        Channel<DownloadManager>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     const val DOWNLOAD_NOTIFICATION_CHANNEL_ID = "download_channel"
-    const val CACHE_DIRNAME = "exo_downloads"
+
+    /** The base (unsuffixed) downloads directory name — see [ProfileDataDirNames.DOWNLOADS_DIR]. */
+    const val CACHE_DIRNAME = ProfileDataDirNames.DOWNLOADS_DIR
 
     private lateinit var databaseProvider: DatabaseProvider
     lateinit var downloadCache: Cache
@@ -212,8 +230,24 @@ object MyDownloadHelper {
         return downloadManager
     }
 
+    /**
+     * The (cache dir, index DB name) of the ACTIVE profile's downloads
+     * (spec-profile-data-separation): the profile's own suffixed folder + suffixed index
+     * when the downloads are separate, the base folder + base index when they are shared
+     * (governed by the BASE profile's settings — see [downloadsDir]); [DownloadCacheLocation.dir]
+     * is null when the (effective) download cache is Disabled — the caller then uses a
+     * process-local temp dir named [DownloadCacheLocation.tempDirName] that deletes itself
+     * after close. Extracted from [initDownloadCache] so the resolution is unit-testable.
+     */
+    internal fun downloadCacheLocation( context: Context ): DownloadCacheLocation {
+        val profileId = getActiveProfile( context )
+        val names = resolveProfileDataDirNames( profileId, context.profileSharedItems( profileId ) )
+        return DownloadCacheLocation( downloadsDir( context, profileId ), names.downloadsDir, names.downloadsIndexDb )
+    }
+
     @Synchronized
     private fun initDownloadCache( context: Context ): SimpleCache {
+        val location = downloadCacheLocation( context )
         val cacheSize = context.preferences.getEnum( exoPlayerDiskDownloadCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB` )
 
         val cacheEvictor = when( cacheSize ) {
@@ -227,25 +261,15 @@ object MyDownloadHelper {
             else                                -> LeastRecentlyUsedCacheEvictor( cacheSize.bytes )
         }
 
-        val cacheDir = when( cacheSize ) {
+        val cacheDir = location.dir ?:
             // Temporary directory deletes itself after close
             // It means songs remain on device as long as it's open
-            ExoPlayerDiskCacheMaxSize.Disabled -> createTempDirectory( CACHE_DIRNAME ).toFile()
-
-            else                               ->
-                // Looks a bit ugly but what it does is
-                // check location set by user and return
-                // appropriate path with [CACHE_DIRNAME] appended.
-                when( context.preferences.getEnum( exoPlayerCacheLocationKey, ExoPlayerCacheLocation.System ) ) {
-                    ExoPlayerCacheLocation.System -> context.cacheDir
-                    ExoPlayerCacheLocation.Private -> context.filesDir
-                }.resolve( CACHE_DIRNAME )
-        }
+            createTempDirectory( location.tempDirName ).toFile()
 
         // Ensure this location exists
         cacheDir.mkdirs()
 
-        return SimpleCache( cacheDir, cacheEvictor, getDatabaseProvider(context) )
+        return SimpleCache( cacheDir, cacheEvictor, getDatabaseProvider( context, location.indexDbName ) )
     }
 
     @Synchronized
@@ -266,7 +290,7 @@ object MyDownloadHelper {
         if (!MyDownloadHelper::downloadManager.isInitialized) {
             downloadManager = DownloadManager(
                 context,
-                getDatabaseProvider(context),
+                getDatabaseProvider( context, downloadIndexDbName( context ) ),
                 getDownloadCache(context),
                 createDownloadDataSourceFactory(), // Use dedicated download resolver
                 NzikDispatchers.DATA.asExecutor()
@@ -396,10 +420,18 @@ object MyDownloadHelper {
         }
     }
 
+    /**
+     * The Media3 index database of the ACTIVE profile's downloads (spec-profile-data-separation):
+     * the base `exoplayer_internal.db` when the downloads are shared (or the profile is the base),
+     * the suffixed `exoplayer_internal_<id>.db` when they are separate — same resolution as
+     * [downloadCacheLocation].
+     */
+    private fun downloadIndexDbName(context: Context): String = downloadCacheLocation(context).indexDbName
+
     @Synchronized
-    private fun getDatabaseProvider(context: Context): DatabaseProvider {
+    private fun getDatabaseProvider(context: Context, dbName: String): DatabaseProvider {
         if (!MyDownloadHelper::databaseProvider.isInitialized) databaseProvider =
-            StandaloneDatabaseProvider(context)
+            cacheDatabaseProvider(context, dbName)
         return databaseProvider
     }
 

@@ -10,15 +10,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.core.database.Database
-import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
-import app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize
+import app.n_zik.android.core.profiles.ProfileDataDirNames
+import app.n_zik.android.core.profiles.downloadsDir
+import app.n_zik.android.core.profiles.mediaCacheDir
+import app.n_zik.android.core.profiles.profileSharedItems
+import app.n_zik.android.core.profiles.resolveProfileDataDirNames
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
-import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
-import app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey
-import app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey
-import app.it.fast4x.rimusic.utils.getEnum
-import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -68,37 +67,19 @@ class ImportMigration private constructor(
                                        ZipInputStream( inStream ).use { zipIn ->
                                            var entry: ZipEntry? = zipIn.nextEntry
 
-                                           val cacheDir = when( context.preferences.getEnum( exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB` ) ) {
-                                               // Temporary directory deletes itself after close
-                                               // It means songs remain on device as long as it's open
-                                               ExoPlayerDiskCacheMaxSize.Disabled -> createTempDirectory( PlayerServiceModern.CACHE_DIRNAME ).toFile()
+                                           val profileId = getActiveProfile( context )
+                                           val dataDirNames = resolveProfileDataDirNames( profileId, context.profileSharedItems( profileId ) )
 
-                                               else                               ->
-                                                   // Looks a bit ugly but what it does is
-                                                   // check location set by user and return
-                                                   // appropriate path with [CACHE_DIRNAME] appended.
-                                                   when( context.preferences.getEnum( exoPlayerCacheLocationKey, ExoPlayerCacheLocation.System ) ) {
-                                                       ExoPlayerCacheLocation.System -> context.cacheDir
-                                                       ExoPlayerCacheLocation.Private -> context.filesDir
-                                                   }.resolve( PlayerServiceModern.CACHE_DIRNAME )
-                                           }
+                                           // The ACTIVE profile's cache + downloads dirs (spec-profile-data-separation):
+                                           // its own suffixed folders when separate, the base folders when shared
+                                           // (the resolvers apply the shared-to-base-settings rule). A null dir is a
+                                           // Disabled cache: a process-local temp dir, which deletes itself after close
+                                           // (the existing behavior, kept per profile).
+                                           val cacheDir = mediaCacheDir( context, profileId ) ?: createTempDirectory( dataDirNames.mediaCacheDir ).toFile()
                                            // Ensure folder is empty
                                            cacheDir.listFiles()?.forEach( File::deleteRecursively )
 
-                                           val downloadDir = when( context.preferences.getEnum( exoPlayerDiskDownloadCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB` ) ) {
-                                               // Temporary directory deletes itself after close
-                                               // It means songs remain on device as long as it's open
-                                               ExoPlayerDiskCacheMaxSize.Disabled -> createTempDirectory( MyDownloadHelper.CACHE_DIRNAME ).toFile()
-
-                                               else                               ->
-                                                   // Looks a bit ugly but what it does is
-                                                   // check location set by user and return
-                                                   // appropriate path with [CACHE_DIRNAME] appended.
-                                                   when( context.preferences.getEnum( exoPlayerCacheLocationKey, ExoPlayerCacheLocation.System ) ) {
-                                                       ExoPlayerCacheLocation.System -> context.cacheDir
-                                                       ExoPlayerCacheLocation.Private -> context.filesDir
-                                                   }.resolve( MyDownloadHelper.CACHE_DIRNAME )
-                                           }
+                                           val downloadDir = downloadsDir( context, profileId ) ?: createTempDirectory( dataDirNames.downloadsDir ).toFile()
                                            // Ensure folder is empty
                                            downloadDir.listFiles()?.forEach( File::deleteRecursively )
 
@@ -138,10 +119,18 @@ class ImportMigration private constructor(
                                                    }
                                                }
 
-                                               if( entry.name.equals( "exoplayer_internal.db", true ) )
-                                                   FileOutputStream(context.getDatabasePath( "exoplayer_internal.db" )).use { dbOut ->
+                                               if( entry.name.equals( "exoplayer_internal.db", true ) ) {
+                                                   // The imported index lands in the ACTIVE profile's resolved index
+                                                   // database (spec-profile-data-separation): the single suffixed
+                                                   // database when BOTH caches are separate, the base one otherwise
+                                                   // (a shared cache indexes into the base).
+                                                   val indexName = dataDirNames.downloadsIndexDb
+                                                       .takeIf { it == dataDirNames.mediaCacheIndexDb }
+                                                       ?: ProfileDataDirNames.INDEX_DB_FILE
+                                                   FileOutputStream(context.getDatabasePath( indexName )).use { dbOut ->
                                                        zipIn.copyTo( dbOut )
                                                    }
+                                               }
                                                //</editor-fold>
 
                                                if( entry.name.equals( "settings.csv", true ) ) {

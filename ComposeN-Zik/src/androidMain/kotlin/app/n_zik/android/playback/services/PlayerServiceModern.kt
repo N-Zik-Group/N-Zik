@@ -50,7 +50,6 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.NoOpCacheEvictor
@@ -95,7 +94,6 @@ import app.n_zik.android.enums.DownloadQualityFormat
 import app.n_zik.android.enums.downloadQualityFormatKey
 import app.it.fast4x.rimusic.enums.ImageQualityFormat
 import app.it.fast4x.rimusic.enums.DurationInMilliseconds
-import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
 import app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize
 import app.it.fast4x.rimusic.enums.ExoPlayerMinTimeForEvent
 import app.it.fast4x.rimusic.enums.NotificationButtons
@@ -105,6 +103,11 @@ import app.it.fast4x.rimusic.extensions.audiovolume.AudioVolumeObserver
 import app.it.fast4x.rimusic.extensions.audiovolume.OnAudioVolumeChangedListener
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.core.notifications.channelId
+import app.n_zik.android.core.profiles.ProfileDataDirNames
+import app.n_zik.android.core.profiles.cacheDatabaseProvider
+import app.n_zik.android.core.profiles.mediaCacheDir
+import app.n_zik.android.core.profiles.profileSharedItems
+import app.n_zik.android.core.profiles.resolveProfileDataDirNames
 import app.n_zik.android.extensions.discord.DiscordAdvancedSettings
 import app.n_zik.android.extensions.discord.DiscordPresenceManager
 import app.n_zik.android.extensions.discord.discordAdvancedSettingKeys
@@ -133,7 +136,6 @@ import it.fast4x.innertube.requests.searchPage
 import it.fast4x.innertube.utils.from
 import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
 import app.it.fast4x.rimusic.utils.encryptedPreferences
-import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
 import app.it.fast4x.rimusic.utils.exoPlayerCustomCacheKey
 import app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey
 import app.it.fast4x.rimusic.utils.exoPlayerMinTimeForEventKey
@@ -243,6 +245,35 @@ val Song.isLocal get() = id.contains(LOCAL_KEY_PREFIX)
 val Song.isUnmatched: Boolean
     get() = (id.length != 11 || (durationText == "00:00" && totalPlayTimeMs == 1L))
             && !id.startsWith(LOCAL_KEY_PREFIX)
+
+/**
+ * The resolved (cache dir, index DB name) of a profile's streaming media cache
+ * (spec-profile-data-separation): [dir] is null when the media cache is Disabled —
+ * the caller then uses a process-local temp dir named [tempDirName] that deletes itself
+ * after close. [indexDbName] is the base `exoplayer_internal.db` when the media cache is
+ * shared, the suffixed `exoplayer_internal_<id>.db` when it is separate.
+ */
+internal data class MediaCacheLocation(
+    val dir: File?,
+    val tempDirName: String,
+    val indexDbName: String,
+)
+
+/**
+ * The (cache dir, index DB name) of the ACTIVE profile's streaming media cache
+ * (spec-profile-data-separation): the profile's own suffixed folder + suffixed index
+ * when the media cache is separate, the base folder + base index when it is shared
+ * (governed by the BASE profile's settings — see [mediaCacheDir]); [MediaCacheLocation.dir]
+ * is null when the (effective) media cache is Disabled — the caller then uses a
+ * process-local temp dir named [MediaCacheLocation.tempDirName] that deletes itself
+ * after close. Extracted from [PlayerServiceModern.onCreate] so the resolution is
+ * unit-testable.
+ */
+internal fun mediaCacheLocation(context: Context): MediaCacheLocation {
+    val profileId = getActiveProfile(context)
+    val names = resolveProfileDataDirNames(profileId, context.profileSharedItems(profileId))
+    return MediaCacheLocation(mediaCacheDir(context, profileId), names.mediaCacheDir, names.mediaCacheIndexDb)
+}
 
 @UnstableApi
 class PlayerServiceModern : MediaLibraryService(),
@@ -443,25 +474,19 @@ class PlayerServiceModern : MediaLibraryService(),
             else -> LeastRecentlyUsedCacheEvictor(cacheSize.bytes)
         }
 
-        val cacheDir = when (cacheSize) {
+        // The streaming cache of the ACTIVE profile (spec-profile-data-separation): its own
+        // suffixed folder + index when separate, the base folder + index when shared.
+        val location = mediaCacheLocation(applicationContext)
+
+        val cacheDir = location.dir ?:
             // Temporary directory deletes itself after close
             // It means songs remain on device as long as it's open
-            ExoPlayerDiskCacheMaxSize.Disabled -> createTempDirectory(CACHE_DIRNAME).toFile()
-
-            else ->
-                // Looks a bit ugly but what it does is
-                // check location set by user and return
-                // appropriate path with [CACHE_DIRNAME] appended.
-                when (preferences.getEnum(exoPlayerCacheLocationKey, ExoPlayerCacheLocation.System)) {
-                    ExoPlayerCacheLocation.System -> super.getCacheDir()
-                    ExoPlayerCacheLocation.Private -> filesDir
-                }.resolve(CACHE_DIRNAME)
-        }
+            createTempDirectory(location.tempDirName).toFile()
 
         // Ensure this location exists
         cacheDir.mkdirs()
 
-        cache = SimpleCache(cacheDir, cacheEvictor, StandaloneDatabaseProvider(this))
+        cache = SimpleCache(cacheDir, cacheEvictor, cacheDatabaseProvider(applicationContext, location.indexDbName))
         downloadCache = MyDownloadHelper.getDownloadCache(applicationContext)
 
         // Pre-load persisted stream client data into playbackDataCache
@@ -2946,7 +2971,8 @@ class PlayerServiceModern : MediaLibraryService(),
         const val PLAYLIST = "playlist"
         const val SEARCHED = "searched"
 
-        const val CACHE_DIRNAME = "exoplayer"
+        /** The base (unsuffixed) streaming cache directory name — see [ProfileDataDirNames.MEDIA_CACHE_DIR]. */
+        const val CACHE_DIRNAME = ProfileDataDirNames.MEDIA_CACHE_DIR
 
         private val STATS_HOSTS = setOf("s.youtube.com", "www.youtube.com", "music.youtube.com")
         private val STATS_PATHS = setOf("/api/stats/playback", "/api/stats/watchtime")

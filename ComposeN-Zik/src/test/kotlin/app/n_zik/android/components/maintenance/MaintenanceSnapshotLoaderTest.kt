@@ -6,14 +6,19 @@ import androidx.core.content.edit
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.utils.logDebugEnabledKey
 import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.profilePreferences
 import app.n_zik.android.MainApplication
 import app.n_zik.android.core.backup.BackupManager
 import app.n_zik.android.R
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.DatabaseInitializer
+import app.n_zik.android.core.profiles.ProfileDataItem
+import app.n_zik.android.core.profiles.profileShareKey
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.listentogether.ListenTogetherClient
+import androidx.media3.datasource.cache.Cache
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import kotlinx.coroutines.CoroutineScope
@@ -22,6 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -166,5 +172,50 @@ class MaintenanceSnapshotLoaderTest {
             assertEquals(MAINTENANCE_JOB_NAMES, jobs.map { it.name })
             assertEquals(jobs.firstOrNull { it.name == "AutoBackupWorker" }, snapshot.backupJob)
         }
+    }
+
+    @Test
+    fun aLiveProfileSeparateDirsAreCountedInTheStorageRows() {
+        // A live user profile ("work") with its own (separate) coil + downloads dirs, and a
+        // second profile ("home") sharing BOTH — its dirs map onto the base, which must be
+        // counted exactly once (spec-profile-data-separation).
+        File(context.filesDir, "Profiles_names.txt").writeText("work\nhome\n")
+        context.profilePreferences.edit {
+            putBoolean(profileShareKey(ProfileDataItem.IMAGES, "home"), true)
+            putBoolean(profileShareKey(ProfileDataItem.DOWNLOADS, "home"), true)
+        }
+        File(context.cacheDir, "coil_work").apply { mkdirs() }
+        File(context.cacheDir, "coil_work/a.bin").writeBytes(ByteArray(100))
+        File(context.cacheDir, "exo_downloads_work").apply { mkdirs() }
+        File(context.cacheDir, "exo_downloads_work/dl.bin").writeBytes(ByteArray(200))
+        // The base dirs hold data too — a broken dedup would walk them a second time
+        // (via "home" or instead of the active-profile exclusion) and inflate the totals.
+        File(context.cacheDir, "coil").apply { mkdirs() }
+        File(context.cacheDir, "coil/base.bin").writeBytes(ByteArray(50))
+        File(context.cacheDir, "exo_downloads").apply { mkdirs() }
+        File(context.cacheDir, "exo_downloads/base_dl.bin").writeBytes(ByteArray(50))
+
+        // The live (memory-tracked) sizes are non-deterministic across test JVMs (a stale
+        // lazy DiskCache / download cache from another test class may point at old dirs):
+        // stub the tracked reads to 0 — NOT a failure injection — so the disk walk, the
+        // cross-profile aggregation under test, is exact.
+        mockkObject(ImageCacheFactory)
+        every { ImageCacheFactory.getCacheSize() } returns 0L
+        mockkObject(MyDownloadHelper)
+        every { MyDownloadHelper.getDownloadCache(any()) } returns mockk<Cache> {
+            every { cacheSpace } returns 0L
+        }
+
+        val snapshot = loadSnapshot()
+
+        // images = active tracked (0, stubbed) + the other distinct coil dirs walked:
+        // exactly coil_work (100). The base coil is the active dir (excluded) and "home"
+        // maps onto it (deduped) — so the base is counted exactly once, via the tracked read.
+        assertNotNull("the images row must be present without any failure injection", snapshot.imagesCache)
+        assertEquals(100L, snapshot.imagesCache!!.first)
+        // downloads = active tracked (0, stubbed) + the other distinct download dirs walked:
+        // exactly exo_downloads_work (200) — same base-counted-once property.
+        assertNotNull("the downloads row must be present without any failure injection", snapshot.downloadsCache)
+        assertEquals(200L, snapshot.downloadsCache!!.first)
     }
 }

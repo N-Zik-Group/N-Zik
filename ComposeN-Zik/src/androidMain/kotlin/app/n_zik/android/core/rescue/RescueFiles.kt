@@ -25,6 +25,7 @@ import app.it.fast4x.rimusic.utils.isProfileIdSafe
 import app.it.fast4x.rimusic.utils.profileDisplayName
 import app.it.fast4x.rimusic.utils.profileLastUsed
 import app.it.fast4x.rimusic.utils.proxyPasswordEncryptedKey
+import app.it.fast4x.rimusic.utils.readProfileIds
 import app.it.fast4x.rimusic.utils.saveProfileDisplayName
 import app.it.fast4x.rimusic.utils.saveProfileLastUsed
 import app.it.fast4x.rimusic.utils.setActiveProfile
@@ -40,6 +41,14 @@ import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import app.n_zik.android.appContext
 import app.n_zik.android.core.backup.ProfileStateArchive
 import app.n_zik.android.core.notifications.deleteProfileChannels
+import app.n_zik.android.core.profiles.ProfileDataItem
+import app.n_zik.android.core.profiles.clearProfileShareFlags
+import app.n_zik.android.core.profiles.coversDir
+import app.n_zik.android.core.profiles.downloadsDir
+import app.n_zik.android.core.profiles.profileIndexDbFile
+import app.n_zik.android.core.profiles.profileSharedItems
+import app.n_zik.android.core.profiles.resolveProfileDataDirNames
+import app.n_zik.android.core.profiles.waveformsDir
 import app.n_zik.android.extensions.discord.discordAdvancedSettingKeys
 import app.n_zik.android.extensions.lastfm.isLastfmNowPlayingEnabledKey
 import app.n_zik.android.extensions.lastfm.isLastfmScrobbleEnabledKey
@@ -660,6 +669,10 @@ object RescueFiles {
                 toDelete.forEach { id ->
                     deleteProfileSettingsFiles(context, id)
                     deleteProfileDatabaseFiles(context, id)
+                    // The profile's SEPARATE data dirs + index are purged with it
+                    // (spec-profile-data-separation) — the shared items stay with the base.
+                    deleteProfileDataFiles(context, id)
+                    context.clearProfileShareFlags(id)
                     context.clearProfileFaceEntries(id)
                     // The profile's own files dir (its custom face photo) — the same
                     // rule as the profiles-page deletion (ProfileCard.profileDataDir).
@@ -713,6 +726,15 @@ object RescueFiles {
                     backupProfileData(context, id)
                     deleteProfileDatabaseFiles(context, id)
                     deleteProfileSettingsFiles(context, id)
+                    if (id != DEFAULT_PROFILE_ID) {
+                        // The remaining SEPARATE data (the regenerable caches — the
+                        // non-regenerable dirs + index were moved to the backup above)
+                        // is wiped, and the sharing flags are forgotten: the restored
+                        // (or never-restored) data is separate, so the default
+                        // (separate) matches it (spec-profile-data-separation).
+                        deleteProfileDataFiles(context, id)
+                        context.clearProfileShareFlags(id)
+                    }
                     context.clearProfileFaceEntries(id)
                     runCatching { File(context.filesDir, "profiles/$id").deleteRecursively() }
                         .onFailure {
@@ -805,6 +827,26 @@ object RescueFiles {
             "name=${context.profileDisplayName(profileId).orEmpty()}\n" +
                 "lastUsed=${context.profileLastUsed(profileId) ?: 0L}\n"
         )
+
+        // The SEPARATE non-regenerable data dirs (downloads, covers, waveforms) + the
+        // suffixed index (spec-profile-data-separation). The caches (streaming +
+        // image) are wiped WITHOUT backup (user decision 2026-10-01). The shared
+        // items are NEVER backed up: they belong to the base. The base has no
+        // suffixed data, so it is a no-op for the base.
+        if (profileId != DEFAULT_PROFILE_ID) {
+            val shared = context.profileSharedItems(profileId)
+            val separateDownloads = if (ProfileDataItem.DOWNLOADS in shared) null else downloadsDir(context, profileId)
+            separateDownloads?.let { if (it.exists()) moveDirReplacing(it, File(backup, "downloads")) }
+            val separateCovers = if (ProfileDataItem.IMAGES in shared) null else coversDir(context, profileId)
+            if (separateCovers != null && separateCovers.exists()) moveDirReplacing(separateCovers, File(backup, "covers"))
+            val separateWaveforms = if (ProfileDataItem.WAVEFORMS in shared) null else waveformsDir(context, profileId)
+            if (separateWaveforms != null && separateWaveforms.exists()) moveDirReplacing(separateWaveforms, File(backup, "waveforms"))
+            // The suffixed index (carries both indexes when both caches are separate).
+            if (ProfileDataItem.DOWNLOADS !in shared || ProfileDataItem.MEDIA_CACHE !in shared) {
+                val indexDb = profileIndexDbFile(context, profileId)
+                if (indexDb.exists()) moveDatabaseFiles(indexDb, File(backup, indexDb.name))
+            }
+        }
     }
 
     /**
@@ -859,6 +901,29 @@ object RescueFiles {
             }
             if (name.isNotEmpty()) context.saveProfileDisplayName(profileId, name)
             if (lastUsed > 0L) context.saveProfileLastUsed(profileId, lastUsed)
+        }
+
+        // The SEPARATE non-regenerable data dirs + the suffixed index — ping-pong
+        // (the data written since the reset becomes the new backup). An item the
+        // profile SHARES now is not restored into the base location: its backup copy
+        // stays parked in [backup] (spec-profile-data-separation). The sharing flags
+        // are NOT restored (they were cleared with the reset — the default separate
+        // matches the backed-up separate data).
+        if (profileId != DEFAULT_PROFILE_ID) {
+            val shared = context.profileSharedItems(profileId)
+            fun swapBackedDir(backupEntry: String, item: ProfileDataItem, live: File?) {
+                if (live == null || item in shared) return
+                val backed = File(backup, backupEntry)
+                if (backed.exists()) swapDataDir(live, backed)
+            }
+            swapBackedDir("downloads", ProfileDataItem.DOWNLOADS, downloadsDir(context, profileId))
+            swapBackedDir("covers", ProfileDataItem.IMAGES, coversDir(context, profileId))
+            swapBackedDir("waveforms", ProfileDataItem.WAVEFORMS, waveformsDir(context, profileId))
+            if (ProfileDataItem.DOWNLOADS !in shared || ProfileDataItem.MEDIA_CACHE !in shared) {
+                val liveIndex = profileIndexDbFile(context, profileId)
+                val backedIndex = File(backup, liveIndex.name)
+                if (backedIndex.exists()) swapProfileIndex(liveIndex, backedIndex)
+            }
         }
     }
 
@@ -930,6 +995,99 @@ object RescueFiles {
             }
         }
     }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Per-profile data dirs (spec-profile-data-separation: the SEPARATE data of a
+    // profile is wiped with the profile — the shared items are NEVER touched, they
+    // belong to the base)
+    // ──────────────────────────────────────────────────────────────────────
+
+    /**
+     * Deletes the data of [profileId]'s OWN namespace: its suffixed directories
+     * (downloads, streaming cache, covers, Coil image cache, waveforms) and its
+     * suffixed index database. The suffixed names are the profile's own whatever its
+     * sharing flags say now (the base keeps the unsuffixed ones, NEVER touched), so
+     * the wipe is UNCONDITIONAL: it also removes the stale suffixed data left behind
+     * when an item the profile now shares used to be separate (spec-profile-data-separation).
+     * A no-op for the base (its locations are the unsuffixed base ones). A missing
+     * file is not an error: the profile may have never written data.
+     *
+     * Returns the number of files removed.
+     */
+    internal fun deleteProfileDataFiles(context: Context, profileId: String): Int {
+        if (profileId == DEFAULT_PROFILE_ID) return 0
+        val own = resolveProfileDataDirNames(profileId, emptySet())
+        var deletedCount = 0
+        // Downloads / media cache / Coil live under the profile's location setting
+        // (System → cacheDir, Private → filesDir): walk BOTH bases — the setting may
+        // have changed since the data was written (a Disabled cache wrote none).
+        listOf(own.downloadsDir, own.mediaCacheDir, own.imageCacheDir).forEach { name ->
+            deletedCount += safeDeleteDir(File(context.cacheDir, name))
+            deletedCount += safeDeleteDir(File(context.filesDir, name))
+        }
+        // Covers + waveforms always live under filesDir.
+        deletedCount += safeDeleteDir(File(context.filesDir, own.coversDir))
+        deletedCount += safeDeleteDir(File(context.filesDir, own.waveformsDir))
+        // The suffixed index is the profile's own database (a shared cache points at
+        // the base one, never touched) — stale when the profile shares both caches now.
+        deletedCount += removeWithSideFiles(profileIndexDbFile(context, profileId))
+        return deletedCount
+    }
+
+    /**
+     * Deletes [file] + its SQLite side files (the [DB_FILE_SUFFIXES] set), returning
+     * the number of files removed — the same side-file rule as the global downloads
+     * delete, so a stale journal cannot be replayed onto a fresh index.
+     */
+    private fun removeWithSideFiles(file: File): Int {
+        var count = 0
+        DB_FILE_SUFFIXES.forEach { suffix ->
+            val f = File(file.path + suffix)
+            if (f.exists() && f.delete()) count++
+        }
+        return count
+    }
+
+    /**
+     * The user profiles' OWN cache dirs a global cache clear must cover: their suffixed
+     * streaming + Coil image cache dirs under BOTH bases (the location setting may have
+     * changed — see [deleteProfileDataFiles]). Unconditional on the sharing flags: a
+     * stale suffixed dir is still the profile's own, while the shared (base) dirs are
+     * cleared by [clearCacheDirs] itself.
+     */
+    private fun profileCacheDirsToClear(context: Context): List<File> =
+        context.readProfileIds()
+            .filterNot { it == DEFAULT_PROFILE_ID }
+            .flatMap { id ->
+                val own = resolveProfileDataDirNames(id, emptySet())
+                listOf(context.cacheDir, context.filesDir).flatMap { base ->
+                    listOf(File(base, own.mediaCacheDir), File(base, own.imageCacheDir))
+                }
+            }
+
+    /**
+     * The user profiles' OWN download dirs a global downloads delete must cover
+     * (both bases — see [deleteProfileDataFiles]; the shared base dir is deleted
+     * by [deleteDownloadFiles] itself).
+     */
+    private fun profileDownloadDirsToWipe(context: Context): List<File> =
+        context.readProfileIds()
+            .filterNot { it == DEFAULT_PROFILE_ID }
+            .flatMap { id ->
+                val name = resolveProfileDataDirNames(id, emptySet()).downloadsDir
+                listOf(context.cacheDir, context.filesDir).map { base -> File(base, name) }
+            }
+
+    /**
+     * The user profiles' OWN suffixed index databases — unconditional on the sharing
+     * flags: a profile whose downloads are shared now may still hold a stale suffixed
+     * database from when they were separate. The base index is the one
+     * [deleteDownloadFiles] deletes itself, and is never in this list.
+     */
+    private fun profileDownloadIndexDatabases(context: Context): List<File> =
+        context.readProfileIds()
+            .filterNot { it == DEFAULT_PROFILE_ID }
+            .map { profileIndexDbFile(context, it) }
 
     /**
      * The display name of the document at [uri], or `null` when it cannot be
@@ -1045,11 +1203,28 @@ object RescueFiles {
      * the user can configure the cache location to either via [ExoPlayerCacheLocation].
      */
     fun clearCache(context: Context): Result<Int> = runCatching {
-        clearCacheDirs(context.cacheDir, context.filesDir, context.externalCacheDir)
+        clearCacheDirs(
+            context.cacheDir,
+            context.filesDir,
+            context.externalCacheDir,
+            // The user profiles' OWN streaming/image caches (spec-profile-data-separation)
+            // — the shared (base) dirs are the ones cleared above.
+            profileCacheDirsToClear(context),
+        )
     }
 
-    /** File-based core of [clearCache], separated so it can be unit-tested with temp dirs. */
-    internal fun clearCacheDirs(cacheDir: File, filesDir: File, externalCacheDir: File?): Int {
+    /**
+     * File-based core of [clearCache], separated so it can be unit-tested with temp
+     * dirs. [profileCacheDirs] carries the user profiles' OWN suffixed streaming/image
+     * cache dirs (unconditional on the sharing flags, both bases — the shared base
+     * dirs are the ones cleared above).
+     */
+    internal fun clearCacheDirs(
+        cacheDir: File,
+        filesDir: File,
+        externalCacheDir: File?,
+        profileCacheDirs: List<File> = emptyList(),
+    ): Int {
         var deletedCount = 0
         val bases = listOf(cacheDir, filesDir)
 
@@ -1059,6 +1234,9 @@ object RescueFiles {
             // Image cache (coil)
             deletedCount += safeDeleteDir(File(base, IMAGE_CACHE_DIR))
         }
+
+        // The user profiles' OWN suffixed caches (both bases — see profileCacheDirsToClear).
+        profileCacheDirs.forEach { deletedCount += safeDeleteDir(it) }
 
         // OkHttp cache in externalCacheDir
         externalCacheDir?.let { extCache ->
@@ -1108,23 +1286,44 @@ object RescueFiles {
             mediaBases = listOfNotNull(context.cacheDir, context.filesDir, context.externalCacheDir),
             // The download index lives in the databases dir (StandaloneDatabaseProvider), not in a
             // cache dir: deleting only the media would leave the index claiming songs are downloaded.
-            downloadDatabase = context.getDatabasePath(DOWNLOAD_DB_FILE)
+            downloadDatabase = context.getDatabasePath(DOWNLOAD_DB_FILE),
+            // The user profiles' OWN download dirs (spec-profile-data-separation)
+            // — the shared (base) dir is the one deleted above.
+            profileDownloadDirs = profileDownloadDirsToWipe(context),
+            profileDownloadIndexDatabases = profileDownloadIndexDatabases(context),
         )
     }
 
-    /** File-based core of [deleteDownloads], separated so it can be unit-tested with temp dirs. */
-    internal fun deleteDownloadFiles(mediaBases: List<File>, downloadDatabase: File): Int {
+    /**
+     * File-based core of [deleteDownloads], separated so it can be unit-tested with
+     * temp dirs. [profileDownloadDirs] carries the user profiles' OWN suffixed download
+     * dirs (unconditional on the sharing flags, both bases — the shared base dir is
+     * the one deleted above); [profileDownloadIndexDatabases] the profiles' OWN suffixed
+     * index databases.
+     */
+    internal fun deleteDownloadFiles(
+        mediaBases: List<File>,
+        downloadDatabase: File,
+        profileDownloadDirs: List<File> = emptyList(),
+        profileDownloadIndexDatabases: List<File> = emptyList(),
+    ): Int {
         var deletedCount = 0
 
         mediaBases.forEach { base ->
             deletedCount += safeDeleteDir(File(base, DOWNLOAD_CACHE_DIR))
         }
 
+        // The user profiles' OWN suffixed download dirs (both bases — see profileDownloadDirsToWipe).
+        profileDownloadDirs.forEach { deletedCount += safeDeleteDir(it) }
+
         // SQLite side files too, so a stale journal cannot be replayed onto a fresh index.
         listOf("", "-journal", "-wal", "-shm").forEach { suffix ->
             val file = File(downloadDatabase.path + suffix)
             if (file.exists() && file.delete()) deletedCount++
         }
+
+        // The suffixed profile index databases (+ their side files).
+        profileDownloadIndexDatabases.forEach { deletedCount += removeWithSideFiles(it) }
 
         Timber.tag(TAG).i("Downloads deleted: %d items", deletedCount)
         return deletedCount
@@ -1184,6 +1383,62 @@ object RescueFiles {
         if (source.renameTo(target)) return
         source.copyTo(target, overwrite = true)
         check(source.delete()) { "Cannot remove ${source.name} after copying it" }
+    }
+
+    /**
+     * Moves the directory tree [from] to [to], replacing any stale tree at [to] first
+     * (the same "the set can be left half-moved" contract as [moveDatabaseFiles]: a
+     * failure part-way throws without a rollback).
+     */
+    private fun moveDirReplacing(from: File, to: File) {
+        if (to.exists()) check(to.deleteRecursively()) { "Cannot replace ${to.absolutePath}" }
+        if (from.renameTo(to)) return
+        from.copyRecursively(to, overwrite = true)
+        check(from.deleteRecursively()) { "Cannot remove ${from.absolutePath} after copying it" }
+    }
+
+    /**
+     * Swaps the live directory [live] with [backupDir] (the ping-pong of
+     * [swapDatabaseFiles] for directory trees): the live tree is parked first under
+     * a per-backup swap name, only then replaced by the backup tree — a tree created
+     * since the reset becomes the new backup, and the normal path never removes the
+     * last good copy of either.
+     */
+    internal fun swapDataDir(live: File, backupDir: File) {
+        // The backup dir is per-profile, so the entry name alone is a unique
+        // (and filesystem-safe) parking slot.
+        val parked = File(backupDir.parentFile, "${backupDir.name}.swap")
+        try {
+            if (live.exists()) moveDirReplacing(live, parked)
+            moveDirReplacing(backupDir, live)
+            if (parked.exists()) moveDirReplacing(parked, backupDir)
+        } catch (e: Exception) {
+            if (parked.exists() && !live.exists()) {
+                runCatching { moveDirReplacing(parked, live) }
+                    .onFailure { Timber.tag(TAG).e("Could not put the parked data dir back: %s", it.javaClass.simpleName) }
+            }
+            throw e
+        }
+    }
+
+    /**
+     * Swaps the live suffixed profile index [live] with its backup (the ping-pong of
+     * [swapDatabaseFiles]): the live one is parked first under a per-backup swap
+     * name (the backup dir is per-profile, so the name is unique), then replaced.
+     */
+    private fun swapProfileIndex(live: File, backupDb: File) {
+        val parkedDb = File(backupDb.parentFile, "${live.name}.swap")
+        try {
+            if (live.exists()) moveDatabaseFiles(live, parkedDb)
+            moveDatabaseFiles(backupDb, live)
+            if (parkedDb.exists()) moveDatabaseFiles(parkedDb, backupDb)
+        } catch (e: Exception) {
+            if (parkedDb.exists() && !live.exists()) {
+                runCatching { moveDatabaseFiles(parkedDb, live) }
+                    .onFailure { Timber.tag(TAG).e("Could not put the parked profile index back: %s", it.javaClass.simpleName) }
+            }
+            throw e
+        }
     }
 
     /**

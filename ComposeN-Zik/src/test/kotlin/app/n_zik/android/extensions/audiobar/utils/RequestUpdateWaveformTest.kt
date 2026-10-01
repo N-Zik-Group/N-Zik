@@ -1,6 +1,7 @@
 package app.n_zik.android.extensions.audiobar.utils
 
 import android.content.Context
+import android.content.SharedPreferences
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
@@ -51,6 +52,12 @@ class RequestUpdateWaveformTest {
         val context = mockk<Context>()
         every { context.filesDir } returns tempDir
         every { context.cacheDir } returns tempDir
+        // The waveform dir is profile-aware (spec-profile-data-separation): the active profile
+        // and its sharing flags come from the plain profile_preferences store.
+        val profilePrefs = mockk<SharedPreferences>()
+        every { profilePrefs.getString(any(), any()) } returns null
+        every { profilePrefs.getBoolean(any(), any()) } returns false
+        every { context.getSharedPreferences(any(), any()) } returns profilePrefs
 
         val latch = CountDownLatch(1)
         var delivered: WaveformResult? = null
@@ -74,6 +81,12 @@ class RequestUpdateWaveformTest {
         val context = mockk<Context>()
         every { context.filesDir } returns tempDir
         every { context.cacheDir } returns tempDir
+        // The waveform dir is profile-aware (spec-profile-data-separation): the active profile
+        // and its sharing flags come from the plain profile_preferences store.
+        val profilePrefs = mockk<SharedPreferences>()
+        every { profilePrefs.getString(any(), any()) } returns null
+        every { profilePrefs.getBoolean(any(), any()) } returns false
+        every { context.getSharedPreferences(any(), any()) } returns profilePrefs
 
         val latch = CountDownLatch(1)
         var delivered: WaveformResult? = null

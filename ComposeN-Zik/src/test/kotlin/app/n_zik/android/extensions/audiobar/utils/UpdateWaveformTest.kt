@@ -1,6 +1,7 @@
 package app.n_zik.android.extensions.audiobar.utils
 
 import android.content.Context
+import android.content.SharedPreferences
 import com.google.gson.Gson
 import io.mockk.every
 import io.mockk.mockk
@@ -27,6 +28,12 @@ class UpdateWaveformTest {
         val context = mockk<Context>()
         every { context.filesDir } returns tempDir
         every { context.cacheDir } returns tempDir
+        // The waveform dir is profile-aware (spec-profile-data-separation): the active profile
+        // and its sharing flags come from the plain profile_preferences store.
+        val profilePrefs = mockk<SharedPreferences>()
+        every { profilePrefs.getString(any(), any()) } returns null
+        every { profilePrefs.getBoolean(any(), any()) } returns false
+        every { context.getSharedPreferences(any(), any()) } returns profilePrefs
 
         // No caches -> if the stale JSON were NOT deleted first, this would short-circuit to
         // Success from the stale file; deletion forces the real (empty-cache) outcome instead.

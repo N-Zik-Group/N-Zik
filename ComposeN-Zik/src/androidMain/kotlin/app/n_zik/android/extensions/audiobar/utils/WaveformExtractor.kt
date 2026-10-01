@@ -12,7 +12,9 @@ import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import app.n_zik.android.core.profiles.waveformsDir
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -57,7 +59,7 @@ object WaveformExtractor {
 
     fun deleteWaveform(context: Context, mediaId: String) {
         Timber.tag(TAG).d("DELETE [$mediaId] Start deleteWaveform")
-        val waveformDir = File(context.filesDir, "waveforms")
+        val waveformDir = waveformsDir(context, getActiveProfile(context))
         val savedFile = File(waveformDir, "$mediaId.json")
         if (savedFile.exists()) {
             val deleted = savedFile.delete()
@@ -88,8 +90,9 @@ object WaveformExtractor {
     suspend fun getOrExtractWaveform(context: Context, mediaId: String, caches: List<Cache>): WaveformResult {
         Timber.tag(TAG).d("EXTRACT [$mediaId] getOrExtractWaveform called, caches=${caches.size}")
         return withContext(NzikDispatchers.DATA) {
-            // We use filesDir instead of cacheDir so it survives a "Clear Cache" by the user
-            val waveformDir = File(context.filesDir, "waveforms")
+            // We use filesDir instead of cacheDir so it survives a "Clear Cache" by the user —
+            // the ACTIVE profile's waveforms folder (spec-profile-data-separation).
+            val waveformDir = waveformsDir(context, getActiveProfile(context))
             if (!waveformDir.exists()) {
                 waveformDir.mkdirs()
                 Timber.tag(TAG).d("EXTRACT [$mediaId] Created waveforms directory")

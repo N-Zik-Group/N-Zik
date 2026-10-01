@@ -64,6 +64,7 @@ import app.it.fast4x.rimusic.utils.encryptedPreferences
 import app.it.fast4x.rimusic.utils.exoPlayerCustomCacheKey
 import app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey
 import app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.getLastSyncTime
 import app.it.fast4x.rimusic.utils.isIgnoringBatteryOptimizations
@@ -86,6 +87,10 @@ import app.n_zik.android.components.settings.settingsEntryExit
 import app.n_zik.android.components.ui.header.clampedLabelMaxWidth
 import app.n_zik.android.core.backup.BackupManager
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.profiles.allDataDirs
+import app.n_zik.android.core.profiles.coilImageCacheDir
+import app.n_zik.android.core.profiles.downloadsDir
+import app.n_zik.android.core.profiles.totalDirectorySize
 import app.n_zik.android.core.maintenance.DedupGroupRecord
 import app.n_zik.android.core.maintenance.DedupGroupStatus
 import app.n_zik.android.core.maintenance.DedupSkipReason
@@ -751,19 +756,36 @@ internal suspend fun loadMaintenanceSnapshot(context: Context): MaintenanceSnaps
         val dbSizeBytes = runCatching { app.getDatabasePath(Database.FILE_NAME).length() }.getOrNull()
 
         // Storage: images (coil, memory), downloads (media3 cache, memory)
+        val activeProfileId = getActiveProfile(app)
         val imagesCache = runCatching {
             val size = preferences.getEnum(coilDiskCacheMaxSizeKey, CoilDiskCacheMaxSize.`128MB`)
             val max = if (size == CoilDiskCacheMaxSize.Custom) {
                 preferences.getInt(coilCustomDiskCacheKey, 128) * 1_000_000L
             } else size.bytes
-            ImageCacheFactory.getCacheSize() to max
+            // The ACTIVE profile's coil cache (tracked) + the other distinct coil dirs
+            // (base + every profile, deduped — spec-profile-data-separation) walked.
+            val activeCoilDir = coilImageCacheDir(app, activeProfileId)
+            val activeCoil = ImageCacheFactory.getCacheSize()
+            val otherCoil = allDataDirs(app) { coilImageCacheDir(app, it) }
+                .filterNot { it.absolutePath == activeCoilDir.absolutePath }
+                .sumOf { totalDirectorySize(it) }
+            (activeCoil + otherCoil) to max
         }.getOrNull()
         val downloadsCache = runCatching {
             val size = preferences.getEnum(
                 exoPlayerDiskDownloadCacheMaxSizeKey,
                 ExoPlayerDiskDownloadCacheMaxSize.`2GB`,
             )
-            MyDownloadHelper.getDownloadCache(app).cacheSpace to size.bytes
+            // The ACTIVE profile's download cache (tracked) + the other distinct
+            // download dirs (base + every profile, deduped — spec-profile-data-separation)
+            // walked. Null active dir (a Disabled cache lives in a temp dir) is
+            // excluded from the dedup, so it is never double-counted.
+            val activeDownloadsDir = downloadsDir(app, activeProfileId)
+            val activeDownloads = MyDownloadHelper.getDownloadCache(app).cacheSpace
+            val otherDownloads = allDataDirs(app) { downloadsDir(app, it) }
+                .filterNot { activeDownloadsDir != null && it.absolutePath == activeDownloadsDir.absolutePath }
+                .sumOf { totalDirectorySize(it) }
+            (activeDownloads + otherDownloads) to size.bytes
         }.getOrNull()
         val downloadsCacheDisabled = runCatching {
             preferences.getEnum(

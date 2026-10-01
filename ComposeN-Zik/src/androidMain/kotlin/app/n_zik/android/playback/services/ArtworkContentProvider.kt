@@ -9,6 +9,8 @@ import android.media.ExifInterface
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import timber.log.Timber
+import app.n_zik.android.core.profiles.coversDir
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import java.io.File
 import java.io.FileOutputStream
 import android.graphics.Bitmap
@@ -23,7 +25,10 @@ class ArtworkContentProvider : ContentProvider() {
 
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
         val songId = uri.lastPathSegment ?: return null
-        val coversDir = File(context?.filesDir, "app_covers")
+        val ctx = context ?: return null
+        // Resolved per request (spec-profile-data-separation): the ACTIVE profile's custom
+        // covers folder, so a profile set by a launcher shortcut before init still reads its own.
+        val coversDir = coversDir(ctx, getActiveProfile(ctx))
         val file = File(coversDir, "cover_${songId}.jpg")
         if (!file.exists()) return null
 

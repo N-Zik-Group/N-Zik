@@ -28,6 +28,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import android.content.Context
 import android.net.Uri
 import androidx.compose.ui.Modifier
+import app.n_zik.android.core.profiles.activeCoversDirName
 import app.it.fast4x.rimusic.utils.saveImageToInternalStorage
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import androidx.compose.material3.OutlinedButton
@@ -120,7 +121,9 @@ class ChangeAlbumCoverDialog private constructor(
                     saveCoverJob.value?.cancel()
                     saveCoverJob.value = coroutineScope.launch {
                         val savedUri = withContext(NzikDispatchers.DATA) {
-                            saveCoverArt(context, uri, "app_covers", "cover_$albumId.jpg")
+                            // The ACTIVE profile's custom covers folder name
+                            // (spec-profile-data-separation)
+                            saveCoverArt(context, uri, activeCoversDirName(context), "cover_$albumId.jpg")
                         }
                         if (savedUri != null) {
                             value = TextFieldValue(savedUri.toString())
