@@ -68,6 +68,14 @@ object BridgeServerController {
     @Volatile
     private var activeCore: BridgeServerCore? = null
 
+    /** Guards the pairing of [activeCore] with [_activeDevice]. */
+    private val activeLock = Any()
+
+    private val _activeDevice = MutableStateFlow<ActiveDevice?>(null)
+
+    /** PC holding the active session of the running server (contract §6.2), `null` when none. */
+    val activeDevice: StateFlow<ActiveDevice?> = _activeDevice.asStateFlow()
+
     private val offerSender = PairingOfferSender()
 
     internal fun publish(state: BridgeState) {
@@ -75,7 +83,17 @@ object BridgeServerController {
     }
 
     internal fun attachCore(core: BridgeServerCore?) {
-        activeCore = core
+        synchronized(activeLock) {
+            activeCore = core
+            _activeDevice.value = core?.activeDevice?.value
+        }
+    }
+
+    /** Mirrors the active device of [core] while it is the attached one; always its latest value. */
+    private fun syncActiveDevice(core: BridgeServerCore) {
+        synchronized(activeLock) {
+            if (activeCore === core) _activeDevice.value = core.activeDevice.value
+        }
     }
 
     private val _pairedEvents = MutableSharedFlow<String>(extraBufferCapacity = 4)
@@ -98,8 +116,9 @@ object BridgeServerController {
         commandExecutor: BridgeCommandExecutor = BridgeCommandExecutor.UNAVAILABLE,
         libraryProvider: LibraryProvider = LibraryProvider.EMPTY,
         audioLibrary: AudioLibrary = AudioLibrary.EMPTY,
-    ): BridgeServerCore =
-        BridgeServerCore(
+    ): BridgeServerCore {
+        lateinit var core: BridgeServerCore
+        core = BridgeServerCore(
             serverName = serverName,
             deviceStore = deviceStore,
             pairingCodes = pairingCodes,
@@ -111,7 +130,10 @@ object BridgeServerController {
                 pairingCodes.close()
                 _pairedEvents.tryEmit(deviceName)
             },
+            onActiveDeviceChanged = { syncActiveDevice(core) },
         )
+        return core
+    }
 
     /**
      * Paired devices of the active profile, kept in `encryptedPreferences` (only token
@@ -175,6 +197,17 @@ object BridgeServerController {
             val store = loadDeviceStore(context)
             withContext(NzikDispatchers.DATA) { store.revoke(deviceId) }
         }
+    }
+
+    /**
+     * Disconnects the active PC without revoking it (contract §6.4, §8.4): its session is
+     * closed with `4001 KICKED` and its audio URLs stop working; it stays paired. No effect
+     * without a running server or an active PC. `true` when a PC was disconnected.
+     */
+    suspend fun kick(): Boolean {
+        val core = activeCore ?: return false
+        val device = core.activeDevice.value ?: return false
+        return core.kick(device.deviceId)
     }
 
     /**

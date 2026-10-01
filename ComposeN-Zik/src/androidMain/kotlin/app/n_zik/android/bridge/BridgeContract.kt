@@ -26,6 +26,14 @@ internal object BridgeContract {
 
     const val TYPE_SERVER_STOPPED = "serverStopped"
 
+    /** Close code of a session taken over by a new connection of the same device (contract §6.2, §6.4). */
+    const val CLOSE_SESSION_REPLACED: Short = 4000
+    const val CLOSE_REASON_SESSION_REPLACED = "SESSION_REPLACED"
+
+    /** Close code of a session disconnected from the phone, pairing kept (contract §6.4, §8.4). */
+    const val CLOSE_KICKED: Short = 4001
+    const val CLOSE_REASON_KICKED = "KICKED"
+
     /** Close code of the session of a revoked device (contract §4.7, §6.4). */
     const val CLOSE_DEVICE_REVOKED: Short = 4003
     const val CLOSE_REASON_DEVICE_REVOKED = "DEVICE_REVOKED"
@@ -122,6 +130,7 @@ internal object BridgeErrorCode {
     const val RATE_LIMITED = "RATE_LIMITED"
     const val NOT_FOUND = "NOT_FOUND"
     const val QUEUE_MISMATCH = "QUEUE_MISMATCH"
+    const val CONFLICT_ACTIVE_CLIENT = "CONFLICT_ACTIVE_CLIENT"
     const val PLAYER_REJECTED = "PLAYER_REJECTED"
     const val PLAYER_UNAVAILABLE = "PLAYER_UNAVAILABLE"
     const val SERVER_STOPPING = "SERVER_STOPPING"
@@ -185,6 +194,21 @@ internal data class QueueMismatchResponse(
     val code: String,
     val message: String,
     val revision: Long,
+)
+
+/** The paired device holding the active session (contract §6.2): `activeDevice` of a `409`. */
+@Serializable
+data class ActiveDevice(
+    val deviceId: String,
+    val deviceName: String,
+)
+
+/** `409 CONFLICT_ACTIVE_CLIENT` body: the error model plus the active device (contract §3, §6.2). */
+@Serializable
+internal data class ConflictActiveClientResponse(
+    val code: String,
+    val message: String,
+    val activeDevice: ActiveDevice,
 )
 
 /** `200` answer of every command (contract §9). */

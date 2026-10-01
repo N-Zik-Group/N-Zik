@@ -41,6 +41,7 @@ import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.createApplicationPlugin
 import io.ktor.server.application.createRouteScopedPlugin
 import io.ktor.server.application.hooks.CallFailed
+import io.ktor.server.application.hooks.ResponseSent
 import io.ktor.server.application.install
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.origin
@@ -74,6 +75,9 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -132,16 +136,63 @@ internal class BridgeServerCore(
     private val audioTokens: AudioTokens = AudioTokens(clock = clock),
     /** Whether the device an audio token was forged for is still paired (contract §8.2 step 2). */
     private val isDevicePaired: (String) -> Boolean = deviceStore::isPaired,
+    /** Called after every change of [activeDevice]. */
+    private val onActiveDeviceChanged: () -> Unit = {},
 ) {
     private val stopping = AtomicBoolean(false)
 
-    /** Contract §2: on a Bearer route the authentication runs before any other processing. */
+    /** Claim of the active session taken by a WebSocket call before its upgrade. */
+    private val sessionClaimKey = AttributeKey<SessionClaim>("BridgeSessionClaim")
+
+    /**
+     * Contract §2 then §6.2 on a REST Bearer route: authentication (`401`) first, then the
+     * active-client rule (`409`), both before any other processing of the route.
+     */
     private val bearerAuth = createRouteScopedPlugin("BridgeBearerAuth") {
-        onCall { call -> call.rejectUnlessAuthenticated() }
+        onCall { call ->
+            val deviceId = call.authenticateOrReject() ?: return@onCall
+            activeDeviceOtherThan(deviceId)?.let { call.respondConflict(it) }
+        }
+    }
+
+    /**
+     * Contract §6.1–§6.2 before the WebSocket upgrade: authentication, then the session is
+     * taken atomically (`409` when another device holds it). The same device's previous
+     * session is closed with `4000` here, before the new one is upgraded and gets its snapshot.
+     */
+    private val sessionAuth = createRouteScopedPlugin("BridgeSessionAuth") {
+        onCall { call ->
+            val deviceId = call.authenticateOrReject() ?: return@onCall
+            when (val result = claimSession(deviceId)) {
+                is ClaimResult.Conflict -> call.respondConflict(result.active)
+                ClaimResult.Stopping ->
+                    call.respondError(HttpStatusCode.ServiceUnavailable, BridgeErrorCode.SERVER_STOPPING, "Server is stopping")
+                is ClaimResult.Claimed -> {
+                    call.attributes.put(sessionClaimKey, result.claim)
+                    result.replaced?.let { closeSession(it, sessionReplaced) }
+                }
+            }
+        }
+        // A claim whose upgrade never happened must not keep the session taken
+        on(ResponseSent) { call ->
+            val claim = call.attributes.getOrNull(sessionClaimKey) ?: return@on
+            if (call.response.status() != HttpStatusCode.SwitchingProtocols) releaseClaim(claim)
+        }
     }
 
     /** Open WebSocket sessions and their state stream (which knows the device id). */
     private val sessions = ConcurrentHashMap<DefaultWebSocketServerSession, SessionStream>()
+
+    /** Guards [activeClaim] and the fields of every [SessionClaim]. */
+    private val claimLock = Any()
+
+    /** The single active session of contract §6.2, taken before the upgrade; `null` when free. */
+    private var activeClaim: SessionClaim? = null
+
+    private val _activeDevice = MutableStateFlow<ActiveDevice?>(null)
+
+    /** Device holding the active session (contract §6.2), `null` when none. */
+    val activeDevice: StateFlow<ActiveDevice?> = _activeDevice.asStateFlow()
 
     val isStopping: Boolean get() = stopping.get()
     val sessionCount: Int get() = sessions.size
@@ -235,10 +286,16 @@ internal class BridgeServerCore(
                     }
                 }
                 route("ws") {
-                    // Contract §6.1: authentication happens before the upgrade
-                    install(bearerAuth)
+                    // Contract §6.1: authentication and the active-client rule happen before the upgrade
+                    install(sessionAuth)
                     webSocket {
-                        handleSession(this, call.attributes[DeviceIdKey], call.request.headers[HttpHeaders.Authorization])
+                        val claim = call.attributes[sessionClaimKey]
+                        // Released whatever happens after the 101 (no-op once replaced or ended)
+                        try {
+                            handleSession(this, claim, call.request.headers[HttpHeaders.Authorization])
+                        } finally {
+                            releaseClaim(claim)
+                        }
                     }
                 }
             }
@@ -257,7 +314,9 @@ internal class BridgeServerCore(
      * frame so the client treats the loss as transient (contract §6.4).
      */
     suspend fun shutdownSessions(code: BridgeStopCode?) {
-        stopping.set(true)
+        // Under claimLock: no claim can be taken between this and the endClaim below
+        synchronized(claimLock) { stopping.set(true) }
+        endClaim(CloseReason(BridgeContract.CLOSE_SERVER_STOPPED, BridgeContract.CLOSE_REASON_SERVER_STOPPED)) { true }
         sessions.entries.toList().forEach { (session, stream) ->
             runCatching {
                 // serverStopped must stay the last message: silence the state stream first
@@ -281,15 +340,129 @@ internal class BridgeServerCore(
      */
     suspend fun revokeDevice(deviceId: String): Boolean {
         val removed = withContext(NzikDispatchers.DATA) { deviceStore.revoke(deviceId) }
-        sessions.filterValues { it.deviceId == deviceId }.forEach { (session, stream) ->
-            sessions.remove(session)
-            runCatching {
-                stream.detach()
-                session.close(CloseReason(BridgeContract.CLOSE_DEVICE_REVOKED, BridgeContract.CLOSE_REASON_DEVICE_REVOKED))
-            }.onFailure { Timber.tag(TAG).w(it, "Failed to close the session of a revoked device") }
-        }
+        val reason = CloseReason(BridgeContract.CLOSE_DEVICE_REVOKED, BridgeContract.CLOSE_REASON_DEVICE_REVOKED)
+        endClaim(reason) { it.device.deviceId == deviceId }
+        closeSessionsOf(deviceId, reason)
         return removed
     }
+
+    /**
+     * Disconnects [deviceId] without revoking it (contract §6.4, §8.4): its session is closed
+     * with `4001 KICKED` first, then every audio URL already forged for it is invalidated.
+     * It stays paired and may open a new session later. `false` when it held no session.
+     */
+    suspend fun kick(deviceId: String): Boolean {
+        endClaim(kicked) { it.device.deviceId == deviceId } ?: return false
+        closeSessionsOf(deviceId, kicked)
+        audioTokens.invalidate(deviceId)
+        Timber.tag(TAG).i("Device $deviceId kicked")
+        return true
+    }
+
+    private suspend fun closeSessionsOf(deviceId: String, reason: CloseReason) {
+        sessions.filter { it.value.deviceId == deviceId }.forEach { (session, stream) -> closeSession(session to stream, reason) }
+    }
+
+    /** Silences the state stream first, so the close is the last frame the session receives. */
+    private suspend fun closeSession(entry: Pair<DefaultWebSocketServerSession, SessionStream>, reason: CloseReason) {
+        val (session, stream) = entry
+        sessions.remove(session)
+        runCatching {
+            stream.detach()
+            session.close(reason)
+        }.onFailure { Timber.tag(TAG).w(it, "Failed to close a bridge session (${reason.message})") }
+    }
+
+    // --- Single active client (contract §6.2) ---
+
+    /** One take of the active session by a device, from its pre-upgrade check to its end. */
+    private class SessionClaim(val device: ActiveDevice) {
+        /** The session once upgraded and registered; guarded by [claimLock]. */
+        var session: Pair<DefaultWebSocketServerSession, SessionStream>? = null
+
+        /** Why the claim was taken away, for a session registering afterwards; guarded by [claimLock]. */
+        var endedBy: CloseReason? = null
+    }
+
+    private sealed interface ClaimResult {
+        data class Conflict(val active: ActiveDevice) : ClaimResult
+
+        /** The server began stopping: `503 SERVER_STOPPING` (contract §6.1, §11.3). */
+        data object Stopping : ClaimResult
+
+        /** [replaced]: the same device's previous session, to close with `4000`. */
+        class Claimed(
+            val claim: SessionClaim,
+            val replaced: Pair<DefaultWebSocketServerSession, SessionStream>?,
+        ) : ClaimResult
+    }
+
+    private val sessionReplaced = CloseReason(BridgeContract.CLOSE_SESSION_REPLACED, BridgeContract.CLOSE_REASON_SESSION_REPLACED)
+    private val kicked = CloseReason(BridgeContract.CLOSE_KICKED, BridgeContract.CLOSE_REASON_KICKED)
+
+    /** Atomic: of two devices claiming a free session at once, exactly one wins. */
+    private fun claimSession(deviceId: String): ClaimResult {
+        val result = synchronized(claimLock) {
+            if (stopping.get()) return ClaimResult.Stopping
+            val current = activeClaim
+            if (current != null && current.device.deviceId != deviceId) return ClaimResult.Conflict(current.device)
+            val claim = SessionClaim(ActiveDevice(deviceId, deviceNameOf(deviceId)))
+            current?.endedBy = sessionReplaced
+            activeClaim = claim
+            _activeDevice.value = claim.device
+            ClaimResult.Claimed(claim, current?.session)
+        }
+        onActiveDeviceChanged()
+        return result
+    }
+
+    /** Binds the upgraded session to [claim]; the close reason instead when the claim was taken away meanwhile. */
+    private fun attachSession(claim: SessionClaim, session: Pair<DefaultWebSocketServerSession, SessionStream>): CloseReason? =
+        synchronized(claimLock) {
+            if (activeClaim === claim) {
+                claim.session = session
+                null
+            } else {
+                claim.endedBy ?: sessionReplaced
+            }
+        }
+
+    /** Frees the session when [claim] still holds it (client close, `4008`, failed upgrade). */
+    private fun releaseClaim(claim: SessionClaim) {
+        synchronized(claimLock) {
+            if (activeClaim !== claim) return
+            activeClaim = null
+            _activeDevice.value = null
+        }
+        onActiveDeviceChanged()
+    }
+
+    /** Takes the session away from its holder when [matches]; returns the claim that held it. */
+    private fun endClaim(reason: CloseReason, matches: (SessionClaim) -> Boolean): SessionClaim? {
+        val ended = synchronized(claimLock) {
+            val current = activeClaim?.takeIf(matches) ?: return null
+            current.endedBy = reason
+            activeClaim = null
+            _activeDevice.value = null
+            current
+        }
+        onActiveDeviceChanged()
+        return ended
+    }
+
+    /** The active device when it is not [deviceId]: that caller gets `409` (contract §6.2). */
+    private fun activeDeviceOtherThan(deviceId: String): ActiveDevice? =
+        synchronized(claimLock) { activeClaim?.device?.takeIf { it.deviceId != deviceId } }
+
+    /** Name shown in the `409` and on the phone; empty only for a device unknown to the store. */
+    private fun deviceNameOf(deviceId: String): String =
+        deviceStore.devices.value.firstOrNull { it.deviceId == deviceId }?.deviceName.orEmpty()
+
+    private suspend fun ApplicationCall.respondConflict(active: ActiveDevice) =
+        respond(
+            HttpStatusCode.Conflict,
+            ConflictActiveClientResponse(BridgeErrorCode.CONFLICT_ACTIVE_CLIENT, "Another device holds the active session", active),
+        )
 
     /** Contract §4.5, rules applied in order: rate-limit, body, code and requestId, issue. */
     private suspend fun ApplicationCall.handleValidate() {
@@ -535,13 +708,20 @@ internal class BridgeServerCore(
         return out.toString(Charsets.UTF_8.name())
     }
 
-    private suspend fun handleSession(session: DefaultWebSocketServerSession, deviceId: String, authorizationHeader: String?) {
-        val stream = SessionStream(session, deviceId)
+    private suspend fun handleSession(session: DefaultWebSocketServerSession, claim: SessionClaim, authorizationHeader: String?) {
+        val stream = SessionStream(session, claim.device.deviceId)
         sessions[session] = stream
-        // A revocation between the pre-upgrade check and this registration did not see the session
-        if (authenticate(authorizationHeader) !is AuthOutcome.Success) {
+        // A revocation, kick or replacement between the pre-upgrade check and this
+        // registration did not see the session: it is closed the way it would have been
+        val refused = if (authenticate(authorizationHeader) !is AuthOutcome.Success) {
+            CloseReason(BridgeContract.CLOSE_DEVICE_REVOKED, BridgeContract.CLOSE_REASON_DEVICE_REVOKED)
+        } else {
+            attachSession(claim, session to stream)
+        }
+        if (refused != null) {
             sessions.remove(session)
-            session.close(CloseReason(BridgeContract.CLOSE_DEVICE_REVOKED, BridgeContract.CLOSE_REASON_DEVICE_REVOKED))
+            releaseClaim(claim)
+            session.close(refused)
             return
         }
         Timber.tag(TAG).i("Bridge session opened (${sessions.size} active)")
@@ -564,6 +744,7 @@ internal class BridgeServerCore(
             }
         } finally {
             sessions.remove(session)
+            releaseClaim(claim)
             withContext(NonCancellable) { stream.detach() }
             Timber.tag(TAG).i("Bridge session closed (${sessions.size} active)")
         }
@@ -636,12 +817,15 @@ internal class BridgeServerCore(
         }
     }
 
-    private suspend fun ApplicationCall.rejectUnlessAuthenticated() {
+    /** The caller's device id, or `null` once a `401` has been answered (contract §2). */
+    private suspend fun ApplicationCall.authenticateOrReject(): String? =
         when (val outcome = authenticate(request.headers[HttpHeaders.Authorization])) {
-            is AuthOutcome.Failure -> respond(HttpStatusCode.Unauthorized, outcome.error)
-            is AuthOutcome.Success -> attributes.put(DeviceIdKey, outcome.deviceId)
+            is AuthOutcome.Failure -> {
+                respond(HttpStatusCode.Unauthorized, outcome.error)
+                null
+            }
+            is AuthOutcome.Success -> outcome.deviceId.also { attributes.put(DeviceIdKey, it) }
         }
-    }
 
     /**
      * Contract §2: `UNAUTHORIZED` when the `Authorization` header is missing or not a Bearer

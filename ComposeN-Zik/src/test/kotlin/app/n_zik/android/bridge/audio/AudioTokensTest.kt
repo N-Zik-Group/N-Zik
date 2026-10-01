@@ -36,19 +36,20 @@ class AudioTokensTest {
     }
 
     @Test
-    fun `tampered signature, quality or expiry is AUDIO_URL_INVALID`() {
+    fun `tampered signature, generation, quality or expiry is AUDIO_URL_INVALID`() {
         val token = forge()
-        val (device, quality, expiry, mac) = token.split('.')
+        val (device, generation, quality, expiry, mac) = token.split('.')
         val flipped = (if (mac.first() == 'A') 'B' else 'A') + mac.drop(1)
 
-        assertEquals(AudioTokenCheck.Invalid, tokens.check("$device.$quality.$expiry.$flipped", TRACK, paired))
-        assertEquals(AudioTokenCheck.Invalid, tokens.check("$device.low.$expiry.$mac", TRACK, paired))
-        assertEquals(AudioTokenCheck.Invalid, tokens.check("$device.$quality.${expiry.toLong() + 1}.$mac", TRACK, paired))
+        assertEquals(AudioTokenCheck.Invalid, tokens.check("$device.$generation.$quality.$expiry.$flipped", TRACK, paired))
+        assertEquals(AudioTokenCheck.Invalid, tokens.check("$device.$generation.low.$expiry.$mac", TRACK, paired))
+        assertEquals(AudioTokenCheck.Invalid, tokens.check("$device.$generation.$quality.${expiry.toLong() + 1}.$mac", TRACK, paired))
+        assertEquals(AudioTokenCheck.Invalid, tokens.check("$device.${generation.toLong() + 1}.$quality.$expiry.$mac", TRACK, paired))
     }
 
     @Test
     fun `malformed or missing token is AUDIO_URL_INVALID`() {
-        listOf(null, "", "abc", "a.b.c", "a.b.c.d.e", "$DEVICE.ultra.1.x", "$DEVICE.high.-1.x", "x".repeat(513))
+        listOf(null, "", "abc", "a.b.c", "a.b.c.d", "a.b.c.d.e.f", "$DEVICE.0.ultra.1.x", "$DEVICE.0.high.-1.x", "$DEVICE.x.high.1.x", "x".repeat(513))
             .forEach { assertEquals(AudioTokenCheck.Invalid, tokens.check(it, TRACK, paired), "token=$it") }
     }
 
@@ -67,6 +68,36 @@ class AudioTokensTest {
     @Test
     fun `token of a revoked device is DEVICE_REVOKED`() {
         assertEquals(AudioTokenCheck.Revoked, tokens.check(forge(), TRACK) { false })
+    }
+
+    @Test
+    fun `token forged before a kick is DEVICE_REVOKED, one forged after is valid`() {
+        val before = forge()
+
+        tokens.invalidate(DEVICE)
+        val after = forge()
+
+        assertEquals(AudioTokenCheck.Revoked, tokens.check(before, TRACK, paired))
+        assertTrue(tokens.check(after, TRACK, paired) is AudioTokenCheck.Valid)
+    }
+
+    @Test
+    fun `a kick only invalidates the kicked device`() {
+        val other = "Zz9yX8wV7uT"
+        val otherToken = tokens.forge(TRACK, AudioQuality.HIGH, other, NOW + 60_000)
+
+        tokens.invalidate(DEVICE)
+
+        assertTrue(tokens.check(otherToken, TRACK) { true } is AudioTokenCheck.Valid)
+    }
+
+    @Test
+    fun `kick keeps the validation order invalid, then revoked, then expired`() {
+        val token = forge(expiresAtMs = NOW - 1)
+        tokens.invalidate(DEVICE)
+
+        assertEquals(AudioTokenCheck.Invalid, tokens.check(token, "otherTrack1", paired))
+        assertEquals(AudioTokenCheck.Revoked, tokens.check(token, TRACK, paired))
     }
 
     @Test
