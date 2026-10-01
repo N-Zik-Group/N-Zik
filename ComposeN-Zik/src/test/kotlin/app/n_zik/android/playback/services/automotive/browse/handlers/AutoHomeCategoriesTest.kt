@@ -8,14 +8,21 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 /**
  * Unit tests for [homeCategoryOrder]: the automotive home categories must be
  * displayed in the same order as the in-app settings — the phone's
  * Home*SettingsDialog stores a JSON array of category ids under its order
  * key, and the automotive handlers reuse it.
+ *
+ * `sdk = [33]` like the other automotive Robolectric classes: on this JVM the
+ * default-SDK sandbox fails at environment setup (`ApplicationSharedMemory`
+ * creation reaches `jdk.internal.access.SharedSecrets`, which `java.base`
+ * does not export to the unnamed module).
  */
 @RunWith(RobolectricTestRunner::class)
+@Config(sdk = [33])
 class AutoHomeCategoriesTest {
 
     private lateinit var context: Context

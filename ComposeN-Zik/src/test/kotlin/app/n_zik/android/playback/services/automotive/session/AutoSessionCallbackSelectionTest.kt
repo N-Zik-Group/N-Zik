@@ -85,12 +85,10 @@ class AutoSessionCallbackSelectionTest {
         Dependencies.init(mainApplication)
         context = app
         runBlocking { onDatabase { DatabaseInitializer.Instance.clearAllTables() } }
-        // The real singleton object: under Robolectric an instance mock of the
-        // final `object` class does not intercept property getters (calls are
-        // never recorded), while `mockkObject` instrumentation of the singleton
-        // does (same pattern as `SmartTrashDeleteDownloadsTest`). Only the
-        // `downloaded shuffle` test touches it, and it stubs + unmocks around
-        // its own body.
+        // The real singleton object: the `downloaded shuffle` test sets its
+        // `downloads` property directly (set + restore, no `mockkObject`) —
+        // the object's inline instrumentation can be left stale by other
+        // classes in the same JVM, and a direct set/restore is immune.
         callback = AutoSessionCallback(context, Database, MyDownloadHelper)
         AutoSearchState.clear()
     }
@@ -416,10 +414,14 @@ class AutoSessionCallbackSelectionTest {
             upsertSongWithLikedAt("dl-ok", null)
             upsertSongWithLikedAt("dl-dis", -1L)
         }
-        mockkObject(MyDownloadHelper)
+        // The real `var downloads` is set directly (and restored below) instead
+        // of stubbing through `mockkObject`: the object's inline
+        // instrumentation can be left stale by other test classes in the same
+        // JVM, and a direct set/restore is immune to it.
+        val originalDownloads = MyDownloadHelper.downloads
         try {
             // Both downloads are COMPLETED: only the dislike flag separates them.
-            every { MyDownloadHelper.downloads } returns MutableStateFlow(mapOf("dl-ok" to fakeDownload("dl-ok", Download.STATE_COMPLETED), "dl-dis" to fakeDownload("dl-dis", Download.STATE_COMPLETED)))
+            MyDownloadHelper.downloads = MutableStateFlow(mapOf("dl-ok" to fakeDownload("dl-ok", Download.STATE_COMPLETED), "dl-dis" to fakeDownload("dl-dis", Download.STATE_COMPLETED)))
             val result = setMediaItems(AutoSessionConstants.ID_SONGS_DOWNLOADED_SHUFFLE)
             assertEquals(setOf("dl-ok"), result.mediaItems.map { it.mediaId }.toSet())
 
@@ -432,7 +434,7 @@ class AutoSessionCallbackSelectionTest {
                 context.preferences.edit().remove(excludeDislikedSongsKey).apply()
             }
         } finally {
-            unmockkObject(MyDownloadHelper)
+            MyDownloadHelper.downloads = originalDownloads
         }
     }
 
@@ -551,7 +553,7 @@ class AutoSessionCallbackSelectionTest {
     }
 
     @Test
-    fun `artist selection queue excludes songs of disliked artists`() {
+    fun `artist selection queue keeps every track (no triple filter, phone parity)`() {
         runBlocking {
             onDatabase {
                 upsertSong("art-ok-1")
@@ -560,13 +562,14 @@ class AutoSessionCallbackSelectionTest {
                 Database.artistTable.insertIgnore(Artist(id = "UCdis", dislikedAt = 1L))
                 Database.songArtistMapTable.insertIgnore(SongArtistMap(songId = "art-ok-1", artistId = "UCok"))
                 // art-dis-1 belongs to the normal artist AND the disliked one —
-                // the disliked mapping alone must remove it from the queue.
+                // the phone's artist queue is NOT triple-filtered (user decision:
+                // details follow the app), so it stays in the queue.
                 Database.songArtistMapTable.insertIgnore(SongArtistMap(songId = "art-dis-1", artistId = "UCok"))
                 Database.songArtistMapTable.insertIgnore(SongArtistMap(songId = "art-dis-1", artistId = "UCdis"))
             }
         }
         val result = setMediaItems("artist/UCok/art-ok-1")
-        assertEquals(setOf("art-ok-1"), result.mediaItems.map { it.mediaId }.toSet())
+        assertEquals(setOf("art-ok-1", "art-dis-1"), result.mediaItems.map { it.mediaId }.toSet())
         assertEquals("art-ok-1", result.mediaItems[result.startIndex].mediaId)
     }
 
