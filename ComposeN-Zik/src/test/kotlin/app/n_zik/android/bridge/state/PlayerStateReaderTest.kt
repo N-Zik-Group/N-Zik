@@ -24,6 +24,7 @@ class PlayerStateReaderTest {
         shuffleOrder: List<Int> = ids.indices.toList(),
         repeatMode: Int = Player.REPEAT_MODE_OFF,
         count: Int = ids.size,
+        durationMs: Long = C.TIME_UNSET,
     ): Player {
         val timeline = mockk<Timeline>()
         every { timeline.windowCount } returns count
@@ -49,6 +50,7 @@ class PlayerStateReaderTest {
             every { isPlaying } returns true
             every { playbackParameters } returns PlaybackParameters(1.5f)
             every { currentPosition } returns 42_000L
+            every { duration } returns durationMs
         }
     }
 
@@ -112,5 +114,19 @@ class PlayerStateReaderTest {
         assertNull(read.sample.currentTrackId)
         assertFalse(read.sample.isPlaying)
         assertEquals(0L, read.sample.positionMs)
+    }
+
+    @Test
+    fun `only the current item carries the player's duration`() {
+        val read = PlayerStateReader.read(player(current = 1, durationMs = 222_000L), 0L)
+
+        assertEquals(listOf(null, 222_000L, null), read.items.map { it.playerDurationMs })
+    }
+
+    @Test
+    fun `an unknown player duration gives no fallback`() {
+        val read = PlayerStateReader.read(player(current = 0), 0L)
+
+        assertEquals(listOf<Long?>(null, null, null), read.items.map { it.playerDurationMs })
     }
 }

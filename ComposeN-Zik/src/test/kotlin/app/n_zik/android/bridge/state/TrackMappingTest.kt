@@ -73,4 +73,18 @@ class TrackMappingTest {
         assertEquals("dQw4w9WgXcQ", TrackMapping.trackIdOf("prefix/dQw4w9WgXcQ"))
         assertEquals("dQw4w9WgXcQ", TrackMapping.trackIdOf("prefix/dQw4w9WgXcQ/"))
     }
+
+    @Test
+    fun `the player's duration fills a missing durationText, the text wins otherwise`() {
+        fun track(durationText: String?, playerDurationMs: Long?) = TrackMapping.track(
+            mediaId = "aaaaaaaaaaa", title = "T", artist = "A", hasArtwork = false, durationText = durationText,
+            isLiked = false, isDownloaded = false, playerDurationMs = playerDurationMs,
+        )
+
+        assertEquals(222_000L, track(durationText = null, playerDurationMs = 222_000L).durationMs)
+        assertEquals(222_000L, track(durationText = "00:00", playerDurationMs = 222_000L).durationMs)
+        assertEquals(185_000L, track(durationText = "3:05", playerDurationMs = 222_000L).durationMs)
+        assertEquals(null, track(durationText = null, playerDurationMs = null).durationMs)
+        assertEquals(null, track(durationText = null, playerDurationMs = 0L).durationMs)
+    }
 }

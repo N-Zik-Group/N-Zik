@@ -236,6 +236,7 @@ internal class BridgePlayerSource(
                 durationText = item.durationText,
                 isLiked = itemFlags?.isLiked == true,
                 isDownloaded = itemFlags?.isDownloaded == true,
+                playerDurationMs = item.playerDurationMs,
             )
         }
         return hub.submit(read.sample.copy(queue = queue), seek = seek, transition = transition)

@@ -11,6 +11,8 @@ internal data class RawItem(
     val artist: CharSequence?,
     val hasArtwork: Boolean,
     val durationText: String?,
+    /** Duration the player knows for this item (current item once loaded), the fallback of [durationText]. */
+    val playerDurationMs: Long? = null,
 )
 
 /** One read of the player: its queue items and a [PlayerSample] whose queue is still empty. */
@@ -28,6 +30,9 @@ internal object PlayerStateReader {
             else -> RepeatModeDto.OFF
         }
         val order = playOrder(player)
+        val currentWindow = player.currentMediaItemIndex
+        // Only the current item is loaded: its real duration covers a track whose metadata has none
+        val currentDurationMs = player.duration.takeIf { it != C.TIME_UNSET && it > 0 }
         val items = order.map { index ->
             val item = player.getMediaItemAt(index)
             val metadata = item.mediaMetadata
@@ -38,6 +43,7 @@ internal object PlayerStateReader {
                 artist = metadata.artist,
                 hasArtwork = metadata.artworkUri != null,
                 durationText = metadata.extras?.getString(DURATION_TEXT_EXTRA),
+                playerDurationMs = currentDurationMs.takeIf { index == currentWindow },
             )
         }
         val currentIndex = order.indexOf(player.currentMediaItemIndex)

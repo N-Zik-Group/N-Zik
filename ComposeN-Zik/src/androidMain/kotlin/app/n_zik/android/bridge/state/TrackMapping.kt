@@ -38,6 +38,7 @@ internal object TrackMapping {
         durationText: String?,
         isLiked: Boolean,
         isDownloaded: Boolean,
+        playerDurationMs: Long? = null,
     ): TrackDto {
         val id = trackIdOf(mediaId)
         val source = sourceOf(id)
@@ -45,7 +46,8 @@ internal object TrackMapping {
             id = id,
             title = title.cleanText().orEmpty(),
             artists = artist.cleanText(),
-            durationMs = durationTextToMs(durationText),
+            // The metadata text first; the player's own duration when the track has none (current item)
+            durationMs = durationTextToMs(durationText) ?: playerDurationMs?.takeIf { it > 0 },
             source = source,
             // Only an online track can be "available offline" (contract §1.1)
             isDownloaded = source == TrackSource.ONLINE && isDownloaded,
