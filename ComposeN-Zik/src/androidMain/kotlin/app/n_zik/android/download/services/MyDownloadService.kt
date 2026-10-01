@@ -17,12 +17,15 @@ import androidx.media3.exoplayer.offline.DownloadNotificationHelper
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.exoplayer.scheduler.PlatformScheduler
 import app.n_zik.android.R
+import app.n_zik.android.appContext
+import app.n_zik.android.core.notifications.channelId
 import app.n_zik.android.download.utils.MyDownloadHelper.DOWNLOAD_NOTIFICATION_CHANNEL_ID
 import app.n_zik.android.download.utils.MyDownloadHelper.batchTotal
 import app.n_zik.android.download.utils.MyDownloadHelper.batchCompleted
 import app.n_zik.android.download.utils.MyDownloadHelper.incrementBatchCompleted
 import app.n_zik.android.download.utils.MyDownloadHelper.resetBatch
 import app.kreate.android.me.knighthat.utils.Toaster
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
 import app.n_zik.android.playback.exceptions.ExplicitContentException
 import app.n_zik.android.playback.exceptions.LoginRequiredException
@@ -44,7 +47,12 @@ const val FOREGROUND_NOTIFICATION_ID = 8989
 class MyDownloadService : DownloadService(
     FOREGROUND_NOTIFICATION_ID,
     DEFAULT_FOREGROUND_NOTIFICATION_UPDATE_INTERVAL,
-    DOWNLOAD_NOTIFICATION_CHANNEL_ID,
+    // The channel this service actually posts on (per-profile — both notification builders
+    // below use it): DownloadService.onCreate (re)creates exactly this channel at start, so
+    // the base ID here would resurrect the base `download_channel` under every profile.
+    // (`this` is not usable in a super-constructor call — appContext() is already set by
+    // the time any service can be constructed.)
+    channelId(DOWNLOAD_NOTIFICATION_CHANNEL_ID, getActiveProfile(appContext())),
     R.string.download, 0
 ) {
 
@@ -145,7 +153,7 @@ class MyDownloadService : DownloadService(
         val progressCurrent = if (total > 0) completed else downloadProgress
         val indeterminate = downloads.isEmpty()
 
-        return NotificationCompat.Builder(this, DOWNLOAD_NOTIFICATION_CHANNEL_ID)
+        return NotificationCompat.Builder(this, channelId(DOWNLOAD_NOTIFICATION_CHANNEL_ID, getActiveProfile(this)))
             .setSmallIcon(R.drawable.download_progress)
             .setContentTitle(getString(R.string.download))
             .setContentText(currentDownloadName ?: message)
@@ -246,7 +254,7 @@ class MyDownloadService : DownloadService(
                     context.getString(R.string.download_completed, completedCount)  
                 }
 
-                val notification = NotificationCompat.Builder(context, DOWNLOAD_NOTIFICATION_CHANNEL_ID)
+                val notification = NotificationCompat.Builder(context, channelId(DOWNLOAD_NOTIFICATION_CHANNEL_ID, getActiveProfile(context)))
                     .setSmallIcon(if (failedCount == 0) R.drawable.downloaded else R.drawable.alert_circle_not_filled)
                     .setContentTitle(context.getString(R.string.download))
                     .setContentText(title)

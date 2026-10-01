@@ -33,7 +33,9 @@ import com.google.protobuf.MessageLite
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import app.n_zik.android.core.notifications.channelId
 import app.n_zik.android.utils.DataStoreUtils
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -251,7 +253,8 @@ class ListenTogetherClient(
             const val PREF_HISTORY = "listen_together_history"
 
             // Notification constants
-            private const val NOTIFICATION_CHANNEL_ID = "listen_together_channel"
+            // internal: also the base ID of the per-profile channel set (ProfileNotificationChannels)
+            internal const val NOTIFICATION_CHANNEL_ID = "listen_together_channel"
             const val ACTION_APPROVE_JOIN = "app.n_zik.android.LISTEN_TOGETHER_APPROVE_JOIN"
             const val ACTION_REJECT_JOIN = "app.n_zik.android.LISTEN_TOGETHER_REJECT_JOIN"
             const val ACTION_APPROVE_SUGGESTION = "app.n_zik.android.LISTEN_TOGETHER_APPROVE_SUGGESTION"
@@ -837,12 +840,14 @@ class ListenTogetherClient(
 
         private fun ensureNotificationChannel() {
             try {
+                val activeProfile = getActiveProfile(context)
+                val profileChannelId = channelId(NOTIFICATION_CHANNEL_ID, activeProfile)
                 val nm = context.getSystemService(NotificationManager::class.java)
-                val existing = nm?.getNotificationChannel(NOTIFICATION_CHANNEL_ID)
+                val existing = nm?.getNotificationChannel(profileChannelId)
                 if (existing == null) {
                     val channel =
                         NotificationChannel(
-                            NOTIFICATION_CHANNEL_ID,
+                            profileChannelId,
                             context.getString(R.string.listen_together_notification_channel_name),
                             NotificationManager.IMPORTANCE_HIGH,
                         )
@@ -893,7 +898,7 @@ class ListenTogetherClient(
 
             val builder =
                 NotificationCompat
-                    .Builder(context, NOTIFICATION_CHANNEL_ID)
+                    .Builder(context, channelId(NOTIFICATION_CHANNEL_ID, getActiveProfile(context)))
                     .setSmallIcon(R.drawable.people)
                     .setContentTitle(context.getString(R.string.listen_together))
                     .setContentText(content)
@@ -946,7 +951,7 @@ class ListenTogetherClient(
 
             val builder =
                 NotificationCompat
-                    .Builder(context, NOTIFICATION_CHANNEL_ID)
+                    .Builder(context, channelId(NOTIFICATION_CHANNEL_ID, getActiveProfile(context)))
                     .setSmallIcon(R.drawable.people)
                     .setContentTitle(context.getString(R.string.listen_together))
                     .setContentText(content)

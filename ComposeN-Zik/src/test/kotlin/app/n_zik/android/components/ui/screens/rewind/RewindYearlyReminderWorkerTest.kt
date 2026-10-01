@@ -7,8 +7,10 @@ import android.content.Context
 import androidx.core.app.NotificationCompat
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
+import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.n_zik.android.MainActivity
 import app.n_zik.android.R
+import app.n_zik.android.core.notifications.channelId
 import app.n_zik.android.rewindDeckTargetFromIntent
 import app.n_zik.android.utils.DataStoreUtils
 import io.mockk.mockk
@@ -126,6 +128,25 @@ class RewindYearlyReminderWorkerTest {
             NotificationCompat.getAutoCancel(notification)
         )
         assertEquals(1, reschedules.size)
+    }
+
+    // The default-profile tests above pass either way (channelId(base, "default") == base) —
+    // this one activates a user profile and pins the per-profile channel resolution of the
+    // emitter itself.
+    @Test
+    fun userPostsTheReminderOnTheProfileChannelWhenAUserProfileIsActive() {
+        setPermissionState(granted = true, permission = Manifest.permission.POST_NOTIFICATIONS)
+        setActiveProfile("work", RuntimeEnvironment.getApplication())
+        val worker = workerWithRescheduleHook(mutableListOf())
+
+        runBlocking { worker.doWork() }
+
+        val notification = postedNotifications().single()
+        assertEquals(
+            "with a user profile active, the reminder must post on the profile's suffixed channel",
+            channelId(RewindReminderWorker.CHANNEL_ID, "work"),
+            notification.channelId
+        )
     }
 
     @Test

@@ -17,7 +17,9 @@ import app.n_zik.android.MainActivity
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.notifications.channelId
 import app.n_zik.android.utils.DataStoreUtils
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import java.time.Duration
@@ -211,7 +213,7 @@ internal class RewindMonthlyPlaylistWorker(
 
         NotificationManagerCompat.from(applicationContext).notify(
             NOTIFICATION_ID,
-            NotificationCompat.Builder(applicationContext, RewindReminderWorker.CHANNEL_ID)
+            NotificationCompat.Builder(applicationContext, channelId(RewindReminderWorker.CHANNEL_ID, getActiveProfile(applicationContext)))
                 .setSmallIcon(R.drawable.ic_launcher_monochrome)
                 .setContentTitle(applicationContext.getString(R.string.rw_playlist_notif_title, finishedMonthName))
                 .setContentText(applicationContext.getString(R.string.rw_playlist_notif_body))

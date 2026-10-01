@@ -39,6 +39,7 @@ import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
 import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import app.n_zik.android.appContext
 import app.n_zik.android.core.backup.ProfileStateArchive
+import app.n_zik.android.core.notifications.deleteProfileChannels
 import app.n_zik.android.extensions.discord.discordAdvancedSettingKeys
 import app.n_zik.android.extensions.lastfm.isLastfmNowPlayingEnabledKey
 import app.n_zik.android.extensions.lastfm.isLastfmScrobbleEnabledKey
@@ -627,7 +628,8 @@ object RescueFiles {
      * Deletes the user profiles in [ids] (the base ID is ignored — the base is never
      * deleted): the names-file line, the profile's own settings files (plain +
      * encrypted), its database (and its WAL/SHM/journal), its face entries (display
-     * name + last use) and its face files.
+     * name + last use), its face files, and its 6 notification channels + pending
+     * notifications (no orphan channel or surviving notification left behind).
      *
      * When the ACTIVE profile is among [ids], the active slot is switched to the base
      * first, so the next launch starts on a valid profile — the app must be relaunched
@@ -664,6 +666,14 @@ object RescueFiles {
                     runCatching { File(context.filesDir, "profiles/$id").deleteRecursively() }
                         .onFailure {
                             Timber.tag(TAG).w(it, "Could not purge the profile files of %s", id)
+                        }
+                    // The profile's 6 notification channels + its pending notifications are
+                    // purged with the profile — no orphan channel (or surviving notification)
+                    // left behind (the main process is not running, so its non-ongoing
+                    // notifications would otherwise survive in the shade).
+                    runCatching { deleteProfileChannels(context, id) }
+                        .onFailure {
+                            Timber.tag(TAG).w(it, "Could not purge the notification channels of %s", id)
                         }
                 }
             }

@@ -14,6 +14,8 @@ import timber.log.Timber
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.notifications.channelId
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import it.fast4x.innertube.YtMusic
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.searchPage
@@ -39,6 +41,8 @@ class HomeSyncService : Service() {
     private var activeSyncs = 0
 
     companion object {
+        /** The sync notification channel ID (shared with the sync emitters and the per-profile channel set). */
+        const val SYNC_NOTIFICATION_CHANNEL_ID = "sync_channel_id"
         const val ACTION_SYNC_ARTISTS = "app.n_zik.android.action.SYNC_ARTISTS"
         const val ACTION_SYNC_ALBUMS = "app.n_zik.android.action.SYNC_ALBUMS"
         const val ACTION_SYNC_PLAYLISTS = "app.n_zik.android.action.SYNC_PLAYLISTS"
@@ -64,7 +68,7 @@ class HomeSyncService : Service() {
             isOngoing = true
         )
         
-        val builder = NotificationCompat.Builder(appContext(), "sync_channel_id")
+        val builder = NotificationCompat.Builder(appContext(), channelId(SYNC_NOTIFICATION_CHANNEL_ID, getActiveProfile(appContext())))
             .setSmallIcon(R.drawable.ic_launcher)
             .setContentTitle(appContext().getString(R.string.sync_notifications))
             .setContentText("Syncing in background...")

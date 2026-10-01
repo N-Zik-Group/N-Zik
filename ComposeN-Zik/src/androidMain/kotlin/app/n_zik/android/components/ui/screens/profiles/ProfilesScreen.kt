@@ -81,6 +81,9 @@ import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.import.ImportProfileState
 import app.n_zik.android.core.backup.ProfileStateArchive
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.notifications.cancelProfileNotifications
+import app.n_zik.android.core.notifications.deleteProfileChannels
+import app.n_zik.android.core.notifications.ensureProfileChannels
 import app.n_zik.android.download.services.MyDownloadService
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.typography
@@ -380,6 +383,10 @@ fun ProfileScreen(
                     // files (its custom photo) are purged with the profile.
                     context.clearProfileFaceEntries(removingProfile)
                     deleteProfileAvatar(context, removingProfile)
+                    // The profile's 6 notification channels + its pending notifications are
+                    // purged with the profile — no orphan channel (or notification) left
+                    // behind for a profile that no longer exists.
+                    deleteProfileChannels(context, removingProfile)
                     withContext(NzikDispatchers.UI) { refresh++ }
                 }
             }
@@ -419,7 +426,12 @@ fun ProfileScreen(
             text = stringResource(R.string.profile_restart_required),
             onDismiss = { showChangePopup = false },
             onConfirm = {
-                changeProfile(profileToSwitch, context)
+                executeProfileSwitch(profileToSwitch, context)
+                // Close the app with exit 0 (no problem occurred): the new profile's stores
+                // can only be loaded in a fresh process. The process exit deliberately lives
+                // HERE (not in executeProfileSwitch) so the switch wiring stays pinnable
+                // under Robolectric without killing the test JVM (ProfileSwitchTest).
+                exitProcess(0)
             }
         )
 
@@ -458,12 +470,32 @@ fun ProfileScreen(
 }
 
 
-private fun changeProfile(profile: String, context: Context) {
+/**
+ * Runs one whole profile switch (the profiles page's switch dialog target): captures the
+ * profile left, cancels its pending notifications (CAP-3 — synchronously, before the switch),
+ * records the switch, commits the outgoing profile's in-memory settings, stops the services
+ * tied to the old profile, and ensures the incoming profile's 6 channels exist. The caller
+ * exits the process afterwards (see the dialog's onConfirm — the process exit deliberately
+ * stays out of this function so the wiring is pinnable under Robolectric without killing the
+ * test JVM).
+ *
+ * internal (not private) so the switch wiring is pinnable under Robolectric (ProfileSwitchTest)
+ * without composing the screen.
+ */
+internal fun executeProfileSwitch(profile: String, context: Context) {
+    // CAP-3: the notifications pending on the channels of the profile left (rewind, sync,
+    // listen-together — the non-ongoing ones survive a process death) are cancelled
+    // synchronously, before the switch and the process exit below — per channel, never by
+    // tag. Captured here, BEFORE setActiveProfile, so the cancel target can never drift to
+    // the destination profile if the statements below are reordered.
+    val leftProfile = getActiveProfile(context)
+    cancelProfileNotifications(context, leftProfile)
+
     // The switched profile counts as used from now on (spec: written at switch).
     context.saveProfileLastUsed(profile, System.currentTimeMillis())
     setActiveProfile(profile, context)
 
-    //save al settings
+    // Save all settings (the outgoing profile's stores, still cached under its file name).
     context.preferences.edit().commit()
     context.encryptedPreferences.edit().commit()
 
@@ -473,8 +505,9 @@ private fun changeProfile(profile: String, context: Context) {
     // Close other activities
     (context as? Activity)?.finishAffinity()
 
-    // Close app with exit 0 notify that no problem occurred
-    exitProcess( 0 )
+    // The 6 channels of the incoming profile must exist before the process dies (the next
+    // boot re-creates them via MainApplication as a safety net).
+    ensureProfileChannels(context, profile)
 }
 
 private fun deletePreferencesForProfile(

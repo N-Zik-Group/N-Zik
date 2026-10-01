@@ -15,7 +15,9 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import app.n_zik.android.MainActivity
 import app.n_zik.android.R
+import app.n_zik.android.core.notifications.channelId
 import app.n_zik.android.utils.DataStoreUtils
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import timber.log.Timber
 import java.time.Duration
 import java.time.LocalDate
@@ -177,7 +179,7 @@ internal class RewindReminderWorker(
 
         manager.notify(
             NOTIFICATION_ID,
-            NotificationCompat.Builder(applicationContext, CHANNEL_ID)
+            NotificationCompat.Builder(applicationContext, channelId(CHANNEL_ID, getActiveProfile(applicationContext)))
                 .setSmallIcon(R.drawable.ic_launcher_monochrome)
                 .setContentTitle(applicationContext.getString(R.string.rw_notif_title, monthName))
                 .setContentText(applicationContext.getString(R.string.rw_monthly_notif_body))

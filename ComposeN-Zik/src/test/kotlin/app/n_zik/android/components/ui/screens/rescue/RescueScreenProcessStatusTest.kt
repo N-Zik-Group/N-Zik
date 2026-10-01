@@ -270,7 +270,14 @@ class RescueScreenProcessStatusTest {
 
         // The request is sent off the main thread: wait until the flag carries the new nonce.
         composeRule.waitUntil { RescueProcess.flagNonce(context.filesDir) != originalNonce }
-        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        // The re-send (flag then broadcast) is fire-and-forget off the main thread, so a
+        // single idle() can race ahead of the broadcast being posted to the main looper.
+        // Idle the main looper until the receiver actually gets it (bounded, so a genuine
+        // regression fails instead of hanging).
+        val broadcastDeadline = System.currentTimeMillis() + 5_000L
+        while (received.isEmpty() && System.currentTimeMillis() < broadcastDeadline) {
+            Shadows.shadowOf(Looper.getMainLooper()).idle()
+        }
 
         assertTrue(
             "the re-sent request must write the safety-net flag",

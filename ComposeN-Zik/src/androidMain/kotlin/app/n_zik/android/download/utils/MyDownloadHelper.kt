@@ -43,6 +43,7 @@ import app.it.fast4x.rimusic.utils.downloadSyncedLyrics
 import app.it.fast4x.rimusic.utils.exoPlayerCacheLocationKey
 import app.it.fast4x.rimusic.utils.exoPlayerCustomCacheKey
 import app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.isNetworkConnected
 import app.it.fast4x.rimusic.utils.preferences
@@ -64,6 +65,7 @@ import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import app.it.fast4x.rimusic.utils.ExternalUris
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.notifications.channelId
 
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -197,8 +199,9 @@ object MyDownloadHelper {
     @Synchronized
     fun getDownloadNotificationHelper(context: Context?): DownloadNotificationHelper {
         if (!MyDownloadHelper::downloadNotificationHelper.isInitialized) {
+            val appContext = context ?: return downloadNotificationHelper
             downloadNotificationHelper =
-                DownloadNotificationHelper(context ?: return downloadNotificationHelper, DOWNLOAD_NOTIFICATION_CHANNEL_ID)
+                DownloadNotificationHelper(appContext, channelId(DOWNLOAD_NOTIFICATION_CHANNEL_ID, getActiveProfile(appContext)))
         }
         return downloadNotificationHelper
     }

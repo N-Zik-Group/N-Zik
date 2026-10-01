@@ -58,6 +58,7 @@ import app.n_zik.android.core.migration.RemovedSettingsMigration
 import app.n_zik.android.core.migration.SameNameArtistDedup
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.network.client.Store
+import app.n_zik.android.core.notifications.ensureProfileChannels
 import app.n_zik.android.core.rescue.RescueProcess
 import app.n_zik.android.core.settings.ensureDefaultColorPaletteMode
 import app.n_zik.android.extensions.audiobar.VisualizerCaptureCoordinator
@@ -395,6 +396,11 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         }
 
         createNotificationChannels()
+
+        // The 6 channels of the active profile (no-op for the base profile — its 5 channels are
+        // created above, unchanged, and its 6th — listen-together — is created on first use by
+        // the Listen Together client): the emitters and the profile switch rely on them existing.
+        ensureProfileChannels(this, getActiveProfile(this))
 
         // Enrich artist/album MusicBrainz metadata in background (first run after 1h)
         MbBackfillWorker.schedule(this)

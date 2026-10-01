@@ -10,7 +10,9 @@ import android.app.NotificationManager
 import androidx.core.app.NotificationCompat
 import app.n_zik.android.R
 import app.n_zik.android.appContext
+import app.n_zik.android.core.notifications.channelId
 import app.n_zik.android.MainActivity
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.models.PlaylistPreview
@@ -62,7 +64,7 @@ object HomeSyncState {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val builder = NotificationCompat.Builder(appContext(), "sync_channel_id")
+        val builder = NotificationCompat.Builder(appContext(), channelId(HomeSyncService.SYNC_NOTIFICATION_CHANNEL_ID, getActiveProfile(appContext())))
             .setSmallIcon(R.drawable.sync) // Using sync icon or default
             .setContentTitle(title)
             .setContentText(message)

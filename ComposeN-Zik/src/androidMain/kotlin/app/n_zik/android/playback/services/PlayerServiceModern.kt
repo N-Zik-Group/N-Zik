@@ -76,6 +76,7 @@ import androidx.media3.session.CommandButton
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaLibraryService
+import androidx.media3.session.MediaNotification.Provider
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionToken
 import app.it.fast4x.rimusic.repository.QuickPicksRepository
@@ -103,6 +104,7 @@ import app.it.fast4x.rimusic.enums.QueueLoopType
 import app.it.fast4x.rimusic.extensions.audiovolume.AudioVolumeObserver
 import app.it.fast4x.rimusic.extensions.audiovolume.OnAudioVolumeChangedListener
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import app.n_zik.android.core.notifications.channelId
 import app.n_zik.android.extensions.discord.DiscordAdvancedSettings
 import app.n_zik.android.extensions.discord.DiscordPresenceManager
 import app.n_zik.android.extensions.discord.discordAdvancedSettingKeys
@@ -137,6 +139,7 @@ import app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey
 import app.it.fast4x.rimusic.utils.exoPlayerMinTimeForEventKey
 import app.it.fast4x.rimusic.utils.fadeInEffect
 import app.it.fast4x.rimusic.utils.fadeOutEffect
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.intent
 import app.it.fast4x.rimusic.utils.isAtLeastAndroid10
@@ -2241,7 +2244,32 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     @UnstableApi
-    class CustomMediaNotificationProvider(private val context: Context) : DefaultMediaNotificationProvider(context) {
+    class CustomMediaNotificationProvider(private val context: Context) :
+        DefaultMediaNotificationProvider(
+            context,
+            DefaultMediaNotificationProvider.NotificationIdProvider { session -> DefaultMediaNotificationProvider.DEFAULT_NOTIFICATION_ID },
+            // The main player notification is built from the channel ID captured at construction
+            // time (media3 1.10.x: createNotification() is final and uses the private channelId
+            // field, never getNotificationChannelInfo()): the channel of the active profile. The
+            // player service is stopped and the process exits on every profile switch, so the
+            // construction-time profile is always the active one at emission.
+            channelId(NotificationChannelId, getActiveProfile(context)),
+            R.string.player,
+        ) {
+
+        /**
+         * The channel info of the active profile (Media3 consumes it, e.g. for the shutdown
+         * notification): the suffixed ID + the base channel's display name (the profile is not
+         * shown in the channel name; the channels are separated by ID). The channel itself is
+         * created by ensureProfileChannels (boot / switch) and Media3 re-creates it on the fly
+         * when missing.
+         */
+        override fun getNotificationChannelInfo(): Provider.NotificationChannelInfo =
+            Provider.NotificationChannelInfo(
+                channelId(NotificationChannelId, getActiveProfile(context)),
+                context.getString(R.string.player),
+            )
+
         override fun getNotificationContentTitle(metadata: MediaMetadata): CharSequence? {
             val isExplicit = metadata.extras?.getBoolean("isExplicit") == true ||
                              metadata.extras?.getBoolean("androidx.media3.session.EXTRAS_KEY_IS_EXPLICIT") == true
@@ -2378,7 +2406,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
             timerJob = coroutineScope.timer(delayMillis) {
                 val notification = NotificationCompat
-                    .Builder(this@PlayerServiceModern, SleepTimerNotificationChannelId)
+                    .Builder(this@PlayerServiceModern, channelId(SleepTimerNotificationChannelId, getActiveProfile(this@PlayerServiceModern)))
                     .setContentTitle(getString(R.string.sleep_timer_ended))
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setAutoCancel(true)
