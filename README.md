@@ -125,9 +125,8 @@ Join the N-Zik Discord:
 - 🕹️ **Discord Rich Presence** – Display your currently playing track directly on your Discord profile. An advanced mode adds custom text templates, activity type, up to 2 custom buttons, pause-presence, and a live interactive preview card.
 
 <p align="left">
-  <img width="280" height="100" src="https://github.com/user-attachments/assets/aa8a8b94-f451-4f8f-ade0-b86a1e9d8924" alt="Discord Rich Presence Preview 1"/> <img width="280" height="100" src="https://github.com/user-attachments/assets/573e23ea-bd2e-4717-a6be-e830be28e56b" alt="Discord Rich Presence Preview 2"/> <br>
-  <img width="320" height="207" src="https://github.com/user-attachments/assets/7b3d3e22-c200-4b98-b4d0-b1424f39f976" alt="Discord Rich Presence Preview 3"/>
-
+  <img width="280" height="100" alt="image" src="https://github.com/user-attachments/assets/f820686e-8e24-4ac1-8133-505dd94550cc" /> <img width="280" height="100" alt="image" src="https://github.com/user-attachments/assets/8d03df13-3114-40d4-a403-f7d57524787c" /><br>
+  <img width="320" height="207" alt="image" src="https://github.com/user-attachments/assets/f9d0c5a7-b334-45df-a35a-810813ddd26a" />
 </p>
 
 - 📰 **Discovery** – Explore moods, genres, releases, and albums from your favorite artists, plus trending picks.
