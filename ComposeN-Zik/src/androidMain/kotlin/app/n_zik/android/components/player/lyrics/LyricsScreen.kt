@@ -111,7 +111,8 @@ fun LyricsScreen(
         var lyricsColor by rememberPreference(lyricsColorKey, LyricsColor.White)
         var lyricsOutline by rememberPreference(lyricsOutlineKey, LyricsOutline.None)
         val playerBackgroundColors by rememberPreference(playerBackgroundColorsKey, PlayerBackgroundColors.AnimatedGradient)
-        var lyricsFontSize by rememberPreference(lyricsFontSizeKey, LyricsFontSize.Large)
+        var lyricsFontSize by rememberPreference(lyricsFontSizeKey, LyricsFontSize.DEFAULT)
+        var showClipRectsDebug by rememberPreference(karaokeClipRectsDebugKey, false)
 
         val thumbnailSize = Dimensions.thumbnails.player.song
         val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
@@ -161,7 +162,7 @@ fun LyricsScreen(
         var copyToClipboard by remember { mutableStateOf(false) }
         if (copyToClipboard) text?.let { textCopyToClipboard(it, context) }
 
-        var fontSize by rememberPreference(lyricsFontSizeKey, LyricsFontSize.Large)
+        var fontSize by rememberPreference(lyricsFontSizeKey, LyricsFontSize.DEFAULT)
         val showBackgroundLyrics by rememberPreference(showBackgroundLyricsKey, false)
         val playerEnableLyricsPopupMessage by rememberPreference(playerEnableLyricsPopupMessageKey, true)
         var expandedplayer by rememberPreference(expandedplayerKey, false)
@@ -366,7 +367,8 @@ fun LyricsScreen(
                             isDisplayed = isDisplayed,
                             onDismiss = onDismiss,
                             onInvalidLrc = { invalidLrc = it },
-                            showIntervalIndicator = showIntervalIndicator
+                            showIntervalIndicator = showIntervalIndicator,
+                            showClipRectsDebug = showClipRectsDebug
                         )
                     }
 

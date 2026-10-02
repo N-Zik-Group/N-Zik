@@ -69,6 +69,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.player.lyrics.karaokeClipRectsDebugKey
 import app.n_zik.android.components.ui.toggles.Switch
 import app.n_zik.android.enums.lyrics.LyricsAlignment
 import app.n_zik.android.enums.lyrics.LyricsBackground
@@ -144,7 +145,10 @@ class LyricsSettingsMenu private constructor(
         // Preferences
         var landscapeControls by rememberPreference(landscapeControlsKey, true)
         var lyricsAlignment by rememberPreference(lyricsAlignmentKey, LyricsAlignment.Center)
-        var fontSize by rememberPreference(lyricsFontSizeKey, LyricsFontSize.Medium)
+        // Shared default: the lyrics screen renders with the same fallback,
+        // so the menu and the rendered size always agree on fresh installs
+        var fontSize by rememberPreference(lyricsFontSizeKey, LyricsFontSize.DEFAULT)
+        var showClipRectsDebug by rememberPreference(karaokeClipRectsDebugKey, false)
         var lyricsColor by rememberPreference(lyricsColorKey, LyricsColor.White)
         var lyricsCustomColor by rememberPreference(lyricsCustomColorKey, android.graphics.Color.WHITE)
         var lyricsOutline by rememberPreference(lyricsOutlineKey, LyricsOutline.None)
@@ -275,6 +279,14 @@ class LyricsSettingsMenu private constructor(
                         }
                     }
                 }
+            )
+
+            // Debug: karaoke clip rects overlay
+            ToggleSettingEntry(
+                title = stringResource(R.string.lyrics_show_clip_rects),
+                icon = R.drawable.eye,
+                isChecked = showClipRectsDebug,
+                onCheckedChange = { showClipRectsDebug = it }
             )
 
             // Color
@@ -695,6 +707,16 @@ class LyricsSettingsMenu private constructor(
                             }
                         }
                     }
+                )
+            }
+
+            // Debug: karaoke clip rects overlay
+            item {
+                ToggleSettingEntry(
+                    title = stringResource(R.string.lyrics_show_clip_rects),
+                    icon = R.drawable.eye,
+                    isChecked = showClipRectsDebug,
+                    onCheckedChange = { showClipRectsDebug = it }
                 )
             }
 

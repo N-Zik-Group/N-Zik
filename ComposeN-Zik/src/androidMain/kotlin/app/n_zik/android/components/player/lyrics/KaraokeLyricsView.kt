@@ -19,6 +19,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
@@ -61,6 +63,7 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.text.TextLayoutResult
 
 /**
@@ -298,7 +301,8 @@ fun KaraokeLyricsView(
     isDisplayed: Boolean,
     onDismiss: () -> Unit,
     onInvalidLrc: (Boolean) -> Unit,
-    showIntervalIndicator: Boolean = true
+    showIntervalIndicator: Boolean = true,
+    showClipRectsDebug: Boolean = false
 ) {
     val density = LocalDensity.current
 
@@ -443,33 +447,11 @@ fun KaraokeLyricsView(
         }
     }
 
-    // Determine active lines (multiple can be active for overlapping agents)
+    // Determine active lines (multiple can be active for overlapping agents).
+    // Inside a gap (finished / blank / loader window, after a background line
+    // ended) the set is empty: nothing stays lit, nothing is re-selected.
     val activeLineIndices = remember(currentPositionMs, karaokeLines) {
-        val active = mutableSetOf<Int>()
-        if (karaokeLines.isNotEmpty()) {
-            var lastPassedNonBgIndex = 0
-            for (i in karaokeLines.indices) {
-                val line = karaokeLines[i]
-                if (line.timeMs > currentPositionMs + 50L) break
-                if (!line.isBackground) lastPassedNonBgIndex = i
-
-                // Determine line end time
-                val lineEndMs = if (line.words.isNotEmpty()) {
-                    line.words.maxOf { it.endMs }
-                } else {
-                    // Fallback: use next non-background line's start
-                    karaokeLines.getOrNull(i + 1)?.timeMs ?: Long.MAX_VALUE
-                }
-
-                if (currentPositionMs <= lineEndMs) {
-                    active.add(i)
-                }
-            }
-            if (active.isEmpty()) {
-                active.add(lastPassedNonBgIndex)
-            }
-        }
-        active
+        computeActiveLineIndices(karaokeLines, currentPositionMs)
     }
 
     // Primary active line for scroll targeting - prefer non-background lines
@@ -709,6 +691,13 @@ fun KaraokeLyricsView(
                     .fillMaxWidth()
                     .padding(vertical = 4.dp, horizontal = 32.dp)
                     .graphicsLayer {
+                        // Render without an offscreen buffer: with alpha < 1 the default
+                        // strategy implicitly clips content to the item bounds (layout +
+                        // 4dp padding), which cuts the rising karaoke characters (up to
+                        // ~13dp above the layout — background lines in particular).
+                        // ModulateAlpha applies the alpha per draw command, so overflow
+                        // is visible and the lift effect is never cropped.
+                        compositingStrategy = CompositingStrategy.ModulateAlpha
                         alpha = animateOpacity
                         scaleX = animateScale
                         scaleY = animateScale
@@ -899,6 +888,12 @@ fun KaraokeLyricsView(
                                     return@drawWithContent
                                 }
 
+                                // [DEBUG] text layout bounds — shows where the text box ends
+                                if (showClipRectsDebug) {
+                                    val layoutSize = layout.size
+                                    drawRect(Color.Blue.copy(alpha = 0.2f), Offset(0f, 0f), Size(layoutSize.width.toFloat(), layoutSize.height.toFloat()))
+                                }
+
                                 if (isTextReplaced) {
                                     val lineStartMs = line.timeMs
                                     val lineEndMs = line.words.maxOfOrNull { it.endMs } ?: (lineStartMs + 2000L)
@@ -974,6 +969,15 @@ fun KaraokeLyricsView(
                                             
                                             drawContext.canvas.save()
                                             drawContext.canvas.clipRect(Rect(startBox.left - with(density) { 8.dp.toPx() }, startBox.top - waveAmplitude - riseAmount - with(density) { 8.dp.toPx() }, endBox.right + with(density) { 8.dp.toPx() }, endBox.bottom + waveAmplitude + with(density) { 8.dp.toPx() }))
+                                            // [DEBUG] sung long-word envelope
+                                            if (showClipRectsDebug) {
+                                                val sp = with(density) { 8.dp.toPx() }
+                                                drawRect(
+                                                    Color.Red.copy(alpha = 0.35f),
+                                                    Offset(startBox.left - sp, startBox.top - waveAmplitude - riseAmount - sp),
+                                                    Size(endBox.right + sp - (startBox.left - sp), endBox.bottom + waveAmplitude + sp - (startBox.top - waveAmplitude - riseAmount - sp))
+                                                )
+                                            }
                                             
                                             for (charIdx in 0 until wordLen) {
                                                 val globalIdx = (word.charStartIndex + charIdx).coerceIn(0, displayedText.length - 1)
@@ -992,6 +996,10 @@ fun KaraokeLyricsView(
                                                 drawContext.canvas.translate(-pivotX, -pivotY)
                                                 drawContext.canvas.clipRect(Rect(charBox.left, charBox.top, charBox.right, charBox.bottom))
                                                 this@drawWithContent.drawContent()
+                                                // [DEBUG] per-char clip where it actually lands (transformed space)
+                                                if (showClipRectsDebug) {
+                                                    drawRect(Color.Green.copy(alpha = 0.35f), Offset(charBox.left, charBox.top), Size(charBox.width, charBox.height))
+                                                }
                                                 drawContext.canvas.restore()
                                             }
                                             drawContext.canvas.restore()
@@ -1020,13 +1028,99 @@ fun KaraokeLyricsView(
                                             val riseCurve = linearProgress * linearProgress // quadratic - rises fast
                                             val riseAmount = riseCurve * with(density) { (2.5f * durFactor).dp.toPx() }
                                             
-                                            // Fill clip: reveals accent color left-to-right
-                                            val fillRight = startBox.left + (endBox.right - startBox.left) * easedProgress
-                                            drawContext.canvas.save()
-                                            drawContext.canvas.clipRect(Rect(startBox.left - with(density) { 8.dp.toPx() }, startBox.top - waveAmplitude - riseAmount - with(density) { 8.dp.toPx() }, fillRight + with(density) { 8.dp.toPx() }, endBox.bottom + waveAmplitude + with(density) { 8.dp.toPx() }))
+                                            // Fill clip: per-physical-line sweep — a word that wraps (typically a CJK line
+                                            // merged into a single word) fills line by line instead of revealing every
+                                            // wrapped line at once (GH #820). Single-line words keep the legacy clipRect
+                                            // path, so unwrapped words stay bit-identical; at zero progress nothing is
+                                            // revealed (the legacy 16dp start sliver is intentionally gone, one frame).
+                                            val pad = with(density) { 8.dp.toPx() }
+                                            val firstLine = layout.getLineForOffset(wStartIdx)
+                                            val lastLine = layout.getLineForOffset(wEndIdx)
+                                            val spannedLines = lastLine - firstLine + 1
+                                            // Per-line fill geometry is computed for every long word (single- or
+                                            // multi-line): it feeds the per-line reveal gate below. For a single
+                                            // physical line the rect matches the legacy fast-path clipRect exactly
+                                            // (same formula, same headroom), so the gate is a no-op there.
+                                            val fillLayout = object : ActiveFillLayout {
+                                                override fun getLineForOffset(offset: Int) = layout.getLineForOffset(offset)
+                                                override fun getLineStart(lineIndex: Int) = layout.getLineStart(lineIndex)
+                                                override fun getLineEnd(lineIndex: Int, visibleEnd: Boolean) = layout.getLineEnd(lineIndex, visibleEnd)
+                                                override fun getBoundingBox(offset: Int) = layout.getBoundingBox(offset)
+                                            }
+                                            val geometry = collectActiveFillGeometry(
+                                                layout = fillLayout,
+                                                startIdx = wStartIdx,
+                                                endIdx = wEndIdx
+                                            )
+                                            val fillRects = computeActiveFillRects(
+                                                lineCharCounts = geometry.lineCharCounts,
+                                                lineLefts = geometry.lineLefts,
+                                                lineRights = geometry.lineRights,
+                                                lineTops = geometry.lineTops,
+                                                lineBottoms = geometry.lineBottoms,
+                                                progress = easedProgress,
+                                                topHeadroom = waveAmplitude + riseAmount,
+                                                bottomHeadroom = waveAmplitude,
+                                                padding = pad
+                                            )
+                                            if (spannedLines == 1) {
+                                                val fillRight = startBox.left + (endBox.right - startBox.left) * easedProgress
+                                                drawContext.canvas.save()
+                                                drawContext.canvas.clipRect(Rect(startBox.left - pad, startBox.top - waveAmplitude - riseAmount - pad, fillRight + pad, endBox.bottom + waveAmplitude + pad))
+                                                // [DEBUG] active long-word envelope (single line)
+                                                if (showClipRectsDebug) {
+                                                    drawRect(
+                                                        Color.Red.copy(alpha = 0.35f),
+                                                        Offset(startBox.left - pad, startBox.top - waveAmplitude - riseAmount - pad),
+                                                        Size((fillRight + pad) - (startBox.left - pad), (endBox.bottom + waveAmplitude + pad) - (startBox.top - waveAmplitude - riseAmount - pad))
+                                                    )
+                                                }
+                                            } else {
+                                                if (currentPositionMs - word.startMs < 50L) {
+                                                    Timber.tag("KaraokeLyricsView").d("Active word spans $spannedLines physical lines (chars $wStartIdx..$wEndIdx)")
+                                                }
+                                                drawContext.canvas.save()
+                                                val fillClipPath = Path()
+                                                // Per-line rects can overlap vertically (padding + wave headroom exceeds
+                                                // the line spacing); the default EvenOdd fill type would punch holes in
+                                                // the overlap, clipping the tops of characters rising into it
+                                                fillClipPath.fillType = PathFillType.NonZero
+                                                fillRects.forEach { rect ->
+                                                    if (rect.revealed) {
+                                                        fillClipPath.addRect(Rect(rect.left, rect.top, rect.right, rect.bottom))
+                                                    }
+                                                }
+                                                drawContext.canvas.clipPath(fillClipPath)
+                                                // [DEBUG] active long-word envelope (per-line rects)
+                                                if (showClipRectsDebug) {
+                                                    fillRects.forEach { rect ->
+                                                        if (rect.revealed) {
+                                                            drawRect(Color.Red.copy(alpha = 0.35f), Offset(rect.left, rect.top), Size(rect.right - rect.left, rect.bottom - rect.top))
+                                                        }
+                                                    }
+                                                }
+                                            }
                                             
-                                            // Draw each character with traveling wave
-                                            for (charIdx in 0 until wordLen) {
+                                            // Draw each physical line's characters, gated by that line's own sweep
+                                            // rect inset to the true frontier (activeLineGateRect strips the 8dp
+                                            // horizontal pad): with the padded edges a short final line (often one
+                                            // CJK char) would open half-revealed as soon as the previous line
+                                            // closes — the visible flash at the end of a wrapped word. The per-line
+                                            // rects also overlap vertically (headroom exceeds the CJK line
+                                            // spacing), so the union envelope alone would light up a sliver of the
+                                            // next line's characters as soon as the previous line is fully filled
+                                            // (GH #820 residual): each line's characters are clipped to that line's
+                                            // rect, so the horizontal reveal stays strictly per-line while the
+                                            // vertical headroom for wave/rise is kept.
+                                            activeWordLineCharRanges(fillLayout, wStartIdx, wEndIdx).forEachIndexed { k, charRange ->
+                                                val lineRect = fillRects.getOrNull(k) ?: return@forEachIndexed
+                                                if (charRange.isEmpty() || !lineRect.revealed || lineRect.right <= lineRect.left) {
+                                                    return@forEachIndexed
+                                                }
+                                                drawContext.canvas.save()
+                                                drawContext.canvas.clipRect(activeLineGateRect(lineRect, pad))
+                                            // Draw each character of this line with traveling wave
+                                            for (charIdx in charRange) {
                                                 val globalIdx = (word.charStartIndex + charIdx).coerceIn(0, displayedText.length - 1)
                                                 val charBox = layout.getBoundingBox(globalIdx)
                                                 val charPos = charIdx.toFloat() / wordLen.coerceAtLeast(1)
@@ -1043,6 +1137,12 @@ fun KaraokeLyricsView(
                                                 drawContext.canvas.translate(-pivotX, -pivotY)
                                                 drawContext.canvas.clipRect(Rect(charBox.left, charBox.top, charBox.right, charBox.bottom))
                                                 this@drawWithContent.drawContent()
+                                                // [DEBUG] per-char clip where it actually lands (transformed space)
+                                                if (showClipRectsDebug) {
+                                                    drawRect(Color.Green.copy(alpha = 0.35f), Offset(charBox.left, charBox.top), Size(charBox.width, charBox.height))
+                                                }
+                                                drawContext.canvas.restore()
+                                            }
                                                 drawContext.canvas.restore()
                                             }
                                             drawContext.canvas.restore()
@@ -1080,6 +1180,10 @@ fun KaraokeLyricsView(
                                             drawContext.canvas.save()
                                             drawContext.canvas.clipRect(Rect(charBox.left, charBox.top, charBox.right, charBox.bottom))
                                             this@drawWithContent.drawContent()
+                                            // [DEBUG] active-char clip where it actually lands (transformed space)
+                                            if (showClipRectsDebug) {
+                                                drawRect(Color.Green.copy(alpha = 0.35f), Offset(charBox.left, charBox.top), Size(charBox.width, charBox.height))
+                                            }
                                             drawContext.canvas.restore()
                                             
                                             drawContext.canvas.restore()
