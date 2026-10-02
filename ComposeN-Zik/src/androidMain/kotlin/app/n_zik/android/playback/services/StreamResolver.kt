@@ -6,6 +6,7 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 import android.content.ContentResolver
 import android.net.Uri
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.PlaybackException
@@ -37,6 +38,7 @@ import app.n_zik.android.playback.exceptions.UnplayableException
 import app.n_zik.android.playback.exceptions.UnmatchedSongException
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
 import app.it.fast4x.rimusic.utils.isConnectionMetered
 import app.it.fast4x.rimusic.utils.okHttpDataSourceFactory
 import app.it.fast4x.rimusic.utils.preferences
@@ -73,6 +75,13 @@ import com.metrolist.innertubex.extraction.AudioQuality as InnerTubeXAudioQualit
 import com.metrolist.innertubex.extraction.ContentHints
 
 private const val TAG = "StreamResolver"
+
+/**
+ * Issue #881 (gh-881): resolutions above this duration are worth a warn line in the
+ * diagnostic log (spec S4 — the slow resolution after the screen off→on cycle is the
+ * prime suspect). Internal for testing only — production callers stay within this file.
+ */
+internal const val RESOLUTION_SLOW_THRESHOLD_MS = 10_000L
 
 private val PARTIAL_CONTENT_RANGE = Regex("""bytes\s+0-0/(\d+)""", RegexOption.IGNORE_CASE)
 private val UNSATISFIED_CONTENT_RANGE = Regex("""bytes\s+\*/(\d+)""", RegexOption.IGNORE_CASE)
@@ -963,6 +972,10 @@ fun DataSpec.process(
     // runBlocking is necessary because ExoPlayer's ResolvingDataSource expects a synchronous return.
     // We catch CancellationException (caused by thread interruption during media item transitions)
     // and re-throw as IOException so ExoPlayer treats it as a recoverable error.
+    // Issue #881 (gh-881): every resolution is timed — duration + outcome (cache hit / OK /
+    // exception class) in one PlaybackDiag line, warn above the slow threshold (spec S4).
+    val startedAtNanos = System.nanoTime()
+    fun elapsedMs(): Long = (System.nanoTime() - startedAtNanos) / 1_000_000
     return try {
         runBlocking(NzikDispatchers.DATA) {
             val isLoggedIn = !Innertube.cookie.isNullOrBlank() && Innertube.cookie?.contains("SAPISID") == true
@@ -984,22 +997,65 @@ fun DataSpec.process(
 
             if (cachedStream != null) {
                 Timber.tag(TAG).d("StreamUrlCache hit for $videoId (client=${cachedStream.clientName})")
-                return@runBlocking withResolvedStream(cachedStream)
+                // Issue #881 (gh-881): the outcome line is written AFTER withResolvedStream
+                // succeeded — a malformed URL would otherwise log OK next to the FAILED line
+                // raised by the same resolution (review gh-881).
+                val dataSpec = withResolvedStream(cachedStream)
+                logResolutionOutcome(videoId, "CACHE_HIT", elapsedMs())
+                return@runBlocking dataSpec
             }
 
             Timber.tag(TAG).d("StreamUrlCache miss for $videoId, resolving...")
             val resolvedStream = resolveStreamUriInternal(videoId, audioQualityFormat, connectionMetered, allowBoundedRange)
-            withResolvedStream(resolvedStream)
+            val dataSpec = withResolvedStream(resolvedStream)
+            logResolutionOutcome(videoId, "OK", elapsedMs())
+            dataSpec
         }
     } catch (e: CancellationException) {
         if (e.cause is InterruptedException) {
             // ExoPlayer interrupted the thread during a media item transition.
             // Re-throw as IOException so ExoPlayer handles it as a recoverable load error.
             Timber.tag(TAG).w("Stream resolution interrupted for $videoId (media item transition)")
+            // Issue #881 (gh-881): the re-thrown IOException bypasses the sibling catch —
+            // one PlaybackDiag line of its own keeps the S4 "every resolution is timed"
+            // contract whole (review gh-881).
+            logResolutionOutcome(videoId, "INTERRUPTED", elapsedMs())
             throw IOException("Stream resolution interrupted for $videoId", e)
         }
         // Genuine coroutine cancellation — propagate as-is
         throw e
+    } catch (e: Exception) {
+        // Issue #881 (gh-881): log the failing link (exception class only — never the URL),
+        // then propagate as-is so ExoPlayer's retry policy sees the original exception.
+        Timber.tag(PLAYBACK_DIAG_TAG).w(
+            "RESOLUTION videoId=%s outcome=FAILED exception=%s elapsedMs=%d",
+            videoId,
+            e.javaClass.simpleName,
+            elapsedMs(),
+        )
+        throw e
+    }
+}
+
+/**
+ * Issue #881 (gh-881): log level of one RESOLUTION line — warn above
+ * [RESOLUTION_SLOW_THRESHOLD_MS], debug otherwise (spec S4). Lifted so the threshold
+ * decision is unit-testable without running a full resolution (review gh-881).
+ */
+internal fun resolutionOutcomeLevel(elapsedMs: Long): Int =
+    if (elapsedMs > RESOLUTION_SLOW_THRESHOLD_MS) Log.WARN else Log.DEBUG
+
+/**
+ * Issue #881 (gh-881): one PlaybackDiag line per stream resolution — debug normally, warn
+ * when the resolution exceeded [RESOLUTION_SLOW_THRESHOLD_MS] (spec S4).
+ */
+private fun logResolutionOutcome(videoId: String, outcome: String, elapsedMs: Long) {
+    val line = "RESOLUTION videoId=%s outcome=%s elapsedMs=%d"
+    val tag = Timber.tag(PLAYBACK_DIAG_TAG)
+    if (resolutionOutcomeLevel(elapsedMs) == Log.WARN) {
+        tag.w(line, videoId, outcome, elapsedMs)
+    } else {
+        tag.d(line, videoId, outcome, elapsedMs)
     }
 }
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -35,6 +35,7 @@ import android.media.audiofx.BassBoost
 import android.media.audiofx.LoudnessEnhancer
 import android.media.audiofx.PresetReverb
 import android.os.Build
+import android.os.SystemClock
 import androidx.annotation.MainThread
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -118,6 +119,8 @@ import app.n_zik.android.isPauseOnHeadphoneDisconnectEnabled
 import app.it.fast4x.rimusic.models.Event
 import app.it.fast4x.rimusic.models.QueuedMediaItem
 import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
+import app.n_zik.android.playback.services.diagnostics.PlaybackStallWatchdog
 import app.n_zik.android.playback.utils.BitmapProvider
 import app.n_zik.android.playback.utils.NZikRadio
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -291,6 +294,22 @@ class PlayerServiceModern : MediaLibraryService(),
     val playerUpdateTrigger = MutableStateFlow(0)
 
     /**
+     * Issue #881 (gh-881): playback stall diagnostics — pure watchdog fed by periodic
+     * sampling while `playWhenReady` (spec problem-solution-2026-10-02-progress-bar-stuck-gh881,
+     * S1). Sampling reads `player.*`, so it runs on the UI dispatcher.
+     */
+    private val stallWatchdog = PlaybackStallWatchdog()
+    private var stallWatchdogJob: Job? = null
+
+    /** Issue #881: last load-retry count seen by the retry policy in [createMediaSourceFactory]. */
+    @Volatile
+    private var diagnosticRetryCount = 0
+
+    /** Issue #881: last `onIsLoadingChanged` value seen by [playbackDiagnosticsListener]. */
+    @Volatile
+    private var diagnosticIsLoading = false
+
+    /**
      * Guarded delegation facade for every EXTERNAL entry point (UI via [Binder.player],
      * notification buttons, MediaSession / lockscreen / automotive) — Listen Together
      * guest-lock policy (spec-listen-together-guest-lock-hardening, spine AD-1/AD-2/AD-6).
@@ -406,6 +425,150 @@ class PlayerServiceModern : MediaLibraryService(),
         }
     }
 
+    /**
+     * Issue #881 (gh-881): screen on/off markers — correlate the stall with the
+     * off→on cycle reported by the reporter (spec S5).
+     */
+    private val screenStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.action) {
+                Intent.ACTION_SCREEN_ON -> Timber.tag(PLAYBACK_DIAG_TAG).i("SCREEN_ON")
+                Intent.ACTION_SCREEN_OFF -> Timber.tag(PLAYBACK_DIAG_TAG).i("SCREEN_OFF")
+            }
+        }
+    }
+
+    /**
+     * Issue #881 (gh-881): diagnostics listener attached to the PRIMARY player only
+     * (re-attached on every crossfade swap). One compact `PlaybackDiag` line per player
+     * transition (spec S2), plus starts/stops the stall-watchdog sampling (spec S1).
+     */
+    private inner class PlaybackDiagnosticsListener : Player.Listener {
+
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            Timber.tag(PLAYBACK_DIAG_TAG).d("STATE -> %s", diagnosticStateName(playbackState))
+        }
+
+        override fun onIsLoadingChanged(isLoading: Boolean) {
+            diagnosticIsLoading = isLoading
+            Timber.tag(PLAYBACK_DIAG_TAG).d("LOADING -> %s", isLoading)
+        }
+
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            // Issue #881 (gh-881): a new track starts with no load errors — reset the
+            // stall-report feed so a later report never carries the previous track's count
+            // (review gh-881).
+            diagnosticRetryCount = 0
+            Timber.tag(PLAYBACK_DIAG_TAG).d(
+                "MEDIA_TRANSITION reason=%s mediaId=%s",
+                diagnosticTransitionName(reason),
+                mediaItem?.mediaId,
+            )
+        }
+
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            Timber.tag(PLAYBACK_DIAG_TAG).d(
+                "PLAY_WHEN_READY -> %s reason=%s",
+                playWhenReady,
+                diagnosticPlayWhenReadyReasonName(reason),
+            )
+            if (playWhenReady) startStallWatchdogSampling() else stopStallWatchdogSampling()
+        }
+    }
+
+    private val playbackDiagnosticsListener = PlaybackDiagnosticsListener()
+
+    /**
+     * Issue #881 (gh-881): samples the real player state into [stallWatchdog] every
+     * [PlaybackStallWatchdog.DEFAULT_SAMPLING_INTERVAL_MS] while `playWhenReady`. Reads
+     * `player.*`, so it runs on the UI dispatcher (the only one allowed to touch ExoPlayer state).
+     */
+    private fun startStallWatchdogSampling() {
+        stallWatchdogJob?.cancel()
+        stallWatchdogJob = coroutineScope.launch(NzikDispatchers.UI) {
+            while (isActive) {
+                sampleStallWatchdog()
+                delay(PlaybackStallWatchdog.DEFAULT_SAMPLING_INTERVAL_MS)
+            }
+        }
+    }
+
+    private fun stopStallWatchdogSampling() {
+        stallWatchdogJob?.cancel()
+        stallWatchdogJob = null
+        // Issue #881 (gh-881): a paused player cannot stall — drop the stall clock so a
+        // post-resume report only measures the continuous stalling since the resume
+        // (review gh-881).
+        stallWatchdog.reset()
+    }
+
+    private fun sampleStallWatchdog() {
+        val p = player
+        if (!p.playWhenReady) return
+        when (val decision = stallWatchdog.sample(
+            nowMs = SystemClock.elapsedRealtime(),
+            playWhenReady = true,
+            playbackState = p.playbackState,
+            isLoading = diagnosticIsLoading,
+            positionMs = p.currentPosition,
+            // Issue #881 (gh-881): report "unknown" (-1) instead of the C.TIME_UNSET sentinel
+            // (Long.MIN_VALUE) for streams without a duration (review gh-881).
+            durationMs = if (p.duration == C.TIME_UNSET) -1L else p.duration,
+            mediaId = p.currentMediaItem?.mediaId,
+            retryCount = diagnosticRetryCount,
+            networkAvailable = isNetworkAvailable.value,
+            playerIdentity = System.identityHashCode(p),
+        )) {
+            is PlaybackStallWatchdog.Decision.Ok -> Unit
+            is PlaybackStallWatchdog.Decision.Stalled -> {
+                val r = decision.report
+                Timber.tag(PLAYBACK_DIAG_TAG).w(
+                    "STALL mediaId=%s state=%s loading=%s position=%dms duration=%dms stallMs=%d retries=%d network=%s playerIdentity=%s",
+                    r.mediaId,
+                    diagnosticStateName(r.playbackState),
+                    r.isLoading,
+                    r.positionMs,
+                    r.durationMs,
+                    r.stallDurationMs,
+                    r.retryCount,
+                    r.networkAvailable,
+                    r.playerIdentity,
+                )
+            }
+            PlaybackStallWatchdog.Decision.Recovered ->
+                Timber.tag(PLAYBACK_DIAG_TAG).i("STALL_RECOVERED")
+        }
+    }
+
+    /** Issue #881: human-readable player state for diagnostic lines. */
+    private fun diagnosticStateName(state: Int): String = when (state) {
+        Player.STATE_IDLE -> "IDLE"
+        Player.STATE_BUFFERING -> "BUFFERING"
+        Player.STATE_READY -> "READY"
+        else -> "UNKNOWN($state)"
+    }
+
+    /** Issue #881: human-readable media-item transition reason for diagnostic lines. */
+    private fun diagnosticTransitionName(reason: Int): String = when (reason) {
+        Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT -> "REPEAT"
+        Player.MEDIA_ITEM_TRANSITION_REASON_AUTO -> "AUTO"
+        Player.MEDIA_ITEM_TRANSITION_REASON_SEEK -> "SEEK"
+        Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED -> "PLAYLIST_CHANGED"
+        else -> "UNKNOWN($reason)"
+    }
+
+    /** Issue #881: human-readable playWhenReady change reason for diagnostic lines. */
+    private fun diagnosticPlayWhenReadyReasonName(reason: Int): String = when (reason) {
+        Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST -> "USER_REQUEST"
+        Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS -> "AUDIO_FOCUS_LOSS"
+        Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_BECOMING_NOISY -> "AUDIO_BECOMING_NOISY"
+        Player.PLAY_WHEN_READY_CHANGE_REASON_REMOTE -> "REMOTE"
+        Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM -> "END_OF_MEDIA_ITEM"
+        Player.PLAY_WHEN_READY_CHANGE_REASON_SUPPRESSED_TOO_LONG -> "SUPPRESSED_TOO_LONG"
+        else -> "UNKNOWN($reason)"
+    }
+
+
     @kotlin.OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     override fun onCreate() {
         super.onCreate()
@@ -419,6 +582,9 @@ class PlayerServiceModern : MediaLibraryService(),
             NetworkQualityHelper.observeConnection(this@PlayerServiceModern).collect { isAvailable ->
                 isNetworkAvailable.value = isAvailable
                 Timber.tag("PlayerServiceModern").d("network status: $isAvailable")
+                // Issue #881 (gh-881): network markers correlate the stall with connectivity loss
+                // after the screen off→on cycle (spec S5).
+                Timber.tag(PLAYBACK_DIAG_TAG).i("NETWORK_%s", if (isAvailable) "AVAILABLE" else "LOST")
                 if (isAvailable && waitingForNetwork.value) {
                     waitingForNetwork.value = false
                     if (player.playWhenReady && player.playbackState != Player.STATE_IDLE) {
@@ -570,6 +736,8 @@ class PlayerServiceModern : MediaLibraryService(),
 
         player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
         player.addListener(this@PlayerServiceModern)
+        // Issue #881 (gh-881): transition journal + stall-watchdog sampling (spec S1/S2)
+        player.addListener(playbackDiagnosticsListener)
 
         player.repeatMode = preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
 
@@ -665,6 +833,17 @@ class PlayerServiceModern : MediaLibraryService(),
                 ContextCompat.RECEIVER_NOT_EXPORTED
             )
         }
+
+        // Issue #881 (gh-881): screen on/off markers for stall correlation (spec S5)
+        ContextCompat.registerReceiver(
+            this,
+            screenStateReceiver,
+            IntentFilter().apply {
+                addAction(Intent.ACTION_SCREEN_ON)
+                addAction(Intent.ACTION_SCREEN_OFF)
+            },
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
 
         // Ensure that song is updated
         coroutineScope.launch {
@@ -912,6 +1091,8 @@ class PlayerServiceModern : MediaLibraryService(),
             stopService(intent<MyDownloadService>())
             stopService(intent<PlayerServiceModern>())
             player.removeListener(this)
+            // Issue #881 (gh-881): detach the diagnostics listener before teardown
+            player.removeListener(playbackDiagnosticsListener)
             player.stop()
             // Release through the guarded facade so its commandListeners are cleared before the
             // raw player goes (review finding: the facade's release() was dead on teardown).
@@ -927,6 +1108,11 @@ class PlayerServiceModern : MediaLibraryService(),
                 unregisterReceiver(audioBecomingNoisyReceiver)
             } catch (e: Exception){
                 Timber.tag("PlayerServiceModern").e("onDestroy unregisterReceiver audioBecomingNoisyReceiver "+e.stackTraceToString())
+            }
+            try{
+                unregisterReceiver(screenStateReceiver)
+            } catch (e: Exception){
+                Timber.tag("PlayerServiceModern").e("onDestroy unregisterReceiver screenStateReceiver "+e.stackTraceToString())
             }
             mediaLibrarySessionCallback.release()
             mediaSession.release()
@@ -948,6 +1134,8 @@ class PlayerServiceModern : MediaLibraryService(),
             radioStateObserverJob = null
             shuffleOkFlashJob?.cancel()
             shuffleOkFlashJob = null
+            // Issue #881 (gh-881): stop the stall-watchdog sampling loop
+            stopStallWatchdogSampling()
             coroutineScope.cancel()
 
         }.onFailure {
@@ -1843,23 +2031,37 @@ class PlayerServiceModern : MediaLibraryService(),
                 val skipOnError = preferences.getBoolean(skipMediaOnErrorKey, false)
                 val count = loadErrorInfo.errorCount
 
-                if (loadErrorInfo.exception.isFatalCustomException()) {
-                    return C.TIME_UNSET
-                }
+                // Issue #881 (gh-881): the stall watchdog report includes this counter
+                diagnosticRetryCount = count
 
-                return if (count <= 7) {
+                val delayMs: Long
+                if (loadErrorInfo.exception.isFatalCustomException()) {
+                    delayMs = C.TIME_UNSET
+                } else if (count <= 7) {
                     // Normal exponential backoff up to 7 retries
-                    (count * 2000L).coerceAtMost(10_000L)
+                    delayMs = (count * 2000L).coerceAtMost(10_000L)
                 } else if (!skipOnError) {
                     // User wants to NEVER skip: keep retrying with a long delay.
                     // Show a toast so the user always knows something is happening.
                     Toaster.w(R.string.stream_still_retrying, formatArgs = arrayOf(count.toString()))
                     // Returning a positive value ensures ExoPlayer never gives up
                     // on this media item (C.TIME_UNSET would cause a skip).
-                    15_000L
+                    delayMs = 15_000L
                 } else {
-                    C.TIME_UNSET // skipOnError is ON - let ExoPlayer give up and trigger onPlayerError give up and trigger onPlayerError
+                    delayMs = C.TIME_UNSET // skipOnError is ON - let ExoPlayer give up and trigger onPlayerError
                 }
+
+                // Issue #881 (gh-881): retry instrumented (spec S3) — exception class + truncated
+                // root-cause message (never the URL) reveal which link breaks; count growth
+                // reveals the infinite-retry loop of the "never skip" policy.
+                Timber.tag(PLAYBACK_DIAG_TAG).w(
+                    "LOAD_RETRY count=%d mediaId=%s exception=%s delayMs=%d",
+                    count,
+                    mediaId,
+                    diagnosticExceptionSummary(loadErrorInfo.exception),
+                    delayMs,
+                )
+                return delayMs
             }
         }
     )
@@ -2851,6 +3053,8 @@ class PlayerServiceModern : MediaLibraryService(),
         
         // Unregister listeners from the old player
         fadingPlayer?.removeListener(this)
+        // Issue #881 (gh-881): diagnostics follow the PRIMARY player across the swap
+        fadingPlayer?.removeListener(playbackDiagnosticsListener)
 
         // Sync play/pause state between new and fading player
         player.addListener(
@@ -2872,6 +3076,8 @@ class PlayerServiceModern : MediaLibraryService(),
         // Register listeners to the new primary player
         nextPlayer.removeListener(secondaryPlayerListener)
         nextPlayer.addListener(this)
+        // Issue #881 (gh-881): diagnostics follow the PRIMARY player across the swap
+        nextPlayer.addListener(playbackDiagnosticsListener)
 
         // Update MediaSession to show the new song in the UI — the guarded facade is rebuilt and
         // re-attached to the new player (AD-5: the guest lock must survive crossfade swaps).
@@ -2881,6 +3087,17 @@ class PlayerServiceModern : MediaLibraryService(),
         } catch (e: Exception) {
             Timber.tag("PlayerServiceModern").e(e, "Failed to swap player in MediaSession")
         }
+
+        // Issue #881 (gh-881): instance identity across the crossfade swap (spec S6) — a mismatch
+        // between the facade/UI trigger and the raw player would prove the UI kept driving an
+        // old instance (the "UI attached to the old player" hypothesis).
+        Timber.tag(PLAYBACK_DIAG_TAG).i(
+            "CROSSFADE_SWAP oldPlayerIdentity=%s newPlayerIdentity=%s facadeIdentity=%s trigger=%d",
+            System.identityHashCode(currentPlayer),
+            System.identityHashCode(nextPlayer),
+            System.identityHashCode(guestGuardPlayer),
+            playerUpdateTrigger.value,
+        )
 
         nextPlayer.volume = 0f
         nextPlayer.playWhenReady = fadingPlayer?.playWhenReady ?: false
@@ -3073,3 +3290,37 @@ internal fun shuffleOkFlashIconRes(flashActive: Boolean, stateIconRes: Int): Int
  */
 internal fun discoverCommandButtonIconRes(stateIconRes: Int, isDiscoverEnabled: Boolean): Int =
     if (isDiscoverEnabled) R.drawable.discover_stop else stateIconRes
+
+/**
+ * Issue #881 (gh-881): hard bound on the root-cause walk — a malformed cyclic cause chain
+ * must never spin the retry thread that calls [diagnosticExceptionSummary].
+ */
+private const val DIAGNOSTIC_CAUSE_HOP_LIMIT = 16
+
+/**
+ * Issue #881 (gh-881): `scheme://…` blobs embedded in exception messages (stream URLs,
+ * hosts) — scrubbed so the exported log file, which is shared publicly, never carries the
+ * stream URL (spec S3 / M4 confidentiality rule).
+ */
+private val DIAGNOSTIC_URL_PATTERN = Regex("""(?i)(?:https?|ftp)://\S+""")
+
+/**
+ * Issue #881 (gh-881): `ClassName: message` of the ROOT cause of a load failure —
+ * class + truncated message only. Lifted so the scrubbing and the bounded cause walk are
+ * unit-testable without the service (review gh-881).
+ */
+internal fun diagnosticExceptionSummary(exception: Throwable): String {
+    var root = exception
+    var hops = 0
+    while (hops < DIAGNOSTIC_CAUSE_HOP_LIMIT) {
+        val cause = root.cause
+        if (cause == null || cause === root) break
+        root = cause
+        hops++
+    }
+    val message = root.message
+        ?.replace(DIAGNOSTIC_URL_PATTERN, "<url>")
+        ?.take(200)
+        ?: "-"
+    return "${root.javaClass.simpleName}: $message"
+}
