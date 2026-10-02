@@ -124,11 +124,6 @@ Join the N-Zik Discord:
 
 - 🕹️ **Discord Rich Presence** – Display your currently playing track directly on your Discord profile. An advanced mode adds custom text templates, activity type, up to 2 custom buttons, pause-presence, and a live interactive preview card.
 
-<p align="left">
-  <img width="280" height="100" alt="image" src="https://github.com/user-attachments/assets/f820686e-8e24-4ac1-8133-505dd94550cc" /> <img width="280" height="100" alt="image" src="https://github.com/user-attachments/assets/8d03df13-3114-40d4-a403-f7d57524787c" /><br>
-  <img width="320" height="207" alt="image" src="https://github.com/user-attachments/assets/f9d0c5a7-b334-45df-a35a-810813ddd26a" />
-</p>
-
 - 📰 **Discovery** – Explore moods, genres, releases, and albums from your favorite artists, plus trending picks.
 - 🔄 **Playlist Import & Export** – Easily back up, share, and restore playlists, you can import from Riplay, Spotify ([Exportify](https://exportify.net/)), Youtube Music and N-Zik
 - ✍️ **Advanced Lyrics Support** – Fetch, display word by word, sync and unsync lyrics with smart fallback mechanisms, edit, and translate them in real-time via Google Translate with source language detection.
@@ -140,18 +135,6 @@ Join the N-Zik Discord:
 - 📱 **On-Device Music** – Play local music files stored directly on your device.
 - 📺 **Wide Platform Support** – Compatible with Android Auto, Android Automotive, Android TV, and YouTube video playback.
 - 🪟 **Widgets** – New widgets for your home screen (Compact, Turntable, and Playlist).
-
-<p align="left">
-  <!-- Compact Widgets -->
-  <img width="220" src="https://github.com/user-attachments/assets/d1ebf277-433d-4ed4-b3c7-4cff067c5cb9" alt="Compact Widget Preview 1"/> 
-  <img width="220" src="https://github.com/user-attachments/assets/60f49cd0-5e8e-47c2-b66e-aa05ba389d35" alt="Compact Widget Preview 2"/> <br>
-  <!-- Turntable Widgets -->
-  <img width="180" src="https://github.com/user-attachments/assets/cdeec72a-7263-4f2a-acf2-b009727af56e" alt="Turntable Widget Preview 1"/> 
-  <img width="180" src="https://github.com/user-attachments/assets/6bc819fa-dd9e-43cb-b527-5e1f86b4d004" alt="Turntable Widget Preview 2"/> <br>
-  <!-- Playlist Widgets -->
-  <img width="180" src="https://github.com/user-attachments/assets/d68d397d-18c8-4137-abfa-8116a9aa97e9" alt="Playlist Widget Preview 1"/> 
-  <img width="180" src="https://github.com/user-attachments/assets/d24f97d0-5e9c-45a7-9f44-1ee5be61e22a" alt="Playlist Widget Preview 2"/>
-</p>
 
 - 📤 **Media Export** – Export cached or downloaded music to external storage with full metadata (title, artist, album, cover art, copyright, etc.) powered by FFmpeg. _(Note: Not available on 32-bit builds as they drop FFmpeg)_
 - ✏️ **Metadata Editor** – Edit song metadata (title, artist, album, genre, year, cover art, and more) directly in-app. Supports both AAC and Opus codecs with automatic cover art embedding.
@@ -420,3 +403,24 @@ Any trademarks, service marks, trade names, or other intellectual property right
 
 Made with ❤️ by [NEVARLeVrai](https://github.com/NEVARLeVrai)  
 Licensed under GPLv3 - see [LICENSE](LICENSE)
+
+# 🕹️ Discord Rich Presence
+
+<p align="left">
+  <img width="280" height="100" alt="image" src="https://github.com/user-attachments/assets/f820686e-8e24-4ac1-8133-505dd94550cc" /> <img width="280" height="100" alt="image" src="https://github.com/user-attachments/assets/8d03df13-3114-40d4-a403-f7d57524787c" /><br>
+  <img width="320" height="207" alt="image" src="https://github.com/user-attachments/assets/f9d0c5a7-b334-45df-a35a-810813ddd26a" />
+</p>
+
+# 🪟 Widgets
+
+<p align="left">
+  <!-- Compact Widgets -->
+  <img width="220" src="https://github.com/user-attachments/assets/d1ebf277-433d-4ed4-b3c7-4cff067c5cb9" alt="Compact Widget Preview 1"/> 
+  <img width="220" src="https://github.com/user-attachments/assets/60f49cd0-5e8e-47c2-b66e-aa05ba389d35" alt="Compact Widget Preview 2"/> <br>
+  <!-- Turntable Widgets -->
+  <img width="180" src="https://github.com/user-attachments/assets/cdeec72a-7263-4f2a-acf2-b009727af56e" alt="Turntable Widget Preview 1"/> 
+  <img width="180" src="https://github.com/user-attachments/assets/6bc819fa-dd9e-43cb-b527-5e1f86b4d004" alt="Turntable Widget Preview 2"/> <br>
+  <!-- Playlist Widgets -->
+  <img width="180" src="https://github.com/user-attachments/assets/d68d397d-18c8-4137-abfa-8116a9aa97e9" alt="Playlist Widget Preview 1"/> 
+  <img width="180" src="https://github.com/user-attachments/assets/d24f97d0-5e9c-45a7-9f44-1ee5be61e22a" alt="Playlist Widget Preview 2"/>
+</p>
