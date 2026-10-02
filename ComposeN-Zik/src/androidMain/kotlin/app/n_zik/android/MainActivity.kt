@@ -89,6 +89,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -96,6 +97,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
@@ -184,6 +186,8 @@ import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
 import app.n_zik.android.listentogether.shouldDisablePlayerSheetDismiss
 import app.n_zik.android.components.player.MiniPlayerQueueOverlay
 import app.n_zik.android.components.player.APP_HEADER_HEIGHT
+import app.n_zik.android.components.player.miniPlayerDismissAlpha
+import app.n_zik.android.components.player.shouldComposePlayerSheet
 import app.n_zik.android.components.player.miniPlayerSideInset
 import app.n_zik.android.components.player.miniPlayerTopInset
 import app.n_zik.android.components.player.miniPlayerTopPaddingPx
@@ -193,6 +197,9 @@ import app.n_zik.android.components.player.PaletteFade
 import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
 import app.n_zik.android.components.player.m3eRecapRestoredDynamicPalette
 import app.n_zik.android.components.player.presentMiniplayerThenExpand
+import app.n_zik.android.components.player.presentMiniplayerCollapsed
+import app.n_zik.android.components.player.MINIPLAYER_APPEAR_FADE_MS
+import app.n_zik.android.components.player.MINIPLAYER_APPEAR_FADE_SKIPPED_FRAMES
 import app.n_zik.android.components.theme.AnimatedAppearance
 import app.n_zik.android.components.theme.withColor
 import app.it.fast4x.rimusic.ui.styling.Appearance
@@ -292,6 +299,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.knighthat.invidious.Invidious
@@ -2068,7 +2076,10 @@ class MainActivity :
                                     if (binder?.player?.currentMediaItem != null) return@LaunchedEffect
                                     mediaPresent = false
                                     if (!playerSheetState.isDismissed) {
-                                        playerSheetState.snapTo(playerSheetState.dismissedBound)
+                                        // Animated dismiss instead of the old instant snap: the sheet
+                                        // slides out of the screen while the dismissed-zone alpha fades the
+                                        // mini-player, instead of vanishing in place.
+                                        playerSheetState.dismiss()
                                     }
                                     showQueueOverlay = false
                                 } else {
@@ -2098,13 +2109,51 @@ class MainActivity :
                                 label = "rewindSheetDismiss"
                             )
 
-                            if (mediaPresent) {
+                            // The sheet subtree stays composed until the animated dismiss has reached
+                            // the dismissed bound, so the slide-out is never cut short. The fades come
+                            // from the appearance + dismissed-zone alphas below — no AnimatedVisibility:
+                            // it would add a second full-screen layer with the default Auto strategy,
+                            // i.e. an offscreen buffer of the whole sheet on every frame (lag).
+                            if (shouldComposePlayerSheet(mediaPresent, playerSheetState.isDismissed)) {
+                                // Appearance fade, replayed each time the sheet leaves the dismissed
+                                // bound. The mini-player is only composed once the sheet is out of
+                                // dismissed, and that composition (plus the full player's) is heavy:
+                                // a fade started in the same frame has its first frames swallowed and
+                                // the mini-player pops in. So wait for the sheet to leave dismissed,
+                                // let the heavy frames land, then start the fade.
+                                val appearAlpha = remember { Animatable(0f) }
+                                LaunchedEffect(playerSheetState) {
+                                    snapshotFlow { playerSheetState.isDismissed }.collectLatest { dismissed ->
+                                        if (dismissed) {
+                                            appearAlpha.snapTo(0f)
+                                        } else if (appearAlpha.value < 1f) {
+                                            repeat(MINIPLAYER_APPEAR_FADE_SKIPPED_FRAMES) { withFrameNanos { } }
+                                            appearAlpha.animateTo(1f, tween(MINIPLAYER_APPEAR_FADE_MS.toInt()))
+                                        }
+                                    }
+                                }
                                 Box(
                                     // Top anchor follows the header through topPadding instead
                                     modifier = Modifier.fillMaxSize()
                                         .graphicsLayer {
                                             translationY = rewindSheetProgress.value * 160.dp.toPx()
-                                            alpha = (1f - rewindSheetProgress.value).coerceIn(0f, 1f)
+                                            // Appearance fade x rewind-deck fade x dismissed-zone fade: the
+                                            // mini-player fades with the sheet's value, which follows the
+                                            // finger on a drag and the tween on an animated dismiss.
+                                            alpha = appearAlpha.value *
+                                                (1f - rewindSheetProgress.value).coerceIn(0f, 1f) *
+                                                miniPlayerDismissAlpha(
+                                                    value = playerSheetState.value,
+                                                    dismissedBound = playerSheetState.dismissedBound,
+                                                    collapsedBound = playerSheetState.collapsedBound,
+                                                )
+                                            // This layer spans the full screen: with the default Auto strategy,
+                                            // an alpha below 1 would render the whole sheet subtree into a
+                                            // full-screen offscreen buffer on every frame of a drag (lag).
+                                            // ModulateAlpha applies the alpha per draw op instead. Trade-off:
+                                            // semi-transparent elements modulate individually rather than as a
+                                            // unit — imperceptible on a fast dismiss fade.
+                                            compositingStrategy = CompositingStrategy.ModulateAlpha
                                         }
                                         .offset { IntOffset(0, if (isTopPlayer) 0 else bottomBarOffsetState.value.roundToInt()) }
                                 ) {
@@ -2277,16 +2326,16 @@ class MainActivity :
                                 intent.replaceExtras(Bundle())
                                 if (preferences.getBoolean(keepPlayerMinimizedKey, true)) {
                                     showPlayer = false
-                                    // Snap to collapsed so the mini-player is at the right position
-                                    playerSheetState.snapTo(playerSheetState.collapsedBound)
+                                    // Collapsed position; pops with a fade when coming from the dismissed zone
+                                    playerSheetState.presentMiniplayerCollapsed()
                                 } else {
                                     showPlayer = true
                                     coroutineScope.presentMiniplayerThenExpand(playerSheetState, onPresent = { restoreHiddenBars() })
                                 }
                             } else {
                                 showPlayer = false
-                                // Snap to collapsed so the mini-player is at the right position
-                                playerSheetState.snapTo(playerSheetState.collapsedBound)
+                                // Collapsed position; pops with a fade when coming from the dismissed zone
+                                playerSheetState.presentMiniplayerCollapsed()
                             }
                         }
                     }
@@ -2297,8 +2346,8 @@ class MainActivity :
                                 if (mediaItem.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
                                     if (preferences.getBoolean(keepPlayerMinimizedKey, true)) {
                                         showPlayer = false
-                                        // Ensure mini-player is at collapsed position
-                                        playerSheetState.snapTo(playerSheetState.collapsedBound)
+                                        // Collapsed position; pops with a fade when coming from the dismissed zone
+                                        playerSheetState.presentMiniplayerCollapsed()
                                     } else {
                                         showPlayer = true
                                         coroutineScope.presentMiniplayerThenExpand(playerSheetState, onPresent = { restoreHiddenBars() })
