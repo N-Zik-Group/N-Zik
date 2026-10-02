@@ -145,6 +145,27 @@ fun miniPlayerFade(progress: Float): Float =
     1f - (progress / PLAYER_SHEET_HANDOVER_PROGRESS).coerceIn(0f, 1f)
 
 /**
+ * Progress at or below which the deploy card background is skipped: the
+ * mini-player still renders its own surface there, so drawing the card would
+ * only paint a sliver behind it.
+ */
+internal const val CARD_BG_COLLAPSED_EPSILON = 0.01f
+
+/**
+ * Whether the deploy card's background fill is drawn at the given progress.
+ *
+ * The card fill is the sheet's opaque base, so it must persist all the way to
+ * fully expanded (progress = 1): otherwise the player background's legitimate
+ * transparent regions (the rotating DstOut band of the fluid gradient, the
+ * letterboxed cover, 0% blurred backdrop) expose the screen behind the sheet
+ * (issue #855). Skipped for progress <= [CARD_BG_COLLAPSED_EPSILON] (collapsed
+ * state and the first instants of the deploy), where the mini-player renders
+ * its own surface.
+ */
+internal fun shouldDrawCardBackground(progress: Float): Boolean =
+    progress.coerceIn(0f, 1f) > CARD_BG_COLLAPSED_EPSILON
+
+/**
  * Shape qui suit exactement le rectangle animé de la carte "deploy"
  * (au lieu d'un RoundedCornerShape plein écran qui ne matchait pas
  * la taille réelle de la carte dessinée dans drawBehind).
@@ -276,10 +297,10 @@ fun CustomBottomSheet(
                     }
                 )
             }
-            // ── Deploy animation: expanding card background ──
+            // ── Card background: expands during the deploy, then stays as the sheet's opaque base (#855) ──
             .drawBehind {
                 val p = state.progress.coerceIn(0f, 1f)
-                if (p > 0.01f && p < 0.99f) {
+                if (shouldDrawCardBackground(p)) {
                     val baseCornerPx = (baseShape as? RoundedCornerShape)?.topStart?.toPx(size, this) ?: 16.dp.toPx()
                     val geometry = computeCardGeometry(
                         p = p,

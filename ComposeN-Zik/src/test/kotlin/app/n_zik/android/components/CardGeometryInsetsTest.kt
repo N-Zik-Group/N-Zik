@@ -54,6 +54,16 @@ class CardGeometryInsetsTest {
     }
 
     @Test
+    fun `the expanded card is full size with square corners whatever the insets`() {
+        // The sheet's opaque base (issue #855) full-bleeds this geometry at
+        // progress 1, so its height and corner radius must be pinned.
+        val expanded = geometry(p = 1f, startInsetPx = 100f, endInsetPx = 60f)
+
+        assertEquals(2000f, expanded.height)
+        assertEquals(0f, expanded.cornerPx)
+    }
+
+    @Test
     fun `a rail leaves room on its side, counting the usual margin`() {
         // 50dp rail + 8dp gap - 16dp usual margin
         assertEquals(42.dp, miniPlayerSideInset(railWidth = 50.dp, safeInset = 0.dp))
