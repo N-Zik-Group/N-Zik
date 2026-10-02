@@ -227,7 +227,7 @@ Join the N-Zik Discord:
     <img alt="Rewind" src="assets/design/preview/img/24.png" height="300px" />
     <img alt="Rewind (Intro)" src="assets/design/preview/img/23.png" height="300px" />
     <br><br>
-    <h3>📺 Android</h3>
+    <h3>📺 Other Android Platforms</h3>
     <img alt="Android Auto" src="assets/design/preview/img/AndroidAuto.png" height="200px" />
     <img alt="Android Automotive" src="assets/design/preview/img/AndroidAutomotive.png" height="200px" />
     <img alt="Android TV" src="assets/design/preview/img/AndroidTV.png" height="200px" />
