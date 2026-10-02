@@ -704,6 +704,7 @@
     <string name="expanded">展開済み</string>
     <string name="lyricscolor">歌詞の色</string>
     <string name="lyrics_size">歌詞の大きさ</string>
+    <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="translate">翻訳</string>
     <string name="transparentbar">透明なタイムラインバー</string>
     <string name="timelinesize">プレイヤーのタイムラインサイズ</string>
