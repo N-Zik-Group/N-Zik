@@ -704,6 +704,7 @@
     <string name="expanded">প্রসারিত</string>
     <string name="lyricscolor">লিরিক কালার</string>
     <string name="lyrics_size">লিরিকের আকার</string>
+    <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="translate">অনুবাদ</string>
     <string name="transparentbar">স্বচ্ছ টাইমলাইন বার</string>
     <string name="timelinesize">প্লেয়ার টাইমলাইনের আকার</string>
