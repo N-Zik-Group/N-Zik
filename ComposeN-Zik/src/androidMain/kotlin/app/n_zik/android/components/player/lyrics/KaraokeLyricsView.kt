@@ -8,7 +8,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ripple
@@ -455,25 +454,14 @@ fun KaraokeLyricsView(
         computeActiveLineIndices(karaokeLines, currentPositionMs)
     }
 
-    // Primary active line for scroll targeting - prefer non-background lines
-    // Track max reached line, but reset when seeking backwards
+    // Primary active line for scroll targeting: the furthest active main line,
+    // or — when only a chorus line is active — that chorus (the index switches
+    // to it, so the chorus advances to the center like a main line and
+    // retreats when the next main line takes over). Track max reached line,
+    // but reset when seeking backwards.
     var maxReachedLineIndex by remember { mutableIntStateOf(0) }
     val primaryActiveIndex = remember(activeLineIndices, currentPositionMs) {
-        if (karaokeLines.isEmpty()) {
-            0
-        } else {
-        val nonBgActive = activeLineIndices.filter { !karaokeLines[it].isBackground }
-        val currentIndex = if (nonBgActive.isNotEmpty()) {
-            nonBgActive.maxOrNull() ?: 0
-        } else {
-            // No non-background active - find last passed non-background line
-            var lastNonBg = 0
-            for (i in karaokeLines.indices) {
-                if (karaokeLines[i].timeMs > currentPositionMs) break
-                if (!karaokeLines[i].isBackground) lastNonBg = i
-            }
-            lastNonBg
-        }
+        val currentIndex = primaryLyricsIndex(karaokeLines, activeLineIndices, currentPositionMs)
         // Allow going backwards when seeking (currentIndex is significantly before max)
         if (currentIndex < maxReachedLineIndex - 1) {
             maxReachedLineIndex = currentIndex
@@ -481,7 +469,6 @@ fun KaraokeLyricsView(
             maxReachedLineIndex = currentIndex
         }
         maxReachedLineIndex
-        }
     }
 
     val lazyListState = rememberLazyListState()
@@ -551,10 +538,10 @@ fun KaraokeLyricsView(
     
     val fixedCenter = (effectiveVpH * multiplier).toInt()
 
-    // Centers the primary active line at its target position. Extracted so
-    // both the active-line change and the chorus pop/de-pop recentering can
-    // share the same math. Suspend: the smooth scroll (animateScrollBy) is.
-    val recenterOnActiveLine: suspend () -> Unit = {
+    // Centers the item at [targetItem] at its target position. Extracted so
+    // both the active-line change and the chorus reveal recentering can share
+    // the same math. Suspend: the smooth scroll (animateScrollBy) is.
+    val recenterOnItem: suspend (Int) -> Unit = { targetItem: Int ->
         val reMeasuredVpH = lazyListState.layoutInfo.viewportEndOffset - lazyListState.layoutInfo.viewportStartOffset
         val finalEffectiveVpH = if (reMeasuredVpH > 0) reMeasuredVpH else screenHeightPx
         val hasLoader = showIntervalIndicator && initialGapWindow != null
@@ -563,11 +550,10 @@ fun KaraokeLyricsView(
             finalMultiplier = 0.50f
         }
         val finalFixedCenter = (finalEffectiveVpH * finalMultiplier).toInt()
-        Timber.tag("KaraokeLyricsView").d("CENTER: idx=${primaryActiveIndex+1} vpH=$reMeasuredVpH mult=$finalMultiplier center=$finalFixedCenter lines=$lineCount loader=$hasLoader")
-        val scrollIndex = primaryActiveIndex + 1 + (if (hasLoader) 1 else 0)
+        Timber.tag("KaraokeLyricsView").d("CENTER: item=$targetItem vpH=$reMeasuredVpH mult=$finalMultiplier center=$finalFixedCenter lines=$lineCount loader=$hasLoader")
 
         // Smooth scroll Metrolist-style: use animateScrollBy for fluid transitions
-        val itemInfo = lazyListState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == scrollIndex }
+        val itemInfo = lazyListState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == targetItem }
         if (itemInfo != null) {
             // Item is visible, animate to the target position (using multiplier for proper positioning)
             val targetPosition = finalFixedCenter
@@ -581,33 +567,67 @@ fun KaraokeLyricsView(
             }
         } else {
             // Item is not visible, scroll to it first with proper offset
-            lazyListState.scrollToItem(scrollIndex, -finalFixedCenter)
+            lazyListState.scrollToItem(targetItem, -finalFixedCenter)
         }
     }
 
-    LaunchedEffect(primaryActiveIndex, density, isAutoScrollEnabled, vpH) {
+    // Item index of every lyric line inside the LazyColumn: the header spacer,
+    // the optional initial loader, and the gap-loader items interleaved right
+    // after their line (the loaders are SEPARATE items, so the scroll index
+    // can switch to one).
+    val lineItemIndices = remember(karaokeLines, gapWindows, showIntervalIndicator, initialGapWindow) {
+        lyricsLineItemIndices(
+            lineCount = karaokeLines.size,
+            gapWindows = gapWindows,
+            showIntervalIndicator = showIntervalIndicator,
+            hasInitialLoader = initialGapWindow != null
+        )
+    }
+
+    // The item the scroll index should point at: an active line (a main line,
+    // else the active chorus — the index switches to the chorus, so it
+    // advances to the center like a main line and retreats when the next main
+    // line takes over); while no line is active, the gap-loader item of the
+    // active gap window (or the initial loader); otherwise null = no
+    // re-centering (the list stays put).
+    val centerTarget: Int? = when {
+        activeLineIndices.isNotEmpty() -> lineItemIndices.getOrNull(primaryActiveIndex)
+        !showIntervalIndicator -> null
+        else -> {
+            val activeGap = activeGapLine(gapWindows, currentPositionMs)
+            val initialGap = initialGapWindow
+            when {
+                activeGap != null -> lineItemIndices[activeGap] + 1
+                initialGap != null && currentPositionMs in initialGap.first until initialGap.second -> 1
+                else -> null
+            }
+        }
+    }
+
+    LaunchedEffect(centerTarget, density, isAutoScrollEnabled, vpH) {
         if (!isAutoScrollEnabled) return@LaunchedEffect
+        val target = centerTarget ?: return@LaunchedEffect
         if (primaryActiveIndex == 0 || vpH == 0) {
             delay(100)
         }
-        recenterOnActiveLine()
+        recenterOnItem(target)
     }
 
     // Chorus lines expand their slot (200ms) when they appear (lead-in) —
     // the height change shifts the active line's scroll position, so the
     // canvas appears to jump. (Choruses never de-pop: once sung they stay
     // shown.) When the set of shown chorus lines changes, wait for the
-    // height animation to settle and re-center on the active line so the
-    // sung line stays put. If the chorus sits below the active line its
+    // height animation to settle and re-center on the current target so the
+    // sung line stays put. If the target sits below the visible center its
     // height change does not move it, and the |offset| > 10 guard inside
-    // recenterOnActiveLine makes this a no-op.
+    // recenterOnItem makes this a no-op.
     val chorusShownKeys = remember(karaokeLines, currentPositionMs) {
         chorusShownIndices(karaokeLines, currentPositionMs)
     }
     LaunchedEffect(chorusShownKeys) {
         if (!isAutoScrollEnabled) return@LaunchedEffect
         delay(300) // chorus slot height animation is 200ms; wait for it to settle
-        recenterOnActiveLine()
+        centerTarget?.let { recenterOnItem(it) }
     }
 
     // Resolve the accent color
@@ -668,7 +688,13 @@ fun KaraokeLyricsView(
             }
         }
 
-        itemsIndexed(karaokeLines, key = { index, _ -> index }, contentType = { _, _ -> "lyric_line" }) { index, line ->
+        // Each line is its own item, followed by its gap-loader item when the
+        // line owns a gap window: the loaders are SEPARATE items (not part of
+        // the previous line's item), so the scroll index can switch to one —
+        // while a gap runs the list centers on the loader, and the index
+        // switches to the chorus line itself while it is sung.
+        karaokeLines.forEachIndexed { index, line ->
+        item(key = index, contentType = "lyric_line") {
             val isActiveLine = index in activeLineIndices
 
             // Agent-based alignment: v1=Left, v2=Right, bg/v1000=Center
@@ -1337,20 +1363,23 @@ fun KaraokeLyricsView(
                         )
                     )
                 }
-                if (!line.isBackground && showIntervalIndicator) {
-                    gapWindows[index]?.let { (gapStart, gapEnd) ->
-                        val isVisible = currentPositionMs in gapStart until gapEnd
-                        LyricsIntervalIndicator(
-                            gapStartMs = gapStart,
-                            gapEndMs = gapEnd,
-                            currentPositionMs = currentPositionMs,
-                            visible = isVisible,
-                            color = accentColor,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
             }
+        }
+        val gapWindow = gapWindows[index]
+        if (showIntervalIndicator && gapWindow != null) {
+            val (gapStart, gapEnd) = gapWindow
+            item(key = "gap_$index", contentType = 2) {
+                val isVisible = currentPositionMs in gapStart until gapEnd
+                LyricsIntervalIndicator(
+                    gapStartMs = gapStart,
+                    gapEndMs = gapEnd,
+                    currentPositionMs = currentPositionMs,
+                    visible = isVisible,
+                    color = accentColor,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
         }
         item(key = "footer", contentType = 2) {
             Spacer(modifier = Modifier.height(with(LocalConfiguration.current) { screenHeightDp.dp }))

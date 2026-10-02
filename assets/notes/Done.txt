@@ -125,6 +125,11 @@ Added:
    - Layout micro-jump fix: the animated branch (background/glow/foreground) and the static/fallback branches all share KARAOKE_LINE_HEIGHT_MULTIPLIER = 1.4f as TextStyle.lineHeight, so the LazyColumn item height is bit-identical across the branch switch at the end of the sung-fade tail (and on activation) — the leave animation runs while the settle effects finish without any list shift
    - isKaraokeLineStillAnimating now includes chorus lines ((lineEnd+1)..(lineEnd+1200)) so the last word finishes settling before the branch flips
    - Tests: KaraokeFillSupportTest 49/49 green (settle color, chorus stays shown, chorus never scales, chorus past-state opacity, isKaraokeLineInPastState, line-height multiplier pin + slot-height stability, chorus animating tail) ; verified on device (emulator)
+- feat(karaoke): chorus advance/retreat + separate gap-loader item so the scroll index switches to them (issue https://github.com/N-Zik-Group/N-Zik/issues/820)
+   - The scroll index now switches to a chorus line when it is the only active line (primaryLyricsIndex: furthest active main line wins, else furthest active chorus, else last passed main line) — the chorus advances to the center exactly like a main line and retreats when the next main line takes over
+   - Gap loaders are now separate LazyColumn items (gap_<i> right after their line) instead of being rendered inside the previous line's item — while a gap runs and no line is active, the re-centering targets that gap's loader item (activeGapLine), and the initial loader during the initial gap
+   - lineItemIndices maps each lyric line to its real list-item index across the interleaved gap-loader items (a missed increment per line item made every line target an item too early and the text scroll out of the visible area — pinned by 3 mapping tests) ; recenterOnItem(target) recenters on the exact item
+   - Tests: KaraokeFillSupportTest 56/56 green (chorus index switch, main-line priority, last-passed fallback, active gap resolution, item-index mapping with/without interleaved gap loaders) ; verified on device (emulator)
 
 Changed:
 - change(rescue): the base profile joins "Reset profiles" and "Restore profiles" — the dedicated base cards are gone

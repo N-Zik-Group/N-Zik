@@ -265,6 +265,84 @@ fun computeActiveLineIndices(lines: List<KaraokeLine>, currentPositionMs: Long):
 }
 
 /**
+ * The line the scroll index should point at.
+ *
+ * The furthest active MAIN (non-background) line wins — several agents can be
+ * active at once and the center follows the sung main line. When only a chorus
+ * (background) line is active the index switches to it, so the chorus advances
+ * to the center exactly like a main line and retreats when the next main line
+ * takes over. When no line is active (gap, before the first line) the last
+ * passed non-background line is kept — the list stays put.
+ *
+ * @param lines all karaoke lines in order
+ * @param activeIndices the indices from [computeActiveLineIndices]
+ * @param currentPositionMs playback position in ms
+ * @return the line index the scroll should target (0 for an empty list)
+ */
+fun primaryLyricsIndex(lines: List<KaraokeLine>, activeIndices: Set<Int>, currentPositionMs: Long): Int {
+    if (lines.isEmpty()) return 0
+    val nonBgActive = activeIndices.filter { lines[it].isBackground.not() }
+    if (nonBgActive.isNotEmpty()) return nonBgActive.max()
+    val bgActive = activeIndices.filter { lines[it].isBackground }
+    if (bgActive.isNotEmpty()) return bgActive.max()
+    var lastNonBg = 0
+    for (i in lines.indices) {
+        if (lines[i].timeMs > currentPositionMs) break
+        if (!lines[i].isBackground) lastNonBg = i
+    }
+    return lastNonBg
+}
+
+/**
+ * Item index of every lyric line inside the lyrics list layout.
+ *
+ * The list starts with the header spacer, then the optional initial gap loader,
+ * then each lyric line item, each followed by its gap-loader item when the
+ * line owns a gap window and the indicator is enabled (the loaders are
+ * separate items, so the scroll index can switch to one). Returns the item
+ * index of each line so the re-centering can target the right item even with
+ * interleaved gap loaders.
+ *
+ * @param lineCount number of lyric lines
+ * @param gapWindows the per-line gap windows from `computeKaraokeGapWindows`
+ * @param showIntervalIndicator whether gap loaders are enabled
+ * @param hasInitialLoader whether the initial gap loader item is present
+ * @return the list-item index of each lyric line
+ */
+fun lyricsLineItemIndices(
+    lineCount: Int,
+    gapWindows: Map<Int, Pair<Long, Long>>,
+    showIntervalIndicator: Boolean,
+    hasInitialLoader: Boolean
+): IntArray {
+    val base = 1 + (if (showIntervalIndicator && hasInitialLoader) 1 else 0)
+    val indices = IntArray(lineCount)
+    var next = base
+    for (i in 0 until lineCount) {
+        indices[i] = next
+        next++ // the line item itself
+        if (showIntervalIndicator && gapWindows.containsKey(i)) next++ // its gap-loader item
+    }
+    return indices
+}
+
+/**
+ * The line whose gap-loader window contains [currentPositionMs], or null when
+ * no gap window is active.
+ *
+ * The gap loaders are separate list items (not part of the previous line's
+ * item), so the scroll index can switch to one: while a gap runs and no line
+ * is active, the re-centering targets that line's loader item instead of
+ * staying on the previous line.
+ *
+ * @param gapWindows the per-line gap windows from `computeKaraokeGapWindows`
+ * @param currentPositionMs playback position in ms
+ * @return the line index owning the active gap window, or null
+ */
+fun activeGapLine(gapWindows: Map<Int, Pair<Long, Long>>, currentPositionMs: Long): Int? =
+    gapWindows.entries.firstOrNull { currentPositionMs in it.value.first until it.value.second }?.key
+
+/**
  * Target opacity of a karaoke line in the item `graphicsLayer`.
  *
  * Chorus/background lines are HIDDEN (0f) before their reveal, shown at 0.8f

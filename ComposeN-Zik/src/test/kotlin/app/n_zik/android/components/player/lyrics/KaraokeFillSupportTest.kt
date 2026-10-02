@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -554,6 +555,103 @@ class KaraokeFillSupportTest {
         // so only pixels (never the layout) change on the switch.
         assertEquals(1f, karaokeLineHeightFraction(isBackground = false, isActive = true))
         assertEquals(1f, karaokeLineHeightFraction(isBackground = false, isActive = false))
+    }
+
+    @Test
+    fun `the scroll index switches to a chorus line when it is the only active line`() {
+        // main line 0 ended, chorus line 1 is the active one -> the index must
+        // point at the chorus so it advances to the center like a main line
+        val lines = listOf(
+            KaraokeLine(timeMs = 0L, text = "main", words = listOf(KaraokeWord("main", 0L, 1000L))),
+            KaraokeLine(timeMs = 2000L, text = "oh", words = listOf(KaraokeWord("oh", 2000L, 3000L)), isBackground = true)
+        )
+        assertEquals(1, primaryLyricsIndex(lines, activeIndices = setOf(1), currentPositionMs = 2500L))
+    }
+
+    @Test
+    fun `the scroll index keeps the furthest main line when main and chorus are both active`() {
+        // a main line and a chorus are active at once -> the main line wins
+        val lines = listOf(
+            KaraokeLine(timeMs = 0L, text = "a", words = listOf(KaraokeWord("a", 0L, 4000L))),
+            KaraokeLine(timeMs = 2000L, text = "b", words = listOf(KaraokeWord("b", 2000L, 4000L)), isBackground = true),
+            KaraokeLine(timeMs = 3000L, text = "c", words = listOf(KaraokeWord("c", 3000L, 5000L)))
+        )
+        assertEquals(2, primaryLyricsIndex(lines, activeIndices = setOf(1, 2), currentPositionMs = 3500L))
+    }
+
+    @Test
+    fun `the scroll index keeps the last passed main line when no line is active`() {
+        // inside the gap after the chorus ended, before the next main line:
+        // nothing is active, the list stays on the last passed main line
+        val lines = listOf(
+            KaraokeLine(timeMs = 0L, text = "main", words = listOf(KaraokeWord("main", 0L, 1000L))),
+            KaraokeLine(timeMs = 2000L, text = "oh", words = listOf(KaraokeWord("oh", 2000L, 3000L)), isBackground = true)
+        )
+        assertEquals(0, primaryLyricsIndex(lines, activeIndices = emptySet(), currentPositionMs = 4000L))
+    }
+
+    @Test
+    fun `the active gap resolves to the line that owns its window`() {
+        val gapWindows = mapOf(0 to (5000L to 9000L))
+        assertEquals(0, activeGapLine(gapWindows, currentPositionMs = 7000L))
+        assertNull(activeGapLine(gapWindows, currentPositionMs = 4999L))
+        assertNull(activeGapLine(gapWindows, currentPositionMs = 9000L)) // window is until (exclusive)
+        assertNull(activeGapLine(emptyMap(), currentPositionMs = 7000L))
+    }
+
+    @Test
+    fun `line item indices account for the header, initial loader and interleaved gap loaders`() {
+        // Layout with the initial loader ON and a gap loader owned by line 1:
+        //   0 = header, 1 = initial loader
+        //   2 = line 0
+        //   3 = line 1, 4 = line 1's gap loader
+        //   5 = line 2, 6 = line 3
+        // Each line item AND its gap-loader item must advance the cursor,
+        // otherwise the re-centering targets the wrong item and the text
+        // scrolls out of the visible area.
+        val gapWindows = mapOf(1 to (5000L to 9000L))
+        val indices = lyricsLineItemIndices(
+            lineCount = 4,
+            gapWindows = gapWindows,
+            showIntervalIndicator = true,
+            hasInitialLoader = true
+        )
+        assertArrayEquals(intArrayOf(2, 3, 5, 6), indices)
+    }
+
+    @Test
+    fun `line item indices are contiguous when there are no gap loaders`() {
+        // Without interleaved gap loaders every line is exactly one item apart:
+        // header(0) + optional initial loader(1), then lines back to back.
+        val withoutInitial = lyricsLineItemIndices(
+            lineCount = 3,
+            gapWindows = emptyMap(),
+            showIntervalIndicator = true,
+            hasInitialLoader = false
+        )
+        assertArrayEquals(intArrayOf(1, 2, 3), withoutInitial)
+
+        val withInitial = lyricsLineItemIndices(
+            lineCount = 3,
+            gapWindows = emptyMap(),
+            showIntervalIndicator = true,
+            hasInitialLoader = true
+        )
+        assertArrayEquals(intArrayOf(2, 3, 4), withInitial)
+    }
+
+    @Test
+    fun `line item indices ignore gap loaders when the indicator is disabled`() {
+        // When the interval indicator is off, no gap-loader item is laid out,
+        // so the lines stay contiguous even if gap windows exist.
+        val gapWindows = mapOf(1 to (5000L to 9000L))
+        val indices = lyricsLineItemIndices(
+            lineCount = 3,
+            gapWindows = gapWindows,
+            showIntervalIndicator = false,
+            hasInitialLoader = false
+        )
+        assertArrayEquals(intArrayOf(1, 2, 3), indices)
     }
 
     @Test
