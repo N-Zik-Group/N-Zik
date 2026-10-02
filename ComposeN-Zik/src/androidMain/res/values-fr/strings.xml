@@ -704,6 +704,7 @@
     <string name="expanded">Étendu</string>
     <string name="lyricscolor">Couleur des paroles</string>
     <string name="lyrics_size">Taille des paroles</string>
+    <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="translate">Traduire</string>
     <string name="transparentbar">Barre de chronologie transparente</string>
     <string name="timelinesize">Taille de la chronologie du lecteur</string>
