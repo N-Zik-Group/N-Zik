@@ -704,6 +704,7 @@
     <string name="expanded">Genişletilmiş</string>
     <string name="lyricscolor">Şarkı Sözleri Rengi</string>
     <string name="lyrics_size">Şarkı Sözleri Boyutu</string>
+    <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="translate">Çevir</string>
     <string name="transparentbar">Şeffaf Zaman Çizelgesi Çubuğu</string>
     <string name="timelinesize">Oynatıcı Zaman Çizelgesi Boyutu</string>
