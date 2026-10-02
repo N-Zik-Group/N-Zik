@@ -148,6 +148,40 @@ class KaraokeFillSupportTest {
     }
 
     @Test
+    fun `full progress keeps each wrapped line's own bounds for the sung envelope`() {
+        // GH #820 residual: the sung (SING) long-word envelope reuses these
+        // full-progress per-line rects. A long word that starts at the end of
+        // line 1 and wraps to a wider line 2 used to be clipped by a single
+        // first-char..last-char box — a narrow column that cut the wrapped
+        // characters out of the envelope until the static branch redrew the
+        // whole word (visible as the text "reappearing" at the end of the line).
+        // At full progress every line must span its own full bounds.
+        val rects = computeActiveFillRects(
+            lineCharCounts = intArrayOf(3, 4),
+            lineLefts = floatArrayOf(673f, 303f),
+            lineRights = floatArrayOf(979f, 704f),
+            lineTops = floatArrayOf(0f, 144f),
+            lineBottoms = floatArrayOf(144f, 288f),
+            progress = 1f,
+            topHeadroom = 34f,
+            bottomHeadroom = 21f,
+            padding = 21f
+        )
+
+        val (first, second) = rects
+        assertTrue(first.revealed)
+        assertTrue(second.revealed)
+        assertEquals(673f - 21f, first.left, delta)
+        assertEquals(979f + 21f, first.right, delta)
+        assertEquals(0f - 34f - 21f, first.top, delta)
+        assertEquals(144f + 21f + 21f, first.bottom, delta)
+        // line 2 extends further left than the word's first character (673f):
+        // only its own left bound keeps the wrapped chars inside the envelope
+        assertEquals(303f - 21f, second.left, delta)
+        assertEquals(704f + 21f, second.right, delta)
+    }
+
+    @Test
     fun `a right aligned line uses its own bounds`() {
         // line 2 shifted to the right: the sweep within it starts at its own left bound
         val rects = computeActiveFillRects(

@@ -1091,20 +1091,52 @@ fun KaraokeLyricsView(
                                             val waveFrequency = (600f / dur.toFloat().coerceAtLeast(100f)).coerceIn(2f, 8f)
                                             // Rise fades gradually
                                             val riseAmount = fadeFactor * with(density) { (2.5f * durFactor).dp.toPx() }
-                                            
-                                            drawContext.canvas.save()
-                                            drawContext.canvas.clipRect(Rect(startBox.left - with(density) { 8.dp.toPx() }, startBox.top - waveAmplitude - riseAmount - with(density) { 8.dp.toPx() }, endBox.right + with(density) { 8.dp.toPx() }, endBox.bottom + waveAmplitude + with(density) { 8.dp.toPx() }))
-                                            // [DEBUG] sung long-word envelope
-                                            if (showClipRectsDebug) {
-                                                val sp = with(density) { 8.dp.toPx() }
-                                                drawRect(
-                                                    Color.Red.copy(alpha = 0.35f),
-                                                    Offset(startBox.left - sp, startBox.top - waveAmplitude - riseAmount - sp),
-                                                    Size(endBox.right + sp - (startBox.left - sp), endBox.bottom + waveAmplitude + sp - (startBox.top - waveAmplitude - riseAmount - sp))
-                                                )
+                                            // Envelope: per-physical-line rects, fully revealed — the same
+                                            // geometry the ACTIVE branch ends on (progress 1), so the
+                                            // ACTIVE→SING switch is seamless. The legacy single rect
+                                            // (startBox.left..endBox.right) collapsed to a narrow column
+                                            // when a long word started at the end of a line and wrapped:
+                                            // the wrapped part was clipped out / mixed with the column.
+                                            val pad = with(density) { 8.dp.toPx() }
+                                            val sungLayout = object : ActiveFillLayout {
+                                                override fun getLineForOffset(offset: Int) = layout.getLineForOffset(offset)
+                                                override fun getLineStart(lineIndex: Int) = layout.getLineStart(lineIndex)
+                                                override fun getLineEnd(lineIndex: Int, visibleEnd: Boolean) = layout.getLineEnd(lineIndex, visibleEnd)
+                                                override fun getBoundingBox(offset: Int) = layout.getBoundingBox(offset)
                                             }
-                                            
-                                            for (charIdx in 0 until wordLen) {
+                                            val sungGeometry = collectActiveFillGeometry(sungLayout, wStartIdx, wEndIdx)
+                                            val sungRects = computeActiveFillRects(
+                                                lineCharCounts = sungGeometry.lineCharCounts,
+                                                lineLefts = sungGeometry.lineLefts,
+                                                lineRights = sungGeometry.lineRights,
+                                                lineTops = sungGeometry.lineTops,
+                                                lineBottoms = sungGeometry.lineBottoms,
+                                                progress = 1f,
+                                                topHeadroom = waveAmplitude + riseAmount,
+                                                bottomHeadroom = waveAmplitude,
+                                                padding = pad
+                                            )
+                                            val sungRanges = activeWordLineCharRanges(sungLayout, wStartIdx, wEndIdx)
+                                            // [DEBUG] sung long-word envelope (per-line rects)
+                                            if (showClipRectsDebug) {
+                                                sungRects.forEach { rect ->
+                                                    if (rect.revealed) {
+                                                        drawRect(Color.Red.copy(alpha = 0.35f), Offset(rect.left, rect.top), Size(rect.right - rect.left, rect.bottom - rect.top))
+                                                    }
+                                                }
+                                            }
+
+                                            // Each physical line's characters are clipped to that line's own
+                                            // gate (as in the ACTIVE branch): the per-line rects overlap
+                                            // vertically, a union clip would let a line bleed into the next.
+                                            sungRanges.forEachIndexed { k, charRange ->
+                                                val lineRect = sungRects.getOrNull(k) ?: return@forEachIndexed
+                                                if (charRange.isEmpty() || !lineRect.revealed || lineRect.right <= lineRect.left) {
+                                                    return@forEachIndexed
+                                                }
+                                                drawContext.canvas.save()
+                                                drawContext.canvas.clipRect(activeLineGateRect(lineRect, pad))
+                                            for (charIdx in charRange) {
                                                 val globalIdx = (word.charStartIndex + charIdx).coerceIn(0, displayedText.length - 1)
                                                 val charBox = layout.getBoundingBox(globalIdx)
                                                 val charPos = charIdx.toFloat() / wordLen.coerceAtLeast(1)
@@ -1127,7 +1159,8 @@ fun KaraokeLyricsView(
                                                 }
                                                 drawContext.canvas.restore()
                                             }
-                                            drawContext.canvas.restore()
+                                                drawContext.canvas.restore()
+                                            }
                                         } else {
                                             // Short word: same per-character settle as the long
                                             // words, but at rest (no wave/rise motion) — identical
@@ -1135,9 +1168,9 @@ fun KaraokeLyricsView(
                                             // the same (a whole-word path clip left glyph
                                             // overhangs uncut, which made short words look
                                             // brighter than long ones once sung).
+                                            // No startBox..endBox envelope: it collapses for a word
+                                            // that wraps; the per-char clips are enough (no motion).
                                             val wordLen = word.text.length
-                                            drawContext.canvas.save()
-                                            drawContext.canvas.clipRect(Rect(startBox.left - with(density) { 8.dp.toPx() }, startBox.top - with(density) { 8.dp.toPx() }, endBox.right + with(density) { 8.dp.toPx() }, endBox.bottom + with(density) { 8.dp.toPx() }))
                                             for (charIdx in 0 until wordLen) {
                                                 val globalIdx = (word.charStartIndex + charIdx).coerceIn(0, displayedText.length - 1)
                                                 val charBox = layout.getBoundingBox(globalIdx)
@@ -1146,7 +1179,6 @@ fun KaraokeLyricsView(
                                                 this@drawWithContent.drawContent()
                                                 drawContext.canvas.restore()
                                             }
-                                            drawContext.canvas.restore()
                                         }
                                     } else if (isWordActive) {
                                         val dur = word.endMs - word.startMs
