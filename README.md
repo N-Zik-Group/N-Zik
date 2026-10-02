@@ -216,6 +216,8 @@ Join the N-Zik Discord:
     <img alt="Discord RPC (Settings)" src="assets/design/preview/img/20.png" height="300px" />
     <img alt="Discord RPC (Live)" src="assets/design/preview/img/21.png" height="300px" />
     <img alt="OTA Updates" src="assets/design/preview/img/22.png" height="300px" />
+    <img alt="Rewind" src="assets/design/preview/img/24.png" height="300px" />
+    <img alt="Rewind (Intro)" src="assets/design/preview/img/23.png" height="300px" />
     <img alt="Android Auto" src="assets/design/preview/img/AndroidAuto.png" height="200px" />
     <img alt="Android Automotive" src="assets/design/preview/img/AndroidAutomotive.png" height="200px" />
     <img alt="Android TV" src="assets/design/preview/img/AndroidTV.png" height="200px" />
