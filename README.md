@@ -177,37 +177,69 @@ Join the N-Zik Discord:
     <img alt="OTA Demo" src="assets/design/preview/framed_videos/ota.gif" height="300px" />
     <img alt="VZ Demo" src="assets/design/preview/framed_videos/vz.gif" height="300px" />
     <br><br>
+
+    <h3>🏠 Main</h3>
     <img alt="Home (Light)" src="assets/design/preview/img/1.png" height="300px" />
     <img alt="Home (Dark)" src="assets/design/preview/img/2.png" height="300px" />
     <img alt="Home (AMOLED)" src="assets/design/preview/img/3.png" height="300px" />
+    <br><br>
+
+    <h3>▶️ Player</h3>
     <img alt="Player" src="assets/design/preview/img/4.png" height="300px" />
     <img alt="Player (Cover Animation)" src="assets/design/preview/img/5.png" height="300px" />
     <img alt="Player (Audio Bar)" src="assets/design/preview/img/6.png" height="300px" />
     <img alt="Player (Lyrics)" src="assets/design/preview/img/7.png" height="300px" />
+    <br><br>
+
+    <h3>📃 Player - queue</h3>
     <img alt="Player Queue" src="assets/design/preview/img/8.png" height="300px" />
     <img alt="Player Queue2" src="assets/design/preview/img/9.png" height="300px" />
+    <br><br>
+
+    <h3>🎵 Library</h3>
     <img alt="Playlist" src="assets/design/preview/img/10.png" height="300px" />
     <img alt="Artist" src="assets/design/preview/img/11.png" height="300px" />
+    <br><br>
+
+    <h3>🔍 Search</h3>
     <img alt="Search" src="assets/design/preview/img/12.png" height="300px" />
-    <img alt="History" src="assets/design/preview/img/13.png" height="300px" />
-    <img alt="Stats" src="assets/design/preview/img/14.png" height="300px" />
-    <img alt="Settings" src="assets/design/preview/img/15.png" height="300px" />
     <img alt="Voice Search" src="assets/design/preview/img/16.png" height="300px" />
     <img alt="Song Recognition" src="assets/design/preview/img/17.png" height="300px" />
+    <br><br>
+
+    <h3>📊 History</h3>
+    <img alt="History" src="assets/design/preview/img/13.png" height="300px" />
+    <img alt="Stats" src="assets/design/preview/img/14.png" height="300px" />
+    <br><br>
+
+    <h3>⚙️ Settings</h3>
+    <img alt="Settings" src="assets/design/preview/img/15.png" height="300px" />
     <img alt="Profiles" src="assets/design/preview/img/18.png" height="300px" />
     <img alt="Accounts" src="assets/design/preview/img/19.png" height="300px" />
+    <br><br>
+
+    <h3>🕹️ Discord</h3>
     <img alt="Discord RPC (Settings)" src="assets/design/preview/img/20.png" height="300px" />
     <img alt="Discord RPC (Live)" src="assets/design/preview/img/21.png" height="300px" />
+    <br><br>
+
+    <h3>⬇️ Auto Update</h3>
     <img alt="OTA Updates" src="assets/design/preview/img/22.png" height="300px" />
+    <br><br>
+
+    <h3>🗓️ Rewind</h3>
     <img alt="Rewind" src="assets/design/preview/img/24.png" height="300px" />
     <img alt="Rewind (Intro)" src="assets/design/preview/img/23.png" height="300px" />
+    <br><br>
+
+    <h3>📺 Android</h3>
     <img alt="Android Auto" src="assets/design/preview/img/AndroidAuto.png" height="200px" />
     <img alt="Android Automotive" src="assets/design/preview/img/AndroidAutomotive.png" height="200px" />
     <img alt="Android TV" src="assets/design/preview/img/AndroidTV.png" height="200px" />
     <img alt="Android Tablet" src="assets/design/preview/img/AndroidTablet.png" height="200px" />
     <br><br>
 
-    <h3>🕹️ Discord Rich Presence</h3>
+    <h3>🕹️ Discord</h3>
     <img width="280" height="100" alt="Discord Rich Presence Preview 1" src="https://github.com/user-attachments/assets/f820686e-8e24-4ac1-8133-505dd94550cc" />
     <img width="280" height="100" alt="Discord Rich Presence Preview 2" src="https://github.com/user-attachments/assets/8d03df13-3114-40d4-a403-f7d57524787c" />
     <br>
