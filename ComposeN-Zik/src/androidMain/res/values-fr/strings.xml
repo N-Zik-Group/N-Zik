@@ -1938,10 +1938,10 @@ Volume BAS : titre précédent</string>
     <string name="profile_channel_name">%1$s — %2$s</string>
     <string name="profile_data_status_all_separate">Separate: database, settings, sessions, downloads, media cache, images, waveforms</string>
     <string name="profile_data_status_shared">Separate: database, settings, sessions%1$s · Shared: %2$s</string>
-    <string name="profile_data_downloads">downloads</string>
-    <string name="profile_data_media_cache">media cache</string>
+    <string name="profile_data_downloads">téléchargements</string>
+    <string name="profile_data_media_cache">cache multimédia</string>
     <string name="profile_data_images">images</string>
-    <string name="profile_data_waveforms">waveforms</string>
+    <string name="profile_data_waveforms">formes d\'onde</string>
     <string name="profile_share_downloads">Share downloads</string>
     <string name="profile_share_downloads_description">Use the base profile\'s downloads folder and index instead of this profile\'s own. Applies at the next app restart; data already written in this profile\'s own folder stays there</string>
     <string name="profile_share_media_cache">Share media cache</string>
