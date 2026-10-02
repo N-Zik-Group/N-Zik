@@ -704,6 +704,7 @@
     <string name="expanded">Rozszerzony</string>
     <string name="lyricscolor">Kolor tekstu</string>
     <string name="lyrics_size">Rozmiar tekstu</string>
+    <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="translate">Przetłumacz</string>
     <string name="transparentbar">Przezroczysty pasek czasu</string>
     <string name="timelinesize">Rozmiar czasu odtwarzacza</string>
