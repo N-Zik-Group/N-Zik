@@ -704,6 +704,7 @@
     <string name="expanded">Erweitert</string>
     <string name="lyricscolor">Liedtext-Farbe</string>
     <string name="lyrics_size">Liedtext-Größe</string>
+    <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="translate">Übersetzen</string>
     <string name="transparentbar">Transparente Zeitleiste</string>
     <string name="timelinesize">Größe der Zeitachse im Player</string>
