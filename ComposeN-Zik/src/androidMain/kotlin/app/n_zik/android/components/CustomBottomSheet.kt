@@ -324,10 +324,6 @@ fun CustomBottomSheet(
                 }
             }
     ) {
-        // Player content fade-in (see playerContentFade); the mini-player
-        // fades out on its own, earlier curve (see miniPlayerFade).
-        val playerAlpha = playerContentFade(state.progress)
-
         if (!state.isCollapsed && !state.isDismissed) {
             BackHandler(onBack = state::collapseSoft)
         }
@@ -348,16 +344,22 @@ fun CustomBottomSheet(
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
+                // Player content fade-in (see playerContentFade); the mini-player
+                // fades out on its own, earlier curve (see miniPlayerFade).
+                // progress is read only inside these draw-phase lambdas, never in
+                // composition: a composition read would recompose this whole sheet
+                // on every frame of a drag or an animated pop/dismiss.
                 .drawWithContent {
                     // Skip the (potentially heavy) draw entirely below the alpha
                     // threshold instead of just setting alpha = 0, which still
                     // records the full display list every frame.
-                    if (state.progress >= 0.3f && playerAlpha > 0.01f) {
+                    val progress = state.progress
+                    if (progress >= 0.3f && playerContentFade(progress) > 0.01f) {
                         drawContent()
                     }
                 }
                 .graphicsLayer {
-                    alpha = playerAlpha
+                    alpha = playerContentFade(state.progress)
                 },
             content = content
         )
