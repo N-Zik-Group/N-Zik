@@ -704,6 +704,7 @@
     <string name="expanded">Laajennettu</string>
     <string name="lyricscolor">Sanoitusten Väri</string>
     <string name="lyrics_size">Sanoitusten koko</string>
+    <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="translate">Käännä</string>
     <string name="transparentbar">Läpinäkyvä aikajanapalkki</string>
     <string name="timelinesize">Soittimen aikajanan koko</string>
