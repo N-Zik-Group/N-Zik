@@ -704,6 +704,7 @@
     <string name="expanded">Ampliat</string>
     <string name="lyricscolor">Color de la lletra</string>
     <string name="lyrics_size">Mida de la lletra</string>
+    <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="translate">Tradueix</string>
     <string name="transparentbar">Barra de temps transparent</string>
     <string name="timelinesize">Mida de la línia de temps del reproductor</string>
