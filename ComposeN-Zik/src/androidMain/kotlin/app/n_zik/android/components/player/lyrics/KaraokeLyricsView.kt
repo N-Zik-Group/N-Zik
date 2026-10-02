@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.SpanStyle
@@ -550,11 +551,10 @@ fun KaraokeLyricsView(
     
     val fixedCenter = (effectiveVpH * multiplier).toInt()
 
-    LaunchedEffect(primaryActiveIndex, density, isAutoScrollEnabled, vpH) {
-        if (!isAutoScrollEnabled) return@LaunchedEffect
-        if (primaryActiveIndex == 0 || vpH == 0) {
-            delay(100)
-        }
+    // Centers the primary active line at its target position. Extracted so
+    // both the active-line change and the chorus pop/de-pop recentering can
+    // share the same math. Suspend: the smooth scroll (animateScrollBy) is.
+    val recenterOnActiveLine: suspend () -> Unit = {
         val reMeasuredVpH = lazyListState.layoutInfo.viewportEndOffset - lazyListState.layoutInfo.viewportStartOffset
         val finalEffectiveVpH = if (reMeasuredVpH > 0) reMeasuredVpH else screenHeightPx
         val hasLoader = showIntervalIndicator && initialGapWindow != null
@@ -565,7 +565,7 @@ fun KaraokeLyricsView(
         val finalFixedCenter = (finalEffectiveVpH * finalMultiplier).toInt()
         Timber.tag("KaraokeLyricsView").d("CENTER: idx=${primaryActiveIndex+1} vpH=$reMeasuredVpH mult=$finalMultiplier center=$finalFixedCenter lines=$lineCount loader=$hasLoader")
         val scrollIndex = primaryActiveIndex + 1 + (if (hasLoader) 1 else 0)
-        
+
         // Smooth scroll Metrolist-style: use animateScrollBy for fluid transitions
         val itemInfo = lazyListState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == scrollIndex }
         if (itemInfo != null) {
@@ -583,6 +583,31 @@ fun KaraokeLyricsView(
             // Item is not visible, scroll to it first with proper offset
             lazyListState.scrollToItem(scrollIndex, -finalFixedCenter)
         }
+    }
+
+    LaunchedEffect(primaryActiveIndex, density, isAutoScrollEnabled, vpH) {
+        if (!isAutoScrollEnabled) return@LaunchedEffect
+        if (primaryActiveIndex == 0 || vpH == 0) {
+            delay(100)
+        }
+        recenterOnActiveLine()
+    }
+
+    // Chorus lines expand their slot (200ms) when they appear (lead-in) —
+    // the height change shifts the active line's scroll position, so the
+    // canvas appears to jump. (Choruses never de-pop: once sung they stay
+    // shown.) When the set of shown chorus lines changes, wait for the
+    // height animation to settle and re-center on the active line so the
+    // sung line stays put. If the chorus sits below the active line its
+    // height change does not move it, and the |offset| > 10 guard inside
+    // recenterOnActiveLine makes this a no-op.
+    val chorusShownKeys = remember(karaokeLines, currentPositionMs) {
+        chorusShownIndices(karaokeLines, currentPositionMs)
+    }
+    LaunchedEffect(chorusShownKeys) {
+        if (!isAutoScrollEnabled) return@LaunchedEffect
+        delay(300) // chorus slot height animation is 200ms; wait for it to settle
+        recenterOnActiveLine()
     }
 
     // Resolve the accent color
@@ -670,37 +695,61 @@ fun KaraokeLyricsView(
                 }
             }
 
-            // Background vocals are smaller/dimmer
-            val bgScale = if (line.isBackground) 0.85f else 1f
-            val bgAlphaFactor = if (line.isBackground) 0.8f else 1f
-
+            // A chorus is revealed within an extended window (isChorusLineShown):
+            // it fades/expands in a few seconds BEFORE it is sung (lead-in), and
+            // once sung it STAYS shown (slot kept, rendered in the past state) —
+            // it never de-pops back, so the canvas is not shifted again after
+            // the reveal. Regular lines are always shown.
+            val isShown = if (line.isBackground) isChorusLineShown(line, currentPositionMs) else isActiveLine
+            // A regular line stays in the animated karaoke branch for the sung-fade
+            // tail after it deactivates, so its lift finishes in the background
+            // instead of being cut off on the switch.
+            val isStillAnimating = isKaraokeLineStillAnimating(line, currentPositionMs)
+            // Fully in the past state: settling tail over (lines with words) or
+            // the active window over (wordless lines). Chorus lines fade down to
+            // the regular past-line dim level once they reach it — the same
+            // "fade to the background" the other lines get once sung.
+            val isPastState = isKaraokeLineInPastState(line, currentPositionMs, karaokeLines.getOrNull(index + 1)?.timeMs)
             val animateOpacity by animateFloatAsState(
-                targetValue = if (isActiveLine) 1f * bgAlphaFactor else 0.35f * bgAlphaFactor,
+                targetValue = karaokeLineOpacity(line.isBackground, isShown, isPastState),
+                animationSpec = tween(if (line.isBackground) 200 else 600, easing = FastOutSlowInEasing),
+                label = ""
+            )
+            // The pop (scale up) is kept while the leaving line is still settling,
+            // so it fades in place instead of popping back down and shifting the
+            // text; it only returns to the base scale once the line is fully in the
+            // background (static branch, already dimmed). Chorus lines never scale
+            // at all (loader behavior: height + opacity only), so their pop cannot
+            // shift their text either.
+            val animateScale by animateFloatAsState(
+                targetValue = karaokeLineScale(line.isBackground, isActiveLine || isStillAnimating),
                 animationSpec = tween(400, easing = FastOutSlowInEasing),
                 label = ""
             )
-            val animateScale by animateFloatAsState(
-                targetValue = if (isActiveLine) 1.08f * bgScale
-                              else 0.92f * bgScale,
-                animationSpec = tween(400, easing = FastOutSlowInEasing),
+            val heightFraction by animateFloatAsState(
+                targetValue = karaokeLineHeightFraction(line.isBackground, isShown),
+                animationSpec = tween(200, easing = FastOutSlowInEasing),
                 label = ""
             )
 
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp, horizontal = 32.dp)
                     .graphicsLayer {
                         // Render without an offscreen buffer: with alpha < 1 the default
-                        // strategy implicitly clips content to the item bounds (layout +
-                        // 4dp padding), which cuts the rising karaoke characters (up to
-                        // ~13dp above the layout — background lines in particular).
-                        // ModulateAlpha applies the alpha per draw command, so overflow
-                        // is visible and the lift effect is never cropped.
+                        // strategy implicitly clips content to the item bounds, which
+                        // cuts the rising karaoke characters (up to ~13dp above the
+                        // layout — background lines in particular). ModulateAlpha
+                        // applies the alpha per draw command, so overflow is visible
+                        // and the lift effect is never cropped. Chorus lines are
+                        // clipped while their slot is collapsing so the natural-size
+                        // content cannot be drawn over the neighboring lines; once
+                        // fully expanded the clip is off again.
                         compositingStrategy = CompositingStrategy.ModulateAlpha
                         alpha = animateOpacity
                         scaleX = animateScale
                         scaleY = animateScale
+                        clip = line.isBackground && heightFraction < 0.999f
                     }
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
@@ -709,6 +758,17 @@ fun KaraokeLyricsView(
                             if (clickLyricsText) onSeekTo(line.timeMs) else onDismiss()
                         }
                     )
+                    .layout { measurable, constraints ->
+                        // Collapse/expand the item slot (chorus lines only): measure
+                        // the natural content height, then report a fraction of it,
+                        // so a not-sung chorus takes no space (gap removed) and a
+                        // sung one takes its place back — like the interval loader.
+                        // Regular lines keep fraction 1f (no-op).
+                        val placeable = measurable.measure(constraints)
+                        val targetHeight = (placeable.height * heightFraction).toInt().coerceAtLeast(0)
+                        layout(placeable.width, targetHeight) { placeable.place(0, 0) }
+                    }
+                    .padding(vertical = 4.dp, horizontal = 32.dp)
                     .background(
                         if (isActiveLine && !line.isBackground && lyricsHighlight == LyricsHighlight.White) Color.White.copy(0.5f)
                         else if (isActiveLine && !line.isBackground && lyricsHighlight == LyricsHighlight.Black) Color.Black.copy(0.5f)
@@ -726,7 +786,7 @@ fun KaraokeLyricsView(
 
                 val displayedText = translationCache[index] ?: line.text
 
-                if (line.words.isNotEmpty() && isActiveLine) {
+                if (line.words.isNotEmpty() && (isActiveLine || isStillAnimating)) {
                     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
 
                     Box(contentAlignment = Alignment.Center) {
@@ -759,19 +819,20 @@ fun KaraokeLyricsView(
                                         }
                                     }
                                     
-                                    // Word itself - smooth fade for long active words
-                                    val wordColor = if (isLongWord) {
-                                        if (isActive) {
+                                    // Word itself — SING words (short or long alike) are transparent
+                                    // in this layer: the foreground clip renders the settled word,
+                                    // so both word types share the exact same final pixels (no dim
+                                    // "halo" behind short words, which made them look brighter than
+                                    // long ones once sung). Long ACTIVE words get a smooth fade
+                                    // under the wave reveal.
+                                    val wordColor = when {
+                                        isSung -> androidx.compose.ui.graphics.Color.Transparent
+                                        isLongWord && isActive -> {
                                             val linearProgress = ((currentPositionMs - word.startMs).toFloat() / dur.coerceAtLeast(1L)).coerceIn(0f, 1f)
                                             val fadeAlpha = (1f - linearProgress).coerceIn(0f, 1f)
                                             lineInactive.copy(alpha = fadeAlpha * lineInactive.alpha)
-                                        } else if (isSung) {
-                                            androidx.compose.ui.graphics.Color.Transparent
-                                        } else {
-                                            lineInactive
                                         }
-                                    } else {
-                                        lineInactive
+                                        else -> lineInactive
                                     }
                                     withStyle(SpanStyle(color = wordColor)) {
                                         append(word.text)
@@ -797,7 +858,8 @@ fun KaraokeLyricsView(
                             style = TextStyle(
                                 fontSize = textSize,
                                 fontWeight = FontWeight.Bold,
-                                textAlign = lineTextAlign
+                                textAlign = lineTextAlign,
+                                lineHeight = textSize * KARAOKE_LINE_HEIGHT_MULTIPLIER
                             ),
                             onTextLayout = { textLayoutResult = it }
                         )
@@ -861,19 +923,57 @@ fun KaraokeLyricsView(
                                 style = TextStyle(
                                     fontSize = textSize,
                                     fontWeight = FontWeight.Bold,
-                                    textAlign = lineTextAlign
+                                    textAlign = lineTextAlign,
+                                    lineHeight = textSize * KARAOKE_LINE_HEIGHT_MULTIPLIER
                                 )
                             )
                         }
 
-                        // Foreground (active) text with character-level clipping
+                        // Foreground (active) text with character-level clipping.
+                        // Per-word settle: every word fades from the full accent
+                        // to the dimmed past-line accent (the color the static
+                        // branch uses) over the sung-fade window after its OWN
+                        // end — short words included — so nothing pops in the
+                        // background and the branch switch at the end of the
+                        // fade tail is seamless (all words already sit on the
+                        // static branch color).
+                        val foregroundText = buildAnnotatedString {
+                            if (line.words.isNotEmpty() && !isTextReplaced) {
+                                var searchIdx = 0
+                                line.words.forEach { word ->
+                                    val wordStartInText = line.text.indexOf(word.text, searchIdx)
+                                    if (wordStartInText > searchIdx) {
+                                        append(line.text.substring(searchIdx, wordStartInText))
+                                    }
+                                    val wordColor = if (currentPositionMs >= word.endMs) {
+                                        karaokeSungWordSettleColor(lineAccent, word.endMs, currentPositionMs)
+                                    } else {
+                                        lineAccent
+                                    }
+                                    withStyle(SpanStyle(color = wordColor)) {
+                                        append(word.text)
+                                    }
+                                    searchIdx = wordStartInText + word.text.length
+                                }
+                                if (searchIdx < line.text.length) {
+                                    append(line.text.substring(searchIdx))
+                                }
+                                // Translation part (never sung, never clipped here)
+                                if (displayedText.length > line.text.length) {
+                                    append(displayedText.substring(line.text.length))
+                                }
+                            } else {
+                                append(displayedText)
+                            }
+                        }
                         BasicText(
-                            text = displayedText,
+                            text = foregroundText,
                             style = TextStyle(
                                 color = lineAccent,
                                 fontSize = textSize,
                                 fontWeight = FontWeight.Bold,
-                                textAlign = lineTextAlign
+                                textAlign = lineTextAlign,
+                                lineHeight = textSize * KARAOKE_LINE_HEIGHT_MULTIPLIER
                             ),
                             modifier = Modifier.drawWithContent {
                                 val layout = textLayoutResult ?: return@drawWithContent
@@ -955,8 +1055,7 @@ fun KaraokeLyricsView(
                                         val dur = word.endMs - word.startMs
                                         if (dur > 500L) {
                                             // Long word: smooth descent with fading oscillation
-                                            val fadeMs = 1200L
-                                            val fadeProgress = ((currentPositionMs - word.endMs).toFloat() / fadeMs).coerceIn(0f, 1f)
+                                            val fadeProgress = ((currentPositionMs - word.endMs).toFloat() / KARAOKE_SUNG_FADE_MS).coerceIn(0f, 1f)
                                             val fadeFactor = 1f - (fadeProgress * fadeProgress * (3f - 2f * fadeProgress))
                                             val wordLen = word.text.length
                                             val durFactor = (dur / 800f).coerceIn(0.6f, 2f)
@@ -1004,11 +1103,23 @@ fun KaraokeLyricsView(
                                             }
                                             drawContext.canvas.restore()
                                         } else {
-                                            // Short word: simple clip (no wave)
-                                            val path = getFastPathForRange(layout, wStartIdx, wEndIdx)
+                                            // Short word: same per-character settle as the long
+                                            // words, but at rest (no wave/rise motion) — identical
+                                            // final rendering so short and long sung words look
+                                            // the same (a whole-word path clip left glyph
+                                            // overhangs uncut, which made short words look
+                                            // brighter than long ones once sung).
+                                            val wordLen = word.text.length
                                             drawContext.canvas.save()
-                                            drawContext.canvas.clipPath(path)
-                                            this@drawWithContent.drawContent()
+                                            drawContext.canvas.clipRect(Rect(startBox.left - with(density) { 8.dp.toPx() }, startBox.top - with(density) { 8.dp.toPx() }, endBox.right + with(density) { 8.dp.toPx() }, endBox.bottom + with(density) { 8.dp.toPx() }))
+                                            for (charIdx in 0 until wordLen) {
+                                                val globalIdx = (word.charStartIndex + charIdx).coerceIn(0, displayedText.length - 1)
+                                                val charBox = layout.getBoundingBox(globalIdx)
+                                                drawContext.canvas.save()
+                                                drawContext.canvas.clipRect(Rect(charBox.left, charBox.top, charBox.right, charBox.bottom))
+                                                this@drawWithContent.drawContent()
+                                                drawContext.canvas.restore()
+                                            }
                                             drawContext.canvas.restore()
                                         }
                                     } else if (isWordActive) {
@@ -1203,7 +1314,7 @@ fun KaraokeLyricsView(
                         style = TextStyle(
                             fontSize = textSize,
                             textAlign = lineTextAlign,
-                            lineHeight = textSize * 1.4f,
+                            lineHeight = textSize * KARAOKE_LINE_HEIGHT_MULTIPLIER,
                             color = if (isPastLine) lineAccent.copy(alpha = 0.5f) else lineInactive,
                             fontWeight = if (isPastLine) FontWeight.Bold else FontWeight.Medium
                         )
@@ -1215,7 +1326,7 @@ fun KaraokeLyricsView(
                         style = TextStyle(
                             fontSize = textSize,
                             textAlign = lineTextAlign,
-                            lineHeight = textSize * 1.4f,
+                            lineHeight = textSize * KARAOKE_LINE_HEIGHT_MULTIPLIER,
                             color = if (isActiveLine) lineAccent else lineInactive,
                             fontWeight = if (isActiveLine) FontWeight.ExtraBold else FontWeight.Medium,
                             shadow = if (isActiveLine) Shadow(

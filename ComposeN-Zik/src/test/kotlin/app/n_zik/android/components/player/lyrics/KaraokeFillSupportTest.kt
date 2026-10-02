@@ -1,6 +1,7 @@
 package app.n_zik.android.components.player.lyrics
 
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -442,6 +443,229 @@ class KaraokeFillSupportTest {
         assertEquals(setOf(1), computeActiveLineIndices(lines, currentPositionMs = 4000L))
         assertEquals(setOf(1), computeActiveLineIndices(lines, currentPositionMs = 5940L))
         assertEquals(setOf(1, 2), computeActiveLineIndices(lines, currentPositionMs = 5950L))
+    }
+
+    @Test
+    fun `chorus line is hidden before its reveal`() {
+        assertEquals(0f, karaokeLineOpacity(isBackground = true, isShown = false, isPastState = false))
+    }
+
+    @Test
+    fun `chorus line is revealed while sung`() {
+        assertEquals(0.8f, karaokeLineOpacity(isBackground = true, isShown = true, isPastState = false))
+    }
+
+    @Test
+    fun `chorus line fades to the regular past-line dim level once in the past state`() {
+        assertEquals(0.35f, karaokeLineOpacity(isBackground = true, isShown = true, isPastState = true))
+    }
+
+    @Test
+    fun `regular line is opaque while active`() {
+        assertEquals(1f, karaokeLineOpacity(isBackground = false, isShown = true, isPastState = false))
+    }
+
+    @Test
+    fun `regular line is dimmed while idle`() {
+        assertEquals(0.35f, karaokeLineOpacity(isBackground = false, isShown = false, isPastState = false))
+    }
+
+    @Test
+    fun `line with words enters the past state after its sung settling tail`() {
+        val line = KaraokeLine(timeMs = 0L, text = "hello", words = listOf(KaraokeWord("hello", 0L, 1000L)))
+
+        assertFalse(isKaraokeLineInPastState(line, currentPositionMs = 1000L, nextLineStartMs = 3000L))
+        assertFalse(isKaraokeLineInPastState(line, currentPositionMs = 2199L, nextLineStartMs = 3000L))
+        assertTrue(isKaraokeLineInPastState(line, currentPositionMs = 2200L, nextLineStartMs = 3000L))
+    }
+
+    @Test
+    fun `wordless line enters the past state from the next line start`() {
+        val line = KaraokeLine(timeMs = 0L, text = "break", words = emptyList())
+
+        assertFalse(isKaraokeLineInPastState(line, currentPositionMs = 1000L, nextLineStartMs = 2000L))
+        assertFalse(isKaraokeLineInPastState(line, currentPositionMs = 1999L, nextLineStartMs = 2000L))
+        assertTrue(isKaraokeLineInPastState(line, currentPositionMs = 2000L, nextLineStartMs = 2000L))
+        // last line of the list: no next start, never in the past state
+        assertFalse(isKaraokeLineInPastState(line, currentPositionMs = 999999L, nextLineStartMs = null))
+    }
+
+    @Test
+    fun `regular line pops up while active`() {
+        assertEquals(1.08f, karaokeLineScale(isBackground = false, isActive = true))
+    }
+
+    @Test
+    fun `regular line stays at base scale while idle`() {
+        assertEquals(1f, karaokeLineScale(isBackground = false, isActive = false))
+    }
+
+    @Test
+    fun `chorus line never scales so its pop cannot shift the text`() {
+        // Loader behavior: height + opacity only, constant scale.
+        assertEquals(0.85f, karaokeLineScale(isBackground = true, isActive = true), delta)
+        assertEquals(0.85f, karaokeLineScale(isBackground = true, isActive = false), delta)
+    }
+
+    @Test
+    fun `chorus line collapses its slot while not sung`() {
+        assertEquals(0f, karaokeLineHeightFraction(isBackground = true, isActive = false))
+    }
+
+    @Test
+    fun `chorus line takes back its slot while sung`() {
+        assertEquals(1f, karaokeLineHeightFraction(isBackground = true, isActive = true))
+    }
+
+    @Test
+    fun `regular line always keeps its full slot`() {
+        assertEquals(1f, karaokeLineHeightFraction(isBackground = false, isActive = true))
+        assertEquals(1f, karaokeLineHeightFraction(isBackground = false, isActive = false))
+    }
+
+    @Test
+    fun `regular line keeps animating inside its sung fade tail`() {
+        val line = KaraokeLine(timeMs = 0L, text = "hello", words = listOf(KaraokeWord("hello", 0L, 1000L)))
+
+        assertTrue(isKaraokeLineStillAnimating(line, currentPositionMs = 1300L))
+        assertTrue(isKaraokeLineStillAnimating(line, currentPositionMs = 2200L)) // fade tail ends exactly
+    }
+
+    @Test
+    fun `regular line stops animating while active or once the fade completed`() {
+        val line = KaraokeLine(timeMs = 0L, text = "hello", words = listOf(KaraokeWord("hello", 0L, 1000L)))
+
+        assertFalse(isKaraokeLineStillAnimating(line, currentPositionMs = 500L)) // still active
+        assertFalse(isKaraokeLineStillAnimating(line, currentPositionMs = 1000L)) // deactivating frame
+        assertFalse(isKaraokeLineStillAnimating(line, currentPositionMs = 2201L)) // past the fade tail
+    }
+
+    @Test
+    fun `every branch shares one line height multiplier so branch switches never resize the item`() {
+        // The animated and the static branch must lay a line out with the same
+        // height: a line flips between the two branches on activation and at
+        // the end of the sung-fade tail. If either branch used a different
+        // line height, the LazyColumn item would resize on the switch and the
+        // whole list would jump. Both branches read this one shared constant,
+        // so the leave animation runs while the settle effects finish without
+        // any layout shift. Pin the value so a drift re-creates the jump.
+        assertEquals(1.4f, KARAOKE_LINE_HEIGHT_MULTIPLIER)
+        // The regular line also keeps its full slot fraction in every state,
+        // so only pixels (never the layout) change on the switch.
+        assertEquals(1f, karaokeLineHeightFraction(isBackground = false, isActive = true))
+        assertEquals(1f, karaokeLineHeightFraction(isBackground = false, isActive = false))
+    }
+
+    @Test
+    fun `chorus line keeps animating inside its sung fade tail`() {
+        // With the lead-out window the chorus stays revealed after deactivation,
+        // so its last word must finish settling before the branch flips.
+        val line = KaraokeLine(
+            timeMs = 0L,
+            text = "oh",
+            words = listOf(KaraokeWord("oh", 0L, 1000L)),
+            isBackground = true
+        )
+
+        assertTrue(isKaraokeLineStillAnimating(line, currentPositionMs = 1300L))
+        assertFalse(isKaraokeLineStillAnimating(line, currentPositionMs = 2201L)) // past the fade tail
+    }
+
+    @Test
+    fun `line without words never keeps animating`() {
+        val line = KaraokeLine(timeMs = 0L, text = "break", words = emptyList())
+
+        assertFalse(isKaraokeLineStillAnimating(line, currentPositionMs = 1300L))
+    }
+
+    @Test
+    fun `sung word starts its settle at full accent color`() {
+        val accent = Color(0xFF00FF00)
+
+        assertEquals(accent, karaokeSungWordSettleColor(accent, wordEndMs = 1000L, currentPositionMs = 1000L))
+    }
+
+    @Test
+    fun `sung word settles to the dimmed past-line accent after the color settle window`() {
+        val accent = Color(0xFF00FF00)
+
+        assertEquals(
+            accent.copy(alpha = 0.5f),
+            karaokeSungWordSettleColor(accent, wordEndMs = 1000L, currentPositionMs = 1300L)
+        )
+        // Clamped: stays on the dimmed past-line color past the settle
+        assertEquals(
+            accent.copy(alpha = 0.5f),
+            karaokeSungWordSettleColor(accent, wordEndMs = 1000L, currentPositionMs = 5000L)
+        )
+    }
+
+    @Test
+    fun `sung word settle follows the same smoothstep easing as the motion decay`() {
+        val accent = Color(0xFF00FF00)
+
+        // Mid-settle (300ms window): smoothstep(0.5) = 0.5 -> alpha = 0.5 + 0.5 * 0.5 = 0.75
+        val settled = karaokeSungWordSettleColor(accent, wordEndMs = 1000L, currentPositionMs = 1150L)
+        assertEquals(0.75f, settled.alpha, delta)
+    }
+
+    @Test
+    fun `chorus line is revealed during its lead in`() {
+        val line = KaraokeLine(
+            timeMs = 10000L,
+            text = "oh",
+            words = listOf(KaraokeWord("oh", 10000L, 12000L)),
+            isBackground = true
+        )
+
+        // inside the 2s lead-in window: shown before the first word is sung
+        assertTrue(isChorusLineShown(line, currentPositionMs = 8500L))
+        // just outside the lead-in window: not shown yet
+        assertFalse(isChorusLineShown(line, currentPositionMs = 7999L))
+    }
+
+    @Test
+    fun `chorus line stays shown after it is sung`() {
+        val line = KaraokeLine(
+            timeMs = 10000L,
+            text = "oh",
+            words = listOf(KaraokeWord("oh", 10000L, 12000L)),
+            isBackground = true
+        )
+
+        // just past the last word: the slot is kept (no de-pop)
+        assertTrue(isChorusLineShown(line, currentPositionMs = 14001L))
+        // far past the line: still shown, rendered in the past state
+        assertTrue(isChorusLineShown(line, currentPositionMs = 50000L))
+    }
+
+    @Test
+    fun `regular line is always shown`() {
+        val line = KaraokeLine(timeMs = 0L, text = "A", words = listOf(KaraokeWord("A", 0L, 1000L)))
+
+        assertTrue(isChorusLineShown(line, currentPositionMs = 500L))
+        assertTrue(isChorusLineShown(line, currentPositionMs = 5000L))
+    }
+
+    @Test
+    fun `chorus shown indices track the lead in window and stay after being sung`() {
+        val regular = KaraokeLine(timeMs = 0L, text = "A", words = listOf(KaraokeWord("A", 0L, 1000L)))
+        val chorus = KaraokeLine(
+            timeMs = 10000L,
+            text = "oh",
+            words = listOf(KaraokeWord("oh", 10000L, 12000L)),
+            isBackground = true
+        )
+        val lines = listOf(regular, chorus)
+
+        // lead-in window starts at 10000 - 2000 = 8000
+        assertEquals(emptyList<Int>(), chorusShownIndices(lines, currentPositionMs = 7999L))
+        assertEquals(listOf(1), chorusShownIndices(lines, currentPositionMs = 8000L))
+        // once sung, the chorus stays shown (no de-pop)
+        assertEquals(listOf(1), chorusShownIndices(lines, currentPositionMs = 14001L))
+        assertEquals(listOf(1), chorusShownIndices(lines, currentPositionMs = 50000L))
+        // regular lines are never part of the chorus set
+        assertEquals(emptyList<Int>(), chorusShownIndices(lines, currentPositionMs = 500L))
     }
 
     /**
