@@ -704,6 +704,7 @@
     <string name="expanded">Розширений</string>
     <string name="lyricscolor">Колір тексту пісні</string>
     <string name="lyrics_size">Розмін тексту пісні</string>
+    <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="translate">Перекласти</string>
     <string name="transparentbar">Прозорий Таймлайн</string>
     <string name="timelinesize">Розмір Таймлайну Програвача</string>

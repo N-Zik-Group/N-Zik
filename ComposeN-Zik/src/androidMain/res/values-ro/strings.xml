@@ -704,6 +704,7 @@
     <string name="expanded">Extins</string>
     <string name="lyricscolor">Culoarea versurilor</string>
     <string name="lyrics_size">Dimensiunea versurilor</string>
+    <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="translate">Tradu</string>
     <string name="transparentbar">Bară cronologică transparentă</string>
     <string name="timelinesize">Dimensiune bară cronologică player</string>

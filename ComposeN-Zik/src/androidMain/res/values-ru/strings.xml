@@ -704,6 +704,7 @@
     <string name="expanded">Развернутый</string>
     <string name="lyricscolor">Цвет текстов песен</string>
     <string name="lyrics_size">Размер текстов песен</string>
+    <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="translate">Перевести</string>
     <string name="transparentbar">Прозрачный таймлайн</string>
     <string name="timelinesize">Размер таймлайна</string>

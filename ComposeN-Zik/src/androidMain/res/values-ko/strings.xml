@@ -704,6 +704,7 @@
     <string name="expanded">확장됨</string>
     <string name="lyricscolor">가사 색상</string>
     <string name="lyrics_size">가사 크기</string>
+    <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="translate">번역</string>
     <string name="transparentbar">투명 타임라인 바</string>
     <string name="timelinesize">플레이어 타임라인 크기</string>

@@ -704,6 +704,7 @@
     <string name="expanded">Proširen</string>
     <string name="lyricscolor">Boja Sthova</string>
     <string name="lyrics_size">Veličina Stihova</string>
+    <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="translate">Prevedi</string>
     <string name="transparentbar">Barra de línea de tiempo transparente</string>
     <string name="timelinesize">Tamaño de la línea de tiempo del jugador</string>

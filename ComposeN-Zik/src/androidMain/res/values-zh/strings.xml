@@ -704,6 +704,7 @@
     <string name="expanded">已展開</string>
     <string name="lyricscolor">歌詞顏色</string>
     <string name="lyrics_size">歌詞大小</string>
+    <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="translate">翻譯</string>
     <string name="transparentbar">透明的時間軸</string>
     <string name="timelinesize">播放器時間軸大小</string>

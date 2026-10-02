@@ -704,6 +704,7 @@
     <string name="expanded">Utvidet</string>
     <string name="lyricscolor">Sangtekst farge</string>
     <string name="lyrics_size">Sangtekst størrelse</string>
+    <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="translate">Oversett</string>
     <string name="transparentbar">Gjennomsiktig Tidslinje</string>
     <string name="timelinesize">Størrelse på spillerens tidslinje</string>

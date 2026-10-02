@@ -704,6 +704,7 @@
     <string name="expanded">Kiterjesztett</string>
     <string name="lyricscolor">Dalszöveg színe</string>
     <string name="lyrics_size">Dalszöveg mérete</string>
+    <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="translate">Fordítás</string>
     <string name="transparentbar">Átlátszó idővonal sáv</string>
     <string name="timelinesize">Lejátszó idővonalának mérete</string>
