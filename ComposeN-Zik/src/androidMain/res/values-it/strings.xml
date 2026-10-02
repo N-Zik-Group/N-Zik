@@ -704,6 +704,7 @@
     <string name="expanded">Espanso</string>
     <string name="lyricscolor">Colore lyrics</string>
     <string name="lyrics_size">Dimensione lyrics</string>
+    <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="translate">Traduci</string>
     <string name="transparentbar">Barra Della Timeline Trasparente</string>
     <string name="timelinesize">Dimensione Della Timeline Del Player</string>
