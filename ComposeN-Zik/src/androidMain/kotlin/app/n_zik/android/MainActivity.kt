@@ -435,6 +435,33 @@ internal fun consumeRewindPlaylistExtras(intent: Intent?) {
 }
 
 /**
+ * Decodes the "now playing" notification tap carried by the notification's content intent
+ * ([MainActivity.EXTRA_OPEN_PLAYER_TOKEN], set by PlayerServiceModern's global session
+ * activity — the PendingIntent media3 uses as the notification content intent,
+ * spec-notification-click-opens-player option B): a positive token (the session's one-shot
+ * System.currentTimeMillis() token, static per service instance) yields it, anything else
+ * (missing extra, 0, negative) yields null so the app starts without a forced player open.
+ * Staleness is NOT rejected here — the task record re-sends the original launch intent
+ * (extras intact) after a process-death restore, and the token is static per service, so
+ * the rejection lives at deployment time as a live comparison against the current service's
+ * token (see [consumeOpenPlayerDeepLink] / the cold deploy site).
+ * Top-level so the parse contract is unit-testable without launching the activity.
+ */
+internal fun openPlayerTokenFromIntent(intent: Intent?): Long? =
+    intent?.getLongExtra(MainActivity.EXTRA_OPEN_PLAYER_TOKEN, 0L)
+        ?.takeIf { it > 0L }
+
+/**
+ * One-shot consumption of the "open player" extra on the intent the activity keeps — the
+ * token twin of [consumeRewindPlaylistExtras] (spec-notification-click-opens-player). The
+ * strip is unconditional: even a rejected (non-positive / malformed) token must not stay
+ * alive in the kept intent for a later re-delivery.
+ */
+internal fun consumeOpenPlayerExtras(intent: Intent?) {
+    intent?.removeExtra(MainActivity.EXTRA_OPEN_PLAYER_TOKEN)
+}
+
+/**
  * Builds the deck route for a decoded target (spec GH-275): the monthly target (month 1..12)
  * carries both arguments, while the yearly target (month = 0 intent sentinel) omits the month
  * argument — the route's default month=-1 then maps to `rewindMonth = null` in
@@ -544,6 +571,23 @@ class MainActivity :
     // consumed once by the navigation effect that opens the profiles page. Internal for the
     // same reason as [rewindDeckTarget].
     internal var openProfilesShortcut by mutableStateOf(false)
+
+    // "Now playing" notification tap — COLD start (spec-notification-click-opens-player):
+    // the tap token HELD in memory (Long?) when the launch intent carries one — no persistent
+    // marker. Validated at deployment time by a live comparison against the current service's
+    // token (via the Binder): equal → legitimate tap (always deploys the full player, the
+    // keepPlayerMinimized setting is NOT consulted, decision 2026-10-03); different → stale
+    // (process-death re-send, the service restarted and minted a new token) → discarded, no
+    // deployment. A valid token with no media yet is HELD and re-checked on every
+    // playerUpdateTrigger. Internal for the same reason as [rewindDeckTarget].
+    internal var openPlayerColdToken by mutableStateOf<Long?>(null)
+
+    // "Now playing" notification tap — WARM start (spec-notification-click-opens-player):
+    // set on warm start (onNewIntent) when the new intent carries a fresh open-player
+    // token, consumed once by the deployment effect that presents the mini-player (if the
+    // sheet is dismissed) then deploys the full player. Internal for the same reason as
+    // [rewindDeckTarget].
+    internal var openPlayerFromNotificationWarm by mutableStateOf(false)
 
     // Current step of the first-launch onboarding flow, held by the activity so a
     // recreation (rotation) resumes the flow at the right step; null means the flow
@@ -660,6 +704,43 @@ class MainActivity :
     }
 
     /**
+     * Consumes the "now playing" notification tap carried by [intent]
+     * (spec-notification-click-opens-player): a positive token arms the matching one-shot
+     * state — [openPlayerColdToken] (held in memory) on cold start,
+     * [openPlayerFromNotificationWarm] on warm start — then strips the extra off the intent
+     * the activity keeps.
+     *
+     * There is NO persistent marker here: the token is static for the service's lifetime, so
+     * a "last consumed" marker would reject a legitimate second cold tap (the activity is
+     * destroyed while the foreground service survives — recents swipe, memory pressure).
+     * Staleness is instead rejected at deployment time by a live comparison of the held token
+     * against the CURRENT service's token (via the Binder): a process-death task-record
+     * re-delivery carries the OLD token, while the restarted service minted a new one →
+     * mismatch → discarded, no deployment. A warm tap needs no comparison at all: it is a
+     * fresh fire of the PendingIntent, and any re-delivery was already stripped off the
+     * kept intent.
+     *
+     * Runs synchronously in onCreate (app off, [cold] = true) and onNewIntent (app on,
+     * [cold] = false) — the extra is consumed the moment the intent arrives. Internal (not
+     * private) so the Robolectric lifecycle tests can exercise the exact consumption
+     * contract both launch paths share.
+     */
+    internal fun consumeOpenPlayerDeepLink(intent: Intent?, cold: Boolean) {
+        val token = openPlayerTokenFromIntent(intent)
+        if (token != null) {
+            if (cold) {
+                openPlayerColdToken = token
+            } else {
+                openPlayerFromNotificationWarm = true
+            }
+            Timber.tag("MainActivity").i("Notification tap: open-player token $token consumed (${if (cold) "cold" else "warm"})")
+        }
+        // The strip is unconditional (not gated on a successful parse): a rejected token
+        // must not keep its extra alive in the kept intent for a later re-delivery.
+        consumeOpenPlayerExtras(intent)
+    }
+
+    /**
      * The user profile IDs a profile shortcut may point to, read from the names file (the base
      * profile is never listed). A read failure degrades to "no profiles" — the tap is then a
      * bare launch — instead of crashing the cold start (spec-profile-shortcuts).
@@ -769,6 +850,13 @@ class MainActivity :
         // reject an already-consumed target while a fresh tap still opens (spec GH-275
         // follow-up). The app ON path is onNewIntent, which shares the same contract.
         consumeRewindDeepLinks(intent)
+        // "Now playing" notification tap (spec-notification-click-opens-player): consume the
+        // launch intent's open-player token synchronously — app OFF path. A positive token is
+        // held in memory ([openPlayerColdToken]) and validated at deployment time by a live
+        // comparison against the current service's token (staleness is the service's live
+        // token — there is no persistent marker); the extra is stripped off the kept intent
+        // either way.
+        consumeOpenPlayerDeepLink(intent, cold = true)
 
         checkIfAppIsRunningInBackground()
         // App shortcuts are now registered in MainApplication.onCreate (before Dependencies.init)
@@ -1897,6 +1985,33 @@ class MainActivity :
                     }
                 }
 
+                // "Now playing" notification tap — WARM start (spec-notification-click-opens-player):
+                // present the mini-player (if the sheet is dismissed) then deploy the full
+                // player, restoring the hidden bars first — the same pacing as the existing
+                // launchedFromNotification path (presentMiniplayerThenExpand). Consumed from an
+                // effect, like the rewind targets above, and gated on onboarding the same way:
+                // while onboarding is up the NavHost is not composed, so the target is held
+                // until the flow completes and the effect re-runs. The token was already
+                // consumed off the intent in onNewIntent (one-shot contract).
+                LaunchedEffect(openPlayerFromNotificationWarm, onboardingStep == null) {
+                    if (onboardingStep != null) return@LaunchedEffect
+                    if (openPlayerFromNotificationWarm) {
+                        openPlayerFromNotificationWarm = false
+                        showPlayer = true
+                        // Anti-flicker: a sheet already above the expanded bound is left alone
+                        // (a tap while the full player is open must not cause a visible
+                        // collapse→expand).
+                        if (playerSheetState.value < playerSheetState.expandedBound) {
+                            // On the composable's rememberCoroutineScope(), NOT this effect's
+                            // scope: the flag reset above changes the effect key → recomposition
+                            // cancels the effect scope, which would kill the delayed
+                            // launch { delay(800); expandSoft() } child before it runs
+                            // (device bug: the mini bar appeared, the expansion never did).
+                            coroutineScope.presentMiniplayerThenExpand(playerSheetState, onPresent = { restoreHiddenBars() })
+                        }
+                    }
+                }
+
                 // Generic « Profiles » launcher shortcut (spec-profile-shortcuts): open the
                 // profiles page once the graph is composed (cold: after the normal start).
                 // Consumed from an effect, like the rewind targets above, and gated on
@@ -2311,9 +2426,44 @@ class MainActivity :
                 var isPlayerInitialized by rememberSaveable { mutableStateOf(false) }
                 val playerUpdateTrigger by binder?.playerUpdateTrigger?.collectAsStateWithLifecycle(0) ?: remember { mutableStateOf(0) }
                 DisposableEffect(binder?.player, playerUpdateTrigger) {
-                    val player = binder?.player ?: return@DisposableEffect onDispose { }
+                    val currentBinder = binder ?: return@DisposableEffect onDispose { }
+                    val player = currentBinder.player
 
                     setDynamicPalette(player.currentMediaItem?.mediaMetadata?.artworkUri?.thumbnail(1000)?.toString())
+
+                    // "Now playing" notification tap — COLD start (spec-notification-click-opens-player):
+                    // the held tap token is validated against the CURRENT service's token (via
+                    // the Binder) on EVERY run of this effect, not only at init: a valid token
+                    // with no media yet is HELD and re-checked when media arrives (queue
+                    // restore / early binder attach); a stale token (task-record re-send after
+                    // a process death — the restarted service minted a new token) is
+                    // discarded, no deployment. There is no persistent marker: staleness is
+                    // the service's live token, not a stored value.
+                    val heldOpenPlayerToken = openPlayerColdToken
+                    var deployedNow = false
+                    if (heldOpenPlayerToken != null) {
+                        if (heldOpenPlayerToken != currentBinder.openPlayerToken) {
+                            // Stale (process-death re-send: the service restarted and minted a
+                            // new token) → discard, no deployment.
+                            openPlayerColdToken = null
+                        } else if (player.currentMediaItem != null) {
+                            openPlayerColdToken = null
+                            // Decision 2026-10-03 (spec-notification-click-opens-player): the
+                            // notification tap ALWAYS deploys the full player — the
+                            // keepPlayerMinimized setting is NOT consulted on this path
+                            // (a deliberate tap, distinct from the widget/historical
+                            // cold start that honors the setting).
+                            showPlayer = true
+                            // Anti-flicker: a sheet already above the expanded bound is left
+                            // alone (no visible collapse→expand on a tap while the full player
+                            // is open).
+                            if (playerSheetState.value < playerSheetState.expandedBound) {
+                                coroutineScope.presentMiniplayerThenExpand(playerSheetState, onPresent = { restoreHiddenBars() })
+                            }
+                            deployedNow = true
+                        }
+                        // valid + no media: held — re-checked on the next playerUpdateTrigger.
+                    }
 
                     if (!isPlayerInitialized) {
                         isPlayerInitialized = true
@@ -2321,22 +2471,24 @@ class MainActivity :
                             if (playerSheetState.isVisible) {
                                 showPlayer = false
                             }
-                        } else {
-                            if (launchedFromNotification) {
-                                intent.replaceExtras(Bundle())
-                                if (preferences.getBoolean(keepPlayerMinimizedKey, true)) {
-                                    showPlayer = false
-                                    // Collapsed position; pops with a fade when coming from the dismissed zone
-                                    playerSheetState.presentMiniplayerCollapsed()
-                                } else {
-                                    showPlayer = true
-                                    coroutineScope.presentMiniplayerThenExpand(playerSheetState, onPresent = { restoreHiddenBars() })
-                                }
-                            } else {
+                        } else if (deployedNow) {
+                            // The deployment above owns the presentation: the default collapsed
+                            // presentation must NOT run in the same effect run (it would undo
+                            // the deployment).
+                        } else if (launchedFromNotification) {
+                            intent.replaceExtras(Bundle())
+                            if (preferences.getBoolean(keepPlayerMinimizedKey, true)) {
                                 showPlayer = false
                                 // Collapsed position; pops with a fade when coming from the dismissed zone
                                 playerSheetState.presentMiniplayerCollapsed()
+                            } else {
+                                showPlayer = true
+                                coroutineScope.presentMiniplayerThenExpand(playerSheetState, onPresent = { restoreHiddenBars() })
                             }
+                        } else {
+                            showPlayer = false
+                            // Collapsed position; pops with a fade when coming from the dismissed zone
+                            playerSheetState.presentMiniplayerCollapsed()
                         }
                     }
 
@@ -2496,6 +2648,12 @@ class MainActivity :
         // one (task record re-send / singleTask relaunch) is rejected, and the extras are
         // stripped so the kept intent decodes to nothing on the next re-delivery.
         consumeRewindDeepLinks(intent)
+        // "Now playing" notification tap (spec-notification-click-opens-player): consume
+        // the fresh intent's open-player token BEFORE keeping it as the current intent —
+        // app ON path, same contract as onCreate: a positive token arms the warm
+        // deployment flag (always fresh — a warm tap is a fresh fire of the PendingIntent,
+        // no live comparison needed), and the extra is stripped either way.
+        consumeOpenPlayerDeepLink(intent, cold = false)
         setIntent(intent)
     }
 
@@ -2581,6 +2739,12 @@ class MainActivity :
         const val action_profiles = "app.it.fast4x.rimusic.action.profiles"
         const val action_profile = "app.it.fast4x.rimusic.action.profile"
         const val EXTRA_PROFILE_ID = "profileId"
+        // "Now playing" notification tap (spec-notification-click-opens-player): the
+        // notification's content intent — PlayerServiceModern's global session activity
+        // (the PendingIntent media3 uses as the notification content intent, option B) —
+        // carries this one-shot token. The tap always deploys the full player, regardless
+        // of the keepPlayerMinimized setting.
+        const val EXTRA_OPEN_PLAYER_TOKEN = "openPlayerToken"
     }
 
 

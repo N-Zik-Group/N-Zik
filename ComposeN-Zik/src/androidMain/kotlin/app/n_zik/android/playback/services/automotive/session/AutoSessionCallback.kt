@@ -177,6 +177,29 @@ class AutoSessionCallback(
         )
     }
 
+    override fun onPostConnect(
+        session: MediaSession,
+        controller: MediaSession.ControllerInfo
+    ) {
+        super.onPostConnect(session, controller)
+        // spec-notification-click-opens-player (option B): the GLOBAL session activity is now
+        // the "now playing" notification's content intent (opens the phone MainActivity with
+        // a one-shot token — media3 hard-wires the notification content intent to the global
+        // session activity). The Android Auto companion must NOT inherit it: send it null via
+        // the per-controller override (official since media3 1.4.0) so AA falls back to the
+        // standard session UI (media library) instead of the in-app screen. Runs on every
+        // AA connection (car re-connects re-send it).
+        // Deliberately done in onPostConnect, NOT onConnect: in media3 1.10.1 the controller
+        // is only registered (ConnectedControllersManager.addController) after onConnect
+        // returns, and the per-controller setSessionActivity dispatch guards on
+        // isConnected(controller) — a call from onConnect would be a silent no-op, leaving
+        // AA with the global activity (the in-app screen regression this feature must not
+        // reintroduce).
+        if (session.isAutoCompanionController(controller)) {
+            session.setSessionActivity(controller, null)
+        }
+    }
+
     override fun onSearch(
         session: MediaLibrarySession,
         browser: MediaSession.ControllerInfo,

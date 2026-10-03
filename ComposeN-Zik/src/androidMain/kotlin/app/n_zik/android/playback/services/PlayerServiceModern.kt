@@ -287,6 +287,16 @@ class PlayerServiceModern : MediaLibraryService(),
 
     private val coroutineScope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
     private lateinit var mediaSession: MediaLibrarySession
+
+    /**
+     * One-shot "open player" token of the session activity (spec-notification-click-opens-player,
+     * option B): minted ONCE per service instance — static for the session's lifetime, a service
+     * restart mints a fresh one. Carried in the notification content intent's extra; the consumer
+     * live-compares the tap token against this value at deployment: equal → legitimate tap
+     * (including a second cold tap while the service lives); different → stale re-delivery
+     * (process death → restarted service) → rejected. Exposed via [Binder.openPlayerToken].
+     */
+    private val openPlayerToken = System.currentTimeMillis()
     private var mediaLibrarySessionCallback: AutoSessionCallback =
         AutoSessionCallback(this, Database, MyDownloadHelper)
     private var sessionController: MediaController? = null
@@ -713,13 +723,32 @@ class PlayerServiceModern : MediaLibraryService(),
         }
 
         // Build the media library session on the guarded facade (AD-6).
-        // No sessionActivity on purpose: Android Auto launches the session
-        // activity when the user opens the app on the car — pointing it at the
-        // phone MainActivity (expanded player sheet) made AA open the in-app
-        // screen (search bar + "your selection") instead of the media library.
-        // Without it, AA falls back to the standard session UI: browse root
-        // (QuickPicks + the five categories) by default, search on demand,
-        // now-playing only while something actually plays.
+        // The GLOBAL session activity is the "now playing" notification's content
+        // intent (spec-notification-click-opens-player, option B): media3 1.10.1 hard-wires
+        // the notification content intent to the global session activity (no overridable
+        // hook — DefaultMediaNotificationProvider.createNotification is final), so it points
+        // at MainActivity with the one-shot "open player" token ([openPlayerToken], minted
+        // once per service instance — static for the session's lifetime; a service restart
+        // mints a fresh token and the MainActivity consumer live-compares against it).
+        // Dedicated request code (501, NOT 0): request code 0 + a filter-equal intent is the
+        // SAME system PendingIntent slot as NZikWidgetManager.getOpenAppIntent() (request
+        // code 0, bare Intent to MainActivity) — Intent.filterEquals ignores extras and
+        // activity flags, so the widget's 1-second refresh loop overwrote this token ~1s
+        // after playback started and the tap delivered an intent WITHOUT the token.
+        // Repo precedent: 500 = PlaylistWidgetManager's open-app Pi.
+        // Android Auto is protected separately — its companion controller is sent null via
+        // the per-controller override in AutoSessionCallback (the official media3
+        // per-controller API), so AA falls back to the standard session UI: browse root
+        // (QuickPicks + the five categories) by default, search on demand, now-playing only
+        // while something actually plays — never the in-app screen (search bar + "your
+        // selection").
+        val openPlayerSessionActivity = PendingIntent.getActivity(
+            this,
+            OpenPlayerSessionActivityRequestCode,
+            Intent(this, MainActivity::class.java)
+                .putExtra(MainActivity.EXTRA_OPEN_PLAYER_TOKEN, openPlayerToken),
+            FLAG_ACTIVITY_NEW_TASK or PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
         mediaSession =
             MediaLibrarySession.Builder(this, guestGuardPlayer, mediaLibrarySessionCallback)
                 .setBitmapLoader(
@@ -730,6 +759,7 @@ class PlayerServiceModern : MediaLibraryService(),
                     )
                 )
                 .setPeriodicPositionUpdateEnabled(false)
+                .setSessionActivity(openPlayerSessionActivity)
                 .build()
         
         mediaLibrarySessionCallback.observeRepository(mediaSession)
@@ -2619,6 +2649,15 @@ class PlayerServiceModern : MediaLibraryService(),
         val playerUpdateTrigger: StateFlow<Int>
             get() = this@PlayerServiceModern.playerUpdateTrigger
 
+        /**
+         * The session's "open player" token (spec-notification-click-opens-player, option B) —
+         * static for the service's lifetime. The consumer live-compares a tap token against
+         * this at deployment: equal → legitimate tap; different → stale task-record
+         * re-delivery (the service restarted and minted a new token) → no deployment.
+         */
+        val openPlayerToken: Long
+            get() = this@PlayerServiceModern.openPlayerToken
+
         val cache: Cache
             get() = this@PlayerServiceModern.cache
 
@@ -3174,6 +3213,16 @@ class PlayerServiceModern : MediaLibraryService(),
 
         const val NotificationId = 1001
         const val NotificationChannelId = "default_channel_id"
+
+        /**
+         * PendingIntent request code of the session activity (the "now playing" notification
+         * content intent, spec-notification-click-opens-player). It must be DEDICATED: request
+         * code 0 is the widget Pi slot (NZikWidgetManager.getOpenAppIntent — bare Intent to
+         * MainActivity) and Intent.filterEquals ignores extras + activity flags, so the widget
+         * refresh loop (1s while playing) would overwrite the session Pi and strip the token.
+         * Precedent: 500 = PlaylistWidgetManager open-app Pi.
+         */
+        const val OpenPlayerSessionActivityRequestCode = 501
 
         const val SleepTimerNotificationId = 1002
         const val SleepTimerNotificationChannelId = "sleep_timer_channel_id"
