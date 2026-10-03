@@ -152,6 +152,11 @@ import app.n_zik.android.utils.isCar
 import app.n_zik.android.utils.getAudioDeviceIcon
 import app.n_zik.android.utils.getBottomSheetDeviceIcon
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.bridge.ActiveDevice
+import app.n_zik.android.bridge.AudioOutput
+import app.n_zik.android.bridge.BridgeServerController
 
 data class AudioDevice(
     val name: String,
@@ -171,6 +176,33 @@ enum class AudioDeviceType {
     EXTERNAL_SPEAKER,
     USB_HEADSET,
     HDMI,
+    /** Connected PC of the PC bridge: a virtual output (contract §8.5). */
+    PC,
+}
+
+/**
+ * Adds the PC holding the bridge session ([pc], `null` when none) to [devices]. While the
+ * output is the PC it is the only active entry; [fallbackName] names a PC without one.
+ *
+ * Counterpart of `AudioOutputManager.withBridgePc` (the mini-picker `AudioDevice` model,
+ * sorted first while active): the same contract §8.5 rule on two different models — keep
+ * both in sync when the rule changes.
+ */
+internal fun withBridgePcEntry(
+    devices: List<AudioDevice>,
+    pc: ActiveDevice?,
+    output: AudioOutput,
+    fallbackName: String,
+): List<AudioDevice> {
+    if (pc == null) return devices
+    val onPc = output == AudioOutput.PC
+    val pcEntry = AudioDevice(
+        name = pc.deviceName.ifBlank { fallbackName },
+        type = AudioDeviceType.PC,
+        isConnected = true,
+        isActive = onPc,
+    )
+    return (if (onPc) devices.map { it.copy(isActive = false, isCar = false) } else devices) + pcEntry
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -199,6 +231,22 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
     val isCarProjectionActive = carConnectionType == CarConnection.CONNECTION_TYPE_PROJECTION || carConnectionType == CarConnection.CONNECTION_TYPE_NATIVE
     
     val currentIsCarProjectionActive by rememberUpdatedState(isCarProjectionActive)
+
+    // PC bridge (contract §8.5): the connected PC is one more output
+    val bridgePc by BridgeServerController.activeDevice.collectAsStateWithLifecycle()
+    val bridgeOutput by BridgeServerController.audioOutput.collectAsStateWithLifecycle()
+    val bridgePcFallbackName = stringResource(R.string.bridge_connected_pc)
+    val shownDevices = remember(audioDevices, bridgePc, bridgeOutput, bridgePcFallbackName) {
+        withBridgePcEntry(audioDevices, bridgePc, bridgeOutput, bridgePcFallbackName)
+    }
+
+    val bridgePcSubtitle = stringResource(R.string.bridge_audio_output_pc_subtitle)
+
+    fun selectBridgeOutput(output: AudioOutput) {
+        coroutineScope.launch {
+            if (!BridgeServerController.selectAudioOutput(output)) Toaster.w(R.string.bridge_audio_output_pc_unavailable)
+        }
+    }
 
     val bluetoothLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -400,13 +448,13 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                     if (style == MenuStyle.List) {
                         ListMenu.Menu(title = stringResource(R.string.audio_devices), showDragHandle = true) {
                             SectionTitle(stringResource(R.string.audio_output_title))
-                            audioDevices.forEach { dev ->
+                            shownDevices.forEach { dev ->
                                     ListMenu.Entry(
                                         text = dev.name,
                                         enabled = !isCarProjectionActive || dev.isActive,
                                         icon = {
                                             val iconColor = if (dev.isActive) colorPalette().accent else colorPalette().text
-                                            val isActuallyCar = dev.isCar || (dev.isActive && isCarProjectionActive)
+                                            val isActuallyCar = dev.isCar || (dev.type != AudioDeviceType.PC && dev.isActive && isCarProjectionActive)
                                             Box(
                                                 modifier = Modifier
                                                     .size(32.dp)
@@ -435,7 +483,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                             }
                                         },
                                         modifier = if (dev.isActive) Modifier.background(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape()) else Modifier,
-                                        subtitle = dev.batteryLevel?.let { "Battery: $it%" },
+                                        subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { "Battery: $it%" },
                                         trailingContent = {
                                             AnimatedVisibility(
                                                 visible = dev.isActive,
@@ -453,6 +501,12 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                             }
                                         },
                                         onClick = {
+                                        if (dev.type == AudioDeviceType.PC) {
+                                            selectBridgeOutput(AudioOutput.PC)
+                                            return@Entry
+                                        }
+                                        // A phone output while on the PC brings the sound back to the phone
+                                        if (bridgeOutput == AudioOutput.PC) selectBridgeOutput(AudioOutput.PHONE)
                                         val wasPlaying = binder?.player?.isPlaying == true
                                         binder?.player?.pause()
                                         binder?.setPreferredAudioDevice(dev.deviceId)
@@ -545,11 +599,11 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                 SectionTitle(stringResource(R.string.audio_output_title)) 
                             }
                             items(
-                                count = audioDevices.size,
-                                key = { index -> "${audioDevices[index].deviceId}_${audioDevices[index].isCar}_${index}" }
+                                count = shownDevices.size,
+                                key = { index -> "${shownDevices[index].deviceId}_${shownDevices[index].isCar}_${index}" }
                             ) { index ->
-                                val dev = audioDevices[index]
-                                val isActuallyCar = dev.isCar || (dev.isActive && isCarProjectionActive)
+                                val dev = shownDevices[index]
+                                val isActuallyCar = dev.isCar || (dev.type != AudioDeviceType.PC && dev.isActive && isCarProjectionActive)
                                 
                                 GridMenu.Entry(
                                     text = dev.name,
@@ -583,7 +637,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                             }
                                         }
                                     },
-                                    subtitle = dev.batteryLevel?.let { "Battery: $it%" },
+                                    subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { "Battery: $it%" },
                                     trailingContent = {
                                         AnimatedVisibility(
                                             visible = dev.isActive,
@@ -601,6 +655,12 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                         }
                                     },
                                     onClick = {
+                                        if (dev.type == AudioDeviceType.PC) {
+                                            selectBridgeOutput(AudioOutput.PC)
+                                            return@Entry
+                                        }
+                                        // A phone output while on the PC brings the sound back to the phone
+                                        if (bridgeOutput == AudioOutput.PC) selectBridgeOutput(AudioOutput.PHONE)
                                         val wasPlaying = binder?.player?.isPlaying == true
                                         binder?.player?.pause()
                                         binder?.setPreferredAudioDevice(dev.deviceId)

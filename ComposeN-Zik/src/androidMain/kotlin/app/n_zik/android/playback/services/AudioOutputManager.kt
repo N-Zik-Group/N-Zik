@@ -15,6 +15,16 @@ import android.media.RouteDiscoveryPreference
 import android.media.MediaRouter
 import androidx.car.app.connection.CarConnection
 import androidx.lifecycle.Observer
+import app.n_zik.android.R
+import app.n_zik.android.bridge.ActiveDevice
+import app.n_zik.android.bridge.AudioOutput
+import app.n_zik.android.bridge.BridgeServerController
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
 
 class AudioOutputManager(private val context: Context, private val audioManager: AudioManager) {
 
@@ -29,7 +39,42 @@ class AudioOutputManager(private val context: Context, private val audioManager:
             get() = getAudioDeviceIcon(type, name, isCar)
     }
 
+    companion object {
+        /**
+         * Type of the virtual output "connected PC" of the PC bridge (contract §8.5): outside
+         * the `AudioDeviceInfo.TYPE_*` range, also used as its id.
+         */
+        const val TYPE_BRIDGE_PC = -100
+
+        /**
+         * Adds the connected PC ([pc], `null` when none) to [devices]. While the output is the
+         * PC it is the only active device, listed first; [fallbackName] names a PC without one.
+         *
+         * Counterpart of `withBridgePcEntry` (the device-menu `AudioDevice` model, appended
+         * last): the same contract §8.5 rule on two different models — keep both in sync when
+         * the rule changes.
+         */
+        internal fun withBridgePc(
+            devices: List<AudioDevice>,
+            pc: ActiveDevice?,
+            output: AudioOutput,
+            fallbackName: String,
+        ): List<AudioDevice> {
+            if (pc == null) return devices
+            val onPc = output == AudioOutput.PC
+            val pcDevice = AudioDevice(
+                id = TYPE_BRIDGE_PC,
+                type = TYPE_BRIDGE_PC,
+                name = pc.deviceName.ifBlank { fallbackName },
+                isCurrentlyActive = onPc,
+            )
+            val phoneDevices = if (onPc) devices.map { it.copy(isCurrentlyActive = false, isCar = false) } else devices
+            return (phoneDevices + pcDevice).sortedByDescending { it.isCurrentlyActive }
+        }
+    }
+
     private var deviceCallback: AudioDeviceCallback? = null
+    private var bridgeScope: CoroutineScope? = null
     private var playbackCallback: Any? = null // AudioManager.AudioPlaybackCallback
     private var mediaRouter2Callback: Any? = null // MediaRouter2.ControllerCallback
     private var carConnectionObserver: Observer<Int>? = null
@@ -180,7 +225,7 @@ class AudioOutputManager(private val context: Context, private val audioManager:
 
         val isCarProjectionActive = currentCarConnectionType == CarConnection.CONNECTION_TYPE_PROJECTION || currentCarConnectionType == CarConnection.CONNECTION_TYPE_NATIVE
 
-        return devices.map { device ->
+        val phoneDevices = devices.map { device ->
             val isCurrentlyActive = device.id == activeRouteId
             AudioDevice(
                 id = device.id,
@@ -190,6 +235,12 @@ class AudioOutputManager(private val context: Context, private val audioManager:
                 isCar = isCurrentlyActive && isCarProjectionActive
             )
         }.sortedByDescending { it.isCurrentlyActive }
+        return withBridgePc(
+            phoneDevices,
+            BridgeServerController.activeDevice.value,
+            BridgeServerController.audioOutput.value,
+            context.getString(R.string.bridge_connected_pc),
+        )
     }
 
     @SuppressLint("NewApi")
@@ -206,6 +257,16 @@ class AudioOutputManager(private val context: Context, private val audioManager:
             }
         }
         audioManager.registerAudioDeviceCallback(deviceCallback, null) // null = main looper
+
+        // PC bridge: a PC connecting, leaving or taking the output changes the list too
+        bridgeScope?.cancel()
+        bridgeScope = NzikDispatchers.fireAndForget(NzikDispatchers.UI).also { scope ->
+            scope.launch {
+                combine(BridgeServerController.activeDevice, BridgeServerController.audioOutput) { _, _ -> }
+                    .drop(1)
+                    .collect { callback(getAvailableDevices()) }
+            }
+        }
 
         val observer = Observer<Int> { type ->
             Timber.tag("AudioOutputManager").d("CarConnection type changed: $type")
@@ -261,6 +322,8 @@ class AudioOutputManager(private val context: Context, private val audioManager:
     fun unregisterDeviceChanges() {
         deviceCallback?.let { audioManager.unregisterAudioDeviceCallback(it) }
         deviceCallback = null
+        bridgeScope?.cancel()
+        bridgeScope = null
 
         carConnectionObserver?.let {
             try {

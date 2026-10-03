@@ -1,5 +1,7 @@
 package app.n_zik.android.bridge.state
 
+import app.n_zik.android.bridge.AudioOutput
+
 /**
  * Revisioned player state of one server run (contract §7). Pure: it only knows
  * [PlayerSample]s and an injectable [clock]. Each new sample is compared to the previous
@@ -21,9 +23,13 @@ internal class BridgeStateHub(private val clock: () -> Long = System::currentTim
     private val lock = Any()
     private var revision = 0L
     private var current = PlayerSample.EMPTY
+    private var audioOutput = AudioOutput.PHONE
     private val subscribers = LinkedHashSet<Subscription>()
 
     val currentRevision: Long get() = synchronized(lock) { revision }
+
+    /** Audio output of this server run (contract §8.5); every run starts on the phone. */
+    val currentAudioOutput: AudioOutput get() = synchronized(lock) { audioOutput }
 
     /**
      * Records [sample] and publishes the deltas it implies. The position alone never makes
@@ -65,6 +71,20 @@ internal class BridgeStateHub(private val clock: () -> Long = System::currentTim
         }
 
     /**
+     * Records the audio output (contract §8.5) and publishes its `outputChanged` delta at
+     * `revision + 1`, under the same lock as the player deltas.
+     *
+     * @return the delta published, `null` when [output] was already the current one
+     */
+    fun setAudioOutput(output: AudioOutput): OutputChangedMessage? = synchronized(lock) {
+        if (output == audioOutput) return null
+        audioOutput = output
+        OutputChangedMessage(++revision, clock(), output).also { delta ->
+            subscribers.forEach { it.sink.deliver(delta) }
+        }
+    }
+
+    /**
      * Sends the non-revised [message] to every subscriber (contract §7.6), under the same
      * lock as the deltas so it never splits a snapshot from its following deltas.
      */
@@ -100,6 +120,7 @@ internal class BridgeStateHub(private val clock: () -> Long = System::currentTim
             positionMs = positionAt(sample, now),
             repeatMode = sample.repeatMode,
             shuffle = sample.shuffle,
+            audioOutput = audioOutput,
         )
     }
 

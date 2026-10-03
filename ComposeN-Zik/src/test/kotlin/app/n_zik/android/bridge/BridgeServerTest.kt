@@ -85,7 +85,7 @@ class BridgeServerTest {
 
         assertEquals(HttpStatusCode.OK, response.status)
         val json = BridgeJson.parseToJsonElement(response.bodyAsText()).jsonObject
-        assertEquals("1.1", json["contractVersion"]?.jsonPrimitive?.content)
+        assertEquals("1.2", json["contractVersion"]?.jsonPrimitive?.content)
         assertEquals("Pixel test", json["serverName"]?.jsonPrimitive?.content)
         assertEquals(1_790_000_000_000L, json["serverTimeMs"]?.jsonPrimitive?.long)
         assertEquals(
@@ -100,6 +100,7 @@ class BridgeServerTest {
                 "library.artists",
                 "artwork",
                 "audio",
+                "audio.output",
                 "ws.state",
             ),
             json["features"]?.jsonArray?.map { it.jsonPrimitive.content },

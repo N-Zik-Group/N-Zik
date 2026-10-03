@@ -65,6 +65,10 @@ import androidx.media3.exoplayer.audio.DefaultAudioOffloadSupportProvider
 import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.exoplayer.audio.DefaultAudioSink.DefaultAudioProcessorChain
 import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
+import app.n_zik.android.bridge.AudioOutput
+import app.n_zik.android.bridge.BridgeServerController
+import app.n_zik.android.playback.audio.MuteAudioProcessor
+import app.n_zik.android.playback.audio.MuteAudioProcessorChain
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadManager
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
@@ -2037,6 +2041,8 @@ class PlayerServiceModern : MediaLibraryService(),
                 minimumSilenceDurationKey, 2_000_000L
             ).coerceIn(1000L..2_000_000L)
 
+            // Captured once per sink: the mute predicate runs on the audio thread, per buffer
+            val audioOutput = BridgeServerController.audioOutput
             return DefaultAudioSink.Builder(applicationContext)
                 .setEnableFloatOutput(enableFloatOutput)
                 .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
@@ -2044,16 +2050,21 @@ class PlayerServiceModern : MediaLibraryService(),
                     DefaultAudioOffloadSupportProvider(applicationContext)
                 )
                 .setAudioProcessorChain(
-                    DefaultAudioProcessorChain(
-                        arrayOf(),
-                        SilenceSkippingAudioProcessor(
-                            /* minimumSilenceDurationUs = */ minimumSilenceDuration,
-                            /* silenceRetentionRatio = */ 0.01f,
-                            /* maxSilenceToKeepDurationUs = */ minimumSilenceDuration,
-                            /* minVolumeToKeepPercentageWhenMuting = */ 0,
-                            /* silenceThresholdLevel = */ 256
+                    // PC bridge (contract §8.5): silent while the audio output is the PC, last in
+                    // the chain; both the main and the crossfade player are built here
+                    MuteAudioProcessorChain(
+                        DefaultAudioProcessorChain(
+                            arrayOf(),
+                            SilenceSkippingAudioProcessor(
+                                /* minimumSilenceDurationUs = */ minimumSilenceDuration,
+                                /* silenceRetentionRatio = */ 0.01f,
+                                /* maxSilenceToKeepDurationUs = */ minimumSilenceDuration,
+                                /* minVolumeToKeepPercentageWhenMuting = */ 0,
+                                /* silenceThresholdLevel = */ 256
+                            ),
+                            SonicAudioProcessor()
                         ),
-                        SonicAudioProcessor()
+                        MuteAudioProcessor { audioOutput.value == AudioOutput.PC }
                     )
                 )
                 .build()

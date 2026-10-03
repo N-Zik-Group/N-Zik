@@ -6,6 +6,7 @@ import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import app.n_zik.android.bridge.AddPosition
+import app.n_zik.android.bridge.AudioOutput
 import app.n_zik.android.bridge.state.BridgeServerMessage
 import app.n_zik.android.bridge.state.BridgeStateHub
 import app.n_zik.android.bridge.state.ErrorMessage
@@ -65,7 +66,12 @@ class PlayerCommandExecutorTest {
         }
     }
 
-    private class Fixture(player: Player?, locked: Boolean = false, library: Set<String> = emptySet()) {
+    private class Fixture(
+        player: Player?,
+        locked: Boolean = false,
+        library: Set<String> = emptySet(),
+        outputs: AudioOutputSelector? = null,
+    ) {
         val hub = BridgeStateHub()
         val access = FakeAccess(player, hub)
         val settings = FakeSettings()
@@ -77,6 +83,7 @@ class PlayerCommandExecutorTest {
             settings = settings,
             tracks = { trackIds -> if (library.containsAll(trackIds)) trackIds.map { MediaItem.Builder().setMediaId(it).build() } else null },
             guestLocked = { locked },
+            outputs = outputs,
         )
     }
 
@@ -392,5 +399,35 @@ class PlayerCommandExecutorTest {
         fixture.lateFailures.onPlayerError("ERROR_CODE_IO_NETWORK_CONNECTION_FAILED")
 
         assertEquals(listOf("cmd-play"), errors.map { it.commandId })
+    }
+
+    @Test
+    fun `output goes to the output control, never to the player, even under the guest lock`() = runTest {
+        val p = player()
+        val asked = mutableListOf<AudioOutput>()
+        val fixture = Fixture(p, locked = true, outputs = { output ->
+            asked += output
+            CommandResult.Applied(changed = true, revision = 7L)
+        })
+
+        val result = fixture.executor.execute(BridgeCommand(PlayerAction.Output(AudioOutput.PC)))
+
+        assertEquals(CommandResult.Applied(changed = true, revision = 7L), result)
+        assertEquals(listOf(AudioOutput.PC), asked)
+        assertEquals(0, fixture.access.applied)
+        verify(exactly = 0) { p.pause() }
+        verify(exactly = 0) { p.volume = any() }
+    }
+
+    @Test
+    fun `without an output control pc is rejected and phone changes nothing`() = runTest {
+        val fixture = Fixture(player())
+        fixture.hub.submit(playingSample)
+
+        assertEquals(CommandResult.Rejected, fixture.executor.execute(BridgeCommand(PlayerAction.Output(AudioOutput.PC))))
+        assertEquals(
+            CommandResult.Applied(changed = false, revision = fixture.hub.currentRevision),
+            fixture.executor.execute(BridgeCommand(PlayerAction.Output(AudioOutput.PHONE))),
+        )
     }
 }

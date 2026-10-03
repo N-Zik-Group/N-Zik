@@ -11,7 +11,7 @@ import kotlinx.serialization.json.Json
  * Every literal that travels on the wire lives here.
  */
 internal object BridgeContract {
-    const val CONTRACT_VERSION = "1.1"
+    const val CONTRACT_VERSION = "1.2"
     const val API_PREFIX = "/api/v1"
 
     /** Port 42420, then 42421–42429, then an OS-assigned ephemeral port (contract §11.1). */
@@ -67,6 +67,7 @@ internal object BridgeContract {
         "library.artists",
         "artwork",
         "audio",
+        "audio.output",
         "ws.state",
     )
 
@@ -139,6 +140,17 @@ internal object BridgeErrorCode {
     const val AUDIO_URL_INVALID = "AUDIO_URL_INVALID"
     const val RANGE_NOT_SATISFIABLE = "RANGE_NOT_SATISFIABLE"
     const val INTERNAL_ERROR = "INTERNAL_ERROR"
+}
+
+/**
+ * `AudioOutput` (contract §1.1, since 1.2): the device the phone's playback sounds on. [PC] =
+ * the active client plays the current track with its local player while the phone keeps
+ * playing silently (contract §8.5).
+ */
+@Serializable
+enum class AudioOutput {
+    @SerialName("phone") PHONE,
+    @SerialName("pc") PC,
 }
 
 /** Why the server stops; sent as `serverStopped.code` (contract §7.7). */
@@ -235,6 +247,10 @@ internal data class RepeatCommandBody(val mode: RepeatModeDto, val commandId: St
 
 @Serializable
 internal data class ShuffleCommandBody(val enabled: Boolean, val commandId: String? = null)
+
+/** `/player/output` (contract §9, since 1.2): an unknown `output` fails the decoding (`400`). */
+@Serializable
+internal data class OutputCommandBody(val output: AudioOutput, val commandId: String? = null)
 
 @Serializable
 internal data class QueuePlayCommandBody(

@@ -1,5 +1,6 @@
 package app.n_zik.android.bridge.state
 
+import app.n_zik.android.bridge.AudioOutput
 import app.n_zik.android.bridge.BridgeJson
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -214,5 +215,20 @@ class ContractClientModelTest {
             types,
         )
         assertEquals(hub.currentRevision, client.last)
+    }
+
+    @Test
+    fun `a 1_1 client counts the outputChanged of a 1_2 server without applying it`() {
+        val hub = BridgeStateHub(clock = { now })
+        client.receive(encodeServerMessage(hub.snapshot()))
+        hub.submitEncoded(playingSample).forEach(client::receive)
+
+        client.receive(encodeServerMessage(requireNotNull(hub.setAudioOutput(AudioOutput.PC))))
+        hub.submitEncoded(playingSample.copy(isPlaying = false)).forEach(client::receive)
+        client.receive(encodeServerMessage(hub.heartbeat()))
+
+        assertEquals(hub.currentRevision, client.last)
+        assertTrue("outputChanged" !in client.applied)
+        assertTrue(client.sent.isEmpty())
     }
 }

@@ -1,5 +1,6 @@
 package app.n_zik.android.bridge.state
 
+import app.n_zik.android.bridge.AudioOutput
 import app.n_zik.android.bridge.BridgeContract
 import app.n_zik.android.bridge.BridgeJson
 import kotlinx.serialization.SerialName
@@ -58,6 +59,8 @@ internal data class SnapshotMessage(
     val positionMs: Long,
     val repeatMode: RepeatModeDto,
     val shuffle: Boolean,
+    /** Since 1.2 (contract §7.1); a 1.1 client ignores it. */
+    val audioOutput: AudioOutput,
 ) : RevisedMessage
 
 /** Deltas of contract §7.2: each one is exactly `revision + 1`. */
@@ -101,6 +104,15 @@ internal data class ModesChangedMessage(
     val serverTimeMs: Long,
     val repeatMode: RepeatModeDto,
     val shuffle: Boolean,
+) : DeltaMessage
+
+/** Change of the audio output (contract §7.2, §8.5, since 1.2). */
+@Serializable
+@SerialName("outputChanged")
+internal data class OutputChangedMessage(
+    override val revision: Long,
+    val serverTimeMs: Long,
+    val audioOutput: AudioOutput,
 ) : DeltaMessage
 
 /** Light, non-revised snapshot sent every 10 s (contract §7.3). */

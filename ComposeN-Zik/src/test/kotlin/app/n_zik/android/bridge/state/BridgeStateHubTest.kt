@@ -1,5 +1,6 @@
 package app.n_zik.android.bridge.state
 
+import app.n_zik.android.bridge.AudioOutput
 import app.n_zik.android.bridge.BridgeJson
 import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.int
@@ -8,6 +9,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -224,5 +226,51 @@ class BridgeStateHubTest {
 
         val heartbeat = BridgeJson.parseToJsonElement(encodeServerMessage(hub.heartbeat())).jsonObject
         assertEquals("heartbeat", heartbeat["type"]?.jsonPrimitive?.content)
+    }
+
+    @Test
+    fun `a new hub starts on the phone output and its snapshot carries it`() {
+        assertEquals(AudioOutput.PHONE, hub.currentAudioOutput)
+        val snapshot = BridgeJson.parseToJsonElement(encodeServerMessage(hub.snapshot())).jsonObject
+        assertEquals("phone", snapshot["audioOutput"]?.jsonPrimitive?.content)
+    }
+
+    @Test
+    fun `output change is an outputChanged at revision plus one, delivered and kept in the snapshot`() {
+        hub.submit(playingSample)
+        val start = hub.currentRevision
+        val received = mutableListOf<BridgeServerMessage>()
+        hub.subscribe { received += it }
+
+        val delta = hub.setAudioOutput(AudioOutput.PC)
+
+        assertEquals(start + 1, delta?.revision)
+        assertEquals(start + 1, hub.currentRevision)
+        assertEquals(listOf("SnapshotMessage", "OutputChangedMessage"), received.map { it::class.simpleName })
+        assertEquals(AudioOutput.PC, hub.snapshot().audioOutput)
+        val json = BridgeJson.parseToJsonElement(encodeServerMessage(requireNotNull(delta))).jsonObject
+        assertEquals(setOf("type", "revision", "serverTimeMs", "audioOutput"), json.keys)
+        assertEquals("outputChanged", json["type"]?.jsonPrimitive?.content)
+        assertEquals("pc", json["audioOutput"]?.jsonPrimitive?.content)
+    }
+
+    @Test
+    fun `setting the current output again publishes nothing`() {
+        hub.setAudioOutput(AudioOutput.PC)
+        val revision = hub.currentRevision
+
+        assertNull(hub.setAudioOutput(AudioOutput.PC))
+        assertNull(BridgeStateHub().setAudioOutput(AudioOutput.PHONE))
+        assertEquals(revision, hub.currentRevision)
+    }
+
+    @Test
+    fun `player deltas and output deltas share one consecutive revision sequence`() {
+        val first = hub.submit(playingSample)
+        val output = hub.setAudioOutput(AudioOutput.PC)
+        val pause = hub.submit(playingSample.copy(isPlaying = false))
+
+        val revisions = first.map { it.revision } + listOfNotNull(output?.revision) + pause.map { it.revision }
+        assertEquals((1L..revisions.size).toList(), revisions)
     }
 }

@@ -140,6 +140,12 @@ internal class BridgeServerCore(
     private val onActiveDeviceChanged: () -> Unit = {},
     /** Called for each valid command handed to [commandExecutor]: the inactivity auto-stop tick (contract §11.2). */
     private val onCommandAccepted: () -> Unit = {},
+    /**
+     * Called once each WebSocket session has ended, whatever the reason (client close, kick,
+     * revocation, replacement, ping timeout, network loss, server stop), after the session is
+     * freed: the audio output fallback of contract §6.2. Runs non-cancellable.
+     */
+    private val onSessionEnded: suspend () -> Unit = {},
 ) {
     private val stopping = AtomicBoolean(false)
 
@@ -297,6 +303,11 @@ internal class BridgeServerCore(
                             handleSession(this, claim, call.request.headers[HttpHeaders.Authorization])
                         } finally {
                             releaseClaim(claim)
+                            // Contract §6.2: the single fallback point of the audio output (pause, then phone)
+                            withContext(NonCancellable) {
+                                runCatching { onSessionEnded() }
+                                    .onFailure { Timber.tag(TAG).w(it, "Audio output fallback failed") }
+                            }
                         }
                     }
                 }

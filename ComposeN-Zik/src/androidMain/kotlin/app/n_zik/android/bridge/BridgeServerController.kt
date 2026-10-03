@@ -9,6 +9,7 @@ import app.it.fast4x.rimusic.utils.encryptedPreferences
 import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.bridge.audio.AudioLibrary
 import app.n_zik.android.bridge.command.BridgeCommandExecutor
+import app.n_zik.android.bridge.command.CommandResult
 import app.n_zik.android.bridge.library.LibraryProvider
 import app.n_zik.android.bridge.pairing.InMemoryPairedDeviceStorage
 import app.n_zik.android.bridge.pairing.JsonPairedDeviceStore
@@ -82,6 +83,39 @@ object BridgeServerController {
 
     private val offerSender = PairingOfferSender()
 
+    private val _audioOutput = MutableStateFlow(AudioOutput.PHONE)
+
+    /**
+     * Audio output of the running server (contract §8.5): [AudioOutput.PC] mutes the phone's
+     * player (it keeps playing silently). Always [AudioOutput.PHONE] without a running server.
+     */
+    val audioOutput: StateFlow<AudioOutput> = _audioOutput.asStateFlow()
+
+    @Volatile
+    private var activeOutputs: AudioOutputController? = null
+
+    /** Output control of the running server, `null` once it stops. */
+    internal fun attachOutputs(outputs: AudioOutputController?) {
+        activeOutputs = outputs
+    }
+
+    /** Mirror of the running server's output; also the reset to the phone when it stops. */
+    internal fun publishAudioOutput(output: AudioOutput) {
+        _audioOutput.value = output
+    }
+
+    /**
+     * Output chosen from the phone's UI (contract §8.5): the `outputChanged` delta is sent to
+     * the PC as for a command. `false` when refused (no running server, or `pc` without a
+     * connected PC).
+     */
+    suspend fun selectAudioOutput(output: AudioOutput): Boolean {
+        val outputs = activeOutputs ?: return output == AudioOutput.PHONE
+        val result = withContext(NonCancellable) { outputs.select(output) }
+        if (result !is CommandResult.Applied) Timber.tag(TAG).i("Audio output $output refused")
+        return result is CommandResult.Applied
+    }
+
     internal fun publish(state: BridgeState) {
         _state.value = state
     }
@@ -136,6 +170,8 @@ object BridgeServerController {
         commandExecutor: BridgeCommandExecutor = BridgeCommandExecutor.UNAVAILABLE,
         libraryProvider: LibraryProvider = LibraryProvider.EMPTY,
         audioLibrary: AudioLibrary = AudioLibrary.EMPTY,
+        /** Called after each session end: the audio output fallback (contract §6.2). */
+        onSessionEnded: suspend () -> Unit = {},
     ): BridgeServerCore {
         lateinit var core: BridgeServerCore
         core = BridgeServerCore(
@@ -152,6 +188,7 @@ object BridgeServerController {
             },
             onActiveDeviceChanged = { syncActiveDevice(core) },
             onCommandAccepted = { _commandTicks.tryEmit(Unit) },
+            onSessionEnded = onSessionEnded,
         )
         return core
     }

@@ -1,9 +1,11 @@
 package app.n_zik.android.bridge.command
 
 import app.n_zik.android.bridge.AddPosition
+import app.n_zik.android.bridge.AudioOutput
 import app.n_zik.android.bridge.BridgeContract
 import app.n_zik.android.bridge.BridgeJson
 import app.n_zik.android.bridge.EmptyCommandBody
+import app.n_zik.android.bridge.OutputCommandBody
 import app.n_zik.android.bridge.QueueAddCommandBody
 import app.n_zik.android.bridge.QueueItemCommandBody
 import app.n_zik.android.bridge.QueueMoveCommandBody
@@ -47,6 +49,14 @@ internal sealed interface PlayerAction {
     data class QueueMove(val fromIndex: Int, val toIndex: Int, val trackId: String) : PlayerAction
     data class QueueJump(val index: Int, val trackId: String) : PlayerAction
     data object QueueClear : PlayerAction
+
+    /**
+     * `/player/output` (since 1.2): never reaches the player, only the audio output changes
+     * (contract §8.5, §9). Not a playback control, so the guest lock does not apply.
+     */
+    data class Output(val output: AudioOutput) : PlayerAction {
+        override val guarded: Boolean get() = false
+    }
 }
 
 /** A validated command and the client's `commandId`, copied into a late WS `error` (contract §7.6). */
@@ -68,6 +78,15 @@ internal sealed interface CommandResult {
 
     /** `404 NOT_FOUND`: a `trackId` is not in the library, nothing applied. */
     data object NotFound : CommandResult
+}
+
+/** Changes the audio output of the running server (contract §8.5, §9). */
+internal fun interface AudioOutputSelector {
+    /**
+     * `Applied` (`changed: false` when [output] was already selected) or `Rejected` when
+     * `pc` is asked without an active WebSocket session.
+     */
+    suspend fun select(output: AudioOutput): CommandResult
 }
 
 /** Applies commands to the phone's player. Implementations serialize concurrent calls. */
@@ -124,6 +143,7 @@ internal object BridgeCommandParser {
         },
         "player/repeat" to route(RepeatCommandBody.serializer()) { PlayerAction.Repeat(it.mode) to it.commandId },
         "player/shuffle" to route(ShuffleCommandBody.serializer()) { PlayerAction.Shuffle(it.enabled) to it.commandId },
+        "player/output" to route(OutputCommandBody.serializer()) { PlayerAction.Output(it.output) to it.commandId },
         "queue/play" to route(QueuePlayCommandBody.serializer()) { body ->
             (PlayerAction.QueuePlay(body.trackIds, body.startIndex, body.positionMs) to body.commandId).takeIf {
                 validTrackIds(body.trackIds) && body.startIndex in body.trackIds.indices && body.positionMs >= 0

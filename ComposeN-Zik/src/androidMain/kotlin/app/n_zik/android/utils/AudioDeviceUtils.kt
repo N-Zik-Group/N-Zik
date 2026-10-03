@@ -7,6 +7,7 @@ import android.os.Build
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import app.n_zik.android.components.menu.player.AudioDeviceType
+import app.n_zik.android.playback.services.AudioOutputManager
 
 /**
  * Checks if Bluetooth headphones (A2DP or SCO) are currently connected.
@@ -130,6 +131,9 @@ fun getAudioDeviceIcon(type: Int, name: String?, isCarForced: Boolean = false): 
         }
         
         AudioDeviceInfo.TYPE_BUS -> app.n_zik.android.R.drawable.car
+
+        // Virtual output of the PC bridge (contract §8.5)
+        AudioOutputManager.TYPE_BRIDGE_PC -> Icons.Filled.Computer
         
         else -> app.n_zik.android.R.drawable.devices
     }
@@ -160,5 +164,6 @@ fun getBottomSheetDeviceIcon(
         AudioDeviceType.HDMI -> Icons.Filled.Tv
         AudioDeviceType.EXTERNAL_SPEAKER -> Icons.Filled.Speaker
         AudioDeviceType.PHONE_SPEAKER -> Icons.Filled.PhoneAndroid
+        AudioDeviceType.PC -> Icons.Filled.Computer
     }
 }

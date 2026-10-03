@@ -23,6 +23,7 @@ import app.n_zik.android.bridge.state.BridgeStateHub
 import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.drop
@@ -31,6 +32,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.util.concurrent.atomic.AtomicReference
 import timber.log.Timber
@@ -57,6 +59,8 @@ class BridgeServerService : Service() {
     private val scope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
     private var wifiMonitor: WifiNetworkMonitor? = null
     private var server: BridgeServer? = null
+    // Output control of the running server: its fallback runs at stop (contract §6.2)
+    private var outputs: AudioOutputController? = null
     // Written on the DATA scope, released from the DATA scope or onDestroy (main thread)
     private val playerSource = AtomicReference<BridgePlayerSource?>(null)
     private var wifiWatch: Job? = null
@@ -88,6 +92,9 @@ class BridgeServerService : Service() {
     }
 
     override fun onDestroy() {
+        // Never leave the phone muted without a server
+        BridgeServerController.attachOutputs(null)
+        BridgeServerController.publishAudioOutput(AudioOutput.PHONE)
         wifiMonitor?.stop()
         releasePlayerSource()
         scope.cancel()
@@ -114,20 +121,30 @@ class BridgeServerService : Service() {
         val lateFailures = LateFailureTracker(stateHub)
         val source = BridgePlayerSource(this, stateHub, onPlayerError = lateFailures::onPlayerError).also { it.start() }
         playerSource.getAndSet(source)?.stop()
+        // The output control needs the core (active session) and the core its fallback: tied lazily
+        lateinit var core: BridgeServerCore
+        val audioOutputs = AudioOutputController(
+            hub = stateHub,
+            player = source,
+            hasActiveSession = { core.activeDevice.value != null },
+            onOutputChanged = BridgeServerController::publishAudioOutput,
+        )
         val executor = PlayerCommandExecutor(
             player = source,
             hub = stateHub,
             lateFailures = lateFailures,
             settings = PreferencePlayerSettings(this),
             guestLocked = { listenTogetherGuestLock.value },
+            outputs = audioOutputs,
         )
-        val core = BridgeServerController.createCore(
+        core = BridgeServerController.createCore(
             serverName = Build.MODEL,
             deviceStore = BridgeServerController.loadDeviceStore(this),
             stateHub = stateHub,
             commandExecutor = executor,
             libraryProvider = DatabaseLibraryProvider(this),
             audioLibrary = PhoneAudioLibrary(this),
+            onSessionEnded = audioOutputs::fallback,
         )
         val bridge = BridgeServer(core)
         val port = runCatching { bridge.start(host) }
@@ -138,6 +155,8 @@ class BridgeServerService : Service() {
             return finish(BridgeState.Failed, getString(R.string.bridge_server_failed))
         }
         server = bridge
+        outputs = audioOutputs
+        BridgeServerController.attachOutputs(audioOutputs)
         BridgeServerController.attachCore(core)
         BridgeServerController.publish(BridgeState.Running(host, port, viaHotspot))
         startInForeground(getString(R.string.bridge_server_running_address, host, port))
@@ -182,8 +201,13 @@ class BridgeServerService : Service() {
         autoStopWatch?.cancel()
         BridgeServerController.closePairing()
         BridgeServerController.attachCore(null)
+        // No output change from the UI once stopping: the fallback below is the last one
+        BridgeServerController.attachOutputs(null)
         BridgeServerController.publish(BridgeState.Stopping)
         bridge.stop(code)
+        // Contract §6.2: the server stop ends the session, pause then phone (no-op when already done)
+        outputs?.let { withContext(NonCancellable) { it.fallback() } }
+        outputs = null
         // After the sessions are closed: serverStopped stays the last message they received
         releasePlayerSource()
         val message = when (code) {
@@ -201,6 +225,7 @@ class BridgeServerService : Service() {
 
     /** Publishes the final [state], posts the "stopped" notification when [message] is set, and ends the service. */
     private fun finish(state: BridgeState, message: String?) {
+        BridgeServerController.publishAudioOutput(AudioOutput.PHONE)
         wifiMonitor?.stop()
         wifiMonitor = null
         // No server, no pairing: the code only lives while the server runs (contract §4.1)

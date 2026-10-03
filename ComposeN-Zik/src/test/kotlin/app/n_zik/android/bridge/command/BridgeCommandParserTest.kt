@@ -1,6 +1,7 @@
 package app.n_zik.android.bridge.command
 
 import app.n_zik.android.bridge.AddPosition
+import app.n_zik.android.bridge.AudioOutput
 import app.n_zik.android.bridge.state.RepeatModeDto
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -81,5 +82,15 @@ class BridgeCommandParserTest {
     fun `unknown enum values are invalid`() {
         assertInvalid("player/repeat", """{"mode":"forever"}""")
         assertInvalid("queue/add", """{"trackIds":["a"],"position":"first"}""")
+    }
+
+    @Test
+    fun `player output parses phone and pc, anything else is a 400`() {
+        assertEquals(BridgeCommand(PlayerAction.Output(AudioOutput.PC), "c-9"), valid("player/output", """{"output":"pc","commandId":"c-9"}"""))
+        assertEquals(BridgeCommand(PlayerAction.Output(AudioOutput.PHONE)), valid("player/output", """{"output":"phone"}"""))
+        assertInvalid("player/output", """{"output":"tv"}""")
+        assertInvalid("player/output", """{"output":"PC"}""")
+        assertInvalid("player/output", "{}")
+        assertEquals(false, PlayerAction.Output(AudioOutput.PC).guarded)
     }
 }

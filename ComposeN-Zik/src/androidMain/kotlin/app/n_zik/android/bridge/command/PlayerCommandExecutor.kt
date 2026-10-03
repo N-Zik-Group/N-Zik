@@ -18,6 +18,7 @@ import app.it.fast4x.rimusic.utils.playbackSpeedKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.restoreGlobalVolume
 import app.n_zik.android.bridge.AddPosition
+import app.n_zik.android.bridge.AudioOutput
 import app.n_zik.android.bridge.BridgeContract
 import app.n_zik.android.bridge.BridgeErrorCode
 import app.n_zik.android.bridge.state.BridgeStateHub
@@ -139,6 +140,8 @@ internal class PlayerCommandExecutor(
     private val tracks: TrackResolver = DatabaseTrackResolver,
     /** Listen Together guest lock, read on the main thread at every command. */
     private val guestLocked: () -> Boolean,
+    /** Audio output of `/player/output` (contract §8.5); without one, only `phone` is accepted. */
+    private val outputs: AudioOutputSelector? = null,
 ) : BridgeCommandExecutor {
 
     private sealed interface Outcome {
@@ -154,6 +157,10 @@ internal class PlayerCommandExecutor(
 
     override suspend fun execute(command: BridgeCommand): CommandResult = mutex.withLock {
         val action = command.action
+        // Contract §9: the output never goes through the player, only through the output control
+        if (action is PlayerAction.Output) {
+            return@withLock selectOutput(action.output).also { Timber.tag(TAG).d("Output ${action.output} -> ${it::class.simpleName}") }
+        }
         val trackIds = when (action) {
             is PlayerAction.QueuePlay -> action.trackIds
             is PlayerAction.QueueAdd -> action.trackIds.distinct()
@@ -180,6 +187,12 @@ internal class PlayerCommandExecutor(
             }
         }.also { Timber.tag(TAG).d("${action::class.simpleName} -> ${it::class.simpleName}") }
     }
+
+    private suspend fun selectOutput(output: AudioOutput): CommandResult =
+        outputs?.select(output) ?: when (output) {
+            AudioOutput.PHONE -> CommandResult.Applied(changed = false, revision = hub.currentRevision)
+            AudioOutput.PC -> CommandResult.Rejected
+        }
 
     private fun Refusal.toResult(revision: Long): CommandResult = when (this) {
         Refusal.UNAVAILABLE -> CommandResult.Unavailable
@@ -291,6 +304,8 @@ internal class PlayerCommandExecutor(
                 p.clearMediaItems()
                 Outcome.Done()
             }
+            // Handled before the player is reached (see execute)
+            is PlayerAction.Output -> Outcome.Done()
         }
     }
 
