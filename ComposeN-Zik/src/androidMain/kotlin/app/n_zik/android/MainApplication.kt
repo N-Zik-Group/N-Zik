@@ -60,6 +60,7 @@ import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.network.client.Store
 import app.n_zik.android.core.notifications.ensureProfileChannels
 import app.n_zik.android.core.rescue.RescueProcess
+import app.n_zik.android.components.settings.applyUseLoginForSearch
 import app.n_zik.android.core.settings.ensureDefaultColorPaletteMode
 import app.n_zik.android.extensions.audiobar.VisualizerCaptureCoordinator
 import app.n_zik.android.listentogether.ListenTogetherClient
@@ -331,6 +332,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             }
             val useLoginForBrowse = preferences.getBoolean(useLoginForBrowseKey, true)
             Innertube.useLoginForBrowse = useLoginForBrowse
+            applyUseLoginForSearch(this)
             
             NetworkClientFactory.configure(
                 proxy = proxy,
@@ -339,6 +341,10 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             Innertube.proxy = proxy
             MBNetwork.proxy = proxy
             
+            // useLoginForSearch is deliberately NOT force-disabled/persisted like
+            // useLoginForBrowse in the cookie branches below: without a valid cookie both
+            // ON and OFF send guest requests, and a persisted OFF must survive (re)login
+            // (spec matrix "OFF then login" — the Accounts screen never resets it either).
             val savedCookie = encryptedPreferences.getString(ytCookieKey, "")
             if (!savedCookie.isNullOrBlank()) {
                 Innertube.cookie = savedCookie

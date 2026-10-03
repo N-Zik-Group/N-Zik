@@ -98,6 +98,7 @@ import app.n_zik.android.extensions.discord.DiscordTemplateFieldActions
 import app.n_zik.android.extensions.discord.DiscordTemplateRenderer
 import app.n_zik.android.components.settings.ProfileFaceCard
 import app.n_zik.android.components.settings.LastFmSettingsCard
+import app.n_zik.android.components.settings.YtSearchAccountToggle
 import app.n_zik.android.components.ui.screens.profiles.ProfileAccountCard
 import app.n_zik.android.components.settings.ListenTogetherSettingsCard
 import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
@@ -661,6 +662,7 @@ fun AccountsSettings() {
                                 )
                             }
                             }
+                            YtSearchAccountToggle(isYouTubeLoginEnabled = isYouTubeLoginEnabled, isLoggedIn = isLoggedIn, searchQuery = search.inputValue)
 
 
                         }

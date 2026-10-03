@@ -28,6 +28,7 @@ dependencies {
 
     testImplementation(libs.bundles.junit5)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
     testRuntimeOnly(libs.junit.platform)
 }
 

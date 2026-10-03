@@ -33,6 +33,7 @@ import it.fast4x.innertube.utils.ProxyPreferences
 import it.fast4x.innertube.utils.YoutubePreferences
 import it.fast4x.innertube.utils.getProxy
 import it.fast4x.innertube.utils.parseCookieString
+import kotlin.concurrent.Volatile
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.net.Proxy
@@ -141,7 +142,9 @@ object Innertube {
     var client = createClient()
         private set
 
-    private var innerTubeX = com.metrolist.innertubex.InnerTube(client)
+    // internal (not private) so module-internal tests can inject an InnertubeX stub —
+    // the app module cannot reach it, so the module's public API is unchanged
+    internal var innerTubeX = com.metrolist.innertubex.InnerTube(client)
     private var transportGeneration = 0L
 
     var proxy: Proxy? = null
@@ -178,6 +181,14 @@ object Innertube {
     var useLoginForBrowse: Boolean
         get() = innerTubeX.useLoginForBrowse
         set(value) { innerTubeX.useLoginForBrowse = value }
+
+    // When false, [search] sends guest requests (no account cookie/auth/dataSyncId)
+    // even while an account session is loaded — keeps searches out of the account
+    // history/suggestions. Restored from the app's settings at startup (MainApplication).
+    // @Volatile: written on the main thread (startup restore, toggle click) and read by
+    // [search] on a background dispatcher.
+    @Volatile
+    var useLoginForSearch: Boolean = true
 
     @Synchronized
     private fun recreateTransport() {
@@ -668,6 +679,7 @@ object Innertube {
         query = query,
         params = params,
         continuation = continuation,
+        setLogin = searchSetLogin(useLoginForSearch),
     )
 
     suspend fun getQueue(
@@ -953,4 +965,18 @@ object Innertube {
         poToken: String? = null,
     ) = innerTubeX.player(client, videoId, playlistId, signatureTimestamp, poToken)
 }
+
+/**
+ * Maps the [Innertube.useLoginForSearch] setting to the `setLogin` argument of
+ * `InnerTube.search` (innertubex).
+ *
+ * `true` (setting ON) -> `null`: the library default, i.e. an authenticated request
+ * when a session is loaded — the pre-existing behavior, kept exactly (including any
+ * future upstream evolution of that default).
+ * `false` (setting OFF) -> `false`: an explicit guest request — no account cookie,
+ * no X-Goog-AuthUser/SAPISIDHASH and a null dataSyncId in the body context
+ * (visitorData is still sent, as in any innertubex request).
+ */
+internal fun searchSetLogin(useLoginForSearch: Boolean): Boolean? =
+    if (useLoginForSearch) null else false
 
