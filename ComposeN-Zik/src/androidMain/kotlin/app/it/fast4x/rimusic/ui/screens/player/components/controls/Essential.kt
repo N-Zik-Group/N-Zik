@@ -1,6 +1,7 @@
 @file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.it.fast4x.rimusic.ui.screens.player.components.controls
 
+import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.uiRoundnessShape
 
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -134,7 +135,8 @@ fun InfoAlbumAndArtistEssential(
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     var effectRotationEnabled by rememberPreference(effectRotationKey, false)
     var showthumbnail by rememberPreference(showthumbnailKey, true)
-    var isRotated by rememberSaveable { mutableStateOf(false) }
+    // Issue #881 (gh-881): tolerant saver (spec M5).
+    var isRotated by rememberSaveable(saver = TolerantBoolStateSaver("essential.infoAlbumArtist.isRotated")) { mutableStateOf(false) }
     var showSelectDialog by remember { mutableStateOf(false) }
     var textoutline by rememberPreference(textoutlineKey, false)
     val buttonState by rememberPreference(buttonStateKey, ButtonState.Idle)
@@ -419,7 +421,8 @@ fun ControlsEssential(
     val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
     var effectRotationEnabled by rememberPreference(effectRotationKey, false)
-    var isRotated by rememberSaveable { mutableStateOf(false) }
+    // Issue #881 (gh-881): tolerant saver (spec M5).
+    var isRotated by rememberSaveable(saver = TolerantBoolStateSaver("essential.controls.isRotated")) { mutableStateOf(false) }
     val rotationAngle by animateFloatAsState(
         targetValue = if (isRotated) 360F else 0f,
         animationSpec = tween(durationMillis = 200), label = ""

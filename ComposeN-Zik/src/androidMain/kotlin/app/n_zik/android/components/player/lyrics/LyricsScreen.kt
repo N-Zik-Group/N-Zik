@@ -54,6 +54,8 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.typography
+import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
+import app.n_zik.android.ui.saveable.TolerantStringStateSaver
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.launch
@@ -177,14 +179,17 @@ fun LyricsScreen(
         var karaokeRespectAgentPosition by rememberPreference(karaokeRespectAgentPositionKey, true)
         var lyricsSizeAnimate by rememberPreference(lyricsSizeAnimateKey, false)
         val mediaMetadata = mediaMetadataProvider()
-        var editedArtistName by rememberSaveable { mutableStateOf<String?>(null) }
-        var editedTitle by rememberSaveable { mutableStateOf<String?>(null) }
+        // Issue #881 (gh-881): tolerant savers (spec M5) — these slots live in the Player
+        // screen's sub-composition, the subtree most exposed to positional saveable shifts.
+        var editedArtistName by rememberSaveable(saver = TolerantStringStateSaver("lyrics.editedArtistName")) { mutableStateOf<String?>(null) }
+        var editedTitle by rememberSaveable(saver = TolerantStringStateSaver("lyrics.editedTitle")) { mutableStateOf<String?>(null) }
         var artistName = editedArtistName ?: cleanPrefix(mediaMetadata.artist?.toString().orEmpty())
         var title = editedTitle ?: cleanPrefix(mediaMetadata.title?.toString().orEmpty())
         var lyricsSize by rememberPreference(lyricsSizeKey, 20f)
         var lyricsSizeL by rememberPreference(lyricsSizeLKey, 20f)
         var customSize = if (isLandscape) lyricsSizeL else lyricsSize
-        var showLyricsSizeDialog by rememberSaveable { mutableStateOf(false) }
+        // Issue #881 (gh-881): tolerant saver (spec M5).
+        var showLyricsSizeDialog by rememberSaveable(saver = TolerantBoolStateSaver("lyrics.showLyricsSizeDialog")) { mutableStateOf(false) }
         var isAutoScrollEnabled by remember { mutableStateOf(true) }
 
         // Reset auto-scroll whenever the mode changes so lyrics re-center automatically
@@ -197,7 +202,8 @@ fun LyricsScreen(
         val effectRotationEnabled by rememberPreference(effectRotationKey, false)
         var landscapeControls by rememberPreference(landscapeControlsKey, true)
         var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
-        var isRotated by rememberSaveable { mutableStateOf(false) }
+        // Issue #881 (gh-881): tolerant saver (spec M5).
+        var isRotated by rememberSaveable(saver = TolerantBoolStateSaver("lyrics.isRotated")) { mutableStateOf(false) }
         val rotationAngle by animateFloatAsState(targetValue = if (isRotated) 360F else 0f, animationSpec = tween(durationMillis = 200), label = "")
         val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
 

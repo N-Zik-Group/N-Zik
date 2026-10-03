@@ -27,6 +27,7 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
 import androidx.media3.common.util.UnstableApi
+import app.n_zik.android.ui.saveable.TolerantIntStateSaver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -237,7 +238,14 @@ fun rememberPlayerSheetState(
     val density = LocalDensity.current
     val coroutineScope = rememberCoroutineScope()
 
-    var previousAnchor by rememberSaveable {
+    // Issue #881 (gh-881): tolerant Int saver (spec M5). The default MUST be a valid PlayerSheet
+    // anchor — a foreign payload restoring to a value outside {dismissed, collapsed, expanded}
+    // would crash the `when(previousAnchor)` below on error("Unknown PlayerSheet anchor").
+    var previousAnchor by rememberSaveable(
+        saver = TolerantIntStateSaver(initialAnchor, "playerSheet.previousAnchor") {
+            it in setOf(expandedAnchor, collapsedAnchor, dismissedAnchor)
+        },
+    ) {
         mutableStateOf(initialAnchor)
     }
 

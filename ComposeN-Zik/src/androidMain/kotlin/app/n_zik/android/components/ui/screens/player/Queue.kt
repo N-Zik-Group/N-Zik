@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.media3.common.Player
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
+import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.it.fast4x.rimusic.enums.QueueLoopType
 import kotlinx.coroutines.CoroutineScope
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.ConfirmDialog
@@ -200,7 +201,9 @@ fun DeleteFromQueue(
     override val isEnabled: Boolean
         get() = !guestLocked
 
-    override var isActive: Boolean by rememberSaveable { mutableStateOf(false) }
+    // Issue #881 (gh-881): tolerant saver — this slot is composed inside the Player screen's
+    // BoxWithConstraints sub-composition (the 15:23:55 CCE crash spot, spec M5).
+    override var isActive: Boolean by rememberSaveable(saver = TolerantBoolStateSaver("queue.deleteFromQueue.isActive")) { mutableStateOf(false) }
 
     override fun onShortClick() { if (!guestLocked) isActive = !isActive }
 

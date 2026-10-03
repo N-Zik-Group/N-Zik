@@ -3,6 +3,7 @@ package app.it.fast4x.rimusic.ui.screens.player.components.controls
 
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.CircularWavyProgressIndicator
+import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.uiRoundnessShape
 
 import android.os.Build
@@ -124,7 +125,8 @@ fun InfoAlbumAndArtistModern(
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     var showthumbnail by rememberPreference(showthumbnailKey, true)
     var effectRotationEnabled by rememberPreference(effectRotationKey, false)
-    var isRotated by rememberSaveable { mutableStateOf(false) }
+    // Issue #881 (gh-881): tolerant saver (spec M5).
+    var isRotated by rememberSaveable(saver = TolerantBoolStateSaver("modern.infoAlbumArtist.isRotated")) { mutableStateOf(false) }
     var showSelectDialog by remember { mutableStateOf(false) }
     val playerBackgroundColors by rememberPreference(playerBackgroundColorsKey,PlayerBackgroundColors.AnimatedGradient)
     val playerInfoShowIcon by rememberPreference(playerInfoShowIconsKey, true)
@@ -423,7 +425,8 @@ fun ControlsModern(
         else -> colorPalette().accent
     }
     var effectRotationEnabled by rememberPreference(effectRotationKey, false)
-    var isRotated by rememberSaveable { mutableStateOf(false) }
+    // Issue #881 (gh-881): tolerant saver (spec M5).
+    var isRotated by rememberSaveable(saver = TolerantBoolStateSaver("modern.controls.isRotated")) { mutableStateOf(false) }
     val rotationAngle by animateFloatAsState(
         targetValue = if (isRotated) 360F else 0f,
         animationSpec = tween(durationMillis = 200), label = ""

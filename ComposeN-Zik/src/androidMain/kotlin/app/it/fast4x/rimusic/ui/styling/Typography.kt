@@ -11,6 +11,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import app.n_zik.android.R
+import app.n_zik.android.ui.saveable.reportSaveableMismatch
+import app.n_zik.android.ui.saveable.reportTruncatedSaveable
 import app.it.fast4x.rimusic.enums.FontType
 
 @Immutable
@@ -39,13 +41,42 @@ data class Typography(
         xlxl = xlxl.copy(color = color),
     )
 
-    companion object : Saver<Typography, List<Any>> {
-        override fun restore(value: List<Any>) = typographyOf(
-            Color((value[0] as Long).toULong()),
-            value[1] as Boolean,
-            value[2] as Boolean,
-            value[3] as FontType
-        )
+    companion object : Saver<Typography, Any> {
+        /**
+         * Process-wide fallback (dark default text color, Rubik) for corrupted payloads — mirrors
+         * the app's default preferences (issue #881, gh-881).
+         */
+        val fallback: Typography get() =
+            typographyOf(DefaultDarkColorPalette.text, useSystemFont = false, applyFontPadding = false, FontType.Rubik)
+
+        /**
+         * Issue #881 (gh-881): tolerant restore (spec M5). The saved payload is the 4-element
+         * `List` `[colorValue, useSystemFont, applyFontPadding, fontType]` — but a positional
+         * saveable shift can deliver a foreign payload (any type) or a truncated list: safe
+         * casts + [fallback] instead of a `ClassCastException`. A valid payload restores
+         * exactly the same typography as before.
+         */
+        override fun restore(value: Any): Typography {
+            val list = value as? List<*>
+            if (list == null) {
+                reportSaveableMismatch<List<*>>("typography", value)
+                return fallback
+            }
+            val colorValue = list.getOrNull(0) as? Long
+            if (colorValue == null) {
+                reportSaveableMismatch<Long>("typography.color", list.getOrNull(0))
+                return fallback
+            }
+            // A valid typography payload always has 4 elements — color present but the
+            // booleans / font type missing.
+            if (list.size < 4) reportTruncatedSaveable("typography.truncated", list.size, 4)
+            return typographyOf(
+                Color(colorValue.toULong()),
+                list.getOrNull(1) as? Boolean ?: false,
+                list.getOrNull(2) as? Boolean ?: false,
+                list.getOrNull(3) as? FontType ?: FontType.Rubik
+            )
+        }
 
         override fun SaverScope.save(value: Typography) =
             listOf(

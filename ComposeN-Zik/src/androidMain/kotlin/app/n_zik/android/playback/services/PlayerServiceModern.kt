@@ -119,8 +119,10 @@ import app.n_zik.android.isPauseOnHeadphoneDisconnectEnabled
 import app.it.fast4x.rimusic.models.Event
 import app.it.fast4x.rimusic.models.QueuedMediaItem
 import app.it.fast4x.rimusic.models.Song
+import app.n_zik.android.playback.services.diagnostics.DiagExoPlayer
 import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
 import app.n_zik.android.playback.services.diagnostics.PlaybackStallWatchdog
+import app.n_zik.android.playback.services.diagnostics.discontinuityReasonName
 import app.n_zik.android.playback.utils.BitmapProvider
 import app.n_zik.android.playback.utils.NZikRadio
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -682,26 +684,31 @@ class PlayerServiceModern : MediaLibraryService(),
         }
 
 
-        player = ExoPlayer.Builder(this)
-            .setMediaSourceFactory(createMediaSourceFactory())
-            .setRenderersFactory(createRendersFactory())
-            .setHandleAudioBecomingNoisy(false)
-            .setWakeMode(C.WAKE_MODE_NETWORK)
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(C.USAGE_MEDIA)
-                    .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-                    .build(),
-                isHandleAudioFocusEnabled()
-            )
-            .setUsePlatformDiagnostics(false)
-            .setSeekBackIncrementMs(5000)
-            .setSeekForwardIncrementMs(5000)
-            .build()
-            .apply {
-                addListener(this@PlayerServiceModern)
-                addAnalyticsListener(PlaybackStatsListener(false, this@PlayerServiceModern))
-            }
+        // Issue #881 (gh-881): wrap the primary player in the diagnostics facade (spec S1) —
+        // every seek (UI / MediaSession / internal) is observed with the caller's stack trace.
+        // The builder config is unchanged; the wrapper delegates every member to the real player.
+        player = DiagExoPlayer(
+            ExoPlayer.Builder(this)
+                .setMediaSourceFactory(createMediaSourceFactory())
+                .setRenderersFactory(createRendersFactory())
+                .setHandleAudioBecomingNoisy(false)
+                .setWakeMode(C.WAKE_MODE_NETWORK)
+                .setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(C.USAGE_MEDIA)
+                        .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                        .build(),
+                    isHandleAudioFocusEnabled()
+                )
+                .setUsePlatformDiagnostics(false)
+                .setSeekBackIncrementMs(5000)
+                .setSeekForwardIncrementMs(5000)
+                .build()
+                .apply {
+                    addListener(this@PlayerServiceModern)
+                    addAnalyticsListener(PlaybackStatsListener(false, this@PlayerServiceModern))
+                }
+        )
 
         // Guarded delegation facade for all external entry points (spec-listen-together-guest-lock-hardening,
         // spine AD-1): MediaSession / lockscreen / automotive commands route through it, so a
@@ -2364,7 +2371,19 @@ class PlayerServiceModern : MediaLibraryService(),
         reason: Int
     ) {
         Timber.tag("PlayerServiceModern").d("onPositionDiscontinuity oldPosition ${oldPosition.mediaItemIndex} newPosition ${newPosition.mediaItemIndex} reason $reason")
-        
+        // Issue #881 (gh-881): full discontinuity journal (spec S2) — positions in ms + the NAMED
+        // reason (media3 1.10.1: SEEK=1, SEEK_ADJUSTMENT=2, … — the legacy line above prints the
+        // raw int and the index only, which reads misleadingly).
+        Timber.tag(PLAYBACK_DIAG_TAG).d(
+            "DISCONTINUITY old=%d@%d new=%d@%d reason=%s playerIdentity=%d",
+            oldPosition.mediaItemIndex,
+            oldPosition.positionMs,
+            newPosition.mediaItemIndex,
+            newPosition.positionMs,
+            discontinuityReasonName(reason),
+            System.identityHashCode(player),
+        )
+
         if (!isInternalCrossfadeSeek && (reason == Player.DISCONTINUITY_REASON_SEEK || reason == Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT || reason == Player.DISCONTINUITY_REASON_SKIP)) {
             cancelCrossfadeAndReset()
         }
@@ -3008,19 +3027,23 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     private fun createCrossfadeExoPlayer(): ExoPlayer {
-        return ExoPlayer.Builder(this)
-            .setMediaSourceFactory(createMediaSourceFactory())
-            .setRenderersFactory(createRendersFactory())
-            .setWakeMode(C.WAKE_MODE_NETWORK)
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(C.USAGE_MEDIA)
-                    .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-                    .build(),
-                false // NEVER handle audio focus for secondary player
-            )
-            .setUsePlatformDiagnostics(false)
-            .build()
+        // Issue #881 (gh-881): the secondary (crossfade) player is wrapped in the diagnostics
+        // facade too — a seek landing on it must be visible in the same SEEK_CALL journal (spec S1).
+        return DiagExoPlayer(
+            ExoPlayer.Builder(this)
+                .setMediaSourceFactory(createMediaSourceFactory())
+                .setRenderersFactory(createRendersFactory())
+                .setWakeMode(C.WAKE_MODE_NETWORK)
+                .setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(C.USAGE_MEDIA)
+                        .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                        .build(),
+                    false // NEVER handle audio focus for secondary player
+                )
+                .setUsePlatformDiagnostics(false)
+                .build()
+        )
     }
 
     /**

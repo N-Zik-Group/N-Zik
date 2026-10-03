@@ -2,6 +2,7 @@ package app.it.fast4x.rimusic.ui.screens.player
 
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.appRunningInBackground
+import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 
 import app.n_zik.android.core.database.*
 import app.n_zik.android.utils.artistIdsWithFallback
@@ -475,17 +476,20 @@ fun Player(
         mutableStateOf(binder.player.shouldBePlaying)
     }
 
-    val rotateState = rememberSaveable { mutableStateOf( false ) }
+    // Issue #881 (gh-881): tolerant saver — this was the exact 15:23:55 CCE crash slot
+    // (Player.kt:478, spec M5): a foreign payload now restores to the default, never throws.
+    val rotateState = rememberSaveable(saver = TolerantBoolStateSaver("player.rotateState")) { mutableStateOf( false ) }
     var isRotated by rotateState
     val rotationAngle by animateFloatAsState(
         targetValue = if (isRotated) 360F else 0f,
         animationSpec = tween(durationMillis = 200), label = ""
     )
 
-    val showQueueState = rememberSaveable { mutableStateOf( false ) }
+    // Issue #881 (gh-881): tolerant savers (spec M5).
+    val showQueueState = rememberSaveable(saver = TolerantBoolStateSaver("player.showQueue")) { mutableStateOf( false ) }
     var showQueue by showQueueState
 
-    val showSearchEntityState = rememberSaveable { mutableStateOf( false ) }
+    val showSearchEntityState = rememberSaveable(saver = TolerantBoolStateSaver("player.showSearchEntity")) { mutableStateOf( false ) }
     var showSearchEntity by showSearchEntityState
 
     val showVisualizerState = LocalIsShowingVisualizer.current
@@ -493,7 +497,7 @@ fun Player(
     val showLyricsState = LocalIsShowingLyrics.current
     var isShowingLyrics by showLyricsState
     
-    val showSleepTimerState = rememberSaveable { mutableStateOf( false ) }
+    val showSleepTimerState = rememberSaveable(saver = TolerantBoolStateSaver("player.showSleepTimer")) { mutableStateOf( false ) }
     var isShowingSleepTimerDialog by showSleepTimerState
 
     var suppressSavedRestoreOnNextOpen by remember { mutableStateOf(false) }
@@ -591,7 +595,8 @@ fun Player(
        }
    }
 
-    var showThumbnailOffsetDialog by rememberSaveable {
+    // Issue #881 (gh-881): tolerant saver (spec M5).
+    var showThumbnailOffsetDialog by rememberSaveable(saver = TolerantBoolStateSaver("player.showThumbnailOffsetDialog")) {
         mutableStateOf(false)
     }
 
@@ -861,7 +866,8 @@ fun Player(
     }
 
 
-    var isShowingStatsForNerds by rememberSaveable {
+    // Issue #881 (gh-881): tolerant saver (spec M5).
+    var isShowingStatsForNerds by rememberSaveable(saver = TolerantBoolStateSaver("player.isShowingStatsForNerds")) {
         mutableStateOf(false)
     }
 

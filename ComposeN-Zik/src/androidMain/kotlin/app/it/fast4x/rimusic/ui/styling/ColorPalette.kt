@@ -9,6 +9,8 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils
 import androidx.palette.graphics.Palette
+import app.n_zik.android.ui.saveable.reportSaveableMismatch
+import app.n_zik.android.ui.saveable.reportTruncatedSaveable
 import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.it.fast4x.rimusic.enums.ColorPaletteName
 
@@ -30,16 +32,42 @@ data class ColorPalette(
     val isDark: Boolean,
     val iconButtonPlayer: Color,
 ) {
-    companion object : Saver<ColorPalette, List<Any>> {
-        override fun restore(value: List<Any>) = when (val accent = value[0] as Int) {
-            0 -> DefaultDarkColorPalette
-            1 -> DefaultLightColorPalette
-            2 -> PureBlackColorPalette
-            3 -> ModernBlackColorPalette
-            else -> dynamicColorPaletteOf(
-                FloatArray(3).apply { ColorUtils.colorToHSL(accent, this) },
-                value[1] as Boolean
-            )
+    companion object : Saver<ColorPalette, Any> {
+        /**
+         * Process-wide fallback (dark default) for corrupted payloads — the dark default is the
+         * app's own default mode (issue #881, gh-881).
+         */
+        val fallback: ColorPalette get() = DefaultDarkColorPalette
+
+        /**
+         * Issue #881 (gh-881): tolerant restore (spec M5). The saved payload is the 2-element
+         * `List` `[accentArgb, isDark]` — but a positional saveable shift can deliver a foreign
+         * payload (any type) or a truncated list: safe casts + [fallback] instead of a
+         * `ClassCastException`. A valid payload restores exactly the same palette as before.
+         */
+        override fun restore(value: Any): ColorPalette {
+            val list = value as? List<*>
+            if (list == null) {
+                reportSaveableMismatch<List<*>>("colorPalette", value)
+                return fallback
+            }
+            val accent = list.getOrNull(0) as? Int
+            if (accent == null) {
+                reportSaveableMismatch<Int>("colorPalette.accent", list.getOrNull(0))
+                return fallback
+            }
+            // A valid palette payload always has 2 elements — accent present but `isDark` missing.
+            if (list.size < 2) reportTruncatedSaveable("colorPalette.truncated", list.size, 2)
+            return when (accent) {
+                0 -> DefaultDarkColorPalette
+                1 -> DefaultLightColorPalette
+                2 -> PureBlackColorPalette
+                3 -> ModernBlackColorPalette
+                else -> dynamicColorPaletteOf(
+                    FloatArray(3).apply { ColorUtils.colorToHSL(accent, this) },
+                    list.getOrNull(1) as? Boolean ?: true
+                )
+            }
         }
 
         override fun SaverScope.save(value: ColorPalette) =

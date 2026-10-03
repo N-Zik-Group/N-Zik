@@ -167,6 +167,8 @@ import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.enums.OnboardingStep
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.ui.saveable.TolerantAppearanceStateSaver
+import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.PlayerAwareInsetsTracker
 import app.n_zik.android.utils.appNavBarPresentForRoute
@@ -1046,8 +1048,10 @@ class MainActivity :
                     navController.removeOnDestinationChangedListener(listener)
                 }
             }
-            var showPlayer by rememberSaveable { mutableStateOf(false) }
-            var showQueueOverlay by rememberSaveable { mutableStateOf(false) }
+            // Issue #881 (gh-881): tolerant saver — a positional saveable shift (foreign payload)
+            // must restore to the default instead of throwing (spec M5).
+            var showPlayer by rememberSaveable(saver = TolerantBoolStateSaver("main.showPlayer")) { mutableStateOf(false) }
+            var showQueueOverlay by rememberSaveable(saver = TolerantBoolStateSaver("main.showQueueOverlay")) { mutableStateOf(false) }
             val queueInterceptor = remember(navController) {
                 MiniPlayerQueueInterceptor(navController) { showQueueOverlay = true }
             }
@@ -1055,10 +1059,12 @@ class MainActivity :
                 queueInterceptor.attach()
                 onDispose { queueInterceptor.detach() }
             }
-            var switchToAudioPlayer by rememberSaveable { mutableStateOf(false) }
+            // Issue #881 (gh-881): tolerant saver (spec M5).
+            var switchToAudioPlayer by rememberSaveable(saver = TolerantBoolStateSaver("main.switchToAudioPlayer")) { mutableStateOf(false) }
             val pendingMiniPlayerAction = remember { mutableStateOf<PendingMiniPlayerAction?>(null) }
-            val isShowingLyrics = rememberSaveable { mutableStateOf(false) }
-            val isShowingVisualizer = rememberSaveable { mutableStateOf(false) }
+            // Issue #881 (gh-881): tolerant savers (spec M5).
+            val isShowingLyrics = rememberSaveable(saver = TolerantBoolStateSaver("main.isShowingLyrics")) { mutableStateOf(false) }
+            val isShowingVisualizer = rememberSaveable(saver = TolerantBoolStateSaver("main.isShowingVisualizer")) { mutableStateOf(false) }
             var animatedGradient by rememberPreference(animatedGradientKey, AnimatedGradient.M3EMorphingCover)
             var customColor by rememberPreference(customColorKey, Color.Green.hashCode())
             val lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
@@ -1114,7 +1120,12 @@ class MainActivity :
                 )
             }
 
-            var appearance by rememberSaveable(stateSaver = Appearance.Companion) {
+            // Issue #881 (gh-881): tolerant saver on the PLAIN `saver =` overload (the `stateSaver =`
+            // overload is prohibited — its `mutableStateSaver` wrapper `require`s a
+            // SnapshotMutableState payload and throws IAE on a foreign one, spec M5). The fallback
+            // is the same preference-derived default the init lambda computes, so a corrupted
+            // payload restores to the real current appearance instead of crashing.
+            var appearance by rememberSaveable(saver = TolerantAppearanceStateSaver(::computeAppearance, "main.appearance")) {
                 mutableStateOf(computeAppearance())
             }
 
@@ -1284,7 +1295,8 @@ class MainActivity :
                 }
             }
 
-            var hasInitializedAppearance by rememberSaveable { mutableStateOf(false) }
+            // Issue #881 (gh-881): tolerant saver (spec M5).
+            var hasInitializedAppearance by rememberSaveable(saver = TolerantBoolStateSaver("main.hasInitializedAppearance")) { mutableStateOf(false) }
 
             LaunchedEffect(isSystemInDarkTheme) {
                 if (!hasInitializedAppearance) {
@@ -2423,7 +2435,9 @@ class MainActivity :
                         }
 
                 }
-                var isPlayerInitialized by rememberSaveable { mutableStateOf(false) }
+                // Issue #881 (gh-881): tolerant saver — this slot lives in the BoxWithConstraints
+                // sub-composition, the exact spot where the 15:23:55 CCE crashed (spec M5).
+                var isPlayerInitialized by rememberSaveable(saver = TolerantBoolStateSaver("main.isPlayerInitialized")) { mutableStateOf(false) }
                 val playerUpdateTrigger by binder?.playerUpdateTrigger?.collectAsStateWithLifecycle(0) ?: remember { mutableStateOf(0) }
                 DisposableEffect(binder?.player, playerUpdateTrigger) {
                     val currentBinder = binder ?: return@DisposableEffect onDispose { }

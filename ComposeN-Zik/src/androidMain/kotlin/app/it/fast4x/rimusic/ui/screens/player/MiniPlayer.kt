@@ -5,6 +5,7 @@ import app.n_zik.android.core.database.*
 import app.n_zik.android.components.discoverButtonIconRes
 import app.n_zik.android.components.radioButtonIcon
 import app.n_zik.android.components.shuffleButtonIcon
+import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.artistTextWithFallback
 import app.n_zik.android.utils.titleWithFallback
@@ -496,8 +497,9 @@ fun MiniPlayer(
         targetValueByState = { if (it) 24.dp else 12.dp }
     )
 
-    var isRotated by rememberSaveable { mutableStateOf(false) }
-    
+    // Issue #881 (gh-881): tolerant saver (spec M5).
+    var isRotated by rememberSaveable(saver = TolerantBoolStateSaver("miniPlayer.isRotated")) { mutableStateOf(false) }
+
     LaunchedEffect(playerSheetState.progress) {
         if (playerSheetState.progress > 0f && dismissState.targetValue != SwipeToDismissBoxValue.Settled) {
             try {

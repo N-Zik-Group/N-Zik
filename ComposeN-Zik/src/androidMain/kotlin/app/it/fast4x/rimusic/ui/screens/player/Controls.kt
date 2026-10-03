@@ -1,6 +1,7 @@
 package app.it.fast4x.rimusic.ui.screens.player
 
 import app.n_zik.android.core.database.*
+import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.utils.artistTextWithFallback
 
 import android.annotation.SuppressLint
@@ -165,7 +166,8 @@ fun Controls(
     var disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
 
-    var isDownloaded by rememberSaveable {
+    // Issue #881 (gh-881): tolerant saver (spec M5).
+    var isDownloaded by rememberSaveable(saver = TolerantBoolStateSaver("controls.isDownloaded")) {
         mutableStateOf(false)
     }
 

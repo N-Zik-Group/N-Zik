@@ -8,6 +8,9 @@ import app.n_zik.android.core.database.ext.FormatWithSong
 import app.n_zik.android.core.rewind.RewindPlaylists
 
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
+import app.n_zik.android.playback.services.diagnostics.SEEK_PLAYER_COMMANDS
+import app.n_zik.android.playback.services.diagnostics.seekCommandName
 
 import android.content.Context
 import android.net.Uri
@@ -198,6 +201,42 @@ class AutoSessionCallback(
         if (session.isAutoCompanionController(controller)) {
             session.setSessionActivity(controller, null)
         }
+    }
+
+    /**
+     * Issue #881 (gh-881): observe seek commands requested by AOSP-interop session controllers
+     * (lockscreen / Android Auto legacy path) — spec S3. In media3 1.10.1 the legacy `onSeekTo` /
+     * `onSeekForward` / `onSeekBack` overrides are GONE: the AOSP-interop path routes every player
+     * command here, so a `SEEK_SESSION` line synchronized with a seek-loop cycle pins that system
+     * path as the caller.
+     *
+     * SCOPE: media3's OWN controllers (`MediaControllerImplBase` — the in-app media notification
+     * and the media-button path) do NOT go through this callback; they apply their seeks straight
+     * to the player as dedicated transactions, and those show up in the S1 `SEEK_CALL` stack
+     * instead. Absence of a `SEEK_SESSION` line therefore does NOT rule out the
+     * notification/media-button path.
+     *
+     * Purely observational: the command is always delegated to the default handling, which returns
+     * `RESULT_SUCCESS` — a non-SUCCESS return would make media3 skip the command.
+     */
+    // onPlayerCommandRequest is @Deprecated in media3 1.10.1 — it is still the ONLY AOSP-interop
+    // hook available (the legacy onSeek* overrides are gone), so the diagnostic stays on it.
+    @Suppress("DEPRECATION")
+    override fun onPlayerCommandRequest(
+        session: MediaSession,
+        controller: MediaSession.ControllerInfo,
+        playerCommand: Int
+    ): Int {
+        if (playerCommand in SEEK_PLAYER_COMMANDS) {
+            Timber.tag(PLAYBACK_DIAG_TAG).d(
+                "SEEK_SESSION op=%s controller=%s",
+                seekCommandName(playerCommand),
+                controller.javaClass.simpleName,
+            )
+        }
+        // Default handler inherited from the MediaSession.Callback parent (MediaLibrarySession.Callback
+        // declares only browse commands) — pure pass-through, zero behavior change.
+        return super.onPlayerCommandRequest(session, controller, playerCommand)
     }
 
     override fun onSearch(

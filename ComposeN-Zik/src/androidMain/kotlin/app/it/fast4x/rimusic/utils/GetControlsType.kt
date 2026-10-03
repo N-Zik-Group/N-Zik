@@ -22,6 +22,7 @@ import app.it.fast4x.rimusic.enums.PlayerControlsType
 import app.it.fast4x.rimusic.enums.PlayerPlayButtonType
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.components.menu.player.PlaybackSettingsMenu
+import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.screens.player.components.controls.ControlsEssential
@@ -45,7 +46,8 @@ fun GetControls(
         playerPlayButtonTypeKey,
         PlayerPlayButtonType.CircularRibbed
     )
-    var isRotated by rememberSaveable { mutableStateOf(false) }
+    // Issue #881 (gh-881): tolerant saver (spec M5).
+    var isRotated by rememberSaveable(saver = TolerantBoolStateSaver("getControls.isRotated")) { mutableStateOf(false) }
     val rotationAngle by animateFloatAsState(
         targetValue = if (isRotated) 360F else 0f,
         animationSpec = tween(durationMillis = 200), label = ""
