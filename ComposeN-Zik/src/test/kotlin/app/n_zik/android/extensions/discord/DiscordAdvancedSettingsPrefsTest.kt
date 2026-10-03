@@ -175,7 +175,8 @@ class DiscordAdvancedSettingsPrefsTest {
             getAdvancedSettings = advanced,
             externalScope = CoroutineScope(dispatcher),
             connectionFactory = { connection },
-            tokenValidator = { true }
+            tokenValidator = { true },
+            playerStateDispatcher = dispatcher
         )
         managers += manager
         return manager

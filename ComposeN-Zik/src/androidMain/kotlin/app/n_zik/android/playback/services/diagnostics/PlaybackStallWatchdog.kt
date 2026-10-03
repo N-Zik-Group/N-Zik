@@ -123,6 +123,10 @@ class PlaybackStallWatchdog(
                 reset()
                 Decision.Recovered
             } else {
+                // A sub-threshold episode healed without a report: disarm the stall clock,
+                // or the NEXT episode inherits its start and reports a phantom stall
+                // (field logs 2026-10-04: stallMs=18155 for a 520 ms BUFFERING, gh-881 3.1).
+                stallStartMs = null
                 Decision.Ok
             }
         } else {

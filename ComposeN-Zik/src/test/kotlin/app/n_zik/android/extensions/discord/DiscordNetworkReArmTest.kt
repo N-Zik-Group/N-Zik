@@ -53,7 +53,8 @@ class DiscordNetworkReArmTest {
             getAdvancedSettings = { DiscordAdvancedSettings.DEFAULTS },
             externalScope = CoroutineScope(dispatcher),
             connectionFactory = { onConnectionCreated(); connection },
-            tokenValidator = { true }
+            tokenValidator = { true },
+            playerStateDispatcher = dispatcher
         )
         managers += manager
         return manager

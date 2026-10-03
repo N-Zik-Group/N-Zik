@@ -47,6 +47,8 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.it.fast4x.rimusic.enums.PauseBetweenSongs
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
+import timber.log.Timber
 import app.n_zik.android.typography
 import app.n_zik.android.LocalPlayerSheetState
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
@@ -72,21 +74,41 @@ import app.it.fast4x.rimusic.utils.showSkipTimeButtonsKey
 @Composable
 private fun RowScope.SkipTimeButton(
     binder: PlayerServiceModern.Binder,
-    position: Long,
+    // Issue #881 (gh-881), Phase 3.1: base and bound are read at TAP time — a composed value
+    // can be stale when the player UI stops recomposing (screen-off track change, field logs
+    // 2026-10-04); [composedPosition] is only kept for the SKIP_TAP diagnostic line.
+    position: () -> Long,
+    composedPosition: Long,
     operation: Long.(Long) -> Long,
     valueSelector: (Long, Long) -> Long,
-    comparedValue: Long,
+    comparedValue: () -> Long,
     contentDescription: String,
     onClickLabel: String,
     onLongClickLabel: String,
     modifier: Modifier = Modifier,
     tapAdjustment: Long = 5_000L,
     doubleTapAdjustment: Long = 10_000L,
-    longTapAdjustment: Long = 30_000L
+    longTapAdjustment: Long = 30_000L,
+    onSeekIssued: (Long) -> Unit = {}
 ) {
+    // Issue #881 (gh-881), Phase 3 Fix E: a guest's seek is vetoed by the guarded facade —
+    // publishing the target would hold the label on a position the player never reaches.
+    val ltGuestLocked = rememberListenTogetherGuestLock()
     fun seekTo( adjustment: Long ) {
-        val adjustedPosition = position.operation( adjustment )
-        val newPosition = valueSelector( adjustedPosition, comparedValue )
+        val base = position()
+        val adjustedPosition = base.operation( adjustment )
+        val newPosition = valueSelector( adjustedPosition, comparedValue() )
+        Timber.tag( PLAYBACK_DIAG_TAG ).d(
+            "SKIP_TAP adj=%d base=%d composed=%d target=%d",
+            adjustedPosition - base, base, composedPosition, newPosition
+        )
+        // Issue #881 (gh-881), Phase 3 Fix E (review patch): while the stream is still loading
+        // `duration` is `C.TIME_UNSET` (Long.MIN_VALUE) — the forward button then computes
+        // `minOf(x, Long.MIN_VALUE)` = Long.MIN_VALUE, which would hold a garbage target on
+        // the label (up to the 10 s release timeout) and feed it to `seekTo`. Rewind clamps
+        // at 0, so only the forward tap can ever produce a negative target here.
+        if ( newPosition < 0 ) return
+        if ( !ltGuestLocked ) onSeekIssued( newPosition )
         binder.player.seekTo( newPosition )
     }
 
@@ -168,7 +190,14 @@ fun DurationIndicator(
     binder: PlayerServiceModern.Binder,
     scrubbingPosition: Long?,
     position: Long,
-    duration: Long
+    duration: Long,
+    // Issue #881 (gh-881), Phase 3 Fix E: invoked with the target whenever a skip button
+    // issues a seek, so the label can hold that position until the player commits it
+    // (GetSeekBar publishes its pendingSeekTarget state through it).
+    onSeekIssued: (Long) -> Unit = {},
+    // Issue #881 (gh-881), Phase 3.1: live skip base evaluated at tap time (GetSeekBar reads
+    // the pending target / player position); defaults to the composed [position].
+    seekBasePosition: () -> Long = { position }
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -179,7 +208,7 @@ fun DurationIndicator(
         val showSkipTimeButtons by rememberPreference( showSkipTimeButtonsKey, true )
         if (showSkipTimeButtons) {
             SkipTimeButton(
-                binder, position, Long::minus, ::maxOf, 0, stringResource(R.string.rewind), stringResource(R.string.rewind_5_seconds), stringResource(R.string.rewind_30_seconds), Modifier.rotate( 180f )
+                binder, seekBasePosition, position, Long::minus, ::maxOf, { 0L }, stringResource(R.string.rewind), stringResource(R.string.rewind_5_seconds), stringResource(R.string.rewind_30_seconds), Modifier.rotate( 180f ), onSeekIssued = onSeekIssued
             )
 
             Spacer( Modifier.width( 5.dp ) )
@@ -200,7 +229,11 @@ fun DurationIndicator(
                                .height( DURATION_INDICATOR_HEIGHT.dp ),
             contentAlignment = Alignment.CenterStart
         ) {
-            val toDisplay by remember( position ) {
+            // Issue #881 (gh-881), Phase 3 Fix E (review patch): the held seek target arrives
+            // through the `scrubbingPosition` parameter — it must be in the remember key, or
+            // the label keeps showing the stale player position while the bar holds the target
+            // (the captured parameter is a plain value, so only a key change re-derives it).
+            val toDisplay by remember( scrubbingPosition, position ) {
                 derivedStateOf { formatAsDuration( scrubbingPosition ?: position ) }
             }
             OutlinedText( toDisplay, outlineColor )
@@ -272,7 +305,7 @@ fun DurationIndicator(
             Spacer( Modifier.width( 5.dp ) )
 
             SkipTimeButton(
-                binder, position, Long::plus, ::minOf, duration, stringResource(R.string.forward), stringResource(R.string.forward_5_seconds), stringResource(R.string.forward_30_seconds)
+                binder, seekBasePosition, position, Long::plus, ::minOf, { binder.player.duration }, stringResource(R.string.forward), stringResource(R.string.forward_5_seconds), stringResource(R.string.forward_30_seconds), onSeekIssued = onSeekIssued
             )
         }
     }

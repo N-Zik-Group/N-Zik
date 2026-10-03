@@ -310,6 +310,8 @@ import app.kreate.android.me.knighthat.utils.Toaster
 import it.fast4x.innertube.Innertube.proxy
 import okhttp3.OkHttpClient
 import timber.log.Timber
+import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
+import app.n_zik.android.playback.services.diagnostics.UiFrameClockDiagnostics
 import java.net.Proxy
 import java.util.Locale
 
@@ -1031,6 +1033,8 @@ class MainActivity :
         }
 
         setContent {
+            // Issue #881 (gh-881), Phase 3.1: lifecycle + first-frame probe (frozen UI after wake).
+            UiFrameClockDiagnostics()
             val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
 
             //TODO: Check internet connection
@@ -2669,6 +2673,15 @@ class MainActivity :
         // no live comparison needed), and the extra is stripped either way.
         consumeOpenPlayerDeepLink(intent, cold = false)
         setIntent(intent)
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        // Issue #881 (gh-881), Phase 3.1: correlates window focus with the lifecycle state —
+        // a focused window whose lifecycle is below STARTED keeps Compose's frame clock paused.
+        Timber.tag(PLAYBACK_DIAG_TAG).i(
+            "UI_WINDOW_FOCUS hasFocus=%b lifecycle=%s", hasFocus, lifecycle.currentState
+        )
     }
 
     override fun onStop() {

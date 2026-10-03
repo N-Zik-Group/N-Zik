@@ -99,8 +99,38 @@ internal val scope = NzikDispatchers.fireAndForget(NzikDispatchers.PLAYBACK)
 // Stream playback uses InnerTubeXPlayer's own PoTokenGenerator instance.
 private val poTokenGenerator = PoTokenGenerator()
 
-// Track videoIds already fetched by fetchFormatIfMissing (avoid redundant API calls)
-private val fetchedFormatIds = Collections.synchronizedSet(mutableSetOf<String>())
+/**
+ * Issue #881 (Phase 3, Fix A): per-video gate for [fetchFormatIfMissing].
+ *
+ * The id is marked the moment the fire-and-forget fetch starts (not when it finishes), so rapid
+ * data-source re-opens — one per seek on progressive streams — can no longer re-launch
+ * redundant player-response fetches while one is still running or already done. Stable outcomes
+ * (format saved, or the client response has no selectable adaptive audio format) keep the id
+ * marked for the process; a hard failure releases it so the next re-open may retry.
+ *
+ * Cancellation: [scope] is process-lifetime, so the launched fetch is never cancelled today and
+ * the mark is always resolved (saved / released / kept). If the fetch is ever moved to a bounded
+ * or cancellable scope, the cancellation path must define its own release semantics — as written,
+ * a cancelled fetch would keep the id marked forever.
+ */
+internal class FormatFetchGate {
+    private val marked = Collections.synchronizedSet(mutableSetOf<String>())
+
+    /** @return true if [videoId] was not yet marked and now is (the caller owns the fetch). */
+    fun tryMark(videoId: String): Boolean = marked.add(videoId)
+
+    /** Releases a previously marked id so the next open may retry (hard failures only). */
+    fun release(videoId: String) {
+        marked.remove(videoId)
+    }
+
+    /** Empties the gate (stream client settings change — mirrors the former set's `clear`). */
+    fun clear() {
+        marked.clear()
+    }
+}
+
+private val formatFetchGate = FormatFetchGate()
 private val webRemixFailedIds = Collections.synchronizedSet(mutableSetOf<String>())
 
 // Per-client failure tracking: clientName → map of videoId → failure timestamp
@@ -486,9 +516,14 @@ private fun saveFormatSafe(format: Format) {
  * on the stream URL to resolve content-length if not provided by the API.
  */
 private fun fetchFormatIfMissing(videoId: String) {
-    if (videoId in fetchedFormatIds) return
     if (videoId.startsWith(LOCAL_KEY_PREFIX)) return
     if (videoId.length != 11) return
+    // Issue #881 (Phase 3, Fix A): mark the id in-flight BEFORE launching. The previous version
+    // added it only after the block completed — which it never did for the silent early exits
+    // below — so every data-source re-open (one per seek on progressive streams) re-launched a
+    // redundant player-response fetch (field logs 2026-10-03: 50/50 and 34/34 seeks each
+    // re-fetched the same videoId, up to two fetches in parallel).
+    if (!formatFetchGate.tryMark(videoId)) return
     scope.launch(NzikDispatchers.PLAYBACK) {
         try {
             val existing = Database.formatTable.findBySongIdDirect(videoId)
@@ -498,11 +533,31 @@ private fun fetchFormatIfMissing(videoId: String) {
                 Timber.tag(TAG).d("fetchFormatIfMissing: new $videoId (no format in DB)")
             }
 
-            val response = playerResponseForMetadata(videoId).getOrNull() ?: return@launch
+            val response = playerResponseForMetadata(videoId).getOrNull() ?: run {
+                // Request-level failure (network / session): release the gate so the next
+                // re-open may retry; log the exit so the field log shows why it happened.
+                formatFetchGate.release(videoId)
+                Timber.tag(TAG).w("fetchFormatIfMissing: no metadata response for $videoId (gate released, will retry)")
+                return@launch
+            }
             val api = response.streamingData?.adaptiveFormats
                 ?.filter { it.isAudio && (it.url != null || it.signatureCipher != null) }
                 ?.maxByOrNull { scoreCodec(it.mimeType) * 10000 + (it.bitrate ?: 0) }
-                ?: return@launch
+                ?: run {
+                    // Issue #881 (gh-881), Phase 3 Fix A (review patch): split the two "no
+                    // format" outcomes. A successful response WITHOUT streamingData is a
+                    // degraded/transient answer — release the gate so the next re-open may
+                    // retry. The stable "no selectable adaptive audio" outcome (streamingData
+                    // present but empty of selectable audio) keeps the gate marked, no retry.
+                    if (response.streamingData == null) {
+                        formatFetchGate.release(videoId)
+                        Timber.tag(TAG).w("fetchFormatIfMissing: no streamingData in response for $videoId (gate released, will retry)")
+                    } else {
+                        // Stable for this client (WEB_REMIX): keep the gate marked, no retry.
+                        Timber.tag(TAG).w("fetchFormatIfMissing: no adaptive audio format for $videoId (gate kept, no retry)")
+                    }
+                    return@launch
+                }
             val apiPerceptual = response.playerConfig?.audioConfig?.perceptualLoudnessDb
             val apiLoudness = response.playerConfig?.audioConfig?.loudnessDb
             val codecs = api.mimeType.substringAfter("codecs=", "").removeSurrounding("\"").takeIf { it.isNotEmpty() }
@@ -551,7 +606,8 @@ private fun fetchFormatIfMissing(videoId: String) {
                 downloadQuality = existing?.downloadQuality
             )
             saveFormatSafe(formatToSave)
-            fetchedFormatIds.add(videoId)
+            // The id stays marked (in-flight marking happened at entry) — no re-fetch for the
+            // process lifetime unless a hard failure released it.
             Timber.tag(TAG).d("fetchFormatIfMissing: videoId=$videoId" +
                 " existing=${existing != null}" +
                 " apiSize=${api.contentLength}" +
@@ -564,6 +620,8 @@ private fun fetchFormatIfMissing(videoId: String) {
                 " codecs=$finalCodecs")
         } catch (e: Exception) {
             Timber.tag(TAG).w(e, "Failed to fetch missing format for $videoId")
+            // Hard failure: release the gate so the next re-open may retry.
+            formatFetchGate.release(videoId)
         }
     }
 }
@@ -922,7 +980,7 @@ fun clearStreamCaches() {
     streamUrlCache.clear()
     playbackDataCache.clear()
     webRemixFailedIds.clear()
-    fetchedFormatIds.clear()
+    formatFetchGate.clear()
     MyDownloadHelper.songUrlCache.clear()
     PlaybackDataStore.clearStreamClients(appContext())
     Timber.tag("StreamResolver").d("All stream caches cleared (format + playback data + webRemix failures + URL cache)")

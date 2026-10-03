@@ -331,6 +331,15 @@ class PlayerServiceModern : MediaLibraryService(),
      */
     private lateinit var guestGuardPlayer: ListenTogetherGuestGuardPlayer
 
+    /**
+     * Issue #881 (gh-881), Phase 3 Fix B (review patch): the seek coalescer backing the current
+     * [guestGuardPlayer]. Held by the service (not the guard) so it can be detached when the
+     * facade is rebuilt on a crossfade swap — without the reference the orphaned wrapper's
+     * settle job could fire against the fading player (released later by `cleanupCrossfade()`,
+     * which bypasses the wrapper chain entirely).
+     */
+    private var currentSeekCoalescer: SeekCoalescingPlayer? = null
+
     /** Rebuilds the notification when the guest lock toggles (guest: only play/pause visible). */
     private var guestLockObserverJob: Job? = null
     /**
@@ -701,6 +710,10 @@ class PlayerServiceModern : MediaLibraryService(),
                     isHandleAudioFocusEnabled()
                 )
                 .setUsePlatformDiagnostics(false)
+                // Issue #881 (gh-881), Phase 3 Fix C: back buffer so backward seeks within
+                // SEEK_BACK_BUFFER_MS resolve in-buffer instead of re-opening the full
+                // data-source chain (80–760 ms of BUFFERING + bar stuck on the old position).
+                .setLoadControl(createSeekFriendlyLoadControl())
                 .setSeekBackIncrementMs(5000)
                 .setSeekForwardIncrementMs(5000)
                 .build()
@@ -1504,7 +1517,12 @@ class PlayerServiceModern : MediaLibraryService(),
             if (encryptedPreferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
                 coroutineScope.launch {
                     delay(1000L)
-                    if (player.playWhenReady && player.playbackState == Player.STATE_READY) {
+                    // gh-881 (Phase 3, Fix D): player state must be read on the main thread
+                    // (ExoPlayer verifyApplicationThread) — this scope runs on DATA (IO).
+                    val activelyPlaying = withContext(NzikDispatchers.UI) {
+                        player.playWhenReady && player.playbackState == Player.STATE_READY
+                    }
+                    if (activelyPlaying) {
                         discordPresenceManager?.onPlaybackSpeedChanged(playbackParameters.speed)
                     }
                 }
@@ -3043,6 +3061,9 @@ class PlayerServiceModern : MediaLibraryService(),
                     false // NEVER handle audio focus for secondary player
                 )
                 .setUsePlatformDiagnostics(false)
+                // Issue #881 (gh-881), Phase 3 Fix C: same back buffer as the primary player —
+                // the crossfade player follows the same backward-seek pattern (spec gh-881).
+                .setLoadControl(createSeekFriendlyLoadControl())
                 .build()
         )
     }
@@ -3053,7 +3074,17 @@ class PlayerServiceModern : MediaLibraryService(),
      * policy (spec-listen-together-guest-lock-hardening, spine AD-1/AD-2/AD-6).
      */
     private fun createGuestGuardPlayer(targetPlayer: Player): ListenTogetherGuestGuardPlayer {
-        val guard = ListenTogetherGuestGuardPlayer(targetPlayer, applicationContext)
+        // Issue #881 (Phase 3, Fix B): coalesce rapid absolute seeks while the player is still
+        // recovering from the previous one — one full data-source re-open + buffer refill per
+        // seek kept the progress bar frozen in a user↔player feedback loop (field logs
+        // 2026-10-03). The guard stays outermost so the guest lock vetoes seeks before they
+        // reach the coalescer; the coalescer wraps the diagnostics facade so SEEK_CALL still
+        // sees every seek that actually lands on the player.
+        // Review patch: keep the coalescer reachable so the crossfade swap can detach the
+        // OLD wrapper before this facade is rebuilt over a new player.
+        val coalescer = SeekCoalescingPlayer(targetPlayer)
+        currentSeekCoalescer = coalescer
+        val guard = ListenTogetherGuestGuardPlayer(coalescer, applicationContext)
         // Guest play/pause intent (only the guest's own taps reach the guarded facade): play
         // resyncs the guest to the host's position, pause is kept across host skips
         // (spec-listen-together-guest-lock-hardening).
@@ -3145,6 +3176,10 @@ class PlayerServiceModern : MediaLibraryService(),
         // Update MediaSession to show the new song in the UI — the guarded facade is rebuilt and
         // re-attached to the new player (AD-5: the guest lock must survive crossfade swaps).
         try {
+            // Issue #881 (gh-881), Phase 3 Fix B (review patch): detach the OLD coalescer before
+            // rebuilding the facade — its settle job (≤ 1 s) could otherwise fire against the
+            // fading player, which cleanupCrossfade() releases later bypassing the wrapper chain.
+            currentSeekCoalescer?.detach()
             guestGuardPlayer = createGuestGuardPlayer(player)
             mediaSession.player = SessionArtworkPlayer(guestGuardPlayer)
         } catch (e: Exception) {

@@ -193,6 +193,29 @@ class PlaybackStallWatchdogTest {
                 "recovered is only emitted for a previously REPORTED stall",
             )
         }
+
+        @Test
+        fun `healed sub-threshold episode disarms the stall clock for the next one`() {
+            // gh-881 Phase 3.1 field log: a 687 ms BUFFERING healed without report, the next
+            // 520 ms one inherited its start and reported stallMs=18155. Episode 1: buffering
+            // t=3..9 s (clock armed at 3 s), healed at 12 s. Episode 2: buffering t=15..21 s —
+            // 6 s long on its own, 18 s if the clock were inherited from episode 1.
+            val all = listOf(
+                sample(nowMs = 0L, positionMs = 0L),
+                sample(nowMs = 3_000L, playbackState = buffering, positionMs = 0L),
+                sample(nowMs = 6_000L, playbackState = buffering, positionMs = 0L),
+                sample(nowMs = 9_000L, playbackState = buffering, positionMs = 0L),
+                sample(nowMs = 12_000L, positionMs = 3_000L),
+                sample(nowMs = 15_000L, playbackState = buffering, positionMs = 3_000L),
+                sample(nowMs = 18_000L, playbackState = buffering, positionMs = 3_000L),
+                sample(nowMs = 21_000L, playbackState = buffering, positionMs = 3_000L),
+            )
+
+            assertTrue(
+                all.filterIsInstance<PlaybackStallWatchdog.Decision.Stalled>().isEmpty(),
+                "two healed sub-threshold episodes must not add up to a phantom stall",
+            )
+        }
     }
 
     @Nested

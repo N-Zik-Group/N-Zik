@@ -1,5 +1,6 @@
 package app.it.fast4x.rimusic.utils
 
+import android.os.SystemClock
 import androidx.annotation.OptIn
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -27,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -52,6 +54,9 @@ import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.kreate.android.themed.rimusic.screen.player.timeline.DurationIndicator
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.player.PENDING_SEEK_POLL_INTERVAL_MS
+import app.n_zik.android.components.player.shouldReleasePendingSeekPosition
+import app.n_zik.android.components.player.skipBasePosition
 import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.it.fast4x.rimusic.enums.PauseBetweenSongs
 import app.it.fast4x.rimusic.enums.PlayerTimelineType
@@ -89,6 +94,23 @@ fun GetSeekBar(
     var scrubbingPosition by remember(mediaId) {
         mutableStateOf<Long?>(null)
     }
+    // Issue #881 (gh-881), Phase 3 Fix E: the tapped / skip-button seek target held on the bar
+    // until the player COMMITS the seek. Without it the bar snaps back to the stale player
+    // position on every seek (player reports the pre-seek position until the seek commits),
+    // the user-visible "l'ancienne position brièvement puis téléport" (field report 2026-10-03).
+    // Cleared by the release effect below (convergence / safety timeout) or by the next drag.
+    var pendingSeekTarget by remember(mediaId) {
+        mutableStateOf<Long?>(null)
+    }
+    // Issue #881 (gh-881), Phase 3.1: when the target was issued — lets the skip buttons
+    // decide AT TAP TIME whether the held target is still the right base (see skipBasePosition).
+    var pendingSeekIssuedAtMs by remember(mediaId) {
+        mutableLongStateOf(0L)
+    }
+    fun holdSeekTarget(target: Long) {
+        pendingSeekTarget = target
+        pendingSeekIssuedAtMs = SystemClock.elapsedRealtime()
+    }
     var transparentbar by rememberPreference(transparentbarKey, true)
     val scope = rememberCoroutineScope()
     // Listen Together guest lock (spec-listen-together-guest-lock-hardening): a guest in a room
@@ -101,6 +123,32 @@ fun GetSeekBar(
     // look "crushed" (user feedback 2026-09-29, confirmed by the Modifier.alpha docs).
     val ltGuestLocked = rememberListenTogetherGuestLock()
     val ltContext = LocalContext.current
+
+    // Issue #881 (gh-881), Phase 3 Fix E: release the held target once the player converges on
+    // it (see shouldReleasePendingSeekPosition) — or after the safety timeout if the seek never
+    // commits (error state). Keyed on the target: a new tap/drag restarts the effect with the
+    // new value, and remember(mediaId) drops it on track changes.
+    // The convergence source is the SAME `position()` the bar renders from, i.e. the app's
+    // 100 ms poll cache (positionAndDurationState, Phase 3.1): it freezes only while the sheet
+    // content is inactive (active=false) — in that case the hold simply survives until the
+    // 10 s safety timeout, which is the intended behavior on a screen the user is not looking
+    // at (review finding: the coupling is documented, not accidental).
+    LaunchedEffect(pendingSeekTarget) {
+        val target = pendingSeekTarget ?: return@LaunchedEffect
+        val startedAtMs = SystemClock.elapsedRealtime()
+        while (pendingSeekTarget == target) {
+            if (shouldReleasePendingSeekPosition(
+                    target,
+                    position(),
+                    SystemClock.elapsedRealtime() - startedAtMs,
+                )
+            ) {
+                pendingSeekTarget = null
+                break
+            }
+            delay(PENDING_SEEK_POLL_INTERVAL_MS)
+        }
+    }
 
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -135,7 +183,7 @@ fun GetSeekBar(
         )
             SeekBarCustom(
                 type = playerTimelineType,
-                value = scrubbingPosition ?: position(),
+                value = scrubbingPosition ?: pendingSeekTarget ?: position(),
                 minimumValue = 0,
                 maximumValue = duration(),
                 onDragStart = {
@@ -144,6 +192,9 @@ fun GetSeekBar(
                     if (ltGuestLocked) {
                         ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
                     } else {
+                        // Issue #881 (gh-881), Phase 3 Fix E: a new drag takes over the display —
+                        // drop any held seek target.
+                        pendingSeekTarget = null
                         scrubbingPosition = it
                     }
                 },
@@ -155,7 +206,21 @@ fun GetSeekBar(
                     }
                 },
                 onDragEnd = {
-                    scrubbingPosition?.let(binder.player::seekTo)
+                    // Issue #881 (gh-881), Phase 3 Fix E (review patch): the guest lock may
+                    // have engaged DURING the drag — re-check it so a seek the guarded facade
+                    // vetoes is not held on the bar (parity with the skip-button path, which
+                    // guards onSeekIssued).
+                    if (ltGuestLocked) {
+                        ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
+                    } else {
+                        // Hold the tapped position on the bar until the player commits the seek
+                        // (pendingSeekTarget release effect) instead of snapping back to the
+                        // stale player position.
+                        scrubbingPosition?.let {
+                            holdSeekTarget(it)
+                            binder.player.seekTo(it)
+                        }
+                    }
                     scrubbingPosition = null
                 },
                 color = colorPalette().collapsedPlayerProgressBar,
@@ -166,7 +231,7 @@ fun GetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.Default)
             SeekBar(
-                value = scrubbingPosition ?: position(),
+                value = scrubbingPosition ?: pendingSeekTarget ?: position(),
                 minimumValue = 0,
                 maximumValue = duration(),
                 onDragStart = {
@@ -175,6 +240,9 @@ fun GetSeekBar(
                     if (ltGuestLocked) {
                         ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
                     } else {
+                        // Issue #881 (gh-881), Phase 3 Fix E: a new drag takes over the display —
+                        // drop any held seek target.
+                        pendingSeekTarget = null
                         scrubbingPosition = it
                     }
                 },
@@ -186,7 +254,21 @@ fun GetSeekBar(
                     }
                 },
                 onDragEnd = {
-                    scrubbingPosition?.let(binder.player::seekTo)
+                    // Issue #881 (gh-881), Phase 3 Fix E (review patch): the guest lock may
+                    // have engaged DURING the drag — re-check it so a seek the guarded facade
+                    // vetoes is not held on the bar (parity with the skip-button path, which
+                    // guards onSeekIssued).
+                    if (ltGuestLocked) {
+                        ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
+                    } else {
+                        // Hold the tapped position on the bar until the player commits the seek
+                        // (pendingSeekTarget release effect) instead of snapping back to the
+                        // stale player position.
+                        scrubbingPosition?.let {
+                            holdSeekTarget(it)
+                            binder.player.seekTo(it)
+                        }
+                    }
                     scrubbingPosition = null
                 },
                 color = colorPalette().collapsedPlayerProgressBar,
@@ -197,7 +279,7 @@ fun GetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.ThinBar)
             SeekBarThin(
-                value = scrubbingPosition ?: position(),
+                value = scrubbingPosition ?: pendingSeekTarget ?: position(),
                 minimumValue = 0,
                 maximumValue = duration(),
                 onDragStart = {
@@ -206,6 +288,9 @@ fun GetSeekBar(
                     if (ltGuestLocked) {
                         ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
                     } else {
+                        // Issue #881 (gh-881), Phase 3 Fix E: a new drag takes over the display —
+                        // drop any held seek target.
+                        pendingSeekTarget = null
                         scrubbingPosition = it
                     }
                 },
@@ -217,7 +302,21 @@ fun GetSeekBar(
                     }
                 },
                 onDragEnd = {
-                    scrubbingPosition?.let(binder.player::seekTo)
+                    // Issue #881 (gh-881), Phase 3 Fix E (review patch): the guest lock may
+                    // have engaged DURING the drag — re-check it so a seek the guarded facade
+                    // vetoes is not held on the bar (parity with the skip-button path, which
+                    // guards onSeekIssued).
+                    if (ltGuestLocked) {
+                        ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
+                    } else {
+                        // Hold the tapped position on the bar until the player commits the seek
+                        // (pendingSeekTarget release effect) instead of snapping back to the
+                        // stale player position.
+                        scrubbingPosition?.let {
+                            holdSeekTarget(it)
+                            binder.player.seekTo(it)
+                        }
+                    }
                     scrubbingPosition = null
                 },
                 color = colorPalette().collapsedPlayerProgressBar,
@@ -228,7 +327,7 @@ fun GetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.Wavy) {
             SeekBarWaved(
-                position = { scrubbingPosition?.toFloat() ?: position().toFloat() },
+                position = { (scrubbingPosition ?: pendingSeekTarget)?.toFloat() ?: position().toFloat() },
                 range = 0f..media.duration.toFloat(),
                 onSeekStarted = {
                     // Guest lock: the seek bar is inert — capture nothing (no scrubber jump);
@@ -236,6 +335,9 @@ fun GetSeekBar(
                     if (ltGuestLocked) {
                         ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
                     } else {
+                        // Issue #881 (gh-881), Phase 3 Fix E: a new drag takes over the display —
+                        // drop any held seek target.
+                        pendingSeekTarget = null
                         scrubbingPosition = it.toLong()
                     }
                 },
@@ -248,7 +350,19 @@ fun GetSeekBar(
                     }
                 },
                 onSeekFinished = {
-                    scrubbingPosition?.let(binder.player::seekTo)
+                    // Issue #881 (gh-881), Phase 3 Fix E (review patch): the guest lock may
+                    // have engaged DURING the drag — re-check it so a seek the guarded facade
+                    // vetoes is not held on the bar (parity with the skip-button path).
+                    if (ltGuestLocked) {
+                        ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
+                    } else {
+                        // Hold the tapped position on the bar until the player commits the seek
+                        // (pendingSeekTarget release effect).
+                        scrubbingPosition?.let {
+                            holdSeekTarget(it)
+                            binder.player.seekTo(it)
+                        }
+                    }
                     scrubbingPosition = null
                 },
                 color = colorPalette().collapsedPlayerProgressBar,
@@ -262,7 +376,12 @@ fun GetSeekBar(
             SeekBarVisualizer(
                 audioSessionIdProvider = { try { binder.player.audioSessionId } catch (e: Exception) { null } },
                 isPlaying = binder.player.isPlaying,
-                progressPercentage = { ProgressPercentage.safeValue((position().toFloat() / duration().toFloat()).coerceIn(0f, 1f)) },
+                progressPercentage = {
+                    // Issue #881 (gh-881), Phase 3 Fix E: show the held target until the
+                    // player commits the seek.
+                    val held = pendingSeekTarget ?: position()
+                    ProgressPercentage.safeValue((held.toFloat() / duration().toFloat()).coerceIn(0f, 1f))
+                },
                 playedColor = colorPalette().accent,
                 notPlayedColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
                 waveInteraction = {
@@ -271,9 +390,11 @@ fun GetSeekBar(
                     if (ltGuestLocked) {
                         ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
                     } else {
-                        scrubbingPosition = (it.value * duration().toFloat()).toLong()
-                        binder.player.seekTo(scrubbingPosition!!)
-                        scrubbingPosition = null
+                        // Issue #881 (gh-881), Phase 3 Fix E (review patch): local val instead
+                        // of re-reading the delegated state with `!!` (AGENTS.md no-!! rule).
+                        val target = (it.value * duration().toFloat()).toLong()
+                        holdSeekTarget(target)
+                        binder.player.seekTo(target)
                     }
                 },
                 modifier = Modifier
@@ -284,7 +405,7 @@ fun GetSeekBar(
         if (playerTimelineType == PlayerTimelineType.AudioWaves) {
             SeekBarStaticAudioWaves(
                 uiMedia = media,
-                position = scrubbingPosition ?: position(),
+                position = scrubbingPosition ?: pendingSeekTarget ?: position(),
                 duration = duration(),
                 isPlaying = binder.player.isPlaying,
                 onPositionChange = {
@@ -293,11 +414,26 @@ fun GetSeekBar(
                     if (ltGuestLocked) {
                         ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
                     } else {
+                        // Issue #881 (gh-881), Phase 3 Fix E: a new drag takes over the display —
+                        // drop any held seek target.
+                        pendingSeekTarget = null
                         scrubbingPosition = it
                     }
                 },
                 onPositionChangeFinished = {
-                    scrubbingPosition?.let { binder.player.seekTo(it) }
+                    // Issue #881 (gh-881), Phase 3 Fix E (review patch): the guest lock may
+                    // have engaged DURING the drag — re-check it so a seek the guarded facade
+                    // vetoes is not held on the bar (parity with the skip-button path).
+                    if (ltGuestLocked) {
+                        ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
+                    } else {
+                        // Hold the tapped position on the bar until the player commits the seek
+                        // (pendingSeekTarget release effect).
+                        scrubbingPosition?.let {
+                            holdSeekTarget(it)
+                            binder.player.seekTo(it)
+                        }
+                    }
                     scrubbingPosition = null
                 },
                 audioSessionId = { try { binder.player.audioSessionId } catch (e: Exception) { -1 } },
@@ -308,7 +444,7 @@ fun GetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.ColoredBar)
             SeekBarColored(
-                value = scrubbingPosition ?: position(),
+                value = scrubbingPosition ?: pendingSeekTarget ?: position(),
                 minimumValue = 0,
                 maximumValue = duration(),
                 onDragStart = {
@@ -317,6 +453,9 @@ fun GetSeekBar(
                     if (ltGuestLocked) {
                         ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
                     } else {
+                        // Issue #881 (gh-881), Phase 3 Fix E: a new drag takes over the display —
+                        // drop any held seek target.
+                        pendingSeekTarget = null
                         scrubbingPosition = it
                     }
                 },
@@ -328,7 +467,21 @@ fun GetSeekBar(
                     }
                 },
                 onDragEnd = {
-                    scrubbingPosition?.let(binder.player::seekTo)
+                    // Issue #881 (gh-881), Phase 3 Fix E (review patch): the guest lock may
+                    // have engaged DURING the drag — re-check it so a seek the guarded facade
+                    // vetoes is not held on the bar (parity with the skip-button path, which
+                    // guards onSeekIssued).
+                    if (ltGuestLocked) {
+                        ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
+                    } else {
+                        // Hold the tapped position on the bar until the player commits the seek
+                        // (pendingSeekTarget release effect) instead of snapping back to the
+                        // stale player position.
+                        scrubbingPosition?.let {
+                            holdSeekTarget(it)
+                            binder.player.seekTo(it)
+                        }
+                    }
                     scrubbingPosition = null
                 },
                 color = colorPalette().collapsedPlayerProgressBar,
@@ -340,7 +493,29 @@ fun GetSeekBar(
 
     Spacer( modifier = Modifier.height( 8.dp ) )
 
-    DurationIndicator( binder, scrubbingPosition, position(), duration() )
+    DurationIndicator(
+        binder,
+        scrubbingPosition ?: pendingSeekTarget,
+        // Issue #881 (gh-881), Phase 3 Fix E (review patch): the skip buttons must compute
+        // their adjustment from the HELD target, not the stale player position — otherwise a
+        // consecutive tap lands from the old position while the label shows the target.
+        scrubbingPosition ?: pendingSeekTarget ?: position(),
+        duration(),
+        // Issue #881 (gh-881), Phase 3 Fix E: skip-button seeks hold their target on the label
+        // until the player commits it (same pendingSeekTarget state as the bar taps).
+        onSeekIssued = { holdSeekTarget(it) },
+        // Issue #881 (gh-881), Phase 3.1: the skip base is read LIVE at tap time — the composed
+        // position above froze on the previous track after a screen-off track change (field
+        // logs 2026-10-04), so every tap re-seeked to the same stale value ± 5/30 s.
+        seekBasePosition = {
+            skipBasePosition(
+                scrubbingMs = scrubbingPosition,
+                pendingTargetMs = pendingSeekTarget,
+                pendingHeldForMs = SystemClock.elapsedRealtime() - pendingSeekIssuedAtMs,
+                livePlayerPositionMs = binder.player.currentPosition,
+            )
+        },
+    )
 }
 
 

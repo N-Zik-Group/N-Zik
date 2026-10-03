@@ -64,7 +64,8 @@ class DiscordInactivityTimersTest {
                 createdConnections += connection
                 connection
             },
-            tokenValidator = { true }
+            tokenValidator = { true },
+            playerStateDispatcher = dispatcher
         )
         managers += manager
         return manager

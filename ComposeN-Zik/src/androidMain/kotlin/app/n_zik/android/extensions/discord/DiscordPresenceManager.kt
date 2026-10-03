@@ -13,6 +13,7 @@ import com.metrolist.music.discordrpc.DiscordRpc
 import com.metrolist.music.discordrpc.DiscordRpcConnection
 import com.metrolist.music.discordrpc.entities.Timestamps
 import com.metrolist.music.discordrpc.ActivityType
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.Job
@@ -36,7 +37,15 @@ class DiscordPresenceManager(
     private val getAdvancedSettings: () -> DiscordAdvancedSettings = { DiscordAdvancedSettings.read(context) },
     private val externalScope: CoroutineScope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA),
     private val connectionFactory: (String) -> DiscordRpcConnection = { defaultConnection(it) },
-    private val tokenValidator: (suspend (String) -> Boolean?)? = null
+    private val tokenValidator: (suspend (String) -> Boolean?)? = null,
+    /** Item 8: refresh tick interval. Production = [REFRESH_INTERVAL_MS]; tests inject a shorter value. */
+    private val refreshIntervalMs: Long = REFRESH_INTERVAL_MS,
+    /**
+     * gh-881 (Phase 3, Fix D): the dispatcher the live player-state providers must be
+     * invoked on — ExoPlayer state is main-thread only (`verifyApplicationThread`).
+     * Production = [NzikDispatchers].UI; tests inject their own.
+     */
+    private val playerStateDispatcher: CoroutineDispatcher = NzikDispatchers.UI
 ) {
     companion object {
         /**
@@ -74,6 +83,10 @@ class DiscordPresenceManager(
     private var rpc: DiscordRpcConnection? = null
     private var lastToken: String? = null
     private var lastMediaItem: MediaItem? = null
+    // Issue #881 (gh-881), Phase 3 Fix D (review patch): written on the main thread (refresh
+    // tick / onPlaybackParametersChanged) and read from the Discord scope (IO) — make the
+    // cross-thread handoff explicit.
+    @Volatile
     private var lastPosition: Long = 0L
     private var lastDuration: Long = 0L
     private var lastPlaybackSpeed: Float = 1f
@@ -197,7 +210,10 @@ class DiscordPresenceManager(
      * [playbackSpeed] is the effective playback speed (item 5): the timestamps are
      * adjusted by it and the details carry a " [1.50x]"-style suffix when it is not 1.0.
      * [getCurrentPosition] / [isPlayingProvider] are live providers (item 8): the
-     * refresh tick reads them every ~5 s so the Discord progress bar animates.
+     * refresh tick reads them every ~5 s so the Discord progress bar animates. They read
+     * ExoPlayer state, which ExoPlayer only allows on the main thread
+     * (`verifyApplicationThread`): this manager guarantees they are always INVOKED on the
+     * main thread, even though its own loops run on the DATA (IO) scope (gh-881 Phase 3, Fix D).
      */
     fun onPlayingStateChanged(
         mediaItem: MediaItem?,
@@ -494,7 +510,12 @@ class DiscordPresenceManager(
         lastMediaItem?.let { media ->
             if (lastIsPlaying && context.isNetworkAvailable) {
                 Timber.tag(tag).d("Re-sending presence after speed change (${lastPlaybackSpeed}x)")
-                sendPlayingPresence(media, lastGetCurrentPosition?.invoke() ?: lastPosition, lastDuration, lastPlaybackSpeed)
+                // gh-881 (Phase 3, Fix D): the live position provider reads ExoPlayer state
+                // — main thread only. The caller runs on the DATA scope, so hop before reading.
+                discordScope.launch {
+                    val position = withContext(playerStateDispatcher) { lastGetCurrentPosition?.invoke() ?: lastPosition }
+                    sendPlayingPresence(media, position, lastDuration, lastPlaybackSpeed)
+                }
             }
         }
     }
@@ -524,7 +545,7 @@ class DiscordPresenceManager(
         refreshJob?.cancel()
         refreshJob = discordScope.launch {
             while (isActive && !isStopped) {
-                delay(REFRESH_INTERVAL_MS)
+                delay(refreshIntervalMs)
                 if (isStopped) break
                 // A pause (or media removed) stops the loop — the presence is frozen.
                 // Callers must pass the live providers: without isPlayingProvider the
@@ -534,9 +555,14 @@ class DiscordPresenceManager(
                     Timber.tag(tag).w("Refresh tick: no live isPlaying provider — stopping the refresh loop")
                     break
                 }
-                if (!isPlayingProvider.invoke()) break
+                // gh-881 (Phase 3, Fix D): the live providers read ExoPlayer state, which
+                // ExoPlayer only allows on the main thread (verifyApplicationThread). This
+                // loop runs on the DATA (IO) scope — hop to the player-state dispatcher
+                // around the calls (an off-main read throws IllegalStateException and
+                // killed the tick).
+                if (!withContext(playerStateDispatcher) { isPlayingProvider() }) break
                 val media = lastMediaItem ?: break
-                lastPosition = lastGetCurrentPosition?.invoke() ?: lastPosition
+                lastPosition = withContext(playerStateDispatcher) { lastGetCurrentPosition?.invoke() ?: lastPosition }
                 // Activity keeps the connection alive: re-arm the 10-min idle close.
                 armIdleCloseTimer()
                 if (!context.isNetworkAvailable) {

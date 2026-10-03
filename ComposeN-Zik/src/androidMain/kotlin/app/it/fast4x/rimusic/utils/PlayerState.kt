@@ -13,14 +13,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.runtime.withFrameNanos
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import app.n_zik.android.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import app.kreate.android.me.knighthat.utils.Toaster
 
 @Composable
@@ -38,12 +35,27 @@ fun Player.DisposableListener(
 }
 
 /**
- * Polls the player position once per frame into [state].
+ * Issue #881 (gh-881), Phase 3.1: position poll period of [positionAndDurationState].
+ * 100 ms keeps the bar/label smooth (RiPlay, which never shows the frozen bar on the same
+ * device, polls every 200 ms) without a per-frame request.
+ */
+internal const val POSITION_POLL_INTERVAL_MS = 100L
+
+/**
+ * Polls the player position every [POSITION_POLL_INTERVAL_MS] into the returned state.
  *
- * @param active When false the poller stays suspended from writing, so
- * consumers are not invalidated every frame (the player content is always
- * composed but may be hidden behind the mini-player). The first frame after
- * [active] becomes true again re-syncs the position.
+ * Issue #881 (gh-881), Phase 3.1 — aligned on RiPlay's `rememberPlayerPositionAndDurationState`:
+ * a plain time-based loop that ALWAYS reads the live `currentPosition`/`duration`. The former
+ * frame-clock poller (`withFrameNanos`) only wrote when an `isSeeking` flag (set on a SEEK
+ * discontinuity, cleared on a `STATE_READY` callback) and a `needsUpdate` flag agreed; field
+ * logs 2026-10-04 (FURY, OPPO / Android 15) show the bar frozen on the PREVIOUS track's position
+ * after a screen-off track change, every skip tap re-seeking to that stale value. With no
+ * latch there is no state to get stuck in; the "snap back to the old position" the seeking
+ * latch used to hide is covered by GetSeekBar's held `pendingSeekTarget` (Phase 3 Fix E).
+ *
+ * @param active When false the poller does not write, so consumers are not invalidated
+ * while the player content is hidden behind the mini-player. The next tick after [active]
+ * becomes true again re-syncs the position.
  */
 @Composable
 fun Player.positionAndDurationState(key1: Any? = null, active: Boolean = true): State<Pair<Long, Long>> {
@@ -53,51 +65,12 @@ fun Player.positionAndDurationState(key1: Any? = null, active: Boolean = true): 
     val activeRef = rememberUpdatedState(active)
 
     LaunchedEffect(this, key1) {
-        var isSeeking = false
-        var needsUpdate = false
-
-        val listener = object : Player.Listener {
-            override fun onPlaybackStateChanged(playbackState: Int) {
-                if (playbackState == Player.STATE_READY) {
-                    isSeeking = false
-                }
+        while (isActive) {
+            if (activeRef.value) {
+                val sample = currentPosition to duration
+                if (sample != state.value) state.value = sample
             }
-
-            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                // Do not modify the state directly in the callback
-                // The polling coroutine will take care of it.
-                needsUpdate = true
-            }
-
-            override fun onPositionDiscontinuity(
-                oldPosition: Player.PositionInfo,
-                newPosition: Player.PositionInfo,
-                reason: Int
-            ) {
-                if (reason == Player.DISCONTINUITY_REASON_SEEK) {
-                    isSeeking = true
-                    needsUpdate = true
-                }
-            }
-        }
-
-        addListener(listener)
-
-        val pollJob = launch {
-            while (isActive) {
-                withFrameNanos { }
-                if (activeRef.value && (!isSeeking || needsUpdate)) {
-                    state.value = currentPosition to duration
-                    needsUpdate = false
-                }
-            }
-        }
-
-        try {
-            suspendCancellableCoroutine<Nothing> { }
-        } finally {
-            pollJob.cancel()
-            removeListener(listener)
+            delay(POSITION_POLL_INTERVAL_MS)
         }
     }
 
