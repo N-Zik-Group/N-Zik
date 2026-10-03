@@ -30,7 +30,11 @@ import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.JsonObject
@@ -119,7 +123,7 @@ class AudioOutputControllerTest {
     private val store = JsonPairedDeviceStore(InMemoryPairedDeviceStorage())
     private val device = store.issue("PC-A")
 
-    private fun ApplicationTestBuilder.mountWithOutputs(): Pair<BridgeServerCore, AudioOutputController> {
+    private fun ApplicationTestBuilder.mountWithOutputs(handoffScope: CoroutineScope? = null): Pair<BridgeServerCore, AudioOutputController> {
         lateinit var core: BridgeServerCore
         val outputs = AudioOutputController(hub, access, { core.activeDevice.value != null })
         val executor = PlayerCommandExecutor(
@@ -140,6 +144,12 @@ class AudioOutputControllerTest {
             stateHub = hub,
             commandExecutor = executor,
             onSessionEnded = outputs::fallback,
+            // The service wiring of BridgeServerService.startServer, only when a scope is provided
+            onSessionClaimed = if (handoffScope != null) {
+                { handoffScope.launch { outputs.select(AudioOutput.PC) } }
+            } else {
+                {}
+            },
         )
         application { core.install(this) }
         return core to outputs
@@ -221,4 +231,50 @@ class AudioOutputControllerTest {
         withTimeout(5_000) { while (outputs.current != AudioOutput.PHONE) delay(10) }
         verify(exactly = 1) { player.pause() }
     }
+
+    // --- Session handoff (contract §8.5, since 1.3): the output switches to pc on activation ---
+
+    @Test
+    fun `with the handoff, a new session switches the output to pc, and closing it pauses then goes back to phone`() =
+        testApplication {
+            val handoffScope = CoroutineScope(Dispatchers.Unconfined)
+            val (core, outputs) = mountWithOutputs(handoffScope)
+            val session = wsClient().webSocketSession("/api/v1/ws") { bearerAuth(device.deviceToken) }
+            val snapshot = session.nextJson()
+
+            withTimeout(5_000) { while (outputs.current != AudioOutput.PC) delay(10) }
+            // The client sees `pc` in the snapshot, or as an `outputChanged` delta right after
+            if ("pc" != snapshot["audioOutput"]?.jsonPrimitive?.content) {
+                val delta = session.nextJson()
+                assertEquals("outputChanged", delta["type"]?.jsonPrimitive?.content)
+                assertEquals("pc", delta["audioOutput"]?.jsonPrimitive?.content)
+            }
+
+            session.close()
+            withTimeout(5_000) { while (outputs.current != AudioOutput.PHONE || core.activeDevice.value != null) delay(10) }
+            verify(exactly = 1) { player.pause() }
+            handoffScope.cancel()
+        }
+
+    @Test
+    fun `with the handoff, the same device replacing its session keeps the output on pc`() =
+        testApplication {
+            val handoffScope = CoroutineScope(Dispatchers.Unconfined)
+            val (core, outputs) = mountWithOutputs(handoffScope)
+            val session = wsClient().webSocketSession("/api/v1/ws") { bearerAuth(device.deviceToken) }
+            session.nextJson()
+            withTimeout(5_000) { while (outputs.current != AudioOutput.PC) delay(10) }
+
+            // A second connection of the same device replaces the first one with `4000`
+            val replacement = wsClient().webSocketSession("/api/v1/ws") { bearerAuth(device.deviceToken) }
+            replacement.nextJson()
+            withTimeout(5_000) { while (outputs.current != AudioOutput.PC) delay(10) }
+
+            // The replaced session ends after; the active session continues, so no fallback
+            withTimeout(5_000) { while (core.sessionCount != 1) delay(10) }
+            delay(100) // any late end (and any spurious fallback) of the replaced session is done by now
+            assertEquals(AudioOutput.PC, outputs.current)
+            verify(exactly = 0) { player.pause() }
+            handoffScope.cancel()
+        }
 }

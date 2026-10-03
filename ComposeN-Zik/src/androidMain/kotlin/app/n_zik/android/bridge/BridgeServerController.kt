@@ -172,6 +172,8 @@ object BridgeServerController {
         audioLibrary: AudioLibrary = AudioLibrary.EMPTY,
         /** Called after each session end: the audio output fallback (contract §6.2). */
         onSessionEnded: suspend () -> Unit = {},
+        /** Called once a session becomes active: the audio output handoff to the PC (contract §8.5, since 1.3). */
+        onSessionClaimed: () -> Unit = {},
     ): BridgeServerCore {
         lateinit var core: BridgeServerCore
         core = BridgeServerCore(
@@ -189,6 +191,7 @@ object BridgeServerController {
             onActiveDeviceChanged = { syncActiveDevice(core) },
             onCommandAccepted = { _commandTicks.tryEmit(Unit) },
             onSessionEnded = onSessionEnded,
+            onSessionClaimed = onSessionClaimed,
         )
         return core
     }

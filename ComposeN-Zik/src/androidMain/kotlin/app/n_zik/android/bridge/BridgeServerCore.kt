@@ -142,10 +142,17 @@ internal class BridgeServerCore(
     private val onCommandAccepted: () -> Unit = {},
     /**
      * Called once each WebSocket session has ended, whatever the reason (client close, kick,
-     * revocation, replacement, ping timeout, network loss, server stop), after the session is
-     * freed: the audio output fallback of contract §6.2. Runs non-cancellable.
+     * revocation, ping timeout, network loss, server stop), after the session is freed, unless
+     * the same device's replacement session is already active — then the active session
+     * continues and no fallback runs (contract §6.2). Runs non-cancellable.
      */
     private val onSessionEnded: suspend () -> Unit = {},
+    /**
+     * Called once a session has been claimed, i.e. has become the active session (contract §6.2):
+     * the audio output handoff to the PC of contract §8.5 (since 1.3). Fires on every successful
+     * claim, including the same device replacing its own session.
+     */
+    private val onSessionClaimed: () -> Unit = {},
 ) {
     private val stopping = AtomicBoolean(false)
 
@@ -303,10 +310,14 @@ internal class BridgeServerCore(
                             handleSession(this, claim, call.request.headers[HttpHeaders.Authorization])
                         } finally {
                             releaseClaim(claim)
-                            // Contract §6.2: the single fallback point of the audio output (pause, then phone)
-                            withContext(NonCancellable) {
-                                runCatching { onSessionEnded() }
-                                    .onFailure { Timber.tag(TAG).w(it, "Audio output fallback failed") }
+                            // Contract §6.2: the active session ended unless the same device's
+                            // replacement session is already active, then it continues
+                            val continued = _activeDevice.value?.deviceId == claim.device.deviceId
+                            if (!continued) {
+                                withContext(NonCancellable) {
+                                    runCatching { onSessionEnded() }
+                                        .onFailure { Timber.tag(TAG).w(it, "Audio output fallback failed") }
+                                }
                             }
                         }
                     }
@@ -426,6 +437,7 @@ internal class BridgeServerCore(
             ClaimResult.Claimed(claim, current?.session)
         }
         onActiveDeviceChanged()
+        onSessionClaimed()
         return result
     }
 
