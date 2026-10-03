@@ -996,8 +996,8 @@
     <string name="login_for_browse">Göz atmak için oturum açın</string>
     <string name="login_for_browse_description">Göz atma istekleri (ana sayfa, keşfet vb.) için oturum açma özelliğini kullanın</string>
     <string name="youtube_connect_first">Bu seçeneği etkinleştirmek için önce YouTube\'a bağlanın</string>
-    <string name="use_account_for_searches">Use account for searches</string>
-    <string name="use_account_for_searches_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="use_account_for_searches">Aramalar için hesabı kullan</string>
+    <string name="use_account_for_searches_description">Kapatıldığında, aramalar hesabınız olmadan misafir olarak gönderilir — bu aramalar YouTube arama geçmişinize ve önerilerinize kaydedilmez</string>
     <string name="disliked">Beğenilmedi</string>
     <string name="disliked_this_song">Beğenilmeyen Şarkılarla Bu Eylem Gerçekleştirilemez</string>
     <string name="disliked_this_collection">Tüm Şarkılar Beğenilmediğinde Bu İşlem Gerçekleştirilemez</string>
@@ -1248,7 +1248,7 @@
     <string name="update_not_available_yet">Güncelleme henüz mevcut değil veya sürüm bulunamadı</string>
     <string name="update_cache_cleared">Önbellek temizlendi</string>
     <string name="on">Açık</string>
-    <string name="off">Kapalı</string>
+    <string name="off">Kapat</string>
     <string name="exclude_disliked_songs">Beğenilmeyen şarkıları hariç tut</string>
     <string name="exclude_disliked_artists">Beğenilmeyen sanatçıları hariç tut</string>
     <string name="exclude_disliked_albums">Beğenilmeyen albümleri hariç tut</string>
