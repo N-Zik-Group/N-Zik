@@ -3,6 +3,7 @@ package app.it.fast4x.rimusic.ui.screens.player
 import app.n_zik.android.core.database.*
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.utils.artistTextWithFallback
+import app.n_zik.android.utils.titleWithFallback
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -112,7 +113,10 @@ fun Controls(
         mediaItem.toUiMedia(duration())
     },
     mediaId = mediaItem.mediaId,
-    title = cleanPrefix( mediaItem.mediaMetadata.title?.toString() ?: "" ).let { if (it == "null") "" else it },
+    // titleWithFallback: the legacy raw-title line rendered a blank title (and never
+    // triggered the player's "unknown" icon) for tracks without a title tag — same
+    // metadata→DB→localized-placeholder contract as the artist line below.
+    title = mediaItem.titleWithFallback(),
     artist = cleanPrefix( mediaItem.artistTextWithFallback() ),
     artistIds = artistIds,
     albumId = albumId,

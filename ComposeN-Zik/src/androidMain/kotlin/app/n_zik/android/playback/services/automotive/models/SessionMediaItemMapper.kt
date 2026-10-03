@@ -14,6 +14,7 @@ import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.persistentQueueKey
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.thumbnail
+import app.n_zik.android.playback.services.SessionMetadataFallbacks
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
@@ -247,6 +248,20 @@ object SessionMediaItemMapper {
         return Bitmap.createBitmap(bitmap, x, y, size, size)
     }
 
+    /**
+     * Tracks without title/artist tags must still render on the head unit: the
+     * raw empty (or literal "null") metadata strings are replaced with the
+     * localized placeholders — the same labels the phone lists already show.
+     */
+    private fun applyMetadataFallbacks(metadataBuilder: MediaMetadata.Builder, metadata: MediaMetadata) {
+        val needsTitle = SessionMetadataFallbacks.needsFallback(metadata.title)
+        val needsArtist = SessionMetadataFallbacks.needsFallback(metadata.artist)
+        if (!needsTitle && !needsArtist) return
+        val context = appContext()
+        if (needsTitle) metadataBuilder.setTitle(context.getString(R.string.unknown_title))
+        if (needsArtist) metadataBuilder.setArtist(context.getString(R.string.unknown_artist))
+    }
+
     fun mapArtistToMediaItem(
         parentId: String,
         id: String,
@@ -305,6 +320,7 @@ object SessionMediaItemMapper {
     fun mapSongToMediaItem(song: Song, path: String, loadArtwork: Boolean = false): MediaItem {
         val baseItem = song.asMediaItem
         var metadataBuilder = baseItem.mediaMetadata.buildUpon()
+        applyMetadataFallbacks(metadataBuilder, baseItem.mediaMetadata)
 
         if (loadArtwork) {
             if (song.isLocal) {
@@ -371,6 +387,7 @@ object SessionMediaItemMapper {
         var metadataBuilder = mediaItem.mediaMetadata
             .buildUpon()
             .setExtras(bundle)
+        applyMetadataFallbacks(metadataBuilder, mediaItem.mediaMetadata)
 
         if (loadArtwork) {
             // Load artwork for queue display (needed for on-device in AA)
