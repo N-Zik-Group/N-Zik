@@ -13,6 +13,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.automotive.models.AutoSearchState
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -49,7 +50,7 @@ class AlbumDetailHandler : BrowseHandler {
         if (albumId.startsWith("LOCAL_ALBUM_")) {
             val localSongs = database.songAlbumMapTable.allSongsOf(albumId).first()
             return localSongs.mapIndexed { index, song ->
-                SessionMediaItemMapper.mapSongToMediaItem(song, parentId).let { item ->
+                SessionMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal).let { item ->
                     item.buildUpon()
                         .setMediaMetadata(
                             item.mediaMetadata.buildUpon()
@@ -107,7 +108,7 @@ class AlbumDetailHandler : BrowseHandler {
         return if (!onlineSongs.isNullOrEmpty()) {
             AutoSearchState.searchedSongs = (AutoSearchState.searchedSongs + onlineSongs).distinctBy { s -> s.id }
             onlineSongs.mapIndexed { index, song ->
-                SessionMediaItemMapper.mapSongToMediaItem(song, parentId).let { item ->
+                SessionMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal).let { item ->
                     item.buildUpon()
                         .setMediaMetadata(
                             item.mediaMetadata.buildUpon()
@@ -120,7 +121,7 @@ class AlbumDetailHandler : BrowseHandler {
         } else {
             val localSongs = database.songAlbumMapTable.allSongsOf(albumId).first()
             localSongs.mapIndexed { index, song ->
-                SessionMediaItemMapper.mapSongToMediaItem(song, parentId).let { item ->
+                SessionMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal).let { item ->
                     item.buildUpon()
                         .setMediaMetadata(
                             item.mediaMetadata.buildUpon()

@@ -18,6 +18,7 @@ import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMap
 import app.n_zik.android.playback.services.automotive.session.AutoMediaIdContract
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.automotive.models.AutoSearchState
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.playlistPage
@@ -101,6 +102,6 @@ class PlaylistDetailHandler : BrowseHandler {
                 }
             }
         }
-        return listOf(shuffleItem) + listFlow.first().map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId) }
+        return listOf(shuffleItem) + listFlow.first().map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
     }
 }

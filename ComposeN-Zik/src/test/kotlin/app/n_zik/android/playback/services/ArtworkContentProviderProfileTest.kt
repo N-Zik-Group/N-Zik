@@ -3,10 +3,11 @@ package app.n_zik.android.playback.services
 import android.app.Application
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import app.it.fast4x.rimusic.utils.activeProfileKey
 import app.it.fast4x.rimusic.utils.profilePreferences
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -59,17 +60,27 @@ class ArtworkContentProviderProfileTest {
         assertNotNull("the profile's own cover must be served from app_covers_<id>", pfd)
     }
 
+    /** Reads the served JPEG through the descriptor (the temp file is unlinked, the FD stays open). */
+    private fun servedBytes(pfd: ParcelFileDescriptor): ByteArray =
+        ParcelFileDescriptor.AutoCloseInputStream(pfd).use { it.readBytes() }
+
     @Test
     fun `openFile does not serve a base-only cover for a non-default profile`() {
         seedCover("app_covers", "1") // base only
+        val baseCoverBytes = File(app.filesDir, "app_covers/cover_1.jpg").readBytes()
         app.profilePreferences.edit().putString(activeProfileKey, "work").commit()
 
-        assertNull(
+        // The provider now falls back to the app placeholder instead of refusing —
+        // but the base profile's cover must still never leak across profiles.
+        val pfd = provider().openFile(Uri.parse("content://anything/1"), "r")
+        assertNotNull("the provider serves a fallback placeholder, never nothing", pfd)
+        assertNotEquals(
             "a base-only cover must not leak into a non-default profile",
-            provider().openFile(Uri.parse("content://anything/1"), "r")
+            baseCoverBytes,
+            servedBytes(pfd!!)
         )
 
-        // ...and the same cover is served once the base profile is active again.
+        // ...and the base cover IS served again once the base profile is active.
         app.profilePreferences.edit().remove(activeProfileKey).commit()
         assertNotNull(
             "the base profile serves its own cover from the unsuffixed folder",

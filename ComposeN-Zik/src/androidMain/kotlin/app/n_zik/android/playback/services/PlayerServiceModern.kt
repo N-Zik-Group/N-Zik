@@ -127,7 +127,7 @@ import app.n_zik.android.playback.utils.BitmapProvider
 import app.n_zik.android.playback.utils.NZikRadio
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.download.services.MyDownloadService
-import app.it.fast4x.rimusic.utils.CoilBitmapLoader
+import app.n_zik.android.playback.utils.SessionBitmapLoader
 import app.it.fast4x.rimusic.utils.TimerJob
 import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.audioQualityFormatKey
@@ -757,9 +757,10 @@ class PlayerServiceModern : MediaLibraryService(),
             FLAG_ACTIVITY_NEW_TASK or PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         mediaSession =
-            MediaLibrarySession.Builder(this, guestGuardPlayer, mediaLibrarySessionCallback)
+            // Local artwork goes out as the signed provider URI (Android Auto home card)
+            MediaLibrarySession.Builder(this, SessionArtworkPlayer(guestGuardPlayer), mediaLibrarySessionCallback)
                 .setBitmapLoader(
-                    CoilBitmapLoader(
+                    SessionBitmapLoader(
                         this,
                         coroutineScope,
                         250 * resources.displayMetrics.density.toInt()
@@ -3145,7 +3146,7 @@ class PlayerServiceModern : MediaLibraryService(),
         // re-attached to the new player (AD-5: the guest lock must survive crossfade swaps).
         try {
             guestGuardPlayer = createGuestGuardPlayer(player)
-            mediaSession.player = guestGuardPlayer
+            mediaSession.player = SessionArtworkPlayer(guestGuardPlayer)
         } catch (e: Exception) {
             Timber.tag("PlayerServiceModern").e(e, "Failed to swap player in MediaSession")
         }

@@ -15,6 +15,7 @@ import app.n_zik.android.playback.services.automotive.DislikedExclusion
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
 import app.kreate.android.me.knighthat.utils.getLocalSongs
@@ -96,20 +97,20 @@ class SongsBrowseHandler : BrowseHandler {
                 val sortOrder = context.preferences.getEnum(Preference.HOME_SONGS_TOP_SORT_ORDER.key, SortOrder.Ascending)
                 val topIds = database.eventTable.findSongsMostPlayedBetween(from = 0, limit = context.preferences.getEnum(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`).toInt(context.preferences.getInt(MaxTopPlaylistItemsCustomValueKey, 10))).first().map { it.id }.toSet()
                 val songs = database.songTable.sortAll(sortBy, sortOrder, excludeHidden = true).first().filter { it.id in topIds && it.id !in excludedIds }
-                listOf(shuffleItem) + songs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId) }
+                listOf(shuffleItem) + songs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
             }
             AutoSessionConstants.ID_SONGS_ALL -> {
                 val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_SONGS_ALL_SHUFFLE)
                 val sortBy = context.preferences.getEnum(Preference.HOME_SONGS_SORT_BY.key, SongSortBy.Title)
                 val sortOrder = context.preferences.getEnum(Preference.HOME_SONGS_SORT_ORDER.key, SortOrder.Ascending)
-                val songs = database.songTable.sortAll(sortBy, sortOrder, excludeHidden = true).first().filter { it.id !in excludedIds }.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId) }
+                val songs = database.songTable.sortAll(sortBy, sortOrder, excludeHidden = true).first().filter { it.id !in excludedIds }.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
                 listOf(shuffleItem) + songs
             }
             AutoSessionConstants.ID_SONGS_FAVORITES -> {
                 val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_SONGS_FAVORITES_SHUFFLE)
                 val sortBy = context.preferences.getEnum(Preference.HOME_SONGS_FAVORITES_SORT_BY.key, SongSortBy.Title)
                 val sortOrder = context.preferences.getEnum(Preference.HOME_SONGS_FAVORITES_SORT_ORDER.key, SortOrder.Ascending)
-                val songs = database.songTable.sortFavorites(sortBy, sortOrder).first().filter { it.id !in excludedIds }.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId) }
+                val songs = database.songTable.sortFavorites(sortBy, sortOrder).first().filter { it.id !in excludedIds }.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
                 listOf(shuffleItem) + songs
             }
             AutoSessionConstants.ID_SONGS_DOWNLOADED -> {
@@ -120,14 +121,14 @@ class SongsBrowseHandler : BrowseHandler {
                 val sortOrder = context.preferences.getEnum(Preference.HOME_SONGS_DOWNLOADED_SORT_ORDER.key, SortOrder.Ascending)
                 val songs = database.songTable.sortAll(sortBy, sortOrder, excludeHidden = false).first()
                     .filter { song -> downloads[song.id]?.state == Download.STATE_COMPLETED && song.id !in excludedIds }
-                listOf(shuffleItem) + songs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId) }
+                listOf(shuffleItem) + songs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
             }
             AutoSessionConstants.ID_SONGS_ONDEVICE -> {
                 val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_SONGS_ONDEVICE_SHUFFLE)
                 val sortBy = context.preferences.getEnum(Preference.HOME_ON_DEVICE_SONGS_SORT_BY.key, OnDeviceSongSortBy.Title)
                 val sortOrder = context.preferences.getEnum(Preference.HOME_ON_DEVICE_SONGS_SORT_ORDER.key, SortOrder.Ascending)
                 val songs = context.getLocalSongs(sortBy, sortOrder).first().keys.filter { it.id !in excludedIds }.toList()
-                listOf(shuffleItem) + songs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId) }
+                listOf(shuffleItem) + songs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
             }
             AutoSessionConstants.ID_SONGS_CACHED -> {
                 val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_SONGS_CACHED_SHUFFLE)
@@ -136,12 +137,12 @@ class SongsBrowseHandler : BrowseHandler {
                 val songs = database.formatTable.sortAllWithSongs(sortBy, sortOrder).first()
                     .filter { itf -> itf.song.id !in excludedIds && itf.format.contentLength != null && (if (binder != null) binder.cache.isCached(itf.song.id, 0L, itf.format.contentLength ?: 0L) else false) }
                     .map { itf -> itf.song }
-                listOf(shuffleItem) + songs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId) }
+                listOf(shuffleItem) + songs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
             }
             AutoSessionConstants.ID_SONGS_DISLIKED -> {
                 val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_SONGS_DISLIKED_SHUFFLE)
                 val songs = DislikedExclusion.dislikedSongs(context, database)
-                listOf(shuffleItem) + songs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId) }
+                listOf(shuffleItem) + songs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
             }
             else -> emptyList()
         }

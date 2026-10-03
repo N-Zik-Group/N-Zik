@@ -31,40 +31,179 @@ import android.os.Bundle
 @UnstableApi
 object SessionMediaItemMapper {
 
-    private fun loadArtworkBytes(url: String?): ByteArray? {
-        if (url.isNullOrBlank()) return null
+    /**
+     * Longest side (px) of artwork embedded into Android Auto items: the head
+     * unit renders queue and browse artwork at list size, so full-resolution
+     * covers only bloat the IPC parcel and the service RAM.
+     */
+    private const val EMBEDDED_ARTWORK_MAX_SIDE = 512
+
+    private val artworkBytesCache = ArtworkBytesCache()
+
+    @Volatile
+    private var serializedFallbackBytes: ByteArray? = null
+
+    /**
+     * Largest power-of-two inSampleSize keeping the decoded bitmap at or below
+     * [targetMaxSide] on its longest side. Pure int math so it stays
+     * unit-testable off device; the decode helpers feed it the bounds of an
+     * inJustDecodeBounds pass.
+     */
+    internal fun computeInSampleSize(reqWidth: Int, reqHeight: Int, targetMaxSide: Int): Int {
+        if (reqWidth <= 0 || reqHeight <= 0 || targetMaxSide <= 0) return 1
+        val maxSide = maxOf(reqWidth, reqHeight)
+        if (maxSide <= targetMaxSide) return 1
+        var sampleSize = 1
+        while (maxSide / (sampleSize * 2) >= targetMaxSide) sampleSize *= 2
+        return sampleSize
+    }
+
+    /**
+     * Decodes [path] downscaled toward [EMBEDDED_ARTWORK_MAX_SIDE]: two passes,
+     * bounds first, then the sampled decode, so the RAM peak never exceeds the
+     * target size.
+     */
+    private fun decodeFileDownsampled(path: String): Bitmap? {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(path, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+        return BitmapFactory.decodeFile(
+            path,
+            BitmapFactory.Options().apply {
+                inSampleSize = computeInSampleSize(bounds.outWidth, bounds.outHeight, EMBEDDED_ARTWORK_MAX_SIDE)
+            }
+        )
+    }
+
+    /** Same downsample contract as [decodeFileDownsampled] for stream-sourced bytes. */
+    private fun decodeBytesDownsampled(data: ByteArray): Bitmap? {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(data, 0, data.size, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+        return BitmapFactory.decodeByteArray(
+            data,
+            0,
+            data.size,
+            BitmapFactory.Options().apply {
+                inSampleSize = computeInSampleSize(bounds.outWidth, bounds.outHeight, EMBEDDED_ARTWORK_MAX_SIDE)
+            }
+        )
+    }
+
+    /**
+     * Serialized fallback artwork for art-less local tracks: an
+     * android.resource:// URI is unresolvable from the Android Auto head unit
+     * (separate device), so the placeholder is embedded as bytes instead of a
+     * URI. Decoded once — downscaled toward [EMBEDDED_ARTWORK_MAX_SIDE] like
+     * every other embedded cover (the source drawable is 1200px) — then
+     * shared for the process lifetime.
+     */
+    @Synchronized
+    private fun fallbackArtworkBytes(): ByteArray? {
+        serializedFallbackBytes?.let { return it }
         return try {
-            if (url.startsWith("file://") || url.startsWith("/")) {
-                val path = url.removePrefix("file://")
-                val file = File(path)
-                if (!file.exists()) return null
-                val bitmap = BitmapFactory.decodeFile(path) ?: return null
-                val rotated = applyExifRotation(path, bitmap)
-                val cropped = centerCrop(rotated)
-                val stream = ByteArrayOutputStream()
-                cropped.compress(Bitmap.CompressFormat.JPEG, 85, stream)
-                if (cropped !== rotated) cropped.recycle()
-                if (rotated !== bitmap) rotated.recycle()
-                bitmap.recycle()
-                return stream.toByteArray()
-            }
-            if (url.startsWith("content://")) {
-                val uri = Uri.parse(url)
-                val inputStream = appContext().contentResolver.openInputStream(uri) ?: return null
-                val bitmap = BitmapFactory.decodeStream(inputStream)
-                inputStream.close()
-                if (bitmap == null) return null
-                val stream = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 85, stream)
-                return stream.toByteArray()
-            }
-            // runBlocking justified: loadArtworkBytes is private non-suspend called from 5 non-suspend public mappers
-            val bitmap = runBlocking(NzikDispatchers.DATA) {
-                ImageCacheFactory.loadBitmap(url, allowHardware = false)
-            } ?: return null
+            val full = BitmapFactory.decodeResource(appContext().resources, R.drawable.ic_launcher_box)
+                ?: return null
+            // The source placeholder is 1200px — downscale toward the 512px
+            // embed target like every other embedded cover (one-time decode,
+            // the bytes are shared for the process lifetime).
+            val bitmap = if (minOf(full.width, full.height) > EMBEDDED_ARTWORK_MAX_SIDE) {
+                Bitmap.createScaledBitmap(
+                    full,
+                    EMBEDDED_ARTWORK_MAX_SIDE,
+                    EMBEDDED_ARTWORK_MAX_SIDE,
+                    true
+                )
+            } else full
             val stream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.JPEG, 85, stream)
-            stream.toByteArray()
+            bitmap.recycle()
+            if (bitmap !== full) full.recycle()
+            val bytes = stream.toByteArray()
+            serializedFallbackBytes = bytes
+            bytes
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+
+    /**
+     * Artwork-less items must still render on the head unit: embed the
+     * serialized placeholder. Falls back to the URI only when the placeholder
+     * cannot be decoded (keeps phone-side rendering alive).
+     */
+    private fun setSerializedFallback(metadataBuilder: MediaMetadata.Builder) {
+        val fallback = fallbackArtworkBytes()
+        if (fallback != null) {
+            metadataBuilder.setArtworkData(fallback, MediaMetadata.PICTURE_TYPE_ILLUSTRATION)
+        } else {
+            metadataBuilder.setArtworkUri(drawableUri(appContext(), R.drawable.ic_launcher_box))
+        }
+    }
+
+    /**
+     * Resolves the artwork file for a `file://` URL or a bare absolute path.
+     * `java.nio.file.Paths.get(URI)` understands Windows drive URIs
+     * (`file:///C:/...`), which `File("/C:/...")` silently misresolves
+     * against the current drive root.
+     */
+    private fun resolveArtworkFile(url: String, barePath: String): File =
+        try {
+            java.nio.file.Paths.get(java.net.URI(url)).toFile()
+        } catch (_: Exception) {
+            File(barePath)
+        }
+
+    private fun loadArtworkBytes(url: String?): ByteArray? {
+        if (url.isNullOrBlank()) return null
+        // Embedded artwork is paid once per source per process lifetime: queue
+        // rebuilds (shuffle, next, playback resumption) share the bytes instead
+        // of re-decoding and re-compressing every cover.
+        artworkBytesCache.get(url)?.let { return it }
+        return try {
+            val bytes: ByteArray? = when {
+                url.startsWith("file://") || url.startsWith("/") -> {
+                    val path = url.removePrefix("file://")
+                    val file = resolveArtworkFile(url, path)
+                    if (!file.exists()) null
+                    else {
+                        val bitmap = decodeFileDownsampled(path) ?: return null
+                        val rotated = applyExifRotation(path, bitmap)
+                        val cropped = centerCrop(rotated)
+                        val stream = ByteArrayOutputStream()
+                        cropped.compress(Bitmap.CompressFormat.JPEG, 85, stream)
+                        if (cropped !== rotated) cropped.recycle()
+                        if (rotated !== bitmap) rotated.recycle()
+                        bitmap.recycle()
+                        stream.toByteArray()
+                    }
+                }
+
+                url.startsWith("content://") -> {
+                    val uri = Uri.parse(url)
+                    val data = appContext().contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                        ?: return null
+                    val bitmap = decodeBytesDownsampled(data) ?: return null
+                    val stream = ByteArrayOutputStream()
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 85, stream)
+                    bitmap.recycle()
+                    stream.toByteArray()
+                }
+
+                // runBlocking justified: loadArtworkBytes is private non-suspend called from 5 non-suspend public mappers
+                else -> runBlocking(NzikDispatchers.DATA) {
+                    ImageCacheFactory.loadBitmap(url, allowHardware = false)
+                }?.let { bitmap ->
+                    val stream = ByteArrayOutputStream()
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 85, stream)
+                    stream.toByteArray()
+                }
+            }
+            bytes?.let {
+                artworkBytesCache.put(url, it)
+                it
+            }
         } catch (_: Exception) {
             null
         }
@@ -175,7 +314,7 @@ object SessionMediaItemMapper {
                 if (artworkBytes != null) {
                     metadataBuilder.setArtworkData(artworkBytes, MediaMetadata.PICTURE_TYPE_ILLUSTRATION)
                 } else {
-                    metadataBuilder.setArtworkUri(drawableUri(appContext(), R.drawable.ic_launcher_box))
+                    setSerializedFallback(metadataBuilder)
                 }
             } else {
                 // Load artwork via Coil (handles EXIF rotation) for Android Auto
@@ -184,7 +323,7 @@ object SessionMediaItemMapper {
                 if (artworkBytes != null) {
                     metadataBuilder.setArtworkData(artworkBytes, MediaMetadata.PICTURE_TYPE_ILLUSTRATION)
                 } else {
-                    metadataBuilder.setArtworkUri(drawableUri(appContext(), R.drawable.ic_launcher_box))
+                    setSerializedFallback(metadataBuilder)
                 }
             }
         } else {
@@ -241,7 +380,7 @@ object SessionMediaItemMapper {
                 if (artworkBytes != null) {
                     metadataBuilder.setArtworkData(artworkBytes, MediaMetadata.PICTURE_TYPE_ILLUSTRATION)
                 } else {
-                    metadataBuilder.setArtworkUri(drawableUri(appContext(), R.drawable.ic_launcher_box))
+                    setSerializedFallback(metadataBuilder)
                 }
             }
         } else {

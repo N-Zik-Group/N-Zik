@@ -13,6 +13,7 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
 import app.n_zik.android.playback.services.automotive.models.AutoSearchState
 import it.fast4x.innertube.Innertube
@@ -45,7 +46,7 @@ class SearchBrowseHandler : BrowseHandler {
                     }
                     val songs = resultPage?.items?.map { s -> s.asSong } ?: emptyList()
                     AutoSearchState.searchedSongs = (AutoSearchState.searchedSongs + songs).distinctBy { s -> s.id }
-                    allMapped.addAll(songs.map { s -> SessionMediaItemMapper.mapSongToMediaItem(s, actualParentId) })
+                    allMapped.addAll(songs.map { s -> SessionMediaItemMapper.mapSongToMediaItem(s, actualParentId, loadArtwork = s.isLocal) })
                     cont = resultPage?.continuation
                 } while (cont != null && allMapped.size < 150)
                 allMapped
@@ -94,7 +95,7 @@ class SearchBrowseHandler : BrowseHandler {
                     val items = resultPage?.items ?: emptyList()
                     val songs = items.map { it.asSong }
                     AutoSearchState.searchedVideos = (AutoSearchState.searchedVideos + items).distinctBy { it.key }
-                    allMapped.addAll(songs.map { s -> SessionMediaItemMapper.mapSongToMediaItem(s, actualParentId) })
+                    allMapped.addAll(songs.map { s -> SessionMediaItemMapper.mapSongToMediaItem(s, actualParentId, loadArtwork = s.isLocal) })
                     cont = resultPage?.continuation
                 } while (cont != null && allMapped.size < 150)
                 allMapped

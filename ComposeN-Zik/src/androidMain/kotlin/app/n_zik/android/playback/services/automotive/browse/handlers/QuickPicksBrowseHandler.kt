@@ -17,6 +17,7 @@ import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
@@ -157,7 +158,7 @@ class QuickPicksBrowseHandler : BrowseHandler {
                 "related: ${relatedSongsSource.size}, total: ${candidateList.size}, ytLogin: ${isYouTubeLoggedIn()}"
         )
 
-        val items = candidateList.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId) }
+        val items = candidateList.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
         return (listOf(luckyItem) + items).distinctBy { it.mediaId }
     }
 }
