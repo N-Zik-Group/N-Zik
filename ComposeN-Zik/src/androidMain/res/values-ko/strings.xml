@@ -996,6 +996,8 @@
     <string name="login_for_browse">Login for Browse</string>
     <string name="login_for_browse_description">Use login for browse requests (home, explore, etc.)</string>
     <string name="youtube_connect_first">Connect to YouTube first to enable this option</string>
+    <string name="use_account_for_searches">Use account for searches</string>
+    <string name="use_account_for_searches_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
     <string name="disliked">Disliked</string>
     <string name="disliked_this_song">이 행동을 싫어요 표시된 곡에 수행할 수 없습니다</string>
     <string name="disliked_this_collection">Cannot Perform this Action when all the Songs are Disliked</string>
