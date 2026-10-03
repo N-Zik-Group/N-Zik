@@ -5,6 +5,7 @@ import androidx.compose.ui.draw.clip
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.PLAYER_SHEET_HANDOVER_PROGRESS
 import app.n_zik.android.components.player.durationOutlineColorOf
+import app.n_zik.android.components.player.displayedTimeRemainingOf
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -282,8 +283,13 @@ fun DurationIndicator(
 
                 if(isPaused) return@Box
 
-                val toDisplay by remember {
-                    derivedStateOf { if (timeRemaining < 0) "--:--" else formatAsDuration(timeRemaining) }
+                // Label sync (approved legacy fix): the displayed remaining time is derived
+                // from the SAME position as the elapsed label (incl. drag / held seek target)
+                // and floored on whole seconds, so both labels tick together. The precise
+                // poller value above only drives the pause-between-songs trigger.
+                val toDisplay = remember( duration, scrubbingPosition, position ) {
+                    val remaining = displayedTimeRemainingOf( duration, scrubbingPosition ?: position )
+                    if (remaining < 0) "--:--" else formatAsDuration(remaining)
                 }
                 OutlinedText( toDisplay, outlineColor )
             }

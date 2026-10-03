@@ -249,6 +249,18 @@ class GetSeekBarPendingSeekTargetTest {
         verify(exactly = 0) { mockPlayer.seekTo(BASE_POSITION_MS + STEP_MS) }
     }
 
+    @Test
+    fun `elapsed and remaining labels are computed from the same whole second`() {
+        // 30.5 s into a 200.441 s track: elapsed "0:30" and remaining 200 - 30 = "2:50". The
+        // former `duration - position` (169 941 ms) read "2:49" — 441 ms out of phase.
+        fakePosition = 30_500L
+        content(duration = 200_441L)
+
+        assertLabelPresent("0:30")
+        assertLabelPresent("2:50")
+        assertLabelGone("2:49")
+    }
+
     private companion object {
         const val STEP_MS = 5_000L
         const val BASE_POSITION_MS = 30_000L
