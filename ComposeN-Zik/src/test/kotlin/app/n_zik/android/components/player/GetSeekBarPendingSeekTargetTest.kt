@@ -186,6 +186,10 @@ class GetSeekBarPendingSeekTargetTest {
         composeRule.waitForIdle()
         assertLabelPresent("0:35")
         assertLabelGone("0:30")
+        // The remaining label holds the SAME target (2:45 = 200 s − 0:35), not the stale
+        // position's 2:50 — both labels tick together on the held target.
+        assertLabelPresent("2:45")
+        assertLabelGone("2:50")
 
         // A second tap accumulates from the HELD target (0:35 → 0:40), not from the stale
         // player position (which would produce 0:35 again).
