@@ -2268,6 +2268,8 @@ Volume BAS : titre précédent</string>
     <string name="bridge_battery_title">Optimisation de la batterie</string>
     <string name="bridge_battery_warning">L\'optimisation de la batterie est activée : Android pourrait arrêter le serveur PC fonctionnant en arrière-plan</string>
     <string name="bridge_battery_action">Désactiver l\'optimisation de la batterie</string>
+    <string name="bridge_audio_output_pc_subtitle">Sound on the PC (N-Zik Desktop Compagnon)</string>
+    <string name="bridge_audio_output_pc_unavailable">This PC is not available</string>
     <string name="onboard_perm_camera">Appareil photo</string>
     <string name="onboard_perm_camera_desc">Scannez le QR code de N-Zik Desktop Compagnon pour connecter un PC</string>
 </resources>
