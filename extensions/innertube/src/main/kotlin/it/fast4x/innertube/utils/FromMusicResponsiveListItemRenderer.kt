@@ -37,12 +37,18 @@ fun Innertube.SongItem.Companion.from(renderer: MusicResponsiveListItemRenderer)
                     endpoint = it.navigationEndpoint.endpoint as NavigationEndpoint.Endpoint.Watch
                 ) else null
             },
+        // Keep only byline runs linked to a browse endpoint: artist names are the
+        // only runs pointing to an artist page, while plain-text runs are byline
+        // fragments (separators, play counts such as "162K plays", timestamps such
+        // as "51:03") that must not pollute the song's authors. Same convention as
+        // the two-row isSong parser in HomePage.
         authors = renderer
             .flexColumns
             .getOrNull(1)
             ?.musicResponsiveListItemFlexColumnRenderer
             ?.text
             ?.runs
+            ?.filter { it.navigationEndpoint?.browseEndpoint != null }
             ?.map { Innertube.Info(name = it.text, endpoint = it.navigationEndpoint?.browseEndpoint) }
             ?.filter { !it.name.isNullOrBlank() }
             ?.takeIf(List<Any>::isNotEmpty),

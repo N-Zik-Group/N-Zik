@@ -307,14 +307,16 @@ fun YtmSectionItems(
                             }
                             is Innertube.ArtistItem -> {
                                 val menuState = LocalMenuState.current
+                                // Album card format (album-size thumbnail, name centered
+                                // below) so artist items match the album geometry of
+                                // the other cards.
                                 ArtistItem(
                                     artist = item,
-                                    thumbnailSizePx = songThumbnailSizePx,
-                                    thumbnailSizeDp = songThumbnailSizeDp,
-                                    alternative = false,
+                                    thumbnailSizePx = albumThumbnailSizePx,
+                                    thumbnailSizeDp = albumThumbnailSizeDp,
+                                    alternative = true,
                                     bookmarkState = sectionArtistBookmarkStatesMap[item.key],
                                     modifier = Modifier
-                                        .width(200.dp)
                                         .clip(uiRoundnessShape())
                                         .combinedClickable(
                                             onClick = { onArtistClick(item.key) },

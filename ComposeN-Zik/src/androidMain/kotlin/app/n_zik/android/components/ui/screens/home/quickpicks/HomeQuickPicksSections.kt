@@ -1316,10 +1316,13 @@ fun GenericYtmSections(
                             )
                         }
                         is Innertube.ArtistItem -> {
+                            // Album card format (album-size thumbnail, name centered below)
+                            // so artist items match the album geometry of the other cards.
                             ArtistItem(
                                 artist = item,
-                                thumbnailSizePx = songThumbnailSizePx,
-                                thumbnailSizeDp = songThumbnailSizeDp,
+                                thumbnailSizePx = albumThumbnailSizePx,
+                                thumbnailSizeDp = albumThumbnailSizeDp,
+                                alternative = true,
                                 bookmarkState = sectionArtistBookmarkStatesMap[item.key],
                                 disableScrollingText = disableScrollingText,
                                 modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
