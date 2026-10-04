@@ -2,6 +2,7 @@ package app.n_zik.android.bridge.state
 
 import androidx.media3.common.C
 import androidx.media3.common.Player
+import app.it.fast4x.rimusic.utils.EXPLICIT_BUNDLE_TAG
 
 /** Queue item as read from the player, before its `isLiked` / `isDownloaded` flags are resolved. */
 internal data class RawItem(
@@ -13,6 +14,8 @@ internal data class RawItem(
     val durationText: String?,
     /** Duration the player knows for this item (current item once loaded), the fallback of [durationText]. */
     val playerDurationMs: Long? = null,
+    /** Explicit flag carried by the item's extras (the title prefix is read by [TrackMapping]). */
+    val isExplicitExtra: Boolean = false,
 )
 
 /** One read of the player: its queue items and a [PlayerSample] whose queue is still empty. */
@@ -21,6 +24,9 @@ internal data class PlayerRead(val items: List<RawItem>, val sample: PlayerSampl
 /** Reads a [Player] into the bridge's shape; call it on the player's (main) thread. */
 internal object PlayerStateReader {
     private const val DURATION_TEXT_EXTRA = "durationText"
+
+    // Same extras as the phone's `MediaItem.isExplicit` (rim/utils/Utils.kt:405-412)
+    private const val STANDARD_EXPLICIT_EXTRA = "androidx.media3.session.EXTRAS_KEY_IS_EXPLICIT"
 
     fun read(player: Player, sampledAtMs: Long): PlayerRead {
         val shuffle = player.shuffleModeEnabled
@@ -44,6 +50,9 @@ internal object PlayerStateReader {
                 hasArtwork = metadata.artworkUri != null,
                 durationText = metadata.extras?.getString(DURATION_TEXT_EXTRA),
                 playerDurationMs = currentDurationMs.takeIf { index == currentWindow },
+                isExplicitExtra = metadata.extras?.let {
+                    it.getBoolean(EXPLICIT_BUNDLE_TAG) || it.getBoolean(STANDARD_EXPLICIT_EXTRA)
+                } == true,
             )
         }
         val currentIndex = order.indexOf(player.currentMediaItemIndex)

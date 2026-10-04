@@ -212,7 +212,7 @@ class BridgeStateHubTest {
         assertEquals("off", snapshot["repeatMode"]?.jsonPrimitive?.content)
         val track = snapshot["queue"]?.jsonArray?.first()?.jsonObject
         assertEquals(
-            setOf("id", "title", "artists", "durationMs", "source", "isDownloaded", "isLiked", "hasArtwork"),
+            setOf("id", "title", "artists", "durationMs", "source", "isDownloaded", "isLiked", "hasArtwork", "isExplicit"),
             track?.keys,
         )
         assertEquals("online", track?.get("source")?.jsonPrimitive?.content)

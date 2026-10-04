@@ -87,4 +87,41 @@ class TrackMappingTest {
         assertEquals(null, track(durationText = null, playerDurationMs = null).durationMs)
         assertEquals(null, track(durationText = null, playerDurationMs = 0L).durationMs)
     }
+
+    // Contract 1.3: isExplicit
+
+    @Test
+    fun `isExplicitTitle detects explicit titles, with nested prefixes or the explicit mark`() {
+        assertTrue(TrackMapping.isExplicitTitle("e:Song"))
+        assertTrue(TrackMapping.isExplicitTitle("pinned:e:Song"))
+        assertTrue(TrackMapping.isExplicitTitle("🅴 Song"))
+        assertFalse(TrackMapping.isExplicitTitle("Song"))
+        assertFalse(TrackMapping.isExplicitTitle(""))
+    }
+
+    @Test
+    fun `an explicit queue title is sent clean and flagged explicit`() {
+        fun track(title: String) = TrackMapping.track(
+            mediaId = "aaaaaaaaaaa", title = title, artist = "A", hasArtwork = false,
+            durationText = null, isLiked = false, isDownloaded = false,
+        )
+
+        assertEquals("Song", track("e:Song").title)
+        assertTrue(track("e:Song").isExplicit)
+        assertEquals("Song", track("🅴 Song").title)
+        assertTrue(track("🅴 Song").isExplicit)
+        assertEquals("Song", track("Song").title)
+        assertFalse(track("Song").isExplicit)
+    }
+
+    @Test
+    fun `the isExplicit flag survives a non-explicit title`() {
+        val track = TrackMapping.track(
+            mediaId = "aaaaaaaaaaa", title = "Song", artist = "A", hasArtwork = false,
+            durationText = null, isLiked = false, isDownloaded = false, isExplicit = true,
+        )
+
+        assertTrue(track.isExplicit)
+        assertEquals("Song", track.title)
+    }
 }

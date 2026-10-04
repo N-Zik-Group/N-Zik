@@ -1,5 +1,6 @@
 package app.n_zik.android.bridge.library
 
+import app.it.fast4x.rimusic.hasExplicitPrefix
 import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.models.PlaylistPreview
@@ -25,6 +26,7 @@ internal object LibraryMapping {
         TrackMapping.track(
             mediaId = song.id,
             title = song.cleanTitle(),
+            isExplicit = song.title.hasExplicitPrefix(),
             artist = song.artistsText?.let { song.cleanArtistsText() },
             hasArtwork = ArtworkUrls.hasArtwork(song.thumbnailUrl),
             durationText = song.durationText,
@@ -45,6 +47,7 @@ internal object LibraryMapping {
                 year = album.year,
                 trackCount = songCounts[album.id] ?: 0,
                 hasArtwork = ArtworkUrls.hasArtwork(album.thumbnailUrl),
+                isBookmarked = album.bookmarkedAt != null,
             )
         }
 
@@ -56,6 +59,7 @@ internal object LibraryMapping {
                 name = artist.cleanName(),
                 trackCount = songCounts[artist.id] ?: 0,
                 hasArtwork = ArtworkUrls.hasArtwork(artist.thumbnailUrl),
+                isBookmarked = artist.bookmarkedAt != null,
             )
         }
 

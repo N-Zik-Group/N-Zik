@@ -64,6 +64,16 @@ class LibraryMappingTest {
     }
 
     @Test
+    fun `isExplicit follows the explicit prefix of the database title`() {
+        assertTrue(LibraryMapping.track(song("a"), emptySet()).isExplicit)
+        assertTrue(LibraryMapping.track(song("b").copy(title = "pinned:e:Title b"), emptySet()).isExplicit)
+
+        val plain = song("c").copy(title = "Title c")
+        assertFalse(LibraryMapping.track(plain, emptySet()).isExplicit)
+        assertEquals("Title c", LibraryMapping.track(plain, emptySet()).title)
+    }
+
+    @Test
     fun `disliked albums and artists are hidden and names are cleaned`() {
         val albums = LibraryMapping.albums(
             listOf(
@@ -92,6 +102,29 @@ class LibraryMappingTest {
         assertEquals("Singer", artists[0].name)
         assertEquals(2, artists[0].trackCount)
         assertTrue(artists[0].hasArtwork)
+    }
+
+    @Test
+    fun `isBookmarked follows bookmarkedAt for albums and artists`() {
+        val albums = LibraryMapping.albums(
+            listOf(
+                Album(id = "bm1", title = "Followed", bookmarkedAt = 1_000L, thumbnailUrl = "https://x/y"),
+                Album(id = "bm2", title = "Not followed", thumbnailUrl = "https://x/y"),
+            ),
+            emptyMap(),
+        )
+        assertTrue(albums[0].isBookmarked)
+        assertFalse(albums[1].isBookmarked)
+
+        val artists = LibraryMapping.artists(
+            listOf(
+                Artist(id = "bm3", name = "Followed", bookmarkedAt = 1_000L, thumbnailUrl = "https://x/y"),
+                Artist(id = "bm4", name = "Not followed", thumbnailUrl = "https://x/y"),
+            ),
+            emptyMap(),
+        )
+        assertTrue(artists[0].isBookmarked)
+        assertFalse(artists[1].isBookmarked)
     }
 
     @Test

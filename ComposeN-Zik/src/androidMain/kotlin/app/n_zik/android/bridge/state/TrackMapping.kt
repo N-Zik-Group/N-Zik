@@ -1,5 +1,7 @@
 package app.n_zik.android.bridge.state
 
+import app.it.fast4x.rimusic.cleanPrefix
+import app.it.fast4x.rimusic.hasExplicitPrefix
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 
 /** Pure conversion from the phone's queue items to the contract's `Track` (§1.1). */
@@ -39,12 +41,16 @@ internal object TrackMapping {
         isLiked: Boolean,
         isDownloaded: Boolean,
         playerDurationMs: Long? = null,
+        isExplicit: Boolean = false,
     ): TrackDto {
         val id = trackIdOf(mediaId)
         val source = sourceOf(id)
+        val rawTitle = title.cleanText().orEmpty()
+        val explicitTitle = isExplicitTitle(rawTitle)
         return TrackDto(
             id = id,
-            title = title.cleanText().orEmpty(),
+            // Queue titles keep `e:` or the explicit mark of `Song.asMediaItem`: sent clean, flagged apart
+            title = if (explicitTitle) cleanPrefix(rawTitle) else rawTitle,
             artists = artist.cleanText(),
             // The metadata text first; the player's own duration when the track has none (current item)
             durationMs = durationTextToMs(durationText) ?: playerDurationMs?.takeIf { it > 0 },
@@ -53,6 +59,13 @@ internal object TrackMapping {
             isDownloaded = source == TrackSource.ONLINE && isDownloaded,
             isLiked = isLiked,
             hasArtwork = hasArtwork,
+            isExplicit = isExplicit || explicitTitle,
         )
     }
+
+    /** `e:` prefix (database title) or the explicit mark `Song.asMediaItem` puts in its place. */
+    fun isExplicitTitle(title: String): Boolean = title.hasExplicitPrefix() || title.startsWith(EXPLICIT_MARK)
+
+    // "🅴 " written by `Song.asMediaItem` (rim/utils/Utils.kt:257) and removed by `cleanPrefix`
+    private const val EXPLICIT_MARK = "🅴 "
 }

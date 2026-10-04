@@ -315,6 +315,8 @@ internal data class AlbumDto(
     val year: String?,
     val trackCount: Int,
     val hasArtwork: Boolean,
+    /** Since 1.3: album bookmarked on the phone. */
+    val isBookmarked: Boolean = false,
 )
 
 /** `Artist` (contract §1.1, since 1.1). */
@@ -324,6 +326,8 @@ internal data class ArtistDto(
     val name: String,
     val trackCount: Int,
     val hasArtwork: Boolean,
+    /** Since 1.3: artist followed (bookmarked) on the phone. */
+    val isBookmarked: Boolean = false,
 )
 
 // --- Audio (contract §8) ---

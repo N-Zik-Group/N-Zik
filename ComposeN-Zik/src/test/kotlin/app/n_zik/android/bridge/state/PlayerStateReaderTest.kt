@@ -1,5 +1,7 @@
 package app.n_zik.android.bridge.state
 
+import android.os.Bundle
+import app.it.fast4x.rimusic.utils.EXPLICIT_BUNDLE_TAG
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -11,6 +13,7 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class PlayerStateReaderTest {
@@ -25,6 +28,7 @@ class PlayerStateReaderTest {
         repeatMode: Int = Player.REPEAT_MODE_OFF,
         count: Int = ids.size,
         durationMs: Long = C.TIME_UNSET,
+        explicitExtra: Boolean? = null,
     ): Player {
         val timeline = mockk<Timeline>()
         every { timeline.windowCount } returns count
@@ -36,6 +40,9 @@ class PlayerStateReaderTest {
             val order = if (thirdArg()) shuffleOrder else ids.indices.toList()
             order.getOrNull(order.indexOf(index) + 1) ?: C.INDEX_UNSET
         }
+        val extras = explicitExtra?.let { flag ->
+            mockk<Bundle>(relaxed = true).apply { every { getBoolean(EXPLICIT_BUNDLE_TAG) } returns flag }
+        }
         return mockk<Player> {
             every { currentTimeline } returns timeline
             every { shuffleModeEnabled } returns shuffle
@@ -43,7 +50,12 @@ class PlayerStateReaderTest {
             every { getMediaItemAt(any()) } answers {
                 MediaItem.Builder()
                     .setMediaId(ids[firstArg()])
-                    .setMediaMetadata(MediaMetadata.Builder().setTitle("Title ${firstArg<Int>()}").build())
+                    .setMediaMetadata(
+                        MediaMetadata.Builder()
+                            .setTitle("Title ${firstArg<Int>()}")
+                            .apply { if (extras != null) setExtras(extras) }
+                            .build(),
+                    )
                     .build()
             }
             every { currentMediaItemIndex } returns current
@@ -128,5 +140,19 @@ class PlayerStateReaderTest {
         val read = PlayerStateReader.read(player(current = 0), 0L)
 
         assertEquals(listOf<Long?>(null, null, null), read.items.map { it.playerDurationMs })
+    }
+
+    @Test
+    fun `the explicit extra of the item metadata is read`() {
+        val read = PlayerStateReader.read(player(current = 0, explicitExtra = true), 0L)
+
+        assertTrue(read.items.all { it.isExplicitExtra })
+    }
+
+    @Test
+    fun `items without an explicit extra are read as non-explicit`() {
+        val read = PlayerStateReader.read(player(current = 0), 0L)
+
+        assertFalse(read.items.any { it.isExplicitExtra })
     }
 }

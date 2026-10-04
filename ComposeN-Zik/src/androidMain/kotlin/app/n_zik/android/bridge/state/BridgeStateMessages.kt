@@ -17,6 +17,8 @@ internal data class TrackDto(
     val isDownloaded: Boolean,
     val isLiked: Boolean,
     val hasArtwork: Boolean,
+    /** Since 1.3: explicit content, the source of the phone's "E" badge. */
+    val isExplicit: Boolean = false,
 )
 
 @Serializable
