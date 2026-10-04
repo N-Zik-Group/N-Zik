@@ -2267,8 +2267,8 @@
     <string name="bridge_battery_title">Pil optimizasyonu</string>
     <string name="bridge_battery_warning">Pil optimizasyonu etkin: Android, arka plandaki bilgisayar sunucusunu durdurabilir</string>
     <string name="bridge_battery_action">Pil optimizasyonunu devre dışı bırak</string>
-    <string name="bridge_audio_output_pc_subtitle">Sound on the PC (N-Zik Desktop Compagnon)</string>
-    <string name="bridge_audio_output_pc_unavailable">This PC is not available</string>
+    <string name="bridge_audio_output_pc_subtitle">Bilgisayarda ses (N-Zik Masaüstü Yardımcısı)</string>
+    <string name="bridge_audio_output_pc_unavailable">Bu bilgisayar mevcut değil</string>
     <string name="onboard_perm_camera">Kamera</string>
     <string name="onboard_perm_camera_desc">Bir bilgisayarla eşleştirmek için N-Zik Masaüstü Yardımcısı uygulamasının QR kodunu tarayın</string>
 </resources>
