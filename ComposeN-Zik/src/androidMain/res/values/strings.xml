@@ -2267,6 +2267,8 @@
 <string name="bridge_battery_title">Battery optimization</string>
 <string name="bridge_battery_warning">Battery optimization is on: Android may stop the PC server in the background</string>
 <string name="bridge_battery_action">Disable battery optimization</string>
+<string name="bridge_audio_output_pc_subtitle">Sound on the PC (N-Zik Desktop Compagnon)</string>
+<string name="bridge_audio_output_pc_unavailable">This PC is not available</string>
 <string name="onboard_perm_camera">Camera</string>
 <string name="onboard_perm_camera_desc">Scan the QR code of N-Zik Desktop Compagnon to pair a PC</string>
 </resources>
