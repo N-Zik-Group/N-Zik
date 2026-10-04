@@ -254,6 +254,43 @@ class GetSeekBarPendingSeekTargetTest {
     }
 
     @Test
+    fun `the hold releases from the live player position when the polled cache stays stale`() {
+        // gh-881 Phase 3.2 (R2): the release effect used to converge on the gated poll cache
+        // (position()); while the sheet content is inactive that cache freezes, so the hold
+        // survived until the 10 s safety timeout and chained every skip tap from the stale
+        // value (field logs 2026-10-04). Here the polled cache stays frozen at 0:30 while the
+        // player's LIVE position converges on the 1:45 target — the hold must release on the
+        // live convergence (the player's own state, RiMusic/Kreate model) and the label must
+        // fall back to the cache, not keep holding the target.
+        content()
+        every { mockPlayer.currentPosition } returns LIVE_POSITION_MS
+
+        clickForward()
+        verify(exactly = 1) { mockPlayer.seekTo(LIVE_POSITION_MS + STEP_MS) }
+        // Pump so the held target reaches the label. The hold cannot release yet: the live
+        // position is still 5_000 ms away from the target (outside the 500 ms tolerance).
+        composeRule.mainClock.advanceTimeBy(100)
+        composeRule.waitForIdle()
+        assertLabelPresent("1:45")
+
+        // The player commits the seek (live position reaches the target) while the polled
+        // cache (fakePosition) stays frozen on its stale value.
+        every { mockPlayer.currentPosition } returns LIVE_POSITION_MS + STEP_MS
+        composeRule.mainClock.advanceTimeBy(150)
+        composeRule.waitForIdle()
+
+        // Released: the label fell back to the polled cache (0:30). With the old
+        // cache-converged release it would still hold "1:45" until the 10 s timeout.
+        // Harness note: the 0:30 fallback is an isolation artifact — in production the same
+        // seek commit that releases the hold fires onPositionDiscontinuity(SEEK), which R1
+        // uses to re-anchor the cache on the target, so the label shows the target, not the
+        // stale cache. The assertion proves the RELEASE (the label no longer holds the
+        // target), not the production display.
+        assertLabelPresent("0:30")
+        assertLabelGone("1:45")
+    }
+
+    @Test
     fun `elapsed and remaining labels are computed from the same whole second`() {
         // 30.5 s into a 200.441 s track: elapsed "0:30" and remaining 200 - 30 = "2:50". The
         // former `duration - position` (169 941 ms) read "2:49" — 441 ms out of phase.

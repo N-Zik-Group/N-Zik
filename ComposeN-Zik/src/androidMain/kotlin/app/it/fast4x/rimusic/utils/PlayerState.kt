@@ -53,9 +53,31 @@ internal const val POSITION_POLL_INTERVAL_MS = 100L
  * latch there is no state to get stuck in; the "snap back to the old position" the seeking
  * latch used to hide is covered by GetSeekBar's held `pendingSeekTarget` (Phase 3 Fix E).
  *
- * @param active When false the poller does not write, so consumers are not invalidated
- * while the player content is hidden behind the mini-player. The next tick after [active]
- * becomes true again re-syncs the position.
+ * Issue #881 (gh-881), Phase 3.2 (R1) — the poll loop above is only the BASE stream: while
+ * [active] is false it does not write, so a track change or a committed seek that happens
+ * while the sheet is hidden left the cache on the previous value until the next gated tick
+ * (field logs 2026-10-04: the bar stayed on the previous track's position for minutes after a
+ * screen-off track change, while Metrolist/RiPlay/Kreate — which re-anchor the cache from the
+ * player's OWN events — never show the freeze on the same device). The listener below writes
+ * the live position on `onMediaItemTransition` and on every committed seek
+ * (`onPositionDiscontinuity` with [Player.DISCONTINUITY_REASON_SEEK]), regardless of
+ * [active] — the RiMusic/Kreate pattern (N-Zik's upstream), behaviourally verbatim. No latch
+ * is set on the seek: a latch would reintroduce a state that can get stuck when `STATE_READY`
+ * is delayed or missing — the exact failure mode Phases 2/3 had to remove. While the seek is
+ * still in flight the poll loop keeps reporting the pre-seek position, which the bar never
+ * shows because GetSeekBar holds the tapped target until the player converges on it
+ * (pendingSeekTarget, Phase 3 Fix E + Phase 3.2 R2).
+ *
+ * Phase 3.2 (R3) — a one-shot re-seed whenever the visibility gate [active] flips or the
+ * player instance changes (Metrolist's `LaunchedEffect(playbackState, mediaMetadata?.id)`
+ * re-sync): the cache is written from the live player IMMEDIATELY, without waiting for the
+ * next poll tick.
+ *
+ * @param active Gates ONLY the poll loop above: when false it does not write, so there is no
+ * per-tick recomposition churn while the player content is hidden behind the mini-player.
+ * The event writes (R1) and the one-shot re-seed (R3) are NOT gated — they still run while
+ * inactive (writing an unobserved state is cheap), so a hidden consumer is re-anchored as
+ * soon as it becomes visible again.
  */
 @Composable
 fun Player.positionAndDurationState(key1: Any? = null, active: Boolean = true): State<Pair<Long, Long>> {
@@ -72,6 +94,39 @@ fun Player.positionAndDurationState(key1: Any? = null, active: Boolean = true): 
             }
             delay(POSITION_POLL_INTERVAL_MS)
         }
+    }
+
+    // Issue #881 (gh-881), Phase 3.2 (R1): event-driven re-anchoring from the player's own
+    // callbacks (RiMusic/Kreate pattern — see the function KDoc). Runs regardless of the
+    // [active] gate: while the sheet is hidden the state has no visible observers, so the
+    // writes cost nothing and keep the cache correct for the next time the sheet is shown.
+    DisposableListener(key1) {
+        object : Player.Listener {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                // RiMusic: keep the previously cached duration — the new stream's duration is
+                // not known yet, and jumping the slider range mid-transition would be visible.
+                state.value = currentPosition to state.value.second
+            }
+
+            override fun onPositionDiscontinuity(
+                oldPosition: Player.PositionInfo,
+                newPosition: Player.PositionInfo,
+                reason: Int,
+            ) {
+                if (reason == Player.DISCONTINUITY_REASON_SEEK) {
+                    // Committed seek: ExoPlayer updates the position before this callback, so
+                    // the live position IS the seek target — re-anchor immediately.
+                    state.value = currentPosition to duration
+                }
+            }
+        }
+    }
+
+    // Issue #881 (gh-881), Phase 3.2 (R3): explicit one-shot re-sync when the sheet
+    // visibility gate flips or the player instance changes (Metrolist pattern). Writing the
+    // same value is a snapshot no-op, so this is safe on every gate oscillation.
+    LaunchedEffect(this, active) {
+        state.value = currentPosition to duration
     }
 
     return state
