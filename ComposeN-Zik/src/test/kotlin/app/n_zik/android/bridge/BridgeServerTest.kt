@@ -9,6 +9,9 @@ import app.n_zik.android.bridge.command.CommandResult
 import app.n_zik.android.bridge.command.PlayerAction
 import app.n_zik.android.bridge.library.LibraryProvider
 import app.n_zik.android.bridge.library.LibrarySong
+import app.n_zik.android.bridge.library.SongFilter
+import app.n_zik.android.bridge.library.SongSort
+import app.n_zik.android.bridge.library.TopPeriod
 import app.n_zik.android.bridge.library.libSong
 import app.n_zik.android.bridge.pairing.InMemoryPairedDeviceStorage
 import app.n_zik.android.bridge.pairing.JsonPairedDeviceStore
@@ -85,7 +88,7 @@ class BridgeServerTest {
 
         assertEquals(HttpStatusCode.OK, response.status)
         val json = BridgeJson.parseToJsonElement(response.bodyAsText()).jsonObject
-        assertEquals("1.5", json["contractVersion"]?.jsonPrimitive?.content)
+        assertEquals("1.6", json["contractVersion"]?.jsonPrimitive?.content)
         assertEquals("Pixel test", json["serverName"]?.jsonPrimitive?.content)
         assertEquals(1_790_000_000_000L, json["serverTimeMs"]?.jsonPrimitive?.long)
         assertEquals(
@@ -98,6 +101,7 @@ class BridgeServerTest {
                 "library.playlists",
                 "library.albums",
                 "library.artists",
+                "library.sort",
                 "artwork",
                 "audio",
                 "audio.output",
@@ -477,7 +481,8 @@ class BridgeServerTest {
     fun `core built by the controller serves the library provider of the server run`() = testApplication {
         val store = JsonPairedDeviceStore(InMemoryPairedDeviceStorage())
         val library = object : LibraryProvider by LibraryProvider.EMPTY {
-            override suspend fun songs(): List<LibrarySong> = listOf(libSong("abc", "From the provider"))
+            override suspend fun songs(filter: SongFilter, sort: SongSort, reverse: Boolean, period: TopPeriod?): List<LibrarySong> =
+                listOf(libSong("abc", "From the provider"))
         }
         mount(BridgeServerController.createCore("Pixel test", store, BridgeStateHub(), libraryProvider = library))
         val token = store.issue("PC-SALON").deviceToken

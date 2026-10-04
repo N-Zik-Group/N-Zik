@@ -8,6 +8,7 @@ import app.n_zik.android.bridge.BridgeServerCore
 import app.n_zik.android.bridge.DeviceAuthenticator
 import app.n_zik.android.bridge.PlaylistDto
 import app.n_zik.android.bridge.state.TrackDto
+import app.n_zik.android.bridge.state.TrackSource
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
@@ -30,11 +31,19 @@ import org.junit.jupiter.api.Test
 
 private const val TOKEN = "valid-token"
 
-/** In-memory library standing in for the phone's database. */
+/** The full request of `GET /library/songs`: filter, sort, direction and the Top period. */
+private data class SongQuery(val filter: SongFilter, val sort: SongSort, val reverse: Boolean, val period: TopPeriod?)
+
+/** In-memory library standing in for the phone's database: it sorts like the phone does. */
 private class FakeLibrary : LibraryProvider {
     val calls = mutableListOf<String>()
     var albumFilter: CollectionFilter? = null
     var artworkSize: Int? = null
+    var playlistRequest: Triple<PlaylistsFilter, PlaylistSort, Boolean>? = null
+    var albumRequest: Triple<CollectionFilter, AlbumSort, Boolean>? = null
+    var artistRequest: Triple<CollectionFilter, ArtistSort, Boolean>? = null
+    var songRequest: SongQuery? = null
+    var playlistSongsRequest: Pair<PlaylistSongSort, Boolean>? = null
 
     val songList = listOf(
         libSong("id-b", "Bravo", liked = true),
@@ -42,30 +51,56 @@ private class FakeLibrary : LibraryProvider {
         libSong("local:1", "Charlie"),
     )
 
-    override suspend fun songs(): List<LibrarySong> = songList.also { calls += "songs" }
+    override suspend fun songs(filter: SongFilter, sort: SongSort, reverse: Boolean, period: TopPeriod?): List<LibrarySong> {
+        calls += "songs"
+        songRequest = SongQuery(filter, sort, reverse, period)
+        val kept = when (filter) {
+            SongFilter.ALL -> songList
+            SongFilter.LIKED -> songList.filter { it.track.isLiked }
+            SongFilter.LOCAL -> songList.filter { it.track.source == TrackSource.LOCAL }
+            SongFilter.DOWNLOADED -> songList.filter { it.track.isDownloaded }
+            // The fake keeps no disliked songs, no cache and no play events
+            SongFilter.DISLIKED -> emptyList()
+            SongFilter.OFFLINE -> emptyList()
+            SongFilter.TOP -> songList.reversed()
+        }
+        return kept.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.track.title }).let { if (reverse) it.reversed() else it }
+    }
 
-    override suspend fun playlists(): List<PlaylistDto> = listOf(
-        PlaylistDto("7", "Zebra", 2, "id-a"),
-        PlaylistDto("3", "apple", 0, null),
-    ).also { calls += "playlists" }
+    override suspend fun playlists(filter: PlaylistsFilter, sort: PlaylistSort, reverse: Boolean): List<PlaylistDto> {
+        calls += "playlists"
+        playlistRequest = Triple(filter, sort, reverse)
+        return listOf(
+            PlaylistDto("7", "Zebra", 2, "id-a"),
+            PlaylistDto("3", "apple", 0, null),
+        ).sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name }).let { if (reverse) it.reversed() else it }
+    }
 
-    override suspend fun playlistSongs(playlistId: Long): List<TrackDto>? =
-        calls.add("playlistSongs").let { if (playlistId == 7L) listOf(songList[2].track, songList[0].track) else null }
+    override suspend fun playlistSongs(playlistId: Long, sort: PlaylistSongSort, reverse: Boolean): List<TrackDto>? {
+        calls += "playlistSongs"
+        playlistSongsRequest = sort to reverse
+        return if (playlistId == 7L) listOf(songList[2].track, songList[0].track) else null
+    }
 
-    override suspend fun albums(filter: CollectionFilter): List<AlbumDto> {
+    override suspend fun albums(filter: CollectionFilter, sort: AlbumSort, reverse: Boolean): List<AlbumDto> {
         calls += "albums"
         albumFilter = filter
+        albumRequest = Triple(filter, sort, reverse)
         return listOf(
             AlbumDto("MPREb_2", "Zulu", "B", "2020", 3, false),
             AlbumDto("MPREb_1", "echo", null, null, 1, true),
-        )
+        ).sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.title }).let { if (reverse) it.reversed() else it }
     }
 
     override suspend fun albumSongs(albumId: String): List<TrackDto>? =
         calls.add("albumSongs").let { if (albumId == "MPREb_1") listOf(songList[1].track) else null }
 
-    override suspend fun artists(filter: CollectionFilter): List<ArtistDto> =
-        listOf(ArtistDto("UC2", "yann", 4, true), ArtistDto("UC1", "Abba", 1, false)).also { calls += "artists" }
+    override suspend fun artists(filter: CollectionFilter, sort: ArtistSort, reverse: Boolean): List<ArtistDto> {
+        calls += "artists"
+        artistRequest = Triple(filter, sort, reverse)
+        return listOf(ArtistDto("UC2", "yann", 4, true), ArtistDto("UC1", "Abba", 1, false))
+            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name }).let { if (reverse) it.reversed() else it }
+    }
 
     override suspend fun artistSongs(artistId: String): List<TrackDto>? =
         calls.add("artistSongs").let { if (artistId == "UC1") listOf(songList[0].track) else null }
@@ -114,6 +149,35 @@ class LibraryRoutesTest {
         this.getValue("items").jsonArray.map { it.jsonObject.getValue(key).jsonPrimitive.content }
 
     @Test
+    fun `songs filter, sort and reverse pass through to the provider`() = testApplication {
+        val library = FakeLibrary()
+        mount(library)
+
+        getAuthed("/api/v1/library/songs")
+        assertEquals(SongQuery(SongFilter.ALL, SongSort.TITLE, false, null), library.songRequest)
+        getAuthed("/api/v1/library/songs?filter=liked&sort=playCount&reverse=true")
+        assertEquals(SongQuery(SongFilter.LIKED, SongSort.PLAY_COUNT, true, null), library.songRequest)
+        getAuthed("/api/v1/library/songs?filter=downloaded&sort=downloaded")
+        assertEquals(SongQuery(SongFilter.DOWNLOADED, SongSort.DOWNLOADED, false, null), library.songRequest)
+        getAuthed("/api/v1/library/songs?filter=disliked")
+        assertEquals(SongQuery(SongFilter.DISLIKED, SongSort.TITLE, false, null), library.songRequest)
+        getAuthed("/api/v1/library/songs?filter=offline&sort=duration")
+        assertEquals(SongQuery(SongFilter.OFFLINE, SongSort.DURATION, false, null), library.songRequest)
+        getAuthed("/api/v1/library/songs?filter=top")
+        assertEquals(SongQuery(SongFilter.TOP, SongSort.TITLE, false, null), library.songRequest)
+        // The period selector of the phone's Top tab overrides the phone's own period
+        getAuthed("/api/v1/library/songs?filter=top&period=week")
+        assertEquals(SongQuery(SongFilter.TOP, SongSort.TITLE, false, TopPeriod.WEEK), library.songRequest)
+        getAuthed("/api/v1/library/songs?filter=top&period=3months")
+        assertEquals(SongQuery(SongFilter.TOP, SongSort.TITLE, false, TopPeriod.THREE_MONTHS), library.songRequest)
+
+        getAuthed("/api/v1/library/playlists/7/songs")
+        assertEquals(PlaylistSongSort.CUSTOM to false, library.playlistSongsRequest)
+        getAuthed("/api/v1/library/playlists/7/songs?sort=albumYear&reverse=true")
+        assertEquals(PlaylistSongSort.ALBUM_YEAR to true, library.playlistSongsRequest)
+    }
+
+    @Test
     fun `songs are paginated and sorted by title with the total after filters`() = testApplication {
         mount(FakeLibrary())
 
@@ -148,14 +212,25 @@ class LibraryRoutesTest {
             "/api/v1/library/songs?offset=-1",
             "/api/v1/library/songs?filter=unknown",
             "/api/v1/library/songs?sort=unknown",
+            "/api/v1/library/songs?sort=title&reverse=nope",
             "/api/v1/library/songs?query=${"a".repeat(101)}",
+            "/api/v1/library/songs?period=weekly",
             "/api/v1/library/playlists?limit=abc",
+            "/api/v1/library/playlists?filter=favorites",
             "/api/v1/library/albums?filter=all",
             "/api/v1/library/artists?filter=liked",
+            "/api/v1/library/albums?sort=name",
+            "/api/v1/library/albums?sort=playTime",
+            "/api/v1/library/artists?sort=title",
+            "/api/v1/library/playlists?sort=songs",
+            "/api/v1/library/albums?reverse=1",
+            "/api/v1/library/playlists?reverse=maybe",
             "/api/v1/artwork/id-a?size=10",
             "/api/v1/library/albums/MPREb_1/artwork?size=5000",
             "/api/v1/library/songs?offset=%2B1",
             "/api/v1/library/playlists/7/songs?limit=0",
+            "/api/v1/library/playlists/7/songs?sort=rewindTop",
+            "/api/v1/library/playlists/7/songs?reverse=yes",
             "/api/v1/library/albums/MPREb_1/songs?offset=-2",
             "/api/v1/library/artists/UC1/songs?limit=500",
             "/api/v1/library/artists/UC2/artwork?size=abc",
@@ -169,7 +244,8 @@ class LibraryRoutesTest {
 
     @Test
     fun `playlists are sorted by name and their songs keep the playlist order`() = testApplication {
-        mount(FakeLibrary())
+        val library = FakeLibrary()
+        mount(library)
 
         val playlists = getAuthed("/api/v1/library/playlists").json()
         assertEquals(listOf("3", "7"), playlists.itemIds())
@@ -179,6 +255,7 @@ class LibraryRoutesTest {
 
         val songs = getAuthed("/api/v1/library/playlists/7/songs").json()
         assertEquals(listOf("local:1", "id-b"), songs.itemIds())
+        assertEquals(PlaylistSongSort.CUSTOM to false, library.playlistSongsRequest)
     }
 
     @Test
@@ -196,6 +273,43 @@ class LibraryRoutesTest {
             assertEquals(HttpStatusCode.NotFound, response.status, path)
             assertEquals("NOT_FOUND", response.errorCode(), path)
         }
+    }
+
+    @Test
+    fun `collection sort and reverse default to ascending name and pass through to the provider`() = testApplication {
+        val library = FakeLibrary()
+        mount(library)
+
+        getAuthed("/api/v1/library/playlists")
+        assertEquals(Triple(PlaylistsFilter.ALL, PlaylistSort.NAME, false), library.playlistRequest)
+        getAuthed("/api/v1/library/albums")
+        assertEquals(Triple(CollectionFilter.LIBRARY, AlbumSort.TITLE, false), library.albumRequest)
+        getAuthed("/api/v1/library/artists")
+        assertEquals(Triple(CollectionFilter.LIBRARY, ArtistSort.NAME, false), library.artistRequest)
+
+        getAuthed("/api/v1/library/playlists?sort=playCount&reverse=true")
+        assertEquals(Triple(PlaylistsFilter.ALL, PlaylistSort.PLAY_COUNT, true), library.playlistRequest)
+        getAuthed("/api/v1/library/albums?filter=bookmarked&sort=year&reverse=true")
+        assertEquals(Triple(CollectionFilter.BOOKMARKED, AlbumSort.YEAR, true), library.albumRequest)
+        getAuthed("/api/v1/library/artists?sort=custom&reverse=false")
+        assertEquals(Triple(CollectionFilter.LIBRARY, ArtistSort.CUSTOM, false), library.artistRequest)
+
+        // The home-tab chips of the phone: the filter travels to the provider
+        getAuthed("/api/v1/library/playlists?filter=pinned")
+        assertEquals(Triple(PlaylistsFilter.PINNED, PlaylistSort.NAME, false), library.playlistRequest)
+        getAuthed("/api/v1/library/playlists?filter=rewind&sort=songCount")
+        assertEquals(Triple(PlaylistsFilter.REWIND, PlaylistSort.SONG_COUNT, false), library.playlistRequest)
+        getAuthed("/api/v1/library/playlists?filter=youtube&reverse=true")
+        assertEquals(Triple(PlaylistsFilter.YOUTUBE, PlaylistSort.NAME, true), library.playlistRequest)
+        getAuthed("/api/v1/library/albums?filter=disliked")
+        assertEquals(Triple(CollectionFilter.DISLIKED, AlbumSort.TITLE, false), library.albumRequest)
+        getAuthed("/api/v1/library/artists?filter=disliked&sort=custom")
+        assertEquals(Triple(CollectionFilter.DISLIKED, ArtistSort.CUSTOM, false), library.artistRequest)
+
+        // The provider answers already sorted; reverse=true reverses its order
+        assertEquals(listOf("7", "3"), getAuthed("/api/v1/library/playlists?reverse=true").json().itemIds())
+        assertEquals(listOf("MPREb_2", "MPREb_1"), getAuthed("/api/v1/library/albums?reverse=true").json().itemIds())
+        assertEquals(listOf("UC2", "UC1"), getAuthed("/api/v1/library/artists?reverse=true").json().itemIds())
     }
 
     @Test

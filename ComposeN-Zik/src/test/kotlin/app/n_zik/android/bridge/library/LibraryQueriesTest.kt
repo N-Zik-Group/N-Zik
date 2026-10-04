@@ -1,7 +1,5 @@
 package app.n_zik.android.bridge.library
 
-import app.n_zik.android.bridge.AlbumDto
-import app.n_zik.android.bridge.PlaylistDto
 import app.n_zik.android.bridge.state.TrackDto
 import app.n_zik.android.bridge.state.TrackSource
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -38,12 +36,6 @@ class LibraryQueriesTest {
         libSong("id-d", "Delta", artists = null, playTimeMs = 7_000L, liked = true),
     )
 
-    private fun query(
-        filter: String? = null,
-        sort: String? = null,
-        search: String? = null,
-    ): SongsQuery = requireNotNull(LibraryQueries.parseSongsQuery(null, null, search, filter, sort))
-
     private fun ids(list: List<LibrarySong>) = list.map { it.track.id }
 
     @Test
@@ -73,24 +65,68 @@ class LibraryQueriesTest {
     }
 
     @Test
-    fun `query is trimmed and a blank one means no search`() {
-        assertEquals("alp", LibraryQueries.parseSongsQuery(null, null, "  alp ", null, null)?.query)
-        val blank = requireNotNull(LibraryQueries.parseSongsQuery(null, null, "   ", null, null))
-        assertNull(blank.query)
-        assertEquals(listOf("id-a"), ids(LibraryQueries.selectSongs(songs, query(search = " alp"))))
-        // Surrounding spaces do not count towards the 100-character limit
-        assertEquals("x".repeat(100), LibraryQueries.parseSongsQuery(null, null, " ${"x".repeat(100)} ", null, null)?.query)
+    fun `the search text is trimmed and a blank one means no search`() {
+        assertEquals("alp", LibraryQueries.songsText("  alp "))
+        assertNull(LibraryQueries.songsText("   "))
+        assertNull(LibraryQueries.songsText(null))
     }
 
     @Test
-    fun `unknown enum values and a query over 100 characters are rejected`() {
-        assertNull(LibraryQueries.parseSongsQuery(null, null, null, "favorites", null))
-        assertNull(LibraryQueries.parseSongsQuery(null, null, null, null, "duration"))
-        assertNull(LibraryQueries.parseSongsQuery(null, null, "x".repeat(101), null, null))
-        assertEquals("x".repeat(100), LibraryQueries.parseSongsQuery(null, null, "x".repeat(100), null, null)?.query)
+    fun `songs filter and sort default to all and title and reject unknown ones`() {
+        assertEquals(SongFilter.ALL, LibraryQueries.parseSongFilter(null))
+        assertEquals(SongFilter.LIKED, LibraryQueries.parseSongFilter("liked"))
+        assertEquals(SongFilter.LOCAL, LibraryQueries.parseSongFilter("local"))
+        assertEquals(SongFilter.DOWNLOADED, LibraryQueries.parseSongFilter("downloaded"))
+        assertEquals(SongFilter.DISLIKED, LibraryQueries.parseSongFilter("disliked"))
+        assertEquals(SongFilter.OFFLINE, LibraryQueries.parseSongFilter("offline"))
+        assertEquals(SongFilter.TOP, LibraryQueries.parseSongFilter("top"))
+        assertNull(LibraryQueries.parseSongFilter("favorites"))
+
+        assertEquals(SongSort.TITLE, LibraryQueries.parseSongSort(null))
+        assertEquals(SongSort.PLAY_TIME, LibraryQueries.parseSongSort("playTime"))
+        assertEquals(SongSort.RELATIVE_PLAY_TIME, LibraryQueries.parseSongSort("relativePlayTime"))
+        assertEquals(SongSort.DOWNLOADED, LibraryQueries.parseSongSort("downloaded"))
+        assertEquals(SongSort.CUSTOM, LibraryQueries.parseSongSort("custom"))
+        assertNull(LibraryQueries.parseSongSort("playcount"))
+        assertNull(LibraryQueries.parseSongSort("albumName"))
+
         assertNull(LibraryQueries.parseCollectionFilter("all"))
         assertEquals(CollectionFilter.LIBRARY, LibraryQueries.parseCollectionFilter(null))
         assertEquals(CollectionFilter.BOOKMARKED, LibraryQueries.parseCollectionFilter("bookmarked"))
+        assertEquals(CollectionFilter.DISLIKED, LibraryQueries.parseCollectionFilter("disliked"))
+    }
+
+    @Test
+    fun `playlists filter defaults to all and accepts pinned, rewind and youtube`() {
+        assertEquals(PlaylistsFilter.ALL, LibraryQueries.parsePlaylistsFilter(null))
+        assertEquals(PlaylistsFilter.ALL, LibraryQueries.parsePlaylistsFilter("all"))
+        assertEquals(PlaylistsFilter.PINNED, LibraryQueries.parsePlaylistsFilter("pinned"))
+        assertEquals(PlaylistsFilter.REWIND, LibraryQueries.parsePlaylistsFilter("rewind"))
+        assertEquals(PlaylistsFilter.YOUTUBE, LibraryQueries.parsePlaylistsFilter("youtube"))
+        assertNull(LibraryQueries.parsePlaylistsFilter("favorites"))
+    }
+
+    @Test
+    fun `top period is absent by default and rejects unknown ones`() {
+        assertNull(LibraryQueries.parseTopPeriod(null))
+        assertEquals(TopPeriod.TODAY, LibraryQueries.parseTopPeriod("today"))
+        assertEquals(TopPeriod.WEEK, LibraryQueries.parseTopPeriod("week"))
+        assertEquals(TopPeriod.MONTH, LibraryQueries.parseTopPeriod("month"))
+        assertEquals(TopPeriod.THREE_MONTHS, LibraryQueries.parseTopPeriod("3months"))
+        assertEquals(TopPeriod.SIX_MONTHS, LibraryQueries.parseTopPeriod("6months"))
+        assertEquals(TopPeriod.YEAR, LibraryQueries.parseTopPeriod("year"))
+        assertEquals(TopPeriod.ALL_TIME, LibraryQueries.parseTopPeriod("all"))
+        assertNull(LibraryQueries.parseTopPeriod("weekly"))
+    }
+
+    @Test
+    fun `playlist songs sort defaults to the position order and rejects unknown ones`() {
+        assertEquals(PlaylistSongSort.CUSTOM, LibraryQueries.parsePlaylistSongSort(null))
+        assertEquals(PlaylistSongSort.TITLE, LibraryQueries.parsePlaylistSongSort("title"))
+        assertEquals(PlaylistSongSort.ARTIST_AND_ALBUM, LibraryQueries.parsePlaylistSongSort("artistAndAlbum"))
+        assertEquals(PlaylistSongSort.ALBUM_YEAR, LibraryQueries.parsePlaylistSongSort("albumYear"))
+        assertNull(LibraryQueries.parsePlaylistSongSort("rewindTop"))
+        assertNull(LibraryQueries.parsePlaylistSongSort("name"))
     }
 
     @Test
@@ -114,36 +150,12 @@ class LibraryQueriesTest {
     }
 
     @Test
-    fun `default sort is by title A to Z ignoring case`() {
-        assertEquals(listOf("id-a", "id-b", "local:1", "id-d"), ids(LibraryQueries.selectSongs(songs, query())))
-    }
-
-    @Test
-    fun `artist sort is A to Z and play time sort is descending`() {
-        assertEquals(listOf("id-d", "local:1", "id-a", "id-b"), ids(LibraryQueries.selectSongs(songs, query(sort = "artist"))))
-        assertEquals(listOf("id-a", "id-d", "id-b", "local:1"), ids(LibraryQueries.selectSongs(songs, query(sort = "playTime"))))
-    }
-
-    @Test
-    fun `filters keep liked, local or downloaded tracks only`() {
-        assertEquals(listOf("id-b", "id-d"), ids(LibraryQueries.selectSongs(songs, query(filter = "liked"))))
-        assertEquals(listOf("local:1"), ids(LibraryQueries.selectSongs(songs, query(filter = "local"))))
-        assertEquals(listOf("id-a"), ids(LibraryQueries.selectSongs(songs, query(filter = "downloaded"))))
-        assertEquals(4, LibraryQueries.selectSongs(songs, query(filter = "all")).size)
-    }
-
-    @Test
-    fun `query matches title or artists case-insensitively`() {
-        assertEquals(listOf("id-a"), ids(LibraryQueries.selectSongs(songs, query(search = "ALP"))))
-        assertEquals(listOf("local:1"), ids(LibraryQueries.selectSongs(songs, query(search = "abb"))))
-        assertEquals(listOf("id-b"), ids(LibraryQueries.selectSongs(songs, query(search = "zed", filter = "liked"))))
-        assertEquals(emptyList<String>(), ids(LibraryQueries.selectSongs(songs, query(search = "nothing"))))
-    }
-
-    @Test
-    fun `equal titles are ordered by id so pages are stable`() {
-        val twins = listOf(libSong("z", "Same"), libSong("a", "same"), libSong("m", "SAME"))
-        assertEquals(listOf("a", "m", "z"), ids(LibraryQueries.selectSongs(twins, query())))
+    fun `the search matches title or artists case-insensitively and null keeps every song`() {
+        assertEquals(listOf("id-a"), ids(LibraryQueries.searchSongs(songs, "ALP")))
+        assertEquals(listOf("local:1"), ids(LibraryQueries.searchSongs(songs, "abb")))
+        assertEquals(listOf("id-b"), ids(LibraryQueries.searchSongs(songs, "zed")))
+        assertEquals(emptyList<String>(), ids(LibraryQueries.searchSongs(songs, "nothing")))
+        assertEquals(4, LibraryQueries.searchSongs(songs, null).size)
     }
 
     @Test
@@ -171,18 +183,30 @@ class LibraryQueriesTest {
     }
 
     @Test
-    fun `playlists and albums are sorted A to Z ignoring case`() {
-        val playlists = listOf(
-            PlaylistDto("2", "beta", 1, null),
-            PlaylistDto("1", "Alpha", 3, "x"),
-            PlaylistDto("3", "Rewind 2025", 0, null),
-        )
-        assertEquals(listOf("1", "2", "3"), LibraryQueries.sortPlaylists(playlists).map { it.id })
-        val albums = listOf(
-            AlbumDto("b", "zulu", null, null, 1, false),
-            AlbumDto("a", "Echo", "X", "2021", 2, true),
-        )
-        assertEquals(listOf("a", "b"), LibraryQueries.sortAlbums(albums).map { it.id })
+    fun `collection sorts default to the first value and reject unknown ones`() {
+        assertEquals(AlbumSort.TITLE, LibraryQueries.parseAlbumSort(null))
+        assertEquals(AlbumSort.YEAR, LibraryQueries.parseAlbumSort("year"))
+        assertEquals(AlbumSort.PLAY_COUNT, LibraryQueries.parseAlbumSort("playCount"))
+        assertNull(LibraryQueries.parseAlbumSort("name"))
+        assertNull(LibraryQueries.parseAlbumSort("playcount"))
+
+        assertEquals(ArtistSort.NAME, LibraryQueries.parseArtistSort(null))
+        assertEquals(ArtistSort.CUSTOM, LibraryQueries.parseArtistSort("custom"))
+        assertNull(LibraryQueries.parseArtistSort("title"))
+
+        assertEquals(PlaylistSort.NAME, LibraryQueries.parsePlaylistSort(null))
+        assertEquals(PlaylistSort.SONG_COUNT, LibraryQueries.parsePlaylistSort("songCount"))
+        assertNull(LibraryQueries.parsePlaylistSort("songs"))
+    }
+
+    @Test
+    fun `reverse defaults to false and only true or false are accepted`() {
+        assertEquals(false, LibraryQueries.parseReverse(null))
+        assertEquals(false, LibraryQueries.parseReverse("false"))
+        assertEquals(true, LibraryQueries.parseReverse("true"))
+        assertNull(LibraryQueries.parseReverse("True"))
+        assertNull(LibraryQueries.parseReverse("1"))
+        assertNull(LibraryQueries.parseReverse(""))
     }
 
     @Test

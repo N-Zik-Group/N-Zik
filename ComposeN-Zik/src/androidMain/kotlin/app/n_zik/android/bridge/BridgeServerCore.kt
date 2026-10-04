@@ -259,12 +259,9 @@ internal class BridgeServerCore(
                 route("library") {
                     install(bearerAuth)
                     get("songs") { call.handleSongs() }
-                    get("playlists") { call.respondListPage { LibraryQueries.sortPlaylists(libraryProvider.playlists()) } }
-                    get("playlists/{id}/songs") {
-                        val id = LibraryQueries.parsePlaylistId(call.parameters["id"])
-                        call.respondTracks("Unknown playlist") { id?.let { libraryProvider.playlistSongs(it) } }
-                    }
-                    get("albums") { call.respondCollectionPage { LibraryQueries.sortAlbums(libraryProvider.albums(it)) } }
+                    get("playlists") { call.handlePlaylists() }
+                    get("playlists/{id}/songs") { call.handlePlaylistSongs() }
+                    get("albums") { call.handleAlbums() }
                     get("albums/{id}/songs") {
                         val id = call.parameters["id"].orEmpty()
                         call.respondTracks("Unknown album") { libraryProvider.albumSongs(id) }
@@ -273,7 +270,7 @@ internal class BridgeServerCore(
                         val id = call.parameters["id"].orEmpty()
                         call.respondArtwork { size -> libraryProvider.albumArtwork(id, size) }
                     }
-                    get("artists") { call.respondCollectionPage { LibraryQueries.sortArtists(libraryProvider.artists(it)) } }
+                    get("artists") { call.handleArtists() }
                     get("artists/{id}/songs") {
                         val id = call.parameters["id"].orEmpty()
                         call.respondTracks("Unknown artist") { libraryProvider.artistSongs(id) }
@@ -557,13 +554,39 @@ internal class BridgeServerCore(
         }
     }
 
-    /** Contract §10 `/library/songs`: parameters, then filter, search, sort and pagination. */
+    /** Contract §10 `/library/songs` (since 1.6): pagination, `filter`, `sort`, `reverse`, `period`, then search. */
     private suspend fun ApplicationCall.handleSongs() {
         val params = request.queryParameters
-        val query = LibraryQueries.parseSongsQuery(params["offset"], params["limit"], params["query"], params["filter"], params["sort"])
-            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid library parameters")
-        val tracks = LibraryQueries.selectSongs(libraryProvider.songs(), query).map { it.track }
-        respond(LibraryQueries.paginate(tracks, query.page))
+        val page = LibraryQueries.parsePage(params["offset"], params["limit"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid pagination")
+        val text = LibraryQueries.songsText(params["query"])
+        if (text != null && text.length > BridgeContract.LIBRARY_QUERY_MAX_LENGTH) {
+            return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Query too long")
+        }
+        val filter = LibraryQueries.parseSongFilter(params["filter"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid filter")
+        val sort = LibraryQueries.parseSongSort(params["sort"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid sort")
+        val reverse = LibraryQueries.parseReverse(params["reverse"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid reverse")
+        // Absent `period` keeps the phone's own Top period: only a present value is validated
+        val period = when (val raw = params["period"]) {
+            null -> null
+            else -> LibraryQueries.parseTopPeriod(raw)
+                ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid period")
+        }
+        val tracks = LibraryQueries.searchSongs(libraryProvider.songs(filter, sort, reverse, period), text).map { it.track }
+        respond(LibraryQueries.paginate(tracks, page))
+    }
+
+    /** Contract §10 `/library/playlists/{id}/songs` (since 1.6): pagination, `sort` and `reverse`. */
+    private suspend fun ApplicationCall.handlePlaylistSongs() {
+        val id = LibraryQueries.parsePlaylistId(parameters["id"])
+        val sort = LibraryQueries.parsePlaylistSongSort(request.queryParameters["sort"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid sort")
+        val reverse = LibraryQueries.parseReverse(request.queryParameters["reverse"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid reverse")
+        respondTracks("Unknown playlist") { id?.let { libraryProvider.playlistSongs(it, sort, reverse) } }
     }
 
     /** Contract §1 pagination parameters, or `null` once a `400` has been answered. */
@@ -573,17 +596,46 @@ internal class BridgeServerCore(
         return page
     }
 
-    private suspend inline fun <reified T> ApplicationCall.respondListPage(load: () -> List<T>) {
-        val page = pageOrReject() ?: return
-        respond(LibraryQueries.paginate(load(), page))
+    /** Contract §10 `/library/playlists` (since 1.6): pagination, `filter`, `sort` and `reverse`. */
+    private suspend fun ApplicationCall.handlePlaylists() {
+        val params = request.queryParameters
+        val page = LibraryQueries.parsePage(params["offset"], params["limit"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid pagination")
+        val filter = LibraryQueries.parsePlaylistsFilter(params["filter"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid filter")
+        val sort = LibraryQueries.parsePlaylistSort(params["sort"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid sort")
+        val reverse = LibraryQueries.parseReverse(params["reverse"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid reverse")
+        respond(LibraryQueries.paginate(libraryProvider.playlists(filter, sort, reverse), page))
     }
 
-    /** Albums and artists: pagination plus `filter` (`library` by default, contract §10). */
-    private suspend inline fun <reified T> ApplicationCall.respondCollectionPage(load: (CollectionFilter) -> List<T>) {
-        val page = pageOrReject() ?: return
-        val filter = LibraryQueries.parseCollectionFilter(request.queryParameters["filter"])
+    /** Contract §10 `/library/albums` (since 1.6): pagination, `filter`, `sort` and `reverse`. */
+    private suspend fun ApplicationCall.handleAlbums() {
+        val params = request.queryParameters
+        val page = LibraryQueries.parsePage(params["offset"], params["limit"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid pagination")
+        val filter = LibraryQueries.parseCollectionFilter(params["filter"])
             ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid filter")
-        respond(LibraryQueries.paginate(load(filter), page))
+        val sort = LibraryQueries.parseAlbumSort(params["sort"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid sort")
+        val reverse = LibraryQueries.parseReverse(params["reverse"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid reverse")
+        respond(LibraryQueries.paginate(libraryProvider.albums(filter, sort, reverse), page))
+    }
+
+    /** Contract §10 `/library/artists` (since 1.6): pagination, `filter`, `sort` and `reverse`. */
+    private suspend fun ApplicationCall.handleArtists() {
+        val params = request.queryParameters
+        val page = LibraryQueries.parsePage(params["offset"], params["limit"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid pagination")
+        val filter = LibraryQueries.parseCollectionFilter(params["filter"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid filter")
+        val sort = LibraryQueries.parseArtistSort(params["sort"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid sort")
+        val reverse = LibraryQueries.parseReverse(params["reverse"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid reverse")
+        respond(LibraryQueries.paginate(libraryProvider.artists(filter, sort, reverse), page))
     }
 
     /** Tracks of one playlist, album or artist; [load] gives `null` when it is unknown (`404`). */

@@ -1,52 +1,123 @@
 package app.n_zik.android.bridge.library
 
-import app.n_zik.android.bridge.AlbumDto
-import app.n_zik.android.bridge.ArtistDto
 import app.n_zik.android.bridge.BridgeContract
 import app.n_zik.android.bridge.Page
-import app.n_zik.android.bridge.PlaylistDto
 import app.n_zik.android.bridge.state.TrackDto
-import app.n_zik.android.bridge.state.TrackSource
 
 /** `offset` / `limit` of a paginated route (contract §1), already validated. */
 internal data class PageRequest(val offset: Int, val limit: Int)
 
-/** `filter` of `/library/songs` (contract §10). */
+/** `filter` of `/library/songs` (contract §10; the phone's `BuiltInPlaylist`, since 1.6). */
 internal enum class SongFilter(val wire: String) {
     ALL("all"),
     LIKED("liked"),
     LOCAL("local"),
     DOWNLOADED("downloaded"),
+    DISLIKED("disliked"),
+    OFFLINE("offline"),
+    TOP("top"),
 }
 
-/** `sort` of `/library/songs` (contract §10). */
+/** `sort` of `/library/songs` (contract §10; the phone's `SongSortBy`, since 1.6). */
 internal enum class SongSort(val wire: String) {
     TITLE("title"),
     ARTIST("artist"),
+    ALBUM("album"),
+    DURATION("duration"),
+    PLAY_COUNT("playCount"),
     PLAY_TIME("playTime"),
+    RELATIVE_PLAY_TIME("relativePlayTime"),
+    DATE_ADDED("dateAdded"),
+    DATE_PLAYED("datePlayed"),
+    DATE_LIKED("dateLiked"),
+    DOWNLOADED("downloaded"),
+    CUSTOM("custom"),
 }
 
-/** `filter` of `/library/albums` and `/library/artists` (contract §10, since 1.1). */
+/** `sort` of `/library/playlists/{id}/songs` (contract §10; the phone's `PlaylistSongSortBy`, since 1.6). */
+internal enum class PlaylistSongSort(val wire: String) {
+    TITLE("title"),
+    ARTIST("artist"),
+    ALBUM("album"),
+    ARTIST_AND_ALBUM("artistAndAlbum"),
+    DURATION("duration"),
+    PLAY_COUNT("playCount"),
+    PLAY_TIME("playTime"),
+    RELATIVE_PLAY_TIME("relativePlayTime"),
+    DATE_ADDED("dateAdded"),
+    DATE_PLAYED("datePlayed"),
+    DATE_LIKED("dateLiked"),
+    ALBUM_YEAR("albumYear"),
+    DOWNLOADED("downloaded"),
+    CUSTOM("custom"),
+}
+
+/** `filter` of `/library/albums` and `/library/artists` (contract §10, since 1.1; `disliked` since 1.6). */
 internal enum class CollectionFilter(val wire: String) {
     LIBRARY("library"),
     BOOKMARKED("bookmarked"),
+    DISLIKED("disliked"),
 }
 
-/** Validated parameters of `/library/songs`; [query] is `null` when absent or blank. */
-internal data class SongsQuery(
-    val page: PageRequest,
-    val query: String?,
-    val filter: SongFilter,
-    val sort: SongSort,
-)
+/** `filter` of `/library/playlists` (contract §10, since 1.6; the phone's `PlaylistsType` chips). */
+internal enum class PlaylistsFilter(val wire: String) {
+    ALL("all"),
+    PINNED("pinned"),
+    REWIND("rewind"),
+    YOUTUBE("youtube"),
+}
 
-/** One song of the library: its wire [track] plus what the sort needs and the wire does not carry. */
+/** `period` of `/library/songs?filter=top` (contract §10, since 1.6; the phone's `StatisticsType`). */
+internal enum class TopPeriod(val wire: String) {
+    TODAY("today"),
+    WEEK("week"),
+    MONTH("month"),
+    THREE_MONTHS("3months"),
+    SIX_MONTHS("6months"),
+    YEAR("year"),
+    ALL_TIME("all"),
+}
+
+/** `sort` of `/library/albums` (contract §10, since 1.6). */
+internal enum class AlbumSort(val wire: String) {
+    TITLE("title"),
+    ARTIST("artist"),
+    SONGS("songs"),
+    DURATION("duration"),
+    PLAY_COUNT("playCount"),
+    LISTENING_TIME("listeningTime"),
+    DATE_ADDED("dateAdded"),
+    YEAR("year"),
+    CUSTOM("custom"),
+}
+
+/** `sort` of `/library/artists` (contract §10, since 1.6). */
+internal enum class ArtistSort(val wire: String) {
+    NAME("name"),
+    PLAY_COUNT("playCount"),
+    LISTENING_TIME("listeningTime"),
+    DATE_ADDED("dateAdded"),
+    CUSTOM("custom"),
+}
+
+/** `sort` of `/library/playlists` (contract §10, since 1.6). */
+internal enum class PlaylistSort(val wire: String) {
+    NAME("name"),
+    SONG_COUNT("songCount"),
+    LISTENING_TIME("listeningTime"),
+    PLAY_COUNT("playCount"),
+    DATE_ADDED("dateAdded"),
+    CUSTOM("custom"),
+}
+
+/** One song of the library: its wire [track] plus what the wire does not carry. */
 internal data class LibrarySong(val track: TrackDto, val totalPlayTimeMs: Long)
 
 /**
- * Pure part of the library routes (contract §1, §10): parameter validation, filtering,
- * search, sorting and pagination. Every parser returns `null` for an invalid value, which
- * the server answers with `400 BAD_REQUEST`.
+ * Pure part of the library routes (contract §1, §10): parameter validation, search and
+ * pagination. The sorting belongs to the provider (it needs the phone's database, since 1.6).
+ * Every parser returns `null` for an invalid value, which the server answers with
+ * `400 BAD_REQUEST`.
  */
 internal object LibraryQueries {
 
@@ -55,12 +126,6 @@ internal object LibraryQueries {
     /** Plain digits only: no sign, no blank, at most 9 digits (fits an `Int`). */
     private val DIGITS = Regex("^[0-9]{1,9}$")
 
-    /**
-     * Case-insensitive A→Z order. Every sort below ends with the id as last tie-breaker,
-     * so pages never overlap nor skip.
-     */
-    private val TEXT_ORDER: Comparator<String> = String.CASE_INSENSITIVE_ORDER
-
     fun parsePage(offset: String?, limit: String?): PageRequest? {
         val parsedOffset = if (offset == null) BridgeContract.PAGE_OFFSET_DEFAULT else offset.digitsOrNull() ?: return null
         val parsedLimit = if (limit == null) BridgeContract.PAGE_LIMIT_DEFAULT else limit.digitsOrNull() ?: return null
@@ -68,17 +133,49 @@ internal object LibraryQueries {
         return PageRequest(parsedOffset, parsedLimit)
     }
 
-    fun parseSongsQuery(offset: String?, limit: String?, query: String?, filter: String?, sort: String?): SongsQuery? {
-        val page = parsePage(offset, limit) ?: return null
-        val trimmedQuery = query?.trim()
-        if (trimmedQuery != null && trimmedQuery.length > BridgeContract.LIBRARY_QUERY_MAX_LENGTH) return null
-        val parsedFilter = if (filter == null) SongFilter.ALL else SongFilter.entries.firstOrNull { it.wire == filter } ?: return null
-        val parsedSort = if (sort == null) SongSort.TITLE else SongSort.entries.firstOrNull { it.wire == sort } ?: return null
-        return SongsQuery(page, trimmedQuery?.takeIf { it.isNotEmpty() }, parsedFilter, parsedSort)
-    }
+    /** `filter` of `/library/songs`; absent means `all`. */
+    fun parseSongFilter(filter: String?): SongFilter? =
+        if (filter == null) SongFilter.ALL else SongFilter.entries.firstOrNull { it.wire == filter }
+
+    /** `sort` of `/library/songs` (since 1.6); absent means the first value. */
+    fun parseSongSort(sort: String?): SongSort? =
+        if (sort == null) SongSort.TITLE else SongSort.entries.firstOrNull { it.wire == sort }
+
+    /** `sort` of `/library/playlists/{id}/songs` (since 1.6); absent keeps the phone's position order. */
+    fun parsePlaylistSongSort(sort: String?): PlaylistSongSort? =
+        if (sort == null) PlaylistSongSort.CUSTOM else PlaylistSongSort.entries.firstOrNull { it.wire == sort }
+
+    /** `query` of `/library/songs` (contract §10): trimmed, `null` when blank. */
+    fun songsText(query: String?): String? = query?.trim()?.takeIf { it.isNotEmpty() }
 
     fun parseCollectionFilter(filter: String?): CollectionFilter? =
         if (filter == null) CollectionFilter.LIBRARY else CollectionFilter.entries.firstOrNull { it.wire == filter }
+
+    /** `filter` of `/library/playlists` (since 1.6); absent means `all`. */
+    fun parsePlaylistsFilter(filter: String?): PlaylistsFilter? =
+        if (filter == null) PlaylistsFilter.ALL else PlaylistsFilter.entries.firstOrNull { it.wire == filter }
+
+    /** `period` of `/library/songs?filter=top` (since 1.6); absent means the phone's own Top period. */
+    fun parseTopPeriod(period: String?): TopPeriod? =
+        if (period == null) null else TopPeriod.entries.firstOrNull { it.wire == period }
+
+    /** `sort` of the collections (contract §10, since 1.6); absent means the first value. */
+    fun parseAlbumSort(sort: String?): AlbumSort? =
+        if (sort == null) AlbumSort.TITLE else AlbumSort.entries.firstOrNull { it.wire == sort }
+
+    fun parseArtistSort(sort: String?): ArtistSort? =
+        if (sort == null) ArtistSort.NAME else ArtistSort.entries.firstOrNull { it.wire == sort }
+
+    fun parsePlaylistSort(sort: String?): PlaylistSort? =
+        if (sort == null) PlaylistSort.NAME else PlaylistSort.entries.firstOrNull { it.wire == sort }
+
+    /** `reverse` of the collections (contract §10, since 1.6); absent or `false` keeps the ascending order. */
+    fun parseReverse(reverse: String?): Boolean? = when (reverse) {
+        null -> false
+        "true" -> true
+        "false" -> false
+        else -> null
+    }
 
     fun parseArtworkSize(size: String?): Int? {
         if (size == null) return BridgeContract.ARTWORK_SIZE_DEFAULT
@@ -90,41 +187,15 @@ internal object LibraryQueries {
     /** Contract §1: a `playlistId` is decimal; anything else designates no playlist (`404`). */
     fun parsePlaylistId(id: String?): Long? = id?.takeIf { DECIMAL_ID.matches(it) }?.toLongOrNull()
 
-    /** Filter, then case-insensitive search on `title` and `artists`, then sort (contract §10). */
-    fun selectSongs(songs: List<LibrarySong>, query: SongsQuery): List<LibrarySong> {
-        val filtered = songs.filter { song ->
+    /** Case-insensitive search on `title` and `artists` (contract §10); [query] `null` keeps every song. */
+    fun searchSongs(songs: List<LibrarySong>, query: String?): List<LibrarySong> =
+        songs.filter { song ->
             val track = song.track
-            val kept = when (query.filter) {
-                SongFilter.ALL -> true
-                SongFilter.LIKED -> track.isLiked
-                SongFilter.LOCAL -> track.source == TrackSource.LOCAL
-                SongFilter.DOWNLOADED -> track.isDownloaded
-            }
-            kept && (query.query == null || track.matches(query.query))
+            query == null || track.matches(query)
         }
-        val byId = compareBy<LibrarySong> { it.track.id }
-        val order: Comparator<LibrarySong> = when (query.sort) {
-            SongSort.TITLE -> compareBy<LibrarySong, String>(TEXT_ORDER) { it.track.title }
-                .thenBy(TEXT_ORDER) { it.track.artists.orEmpty() }
-            SongSort.ARTIST -> compareBy<LibrarySong, String>(TEXT_ORDER) { it.track.artists.orEmpty() }
-                .thenBy(TEXT_ORDER) { it.track.title }
-            SongSort.PLAY_TIME -> compareByDescending<LibrarySong> { it.totalPlayTimeMs }
-                .thenBy(TEXT_ORDER) { it.track.title }
-        }
-        return filtered.sortedWith(order.then(byId))
-    }
 
     private fun TrackDto.matches(query: String): Boolean =
         title.contains(query, ignoreCase = true) || artists?.contains(query, ignoreCase = true) == true
-
-    fun sortPlaylists(playlists: List<PlaylistDto>): List<PlaylistDto> =
-        playlists.sortedWith(compareBy<PlaylistDto, String>(TEXT_ORDER) { it.name }.thenBy { it.id })
-
-    fun sortAlbums(albums: List<AlbumDto>): List<AlbumDto> =
-        albums.sortedWith(compareBy<AlbumDto, String>(TEXT_ORDER) { it.title }.thenBy { it.id })
-
-    fun sortArtists(artists: List<ArtistDto>): List<ArtistDto> =
-        artists.sortedWith(compareBy<ArtistDto, String>(TEXT_ORDER) { it.name }.thenBy { it.id })
 
     /** Contract §1: `total` is the full size; an offset past the end gives an empty page. */
     fun <T> paginate(items: List<T>, page: PageRequest): Page<T> {

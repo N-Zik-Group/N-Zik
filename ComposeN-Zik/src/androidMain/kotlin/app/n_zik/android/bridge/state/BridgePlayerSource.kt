@@ -42,8 +42,10 @@ private data class TrackFlags(val isLiked: Boolean, val isDownloaded: Boolean)
  * every use and re-attached on `playerUpdateTrigger` (crossfade swap) — and samples the
  * player on each relevant event and every [resampleIntervalMs] (fresh heartbeat position).
  *
- * `isLiked` / `isDownloaded` are resolved off the main thread once per queue change and
- * kept until the next one: a like alone produces no delta (contract §1.1).
+ * `isLiked` / `isDownloaded` are re-resolved off the main thread on EVERY sample (cheap
+ * indexed reads, contract §1.1): a flag change alone — a like on the phone, a download
+ * finishing — reaches the companion as a `queueChanged`. The hub drops the delta when the
+ * flags did not actually move.
  *
  * As a [PlayerAccess], it hands the same facade to the remote commands (contract §9) and
  * samples right after each one, serialized with the regular sampling.
@@ -70,7 +72,6 @@ internal class BridgePlayerSource(
     private var swapJob: Job? = null
     private var pendingSeek = false
     private var pendingTransition = false
-    private var resolvedIds: List<String>? = null
     private var flags: Map<String, TrackFlags> = emptyMap()
 
     private val listener = object : Player.Listener {
@@ -210,7 +211,6 @@ internal class BridgePlayerSource(
     private suspend fun sampleOnce(): List<DeltaMessage> {
         val player = currentPlayer()
         if (player == null) {
-            resolvedIds = null
             return hub.submit(PlayerSample.EMPTY)
         }
         // A failed read keeps the pending seek / transition for the next sample
@@ -221,11 +221,10 @@ internal class BridgePlayerSource(
         val transition = pendingTransition
         pendingSeek = false
         pendingTransition = false
+        // The like / download flags can change without the queue changing (a like alone):
+        // re-resolve on every sample so the companion's badges follow the phone
         val ids = read.items.map { it.trackId }
-        if (ids != resolvedIds) {
-            flags = withContext(NzikDispatchers.DATA) { resolveFlags(ids.distinct()) }
-            resolvedIds = ids
-        }
+        flags = withContext(NzikDispatchers.DATA) { resolveFlags(ids.distinct()) }
         val queue = read.items.map { item ->
             val itemFlags = flags[item.trackId]
             TrackMapping.track(

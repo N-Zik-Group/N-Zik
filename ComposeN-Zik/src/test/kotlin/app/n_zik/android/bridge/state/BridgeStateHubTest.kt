@@ -181,6 +181,22 @@ class BridgeStateHubTest {
     }
 
     @Test
+    fun `a flag-only queue change produces a queueChanged`() {
+        // A like on the phone changes the queue's flags without changing its composition (contract §1.1)
+        hub.submit(playingSample)
+
+        val deltas = hub.submit(
+            playingSample.copy(queue = playingSample.queue.map { track ->
+                if (track.id == "aaaaaaaaaaa") track.copy(isLiked = true) else track
+            }),
+        )
+
+        val delta = deltas.single() as QueueChangedMessage
+        assertEquals(listOf("QueueChangedMessage"), types(deltas))
+        assertTrue(delta.queue.first().isLiked)
+    }
+
+    @Test
     fun `trackChanged carries the live duration of the new track`() {
         hub.submit(playingSample)
 
