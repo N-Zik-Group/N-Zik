@@ -417,6 +417,45 @@ interface EventTable : RewindEventSource {
     """)
     fun getPlaylistPlayCount(playlistId: Long): Flow<Int>
 
+    /**
+     * The listening totals per album (play count + total play time in ms), one row per album with
+     * events — the batch form of [getAlbumPlayCount] / [getAlbumTotalPlayTime] (the phone's album
+     * grid overlays, `HomeAlbum.kt` 723-754).
+     */
+    @Query("""
+        SELECT SAM.albumId AS albumId, COUNT(E.id) AS playCount, IFNULL(SUM(E.playtime), 0) AS totalPlayTimeMs
+        FROM Event E
+        JOIN SongAlbumMap SAM ON SAM.songId = E.songId
+        GROUP BY SAM.albumId
+    """)
+    fun getAlbumListeningTotals(): Flow<List<AlbumListening>>
+
+    /**
+     * The listening totals per artist (play count + total play time in ms), one row per artist with
+     * events — the batch form of [getArtistPlayCount] / [getArtistTotalPlayTime] (the phone's artist
+     * grid overlays, `HomeArtist.kt` 687-710).
+     */
+    @Query("""
+        SELECT SAM.artistId AS artistId, COUNT(E.id) AS playCount, IFNULL(SUM(E.playtime), 0) AS totalPlayTimeMs
+        FROM Event E
+        JOIN SongArtistMap SAM ON SAM.songId = E.songId
+        GROUP BY SAM.artistId
+    """)
+    fun getArtistListeningTotals(): Flow<List<ArtistListening>>
+
+    /**
+     * The listening totals per playlist (play count + total play time in ms), one row per playlist
+     * with events — the batch form of [getPlaylistPlayCount] / [getPlaylistTotalPlayTime] (the
+     * phone's playlist grid overlays, `HomeLibrary.kt` 887-919).
+     */
+    @Query("""
+        SELECT SPM.playlistId AS playlistId, COUNT(E.id) AS playCount, IFNULL(SUM(E.playtime), 0) AS totalPlayTimeMs
+        FROM Event E
+        JOIN SongPlaylistMap SPM ON SPM.songId = E.songId
+        GROUP BY SPM.playlistId
+    """)
+    fun getPlaylistListeningTotals(): Flow<List<PlaylistListening>>
+
     @Query("UPDATE Event SET songId = :newId WHERE songId = :oldId")
     fun updateSongId(oldId: String, newId: String)
 
@@ -430,6 +469,27 @@ interface EventTable : RewindEventSource {
 data class PlayCountTuple(
     val songId: String,
     val playCount: Int
+)
+
+/** One row of [EventTable.getAlbumListeningTotals]. */
+data class AlbumListening(
+    val albumId: String,
+    val playCount: Int,
+    val totalPlayTimeMs: Long
+)
+
+/** One row of [EventTable.getArtistListeningTotals]. */
+data class ArtistListening(
+    val artistId: String,
+    val playCount: Int,
+    val totalPlayTimeMs: Long
+)
+
+/** One row of [EventTable.getPlaylistListeningTotals]. */
+data class PlaylistListening(
+    val playlistId: Long,
+    val playCount: Int,
+    val totalPlayTimeMs: Long
 )
 
 

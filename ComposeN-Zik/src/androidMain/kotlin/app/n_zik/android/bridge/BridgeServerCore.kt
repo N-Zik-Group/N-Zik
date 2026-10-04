@@ -29,6 +29,7 @@ import app.n_zik.android.bridge.state.BridgeStateHub
 import app.n_zik.android.bridge.state.PongMessage
 import app.n_zik.android.bridge.state.encodeServerMessage
 import app.n_zik.android.bridge.state.TrackDto
+import app.n_zik.android.bridge.state.TrackLike
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
@@ -84,6 +85,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.longOrNull
 import java.io.ByteArrayOutputStream
@@ -261,6 +263,10 @@ internal class BridgeServerCore(
                     get("songs") { call.handleSongs() }
                     get("playlists") { call.handlePlaylists() }
                     get("playlists/{id}/songs") { call.handlePlaylistSongs() }
+                    // Since 1.7.2: the phone's custom playlist cover (no `size` parameter: the local file is served as-is)
+                    get("playlists/{id}/artwork") { call.handlePlaylistArtwork() }
+                    get("rewind") { call.handleRewind() }
+                    get("dislikeMode") { call.handleDislikeMode() }
                     get("albums") { call.handleAlbums() }
                     get("albums/{id}/songs") {
                         val id = call.parameters["id"].orEmpty()
@@ -279,6 +285,14 @@ internal class BridgeServerCore(
                         val id = call.parameters["id"].orEmpty()
                         call.respondArtwork { size -> libraryProvider.artistArtwork(id, size) }
                     }
+                    get("cache") { call.handleCache() }
+                    // Contract §10.2 (since 1.7): the explicit writes, local Room only
+                    post("songs/{id}/like") { call.handleSongLike() }
+                    post("albums/{id}/bookmark") { call.handleAlbumBookmark() }
+                    post("albums/{id}/like") { call.handleAlbumLike() }
+                    post("artists/{id}/follow") { call.handleArtistFollow() }
+                    post("playlists/{id}/pin") { call.handlePlaylistPin() }
+                    post("playlists/{id}/bookmark") { call.handlePlaylistBookmark() }
                 }
                 route("artwork") {
                     install(bearerAuth)
@@ -575,18 +589,30 @@ internal class BridgeServerCore(
             else -> LibraryQueries.parseTopPeriod(raw)
                 ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid period")
         }
-        val tracks = LibraryQueries.searchSongs(libraryProvider.songs(filter, sort, reverse, period), text).map { it.track }
+        val tracks = LibraryQueries.searchSongs(libraryProvider.songs(filter, sort, reverse, period), text)
         respond(LibraryQueries.paginate(tracks, page))
     }
 
-    /** Contract §10 `/library/playlists/{id}/songs` (since 1.6): pagination, `sort` and `reverse`. */
+    /** Contract §10 `/library/playlists/{id}/songs` (since 1.6): pagination, `sort`, `reverse`; since 1.7.2, `text` and `totalDurationMs`. */
     private suspend fun ApplicationCall.handlePlaylistSongs() {
         val id = LibraryQueries.parsePlaylistId(parameters["id"])
+        val page = pageOrReject() ?: return
         val sort = LibraryQueries.parsePlaylistSongSort(request.queryParameters["sort"])
             ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid sort")
         val reverse = LibraryQueries.parseReverse(request.queryParameters["reverse"])
             ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid reverse")
-        respondTracks("Unknown playlist") { id?.let { libraryProvider.playlistSongs(it, sort, reverse) } }
+        val text = LibraryQueries.playlistText(request.queryParameters["text"])
+        if (text != null && text.length > BridgeContract.LIBRARY_QUERY_MAX_LENGTH) {
+            return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Query too long")
+        }
+        val all = id?.let { libraryProvider.playlistSongs(it, sort, reverse) }
+            ?: return respondError(HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, "Unknown playlist")
+        val tracks = LibraryQueries.searchSongs(all, text)
+        respond(
+            LibraryQueries.paginate(tracks, page, total = all.size).copy(
+                totalDurationMs = LibraryQueries.totalDurationMsOf(all),
+            ),
+        )
     }
 
     /** Contract §1 pagination parameters, or `null` once a `400` has been answered. */
@@ -596,7 +622,11 @@ internal class BridgeServerCore(
         return page
     }
 
-    /** Contract §10 `/library/playlists` (since 1.6): pagination, `filter`, `sort` and `reverse`. */
+    /**
+     * Contract §10 `/library/playlists` (since 1.6): pagination, `filter`, `sort`, `reverse`;
+     * since 1.7.2, `rewind` (applied and persisted by the phone) and `text` (the phone's search,
+     * `total` kept pre-`text`).
+     */
     private suspend fun ApplicationCall.handlePlaylists() {
         val params = request.queryParameters
         val page = LibraryQueries.parsePage(params["offset"], params["limit"])
@@ -607,7 +637,19 @@ internal class BridgeServerCore(
             ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid sort")
         val reverse = LibraryQueries.parseReverse(params["reverse"])
             ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid reverse")
-        respond(LibraryQueries.paginate(libraryProvider.playlists(filter, sort, reverse), page))
+        // Absent `rewind` keeps the phone's own setting; a present value is always validated
+        val rewind = when (val raw = params["rewind"]) {
+            null -> null
+            else -> LibraryQueries.parseRewindFilter(raw)
+                ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid rewind filter")
+        }
+        val text = LibraryQueries.playlistText(params["text"])
+        if (text != null && text.length > BridgeContract.LIBRARY_QUERY_MAX_LENGTH) {
+            return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Query too long")
+        }
+        val all = libraryProvider.playlists(filter, sort, reverse, rewind)
+        val shown = LibraryQueries.searchPlaylists(all, text)
+        respond(LibraryQueries.paginate(shown, page, total = all.size))
     }
 
     /** Contract §10 `/library/albums` (since 1.6): pagination, `filter`, `sort` and `reverse`. */
@@ -659,6 +701,113 @@ internal class BridgeServerCore(
             ArtworkResult.UpstreamFailed ->
                 respondError(HttpStatusCode.BadGateway, BridgeErrorCode.AUDIO_UPSTREAM_FAILED, "The artwork could not be fetched")
         }
+    }
+
+    // --- Contract §10.2 (since 1.7): the explicit writes, local Room only ---
+
+    /**
+     * The body of a §10.2 write: one small JSON object carrying a single value for [key].
+     * `null` when the body is missing, over the size cap, not a JSON object, or the key is
+     * absent or not a primitive — the handler answers `400 BAD_REQUEST`.
+     */
+    private suspend fun ApplicationCall.writeBody(key: String): JsonPrimitive? {
+        val body = receiveBoundedText(BridgeContract.MAX_LIBRARY_WRITE_BODY_BYTES) ?: return null
+        val json = runCatching { BridgeJson.parseToJsonElement(body) }.getOrNull() as? JsonObject ?: return null
+        return json[key] as? JsonPrimitive
+    }
+
+    /** Contract §10 `/library/cache` (since 1.7.1): the phone's disk caches, used vs configured cap. */
+    private suspend fun ApplicationCall.handleCache() {
+        respond(libraryProvider.cacheSpace())
+    }
+
+    /** Contract §10 `/library/rewind` (since 1.7.2): the phone's Month/Year/All row state. */
+    private suspend fun ApplicationCall.handleRewind() {
+        respond(libraryProvider.rewindState())
+    }
+
+    /** Contract §10 `/library/dislikeMode` (since 1.7.2): the phone's `DislikeMode` per collection. */
+    private suspend fun ApplicationCall.handleDislikeMode() {
+        respond(libraryProvider.dislikeMode())
+    }
+
+    /** Contract §10 `/library/playlists/{id}/artwork` (since 1.7.2): the phone's custom playlist cover, `404` without one. */
+    private suspend fun ApplicationCall.handlePlaylistArtwork() {
+        val id = LibraryQueries.parsePlaylistId(parameters["id"])
+        val result = id?.let { libraryProvider.playlistArtwork(it) } ?: ArtworkResult.NotFound
+        when (result) {
+            is ArtworkResult.Image -> {
+                val type = runCatching { ContentType.parse(result.contentType) }.getOrDefault(ContentType.Image.JPEG)
+                response.header(HttpHeaders.CacheControl, BridgeContract.ARTWORK_CACHE_CONTROL)
+                respondBytes(result.bytes, type)
+            }
+
+            ArtworkResult.NotFound -> respondError(HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, "No custom cover")
+            ArtworkResult.UpstreamFailed ->
+                respondError(HttpStatusCode.BadGateway, BridgeErrorCode.AUDIO_UPSTREAM_FAILED, "The artwork could not be fetched")
+        }
+    }
+
+    /** Contract §10.2 `/library/songs/{id}/like` (since 1.7): the explicit like state. */
+    private suspend fun ApplicationCall.handleSongLike() {
+        val songId = parameters["id"].orEmpty()
+        val state = writeBody("state")?.contentOrNull?.let { TrackLike.parse(it) }
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid state")
+        val result = libraryProvider.setSongLike(songId, state)
+            ?: return respondError(HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, "Unknown track")
+        respond(SongLikeResponse(result))
+    }
+
+    /** Contract §10.2 `/library/albums/{id}/bookmark` (since 1.7): the explicit bookmark. */
+    private suspend fun ApplicationCall.handleAlbumBookmark() {
+        val albumId = parameters["id"].orEmpty()
+        val bookmarked = writeBody("bookmarked")?.booleanOrNull
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid bookmarked")
+        val result = libraryProvider.setAlbumBookmark(albumId, bookmarked)
+            ?: return respondError(HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, "Unknown album")
+        respond(AlbumBookmarkResponse(result))
+    }
+
+    /** Contract §10.2 `/library/albums/{id}/like` (since 1.7.2): the explicit album tri-state. */
+    private suspend fun ApplicationCall.handleAlbumLike() {
+        val albumId = parameters["id"].orEmpty()
+        val state = writeBody("state")?.contentOrNull?.let { AlbumLike.parse(it) }
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid state")
+        val result = libraryProvider.setAlbumLike(albumId, state)
+            ?: return respondError(HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, "Unknown album")
+        respond(AlbumLikeResponse(result))
+    }
+
+    /** Contract §10.2 `/library/artists/{id}/follow` (since 1.7): the explicit follow state. */
+    private suspend fun ApplicationCall.handleArtistFollow() {
+        val artistId = parameters["id"].orEmpty()
+        val state = writeBody("state")?.contentOrNull?.let { ArtistFollow.parse(it) }
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid state")
+        val result = libraryProvider.setArtistFollow(artistId, state)
+            ?: return respondError(HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, "Unknown artist")
+        respond(ArtistFollowResponse(result))
+    }
+
+    /** Contract §10.2 `/library/playlists/{id}/pin` (since 1.7): the explicit pin. */
+    private suspend fun ApplicationCall.handlePlaylistPin() {
+        val playlistId = parameters["id"]?.toLongOrNull()
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid playlist id")
+        val pinned = writeBody("pinned")?.booleanOrNull
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid pinned")
+        val result = libraryProvider.setPlaylistPin(playlistId, pinned)
+            ?: return respondError(HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, "Unknown playlist")
+        respond(PlaylistPinResponse(result))
+    }
+
+    /** Contract §10.2 `/library/playlists/{id}/bookmark` (since 1.7.2): the explicit bookmark (the phone's `isYoutubePlaylist`). */
+    private suspend fun ApplicationCall.handlePlaylistBookmark() {
+        val playlistId = parameters["id"]?.toLongOrNull()
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid playlist id")
+        val bookmarked = writeBody("bookmarked")?.booleanOrNull
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid bookmarked")
+        val result = libraryProvider.setPlaylistBookmark(playlistId, bookmarked)
+            ?: return respondError(HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, "Unknown playlist")
+        respond(PlaylistBookmarkResponse(result))
     }
 
     /** Contract §8.1: `{ "quality" }`, library lookup, then a URL signed for the calling device. */

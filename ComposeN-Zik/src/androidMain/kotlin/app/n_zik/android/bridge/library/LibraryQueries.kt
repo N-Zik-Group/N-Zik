@@ -2,7 +2,10 @@ package app.n_zik.android.bridge.library
 
 import app.n_zik.android.bridge.BridgeContract
 import app.n_zik.android.bridge.Page
+import app.n_zik.android.bridge.PlaylistDto
 import app.n_zik.android.bridge.state.TrackDto
+import app.n_zik.android.bridge.state.TrackDownloadState
+import app.n_zik.android.core.rewind.RewindPlaylists
 
 /** `offset` / `limit` of a paginated route (contract §1), already validated. */
 internal data class PageRequest(val offset: Int, val limit: Int)
@@ -110,8 +113,23 @@ internal enum class PlaylistSort(val wire: String) {
     CUSTOM("custom"),
 }
 
-/** One song of the library: its wire [track] plus what the wire does not carry. */
-internal data class LibrarySong(val track: TrackDto, val totalPlayTimeMs: Long)
+/**
+ * The per-track download and cache states of a library read (contract §1.1, since 1.7.1): what the
+ * phone's rows show beside each song.
+ */
+internal data class TrackSupport(
+    /** The ids of the online songs fully downloaded on the phone. */
+    val downloaded: Set<String> = emptySet(),
+    /** The ids of the songs in the phone's streaming cache (the phone's "Cached" tab). */
+    val cached: Set<String> = emptySet(),
+    /** The active download state of each downloading / queued song (the settled ones stay absent). */
+    val states: Map<String, TrackDownloadState> = emptyMap(),
+    /** The download progress (0..1) of each active download. */
+    val progresses: Map<String, Float> = emptyMap(),
+)
+
+/** The listening stats behind a collection id (contract §1.1, since 1.7.1): the phone's grid overlays. */
+internal data class CollectionListening(val playCount: Int = 0, val totalPlayTimeMs: Long = 0L)
 
 /**
  * Pure part of the library routes (contract §1, §10): parameter validation, search and
@@ -148,12 +166,27 @@ internal object LibraryQueries {
     /** `query` of `/library/songs` (contract §10): trimmed, `null` when blank. */
     fun songsText(query: String?): String? = query?.trim()?.takeIf { it.isNotEmpty() }
 
+    /** `text` of `/library/playlists` and of the playlist songs (contract §10, since 1.7.2): trimmed, `null` when blank. */
+    fun playlistText(query: String?): String? = query?.trim()?.takeIf { it.isNotEmpty() }
+
     fun parseCollectionFilter(filter: String?): CollectionFilter? =
         if (filter == null) CollectionFilter.LIBRARY else CollectionFilter.entries.firstOrNull { it.wire == filter }
 
     /** `filter` of `/library/playlists` (since 1.6); absent means `all`. */
     fun parsePlaylistsFilter(filter: String?): PlaylistsFilter? =
         if (filter == null) PlaylistsFilter.ALL else PlaylistsFilter.entries.firstOrNull { it.wire == filter }
+
+    /**
+     * `rewind` of `/library/playlists` (contract §10, since 1.7.2): the phone's Month/Year/All
+     * filter; absent means the phone's own current setting.
+     */
+    fun parseRewindFilter(raw: String?): RewindPlaylists.Filter? = when (raw) {
+        null -> null
+        "month" -> RewindPlaylists.Filter.Month
+        "year" -> RewindPlaylists.Filter.Year
+        "all" -> RewindPlaylists.Filter.All
+        else -> null
+    }
 
     /** `period` of `/library/songs?filter=top` (since 1.6); absent means the phone's own Top period. */
     fun parseTopPeriod(period: String?): TopPeriod? =
@@ -188,19 +221,49 @@ internal object LibraryQueries {
     fun parsePlaylistId(id: String?): Long? = id?.takeIf { DECIMAL_ID.matches(it) }?.toLongOrNull()
 
     /** Case-insensitive search on `title` and `artists` (contract §10); [query] `null` keeps every song. */
-    fun searchSongs(songs: List<LibrarySong>, query: String?): List<LibrarySong> =
+    fun searchSongs(songs: List<TrackDto>, query: String?): List<TrackDto> =
         songs.filter { song ->
-            val track = song.track
-            query == null || track.matches(query)
+            query == null || song.matches(query)
         }
 
     private fun TrackDto.matches(query: String): Boolean =
         title.contains(query, ignoreCase = true) || artists?.contains(query, ignoreCase = true) == true
 
+    /**
+     * Case-insensitive name search of `/library/playlists` (contract §10, since 1.7.2); [query]
+     * `null` keeps every playlist.
+     */
+    fun searchPlaylists(playlists: List<PlaylistDto>, query: String?): List<PlaylistDto> =
+        playlists.filter { playlist ->
+            query == null || playlist.name.contains(query, ignoreCase = true)
+        }
+
     /** Contract §1: `total` is the full size; an offset past the end gives an empty page. */
-    fun <T> paginate(items: List<T>, page: PageRequest): Page<T> {
+    fun <T> paginate(items: List<T>, page: PageRequest): Page<T> =
+        paginate(items, page, items.size)
+
+    /**
+     * Contract §1 (since 1.7.2): [total] given apart from the [items] size — the phone's
+     * counters keep their pre-search total while the `text` filter narrows the page.
+     */
+    fun <T> paginate(items: List<T>, page: PageRequest, total: Int): Page<T> {
         val from = page.offset.coerceAtMost(items.size)
         val to = (from.toLong() + page.limit).coerceAtMost(items.size.toLong()).toInt()
-        return Page(items = items.subList(from, to).toList(), total = items.size, offset = page.offset, limit = page.limit)
+        return Page(
+            items = items.subList(from, to).toList(),
+            total = total,
+            offset = page.offset,
+            limit = page.limit,
+        )
     }
+
+    /**
+     * The phone's local playlist header duration (contract §10, since 1.7.2): the sum of the
+     * whole list's durations, unknown ones counted as 0.
+     */
+    fun totalDurationMsOf(tracks: List<TrackDto>): Long =
+        tracks.sumOf { it.durationMs ?: 0L }
 }
+
+/** The wire value of the phone's rewind filter (contract §10, since 1.7.2). */
+internal val RewindPlaylists.Filter.wire: String get() = name.lowercase()

@@ -9,6 +9,50 @@ import org.junit.jupiter.api.Test
 class TrackMappingTest {
 
     @Test
+    fun `like tri-state defaults to the isLiked projection and can be given explicitly`() {
+        val liked = TrackMapping.track("vid", "Song", null, false, null, isLiked = true, isDownloaded = false)
+        assertEquals(TrackLike.LIKED, liked.like)
+        assertTrue(liked.isLiked)
+
+        val neutral = TrackMapping.track("vid", "Song", null, false, null, isLiked = false, isDownloaded = false)
+        assertEquals(TrackLike.NEUTRAL, neutral.like)
+        assertFalse(neutral.isLiked)
+
+        val disliked = TrackMapping.track("vid", "Song", null, false, null, isLiked = false, isDownloaded = false, like = TrackLike.DISLIKED)
+        assertEquals(TrackLike.DISLIKED, disliked.like)
+        assertFalse(disliked.isLiked)
+    }
+
+    @Test
+    fun `the custom artwork flag follows the phone isCustomImage predicate`() {
+        // Local custom artworks (the phone shows them with Crop)
+        assertTrue(TrackMapping.isCustomArtwork("file:///storage/emulated/0/Music/cover.jpg"))
+        assertTrue(TrackMapping.isCustomArtwork("https://host/app_covers/album123.png"))
+        assertTrue(TrackMapping.isCustomArtwork("modified:videoId"))
+        // Every other artwork (the phone shows it with FillHeight)
+        assertFalse(TrackMapping.isCustomArtwork("https://i.ytimg.com/vi/vid/mqdefault.jpg"))
+        assertFalse(TrackMapping.isCustomArtwork(null))
+        assertFalse(TrackMapping.isCustomArtwork(""))
+    }
+
+    @Test
+    fun `the track mapping carries the custom artwork flag from the artwork url`() {
+        val custom = TrackMapping.track(
+            "vid", "Song", null, hasArtwork = true, null,
+            isLiked = false, isDownloaded = false,
+            artworkUrl = "file:///cover.png",
+        )
+        assertTrue(custom.isCustomArtwork)
+
+        val online = TrackMapping.track(
+            "vid", "Song", null, hasArtwork = true, null,
+            isLiked = false, isDownloaded = false,
+            artworkUrl = "https://i.ytimg.com/vi/vid/mqdefault.jpg",
+        )
+        assertFalse(online.isCustomArtwork)
+    }
+
+    @Test
     fun `durationText in m-ss and h-mm-ss converts to milliseconds`() {
         assertEquals(212_000L, TrackMapping.durationTextToMs("3:32"))
         assertEquals(212_000L, TrackMapping.durationTextToMs("03:32"))

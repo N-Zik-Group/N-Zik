@@ -1,6 +1,8 @@
 package app.n_zik.android.bridge
 
+import app.n_zik.android.BuildConfig
 import app.n_zik.android.bridge.state.RepeatModeDto
+import app.n_zik.android.bridge.state.TrackLike
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -11,7 +13,7 @@ import kotlinx.serialization.json.Json
  * Every literal that travels on the wire lives here.
  */
 internal object BridgeContract {
-    const val CONTRACT_VERSION = "1.6"
+    const val CONTRACT_VERSION = "1.7"
     const val API_PREFIX = "/api/v1"
 
     /** Port 42420, then 42421–42429, then an OS-assigned ephemeral port (contract §11.1). */
@@ -55,7 +57,10 @@ internal object BridgeContract {
     /** Late failure of a confirmed command (contract §7.6). */
     const val TYPE_ERROR = "error"
 
-    /** `features` of `GET /api/v1/meta` implemented so far (contract §5). */
+    /**
+     * `features` of `GET /api/v1/meta` implemented so far (contract §5); since 1.7.2,
+     * `library.ffmpeg` is only advertised on the builds that ship FFmpeg (not the `*32` ones).
+     */
     val FEATURES: List<String> = listOf(
         "pairing.qr",
         "pairing.manual",
@@ -66,11 +71,18 @@ internal object BridgeContract {
         "library.albums",
         "library.artists",
         "library.sort",
-        "artwork",
-        "audio",
-        "audio.output",
-        "ws.state",
-    )
+        "library.write",
+        "library.cache",
+        "library.rewind",
+        "library.dislikeMode",
+    ) +
+        (if (BuildConfig.ENABLE_FFMPEG) listOf("library.ffmpeg") else emptyList()) +
+        listOf(
+            "artwork",
+            "audio",
+            "audio.output",
+            "ws.state",
+        )
 
     /** Pagination bounds (contract §1, §14). */
     const val PAGE_OFFSET_DEFAULT = 0
@@ -121,6 +133,9 @@ internal object BridgeContract {
 
     /** Largest forge body read (`{ "quality": … }`); anything bigger is `400 BAD_REQUEST`. */
     const val MAX_AUDIO_FORGE_BODY_BYTES = 4 * 1_024
+
+    /** Largest library write body read (contract §10.2, since 1.7); anything bigger is `400 BAD_REQUEST`. */
+    const val MAX_LIBRARY_WRITE_BODY_BYTES = 1_024
 }
 
 /** Error codes of contract §3 used by the server so far. */
@@ -296,6 +311,12 @@ internal data class Page<T>(
     val total: Int,
     val offset: Int,
     val limit: Int,
+    /**
+     * Since 1.7.2 (contract §1): the total duration in ms of the FULL list, before pagination
+     * and before `text` — carried by `GET /library/playlists/{id}/songs` (the phone's header
+     * duration), `0` on every other route.
+     */
+    val totalDurationMs: Long = 0L,
 )
 
 /** `Playlist` (contract §1.1). */
@@ -305,7 +326,95 @@ internal data class PlaylistDto(
     val name: String,
     val trackCount: Int,
     val artworkTrackId: String?,
+    /** Since 1.7: origin of the playlist, for its origin icon (contract §1.1). */
+    val origin: PlaylistOrigin = PlaylistOrigin.LOCAL,
+    /** Since 1.7: the phone's `pinned:` name prefix (contract §1.1). */
+    val isPinned: Boolean = false,
+    /** Since 1.7: saved in the YouTube Music library (the phone's bookmark badge, contract §1.1). */
+    val isBookmarked: Boolean = false,
+    /** Since 1.7.1: the phone's `isEditable` — the phone's lock badge on a non-editable YouTube playlist. */
+    val isEditable: Boolean = true,
+    /** Since 1.7.1: the playlist's play count, from the phone's playback events (the phone's grid overlay). */
+    val playCount: Int = 0,
+    /** Since 1.7.1: the playlist's total play time in ms, from the phone's playback events (the phone's grid overlay). */
+    val totalPlayTimeMs: Long = 0L,
+    /** Since 1.7.2: the phone's raw `browseId` (the playlist-menu guards, contract §1.1). */
+    val browseId: String? = null,
 )
+
+/**
+ * `Playlist.origin` (contract §1.1, since 1.7) — the phone's own origin icon logic, pin apart.
+ * The rewind kinds (`REWIND_*`, since 1.7.1) keep the phone's three period icons; `REWIND` is
+ * the legacy (pre-kind) value of the 1.7 wire.
+ */
+@Serializable
+internal enum class PlaylistOrigin(val wire: String) {
+    @SerialName("local") LOCAL("local"),
+    @SerialName("ytmusic") YTMUSIC("ytmusic"),
+    @SerialName("spotify") SPOTIFY("spotify"),
+    @SerialName("riplay") RIPLAY("riplay"),
+    /** Since 1.7.1: the generated monthly rewind playlist (the phone's `stat_month` icon). */
+    @SerialName("rewind-monthly") REWIND_MONTHLY("rewind-monthly"),
+    /** Since 1.7.1: the generated yearly rewind playlist (the phone's `stat_year` icon). */
+    @SerialName("rewind-yearly") REWIND_YEARLY("rewind-yearly"),
+    /** Since 1.7.1: the generated all-time rewind snapshot (the phone's `musical_notes` icon). */
+    @SerialName("rewind-alltime") REWIND_ALLTIME("rewind-alltime"),
+    @SerialName("rewind") REWIND("rewind");
+
+    companion object {
+        fun parse(value: String?): PlaylistOrigin? = entries.firstOrNull { it.wire == value }
+    }
+}
+
+/** Target state of `POST /library/artists/{id}/follow` (contract §10.2, since 1.7). */
+@Serializable
+internal enum class ArtistFollow {
+    @SerialName("followed") FOLLOWED,
+    @SerialName("neutral") NEUTRAL,
+    @SerialName("disliked") DISLIKED;
+
+    companion object {
+        fun parse(value: String?): ArtistFollow? = entries.firstOrNull { it.name.lowercase() == value }
+    }
+}
+
+/** Target state of `POST /library/albums/{id}/like` (contract §10.2, since 1.7.2). */
+@Serializable
+internal enum class AlbumLike {
+    @SerialName("neutral") NEUTRAL,
+    @SerialName("bookmarked") BOOKMARKED,
+    @SerialName("disliked") DISLIKED;
+
+    companion object {
+        fun parse(value: String?): AlbumLike? = entries.firstOrNull { it.name.lowercase() == value }
+    }
+}
+
+// --- Library writes (contract §10.2, since 1.7): the `200` answers carry the resulting state ---
+
+/** `200` answer of `POST /library/songs/{id}/like`. */
+@Serializable
+internal data class SongLikeResponse(val state: TrackLike)
+
+/** `200` answer of `POST /library/albums/{id}/bookmark`. */
+@Serializable
+internal data class AlbumBookmarkResponse(val bookmarked: Boolean)
+
+/** `200` answer of `POST /library/albums/{id}/like` (since 1.7.2). */
+@Serializable
+internal data class AlbumLikeResponse(val state: AlbumLike)
+
+/** `200` answer of `POST /library/playlists/{id}/bookmark` (since 1.7.2). */
+@Serializable
+internal data class PlaylistBookmarkResponse(val bookmarked: Boolean)
+
+/** `200` answer of `POST /library/artists/{id}/follow`. */
+@Serializable
+internal data class ArtistFollowResponse(val state: ArtistFollow)
+
+/** `200` answer of `POST /library/playlists/{id}/pin`. */
+@Serializable
+internal data class PlaylistPinResponse(val pinned: Boolean)
 
 /** `Album` (contract §1.1, since 1.1). */
 @Serializable
@@ -318,6 +427,14 @@ internal data class AlbumDto(
     val hasArtwork: Boolean,
     /** Since 1.3: album bookmarked on the phone. */
     val isBookmarked: Boolean = false,
+    /** Since 1.7.1: album disliked on the phone (the phone's `bookmark_slash` badge): the read half of the bookmark tri-state. */
+    val isDisliked: Boolean = false,
+    /** Since 1.7.1: origin of the album, for its origin icon (`local` | `ytmusic`, the phone's `AlbumItem` badge). */
+    val origin: PlaylistOrigin = PlaylistOrigin.LOCAL,
+    /** Since 1.7.1: the album's play count, from the phone's playback events (the phone's grid overlay). */
+    val playCount: Int = 0,
+    /** Since 1.7.1: the album's total play time in ms, from the phone's playback events (the phone's grid overlay). */
+    val totalPlayTimeMs: Long = 0L,
 )
 
 /** `Artist` (contract §1.1, since 1.1). */
@@ -329,6 +446,50 @@ internal data class ArtistDto(
     val hasArtwork: Boolean,
     /** Since 1.3: artist followed (bookmarked) on the phone. */
     val isBookmarked: Boolean = false,
+    /** Since 1.7: artist disliked on the phone (listed by `filter=disliked`): the read half of the follow tri-state. */
+    val isDisliked: Boolean = false,
+    /** Since 1.7.1: origin of the artist, for its origin icon (`local` | `ytmusic`, the phone's `ArtistItem` badge). */
+    val origin: PlaylistOrigin = PlaylistOrigin.LOCAL,
+    /** Since 1.7.1: the artist's play count, from the phone's playback events (the phone's grid overlay). */
+    val playCount: Int = 0,
+    /** Since 1.7.1: the artist's total play time in ms, from the phone's playback events (the phone's grid overlay). */
+    val totalPlayTimeMs: Long = 0L,
+)
+
+/** Used vs configured cap of one of the phone's disk caches (contract §10, since 1.7.1). */
+@Serializable
+internal data class CacheSpaceDto(
+    val usedBytes: Long,
+    /** The configured cap; `null` when it is unlimited (the phone hides its bar in that case). */
+    val maxBytes: Long?,
+    /** Since 1.7.2: the phone's label of its configured cap in its own language; `null` when unlimited. */
+    val maxText: String? = null,
+)
+
+/** `GET /library/cache` answer (contract §10, since 1.7.1): the phone's media (streaming) cache and its download cache. */
+@Serializable
+internal data class LibraryCacheDto(
+    val cached: CacheSpaceDto,
+    val downloaded: CacheSpaceDto,
+)
+
+/** `GET /library/rewind` answer (contract §10, since 1.7.2): the phone's Month/Year/All row state. */
+@Serializable
+internal data class RewindStateDto(
+    /** The phone's monthly rewind playlist creation toggle (default `true`). */
+    val monthlyEnabled: Boolean,
+    /** The phone's yearly rewind playlist creation toggle (default `true`). */
+    val yearlyEnabled: Boolean,
+    /** The phone's current Month/Year/All filter (default `month`). */
+    val filter: String,
+)
+
+/** `GET /library/dislikeMode` answer (contract §10, since 1.7.2): the phone's `DislikeMode.Enabled` per collection. */
+@Serializable
+internal data class DislikeModeDto(
+    val songs: Boolean,
+    val albums: Boolean,
+    val artists: Boolean,
 )
 
 // --- Audio (contract §8) ---

@@ -7,6 +7,37 @@ import app.n_zik.android.bridge.BridgeJson
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/** `Track.like` (contract §1.1, since 1.7): the phone's like tri-state. */
+@Serializable
+internal enum class TrackLike {
+    @SerialName("liked") LIKED,
+    @SerialName("neutral") NEUTRAL,
+    @SerialName("disliked") DISLIKED;
+
+    companion object {
+        fun parse(value: String?): TrackLike? = entries.firstOrNull { it.name.lowercase() == value }
+
+        /**
+         * The phone's `likedAt` column: `null` = neutral, a positive timestamp = liked, `-1` =
+         * disliked. `0` is neutral too: the phone's `isLiked` only counts `likedAt > 0`, and the
+         * writers only ever store `null`, a timestamp or `-1`.
+         */
+        fun of(likedAt: Long?): TrackLike = when {
+            likedAt == null -> NEUTRAL
+            likedAt > 0 -> LIKED
+            likedAt < 0 -> DISLIKED
+            else -> NEUTRAL
+        }
+
+        /** The explicit setter's argument of `SongTable.likeState(songId, Boolean?)`. */
+        fun toColumnValue(state: TrackLike): Boolean? = when (state) {
+            LIKED -> true
+            DISLIKED -> false
+            NEUTRAL -> null
+        }
+    }
+}
+
 /** `Track` shared object (contract §1.1). */
 @Serializable
 internal data class TrackDto(
@@ -17,10 +48,37 @@ internal data class TrackDto(
     val source: TrackSource,
     val isDownloaded: Boolean,
     val isLiked: Boolean,
+    /** Since 1.7: the like tri-state; `isLiked` is its `liked` projection (contract §1.1). */
+    val like: TrackLike,
     val hasArtwork: Boolean,
     /** Since 1.3: explicit content, the source of the phone's "E" badge. */
     val isExplicit: Boolean = false,
+    /** Since 1.7.1: the song's total play time in ms (the phone's `totalPlayTimeMs` column); the library reads only. */
+    val totalPlayTimeMs: Long = 0L,
+    /** Since 1.7.1: the song's play count (the phone's `playCount` column); the library reads only. */
+    val playCount: Int = 0,
+    /** Since 1.7.1: the phone's active download state; `none` when settled (the row icon derives from `isDownloaded`). */
+    val downloadState: TrackDownloadState = TrackDownloadState.NONE,
+    /** Since 1.7.1: the download progress, 0..1, only while [downloadState] is `downloading`. */
+    val downloadProgress: Float? = null,
+    /** Since 1.7.1: the song is in the phone's streaming cache (the phone's row icon color, apart from its state). */
+    val isCached: Boolean = false,
+    /** Since 1.7.2: the track's artwork is a phone-local custom image (the phone's `isCustomImage` predicate — it shows it with `Crop`, every other artwork with `FillHeight`). */
+    val isCustomArtwork: Boolean = false,
 )
+
+/** `Track.downloadState` (contract §1.1, since 1.7.1): the phone's active download states, the settled ones apart. */
+@Serializable
+internal enum class TrackDownloadState {
+    /** No active download: the settled icon derives from `Track.isDownloaded` (and `Track.isCached` for its color). */
+    @SerialName("none") NONE,
+
+    /** Queued or restarting: the phone's `download_progress` icon. */
+    @SerialName("queued") QUEUED,
+
+    /** Downloading: the phone's progress ring, `Track.downloadProgress` in 0..1. */
+    @SerialName("downloading") DOWNLOADING,
+}
 
 @Serializable
 internal enum class TrackSource {

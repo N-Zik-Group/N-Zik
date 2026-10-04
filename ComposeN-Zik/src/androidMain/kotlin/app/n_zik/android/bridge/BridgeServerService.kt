@@ -142,7 +142,7 @@ class BridgeServerService : Service() {
             deviceStore = BridgeServerController.loadDeviceStore(this),
             stateHub = stateHub,
             commandExecutor = executor,
-            libraryProvider = DatabaseLibraryProvider(this),
+            libraryProvider = DatabaseLibraryProvider(this, mediaCacheSpace = source::mediaCacheSpace),
             audioLibrary = PhoneAudioLibrary(this),
             onSessionEnded = audioOutputs::fallback,
             // Contract §8.5 (since 1.3): as soon as a session is active, the audio sounds on the PC

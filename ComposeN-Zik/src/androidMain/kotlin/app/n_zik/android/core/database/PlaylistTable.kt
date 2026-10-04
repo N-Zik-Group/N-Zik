@@ -247,6 +247,29 @@ interface PlaylistTable {
     """)
     fun togglePin( playlistId: Long ): Int
 
+    /**
+     * Set the explicit pin state of a playlist (PC bridge, contract §10.2, since 1.7):
+     * `true` = pinned now, `false` = not pinned. Unlike [togglePin], the target state is
+     * given directly and the write is idempotent (setting the current state changes
+     * nothing).
+     *
+     * @param playlistId playlist identifier to update
+     * @param pinned target pin state
+     *
+     * @return number of playlists updated by this operation
+     */
+    @Query("""
+        UPDATE Playlist
+        SET name = 
+            CASE
+                WHEN :pinned = 1 AND name NOT LIKE '$PINNED_PREFIX%' THEN '$PINNED_PREFIX' || name
+                WHEN :pinned = 0 AND name LIKE '$PINNED_PREFIX%' THEN SUBSTR(name, LENGTH('$PINNED_PREFIX') + 1)
+                ELSE name
+            END
+        WHERE id = :playlistId
+    """)
+    fun pinState( playlistId: Long, pinned: Boolean ): Int
+
     @Query("UPDATE Playlist SET isAutoSync = NOT isAutoSync WHERE id = :playlistId")
     fun toggleAutoSync( playlistId: Long ): Int
 

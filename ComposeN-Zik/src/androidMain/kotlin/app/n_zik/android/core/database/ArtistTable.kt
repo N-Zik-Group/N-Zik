@@ -393,6 +393,31 @@ interface ArtistTable {
     fun toggleFollow( artistId: String ): Int
 
     /**
+     * Set the explicit follow state of an artist (PC bridge, contract §10.2, since 1.7):
+     * `true` = followed now, `false` = disliked now, `null` = neutral. Unlike
+     * [toggleFollow] / [rotateLikeState], the target state is given directly and the write
+     * is idempotent (setting the current state changes nothing).
+     *
+     * @param artistId artist identifier to update
+     * @param followState target state: true = followed, false = disliked, null = neutral
+     *
+     * @return number of artists updated by this operation
+     */
+    @Query("""
+        UPDATE Artist
+        SET bookmarkedAt = CASE
+            WHEN :followState = 1 THEN strftime('%s', 'now') * 1000
+            ELSE NULL
+        END,
+        dislikedAt = CASE
+            WHEN :followState = 0 THEN strftime('%s', 'now') * 1000
+            ELSE NULL
+        END
+        WHERE id = :artistId
+    """)
+    fun followState( artistId: String, followState: Boolean? ): Int
+
+    /**
      * Rotate like state for an artist: neutral → followed → disliked → neutral
      * - neutral (NULL) → followed (bookmarkedAt = timestamp) = "follow"
      * - followed (bookmarkedAt > 0) → disliked (dislikedAt = timestamp) = "dislike"

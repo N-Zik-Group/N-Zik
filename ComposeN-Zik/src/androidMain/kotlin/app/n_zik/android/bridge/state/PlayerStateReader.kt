@@ -16,6 +16,8 @@ internal data class RawItem(
     val playerDurationMs: Long? = null,
     /** Explicit flag carried by the item's extras (the title prefix is read by [TrackMapping]). */
     val isExplicitExtra: Boolean = false,
+    /** The item's artwork url (since 1.7.2: the custom-artwork flag of [TrackMapping]). */
+    val artworkUrl: String? = null,
 )
 
 /** One read of the player: its queue items and a [PlayerSample] whose queue is still empty. */
@@ -53,6 +55,7 @@ internal object PlayerStateReader {
                 isExplicitExtra = metadata.extras?.let {
                     it.getBoolean(EXPLICIT_BUNDLE_TAG) || it.getBoolean(STANDARD_EXPLICIT_EXTRA)
                 } == true,
+                artworkUrl = metadata.artworkUri?.toString(),
             )
         }
         val currentIndex = order.indexOf(player.currentMediaItemIndex)

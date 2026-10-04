@@ -1,7 +1,10 @@
 package app.n_zik.android.bridge.library
 
+import app.n_zik.android.bridge.PlaylistDto
 import app.n_zik.android.bridge.state.TrackDto
+import app.n_zik.android.bridge.state.TrackLike
 import app.n_zik.android.bridge.state.TrackSource
+import app.n_zik.android.core.rewind.RewindPlaylists
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
@@ -13,17 +16,17 @@ internal fun libSong(
     playTimeMs: Long = 1_000L,
     liked: Boolean = false,
     downloaded: Boolean = false,
-): LibrarySong = LibrarySong(
-    track = TrackDto(
-        id = id,
-        title = title,
-        artists = artists,
-        durationMs = null,
-        source = if (id.startsWith("local:")) TrackSource.LOCAL else TrackSource.ONLINE,
-        isDownloaded = downloaded,
-        isLiked = liked,
-        hasArtwork = true,
-    ),
+    durationMs: Long? = null,
+): TrackDto = TrackDto(
+    id = id,
+    title = title,
+    artists = artists,
+    durationMs = durationMs,
+    source = if (id.startsWith("local:")) TrackSource.LOCAL else TrackSource.ONLINE,
+    isDownloaded = downloaded,
+    isLiked = liked,
+    like = if (liked) TrackLike.LIKED else TrackLike.NEUTRAL,
+    hasArtwork = true,
     totalPlayTimeMs = playTimeMs,
 )
 
@@ -36,7 +39,7 @@ class LibraryQueriesTest {
         libSong("id-d", "Delta", artists = null, playTimeMs = 7_000L, liked = true),
     )
 
-    private fun ids(list: List<LibrarySong>) = list.map { it.track.id }
+    private fun ids(list: List<TrackDto>) = list.map { it.id }
 
     @Test
     fun `pagination defaults to offset 0 and limit 50`() {
@@ -156,6 +159,53 @@ class LibraryQueriesTest {
         assertEquals(listOf("id-b"), ids(LibraryQueries.searchSongs(songs, "zed")))
         assertEquals(emptyList<String>(), ids(LibraryQueries.searchSongs(songs, "nothing")))
         assertEquals(4, LibraryQueries.searchSongs(songs, null).size)
+    }
+
+    @Test
+    fun `the rewind filter is absent by default and rejects unknown values`() {
+        assertNull(LibraryQueries.parseRewindFilter(null))
+        assertEquals(RewindPlaylists.Filter.Month, LibraryQueries.parseRewindFilter("month"))
+        assertEquals(RewindPlaylists.Filter.Year, LibraryQueries.parseRewindFilter("year"))
+        assertEquals(RewindPlaylists.Filter.All, LibraryQueries.parseRewindFilter("all"))
+        assertNull(LibraryQueries.parseRewindFilter("week"))
+        assertNull(LibraryQueries.parseRewindFilter("Month"))
+    }
+
+    @Test
+    fun `the playlist text is trimmed and a blank one means no search`() {
+        assertEquals("alp", LibraryQueries.playlistText("  alp "))
+        assertNull(LibraryQueries.playlistText("   "))
+        assertNull(LibraryQueries.playlistText(null))
+    }
+
+    @Test
+    fun `the playlist search matches the name case-insensitively and null keeps every playlist`() {
+        val playlists = listOf(
+            PlaylistDto("7", "Zebra", 2, null),
+            PlaylistDto("3", "apple", 0, null),
+        )
+        assertEquals(listOf("7"), LibraryQueries.searchPlaylists(playlists, "ZE").map { it.id })
+        assertEquals(listOf("3"), LibraryQueries.searchPlaylists(playlists, "app").map { it.id })
+        assertEquals(emptyList<PlaylistDto>(), LibraryQueries.searchPlaylists(playlists, "nothing"))
+        assertEquals(2, LibraryQueries.searchPlaylists(playlists, null).size)
+    }
+
+    @Test
+    fun `paging with an explicit total keeps it apart from the items size`() {
+        val page = LibraryQueries.paginate(listOf("a"), PageRequest(0, 50), total = 2)
+        assertEquals(listOf("a"), page.items)
+        assertEquals(2, page.total)
+    }
+
+    @Test
+    fun `the total duration sums every track and counts unknown durations as zero`() {
+        val tracks = listOf(
+            libSong("id-a", "Alpha", durationMs = 120_000L),
+            libSong("id-b", "Bravo", durationMs = 200_000L),
+            libSong("id-c", "charlie"),
+        )
+        assertEquals(320_000L, LibraryQueries.totalDurationMsOf(tracks))
+        assertEquals(0L, LibraryQueries.totalDurationMsOf(emptyList()))
     }
 
     @Test

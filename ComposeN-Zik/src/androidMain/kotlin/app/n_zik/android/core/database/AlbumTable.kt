@@ -342,6 +342,66 @@ interface AlbumTable {
     fun toggleBookmark( albumId: String ): Int
 
     /**
+     * Set the explicit bookmark state of an album (PC bridge, contract §10.2, since 1.7):
+     * `true` = bookmarked now, `false` = not bookmarked. Unlike [toggleBookmark], the target
+     * state is given directly, a bookmark also removes any dislike, and the write is
+     * idempotent (setting the current state changes nothing).
+     *
+     * @param albumId album identifier to update its [Album.bookmarkedAt]
+     * @param bookmarked target bookmark state
+     *
+     * @return number of albums updated by this operation
+     */
+    @Query("""
+        UPDATE Album
+        SET bookmarkedAt = 
+            CASE 
+                WHEN :bookmarked = 1 THEN strftime('%s', 'now') * 1000
+                ELSE NULL
+            END,
+            dislikedAt = 
+            CASE 
+                WHEN :bookmarked = 1 THEN NULL
+                ELSE dislikedAt
+            END,
+            lastFetch = 
+            CASE 
+                WHEN :bookmarked = 1 AND bookmarkedAt IS NULL THEN NULL
+                ELSE lastFetch
+            END
+        WHERE id = :albumId
+    """)
+    fun bookmarkState( albumId: String, bookmarked: Boolean ): Int
+
+    /**
+     * Set the explicit like state of an album (PC bridge, contract §10.2, since 1.7.2):
+     * [bookmarked] and [disliked] are mutually exclusive target flags — both `false` is the
+     * neutral state. Same result as the phone's own writes ([rotateLikeState],
+     * [bookmarkState]); the write is idempotent.
+     *
+     * @param albumId album identifier to update its [Album.bookmarkedAt] / [Album.dislikedAt]
+     * @param bookmarked target bookmark state
+     * @param disliked target dislike state
+     *
+     * @return number of albums updated by this operation
+     */
+    @Query("""
+        UPDATE Album
+        SET bookmarkedAt =
+            CASE
+                WHEN :bookmarked = 1 THEN strftime('%s', 'now') * 1000
+                ELSE NULL
+            END,
+            dislikedAt =
+            CASE
+                WHEN :disliked = 1 THEN strftime('%s', 'now') * 1000
+                ELSE NULL
+            END
+        WHERE id = :albumId
+    """)
+    fun likeState( albumId: String, bookmarked: Boolean, disliked: Boolean ): Int
+
+    /**
      * Rotate like state for an album: neutral → bookmarked → disliked → neutral
      * - neutral (NULL) → bookmarked (bookmarkedAt = timestamp) = "bookmark"
      * - bookmarked (bookmarkedAt > 0) → disliked (dislikedAt = timestamp) = "dislike"

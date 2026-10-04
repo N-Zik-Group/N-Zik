@@ -23,6 +23,7 @@ internal fun testTrack(id: String) = TrackDto(
     source = TrackSource.ONLINE,
     isDownloaded = false,
     isLiked = false,
+    like = TrackLike.NEUTRAL,
     hasArtwork = true,
 )
 
@@ -281,7 +282,13 @@ class BridgeStateHubTest {
         assertEquals("off", snapshot["repeatMode"]?.jsonPrimitive?.content)
         val track = snapshot["queue"]?.jsonArray?.first()?.jsonObject
         assertEquals(
-            setOf("id", "title", "artists", "durationMs", "source", "isDownloaded", "isLiked", "hasArtwork", "isExplicit"),
+            setOf(
+                "id", "title", "artists", "durationMs", "source", "isDownloaded", "isLiked", "like", "hasArtwork", "isExplicit",
+                // Since 1.7.1: the library row states (the WS queue keeps their defaults)
+                "totalPlayTimeMs", "playCount", "downloadState", "downloadProgress", "isCached",
+                // Since 1.7.2: the custom-artwork flag (always encoded, `encodeDefaults`)
+                "isCustomArtwork",
+            ),
             track?.keys,
         )
         assertEquals("online", track?.get("source")?.jsonPrimitive?.content)

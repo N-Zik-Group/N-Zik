@@ -8,7 +8,6 @@ import app.n_zik.android.bridge.command.BridgeCommandExecutor
 import app.n_zik.android.bridge.command.CommandResult
 import app.n_zik.android.bridge.command.PlayerAction
 import app.n_zik.android.bridge.library.LibraryProvider
-import app.n_zik.android.bridge.library.LibrarySong
 import app.n_zik.android.bridge.library.SongFilter
 import app.n_zik.android.bridge.library.SongSort
 import app.n_zik.android.bridge.library.TopPeriod
@@ -21,6 +20,7 @@ import app.n_zik.android.bridge.pairing.PairingQrPayload
 import app.n_zik.android.bridge.state.BridgeStateHub
 import app.n_zik.android.bridge.state.ErrorMessage
 import app.n_zik.android.bridge.state.RepeatModeDto
+import app.n_zik.android.bridge.state.TrackDto
 import app.n_zik.android.bridge.state.playingSample
 import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.WebSockets
@@ -88,7 +88,7 @@ class BridgeServerTest {
 
         assertEquals(HttpStatusCode.OK, response.status)
         val json = BridgeJson.parseToJsonElement(response.bodyAsText()).jsonObject
-        assertEquals("1.6", json["contractVersion"]?.jsonPrimitive?.content)
+        assertEquals("1.7", json["contractVersion"]?.jsonPrimitive?.content)
         assertEquals("Pixel test", json["serverName"]?.jsonPrimitive?.content)
         assertEquals(1_790_000_000_000L, json["serverTimeMs"]?.jsonPrimitive?.long)
         assertEquals(
@@ -102,6 +102,12 @@ class BridgeServerTest {
                 "library.albums",
                 "library.artists",
                 "library.sort",
+                "library.write",
+                "library.cache",
+                "library.rewind",
+                "library.dislikeMode",
+                // The debug variant of the unit test ships FFmpeg (not the `*32` build types)
+                "library.ffmpeg",
                 "artwork",
                 "audio",
                 "audio.output",
@@ -481,7 +487,7 @@ class BridgeServerTest {
     fun `core built by the controller serves the library provider of the server run`() = testApplication {
         val store = JsonPairedDeviceStore(InMemoryPairedDeviceStorage())
         val library = object : LibraryProvider by LibraryProvider.EMPTY {
-            override suspend fun songs(filter: SongFilter, sort: SongSort, reverse: Boolean, period: TopPeriod?): List<LibrarySong> =
+            override suspend fun songs(filter: SongFilter, sort: SongSort, reverse: Boolean, period: TopPeriod?): List<TrackDto> =
                 listOf(libSong("abc", "From the provider"))
         }
         mount(BridgeServerController.createCore("Pixel test", store, BridgeStateHub(), libraryProvider = library))

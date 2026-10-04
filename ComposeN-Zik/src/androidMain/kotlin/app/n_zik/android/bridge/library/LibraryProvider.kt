@@ -2,13 +2,23 @@ package app.n_zik.android.bridge.library
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.content.edit
 import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.offline.Download
+import app.n_zik.android.R
 import app.n_zik.android.bridge.AlbumDto
+import app.n_zik.android.bridge.AlbumLike
 import app.n_zik.android.bridge.ArtistDto
+import app.n_zik.android.bridge.ArtistFollow
+import app.n_zik.android.bridge.CacheSpaceDto
+import app.n_zik.android.bridge.DislikeModeDto
+import app.n_zik.android.bridge.LibraryCacheDto
 import app.n_zik.android.bridge.PlaylistDto
+import app.n_zik.android.bridge.RewindStateDto
 import app.n_zik.android.bridge.state.TrackDto
+import app.n_zik.android.bridge.state.TrackDownloadState
+import app.n_zik.android.bridge.state.TrackLike
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.profiles.cacheDatabaseProvider
@@ -19,6 +29,9 @@ import app.n_zik.android.utils.DataStoreUtils
 import app.it.fast4x.rimusic.PINNED_PREFIX
 import app.it.fast4x.rimusic.enums.AlbumSortBy
 import app.it.fast4x.rimusic.enums.ArtistSortBy
+import app.it.fast4x.rimusic.enums.DislikeMode
+import app.it.fast4x.rimusic.enums.DurationInMinutes
+import app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize
 import app.it.fast4x.rimusic.enums.MaxTopPlaylistItems
 import app.it.fast4x.rimusic.enums.StatisticsType
 import app.it.fast4x.rimusic.enums.PlaylistSongSortBy
@@ -29,13 +42,24 @@ import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsCustomValueKey
 import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsKey
 import app.it.fast4x.rimusic.utils.Preference
+import app.it.fast4x.rimusic.utils.excludeDislikedAlbumsKey
+import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
+import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
+import app.it.fast4x.rimusic.utils.excludeSongsWithDurationLimitKey
+import app.it.fast4x.rimusic.utils.exoPlayerCustomCacheKey
+import app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey
+import app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey
 import app.it.fast4x.rimusic.utils.getEnum
+import app.it.fast4x.rimusic.utils.includeLocalSongsKey
+import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
 import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.putEnum
 import app.it.fast4x.rimusic.utils.showMonthlyPlaylistsKey
 import app.it.fast4x.rimusic.utils.showPinnedPlaylistsKey
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.playback.services.mediaCacheLocation
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import java.io.File
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -55,15 +79,21 @@ internal sealed interface ArtworkResult {
 }
 
 /**
- * Read-only access to the phone's library for the PC bridge (contract §10, since 1.6): every list
- * is returned already sorted the way the phone's own screens sort it (the sort needs the phone's
- * database); search and pagination belong to [LibraryQueries]. A `null` song list means the
- * playlist / album / artist is unknown (`404`).
+ * Access to the phone's library for the PC bridge (contract §10, since 1.6; writes since 1.7):
+ * every list is returned already sorted the way the phone's own screens sort it (the sort needs
+ * the phone's database); search and pagination belong to [LibraryQueries]. A `null` song list
+ * means the playlist / album / artist is unknown (`404`); the write answers are `null` for an
+ * unknown target the same way.
  */
 internal interface LibraryProvider {
-    suspend fun songs(filter: SongFilter, sort: SongSort, reverse: Boolean, period: TopPeriod? = null): List<LibrarySong>
+    suspend fun songs(filter: SongFilter, sort: SongSort, reverse: Boolean, period: TopPeriod? = null): List<TrackDto>
 
-    suspend fun playlists(filter: PlaylistsFilter, sort: PlaylistSort, reverse: Boolean): List<PlaylistDto>
+    /**
+     * Since 1.7.2: [rewindFilter] (`month` / `year` / `all`) is applied to the `rewind` listing
+     * **and persisted** to the phone's own `rewindPlaylistsFilter` setting (the phone's Rewind
+     * tab reflects it); `null` keeps the phone's current setting.
+     */
+    suspend fun playlists(filter: PlaylistsFilter, sort: PlaylistSort, reverse: Boolean, rewindFilter: RewindPlaylists.Filter? = null): List<PlaylistDto>
     suspend fun playlistSongs(playlistId: Long, sort: PlaylistSongSort, reverse: Boolean): List<TrackDto>?
     suspend fun albums(filter: CollectionFilter, sort: AlbumSort, reverse: Boolean): List<AlbumDto>
     suspend fun albumSongs(albumId: String): List<TrackDto>?
@@ -73,11 +103,43 @@ internal interface LibraryProvider {
     suspend fun albumArtwork(albumId: String, size: Int): ArtworkResult
     suspend fun artistArtwork(artistId: String, size: Int): ArtworkResult
 
+    /**
+     * Contract §10 (since 1.7.2): the phone's custom playlist cover (its
+     * `thumbnail/playlist_<id>` file); `NotFound` when there is none (the client falls back to
+     * its mosaic, the phone's own fallback).
+     */
+    suspend fun playlistArtwork(playlistId: Long): ArtworkResult
+
+    /** Contract §10 (since 1.7.1): the phone's disk caches, used space vs configured cap (its Songs-tab bar). */
+    suspend fun cacheSpace(): LibraryCacheDto
+
+    /** Contract §10 (since 1.7.2): the phone's rewind creation toggles and its current Month/Year/All filter. */
+    suspend fun rewindState(): RewindStateDto
+
+    /** Contract §10 (since 1.7.2): the phone's `DislikeMode` (`Enabled`?) per collection. */
+    suspend fun dislikeMode(): DislikeModeDto
+
+    /** Contract §10.2 (since 1.7): the explicit like state, local Room only; `null` = unknown track (`404`). */
+    suspend fun setSongLike(songId: String, state: TrackLike): TrackLike?
+    /** Contract §10.2 (since 1.7): the explicit bookmark, local Room only; `null` = unknown album (`404`). */
+    suspend fun setAlbumBookmark(albumId: String, bookmarked: Boolean): Boolean?
+    /** Contract §10.2 (since 1.7.2): the explicit album tri-state, local Room only; `null` = unknown album (`404`). */
+    suspend fun setAlbumLike(albumId: String, state: AlbumLike): AlbumLike?
+    /** Contract §10.2 (since 1.7): the explicit follow state, local Room only; `null` = unknown artist (`404`). */
+    suspend fun setArtistFollow(artistId: String, state: ArtistFollow): ArtistFollow?
+    /** Contract §10.2 (since 1.7): the explicit pin, local Room only; `null` = unknown playlist (`404`). */
+    suspend fun setPlaylistPin(playlistId: Long, pinned: Boolean): Boolean?
+    /**
+     * Contract §10.2 (since 1.7.2): the explicit bookmark (the phone's `isYoutubePlaylist`
+     * column), local Room only; `null` = unknown playlist (`404`).
+     */
+    suspend fun setPlaylistBookmark(playlistId: Long, bookmarked: Boolean): Boolean?
+
     companion object {
         /** Empty library: the default of a server without a phone behind it (tests). */
         val EMPTY: LibraryProvider = object : LibraryProvider {
-            override suspend fun songs(filter: SongFilter, sort: SongSort, reverse: Boolean, period: TopPeriod?): List<LibrarySong> = emptyList()
-            override suspend fun playlists(filter: PlaylistsFilter, sort: PlaylistSort, reverse: Boolean): List<PlaylistDto> = emptyList()
+            override suspend fun songs(filter: SongFilter, sort: SongSort, reverse: Boolean, period: TopPeriod?): List<TrackDto> = emptyList()
+            override suspend fun playlists(filter: PlaylistsFilter, sort: PlaylistSort, reverse: Boolean, rewindFilter: RewindPlaylists.Filter?): List<PlaylistDto> = emptyList()
             override suspend fun playlistSongs(playlistId: Long, sort: PlaylistSongSort, reverse: Boolean): List<TrackDto>? = null
             override suspend fun albums(filter: CollectionFilter, sort: AlbumSort, reverse: Boolean): List<AlbumDto> = emptyList()
             override suspend fun albumSongs(albumId: String): List<TrackDto>? = null
@@ -86,18 +148,36 @@ internal interface LibraryProvider {
             override suspend fun trackArtwork(trackId: String, size: Int): ArtworkResult = ArtworkResult.NotFound
             override suspend fun albumArtwork(albumId: String, size: Int): ArtworkResult = ArtworkResult.NotFound
             override suspend fun artistArtwork(artistId: String, size: Int): ArtworkResult = ArtworkResult.NotFound
+            override suspend fun playlistArtwork(playlistId: Long): ArtworkResult = ArtworkResult.NotFound
+            override suspend fun cacheSpace(): LibraryCacheDto =
+                LibraryCacheDto(CacheSpaceDto(0L, null), CacheSpaceDto(0L, null))
+            override suspend fun rewindState(): RewindStateDto = RewindStateDto(true, true, "month")
+            override suspend fun dislikeMode(): DislikeModeDto = DislikeModeDto(true, true, true)
+            override suspend fun setSongLike(songId: String, state: TrackLike): TrackLike? = null
+            override suspend fun setAlbumBookmark(albumId: String, bookmarked: Boolean): Boolean? = null
+            override suspend fun setAlbumLike(albumId: String, state: AlbumLike): AlbumLike? = null
+            override suspend fun setArtistFollow(artistId: String, state: ArtistFollow): ArtistFollow? = null
+            override suspend fun setPlaylistPin(playlistId: Long, pinned: Boolean): Boolean? = null
+            override suspend fun setPlaylistBookmark(playlistId: Long, bookmarked: Boolean): Boolean? = null
         }
     }
 }
 
 /**
- * [LibraryProvider] over the local Room database, read on [NzikDispatchers.DATA]. Nothing
- * is written. The only network access is the relay of an online artwork ([ArtworkRelay]).
- * Visibility and mapping rules live in [LibraryMapping].
+ * [LibraryProvider] over the local Room database, read on [NzikDispatchers.DATA]. The only writes
+ * are the four explicit state setters of contract §10.2 (since 1.7): local Room only, no network
+ * call, no YTMusic push, no download, no queue effect — the phone's UI updates through Room
+ * invalidation, as with its own actions. The only network access is the relay of an online
+ * artwork ([ArtworkRelay]). Visibility and mapping rules live in [LibraryMapping].
  */
 internal class DatabaseLibraryProvider(
     context: Context,
     private val httpClient: () -> OkHttpClient = NetworkClientFactory::getClient,
+    /**
+     * The bound player service's live streaming-cache size (contract §10, since 1.7.1); `null`
+     * while the service is not yet bound — the phone's own indicator shows `0` then too.
+     */
+    private val mediaCacheSpace: () -> Long? = { null },
 ) : LibraryProvider {
     private val appContext = context.applicationContext
     private val artworkRelay = ArtworkRelay(httpClient, ::openLocal)
@@ -108,10 +188,24 @@ internal class DatabaseLibraryProvider(
      * `sortFavorites` for the liked tab, `allDisliked` for the disliked tab (its fixed order), the
      * format table for the cached tab, the most-played events for the top tab. As on the phone, the
      * `Downloaded` sort keeps the tab's base order and puts the downloaded songs first (or last).
+     *
+     * The phone's own display settings of its home tabs are applied here, as its `HomeSongs.kt`
+     * applies them to its rows: the "All" chip keeps its local rows only when its `includeLocalSongs`
+     * setting includes them (240, 254), the Top chip hides its rows over the `excludeSongWithDurationLimit`
+     * setting (300-302, 319-321), and the parental control hides the explicit `e:` rows of every tab
+     * (456; its detail screens apply the same filter to their rows).
      */
-    override suspend fun songs(filter: SongFilter, sort: SongSort, reverse: Boolean, period: TopPeriod?): List<LibrarySong> = withContext(NzikDispatchers.DATA) {
-        val downloaded = completedDownloads()
+    override suspend fun songs(filter: SongFilter, sort: SongSort, reverse: Boolean, period: TopPeriod?): List<TrackDto> = withContext(NzikDispatchers.DATA) {
+        val support = trackSupport()
+        val downloaded = support.downloaded
         val sortBy = sort.songSortBy()
+        val prefs = appContext.preferences
+        // The phone's own home-tab display settings (`HomeSongs.kt` 130-134): the "All" chip's
+        // local-songs toggle, the Top chip's duration limit, and the parental control (456)
+        val includeLocal = prefs.getBoolean(includeLocalSongsKey, true)
+        val durationLimit = prefs.getString(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled.name)
+            ?.let { runCatching { DurationInMinutes.valueOf(it) }.getOrNull() } ?: DurationInMinutes.Disabled
+        val parentalControl = prefs.getBoolean(parentalControlEnabledKey, false)
         val shown = when (filter) {
             SongFilter.ALL -> when (sortBy) {
                 // The phone's tabs use the title order as the base of the "Downloaded" sort
@@ -150,7 +244,12 @@ internal class DatabaseLibraryProvider(
                 if (sortBy == SongSortBy.Downloaded) top.downloadedOrdered(downloaded, reverse) else top
             }
         }
-        LibraryMapping.librarySongs(shown, downloaded)
+        // The phone's home-tab display filters on top of its raw lists (`HomeSongs.kt` 240, 456)
+        LibraryMapping.librarySongs(
+            filter,
+            LibraryMapping.homeTabSongs(shown, filter, includeLocal, durationLimit, parentalControl),
+            support,
+        )
     }
 
     /**
@@ -158,13 +257,18 @@ internal class DatabaseLibraryProvider(
      * way the phone's own `HomeLibrary.kt` shows it: `All` keeps everything except the rewind and
      * pinned playlists the phone's own toggles hide, `Pinned` the pinned-prefix names, `Rewind` the
      * rewind names the phone's creation toggles and Month/Year/All filter allow, `Youtube` the
-     * youtube-synced ones.
+     * youtube-synced ones. Since 1.7.2, [rewindFilter] overrides the phone's Month/Year/All filter
+     * for the `Rewind` listing and is persisted to the phone's own setting (its Rewind tab
+     * reflects the client's choice, like one of its own chip taps).
      */
-    override suspend fun playlists(filter: PlaylistsFilter, sort: PlaylistSort, reverse: Boolean): List<PlaylistDto> = withContext(NzikDispatchers.DATA) {
+    override suspend fun playlists(filter: PlaylistsFilter, sort: PlaylistSort, reverse: Boolean, rewindFilter: RewindPlaylists.Filter?): List<PlaylistDto> = withContext(NzikDispatchers.DATA) {
         val previews = Database.playlistTable.sortPreviews(sort.playlistSortBy(), reverse.sortOrder()).first()
         val prefs = appContext.preferences
         val showPinned = prefs.getBoolean(showPinnedPlaylistsKey, true)
         val showRewind = prefs.getBoolean(showMonthlyPlaylistsKey, true)
+        val rewindFilterToApply = rewindFilter ?: prefs.getEnum(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.Month)
+        // A present wire filter is persisted exactly like the phone's own chip tap
+        if (rewindFilter != null) prefs.edit { putEnum(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, rewindFilter) }
         val shown = when (filter) {
             PlaylistsFilter.ALL -> previews.filter {
                 (!RewindPlaylists.isRewind(it.playlist.name) || showRewind) &&
@@ -178,31 +282,36 @@ internal class DatabaseLibraryProvider(
                     it.playlist.name,
                     DataStoreUtils.prefs(appContext).getBoolean(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true),
                     DataStoreUtils.prefs(appContext).getBoolean(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true),
-                    prefs.getEnum(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.Month),
+                    rewindFilterToApply,
                 )
             }
 
             PlaylistsFilter.YOUTUBE -> previews.filter { it.playlist.isYoutubePlaylist }
         }
         val artworkTracks = LibraryMapping.artworkTracks(Database.songPlaylistMapTable.songsWithThumbnailDirect())
-        LibraryMapping.playlists(shown, artworkTracks) { name -> appContext.rewindDisplayName(name) }
+        val listening = Database.eventTable.getPlaylistListeningTotals().first()
+            .associate { it.playlistId to CollectionListening(it.playCount, it.totalPlayTimeMs) }
+        LibraryMapping.playlists(shown, artworkTracks, listening) { name -> appContext.rewindDisplayName(name) }
     }
 
     /**
      * The tracks of a local playlist with the phone's own sort (`sortSongs` of the local playlist
      * screen); as there, the `Downloaded` sort orders by title and puts the downloaded songs first
-     * (or last). Absent `sort` keeps the position order (the phone's default).
+     * (or last). Absent `sort` keeps the position order (the phone's default). As on the phone's
+     * own screen, the parental control hides the explicit `e:` rows (`LocalPlaylistSongs.kt` 1058).
      */
     override suspend fun playlistSongs(playlistId: Long, sort: PlaylistSongSort, reverse: Boolean): List<TrackDto>? = withContext(NzikDispatchers.DATA) {
         Database.playlistTable.findById(playlistId).first() ?: return@withContext null
-        val downloaded = completedDownloads()
+        val support = trackSupport()
+        val downloaded = support.downloaded
         val songs = if (sort == PlaylistSongSort.DOWNLOADED) {
             val base = Database.songPlaylistMapTable.sortSongs(playlistId, PlaylistSongSortBy.Title, SortOrder.Ascending).first()
             if (reverse) base.sortedBy { it.id in downloaded } else base.sortedByDescending { it.id in downloaded }
         } else {
             Database.songPlaylistMapTable.sortSongs(playlistId, sort.playlistSongSortBy(), reverse.sortOrder()).first()
         }
-        songs.map { LibraryMapping.track(it, downloaded) }
+        LibraryMapping.detailSongs(songs, parentalControl())
+            .map { LibraryMapping.track(it, support) }
     }
 
     override suspend fun albums(filter: CollectionFilter, sort: AlbumSort, reverse: Boolean): List<AlbumDto> = withContext(NzikDispatchers.DATA) {
@@ -212,13 +321,23 @@ internal class DatabaseLibraryProvider(
             // The phone's Disliked tab lists its albums as-is (no sort of its own)
             CollectionFilter.DISLIKED -> Database.albumTable.allDisliked().first()
         }
-        LibraryMapping.albums(albums, Database.songAlbumMapTable.songCountsDirect().associate { it.id to it.count })
+        val listening = Database.eventTable.getAlbumListeningTotals().first()
+            .associate { it.albumId to CollectionListening(it.playCount, it.totalPlayTimeMs) }
+        LibraryMapping.albums(
+            filter,
+            albums,
+            Database.songAlbumMapTable.songCountsDirect().associate { it.id to it.count },
+            listening,
+        )
     }
 
+    /** As on the phone's own screen, the parental control hides the explicit `e:` rows (`AlbumScreen.kt` 453-455). */
     override suspend fun albumSongs(albumId: String): List<TrackDto>? = withContext(NzikDispatchers.DATA) {
         Database.albumTable.findByIdDirect(albumId) ?: return@withContext null
-        val downloaded = completedDownloads()
-        Database.songAlbumMapTable.allSongsOfDirect(albumId).map { LibraryMapping.track(it, downloaded) }
+        LibraryMapping.detailSongs(
+            Database.songAlbumMapTable.allSongsOfDirect(albumId),
+            parentalControl(),
+        ).map { LibraryMapping.track(it, trackSupport()) }
     }
 
     override suspend fun artists(filter: CollectionFilter, sort: ArtistSort, reverse: Boolean): List<ArtistDto> = withContext(NzikDispatchers.DATA) {
@@ -228,14 +347,27 @@ internal class DatabaseLibraryProvider(
             // The phone's Disliked tab lists its artists as-is (no sort of its own)
             CollectionFilter.DISLIKED -> Database.artistTable.allDisliked().first()
         }
-        LibraryMapping.artists(artists, Database.songArtistMapTable.songCountsDirect().associate { it.id to it.count })
+        val listening = Database.eventTable.getArtistListeningTotals().first()
+            .associate { it.artistId to CollectionListening(it.playCount, it.totalPlayTimeMs) }
+        LibraryMapping.artists(
+            filter,
+            artists,
+            Database.songArtistMapTable.songCountsDirect().associate { it.id to it.count },
+            listening,
+        )
     }
 
+    /** As on the phone's own screen, the parental control hides the explicit `e:` rows (`ArtistScreen.kt` 345). */
     override suspend fun artistSongs(artistId: String): List<TrackDto>? = withContext(NzikDispatchers.DATA) {
         Database.artistTable.findByIdDirect(artistId) ?: return@withContext null
-        val downloaded = completedDownloads()
-        Database.songArtistMapTable.allSongsByDirect(artistId).map { LibraryMapping.track(it, downloaded) }
+        LibraryMapping.detailSongs(
+            Database.songArtistMapTable.allSongsByDirect(artistId),
+            parentalControl(),
+        ).map { LibraryMapping.track(it, trackSupport()) }
     }
+
+    /** The phone's parental-control display switch, off by default (its `parentalControlEnabledKey`). */
+    private fun parentalControl(): Boolean = appContext.preferences.getBoolean(parentalControlEnabledKey, false)
 
     override suspend fun trackArtwork(trackId: String, size: Int): ArtworkResult =
         artwork(size) { Database.songTable.findByIdDirect(trackId)?.thumbnailUrl }
@@ -245,6 +377,114 @@ internal class DatabaseLibraryProvider(
 
     override suspend fun artistArtwork(artistId: String, size: Int): ArtworkResult =
         artwork(size) { Database.artistTable.findByIdDirect(artistId)?.thumbnailUrl }
+
+    /**
+     * Contract §10 (since 1.7.2): the phone's custom playlist cover — the `thumbnail/playlist_<id>`
+     * file of its files dir (its own save path, its `LocalPlaylistItemMenu.kt` 203), raw bytes
+     * (no resizing, like the phone's own display).
+     */
+    override suspend fun playlistArtwork(playlistId: Long): ArtworkResult = withContext(NzikDispatchers.DATA) {
+        val file = File(appContext.filesDir, "thumbnail/playlist_$playlistId")
+        if (!file.exists()) return@withContext ArtworkResult.NotFound
+        val bytes = runCatching { file.readBytes() }
+            .onFailure { Timber.tag(TAG).w(it, "Could not read the playlist cover") }
+            .getOrNull()
+            ?.takeIf { it.isNotEmpty() && it.size <= MAX_ARTWORK_BYTES }
+            ?: return@withContext ArtworkResult.NotFound
+        // Only jpeg / png / webp are ever served (the phone's own image formats)
+        val contentType = ImageTypes.contentTypeOf(bytes, null) ?: return@withContext ArtworkResult.NotFound
+        ArtworkResult.Image(bytes, contentType)
+    }
+
+    /** Contract §10 (since 1.7.1): the phone's disk caches, used vs configured cap (its Songs-tab bar). */
+    override suspend fun cacheSpace(): LibraryCacheDto = withContext(NzikDispatchers.DATA) {
+        LibraryCacheDto(
+            cached = CacheSpaceDto(
+                usedBytes = mediaCacheUsedBytes(),
+                maxBytes = mediaCacheMaxBytes(),
+                maxText = cacheMaxText(exoPlayerDiskCacheMaxSizeKey),
+            ),
+            downloaded = CacheSpaceDto(
+                usedBytes = downloadCacheUsedBytes(),
+                maxBytes = downloadCacheMaxBytes(),
+                maxText = cacheMaxText(exoPlayerDiskDownloadCacheMaxSizeKey),
+            ),
+        )
+    }
+
+    /** Contract §10 (since 1.7.2): the phone's rewind creation toggles and its current Month/Year/All filter. */
+    override suspend fun rewindState(): RewindStateDto = withContext(NzikDispatchers.DATA) {
+        RewindStateDto(
+            monthlyEnabled = DataStoreUtils.prefs(appContext).getBoolean(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true),
+            yearlyEnabled = DataStoreUtils.prefs(appContext).getBoolean(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true),
+            filter = appContext.preferences
+                .getEnum(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.Month).wire,
+        )
+    }
+
+    /** Contract §10 (since 1.7.2): the phone's `DislikeMode` per collection (`Enabled` → `true`, default). */
+    override suspend fun dislikeMode(): DislikeModeDto = withContext(NzikDispatchers.DATA) {
+        DislikeModeDto(
+            songs = appContext.preferences.getEnum(excludeDislikedSongsKey, DislikeMode.Enabled).isEnabled,
+            albums = appContext.preferences.getEnum(excludeDislikedAlbumsKey, DislikeMode.Enabled).isEnabled,
+            artists = appContext.preferences.getEnum(excludeDislikedArtistsKey, DislikeMode.Enabled).isEnabled,
+        )
+    }
+
+    // --- Contract §10.2 (since 1.7): the explicit writes, local Room only ---
+
+    override suspend fun setSongLike(songId: String, state: TrackLike): TrackLike? =
+        withContext(NzikDispatchers.DATA) {
+            if (Database.songTable.findByIdDirect(songId) == null) return@withContext null
+            Database.songTable.likeState(songId, TrackLike.toColumnValue(state))
+            state
+        }
+
+    override suspend fun setAlbumBookmark(albumId: String, bookmarked: Boolean): Boolean? =
+        withContext(NzikDispatchers.DATA) {
+            if (Database.albumTable.findByIdDirect(albumId) == null) return@withContext null
+            Database.albumTable.bookmarkState(albumId, bookmarked)
+            bookmarked
+        }
+
+    override suspend fun setAlbumLike(albumId: String, state: AlbumLike): AlbumLike? =
+        withContext(NzikDispatchers.DATA) {
+            if (Database.albumTable.findByIdDirect(albumId) == null) return@withContext null
+            Database.albumTable.likeState(
+                albumId,
+                bookmarked = state == AlbumLike.BOOKMARKED,
+                disliked = state == AlbumLike.DISLIKED,
+            )
+            state
+        }
+
+    override suspend fun setArtistFollow(artistId: String, state: ArtistFollow): ArtistFollow? =
+        withContext(NzikDispatchers.DATA) {
+            if (Database.artistTable.findByIdDirect(artistId) == null) return@withContext null
+            Database.artistTable.followState(
+                artistId,
+                when (state) {
+                    ArtistFollow.FOLLOWED -> true
+                    ArtistFollow.DISLIKED -> false
+                    ArtistFollow.NEUTRAL -> null
+                },
+            )
+            state
+        }
+
+    override suspend fun setPlaylistPin(playlistId: Long, pinned: Boolean): Boolean? =
+        withContext(NzikDispatchers.DATA) {
+            if (Database.playlistTable.findById(playlistId).first() == null) return@withContext null
+            Database.playlistTable.pinState(playlistId, pinned)
+            pinned
+        }
+
+    override suspend fun setPlaylistBookmark(playlistId: Long, bookmarked: Boolean): Boolean? =
+        withContext(NzikDispatchers.DATA) {
+            val playlist = Database.playlistTable.findById(playlistId).first() ?: return@withContext null
+            Database.playlistTable.update(playlist.copy(isYoutubePlaylist = bookmarked))
+            bookmarked
+        }
 
     private suspend fun artwork(size: Int, thumbnailUrl: () -> String?): ArtworkResult =
         withContext(NzikDispatchers.DATA) { artworkRelay.relay(thumbnailUrl(), size) }
@@ -296,27 +536,113 @@ internal class DatabaseLibraryProvider(
      * cache — a temp cache, or none at all, leaves nothing to read).
      */
     private suspend fun cachedSongIds(): Set<String> = runCatching {
-        val location = mediaCacheLocation(appContext)
-        val dir = location.dir ?: return@runCatching emptySet()
-        if (!dir.exists()) return@runCatching emptySet()
-        val cache = SimpleCache(dir, NoOpCacheEvictor(), cacheDatabaseProvider(appContext, location.indexDbName))
-        try {
+        openMediaCache { cache ->
             Database.formatTable.allWithSongs().first().mapNotNull { format ->
                 val contentLength = format.format.contentLength ?: return@mapNotNull null
                 if (cache.isCached(format.song.id, 0, contentLength)) format.song.id else null
             }.toSet()
+        }.orEmpty()
+    }.onFailure { Timber.tag(TAG).w(it, "Cache read unavailable") }.getOrDefault(emptySet())
+
+    /**
+     * The active profile's streaming cache, opened read-only for one read; `null` when the profile
+     * has no cache directory of its own (temp cache, or none at all). The `keys` read waits for the
+     * cache's asynchronous open before anything else is read off it.
+     */
+    private suspend fun <T> openMediaCache(block: suspend (SimpleCache) -> T): T? {
+        val location = mediaCacheLocation(appContext)
+        val dir = location.dir ?: return null
+        if (!dir.exists()) return null
+        val cache = SimpleCache(dir, NoOpCacheEvictor(), cacheDatabaseProvider(appContext, location.indexDbName))
+        try {
+            cache.keys
+            return block(cache)
         } finally {
             cache.release()
         }
-    }.onFailure { Timber.tag(TAG).w(it, "Cache read unavailable") }.getOrDefault(emptySet())
+    }
 
-    /** Ids of the online songs fully downloaded on the phone. */
-    private fun completedDownloads(): Set<String> =
-        runCatching {
-            // The downloads map is only filled once the download manager exists
-            MyDownloadHelper.getDownloadManager(appContext)
-            MyDownloadHelper.downloads.value.filterValues { it.state == Download.STATE_COMPLETED }.keys
-        }.onFailure { Timber.tag(TAG).w(it, "Download states unavailable") }.getOrDefault(emptySet())
+    /**
+     * The per-track download and cache states of the phone's rows (contract §1.1, since 1.7.1): the
+     * completed downloads, the active download states and their progress (from the download manager),
+     * and the streaming-cache membership.
+     */
+    private suspend fun trackSupport(): TrackSupport = runCatching {
+        // The downloads map is only filled once the download manager exists
+        MyDownloadHelper.getDownloadManager(appContext)
+        val downloads = MyDownloadHelper.downloads.value
+        TrackSupport(
+            downloaded = downloads.filterValues { it.state == Download.STATE_COMPLETED }.keys,
+            cached = cachedSongIds(),
+            states = downloads.entries
+                .mapNotNull { (id, download) ->
+                    when (download.state) {
+                        Download.STATE_DOWNLOADING -> id to TrackDownloadState.DOWNLOADING
+                        Download.STATE_QUEUED, Download.STATE_RESTARTING -> id to TrackDownloadState.QUEUED
+                        else -> null
+                    }
+                }
+                .toMap(),
+            progresses = MyDownloadHelper.progresses.value,
+        )
+    }.onFailure { Timber.tag(TAG).w(it, "Download states unavailable") }.getOrDefault(TrackSupport())
+
+    /**
+     * The used space of the player's streaming cache, exactly as the phone's own
+     * `CacheSpaceIndicator` reads it: the bound service's live cache, `0` while the service is not
+     * bound (the phone shows `0` then too).
+     */
+    private fun mediaCacheUsedBytes(): Long = runCatching {
+        mediaCacheSpace()?.coerceAtLeast(0L) ?: 0L
+    }.onFailure { Timber.tag(TAG).w(it, "Media cache size unavailable") }.getOrDefault(0L)
+
+    /** The used space of the phone's download cache (the download manager's live cache). */
+    private fun downloadCacheUsedBytes(): Long = runCatching {
+        MyDownloadHelper.getDownloadManager(appContext)
+        MyDownloadHelper.downloadCache.cacheSpace
+    }.onFailure { Timber.tag(TAG).w(it, "Download cache size unavailable") }.getOrDefault(0L)
+
+    /**
+     * The configured streaming-cache cap (`null` when unlimited — the phone hides its bar then);
+     * `Custom` sends the actual custom value, as the player's own evictor uses it.
+     */
+    private fun mediaCacheMaxBytes(): Long? {
+        val size = appContext.preferences.getEnum(exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`)
+        return when (size) {
+            ExoPlayerDiskCacheMaxSize.Unlimited -> null
+            ExoPlayerDiskCacheMaxSize.Custom -> appContext.preferences.getInt(exoPlayerCustomCacheKey, 32) * 1_000_000L
+            else -> size.bytes
+        }
+    }
+
+    /**
+     * The configured download-cache cap (`null` when unlimited — the phone hides its bar then);
+     * read exactly the way the download cache is built (`MyDownloadHelper.initDownloadCache`).
+     */
+    private fun downloadCacheMaxBytes(): Long? {
+        val size = appContext.preferences.getEnum(exoPlayerDiskDownloadCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`)
+        return when (size) {
+            ExoPlayerDiskCacheMaxSize.Unlimited -> null
+            ExoPlayerDiskCacheMaxSize.Custom -> appContext.preferences.getInt(exoPlayerCustomCacheKey, 32) * 1_000_000L
+            else -> size.bytes
+        }
+    }
+
+    /**
+     * The phone's label of its configured cache cap in its own language (contract §10, since
+     * 1.7.2) — the non-composable twin of `ExoPlayerDiskCacheMaxSize.text`; `null` when the cap
+     * is unlimited (the phone hides its bar then).
+     */
+    private fun cacheMaxText(key: String): String? {
+        val size = appContext.preferences.getEnum(key, ExoPlayerDiskCacheMaxSize.`2GB`)
+        return when (size) {
+            ExoPlayerDiskCacheMaxSize.Unlimited -> null
+            ExoPlayerDiskCacheMaxSize.Disabled -> appContext.getString(R.string.turn_off)
+            ExoPlayerDiskCacheMaxSize.Custom -> appContext.getString(R.string.custom)
+            else -> size.name
+        }
+    }
+
 
     /** The phone's sort behind a wire value, so the bridge sorts exactly like the phone's own screens. */
     private fun SongSort.songSortBy() = when (this) {

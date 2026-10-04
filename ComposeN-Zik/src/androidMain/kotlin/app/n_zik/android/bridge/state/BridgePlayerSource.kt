@@ -31,8 +31,8 @@ import timber.log.Timber
 
 private const val TAG = "BridgePlayerSource"
 
-/** `isLiked` / `isDownloaded` of one track, resolved off the main thread. */
-private data class TrackFlags(val isLiked: Boolean, val isDownloaded: Boolean)
+/** `like` / `isDownloaded` of one track, resolved off the main thread. */
+private data class TrackFlags(val like: TrackLike, val isDownloaded: Boolean)
 
 /**
  * Feeds a [BridgeStateHub] with the phone's player state, read-only. Binds
@@ -42,7 +42,7 @@ private data class TrackFlags(val isLiked: Boolean, val isDownloaded: Boolean)
  * every use and re-attached on `playerUpdateTrigger` (crossfade swap) — and samples the
  * player on each relevant event and every [resampleIntervalMs] (fresh heartbeat position).
  *
- * `isLiked` / `isDownloaded` are re-resolved off the main thread on EVERY sample (cheap
+ * `like` / `isDownloaded` are re-resolved off the main thread on EVERY sample (cheap
  * indexed reads, contract §1.1): a flag change alone — a like on the phone, a download
  * finishing — reaches the companion as a `queueChanged`. The hub drops the delta when the
  * flags did not actually move.
@@ -67,7 +67,9 @@ internal class BridgePlayerSource(
     /** One sample at a time: the periodic loop and the samples forced by commands never interleave. */
     private val sampleMutex = Mutex()
     private var connection: ServiceConnection? = null
-    private var binder: PlayerServiceModern.Binder? = null
+    // @Volatile: the bridge's `GET /library/cache` (contract §10) reads the bound service's cache
+    // size off the main thread; the binder is published only once fully built
+    @Volatile private var binder: PlayerServiceModern.Binder? = null
     private var attachedPlayer: Player? = null
     private var swapJob: Job? = null
     private var pendingSeek = false
@@ -114,6 +116,13 @@ internal class BridgePlayerSource(
             }
         }
     }
+
+    /**
+     * The streaming cache's used space from the bound service, as the phone's own
+     * `CacheSpaceIndicator` reads it; `null` while the service is not yet bound. Callable from
+     * any thread (contract §10, `GET /library/cache`).
+     */
+    fun mediaCacheSpace(): Long? = binder?.cache?.cacheSpace
 
     /** Detaches from the player and unbinds (on the main thread), then stops every job. Callable from any thread. */
     fun stop() {
@@ -233,22 +242,25 @@ internal class BridgePlayerSource(
                 artist = item.artist,
                 hasArtwork = item.hasArtwork,
                 durationText = item.durationText,
-                isLiked = itemFlags?.isLiked == true,
+                isLiked = itemFlags?.like == TrackLike.LIKED,
                 isDownloaded = itemFlags?.isDownloaded == true,
                 playerDurationMs = item.playerDurationMs,
                 isExplicit = item.isExplicitExtra,
+                like = itemFlags?.like,
+                artworkUrl = item.artworkUrl,
             )
         }
         return hub.submit(read.sample.copy(queue = queue), seek = seek, transition = transition)
     }
 
-    private fun resolveFlags(trackIds: List<String>): Map<String, TrackFlags> {
+    private suspend fun resolveFlags(trackIds: List<String>): Map<String, TrackFlags> {
         val downloads = MyDownloadHelper.downloads.value
         return trackIds.associateWith { id ->
-            val liked = runCatching { Database.songTable.isLikedDirect(id) }
+            // Raw `likedAt`: a queue track absent from the database reads neutral
+            val likedAt = runCatching { Database.songTable.getLikedAt(id) }
                 .onFailure { Timber.tag(TAG).w(it, "Could not read the like state of a track") }
-                .getOrDefault(false)
-            TrackFlags(isLiked = liked, isDownloaded = downloads[id]?.state == Download.STATE_COMPLETED)
+                .getOrNull()
+            TrackFlags(like = TrackLike.of(likedAt), isDownloaded = downloads[id]?.state == Download.STATE_COMPLETED)
         }
     }
 
