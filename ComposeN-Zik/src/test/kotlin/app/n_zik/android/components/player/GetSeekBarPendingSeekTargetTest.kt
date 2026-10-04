@@ -1,6 +1,7 @@
 package app.n_zik.android.components.player
 
 import android.app.Application
+import android.content.Context
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -12,9 +13,12 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.core.content.edit
 import androidx.media3.common.C
 import androidx.media3.common.Player
+import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.FontType
+import app.it.fast4x.rimusic.enums.PauseBetweenSongs
 import app.it.fast4x.rimusic.models.ui.UiMedia
 import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
 import app.it.fast4x.rimusic.ui.styling.Appearance
@@ -22,6 +26,8 @@ import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.it.fast4x.rimusic.utils.GetSeekBar
+import app.it.fast4x.rimusic.utils.pauseBetweenSongsKey
+import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.LocalPlayerSheetState
 import app.n_zik.android.listentogether.listenTogetherGuestLock
@@ -52,7 +58,10 @@ import org.robolectric.annotation.Config
  *   later position change is shown directly, and a fresh tap accumulates from the live
  *   position),
  * - a forward tap with an unset duration issues NO seek (minOf against C.TIME_UNSET is a
- *   garbage target; the `newPosition < 0` guard is pinned at the UI level).
+ *   garbage target; the `newPosition < 0` guard is pinned at the UI level),
+ * - Phase 3.3: the position cache ticks while the sheet is collapsed — the removed
+ *   visibility gate would have frozen it there, and the pause-between-songs trigger
+ *   (the cache's only consumer in GetSeekBar) would never fire.
  *
  * The held value is observed two ways: the label text (formatAsDuration of the held target —
  * the user-visible part) and the NEXT click's seek target (the skip buttons compute their
@@ -77,10 +86,6 @@ class GetSeekBarPendingSeekTargetTest {
 
     private val mockPlayer = mockk<Player>(relaxed = true)
     private val binder = mockk<PlayerServiceModern.Binder>()
-    private val sheetState = mockk<PlayerSheetState> {
-        // progress > PLAYER_SHEET_HANDOVER_PROGRESS → the frame-poll cache is active.
-        every { progress } returns 0.9f
-    }
 
     private val appearance = Appearance(
         colorPalette = DefaultDarkColorPalette,
@@ -119,10 +124,14 @@ class GetSeekBarPendingSeekTargetTest {
         unmockkAll()
     }
 
-    private fun content(duration: Long = MEDIA_DURATION_MS) {
+    private fun content(duration: Long = MEDIA_DURATION_MS, sheetProgress: Float = 0.9f) {
         // Manual clock: the release-effect poll (50 ms) is driven by advanceTimeBy. The 10 s
         // safety timeout uses the REAL SystemClock, so it cannot fire inside a unit test —
         // the hold must be observed while it is still valid.
+        // Phase 3.3 (gh-881): the sheet progress no longer gates the position poll cache
+        // (the gate was removed) — it only drives the hand-over visuals; 0.9f keeps the
+        // existing tests on the expanded sheet.
+        val sheetState = mockk<PlayerSheetState> { every { progress } returns sheetProgress }
         composeRule.mainClock.autoAdvance = false
         every { mockPlayer.duration } returns duration
         composeRule.setContent {
@@ -300,6 +309,35 @@ class GetSeekBarPendingSeekTargetTest {
         assertLabelPresent("0:30")
         assertLabelPresent("2:50")
         assertLabelGone("2:49")
+    }
+
+    @Test
+    fun `the poll cache keeps ticking while the sheet is collapsed so pause between songs still fires`() {
+        // Phase 3.3 (gh-881) review (P3): pin the gate removal at a real call site — the
+        // collapsed sheet (progress below the hand-over threshold) used to gate
+        // DurationIndicator's position cache; re-gating it would freeze the time remaining
+        // and the pause-between-songs trigger (the cache's only consumer in GetSeekBar)
+        // would never fire. pauseBetweenSongs is a SharedPreferences-backed enum preference
+        // — seed it before composition.
+        ApplicationProvider.getApplicationContext<Context>()
+            .preferences
+            .edit { putString(pauseBetweenSongsKey, PauseBetweenSongs.`5`.name) }
+        content(duration = MEDIA_DURATION_MS, sheetProgress = 0.1f)
+
+        // Baseline: 30 s into a 200 s track — 2:50 remaining, the trigger is dormant.
+        assertLabelPresent("2:50")
+
+        // The player approaches the end: the cache must tick (the poll is unconditional) so
+        // the time remaining (200 ms) crosses under 500 ms and the trigger fires.
+        fakePosition = MEDIA_DURATION_MS - 200L
+        composeRule.mainClock.advanceTimeBy(150)
+        composeRule.waitForIdle()
+
+        verify(exactly = 1) { mockPlayer.pause() }
+        // pauseBetweenSongs = 5 s: the player resumes after the delay.
+        composeRule.mainClock.advanceTimeBy(5_000)
+        composeRule.waitForIdle()
+        verify(exactly = 1) { mockPlayer.play() }
     }
 
     private companion object {

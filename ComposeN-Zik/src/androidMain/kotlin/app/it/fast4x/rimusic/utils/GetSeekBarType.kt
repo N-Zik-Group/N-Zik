@@ -128,13 +128,14 @@ fun GetSeekBar(
     // it (see shouldReleasePendingSeekPosition) — or after the safety timeout if the seek never
     // commits (error state). Keyed on the target: a new tap/drag restarts the effect with the
     // new value, and remember(mediaId) drops it on track changes.
-    // Phase 3.2 (R2): the convergence source is the player's LIVE position, not the gated poll
-    // cache `position()`: that cache freezes while the sheet content is inactive (active=false)
-    // — and converging on a frozen cache kept the hold alive until the 10 s safety timeout,
-    // chaining every subsequent skip tap from the stale value (field logs 2026-10-04). The
-    // player's own state is the release signal (RiMusic/Kreate check convergence against the
-    // player, never against a UI cache); the displayed value after release is re-anchored by
-    // positionAndDurationState's event writes (Phase 3.2 R1/R3).
+    // Phase 3.2 (R2): the convergence source is the player's LIVE position, not the poll
+    // cache `position()`: while that cache was gated on sheet visibility it could freeze on
+    // a stale value — and converging on a frozen cache kept the hold alive until the 10 s
+    // safety timeout, chaining every subsequent skip tap from the stale value (field logs
+    // 2026-10-04). The player's own state is the release signal (RiMusic/Kreate check
+    // convergence against the player, never against a UI cache); the displayed value after
+    // release is re-anchored by positionAndDurationState's event writes (Phase 3.2 R1; the
+    // poll itself has been ungated since Phase 3.3).
     // Invariant: the `position()` cache the bar renders from must be built from this SAME
     // player instance (every call site feeds it from this binder's player) — the hold is
     // released on the player's live position while the bar displays that cache.

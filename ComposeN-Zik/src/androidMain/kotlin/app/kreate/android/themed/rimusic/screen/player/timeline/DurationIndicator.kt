@@ -3,7 +3,6 @@ package app.kreate.android.themed.rimusic.screen.player.timeline
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
-import app.n_zik.android.components.PLAYER_SHEET_HANDOVER_PROGRESS
 import app.n_zik.android.components.player.durationOutlineColorOf
 import app.n_zik.android.components.player.displayedTimeRemainingOf
 
@@ -51,7 +50,6 @@ import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
 import timber.log.Timber
 import app.n_zik.android.typography
-import app.n_zik.android.LocalPlayerSheetState
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.DURATION_INDICATOR_HEIGHT
 import app.it.fast4x.rimusic.utils.formatAsDuration
@@ -248,11 +246,10 @@ fun DurationIndicator(
                                    .height( DURATION_INDICATOR_HEIGHT.dp ),
                 contentAlignment = Alignment.Center
             ) {
-                // The full player stays composed while hidden behind the
-                // mini-player; only poll position when its content is visible
-                // (0.45f = CustomBottomSheet hand-over threshold)
-                val positionAndDurationState =
-                    binder.player.positionAndDurationState(active = LocalPlayerSheetState.current.progress > PLAYER_SHEET_HANDOVER_PROGRESS)
+                // Issue #881 (gh-881), Phase 3.3: unconditional position poll — the previous
+                // visibility gate froze this cache whenever gate and visible UI disagreed
+                // (see positionAndDurationState KDoc in PlayerState.kt).
+                val positionAndDurationState = binder.player.positionAndDurationState()
                 val timeRemainingState = remember {
                     derivedStateOf {
                         timeRemainingOf(

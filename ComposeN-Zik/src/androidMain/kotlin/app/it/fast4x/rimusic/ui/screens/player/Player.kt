@@ -705,7 +705,10 @@ fun Player(
         ?: flowOf(null))
         .collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
 
-    val positionAndDurationState = binder.player.positionAndDurationState(playerUpdateTrigger, playerContentVisible)
+    // Issue #881 (gh-881), Phase 3.3: no visibility gate — the gated poll froze the bar
+    // whenever gate and visible UI disagreed (see positionAndDurationState KDoc in
+    // PlayerState.kt).
+    val positionAndDurationState = binder.player.positionAndDurationState(playerUpdateTrigger)
     val playbackState by binder.player.playbackStateState(playerUpdateTrigger)
     val isBuffering = playbackState == Player.STATE_BUFFERING
 

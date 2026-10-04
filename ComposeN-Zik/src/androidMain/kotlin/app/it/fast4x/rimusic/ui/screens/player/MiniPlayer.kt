@@ -162,7 +162,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import app.n_zik.android.core.coil.ImageCacheFactory
-import app.n_zik.android.components.PLAYER_SHEET_HANDOVER_PROGRESS
 import app.kreate.android.me.knighthat.sync.YouTubeSync
 import app.kreate.android.me.knighthat.utils.Toaster
 import kotlin.math.absoluteValue
@@ -415,10 +414,10 @@ fun MiniPlayer(
     // Get player sheet state for gesture handling
     val playerSheetState = LocalPlayerSheetState.current
 
-    // Live position updates are only needed while the mini-player is visible;
-    // once the deploy passes the hand-over threshold it fades out and the
-    // full player takes over the polling (see Player.kt)
-    val positionAndDurationState = binder.player.positionAndDurationState(playerUpdateTrigger, playerSheetState.progress < PLAYER_SHEET_HANDOVER_PROGRESS)
+    // Issue #881 (gh-881), Phase 3.3: unconditional position poll — the previous hand-over
+    // gate left the cache frozen whenever gate and visible UI disagreed (see
+    // positionAndDurationState KDoc in PlayerState.kt).
+    val positionAndDurationState = binder.player.positionAndDurationState(playerUpdateTrigger)
     val durationState = remember(positionAndDurationState) {
         derivedStateOf { positionAndDurationState.value.second }
     }

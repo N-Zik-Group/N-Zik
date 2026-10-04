@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import app.it.fast4x.rimusic.utils.POSITION_POLL_INTERVAL_MS
@@ -33,11 +34,14 @@ import org.robolectric.annotation.Config
  * No seek latch exists, so a seek that never delivers READY (the old latch's failure mode) is
  * modelled by simply moving the mocked position: it must reach the state.
  *
- * Phase 3.2 (R1/R3): the gated poll loop is only the base stream — the player's own events
- * (`onMediaItemTransition`, committed-seek `onPositionDiscontinuity`) re-anchor the cache
- * instantly, even while [positionAndDurationState] is inactive (screen-off / collapsed sheet),
- * and the visibility gate flip re-seeds the cache one-shot (Metrolist pattern). The listener
- * is captured via `slot` and driven directly in the tests below.
+ * Phase 3.2 (R1): the player's own events (`onMediaItemTransition`, committed-seek
+ * `onPositionDiscontinuity`) re-anchor the cache instantly, between poll ticks.
+ *
+ * Phase 3.3: the poll loop is unconditional — the sheet-visibility gate was removed because
+ * the field logs (2026-10-04, FURY, OPPO / Android 15) show the bar frozen on the last seek
+ * target for up to 5 s whenever gate and visible UI disagreed, while every healthy reference
+ * (RiPlay/Kreate/RiMusic/Metrolist) polls regardless of sheet visibility. The listener is
+ * captured via `slot` and driven directly in the tests below.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
@@ -60,10 +64,10 @@ class PositionAndDurationStateTest {
     @After
     fun tearDown() = unmockkAll()
 
-    private fun content(active: () -> Boolean = { true }) {
+    private fun content() {
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            state = player.positionAndDurationState(active = active())
+            state = player.positionAndDurationState()
         }
     }
 
@@ -90,18 +94,44 @@ class PositionAndDurationStateTest {
     }
 
     @Test
-    fun `does not write while inactive`() {
-        content(active = { false })
-
-        livePosition = 99_000L
-        tick()
-
+    fun `the cache follows live playback unconditionally - no visibility gate`() {
+        // Phase 3.3 (gh-881): documents the ungated helper contract — the poll follows the
+        // live position on every tick. The gate's absence is enforced at compile time by the
+        // removed parameter; the call-site removal is pinned at the GetSeekBar level by
+        // GetSeekBarPendingSeekTargetTest (collapsed-sheet pause-between-songs trigger).
+        content()
         assertEquals(53_795L to 241_661L, state.value)
+
+        livePosition = 54_000L
+        tick()
+        assertEquals(54_000L to 241_661L, state.value)
+
+        livePosition = 55_000L
+        tick()
+        assertEquals(55_000L to 241_661L, state.value)
+    }
+
+    @Test
+    fun `the poll keeps the cached duration while the player duration is unset`() {
+        // Phase 3.3 review (P1): while a stream is resolving after a track change the
+        // player's duration is C.TIME_UNSET — the poll must keep the cached duration instead
+        // of clobbering it (Metrolist's guard), then converge once the real duration is known.
+        content()
+        assertEquals(53_795L to 241_661L, state.value)
+
+        livePosition = 2_976L
+        liveDuration = C.TIME_UNSET
+        tick()
+        assertEquals(2_976L to 241_661L, state.value)
+
+        liveDuration = 247_441L
+        tick()
+        assertEquals(2_976L to 247_441L, state.value)
     }
 
     // Phase 3.2 (R1): capture the listener the composable registers on the player and drive
-    // it directly — the field scenario is an event that fires while the sheet is INACTIVE
-    // (screen off / collapsed), where the gated poll loop writes nothing.
+    // it directly — no clock advance below, so the asserted value can only have been written
+    // by the event, not by a poll tick.
     private val listenerSlot = slot<Player.Listener>()
 
     // media3 1.10.1 Player.PositionInfo has no simple (position, duration) constructor — the
@@ -110,13 +140,13 @@ class PositionAndDurationStateTest {
         Player.PositionInfo(null, 0, null, 0, positionMs, positionMs, 0, 1)
 
     @Test
-    fun `a media item transition re-anchors the cache while the sheet is inactive`() {
+    fun `a media item transition re-anchors the cache instantly - no poll tick needed`() {
         every { player.addListener(capture(listenerSlot)) } just Runs
-        content(active = { false })
+        content()
 
-        // Track change while the screen is off (field log scenario): the player is now on the
-        // new track at 2_976 ms, while the cached position is still the previous track's
-        // 53_795 ms.
+        // Track change (field log scenario: it happens across screen off/on + background
+        // cycles): the player is now on the new track at 2_976 ms, while the cached position
+        // is still the previous track's 53_795 ms.
         livePosition = 2_976L
         liveDuration = 247_441L
         listenerSlot.captured.onMediaItemTransition(
@@ -124,18 +154,18 @@ class PositionAndDurationStateTest {
             Player.MEDIA_ITEM_TRANSITION_REASON_SEEK,
         )
 
-        // R1: the event write lands even though active=false. RiMusic keeps the previously
+        // R1: the event write lands before the next poll tick. RiMusic keeps the previously
         // cached duration so the slider range does not jump while the stream resolves.
         assertEquals(2_976L to 241_661L, state.value)
     }
 
     @Test
-    fun `a committed seek re-anchors the cache while the sheet is inactive`() {
+    fun `a committed seek re-anchors the cache instantly - no poll tick needed`() {
         every { player.addListener(capture(listenerSlot)) } just Runs
-        content(active = { false })
+        content()
 
         // ExoPlayer commits the seek to 56_030 ms and fires the SEEK discontinuity — the
-        // cache must follow immediately, not wait for the next gated poll tick. The live
+        // cache must follow immediately, not wait for the next poll tick. The live
         // duration follows as well (metadata can arrive with the commit), unlike the
         // transition write which deliberately keeps the previously cached duration.
         livePosition = 56_030L
@@ -152,7 +182,7 @@ class PositionAndDurationStateTest {
     @Test
     fun `non-seek discontinuities do not re-anchor the cache`() {
         every { player.addListener(capture(listenerSlot)) } just Runs
-        content(active = { false })
+        content()
 
         // A REMOVE discontinuity (queue change handled elsewhere) is not a seek: the cache
         // must not be rewritten from a position that does not correspond to a seek commit.
@@ -167,58 +197,15 @@ class PositionAndDurationStateTest {
     }
 
     @Test
-    fun `the cache re-seeds live when the visibility gate flips to active`() {
-        // Phase 3.2 (R3): Metrolist's one-shot re-sync — the cache is written from the live
-        // player as soon as the gate flips, before the poll loop's first 100 ms tick.
-        // Harness note (measured): under the manual clock a snapshot flip recomposes on the
-        // SECOND clock advance — the flip is therefore pumped with two short advances below
-        // (total 60 ms stays below the poll loop's 100 ms first tick).
-        val active = mutableStateOf(false)
-        content(active = { active.value })
-
-        livePosition = 99_000L
-        active.value = true
-        // Two short advances (measured: the snapshot-flip recomposition lands on the second
-        // clock advance in this harness); total 60 ms stays below the poll loop's 100 ms
-        // first tick, so only the one-shot re-seed can have produced the value.
-        composeRule.mainClock.advanceTimeBy(30)
-        composeRule.waitForIdle()
-        composeRule.mainClock.advanceTimeBy(30)
-        composeRule.waitForIdle()
-
-        assertEquals(99_000L to 241_661L, state.value)
-    }
-
-    @Test
-    fun `a media item transition re-anchors the cache while the sheet is active`() {
-        // Phase 3.2 review patch: the event writes are unconditional — the R1 contract is
-        // pinned for active=false above; pin the active=true half too, so a regression that
-        // gates the event writes on visibility fails.
-        every { player.addListener(capture(listenerSlot)) } just Runs
-        content(active = { true })
-
-        livePosition = 2_976L
-        liveDuration = 247_441L
-        listenerSlot.captured.onMediaItemTransition(
-            MediaItem.Builder().setMediaId("newTrack").build(),
-            Player.MEDIA_ITEM_TRANSITION_REASON_SEEK,
-        )
-
-        // No clock advance: whatever the poll loop did at composition it only ever saw the
-        // old position — the asserted value can only have been written by the event.
-        assertEquals(2_976L to 241_661L, state.value)
-    }
-
-    @Test
     fun `the cache re-seeds live when the player instance changes`() {
-        // Phase 3.2 review patch: LaunchedEffect(this, active) also re-seeds on a player
-        // swap (production crossfade: playerUpdateTrigger bump + new player object) — only
-        // the gate flip was pinned before. With the sheet inactive the poll loop is gated,
-        // so only the one-shot re-seed can have produced the new player's values.
+        // Phase 3.3 (gh-881): on a player swap (production crossfade: playerUpdateTrigger
+        // bump + new player object) the poll effect restarts — its immediate first write
+        // re-seeds the cache from the new player's live values (this replaces the Phase 3.2
+        // one-shot re-seed, which only existed to cover the now-removed visibility gate).
         val playerState = mutableStateOf(player)
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            state = playerState.value.positionAndDurationState(active = false)
+            state = playerState.value.positionAndDurationState()
         }
         composeRule.waitForIdle()
 
@@ -248,7 +235,7 @@ class PositionAndDurationStateTest {
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
             if (show.value) {
-                state = player.positionAndDurationState(active = true)
+                state = player.positionAndDurationState()
             }
         }
         composeRule.waitForIdle()
