@@ -29,6 +29,7 @@ class PlayerStateReaderTest {
         count: Int = ids.size,
         durationMs: Long = C.TIME_UNSET,
         explicitExtra: Boolean? = null,
+        playbackState: Int = Player.STATE_READY,
     ): Player {
         val timeline = mockk<Timeline>()
         every { timeline.windowCount } returns count
@@ -60,6 +61,7 @@ class PlayerStateReaderTest {
             }
             every { currentMediaItemIndex } returns current
             every { isPlaying } returns true
+            every { this@mockk.playbackState } returns playbackState
             every { playbackParameters } returns PlaybackParameters(1.5f)
             every { currentPosition } returns 42_000L
             every { duration } returns durationMs
@@ -154,5 +156,32 @@ class PlayerStateReaderTest {
         val read = PlayerStateReader.read(player(current = 0), 0L)
 
         assertFalse(read.items.any { it.isExplicitExtra })
+    }
+
+    @Test
+    fun `the buffering state is read from the player`() {
+        val read = PlayerStateReader.read(player(current = 0, playbackState = Player.STATE_BUFFERING), 0L)
+
+        assertTrue(read.sample.isBuffering)
+    }
+
+    @Test
+    fun `a ready or idle player is not buffering`() {
+        assertFalse(PlayerStateReader.read(player(current = 0, playbackState = Player.STATE_READY), 0L).sample.isBuffering)
+        assertFalse(PlayerStateReader.read(player(current = 0, playbackState = Player.STATE_IDLE), 0L).sample.isBuffering)
+    }
+
+    @Test
+    fun `the sample carries the player's live duration`() {
+        val read = PlayerStateReader.read(player(current = 0, durationMs = 212_000L), 0L)
+
+        assertEquals(212_000L, read.sample.durationMs)
+    }
+
+    @Test
+    fun `an unknown player duration reads as TIME_UNSET on the sample`() {
+        val read = PlayerStateReader.read(player(current = 0), 0L)
+
+        assertEquals(C.TIME_UNSET, read.sample.durationMs)
     }
 }

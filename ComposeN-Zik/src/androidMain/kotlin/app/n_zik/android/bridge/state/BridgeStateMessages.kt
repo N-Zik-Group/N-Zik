@@ -1,5 +1,6 @@
 package app.n_zik.android.bridge.state
 
+import androidx.media3.common.C
 import app.n_zik.android.bridge.AudioOutput
 import app.n_zik.android.bridge.BridgeContract
 import app.n_zik.android.bridge.BridgeJson
@@ -57,6 +58,10 @@ internal data class SnapshotMessage(
     val currentIndex: Int,
     val currentTrackId: String?,
     val isPlaying: Boolean,
+    /** Since 1.4 (contract §7.1): buffering (loading a track, or rebuffering while playing). */
+    val isBuffering: Boolean = false,
+    /** Since 1.5 (contract §7.1): the player's live duration, [C.TIME_UNSET] while it is not known yet. */
+    val durationMs: Long = C.TIME_UNSET,
     val speed: Float,
     val positionMs: Long,
     val repeatMode: RepeatModeDto,
@@ -74,6 +79,10 @@ internal data class PlaybackChangedMessage(
     override val revision: Long,
     val serverTimeMs: Long,
     val isPlaying: Boolean,
+    /** Since 1.4 (contract §7.2). */
+    val isBuffering: Boolean = false,
+    /** Since 1.5 (contract §7.2): the player's live duration, [C.TIME_UNSET] while it is not known yet. */
+    val durationMs: Long = C.TIME_UNSET,
     val speed: Float,
     val positionMs: Long,
 ) : DeltaMessage
@@ -87,6 +96,10 @@ internal data class TrackChangedMessage(
     val currentTrackId: String?,
     val positionMs: Long,
     val isPlaying: Boolean,
+    /** Since 1.4 (contract §7.2): a new track loads, so the buffering state travels with the change. */
+    val isBuffering: Boolean = false,
+    /** Since 1.5 (contract §7.2): a new track loads, so the live duration (reset to [C.TIME_UNSET]) travels with it. */
+    val durationMs: Long = C.TIME_UNSET,
 ) : DeltaMessage
 
 @Serializable

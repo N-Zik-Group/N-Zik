@@ -12,6 +12,15 @@ import app.n_zik.android.bridge.AudioOutput
  * Deltas, snapshots and heartbeats reach the subscribers under a single lock, so a
  * subscriber always sees its snapshot at revision `r` followed by the deltas `r + 1`,
  * `r + 2`… and a heartbeat never overtakes the delta it reports. [Sink]s must not block.
+ *
+ * Since 1.4: [PlayerSample.isBuffering] travels with `trackChanged` (a new track loads) and
+ * a change of it alone emits a `playbackChanged` — a play after a pause enters buffering
+ * with `isPlaying` still `false`, so the ring must not wait for the playback state change.
+ *
+ * Since 1.5: [PlayerSample.durationMs] (the player's live duration) travels with `trackChanged`
+ * (a new track resets it to `C.TIME_UNSET`) and a change of it alone emits a `playbackChanged` —
+ * a loaded track goes from `C.TIME_UNSET` to its duration, the moment the phone's bar switches
+ * from the indeterminate line to the seek bar.
  */
 internal class BridgeStateHub(private val clock: () -> Long = System::currentTimeMillis) {
 
@@ -55,13 +64,24 @@ internal class BridgeStateHub(private val clock: () -> Long = System::currentTim
                 (!queueChanged && sample.currentIndex != previous.currentIndex) ||
                 transition
             if (trackChanged) {
-                deltas += TrackChangedMessage(++revision, now, sample.currentIndex, sample.currentTrackId, position, sample.isPlaying)
+                deltas += TrackChangedMessage(
+                    ++revision,
+                    now,
+                    sample.currentIndex,
+                    sample.currentTrackId,
+                    position,
+                    sample.isPlaying,
+                    sample.isBuffering,
+                    sample.durationMs,
+                )
             }
-            // trackChanged already carries the position and the playing state
+            // trackChanged already carries the position and the playing state; a buffering-only
+            // change (since 1.4) or a duration-only change (since 1.5) still makes a playbackChanged
             val playbackChanged = sample.speed != previous.speed ||
-                (!trackChanged && (sample.isPlaying != previous.isPlaying || seek))
+                (!trackChanged && (sample.isPlaying != previous.isPlaying || sample.isBuffering != previous.isBuffering ||
+                    sample.durationMs != previous.durationMs || seek))
             if (playbackChanged) {
-                deltas += PlaybackChangedMessage(++revision, now, sample.isPlaying, sample.speed, position)
+                deltas += PlaybackChangedMessage(++revision, now, sample.isPlaying, sample.isBuffering, sample.durationMs, sample.speed, position)
             }
             if (sample.repeatMode != previous.repeatMode || sample.shuffle != previous.shuffle) {
                 deltas += ModesChangedMessage(++revision, now, sample.repeatMode, sample.shuffle)
@@ -116,6 +136,8 @@ internal class BridgeStateHub(private val clock: () -> Long = System::currentTim
             currentIndex = sample.currentIndex,
             currentTrackId = sample.currentTrackId,
             isPlaying = sample.isPlaying,
+            isBuffering = sample.isBuffering,
+            durationMs = sample.durationMs,
             speed = sample.speed,
             positionMs = positionAt(sample, now),
             repeatMode = sample.repeatMode,

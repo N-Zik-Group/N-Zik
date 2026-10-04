@@ -61,6 +61,10 @@ internal object PlayerStateReader {
             currentIndex = currentIndex,
             currentTrackId = items.getOrNull(currentIndex)?.trackId,
             isPlaying = items.isNotEmpty() && player.isPlaying,
+            // Same expression as the phone's player UI (`MiniPlayer.kt` 255, `Player.kt` 710)
+            isBuffering = player.playbackState == Player.STATE_BUFFERING,
+            // The player's live duration (contract 1.5): the phone's bar shows `--:--` until it is known
+            durationMs = player.duration,
             speed = player.playbackParameters.speed,
             positionMs = if (items.isEmpty()) 0L else player.currentPosition.coerceAtLeast(0L),
             sampledAtMs = sampledAtMs,

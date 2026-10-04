@@ -1,5 +1,6 @@
 package app.n_zik.android.bridge.state
 
+import androidx.media3.common.C
 import app.n_zik.android.bridge.AudioOutput
 import app.n_zik.android.bridge.BridgeJson
 import kotlinx.serialization.json.boolean
@@ -9,6 +10,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -154,6 +156,57 @@ class BridgeStateHubTest {
     }
 
     @Test
+    fun `a buffering-only change produces a playbackChanged with the flag`() {
+        // A play after a pause enters buffering with isPlaying still false (contract 1.4)
+        hub.submit(playingSample.copy(isPlaying = false))
+
+        val deltas = hub.submit(playingSample.copy(isPlaying = false, isBuffering = true))
+
+        val delta = deltas.single() as PlaybackChangedMessage
+        assertEquals(listOf("PlaybackChangedMessage"), types(deltas))
+        assertTrue(delta.isBuffering)
+        assertFalse(delta.isPlaying)
+    }
+
+    @Test
+    fun `a duration-only change produces a playbackChanged with the live duration`() {
+        // A track finishes loading: the player's duration goes from TIME_UNSET to its value (contract 1.5)
+        hub.submit(playingSample)
+
+        val deltas = hub.submit(playingSample.copy(durationMs = 212_000L))
+
+        val delta = deltas.single() as PlaybackChangedMessage
+        assertEquals(listOf("PlaybackChangedMessage"), types(deltas))
+        assertEquals(212_000L, delta.durationMs)
+    }
+
+    @Test
+    fun `trackChanged carries the live duration of the new track`() {
+        hub.submit(playingSample)
+
+        val deltas = hub.submit(
+            playingSample.copy(isPlaying = false, currentIndex = 1, currentTrackId = "bbbbbbbbbbb", durationMs = 180_000L),
+        )
+
+        val delta = deltas.single() as TrackChangedMessage
+        assertEquals(listOf("TrackChangedMessage"), types(deltas))
+        assertEquals(180_000L, delta.durationMs)
+    }
+
+    @Test
+    fun `trackChanged carries the buffering state of the new track`() {
+        hub.submit(playingSample)
+
+        val deltas = hub.submit(
+            playingSample.copy(isPlaying = false, isBuffering = true, currentIndex = 1, currentTrackId = "bbbbbbbbbbb"),
+        )
+
+        val delta = deltas.single() as TrackChangedMessage
+        assertEquals(listOf("TrackChangedMessage"), types(deltas))
+        assertTrue(delta.isBuffering)
+    }
+
+    @Test
     fun `snapshot and heartbeat extrapolate the position to serverTimeMs`() {
         hub.submit(playingSample.copy(speed = 2f))
         val revision = hub.currentRevision
@@ -222,7 +275,12 @@ class BridgeStateHubTest {
         assertEquals("playbackChanged", delta["type"]?.jsonPrimitive?.content)
         assertEquals(3L, delta["revision"]?.jsonPrimitive?.long)
         assertEquals(false, delta["isPlaying"]?.jsonPrimitive?.boolean)
-        assertEquals(setOf("type", "revision", "serverTimeMs", "isPlaying", "speed", "positionMs"), delta.keys)
+        assertEquals(false, delta["isBuffering"]?.jsonPrimitive?.boolean)
+        assertEquals(C.TIME_UNSET, delta["durationMs"]?.jsonPrimitive?.long)
+        assertEquals(
+            setOf("type", "revision", "serverTimeMs", "isPlaying", "isBuffering", "durationMs", "speed", "positionMs"),
+            delta.keys,
+        )
 
         val heartbeat = BridgeJson.parseToJsonElement(encodeServerMessage(hub.heartbeat())).jsonObject
         assertEquals("heartbeat", heartbeat["type"]?.jsonPrimitive?.content)
