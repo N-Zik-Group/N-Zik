@@ -170,6 +170,8 @@ object BridgeServerController {
         commandExecutor: BridgeCommandExecutor = BridgeCommandExecutor.UNAVAILABLE,
         libraryProvider: LibraryProvider = LibraryProvider.EMPTY,
         audioLibrary: AudioLibrary = AudioLibrary.EMPTY,
+        /** The phone's effective UI language served by `meta` (contract §5, `ui.language`, since 1.9.0). */
+        uiLanguage: () -> String? = { null },
         /** Called after each session end: the audio output fallback (contract §6.2). */
         onSessionEnded: suspend () -> Unit = {},
         /** Called once a session becomes active: the audio output handoff to the PC (contract §8.5, since 1.3). */
@@ -192,6 +194,7 @@ object BridgeServerController {
             onCommandAccepted = { _commandTicks.tryEmit(Unit) },
             onSessionEnded = onSessionEnded,
             onSessionClaimed = onSessionClaimed,
+            uiLanguage = uiLanguage,
         )
         return core
     }

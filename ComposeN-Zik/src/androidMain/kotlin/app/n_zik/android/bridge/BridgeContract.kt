@@ -13,7 +13,7 @@ import kotlinx.serialization.json.Json
  * Every literal that travels on the wire lives here.
  */
 internal object BridgeContract {
-    const val CONTRACT_VERSION = "1.8.0"
+    const val CONTRACT_VERSION = "1.9.0"
     const val API_PREFIX = "/api/v1"
 
     /** Port 42420, then 42421–42429, then an OS-assigned ephemeral port (contract §11.1). */
@@ -85,6 +85,8 @@ internal object BridgeContract {
             "audio",
             "audio.output",
             "ws.state",
+            // Since 1.9.0: the phone's effective UI language in the `meta` answer
+            "ui.language",
         )
 
     /** Pagination bounds (contract §1, §14). */
@@ -181,6 +183,12 @@ internal data class MetaResponse(
     val serverName: String,
     val serverTimeMs: Long,
     val features: List<String>,
+    /**
+     * Since 1.9.0 (contract §5, `ui.language`): the phone's effective UI language as a BCP-47
+     * tag (its chosen language's code, or its resolved OS locale on `System`); `null` when it
+     * cannot be determined.
+     */
+    val language: String? = null,
 )
 
 @Serializable

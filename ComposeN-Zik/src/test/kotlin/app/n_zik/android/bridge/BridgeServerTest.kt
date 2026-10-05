@@ -88,9 +88,11 @@ class BridgeServerTest {
 
         assertEquals(HttpStatusCode.OK, response.status)
         val json = BridgeJson.parseToJsonElement(response.bodyAsText()).jsonObject
-        assertEquals("1.8.0", json["contractVersion"]?.jsonPrimitive?.content)
+        assertEquals("1.9.0", json["contractVersion"]?.jsonPrimitive?.content)
         assertEquals("Pixel test", json["serverName"]?.jsonPrimitive?.content)
         assertEquals(1_790_000_000_000L, json["serverTimeMs"]?.jsonPrimitive?.long)
+        // Since 1.9.0: the phone's effective UI language — `null` without a phone behind the server
+        assertEquals(JsonNull, json["language"])
         assertEquals(
             listOf(
                 "pairing.qr",
@@ -117,9 +119,32 @@ class BridgeServerTest {
                 "audio",
                 "audio.output",
                 "ws.state",
+                // Since 1.9.0: the phone's effective UI language in the `meta` answer
+                "ui.language",
             ),
             json["features"]?.jsonArray?.map { it.jsonPrimitive.content },
         )
+    }
+
+    @Test
+    fun `meta carries the effective language of the injected provider`() = testApplication {
+        mount(BridgeServerCore(serverName = "Pixel test", uiLanguage = { "fr" }))
+
+        val response = client.get("/api/v1/meta")
+
+        val json = BridgeJson.parseToJsonElement(response.bodyAsText()).jsonObject
+        assertEquals("fr", json["language"]?.jsonPrimitive?.content)
+        assertTrue("ui.language" in json["features"]?.jsonArray?.map { it.jsonPrimitive.content }.orEmpty())
+    }
+
+    @Test
+    fun `meta carries an explicit language with its regional code`() = testApplication {
+        mount(BridgeServerCore(serverName = "Pixel test", uiLanguage = { "pt-BR" }))
+
+        val response = client.get("/api/v1/meta")
+
+        val json = BridgeJson.parseToJsonElement(response.bodyAsText()).jsonObject
+        assertEquals("pt-BR", json["language"]?.jsonPrimitive?.content)
     }
 
     @Test

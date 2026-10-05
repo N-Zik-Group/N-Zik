@@ -155,6 +155,11 @@ internal class BridgeServerCore(
      * claim, including the same device replacing its own session.
      */
     private val onSessionClaimed: () -> Unit = {},
+    /**
+     * The phone's effective UI language for the `meta` answer (contract §5, `ui.language`,
+     * since 1.9.0), read on every `meta` request; `null` when it cannot be determined.
+     */
+    private val uiLanguage: () -> String? = { null },
 ) {
     private val stopping = AtomicBoolean(false)
 
@@ -245,6 +250,8 @@ internal class BridgeServerCore(
                             serverTimeMs = clock(),
                             // Each later story adds its identifier once its routes exist
                             features = BridgeContract.FEATURES,
+                            // Contract §5 (since 1.9.0, `ui.language`): the phone's effective UI language
+                            language = uiLanguage(),
                         )
                     )
                 }

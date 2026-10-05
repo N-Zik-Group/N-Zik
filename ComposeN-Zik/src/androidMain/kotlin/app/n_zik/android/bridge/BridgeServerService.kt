@@ -156,6 +156,9 @@ class BridgeServerService : Service() {
             commandExecutor = executor,
             libraryProvider = DatabaseLibraryProvider(this, mediaCacheSpace = source::mediaCacheSpace),
             audioLibrary = PhoneAudioLibrary(this),
+            // Contract §5 (since 1.9.0, `ui.language`): the phone's effective UI language, read on
+            // every `meta` request (the mirror of the language the phone's UI shows)
+            uiLanguage = { BridgeUiLanguage.effective(this.applicationContext) },
             onSessionEnded = audioOutputs::fallback,
             // Contract §8.5 (since 1.3): as soon as a session is active, the audio sounds on the PC
             onSessionClaimed = { scope.launch { audioOutputs.select(AudioOutput.PC) } },
