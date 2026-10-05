@@ -34,6 +34,8 @@ import app.it.fast4x.rimusic.models.SongArtistMap
 import app.it.fast4x.rimusic.models.SongPlaylistMap
 import app.it.fast4x.rimusic.models.SortedSongPlaylistMap
 import app.it.fast4x.rimusic.utils.asSong
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -50,6 +52,7 @@ import app.n_zik.android.core.database.SongAlbumMapTable
 import app.n_zik.android.core.database.SongArtistMapTable
 import app.n_zik.android.core.database.SongPlaylistMapTable
 import app.n_zik.android.core.database.SongTable
+import java.lang.reflect.Proxy
 import app.n_zik.android.core.database.migration.From10To11Migration
 import app.n_zik.android.core.database.migration.From11To12Migration
 import app.n_zik.android.core.database.migration.From14To15Migration
@@ -104,30 +107,186 @@ object Database {
     private val _internal: DatabaseInitializer
         get() = DatabaseInitializer.Instance
 
+    //**********************************************
+    // Contract §10.3 (bridge, since 1.7.3, feature `library.live`): the library DAOs below are
+    // transparent proxies that notify [libraryWriteNotifier] with the changed entity per write,
+    // whatever the origin (the phone's own UI, the client's §10.2 writes, the imports, the play
+    // counters). The album/artist map tables are wrapped too: the client-visible `trackCount` of
+    // an album or artist is derived from their rows, and a standalone map write (a song matched
+    // to an album during playback, an unmatch, a redirect) changes it without touching the main
+    // table. The other DAOs (queue, lyrics, search, import) are left unwrapped: the queue already
+    // has its `queueChanged` delta and the rest is not library listings (§10.3).
+
+    /**
+     * Contract §10.3 (since 1.7.3, feature `library.live`): invoked with the changed entity —
+     * `"songs"`, `"albums"`, `"artists"` or `"playlists"` — per write to a library table.
+     * `null` while no bridge listener is active; the proxies only perform this null check.
+     */
+    @Volatile
+    var libraryWriteNotifier: ((kinds: List<String>) -> Unit)? = null
+
+    /** The changed entity per wrapped library DAO (contract §10.3 `kind`); exposed for tests. */
+    internal val libraryTableKinds: Map<Class<*>, List<String>> = mapOf(
+        SongTable::class.java to listOf("songs"),
+        AlbumTable::class.java to listOf("albums"),
+        ArtistTable::class.java to listOf("artists"),
+        PlaylistTable::class.java to listOf("playlists"),
+        FormatTable::class.java to listOf("songs"),
+        // "songs" too: the open playlist's track list is a songs-family detail list
+        SongPlaylistMapTable::class.java to listOf("playlists", "songs"),
+        SongAlbumMapTable::class.java to listOf("albums"),
+        SongArtistMapTable::class.java to listOf("artists"),
+        EventTable::class.java to listOf("songs", "artists", "albums"),
+    )
+
+    /**
+     * The write methods per library DAO: a call to a name in the set emits, a Flow-returning
+     * method never does (writes don't return Flows; the `likeState(id)`-style Flow reads share
+     * a name with their write overloads). Exposed for tests.
+     */
+    internal val libraryTableWrites: Map<Class<*>, Set<String>> = mapOf(
+        SongTable::class.java to setOf(
+            "insertIgnore", "updateReplace", "updateId", "upsert", "delete",
+            "rotateLikeState", "clearAllDisliked", "toggleDislike", "toggleLike", "likeState",
+            "updateTitle", "updateCover", "updateCoverForAlbum", "updatePosition",
+            "updateArtists", "updateTotalPlayTime", "deleteByIds", "deleteAll",
+            "unlikeByIds", "unlikeAll", "resetPlayTimeByIds", "clearHiddenSongs",
+        ),
+        AlbumTable::class.java to setOf(
+            "insertIgnore", "updateReplace", "upsert", "updateMetadata", "insertMetadata",
+            "toggleBookmark", "bookmarkState", "likeState", "rotateLikeState", "resetFetchTtl",
+            "toggleDislike", "clearAllDisliked", "updateCover", "updateAuthors", "updateTitle",
+            "updatePosition", "deleteOrphaned", "deleteById",
+        ),
+        ArtistTable::class.java to setOf(
+            "insertIgnore", "upsert", "updateMetadata", "insertMetadata", "update",
+            "toggleFollow", "followState", "rotateLikeState", "resetFetchTtl", "toggleBookmark",
+            "toggleDislike", "clearAllDisliked", "updatePosition", "deleteOrphaned", "deleteById",
+        ),
+        PlaylistTable::class.java to setOf(
+            "insert", "insertIgnore", "upsert", "update", "delete",
+            "togglePin", "pinState", "toggleAutoSync", "updatePosition", "updateBrowseId",
+        ),
+        FormatTable::class.java to setOf(
+            "deleteBySongId", "insertIgnore", "upsert", "updateContentLengthOf", "updateDownloadQuality",
+        ),
+        SongPlaylistMapTable::class.java to setOf(
+            "deleteBySongId", "clear", "clearGhostMaps", "updateReplace", "shufflePositions",
+            "move", "updatePosition", "map", "mapAtPosition", "updateSongId",
+        ),
+        SongAlbumMapTable::class.java to setOf(
+            "upsert", "clear", "clearGhostMaps", "map",
+            "clearConflictingPairs", "updateSongId", "updateAlbumId", "deleteBySongId",
+        ),
+        SongArtistMapTable::class.java to setOf(
+            "insertIgnore", "clearGhostMaps", "clearConflictingPairs", "updateSongId",
+            "updateArtistId", "dropLinksAlreadyOn", "deleteBySongId", "deletePairDirect",
+        ),
+        EventTable::class.java to setOf(
+            "insertIgnore", "deleteAll", "updateSongId", "deleteBySongIds", "deleteBySongId",
+        ),
+    )
+
+    /**
+     * Wraps [dao] in a transparent proxy: every call is delegated unchanged, and a call to a
+     * write method (a name in [writes] that doesn't return a Flow) additionally notifies
+     * [libraryWriteNotifier] with [kinds]. Both default to the table's own map entries.
+     *
+     * A `suspend` write (its caller's hidden `Continuation` is the last argument) notifies when
+     * the write actually completes: the bare `invoke` returns `COROUTINE_SUSPENDED` before the
+     * SQL has run, and a notification there would let the client's re-read observe the pre-write
+     * state. A failed (or cancelled) write changed nothing and notifies nothing.
+     */
+    internal fun <T : Any> libraryWrites(
+        dao: T,
+        daoClass: Class<T>,
+        kinds: List<String> = libraryTableKinds[daoClass].orEmpty(),
+        writes: Set<String> = libraryTableWrites[daoClass].orEmpty(),
+    ): T {
+        @Suppress("UNCHECKED_CAST")
+        return Proxy.newProxyInstance(daoClass.classLoader, arrayOf(daoClass)) { _, method, args ->
+            val isWrite = method.name in writes && method.returnType != Flow::class.java
+            val continuation = if (isWrite && args != null && args.isNotEmpty()) args.last() as? Continuation<Any?> else null
+            if (continuation != null) {
+                method.invoke(
+                    dao,
+                    *args.copyOf(args.size - 1),
+                    object : Continuation<Any?> {
+                        override val context: CoroutineContext get() = continuation.context
+                        override fun resumeWith(result: Result<Any?>) {
+                            if (result.isSuccess) runCatching { libraryWriteNotifier?.invoke(kinds) }
+                            continuation.resumeWith(result)
+                        }
+                    },
+                )
+            } else {
+                // `args` is nullable (a no-arg call passes `null`), and a nullable array is not
+                // spread into the vararg by Kotlin: pass it explicitly, or `invoke` sees one array
+                val result = if (args == null) method.invoke(dao) else method.invoke(dao, *args)
+                if (isWrite) runCatching { libraryWriteNotifier?.invoke(kinds) }
+                result
+            }
+        } as T
+    }
+
+    /**
+     * One library DAO behind its write proxy, following the underlying instance: in production
+     * the Room DAO is process-stable (one proxy), and a test that swaps [DatabaseInitializer.Instance]
+     * for a fresh in-memory database gets a fresh proxy — a stale DAO (of a closed database) is
+     * never called.
+     */
+    private class TrackedDao<T : Any>(
+        private val dao: () -> T,
+        private val daoClass: Class<T>,
+    ) {
+        private var underlying: Any? = null
+        private var wrapped: Any? = null
+
+        @Suppress("UNCHECKED_CAST")
+        fun get(): T {
+            val current = dao()
+            val cached = wrapped
+            if (cached !== null && underlying === current) return cached as T
+            val proxy = libraryWrites(current, daoClass)
+            underlying = current
+            wrapped = proxy
+            return proxy
+        }
+    }
+
+    private val songTableDao = TrackedDao({ _internal.songTable }, SongTable::class.java)
     val songTable: SongTable
-        get() = _internal.songTable
+        get() = songTableDao.get()
+    private val albumTableDao = TrackedDao({ _internal.albumTable }, AlbumTable::class.java)
     val albumTable: AlbumTable
-        get() = _internal.albumTable
+        get() = albumTableDao.get()
+    private val artistTableDao = TrackedDao({ _internal.artistTable }, ArtistTable::class.java)
     val artistTable: ArtistTable
-        get() = _internal.artistTable
+        get() = artistTableDao.get()
+    private val eventTableDao = TrackedDao({ _internal.eventTable }, EventTable::class.java)
     val eventTable: EventTable
-        get() = _internal.eventTable
+        get() = eventTableDao.get()
+    private val formatTableDao = TrackedDao({ _internal.formatTable }, FormatTable::class.java)
     val formatTable: FormatTable
-        get() = _internal.formatTable
+        get() = formatTableDao.get()
     val lyricsTable: LyricsTable
         get() = _internal.lyricsTable
+    private val playlistTableDao = TrackedDao({ _internal.playlistTable }, PlaylistTable::class.java)
     val playlistTable: PlaylistTable
-        get() = _internal.playlistTable
+        get() = playlistTableDao.get()
     val queueTable: QueuedMediaItemTable
         get() = _internal.queueTable
     val searchTable: SearchQueryTable
         get() = _internal.searchQueryTable
+    private val songAlbumMapTableDao = TrackedDao({ _internal.songAlbumMapTable }, SongAlbumMapTable::class.java)
     val songAlbumMapTable: SongAlbumMapTable
-        get() = _internal.songAlbumMapTable
+        get() = songAlbumMapTableDao.get()
+    private val songArtistMapTableDao = TrackedDao({ _internal.songArtistMapTable }, SongArtistMapTable::class.java)
     val songArtistMapTable: SongArtistMapTable
-        get() = _internal.songArtistMapTable
+        get() = songArtistMapTableDao.get()
+    private val songPlaylistMapTableDao = TrackedDao({ _internal.songPlaylistMapTable }, SongPlaylistMapTable::class.java)
     val songPlaylistMapTable: SongPlaylistMapTable
-        get() = _internal.songPlaylistMapTable
+        get() = songPlaylistMapTableDao.get()
     val importSongTable: ImportSongTable
         get() = _internal.importSongTable
 

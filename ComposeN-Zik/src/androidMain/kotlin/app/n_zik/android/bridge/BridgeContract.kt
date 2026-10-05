@@ -13,7 +13,7 @@ import kotlinx.serialization.json.Json
  * Every literal that travels on the wire lives here.
  */
 internal object BridgeContract {
-    const val CONTRACT_VERSION = "1.7"
+    const val CONTRACT_VERSION = "1.7.3"
     const val API_PREFIX = "/api/v1"
 
     /** Port 42420, then 42421–42429, then an OS-assigned ephemeral port (contract §11.1). */
@@ -78,6 +78,8 @@ internal object BridgeContract {
     ) +
         (if (BuildConfig.ENABLE_FFMPEG) listOf("library.ffmpeg") else emptyList()) +
         listOf(
+            "library.sortMenu",
+            "library.live",
             "artwork",
             "audio",
             "audio.output",
@@ -317,6 +319,12 @@ internal data class Page<T>(
      * duration), `0` on every other route.
      */
     val totalDurationMs: Long = 0L,
+    /**
+     * Since 1.7.3 (contract §10.1): the effective content of the phone's sort menu for the
+     * requested songs chip — its visible options, in its menu order, as wire values of the
+     * `sort` parameter — carried by `GET /library/songs` only, `null` on every other route.
+     */
+    val sortMenu: List<String>? = null,
 )
 
 /** `Playlist` (contract §1.1). */

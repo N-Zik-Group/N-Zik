@@ -33,6 +33,7 @@ import app.it.fast4x.rimusic.enums.DislikeMode
 import app.it.fast4x.rimusic.enums.DurationInMinutes
 import app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize
 import app.it.fast4x.rimusic.enums.MaxTopPlaylistItems
+import app.it.fast4x.rimusic.enums.OnDeviceSongSortBy
 import app.it.fast4x.rimusic.enums.StatisticsType
 import app.it.fast4x.rimusic.enums.PlaylistSongSortBy
 import app.it.fast4x.rimusic.enums.PlaylistSortBy
@@ -50,7 +51,15 @@ import app.it.fast4x.rimusic.utils.exoPlayerCustomCacheKey
 import app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey
 import app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey
 import app.it.fast4x.rimusic.utils.getEnum
+import app.it.fast4x.rimusic.utils.homeSongsAllSortMenuOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsCachedSortMenuOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsDislikedSortMenuOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsDownloadedSortMenuOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsFavoritesSortMenuOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsOnDeviceSortMenuOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsTopSortMenuOrderKey
 import app.it.fast4x.rimusic.utils.includeLocalSongsKey
+import org.json.JSONArray
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.putEnum
@@ -87,6 +96,13 @@ internal sealed interface ArtworkResult {
  */
 internal interface LibraryProvider {
     suspend fun songs(filter: SongFilter, sort: SongSort, reverse: Boolean, period: TopPeriod? = null): List<TrackDto>
+
+    /**
+     * Contract §10.1 (since 1.7.3, feature `library.sortMenu`): the effective content of the
+     * phone's sort menu for the songs chip behind [filter] — its visible options, in its menu
+     * order, as wire values of the `sort` parameter.
+     */
+    suspend fun songsSortMenu(filter: SongFilter): List<String>
 
     /**
      * Since 1.7.2: [rewindFilter] (`month` / `year` / `all`) is applied to the `rewind` listing
@@ -139,6 +155,10 @@ internal interface LibraryProvider {
         /** Empty library: the default of a server without a phone behind it (tests). */
         val EMPTY: LibraryProvider = object : LibraryProvider {
             override suspend fun songs(filter: SongFilter, sort: SongSort, reverse: Boolean, period: TopPeriod?): List<TrackDto> = emptyList()
+            // Each chip's own native menu (top: its periods, local: its OnDevice options), like the
+            // real provider — never the all-chip menu for every filter
+            override suspend fun songsSortMenu(filter: SongFilter): List<String> =
+                SongsSortMenu.effective(SongsSortMenu.chipKeys(filter), "") { false }
             override suspend fun playlists(filter: PlaylistsFilter, sort: PlaylistSort, reverse: Boolean, rewindFilter: RewindPlaylists.Filter?): List<PlaylistDto> = emptyList()
             override suspend fun playlistSongs(playlistId: Long, sort: PlaylistSongSort, reverse: Boolean): List<TrackDto>? = null
             override suspend fun albums(filter: CollectionFilter, sort: AlbumSort, reverse: Boolean): List<AlbumDto> = emptyList()
@@ -250,6 +270,24 @@ internal class DatabaseLibraryProvider(
             LibraryMapping.homeTabSongs(shown, filter, includeLocal, durationLimit, parentalControl),
             support,
         )
+    }
+
+    /**
+     * Contract §10.1 (since 1.7.3, feature `library.sortMenu`): the effective content of the
+     * phone's sort menu for the songs chip behind [filter] — its visible options, in its menu
+     * order. Each chip reads its own prefix and order key, exactly as its home-screen tab does
+     * (each filter is a real phone tab — `top` serves its period selector, `local` its OnDevice
+     * tab's own menu).
+     */
+    override suspend fun songsSortMenu(filter: SongFilter): List<String> = withContext(NzikDispatchers.DATA) {
+        val chip = SongsSortMenu.chipKeys(filter)
+        // The phone's sort menus read the literal `preferences` file (its `Sort` row, its
+        // `HomeSongsSortSettingsDialog`), not the profile-aware `preferences` accessor — the
+        // served menu must be the one the phone's tabs actually use
+        val prefs = appContext.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        SongsSortMenu.effective(chip, prefs.getString(chip.orderKey, "")) { id ->
+            !prefs.getBoolean("${chip.prefix}_sort_${id}_visible", true)
+        }
     }
 
     /**
@@ -707,4 +745,146 @@ internal class DatabaseLibraryProvider(
     }
 
     private fun Boolean.sortOrder() = if (this) SortOrder.Descending else SortOrder.Ascending
+}
+
+/**
+ * The effective content of the phone's songs sort menus (contract §10.1, since 1.7.3, feature
+ * `library.sortMenu`): the phone's own `Sort.readSortedEnumConstants` /
+ * `PeriodSelector.readSortedEntries` semantics — each chip's visible options (its
+ * `${prefix}_sort_<option>_visible` flags, visible by default), in the chip's menu order when
+ * its user reordered it (the saved JSON array of the chip's order key), the rest in the chip's
+ * native option order. Unknown ids in the saved order are dropped, as on the phone. The result
+ * is the wire values of the contract's `sort` parameter (its `period` values for the Top chip's
+ * periods).
+ */
+internal object SongsSortMenu {
+
+    /** One chip's sort-menu keys: its visibility prefix and its saved-order key (its `Preferences.kt`). */
+    data class ChipKeys(val prefix: String, val orderKey: String)
+
+    /**
+     * The phone's songs sort menus, as its home screen and its `HomeSongsSortSettingsDialog`
+     * define them — one prefix / order-key pair per chip (the real order-key constants). A new
+     * chip is one more entry here: the §10.1 menu read and the §10.3 live listener follow it.
+     */
+    val all = ChipKeys("all", homeSongsAllSortMenuOrderKey)
+    val favs = ChipKeys("favs", homeSongsFavoritesSortMenuOrderKey)
+    val off = ChipKeys("off", homeSongsCachedSortMenuOrderKey)
+    val dl = ChipKeys("dl", homeSongsDownloadedSortMenuOrderKey)
+    val top = ChipKeys("top", homeSongsTopSortMenuOrderKey)
+    val onDevice = ChipKeys("dev", homeSongsOnDeviceSortMenuOrderKey)
+    val disliked = ChipKeys("disliked", homeSongsDislikedSortMenuOrderKey)
+
+    val chips: List<ChipKeys> = listOf(all, favs, off, dl, top, onDevice, disliked)
+
+    /** The chip behind a wire filter: each filter is the phone's real home tab (`local` is its OnDevice tab). */
+    fun chipKeys(filter: SongFilter): ChipKeys = when (filter) {
+        SongFilter.ALL -> all
+        SongFilter.LIKED -> favs
+        SongFilter.OFFLINE -> off
+        SongFilter.DOWNLOADED -> dl
+        SongFilter.TOP -> top
+        SongFilter.LOCAL -> onDevice
+        SongFilter.DISLIKED -> disliked
+    }
+
+    /**
+     * The option names of each menu: `SongSortBy` for the sort chips, `StatisticsType` for the
+     * Top chip (its period selector is its sort menu) and `OnDeviceSongSortBy` for OnDevice —
+     * exactly the options each tab's menu shows.
+     */
+    private val optionNames: Map<ChipKeys, List<String>> = mapOf(
+        top to StatisticsType.entries.map { it.name },
+        onDevice to OnDeviceSongSortBy.entries.map { it.name },
+    )
+
+    private fun optionNamesOf(chip: ChipKeys): List<String> =
+        optionNames[chip] ?: SongSortBy.entries.map { it.name }
+
+    /**
+     * Every preference key one of the phone's songs sort menus reads (contract §10.3, since
+     * 1.7.3): each chip's saved order and its per-option visibility flags, with the chip's own
+     * option ids (its `SongSortBy` / `StatisticsType` / `OnDeviceSongSortBy` names).
+     */
+    val sortMenuKeys: Set<String> = buildSet {
+        chips.forEach { chip ->
+            add(chip.orderKey)
+            optionNamesOf(chip).forEach { id ->
+                add("${chip.prefix}_sort_${id}_visible")
+            }
+        }
+    }
+
+    /** The phone's sort option names (`SongSortBy`) to the wire values of the contract's `sort`. */
+    private val songSortNamesToWire = mapOf(
+        "Title" to "title",
+        "Artist" to "artist",
+        "AlbumName" to "album",
+        "Duration" to "duration",
+        "PlayCount" to "playCount",
+        "PlayTime" to "playTime",
+        "RelativePlayTime" to "relativePlayTime",
+        "DateAdded" to "dateAdded",
+        "DatePlayed" to "datePlayed",
+        "DateLiked" to "dateLiked",
+        "Downloaded" to "downloaded",
+        "Custom" to "custom",
+    )
+
+    /** The phone's Top periods (`StatisticsType`) to the wire values of the contract's `period`. */
+    private val periodNamesToWire = mapOf(
+        "Today" to "today",
+        "OneWeek" to "week",
+        "OneMonth" to "month",
+        "ThreeMonths" to "3months",
+        "SixMonths" to "6months",
+        "OneYear" to "year",
+        "All" to "all",
+    )
+
+    /** The phone's OnDevice options (`OnDeviceSongSortBy`) to the wire values of the contract's `sort`. */
+    private val onDeviceNamesToWire = mapOf(
+        "Title" to "title",
+        "DateAdded" to "dateAdded",
+        "Artist" to "artist",
+        "Duration" to "duration",
+        "Album" to "album",
+    )
+
+    private val namesToWire: Map<String, String> = songSortNamesToWire + onDeviceNamesToWire + periodNamesToWire
+
+    /**
+     * The phone's songs sort options, native (enum) order, as wire values. An option the wire map
+     * does not name (a future phone entry) passes through as-is: the client drops what it does
+     * not know, no route crashes on it.
+     */
+    val nativeOrder: List<String> = SongSortBy.entries.map { songSortNamesToWire[it.name] ?: it.name }
+
+    /**
+     * A chip's effective menu: [savedOrderJson] is the chip's saved order (its order key, a
+     * JSON array of option names, blank when the phone's user never reordered it), [isHidden]
+     * the chip's per-option visibility (`${chip.prefix}_sort_<name>_visible`, visible by
+     * default). The ids are the chip's own options — a saved id of another chip's menu is
+     * dropped, as on the phone.
+     */
+    fun effective(chip: ChipKeys, savedOrderJson: String?, isHidden: (String) -> Boolean): List<String> {
+        val native = optionNamesOf(chip)
+        val visible = native.filterNot(isHidden)
+        val visibleIds = visible.toSet()
+        val saved = runCatching {
+            val array = JSONArray(savedOrderJson.orEmpty())
+            buildList {
+                for (i in 0 until array.length()) {
+                    val id = array.getString(i)
+                    if (contains(id)) continue
+                    add(id)
+                }
+            }
+        }.getOrDefault(emptyList())
+        val result = saved.filter { it in visibleIds }.toMutableList()
+        for (id in visible) if (id !in result) result.add(id)
+        // An id the wire map does not name (a future phone option) passes through: the client
+        // drops what it does not know, the route never crashes on it
+        return result.map { namesToWire[it] ?: it }
+    }
 }

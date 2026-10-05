@@ -83,6 +83,15 @@ private class FakeLibrary : LibraryProvider {
         return kept.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.title }).let { if (reverse) it.reversed() else it }
     }
 
+    var sortMenuFilter: SongFilter? = null
+    var sortMenuResult: List<String> = listOf("playCount", "title", "dateAdded")
+
+    override suspend fun songsSortMenu(filter: SongFilter): List<String> {
+        calls += "songsSortMenu"
+        sortMenuFilter = filter
+        return sortMenuResult
+    }
+
     override suspend fun playlists(filter: PlaylistsFilter, sort: PlaylistSort, reverse: Boolean, rewindFilter: RewindPlaylists.Filter?): List<PlaylistDto> {
         calls += "playlists"
         playlistCalls++
@@ -784,6 +793,27 @@ class LibraryRoutesTest {
         assertEquals(JsonNull, downloaded["maxBytes"])
         assertEquals(JsonNull, downloaded["maxText"])
         assertEquals(1, library.cacheSpaceRequest)
+    }
+
+    @Test
+    fun `the songs page carries the phone sort menu, the other pages do not`() = testApplication {
+        val library = FakeLibrary()
+        library.sortMenuResult = listOf("playCount", "title", "dateAdded")
+        mount(library)
+
+        val songs = getAuthed("/api/v1/library/songs?filter=top&sort=playCount").json()
+        assertEquals(
+            listOf("playCount", "title", "dateAdded"),
+            songs.getValue("sortMenu").jsonArray.map { it.jsonPrimitive.content },
+        )
+        assertEquals(SongFilter.TOP, library.sortMenuFilter)
+
+        // `sortMenu` rides on the songs pages only (contract §10.1)
+        assertEquals(JsonNull, getAuthed("/api/v1/library/playlists").json()["sortMenu"])
+        assertEquals(JsonNull, getAuthed("/api/v1/library/albums").json()["sortMenu"])
+        assertEquals(JsonNull, getAuthed("/api/v1/library/artists").json()["sortMenu"])
+        assertEquals(JsonNull, getAuthed("/api/v1/library/playlists/7/songs").json()["sortMenu"])
+        assertEquals(JsonNull, getAuthed("/api/v1/library/albums/MPREb_1/songs").json()["sortMenu"])
     }
 
     @Test

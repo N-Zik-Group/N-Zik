@@ -105,6 +105,20 @@ internal class BridgeStateHub(private val clock: () -> Long = System::currentTim
     }
 
     /**
+     * Records a library change (contract §10.3, since 1.7.3, feature `library.live`) and
+     * publishes its `libraryChanged` delta at `revision + 1`, under the same lock as the player
+     * deltas. Every call emits — even the same `kind` twice: the client coalesces (§10.3).
+     *
+     * @param kind the changed entity: `"songs"`, `"albums"`, `"artists"` or `"playlists"`
+     * @return the delta published
+     */
+    fun submitLibraryChanged(kind: String): LibraryChangedMessage = synchronized(lock) {
+        LibraryChangedMessage(++revision, clock(), kind).also { delta ->
+            subscribers.forEach { it.sink.deliver(delta) }
+        }
+    }
+
+    /**
      * Sends the non-revised [message] to every subscriber (contract §7.6), under the same
      * lock as the deltas so it never splits a snapshot from its following deltas.
      */

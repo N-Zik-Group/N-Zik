@@ -590,7 +590,9 @@ internal class BridgeServerCore(
                 ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid period")
         }
         val tracks = LibraryQueries.searchSongs(libraryProvider.songs(filter, sort, reverse, period), text)
-        respond(LibraryQueries.paginate(tracks, page))
+        // Contract §10.1 (since 1.7.3): the phone's effective sort menu of the requested chip —
+        // a failure degrades to no menu (the client keeps its static one), never to a failed page
+        respond(LibraryQueries.paginate(tracks, page, sortMenu = runCatching { libraryProvider.songsSortMenu(filter) }.getOrNull()))
     }
 
     /** Contract §10 `/library/playlists/{id}/songs` (since 1.6): pagination, `sort`, `reverse`; since 1.7.2, `text` and `totalDurationMs`. */

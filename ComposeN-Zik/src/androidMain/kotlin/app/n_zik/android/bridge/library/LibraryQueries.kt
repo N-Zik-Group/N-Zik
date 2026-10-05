@@ -239,14 +239,15 @@ internal object LibraryQueries {
         }
 
     /** Contract §1: `total` is the full size; an offset past the end gives an empty page. */
-    fun <T> paginate(items: List<T>, page: PageRequest): Page<T> =
-        paginate(items, page, items.size)
+    fun <T> paginate(items: List<T>, page: PageRequest, sortMenu: List<String>? = null): Page<T> =
+        paginate(items, page, items.size, sortMenu)
 
     /**
      * Contract §1 (since 1.7.2): [total] given apart from the [items] size — the phone's
      * counters keep their pre-search total while the `text` filter narrows the page.
+     * Since 1.7.3: [sortMenu] rides on the page (the songs route only, contract §10.1).
      */
-    fun <T> paginate(items: List<T>, page: PageRequest, total: Int): Page<T> {
+    fun <T> paginate(items: List<T>, page: PageRequest, total: Int, sortMenu: List<String>? = null): Page<T> {
         val from = page.offset.coerceAtMost(items.size)
         val to = (from.toLong() + page.limit).coerceAtMost(items.size.toLong()).toInt()
         return Page(
@@ -254,6 +255,7 @@ internal object LibraryQueries {
             total = total,
             offset = page.offset,
             limit = page.limit,
+            sortMenu = sortMenu,
         )
     }
 

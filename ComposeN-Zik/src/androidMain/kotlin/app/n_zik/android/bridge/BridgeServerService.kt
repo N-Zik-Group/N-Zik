@@ -17,6 +17,7 @@ import app.n_zik.android.bridge.audio.PhoneAudioLibrary
 import app.n_zik.android.bridge.command.LateFailureTracker
 import app.n_zik.android.bridge.command.PlayerCommandExecutor
 import app.n_zik.android.bridge.command.PreferencePlayerSettings
+import app.n_zik.android.bridge.library.BridgeLibraryObserver
 import app.n_zik.android.bridge.library.DatabaseLibraryProvider
 import app.n_zik.android.bridge.state.BridgePlayerSource
 import app.n_zik.android.bridge.state.BridgeStateHub
@@ -27,6 +28,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -66,6 +68,9 @@ class BridgeServerService : Service() {
     private var wifiWatch: Job? = null
     private var autoStopWatch: Job? = null
     private var lifecycleJob: Job? = null
+    // Contract §10.3 (since 1.7.3): the library writes and sort-menu edits pushed to the
+    // clients; written on the DATA scope, released from the DATA scope or onDestroy (main)
+    private var libraryObserver: BridgeLibraryObserver? = null
     // Stops come from the DATA pool (user, Wi-Fi, onTimeout, auto-stop): one at a time
     private val stopMutex = Mutex()
 
@@ -96,6 +101,8 @@ class BridgeServerService : Service() {
         BridgeServerController.attachOutputs(null)
         BridgeServerController.publishAudioOutput(AudioOutput.PHONE)
         wifiMonitor?.stop()
+        libraryObserver?.stop()
+        libraryObserver = null
         releasePlayerSource()
         scope.cancel()
         super.onDestroy()
@@ -118,6 +125,11 @@ class BridgeServerService : Service() {
         BridgeServerController.loadAutoStopSettings(this)
         // One hub, one player source and one command executor per server run: the revision starts again at 0
         val stateHub = BridgeStateHub()
+        // Contract §10.3 (since 1.7.3): every library write and songs-sort-menu edit reaches the
+        // clients — an `onDestroy` that already ran (the scope cancelled) must not leave the
+        // observer running: it holds the process-level write notifier and the prefs listener
+        libraryObserver?.stop()
+        libraryObserver = if (scope.isActive) BridgeLibraryObserver(this, stateHub).also { it.start() } else null
         val lateFailures = LateFailureTracker(stateHub)
         val source = BridgePlayerSource(this, stateHub, onPlayerError = lateFailures::onPlayerError).also { it.start() }
         playerSource.getAndSet(source)?.stop()
@@ -153,6 +165,8 @@ class BridgeServerService : Service() {
             .onFailure { Timber.tag(TAG).e(it, "Bridge server failed to start") }
             .getOrNull()
         if (port == null) {
+            libraryObserver?.stop()
+            libraryObserver = null
             releasePlayerSource()
             return finish(BridgeState.Failed, getString(R.string.bridge_server_failed))
         }
@@ -207,6 +221,8 @@ class BridgeServerService : Service() {
         BridgeServerController.attachOutputs(null)
         BridgeServerController.publish(BridgeState.Stopping)
         bridge.stop(code)
+        libraryObserver?.stop()
+        libraryObserver = null
         // Contract §6.2: the server stop ends the session, pause then phone (no-op when already done)
         outputs?.let { withContext(NonCancellable) { it.fallback() } }
         outputs = null

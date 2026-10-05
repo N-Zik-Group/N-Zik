@@ -354,4 +354,38 @@ class BridgeStateHubTest {
         val revisions = first.map { it.revision } + listOfNotNull(output?.revision) + pause.map { it.revision }
         assertEquals((1L..revisions.size).toList(), revisions)
     }
+
+    @Test
+    fun `a library change is a libraryChanged at revision plus one, delivered with its kind`() {
+        hub.submit(playingSample)
+        val start = hub.currentRevision
+        val received = mutableListOf<BridgeServerMessage>()
+        hub.subscribe { received += it }
+
+        val delta = hub.submitLibraryChanged("songs")
+
+        assertEquals(start + 1, delta.revision)
+        assertEquals(now, delta.serverTimeMs)
+        assertEquals("songs", (delta as LibraryChangedMessage).kind)
+        assertEquals(listOf("SnapshotMessage", "LibraryChangedMessage"), received.map { it::class.simpleName })
+        val json = BridgeJson.parseToJsonElement(encodeServerMessage(delta)).jsonObject
+        assertEquals(setOf("type", "revision", "serverTimeMs", "kind"), json.keys)
+        assertEquals("libraryChanged", json["type"]?.jsonPrimitive?.content)
+        assertEquals("songs", json["kind"]?.jsonPrimitive?.content)
+    }
+
+    @Test
+    fun `every library change emits on the shared revision sequence, even the same kind twice`() {
+        // The client coalesces (§10.3): the hub never deduplicates
+        hub.submit(playingSample)
+        val start = hub.currentRevision
+
+        val first = hub.submitLibraryChanged("songs")
+        val again = hub.submitLibraryChanged("songs")
+        val albums = hub.submitLibraryChanged("albums")
+        val output = hub.setAudioOutput(AudioOutput.PC)
+
+        assertEquals(listOf(start + 1, start + 2, start + 3, start + 4), listOf(first.revision, again.revision, albums.revision, output?.revision))
+        assertEquals(listOf("songs", "songs", "albums"), listOf(first.kind, again.kind, albums.kind))
+    }
 }

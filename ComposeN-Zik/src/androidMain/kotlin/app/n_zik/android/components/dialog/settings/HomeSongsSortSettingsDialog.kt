@@ -44,14 +44,18 @@ object HomeSongsSortSettingsDialog : Dialog {
 
     private val topSortIds = listOf("Today", "OneWeek", "OneMonth", "ThreeMonths", "SixMonths", "OneYear", "All")
 
-    private val tabAvailableIds = mapOf(
+    // "Custom" is offered on every sort chip, as in the phone's own sort menu (its visibility
+    // flags default to visible, so each tab's real menu shows it); only "Downloaded" stays out
+    // of the downloaded / cached chips (the phone hides it there on its own). Internal so the
+    // tests can pin these sets — the same ones contract §10.1 sortMenu serves
+    internal val tabAvailableIds = mapOf(
         BuiltInPlaylist.All to songSortIds,
-        BuiltInPlaylist.Favorites to songSortIds.filter { it != "Custom" },
-        BuiltInPlaylist.Offline to songSortIds.filter { it != "Custom" && it != "Downloaded" },
-        BuiltInPlaylist.Downloaded to songSortIds.filter { it != "Custom" && it != "Downloaded" },
+        BuiltInPlaylist.Favorites to songSortIds,
+        BuiltInPlaylist.Offline to songSortIds.filter { it != "Downloaded" },
+        BuiltInPlaylist.Downloaded to songSortIds.filter { it != "Downloaded" },
         BuiltInPlaylist.Top to topSortIds,
         BuiltInPlaylist.OnDevice to onDeviceSortIds,
-        BuiltInPlaylist.Disliked to songSortIds.filter { it != "Custom" }
+        BuiltInPlaylist.Disliked to songSortIds
     )
 
     private fun getTabPrefix(tab: BuiltInPlaylist): String = when (tab) {
@@ -79,7 +83,9 @@ object HomeSongsSortSettingsDialog : Dialog {
     override val dialogTitle: String @Composable get() = stringResource(R.string.home_songs_settings) + " - Sort"
     override var isActive: Boolean by mutableStateOf(false)
 
-    private fun parseOrder(s: String, tab: BuiltInPlaylist): List<String> {
+    // Internal so the tests can pin the saved-order merge: the saved visible options keep their
+    // order, the unknown ones drop, the missing ones follow in the available order
+    internal fun parseOrder(s: String, tab: BuiltInPlaylist): List<String> {
         val available = tabAvailableIds[tab] ?: songSortIds
         if (s.isBlank()) return available
         return try {

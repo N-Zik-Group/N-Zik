@@ -188,6 +188,21 @@ internal data class OutputChangedMessage(
     val audioOutput: AudioOutput,
 ) : DeltaMessage
 
+/**
+ * Library change (contract §7.2, §10.3, since 1.7.3, feature `library.live`): a write to the
+ * phone's library (a client §10.2 write or the phone's own UI) or an edit of its library
+ * presentation settings (the sort menu). [kind] is the changed entity — `"songs"`, `"albums"`,
+ * `"artists"` or `"playlists"`; the delta carries no content, the client re-queries the
+ * invalidated families (§10.3).
+ */
+@Serializable
+@SerialName("libraryChanged")
+internal data class LibraryChangedMessage(
+    override val revision: Long,
+    val serverTimeMs: Long,
+    val kind: String,
+) : DeltaMessage
+
 /** Light, non-revised snapshot sent every 10 s (contract §7.3). */
 @Serializable
 @SerialName("heartbeat")
