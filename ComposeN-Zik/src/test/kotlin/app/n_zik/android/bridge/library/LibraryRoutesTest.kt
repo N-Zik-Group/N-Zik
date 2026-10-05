@@ -85,11 +85,24 @@ private class FakeLibrary : LibraryProvider {
 
     var sortMenuFilter: SongFilter? = null
     var sortMenuResult: List<String> = listOf("playCount", "title", "dateAdded")
+    var sortMenuThrows = false
 
     override suspend fun songsSortMenu(filter: SongFilter): List<String> {
         calls += "songsSortMenu"
         sortMenuFilter = filter
+        if (sortMenuThrows) error("songsSortMenu failure")
         return sortMenuResult
+    }
+
+    var toolbarFilter: SongFilter? = null
+    var toolbarResult: List<String> = listOf("locator", "search")
+    var toolbarThrows = false
+
+    override suspend fun songsToolbar(filter: SongFilter): List<String> {
+        calls += "songsToolbar"
+        toolbarFilter = filter
+        if (toolbarThrows) error("songsToolbar failure")
+        return toolbarResult
     }
 
     override suspend fun playlists(filter: PlaylistsFilter, sort: PlaylistSort, reverse: Boolean, rewindFilter: RewindPlaylists.Filter?): List<PlaylistDto> {
@@ -814,6 +827,65 @@ class LibraryRoutesTest {
         assertEquals(JsonNull, getAuthed("/api/v1/library/artists").json()["sortMenu"])
         assertEquals(JsonNull, getAuthed("/api/v1/library/playlists/7/songs").json()["sortMenu"])
         assertEquals(JsonNull, getAuthed("/api/v1/library/albums/MPREb_1/songs").json()["sortMenu"])
+    }
+
+    @Test
+    fun `the songs page carries the phone toolbar, the other pages do not`() = testApplication {
+        val library = FakeLibrary()
+        library.toolbarResult = listOf("locator", "search")
+        mount(library)
+
+        val songs = getAuthed("/api/v1/library/songs?filter=top&sort=playCount").json()
+        assertEquals(
+            listOf("locator", "search"),
+            songs.getValue("toolbar").jsonArray.map { it.jsonPrimitive.content },
+        )
+        assertEquals(SongFilter.TOP, library.toolbarFilter)
+
+        // `toolbar` rides on the songs pages only (contract §10.1)
+        assertEquals(JsonNull, getAuthed("/api/v1/library/playlists").json()["toolbar"])
+        assertEquals(JsonNull, getAuthed("/api/v1/library/albums").json()["toolbar"])
+        assertEquals(JsonNull, getAuthed("/api/v1/library/artists").json()["toolbar"])
+        assertEquals(JsonNull, getAuthed("/api/v1/library/playlists/7/songs").json()["toolbar"])
+        assertEquals(JsonNull, getAuthed("/api/v1/library/albums/MPREb_1/songs").json()["toolbar"])
+    }
+
+    @Test
+    fun `a failing songsToolbar degrades to a null toolbar, the page and its sort menu still serve`() = testApplication {
+        val library = FakeLibrary()
+        library.sortMenuResult = listOf("playCount", "title", "dateAdded")
+        library.toolbarThrows = true
+        mount(library)
+
+        val songs = getAuthed("/api/v1/library/songs?filter=top&sort=playCount").json()
+        // A songsToolbar failure degrades to no toolbar (the client keeps its static one),
+        // never to a failed page
+        assertEquals(JsonNull, songs["toolbar"])
+        assertEquals(3, songs.getValue("total").jsonPrimitive.int)
+        // The sibling sort menu still rides the same page
+        assertEquals(
+            listOf("playCount", "title", "dateAdded"),
+            songs.getValue("sortMenu").jsonArray.map { it.jsonPrimitive.content },
+        )
+    }
+
+    @Test
+    fun `a failing songsSortMenu degrades to a null sort menu, the page and its toolbar still serve`() = testApplication {
+        val library = FakeLibrary()
+        library.toolbarResult = listOf("locator", "search")
+        library.sortMenuThrows = true
+        mount(library)
+
+        val songs = getAuthed("/api/v1/library/songs?filter=top&sort=playCount").json()
+        // A songsSortMenu failure degrades to no menu (the client keeps its static one),
+        // never to a failed page
+        assertEquals(JsonNull, songs["sortMenu"])
+        assertEquals(3, songs.getValue("total").jsonPrimitive.int)
+        // The sibling toolbar still rides the same page
+        assertEquals(
+            listOf("locator", "search"),
+            songs.getValue("toolbar").jsonArray.map { it.jsonPrimitive.content },
+        )
     }
 
     @Test

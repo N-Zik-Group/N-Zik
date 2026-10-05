@@ -13,7 +13,7 @@ import kotlinx.serialization.json.Json
  * Every literal that travels on the wire lives here.
  */
 internal object BridgeContract {
-    const val CONTRACT_VERSION = "1.7.3"
+    const val CONTRACT_VERSION = "1.8.0"
     const val API_PREFIX = "/api/v1"
 
     /** Port 42420, then 42421–42429, then an OS-assigned ephemeral port (contract §11.1). */
@@ -79,6 +79,7 @@ internal object BridgeContract {
         (if (BuildConfig.ENABLE_FFMPEG) listOf("library.ffmpeg") else emptyList()) +
         listOf(
             "library.sortMenu",
+            "library.toolbar",
             "library.live",
             "artwork",
             "audio",
@@ -325,6 +326,13 @@ internal data class Page<T>(
      * `sort` parameter — carried by `GET /library/songs` only, `null` on every other route.
      */
     val sortMenu: List<String>? = null,
+    /**
+     * Since 1.8.0 (contract §10.1): the effective content of the phone's Home Songs toolbar for
+     * the requested songs chip — its visible buttons, in its toolbar order (the user's saved
+     * order kept to its tab's available buttons, the hidden ones dropped, the locked ones always
+     * kept) — carried by `GET /library/songs` only, `null` on every other route.
+     */
+    val toolbar: List<String>? = null,
 )
 
 /** `Playlist` (contract §1.1). */

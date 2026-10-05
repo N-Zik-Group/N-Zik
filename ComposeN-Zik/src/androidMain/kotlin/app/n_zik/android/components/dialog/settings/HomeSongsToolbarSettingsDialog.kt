@@ -51,7 +51,8 @@ object HomeSongsToolbarSettingsDialog : Dialog {
         BuiltInPlaylist.Disliked to allButtonIds.filter { it != "export_cache" && it != "sync_ytm_likes" && it != "import_menu" }
     )
 
-    private val lockedIds = setOf("sort", "position_lock", "match", "sync_ytm_likes")
+    /** The toolbar buttons the dialog cannot switch off — the phone always keeps them. */
+    val lockedIds = setOf("sort", "position_lock", "match", "sync_ytm_likes")
 
     fun getTabPrefix(tab: BuiltInPlaylist): String = when (tab) {
         BuiltInPlaylist.All -> "all"

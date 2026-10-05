@@ -88,7 +88,7 @@ class BridgeServerTest {
 
         assertEquals(HttpStatusCode.OK, response.status)
         val json = BridgeJson.parseToJsonElement(response.bodyAsText()).jsonObject
-        assertEquals("1.7.3", json["contractVersion"]?.jsonPrimitive?.content)
+        assertEquals("1.8.0", json["contractVersion"]?.jsonPrimitive?.content)
         assertEquals("Pixel test", json["serverName"]?.jsonPrimitive?.content)
         assertEquals(1_790_000_000_000L, json["serverTimeMs"]?.jsonPrimitive?.long)
         assertEquals(
@@ -110,6 +110,8 @@ class BridgeServerTest {
                 "library.ffmpeg",
                 // Since 1.7.3: the phone's effective songs sort menu, the library live deltas
                 "library.sortMenu",
+                // Since 1.8.0: the phone's effective Home Songs toolbar
+                "library.toolbar",
                 "library.live",
                 "artwork",
                 "audio",
