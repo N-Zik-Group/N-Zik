@@ -7,6 +7,10 @@
     built with performance improvements, UI/UX refinement, bug fixes, and new features in mind with long-term support.
   </p>
   <p>
+    A desktop companion is available: <a href="https://github.com/N-Zik-Group/N-Zik-Desktop-Compagnon">N-Zik Desktop Compagnon</a>
+    controls your library and playback from a Windows or Linux PC.
+  </p>
+  <p>
     <strong>N-Zik</strong> may not yet be as stable as the original 
     <a href="https://github.com/knighthat/Kreate">Kreate</a>, so feel free to use it or other 
     solid alternatives like <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, 
