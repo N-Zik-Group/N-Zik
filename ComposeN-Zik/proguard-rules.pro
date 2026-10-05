@@ -165,6 +165,11 @@
 -dontwarn java.awt.**
 -dontwarn javax.imageio.**
 
+## Rules for ktor (IntellijIdeaDebugDetector references java.lang.management, a JVM-only
+## package absent from Android - the reference is guarded at runtime, so R8 minify
+## must not treat it as a missing class)
+-dontwarn java.lang.management.**
+
 ## Canary/decoy BuildConfig fields — kept so the decoy values survive
 ## minification and land in the release dex (anti key-harvester layer,
 ## see canaryFieldNames in ComposeN-Zik/build.gradle.kts).
