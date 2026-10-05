@@ -14,6 +14,7 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -43,6 +44,13 @@ class SessionArtworkPlayerTest {
         every { appContext() } returns app
     }
 
+    private fun emptyUpstream(): Player {
+        val upstream = mockk<Player>()
+        every { upstream.getMediaMetadata() } returns MediaMetadata.Builder().build()
+        every { upstream.currentMediaItem } returns null
+        return upstream
+    }
+
     private fun upstreamWith(title: String?, artist: String?, mediaId: String): Player {
         val upstream = mockk<Player>()
         every { upstream.getMediaMetadata() } returns MediaMetadata.Builder()
@@ -53,6 +61,17 @@ class SessionArtworkPlayerTest {
             .setArtworkUri("https://img.example.com/cover.jpg".toUri())
             .build()
         every { upstream.currentMediaItem } returns MediaItem.Builder().setMediaId(mediaId).build()
+        // A loaded track is treated as "music" only when the player is not IDLE
+        // (paused / buffering / ready — the session surfaces only matter then).
+        every { upstream.playbackState } returns Player.STATE_READY
+        return upstream
+    }
+
+    private fun idleUpstreamWith(mediaId: String): Player {
+        val upstream = mockk<Player>()
+        every { upstream.getMediaMetadata() } returns MediaMetadata.Builder().build()
+        every { upstream.currentMediaItem } returns MediaItem.Builder().setMediaId(mediaId).build()
+        every { upstream.playbackState } returns Player.STATE_IDLE
         return upstream
     }
 
@@ -81,5 +100,41 @@ class SessionArtworkPlayerTest {
 
         assertEquals("Real Title", metadata.title.toString())
         assertEquals("Real Artist", metadata.artist.toString())
+    }
+
+    @Test
+    fun `an empty player keeps its metadata untouched without placeholders`() {
+        stubAppContext()
+        val metadata = SessionArtworkPlayer(emptyUpstream()).getMediaMetadata()
+
+        assertNull(metadata.title)
+        assertNull(metadata.artist)
+        assertNull(metadata.artworkUri)
+    }
+
+    @Test
+    fun `an empty player with artwork keeps the artwork untouched`() {
+        stubAppContext()
+        val upstream = mockk<Player>()
+        every { upstream.getMediaMetadata() } returns MediaMetadata.Builder()
+            .setArtworkUri("https://img.example.com/cover.jpg".toUri())
+            .build()
+        every { upstream.currentMediaItem } returns null
+        val metadata = SessionArtworkPlayer(upstream).getMediaMetadata()
+
+        assertNull(metadata.title)
+        assertNull(metadata.artist)
+        assertEquals("https://img.example.com/cover.jpg", metadata.artworkUri?.toString())
+    }
+
+    @Test
+    fun `an IDLE player with a loaded untagged track publishes metadata without placeholders`() {
+        stubAppContext()
+        // Restored persistent queue with auto-resume off: items loaded, player
+        // IDLE, nothing playing — no "unknown title / unknown artist" may surface.
+        val metadata = SessionArtworkPlayer(idleUpstreamWith("stream-abc")).getMediaMetadata()
+
+        assertNull(metadata.title)
+        assertNull(metadata.artist)
     }
 }

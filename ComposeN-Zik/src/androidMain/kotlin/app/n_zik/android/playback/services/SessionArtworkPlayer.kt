@@ -20,16 +20,27 @@ import app.n_zik.android.appContext
  * reading the original metadata. Embedded artwork bytes are left untouched.
  *
  * The facade also applies the unknown-metadata placeholders
- * ([SessionMetadataFallbacks]): tracks without title/artist tags must not
- * render a blank label on the session surfaces (Android Auto home card, media
- * notification — both read this [getMediaMetadata] through the session).
+ * ([SessionMetadataFallbacks]): tracks loaded WITHOUT title/artist tags must
+ * not render a blank label on the session surfaces (Android Auto home card,
+ * media notification — both read this [getMediaMetadata] through the session).
+ * The placeholders only apply while a track is loaded and the player is not
+ * IDLE: an empty player, or a restored queue nothing is playing (IDLE),
+ * publishes its metadata untouched, so no "unknown title / unknown artist"
+ * surfaces for a player without music (code review D1, 2026-10-05).
  */
 @UnstableApi
 class SessionArtworkPlayer(upstream: Player) : ForwardingPlayer(upstream) {
 
     override fun getMediaMetadata(): MediaMetadata {
         val metadata = super.getMediaMetadata()
-        val mediaId = currentMediaItem?.mediaId
+        // The placeholders are for LOADED, NON-IDLE tracks without tags (KDoc):
+        // with no current media item, or while the player is IDLE (nothing
+        // playing — e.g. a persistent queue restored without auto-resume), the
+        // metadata must be published as-is, otherwise "unknown title / unknown
+        // artist" would surface for a player without music.
+        val currentItem = currentMediaItem
+        val hasLoadedTrack = currentItem != null && playbackState != Player.STATE_IDLE
+        val mediaId = currentItem?.mediaId
         val providerArtworkUri = mediaId?.takeIf {
             LocalArtworkRules.needsProviderArtwork(
                 it,
@@ -37,8 +48,8 @@ class SessionArtworkPlayer(upstream: Player) : ForwardingPlayer(upstream) {
                 ArtworkContentProvider.AUTHORITY
             )
         }?.let { ArtworkContentProvider.uriFor(LocalArtworkRules.songIdOf(it)) }
-        val needsTitleFallback = SessionMetadataFallbacks.needsFallback(metadata.title)
-        val needsArtistFallback = SessionMetadataFallbacks.needsFallback(metadata.artist)
+        val needsTitleFallback = hasLoadedTrack && SessionMetadataFallbacks.needsFallback(metadata.title)
+        val needsArtistFallback = hasLoadedTrack && SessionMetadataFallbacks.needsFallback(metadata.artist)
         if (providerArtworkUri == null && !needsTitleFallback && !needsArtistFallback) return metadata
         val context = appContext()
         return metadata.buildUpon()

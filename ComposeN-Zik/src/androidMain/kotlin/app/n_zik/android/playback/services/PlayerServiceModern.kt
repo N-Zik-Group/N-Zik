@@ -2493,6 +2493,21 @@ class PlayerServiceModern : MediaLibraryService(),
 
         val parentalControlEnabled = preferences.getBoolean(parentalControlEnabledKey, false)
 
+        // prepare() moves the player out of IDLE, and media3 then shows the
+        // media notification for a non-empty timeline regardless of
+        // playWhenReady — so with auto-resume off the restored queue must
+        // NOT be prepared: the player stays IDLE (no notification, no
+        // pre-buffer/network), the queue stays visible (setMediaItems builds
+        // the timeline). The first play recovers the IDLE state on every
+        // surface: session play commands (notification, Android Auto, widget,
+        // media button) go through media3's
+        // MediaSessionImpl.handleMediaControllerPlayRequest ->
+        // Util.handlePlayButtonAction, which prepares an IDLE player before
+        // play() (media3 1.10.1 sources, verified), and the in-app play path
+        // (gracefulPlay) goes through AudioUtils.fadeInEffect's IDLE->prepare
+        // guard.
+        val resumePlaybackOnStart = preferences.getBoolean(resumePlaybackOnStartKey, false)
+
         Database.asyncQuery {
             val queuedSong = queueTable.allDirect()
 
@@ -2520,7 +2535,13 @@ class PlayerServiceModern : MediaLibraryService(),
                     index,
                     filteredQueuedSong[index].position ?: C.TIME_UNSET
                 )
-                player.prepare()
+                if (RestoredQueueRules.shouldPrepareRestoredQueue(resumePlaybackOnStart)) {
+                    player.prepare()
+                } else {
+                    Timber.tag("PlayerServiceModern").d(
+                        "Restored queue: prepare skipped (auto-resume off) - player stays IDLE, no media notification"
+                    )
+                }
             }
         }
 
