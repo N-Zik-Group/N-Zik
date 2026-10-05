@@ -997,8 +997,8 @@ Volume BAS : titre précédent</string>
     <string name="login_for_browse">Connectez-vous pour parcourir</string>
     <string name="login_for_browse_description">Utiliser les identifiants de connexion pour les requêtes de navigation (page d\'accueil, exploration, etc.)</string>
     <string name="youtube_connect_first">Connectez-vous d\'abord à YouTube pour activer cette option</string>
-    <string name="use_account_for_searches">Use account for searches</string>
-    <string name="use_account_for_searches_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="use_account_for_searches">Utiliser le compte pour effectuer des recherches</string>
+    <string name="use_account_for_searches_description">Lorsque cette option est désactivée, les recherches sont effectuées en mode « invité », sans passer par votre compte ; elles n\'apparaissent donc pas dans votre historique de recherche ni dans vos suggestions YouTube.</string>
     <string name="disliked">Pas aimé</string>
     <string name="disliked_this_song">Impossible d\'effectuer cette action lorsque tous les titres ne sont pas appréciés</string>
     <string name="disliked_this_collection">Impossible d\'effectuer cette action lorsque tous les titres sont soit détestés, soit sans correspondance</string>
@@ -2268,6 +2268,8 @@ Volume BAS : titre précédent</string>
     <string name="bridge_battery_title">Optimisation de la batterie</string>
     <string name="bridge_battery_warning">L\'optimisation de la batterie est activée : Android pourrait arrêter le serveur PC fonctionnant en arrière-plan</string>
     <string name="bridge_battery_action">Désactiver l\'optimisation de la batterie</string>
+    <string name="bridge_audio_output_pc_subtitle">Son sur PC (N-Zik Desktop Compagnon)</string>
+    <string name="bridge_audio_output_pc_unavailable">Cet ordinateur n\'est pas disponible</string>
     <string name="onboard_perm_camera">Appareil photo</string>
     <string name="onboard_perm_camera_desc">Scannez le QR code de N-Zik Desktop Compagnon pour connecter un PC</string>
 </resources>
