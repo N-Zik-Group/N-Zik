@@ -1,0 +1,3 @@
+Added: NZik-style Profiles (face, data separation, archive, shortcuts, per-profile channels), Android Auto rewind/disliked + local artwork, "Use account for searches" toggle, karaoke reveal.
+Improved: mini-player fade, Rescue Center scopes + reversible resets, 5 import/export options with profile targets.
+Fixed: stuck/frozen progress bar, notification tap opens player, rememberSaveable crash, rewind reminder re-opening, "unknown" placeholders with no music, karaoke CJK, profile/import fixes.

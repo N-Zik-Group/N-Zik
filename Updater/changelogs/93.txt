@@ -1,0 +1,31 @@
+Added:
+- NZik-style Profiles page: every profile has its own face (name + avatar — profile / YouTube / Discord / Last.fm sources), its own data or shared data (downloads, streaming cache, images, waveforms — sharing is opt-in per item), real sizes per profile and last-used date; the face is shown in the header, the welcome message and the Rewind deck. Renaming a profile never touches its files.
+- Profile state archive: one combined .txt file covering every profile (list + faces + base name), exported from the Profiles page, the Rescue Center, the data dialogs and onboarding — and importable back.
+- Cross-profile import: every database / settings / profile import now asks which profile it goes to.
+- 5 import/export options everywhere (Database / Settings / Database + Settings / Profiles / All), and the auto-backup now tags every file with its profile and covers the profile state.
+- Rescue Center: scope categories (ALL by default / Per profile), "Reset profiles" now includes the base profile, and every reset is reversible — the profile data is backed up before the wipe and can be restored afterwards.
+- Android Auto: rewind + disliked sections with full phone parity, and local album artwork on the AA queue, the browse lists and the home card.
+- "Use account for searches" toggle: when off, searches run as a guest without your account.
+- Karaoke: chorus / background lines reveal loader-style and stay after being sung, the scroll now follows them, gap loaders are separate items, and an opt-in debug overlay shows the karaoke clip rects.
+- Mini-player pop / depop transitions are now animated with a pure-alpha fade (and the media-off sheet dismiss is animated instead of snapped).
+- Dynamic launcher shortcuts: a generic "Profiles" shortcut + one direct shortcut per profile.
+- Per-profile notification channels, with the profile name in the channel label, and the left profile's notifications cancelled on switch.
+- Onboarding: a new "profile" step (name, face name/avatar sources, photo) after the accounts step.
+
+Changed:
+- "Accounts" renamed "Profiles" everywhere in the profile-state feature; "Both" renamed "Database + Settings" in the backup options.
+- "Reset profiles" / "Restore profiles" now include the base profile (the dedicated base cards are gone).
+- A dedicated restore icon for all four restore cards; import dialogs survive rotation.
+
+Fixed:
+- Stuck / frozen progress bar — every phase (issue https://github.com/N-Zik-Group/N-Zik/issues/881): seeks are coalesced (no more seek storm), one adaptive-format fetch per track, a 35 s back buffer, the skipped-to target is held on the bar until the player commits, the position cache re-anchors from player events, and the position poll is now unconditional so the bar no longer freezes behind an inactive sheet; the elapsed/remaining labels tick together; a stall watchdog + full seek instrumentation were added to catch any remaining field case.
+- The media notification no longer shows "unknown title / unknown artist" when nothing plays: without "resume playback on start", the restored queue stays idle (no notification, no pre-buffer — the queue is still visible and the first play starts it); the placeholders now only apply while a track is loaded and the player is not idle.
+- Tapping the "now playing" notification deploys the big player again (regression since the Android Auto renegotiation) — including a widget token clash it exposed.
+- The player sheet always draws its base background when expanded (the transparent player regions no longer expose the screen behind, issue https://github.com/N-Zik-Group/N-Zik/issues/855).
+- The "ArrayList cannot be cast to MutableState" crash after screen changes is no longer fatal: tolerant savers on the 26 affected slots (phase 2 of issue https://github.com/N-Zik-Group/N-Zik/issues/881).
+- Android Auto: no more "Unable to perform the selection" from the detail pages (issue https://github.com/N-Zik-Group/N-Zik/issues/777); the shuffle / radio / discover / search overflow buttons now have state-aware icons, real feedback and a working search (issue https://github.com/N-Zik-Group/N-Zik/issues/866), including the app-wide shuffle confirmation flash.
+- Unknown title / artist placeholders on the AA surfaces, the media notification and the big player for untagged tracks.
+- Karaoke (issue https://github.com/N-Zik-Group/N-Zik/issues/820): per-line fill for wrapped lines (CJK), the sung envelope no longer collapses to a narrow column on wrapped words, chorus characters are no longer cropped at the top, lines no longer stay lit inside gaps, and the font-size default is shared between the screen and the settings.
+- The rewind reminder notification no longer re-opens the deck on every return to the app — and the rewind playlist deep link now works.
+- Quick picks: polluted artist bylines cleaned (play counts / durations no longer shown as artists) and the artist cards use the album format.
+- Profiles / import / rescue data integrity: profile deletion and settings wipe now target the real credentials store, per-profile actions target the selected profile (not the active one), the post-import login-state reset writes into the right profile, database imports are staged through a temp file, display-name validation hardened (newlines, "__" ids), the base face is exported even when the base is not active, the face-card rename is mirrored to the names file, archives no longer keep stale names, dialogs survive rotation, and the greeting re-resolves when the face changes.
