@@ -62,12 +62,12 @@
 
 ## 📦 Available Builds
 
-- **Full** & **Beta** – Complete build with all components (`arm64-v8a`, 64-bit only).
-- **Full32** & **Beta32** – Complete build with all components without FFmpeg (`armeabi-v7a` + `arm64-v8a`, 32-bit & 64-bit).
-- **Minified** – Lightweight build, recommended for low-end devices (`arm64-v8a`, 64-bit only).
-- **Minified32** – Lightweight build without FFmpeg (`armeabi-v7a` + `arm64-v8a`, 32-bit & 64-bit).
-- **FOSS** (`com.nevar.nzik.foss`) – Full build without auto-updater, suitable for alternative stores (`arm64-v8a`, 64-bit only).
-- **Dev** & **Dev32** – Development builds from latest commits, for testing only (`arm64-v8a` / `armeabi-v7a` + `arm64-v8a`).
+- **Full** & **Beta**: Complete build with all components (`arm64-v8a`, 64-bit only).
+- **Full32** & **Beta32**: Complete build with all components without FFmpeg (`armeabi-v7a` + `arm64-v8a`, 32-bit & 64-bit).
+- **Minified**: Lightweight build, recommended for low-end devices (`arm64-v8a`, 64-bit only).
+- **Minified32**: Lightweight build without FFmpeg (`armeabi-v7a` + `arm64-v8a`, 32-bit & 64-bit).
+- **FOSS** (`com.nevar.nzik.foss`): Full build without auto-updater, suitable for alternative stores (`arm64-v8a`, 64-bit only).
+- **Dev** & **Dev32**: Development builds from latest commits, for testing only (`arm64-v8a` / `armeabi-v7a` + `arm64-v8a`).
 
 > ℹ️ Standard builds (Full, Minified, Beta, FOSS, Dev) are 64-bit only because they bundle FFmpeg. The "32" builds (Full32, Minified32, Beta32, Dev32) drop FFmpeg, so they work on both 32-bit and 64-bit devices. (`armeabi-v7a` + `arm64-v8a`).
 
@@ -111,62 +111,62 @@ Join the N-Zik Discord:
 
 # 🎧 Features
 
-- 🌍 **Multilingual Support** – Available in English, Italian, German, Russian, French, Spanish, Czech, Turkish, Romanian, and more. Contributions are always welcome!
+- 🌍 **Multilingual Support**: Available in English, Italian, German, Russian, French, Spanish, Czech, Turkish, Romanian, and more. Contributions are always welcome!
 - 🔊 **High Quality Audio** - Premium streaming quality is unlocked automatically - just connect your YouTube Music Premium account.
 - 🎨 **Modern and Intuitive UI**
-- 🌓 **UI Mode Toggle** – Switch between the **N-Zik** experience and the classic **ViMusic** interface.
-- 💾 **Smart Offline Caching** – Automatically cache songs for offline playback with customizable cache limits.
-- 📥 **Downloads** – Download individual tracks or entire playlists for permanent offline access, with a dedicated download quality (Auto/High/Low) and a batch "Update downloads" action.
-- ▶️ **Background Playback** – Keep your music playing while using other apps.
-- 🎵 **NZik Radio** – Algorithmic radio mode that auto-queues related songs based on the current track.
-- 📊 **Listening Statistics** – Track your habits, favorite artists, and playback trends.
-- ⬇️ **OTA Updates** – Receive automatic in-app updates without needing to reinstall manually.
-- 🌈 **Audio Visualizer** – Enjoy real-time visual effects synchronized with your music.
+- 🌓 **UI Mode Toggle**: Switch between the **N-Zik** experience and the classic **ViMusic** interface.
+- 💾 **Smart Offline Caching**: Automatically cache songs for offline playback with customizable cache limits.
+- 📥 **Downloads**: Download individual tracks or entire playlists for permanent offline access, with a dedicated download quality (Auto/High/Low) and a batch "Update downloads" action.
+- ▶️ **Background Playback**: Keep your music playing while using other apps.
+- 🎵 **NZik Radio**: Algorithmic radio mode that auto-queues related songs based on the current track.
+- 📊 **Listening Statistics**: Track your habits, favorite artists, and playback trends.
+- ⬇️ **OTA Updates**: Receive automatic in-app updates without needing to reinstall manually.
+- 🌈 **Audio Visualizer**: Enjoy real-time visual effects synchronized with your music.
 
 > [!NOTE]
 > 🎤 The audio visualizer requires **microphone permission** and must be enabled in the settings.
 
-- 🕹️ **Discord Rich Presence** – Display your currently playing track directly on your Discord profile. An advanced mode adds custom text templates, activity type, up to 2 custom buttons, pause-presence, and a live interactive preview card.
+- 🕹️ **Discord Rich Presence**: Display your currently playing track directly on your Discord profile. An advanced mode adds custom text templates, activity type, up to 2 custom buttons, pause-presence, and a live interactive preview card.
 
-- 📰 **Discovery** – Explore moods, genres, releases, and albums from your favorite artists, plus trending picks.
-- 🔄 **Playlist Import & Export** – Easily back up, share, and restore playlists, you can import from Riplay, Spotify ([Exportify](https://exportify.net/)), Youtube Music and N-Zik
-- ✍️ **Advanced Lyrics Support** – Fetch, display word by word, sync and unsync lyrics with smart fallback mechanisms, edit, and translate them in real-time via Google Translate with source language detection.
-- 🎭 **Custom Themes** – Personalize the app with multiple theme options.
-- ⏲️ **Sleep Timer** – Automatically stop playback after a configurable duration.
-- 🎚️ **Advanced Audio Controls** – Adjust volume, playback speed, pitch, normalization, silence skipping, crossfade, volume boost, bass boost, and reverb.
-- 🔍 **Song Recognition** – Identify songs playing around you via audio fingerprinting (Shazam-like).
-- 🎤 **Voice Search** – Search for music using your voice with animated overlay.
-- 📱 **On-Device Music** – Play local music files stored directly on your device.
-- 📺 **Wide Platform Support** – Compatible with Android Auto, Android Automotive, Android TV, and YouTube video playback.
-- 🪟 **Widgets** – New widgets for your home screen (Compact, Turntable, and Playlist).
+- 📰 **Discovery**: Explore moods, genres, releases, and albums from your favorite artists, plus trending picks.
+- 🔄 **Playlist Import & Export**: Easily back up, share, and restore playlists, you can import from Riplay, Spotify ([Exportify](https://exportify.net/)), Youtube Music and N-Zik
+- ✍️ **Advanced Lyrics Support**: Fetch, display word by word, sync and unsync lyrics with smart fallback mechanisms, edit, and translate them in real-time via Google Translate with source language detection.
+- 🎭 **Custom Themes**: Personalize the app with multiple theme options.
+- ⏲️ **Sleep Timer**: Automatically stop playback after a configurable duration.
+- 🎚️ **Advanced Audio Controls**: Adjust volume, playback speed, pitch, normalization, silence skipping, crossfade, volume boost, bass boost, and reverb.
+- 🔍 **Song Recognition**: Identify songs playing around you via audio fingerprinting (Shazam-like).
+- 🎤 **Voice Search**: Search for music using your voice with animated overlay.
+- 📱 **On-Device Music**: Play local music files stored directly on your device.
+- 📺 **Wide Platform Support**: Compatible with Android Auto, Android Automotive, Android TV, and YouTube video playback.
+- 🪟 **Widgets**: New widgets for your home screen (Compact, Turntable, and Playlist).
 
-- 📤 **Media Export** – Export cached or downloaded music to external storage with full metadata (title, artist, album, cover art, copyright, etc.) powered by FFmpeg. _(Note: Not available on 32-bit builds as they drop FFmpeg)_
-- ✏️ **Metadata Editor** – Edit song metadata (title, artist, album, genre, year, cover art, and more) directly in-app. Supports both AAC and Opus codecs with automatic cover art embedding.
-- ⚙️ **Settings & Database Auto-Backup** – Save, restore, and automatically back up your complete app configuration and database with customizable intervals, retention limits, and optional YouTube/Discord/Last.fm credential inclusion.
-- 📡 **Offline First** – Enjoy your music library even without an internet connection.
-- 🔁 **YouTube Sync** – Recommendations and profile-related content are synchronized from your YouTube account, plus a new two-way sync engine (experimental - currently enabled in debug/dev builds) that keeps your likes and synced items aligned between N-Zik and YouTube Music.
-- 🔄 **Auto-Resume on Device Connect** – Automatically resume playback when Bluetooth headphones or speakers connect.
-- 💾 **Persistent Queue** – Your queue is saved and restored across app sessions.
-- 🔀 **Auto-fill Queue** – Automatically adds more songs when the queue is nearly empty.
-- 🗑️ **Smart Trash** – Intelligent cleanup of songs based on listen count thresholds.
-- 🔇 **Hidden Songs** – Hide or unhide songs from your library view.
-- 👨‍👩‍👧‍👦 **Parental Control** – Block explicit content based on your settings.
-- 🔗 **Invidious Integration** – Use an alternative YouTube frontend for streaming.
-- 🌐 **Proxy Support** – Configurable proxy for YouTube API requests.
-- 📶 **Network Quality Adaptation** – Adaptive streaming based on your connection quality.
-- 📋 **Log Export** – Export app logs to a file, or copy them to the clipboard, for easy debugging and reporting.
-- 👤 **Multi-Profile** – Switch between multiple isolated profiles (per-profile database and preferences) from the settings or the main-menu switcher.
-- 👥 **Listen Together** – Join or host live listening sessions with other users via an 8-character code or invite link. Runs on Metrolist's [MetroServer](https://github.com/MetrolistGroup/metroserver) infrastructure (N-Zik is an officially supported host), and you can point it at your own custom server in the settings.
-- 🎼 **Last.fm Integration** – Scrobble what you listen to: Now Playing, love/unlove, and configurable scrobbling options.
-- 🧠 **MusicBrainz Insights** – Rich artist and album information, community data, and external links.
-- 🚫 **Dislike System** – Dislike songs, artists, and albums to keep them out of your recommendations, with dedicated "Disliked" tabs.
-- ⏯️ **Unified Player** – The full player and the mini-player are one experience; long-press the mini-player to open the in-app queue overlay.
-- 🗓️ **Rewind** – Yearly and monthly listening recaps ("My Rewind"), auto-generated Rewind playlists, background music, and deck image export.
-- 🚑 **Rescue Center** – Recover your app even if it won't start: a dedicated launcher shortcut exports and restores your database and settings.
-- 🛠️ **Maintenance Screen** – Inspect the app state and its live subsystems, and export logs or crash reports.
-- 🚪 **First-Launch Onboarding** – A guided 4-step flow (display name, playlist import, account setup).
-- ⚡ **App Shortcuts** – Dynamically registered home-screen shortcuts (search, albums, artists, library, rescue).
-- 📈 **Audio Bar** – A visual waveform seekbar for precise track navigation.
+- 📤 **Media Export**: Export cached or downloaded music to external storage with full metadata (title, artist, album, cover art, copyright, etc.) powered by FFmpeg. _(Note: Not available on 32-bit builds as they drop FFmpeg)_
+- ✏️ **Metadata Editor**: Edit song metadata (title, artist, album, genre, year, cover art, and more) directly in-app. Supports both AAC and Opus codecs with automatic cover art embedding.
+- ⚙️ **Settings & Database Auto-Backup**: Save, restore, and automatically back up your complete app configuration and database with customizable intervals, retention limits, and optional YouTube/Discord/Last.fm credential inclusion.
+- 📡 **Offline First**: Enjoy your music library even without an internet connection.
+- 🔁 **YouTube Sync**: Recommendations and profile-related content are synchronized from your YouTube account, plus a new two-way sync engine (experimental - currently enabled in debug/dev builds) that keeps your likes and synced items aligned between N-Zik and YouTube Music.
+- 🔄 **Auto-Resume on Device Connect**: Automatically resume playback when Bluetooth headphones or speakers connect.
+- 💾 **Persistent Queue**: Your queue is saved and restored across app sessions.
+- 🔀 **Auto-fill Queue**: Automatically adds more songs when the queue is nearly empty.
+- 🗑️ **Smart Trash**: Intelligent cleanup of songs based on listen count thresholds.
+- 🔇 **Hidden Songs**: Hide or unhide songs from your library view.
+- 👨‍👩‍👧‍👦 **Parental Control**: Block explicit content based on your settings.
+- 🔗 **Invidious Integration**: Use an alternative YouTube frontend for streaming.
+- 🌐 **Proxy Support**: Configurable proxy for YouTube API requests.
+- 📶 **Network Quality Adaptation**: Adaptive streaming based on your connection quality.
+- 📋 **Log Export**: Export app logs to a file, or copy them to the clipboard, for easy debugging and reporting.
+- 👤 **Multi-Profile**: Switch between multiple isolated profiles (per-profile database and preferences) from the settings or the main-menu switcher.
+- 👥 **Listen Together**: Join or host live listening sessions with other users via an 8-character code or invite link. Runs on Metrolist's [MetroServer](https://github.com/MetrolistGroup/metroserver) infrastructure (N-Zik is an officially supported host), and you can point it at your own custom server in the settings.
+- 🎼 **Last.fm Integration**: Scrobble what you listen to: Now Playing, love/unlove, and configurable scrobbling options.
+- 🧠 **MusicBrainz Insights**: Rich artist and album information, community data, and external links.
+- 🚫 **Dislike System**: Dislike songs, artists, and albums to keep them out of your recommendations, with dedicated "Disliked" tabs.
+- ⏯️ **Unified Player**: The full player and the mini-player are one experience; long-press the mini-player to open the in-app queue overlay.
+- 🗓️ **Rewind**: Yearly and monthly listening recaps ("My Rewind"), auto-generated Rewind playlists, background music, and deck image export.
+- 🚑 **Rescue Center**: Recover your app even if it won't start: a dedicated launcher shortcut exports and restores your database and settings.
+- 🛠️ **Maintenance Screen**: Inspect the app state and its live subsystems, and export logs or crash reports.
+- 🚪 **First-Launch Onboarding**: A guided 4-step flow (display name, playlist import, account setup).
+- ⚡ **App Shortcuts**: Dynamically registered home-screen shortcuts (search, albums, artists, library, rescue).
+- 📈 **Audio Bar**: A visual waveform seekbar for precise track navigation.
 
 # 📷 Screenshots & Videos
 
@@ -253,48 +253,48 @@ Join the N-Zik Discord:
 Thanks to all our amazing contributors!  
 Here are the languages currently supported:
 
-- 🇿🇦 **Afrikaans** — [HelloZebra1133](https://crowdin.com/profile/HelloZebra1133)
-- 🇸🇦 **Arabic** — [ABS zarzis](https://crowdin.com/profile/abszar), [Ahmad Al Juwaisri](https://crowdin.com/profile/juwaisri)
-- 🇦🇿 **Azerbaijani** — [Nizami Səmidov](https://crowdin.com/profile/nizamismidov4), [Notesuree](https://github.com/Notesuree)
-- 🇧🇩 **Bangla** — [Ann Naser Nabil](https://github.com/AnnNaserNabil)
-- 🇷🇺 **Bashkir** — [Shilave malay](https://crowdin.com/profile/Bash.boy)
-- 🇪🇸 **Catalan** — [Adrià Martínez](https://crowdin.com/profile/marxally), [Aniol](https://crowdin.com/profile/aniol), [EMC_Translator](https://crowdin.com/profile/EMC_Translator)
-- 🇨🇳 **Chinese (Simplified)** — [benhaotang](https://crowdin.com/profile/benhaotang), [SharkChan0622](https://github.com/SharkChan0622)
-- 🇹🇼 **Chinese (Traditional)** — [YeeTW](https://github.com/yjcTW), [SharkChan0622](https://github.com/SharkChan0622)
-- 🇨🇿 **Czech** — [ikanakova](https://github.com/ikanakova), [JZITNIK-github](https://github.com/JZITNIK-github)
-- 🇩🇰 **Danish** — [cultcats](https://crowdin.com/profile/cultcats)
-- 🇳🇱 **Dutch** — [BabyBenefactor](https://crowdin.com/profile/BabyBenefactor)
-- 🇺🇸 **English** — [Alejandro Moctezuma](https://crowdin.com/profile/alejandromoc), [twistios](https://crowdin.com/profile/twistios), [Smk90](https://crowdin.com/profile/smk90), [CanIn](https://crowdin.com/profile/canin), [koliwan](https://crowdin.com/profile/koliwan), [Glich440](https://github.com/Glich440), [fast4x](https://github.com/fast4x)
-- 🌍 **Esperanto** — [kefiiris](https://github.com/kefiiris)
-- 🇪🇪 **Estonian** — [beez276](https://crowdin.com/profile/beez276)
-- 🇵🇭 **Filipino** — [Clyde-Timonera](https://github.com/Clyde-Timonera)
-- 🇫🇮 **Finnish** — [Smk90](https://crowdin.com/profile/smk90), [rikalaj](https://crowdin.com/profile/rikalaj)
-- 🇫🇷 **French** — [Mickael81](https://crowdin.com/profile/mickael81), [esophagusdecency](https://crowdin.com/profile/esophagusdecency), [NEVARLeVrai](https://github.com/NEVARLeVrai)
-- 🇪🇸 **Galician** — [zordor](https://crowdin.com/profile/zordor), [ninjum](https://crowdin.com/profile/ninjum)
-- 🇩🇪 **German** — [twistqj](https://crowdin.com/profile/twistqj), [nitro4542](https://crowdin.com/profile/nitro4542), [twistios](https://crowdin.com/profile/twistios), [Eddisch](https://crowdin.com/profile/eddisch2010), and more...
-- 🇬🇷 **Greek** — [Marinkas](https://github.com/Marinkas)
-- 🇮🇱 **Hebrew** — [opcitgv](https://crowdin.com/profile/opcitgv), [TheCreeperDuck](https://crowdin.com/profile/thecreeperduck)
-- 🇮🇳 **Hindi** — [NikunjKhangwal](https://crowdin.com/profile/nikunjkhangwal), [Sharunkumar](https://crowdin.com/profile/sharunkumar), [Th3-C0der](https://github.com/Th3-C0der)
-- 🇭🇺 **Hungarian** — [Zan1456](https://crowdin.com/profile/Zan1456), [Ndvok](https://crowdin.com/profile/ndvok)
-- 🇮🇹 **Italian** — [Fabio Iotti](https://crowdin.com/profile/bruce965), [CiccioDerole](https://crowdin.com/profile/CiccioDerole), [fast4x](https://github.com/fast4x)
-- 🇮🇩 **Indonesian** — [luthfialfarabi](https://crowdin.com/profile/luthfialfarabi), [teddysulaimanGL](https://github.com/teddysulaimanGL)
-- 🌐 **Interlingua** — [softinterlingua](https://github.com/softinterlingua)
-- 🇯🇵 **Japanese** — [maboroshin](https://crowdin.com/profile/maboroshin), [Mid_Vur_Shaan](https://crowdin.com/profile/Mid_Vur_Shaan)
-- 🇰🇷 **Korean** — [ZeroZero00](https://crowdin.com/profile/ZeroZero00), [TsyQax](https://crowdin.com/profile/TsyQax)
-- 🇳🇴 **Norwegian** — [Xyrcon](https://crowdin.com/profile/xyrcon)
-- 🇮🇷 **Persian** — [CUMOON](https://github.com/CUMOON)
-- 🇵🇱 **Polish** — [Krzysztof](https://crowdin.com/profile/scrummybingus), [AntoniNowak](https://crowdin.com/profile/AntoniNowak), and more...
-- 🇵🇹 **Portuguese (Portugal)** — [ManuelCoimbra](https://crowdin.com/profile/ManuelCoimbra)
-- 🇧🇷 **Portuguese (Brazil)** — [vs-machado](https://crowdin.com/profile/vs-machado), [xSyntheticWave](https://crowdin.com/profile/xSyntheticWave), [NEVARLeVrai](https://github.com/NEVARLeVrai)
-- 🇷🇴 **Romanian** — [OrangeZXZ](https://github.com/OrangeZxZ)
-- 🇷🇺 **Russian** — [Eddisch](https://crowdin.com/profile/eddisch2010), [Alnoer](https://crowdin.com/profile/Alnoer), [siggi1984](https://github.com/siggi1984), and more...
-- 🇷🇸 **Serbian (Cyrillic & Latin)** — [IvanMaksimovic77](https://github.com/IvanMaksimovic77)
-- 🇪🇸 **Spanish** — [Alejandro Moctezuma](https://crowdin.com/profile/alejandromoc), [DanielSevillano](https://github.com/DanielSevillano), and more...
-- 🇱🇰 **Sinhala** — [VINULA2007](https://crowdin.com/profile/VINULA2007)
-- 🇸🇪 **Swedish** — [sebbe.ekman](https://crowdin.com/profile/sebbe.ekman)
-- 🇹🇷 **Turkish** — [abfreeman](https://github.com/abfreeman), [mikropsoft](https://github.com/mikropsoft), and more...
-- 🇺🇦 **Ukrainian** — [Avin](https://crowdin.com/profile/avinateachip), [Crayz310](https://github.com/Crayz310), and more...
-- 🇻🇳 **Vietnamese** — [teaminh](https://crowdin.com/profile/teaminh)
+- 🇿🇦 **Afrikaans**: [HelloZebra1133](https://crowdin.com/profile/HelloZebra1133)
+- 🇸🇦 **Arabic**: [ABS zarzis](https://crowdin.com/profile/abszar), [Ahmad Al Juwaisri](https://crowdin.com/profile/juwaisri)
+- 🇦🇿 **Azerbaijani**: [Nizami Səmidov](https://crowdin.com/profile/nizamismidov4), [Notesuree](https://github.com/Notesuree)
+- 🇧🇩 **Bangla**: [Ann Naser Nabil](https://github.com/AnnNaserNabil)
+- 🇷🇺 **Bashkir**: [Shilave malay](https://crowdin.com/profile/Bash.boy)
+- 🇪🇸 **Catalan**: [Adrià Martínez](https://crowdin.com/profile/marxally), [Aniol](https://crowdin.com/profile/aniol), [EMC_Translator](https://crowdin.com/profile/EMC_Translator)
+- 🇨🇳 **Chinese (Simplified)**: [benhaotang](https://crowdin.com/profile/benhaotang), [SharkChan0622](https://github.com/SharkChan0622)
+- 🇹🇼 **Chinese (Traditional)**: [YeeTW](https://github.com/yjcTW), [SharkChan0622](https://github.com/SharkChan0622)
+- 🇨🇿 **Czech**: [ikanakova](https://github.com/ikanakova), [JZITNIK-github](https://github.com/JZITNIK-github)
+- 🇩🇰 **Danish**: [cultcats](https://crowdin.com/profile/cultcats)
+- 🇳🇱 **Dutch**: [BabyBenefactor](https://crowdin.com/profile/BabyBenefactor)
+- 🇺🇸 **English**: [Alejandro Moctezuma](https://crowdin.com/profile/alejandromoc), [twistios](https://crowdin.com/profile/twistios), [Smk90](https://crowdin.com/profile/smk90), [CanIn](https://crowdin.com/profile/canin), [koliwan](https://crowdin.com/profile/koliwan), [Glich440](https://github.com/Glich440), [fast4x](https://github.com/fast4x)
+- 🌍 **Esperanto**: [kefiiris](https://github.com/kefiiris)
+- 🇪🇪 **Estonian**: [beez276](https://crowdin.com/profile/beez276)
+- 🇵🇭 **Filipino**: [Clyde-Timonera](https://github.com/Clyde-Timonera)
+- 🇫🇮 **Finnish**: [Smk90](https://crowdin.com/profile/smk90), [rikalaj](https://crowdin.com/profile/rikalaj)
+- 🇫🇷 **French**: [Mickael81](https://crowdin.com/profile/mickael81), [esophagusdecency](https://crowdin.com/profile/esophagusdecency), [NEVARLeVrai](https://github.com/NEVARLeVrai)
+- 🇪🇸 **Galician**: [zordor](https://crowdin.com/profile/zordor), [ninjum](https://crowdin.com/profile/ninjum)
+- 🇩🇪 **German**: [twistqj](https://crowdin.com/profile/twistqj), [nitro4542](https://crowdin.com/profile/nitro4542), [twistios](https://crowdin.com/profile/twistios), [Eddisch](https://crowdin.com/profile/eddisch2010), and more...
+- 🇬🇷 **Greek**: [Marinkas](https://github.com/Marinkas)
+- 🇮🇱 **Hebrew**: [opcitgv](https://crowdin.com/profile/opcitgv), [TheCreeperDuck](https://crowdin.com/profile/thecreeperduck)
+- 🇮🇳 **Hindi**: [NikunjKhangwal](https://crowdin.com/profile/nikunjkhangwal), [Sharunkumar](https://crowdin.com/profile/sharunkumar), [Th3-C0der](https://github.com/Th3-C0der)
+- 🇭🇺 **Hungarian**: [Zan1456](https://crowdin.com/profile/Zan1456), [Ndvok](https://crowdin.com/profile/ndvok)
+- 🇮🇹 **Italian**: [Fabio Iotti](https://crowdin.com/profile/bruce965), [CiccioDerole](https://crowdin.com/profile/CiccioDerole), [fast4x](https://github.com/fast4x)
+- 🇮🇩 **Indonesian**: [luthfialfarabi](https://crowdin.com/profile/luthfialfarabi), [teddysulaimanGL](https://github.com/teddysulaimanGL)
+- 🌐 **Interlingua**: [softinterlingua](https://github.com/softinterlingua)
+- 🇯🇵 **Japanese**: [maboroshin](https://crowdin.com/profile/maboroshin), [Mid_Vur_Shaan](https://crowdin.com/profile/Mid_Vur_Shaan)
+- 🇰🇷 **Korean**: [ZeroZero00](https://crowdin.com/profile/ZeroZero00), [TsyQax](https://crowdin.com/profile/TsyQax)
+- 🇳🇴 **Norwegian**: [Xyrcon](https://crowdin.com/profile/xyrcon)
+- 🇮🇷 **Persian**: [CUMOON](https://github.com/CUMOON)
+- 🇵🇱 **Polish**: [Krzysztof](https://crowdin.com/profile/scrummybingus), [AntoniNowak](https://crowdin.com/profile/AntoniNowak), and more...
+- 🇵🇹 **Portuguese (Portugal)**: [ManuelCoimbra](https://crowdin.com/profile/ManuelCoimbra)
+- 🇧🇷 **Portuguese (Brazil)**: [vs-machado](https://crowdin.com/profile/vs-machado), [xSyntheticWave](https://crowdin.com/profile/xSyntheticWave), [NEVARLeVrai](https://github.com/NEVARLeVrai)
+- 🇷🇴 **Romanian**: [OrangeZXZ](https://github.com/OrangeZxZ)
+- 🇷🇺 **Russian**: [Eddisch](https://crowdin.com/profile/eddisch2010), [Alnoer](https://crowdin.com/profile/Alnoer), [siggi1984](https://github.com/siggi1984), and more...
+- 🇷🇸 **Serbian (Cyrillic & Latin)**: [IvanMaksimovic77](https://github.com/IvanMaksimovic77)
+- 🇪🇸 **Spanish**: [Alejandro Moctezuma](https://crowdin.com/profile/alejandromoc), [DanielSevillano](https://github.com/DanielSevillano), and more...
+- 🇱🇰 **Sinhala**: [VINULA2007](https://crowdin.com/profile/VINULA2007)
+- 🇸🇪 **Swedish**: [sebbe.ekman](https://crowdin.com/profile/sebbe.ekman)
+- 🇹🇷 **Turkish**: [abfreeman](https://github.com/abfreeman), [mikropsoft](https://github.com/mikropsoft), and more...
+- 🇺🇦 **Ukrainian**: [Avin](https://crowdin.com/profile/avinateachip), [Crayz310](https://github.com/Crayz310), and more...
+- 🇻🇳 **Vietnamese**: [teaminh](https://crowdin.com/profile/teaminh)
 
 ## 🌍 Help Translate
 
