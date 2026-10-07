@@ -1,0 +1,48 @@
+name: Fetch, create, and update repo's translators
+
+env:
+  TZ: Europe/Paris
+
+on:
+  schedule:
+    - cron: '0 23 * * 6'  # Every Saturday at 23 PM
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  update-translators-list:
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit
+      # and push the added or changed files to the repository.
+      contents: write
+
+    steps:
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Install requests dependency
+        run: pip install requests
+
+      - uses: actions/checkout@v7
+
+      - name: Run get_translators.py script
+        env:
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+        run: python .github/get_translators.py
+
+      - name: Copy generated translators.json to its correct place
+        run: "mkdir -p ComposeN-Zik/src/androidMain/res/raw && mv translators.json ComposeN-Zik/src/androidMain/res/raw/translators.json"
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%m-%d-%Y')" >> $GITHUB_OUTPUT
+
+      - name: Push changes
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "In-app translators list updated ${{ steps.date.outputs.date }}"
