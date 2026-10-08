@@ -53,6 +53,21 @@ jobs:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
 
+      - name: Create placeholder release notes
+        if: matrix.language == 'java-kotlin'
+        run: |
+          mkdir -p ComposeN-Zik/src/androidMain/res/raw
+          # release_notes.txt is NOT tracked in git — it is generated at build
+          # time (same step in build-dev.yml). Without it, R.release_notes in
+          # UpdateScreen.kt is unresolved and the build fails on a fresh
+          # checkout. Copy the latest released changelog as its content.
+          if ls Updater/changelogs/*.txt >/dev/null 2>&1; then
+            cp "$(ls Updater/changelogs/*.txt | sort -V | tail -n 1)" \
+               ComposeN-Zik/src/androidMain/res/raw/release_notes.txt
+          else
+            echo "N-Zik" > ComposeN-Zik/src/androidMain/res/raw/release_notes.txt
+          fi
+
       - name: Build for CodeQL
         if: matrix.build-mode == 'manual'
         shell: bash
