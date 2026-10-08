@@ -1,0 +1,69 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  schedule:
+    - cron: "42 10 * * 6"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            build-mode: none
+          - language: javascript-typescript
+            build-mode: none
+          - language: java-kotlin
+            build-mode: manual
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          # N-Zik depends on its 3 submodules (discordrpc, nextvisualizer,
+          # betterlyrics) — without them the Gradle build cannot resolve the
+          # module variants and the analysis fails.
+          submodules: true
+
+      - name: Set up Java 21
+        if: matrix.language == 'java-kotlin'
+        uses: actions/setup-java@v6.0.1
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      - name: Build for CodeQL
+        if: matrix.build-mode == 'manual'
+        shell: bash
+        run: |
+          chmod +x gradlew
+          # assembleDebug is the daily build variant: it compiles the app and
+          # all module main sources without the custom build types (beta,
+          # full, ...) or the unit-test sources.
+          ./gradlew --no-daemon :ComposeN-Zik:assembleDebug
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:${{ matrix.language }}"
