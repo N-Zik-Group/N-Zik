@@ -36,6 +36,8 @@ const val discordAdvancedSmallImageTextKey = "discordAdvancedSmallImageText"
 // Inactivity timer toggles (advanced mode; default on = current behavior).
 const val discordAdvancedPauseClearEnabledKey = "discordAdvancedPauseClearEnabled"
 const val discordAdvancedIdleCloseEnabledKey = "discordAdvancedIdleCloseEnabled"
+// Refresh tick interval in ms (advanced mode; default 5000, clamped [2000, 60000] on read).
+const val discordAdvancedRefreshIntervalMsKey = "discordAdvancedRefreshIntervalMs"
 
 /** All advanced keys, for the service's encrypted-prefs listener re-sync (item 6). */
 val discordAdvancedSettingKeys: Set<String> = setOf(
@@ -61,6 +63,7 @@ val discordAdvancedSettingKeys: Set<String> = setOf(
     discordAdvancedSmallImageTextKey,
     discordAdvancedPauseClearEnabledKey,
     discordAdvancedIdleCloseEnabledKey,
+    discordAdvancedRefreshIntervalMsKey,
 )
 
 /**
@@ -114,11 +117,19 @@ data class DiscordAdvancedSettings(
     val pauseClearEnabled: Boolean,
     /** Close the RPC connection after 10 min with no media event. Default on = current behavior. */
     val idleCloseEnabled: Boolean,
+    /** Refresh tick interval in ms while playing. Default 5000; clamped to [MIN, MAX] on read. */
+    val refreshIntervalMs: Long,
 ) {
     companion object {
+        /** Hard lower bound of the refresh interval (ms) — enforced on read, never below it. */
+        const val MIN_REFRESH_INTERVAL_MS = 2000L
+
+        /** Hard upper bound of the refresh interval (ms) — the UI slider maximum. */
+        const val MAX_REFRESH_INTERVAL_MS = 60_000L
+
         /**
          * Defaults: mode off, listening, pause presence on, empty templates, both buttons
-         * on, every presence section shown.
+         * on, every presence section shown, 5 s refresh tick.
          */
         val DEFAULTS = DiscordAdvancedSettings(
             advancedMode = false,
@@ -143,6 +154,7 @@ data class DiscordAdvancedSettings(
             smallImageTextTemplate = "",
             pauseClearEnabled = true,
             idleCloseEnabled = true,
+            refreshIntervalMs = 5000L,
         )
 
         /** Reads all advanced keys at once (single prefs access per presence update). */
@@ -169,6 +181,10 @@ data class DiscordAdvancedSettings(
             smallImageTextTemplate = prefs.getString(discordAdvancedSmallImageTextKey, "").orEmpty(),
             pauseClearEnabled = prefs.getBoolean(discordAdvancedPauseClearEnabledKey, true),
             idleCloseEnabled = prefs.getBoolean(discordAdvancedIdleCloseEnabledKey, true),
+            // Hard guard on read: a corrupted stored value is clamped to the [MIN, MAX]
+            // bounds (never below 2 s, never above 60 s) — no crash, default behavior.
+            refreshIntervalMs = prefs.getInt(discordAdvancedRefreshIntervalMsKey, 5000).toLong()
+                .coerceIn(MIN_REFRESH_INTERVAL_MS, MAX_REFRESH_INTERVAL_MS),
         )
 
         fun read(context: Context): DiscordAdvancedSettings = read(context.encryptedPreferences)

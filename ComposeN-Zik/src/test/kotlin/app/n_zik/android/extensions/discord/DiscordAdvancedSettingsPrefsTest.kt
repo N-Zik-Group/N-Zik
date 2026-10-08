@@ -69,6 +69,7 @@ class DiscordAdvancedSettingsPrefsTest {
         every { prefs.getString(discordAdvancedSmallImageTextKey, "") } returns null
         every { prefs.getBoolean(discordAdvancedPauseClearEnabledKey, true) } returns false
         every { prefs.getBoolean(discordAdvancedIdleCloseEnabledKey, true) } returns false
+        every { prefs.getInt(discordAdvancedRefreshIntervalMsKey, 5000) } returns 4000
 
         val settings = DiscordAdvancedSettings.read(prefs)
 
@@ -94,6 +95,7 @@ class DiscordAdvancedSettingsPrefsTest {
         assertEquals("", settings.smallImageTextTemplate, "a null stored string falls back to empty")
         assertTrue(!settings.pauseClearEnabled, "the stored auto-clear toggle must be read (off)")
         assertTrue(!settings.idleCloseEnabled, "the stored idle-close toggle must be read (off)")
+        assertEquals(4000L, settings.refreshIntervalMs, "the stored refresh interval must be read")
     }
 
     @Test
@@ -121,13 +123,38 @@ class DiscordAdvancedSettingsPrefsTest {
         every { prefs.getString(discordAdvancedSmallImageTextKey, "") } returns null
         every { prefs.getBoolean(discordAdvancedPauseClearEnabledKey, true) } returns true
         every { prefs.getBoolean(discordAdvancedIdleCloseEnabledKey, true) } returns true
+        every { prefs.getInt(discordAdvancedRefreshIntervalMsKey, 5000) } returns 5000
 
         assertEquals(DiscordAdvancedSettings.DEFAULTS, DiscordAdvancedSettings.read(prefs))
     }
 
     @Test
+    fun `a corrupted low stored refresh interval is clamped to the 2000 ms minimum at read`() {
+        val prefs = mockk<SharedPreferences>(relaxed = true)
+        every { prefs.getInt(discordAdvancedRefreshIntervalMsKey, 5000) } returns 1000
+
+        assertEquals(
+            2000L,
+            DiscordAdvancedSettings.read(prefs).refreshIntervalMs,
+            "the hard guard clamps on read — never below 2000 ms",
+        )
+    }
+
+    @Test
+    fun `a corrupted high stored refresh interval is clamped to the 60000 ms maximum at read`() {
+        val prefs = mockk<SharedPreferences>(relaxed = true)
+        every { prefs.getInt(discordAdvancedRefreshIntervalMsKey, 5000) } returns 999_999
+
+        assertEquals(
+            60_000L,
+            DiscordAdvancedSettings.read(prefs).refreshIntervalMs,
+            "the hard guard clamps on read — never above 60000 ms",
+        )
+    }
+
+    @Test
     fun `the service re-sync key set covers every advanced key`() {
-        assertEquals(22, discordAdvancedSettingKeys.size)
+        assertEquals(23, discordAdvancedSettingKeys.size)
         assertTrue(
             discordAdvancedSettingKeys.containsAll(
                 listOf(
@@ -153,6 +180,7 @@ class DiscordAdvancedSettingsPrefsTest {
                     discordAdvancedSmallImageTextKey,
                     discordAdvancedPauseClearEnabledKey,
                     discordAdvancedIdleCloseEnabledKey,
+                    discordAdvancedRefreshIntervalMsKey,
                 )
             )
         )

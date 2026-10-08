@@ -92,6 +92,7 @@ import app.n_zik.android.extensions.discord.DiscordAdvancedSettings
 import app.n_zik.android.extensions.discord.DiscordLoginAndGetToken
 import app.n_zik.android.extensions.discord.DiscordMediaInfo
 import app.n_zik.android.extensions.discord.DiscordPresenceManager
+import app.n_zik.android.extensions.discord.DiscordRefreshIntervalEntry
 import app.n_zik.android.extensions.discord.DiscordRpcError
 import app.n_zik.android.extensions.discord.DiscordRpcErrorState
 import app.n_zik.android.extensions.discord.DiscordTemplateFieldActions
@@ -1837,6 +1838,11 @@ private fun DiscordAdvancedSection(search: Search) {
                     onCheckedChange = { idleCloseEnabled = it },
                     icon = R.drawable.link
                 )
+            }
+            // Refresh tick interval while playing (advanced option, default 5 s) — the
+            // manager re-reads it at every tick, so the change applies live (hot apply).
+            if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_refresh_interval).contains(search.inputValue, true)) {
+                DiscordRefreshIntervalEntry()
             }
         }
     }

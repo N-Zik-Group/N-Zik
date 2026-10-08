@@ -859,6 +859,8 @@
 <string name="discord_advanced_pause_auto_clear_text">With the pause presence off, clear the presence 60 s after pausing. Off = keep the last presence.</string>
 <string name="discord_advanced_idle_close">Close after 10 min idle</string>
 <string name="discord_advanced_idle_close_text">Close the RPC connection after 10 min with no media event. Off = keep the connection open.</string>
+<string name="discord_advanced_refresh_interval">Refresh interval</string>
+<string name="discord_advanced_refresh_interval_text">How often the presence is refreshed while playing (2 to 60 s, default 5 s). Lower = a smoother progress bar.</string>
 <string name="discord_preview_title">Rich Presence preview</string>
 <string name="discord_preview_state_actual">Actual state</string>
 <string name="discord_preview_state_playing">Playing</string>

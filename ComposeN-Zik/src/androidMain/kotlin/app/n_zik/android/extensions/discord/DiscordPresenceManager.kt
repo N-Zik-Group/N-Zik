@@ -38,8 +38,13 @@ class DiscordPresenceManager(
     private val externalScope: CoroutineScope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA),
     private val connectionFactory: (String) -> DiscordRpcConnection = { defaultConnection(it) },
     private val tokenValidator: (suspend (String) -> Boolean?)? = null,
-    /** Item 8: refresh tick interval. Production = [REFRESH_INTERVAL_MS]; tests inject a shorter value. */
-    private val refreshIntervalMs: Long = REFRESH_INTERVAL_MS,
+    /**
+     * Item 8: refresh tick interval. `null` = production: the effective interval is
+     * re-read from the advanced settings at every tick (hot apply — a settings change
+     * takes effect on the next tick without re-creating the manager); a fixed value =
+     * test override.
+     */
+    private val refreshIntervalMs: Long? = null,
     /**
      * gh-881 (Phase 3, Fix D): the dispatcher the live player-state providers must be
      * invoked on — ExoPlayer state is main-thread only (`verifyApplicationThread`).
@@ -55,9 +60,6 @@ class DiscordPresenceManager(
          * This prevents RPC spam, wrong-song flashes, and false "paused" states.
          */
         private const val DEBOUNCE_DELAY_MS = 5000L
-
-        /** Item 8: refresh tick while playing (animated Discord progress bar + network re-arm). */
-        private const val REFRESH_INTERVAL_MS = 5000L
 
         /** Item 7: 60 s of pause with no event → clear the activity (connection kept). */
         private const val PAUSE_CLEAR_DELAY_MS = 60_000L
@@ -210,10 +212,11 @@ class DiscordPresenceManager(
      * [playbackSpeed] is the effective playback speed (item 5): the timestamps are
      * adjusted by it and the details carry a " [1.50x]"-style suffix when it is not 1.0.
      * [getCurrentPosition] / [isPlayingProvider] are live providers (item 8): the
-     * refresh tick reads them every ~5 s so the Discord progress bar animates. They read
-     * ExoPlayer state, which ExoPlayer only allows on the main thread
-     * (`verifyApplicationThread`): this manager guarantees they are always INVOKED on the
-     * main thread, even though its own loops run on the DATA (IO) scope (gh-881 Phase 3, Fix D).
+     * refresh tick reads them every tick (default ~5 s, configurable in the advanced
+     * options) so the Discord progress bar animates. They read ExoPlayer state, which
+     * ExoPlayer only allows on the main thread (`verifyApplicationThread`): this manager
+     * guarantees they are always INVOKED on the main thread, even though its own loops
+     * run on the DATA (IO) scope (gh-881 Phase 3, Fix D).
      */
     fun onPlayingStateChanged(
         mediaItem: MediaItem?,
@@ -536,16 +539,20 @@ class DiscordPresenceManager(
     }
 
     /**
-     * Item 8: while the media is playing, re-sends the playing presence every ~5 s
-     * through the live providers, so Discord's progress bar animates. Each tick
-     * re-checks isNetworkAvailable (a down network just skips the tick; the next tick,
-     * within 5 s, re-arms the send). Stopped by a pause or onStop.
+     * Item 8: while the media is playing, re-sends the playing presence every refresh
+     * tick through the live providers, so Discord's progress bar animates. The tick
+     * interval is settings-driven (advanced option, default ~5 s — re-read at every
+     * tick, so a change applies on the next tick without re-creating this manager).
+     * Each tick re-checks isNetworkAvailable (a down network just skips the tick; the
+     * next tick re-arms the send). Stopped by a pause or onStop.
      */
     private fun startRefreshLoop() {
         refreshJob?.cancel()
         refreshJob = discordScope.launch {
             while (isActive && !isStopped) {
-                delay(refreshIntervalMs)
+                // Settings-driven: a fixed test override wins; in production the
+                // effective interval comes from the advanced settings at every tick.
+                delay(refreshIntervalMs ?: getAdvancedSettings().refreshIntervalMs)
                 if (isStopped) break
                 // A pause (or media removed) stops the loop — the presence is frozen.
                 // Callers must pass the live providers: without isPlayingProvider the

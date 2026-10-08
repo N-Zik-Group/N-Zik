@@ -21,6 +21,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.Collections
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * gh-881 (Phase 3, Fix D): the live player-state providers passed to
@@ -118,6 +119,105 @@ class DiscordPresenceMainThreadTest {
             assertTrue(
                 providerThreads.all { it == Thread.currentThread() },
                 "live providers must run on the main thread, got: ${providerThreads.distinct().map { it.name }}",
+            )
+        } finally {
+            manager.onStop()
+        }
+    }
+
+    /**
+     * Configurable refresh interval: without the `refreshIntervalMs` test override the
+     * manager re-reads the interval from the advanced settings at every tick — a live
+     * change must be honored by the SAME loop (hot apply), with no manager re-creation.
+     */
+    @Test
+    fun `the refresh interval is re-read from the advanced settings at every tick (hot apply)`() {
+        val mainScheduler = TestCoroutineScheduler()
+        Dispatchers.setMain(StandardTestDispatcher(mainScheduler))
+
+        val ioScope = CoroutineScope(Dispatchers.IO) // real workers, like production
+        ioScopes += ioScope
+
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkAvailable(any()) } returns true
+
+        // AtomicLong: the settings supplier runs on an IO worker while the test thread
+        // mutates the interval — the re-read at every tick must observe the write
+        // (volatile visibility), or the test races on a stale value.
+        val intervalMs = AtomicLong(10L)
+
+        val manager = DiscordPresenceManager(
+            context = discordTestContext(),
+            getToken = { "test-token" },
+            // No refreshIntervalMs override — the production path (settings-driven).
+            getAdvancedSettings = { DiscordAdvancedSettings.DEFAULTS.copy(refreshIntervalMs = intervalMs.get()) },
+            externalScope = ioScope,
+            connectionFactory = {
+                val connection = mockk<DiscordRpcConnection>(relaxed = true)
+                every { connection.reconnectAbandoned } returns MutableStateFlow(false)
+                every { connection.terminalCloseCode } returns MutableStateFlow(null)
+                connection
+            },
+            tokenValidator = { true },
+        )
+        managers += manager
+
+        try {
+            manager.onPlayingStateChanged(
+                mediaItem = mediaItem(),
+                isPlaying = true,
+                position = 10_000L,
+                duration = 100_000L,
+                getCurrentPosition = {
+                    providerThreads += Thread.currentThread()
+                    42_000L
+                },
+                isPlayingProvider = {
+                    providerThreads += Thread.currentThread()
+                    true
+                },
+            )
+
+            // First tick at the settings-driven 10 ms interval: it must land in tens
+            // of ms — a regression back to a fixed 5 s tick would not finish within
+            // 2500 ms, which this bound detects.
+            val firstTickStart = System.currentTimeMillis()
+            drainUntil(mainScheduler, calls = 2)
+            assertTrue(
+                System.currentTimeMillis() - firstTickStart < 2500,
+                "the settings-driven 10 ms interval must tick within tens of ms, took ${System.currentTimeMillis() - firstTickStart} ms (a fixed 5 s tick would not)",
+            )
+
+            // Live change: the user picks the 2 s minimum — the same loop must now wait
+            // that long, so no tick may fire in a window a 10 ms interval would fill
+            // with dozens of ticks. The settle pumps the main "looper" so any in-flight
+            // tick's provider hops land in the baseline before the window is measured.
+            intervalMs.set(2000L)
+            val settleDeadline = System.currentTimeMillis() + 100
+            while (System.currentTimeMillis() < settleDeadline) {
+                mainScheduler.runCurrent()
+                Thread.sleep(5)
+            }
+            val callsAtChange = providerThreads.size
+            val quietDeadline = System.currentTimeMillis() + 500
+            while (System.currentTimeMillis() < quietDeadline) {
+                mainScheduler.runCurrent()
+                Thread.sleep(5)
+            }
+            assertTrue(
+                providerThreads.size - callsAtChange <= 1,
+                "with a 2 s interval no tick may fire within the 500 ms quiet window, got ${providerThreads.size - callsAtChange} extra provider calls",
+            )
+
+            // Live change back to a short interval — the SAME loop must tick again
+            // (no manager re-creation): it wakes from its 2 s delay, re-reads the
+            // settings and ticks. A full tick calls BOTH providers.
+            val callsAtRestart = providerThreads.size
+            intervalMs.set(10L)
+            drainUntil(mainScheduler, calls = callsAtRestart + 2)
+            assertTrue(
+                providerThreads.size >= callsAtRestart + 2,
+                "after the interval goes back to 10 ms the same refresh loop must tick again within ${DRAIN_BUDGET_MS} ms, got ${providerThreads.size - callsAtRestart} provider calls",
             )
         } finally {
             manager.onStop()
