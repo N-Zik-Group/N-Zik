@@ -2,6 +2,8 @@ name: 💡 Feature request
 description: Suggest an idea to help us improve N-Zik
 title: "[Feature]: "
 labels: ["enhancement"]
+assignees:
+  - NEVARLeVrai
 body:
   - type: markdown
     attributes:

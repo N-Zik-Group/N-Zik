@@ -2,6 +2,8 @@ name: 👾 Bug report
 description: Make a bug report to help us improve N-Zik
 title: "[BUG]: "
 labels: ["bug"]
+assignees:
+  - NEVARLeVrai
 
 body:
   - type: markdown

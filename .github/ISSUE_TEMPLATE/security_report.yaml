@@ -2,6 +2,8 @@ name: 🔒 Security Vulnerability
 description: Report a security vulnerability found in N-Zik
 title: "[SECURITY]: "
 labels: ["security"]
+assignees:
+  - NEVARLeVrai
 
 body:
   - type: markdown

@@ -2,6 +2,8 @@ name: 👷 Dev Bug report
 description: Report a bug found while testing the N-Zik Dev build
 title: "[DEV BUG]: "
 labels: ["bug"]
+assignees:
+  - NEVARLeVrai
 
 body:
   - type: markdown
