@@ -860,8 +860,8 @@ Volume BAS : titre précédent</string>
     <string name="discord_advanced_pause_auto_clear_text">Lorsque la présence en pause est désactivée, effacez la présence 60 s après la mise en pause. Désactivé = conserver la dernière présence.</string>
     <string name="discord_advanced_idle_close">Fermer après 10 minutes d\'inactivité</string>
     <string name="discord_advanced_idle_close_text">Fermer la connexion RPC après 10 minutes sans événement multimédia. Désactivé = maintenir la connexion ouverte.</string>
-    <string name="discord_advanced_refresh_interval">Refresh interval</string>
-    <string name="discord_advanced_refresh_interval_text">How often the presence is refreshed while playing (2 to 60 s, default 5 s). Lower = a smoother progress bar.</string>
+    <string name="discord_advanced_refresh_interval">Intervalle de rafraîchissement</string>
+    <string name="discord_advanced_refresh_interval_text">Fréquence de rafraîchissement de la présence pendant la lecture (2 à 60 s, valeur par défaut : 5 s). Plus la valeur est faible, plus la barre de progression est fluide.</string>
     <string name="discord_preview_title">Aperçu de Rich Presence</string>
     <string name="discord_preview_state_actual">État actuel</string>
     <string name="discord_preview_state_playing">Jouer</string>
