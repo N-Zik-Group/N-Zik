@@ -859,6 +859,8 @@
     <string name="discord_advanced_pause_auto_clear_text">Duraklama sırasında durum bilgisi seçeneği kapalıyken, duraklamadan 60 saniye sonra durum bilgisini silin. Kapalı = son durum bilgisini koru.</string>
     <string name="discord_advanced_idle_close">10 dakika bekleme süresinden sonra kapat</string>
     <string name="discord_advanced_idle_close_text">10 dakika boyunca herhangi bir medya olayı gerçekleşmezse RPC bağlantısını kapat. Kapalı = bağlantıyı açık tut.</string>
+    <string name="discord_advanced_refresh_interval">Refresh interval</string>
+    <string name="discord_advanced_refresh_interval_text">How often the presence is refreshed while playing (2 to 60 s, default 5 s). Lower = a smoother progress bar.</string>
     <string name="discord_preview_title">Zengin Varlık önizlemesi</string>
     <string name="discord_preview_state_actual">Gerçek durum</string>
     <string name="discord_preview_state_playing">Oynatılıyor</string>
