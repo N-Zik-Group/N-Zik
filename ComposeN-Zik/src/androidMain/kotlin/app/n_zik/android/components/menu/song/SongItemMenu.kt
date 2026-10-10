@@ -147,6 +147,14 @@ class SongItemMenu private constructor(
             )
     }
 
+    /**
+     * Index of the first playback button (radio, play next, enqueue, favorite, add to playlist)
+     * of a local song: `2` behind the FFmpeg-only edit-metadata button, `1` without it (the
+     * `*32` builds) — before this fix the menu read fixed indexes and, without FFmpeg, showed
+     * "Start radio" under Management and skipped "Add to playlist".
+     */
+    private fun localPlaybackStart(): Int = localSongPlaybackStart(BuildConfig.ENABLE_FFMPEG)
+
     lateinit var buttons: List<Button>
     var refreshBtn: Button? = null
     private var showLastFmSection = false
@@ -163,24 +171,26 @@ class SongItemMenu private constructor(
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         if (song.isLocal) {
-            // Local songs: editMetadata at index 1
-            // Section: Management
-            SectionTitle(stringResource(R.string.management))
-            buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
+            // Local songs: editMetadata at index 1, only on the builds that ship FFmpeg —
+            // without it the playback buttons start at index 1 (see localPlaybackStart)
+            val playbackStart = localPlaybackStart()
+            if (BuildConfig.ENABLE_FFMPEG) {
+                // Section: Management
+                SectionTitle(stringResource(R.string.management))
+                buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
+            }
             buttons.filterIsInstance<ChangeAlbumBrowseIdDialog>().firstOrNull()?.let { it.ListMenuItem() }
             buttons.filterIsInstance<ChangeArtistBrowseIdDialog>().firstOrNull()?.let { it.ListMenuItem() }
 
             // Section: Playback
             SectionTitle(stringResource(R.string.playback))
-            buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            buttons.getOrNull(3)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            buttons.getOrNull(6)?.let { if (it is MenuIcon) it.ListMenuItem() }
+            for (i in playbackStart until playbackStart + LOCAL_PLAYBACK_COUNT) {
+                buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
+            }
             refreshBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
 
             // Delete/Export at the end
-            for (i in 7 until buttons.size) {
+            for (i in playbackStart + LOCAL_PLAYBACK_COUNT until buttons.size) {
                 val btn = buttons.getOrNull(i)
                 if (btn is ChangeAlbumBrowseIdDialog || btn is ChangeArtistBrowseIdDialog) continue
                 btn?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -239,12 +249,15 @@ class SongItemMenu private constructor(
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
         if (song.isLocal) {
-            // Local songs: editMetadata at index 1
-            // Section: Management
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.management))
+            // Local songs: editMetadata at index 1, only on the builds that ship FFmpeg
+            val playbackStart = localPlaybackStart()
+            if (BuildConfig.ENABLE_FFMPEG) {
+                // Section: Management
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    SectionTitle(stringResource(R.string.management))
+                }
+                buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
-            buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.filterIsInstance<ChangeAlbumBrowseIdDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             buttons.filterIsInstance<ChangeArtistBrowseIdDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
 
@@ -252,15 +265,13 @@ class SongItemMenu private constructor(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SectionTitle(stringResource(R.string.playback))
             }
-            buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            buttons.getOrNull(3)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            buttons.getOrNull(5)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            buttons.getOrNull(6)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            for (i in playbackStart until playbackStart + LOCAL_PLAYBACK_COUNT) {
+                buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            }
             refreshBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
             // Delete/Export at the end
-            for (i in 7 until buttons.size) {
+            for (i in playbackStart + LOCAL_PLAYBACK_COUNT until buttons.size) {
                 val btn = buttons.getOrNull(i)
                 if (btn is ChangeAlbumBrowseIdDialog || btn is ChangeArtistBrowseIdDialog) continue
                 btn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -783,3 +794,10 @@ class SongItemMenu private constructor(
 
 
 
+
+
+/** Number of playback buttons of a local song's menu (radio, play next, enqueue, favorite, add to playlist). */
+internal const val LOCAL_PLAYBACK_COUNT = 5
+
+/** Index of the first playback button of a local song's menu: after info, then the edit-metadata button when FFmpeg ships. */
+internal fun localSongPlaybackStart(ffmpeg: Boolean): Int = if (ffmpeg) 2 else 1

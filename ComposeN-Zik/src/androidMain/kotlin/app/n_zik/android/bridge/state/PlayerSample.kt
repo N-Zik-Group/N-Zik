@@ -23,6 +23,8 @@ internal data class PlayerSample(
     val sampledAtMs: Long,
     val repeatMode: RepeatModeDto,
     val shuffle: Boolean,
+    /** Since 1.10.0: the player's `playWhenReady` (the phone's ring needs `isBuffering && playWhenReady`). */
+    val playWhenReady: Boolean = false,
 ) {
     companion object {
         /** No player service bound, or nothing loaded (contract §7.1: empty snapshot). */

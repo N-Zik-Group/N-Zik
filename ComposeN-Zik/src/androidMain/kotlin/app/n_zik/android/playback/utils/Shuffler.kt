@@ -9,6 +9,7 @@ import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.utils.ToastRelay
 import app.it.fast4x.rimusic.enums.MaxSongs
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.utils.asMediaItem
@@ -49,7 +50,7 @@ object Shuffler {
      */
     fun play(binder: PlayerServiceModern.Binder, mediaItems: List<MediaItem>, onComplete: () -> Unit = {}) {
         if (mediaItems.isEmpty()) {
-            Toaster.i(R.string.no_song_to_shuffle)
+            ToastRelay.i(R.string.no_song_to_shuffle)
             onComplete()
             return
         }
@@ -94,7 +95,7 @@ object Shuffler {
 
                 if (filteredMediaItems.isEmpty()) {
                     withContext(NzikDispatchers.UI) {
-                        Toaster.i(R.string.no_song_to_shuffle)
+                        ToastRelay.i(R.string.no_song_to_shuffle)
                         onComplete()
                     }
                     return@launch
@@ -108,9 +109,9 @@ object Shuffler {
                     try {
                         binder.stopRadio()
                         binder.player.forcePlayFromBeginning(toPlay)
-                        Toaster.s(R.string.songs_shuffled, formatArgs = *arrayOf(toPlay.size))
+                        ToastRelay.s(R.string.songs_shuffled, toPlay.size)
                     } catch (e: Exception) {
-                        Toaster.e(R.string.no_song_found)
+                        ToastRelay.e(R.string.no_song_found)
                     } finally {
                         onComplete()
                     }
@@ -125,7 +126,7 @@ object Shuffler {
                 // flag) stuck forever instead of surfacing an error toast like the equivalent
                 // failure a few lines below already does.
                 withContext(NzikDispatchers.UI) {
-                    Toaster.e(R.string.no_song_found)
+                    ToastRelay.e(R.string.no_song_found)
                     onComplete()
                 }
             }

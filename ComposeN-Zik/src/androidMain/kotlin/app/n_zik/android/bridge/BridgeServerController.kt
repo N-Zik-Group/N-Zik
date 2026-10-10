@@ -9,6 +9,7 @@ import app.it.fast4x.rimusic.utils.encryptedPreferences
 import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.bridge.audio.AudioLibrary
 import app.n_zik.android.bridge.command.BridgeCommandExecutor
+import app.n_zik.android.bridge.command.ListCommandExecutor
 import app.n_zik.android.bridge.command.CommandResult
 import app.n_zik.android.bridge.library.LibraryProvider
 import app.n_zik.android.bridge.pairing.InMemoryPairedDeviceStorage
@@ -172,6 +173,10 @@ object BridgeServerController {
         audioLibrary: AudioLibrary = AudioLibrary.EMPTY,
         /** The phone's effective UI language served by `meta` (contract §5, `ui.language`, since 1.9.0). */
         uiLanguage: () -> String? = { null },
+        /** `/queue/list` (contract §9, since 1.10.0). */
+        listCommandExecutor: ListCommandExecutor = ListCommandExecutor.UNAVAILABLE,
+        /** The phone's UI settings (contract §10.5, since 1.10.0). */
+        uiSettings: suspend () -> UiSettingsDto = { UiSettingsDto() },
         /** Called after each session end: the audio output fallback (contract §6.2). */
         onSessionEnded: suspend () -> Unit = {},
         /** Called once a session becomes active: the audio output handoff to the PC (contract §8.5, since 1.3). */
@@ -195,6 +200,8 @@ object BridgeServerController {
             onSessionEnded = onSessionEnded,
             onSessionClaimed = onSessionClaimed,
             uiLanguage = uiLanguage,
+            listCommandExecutor = listCommandExecutor,
+            uiSettings = uiSettings,
         )
         return core
     }

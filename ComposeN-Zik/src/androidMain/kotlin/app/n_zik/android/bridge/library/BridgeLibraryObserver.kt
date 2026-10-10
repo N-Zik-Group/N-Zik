@@ -24,6 +24,8 @@ import app.n_zik.android.core.database.Database
 internal class BridgeLibraryObserver(
     context: Context,
     private val hub: BridgeStateHub,
+    /** A `songs` write happened (a like among them): the player source re-checks the queue's likes. */
+    private val onSongsChanged: () -> Unit = {},
 ) {
     private val prefs = context.applicationContext.getSharedPreferences("preferences", Context.MODE_PRIVATE)
 
@@ -43,6 +45,7 @@ internal class BridgeLibraryObserver(
                 for (kind in kinds) {
                     hub.submitLibraryChanged(kind)
                 }
+                if ("songs" in kinds) onSongsChanged()
             }
             val menuListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
                 if (key != null && isSongsSortMenuKey(key)) {

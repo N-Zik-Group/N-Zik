@@ -13,7 +13,7 @@ import kotlinx.serialization.json.Json
  * Every literal that travels on the wire lives here.
  */
 internal object BridgeContract {
-    const val CONTRACT_VERSION = "1.9.0"
+    const val CONTRACT_VERSION = "1.10.0"
     const val API_PREFIX = "/api/v1"
 
     /** Port 42420, then 42421–42429, then an OS-assigned ephemeral port (contract §11.1). */
@@ -57,6 +57,9 @@ internal object BridgeContract {
     /** Late failure of a confirmed command (contract §7.6). */
     const val TYPE_ERROR = "error"
 
+    /** A toast the phone showed, relayed to the client (contract §7.9, since 1.10.0). */
+    const val TYPE_TOAST = "toast"
+
     /**
      * `features` of `GET /api/v1/meta` implemented so far (contract §5); since 1.7.2,
      * `library.ffmpeg` is only advertised on the builds that ship FFmpeg (not the `*32` ones).
@@ -87,6 +90,11 @@ internal object BridgeContract {
             "ws.state",
             // Since 1.9.0: the phone's effective UI language in the `meta` answer
             "ui.language",
+            // Since 1.10.0: whole-list queue commands, list locator, UI settings, toast relay
+            "queue.fullList",
+            "library.locate",
+            "ui.settings",
+            "ui.toasts",
         )
 
     /** Pagination bounds (contract §1, §14). */
@@ -383,7 +391,12 @@ internal enum class PlaylistOrigin(val wire: String) {
     @SerialName("rewind-yearly") REWIND_YEARLY("rewind-yearly"),
     /** Since 1.7.1: the generated all-time rewind snapshot (the phone's `musical_notes` icon). */
     @SerialName("rewind-alltime") REWIND_ALLTIME("rewind-alltime"),
-    @SerialName("rewind") REWIND("rewind");
+    @SerialName("rewind") REWIND("rewind"),
+    /**
+     * Since 1.10.0: the legacy (pre-kind) `monthly:` playlist — the phone's `stat_month` icon, and NOT a
+     * rewind playlist for its screens (sort, toolbar), unlike the generated `rewind-*` ones.
+     */
+    @SerialName("monthly") MONTHLY("monthly");
 
     companion object {
         fun parse(value: String?): PlaylistOrigin? = entries.firstOrNull { it.wire == value }

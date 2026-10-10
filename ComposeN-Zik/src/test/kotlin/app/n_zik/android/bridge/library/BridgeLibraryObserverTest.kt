@@ -148,6 +148,21 @@ class BridgeLibraryObserverTest {
         assertEquals(listOf("playlists"), kinds)
     }
 
+    @Test
+    fun `a songs write asks the player source to re-check the queue likes, other kinds do not`() {
+        observer.stop()
+        var checks = 0
+        observer = BridgeLibraryObserver(app, hub, onSongsChanged = { checks++ })
+        observer.start()
+
+        Database.libraryWriteNotifier?.invoke(listOf("albums"))
+        assertEquals(0, checks)
+        // A like is a songs write: one check per write, whatever the other kinds
+        Database.libraryWriteNotifier?.invoke(listOf("songs", "artists"))
+        assertEquals(1, checks)
+        assertEquals(listOf("albums", "songs", "artists"), kinds)
+    }
+
     // --- The sort menu preference listener ---
 
     @Test

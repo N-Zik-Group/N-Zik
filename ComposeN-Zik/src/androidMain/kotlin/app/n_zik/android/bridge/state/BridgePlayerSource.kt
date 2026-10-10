@@ -35,6 +35,14 @@ private const val TAG = "BridgePlayerSource"
 private data class TrackFlags(val like: TrackLike, val isDownloaded: Boolean)
 
 /**
+ * Whether a songs-table write moved the like of a track of the last sampled queue: [known] is
+ * the like each queue track was last published with, [fresh] the like read now. A track the
+ * read missed is not a move (the next sample re-resolves it anyway).
+ */
+internal fun queueLikesMoved(known: Map<String, TrackLike>, fresh: Map<String, TrackLike>): Boolean =
+    known.any { (id, like) -> fresh[id]?.let { it != like } == true }
+
+/**
  * Feeds a [BridgeStateHub] with the phone's player state, read-only. Binds
  * [PlayerServiceModern] WITHOUT creating it (the app behaves exactly as before; with no
  * player the empty state is published and the connection happens as soon as the service
@@ -63,6 +71,9 @@ internal class BridgePlayerSource(
     // Every field below is only touched on the main thread (UI dispatcher, player callbacks)
     private val scope = NzikDispatchers.fireAndForget(NzikDispatchers.UI)
     private val sampleRequests = Channel<Unit>(Channel.CONFLATED)
+
+    /** Songs-table writes to check against the queue's likes ([onSongsChanged]); conflated: a burst is one check. */
+    private val likeChecks = Channel<Unit>(Channel.CONFLATED)
 
     /** One sample at a time: the periodic loop and the samples forced by commands never interleave. */
     private val sampleMutex = Mutex()
@@ -106,6 +117,26 @@ internal class BridgePlayerSource(
                     throw e
                 } catch (e: Exception) {
                     Timber.tag(TAG).w(e, "Could not publish a player sample")
+                }
+            }
+        }
+        scope.launch {
+            for (check in likeChecks) {
+                // A like alone (the §10.2 write or the phone's own UI) triggers no player event:
+                // re-sample only when a queue track's like actually moved, so the other songs
+                // writes (play counts, ...) never cost a sample
+                try {
+                    sampleMutex.withLock {
+                        val known = flags
+                        if (known.isNotEmpty()) {
+                            val fresh = withContext(NzikDispatchers.DATA) { readLikes(known.keys) }
+                            if (queueLikesMoved(known.mapValues { it.value.like }, fresh)) sampleOnce()
+                        }
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.tag(TAG).w(e, "Could not check the queue's like states")
                 }
             }
         }
@@ -192,6 +223,18 @@ internal class BridgePlayerSource(
         sampleRequests.trySend(Unit)
     }
 
+    /**
+     * A songs-table write happened (a like among them, from the companion's §10.2 write or the
+     * phone's own UI): re-samples when a queue track's like moved, so the queue / track delta
+     * carries the new like. Callable from any thread; a burst of writes is one check.
+     */
+    fun onSongsChanged() {
+        likeChecks.trySend(Unit)
+    }
+
+    /** The bound player service's binder (its `player` is the guarded facade), `null` when unbound. */
+    fun binder(): PlayerServiceModern.Binder? = binder
+
     /** The guarded facade, read fresh at every use (never cached across calls). */
     private fun currentPlayer(): Player? = runCatching { binder?.player }.getOrNull()
 
@@ -255,16 +298,33 @@ internal class BridgePlayerSource(
 
     private suspend fun resolveFlags(trackIds: List<String>): Map<String, TrackFlags> {
         val downloads = MyDownloadHelper.downloads.value
+        val likes = readLikes(trackIds)
         return trackIds.associateWith { id ->
-            // Raw `likedAt`: a queue track absent from the database reads neutral
-            val likedAt = runCatching { Database.songTable.getLikedAt(id) }
-                .onFailure { Timber.tag(TAG).w(it, "Could not read the like state of a track") }
-                .getOrNull()
-            TrackFlags(like = TrackLike.of(likedAt), isDownloaded = downloads[id]?.state == Download.STATE_COMPLETED)
+            TrackFlags(like = likes[id] ?: TrackLike.NEUTRAL, isDownloaded = downloads[id]?.state == Download.STATE_COMPLETED)
         }
     }
 
+    /**
+     * The like of each of [trackIds], read in batched queries (chunks under SQLite's 999 bound
+     * parameters) — one per sample and per songs write, never one query per queue track. Raw
+     * `likedAt`: a track absent from the database reads neutral; a failed read is an empty map (the
+     * caller's neutral, and no like move).
+     */
+    private fun readLikes(trackIds: Collection<String>): Map<String, TrackLike> {
+        val likedAt = runCatching {
+            trackIds.distinct()
+                .chunked(LIKE_READ_CHUNK)
+                .flatMap { Database.songTable.findByIdsDirect(it) }
+                .associate { it.id to it.likedAt }
+        }.onFailure { Timber.tag(TAG).w(it, "Could not read the like states of the queue") }
+            .getOrNull() ?: return emptyMap()
+        return trackIds.associateWith { TrackLike.of(likedAt[it]) }
+    }
+
     private companion object {
+        /** Under SQLite's 999 bound parameters per query. */
+        const val LIKE_READ_CHUNK = 900
+
         val SAMPLED_EVENTS = intArrayOf(
             Player.EVENT_TIMELINE_CHANGED,
             Player.EVENT_MEDIA_ITEM_TRANSITION,

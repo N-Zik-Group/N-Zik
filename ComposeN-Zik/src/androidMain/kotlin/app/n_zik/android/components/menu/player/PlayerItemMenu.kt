@@ -185,21 +185,23 @@ class PlayerItemMenu private constructor(
 
         if (song.isLocal) {
             // Local songs: 0=info, 1=waves, 2=editMetadata, 3=equalizer, 4=sleep, 5=fav, 6=playlist, 7+=delete/export
-            SectionTitle(stringResource(R.string.management))
-            buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
+            // Decision 6 (spec pc-ui-parity-audit-fixes): editMetadata (index 2) exists only with FFmpeg —
+            // without it the playback buttons start at index 2 (see localPlayerPlaybackStart)
+            val playbackStart = localPlayerPlaybackStart(BuildConfig.ENABLE_FFMPEG)
+            if (BuildConfig.ENABLE_FFMPEG) {
+                SectionTitle(stringResource(R.string.management))
+                buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
+            }
 
             SectionTitle(stringResource(R.string.playback))
             if (playerTimelineType == PlayerTimelineType.AudioWaves) {
                 buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
-            buttons.getOrNull(3)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            buttons.getOrNull(6)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            buttons.getOrNull(7)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            buttons.getOrNull(8)?.let { if (it is MenuIcon) it.ListMenuItem() }
+            for (i in playbackStart until playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT) {
+                buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
+            }
 
-            for (i in 9 until buttons.size) {
+            for (i in playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT until buttons.size) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
         } else {
@@ -257,10 +259,13 @@ class PlayerItemMenu private constructor(
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
         if (song.isLocal) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.management))
+            val playbackStart = localPlayerPlaybackStart(BuildConfig.ENABLE_FFMPEG)
+            if (BuildConfig.ENABLE_FFMPEG) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    SectionTitle(stringResource(R.string.management))
+                }
+                buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
-            buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SectionTitle(stringResource(R.string.playback))
@@ -268,14 +273,11 @@ class PlayerItemMenu private constructor(
             if (playerTimelineType == PlayerTimelineType.AudioWaves) {
                 buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
-            buttons.getOrNull(3)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            buttons.getOrNull(5)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            buttons.getOrNull(6)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            buttons.getOrNull(7)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            buttons.getOrNull(8)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            for (i in playbackStart until playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT) {
+                buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            }
 
-            for (i in 9 until buttons.size) {
+            for (i in playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT until buttons.size) {
                 buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
         } else {
@@ -916,3 +918,10 @@ class PlayerItemMenu private constructor(
 
 
 
+
+
+/** Local song's player-menu playback buttons: equalizer, sleep timer, favorite, playlist, album id, artist id. */
+internal const val LOCAL_PLAYER_PLAYBACK_COUNT = 6
+
+/** Their first index: after info and waves, then the FFmpeg-only edit-metadata button (decision 6). */
+internal fun localPlayerPlaybackStart(ffmpeg: Boolean): Int = if (ffmpeg) 3 else 2

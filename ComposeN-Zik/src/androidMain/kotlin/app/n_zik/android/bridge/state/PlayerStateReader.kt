@@ -73,6 +73,8 @@ internal object PlayerStateReader {
             sampledAtMs = sampledAtMs,
             repeatMode = repeatMode,
             shuffle = shuffle,
+            // Since 1.10.0: the phone's buffering ring is `isBuffering && playWhenReady` (`MiniPlayer.kt` 727)
+            playWhenReady = items.isNotEmpty() && player.playWhenReady,
         )
         return PlayerRead(items, sample)
     }

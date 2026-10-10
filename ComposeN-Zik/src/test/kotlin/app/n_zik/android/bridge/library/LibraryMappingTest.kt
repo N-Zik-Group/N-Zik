@@ -259,8 +259,9 @@ class LibraryMappingTest {
         assertEquals(PlaylistOrigin.REWIND_MONTHLY, LibraryMapping.originOf("rewind-monthly:202609", "VL123", true))
         assertEquals(PlaylistOrigin.REWIND_YEARLY, LibraryMapping.originOf("rewind-yearly:2025", null, false))
         assertEquals(PlaylistOrigin.REWIND_ALLTIME, LibraryMapping.originOf("rewind-alltime", null, false))
-        // The legacy (pre-kind) `monthly:` prefix keeps the plain rewind kind
-        assertEquals(PlaylistOrigin.REWIND, LibraryMapping.originOf("monthly:2025", null, false))
+        // Since 1.10.0 the legacy (pre-kind) `monthly:` prefix has its own kind
+        assertEquals(PlaylistOrigin.MONTHLY, LibraryMapping.originOf("monthly:2025", null, false))
+        assertEquals("monthly", PlaylistOrigin.MONTHLY.wire)
     }
 
     @Test

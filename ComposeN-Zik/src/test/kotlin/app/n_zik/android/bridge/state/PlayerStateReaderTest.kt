@@ -61,6 +61,7 @@ class PlayerStateReaderTest {
             }
             every { currentMediaItemIndex } returns current
             every { isPlaying } returns true
+            every { playWhenReady } returns true
             every { this@mockk.playbackState } returns playbackState
             every { playbackParameters } returns PlaybackParameters(1.5f)
             every { currentPosition } returns 42_000L

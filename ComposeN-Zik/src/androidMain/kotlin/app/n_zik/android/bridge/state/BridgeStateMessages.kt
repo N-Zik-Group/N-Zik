@@ -126,6 +126,8 @@ internal data class SnapshotMessage(
     val shuffle: Boolean,
     /** Since 1.2 (contract §7.1); a 1.1 client ignores it. */
     val audioOutput: AudioOutput,
+    /** Since 1.10.0 (contract §7.1): `playWhenReady` — buffering while paused shows no ring on the phone. */
+    val playWhenReady: Boolean? = null,
 ) : RevisedMessage
 
 /** Deltas of contract §7.2: each one is exactly `revision + 1`. */
@@ -143,6 +145,8 @@ internal data class PlaybackChangedMessage(
     val durationMs: Long = C.TIME_UNSET,
     val speed: Float,
     val positionMs: Long,
+    /** Since 1.10.0 (contract §7.1): `playWhenReady` — buffering while paused shows no ring on the phone. */
+    val playWhenReady: Boolean? = null,
 ) : DeltaMessage
 
 @Serializable
@@ -158,6 +162,8 @@ internal data class TrackChangedMessage(
     val isBuffering: Boolean = false,
     /** Since 1.5 (contract §7.2): a new track loads, so the live duration (reset to [C.TIME_UNSET]) travels with it. */
     val durationMs: Long = C.TIME_UNSET,
+    /** Since 1.10.0 (contract §7.1): `playWhenReady` — buffering while paused shows no ring on the phone. */
+    val playWhenReady: Boolean? = null,
 ) : DeltaMessage
 
 @Serializable
@@ -233,6 +239,21 @@ internal data class ErrorMessage(
     val code: String,
     val message: String,
     val commandId: String?,
+) : BridgeServerMessage
+
+/**
+ * A toast the phone showed (contract §7.9, since 1.10.0, feature `ui.toasts`). Not revised:
+ * it never affects the revision. [key] is the phone's string resource name, [args] its format
+ * arguments as text, [toastType] the phone's toast type and [message] the text the phone showed
+ * (in its language) — the client shows its own string of [key] when it has one, else [message].
+ */
+@Serializable
+@SerialName(BridgeContract.TYPE_TOAST)
+internal data class ToastMessage(
+    val key: String,
+    val args: List<String>,
+    val toastType: String,
+    val message: String,
 ) : BridgeServerMessage
 
 /** Wire form of [message]: one JSON object with its `type` (contract §6.1). */

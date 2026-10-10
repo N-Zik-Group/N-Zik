@@ -14,13 +14,18 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import app.n_zik.android.R
 import app.n_zik.android.bridge.audio.PhoneAudioLibrary
+import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.bridge.command.BinderPhoneQueue
 import app.n_zik.android.bridge.command.LateFailureTracker
+import app.n_zik.android.bridge.command.ListQueueExecutor
 import app.n_zik.android.bridge.command.PlayerCommandExecutor
 import app.n_zik.android.bridge.command.PreferencePlayerSettings
 import app.n_zik.android.bridge.library.BridgeLibraryObserver
 import app.n_zik.android.bridge.library.DatabaseLibraryProvider
 import app.n_zik.android.bridge.state.BridgePlayerSource
 import app.n_zik.android.bridge.state.BridgeStateHub
+import app.n_zik.android.bridge.state.ToastMessage
+import app.n_zik.android.utils.ToastRelay
 import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.Job
@@ -65,6 +70,9 @@ class BridgeServerService : Service() {
     private var outputs: AudioOutputController? = null
     // Written on the DATA scope, released from the DATA scope or onDestroy (main thread)
     private val playerSource = AtomicReference<BridgePlayerSource?>(null)
+
+    /** Relays the phone's toasts of the running server to its clients (contract §7.9). */
+    @Volatile private var toastListener: ToastRelay.Listener? = null
     private var wifiWatch: Job? = null
     private var autoStopWatch: Job? = null
     private var lifecycleJob: Job? = null
@@ -129,7 +137,7 @@ class BridgeServerService : Service() {
         // clients — an `onDestroy` that already ran (the scope cancelled) must not leave the
         // observer running: it holds the process-level write notifier and the prefs listener
         libraryObserver?.stop()
-        libraryObserver = if (scope.isActive) BridgeLibraryObserver(this, stateHub).also { it.start() } else null
+        libraryObserver = if (scope.isActive) BridgeLibraryObserver(this, stateHub, onSongsChanged = { playerSource.get()?.onSongsChanged() }).also { it.start() } else null
         val lateFailures = LateFailureTracker(stateHub)
         val source = BridgePlayerSource(this, stateHub, onPlayerError = lateFailures::onPlayerError).also { it.start() }
         playerSource.getAndSet(source)?.stop()
@@ -149,12 +157,28 @@ class BridgeServerService : Service() {
             guestLocked = { listenTogetherGuestLock.value },
             outputs = audioOutputs,
         )
+        val libraryProvider = DatabaseLibraryProvider(this, mediaCacheSpace = source::mediaCacheSpace)
+        // Contract §9 (since 1.10.0, `queue.fullList`): whole lists through the phone's own queue entries
+        val listExecutor = ListQueueExecutor(
+            library = libraryProvider,
+            queue = BinderPhoneQueue(this, source::binder),
+            hub = stateHub,
+            guestLocked = { listenTogetherGuestLock.value },
+        )
+        // Contract §7.9 (since 1.10.0, `ui.toasts`): the phone's relayed toasts reach the clients
+        toastListener?.let(ToastRelay::removeListener)
+        toastListener = ToastRelay.Listener { toast ->
+            stateHub.broadcast(ToastMessage(toast.key, toast.args, toast.kind.wire, toast.message))
+        }.also(ToastRelay::addListener)
         core = BridgeServerController.createCore(
             serverName = Build.MODEL,
             deviceStore = BridgeServerController.loadDeviceStore(this),
             stateHub = stateHub,
             commandExecutor = executor,
-            libraryProvider = DatabaseLibraryProvider(this, mediaCacheSpace = source::mediaCacheSpace),
+            libraryProvider = libraryProvider,
+            listCommandExecutor = listExecutor,
+            // Contract §10.5 (since 1.10.0, `ui.settings`): read on every request
+            uiSettings = { withContext(NzikDispatchers.DATA) { BridgeUiSettings.read(BridgeUiSettings.of(applicationContext.preferences)) } },
             audioLibrary = PhoneAudioLibrary(this),
             // Contract §5 (since 1.9.0, `ui.language`): the phone's effective UI language, read on
             // every `meta` request (the mirror of the language the phone's UI shows)
@@ -241,6 +265,8 @@ class BridgeServerService : Service() {
     }
 
     private fun releasePlayerSource() {
+        toastListener?.let(ToastRelay::removeListener)
+        toastListener = null
         playerSource.getAndSet(null)?.stop()
     }
 

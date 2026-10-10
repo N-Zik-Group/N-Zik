@@ -181,8 +181,10 @@ internal object LibraryMapping {
         RewindPlaylists.isMonthly(name) -> PlaylistOrigin.REWIND_MONTHLY
         RewindPlaylists.isYearly(name) -> PlaylistOrigin.REWIND_YEARLY
         RewindPlaylists.isAlltime(name) -> PlaylistOrigin.REWIND_ALLTIME
-        // The legacy (pre-kind) `monthly:` prefix and any other rewind name keep the plain kind
-        RewindPlaylists.isRewind(name) || name.startsWith(MONTHLY_PREFIX, ignoreCase = true) -> PlaylistOrigin.REWIND
+        // Since 1.10.0 the legacy (pre-kind) `monthly:` prefix has its own kind (the phone's `stat_month`
+        // icon, not a rewind playlist for its screens); any other rewind name keeps the plain kind
+        name.startsWith(MONTHLY_PREFIX, ignoreCase = true) -> PlaylistOrigin.MONTHLY
+        RewindPlaylists.isRewind(name) -> PlaylistOrigin.REWIND
         browseId?.startsWith("SPOTIFY_IMPORT") == true -> PlaylistOrigin.SPOTIFY
         browseId?.startsWith("RIPLAY_IMPORT") == true -> PlaylistOrigin.RIPLAY
         isYoutubePlaylist || browseId?.startsWith("VL") == true -> PlaylistOrigin.YTMUSIC

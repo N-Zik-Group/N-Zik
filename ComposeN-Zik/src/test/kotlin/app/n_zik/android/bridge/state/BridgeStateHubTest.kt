@@ -301,7 +301,8 @@ class BridgeStateHubTest {
         assertEquals(false, delta["isBuffering"]?.jsonPrimitive?.boolean)
         assertEquals(C.TIME_UNSET, delta["durationMs"]?.jsonPrimitive?.long)
         assertEquals(
-            setOf("type", "revision", "serverTimeMs", "isPlaying", "isBuffering", "durationMs", "speed", "positionMs"),
+            // Since 1.10.0: `playWhenReady`
+            setOf("type", "revision", "serverTimeMs", "isPlaying", "isBuffering", "durationMs", "speed", "positionMs", "playWhenReady"),
             delta.keys,
         )
 

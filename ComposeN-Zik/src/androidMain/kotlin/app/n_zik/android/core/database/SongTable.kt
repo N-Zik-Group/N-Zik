@@ -128,6 +128,10 @@ interface SongTable {
     @Query("SELECT DISTINCT * FROM Song WHERE id = :songId")
     fun findByIdDirect( songId: String ): Song?
 
+    /** The songs of [songIds] (any order, unknown ids skipped): the PC bridge's batched queue resolution. */
+    @Query("SELECT DISTINCT * FROM Song WHERE id IN (:songIds)")
+    fun findByIdsDirect( songIds: List<String> ): List<Song>
+
     @Query("SELECT COUNT(*) FROM Song WHERE id = :songId")
     fun countById( songId: String ): Int
 

@@ -73,15 +73,20 @@ internal class BridgeStateHub(private val clock: () -> Long = System::currentTim
                     sample.isPlaying,
                     sample.isBuffering,
                     sample.durationMs,
+                    playWhenReady = sample.playWhenReady,
                 )
             }
             // trackChanged already carries the position and the playing state; a buffering-only
             // change (since 1.4) or a duration-only change (since 1.5) still makes a playbackChanged
             val playbackChanged = sample.speed != previous.speed ||
                 (!trackChanged && (sample.isPlaying != previous.isPlaying || sample.isBuffering != previous.isBuffering ||
+                    sample.playWhenReady != previous.playWhenReady ||
                     sample.durationMs != previous.durationMs || seek))
             if (playbackChanged) {
-                deltas += PlaybackChangedMessage(++revision, now, sample.isPlaying, sample.isBuffering, sample.durationMs, sample.speed, position)
+                deltas += PlaybackChangedMessage(
+                    ++revision, now, sample.isPlaying, sample.isBuffering, sample.durationMs, sample.speed, position,
+                    playWhenReady = sample.playWhenReady,
+                )
             }
             if (sample.repeatMode != previous.repeatMode || sample.shuffle != previous.shuffle) {
                 deltas += ModesChangedMessage(++revision, now, sample.repeatMode, sample.shuffle)
@@ -126,6 +131,11 @@ internal class BridgeStateHub(private val clock: () -> Long = System::currentTim
         synchronized(lock) { subscribers.forEach { it.sink.deliver(message) } }
     }
 
+    /** Sends the non-revised `toast` [message] to every subscriber (contract §7.9, since 1.10.0). */
+    fun broadcast(message: ToastMessage) {
+        synchronized(lock) { subscribers.forEach { it.sink.deliver(message) } }
+    }
+
     /** Full state at the current revision, position at `serverTimeMs` (contract §7.1). */
     fun snapshot(): SnapshotMessage = synchronized(lock) { buildSnapshot() }
 
@@ -151,6 +161,7 @@ internal class BridgeStateHub(private val clock: () -> Long = System::currentTim
             currentTrackId = sample.currentTrackId,
             isPlaying = sample.isPlaying,
             isBuffering = sample.isBuffering,
+            playWhenReady = sample.playWhenReady,
             durationMs = sample.durationMs,
             speed = sample.speed,
             positionMs = positionAt(sample, now),

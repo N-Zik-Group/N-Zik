@@ -11,10 +11,17 @@ import app.n_zik.android.bridge.audio.ByteRanges
 import app.n_zik.android.bridge.command.BridgeCommandExecutor
 import app.n_zik.android.bridge.command.BridgeCommandParser
 import app.n_zik.android.bridge.command.CommandResult
+import app.n_zik.android.bridge.command.ListCommandExecutor
+import app.n_zik.android.bridge.command.ListCommandResult
+import app.n_zik.android.bridge.command.LocateResponse
 import app.n_zik.android.bridge.command.ParsedCommand
 import app.n_zik.android.bridge.library.ArtworkResult
 import app.n_zik.android.bridge.library.CollectionFilter
+import app.n_zik.android.bridge.library.LibraryLists
 import app.n_zik.android.bridge.library.LibraryProvider
+import app.n_zik.android.bridge.library.ListKind
+import app.n_zik.android.bridge.library.ListRef
+import app.n_zik.android.bridge.library.ListResolution
 import app.n_zik.android.bridge.library.LibraryQueries
 import app.n_zik.android.bridge.library.PageRequest
 import app.n_zik.android.bridge.pairing.CodeValidation
@@ -160,6 +167,10 @@ internal class BridgeServerCore(
      * since 1.9.0), read on every `meta` request; `null` when it cannot be determined.
      */
     private val uiLanguage: () -> String? = { null },
+    /** `/queue/list` (contract §9, since 1.10.0, `queue.fullList`); without a phone behind the server, always `503`. */
+    private val listCommandExecutor: ListCommandExecutor = ListCommandExecutor.UNAVAILABLE,
+    /** The phone's UI settings of `GET /ui/settings` (contract §10.5, since 1.10.0); the phone's defaults without a phone. */
+    private val uiSettings: suspend () -> UiSettingsDto = { UiSettingsDto() },
 ) {
     private val stopping = AtomicBoolean(false)
 
@@ -258,6 +269,11 @@ internal class BridgeServerCore(
                 // Public regime (contract §2): protected by the ephemeral code and the rate-limit
                 post("pairing/validate") { call.handleValidate() }
                 // Contract §9: playback and queue commands, Bearer only
+                // Contract §9 (since 1.10.0, `queue.fullList`): a whole list handed to the phone's own queue entries
+                route("queue/list") {
+                    install(bearerAuth)
+                    post { call.handleListCommand() }
+                }
                 for (group in COMMAND_GROUPS) {
                     route(group) {
                         install(bearerAuth)
@@ -293,6 +309,8 @@ internal class BridgeServerCore(
                         call.respondArtwork { size -> libraryProvider.artistArtwork(id, size) }
                     }
                     get("cache") { call.handleCache() }
+                    // Since 1.10.0 (`library.locate`): position of a track in a whole list
+                    get("locate") { call.handleLocate() }
                     // Contract §10.2 (since 1.7): the explicit writes, local Room only
                     post("songs/{id}/like") { call.handleSongLike() }
                     post("albums/{id}/bookmark") { call.handleAlbumBookmark() }
@@ -300,6 +318,11 @@ internal class BridgeServerCore(
                     post("artists/{id}/follow") { call.handleArtistFollow() }
                     post("playlists/{id}/pin") { call.handlePlaylistPin() }
                     post("playlists/{id}/bookmark") { call.handlePlaylistBookmark() }
+                }
+                // Contract §10.5 (since 1.10.0, `ui.settings`): the phone's UI settings
+                route("ui") {
+                    install(bearerAuth)
+                    get("settings") { call.respond(uiSettings()) }
                 }
                 route("artwork") {
                     install(bearerAuth)
@@ -575,6 +598,43 @@ internal class BridgeServerCore(
         }
     }
 
+    /** Contract §9 `/queue/list` (since 1.10.0): body (≤ 64 KiB), then the list executor. */
+    private suspend fun ApplicationCall.handleListCommand() {
+        val body = receiveBoundedText(BridgeContract.MAX_COMMAND_BODY_BYTES)
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid command body")
+        onCommandAccepted()
+        when (val result = listCommandExecutor.execute(body)) {
+            is ListCommandResult.Applied -> respond(CommandResponse(applied = true, changed = false, revision = result.revision))
+            ListCommandResult.BadRequest -> respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid command body")
+            ListCommandResult.NotFound -> respondError(HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, "Unknown list or track")
+            ListCommandResult.Rejected ->
+                respondError(HttpStatusCode.UnprocessableEntity, BridgeErrorCode.PLAYER_REJECTED, "The player refused the command")
+            ListCommandResult.Unavailable ->
+                respondError(HttpStatusCode.ServiceUnavailable, BridgeErrorCode.PLAYER_UNAVAILABLE, "The phone's player is not available")
+        }
+    }
+
+    /**
+     * Contract §10.4 `/library/locate` (since 1.10.0): `trackId` plus the parameters of a list
+     * reference (`kind`, `id`, `filter`, `sort`, `reverse`, `period`, `text`); `index` is `-1`
+     * when the track is not in the list.
+     */
+    private suspend fun ApplicationCall.handleLocate() {
+        val params = request.queryParameters
+        val trackId = params["trackId"]
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Missing trackId")
+        val kind = ListKind.entries.firstOrNull { it.name.lowercase() == params["kind"] }
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid kind")
+        val reverse = LibraryQueries.parseReverse(params["reverse"])
+            ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid reverse")
+        val ref = ListRef(kind, params["id"], params["filter"], params["sort"], reverse, params["period"], params["text"])
+        when (val resolved = LibraryLists.resolve(libraryProvider, ref)) {
+            is ListResolution.Found -> respond(LocateResponse(LibraryLists.indexOf(resolved.tracks, trackId), resolved.tracks.size))
+            ListResolution.Invalid -> respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid list")
+            ListResolution.Unknown -> respondError(HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, "Unknown list")
+        }
+    }
+
     /** Contract §10 `/library/songs` (since 1.6): pagination, `filter`, `sort`, `reverse`, `period`, then search. */
     private suspend fun ApplicationCall.handleSongs() {
         val params = request.queryParameters
@@ -701,7 +761,8 @@ internal class BridgeServerCore(
     private suspend inline fun ApplicationCall.respondTracks(notFound: String, load: () -> List<TrackDto>?) {
         val page = pageOrReject() ?: return
         val tracks = load() ?: return respondError(HttpStatusCode.NotFound, BridgeErrorCode.NOT_FOUND, notFound)
-        respond(LibraryQueries.paginate(tracks, page))
+        // Since 1.10.0: the whole list's duration, the album / artist header of the phone
+        respond(LibraryQueries.paginate(tracks, page).copy(totalDurationMs = LibraryQueries.totalDurationMsOf(tracks)))
     }
 
     /** Contract §10 artwork: the image bytes with their real type, `404` without one, `502` when the upstream failed. */

@@ -92,6 +92,8 @@ object Toaster {
         background: Int,
         foreground: Int
     ) {
+        // Spec pc-ui-parity-audit-fixes, decision 7 (2026-10-10): explicit exception to the legacy rule — every phone toast reaches the PC bridge
+        app.n_zik.android.utils.ToastRelay.onLegacyToast( message, type.name )
         NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
             val toast = Toasty.custom(
                 appContext(), message, icon, background, foreground, duration, icon != Type.NORMAL.icon, true
@@ -124,7 +126,7 @@ object Toaster {
         @MagicConstant(valuesFromClass = Toast::class) duration: Int = Toast.LENGTH_SHORT,
         icon: Drawable = type.icon,
         vararg formatArgs: Any?
-    ) = this.toast( appContext().getString( messageId, *formatArgs ), type, duration, icon )
+    ) = this.toast( app.n_zik.android.utils.ToastRelay.legacyResource( messageId, formatArgs ), type, duration, icon )
 
     @MainThread
     fun toast(
@@ -133,7 +135,7 @@ object Toaster {
         type: Type = Type.NORMAL,
         @MagicConstant(valuesFromClass = Toast::class) duration: Int = Toast.LENGTH_SHORT
     ) = this.toast(
-        message = appContext().getString( messageId ),
+        message = app.n_zik.android.utils.ToastRelay.legacyResource( messageId, emptyArray() ),
         type = type,
         duration = duration,
         icon = AppCompatResources.getDrawable( appContext(), iconId )!!
