@@ -171,8 +171,6 @@ object BridgeServerController {
         commandExecutor: BridgeCommandExecutor = BridgeCommandExecutor.UNAVAILABLE,
         libraryProvider: LibraryProvider = LibraryProvider.EMPTY,
         audioLibrary: AudioLibrary = AudioLibrary.EMPTY,
-        /** The phone's effective UI language served by `meta` (contract §5, `ui.language`, since 1.9.0). */
-        uiLanguage: () -> String? = { null },
         /** `/queue/list` (contract §9, since 1.10.0). */
         listCommandExecutor: ListCommandExecutor = ListCommandExecutor.UNAVAILABLE,
         /** The phone's UI settings (contract §10.5, since 1.10.0). */
@@ -199,7 +197,6 @@ object BridgeServerController {
             onCommandAccepted = { _commandTicks.tryEmit(Unit) },
             onSessionEnded = onSessionEnded,
             onSessionClaimed = onSessionClaimed,
-            uiLanguage = uiLanguage,
             listCommandExecutor = listCommandExecutor,
             uiSettings = uiSettings,
         )

@@ -31,8 +31,8 @@ import org.robolectric.annotation.Config
 /**
  * The changed option sets of the phone's songs sort-settings dialog: "Custom" is offered on every
  * sort chip (its real tab menu shows it too, its visibility flags default to visible), while
- * "Downloaded" stays out of the cached and downloaded chips — the same sets the contract §10.1
- * `sortMenu` serves and the phone's tabs display.
+ * "Downloaded" stays out of the cached and downloaded chips — the same sets the phone's tabs
+ * display.
  *
  * The sets themselves are pinned on the dialog's pure option logic
  * ([HomeSongsSortSettingsDialog.tabAvailableIds] and [HomeSongsSortSettingsDialog.parseOrder],

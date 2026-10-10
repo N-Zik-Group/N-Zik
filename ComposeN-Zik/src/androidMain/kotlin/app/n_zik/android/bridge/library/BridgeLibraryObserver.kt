@@ -18,8 +18,8 @@ import app.n_zik.android.core.database.Database
  *
  * Sort menu edits (the reordering or the option visibility of the phone's songs sort menus,
  * its `HomeSongsSortSettingsDialog`) are preferences, not database writes: a listener on the
- * `preferences` SharedPreferences watches their keys and emits `songs` — the client recovers
- * the new menu with its reload (`sortMenu` rides on the songs pages, §10.1).
+ * `preferences` SharedPreferences watches their keys and emits `songs` — the client reloads
+ * its songs lists (since 1.11.0 it no longer receives the menu itself on the wire).
  */
 internal class BridgeLibraryObserver(
     context: Context,
@@ -72,7 +72,7 @@ internal class BridgeLibraryObserver(
         /**
          * A preference key one of the phone's songs sort menus reads (a chip's order, an
          * option's visibility) — [SongsSortMenu.sortMenuKeys], the single source of truth
-         * shared with the contract §10.1 `sortMenu` read.
+         * of those keys (the §10.1 `sortMenu` read that shared it was removed in 1.11.0).
          */
         fun isSongsSortMenuKey(key: String): Boolean = key in SongsSortMenu.sortMenuKeys
     }

@@ -162,11 +162,6 @@ internal class BridgeServerCore(
      * claim, including the same device replacing its own session.
      */
     private val onSessionClaimed: () -> Unit = {},
-    /**
-     * The phone's effective UI language for the `meta` answer (contract §5, `ui.language`,
-     * since 1.9.0), read on every `meta` request; `null` when it cannot be determined.
-     */
-    private val uiLanguage: () -> String? = { null },
     /** `/queue/list` (contract §9, since 1.10.0, `queue.fullList`); without a phone behind the server, always `503`. */
     private val listCommandExecutor: ListCommandExecutor = ListCommandExecutor.UNAVAILABLE,
     /** The phone's UI settings of `GET /ui/settings` (contract §10.5, since 1.10.0); the phone's defaults without a phone. */
@@ -261,8 +256,6 @@ internal class BridgeServerCore(
                             serverTimeMs = clock(),
                             // Each later story adds its identifier once its routes exist
                             features = BridgeContract.FEATURES,
-                            // Contract §5 (since 1.9.0, `ui.language`): the phone's effective UI language
-                            language = uiLanguage(),
                         )
                     )
                 }
@@ -657,17 +650,7 @@ internal class BridgeServerCore(
                 ?: return respondError(HttpStatusCode.BadRequest, BridgeErrorCode.BAD_REQUEST, "Invalid period")
         }
         val tracks = LibraryQueries.searchSongs(libraryProvider.songs(filter, sort, reverse, period), text)
-        // Contract §10.1 (since 1.7.3): the phone's effective sort menu of the requested chip —
-        // a failure degrades to no menu (the client keeps its static one), never to a failed page.
-        // Since 1.8.0: its effective toolbar of the same chip (same serve point, same degradation)
-        respond(
-            LibraryQueries.paginate(
-                tracks,
-                page,
-                sortMenu = runCatching { libraryProvider.songsSortMenu(filter) }.getOrNull(),
-                toolbar = runCatching { libraryProvider.songsToolbar(filter) }.getOrNull(),
-            ),
-        )
+        respond(LibraryQueries.paginate(tracks, page))
     }
 
     /** Contract §10 `/library/playlists/{id}/songs` (since 1.6): pagination, `sort`, `reverse`; since 1.7.2, `text` and `totalDurationMs`. */

@@ -13,7 +13,7 @@ import kotlinx.serialization.json.Json
  * Every literal that travels on the wire lives here.
  */
 internal object BridgeContract {
-    const val CONTRACT_VERSION = "1.10.0"
+    const val CONTRACT_VERSION = "1.11.0"
     const val API_PREFIX = "/api/v1"
 
     /** Port 42420, then 42421–42429, then an OS-assigned ephemeral port (contract §11.1). */
@@ -81,15 +81,11 @@ internal object BridgeContract {
     ) +
         (if (BuildConfig.ENABLE_FFMPEG) listOf("library.ffmpeg") else emptyList()) +
         listOf(
-            "library.sortMenu",
-            "library.toolbar",
             "library.live",
             "artwork",
             "audio",
             "audio.output",
             "ws.state",
-            // Since 1.9.0: the phone's effective UI language in the `meta` answer
-            "ui.language",
             // Since 1.10.0: whole-list queue commands, list locator, UI settings, toast relay
             "queue.fullList",
             "library.locate",
@@ -191,12 +187,6 @@ internal data class MetaResponse(
     val serverName: String,
     val serverTimeMs: Long,
     val features: List<String>,
-    /**
-     * Since 1.9.0 (contract §5, `ui.language`): the phone's effective UI language as a BCP-47
-     * tag (its chosen language's code, or its resolved OS locale on `System`); `null` when it
-     * cannot be determined.
-     */
-    val language: String? = null,
 )
 
 @Serializable
@@ -336,19 +326,6 @@ internal data class Page<T>(
      * duration), `0` on every other route.
      */
     val totalDurationMs: Long = 0L,
-    /**
-     * Since 1.7.3 (contract §10.1): the effective content of the phone's sort menu for the
-     * requested songs chip — its visible options, in its menu order, as wire values of the
-     * `sort` parameter — carried by `GET /library/songs` only, `null` on every other route.
-     */
-    val sortMenu: List<String>? = null,
-    /**
-     * Since 1.8.0 (contract §10.1): the effective content of the phone's Home Songs toolbar for
-     * the requested songs chip — its visible buttons, in its toolbar order (the user's saved
-     * order kept to its tab's available buttons, the hidden ones dropped, the locked ones always
-     * kept) — carried by `GET /library/songs` only, `null` on every other route.
-     */
-    val toolbar: List<String>? = null,
 )
 
 /** `Playlist` (contract §1.1). */
@@ -499,8 +476,6 @@ internal data class CacheSpaceDto(
     val usedBytes: Long,
     /** The configured cap; `null` when it is unlimited (the phone hides its bar in that case). */
     val maxBytes: Long?,
-    /** Since 1.7.2: the phone's label of its configured cap in its own language; `null` when unlimited. */
-    val maxText: String? = null,
 )
 
 /** `GET /library/cache` answer (contract §10, since 1.7.1): the phone's media (streaming) cache and its download cache. */

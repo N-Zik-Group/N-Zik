@@ -29,6 +29,7 @@ import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -144,12 +145,16 @@ class FullListRoutesTest {
 
     @Test
     fun `ui settings serves the injected settings`() = testApplication {
-        mount(settings = UiSettingsDto(colorPaletteName = "PureBlack", topN = null))
+        mount(settings = UiSettingsDto(topN = null))
         val response = client.get("/api/v1/ui/settings") { bearerAuth(FULL_TOKEN) }
         assertEquals(HttpStatusCode.OK, response.status)
         val json = BridgeJson.parseToJsonElement(response.bodyAsText()).jsonObject
-        assertEquals("PureBlack", json.getValue("colorPaletteName").jsonPrimitive.content)
-        assertEquals("Fade", json.getValue("transitionEffect").jsonPrimitive.content)
+        assertEquals(JsonNull, json["topN"])
+        // Since 1.11.0 the payload carries only the Top N: the appearance settings are gone
+        assertNull(json["colorPaletteName"])
+        assertNull(json["maxTopPlaylistItems"])
+        // The exact payload: a single key
+        assertEquals(setOf("topN"), json.keys)
     }
 
     @Test
@@ -162,8 +167,6 @@ class FullListRoutesTest {
     fun `ui settings reader keeps the phone defaults and resolves Top N`() {
         val empty = object : BridgeUiSettings.Source {
             override fun string(key: String): String? = null
-            override fun boolean(key: String, default: Boolean) = default
-            override fun float(key: String, default: Float) = default
             override fun int(key: String, default: Int) = default
         }
         assertEquals(UiSettingsDto(), BridgeUiSettings.read(empty))
@@ -172,15 +175,16 @@ class FullListRoutesTest {
             override fun int(key: String, default: Int) = 25
         }
         assertEquals(25, BridgeUiSettings.read(custom).topN)
+        val unlimited = object : BridgeUiSettings.Source by empty {
+            override fun string(key: String): String? = if (key == "MaxTopPlaylistItems") "Unlimited" else null
+        }
+        assertNull(BridgeUiSettings.read(unlimited).topN)
         assertNull(BridgeUiSettings.topN("Unlimited", 3))
         assertEquals(50, BridgeUiSettings.topN("50", 3))
         assertEquals(10, BridgeUiSettings.topN("garbage", 3))
-        // The phone's now-playing indicator (its `MusicAnimationType` name), `Bubbles` by default
-        assertEquals("Bubbles", BridgeUiSettings.read(empty).nowPlayingIndicator)
-        val bars = object : BridgeUiSettings.Source by empty {
-            override fun string(key: String): String? = if (key == "nowPlayingIndicator") "Bars" else null
-        }
-        assertEquals("Bars", BridgeUiSettings.read(bars).nowPlayingIndicator)
+        // Custom clamps below 1 to 1, as on the phone
+        assertEquals(1, BridgeUiSettings.topN("Custom", 0))
+        assertEquals(1, BridgeUiSettings.topN("Custom", -5))
     }
 
     // --- queue.fullList ---
