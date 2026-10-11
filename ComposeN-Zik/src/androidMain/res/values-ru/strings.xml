@@ -2196,7 +2196,7 @@
     <string name="maintenance_copy">Copy</string>
     <string name="maintenance_stats">Stats</string>
     <string name="maintenance_debug_logs">Debug logs</string>
-    <string name="maintenance_debug_on">На</string>
+    <string name="maintenance_debug_on">Вкл.</string>
     <string name="maintenance_debug_off">Выкл</string>
     <string name="maintenance_debug_restart_needed">restart needed</string>
     <string name="maintenance_lastfm">Last.fm</string>
