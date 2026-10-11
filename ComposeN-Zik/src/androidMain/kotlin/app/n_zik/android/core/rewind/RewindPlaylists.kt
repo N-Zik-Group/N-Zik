@@ -35,7 +35,7 @@ object RewindPlaylists {
 
     /**
      * SharedPreferences key of the selected Month/Year/All chip in the Playlists tab —
-     * stores the [Filter] enum name through `rememberPreference`, default [Filter.Month].
+     * stores the [Filter] enum name through `rememberPreference`, default [Filter.All].
      */
     const val REWIND_PLAYLISTS_FILTER_KEY = "rewindPlaylistsFilter"
 
@@ -99,7 +99,7 @@ object RewindPlaylists {
         Filter.All -> isRewind(name)
     }
 
-    /** Filter chips of the "Rewind" category row (default selection: [Month]). */
+    /** Filter chips of the "Rewind" category row (default selection: [All]). */
     enum class Filter {
         Month,
         Year,

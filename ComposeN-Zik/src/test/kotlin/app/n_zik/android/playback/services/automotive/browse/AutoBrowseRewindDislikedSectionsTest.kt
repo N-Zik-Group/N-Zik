@@ -148,15 +148,15 @@ class AutoBrowseRewindDislikedSectionsTest {
     // ---------- Rewind: sub-group order follows the phone filter key ----------
 
     @Test
-    fun `rewind sub-groups put the phone filter selection first and default to month`() {
+    fun `rewind sub-groups put the phone filter selection first and default to all`() {
         runBlocking { seedRewindPlaylists() }
 
-        // Default (no chip written): canonical order with Month first.
+        // Default (no chip written): canonical order with All first.
         var ids = runBlocking {
             onDatabase { playlistsHandler.getChildren(AutoSessionConstants.ID_PLAYLISTS_REWIND, context, Database, downloadHelper, null) }.map { it.mediaId }
         }
         assertEquals(
-            listOf(AutoSessionConstants.ID_PLAYLISTS_REWIND_MONTH, AutoSessionConstants.ID_PLAYLISTS_REWIND_YEAR, AutoSessionConstants.ID_PLAYLISTS_REWIND_ALL),
+            listOf(AutoSessionConstants.ID_PLAYLISTS_REWIND_ALL, AutoSessionConstants.ID_PLAYLISTS_REWIND_MONTH, AutoSessionConstants.ID_PLAYLISTS_REWIND_YEAR),
             ids
         )
 
@@ -180,13 +180,13 @@ class AutoBrowseRewindDislikedSectionsTest {
             ids
         )
 
-        // Corrupt value: read-only fallback to the default (Month first), no crash.
+        // Corrupt value: read-only fallback to the default (All first), no crash.
         context.preferences.edit().putString(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, "Bogus").apply()
         ids = runBlocking {
             onDatabase { playlistsHandler.getChildren(AutoSessionConstants.ID_PLAYLISTS_REWIND, context, Database, downloadHelper, null) }.map { it.mediaId }
         }
         assertEquals(
-            listOf(AutoSessionConstants.ID_PLAYLISTS_REWIND_MONTH, AutoSessionConstants.ID_PLAYLISTS_REWIND_YEAR, AutoSessionConstants.ID_PLAYLISTS_REWIND_ALL),
+            listOf(AutoSessionConstants.ID_PLAYLISTS_REWIND_ALL, AutoSessionConstants.ID_PLAYLISTS_REWIND_MONTH, AutoSessionConstants.ID_PLAYLISTS_REWIND_YEAR),
             ids
         )
     }

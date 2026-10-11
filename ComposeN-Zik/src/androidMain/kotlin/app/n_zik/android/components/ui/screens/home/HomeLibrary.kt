@@ -395,7 +395,7 @@ fun HomeLibrary(
     // for the Month/Year/All row visibility — spec 2 wires them to the worker
     val rewindMonthlyPlaylistEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true)
     val rewindYearlyPlaylistEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
-    var rewindPlaylistsFilter by rememberPreference(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.Month)
+    var rewindPlaylistsFilter by rememberPreference(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.All)
     val homePlaylistsOrderPref by rememberPreference(homePlaylistsOrderKey, "")
 
     // YT playlists can come from imports (not only live sync), so the tab

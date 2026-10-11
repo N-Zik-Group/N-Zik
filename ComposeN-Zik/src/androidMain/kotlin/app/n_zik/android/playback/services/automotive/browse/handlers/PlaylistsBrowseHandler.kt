@@ -70,11 +70,11 @@ class PlaylistsBrowseHandler : BrowseHandler {
             }
             AutoSessionConstants.ID_PLAYLISTS_REWIND -> {
                 // Read-only of the phone's Month/Year/All chip (REWIND_PLAYLISTS_FILTER_KEY,
-                // default Month): the selected sub-group comes first, the other two keep
+                // default All): the selected sub-group comes first, the other two keep
                 // the canonical order. AA never writes this key.
                 val selected = runCatching {
                     RewindPlaylists.Filter.valueOf(context.preferences.getString(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, null).orEmpty())
-                }.getOrDefault(RewindPlaylists.Filter.Month)
+                }.getOrDefault(RewindPlaylists.Filter.All)
                 val ordered = listOf(selected) + RewindPlaylists.Filter.values().filter { it != selected }
                 val previews = database.playlistTable.allAsPreview().first()
                 ordered.map { filter ->

@@ -158,7 +158,7 @@ internal interface LibraryProvider {
             override suspend fun playlistArtwork(playlistId: Long): ArtworkResult = ArtworkResult.NotFound
             override suspend fun cacheSpace(): LibraryCacheDto =
                 LibraryCacheDto(CacheSpaceDto(0L, null), CacheSpaceDto(0L, null))
-            override suspend fun rewindState(): RewindStateDto = RewindStateDto(true, true, "month")
+            override suspend fun rewindState(): RewindStateDto = RewindStateDto(true, true, "all")
             override suspend fun dislikeMode(): DislikeModeDto = DislikeModeDto(true, true, true)
             override suspend fun setSongLike(songId: String, state: TrackLike): TrackLike? = null
             override suspend fun setAlbumBookmark(albumId: String, bookmarked: Boolean): Boolean? = null
@@ -270,7 +270,7 @@ internal class DatabaseLibraryProvider(
         val prefs = appContext.preferences
         val showPinned = prefs.getBoolean(showPinnedPlaylistsKey, true)
         val showRewind = prefs.getBoolean(showMonthlyPlaylistsKey, true)
-        val rewindFilterToApply = rewindFilter ?: prefs.getEnum(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.Month)
+        val rewindFilterToApply = rewindFilter ?: prefs.getEnum(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.All)
         // A present wire filter is persisted exactly like the phone's own chip tap
         if (rewindFilter != null) prefs.edit { putEnum(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, rewindFilter) }
         val shown = when (filter) {
@@ -425,7 +425,7 @@ internal class DatabaseLibraryProvider(
             monthlyEnabled = DataStoreUtils.prefs(appContext).getBoolean(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true),
             yearlyEnabled = DataStoreUtils.prefs(appContext).getBoolean(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true),
             filter = appContext.preferences
-                .getEnum(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.Month).wire,
+                .getEnum(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.All).wire,
         )
     }
 

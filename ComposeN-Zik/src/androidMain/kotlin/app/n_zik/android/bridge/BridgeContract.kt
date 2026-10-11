@@ -494,7 +494,7 @@ internal data class RewindStateDto(
     val monthlyEnabled: Boolean,
     /** The phone's yearly rewind playlist creation toggle (default `true`). */
     val yearlyEnabled: Boolean,
-    /** The phone's current Month/Year/All filter (default `month`). */
+    /** The phone's current Month/Year/All filter (default `all`). */
     val filter: String,
 )
 
