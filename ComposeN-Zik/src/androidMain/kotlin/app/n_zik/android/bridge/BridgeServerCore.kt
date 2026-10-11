@@ -18,12 +18,15 @@ import app.n_zik.android.bridge.command.ParsedCommand
 import app.n_zik.android.bridge.library.ArtworkResult
 import app.n_zik.android.bridge.library.CollectionFilter
 import app.n_zik.android.bridge.library.LibraryLists
+import app.n_zik.android.bridge.library.LibraryMapping
 import app.n_zik.android.bridge.library.LibraryProvider
 import app.n_zik.android.bridge.library.ListKind
 import app.n_zik.android.bridge.library.ListRef
 import app.n_zik.android.bridge.library.ListResolution
 import app.n_zik.android.bridge.library.LibraryQueries
 import app.n_zik.android.bridge.library.PageRequest
+import app.n_zik.android.bridge.library.SongRecommendations
+import app.n_zik.android.bridge.library.SongRecommendationsState
 import app.n_zik.android.bridge.pairing.CodeValidation
 import app.n_zik.android.bridge.pairing.InMemoryPairedDeviceStorage
 import app.n_zik.android.bridge.pairing.JsonPairedDeviceStore
@@ -166,6 +169,11 @@ internal class BridgeServerCore(
     private val listCommandExecutor: ListCommandExecutor = ListCommandExecutor.UNAVAILABLE,
     /** The phone's UI settings of `GET /ui/settings` (contract §10.5, since 1.10.0); the phone's defaults without a phone. */
     private val uiSettings: suspend () -> UiSettingsDto = { UiSettingsDto() },
+    /**
+     * The smart-shuffle recommendations of the phone's Songs tab (contract §10.1, since 1.12.0,
+     * `library.recommendations`): what its `HomeSongs` published, nothing while it is off.
+     */
+    private val songRecommendations: () -> SongRecommendationsState = { SongRecommendations.state.value },
 ) {
     private val stopping = AtomicBoolean(false)
 
@@ -277,6 +285,8 @@ internal class BridgeServerCore(
                 route("library") {
                     install(bearerAuth)
                     get("songs") { call.handleSongs() }
+                    // Since 1.12.0 (`library.recommendations`): the smart shuffle of the phone's Songs tab
+                    get("songs/recommendations") { call.respond(LibraryMapping.recommendations(songRecommendations())) }
                     get("playlists") { call.handlePlaylists() }
                     get("playlists/{id}/songs") { call.handlePlaylistSongs() }
                     // Since 1.7.2: the phone's custom playlist cover (no `size` parameter: the local file is served as-is)

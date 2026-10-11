@@ -20,6 +20,10 @@ import app.n_zik.android.core.database.Database
  * its `HomeSongsSortSettingsDialog`) are preferences, not database writes: a listener on the
  * `preferences` SharedPreferences watches their keys and emits `songs` — the client reloads
  * its songs lists (since 1.11.0 it no longer receives the menu itself on the wire).
+ *
+ * Since 1.12.0 (`library.recommendations`), every change of the Songs tab's smart shuffle
+ * ([SongRecommendations]: published, or cleared when switched off / the screen left) emits `songs`
+ * too — the client re-reads `GET /library/songs/recommendations`.
  */
 internal class BridgeLibraryObserver(
     context: Context,
@@ -36,7 +40,10 @@ internal class BridgeLibraryObserver(
     private var started = false
     private var prefsListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
 
-    /** Registers the library write notifier and the sort-menu preference listener; a no-op while already started. */
+    /**
+     * Registers the library write notifier, the sort-menu preference listener and the smart-shuffle
+     * listener; a no-op while already started.
+     */
     fun start() {
         synchronized(lock) {
             if (started) return
@@ -54,10 +61,11 @@ internal class BridgeLibraryObserver(
             }
             prefsListener = menuListener
             prefs.registerOnSharedPreferenceChangeListener(menuListener)
+            SongRecommendations.changeListener = { hub.submitLibraryChanged("songs") }
         }
     }
 
-    /** Unregisters both listeners; a no-op when never started. */
+    /** Unregisters every listener; a no-op when never started. */
     fun stop() {
         synchronized(lock) {
             if (!started) return
@@ -65,6 +73,7 @@ internal class BridgeLibraryObserver(
             Database.libraryWriteNotifier = null
             prefsListener?.let { prefs.unregisterOnSharedPreferenceChangeListener(it) }
             prefsListener = null
+            SongRecommendations.changeListener = null
         }
     }
 

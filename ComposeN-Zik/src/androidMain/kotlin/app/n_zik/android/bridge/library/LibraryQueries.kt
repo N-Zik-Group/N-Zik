@@ -126,6 +126,8 @@ internal data class TrackSupport(
     val states: Map<String, TrackDownloadState> = emptyMap(),
     /** The download progress (0..1) of each active download. */
     val progresses: Map<String, Float> = emptyMap(),
+    /** Since 1.12.0: the ids of the songs in at least one of the phone's playlists (its `SongPlaylistMap`). */
+    val inPlaylist: Set<String> = emptySet(),
 )
 
 /** The listening stats behind a collection id (contract §1.1, since 1.7.1): the phone's grid overlays. */

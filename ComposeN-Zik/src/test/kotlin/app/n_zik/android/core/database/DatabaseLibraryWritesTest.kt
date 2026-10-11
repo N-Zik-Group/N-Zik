@@ -27,7 +27,7 @@ class DatabaseLibraryWritesTest {
         assertEquals(listOf("songs"), Database.libraryTableKinds[SongTable::class.java])
         assertEquals(listOf("albums"), Database.libraryTableKinds[AlbumTable::class.java])
         assertEquals(listOf("artists"), Database.libraryTableKinds[ArtistTable::class.java])
-        assertEquals(listOf("playlists"), Database.libraryTableKinds[PlaylistTable::class.java])
+        assertEquals(listOf("playlists", "songs"), Database.libraryTableKinds[PlaylistTable::class.java])
         assertEquals(listOf("songs"), Database.libraryTableKinds[FormatTable::class.java])
         // A playlist membership change also reloads the open playlist's track list (a songs detail)
         assertEquals(listOf("playlists", "songs"), Database.libraryTableKinds[SongPlaylistMapTable::class.java])

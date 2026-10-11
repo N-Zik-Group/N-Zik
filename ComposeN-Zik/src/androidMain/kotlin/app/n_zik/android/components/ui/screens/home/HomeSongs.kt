@@ -56,6 +56,7 @@ import app.kreate.android.themed.rimusic.component.playlist.PositionLock
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.R
+import app.n_zik.android.bridge.library.SongRecommendations
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.Sort
@@ -440,6 +441,19 @@ fun HomeSongs(
 
         isRecommendationsLoading = false
         onRecommendationsLoadingChange(false)
+    }
+
+    // Contract §10.1 (since 1.12.0, `library.recommendations`): the PC bridge shows the same
+    // recommendations at the same positions — published as displayed, cleared when switched off
+    LaunchedEffect( builtInPlaylist, isRecommendationEnabled, relatedSongsPositions ) {
+        if (isRecommendationEnabled && relatedSongsPositions.isNotEmpty()) {
+            SongRecommendations.publish( builtInPlaylist, relatedSongsPositions )
+        } else {
+            SongRecommendations.clear()
+        }
+    }
+    DisposableEffect( Unit ) {
+        onDispose { SongRecommendations.clear() }
     }
 
     LaunchedEffect( items, search.inputValue, isRecommendationEnabled, relatedSongsPositions ) {

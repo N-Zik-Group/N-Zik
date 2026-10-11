@@ -13,7 +13,7 @@ import kotlinx.serialization.json.Json
  * Every literal that travels on the wire lives here.
  */
 internal object BridgeContract {
-    const val CONTRACT_VERSION = "1.11.0"
+    const val CONTRACT_VERSION = "1.12.0"
     const val API_PREFIX = "/api/v1"
 
     /** Port 42420, then 42421–42429, then an OS-assigned ephemeral port (contract §11.1). */
@@ -91,6 +91,8 @@ internal object BridgeContract {
             "library.locate",
             "ui.settings",
             "ui.toasts",
+            // Since 1.12.0: the phone's smart-shuffle recommendations of its Songs tab
+            "library.recommendations",
         )
 
     /** Pagination bounds (contract §1, §14). */

@@ -288,6 +288,8 @@ class BridgeStateHubTest {
                 "totalPlayTimeMs", "playCount", "downloadState", "downloadProgress", "isCached",
                 // Since 1.7.2: the custom-artwork flag (always encoded, `encodeDefaults`)
                 "isCustomArtwork",
+                // Since 1.12.0: the playlist membership (the WS queue reads it too)
+                "inPlaylist",
             ),
             track?.keys,
         )

@@ -10,6 +10,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.bridge.BridgeContract
+import app.n_zik.android.bridge.library.PlaylistMembership
 import app.n_zik.android.bridge.command.PlayerAccess
 import app.n_zik.android.bridge.command.Sampled
 import app.n_zik.android.core.database.Database
@@ -31,8 +32,8 @@ import timber.log.Timber
 
 private const val TAG = "BridgePlayerSource"
 
-/** `like` / `isDownloaded` of one track, resolved off the main thread. */
-private data class TrackFlags(val like: TrackLike, val isDownloaded: Boolean)
+/** `like` / `isDownloaded` / `inPlaylist` (since 1.12.0) of one track, resolved off the main thread. */
+private data class TrackFlags(val like: TrackLike, val isDownloaded: Boolean, val inPlaylist: Boolean = false)
 
 /**
  * Whether a songs-table write moved the like of a track of the last sampled queue: [known] is
@@ -41,6 +42,14 @@ private data class TrackFlags(val like: TrackLike, val isDownloaded: Boolean)
  */
 internal fun queueLikesMoved(known: Map<String, TrackLike>, fresh: Map<String, TrackLike>): Boolean =
     known.any { (id, like) -> fresh[id]?.let { it != like } == true }
+
+/**
+ * Whether a playlist-map write moved the playlist membership of a track of the last sampled queue
+ * (contract §1.1 `Track.inPlaylist`, since 1.12.0): [known] is the set each queue track was last
+ * published with, [fresh] the set read now, over the same [trackIds].
+ */
+internal fun queueMembershipMoved(trackIds: Collection<String>, known: Set<String>, fresh: Set<String>): Boolean =
+    trackIds.any { (it in known) != (it in fresh) }
 
 /**
  * Feeds a [BridgeStateHub] with the phone's player state, read-only. Binds
@@ -129,8 +138,16 @@ internal class BridgePlayerSource(
                     sampleMutex.withLock {
                         val known = flags
                         if (known.isNotEmpty()) {
-                            val fresh = withContext(NzikDispatchers.DATA) { readLikes(known.keys) }
-                            if (queueLikesMoved(known.mapValues { it.value.like }, fresh)) sampleOnce()
+                            val (fresh, freshMembership) = withContext(NzikDispatchers.DATA) {
+                                readLikes(known.keys) to PlaylistMembership.readFromDatabase(known.keys)
+                            }
+                            val knownMembership = known.filterValues { it.inPlaylist }.keys
+                            // Since 1.12.0 a playlist-map write (a `songs` write too) can move `inPlaylist`
+                            if (queueLikesMoved(known.mapValues { it.value.like }, fresh) ||
+                                queueMembershipMoved(known.keys, knownMembership, freshMembership)
+                            ) {
+                                sampleOnce()
+                            }
                         }
                     }
                 } catch (e: CancellationException) {
@@ -291,6 +308,7 @@ internal class BridgePlayerSource(
                 isExplicit = item.isExplicitExtra,
                 like = itemFlags?.like,
                 artworkUrl = item.artworkUrl,
+                inPlaylist = itemFlags?.inPlaylist == true,
             )
         }
         return hub.submit(read.sample.copy(queue = queue), seek = seek, transition = transition)
@@ -299,8 +317,14 @@ internal class BridgePlayerSource(
     private suspend fun resolveFlags(trackIds: List<String>): Map<String, TrackFlags> {
         val downloads = MyDownloadHelper.downloads.value
         val likes = readLikes(trackIds)
+        // Since 1.12.0: the playlist membership, in batched reads like the likes (empty on a failed read)
+        val inPlaylist = PlaylistMembership.readFromDatabase(trackIds)
         return trackIds.associateWith { id ->
-            TrackFlags(like = likes[id] ?: TrackLike.NEUTRAL, isDownloaded = downloads[id]?.state == Download.STATE_COMPLETED)
+            TrackFlags(
+                like = likes[id] ?: TrackLike.NEUTRAL,
+                isDownloaded = downloads[id]?.state == Download.STATE_COMPLETED,
+                inPlaylist = id in inPlaylist,
+            )
         }
     }
 

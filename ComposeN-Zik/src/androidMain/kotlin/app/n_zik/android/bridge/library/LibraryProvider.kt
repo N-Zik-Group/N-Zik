@@ -252,11 +252,8 @@ internal class DatabaseLibraryProvider(
             }
         }
         // The phone's home-tab display filters on top of its raw lists (`HomeSongs.kt` 240, 456)
-        LibraryMapping.librarySongs(
-            filter,
-            LibraryMapping.homeTabSongs(shown, filter, includeLocal, durationLimit, parentalControl),
-            support,
-        )
+        val tabSongs = LibraryMapping.homeTabSongs(shown, filter, includeLocal, durationLimit, parentalControl)
+        LibraryMapping.librarySongs(filter, tabSongs, support.withMembership(tabSongs))
     }
 
     /**
@@ -317,8 +314,9 @@ internal class DatabaseLibraryProvider(
         } else {
             Database.songPlaylistMapTable.sortSongs(playlistId, sort.playlistSongSortBy(), reverse.sortOrder()).first()
         }
-        LibraryMapping.detailSongs(songs, parentalControl())
-            .map { LibraryMapping.track(it, support) }
+        val shown = LibraryMapping.detailSongs(songs, parentalControl())
+        val shownSupport = support.withMembership(shown)
+        shown.map { LibraryMapping.track(it, shownSupport) }
     }
 
     override suspend fun albums(filter: CollectionFilter, sort: AlbumSort, reverse: Boolean): List<AlbumDto> = withContext(NzikDispatchers.DATA) {
@@ -341,10 +339,12 @@ internal class DatabaseLibraryProvider(
     /** As on the phone's own screen, the parental control hides the explicit `e:` rows (`AlbumScreen.kt` 453-455). */
     override suspend fun albumSongs(albumId: String): List<TrackDto>? = withContext(NzikDispatchers.DATA) {
         Database.albumTable.findByIdDirect(albumId) ?: return@withContext null
-        LibraryMapping.detailSongs(
+        val shown = LibraryMapping.detailSongs(
             Database.songAlbumMapTable.allSongsOfDirect(albumId),
             parentalControl(),
-        ).map { LibraryMapping.track(it, trackSupport()) }
+        )
+        val support = trackSupport().withMembership(shown)
+        shown.map { LibraryMapping.track(it, support) }
     }
 
     override suspend fun artists(filter: CollectionFilter, sort: ArtistSort, reverse: Boolean): List<ArtistDto> = withContext(NzikDispatchers.DATA) {
@@ -367,10 +367,12 @@ internal class DatabaseLibraryProvider(
     /** As on the phone's own screen, the parental control hides the explicit `e:` rows (`ArtistScreen.kt` 345). */
     override suspend fun artistSongs(artistId: String): List<TrackDto>? = withContext(NzikDispatchers.DATA) {
         Database.artistTable.findByIdDirect(artistId) ?: return@withContext null
-        LibraryMapping.detailSongs(
+        val shown = LibraryMapping.detailSongs(
             Database.songArtistMapTable.allSongsByDirect(artistId),
             parentalControl(),
-        ).map { LibraryMapping.track(it, trackSupport()) }
+        )
+        val support = trackSupport().withMembership(shown)
+        shown.map { LibraryMapping.track(it, support) }
     }
 
     /** The phone's parental-control display switch, off by default (its `parentalControlEnabledKey`). */
@@ -591,6 +593,13 @@ internal class DatabaseLibraryProvider(
             progresses = MyDownloadHelper.progresses.value,
         )
     }.onFailure { Timber.tag(TAG).w(it, "Download states unavailable") }.getOrDefault(TrackSupport())
+
+    /**
+     * [TrackSupport.inPlaylist] of [songs] (contract §1.1, since 1.12.0): the phone's playlist membership,
+     * read in batched queries ([PlaylistMembership]); a failed read leaves every song out.
+     */
+    private suspend fun TrackSupport.withMembership(songs: List<Song>): TrackSupport =
+        copy(inPlaylist = PlaylistMembership.readFromDatabase(songs.map { it.id }))
 
     /**
      * The used space of the player's streaming cache, exactly as the phone's own

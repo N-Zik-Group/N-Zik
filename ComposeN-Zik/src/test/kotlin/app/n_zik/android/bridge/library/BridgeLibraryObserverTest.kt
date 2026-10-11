@@ -2,6 +2,8 @@ package app.n_zik.android.bridge.library
 
 import android.app.Application
 import android.content.Context
+import app.it.fast4x.rimusic.enums.BuiltInPlaylist
+import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.bridge.state.BridgeStateHub
 import app.n_zik.android.bridge.state.LibraryChangedMessage
 import app.n_zik.android.core.database.Database
@@ -189,5 +191,22 @@ class BridgeLibraryObserverTest {
         prefs.edit().putString("homeSongsAllSortMenuOrder", """["Title"]""").apply()
 
         assertEquals(emptyList<String>(), kinds)
+    }
+
+    // --- The smart-shuffle recommendations (since 1.12.0) ---
+
+    @Test
+    fun `a smart shuffle change emits songs while started, nothing after the stop`() {
+        observer.start()
+
+        SongRecommendations.publish(BuiltInPlaylist.All, mapOf(Song(id = "aaaaaaaaaaa", title = "T", artistsText = null, durationText = null, thumbnailUrl = null) to 0))
+        SongRecommendations.clear()
+        assertEquals(listOf("songs", "songs"), kinds)
+
+        observer.stop()
+        assertNull(SongRecommendations.changeListener)
+        SongRecommendations.publish(BuiltInPlaylist.All, mapOf(Song(id = "bbbbbbbbbbb", title = "T", artistsText = null, durationText = null, thumbnailUrl = null) to 0))
+        SongRecommendations.clear()
+        assertEquals(listOf("songs", "songs"), kinds)
     }
 }

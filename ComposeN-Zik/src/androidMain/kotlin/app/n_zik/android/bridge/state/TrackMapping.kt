@@ -66,6 +66,8 @@ internal object TrackMapping {
         isCached: Boolean = false,
         /** Since 1.7.2: the track's artwork url, for the [isCustomArtwork] flag (both the queue and the library reads). */
         artworkUrl: String? = null,
+        /** Since 1.12.0: in at least one of the phone's playlists (both the queue and the library reads). */
+        inPlaylist: Boolean = false,
     ): TrackDto {
         val id = trackIdOf(mediaId)
         val source = sourceOf(id)
@@ -92,6 +94,7 @@ internal object TrackMapping {
             downloadProgress = downloadProgress,
             isCached = isCached,
             isCustomArtwork = isCustomArtwork(artworkUrl),
+            inPlaylist = inPlaylist,
         )
     }
 

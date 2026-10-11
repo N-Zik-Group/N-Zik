@@ -130,7 +130,8 @@ object Database {
         SongTable::class.java to listOf("songs"),
         AlbumTable::class.java to listOf("albums"),
         ArtistTable::class.java to listOf("artists"),
-        PlaylistTable::class.java to listOf("playlists"),
+        // "songs" too: a playlist delete cascades its SongPlaylistMap rows (`Track.inPlaylist`, since 1.12.0)
+        PlaylistTable::class.java to listOf("playlists", "songs"),
         FormatTable::class.java to listOf("songs"),
         // "songs" too: the open playlist's track list is a songs-family detail list
         SongPlaylistMapTable::class.java to listOf("playlists", "songs"),

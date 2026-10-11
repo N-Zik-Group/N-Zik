@@ -12,6 +12,8 @@ import app.n_zik.android.bridge.AlbumDto
 import app.n_zik.android.bridge.ArtistDto
 import app.n_zik.android.bridge.PlaylistDto
 import app.n_zik.android.bridge.PlaylistOrigin
+import app.n_zik.android.bridge.state.RecommendationDto
+import app.n_zik.android.bridge.state.SongRecommendationsResponse
 import app.n_zik.android.bridge.state.TrackDto
 import app.n_zik.android.bridge.state.TrackDownloadState
 import app.n_zik.android.bridge.state.TrackLike
@@ -82,6 +84,18 @@ internal object LibraryMapping {
                 ?.takeIf { support.states[song.id] == TrackDownloadState.DOWNLOADING },
             isCached = song.id in support.cached,
             artworkUrl = song.thumbnailUrl,
+            inPlaylist = song.id in support.inPlaylist,
+        )
+
+    /**
+     * The answer of `GET /library/songs/recommendations` (contract §10.1, since 1.12.0): the phone's
+     * smart-shuffle songs are online and absent from its database, so each maps with an empty support
+     * (a neutral like, no download, no playlist).
+     */
+    fun recommendations(state: SongRecommendationsState): SongRecommendationsResponse =
+        SongRecommendationsResponse(
+            filter = state.filter?.wire,
+            items = state.items.map { RecommendationDto(it.position, track(it.song, TrackSupport())) },
         )
 
     /** [filter] the tab behind the read: the phone lists its disliked rows only in the Disliked tab. */
