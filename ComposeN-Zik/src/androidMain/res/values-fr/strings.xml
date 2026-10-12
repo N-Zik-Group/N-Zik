@@ -1406,6 +1406,7 @@ Volume BAS : titre précédent</string>
     <string name="state_radio_on_discover">La radio est lancée (elle filtre les morceaux connus et ajoute de nouvelles découvertes)</string>
     <string name="state_radio_on_classic">La radio est lancée (avec des morceaux connus et de nouvelles découvertes)</string>
     <string name="state_radio_off">La radio s\'est arrêtée (Retour à la normale)</string>
+    <string name="state_radio_fetch_error">Radio: no songs loaded (Queue kept)</string>
     <string name="state_discover_on">Mode « Découverte » activé (filtre les titres connus et ajoute de nouvelles découvertes)</string>
     <string name="state_discover_off">Mode « Découverte » désactivé (comprend les titres connus et les nouvelles découvertes)</string>
     <string name="state_reminder_discover">Rappel : le mode « Découverte » est toujours actif</string>
