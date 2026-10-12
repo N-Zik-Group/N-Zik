@@ -1,6 +1,9 @@
 package app.n_zik.android.components.dialog.player
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,13 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import app.n_zik.android.components.ui.sliders.SliderControl
-import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -30,10 +30,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -44,6 +44,11 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.InteractiveDialog
+import app.n_zik.android.typography
+import app.n_zik.android.uiRoundnessShape
+import app.it.fast4x.rimusic.utils.bold
+import app.it.fast4x.rimusic.utils.medium
+import app.it.fast4x.rimusic.utils.semiBold
 
 class ShowOffsetDialog private constructor(
     activeState: MutableState<Boolean>,
@@ -70,6 +75,7 @@ class ShowOffsetDialog private constructor(
         var lyricsOffsetState = rememberPreference("lyricsOffset_$mediaId", 0L)
         var lyricsOffset by rememberSaveable { mutableIntStateOf(lyricsOffsetState.value.toInt()) }
         var textFieldValue by rememberSaveable { mutableStateOf(lyricsOffset.toString()) }
+        val palette = colorPalette()
 
         LaunchedEffect(lyricsOffset) {
             lyricsOffsetState.value = lyricsOffset.toLong()
@@ -77,14 +83,10 @@ class ShowOffsetDialog private constructor(
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 20.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(
-                painter = painterResource(R.drawable.sync),
-                contentDescription = null,
-                modifier = Modifier.size(40.dp),
-                tint = colorPalette().accent
-            )
+            // No header icon — like every other dialog, only the shared frame title
+            // (the 40dp sync icon made this dialog the only one with a header decoration).
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -134,21 +136,19 @@ class ShowOffsetDialog private constructor(
                         }
                     },
                     singleLine = true,
-                    textStyle = MaterialTheme.typography.displaySmall.copy(
+                    textStyle = typography().l.bold.copy(
                         textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold
+                        color = palette.text
                     ),
                     modifier = Modifier.widthIn(min = 120.dp, max = 160.dp),
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = colorPalette().text,
-                        unfocusedTextColor = colorPalette().text,
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        cursorColor = colorPalette().accent,
-                        focusedIndicatorColor = colorPalette().accent,
-                        unfocusedIndicatorColor = colorPalette().textDisabled,
-                        disabledIndicatorColor = Color.Transparent,
-                        errorIndicatorColor = colorPalette().red
+                        focusedTextColor = palette.text,
+                        unfocusedTextColor = palette.text,
+                        focusedContainerColor = palette.background1,
+                        unfocusedContainerColor = palette.background1,
+                        cursorColor = palette.accent,
+                        focusedIndicatorColor = palette.accent,
+                        unfocusedIndicatorColor = palette.textDisabled
                     ),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Number,
@@ -158,28 +158,28 @@ class ShowOffsetDialog private constructor(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                Text(
+                BasicText(
                     text = "ms",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = colorPalette().textSecondary,
-                    fontWeight = FontWeight.Medium
+                    style = typography().s.medium.copy(
+                        color = palette.textSecondary
+                    )
                 )
 
                 if (lyricsOffset != 0) {
                     Spacer(Modifier.width(8.dp))
 
-                    IconButton(
-                        onClick = {
-                            lyricsOffset = 0
-                            textFieldValue = "0"
-                        }
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.refresh),
-                            tint = colorPalette().accent,
-                            contentDescription = stringResource(R.string.cd_reset)
-                        )
-                    }
+                    Icon(
+                        painter = painterResource(R.drawable.refresh),
+                        tint = palette.accent,
+                        contentDescription = stringResource(R.string.cd_reset),
+                        modifier = Modifier
+                            .clip(uiRoundnessShape())
+                            .clickable {
+                                lyricsOffset = 0
+                                textFieldValue = "0"
+                            }
+                            .size(24.dp)
+                    )
                 }
             }
 
@@ -187,18 +187,29 @@ class ShowOffsetDialog private constructor(
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                horizontalArrangement = Arrangement.spacedBy(
+                    space = 16.dp,
+                    alignment = Alignment.CenterHorizontally
+                ),
+                modifier = Modifier
+                    .padding(vertical = 10.dp)
+                    .fillMaxWidth()
             ) {
-                IconButton(
-                    onClick = {
-                        lyricsOffset = (lyricsOffset - 50).coerceIn(-3000, 3000)
-                        textFieldValue = lyricsOffset.toString()
-                    }
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .alpha(if (lyricsOffset <= -3000) 0.5f else 1f)
+                        .clip(uiRoundnessShape())
+                        .clickable(enabled = lyricsOffset > -3000) {
+                            lyricsOffset = (lyricsOffset - 50).coerceIn(-3000, 3000)
+                            textFieldValue = lyricsOffset.toString()
+                        }
+                        .size(48.dp)
+                        .background(palette.background0)
                 ) {
-                    Text(
+                    BasicText(
                         text = "-",
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = colorPalette().text
+                        style = typography().xs.semiBold.copy(color = palette.text)
                     )
                 }
 
@@ -214,16 +225,21 @@ class ShowOffsetDialog private constructor(
                     modifier = Modifier.weight(1f)
                 )
 
-                IconButton(
-                    onClick = {
-                        lyricsOffset = (lyricsOffset + 50).coerceIn(-3000, 3000)
-                        textFieldValue = lyricsOffset.toString()
-                    }
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .alpha(if (lyricsOffset >= 3000) 0.5f else 1f)
+                        .clip(uiRoundnessShape())
+                        .clickable(enabled = lyricsOffset < 3000) {
+                            lyricsOffset = (lyricsOffset + 50).coerceIn(-3000, 3000)
+                            textFieldValue = lyricsOffset.toString()
+                        }
+                        .size(48.dp)
+                        .background(palette.background0)
                 ) {
-                    Icon(
-                        painter = painterResource(R.drawable.add),
-                        tint = colorPalette().text,
-                        contentDescription = stringResource(R.string.cd_increase)
+                    BasicText(
+                        text = "+",
+                        style = typography().xs.semiBold.copy(color = palette.text)
                     )
                 }
             }
@@ -236,15 +252,13 @@ class ShowOffsetDialog private constructor(
                     .fillMaxWidth()
                     .padding(horizontal = 48.dp)
             ) {
-                Text(
+                BasicText(
                     text = "-3000ms",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = colorPalette().textSecondary
+                    style = typography().xxs.copy(color = palette.textSecondary)
                 )
-                Text(
+                BasicText(
                     text = "+3000ms",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = colorPalette().textSecondary
+                    style = typography().xxs.copy(color = palette.textSecondary)
                 )
             }
         }
@@ -261,4 +275,3 @@ class ShowOffsetDialog private constructor(
         )
     )
 }
-

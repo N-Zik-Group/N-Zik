@@ -50,7 +50,8 @@ fun InProgressDialog(
             overflow = TextOverflow.Ellipsis,
         )
         Spacer(modifier = Modifier.height(16.dp))
-        val progress = if (total > 0) done.toFloat() / total.toFloat() else 0f
+        // Bounded to the indicator's domain even if a counter overshoots total.
+        val progress = (if (total > 0) done.toFloat() / total.toFloat() else 0f).coerceIn(0f, 1f)
         if (total > 0) {
             CircularWavyProgressIndicator(
                 progress = { progress },

@@ -1,11 +1,10 @@
 package app.n_zik.android.components.dialog.common
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -14,7 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,7 +34,6 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.ui.sliders.CircularSlider
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.formatAsDuration
-import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.uiRoundnessShape
 
@@ -75,100 +75,109 @@ fun SleepTimerDialog(
             var showCircularSlider by remember { mutableStateOf(false) }
             var amount by remember { mutableStateOf(1) }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(
-                    space = 16.dp,
-                    alignment = Alignment.CenterHorizontally
-                ),
+            // The frame body is non-scrollable and capped at 80 % of the
+            // screen height (canon): the stepper / slider area scrolls inside
+            // this column so the confirm / cancel pills stay reachable on
+            // short screens.
+            Column(
                 modifier = Modifier
-                    .padding(vertical = 10.dp)
-                    .fillMaxWidth()
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState())
             ) {
-                val sleepTimeMillis = amount * STEP_MINUTES * MINUTES_TO_MILLIS
+                Spacer(modifier = Modifier.height(16.dp))
 
-                if (!showCircularSlider) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .alpha(if (amount <= 1) 0.5f else 1f)
-                            .clip(uiRoundnessShape())
-                            .clickable(enabled = amount > 1) { amount-- }
-                            .size(48.dp)
-                            .background(palette.background0)
-                    ) {
-                        BasicText(
-                            text = "-",
-                            style = typography().xs.semiBold.copy(color = palette.text)
-                        )
-                    }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(
+                        space = 16.dp,
+                        alignment = Alignment.CenterHorizontally
+                    ),
+                    modifier = Modifier
+                        .padding(vertical = 10.dp)
+                        .fillMaxWidth()
+                ) {
+                    val sleepTimeMillis = amount * STEP_MINUTES * MINUTES_TO_MILLIS
 
-                    Box(contentAlignment = Alignment.Center) {
-                        BasicText(
-                            text = stringResource(
-                                R.string.left,
-                                formatAsDuration(sleepTimeMillis)
-                            ),
-                            style = typography().s.semiBold.copy(color = palette.text),
-                            modifier = Modifier.clip(uiRoundnessShape()).clickable {
-                                showCircularSlider = !showCircularSlider
+                    if (!showCircularSlider) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .alpha(if (amount <= 1) 0.5f else 1f)
+                                .clip(uiRoundnessShape())
+                                .clickable(enabled = amount > 1) { amount-- }
+                                .size(48.dp)
+                                .background(palette.background0)
+                        ) {
+                            BasicText(
+                                text = "-",
+                                style = typography().xs.semiBold.copy(color = palette.text)
+                            )
+                        }
+
+                        Box(contentAlignment = Alignment.Center) {
+                            BasicText(
+                                text = stringResource(
+                                    R.string.left,
+                                    formatAsDuration(sleepTimeMillis)
+                                ),
+                                style = typography().s.semiBold.copy(color = palette.text),
+                                modifier = Modifier.clip(uiRoundnessShape()).clickable {
+                                    showCircularSlider = !showCircularSlider
+                                }
+                            )
+                        }
+
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .alpha(if (amount >= MAX_SLIDER_VALUE.toInt()) 0.5f else 1f)
+                                .clip(uiRoundnessShape())
+                                .clickable(enabled = amount < MAX_SLIDER_VALUE.toInt()) { amount++ }
+                                .size(48.dp)
+                                .background(palette.background0)
+                        ) {
+                            BasicText(
+                                text = "+",
+                                style = typography().xs.semiBold.copy(color = palette.text)
+                            )
+                        }
+
+                    } else {
+                        CircularSlider(
+                            stroke = 40f,
+                            thumbColor = palette.accent,
+                            text = formatAsDuration(sleepTimeMillis),
+                            modifier = Modifier
+                                .testTag("sleepTimerSlider")
+                                .fillMaxWidth()
+                                .sizeIn(maxWidth = 300.dp, maxHeight = 300.dp)
+                                .aspectRatio(1f),
+                            onChange = { percentage ->
+                                amount = (percentage * MAX_SLIDER_VALUE).toInt()
                             }
                         )
                     }
-
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .alpha(if (amount >= MAX_SLIDER_VALUE.toInt()) 0.5f else 1f)
-                            .clip(uiRoundnessShape())
-                            .clickable(enabled = amount < MAX_SLIDER_VALUE.toInt()) { amount++ }
-                            .size(48.dp)
-                            .background(palette.background0)
-                    ) {
-                        BasicText(
-                            text = "+",
-                            style = typography().xs.semiBold.copy(color = palette.text)
-                        )
-                    }
-
-                } else {
-                    CircularSlider(
-                        stroke = 40f,
-                        thumbColor = palette.accent,
-                        text = formatAsDuration(sleepTimeMillis),
-                        modifier = Modifier
-                            .testTag("sleepTimerSlider")
-                            .fillMaxWidth()
-                            .sizeIn(maxWidth = 300.dp, maxHeight = 300.dp)
-                            .aspectRatio(1f),
-                        onChange = { percentage ->
-                            amount = (percentage * MAX_SLIDER_VALUE).toInt()
-                        }
-                    )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            if (timeRemaining > 0) {
-                Row(
-                    modifier = Modifier
-                        .padding(bottom = 20.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    BasicText(
-                        text = stringResource(R.string.set_to) + " "
-                                + formatAsDuration(timeRemaining)
-                                + " " + stringResource(R.string.end_of_song),
-                        maxLines = 1,
-                        style = typography().xxs.medium.copy(color = palette.text),
-                        modifier = Modifier
-                            .weight(1f)
-                            .basicMarquee(iterations = Int.MAX_VALUE)
+                if (timeRemaining > 0) {
+                    // The legacy dialog offered this as a secondary button —
+                    // restored as a single pill in the shared button language.
+                    ButtonRow(
+                        buttons = listOf(
+                            DialogButton(
+                                text = stringResource(R.string.set_to) + " "
+                                        + formatAsDuration(timeRemaining)
+                                        + " " + stringResource(R.string.end_of_song),
+                                onClick = {
+                                    onStartSleepTimer(timeRemaining)
+                                    onDismiss()
+                                }
+                            )
+                        )
                     )
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
 

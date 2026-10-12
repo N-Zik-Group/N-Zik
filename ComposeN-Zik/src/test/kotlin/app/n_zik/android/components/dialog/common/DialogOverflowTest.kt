@@ -3,18 +3,21 @@ package app.n_zik.android.components.dialog.common
 import android.app.Application
 import android.content.Context
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.dp
@@ -217,9 +220,13 @@ class DialogOverflowTest {
         composeRule.waitForIdle()
 
         // The default view is the stepper; tap the duration to switch to the circular slider.
+        // Under the frozen frame clock a coordinate-based tap is never consumed (see the
+        // repo idiom in GetSeekBarPendingSeekTargetTest), so click through the semantics
+        // action and tick the clock once for the resulting recomposition.
         composeRule
             .onNodeWithText(app.getString(R.string.left, formatAsDuration(5L * 60 * 1000)))
-            .performClick()
+            .performSemanticsAction(SemanticsActions.OnClick)
+        composeRule.mainClock.advanceTimeBy(100)
         composeRule.waitForIdle()
 
         // Dialog windows report differently to assertIsDisplayed under Robolectric
@@ -235,5 +242,110 @@ class DialogOverflowTest {
             "slider overflows the card's available width (card=${widthOf(card)}, slider=${widthOf(slider)})",
             widthOf(slider) <= widthOf(card) - 75.dp
         )
+
+        // On this short screen (h470dp → 376dp card cap) the button row must still sit
+        // inside the card: the stepper / slider area scrolls within the frame, so the
+        // pills are never clipped below the card (issue #896, vertical half).
+        val confirmPill = composeRule.onNodeWithText(app.getString(R.string.confirm)).getBoundsInRoot()
+        val cancelPill = composeRule.onNodeWithText(app.getString(R.string.cancel)).getBoundsInRoot()
+        assertTrue(
+            "confirm pill clipped below the card (cardBottom=${card.bottom}, pillBottom=${confirmPill.bottom})",
+            confirmPill.bottom <= card.bottom
+        )
+        assertTrue(
+            "cancel pill clipped below the card (cardBottom=${card.bottom}, pillBottom=${cancelPill.bottom})",
+            cancelPill.bottom <= card.bottom
+        )
+    }
+
+    @Test
+    fun `dialog frame card is capped at 80 percent of the screen height`() {
+        content {
+            DialogFrame(onDismiss = {}) {
+                Box(modifier = Modifier.size(1000.dp))
+            }
+        }
+        composeRule.waitForIdle()
+
+        val card = composeRule.onNodeWithTag("dialogFrameCard").getBoundsInRoot()
+        // Canon frame (gh-896): the card never grows past 80 % of the screen height
+        // (640dp here → 512dp), no matter how tall its content is.
+        assertTrue(
+            "card exceeds the 80 % height cap (height=${heightOf(card)})",
+            heightOf(card) <= 512.dp
+        )
+    }
+
+    @Config(qualifiers = "w900dp-h500dp")
+    @Test
+    fun `dialog frame card is capped at 80 percent of the screen height in landscape`() {
+        content {
+            DialogFrame(onDismiss = {}) {
+                Box(modifier = Modifier.size(1000.dp))
+            }
+        }
+        composeRule.waitForIdle()
+
+        val card = composeRule.onNodeWithTag("dialogFrameCard").getBoundsInRoot()
+        // 80 % of a 500dp-tall landscape screen → 400dp cap.
+        assertTrue(
+            "card exceeds the 80 % height cap in landscape (height=${heightOf(card)})",
+            heightOf(card) <= 400.dp
+        )
+    }
+
+    @Test
+    fun `value selector locked rows are dimmed and inert`() {
+        var selected: String? = null
+        content {
+            ValueSelectorDialog(
+                onDismiss = {},
+                title = "Choose source",
+                selectedValue = "a",
+                values = listOf("a", "b"),
+                onValueSelected = { selected = it },
+                lockedValues = setOf("b"),
+                lockedLabel = "Not logged in"
+            )
+        }
+        composeRule.waitForIdle()
+
+        // The locked row stays visible, dimmed, with its lock label.
+        composeRule.onNodeWithText("Not logged in").assertIsDisplayed()
+
+        // Tapping the locked row does not select it (clickable(enabled = false)).
+        composeRule.onNodeWithText("b").performClick()
+        composeRule.mainClock.advanceTimeBy(100)
+        assertTrue("locked row fired onValueSelected (selected=$selected)", selected == null)
+
+        // The unlocked row still selects normally.
+        composeRule.onNodeWithText("a").performClick()
+        composeRule.mainClock.advanceTimeBy(100)
+        assertTrue("unlocked row did not fire onValueSelected (selected=$selected)", selected == "a")
+    }
+
+    @Test
+    fun `in progress dialog shows the determinate count and the cancel pill`() {
+        content {
+            InProgressDialog(total = 4, done = 1, text = "Updating songs", onDismiss = {})
+        }
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText("1 / 4").assertIsDisplayed()
+        composeRule.onNodeWithText(app.getString(R.string.cancel)).assertIsDisplayed()
+    }
+
+    @Test
+    fun `in progress dialog without a total is indeterminate without a count`() {
+        content {
+            InProgressDialog(total = 0, done = 0, text = "Working")
+        }
+        composeRule.waitForIdle()
+
+        // Indeterminate mode must not render a "done / total" count.
+        val countAbsent = runCatching {
+            composeRule.onNodeWithText("0 / 0").getBoundsInRoot()
+        }.isFailure
+        assertTrue("indeterminate mode must not render a count", countAbsent)
     }
 }

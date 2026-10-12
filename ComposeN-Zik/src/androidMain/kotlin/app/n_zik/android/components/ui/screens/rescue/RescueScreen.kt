@@ -54,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.disabled
@@ -585,31 +586,40 @@ fun RescueScreen() {
             title = stringResource(R.string.rescue_profiles_to_delete)
         ) {
             val palette = colorPalette()
-            userProfiles.forEach { option ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = deleteSelection.contains(option.id),
-                        onCheckedChange = { checked ->
-                            deleteSelection = if (checked)
-                                deleteSelection + option.id
-                            else
-                                deleteSelection - option.id
-                        },
-                        colors = palette.checkboxColors()
-                    )
-                    Text(
-                        text = option.label,
-                        color = palette.text,
-                        modifier = Modifier.weight(1f)
-                    )
-                    if (option.isActive) {
-                        Text(
-                            text = stringResource(R.string.rescue_profile_active),
-                            style = typography().xxs.copy(color = palette.accent)
+            // The frame body is non-scrollable and capped at 80 % of the screen
+            // height (canon): the profile rows scroll inside this column so the
+            // cancel / OK pills stay reachable with many profiles.
+            Column(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                userProfiles.forEach { option ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = deleteSelection.contains(option.id),
+                            onCheckedChange = { checked ->
+                                deleteSelection = if (checked)
+                                    deleteSelection + option.id
+                                else
+                                    deleteSelection - option.id
+                            },
+                            colors = palette.checkboxColors()
                         )
+                        Text(
+                            text = option.label,
+                            color = palette.text,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (option.isActive) {
+                            Text(
+                                text = stringResource(R.string.rescue_profile_active),
+                                style = typography().xxs.copy(color = palette.accent)
+                            )
+                        }
                     }
                 }
             }
@@ -678,37 +688,47 @@ fun RescueScreen() {
             title = stringResource(R.string.rescue_profiles_to_reset)
         ) {
             val palette = colorPalette()
-            resettableProfiles.forEach { option ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = resetSelection.contains(option.id),
-                        onCheckedChange = { checked ->
-                            resetSelection = if (checked)
-                                resetSelection + option.id
-                            else
-                                resetSelection - option.id
-                        },
-                        colors = palette.checkboxColors()
-                    )
-                    Text(
-                        text = option.label,
-                        color = palette.text,
-                        modifier = Modifier.weight(1f)
-                    )
-                    if (option.isActive) {
-                        Text(
-                            text = stringResource(R.string.rescue_profile_active),
-                            style = typography().xxs.copy(color = palette.accent)
+            // The frame body is non-scrollable and capped at 80 % of the screen
+            // height (canon): the profile rows scroll inside this column so the
+            // cancel / OK pills stay reachable with many profiles.
+            Column(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                resettableProfiles.forEach { option ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = resetSelection.contains(option.id),
+                            onCheckedChange = { checked ->
+                                resetSelection = if (checked)
+                                    resetSelection + option.id
+                                else
+                                    resetSelection - option.id
+                            },
+                            colors = palette.checkboxColors(),
+                            modifier = Modifier.testTag("resetProfilesCheckbox_${option.id}")
                         )
-                    }
-                    if (option.id == DEFAULT_PROFILE_ID) {
                         Text(
-                            text = stringResource(R.string.rescue_profile_base),
-                            style = typography().xxs.copy(color = palette.accent)
+                            text = option.label,
+                            color = palette.text,
+                            modifier = Modifier.weight(1f)
                         )
+                        if (option.isActive) {
+                            Text(
+                                text = stringResource(R.string.rescue_profile_active),
+                                style = typography().xxs.copy(color = palette.accent)
+                            )
+                        }
+                        if (option.id == DEFAULT_PROFILE_ID) {
+                            Text(
+                                text = stringResource(R.string.rescue_profile_base),
+                                style = typography().xxs.copy(color = palette.accent)
+                            )
+                        }
                     }
                 }
             }
@@ -767,37 +787,46 @@ fun RescueScreen() {
             title = stringResource(R.string.rescue_profiles_to_restore)
         ) {
             val palette = colorPalette()
-            restorableProfiles.forEach { option ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = restoreSelection.contains(option.id),
-                        onCheckedChange = { checked ->
-                            restoreSelection = if (checked)
-                                restoreSelection + option.id
-                            else
-                                restoreSelection - option.id
-                        },
-                        colors = palette.checkboxColors()
-                    )
-                    Text(
-                        text = option.label,
-                        color = palette.text,
-                        modifier = Modifier.weight(1f)
-                    )
-                    if (option.isActive) {
-                        Text(
-                            text = stringResource(R.string.rescue_profile_active),
-                            style = typography().xxs.copy(color = palette.accent)
+            // The frame body is non-scrollable and capped at 80 % of the screen
+            // height (canon): the profile rows scroll inside this column so the
+            // cancel / OK pills stay reachable with many profiles.
+            Column(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                restorableProfiles.forEach { option ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = restoreSelection.contains(option.id),
+                            onCheckedChange = { checked ->
+                                restoreSelection = if (checked)
+                                    restoreSelection + option.id
+                                else
+                                    restoreSelection - option.id
+                            },
+                            colors = palette.checkboxColors()
                         )
-                    }
-                    if (option.id == DEFAULT_PROFILE_ID) {
                         Text(
-                            text = stringResource(R.string.rescue_profile_base),
-                            style = typography().xxs.copy(color = palette.accent)
+                            text = option.label,
+                            color = palette.text,
+                            modifier = Modifier.weight(1f)
                         )
+                        if (option.isActive) {
+                            Text(
+                                text = stringResource(R.string.rescue_profile_active),
+                                style = typography().xxs.copy(color = palette.accent)
+                            )
+                        }
+                        if (option.id == DEFAULT_PROFILE_ID) {
+                            Text(
+                                text = stringResource(R.string.rescue_profile_base),
+                                style = typography().xxs.copy(color = palette.accent)
+                            )
+                        }
                     }
                 }
             }

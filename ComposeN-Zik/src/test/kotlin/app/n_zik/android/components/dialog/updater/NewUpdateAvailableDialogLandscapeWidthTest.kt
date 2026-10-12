@@ -106,6 +106,10 @@ class NewUpdateAvailableDialogLandscapeWidthTest {
     @Config(qualifiers = "w900dp-h500dp")
     @Test
     fun `dialog column is capped at the landscape frame width`() {
+        // The shared ButtonRow pills marquee continuously when their label overflows
+        // (gh-896 contract): freeze the frame clock before the composition so the
+        // infinite animation can't keep the scene busy (the DialogOverflowTest idiom).
+        composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
                 NewUpdateAvailableDialog.Render()
@@ -128,6 +132,10 @@ class NewUpdateAvailableDialogLandscapeWidthTest {
     @Config(qualifiers = "w393dp-h851dp")
     @Test
     fun `dialog column is capped at the portrait frame width`() {
+        // The shared ButtonRow pills marquee continuously when their label overflows
+        // (gh-896 contract): freeze the frame clock before the composition so the
+        // infinite animation can't keep the scene busy (the DialogOverflowTest idiom).
+        composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
                 NewUpdateAvailableDialog.Render()

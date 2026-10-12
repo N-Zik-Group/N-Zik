@@ -1,6 +1,9 @@
 package app.n_zik.android.components.dialog.common
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +24,15 @@ inline fun DefaultDialog(
         modifier = modifier,
         horizontalAlignment = horizontalAlignment
     ) {
-        content()
+        // The frame body itself stays non-scrollable (canon); tall content
+        // scrolls inside this column instead of being clipped by the frame's
+        // 80 % height cap (the legacy DefaultDialog was scrollable).
+        Column(
+            modifier = Modifier
+                .weight(1f, fill = false)
+                .verticalScroll(rememberScrollState())
+        ) {
+            content()
+        }
     }
 }
