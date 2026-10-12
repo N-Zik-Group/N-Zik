@@ -336,6 +336,8 @@ jobs:
 
             > ℹ️ Standard builds (Dev) are 64-bit only because they bundle FFmpeg. The "Dev32" build drops FFmpeg, so it works on both 32-bit and 64-bit devices.
 
+            > ⚖️ **Why is the Dev build bigger?** It bundles **FFmpeg** (≈ 24 MB of native audio libraries) — the engine behind **Media Export** and the in-app **Metadata Editor**. It is *not* used for regular playback. **Dev32** drops FFmpeg to stay small and 32-bit compatible, so it doesn't include those two features. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
+
             ## 🔄 Features
 
             - 🔧 Built from the latest code commits
@@ -491,6 +493,8 @@ jobs:
             - **Dev32** – Dev build without FFmpeg (`armeabi-v7a` + `arm64-v8a`, 32-bit & 64-bit).
 
             > ℹ️ Standard builds (Dev) are 64-bit only because they bundle FFmpeg. The "Dev32" build drops FFmpeg, so it works on both 32-bit and 64-bit devices.
+
+            > ⚖️ **Why is the Dev build bigger?** It bundles **FFmpeg** (≈ 24 MB of native audio libraries) — the engine behind **Media Export** and the in-app **Metadata Editor**. It is *not* used for regular playback. **Dev32** drops FFmpeg to stay small and 32-bit compatible, so it doesn't include those two features. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
 
             ## 🔄 Features
 

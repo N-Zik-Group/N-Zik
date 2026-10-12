@@ -252,6 +252,8 @@ jobs:
             - **Beta32** – Complete build without FFmpeg (`armeabi-v7a` + `arm64-v8a`, 32-bit & 64-bit).  
               ⚠️ May contain bugs or experimental features.
 
+            > ⚖️ **Why is the Full (BETA) build bigger?** It bundles **FFmpeg** (≈ 24 MB of native audio libraries) — the engine behind **Media Export** and the in-app **Metadata Editor**. It is *not* used for regular playback. **Beta32** drops FFmpeg to stay small and 32-bit compatible, so it doesn't include those two features. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
+
             ## 🔄 Update Policy
 
             - 🟡 **Beta & Beta32 Builds (-b / -b32)**
@@ -347,6 +349,8 @@ jobs:
             - **Full (BETA)** – Complete build with all components (`arm64-v8a`, 64-bit only).  
             - **Beta32** – Complete build without FFmpeg (`armeabi-v7a` + `arm64-v8a`, 32-bit & 64-bit).  
               ⚠️ May contain bugs or experimental features.
+
+            > ⚖️ **Why is the Full (BETA) build bigger?** It bundles **FFmpeg** (≈ 24 MB of native audio libraries) — the engine behind **Media Export** and the in-app **Metadata Editor**. It is *not* used for regular playback. **Beta32** drops FFmpeg to stay small and 32-bit compatible, so it doesn't include those two features. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
 
             ## 🔄 Update Policy
 

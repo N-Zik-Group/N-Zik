@@ -396,6 +396,8 @@ jobs:
 
             > ℹ️ Standard builds (Full, Minified, FOSS) are 64-bit only because they bundle FFmpeg. The "32" builds (Full32, Minified32) drop FFmpeg (and Media Export), so they work on both 32-bit and 64-bit devices.
 
+            > ⚖️ **Why are the standard builds bigger?** They bundle **FFmpeg** (≈ 24 MB of native audio libraries) — the engine behind **Media Export** (export cached/downloaded songs with full metadata + cover art) and the in-app **Metadata Editor**. It is *not* used for regular playback. The `*32` builds drop FFmpeg to stay small and 32-bit compatible, so they don't include those two features. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
+
             ## 🔄 Update Policy
             
             - 🟢 **Full & Full32 Builds (-f / -f32)** 
@@ -482,6 +484,8 @@ jobs:
             - **FOSS** (`com.nevar.nzik.foss`) – Full build without auto-updater, suitable for alternative stores (`arm64-v8a`, 64-bit only).
 
             > ℹ️ Standard builds (Full, Minified, FOSS) are 64-bit only because they bundle FFmpeg. The "32" builds (Full32, Minified32) drop FFmpeg (and Media Export), so they work on both 32-bit and 64-bit devices.
+
+            > ⚖️ **Why are the standard builds bigger?** They bundle **FFmpeg** (≈ 24 MB of native audio libraries) — the engine behind **Media Export** (export cached/downloaded songs with full metadata + cover art) and the in-app **Metadata Editor**. It is *not* used for regular playback. The `*32` builds drop FFmpeg to stay small and 32-bit compatible, so they don't include those two features. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
 
             ## 🔄 Update Policy
 
