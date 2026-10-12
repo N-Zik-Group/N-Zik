@@ -248,11 +248,11 @@ jobs:
 
             ## 📦 Available Build
 
-            - **Full (BETA)** – Complete build with all components (`arm64-v8a`, 64-bit only).  
-            - **Beta32** – Complete build without FFmpeg (`armeabi-v7a` + `arm64-v8a`, 32-bit & 64-bit).  
+            - **Full (BETA)**: Complete build with all components (universal APK, runs on every architecture).  
+            - **Beta32**: Complete build without FFmpeg (universal APK, runs on every architecture).  
               ⚠️ May contain bugs or experimental features.
 
-            > ⚖️ **Why is the Full (BETA) build bigger?** It bundles **FFmpeg** (≈ 24 MB of native audio libraries) — the engine behind **Media Export** and the in-app **Metadata Editor**. It is *not* used for regular playback. **Beta32** drops FFmpeg to stay small and 32-bit compatible, so it doesn't include those two features. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
+            > ⚖️ **Why is the Full (BETA) build bigger?** It bundles **FFmpeg** for every architecture (≈ 77 MB of native audio libraries, the entire gap between Full (BETA) and Beta32). FFmpeg powers **Media Export** and the in-app **Metadata Editor**, and it is *not* used for regular playback. **Beta32** drops FFmpeg to stay small, so it doesn't include those two features. The base app is inherited legacy code from upstream; reducing its size is ongoing work by a single maintainer in spare time. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
 
             ## 🔄 Update Policy
 
@@ -346,11 +346,11 @@ jobs:
 
             ## 📦 Available Build
 
-            - **Full (BETA)** – Complete build with all components (`arm64-v8a`, 64-bit only).  
-            - **Beta32** – Complete build without FFmpeg (`armeabi-v7a` + `arm64-v8a`, 32-bit & 64-bit).  
+            - **Full (BETA)**: Complete build with all components (universal APK, runs on every architecture).  
+            - **Beta32**: Complete build without FFmpeg (universal APK, runs on every architecture).  
               ⚠️ May contain bugs or experimental features.
 
-            > ⚖️ **Why is the Full (BETA) build bigger?** It bundles **FFmpeg** (≈ 24 MB of native audio libraries) — the engine behind **Media Export** and the in-app **Metadata Editor**. It is *not* used for regular playback. **Beta32** drops FFmpeg to stay small and 32-bit compatible, so it doesn't include those two features. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
+            > ⚖️ **Why is the Full (BETA) build bigger?** It bundles **FFmpeg** for every architecture (≈ 77 MB of native audio libraries, the entire gap between Full (BETA) and Beta32). FFmpeg powers **Media Export** and the in-app **Metadata Editor**, and it is *not* used for regular playback. **Beta32** drops FFmpeg to stay small, so it doesn't include those two features. The base app is inherited legacy code from upstream; reducing its size is ongoing work by a single maintainer in spare time. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
 
             ## 🔄 Update Policy
 

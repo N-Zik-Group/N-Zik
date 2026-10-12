@@ -62,42 +62,53 @@
 
 ## 📦 Available Builds
 
-- **Full** & **Beta**: Complete build with all components (`arm64-v8a`, 64-bit only).
-- **Full32** & **Beta32**: Complete build with all components without FFmpeg (`armeabi-v7a` + `arm64-v8a`, 32-bit & 64-bit).
-- **Minified**: Lightweight build, recommended for low-end devices (`arm64-v8a`, 64-bit only).
-- **Minified32**: Lightweight build without FFmpeg (`armeabi-v7a` + `arm64-v8a`, 32-bit & 64-bit).
-- **FOSS** (`com.nevar.nzik.foss`): Full build without auto-updater, suitable for alternative stores (`arm64-v8a`, 64-bit only).
-- **Dev** & **Dev32**: Development builds from latest commits, for testing only (`arm64-v8a` / `armeabi-v7a` + `arm64-v8a`).
+- **Full** & **Beta**: Complete build with all components, runs on every architecture (universal APK, ≈ 140 MB on v8.4.0).
+- **Full32** & **Beta32**: Complete build without FFmpeg, runs on every architecture (universal APK, ≈ 62 MB on v8.4.0).
+- **Minified**: Lightweight build, recommended for low-end devices, runs on every architecture (universal APK, ≈ 111 MB on v8.4.0).
+- **Minified32**: Lightweight build without FFmpeg, runs on every architecture (universal APK, ≈ 34 MB on v8.4.0).
+- **FOSS** (`com.nevar.nzik.foss`): Full build without auto-updater, suitable for alternative stores, runs on every architecture (universal APK, ≈ 140 MB on v8.4.0).
+- **Dev** & **Dev32**: Development builds from latest commits, for testing only, runs on every architecture (universal APK).
 
-> ℹ️ Standard builds (Full, Minified, Beta, FOSS, Dev) are 64-bit only because they bundle FFmpeg. The "32" builds (Full32, Minified32, Beta32, Dev32) drop FFmpeg, so they work on both 32-bit and 64-bit devices. (`armeabi-v7a` + `arm64-v8a`) — see the section below for the full explanation.
+> ℹ️ Standard builds (Full, Minified, Beta, FOSS, Dev) bundle FFmpeg, which is why they're bigger. The "32" builds (Full32, Minified32, Beta32, Dev32) drop FFmpeg to stay small. All builds are universal APKs and run on every architecture. See the section below for the full explanation.
 
 ### Why are the Full builds so big? (FFmpeg)
 
-If the standard builds feel heavy compared to the `*32` builds, that's not a packaging mistake — it's one single thing: **FFmpeg**. Here's the full picture.
+If the standard builds feel heavy compared to the `*32` builds, that's not a packaging mistake, it's one single thing: **FFmpeg**. Here's the full picture.
 
 **What FFmpeg is used for**
 
 Regular playback, streaming and downloading do *not* run through FFmpeg (that's handled by Media3/ExoPlayer). FFmpeg is only invoked for explicit, user-triggered features:
 
-- 📤 **Media Export** — export cached or downloaded songs to your own storage as proper `.m4a` / `.ogg` files, with full metadata (title, artist, album, year, track position, genre, copyright, composer) and embedded cover art, readable by any music app. The audio stream is transmuxed, never re-encoded, so export is lossless and fast.
-- ✏️ **Metadata Editor** — edit a song's tags (title, artist, album, genre, year, cover art, …) directly in-app, for both AAC and Opus files, with automatic cover art embedding.
-- 🖥️ **Desktop Compagnon** — the `library.ffmpeg` feature flag tells the PC companion whether your phone build offers the two features above, so the matching menu entries appear.
+- 📤 **Media Export**: export cached or downloaded songs to your own storage as proper `.m4a` / `.ogg` files, with full metadata (title, artist, album, year, track position, genre, copyright, composer) and embedded cover art, readable by any music app. The audio stream is transmuxed, never re-encoded, so export is lossless and fast.
+- ✏️ **Metadata Editor**: edit a song's tags (title, artist, album, genre, year, cover art, …) directly in-app, for both AAC and Opus files, with automatic cover art embedding.
+- 🖥️ **Desktop Compagnon**: the `library.ffmpeg` feature flag tells the PC companion whether your phone build offers the two features above, so the matching menu entries appear.
 
-**Why it adds ~24 MB to the APK**
+**Why it adds ~77 MB to the APK**
 
-FFmpeg is one of the largest media libraries in existence. Even the slim "audio-only" variant we ship carries the full audio codec stack (AAC, Opus, Vorbis, MP3, FLAC, AMR, ALAC, …), container parsers and demuxers — which is exactly why export and tag editing keep working no matter what a file's real format turns out to be. FFmpeg ships as **native compiled code**, and Android requires native `.so` libraries to be stored **uncompressed** inside the APK, so the full size lands 1:1 in your download. Measured on the exact library this project ships (`ffmpeg-kit-audio` 6.0.1): **≈ 24 MB** of native libraries for `arm64-v8a`.
+FFmpeg is one of the largest media libraries in existence. Even the slim "audio-only" variant we ship carries the full audio codec stack (AAC, Opus, Vorbis, MP3, FLAC, AMR, ALAC, …), container parsers and demuxers, which is exactly why export and tag editing keep working no matter what a file's real format turns out to be. FFmpeg ships as **native compiled code**, and Android requires native `.so` libraries to be stored **uncompressed** inside the APK, so their full size lands 1:1 in your download. N-Zik's standard builds are **universal APKs**: FFmpeg is bundled for `arm64-v8a` (≈ 24 MB), `armeabi-v7a` (≈ 23 MB) and `x86_64` (≈ 30 MB), which is **≈ 77 MB** of native libraries in total on v8.4.0.
 
-**Why the standard builds are 64-bit only**
+**Real sizes (v8.4.0)**
 
-To keep the download small, FFmpeg is bundled for `arm64-v8a` only — the dominant architecture on modern Android devices — instead of again for `armeabi-v7a` on top. If you're on a 32-bit device, the `Full32` / `Minified32` / `Beta32` / `Dev32` builds are for you.
+| Build | Size | FFmpeg |
+| --- | --- | --- |
+| Full / FOSS | ≈ 140 MB | ✅ (all supported architectures) |
+| Minified | ≈ 111 MB | ✅ (all supported architectures, R8-shrunk) |
+| Full32 | ≈ 62 MB | ❌ |
+| Minified32 | ≈ 34 MB | ❌ (R8-shrunk) |
+
+The entire ~78 MB gap between Full and Full32 is FFmpeg, nothing else differs.
 
 **Why a fork (ffmpeg-kit-16KB)?**
 
-The original FFmpegKit was officially retired by its author (no more releases, prebuilt binaries withdrawn), and Android 15+ ships 16 KB memory-page devices, on which native binaries not aligned to 16 KB pages simply won't load. N-Zik therefore uses the community-maintained [ffmpeg-kit-16KB](https://github.com/maxrave-dev/ffmpeg-kit-16KB) fork, rebuilt with 16 KB alignment — without it, the FFmpeg-based features would fail on those devices.
+The original FFmpegKit was officially retired by its author (no more releases, prebuilt binaries withdrawn), and Android 15+ ships 16 KB memory-page devices, on which native binaries not aligned to 16 KB pages simply won't load. N-Zik therefore uses the community-maintained [ffmpeg-kit-16KB](https://github.com/maxrave-dev/ffmpeg-kit-16KB) fork, rebuilt with 16 KB alignment. Without it, the FFmpeg-based features would fail on those devices.
 
 **What you lose on `*32` builds**
 
-Dropping FFmpeg is what keeps the `*32` builds small and 32-bit compatible. The trade-off: **no Media Export, no Metadata Editor** (those menu entries simply don't appear) and no `library.ffmpeg` feature for the Desktop Compagnon. Everything else works the same.
+Dropping FFmpeg is what keeps the `*32` builds small (≈ 62 MB instead of ≈ 140 MB). The trade-off: **no Media Export, no Metadata Editor** (those menu entries simply don't appear) and no `library.ffmpeg` feature for the Desktop Compagnon. Everything else works the same. Note that the standard builds are universal and run on 32-bit devices too, so choosing a `*32` build is purely a download-size decision.
+
+**Why the base app is still ≈ 62 MB**
+
+N-Zik is a fork, and it carries the legacy codebase of its ancestors (Kreate, RiMusic, ViMusic): a lot of features that were never designed for a small APK. Even without FFmpeg, the base app (Kotlin/Java code + resources) is ≈ 62 MB, and a meaningful part of it is legacy that can only be removed slowly, feature by feature, without breaking the app. I'm the sole maintainer, working on this in my spare time: keeping the app stable and reducing its size are real, ongoing priorities, not something that gets forgotten. If download size matters more to you than features, the `*32` builds are the lightest option, and the alternative clients listed at the top are worth a look.
 
 ---
 
