@@ -4,7 +4,7 @@ import app.it.fast4x.rimusic.utils.asSong
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
-import app.it.fast4x.rimusic.ui.components.themed.ConfirmationDialog
+import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 
 import app.n_zik.android.core.database.*

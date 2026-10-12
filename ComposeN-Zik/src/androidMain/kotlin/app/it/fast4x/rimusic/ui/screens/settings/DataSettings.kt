@@ -36,10 +36,10 @@ import app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize
 import app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.it.fast4x.rimusic.ui.components.themed.CacheSpaceIndicator
-import app.it.fast4x.rimusic.ui.components.themed.ConfirmationDialog
+import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
-import app.it.fast4x.rimusic.ui.components.themed.InputNumericDialog
-import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
+import app.n_zik.android.components.dialog.common.InputNumericDialog
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.RestartPlayerService
 import app.it.fast4x.rimusic.utils.asMediaItem

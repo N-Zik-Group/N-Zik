@@ -10,7 +10,7 @@ import app.n_zik.android.utils.albumIdWithFallback
 import app.n_zik.android.utils.artistTextWithFallback
 import app.n_zik.android.utils.titleWithFallback
 
-import app.it.fast4x.rimusic.ui.components.themed.SleepTimerDialog
+import app.n_zik.android.components.dialog.common.SleepTimerDialog
 import android.annotation.SuppressLint
 import android.graphics.RenderEffect
 import androidx.activity.compose.BackHandler
@@ -199,7 +199,7 @@ import app.n_zik.android.extensions.nextvisualizer.views.NextVisualizer
 import app.n_zik.android.components.menu.player.PlayerMenu
 import app.n_zik.android.components.player.m3eCoverBackgroundColor
 import app.it.fast4x.rimusic.ui.components.themed.RotateThumbnailCoverAnimationModern
-import app.it.fast4x.rimusic.ui.components.themed.ThumbnailOffsetDialog
+import app.n_zik.android.components.dialog.common.ThumbnailOffsetDialog
 import app.it.fast4x.rimusic.ui.components.themed.animateBrushRotation
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.collapsedPlayerProgressBar

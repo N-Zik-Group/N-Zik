@@ -48,9 +48,9 @@ import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.ValidationType
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
-import app.it.fast4x.rimusic.ui.components.themed.StringListDialog
+import app.n_zik.android.components.dialog.common.StringListDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
-import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.MaintenanceSettingsCard
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch

@@ -10,7 +10,7 @@ import app.n_zik.android.updater.models.UpdaterConstants
 import app.n_zik.android.updater.models.GithubRelease
 import app.n_zik.android.updater.models.MajorUpdateConfig
 import app.n_zik.android.uiRoundnessShape
-import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -94,7 +94,7 @@ import app.n_zik.android.R
 import app.kreate.android.me.knighthat.utils.Toaster
 import timber.log.Timber
 import app.n_zik.android.uiRoundnessShape
-import app.it.fast4x.rimusic.ui.components.themed.ConfirmationDialog
+import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import androidx.compose.material3.LinearWavyProgressIndicator
 import app.it.fast4x.rimusic.ui.components.themed.DropdownMenu
 import androidx.compose.material3.Scaffold

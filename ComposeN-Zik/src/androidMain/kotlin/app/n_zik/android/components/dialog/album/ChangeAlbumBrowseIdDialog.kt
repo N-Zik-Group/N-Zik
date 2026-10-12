@@ -29,6 +29,8 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.components.dialog.common.InteractiveDialog
 import app.n_zik.android.core.database.Database
@@ -183,65 +185,47 @@ class ChangeAlbumBrowseIdDialog private constructor(
     @Composable
     override fun Buttons() {
         val album = getAlbum() ?: return
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp)
-        ) {
-            InteractiveDialog.CancelButton(
-                modifier = InteractiveDialog.ButtonModifier()
-                    .weight(1f)
-                    .fillMaxWidth(.98f)
-                    .border(
-                        width = 2.dp,
-                        color = colorPalette().red.copy(alpha = .3f),
-                        shape = uiRoundnessShape()
+        ButtonRow(
+            buttons = buildList {
+                add(
+                    DialogButton(
+                        text = stringResource(R.string.cancel),
+                        onClick = ::hideDialog,
+                        danger = true
                     )
-                    .padding(vertical = 10.dp),
-                onCancel = ::hideDialog
-            )
-
-            // Reset Button
-            if (album.id.startsWith(MODIFIED_PREFIX) || album.id.startsWith("LOCAL_ALBUM_")) {
-                Spacer(modifier = Modifier.width(4.dp))
-                BasicText(
-                    text = stringResource(R.string.reset),
-                    style = typography().xs.medium.copy(color = colorPalette().text, textAlign = TextAlign.Center),
-                    modifier = InteractiveDialog.ButtonModifier()
-                        .weight(1f)
-                        .fillMaxWidth(.98f)
-                        .background(colorPalette().background0)
-                        .border(1.dp, colorPalette().textDisabled, uiRoundnessShape())
-                        .clickable {
-                            val prefs = appContext().preferences
-                            val oldId = prefs.getString("old_browse_id_${album.id}", null)
-                            val cleanId = oldId ?: album.id.removePrefix(MODIFIED_PREFIX)
-                            Database.updateAlbumId(album.id, cleanId)
-                            prefs.edit().remove("old_browse_id_${album.id}").apply()
+                )
+                // Reset Button
+                if (album.id.startsWith(MODIFIED_PREFIX) || album.id.startsWith("LOCAL_ALBUM_")) {
+                    add(
+                        DialogButton(
+                            text = stringResource(R.string.reset),
+                            onClick = {
+                                val prefs = appContext().preferences
+                                val oldId = prefs.getString("old_browse_id_${album.id}", null)
+                                val cleanId = oldId ?: album.id.removePrefix(MODIFIED_PREFIX)
+                                Database.updateAlbumId(album.id, cleanId)
+                                prefs.edit().remove("old_browse_id_${album.id}").apply()
+                                Toaster.done()
+                                hideDialog()
+                                menuState?.hide()
+                            }
+                        )
+                    )
+                }
+                // Unlink Button
+                add(
+                    DialogButton(
+                        text = stringResource(R.string.unlink),
+                        onClick = {
+                            Database.updateAlbumId(album.id, "LOCAL_ALBUM_${UUID.randomUUID()}")
                             Toaster.done()
                             hideDialog()
                             menuState?.hide()
-                        }
-                        .padding(vertical = 10.dp)
+                        },
+                        primary = true
+                    )
                 )
             }
-
-            Spacer(modifier = Modifier.width(4.dp))
-            // Unlink Button
-            BasicText(
-                text = stringResource(R.string.unlink),
-                style = typography().xs.medium.copy(color = colorPalette().onAccent, textAlign = TextAlign.Center),
-                modifier = InteractiveDialog.ButtonModifier()
-                    .weight(1f)
-                    .fillMaxWidth(.98f)
-                    .background(colorPalette().accent)
-                    .clickable {
-                        Database.updateAlbumId(album.id, "LOCAL_ALBUM_${UUID.randomUUID()}")
-                        Toaster.done()
-                        hideDialog()
-                        menuState?.hide()
-                    }
-                    .padding(vertical = 10.dp)
-            )
-        }
+        )
     }
 }

@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
@@ -24,6 +22,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.InteractiveDialog
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
@@ -128,17 +128,13 @@ object SyncStatusDialog : InteractiveDialog {
     }
 
     @Composable
-    override fun Buttons() {
-        Button(
-            onClick = { hideDialog() },
-            modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colorPalette().accent,
-                contentColor = colorPalette().textSecondary
-            ),
-            shape = uiRoundnessShape()
-        ) {
-            InteractiveDialog.ConfirmButton(onConfirm = { hideDialog() })
-        }
-    }
+    override fun Buttons() = ButtonRow(
+        buttons = listOf(
+            DialogButton(
+                text = stringResource(R.string.confirm),
+                onClick = { hideDialog() },
+                primary = true
+            )
+        )
+    )
 }

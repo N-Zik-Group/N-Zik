@@ -23,7 +23,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.core.database.Database
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
-import app.it.fast4x.rimusic.ui.components.themed.DefaultDialog
+import app.n_zik.android.components.dialog.common.DefaultDialog
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource

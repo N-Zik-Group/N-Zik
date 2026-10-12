@@ -21,7 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.dialog.settings.HomeAlbumsToolbarSettingsDialog
 import app.n_zik.android.components.dialog.settings.HomeArtistsToolbarSettingsDialog
 import app.n_zik.android.components.dialog.settings.HomeLibraryToolbarSettingsDialog
@@ -73,7 +73,7 @@ import app.it.fast4x.rimusic.enums.QueueType
 import app.it.fast4x.rimusic.enums.ThumbnailType
 import app.it.fast4x.rimusic.enums.TransitionEffect
 import app.it.fast4x.rimusic.enums.UiType
-import app.it.fast4x.rimusic.ui.components.themed.ConfirmationDialog
+import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.DefaultLightColorPalette

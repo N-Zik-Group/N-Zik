@@ -59,7 +59,7 @@ import app.it.fast4x.rimusic.enums.DislikeMode
 import app.it.fast4x.rimusic.enums.PipModule
 import app.it.fast4x.rimusic.enums.PresetsReverb
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.ui.components.themed.ConfirmationDialog
+import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.RestartActivity
@@ -110,7 +110,7 @@ import app.it.fast4x.rimusic.utils.skipSilenceKey
 import app.it.fast4x.rimusic.utils.useVolumeKeysToChangeSongKey
 import app.it.fast4x.rimusic.utils.volumeNormalizationKey
 import app.it.fast4x.rimusic.utils.volumeBoostLevelKey
-import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.tab.Search
 import app.it.fast4x.rimusic.utils.crossfadeDurationKey

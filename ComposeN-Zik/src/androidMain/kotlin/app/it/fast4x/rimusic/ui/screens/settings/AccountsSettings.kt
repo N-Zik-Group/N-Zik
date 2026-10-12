@@ -106,8 +106,10 @@ import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
 import app.n_zik.android.thumbnailShape
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
 
-import app.it.fast4x.rimusic.ui.components.themed.DefaultDialog
-import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.DefaultDialog
+import app.n_zik.android.components.dialog.common.DialogButton
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import androidx.compose.material3.Button
 
 import androidx.compose.material3.ButtonDefaults
@@ -2034,47 +2036,25 @@ private fun DiscordTemplateFieldDialog(
         // Toolbar settings dialogs' button bar (ToggleListDialog): Reset — Cancel — OK,
         // same look and same behavior. Reset clears the draft only (the dialog stays
         // open), Cancel discards it, OK saves it and toasts the confirmation.
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
-        ) {
-            BasicText(
-                text = stringResource(R.string.reset),
-                style = typography().xs.medium.copy(
-                    color = palette.textDisabled,
-                    textAlign = TextAlign.Center
+        ButtonRow(
+            buttons = listOf(
+                DialogButton(
+                    text = stringResource(R.string.reset),
+                    textColor = palette.textDisabled,
+                    onClick = { actions.reset() }
                 ),
-                modifier = Modifier
-                    .clip(uiRoundnessShape())
-                    .clickable { actions.reset() }
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
-            )
-            Spacer(Modifier.width(8.dp))
-            BasicText(
-                text = stringResource(R.string.cancel),
-                style = typography().xs.medium.copy(
-                    color = palette.red.copy(alpha = 0.3f),
-                    textAlign = TextAlign.Center
+                DialogButton(
+                    text = stringResource(R.string.cancel),
+                    textColor = palette.red.copy(alpha = 0.3f),
+                    onClick = onDismiss
                 ),
-                modifier = Modifier
-                    .clip(uiRoundnessShape())
-                    .clickable(onClick = onDismiss)
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                DialogButton(
+                    text = stringResource(R.string.ok),
+                    primary = true,
+                    onClick = { actions.confirm(onDone, onDismiss) }
+                )
             )
-            Spacer(Modifier.width(8.dp))
-            BasicText(
-                text = stringResource(R.string.ok),
-                style = typography().xs.semiBold.copy(
-                    color = palette.onAccent,
-                    textAlign = TextAlign.Center
-                ),
-                modifier = Modifier
-                    .clip(uiRoundnessShape())
-                    .background(palette.accent)
-                    .clickable { actions.confirm(onDone, onDismiss) }
-                    .padding(horizontal = 20.dp, vertical = 10.dp)
-            )
-        }
+        )
     }
 }
 
@@ -2103,23 +2083,15 @@ private fun DiscordImageTooltipDialog(
         )
         Spacer(Modifier.height(16.dp))
         // Same OK button as the toolbar settings dialogs (ToggleListDialog).
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
-        ) {
-            BasicText(
-                text = stringResource(R.string.ok),
-                style = typography().xs.semiBold.copy(
-                    color = palette.onAccent,
-                    textAlign = TextAlign.Center
-                ),
-                modifier = Modifier
-                    .clip(uiRoundnessShape())
-                    .background(palette.accent)
-                    .clickable(onClick = onDismiss)
-                    .padding(horizontal = 20.dp, vertical = 10.dp)
+        ButtonRow(
+            buttons = listOf(
+                DialogButton(
+                    text = stringResource(R.string.ok),
+                    primary = true,
+                    onClick = onDismiss
+                )
             )
-        }
+        )
     }
 }
 

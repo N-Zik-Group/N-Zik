@@ -106,7 +106,7 @@ import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.it.fast4x.rimusic.ui.components.themed.MultiFloatingActionsContainer
 import app.it.fast4x.rimusic.ui.components.themed.PlayNext
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
-import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.it.fast4x.rimusic.ui.items.AlbumItem
 import app.it.fast4x.rimusic.ui.items.AlbumItemPlaceholder
 import app.it.fast4x.rimusic.ui.styling.Dimensions

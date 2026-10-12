@@ -1,7 +1,7 @@
 package app.it.fast4x.rimusic.ui.components.tab.toolbar
 
 import androidx.compose.runtime.Composable
-import app.it.fast4x.rimusic.ui.components.themed.ConfirmationDialog
+import app.n_zik.android.components.dialog.common.ConfirmationDialog
 
 interface ConfirmDialog: Dialog {
 

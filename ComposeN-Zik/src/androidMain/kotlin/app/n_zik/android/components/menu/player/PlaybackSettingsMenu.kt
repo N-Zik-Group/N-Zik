@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -45,6 +44,9 @@ import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.MenuState
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Menu
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.DialogButton
+import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.ui.sliders.SliderControl
@@ -70,7 +72,6 @@ import app.it.fast4x.rimusic.utils.volumeBoostLevelKey
 import app.it.fast4x.rimusic.utils.volumeNormalizationKey
 import app.n_zik.android.uiRoundnessShape
 import androidx.media3.common.PlaybackParameters
-import androidx.compose.ui.window.Dialog
 import androidx.compose.foundation.text.BasicText
 import android.content.Context
 import android.content.BroadcastReceiver
@@ -735,93 +736,83 @@ class PlaybackSettingsMenu private constructor(
     ) {
         var currentValue by remember { mutableFloatStateOf(value) }
 
-        Dialog(onDismissRequest = onDismiss) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(colorPalette().background1)
-                    .padding(16.dp)
+        DialogFrame(
+            onDismiss = onDismiss,
+            horizontalAlignment = Alignment.Start
+        ) {
+            // Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                // Header
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    SettingIcon(icon)
-                    Spacer(modifier = Modifier.size(12.dp))
-                    val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
+                SettingIcon(icon)
+                Spacer(modifier = Modifier.size(12.dp))
+                val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
 
-                    BasicText(
-                        text = title,
-                        maxLines = 1,
-                        style = typography().s.semiBold.copy(
-                            color = colorPalette().text
-                        ),
-                        modifier = Modifier
-                            .weight(1f)
-                            .conditional(!isScrollingTextDisabled) {
-                                basicMarquee(iterations = Int.MAX_VALUE)
-                            }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Value display
                 BasicText(
-                    text = toDisplay(currentValue),
-                    style = typography().l.semiBold.copy(
-                        color = colorPalette().accent
+                    text = title,
+                    maxLines = 1,
+                    style = typography().s.semiBold.copy(
+                        color = colorPalette().text
                     ),
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                    modifier = Modifier
+                        .weight(1f)
+                        .conditional(!isScrollingTextDisabled) {
+                            basicMarquee(iterations = Int.MAX_VALUE)
+                        }
                 )
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                // Slider
-                SliderControl(
-                    state = currentValue,
-                    onSlide = { currentValue = it },
-                    onSlideComplete = {
-                        onValueChange(currentValue)
-                        onSlideComplete()
-                    },
-                    toDisplay = toDisplay,
-                    range = valueRange,
-                    stepSize = stepSize,
-                    defaultValue = defaultValue,
-                    drawValuePoints = drawValuePoints,
-                    showValue = false
-                )
+            // Value display
+            BasicText(
+                text = toDisplay(currentValue),
+                style = typography().l.semiBold.copy(
+                    color = colorPalette().accent
+                ),
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                // Buttons
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    IconButton(
+            // Slider
+            SliderControl(
+                state = currentValue,
+                onSlide = { currentValue = it },
+                onSlideComplete = {
+                    onValueChange(currentValue)
+                    onSlideComplete()
+                },
+                toDisplay = toDisplay,
+                range = valueRange,
+                stepSize = stepSize,
+                defaultValue = defaultValue,
+                drawValuePoints = drawValuePoints,
+                showValue = false
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ButtonRow(
+                buttons = listOf(
+                    DialogButton(
+                        text = "",
+                        icon = R.drawable.refresh,
+                        textColor = colorPalette().textSecondary,
                         onClick = {
                             onReset()
                             onDismiss()
-                        },
-                        icon = R.drawable.refresh,
-                        color = colorPalette().textSecondary,
-                        modifier = Modifier.size(24.dp)
-                    )
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    IconButton(
-                        onClick = onDismiss,
+                        }
+                    ),
+                    DialogButton(
+                        text = "",
                         icon = R.drawable.checkmark,
-                        color = colorPalette().accent,
-                        modifier = Modifier.size(24.dp)
+                        textColor = colorPalette().accent,
+                        onClick = onDismiss
                     )
-                }
-            }
+                )
+            )
         }
     }
 }

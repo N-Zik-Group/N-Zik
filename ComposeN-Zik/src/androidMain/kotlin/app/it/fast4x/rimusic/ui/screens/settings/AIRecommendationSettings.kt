@@ -28,9 +28,9 @@ import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.PlayEventsType
 import app.it.fast4x.rimusic.enums.LocalRecommandationsNumber
 import app.it.fast4x.rimusic.enums.RecommendationsNumber
-import app.it.fast4x.rimusic.ui.components.themed.ConfirmationDialog
+import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
-import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.enableQuickPicksPageKey
 import app.it.fast4x.rimusic.utils.playEventsTypeKey

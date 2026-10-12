@@ -1,4 +1,4 @@
-﻿package app.it.fast4x.rimusic.ui.components.themed
+package app.n_zik.android.components.dialog.common
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,13 +44,17 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toRect
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import android.graphics.Color as AndroidColor
 import app.n_zik.android.uiRoundnessShape
 import android.graphics.LinearGradient
 
-
+/**
+ * HSV color picker on the shared [DefaultDialog]
+ * (moved from the legacy tree).
+ */
 @Composable
 fun DialogColorPicker(
     onDismiss: () -> Unit,
@@ -330,8 +333,3 @@ private fun DrawScope.drawBitmap(
         )
     }
 }
-
-
-
-
-

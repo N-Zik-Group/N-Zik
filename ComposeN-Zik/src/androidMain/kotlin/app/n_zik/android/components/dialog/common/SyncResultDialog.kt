@@ -1,15 +1,9 @@
 package app.n_zik.android.components.dialog.common
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -19,7 +13,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
-import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.medium
 import app.n_zik.android.components.dialog.common.InteractiveDialog
@@ -67,22 +60,13 @@ class SyncResultDialog(
     }
 
     @Composable
-    override fun Buttons() {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
-        ) {
-            Button(
+    override fun Buttons() = ButtonRow(
+        buttons = listOf(
+            DialogButton(
+                text = stringResource(R.string.confirm),
                 onClick = { hideDialog() },
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorPalette().accent,
-                    contentColor = colorPalette().textSecondary
-                ),
-                shape = uiRoundnessShape()
-            ) {
-                InteractiveDialog.ConfirmButton(onConfirm = { hideDialog() })
-            }
-        }
-    }
+                primary = true
+            )
+        )
+    )
 }

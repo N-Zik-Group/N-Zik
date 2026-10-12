@@ -13,7 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
-import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.it.fast4x.rimusic.ui.screens.settings.OtherSettingsEntry
 import app.it.fast4x.rimusic.ui.screens.settings.OtherSwitchSettingEntry
 import app.it.fast4x.rimusic.ui.screens.settings.ImportantSettingsDescription

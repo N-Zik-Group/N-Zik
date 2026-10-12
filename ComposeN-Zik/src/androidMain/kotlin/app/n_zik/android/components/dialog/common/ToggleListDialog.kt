@@ -1,7 +1,6 @@
 package app.n_zik.android.components.dialog.common
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -34,7 +32,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
@@ -42,7 +39,6 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.semiBold
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.ReorderableLazyListState
@@ -149,59 +145,36 @@ fun ToggleListDialog(
         if (hasButtons) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.End
-            ) {
-                if (onReset != null) {
-                    BasicText(
-                        text = stringResource(R.string.reset),
-                        style = typography().xs.medium.copy(
-                            color = colorPalette().textDisabled,
-                            textAlign = TextAlign.Center
-                        ),
-                        modifier = Modifier
-                            .clip(uiRoundnessShape())
-                            .clickable { onReset() }
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
+            ButtonRow(
+                buttons = buildList {
+                    onReset?.let { reset ->
+                        add(
+                            DialogButton(
+                                text = stringResource(R.string.reset),
+                                onClick = reset
+                            )
+                        )
+                    }
+                    onCancel?.let { cancel ->
+                        add(
+                            DialogButton(
+                                text = stringResource(R.string.cancel),
+                                onClick = cancel,
+                                danger = true
+                            )
+                        )
+                    }
+                    onConfirm?.let { confirm ->
+                        add(
+                            DialogButton(
+                                text = stringResource(R.string.ok),
+                                onClick = confirm,
+                                primary = true
+                            )
+                        )
+                    }
                 }
-
-                if (onCancel != null) {
-                    BasicText(
-                        text = stringResource(R.string.cancel),
-                        style = typography().xs.medium.copy(
-                            color = colorPalette().red.copy(alpha = 0.3f),
-                            textAlign = TextAlign.Center
-                        ),
-                        modifier = Modifier
-                            .clip(uiRoundnessShape())
-                            .clickable { onCancel() }
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
-
-                if (onConfirm != null) {
-                    BasicText(
-                        text = stringResource(R.string.ok),
-                        style = typography().xs.semiBold.copy(
-                            color = colorPalette().onAccent,
-                            textAlign = TextAlign.Center
-                        ),
-                        modifier = Modifier
-                            .clip(uiRoundnessShape())
-                            .background(colorPalette().accent)
-                            .clickable { onConfirm() }
-                            .padding(horizontal = 20.dp, vertical = 10.dp)
-                    )
-                }
-            }
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -270,7 +243,7 @@ private fun ToggleRow(
                                else if (enabled) colorPalette().text
                                else colorPalette().textDisabled
                     ),
-                    modifier = Modifier.basicMarquee()
+                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                 )
                 if (description != null) {
                     BasicText(
@@ -279,7 +252,7 @@ private fun ToggleRow(
                         style = typography().xxs.copy(
                             color = colorPalette().textDisabled
                         ),
-                        modifier = Modifier.basicMarquee()
+                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                     )
                 }
             }

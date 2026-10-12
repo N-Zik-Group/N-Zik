@@ -40,8 +40,8 @@ import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.MenuState
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Menu
-import app.it.fast4x.rimusic.ui.components.themed.DialogColorPicker
-import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
+import app.n_zik.android.components.dialog.common.DialogColorPicker
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.GridMenu
 import androidx.compose.foundation.layout.Column

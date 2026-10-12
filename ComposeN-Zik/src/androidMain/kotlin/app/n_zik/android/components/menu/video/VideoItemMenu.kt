@@ -76,7 +76,7 @@ import app.it.fast4x.rimusic.ui.components.themed.Enqueue
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.it.fast4x.rimusic.ui.components.themed.PlayNext
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
-import app.it.fast4x.rimusic.ui.components.themed.ListenOnDialog
+import app.n_zik.android.components.dialog.common.ListenOnDialog
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.n_zik.android.utils.player.addNextOffMain
 import app.it.fast4x.rimusic.utils.asMediaItem

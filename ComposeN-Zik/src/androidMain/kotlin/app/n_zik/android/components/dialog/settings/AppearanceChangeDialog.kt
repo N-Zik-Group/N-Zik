@@ -1,14 +1,6 @@
 package app.n_zik.android.components.dialog.settings
 
-import androidx.compose.ui.draw.clip
-
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,12 +12,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
-import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.medium
-import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.ConfirmDialog
-import app.n_zik.android.components.dialog.common.InteractiveDialog
-import androidx.compose.foundation.layout.Arrangement
+import app.n_zik.android.components.dialog.common.DialogButton
+import app.n_zik.android.typography
 
 object AppearanceChangeDialog: ConfirmDialog {
 
@@ -44,32 +34,15 @@ object AppearanceChangeDialog: ConfirmDialog {
     }
 
     @Composable
-    override fun Buttons() {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
- 
-            BasicText(
+    override fun Buttons() = ButtonRow(
+        buttons = listOf(
+            DialogButton(
                 text = stringResource(R.string.confirm),
-                style = typography().xs
-                    .medium
-                    .copy(
-                        color = colorPalette().accent,
-                        textAlign = TextAlign.Center
-                    ),
-                modifier = InteractiveDialog.ButtonModifier()
-                    .fillMaxWidth(0.48f)
-                    .border(
-                        width = 2.dp,
-                        color = colorPalette().accent,
-                        shape = uiRoundnessShape()
-                    )
-                    .padding(vertical = 10.dp)
-                    .clip(uiRoundnessShape()).clickable(onClick = ::onConfirm)
+                onClick = ::onConfirm,
+                primary = true
             )
-        }
-    }
+        )
+    )
 
     @Composable
     override fun DialogBody() {

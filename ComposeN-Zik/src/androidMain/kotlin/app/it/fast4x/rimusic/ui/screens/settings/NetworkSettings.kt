@@ -54,7 +54,7 @@ import app.n_zik.android.components.settings.DownloadQualityEntry
 import app.n_zik.android.components.settings.UpdateDownloadsButton
 import app.n_zik.android.enums.DownloadQualityFormat
 import app.n_zik.android.enums.downloadQualityFormatKey
-import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.it.fast4x.rimusic.utils.audioQualityFormatKey
 import app.it.fast4x.rimusic.utils.RestartPlayerService
 import androidx.compose.runtime.produceState

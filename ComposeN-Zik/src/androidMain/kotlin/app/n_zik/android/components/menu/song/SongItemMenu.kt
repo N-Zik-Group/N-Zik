@@ -120,7 +120,7 @@ import app.it.fast4x.rimusic.utils.durationTextToMillis
 import app.kreate.android.me.knighthat.sync.YouTubeSync
 import timber.log.Timber
 import java.util.Optional
-import app.it.fast4x.rimusic.ui.components.themed.InProgressDialog
+import app.n_zik.android.components.dialog.common.InProgressDialog
 import app.it.fast4x.rimusic.ui.screens.info.VideoOrSongInfoScreen
 import app.n_zik.android.BuildConfig
 import androidx.compose.foundation.text.BasicText

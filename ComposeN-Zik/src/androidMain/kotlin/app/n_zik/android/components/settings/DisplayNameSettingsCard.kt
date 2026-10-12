@@ -3,30 +3,17 @@ package app.n_zik.android.components.settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,21 +23,19 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import app.it.fast4x.rimusic.ui.components.themed.DefaultDialog
-import app.it.fast4x.rimusic.ui.components.themed.DialogTextButton
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.DefaultDialog
+import app.n_zik.android.components.dialog.common.DialogButton
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.it.fast4x.rimusic.ui.screens.settings.OtherSettingsEntry
 import app.it.fast4x.rimusic.ui.screens.settings.SettingsSectionCard
 import app.it.fast4x.rimusic.utils.center
@@ -62,7 +47,6 @@ import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.profileDisplayName
 import app.it.fast4x.rimusic.utils.readProfileIds
 import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
-import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.saveFaceAvatarSource
 import app.it.fast4x.rimusic.utils.saveFaceNameSource
 import app.it.fast4x.rimusic.utils.currentProfileEntries
@@ -82,7 +66,6 @@ import app.n_zik.android.components.ui.screens.profiles.faceSourceIcon
 import app.n_zik.android.components.ui.screens.profiles.faceSourceLabel
 import app.n_zik.android.components.ui.screens.profiles.loadAccountLoginState
 import app.n_zik.android.typography
-import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.FACE_SOURCE_DISCORD
 import app.n_zik.android.utils.FACE_SOURCE_LASTFM
 import app.n_zik.android.utils.FACE_SOURCE_PROFILE
@@ -92,133 +75,6 @@ import app.n_zik.android.utils.ProfileFace
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.ui.screens.profiles.loadProfileFace
 import app.kreate.android.me.knighthat.utils.Toaster
-
-/**
- * Face source selector of the Accounts face card: the four sources
- * (profil / YouTube / Discord / Last.fm) as a radio list, with the sources of accounts
- * that are not logged in greyed out, unclickable and labelled "Not logged in"
- * (the "Profil" source is never locked).
- */
-@Composable
-private fun FaceSourceSelectorDialog(
-    onDismiss: () -> Unit,
-    title: String,
-    selectedValue: String,
-    lockedSources: Set<String>,
-    onValueSelected: (String) -> Unit,
-) {
-    val palette = colorPalette()
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .padding(16.dp),
-                shape = uiRoundnessShape(),
-                colors = CardDefaults.cardColors(
-                    containerColor = palette.background1
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(24.dp)
-                ) {
-                    // Header
-                    BasicText(
-                        text = title,
-                        style = typography().l.semiBold.copy(
-                            color = palette.text
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Sources list
-                    Column(
-                        modifier = Modifier
-                            .verticalScroll(rememberScrollState())
-                            .weight(1f, false)
-                    ) {
-                        listOf(
-                            FACE_SOURCE_PROFILE,
-                            FACE_SOURCE_YOUTUBE,
-                            FACE_SOURCE_DISCORD,
-                            FACE_SOURCE_LASTFM
-                        ).forEach { source ->
-                            val locked = source in lockedSources
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(0.dp),
-                                modifier = Modifier
-                                    .clip(uiRoundnessShape())
-                                    .clickable(enabled = !locked) {
-                                        onDismiss()
-                                        onValueSelected(source)
-                                    }
-                                    .alpha(if (locked) 0.4f else 1f)
-                                    .padding(vertical = 0.dp, horizontal = 16.dp)
-                                    .fillMaxWidth()
-                                    .clip(uiRoundnessShape())
-                            ) {
-                                RadioButton(
-                                    selected = selectedValue == source,
-                                    enabled = !locked,
-                                    onClick = {
-                                        onDismiss()
-                                        onValueSelected(source)
-                                    },
-                                    colors = RadioButtonDefaults.colors(
-                                        selectedColor = palette.accent,
-                                        unselectedColor = palette.textSecondary
-                                    )
-                                )
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                BasicText(
-                                    text = faceSourceLabel(source),
-                                    style = typography().s.copy(color = palette.text),
-                                    modifier = Modifier.weight(1f)
-                                )
-
-                                if (locked) {
-                                    BasicText(
-                                        text = stringResource(R.string.face_source_locked),
-                                        style = typography().xxs.copy(color = palette.textSecondary)
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Cancel button
-                    Button(
-                        onClick = onDismiss,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = palette.background2,
-                            contentColor = palette.text
-                        ),
-                        shape = uiRoundnessShape()
-                    ) {
-                        Text(
-                            text = stringResource(R.string.cancel),
-                            style = typography().s.semiBold
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
 
 /**
  * The face card at the top of the Accounts tab: the active profile's face preview
@@ -405,11 +261,19 @@ fun ProfileFaceCard(modifier: Modifier = Modifier) {
             )
 
             if (showNameSourceDialog) {
-                FaceSourceSelectorDialog(
+                ValueSelectorDialog(
                     onDismiss = { showNameSourceDialog = false },
                     title = stringResource(R.string.face_name_source),
                     selectedValue = nameSource,
-                    lockedSources = lockedSources,
+                    values = listOf(
+                        FACE_SOURCE_PROFILE,
+                        FACE_SOURCE_YOUTUBE,
+                        FACE_SOURCE_DISCORD,
+                        FACE_SOURCE_LASTFM
+                    ),
+                    valueText = { faceSourceLabel(it) },
+                    lockedValues = lockedSources,
+                    lockedLabel = stringResource(R.string.face_source_locked),
                     onValueSelected = { value ->
                         nameSource = value
                         app.saveFaceNameSource(value)
@@ -421,11 +285,19 @@ fun ProfileFaceCard(modifier: Modifier = Modifier) {
             }
 
             if (showAvatarSourceDialog) {
-                FaceSourceSelectorDialog(
+                ValueSelectorDialog(
                     onDismiss = { showAvatarSourceDialog = false },
                     title = stringResource(R.string.face_avatar_source),
                     selectedValue = avatarSource,
-                    lockedSources = lockedSources,
+                    values = listOf(
+                        FACE_SOURCE_PROFILE,
+                        FACE_SOURCE_YOUTUBE,
+                        FACE_SOURCE_DISCORD,
+                        FACE_SOURCE_LASTFM
+                    ),
+                    valueText = { faceSourceLabel(it) },
+                    lockedValues = lockedSources,
+                    lockedLabel = stringResource(R.string.face_source_locked),
                     onValueSelected = { value ->
                         avatarSource = value
                         app.saveFaceAvatarSource(value)
@@ -488,19 +360,17 @@ fun ProfileFaceCard(modifier: Modifier = Modifier) {
                             .padding(all = 16.dp)
                     )
 
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        DialogTextButton(
-                            text = stringResource(R.string.confirm),
-                            primary = true,
-                            onClick = {
-                                showErrorPopup = false
-                            }
+                    ButtonRow(
+                        buttons = listOf(
+                            DialogButton(
+                                text = stringResource(R.string.confirm),
+                                primary = true,
+                                onClick = {
+                                    showErrorPopup = false
+                                }
+                            )
                         )
-                    }
+                    )
                 }
             }
         }

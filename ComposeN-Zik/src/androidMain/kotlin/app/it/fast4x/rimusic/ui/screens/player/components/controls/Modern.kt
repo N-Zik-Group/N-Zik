@@ -69,7 +69,7 @@ import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.themed.CustomElevatedButton
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
-import app.it.fast4x.rimusic.ui.components.themed.SelectorArtistsDialog
+import app.n_zik.android.components.dialog.common.SelectorArtistsDialog
 import app.it.fast4x.rimusic.ui.screens.player.bounceClick
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.bold

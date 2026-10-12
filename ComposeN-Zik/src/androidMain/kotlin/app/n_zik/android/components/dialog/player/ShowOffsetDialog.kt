@@ -1,6 +1,5 @@
 package app.n_zik.android.components.dialog.player
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.InteractiveDialog
 
 class ShowOffsetDialog private constructor(
@@ -250,18 +251,14 @@ class ShowOffsetDialog private constructor(
     }
 
     @Composable
-    override fun Buttons() = Row(
-        horizontalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp)
-    ) {
-        InteractiveDialog.ConfirmButton(
-            modifier = InteractiveDialog.ButtonModifier()
-                .weight(1f)
-                .fillMaxWidth(.98f)
-                .background(colorPalette().accent)
-                .padding(vertical = 10.dp),
-            onConfirm = ::hideDialog
+    override fun Buttons() = ButtonRow(
+        buttons = listOf(
+            DialogButton(
+                text = stringResource(R.string.confirm),
+                onClick = ::hideDialog,
+                primary = true
+            )
         )
-    }
+    )
 }
 

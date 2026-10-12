@@ -1,5 +1,7 @@
 package app.n_zik.android.components.dialog.export
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -50,6 +52,7 @@ object ExportBackupDialog : Dialog {
 
     override var isActive: Boolean by mutableStateOf(false)
 
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     override fun DialogBody() {
         val context = LocalContext.current
@@ -140,6 +143,7 @@ object ExportBackupDialog : Dialog {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
+                                    .clip(uiRoundnessShape())
                                     .clickable { includeYtbCredentials = !includeYtbCredentials }
                                     .padding(vertical = 4.dp)
                             ) {
@@ -147,13 +151,23 @@ object ExportBackupDialog : Dialog {
                                     painter = painterResource(if (includeYtbCredentials) R.drawable.checked_filled else R.drawable.unchecked_outline),
                                     contentDescription = null,
                                     tint = if (includeYtbCredentials) colorPalette().text else colorPalette().textSecondary,
-                                    modifier = Modifier.padding(end = 8.dp)
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
                                 )
-                                Text(stringResource(R.string.include_youtube_credentials), style = typography().xxs, color = colorPalette().text)
+                                Text(
+                                    stringResource(R.string.include_youtube_credentials),
+                                    style = typography().xxs,
+                                    color = colorPalette().text,
+                                    maxLines = 1,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .basicMarquee(iterations = Int.MAX_VALUE)
+                                )
                             }
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
+                                    .clip(uiRoundnessShape())
                                     .clickable { includeDiscordCredentials = !includeDiscordCredentials }
                                     .padding(vertical = 4.dp)
                             ) {
@@ -161,13 +175,23 @@ object ExportBackupDialog : Dialog {
                                     painter = painterResource(if (includeDiscordCredentials) R.drawable.checked_filled else R.drawable.unchecked_outline),
                                     contentDescription = null,
                                     tint = if (includeDiscordCredentials) colorPalette().text else colorPalette().textSecondary,
-                                    modifier = Modifier.padding(end = 8.dp)
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
                                 )
-                                Text(stringResource(R.string.include_discord_credentials), style = typography().xxs, color = colorPalette().text)
+                                Text(
+                                    stringResource(R.string.include_discord_credentials),
+                                    style = typography().xxs,
+                                    color = colorPalette().text,
+                                    maxLines = 1,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .basicMarquee(iterations = Int.MAX_VALUE)
+                                )
                             }
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
+                                    .clip(uiRoundnessShape())
                                     .clickable { includeLastfmCredentials = !includeLastfmCredentials }
                                     .padding(vertical = 4.dp)
                             ) {
@@ -175,13 +199,23 @@ object ExportBackupDialog : Dialog {
                                     painter = painterResource(if (includeLastfmCredentials) R.drawable.checked_filled else R.drawable.unchecked_outline),
                                     contentDescription = null,
                                     tint = if (includeLastfmCredentials) colorPalette().text else colorPalette().textSecondary,
-                                    modifier = Modifier.padding(end = 8.dp)
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
                                 )
-                                Text(stringResource(R.string.include_lastfm_credentials), style = typography().xxs, color = colorPalette().text)
+                                Text(
+                                    stringResource(R.string.include_lastfm_credentials),
+                                    style = typography().xxs,
+                                    color = colorPalette().text,
+                                    maxLines = 1,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .basicMarquee(iterations = Int.MAX_VALUE)
+                                )
                             }
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
+                                    .clip(uiRoundnessShape())
                                     .clickable { includeProxyCredentials = !includeProxyCredentials }
                                     .padding(vertical = 4.dp)
                             ) {
@@ -189,9 +223,18 @@ object ExportBackupDialog : Dialog {
                                     painter = painterResource(if (includeProxyCredentials) R.drawable.checked_filled else R.drawable.unchecked_outline),
                                     contentDescription = null,
                                     tint = if (includeProxyCredentials) colorPalette().text else colorPalette().textSecondary,
-                                    modifier = Modifier.padding(end = 8.dp)
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
                                 )
-                                Text(stringResource(R.string.include_proxy_credentials), style = typography().xxs, color = colorPalette().text)
+                                Text(
+                                    stringResource(R.string.include_proxy_credentials),
+                                    style = typography().xxs,
+                                    color = colorPalette().text,
+                                    maxLines = 1,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .basicMarquee(iterations = Int.MAX_VALUE)
+                                )
                             }
                         }
                     }

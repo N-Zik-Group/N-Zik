@@ -65,7 +65,7 @@ import app.it.fast4x.rimusic.enums.SwipeAnimationNoThumbnail
 import app.it.fast4x.rimusic.enums.ThumbnailCoverType
 import app.it.fast4x.rimusic.enums.ThumbnailType
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.ui.components.themed.AppearancePresetDialog
+import app.n_zik.android.components.dialog.common.AppearancePresetDialog
 import app.n_zik.android.components.dialog.settings.PlayerActionBarSettingsDialog
 import app.n_zik.android.components.dialog.settings.MiniPlayerButtonsSettingsDialog
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
@@ -176,7 +176,7 @@ import app.it.fast4x.rimusic.utils.transparentbarKey
 import app.it.fast4x.rimusic.utils.visualizerEnabledKey
 import app.n_zik.android.components.tab.Search
 import app.kreate.android.me.knighthat.utils.Toaster
-import app.it.fast4x.rimusic.ui.components.themed.DialogColorPicker
+import app.n_zik.android.components.dialog.common.DialogColorPicker
 import app.it.fast4x.rimusic.ui.styling.BoundedCornerSize
 import app.n_zik.android.enums.ShakeSensitivityTheme
 import app.n_zik.android.enums.lyrics.LyricsColor

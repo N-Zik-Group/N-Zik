@@ -67,9 +67,9 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Menu
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
-import app.it.fast4x.rimusic.ui.components.themed.InProgressDialog
+import app.n_zik.android.components.dialog.common.InProgressDialog
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
-import app.it.fast4x.rimusic.ui.components.themed.ListenOnDialog
+import app.n_zik.android.components.dialog.common.ListenOnDialog
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.splitArtistNames

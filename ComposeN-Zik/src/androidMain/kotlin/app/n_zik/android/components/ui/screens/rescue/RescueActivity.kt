@@ -8,15 +8,24 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.it.fast4x.rimusic.enums.ColorPaletteName
+import app.it.fast4x.rimusic.ui.styling.Appearance
+import app.it.fast4x.rimusic.ui.styling.BoundedCornerSize
+import app.it.fast4x.rimusic.ui.styling.ColorPalette
+import app.it.fast4x.rimusic.ui.styling.LocalAppearance
+import app.it.fast4x.rimusic.ui.styling.Typography
 import app.it.fast4x.rimusic.ui.styling.colorPaletteOf
 import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
 import app.it.fast4x.rimusic.utils.colorPaletteModeKey
@@ -89,25 +98,65 @@ class RescueActivity : AppCompatActivity() {
             val systemDark = isSystemInDarkTheme()
             // Resolved once per system theme, never on recomposition: it reads preferences and may
             // set up MonetCompat.
-            val colorScheme = remember(systemDark) { resolveColorScheme(systemDark) }
+            val (appearance, colorScheme) = remember(systemDark) { resolveRescueTheme(systemDark) }
 
             MaterialTheme(colorScheme = colorScheme) {
-                RescueScreen()
+                CompositionLocalProvider(LocalAppearance provides appearance) {
+                    RescueScreen()
+                }
             }
         }
     }
 
     /**
-     * The Rescue Center colors: the app palette when it can be resolved, a plain Material3 scheme
+     * The Rescue Center theme: the app palette when it can be resolved, [ColorPalette.fallback]
      * otherwise. Any failure (corrupt preferences, MonetCompat not ready, ...) must not take the
      * recovery screen down with it: it exists precisely for when the app is in a bad state.
+     *
+     * [LocalAppearance] is provided from here: the main app's provider lives in the main process
+     * only, and the shared dialog frame (issue #896) reads the appearance from it.
      */
-    private fun resolveColorScheme(systemDark: Boolean): ColorScheme =
-        runCatching { appColorScheme(systemDark) }
+    private fun resolveRescueTheme(systemDark: Boolean): Pair<Appearance, ColorScheme> {
+        val (palette, lightTheme) = runCatching { appPaletteAndTheme(systemDark) }
             .onFailure { Timber.tag(TAG).e("App palette unavailable, using fallback: %s", it.javaClass.simpleName) }
-            .getOrElse { if (systemDark) darkColorScheme() else lightColorScheme() }
+            .getOrElse { ColorPalette.fallback to !systemDark }
+        val appearance = Appearance(
+            colorPalette = palette,
+            typography = Typography.fallback,
+            thumbnailShape = RoundedCornerShape(BoundedCornerSize(12.dp, 0.25f)),
+            uiRoundnessShape = RoundedCornerShape(BoundedCornerSize(20.dp, 0.4f)),
+            artistThumbnailShape = CircleShape
+        )
+        return appearance to colorSchemeFor(lightTheme, palette)
+    }
 
-    private fun appColorScheme(systemDark: Boolean): ColorScheme {
+    private fun colorSchemeFor(lightTheme: Boolean, palette: ColorPalette): ColorScheme =
+        if (lightTheme) {
+            lightColorScheme(
+                background = palette.background0,
+                surface = palette.background1,
+                surfaceVariant = palette.background2,
+                onSurface = palette.text,
+                onSurfaceVariant = palette.textSecondary,
+                primaryContainer = palette.background2,
+                onPrimaryContainer = Color.Black,
+                primary = palette.accent
+            )
+        } else {
+            darkColorScheme(
+                background = palette.background0,
+                surface = palette.background1,
+                surfaceVariant = palette.background2,
+                onSurface = palette.text,
+                onSurfaceVariant = palette.textSecondary,
+                primaryContainer = palette.background2,
+                onPrimaryContainer = Color.White,
+                primary = palette.accent
+            )
+        }
+
+    /** Best-effort app palette + whether the light theme applies (reads preferences). */
+    private fun appPaletteAndTheme(systemDark: Boolean): Pair<ColorPalette, Boolean> {
         val prefs = preferences
         val paletteName = prefs.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
         val paletteMode = prefs.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
@@ -137,29 +186,7 @@ class RescueActivity : AppCompatActivity() {
             else -> Unit
         }
 
-        return if (lightTheme) {
-            lightColorScheme(
-                background = palette.background0,
-                surface = palette.background1,
-                surfaceVariant = palette.background2,
-                onSurface = palette.text,
-                onSurfaceVariant = palette.textSecondary,
-                primaryContainer = palette.background2,
-                onPrimaryContainer = Color.Black,
-                primary = palette.accent
-            )
-        } else {
-            darkColorScheme(
-                background = palette.background0,
-                surface = palette.background1,
-                surfaceVariant = palette.background2,
-                onSurface = palette.text,
-                onSurfaceVariant = palette.textSecondary,
-                primaryContainer = palette.background2,
-                onPrimaryContainer = Color.White,
-                primary = palette.accent
-            )
-        }
+        return palette to lightTheme
     }
 
     private companion object {

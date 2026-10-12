@@ -1,58 +1,26 @@
 package app.n_zik.android.components.dialog.common
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import app.n_zik.android.colorPalette
-import app.n_zik.android.uiRoundnessShape
+import androidx.compose.ui.res.stringResource
+import app.n_zik.android.R
 
 interface ConfirmDialog: InteractiveDialog {
 
     fun onConfirm()
 
     @Composable
-    override fun Buttons() = Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Button(
-            onClick = ::hideDialog,
-            modifier = Modifier.weight(1f),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colorPalette().background2,
-                contentColor = colorPalette().text
+    override fun Buttons() = ButtonRow(
+        buttons = listOf(
+            DialogButton(
+                text = stringResource(R.string.cancel),
+                onClick = ::hideDialog,
+                danger = true
             ),
-            shape = uiRoundnessShape()
-        ) {
-            InteractiveDialog.CancelButton(
-                onCancel = ::hideDialog
+            DialogButton(
+                text = stringResource(R.string.confirm),
+                onClick = ::onConfirm,
+                primary = true
             )
-        }
-        
-        Button(
-            onClick = ::onConfirm,
-            modifier = Modifier.weight(1f),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colorPalette().accent,
-                contentColor = colorPalette().textSecondary
-            ),
-            shape = uiRoundnessShape()
-        ) {
-            InteractiveDialog.ConfirmButton(
-                onConfirm = ::onConfirm
-            )
-        }
-    }
+        )
+    )
 }
-
-

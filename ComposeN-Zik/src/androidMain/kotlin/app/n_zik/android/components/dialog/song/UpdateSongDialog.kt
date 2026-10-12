@@ -2,31 +2,13 @@ package app.n_zik.android.components.dialog.song
 
 import app.n_zik.android.core.database.*
 
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularWavyProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import app.n_zik.android.colorPalette
-import app.n_zik.android.typography
-import app.n_zik.android.uiRoundnessShape
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.appContext
@@ -37,15 +19,12 @@ import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.utils.asSong
-import app.it.fast4x.rimusic.utils.bold
-import app.it.fast4x.rimusic.utils.isLandscape
-import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.isLocal
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.it.fast4x.rimusic.ui.components.themed.DefaultDialog
+import app.n_zik.android.components.dialog.common.InProgressDialog
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.CancellationException
@@ -274,92 +253,22 @@ class UpdateSongDialog private constructor(
     )
 
     /**
-     * Progress mode renders the exact design of the cached-songs export
-     * progress (the shared `InProgressDialog`: bold label, 48 dp wavy circular
-     * indicator, done/total counter) through the same `DefaultDialog` wrapper,
-     * plus the fully red cancel button. The standard dialog chrome (checkbox
-     * list + confirm buttons) is only rendered while the dialog is idle.
+     * Progress mode renders the shared [InProgressDialog] (bold label, 48 dp
+     * wavy circular indicator, done/total counter, cancel pill). The standard
+     * dialog chrome (checkbox list + confirm buttons) is only rendered while
+     * the dialog is idle.
      */
-    @OptIn( ExperimentalMaterial3ExpressiveApi::class )
     @Composable
     override fun Render() {
         val progress = batchProgress
         if( progress != null ) {
             val ( done, total ) = progress
-            val colorPalette = colorPalette()
-            DefaultDialog(
-                onDismiss = ::onCancelBatch,
-                modifier = Modifier
-                    .fillMaxWidth( if( isLandscape ) 0.3f else 0.8f )
-            ) {
-                BasicText(
-                    text = stringResource( R.string.update ),
-                    style = TextStyle(
-                        textAlign = TextAlign.Center,
-                        fontSize = typography().l.bold.fontSize,
-                        fontWeight = typography().l.bold.fontWeight,
-                        color = colorPalette.text
-                    ),
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Spacer( Modifier.height( 16.dp ) )
-                val progressFraction = if( total > 0 ) done.toFloat() / total.toFloat() else 0f
-                if( total > 0 ) {
-                    CircularWavyProgressIndicator(
-                        progress = { progressFraction },
-                        modifier = Modifier
-                            .size( 48.dp )
-                            .align( Alignment.CenterHorizontally ),
-                        color = colorPalette.accent,
-                        trackColor = colorPalette.background2
-                    )
-                } else {
-                    CircularWavyProgressIndicator(
-                        modifier = Modifier
-                            .size( 48.dp )
-                            .align( Alignment.CenterHorizontally ),
-                        color = colorPalette.accent,
-                        trackColor = colorPalette.background2
-                    )
-                }
-                if( total > 0 ) {
-                    Spacer( Modifier.height( 8.dp ) )
-                    BasicText(
-                        text = "$done / $total",
-                        style = TextStyle(
-                            textAlign = TextAlign.Center,
-                            fontStyle = typography().xs.semiBold.fontStyle,
-                            color = colorPalette.text
-                        ),
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                // The cancel keeps the export progress button geometry (shape,
-                // width, text style) with a fully red container: cancel stops
-                // the in-flight batch between songs; the processed songs stay
-                // written and no summary toast is shown.
-                Spacer( Modifier.height( 20.dp ) )
-                Button(
-                    onClick = ::onCancelBatch,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorPalette.red,
-                        contentColor = colorPalette.text
-                    ),
-                    shape = uiRoundnessShape(),
-                    modifier = Modifier
-                        .fillMaxWidth( 0.8f )
-                        .align( Alignment.CenterHorizontally )
-                ) {
-                    BasicText(
-                        text = stringResource( R.string.cancel ),
-                        style = TextStyle(
-                            textAlign = TextAlign.Center,
-                            fontStyle = typography().s.semiBold.fontStyle,
-                            color = colorPalette.text
-                        )
-                    )
-                }
-            }
+            InProgressDialog(
+                total = total,
+                done = done,
+                text = stringResource( R.string.update ),
+                onDismiss = ::onCancelBatch
+            )
             return
         }
         super.Render()

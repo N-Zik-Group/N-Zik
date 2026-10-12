@@ -1,21 +1,14 @@
 package app.n_zik.android.components.dialog.common
 
 import android.app.Activity
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
@@ -25,9 +18,7 @@ import app.n_zik.android.download.services.MyDownloadService
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.intent
-import app.it.fast4x.rimusic.utils.medium
 import kotlin.system.exitProcess
-import app.n_zik.android.uiRoundnessShape
 
 object RestartAppDialog: ConfirmDialog {
 
@@ -51,22 +42,15 @@ object RestartAppDialog: ConfirmDialog {
     }
 
     @Composable
-    override fun Buttons() {
-        Button(
-            onClick = ::onConfirm,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colorPalette().accent,
-                contentColor = colorPalette().textSecondary
-            ),
-            shape = uiRoundnessShape()
-        ) {
-            BasicText(
-                text = stringResource( R.string.confirm ),
-                style = typography().s.medium
+    override fun Buttons() = ButtonRow(
+        buttons = listOf(
+            DialogButton(
+                text = stringResource(R.string.confirm),
+                onClick = ::onConfirm,
+                primary = true
             )
-        }
-    }
+        )
+    )
 
     @Composable
     override fun DialogBody() {

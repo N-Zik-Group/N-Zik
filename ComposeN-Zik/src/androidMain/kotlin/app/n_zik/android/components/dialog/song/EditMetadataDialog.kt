@@ -10,7 +10,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -44,6 +43,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.InteractiveDialog
 import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.colorPalette
@@ -398,25 +399,20 @@ class EditMetadataDialog private constructor(
     }
 
     @Composable
-    override fun Buttons() = Row(
-        horizontalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp)
-    ) {
-        InteractiveDialog.CancelButton(
-            modifier = InteractiveDialog.ButtonModifier()
-                .weight(1f).fillMaxWidth(.98f)
-                .border(2.dp, androidx.compose.ui.graphics.Color(android.graphics.Color.RED).copy(alpha = .3f), uiRoundnessShape())
-                .padding(vertical = 10.dp),
-            onCancel = ::hideDialog
+    override fun Buttons() = ButtonRow(
+        buttons = listOf(
+            DialogButton(
+                text = stringResource(R.string.cancel),
+                onClick = ::hideDialog,
+                danger = true
+            ),
+            DialogButton(
+                text = stringResource(R.string.confirm),
+                onClick = { saveToFile() },
+                primary = true
+            )
         )
-        InteractiveDialog.ConfirmButton(
-            modifier = InteractiveDialog.ButtonModifier()
-                .weight(1f).fillMaxWidth(.98f)
-                .background(colorPalette().accent)
-                .padding(vertical = 10.dp),
-            onConfirm = { saveToFile() }
-        )
-    }
+    )
 
     private fun saveToFile() {
         val path = filePath ?: run { Toaster.e("Cannot resolve file path"); return }

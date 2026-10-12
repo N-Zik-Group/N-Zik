@@ -1,31 +1,11 @@
 package app.n_zik.android.components.dialog.common
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.colorPalette
-import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.bold
-import app.it.fast4x.rimusic.utils.isLandscape
-import app.it.fast4x.rimusic.utils.semiBold
-import app.n_zik.android.uiRoundnessShape
-import androidx.compose.ui.window.Dialog
 
 interface Dialog {
 
@@ -36,7 +16,7 @@ interface Dialog {
         const val VERTICAL_PADDING = 15
 
         /**
-         * Represents the maximum height allowed
+         * Represents the maximum width allowed
          * for this component in portrait mode.
          *
          * Larger number may cause accessibility issue
@@ -44,7 +24,7 @@ interface Dialog {
         const val MAX_WIDTH_PORTRAIT = .95f
 
         /**
-         * Represents the maximum height allowed
+         * Represents the maximum width allowed
          * for this component in landscape mode.
          *
          * Larger number may cause accessibility issue
@@ -52,7 +32,7 @@ interface Dialog {
         const val MAX_WIDTH_LANDSCAPE = .6f
 
         /**
-         * Represents the maximum width allowed
+         * Represents the maximum height allowed
          * for this component in portrait mode.
          *
          * Larger number may cause accessibility issue
@@ -60,7 +40,7 @@ interface Dialog {
         const val MAX_HEIGHT_PORTRAIT = .8f
 
         /**
-         * Represents the maximum width allowed
+         * Represents the maximum height allowed
          * for this component in landscape mode.
          *
          * Larger number may cause accessibility issue
@@ -99,58 +79,20 @@ interface Dialog {
     fun Render() {
         if( !isActive ) return
 
-        val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
-        val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
-        val maxWidth =
-            if( isLandscape ) MAX_WIDTH_LANDSCAPE else MAX_WIDTH_PORTRAIT
-        val maxHeight =
-            if( isLandscape ) MAX_HEIGHT_LANDSCAPE else MAX_HEIGHT_PORTRAIT
+        DialogFrame(
+            onDismiss = ::hideDialog,
+            title = dialogTitle
+        ) {
+            Spacer( Modifier.height( SPACE_BETWEEN_SECTIONS.dp ) )
 
-        Dialog( ::hideDialog ) dialogComp@ {
-            Card(
-                modifier = Modifier.wrapContentSize()
-                                   .sizeIn(
-                                       maxWidth = screenWidthDp * maxWidth,
-                                       maxHeight = screenHeightDp * maxHeight
-                                   )
-                                   .padding(16.dp),
-                shape = uiRoundnessShape(),
-                colors = CardDefaults.cardColors(
-                    containerColor = colorPalette().background1
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        Modifier.padding( bottom = 4.dp )
-                                .fillMaxWidth( .9f ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        BasicText(
-                            text = dialogTitle,
-                            style = typography().l.semiBold.copy(
-                                color = colorPalette().text
-                            ),
-                        )
-                    }
+            Box( modifier = Modifier.weight( 1f, fill = false ) ) {
+                DialogBody()
+            }
 
-                    Spacer( Modifier.height( SPACE_BETWEEN_SECTIONS.dp ) )
-
-                    Box(modifier = Modifier.weight(1f, fill = false)) {
-                        DialogBody()
-                    }
-
-                    if( this@Dialog is InteractiveDialog ) {
-                        Spacer( Modifier.height( SPACE_BETWEEN_SECTIONS.dp ) )
-                        Buttons()
-                    }
-                }
+            if( this@Dialog is InteractiveDialog ) {
+                Spacer( Modifier.height( SPACE_BETWEEN_SECTIONS.dp ) )
+                Buttons()
             }
         }
     }
 }
-
-

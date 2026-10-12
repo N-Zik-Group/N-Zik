@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
@@ -27,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.utils.medium
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.InteractiveDialog
 import app.n_zik.android.components.import.ProfileTargetOption
 import app.n_zik.android.typography
@@ -126,23 +126,21 @@ object ImportTargetProfileDialog : InteractiveDialog {
     }
 
     @Composable
-    override fun Buttons() {
-        Button(
-            enabled = selectedId != null,
-            onClick = {
-                val id = selectedId ?: return@Button
-                val action = onTarget
-                isActive = false
-                action?.invoke(id)
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colorPalette().accent,
-                contentColor = colorPalette().textSecondary
-            ),
-            shape = uiRoundnessShape()
-        ) {
-            Text(stringResource(R.string.import_button), style = typography().s.medium)
-        }
-    }
+    override fun Buttons() = ButtonRow(
+        buttons = listOf(
+            DialogButton(
+                text = stringResource(R.string.import_button),
+                onClick = {
+                    val id = selectedId
+                    if (id != null) {
+                        val action = onTarget
+                        isActive = false
+                        action?.invoke(id)
+                    }
+                },
+                enabled = selectedId != null,
+                primary = true
+            )
+        )
+    )
 }

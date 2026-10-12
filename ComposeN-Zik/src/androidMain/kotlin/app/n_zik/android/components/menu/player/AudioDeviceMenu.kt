@@ -17,6 +17,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.DialogButton
+import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.ui.sliders.SliderControl
@@ -66,9 +69,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.runtime.key
@@ -142,7 +142,6 @@ import androidx.compose.animation.fadeOut
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
-import androidx.compose.ui.window.Dialog
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
@@ -1139,90 +1138,84 @@ private fun VolumeDialog(
 ) {
     var dialogVolume by remember { mutableFloatStateOf(currentVolume) }
 
-    Dialog(onDismissRequest = onDismiss) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(colorPalette().background1)
-                .padding(16.dp)
+    DialogFrame(
+        onDismiss = onDismiss,
+        horizontalAlignment = Alignment.Start
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .background(
-                            color = colorPalette().accent.copy(alpha = 0.1f),
-                            shape = uiRoundnessShape()
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.MusicNote,
-                        contentDescription = null,
-                        tint = colorPalette().accent,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.size(12.dp))
-                val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
-
-                BasicText(
-                    text = stringResource(R.string.volume),
-                    maxLines = 1,
-                    style = typography().s.semiBold.copy(
-                        color = colorPalette().text
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(
+                        color = colorPalette().accent.copy(alpha = 0.1f),
+                        shape = uiRoundnessShape()
                     ),
-                    modifier = Modifier
-                        .weight(1f)
-                        .conditional(!isScrollingTextDisabled) {
-                            basicMarquee(iterations = Int.MAX_VALUE)
-                        }
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.MusicNote,
+                    contentDescription = null,
+                    tint = colorPalette().accent,
+                    modifier = Modifier.size(18.dp)
                 )
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.size(12.dp))
+            val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
 
             BasicText(
-                text = "${if (maxVolume > 0) kotlin.math.round(((dialogVolume / maxVolume) * 100)).toInt() else 0}%",
-                style = typography().l.semiBold.copy(
-                    color = colorPalette().accent
+                text = stringResource(R.string.volume),
+                maxLines = 1,
+                style = typography().s.semiBold.copy(
+                    color = colorPalette().text
                 ),
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                modifier = Modifier
+                    .weight(1f)
+                    .conditional(!isScrollingTextDisabled) {
+                        basicMarquee(iterations = Int.MAX_VALUE)
+                    }
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            SliderControl(
-                state = dialogVolume,
-                onSlide = { dialogVolume = it },
-                onSlideComplete = {
-                    onVolumeChange(dialogVolume)
-                    onVolumeChangeComplete()
-                },
-                range = 0f..maxVolume,
-                stepSize = 0f,
-                drawValuePoints = false,
-                showValue = false
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.End,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                IconButton(
-                    onClick = onDismiss,
-                    icon = R.drawable.close,
-                    color = colorPalette().textSecondary,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        BasicText(
+            text = "${if (maxVolume > 0) kotlin.math.round(((dialogVolume / maxVolume) * 100)).toInt() else 0}%",
+            style = typography().l.semiBold.copy(
+                color = colorPalette().accent
+            ),
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        SliderControl(
+            state = dialogVolume,
+            onSlide = { dialogVolume = it },
+            onSlideComplete = {
+                onVolumeChange(dialogVolume)
+                onVolumeChangeComplete()
+            },
+            range = 0f..maxVolume,
+            stepSize = 0f,
+            drawValuePoints = false,
+            showValue = false
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        ButtonRow(
+            buttons = listOf(
+                DialogButton(
+                    text = "",
+                    icon = R.drawable.close,
+                    textColor = colorPalette().textSecondary,
+                    onClick = onDismiss
+                )
+            )
+        )
     }
 }
 

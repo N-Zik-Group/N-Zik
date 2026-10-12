@@ -1,6 +1,7 @@
 package app.n_zik.android.components.dialog.export
 
 import app.n_zik.android.core.database.*
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.models.Lyrics
 import com.metrolist.music.betterlyrics.BetterLyrics
@@ -696,7 +697,7 @@ class ExportCacheDialog(
             LyricsType.Unsynced.name to appContext().getString(R.string.lyrics_unsynced),
             LyricsType.Karaoke.name to appContext().getString(R.string.lyrics_karaoke)
         )
-        app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog(
+        ValueSelectorDialog(
             onDismiss = { hideDialog() },
             title = appContext().getString(R.string.export_lyrics_choice),
             selectedValue = selectedLyricsType,

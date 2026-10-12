@@ -69,12 +69,12 @@ import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.ValidationType
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.Skeleton
-import app.it.fast4x.rimusic.ui.components.themed.DialogColorPicker
+import app.n_zik.android.components.dialog.common.DialogColorPicker
 import app.it.fast4x.rimusic.ui.components.themed.IDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.ui.sliders.Slider
-import app.it.fast4x.rimusic.ui.components.themed.StringListDialog
-import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
+import app.n_zik.android.components.dialog.common.StringListDialog
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.ui.toggles.Switch
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.draw.clip

@@ -30,15 +30,15 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 /**
- * Compose UI tests for the landscape width cap on [NewUpdateAvailableDialog].
+ * Compose UI tests for the frame width caps on [NewUpdateAvailableDialog].
  *
  * JUnit 4 + [RobolectricTestRunner], executed through the project's junit-vintage-engine
  * on the JUnit 5 platform (the `createComposeRule()` rule only works with JUnit 4),
  * with the plain [Application] so the app's heavy init (DI, Room, player) is skipped.
  *
- * The dialog's root column is capped at 420.dp: on wide screens (landscape phones,
- * portrait tablets) the column must not span the full window, while narrow portrait
- * phones (< 420.dp) keep filling the width.
+ * The dialog renders on the shared canon frame (gh-896), which caps the card at
+ * 95% of the screen width in portrait and 60% in landscape: on wide screens the
+ * column must not span the full window, and in portrait it stays within the cap.
  * This ui-test version has no `assertWidthIsAtMost`, so the width is asserted through
  * [getBoundsInRoot] on the tagged column.
  */
@@ -105,7 +105,7 @@ class NewUpdateAvailableDialogLandscapeWidthTest {
 
     @Config(qualifiers = "w900dp-h500dp")
     @Test
-    fun `dialog column is capped at 420dp in landscape`() {
+    fun `dialog column is capped at the landscape frame width`() {
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
                 NewUpdateAvailableDialog.Render()
@@ -116,15 +116,18 @@ class NewUpdateAvailableDialogLandscapeWidthTest {
         // DpRect in this ui-unit version exposes left/right only, no width property
         val bounds = composeRule.onNodeWithTag("updateDialogColumn").getBoundsInRoot()
         val width = bounds.right - bounds.left
+        // Canon frame (gh-896): in landscape the card is capped at 60% of the screen
+        // width (900dp here); the tagged column sits inside the card's padding, so it
+        // is strictly narrower than the cap
         assertTrue(
-            "dialog column must be capped at 420.dp in landscape, was $width",
-            width <= 420.dp,
+            "dialog column must be capped at 60% of the screen width in landscape, was $width",
+            width <= 540.dp,
         )
     }
 
     @Config(qualifiers = "w393dp-h851dp")
     @Test
-    fun `dialog column still fills the width in portrait`() {
+    fun `dialog column is capped at the portrait frame width`() {
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
                 NewUpdateAvailableDialog.Render()
@@ -135,12 +138,12 @@ class NewUpdateAvailableDialogLandscapeWidthTest {
         // DpRect in this ui-unit version exposes left/right only, no width property
         val bounds = composeRule.onNodeWithTag("updateDialogColumn").getBoundsInRoot()
         val width = bounds.right - bounds.left
-        // 393.dp screen: with fillMaxWidth() the column fills the window, so it stays
-        // within a few dp of the screen width; the 3.dp allowance absorbs the dialog
-        // window's inset. A content-width column (fillMaxWidth removed) would be far smaller.
+        // Canon frame (gh-896): in portrait the card is capped at 95% of the screen
+        // width (393dp here); the tagged column sits inside the card's padding, so it
+        // is strictly narrower than the cap. 374dp is the 95% cap rounded up.
         assertTrue(
-            "dialog column should still fill the portrait width, was $width",
-            width >= 390.dp,
+            "dialog column must be capped at 95% of the screen width in portrait, was $width",
+            width <= 374.dp,
         )
     }
 }

@@ -146,7 +146,7 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.components.ui.screens.album.AlbumBookmark
 import app.n_zik.android.components.ui.screens.album.Translate
-import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
 import timber.log.Timber

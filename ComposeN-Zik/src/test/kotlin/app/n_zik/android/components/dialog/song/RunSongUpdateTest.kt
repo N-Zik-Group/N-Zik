@@ -122,7 +122,7 @@ class RunSongUpdateTest {
      * itself a `kotlin.Result` one level, which collides with
      * `Innertube.song`'s `Result<SongItem?>?`-typed return; wrapping the
      * intended value in one extra `Result.success(...)` layer absorbs that
-     * single unwrap (same trick as SongMatchingDialogSearchOffMainTest).
+     * single unwrap.
      */
     @Suppress("UNCHECKED_CAST")
     private fun fetchResult(value: Result<Innertube.SongItem?>): Result<Innertube.SongItem?>? =

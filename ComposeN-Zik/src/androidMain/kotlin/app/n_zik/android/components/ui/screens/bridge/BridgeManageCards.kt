@@ -32,7 +32,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import app.it.fast4x.rimusic.ui.components.themed.ValueSelectorDialog
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.it.fast4x.rimusic.ui.screens.settings.SettingsSectionCard
 import app.it.fast4x.rimusic.ui.screens.settings.OtherSettingsEntry
 import app.it.fast4x.rimusic.utils.isIgnoringBatteryOptimizations

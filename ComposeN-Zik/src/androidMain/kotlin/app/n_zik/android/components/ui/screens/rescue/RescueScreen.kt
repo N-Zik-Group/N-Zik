@@ -35,15 +35,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -88,14 +87,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Scaffold
+import app.it.fast4x.rimusic.ui.styling.ColorPalette
+import app.n_zik.android.colorPalette
+import app.n_zik.android.typography
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.ConfirmationDialog
+import app.n_zik.android.components.dialog.common.DialogButton
+import app.n_zik.android.components.dialog.common.DialogFrame
 
 /** Time left to read the confirmation toast before the `:rescue` process is ended. */
 private const val PROCESS_EXIT_DELAY_MS = 1_500L
@@ -528,68 +532,45 @@ fun RescueScreen() {
 
     // Credential toggles dialog for export settings
     if (showCredentialToggles) {
-        Dialog(
-            onDismissRequest = { showCredentialToggles = false },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
+        DialogFrame(
+            onDismiss = { showCredentialToggles = false },
+            title = stringResource(R.string.rescue_export_settings)
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        BasicText(
-                            text = stringResource(R.string.rescue_export_settings),
-                            style = TextStyle(
-                                fontSize = MaterialTheme.typography.titleLarge.fontSize,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            ),
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(checked = includeYtb, onCheckedChange = { includeYtb = it })
-                                Text(stringResource(R.string.rescue_include_youtube_credentials), color = MaterialTheme.colorScheme.onSurface)
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(checked = includeDiscord, onCheckedChange = { includeDiscord = it })
-                                Text(stringResource(R.string.rescue_include_discord_credentials), color = MaterialTheme.colorScheme.onSurface)
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(checked = includeLastfm, onCheckedChange = { includeLastfm = it })
-                                Text(stringResource(R.string.rescue_include_lastfm_credentials), color = MaterialTheme.colorScheme.onSurface)
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(checked = includeProxy, onCheckedChange = { includeProxy = it })
-                                Text(stringResource(R.string.rescue_include_proxy_credentials), color = MaterialTheme.colorScheme.onSurface)
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(24.dp))
-                        RescueDialogButtons(
-                            cancelText = stringResource(android.R.string.cancel),
-                            confirmText = stringResource(android.R.string.ok),
-                            onCancel = { showCredentialToggles = false },
-                            onConfirm = {
-                                showCredentialToggles = false
-                                exportSettingsLauncher.launch("${BuildConfig.APP_NAME} $date Settings.csv")
-                            }
-                        )
-                    }
-                }
+            val palette = colorPalette()
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(checked = includeYtb, onCheckedChange = { includeYtb = it }, colors = palette.checkboxColors())
+                Text(stringResource(R.string.rescue_include_youtube_credentials), color = palette.text)
             }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(checked = includeDiscord, onCheckedChange = { includeDiscord = it }, colors = palette.checkboxColors())
+                Text(stringResource(R.string.rescue_include_discord_credentials), color = palette.text)
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(checked = includeLastfm, onCheckedChange = { includeLastfm = it }, colors = palette.checkboxColors())
+                Text(stringResource(R.string.rescue_include_lastfm_credentials), color = palette.text)
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(checked = includeProxy, onCheckedChange = { includeProxy = it }, colors = palette.checkboxColors())
+                Text(stringResource(R.string.rescue_include_proxy_credentials), color = palette.text)
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+            ButtonRow(
+                buttons = listOf(
+                    DialogButton(
+                        text = stringResource(android.R.string.cancel),
+                        onClick = { showCredentialToggles = false },
+                        danger = true
+                    ),
+                    DialogButton(
+                        text = stringResource(android.R.string.ok),
+                        primary = true,
+                        onClick = {
+                            showCredentialToggles = false
+                            exportSettingsLauncher.launch("${BuildConfig.APP_NAME} $date Settings.csv")
+                        }
+                    )
+                )
+            )
         }
     }
 
@@ -599,117 +580,90 @@ fun RescueScreen() {
     // standard confirmation dialog (same pattern as the other destructive actions).
     if (deleteProfilesDialog) {
         val userProfiles = profileOptions.filter { it.id != DEFAULT_PROFILE_ID }
-        Dialog(
-            onDismissRequest = { deleteProfilesDialog = false },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
+        DialogFrame(
+            onDismiss = { deleteProfilesDialog = false },
+            title = stringResource(R.string.rescue_profiles_to_delete)
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            val palette = colorPalette()
+            userProfiles.forEach { option ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        BasicText(
-                            text = stringResource(R.string.rescue_profiles_to_delete),
-                            style = TextStyle(
-                                fontSize = MaterialTheme.typography.titleLarge.fontSize,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            ),
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .verticalScroll(rememberScrollState())
-                        ) {
-                            userProfiles.forEach { option ->
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Checkbox(
-                                        checked = deleteSelection.contains(option.id),
-                                        onCheckedChange = { checked ->
-                                            deleteSelection = if (checked)
-                                                deleteSelection + option.id
-                                            else
-                                                deleteSelection - option.id
-                                        }
-                                    )
-                                    Text(
-                                        text = option.label,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    if (option.isActive) {
-                                        Text(
-                                            text = stringResource(R.string.rescue_profile_active),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(24.dp))
-                        RescueDialogButtons(
-                            cancelText = stringResource(android.R.string.cancel),
-                            confirmText = stringResource(android.R.string.ok),
-                            confirmEnabled = deleteSelection.isNotEmpty(),
-                            onCancel = { deleteProfilesDialog = false },
-                            onConfirm = {
-                                val selected = deleteSelection
-                                deleteProfilesDialog = false
-                                deleteSelection = emptySet()
-                                guardWrite {
-                                    // The selection is the informed choice; the standard
-                                    // confirmation states the permanent consequences.
-                                    confirmAction = ConfirmAction(R.string.rescue_confirm_delete_profiles) {
-                                        scope.launch {
-                                            val activeId = getActiveProfile(context)
-                                            val result = withContext(NzikDispatchers.DATA) {
-                                                RescueFiles.deleteProfiles(context, selected.toList())
-                                            }
-                                            showResult(
-                                                result,
-                                                result.getOrNull()?.let {
-                                                    context.getString(R.string.rescue_profiles_deleted_count, it)
-                                                }
-                                            )
-                                            // Deleting the CURRENT profile switches the active slot
-                                            // to the base: the app must be relaunched to pick the
-                                            // change up (the base itself can never be deleted).
-                                            if (result.isSuccess && activeId in selected &&
-                                                activeId != DEFAULT_PROFILE_ID
-                                            ) {
-                                                Toasty.warning(
-                                                    context,
-                                                    context.getString(R.string.rescue_profiles_deleted_active_restart),
-                                                    Toast.LENGTH_LONG,
-                                                    true
-                                                ).show()
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                    Checkbox(
+                        checked = deleteSelection.contains(option.id),
+                        onCheckedChange = { checked ->
+                            deleteSelection = if (checked)
+                                deleteSelection + option.id
+                            else
+                                deleteSelection - option.id
+                        },
+                        colors = palette.checkboxColors()
+                    )
+                    Text(
+                        text = option.label,
+                        color = palette.text,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (option.isActive) {
+                        Text(
+                            text = stringResource(R.string.rescue_profile_active),
+                            style = typography().xxs.copy(color = palette.accent)
                         )
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(24.dp))
+            ButtonRow(
+                buttons = listOf(
+                    DialogButton(
+                        text = stringResource(android.R.string.cancel),
+                        onClick = { deleteProfilesDialog = false },
+                        danger = true
+                    ),
+                    DialogButton(
+                        text = stringResource(android.R.string.ok),
+                        primary = true,
+                        enabled = deleteSelection.isNotEmpty(),
+                        onClick = {
+                            val selected = deleteSelection
+                            deleteProfilesDialog = false
+                            deleteSelection = emptySet()
+                            guardWrite {
+                                // The selection is the informed choice; the standard
+                                // confirmation states the permanent consequences.
+                                confirmAction = ConfirmAction(R.string.rescue_confirm_delete_profiles) {
+                                    scope.launch {
+                                        val activeId = getActiveProfile(context)
+                                        val result = withContext(NzikDispatchers.DATA) {
+                                            RescueFiles.deleteProfiles(context, selected.toList())
+                                        }
+                                        showResult(
+                                            result,
+                                            result.getOrNull()?.let {
+                                                context.getString(R.string.rescue_profiles_deleted_count, it)
+                                            }
+                                        )
+                                        // Deleting the CURRENT profile switches the active slot
+                                        // to the base: the app must be relaunched to pick the
+                                        // change up (the base itself can never be deleted).
+                                        if (result.isSuccess && activeId in selected &&
+                                            activeId != DEFAULT_PROFILE_ID
+                                        ) {
+                                            Toasty.warning(
+                                                context,
+                                                context.getString(R.string.rescue_profiles_deleted_active_restart),
+                                                Toast.LENGTH_LONG,
+                                                true
+                                            ).show()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    )
+                )
+            )
         }
     }
 
@@ -719,110 +673,82 @@ fun RescueScreen() {
         // it requires.
         val resettableProfiles = listOf(baseProfileOption()) +
             profileOptions.filter { it.id != DEFAULT_PROFILE_ID }
-        Dialog(
-            onDismissRequest = { resetProfilesDialog = false },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
+        DialogFrame(
+            onDismiss = { resetProfilesDialog = false },
+            title = stringResource(R.string.rescue_profiles_to_reset)
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            val palette = colorPalette()
+            resettableProfiles.forEach { option ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        BasicText(
-                            text = stringResource(R.string.rescue_profiles_to_reset),
-                            style = TextStyle(
-                                fontSize = MaterialTheme.typography.titleLarge.fontSize,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            ),
-                            modifier = Modifier.padding(bottom = 16.dp)
+                    Checkbox(
+                        checked = resetSelection.contains(option.id),
+                        onCheckedChange = { checked ->
+                            resetSelection = if (checked)
+                                resetSelection + option.id
+                            else
+                                resetSelection - option.id
+                        },
+                        colors = palette.checkboxColors()
+                    )
+                    Text(
+                        text = option.label,
+                        color = palette.text,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (option.isActive) {
+                        Text(
+                            text = stringResource(R.string.rescue_profile_active),
+                            style = typography().xxs.copy(color = palette.accent)
                         )
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .verticalScroll(rememberScrollState())
-                        ) {
-                            resettableProfiles.forEach { option ->
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Checkbox(
-                                        checked = resetSelection.contains(option.id),
-                                        onCheckedChange = { checked ->
-                                            resetSelection = if (checked)
-                                                resetSelection + option.id
-                                            else
-                                                resetSelection - option.id
+                    }
+                    if (option.id == DEFAULT_PROFILE_ID) {
+                        Text(
+                            text = stringResource(R.string.rescue_profile_base),
+                            style = typography().xxs.copy(color = palette.accent)
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+            ButtonRow(
+                buttons = listOf(
+                    DialogButton(
+                        text = stringResource(android.R.string.cancel),
+                        onClick = { resetProfilesDialog = false },
+                        danger = true
+                    ),
+                    DialogButton(
+                        text = stringResource(android.R.string.ok),
+                        primary = true,
+                        enabled = resetSelection.isNotEmpty(),
+                        onClick = {
+                            val selected = resetSelection
+                            resetProfilesDialog = false
+                            resetSelection = emptySet()
+                            guardWrite {
+                                // The selection is the informed choice; the standard
+                                // confirmation states the permanent consequences.
+                                confirmAction = ConfirmAction(R.string.rescue_confirm_reset_profiles) {
+                                    scope.launch {
+                                        val result = withContext(NzikDispatchers.DATA) {
+                                            RescueFiles.resetProfiles(context, selected.toList())
                                         }
-                                    )
-                                    Text(
-                                        text = option.label,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    if (option.isActive) {
-                                        Text(
-                                            text = stringResource(R.string.rescue_profile_active),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                    if (option.id == DEFAULT_PROFILE_ID) {
-                                        Text(
-                                            text = stringResource(R.string.rescue_profile_base),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.primary
+                                        showResult(
+                                            result,
+                                            result.getOrNull()?.let {
+                                                context.getString(R.string.rescue_profiles_reset_count, it)
+                                            }
                                         )
                                     }
                                 }
                             }
                         }
-                        Spacer(modifier = Modifier.height(24.dp))
-                        RescueDialogButtons(
-                            cancelText = stringResource(android.R.string.cancel),
-                            confirmText = stringResource(android.R.string.ok),
-                            confirmEnabled = resetSelection.isNotEmpty(),
-                            onCancel = { resetProfilesDialog = false },
-                            onConfirm = {
-                                val selected = resetSelection
-                                resetProfilesDialog = false
-                                resetSelection = emptySet()
-                                guardWrite {
-                                    // The selection is the informed choice; the standard
-                                    // confirmation states the permanent consequences.
-                                    confirmAction = ConfirmAction(R.string.rescue_confirm_reset_profiles) {
-                                        scope.launch {
-                                            val result = withContext(NzikDispatchers.DATA) {
-                                                RescueFiles.resetProfiles(context, selected.toList())
-                                            }
-                                            showResult(
-                                                result,
-                                                result.getOrNull()?.let {
-                                                    context.getString(R.string.rescue_profiles_reset_count, it)
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        )
-                    }
-                }
-            }
+                    )
+                )
+            )
         }
     }
 
@@ -836,110 +762,82 @@ fun RescueScreen() {
         ) + profileOptions.filter {
             it.id != DEFAULT_PROFILE_ID && fileState.profileBackups.contains(it.id)
         }
-        Dialog(
-            onDismissRequest = { restoreProfilesDialog = false },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
+        DialogFrame(
+            onDismiss = { restoreProfilesDialog = false },
+            title = stringResource(R.string.rescue_profiles_to_restore)
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            val palette = colorPalette()
+            restorableProfiles.forEach { option ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        BasicText(
-                            text = stringResource(R.string.rescue_profiles_to_restore),
-                            style = TextStyle(
-                                fontSize = MaterialTheme.typography.titleLarge.fontSize,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            ),
-                            modifier = Modifier.padding(bottom = 16.dp)
+                    Checkbox(
+                        checked = restoreSelection.contains(option.id),
+                        onCheckedChange = { checked ->
+                            restoreSelection = if (checked)
+                                restoreSelection + option.id
+                            else
+                                restoreSelection - option.id
+                        },
+                        colors = palette.checkboxColors()
+                    )
+                    Text(
+                        text = option.label,
+                        color = palette.text,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (option.isActive) {
+                        Text(
+                            text = stringResource(R.string.rescue_profile_active),
+                            style = typography().xxs.copy(color = palette.accent)
                         )
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .verticalScroll(rememberScrollState())
-                        ) {
-                            restorableProfiles.forEach { option ->
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Checkbox(
-                                        checked = restoreSelection.contains(option.id),
-                                        onCheckedChange = { checked ->
-                                            restoreSelection = if (checked)
-                                                restoreSelection + option.id
-                                            else
-                                                restoreSelection - option.id
+                    }
+                    if (option.id == DEFAULT_PROFILE_ID) {
+                        Text(
+                            text = stringResource(R.string.rescue_profile_base),
+                            style = typography().xxs.copy(color = palette.accent)
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+            ButtonRow(
+                buttons = listOf(
+                    DialogButton(
+                        text = stringResource(android.R.string.cancel),
+                        onClick = { restoreProfilesDialog = false },
+                        danger = true
+                    ),
+                    DialogButton(
+                        text = stringResource(android.R.string.ok),
+                        primary = true,
+                        enabled = restoreSelection.isNotEmpty(),
+                        onClick = {
+                            val selected = restoreSelection
+                            restoreProfilesDialog = false
+                            restoreSelection = emptySet()
+                            guardWrite {
+                                // The selection is the informed choice; the standard
+                                // confirmation states what the restore replaces.
+                                confirmAction = ConfirmAction(R.string.rescue_confirm_restore_profiles) {
+                                    scope.launch {
+                                        val result = withContext(NzikDispatchers.DATA) {
+                                            RescueFiles.restoreProfiles(context, selected.toList())
                                         }
-                                    )
-                                    Text(
-                                        text = option.label,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    if (option.isActive) {
-                                        Text(
-                                            text = stringResource(R.string.rescue_profile_active),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                    if (option.id == DEFAULT_PROFILE_ID) {
-                                        Text(
-                                            text = stringResource(R.string.rescue_profile_base),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.primary
+                                        showResult(
+                                            result,
+                                            result.getOrNull()?.let {
+                                                context.getString(R.string.rescue_profiles_restored_count, it)
+                                            }
                                         )
                                     }
                                 }
                             }
                         }
-                        Spacer(modifier = Modifier.height(24.dp))
-                        RescueDialogButtons(
-                            cancelText = stringResource(android.R.string.cancel),
-                            confirmText = stringResource(android.R.string.ok),
-                            confirmEnabled = restoreSelection.isNotEmpty(),
-                            onCancel = { restoreProfilesDialog = false },
-                            onConfirm = {
-                                val selected = restoreSelection
-                                restoreProfilesDialog = false
-                                restoreSelection = emptySet()
-                                guardWrite {
-                                    // The selection is the informed choice; the standard
-                                    // confirmation states what the restore replaces.
-                                    confirmAction = ConfirmAction(R.string.rescue_confirm_restore_profiles) {
-                                        scope.launch {
-                                            val result = withContext(NzikDispatchers.DATA) {
-                                                RescueFiles.restoreProfiles(context, selected.toList())
-                                            }
-                                            showResult(
-                                                result,
-                                                result.getOrNull()?.let {
-                                                    context.getString(R.string.rescue_profiles_restored_count, it)
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        )
-                    }
-                }
-            }
+                    )
+                )
+            )
         }
     }
 
@@ -1766,6 +1664,11 @@ fun RescueHeader(title: String) {
     }
 }
 
+/**
+ * Confirmation dialog of the rescue center: a thin alias of the canonical
+ * [ConfirmationDialog] (the `:rescue` process renders the shared [DialogFrame]
+ * frame, so the rescue dialogs stay visually in line with the app).
+ */
 @Composable
 fun RescueConfirmationDialog(
     text: String,
@@ -1774,83 +1677,21 @@ fun RescueConfirmationDialog(
     cancelText: String = stringResource(android.R.string.cancel),
     confirmText: String = stringResource(android.R.string.ok)
 ) {
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .padding(16.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Message text
-                    BasicText(
-                        text = text,
-                        style = TextStyle(
-                            fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-                            color = MaterialTheme.colorScheme.onSurface
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 24.dp)
-                    )
-
-                    RescueDialogButtons(
-                        cancelText = cancelText,
-                        confirmText = confirmText,
-                        onCancel = onDismiss,
-                        onConfirm = {
-                            onConfirm()
-                            onDismiss()
-                        }
-                    )
-                }
-            }
-        }
-    }
+    ConfirmationDialog(
+        text = text,
+        onDismiss = onDismiss,
+        onConfirm = onConfirm,
+        cancelText = cancelText,
+        confirmText = confirmText
+    )
 }
 
-/**
- * Cancel / confirm buttons shared by the Rescue dialogs. Material3 buttons keep the button role
- * for TalkBack and a 48 dp minimum touch target.
- */
+/** Palette-driven checkbox colors for the rescue selection dialogs. */
 @Composable
-private fun RescueDialogButtons(
-    cancelText: String,
-    confirmText: String,
-    onCancel: () -> Unit,
-    onConfirm: () -> Unit,
-    confirmEnabled: Boolean = true
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        TextButton(
-            onClick = onCancel,
-            modifier = Modifier.weight(1f)
-        ) {
-            Text(text = cancelText, fontWeight = FontWeight.Medium)
-        }
-        Button(
-            onClick = onConfirm,
-            enabled = confirmEnabled,
-            modifier = Modifier.weight(1f)
-        ) {
-            Text(text = confirmText, fontWeight = FontWeight.Medium)
-        }
-    }
-}
+private fun ColorPalette.checkboxColors() = CheckboxDefaults.colors(
+    checkedColor = accent,
+    checkmarkColor = onAccent,
+    uncheckedColor = textSecondary,
+    disabledCheckedColor = textDisabled,
+    disabledUncheckedColor = textDisabled
+)

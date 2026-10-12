@@ -43,9 +43,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.it.fast4x.rimusic.ui.components.Skeleton
-import app.it.fast4x.rimusic.ui.components.themed.ConfirmationDialog
-import app.it.fast4x.rimusic.ui.components.themed.DefaultDialog
-import app.it.fast4x.rimusic.ui.components.themed.DialogTextButton
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.ConfirmationDialog
+import app.n_zik.android.components.dialog.common.DefaultDialog
+import app.n_zik.android.components.dialog.common.DialogButton
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.it.fast4x.rimusic.ui.screens.settings.SettingsDescription
 import app.it.fast4x.rimusic.ui.styling.Dimensions
@@ -438,20 +439,17 @@ fun ProfileScreen(
                     .padding(all = 16.dp)
             )
 
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-
-                DialogTextButton(
-                    text = stringResource(R.string.confirm),
-                    primary = true,
-                    onClick = {
-                        showErrorPopup = false
-                    }
+            ButtonRow(
+                buttons = listOf(
+                    DialogButton(
+                        text = stringResource(R.string.confirm),
+                        primary = true,
+                        onClick = {
+                            showErrorPopup = false
+                        }
+                    )
                 )
-            }
+            )
         }
     }
     if (showChangePopup) {

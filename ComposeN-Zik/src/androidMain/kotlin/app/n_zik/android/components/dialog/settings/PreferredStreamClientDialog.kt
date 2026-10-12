@@ -1,8 +1,6 @@
 package app.n_zik.android.components.dialog.settings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,16 +23,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
-import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.preferredStreamClientKey
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.LocalPlayerServiceBinder
@@ -118,55 +115,27 @@ object PreferredStreamClientDialog : Dialog {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.End
-            ) {
-                // Reset button (grey) - only changes local state
-                BasicText(
-                    text = stringResource(R.string.reset),
-                    style = typography().xs.medium.copy(
-                        color = if (selectedClient != "WEB_REMIX") colorPalette().textDisabled else Color.Transparent,
-                        textAlign = TextAlign.Center
-                    ),
-                    modifier = Modifier
-                        .clip(uiRoundnessShape())
-                        .clickable(enabled = selectedClient != "WEB_REMIX") {
+            ButtonRow(
+                buttons = listOf(
+                    // Reset button (grey) - only changes local state
+                    DialogButton(
+                        text = stringResource(R.string.reset),
+                        enabled = selectedClient != "WEB_REMIX",
+                        textColor = colorPalette().textDisabled,
+                        onClick = {
                             selectedClient = "WEB_REMIX"
                         }
-                        .padding(horizontal = 16.dp, vertical = 10.dp)
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                // Cancel button (red) - closes without saving
-                BasicText(
-                    text = stringResource(R.string.cancel),
-                    style = typography().xs.medium.copy(
-                        color = Color(android.graphics.Color.RED).copy(alpha = 0.3f),
-                        textAlign = TextAlign.Center
                     ),
-                    modifier = Modifier
-                        .clip(uiRoundnessShape())
-                        .clickable { hideDialog() }
-                        .padding(horizontal = 16.dp, vertical = 10.dp)
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                // OK button (accent filled) - saves only if changed
-                BasicText(
-                    text = stringResource(R.string.ok),
-                    style = typography().xs.semiBold.copy(
-                        color = colorPalette().onAccent,
-                        textAlign = TextAlign.Center
+                    // Cancel button (red) - closes without saving
+                    DialogButton(
+                        text = stringResource(R.string.cancel),
+                        onClick = { hideDialog() },
+                        danger = true
                     ),
-                    modifier = Modifier
-                        .clip(uiRoundnessShape())
-                        .background(colorPalette().accent)
-                        .clickable {
+                    // OK button (accent filled) - saves only if changed
+                    DialogButton(
+                        text = stringResource(R.string.ok),
+                        onClick = {
                             if (selectedClient != savedPref) {
                                 prefs.edit().putString(preferredStreamClientKey, selectedClient).apply()
                                 prefs.edit().putBoolean(streamClientRestartNeededKey, true).apply()
@@ -179,10 +148,11 @@ object PreferredStreamClientDialog : Dialog {
                                 Toaster.w(R.string.stream_client_redownload_recommendation)
                             }
                             hideDialog()
-                        }
-                        .padding(horizontal = 20.dp, vertical = 10.dp)
+                        },
+                        primary = true
+                    )
                 )
-            }
+            )
         }
     }
 

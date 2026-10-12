@@ -142,7 +142,7 @@ import app.it.fast4x.rimusic.utils.isLandscape
 import app.it.fast4x.rimusic.utils.manageDownload
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
 import app.it.fast4x.rimusic.utils.recommendationsNumberKey
-import app.it.fast4x.rimusic.ui.components.themed.TextFieldDialog
+import app.n_zik.android.components.dialog.common.TextFieldDialog
 import androidx.core.net.toUri
 import app.it.fast4x.rimusic.utils.asSong
 import app.n_zik.android.core.database.artistEntryNames
@@ -204,10 +204,10 @@ import app.it.fast4x.rimusic.LOCAL_KEY_PREFIX
 import app.it.fast4x.rimusic.enums.SortOrder
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.it.fast4x.rimusic.ui.components.themed.ConfirmationDialog
-import app.it.fast4x.rimusic.ui.components.themed.DefaultDialog
-import app.it.fast4x.rimusic.ui.components.themed.InProgressDialog
-import app.it.fast4x.rimusic.ui.components.themed.InputTextField
+import app.n_zik.android.components.dialog.common.ConfirmationDialog
+import app.n_zik.android.components.dialog.common.DefaultDialog
+import app.n_zik.android.components.dialog.common.InProgressDialog
+import app.n_zik.android.components.dialog.common.InputTextField
 import app.n_zik.android.components.dialog.search.MatchResultsDialog
 import app.n_zik.android.components.tab.ImportPlaylistsMenu
 import app.n_zik.android.components.tab.ImportSongsFromCSV
