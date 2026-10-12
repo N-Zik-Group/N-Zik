@@ -336,7 +336,7 @@ jobs:
 
             > ℹ️ The Dev build bundles FFmpeg, which is why it's bigger. The "Dev32" build drops FFmpeg. All builds are universal APKs and run on every architecture.
 
-            > ⚖️ **Why is the Dev build bigger?** It bundles **FFmpeg** for every architecture (≈ 77 MB of native audio libraries, the entire gap between Dev and Dev32). FFmpeg powers **Media Export** and the in-app **Metadata Editor**, and it is *not* used for regular playback. **Dev32** drops FFmpeg to stay small, so it doesn't include those two features. The base app is inherited legacy code from upstream; reducing its size is ongoing work by a single maintainer in spare time. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
+            > ⚖️ **Why is the Dev build bigger?** It bundles **FFmpeg** for every architecture (≈ 77 MB of native audio libraries, the entire gap between Dev and Dev32). FFmpeg powers **Media Export** and the in-app **Metadata Editor**, and it is *not* used for regular playback. Sizes: Dev ≈ 140 MB, Dev32 ≈ 62 MB. **Dev32** drops FFmpeg to stay small, so it doesn't include those two features. The base app is inherited legacy code from upstream; reducing its size is ongoing work by a single maintainer in spare time. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
 
             ## 🔄 Features
 
@@ -494,7 +494,7 @@ jobs:
 
             > ℹ️ The Dev build bundles FFmpeg, which is why it's bigger. The "Dev32" build drops FFmpeg. All builds are universal APKs and run on every architecture.
 
-            > ⚖️ **Why is the Dev build bigger?** It bundles **FFmpeg** for every architecture (≈ 77 MB of native audio libraries, the entire gap between Dev and Dev32). FFmpeg powers **Media Export** and the in-app **Metadata Editor**, and it is *not* used for regular playback. **Dev32** drops FFmpeg to stay small, so it doesn't include those two features. The base app is inherited legacy code from upstream; reducing its size is ongoing work by a single maintainer in spare time. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
+            > ⚖️ **Why is the Dev build bigger?** It bundles **FFmpeg** for every architecture (≈ 77 MB of native audio libraries, the entire gap between Dev and Dev32). FFmpeg powers **Media Export** and the in-app **Metadata Editor**, and it is *not* used for regular playback. Sizes: Dev ≈ 140 MB, Dev32 ≈ 62 MB. **Dev32** drops FFmpeg to stay small, so it doesn't include those two features. The base app is inherited legacy code from upstream; reducing its size is ongoing work by a single maintainer in spare time. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
 
             ## 🔄 Features
 

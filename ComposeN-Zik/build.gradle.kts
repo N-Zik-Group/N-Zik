@@ -297,7 +297,7 @@ android {
          */
         forEach {
             it.manifestPlaceholders.putIfAbsent( "appName", APP_NAME )
-            if (it.name == "full32" || it.name == "minified32" || it.name == "beta32" || it.name == "dev32") {
+            if (it.name == "full32" || it.name == "minified32" || it.name == "beta32" || it.name == "dev32" || it.name == "foss") {
                 it.buildConfigField("Boolean", "ENABLE_FFMPEG", "false")
             } else {
                 it.buildConfigField("Boolean", "ENABLE_FFMPEG", "true")
@@ -387,7 +387,6 @@ dependencies {
     "minifiedImplementation"(libs.ffmpeg.kit.audio)
     "betaImplementation"(libs.ffmpeg.kit.audio)
     "devImplementation"(libs.ffmpeg.kit.audio)
-    "fossImplementation"(libs.ffmpeg.kit.audio)
     implementation(libs.monetcompat)
     implementation(libs.androidmaterial)
     implementation(libs.timber)

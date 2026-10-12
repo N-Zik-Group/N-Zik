@@ -66,10 +66,10 @@
 - **Full32** & **Beta32**: Complete build without FFmpeg, runs on every architecture (universal APK, ≈ 62 MB on v8.4.0).
 - **Minified**: Lightweight build, recommended for low-end devices, runs on every architecture (universal APK, ≈ 111 MB on v8.4.0).
 - **Minified32**: Lightweight build without FFmpeg, runs on every architecture (universal APK, ≈ 34 MB on v8.4.0).
-- **FOSS** (`com.nevar.nzik.foss`): Full build without auto-updater, suitable for alternative stores, runs on every architecture (universal APK, ≈ 140 MB on v8.4.0).
-- **Dev** & **Dev32**: Development builds from latest commits, for testing only, runs on every architecture (universal APK).
+- **FOSS** (`com.nevar.nzik.foss`): Full build without auto-updater **and without FFmpeg**, suitable for alternative stores, runs on every architecture (universal APK, ≈ 62 MB).
+- **Dev** & **Dev32**: Development builds from latest commits, for testing only, runs on every architecture (universal APK, Dev ≈ 140 MB, Dev32 ≈ 62 MB).
 
-> ℹ️ Standard builds (Full, Minified, Beta, FOSS, Dev) bundle FFmpeg, which is why they're bigger. The "32" builds (Full32, Minified32, Beta32, Dev32) drop FFmpeg to stay small. All builds are universal APKs and run on every architecture. See the section below for the full explanation.
+> ℹ️ Standard builds (Full, Minified, Beta, Dev) bundle FFmpeg, which is why they're bigger. The "32" builds (Full32, Minified32, Beta32, Dev32) and FOSS drop FFmpeg to stay small. All builds are universal APKs and run on every architecture. See the section below for the full explanation.
 
 ### Why are the Full builds so big? (FFmpeg)
 
@@ -91,12 +91,13 @@ FFmpeg is one of the largest media libraries in existence. Even the slim "audio-
 
 | Build | Size | FFmpeg |
 | --- | --- | --- |
-| Full / FOSS | ≈ 140 MB | ✅ (all supported architectures) |
+| Full | ≈ 140 MB | ✅ (all supported architectures) |
 | Minified | ≈ 111 MB | ✅ (all supported architectures, R8-shrunk) |
 | Full32 | ≈ 62 MB | ❌ |
 | Minified32 | ≈ 34 MB | ❌ (R8-shrunk) |
+| FOSS | ≈ 62 MB | ❌ |
 
-The entire ~78 MB gap between Full and Full32 is FFmpeg, nothing else differs.
+The entire ~77 MB gap between Full and Full32 is FFmpeg, nothing else differs.
 
 **Why a fork (ffmpeg-kit-16KB)?**
 
@@ -104,11 +105,11 @@ The original FFmpegKit was officially retired by its author (no more releases, p
 
 **What you lose on `*32` builds**
 
-Dropping FFmpeg is what keeps the `*32` builds small (≈ 62 MB instead of ≈ 140 MB). The trade-off: **no Media Export, no Metadata Editor** (those menu entries simply don't appear) and no `library.ffmpeg` feature for the Desktop Compagnon. Everything else works the same. Note that the standard builds are universal and run on 32-bit devices too, so choosing a `*32` build is purely a download-size decision.
+Dropping FFmpeg is what keeps the `*32` builds (and FOSS) small (≈ 62 MB instead of ≈ 140 MB). The trade-off: **no Media Export, no Metadata Editor** (those menu entries simply don't appear) and no `library.ffmpeg` feature for the Desktop Compagnon. Everything else works the same. Note that the standard builds are universal and run on 32-bit devices too, so choosing a `*32` or FOSS build is purely a download-size decision.
 
 **Why the base app is still ≈ 62 MB**
 
-N-Zik is a fork, and it carries the legacy codebase of its ancestors (Kreate, RiMusic, ViMusic): a lot of features that were never designed for a small APK. Even without FFmpeg, the base app (Kotlin/Java code + resources) is ≈ 62 MB, and a meaningful part of it is legacy that can only be removed slowly, feature by feature, without breaking the app. I'm the sole maintainer, working on this in my spare time: keeping the app stable and reducing its size are real, ongoing priorities, not something that gets forgotten. If download size matters more to you than features, the `*32` builds are the lightest option, and the alternative clients listed at the top are worth a look.
+N-Zik is a fork, and it carries the legacy codebase of its ancestors (Kreate, RiMusic, ViMusic): a lot of features that were never designed for a small APK. Even without FFmpeg, the base app (Kotlin/Java code + resources) is ≈ 62 MB, and a meaningful part of it is legacy that can only be removed slowly, feature by feature, without breaking the app. I'm the sole maintainer, working on this in my spare time: keeping the app stable and reducing its size are real, ongoing priorities, not something that gets forgotten. If download size matters more to you than features, the `*32` and FOSS builds are the lightest option, and the alternative clients listed at the top are worth a look.
 
 ---
 

@@ -392,11 +392,11 @@ jobs:
             - **Full32**: Complete build without FFmpeg (universal APK, runs on every architecture).  
             - **Minified**: Lightweight build, recommended for low-end devices (universal APK, runs on every architecture).
             - **Minified32**: Lightweight build without FFmpeg (universal APK, runs on every architecture).
-            - **FOSS** (`com.nevar.nzik.foss`): Full build without auto-updater, suitable for alternative stores (universal APK, runs on every architecture).
+            - **FOSS** (`com.nevar.nzik.foss`): Full build without auto-updater and without FFmpeg (universal APK, runs on every architecture).
 
-            > ℹ️ Standard builds (Full, Minified, FOSS) bundle FFmpeg, which is why they're bigger. The "32" builds (Full32, Minified32) drop FFmpeg (and Media Export). All builds are universal APKs and run on every architecture.
+            > ℹ️ Standard builds (Full, Minified) bundle FFmpeg, which is why they're bigger. The "32" builds (Full32, Minified32) and FOSS drop FFmpeg (and Media Export). All builds are universal APKs and run on every architecture.
 
-            > ⚖️ **Why are the standard builds bigger?** They bundle **FFmpeg** for every architecture (≈ 77 MB of native audio libraries, the entire gap between Full and Full32). FFmpeg powers **Media Export** (export cached/downloaded songs with full metadata + cover art) and the in-app **Metadata Editor**, and it is *not* used for regular playback. Sizes on v8.4.0: Full ≈ 140 MB, Minified ≈ 111 MB, Full32 ≈ 62 MB, Minified32 ≈ 34 MB. The `*32` builds drop FFmpeg to stay small, so they don't include those two features. The base app (≈ 62 MB without FFmpeg) is inherited legacy code from upstream forks; reducing it is ongoing work by a single maintainer in spare time. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
+            > ⚖️ **Why are the standard builds bigger?** They bundle **FFmpeg** for every architecture (≈ 77 MB of native audio libraries, the entire gap between Full and Full32). FFmpeg powers **Media Export** (export cached/downloaded songs with full metadata + cover art) and the in-app **Metadata Editor**, and it is *not* used for regular playback. Typical sizes: Full ≈ 140 MB, Minified ≈ 111 MB, Full32 ≈ 62 MB, Minified32 ≈ 34 MB, FOSS ≈ 62 MB. The `*32` builds and FOSS drop FFmpeg to stay small, so they don't include those two features. The base app (≈ 62 MB without FFmpeg) is inherited legacy code from upstream forks; reducing it is ongoing work by a single maintainer in spare time. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
 
             ## 🔄 Update Policy
             
@@ -481,11 +481,11 @@ jobs:
             - **Full32**: Complete build without FFmpeg (universal APK, runs on every architecture).  
             - **Minified**: Lightweight build, recommended for low-end devices (universal APK, runs on every architecture).
             - **Minified32**: Lightweight build without FFmpeg (universal APK, runs on every architecture).
-            - **FOSS** (`com.nevar.nzik.foss`): Full build without auto-updater, suitable for alternative stores (universal APK, runs on every architecture).
+            - **FOSS** (`com.nevar.nzik.foss`): Full build without auto-updater and without FFmpeg (universal APK, runs on every architecture).
 
-            > ℹ️ Standard builds (Full, Minified, FOSS) bundle FFmpeg, which is why they're bigger. The "32" builds (Full32, Minified32) drop FFmpeg (and Media Export). All builds are universal APKs and run on every architecture.
+            > ℹ️ Standard builds (Full, Minified) bundle FFmpeg, which is why they're bigger. The "32" builds (Full32, Minified32) and FOSS drop FFmpeg (and Media Export). All builds are universal APKs and run on every architecture.
 
-            > ⚖️ **Why are the standard builds bigger?** They bundle **FFmpeg** for every architecture (≈ 77 MB of native audio libraries, the entire gap between Full and Full32). FFmpeg powers **Media Export** (export cached/downloaded songs with full metadata + cover art) and the in-app **Metadata Editor**, and it is *not* used for regular playback. Sizes on v8.4.0: Full ≈ 140 MB, Minified ≈ 111 MB, Full32 ≈ 62 MB, Minified32 ≈ 34 MB. The `*32` builds drop FFmpeg to stay small, so they don't include those two features. The base app (≈ 62 MB without FFmpeg) is inherited legacy code from upstream forks; reducing it is ongoing work by a single maintainer in spare time. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
+            > ⚖️ **Why are the standard builds bigger?** They bundle **FFmpeg** for every architecture (≈ 77 MB of native audio libraries, the entire gap between Full and Full32). FFmpeg powers **Media Export** (export cached/downloaded songs with full metadata + cover art) and the in-app **Metadata Editor**, and it is *not* used for regular playback. Typical sizes: Full ≈ 140 MB, Minified ≈ 111 MB, Full32 ≈ 62 MB, Minified32 ≈ 34 MB, FOSS ≈ 62 MB. The `*32` builds and FOSS drop FFmpeg to stay small, so they don't include those two features. The base app (≈ 62 MB without FFmpeg) is inherited legacy code from upstream forks; reducing it is ongoing work by a single maintainer in spare time. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
 
             ## 🔄 Update Policy
 
