@@ -62,10 +62,10 @@
 
 ## 📦 Available Builds
 
-- **Full** & **Beta**: Complete build with all components, runs on every architecture (universal APK, ≈ 140 MB on v8.4.0).
-- **Full32** & **Beta32**: Complete build without FFmpeg, runs on every architecture (universal APK, ≈ 62 MB on v8.4.0).
-- **Minified**: Lightweight build, recommended for low-end devices, runs on every architecture (universal APK, ≈ 111 MB on v8.4.0).
-- **Minified32**: Lightweight build without FFmpeg, runs on every architecture (universal APK, ≈ 34 MB on v8.4.0).
+- **Full** & **Beta**: Complete build with all components, runs on every architecture (universal APK, ≈ 140 MB).
+- **Full32** & **Beta32**: Complete build without FFmpeg, runs on every architecture (universal APK, ≈ 62 MB).
+- **Minified**: Lightweight build, recommended for low-end devices, runs on every architecture (universal APK, ≈ 111 MB).
+- **Minified32**: Lightweight build without FFmpeg, runs on every architecture (universal APK, ≈ 34 MB).
 - **FOSS** (`com.nevar.nzik.foss`): Full build without auto-updater **and without FFmpeg**, suitable for alternative stores, runs on every architecture (universal APK, ≈ 62 MB).
 - **Dev** & **Dev32**: Development builds from latest commits, for testing only, runs on every architecture (universal APK, Dev ≈ 140 MB, Dev32 ≈ 62 MB).
 
@@ -85,9 +85,9 @@ Regular playback, streaming and downloading do *not* run through FFmpeg (that's 
 
 **Why it adds ~77 MB to the APK**
 
-FFmpeg is one of the largest media libraries in existence. Even the slim "audio-only" variant we ship carries the full audio codec stack (AAC, Opus, Vorbis, MP3, FLAC, AMR, ALAC, …), container parsers and demuxers, which is exactly why export and tag editing keep working no matter what a file's real format turns out to be. FFmpeg ships as **native compiled code**, and Android requires native `.so` libraries to be stored **uncompressed** inside the APK, so their full size lands 1:1 in your download. N-Zik's standard builds are **universal APKs**: FFmpeg is bundled for `arm64-v8a` (≈ 24 MB), `armeabi-v7a` (≈ 23 MB) and `x86_64` (≈ 30 MB), which is **≈ 77 MB** of native libraries in total on v8.4.0.
+FFmpeg is one of the largest media libraries in existence. Even the slim "audio-only" variant we ship carries the full audio codec stack (AAC, Opus, Vorbis, MP3, FLAC, AMR, ALAC, …), container parsers and demuxers, which is exactly why export and tag editing keep working no matter what a file's real format turns out to be. FFmpeg ships as **native compiled code**, and Android requires native `.so` libraries to be stored **uncompressed** inside the APK, so their full size lands 1:1 in your download. N-Zik's standard builds are **universal APKs**: FFmpeg is bundled for `arm64-v8a` (≈ 24 MB), `armeabi-v7a` (≈ 23 MB) and `x86_64` (≈ 30 MB), which is **≈ 77 MB** of native libraries in total.
 
-**Real sizes (v8.4.0)**
+**Real sizes**
 
 | Build | Size | FFmpeg |
 | --- | --- | --- |

@@ -254,7 +254,7 @@ jobs:
 
             > ℹ️ The Full (BETA) build bundles FFmpeg, which is why it's bigger. The "Beta32" build drops FFmpeg. Both builds are universal APKs and run on every architecture.
 
-            > ⚖️ **Why is the Full (BETA) build bigger?** It bundles **FFmpeg** for every architecture (≈ 77 MB of native audio libraries, the entire gap between Full (BETA) and Beta32). FFmpeg powers **Media Export** and the in-app **Metadata Editor**, and it is *not* used for regular playback. Sizes: Full (BETA) ≈ 140 MB, Beta32 ≈ 62 MB. **Beta32** drops FFmpeg to stay small, so it doesn't include those two features. The base app is inherited legacy code from upstream; reducing its size is ongoing work by a single maintainer in spare time. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
+            > ⚖️ **Why is the Full (BETA) build bigger?** The *only* difference between Full (BETA) (≈ 140 MB) and Beta32 (≈ 62 MB) is **FFmpeg**: ≈ 77 MB of native audio libraries bundled for every architecture. It is **not** used for regular playback, streaming or downloads: it only powers **Media Export** and the in-app **Metadata Editor**. **Beta32** drops FFmpeg to stay small and doesn't include those two features. The rest (≈ 62 MB) is the code and resources inherited from upstream, trimmed gradually by a single maintainer. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
 
             ## 🔄 Update Policy
 
@@ -354,7 +354,7 @@ jobs:
 
             > ℹ️ The Full (BETA) build bundles FFmpeg, which is why it's bigger. The "Beta32" build drops FFmpeg. Both builds are universal APKs and run on every architecture.
 
-            > ⚖️ **Why is the Full (BETA) build bigger?** It bundles **FFmpeg** for every architecture (≈ 77 MB of native audio libraries, the entire gap between Full (BETA) and Beta32). FFmpeg powers **Media Export** and the in-app **Metadata Editor**, and it is *not* used for regular playback. Sizes: Full (BETA) ≈ 140 MB, Beta32 ≈ 62 MB. **Beta32** drops FFmpeg to stay small, so it doesn't include those two features. The base app is inherited legacy code from upstream; reducing its size is ongoing work by a single maintainer in spare time. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
+            > ⚖️ **Why is the Full (BETA) build bigger?** The *only* difference between Full (BETA) (≈ 140 MB) and Beta32 (≈ 62 MB) is **FFmpeg**: ≈ 77 MB of native audio libraries bundled for every architecture. It is **not** used for regular playback, streaming or downloads: it only powers **Media Export** and the in-app **Metadata Editor**. **Beta32** drops FFmpeg to stay small and doesn't include those two features. The rest (≈ 62 MB) is the code and resources inherited from upstream, trimmed gradually by a single maintainer. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
 
             ## 🔄 Update Policy
 
