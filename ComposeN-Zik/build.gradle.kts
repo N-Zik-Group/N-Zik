@@ -439,6 +439,10 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    // Robolectric + Compose dialog tests are heap-heavy (per-SDK environment
+    // accumulation in the test worker); the default 512 MB worker ceiling
+    // caused OutOfMemoryError in the heaviest classes (DialogOverflowTest).
+    maxHeapSize = "1g"
 }
 
 tasks.register("assembleFossRelease") {

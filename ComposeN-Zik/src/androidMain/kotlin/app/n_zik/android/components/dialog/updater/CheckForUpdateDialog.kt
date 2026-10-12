@@ -140,7 +140,8 @@ object CheckForUpdateDialog {
                 Icon(
                     painter = painterResource(R.drawable.arrow_left),
                     contentDescription = null,
-                    tint = colorPalette().accent,
+                    // Danger language: white on the filled-red cancel row.
+                    tint = Color.White,
                     modifier = Modifier.size(24.dp)
                 )
             }

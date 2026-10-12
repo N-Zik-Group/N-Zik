@@ -61,11 +61,12 @@ data class DialogButton(
  * Overflow-safe row of pill buttons — the single source of all dialog
  * buttons (issue #896).
  *
- * Every present button gets an equally weighted cell, so all pills stay
- * visible and tappable on any screen width and any locale: a short label
- * is a small pill centered in its cell, a label wider than the cell is
- * bounded to it and scrolled (continuous marquee, same pattern as
- * [CheckboxDialog]).
+ * Every present button gets an equally weighted cell, and every labelled
+ * pill fills its cell (the old n_zik ConfirmDialog distribution,
+ * `weight(1f)`), so all pills stay visible and tappable on any screen
+ * width and any locale: a label wider than the pill is bounded to it and
+ * scrolled (continuous marquee, same pattern as [CheckboxDialog]). An
+ * icon-only button renders a small pill centered in its cell instead.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -82,20 +83,13 @@ fun ButtonRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         buttons.forEach { button ->
+            val iconOnly = button.icon != null && button.text.isEmpty()
             Box(
                 modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.Center
             ) {
                 Row(
-                    modifier = Modifier
-                        .clip(uiRoundnessShape())
-                        .background(
-                            if (button.primary) palette.accent
-                            else if (button.danger) palette.red
-                            else palette.background2
-                        )
-                        .clickable(enabled = button.enabled, onClick = button.onClick)
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    modifier = pillModifier(button, palette),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     button.icon?.let { iconRes ->
@@ -105,27 +99,44 @@ fun ButtonRow(
                             tint = resolvedColor(button, palette),
                             modifier = Modifier.size(16.dp)
                         )
-                        if (button.text.isNotEmpty()) {
+                        if (!iconOnly) {
                             Spacer(modifier = Modifier.width(6.dp))
                         }
                     }
-                    BasicText(
-                        text = button.text,
-                        maxLines = 1,
-                        style = (if (button.primary) typography().xs.semiBold else typography().xs.medium)
-                            .copy(
-                                color = resolvedColor(button, palette),
-                                textAlign = TextAlign.Center
-                            ),
-                        modifier = Modifier
-                            .weight(1f)
-                            .basicMarquee(iterations = Int.MAX_VALUE)
-                    )
+                    // The weighted label makes the pill fill its cell; without it
+                    // (icon-only) the pill wraps its content and stays centered.
+                    if (!iconOnly) {
+                        BasicText(
+                            text = button.text,
+                            maxLines = 1,
+                            style = (if (button.primary) typography().xs.semiBold else typography().xs.medium)
+                                .copy(
+                                    color = resolvedColor(button, palette),
+                                    textAlign = TextAlign.Center
+                                ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .basicMarquee(iterations = Int.MAX_VALUE)
+                        )
+                    }
                 }
             }
         }
     }
 }
+
+/** The pill surface of every [DialogButton]: rounded clip, role fill, tap and padding. */
+@Composable
+private fun pillModifier(button: DialogButton, palette: ColorPalette) =
+    Modifier
+        .clip(uiRoundnessShape())
+        .background(
+            if (button.primary) palette.accent
+            else if (button.danger) palette.red
+            else palette.background2
+        )
+        .clickable(enabled = button.enabled, onClick = button.onClick)
+        .padding(horizontal = 16.dp, vertical = 10.dp)
 
 private fun resolvedColor(button: DialogButton, palette: ColorPalette): Color =
     button.textColor ?: when {
