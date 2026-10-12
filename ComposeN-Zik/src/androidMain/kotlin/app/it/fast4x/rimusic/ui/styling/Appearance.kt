@@ -99,7 +99,8 @@ data class Appearance(
             val artistThumbRadius = when (val shape = value.artistThumbnailShape) {
                 is RoundedCornerShape -> {
                     val size = shape.topStart
-                    if (size is BoundedCornerSize) size.dp.value else 12f
+                    // Artist default (48f, matching restore), not the song default (12f).
+                    if (size is BoundedCornerSize) size.dp.value else 48f
                 }
                 else -> 48f // For CircleShape
             }

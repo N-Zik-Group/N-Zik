@@ -313,6 +313,21 @@ class TolerantStateSaversTest {
         }
 
         @Test
+        @Suppress("UNCHECKED_CAST") // the unchecked cast is on saveIn's erased `S?` (S = Any) return, not on save()'s declared `List<Any>`
+        fun `save encodes the artist default for a pure Dp (non-Bounded) artist shape`() {
+            // A pure-Dp RoundedCornerShape is not a BoundedCornerSize, so save() must fall back
+            // to the artist default (48f, matching restore) instead of the song default (12f).
+            // Round-trip consequence: 48f is at/above the circle threshold, so restore
+            // normalizes the radius back to CircleShape (same note as the sibling test above).
+            val variant = appearance.copy(
+                artistThumbnailShape = RoundedCornerShape(12.dp),
+            )
+            val saved = requireNotNull(Appearance.Companion.saveIn(scope, variant)) as List<Any>
+
+            assertEquals(48f, saved[4])
+        }
+
+        @Test
         fun `a truncated list payload falls back per element without exception`() {
             val saver = TolerantAppearanceStateSaver(fallback = { appearance })
             val restored = saver.restore(crashPayload).value
