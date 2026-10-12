@@ -1405,6 +1405,7 @@
 <string name="state_radio_on_discover">Radio started (Filters known songs and add new discoveries)</string>
 <string name="state_radio_on_classic">Radio started (Includes known songs and new discoveries)</string>
 <string name="state_radio_off">Radio stopped (Return to normal)</string>
+<string name="state_radio_fetch_error">Radio: no songs loaded (Queue kept)</string>
 <string name="state_discover_on">Discover mode ON (Filters known songs and add new discoveries)</string>
 <string name="state_discover_off">Discover mode OFF (Includes known songs and new discoveries)</string>
 <string name="state_reminder_discover">Reminder: Discover mode is still active</string>

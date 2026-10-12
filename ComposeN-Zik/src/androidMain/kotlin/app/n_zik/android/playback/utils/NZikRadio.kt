@@ -20,9 +20,11 @@ import app.it.fast4x.rimusic.enums.DislikeMode
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.NavigationEndpoint
 import it.fast4x.innertube.requests.nextPage
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -35,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.util.fastMap
 import app.it.fast4x.rimusic.utils.forcePlay
 import app.it.fast4x.rimusic.utils.mediaItems
+import timber.log.Timber
 
 @OptIn(UnstableApi::class)
 class NZikRadio(
@@ -46,7 +49,15 @@ class NZikRadio(
         private set
 
     private var radioJob: Job? = null
-    
+
+    /**
+     * Test seam (issue #880): the dispatcher the fetch job runs on. Overridden with an
+     * `UnconfinedTestDispatcher()` in `NZikRadioTest` so the fetch runs to completion
+     * deterministically on the test thread instead of racing the real `NzikDispatchers.DATA`
+     * pool (same pattern as [Shuffler.backgroundDispatcher]). No public API.
+     */
+    internal var fetchDispatcher: CoroutineDispatcher = NzikDispatchers.DATA
+
     private var reminderShown = false
     
     // Tracks if radio is currently fetching data (to prevent double-fetching)
@@ -110,8 +121,13 @@ class NZikRadio(
             return
         }
         if (isExplicit) {
-            // Toggle OFF if already active on the exact same song
-            if (isRadioActive && binder.player.currentMediaItem?.mediaId == mediaItem.mediaId) {
+            // Issue #880 (scene 2): the "Stop radio" label is global on every entry point, so an
+            // explicit tap while the radio is active stops it UNCONDITIONALLY on the first tap —
+            // regardless of which song was tapped (the current one or another) and even when
+            // `currentMediaItem` is null. The previous mediaId equality check only stopped the
+            // radio for the current song; tapping "Stop radio" from any other song re-started the
+            // radio on that song instead (two-tap stop, wrong queue).
+            if (isRadioActive) {
                 stopRadio(showToast = true)
                 return
             }
@@ -135,7 +151,13 @@ class NZikRadio(
             binder.player.forcePlay(mediaItem)
         }
 
-        fetchAndInject(mediaItem.mediaId, endpoint?.playlistId, append)
+        fetchAndInject(
+            mediaItem.mediaId,
+            endpoint?.playlistId,
+            append,
+            isExplicit,
+            if (isExplicit) "explicit start" else "implicit start"
+        )
     }
 
     fun stopRadio(showToast: Boolean = false) {
@@ -171,7 +193,7 @@ class NZikRadio(
         val currentMediaItem = binder.player.currentMediaItem ?: return
         
         // AutoFill: Silent fetch (No toast)
-        fetchAndInject(currentMediaItem.mediaId, null, append = true)
+        fetchAndInject(currentMediaItem.mediaId, null, append = true, source = "auto-fill")
     }
 
     fun showReminderIfNeeded() {
@@ -196,8 +218,14 @@ class NZikRadio(
         }
     }
 
-    private fun fetchAndInject(videoId: String, initialPlaylistId: String?, append: Boolean) {
-        radioJob = coroutineScope.launch(NzikDispatchers.DATA) {
+    private fun fetchAndInject(
+        videoId: String,
+        initialPlaylistId: String?,
+        append: Boolean,
+        isExplicit: Boolean = false,
+        source: String = "start"
+    ) {
+        radioJob = coroutineScope.launch(fetchDispatcher) {
             isLoading = true
             
             var playlistId = initialPlaylistId
@@ -224,6 +252,17 @@ class NZikRadio(
             }
 
             if (mediaItems.isEmpty()) {
+                // Liveness guard: a stopRadio() cancel that lands after the fetch returned must
+                // not let this stale job trace or reset isLoading — resetting the flag would
+                // defeat the double-fetch guard of the job that replaces it (two concurrent
+                // fetches could both inject).
+                if (!coroutineContext.isActive) return@launch
+                // Issue #880: a pre-filter empty fetch (Innertube error or legitimately empty
+                // page) must be traced — the queue is left intact and nothing is injected. The
+                // auto-fill retries at the next non-repeat track transition only while the
+                // queue has >1 item (no transition, no retry, on an exhausted 1-item queue;
+                // with the radio OFF the AutoFill setting must be enabled as well).
+                traceEmptyFetch(videoId, playlistId, isExplicit, source, "the Innertube fetch came back empty")
                 isLoading = false
                 return@launch
             }
@@ -236,12 +275,79 @@ class NZikRadio(
             // 3. Filter Discover and Deduplicate
             val filteredItems = discoverFilter(mediaItems)
 
+            if (filteredItems.isEmpty()) {
+                // Liveness guard: same as the pre-filter branch — a stale canceled job must not
+                // trace or reset isLoading after a stop.
+                if (!coroutineContext.isActive) return@launch
+                // Issue #880 (EMPTY_AFTER_FILTERS): the discover/dislike filters removed every
+                // song — same trace policy as a pre-filter empty fetch: no trim, nothing
+                // injected; toast only for explicit starts (a silent retry happens at the next
+                // non-repeat track transition only while the queue has >1 item).
+                traceEmptyFetch(videoId, playlistId, isExplicit, source, "the discover/dislike filters removed every song")
+                isLoading = false
+                return@launch
+            }
+
+            // Liveness guard: same as the empty branches — a stopRadio() cancel that lands after
+            // the last suspension must not let this stale job inject into the queue.
+            if (!coroutineContext.isActive) return@launch
+
             // 4. Inject into Player
             withContext(NzikDispatchers.UI) {
                 injectIntoPlayer(filteredItems, append)
             }
 
             isLoading = false
+        }
+    }
+
+    /**
+     * Trace policy for an empty radio fetch (issue #880), shared by the pre-filter empty fetch
+     * and the list emptied by the discover/dislike filters:
+     *
+     * - a `Timber.tag("NZikRadio")` log carrying the fetch identity (videoId/playlistId) and the
+     *   path it came from ([source]). The radio-state claim is path-aware, because it is NOT
+     *   uniformly "the radio stays ON": an explicit start leaves the radio ON; an implicit start
+     *   (`quick picks`, `search`) runs `stopRadio()` first, so the radio is OFF; an auto-fill
+     *   leaves the radio as the caller set it. The retry is CONDITIONAL, not a promise: it
+     *   happens at the next NON-REPEAT track transition only while the queue has >1 item
+     *   (`PlayerServiceModern.loadFromRadio` calls `autoFillQueue()` only on non-repeat
+     *   transitions and when `mediaItemCount > 1`), and with the radio OFF (implicit start)
+     *   auto-fill runs at all only when the AutoFill (auto-continue) setting is enabled
+     *   (`autoFillQueue` guard `!isRadioActive && !isAutoFillEnabled`) — an exhausted 1-item
+     *   queue (the forcePlay case) produces no transition and never retries; hence no
+     *   unconditional "the radio will retry" wording here or in the user-facing toast.
+     * - the queue left intact — no trim, nothing injected;
+     * - a `state_radio_fetch_error` toast ONLY when the fetch came from an explicit start
+     *   (`isExplicit = true`). Implicit paths (quick picks, search) and [autoFillQueue] stay
+     *   silent ("Silent fetch (No toast)") — a repeated empty playlist must not spam a toast on
+     *   every track transition. The toast is dispatched on the UI dispatcher: Toaster's API is
+     *   @MainThread-annotated and this function runs on the fetch dispatcher (DATA pool) —
+     *   the Timber log stays on the fetch thread.
+     */
+    private suspend fun traceEmptyFetch(videoId: String, playlistId: String?, isExplicit: Boolean, source: String, reason: String) {
+        val radioOutcome = when (source) {
+            "explicit start" ->
+                "radio stays ON; auto-fill retries at the next non-repeat track transition only while the queue has >1 item"
+            "auto-fill" ->
+                "silent fetch (no toast), radio left as the caller set it; retries at the next non-repeat track transition only while the queue has >1 item"
+            else ->
+                "silent fetch (no toast), the implicit start stopped the radio first; a retry needs the AutoFill (auto-continue) setting enabled, the next non-repeat track transition, and the queue to have >1 item"
+        }
+        Timber.tag("NZikRadio").e(
+            "Radio fetch is empty (videoId=%s, playlistId=%s, source=%s): %s — queue left intact, %s",
+            videoId,
+            playlistId,
+            source,
+            reason,
+            radioOutcome
+        )
+        if (isExplicit) {
+            // Toaster's toast API is @MainThread — the fetch job runs on the DATA pool, so hop
+            // to the UI dispatcher for the toast.
+            withContext(NzikDispatchers.UI) {
+                Toaster.e(R.string.state_radio_fetch_error)
+            }
         }
     }
 
@@ -294,14 +400,22 @@ class NZikRadio(
 
     @MainThread
     private fun injectIntoPlayer(items: List<MediaItem>, append: Boolean) {
+        // Issue #880: nothing to inject -> the remaining queue must be left intact (no trim, no
+        // injection). The trace (Timber log, toast for explicit starts) happens in
+        // fetchAndInject before this call.
+        if (items.isEmpty()) return
+
         val player = binder.player
         val curIndex = player.currentMediaItemIndex
         val endIndex = player.mediaItemCount
-        
+
         if (!append && player.mediaItemCount > 1) {
-            // Replace remaining queue
+            // Replace remaining queue (issue #880 scene 1): move the current song to the front,
+            // then remove everything AFTER it. The previous `removeMediaItems(curIndex + 1,
+            // endIndex)` left the list songs BEFORE the current song in the queue, so they
+            // played before the radio.
             player.moveMediaItem(curIndex, 0)
-            player.removeMediaItems(curIndex + 1, endIndex)
+            player.removeMediaItems(1, endIndex)
         }
 
         player.addMediaItems(items)
