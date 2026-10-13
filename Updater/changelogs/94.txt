@@ -1,0 +1,19 @@
+Added:
+- PC bridge: the connected PC's library goes live — every change on the phone (like, download, queue, counters, a sort-menu edit, an import) refreshes the PC's loaded lists, the phone's sort menus travel to the PC with their per-chip content and order, and the phone's effective Home Songs toolbar does too.
+- PC bridge: the phone's effective UI language travels to the PC (pair in French and the PC switches to French, a later phone language change is followed on reconnect) — an explicit choice is served as-is and "System" is served as the resolved OS locale.
+- PC bridge: full-list queue commands — the PC names a whole list (tab or collection) and an action (play / shuffle / next / end) and the phone runs it with its own entry points and filters; whole-list locate, the phone's UI settings on the wire, every phone toast relayed to the PC, playWhenReady, and the like state re-sampled so a like from the PC or the phone reaches the other side at once.
+- PC bridge: every track now carries its "in playlist" state on every library read and on the queue, and the Songs tab's smart-shuffle recommendations are available to the PC.
+- Discord RPC: a configurable refresh interval — a "Refresh interval" slider (2 to 60 s, default 5 s) in the Discord advanced options, hot-applied on the very next tick with no presence reset.
+
+Changed:
+- The rewind filter default is now All (was Month) — an unwritten (or corrupt) setting reads All with the All group first, a value already persisted on a device is unchanged.
+- The PC bridge wire is slimmer: the phone stops serving the PC's former UI-sync fields (language, sort menu, toolbar, cache text cap) — the wire keeps only its data + topN, and an older PC client keeps pairing (every removed field has a default or is nullable).
+
+Fixed:
+- In-app updater: every 32-bit and dev flavor now gets the right release, asset and label — dev/dev32 share the dated dev tag, beta/beta32 the shared beta tag, a 32-bit user is never pointed at a 64-bit APK; the dev "Download again last update" no longer 404s and the GitHub button opens the release matching the shown version.
+- In-app updater: a failed or non-newer re-check never leaves a stale "update available" visible (the release is cleared up front and published only once its APK resolved); disabling the beta toggle now actually drops a pending beta update, and the About "Check for updates" card honors the beta toggle.
+- Radio (issue https://github.com/N-Zik-Group/N-Zik/issues/880): the stop works on the first tap from any song (it used to need two taps, or re-start the radio on the tapped song), a start from a list really replaces the queue, and an empty radio fetch keeps the queue — silent on implicit paths, traced on explicit ones.
+- Dialogs (issue https://github.com/N-Zik-Group/N-Zik/issues/896): every dialog is centralized on the shared helper with one consistent button language (filled red cancel, gray secondaries, accent primary) — the portrait button-row overflow is gone (Reset / Cancel / OK no longer wrap and the OK pill stays on-screen), and tall content scrolls under the 80 % height cap instead of pushing the buttons off.
+- Discord RPC: the album artwork is no longer re-uploaded on every refresh tick — a same-song tick reuses the already-resolved asset (no more flash, no image-less fallback while the second phase is slow).
+- Artist thumbnail roundness is no longer masked by the song clip — the visible radius follows the artist setting alone (48 = circle, 12 = rounded, 0 = square).
+- The "Start radio" menu button no longer appears under "Management" for a local song without FFmpeg.
