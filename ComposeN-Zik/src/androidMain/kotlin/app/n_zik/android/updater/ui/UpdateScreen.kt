@@ -71,10 +71,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import app.kreate.android.me.knighthat.utils.Repository
+import app.n_zik.android.updater.models.UpdateEndpoints
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
-import app.it.fast4x.rimusic.enums.CheckUpdateState
+import app.n_zik.android.updater.models.CheckUpdateState
 import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.styling.ModernBlackColorPalette
@@ -118,10 +118,8 @@ fun UpdateScreen(navController: NavController) {
 
     // Update Preferences
     var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Enabled)
-    val currentSuffix = Updater.githubRelease?.tagName?.let {
-        Updater.extractVersionSuffix(it)
-    } ?: Updater.extractVersionSuffix(BuildConfig.VERSION_NAME)
-    var checkBetaUpdates by rememberPreference(checkBetaUpdatesKey, currentSuffix == UpdaterConstants.SUFFIX_CHAR_BETA)
+    // Beta-family flavors (beta/beta32) start with the beta channel enabled
+    var checkBetaUpdates by rememberPreference(checkBetaUpdatesKey, Updater.isBetaFamily(BuildConfig.VERSION_NAME))
 
     var otherLanguageApp by rememberPreference(otherLanguageAppUpdateKey, Languages.System)
     val appLang = Locale.getDefault().language
@@ -161,21 +159,16 @@ fun UpdateScreen(navController: NavController) {
     val newVersion = Updater.getDisplayVersion()
     val hasUpdate = Updater.githubRelease != null && Updater.isVersionNewer(Updater.githubRelease?.tagName ?: "", BuildConfig.VERSION_NAME)
     val currentVersion = BuildConfig.VERSION_NAME
-    val currentBuildTypeLabel = stringResource(
-        when (Updater.extractBuildType(currentVersion)) {
-            UpdaterConstants.TYPE_BETA -> R.string.beta_title
-            UpdaterConstants.TYPE_MINIFIED -> R.string.minified_title
-            else -> R.string.stable_title
-        }
-    )
-    val updateBuildTypeLabel = stringResource(
-        when (Updater.extractBuildType(newVersion)) {
-            UpdaterConstants.TYPE_BETA -> R.string.beta_title
-            UpdaterConstants.TYPE_MINIFIED -> R.string.minified_title
-            else -> R.string.stable_title
-        }
-    )
-    val fileSize = try { Updater.build.readableSize } catch (_: Exception) { "" }
+    val isFoss = BuildConfig.BUILD_TYPE.equals("foss", ignoreCase = true)
+    val currentLabel = Updater.flavorLabel(currentVersion, isFoss) ?: Updater.FlavorLabel(R.string.full_title)
+    val currentBuildTypeLabel = if (currentLabel.literal != null) currentLabel.literal
+    else stringResource(currentLabel.resId) + if (currentLabel.append32) " 32" else ""
+    val updateLabel = Updater.flavorLabel(newVersion, isFoss) ?: Updater.FlavorLabel(R.string.full_title)
+    val updateBuildTypeLabel = if (updateLabel.literal != null) updateLabel.literal
+    else stringResource(updateLabel.resId) + if (updateLabel.append32) " 32" else ""
+    // Only shown while an update is actually selected — Updater.build may keep
+    // a previously found APK after a failed re-check (githubRelease is cleared)
+    val fileSize = if (hasUpdate) try { Updater.build.readableSize } catch (_: Exception) { "" } else ""
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -434,14 +427,14 @@ fun UpdateScreen(navController: NavController) {
                                     modifier = Modifier
                                         .weight(1f)
                                         .clip(uiRoundnessShape()).clickable {
-                                            val rawVersion = if (hasUpdate) newVersion else currentVersion
-                                            val cleanVersion = rawVersion.removePrefix("v")
-                                            val tag = if (Updater.extractBuildType(cleanVersion) == UpdaterConstants.TYPE_BETA) {
-                                                "v$cleanVersion"
-                                            } else {
-                                                "v${cleanVersion.substringBefore('-')}"
-                                            }
-                                            uriHandler.openUri("${Repository.REPO_URL}/releases/tag/$tag")
+                                            // Prefer the actual release tag when the target release is
+                                            // known, so the link always points to an existing release
+                                            // (dev tags carry a dated suffix that cannot be guessed)
+                                            // hasUpdate guarantees a non-null githubRelease, so the
+                                            // elvis below only applies on the no-update path
+                                            val tag = (if (hasUpdate) Updater.githubRelease?.tagName else null)
+                                                ?: Updater.releaseTag(currentVersion)
+                                            uriHandler.openUri("${UpdateEndpoints.REPO_URL}/releases/tag/$tag")
                                         },
                                     colors = CardDefaults.cardColors(containerColor = colorPalette().background1),
                                     shape = uiRoundnessShape(),
@@ -534,8 +527,12 @@ fun UpdateScreen(navController: NavController) {
                                         onDismissRequest = { showMenu = false }
                                     )
 
-                                    val isMinified = Updater.extractVersionSuffix(BuildConfig.VERSION_NAME) == UpdaterConstants.SUFFIX_CHAR_MINIFIED
-                                    if (!isMinified) {
+                                    // The beta toggle only makes sense for flavors that can receive
+                                    // beta updates (full/full32/beta/beta32); the minified and dev
+                                    // families never receive beta updates
+                                    val showBetaToggle = !Updater.isMinifiedFamily(BuildConfig.VERSION_NAME) &&
+                                        !Updater.isDevFamily(BuildConfig.VERSION_NAME)
+                                    if (showBetaToggle) {
                                         menu.add(
                                             DropdownMenu.Item(
                                                 iconId = R.drawable.shield_checkmark,
@@ -563,10 +560,7 @@ fun UpdateScreen(navController: NavController) {
                                         }
                                     )
                                     val currentVersionStr = BuildConfig.VERSION_NAME
-                                    val tagVersion = if (currentVersionStr.endsWith(UpdaterConstants.SUFFIX_BETA)) currentVersionStr else currentVersionStr.removePrefix(UpdaterConstants.PREFIX_VERSION).substringBefore("-")
-                                    val buildType = try { Updater.extractBuildType(currentVersionStr) } catch(e: Exception) { UpdaterConstants.TYPE_FULL }
-                                    val apkName = "${BuildConfig.APP_NAME}-$buildType.apk"
-                                    val currentDownloadUrl = "${Repository.RELEASE_DOWNLOAD_URL}$tagVersion/$apkName"
+                                    val currentDownloadUrl = Updater.redownloadUrl(BuildConfig.APP_NAME, currentVersionStr)
                                     
                                     menu.add(
                                         DropdownMenu.Item(

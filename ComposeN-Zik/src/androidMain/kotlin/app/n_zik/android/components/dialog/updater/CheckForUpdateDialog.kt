@@ -33,10 +33,9 @@ import app.it.fast4x.rimusic.utils.checkBetaUpdatesKey
 import app.it.fast4x.rimusic.utils.checkUpdateStateKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
-import app.it.fast4x.rimusic.enums.CheckUpdateState
+import app.n_zik.android.updater.models.CheckUpdateState
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.uiRoundnessShape
-import app.n_zik.android.updater.models.UpdaterConstants
 import app.n_zik.android.updater.services.Updater
 
 object CheckForUpdateDialog {
@@ -55,7 +54,7 @@ object CheckForUpdateDialog {
         if (isCanceled || !isActive) return
 
         var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Enabled)
-        val checkBetaUpdates by rememberPreference(checkBetaUpdatesKey, Updater.extractVersionSuffix(BuildConfig.VERSION_NAME) == UpdaterConstants.SUFFIX_BETA.removePrefix("-"))
+        val checkBetaUpdates by rememberPreference(checkBetaUpdatesKey, Updater.isBetaFamily(BuildConfig.VERSION_NAME))
 
         DialogFrame(onDismiss = { onDismiss() }) {
             // Header with title

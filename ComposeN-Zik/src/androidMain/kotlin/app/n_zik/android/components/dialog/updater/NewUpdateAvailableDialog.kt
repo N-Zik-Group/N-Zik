@@ -67,6 +67,11 @@ object NewUpdateAvailableDialog {
         if( isCancelled || !isActive ) return
 
         DialogFrame(onDismiss = { onDismiss() }) {
+            val updateVersion = Updater.getDisplayVersion()
+            val updateLabelModel = Updater.flavorLabel(updateVersion) ?: Updater.FlavorLabel(R.string.full_title)
+            val updateLabel = if (updateLabelModel.literal != null) updateLabelModel.literal
+            else stringResource(updateLabelModel.resId) + if (updateLabelModel.append32) " 32" else ""
+
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
@@ -82,12 +87,12 @@ object NewUpdateAvailableDialog {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 BasicText(
-                    text = "${stringResource(Updater.getBuildTypeStringRes())} ${stringResource(R.string.update_available)}",
+                    text = "$updateLabel ${stringResource(R.string.update_available)}",
                     style = typography().l.bold.copy(color = colorPalette().text)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 BasicText(
-                    text = stringResource(R.string.app_update_dialog_version, Updater.getDisplayVersion()),
+                    text = stringResource(R.string.app_update_dialog_version, updateVersion),
                     style = typography().xs.copy(color = colorPalette().textSecondary)
                 )
                 BasicText(

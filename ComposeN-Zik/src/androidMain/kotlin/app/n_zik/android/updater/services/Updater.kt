@@ -21,7 +21,7 @@ import androidx.compose.ui.util.fastFirstOrNull
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.appContext
-import app.it.fast4x.rimusic.enums.CheckUpdateState
+import app.n_zik.android.updater.models.CheckUpdateState
 import app.it.fast4x.rimusic.ui.components.themed.SecondaryTextButton
 import app.it.fast4x.rimusic.ui.screens.settings.EnumValueSelectorSettingsEntry
 import app.it.fast4x.rimusic.ui.screens.settings.SettingsDescription
@@ -35,7 +35,7 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import app.kreate.android.me.knighthat.utils.Repository
+import app.n_zik.android.updater.models.UpdateEndpoints
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import okhttp3.Request
@@ -53,19 +53,25 @@ object Updater {
     var isFetchingChangelog by mutableStateOf(false)
     var latestChangelog: String? by mutableStateOf(null)
     var currentChangelog: String? by mutableStateOf(null)
-    var latestVersionCode: Int? = null
-    private lateinit var tagName: String
+    /**
+     * The APK selected for the current user. Set together with [githubRelease]
+     * in `fetchUpdate` (only after a successful asset extraction), so [build]
+     * is only valid while [githubRelease] is non-null.
+     */
     lateinit var build: GithubRelease.Build
     var githubRelease: GithubRelease? by mutableStateOf(null)
 
     /**
      * Extracts the build type from version string
-     * e.g., "1.0.0-f" returns "full", "1.0.0-b" returns "beta"
+     * e.g., "1.0.0-f" returns "full", "1.0.0-beta32" returns "beta",
+     * "1.0.0-m32" returns "minified", "1.0.0-dev32-20261013" returns "dev"
      */
     fun extractBuildType(versionStr: String): String {
         return when {
-            versionStr.endsWith(UpdaterConstants.SUFFIX_BETA) -> UpdaterConstants.TYPE_BETA
-            versionStr.endsWith(UpdaterConstants.SUFFIX_MINIFIED) -> UpdaterConstants.TYPE_MINIFIED
+            versionStr.endsWith(UpdaterConstants.SUFFIX_BETA) ||
+                versionStr.endsWith(UpdaterConstants.SUFFIX_BETA32) -> UpdaterConstants.TYPE_BETA
+            versionStr.endsWith(UpdaterConstants.SUFFIX_MINIFIED) ||
+                versionStr.endsWith(UpdaterConstants.SUFFIX_MINIFIED32) -> UpdaterConstants.TYPE_MINIFIED
             versionStr.contains(UpdaterConstants.SUFFIX_DEV) -> UpdaterConstants.TYPE_DEV
             else -> UpdaterConstants.TYPE_FULL
         }
@@ -73,7 +79,8 @@ object Updater {
 
     /**
      * Extracts the version suffix from version string
-     * e.g., "1.0.0-f" returns "f", "1.0.0-b" returns "b"
+     * e.g., "1.0.0-f" returns "f", "1.0.0-beta32" returns "beta32",
+     * "1.0.0-dev-20261013" returns "dev"
      */
     fun extractVersionSuffix(versionStr: String): String {
         val parts = versionStr.removePrefix(UpdaterConstants.PREFIX_VERSION).split("-")
@@ -81,67 +88,258 @@ object Updater {
     }
 
     /**
-     * Returns the string resource ID for the build type label
-     * based on the selected build's APK filename.
-     * e.g., "N-Zik-beta.apk" -> R.string.beta_title
+     * Returns true for the dev build family — both the "dev" and "dev32"
+     * flavors, which share the same dev releases and release tags.
      */
-    fun getBuildTypeStringRes(): Int {
-        if (!::build.isInitialized) return R.string.stable_title
+    fun isDevFamily(versionStr: String): Boolean {
+        val suffix = extractVersionSuffix(versionStr)
+        return suffix == UpdaterConstants.SUFFIX_CHAR_DEV ||
+            suffix == UpdaterConstants.SUFFIX_CHAR_DEV32
+    }
+
+    /**
+     * Returns true for the minified build family — "minified" and "minified32".
+     */
+    fun isMinifiedFamily(versionStr: String): Boolean {
+        val suffix = extractVersionSuffix(versionStr)
+        return suffix == UpdaterConstants.SUFFIX_CHAR_MINIFIED ||
+            suffix == UpdaterConstants.SUFFIX_CHAR_MINIFIED32
+    }
+
+    /**
+     * Returns true for the beta build family — "beta" and "beta32".
+     */
+    fun isBetaFamily(versionStr: String): Boolean {
+        val suffix = extractVersionSuffix(versionStr)
+        return suffix == UpdaterConstants.SUFFIX_CHAR_BETA ||
+            suffix == UpdaterConstants.SUFFIX_CHAR_BETA32
+    }
+
+    /**
+     * Returns the GitHub release tag matching the given version string.
+     *
+     * Dev tags carry a dated suffix that is part of the tag itself, so the
+     * full version name is kept. Dev32 builds share the dev release, so their
+     * suffix is mapped back to the dev tag. Beta keeps its full tag, beta32
+     * maps to the shared beta tag, other flavors use the base version.
+     * e.g., "8.4.0-dev-20261013" returns "v8.4.0-dev-20261013",
+     * "8.4.0-dev32-20261013" returns "v8.4.0-dev-20261013",
+     * "8.4.0-dev32" (undated, not producible by the build) returns "v8.4.0-dev",
+     * "8.4.0-beta32" returns "v8.4.0-beta", "8.4.0-f" returns "v8.4.0"
+     */
+    fun releaseTag(versionStr: String): String {
+        val clean = versionStr.removePrefix(UpdaterConstants.PREFIX_VERSION)
         return when {
-            build.name.contains(UpdaterConstants.TYPE_BETA, ignoreCase = true) -> R.string.beta_title
-            build.name.contains(UpdaterConstants.TYPE_MINIFIED, ignoreCase = true) -> R.string.minified_title
-            build.name.contains(UpdaterConstants.TYPE_DEV, ignoreCase = true) -> R.string.dev_title
-            else -> R.string.stable_title
+            isDevFamily(clean) -> {
+                // Dated dev32 shares the dated dev tag; an undated dev32 is not
+                // producible (the build always appends the date) but is mapped to
+                // the undated shared dev tag instead of the non-existent
+                // "-dev32" tag. Any other dev version is kept as-is.
+                val tag = when {
+                    clean.contains(UpdaterConstants.SUFFIX_DEV32 + "-") ->
+                        clean.replaceFirst(UpdaterConstants.SUFFIX_DEV32 + "-", UpdaterConstants.SUFFIX_DEV + "-")
+                    clean.endsWith(UpdaterConstants.SUFFIX_DEV32) -> clean.removeSuffix("32")
+                    else -> clean
+                }
+                UpdaterConstants.PREFIX_VERSION + tag
+            }
+            clean.endsWith(UpdaterConstants.SUFFIX_BETA32) -> UpdaterConstants.PREFIX_VERSION +
+                clean.removeSuffix("32")
+            clean.endsWith(UpdaterConstants.SUFFIX_BETA) -> UpdaterConstants.PREFIX_VERSION + clean
+            else -> UpdaterConstants.PREFIX_VERSION + clean.substringBefore("-")
         }
     }
 
     /**
-     * Returns the version suffix (-b, -m, -f) based on the selected build.
+     * Returns the APK asset name hosted on the GitHub release matching the
+     * given version, e.g. "N-Zik-dev32.apk" for the dev32 flavor or
+     * "N-Zik-full32.apk" for the full32 flavor.
+     */
+    fun assetName(appName: String, versionStr: String): String {
+        val build = when (extractVersionSuffix(versionStr)) {
+            UpdaterConstants.SUFFIX_CHAR_DEV32 -> UpdaterConstants.TYPE_DEV32
+            UpdaterConstants.SUFFIX_CHAR_FULL32 -> UpdaterConstants.TYPE_FULL32
+            UpdaterConstants.SUFFIX_CHAR_MINIFIED32 -> UpdaterConstants.TYPE_MINIFIED32
+            UpdaterConstants.SUFFIX_CHAR_BETA32 -> UpdaterConstants.TYPE_BETA32
+            else -> extractBuildType(versionStr)
+        }
+        return "$appName-$build.apk"
+    }
+
+    /**
+     * The flavor label shared by the header badge, the About badge, the
+     * updater screen and the new-update popup — one source of truth so the
+     * same build reads the same everywhere (FULL / FULL 32, MINIFIED /
+     * MINIFIED 32, BETA / BETA 32, DEV / DEV 32, plus FOSS and DEBUG).
+     *
+     * [resId] carries the localized label (0 when [literal] is used),
+     * [append32] asks the caller to append the " 32" marker, and [literal]
+     * is a fixed text ("FOSS", or an unknown suffix uppercased).
+     */
+    data class FlavorLabel(
+        val resId: Int = 0,
+        val append32: Boolean = false,
+        val literal: String? = null
+    )
+
+    /**
+     * Returns the flavor label for the given version name, or null when the
+     * version carries no suffix (badges stay hidden, label consumers fall
+     * back to the full label).
+     *
+     * The foss build type always yields the fixed "FOSS" text. Both version
+     * names ("8.4.0-f32") and display versions ("v8.4.0-f32", the input the
+     * updater screen and popup derive) work.
+     */
+    fun flavorLabel(versionName: String, isFoss: Boolean = false): FlavorLabel? {
+        if (isFoss) return FlavorLabel(literal = "FOSS")
+        val suffix = extractVersionSuffix(versionName)
+        if (suffix.isEmpty()) return null
+        return when (suffix) {
+            UpdaterConstants.SUFFIX_CHAR_FULL -> FlavorLabel(R.string.full_title)
+            UpdaterConstants.SUFFIX_CHAR_MINIFIED -> FlavorLabel(R.string.minified_title)
+            UpdaterConstants.SUFFIX_CHAR_DEV -> FlavorLabel(R.string.dev_title)
+            UpdaterConstants.SUFFIX_CHAR_BETA -> FlavorLabel(R.string.beta_title)
+            UpdaterConstants.SUFFIX_CHAR_FULL32 -> FlavorLabel(R.string.full_title, append32 = true)
+            UpdaterConstants.SUFFIX_CHAR_MINIFIED32 -> FlavorLabel(R.string.minified_title, append32 = true)
+            UpdaterConstants.SUFFIX_CHAR_BETA32 -> FlavorLabel(R.string.beta_title, append32 = true)
+            UpdaterConstants.SUFFIX_CHAR_DEV32 -> FlavorLabel(R.string.dev_title, append32 = true)
+            "debug" -> FlavorLabel(R.string.debug_title)
+            else -> FlavorLabel(literal = suffix.uppercase())
+        }
+    }
+
+    /**
+     * Returns the GitHub download URL of the APK matching the given version
+     * (release tag + asset name).
+     *
+     * [UpdateEndpoints.RELEASE_DOWNLOAD_URL] already carries the "v" prefix, so the
+     * tag is appended without it.
+     */
+    fun redownloadUrl(appName: String, versionStr: String): String {
+        val tag = releaseTag(versionStr).removePrefix(UpdaterConstants.PREFIX_VERSION)
+        return "${UpdateEndpoints.RELEASE_DOWNLOAD_URL}$tag/${assetName(appName, versionStr)}"
+    }
+
+    /**
+     * Returns the changelog URL for the given version: dev-family builds
+     * (dev + dev32) share a single "dev.txt", every other flavor uses its
+     * version code.
+     */
+    fun currentChangelogUrl(versionCode: Int, versionStr: String): String {
+        return if (isDevFamily(versionStr)) {
+            "${UpdateEndpoints.CHANGELOGS_URL}/dev.txt"
+        } else {
+            "${UpdateEndpoints.CHANGELOGS_URL}/$versionCode.txt"
+        }
+    }
+
+    /**
+     * Returns the version suffix (-beta/-beta32, -m/-m32, -f/-f32) based on
+     * the selected build, keeping the 32-bit marker when the APK is 32-bit.
      */
     fun getBuildSuffix(): String {
         if (!::build.isInitialized) return UpdaterConstants.SUFFIX_FULL
+        // Anchor on the extension: asset names are "…-<type>32.apk", a bare
+        // "32" substring could otherwise match unrelated future names
+        val is32Bit = build.name.endsWith("32.apk", ignoreCase = true)
         return when {
-            build.name.contains(UpdaterConstants.TYPE_BETA, ignoreCase = true) -> UpdaterConstants.SUFFIX_BETA
-            build.name.contains(UpdaterConstants.TYPE_MINIFIED, ignoreCase = true) -> UpdaterConstants.SUFFIX_MINIFIED
-            build.name.contains(UpdaterConstants.TYPE_DEV, ignoreCase = true) -> UpdaterConstants.SUFFIX_DEV
-            else -> UpdaterConstants.SUFFIX_FULL
+            build.name.contains(UpdaterConstants.TYPE_BETA, ignoreCase = true) ->
+                if (is32Bit) UpdaterConstants.SUFFIX_BETA32 else UpdaterConstants.SUFFIX_BETA
+            build.name.contains(UpdaterConstants.TYPE_MINIFIED, ignoreCase = true) ->
+                if (is32Bit) UpdaterConstants.SUFFIX_MINIFIED32 else UpdaterConstants.SUFFIX_MINIFIED
+            build.name.contains(UpdaterConstants.TYPE_DEV, ignoreCase = true) ->
+                if (is32Bit) UpdaterConstants.SUFFIX_DEV32 else UpdaterConstants.SUFFIX_DEV
+            else -> if (is32Bit) UpdaterConstants.SUFFIX_FULL32 else UpdaterConstants.SUFFIX_FULL
         }
     }
 
     /**
      * Returns the display version with suffix, avoiding duplication.
-     * e.g., tagName="v4.1.3-b" returns "v4.1.3-b" (not "v4.1.3-b-b")
-     * e.g., tagName="v4.1.3" returns "v4.1.3-b" (suffix added)
+     * Release tags carry the base 64-bit suffix ("-beta", "-dev") but never
+     * the 32-bit marker, so the base suffix is swapped for the 32-bit one
+     * instead of appended (appending would duplicate it).
+     * e.g., tagName="v8.4.0-beta", build=N-Zik-beta32.apk returns "v8.4.0-beta32"
+     * e.g., tagName="v8.4.0-dev-20261013", build=N-Zik-dev32.apk returns "v8.4.0-dev32-20261013"
+     * e.g., tagName="v8.4.0" returns "v8.4.0-f" (suffix added)
      */
     fun getDisplayVersion(): String {
         val tag = githubRelease?.tagName ?: return BuildConfig.VERSION_NAME
         val suffix = getBuildSuffix()
-        // Avoid duplicating the suffix if tagName already contains it
-        return if (tag.endsWith(suffix)) tag else "$tag$suffix"
+        val baseSuffix = when (suffix) {
+            UpdaterConstants.SUFFIX_BETA32 -> UpdaterConstants.SUFFIX_BETA
+            UpdaterConstants.SUFFIX_MINIFIED32 -> UpdaterConstants.SUFFIX_MINIFIED
+            UpdaterConstants.SUFFIX_FULL32 -> UpdaterConstants.SUFFIX_FULL
+            UpdaterConstants.SUFFIX_DEV32 -> UpdaterConstants.SUFFIX_DEV
+            else -> suffix
+        }
+        return when {
+            // Tag already carries the exact suffix
+            tag.contains(suffix) -> tag
+            // 32-bit flavor: the tag carries the base suffix -> swap in the 32 marker
+            baseSuffix != suffix && tag.contains(baseSuffix) -> tag.replaceFirst(baseSuffix, suffix)
+            // Plain tag (e.g. stable "v8.4.0") -> append the suffix
+            else -> "$tag$suffix"
+        }
     }
 
-    private fun extractBuild(assets: List<GithubRelease.Build>, checkBetaUpdates: Boolean = false): GithubRelease.Build {
-        val appName = BuildConfig.APP_NAME
-        val currentBuildType = extractBuildType(BuildConfig.VERSION_NAME)
-        val currentSuffix = extractVersionSuffix(BuildConfig.VERSION_NAME)
-
-        // Determine which build types to look for based on current build and beta preferences
-        val targetBuildTypes = when {
+    /**
+     * The APK build types a user on [currentVersion] can install, in
+     * priority order, given their beta preference.
+     *
+     * Shared by [extractBuild] (asset selection) and [findBestRelease]
+     * (releases must ship at least one of these assets). Empty for unknown
+     * flavors — [extractBuild] then falls back to the base build type.
+     * Visible for testing (see `UpdaterReleaseTagTest`).
+     */
+    internal fun targetBuildTypes(
+        currentVersion: String,
+        checkBetaUpdates: Boolean
+    ): List<String> {
+        val currentSuffix = extractVersionSuffix(currentVersion)
+        return when {
             // Dev users: check only dev
             currentSuffix == UpdaterConstants.SUFFIX_CHAR_DEV -> listOf(UpdaterConstants.TYPE_DEV)
+            // Dev32 users: same dev releases, dev32 asset
+            currentSuffix == UpdaterConstants.SUFFIX_CHAR_DEV32 -> listOf(UpdaterConstants.TYPE_DEV32)
             // Full users with beta enabled: check beta and full
             currentSuffix == UpdaterConstants.SUFFIX_CHAR_FULL && checkBetaUpdates -> listOf(UpdaterConstants.TYPE_BETA, UpdaterConstants.TYPE_FULL)
             // Full users with beta disabled: check only full
             currentSuffix == UpdaterConstants.SUFFIX_CHAR_FULL && !checkBetaUpdates -> listOf(UpdaterConstants.TYPE_FULL)
+            // Full32 users: same channels, 32-bit assets
+            currentSuffix == UpdaterConstants.SUFFIX_CHAR_FULL32 && checkBetaUpdates -> listOf(UpdaterConstants.TYPE_BETA32, UpdaterConstants.TYPE_FULL32)
+            currentSuffix == UpdaterConstants.SUFFIX_CHAR_FULL32 && !checkBetaUpdates -> listOf(UpdaterConstants.TYPE_FULL32)
             // Beta users with beta enabled: check beta and full
             currentSuffix == UpdaterConstants.SUFFIX_CHAR_BETA && checkBetaUpdates -> listOf(UpdaterConstants.TYPE_BETA, UpdaterConstants.TYPE_FULL)
             // Beta users with beta disabled: check only full
             currentSuffix == UpdaterConstants.SUFFIX_CHAR_BETA && !checkBetaUpdates -> listOf(UpdaterConstants.TYPE_FULL)
+            // Beta32 users: same channels, 32-bit assets
+            currentSuffix == UpdaterConstants.SUFFIX_CHAR_BETA32 && checkBetaUpdates -> listOf(UpdaterConstants.TYPE_BETA32, UpdaterConstants.TYPE_FULL32)
+            currentSuffix == UpdaterConstants.SUFFIX_CHAR_BETA32 && !checkBetaUpdates -> listOf(UpdaterConstants.TYPE_FULL32)
             // Minified users: check only minified
             currentSuffix == UpdaterConstants.SUFFIX_CHAR_MINIFIED -> listOf(UpdaterConstants.TYPE_MINIFIED)
-            // Default: empty list to trigger fallback error
+            // Minified32 users: same channel, 32-bit asset
+            currentSuffix == UpdaterConstants.SUFFIX_CHAR_MINIFIED32 -> listOf(UpdaterConstants.TYPE_MINIFIED32)
+            // Default: unknown flavor — extractBuild falls back to the base type
             else -> emptyList()
         }
+    }
+
+    /**
+     * Visible for testing: selects the APK build matching the current flavor
+     * from a release's assets (see `UpdaterReleaseTagTest`).
+     */
+    internal fun extractBuild(
+        assets: List<GithubRelease.Build>,
+        checkBetaUpdates: Boolean = false,
+        currentVersion: String = BuildConfig.VERSION_NAME
+    ): GithubRelease.Build {
+        val appName = BuildConfig.APP_NAME
+        val currentBuildType = extractBuildType(currentVersion)
+        val currentSuffix = extractVersionSuffix(currentVersion)
+
+        // Determine which build types to look for based on current build and beta preferences
+        val targetBuildTypes = targetBuildTypes(currentVersion, checkBetaUpdates)
 
         // Try to find the best matching build
         for (buildType in targetBuildTypes) {
@@ -152,15 +350,26 @@ object Updater {
             }
         }
 
-        // Fallback to the original logic
-        val fileName = "$appName-$currentBuildType.apk"
+        // Fallback to the original logic — 32-aware, so a 32-bit user is
+        // never pointed at a 64-bit APK (the base type name would be
+        // un-installable on a 32-bit-only device)
+        val fallbackType = when (currentSuffix) {
+            UpdaterConstants.SUFFIX_CHAR_FULL32 -> UpdaterConstants.TYPE_FULL32
+            UpdaterConstants.SUFFIX_CHAR_MINIFIED32 -> UpdaterConstants.TYPE_MINIFIED32
+            UpdaterConstants.SUFFIX_CHAR_BETA32 -> UpdaterConstants.TYPE_BETA32
+            UpdaterConstants.SUFFIX_CHAR_DEV32 -> UpdaterConstants.TYPE_DEV32
+            else -> currentBuildType
+        }
+        val fileName = "$appName-$fallbackType.apk"
         val fallbackBuild = assets.fastFirstOrNull {
             it.name == fileName
         }
         
         if (fallbackBuild != null) {
+            Timber.tag("Updater").w("No targeted build found, falling back to $fileName")
             return fallbackBuild
         } else {
+            Timber.tag("Updater").w("No matching build found (tried target list + $fileName)")
             throw NoSuchFileException("")
         }
     }
@@ -216,8 +425,15 @@ object Updater {
             "Cannot run fetch update on main thread"
         }
 
+        // Clear any previously found release so a failed fetch or a no-update
+        // result never leaves a stale update visible to the UI
+        this@Updater.githubRelease = null
+        // Same for the previous release's changelog — a new release without a
+        // changelog link must not keep showing the old one
+        latestChangelog = null
+
         // Get all releases to find the best one
-        val url = "${Repository.GITHUB_API}/repos/${Repository.REPO}/releases"
+        val url = UpdateEndpoints.RELEASES_API_URL
         val request = Request.Builder().url(url).build()
         val response = NetworkClientFactory.getClient().newCall(request).execute()
 
@@ -241,17 +457,21 @@ object Updater {
         val bestRelease = findBestRelease(releases, checkBetaUpdates)
         
         if (bestRelease != null) {
-            this@Updater.githubRelease = bestRelease
+            // Only publish the release once its APK resolved successfully, so a
+            // failed extraction (e.g. a 32-bit user whose best release ships no
+            // 32-bit asset) reports "no update" instead of a stale or
+            // undeliverable one
             build = extractBuild(bestRelease.builds, checkBetaUpdates)
-            tagName = bestRelease.tagName
+            this@Updater.githubRelease = bestRelease
 
             try {
-                val isDevRelease = bestRelease.tagName.contains(UpdaterConstants.SUFFIX_CHAR_DEV)
+                val isDevRelease = isDevFamily(bestRelease.tagName)
                 
                 if (isDevRelease) {
-                    // Dev builds use a single generic changelog file
+                    // Dev builds use a single generic changelog file (the
+                    // version code is irrelevant for the dev family)
                     isFetchingChangelog = true
-                    val downloadUrl = "${Repository.CHANGELOGS_URL}/dev.txt"
+                    val downloadUrl = currentChangelogUrl(BuildConfig.VERSION_CODE, bestRelease.tagName)
                     val txtReq = Request.Builder().url(downloadUrl).build()
                     val txtRes = NetworkClientFactory.getClient().newCall(txtReq).execute()
                     if (txtRes.isSuccessful) {
@@ -259,14 +479,13 @@ object Updater {
                     }
                 } else {
                     // Stable/beta: find the exact version code linked in the release body
-                    val regex = """${Repository.CHANGELOGS_PATH}/(\d+)\.txt""".toRegex()
+                    val regex = """${UpdateEndpoints.CHANGELOGS_PATH}/(\d+)\.txt""".toRegex()
                     val match = regex.find(bestRelease.body)
                     
                     if (match != null) {
                         isFetchingChangelog = true
                         val versionCodeStr = match.groupValues[1]
-                        latestVersionCode = versionCodeStr.toIntOrNull()
-                        val downloadUrl = "${Repository.CHANGELOGS_URL}/$versionCodeStr.txt"
+                        val downloadUrl = "${UpdateEndpoints.CHANGELOGS_URL}/$versionCodeStr.txt"
                         
                         val txtReq = Request.Builder().url(downloadUrl).build()
                         val txtRes = NetworkClientFactory.getClient().newCall(txtReq).execute()
@@ -291,13 +510,7 @@ object Updater {
     fun fetchCurrentChangelog() = NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
         try {
             isFetchingChangelog = true
-            val versionCode = BuildConfig.VERSION_CODE
-            val isDev = extractVersionSuffix(BuildConfig.VERSION_NAME) == UpdaterConstants.SUFFIX_CHAR_DEV
-            val downloadUrl = if (isDev) {
-                "${Repository.CHANGELOGS_URL}/dev.txt"
-            } else {
-                "${Repository.CHANGELOGS_URL}/$versionCode.txt"
-            }
+            val downloadUrl = currentChangelogUrl(BuildConfig.VERSION_CODE, BuildConfig.VERSION_NAME)
             
             val txtReq = Request.Builder().url(downloadUrl).build()
             val txtRes = NetworkClientFactory.getClient().newCall(txtReq).execute()
@@ -308,7 +521,7 @@ object Updater {
                     // Cache the changelog locally
                     appContext().preferences.edit()
                         .putString(CHANGELOG_CACHE_KEY, fetchedChangelog)
-                        .putInt(CHANGELOG_VERSION_KEY, versionCode)
+                        .putInt(CHANGELOG_VERSION_KEY, BuildConfig.VERSION_CODE)
                         .apply()
                 }
             }
@@ -339,32 +552,64 @@ object Updater {
     /**
      * Finds the best release based on current version and beta preferences
      */
-    private fun findBestRelease(releases: List<GithubRelease>, checkBetaUpdates: Boolean): GithubRelease? {
-        val currentVersion = BuildConfig.VERSION_NAME
+    // Visible for testing (see `UpdaterReleaseTagTest`)
+    internal fun findBestRelease(
+        releases: List<GithubRelease>,
+        checkBetaUpdates: Boolean,
+        currentVersion: String = BuildConfig.VERSION_NAME
+    ): GithubRelease? {
         val currentSuffix = extractVersionSuffix(currentVersion)
-        
+
+        // Surface flavors the matching branches below do not know about
+        // (e.g. debug), instead of silently defaulting to full releases
+        val knownFlavor = currentSuffix.isEmpty() ||
+            isDevFamily(currentVersion) ||
+            isMinifiedFamily(currentVersion) ||
+            isBetaFamily(currentVersion) ||
+            currentSuffix == UpdaterConstants.SUFFIX_CHAR_FULL ||
+            currentSuffix == UpdaterConstants.SUFFIX_CHAR_FULL32
+        if (!knownFlavor) {
+            Timber.tag("Updater").w("Unknown version suffix '$currentSuffix', defaulting to full releases")
+        }
+
+        // Assets this user can actually install (empty for unknown flavors —
+        // the legacy release matching is kept for those)
+        val installableAssets = targetBuildTypes(currentVersion, checkBetaUpdates)
+            .map { "${BuildConfig.APP_NAME}-$it.apk" }
+
         // Filter releases based on current build type and beta preferences
         val eligibleReleases = releases.filter { release ->
             val releaseSuffix = extractVersionSuffix(release.tagName)
-            
-            when {
-                // Dev users: only accept dev releases
-                currentSuffix == UpdaterConstants.SUFFIX_CHAR_DEV -> releaseSuffix.startsWith(UpdaterConstants.SUFFIX_CHAR_DEV)
-                // Full users with beta enabled: accept both beta and full
-                currentSuffix == UpdaterConstants.SUFFIX_CHAR_FULL && checkBetaUpdates -> releaseSuffix == "" || releaseSuffix == UpdaterConstants.SUFFIX_BETA.removePrefix("-")
-                // Full users with beta disabled: only accept full
-                currentSuffix == UpdaterConstants.SUFFIX_CHAR_FULL && !checkBetaUpdates -> releaseSuffix == ""
-                // Beta users with beta enabled: accept both beta and full
-                currentSuffix == UpdaterConstants.SUFFIX_CHAR_BETA && checkBetaUpdates -> releaseSuffix == UpdaterConstants.SUFFIX_BETA.removePrefix("-") || releaseSuffix == ""
-                // Beta users with beta disabled: only accept full
-                currentSuffix == UpdaterConstants.SUFFIX_CHAR_BETA && !checkBetaUpdates -> releaseSuffix == ""
-                // Minified users: only accept minified
-                currentSuffix == UpdaterConstants.SUFFIX_MINIFIED.removePrefix("-") -> releaseSuffix == ""
+
+            val channelOk = when {
+                // Dev users (dev + dev32): only accept dev releases
+                isDevFamily(currentVersion) -> releaseSuffix.startsWith(UpdaterConstants.SUFFIX_CHAR_DEV)
+                // Full users (full + full32) with beta enabled: accept both beta and full
+                currentSuffix in listOf(UpdaterConstants.SUFFIX_CHAR_FULL, UpdaterConstants.SUFFIX_CHAR_FULL32) && checkBetaUpdates -> releaseSuffix == "" || releaseSuffix == UpdaterConstants.SUFFIX_BETA.removePrefix("-")
+                // Full users (full + full32) with beta disabled: only accept full
+                currentSuffix in listOf(UpdaterConstants.SUFFIX_CHAR_FULL, UpdaterConstants.SUFFIX_CHAR_FULL32) && !checkBetaUpdates -> releaseSuffix == ""
+                // Beta users (beta + beta32) with beta enabled: accept both beta and full
+                isBetaFamily(currentVersion) && checkBetaUpdates -> releaseSuffix == UpdaterConstants.SUFFIX_BETA.removePrefix("-") || releaseSuffix == ""
+                // Beta users (beta + beta32) with beta disabled: only accept full
+                isBetaFamily(currentVersion) && !checkBetaUpdates -> releaseSuffix == ""
+                // Minified users (minified + minified32): only accept full releases (minified assets ship in full releases)
+                isMinifiedFamily(currentVersion) -> releaseSuffix == ""
                 // Default case: only accept full releases
                 else -> releaseSuffix == ""
             }
+
+            // Skip releases that ship none of the user's installable assets
+            // (e.g. a 32-bit user facing a beta release published without the
+            // matching 32-bit asset, or a docs-only release) — the user then
+            // falls back to the best release that does ship one. Unknown
+            // flavors have no installable list, so the legacy behavior (any
+            // release passes) is kept for them.
+            val shipsInstallableAsset = installableAssets.isEmpty() ||
+                release.builds.any { it.name in installableAssets }
+
+            channelOk && shipsInstallableAsset
         }
-        
+
         if (eligibleReleases.isEmpty()) return null
         
         // Find the release with the highest version number
@@ -391,9 +636,9 @@ object Updater {
             
             // For dev releases, add the date as a fractional bonus
             // Dev tag format: "v7.3.2-dev-20260806"
-            val dateBonus = if (currentSuffix == UpdaterConstants.SUFFIX_CHAR_DEV) {
+            val dateBonus = if (isDevFamily(currentVersion)) {
                 val dateStr = release.tagName.split("-").lastOrNull()?.toLongOrNull() ?: 0L
-                dateStr  // e.g., 20260806 — enough to排序 by date
+                dateStr  // e.g., 20260806 — enough to sort by date
             } else {
                 0L
             }
@@ -421,12 +666,11 @@ object Updater {
                 fetchUpdate(checkBetaUpdates)
             }
 
-            // Check if the new version is actually newer
-            val hasUpdate = if (::tagName.isInitialized) {
-                isVersionNewer(tagName, BuildConfig.VERSION_NAME)
-            } else {
-                false
-            }
+            // Check if the new version is actually newer (githubRelease is only
+            // set once a release AND a downloadable APK were found)
+            val hasUpdate = githubRelease?.let {
+                isVersionNewer(it.tagName, BuildConfig.VERSION_NAME)
+            } ?: false
             
             if (showDialog) {
                 NewUpdateAvailableDialog.isActive = hasUpdate
@@ -468,7 +712,7 @@ object Updater {
     @Composable
     fun SettingEntry() {
         var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Enabled)
-        var checkBetaUpdates by rememberPreference(checkBetaUpdatesKey, extractVersionSuffix(BuildConfig.VERSION_NAME) == UpdaterConstants.SUFFIX_CHAR_BETA)
+        var checkBetaUpdates by rememberPreference(checkBetaUpdatesKey, isBetaFamily(BuildConfig.VERSION_NAME))
         if (!BuildConfig.IS_AUTOUPDATE)
             checkUpdateState = CheckUpdateState.Disabled
 

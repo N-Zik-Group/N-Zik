@@ -49,7 +49,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Spring
 import androidx.compose.ui.graphics.graphicsLayer
-import app.it.fast4x.rimusic.enums.CheckUpdateState
+import app.n_zik.android.updater.models.CheckUpdateState
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.PlayerPosition
 import app.n_zik.android.LocalPlayerAwareWindowInsets
@@ -383,21 +383,18 @@ fun Skeleton(
             lastVersionCode.value = BuildConfig.VERSION_CODE
         })
 
-        // Function to extract the version suffix
-        fun extractVersionSuffix(versionStr: String): String {
-            val parts = versionStr.removePrefix("v").split("-")
-            return if (parts.size > 1) parts[1] else ""
-        }
-
         val check4UpdateState by rememberPreference( checkUpdateStateKey, CheckUpdateState.Enabled )
-        val checkBetaUpdates by rememberPreference( checkBetaUpdatesKey, extractVersionSuffix(BuildConfig.VERSION_NAME) == "beta" )
+        val checkBetaUpdates by rememberPreference( checkBetaUpdatesKey, Updater.isBetaFamily(BuildConfig.VERSION_NAME) )
         
         // Reset update state when beta preferences change
         LaunchedEffect( checkBetaUpdates ) {
             if (NewUpdateAvailableDialog.isActive) {
                 // If beta preferences changed and there's an active update dialog, recheck
                 NewUpdateAvailableDialog.isCancelled = false
-                Updater.checkForUpdate(checkBetaUpdates = checkBetaUpdates)
+                // Forced: the cached build is already initialized from the
+                // previous channel, so a plain check would re-evaluate the
+                // stale release instead of re-fetching with the new channel
+                Updater.checkForUpdate(isForced = true, checkBetaUpdates = checkBetaUpdates)
             }
         }
         

@@ -48,7 +48,7 @@ import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.*
-import app.kreate.android.me.knighthat.utils.Repository
+import app.n_zik.android.updater.models.UpdateEndpoints
 import app.n_zik.android.updater.services.Updater
 import app.n_zik.android.components.dialog.updater.NewUpdateAvailableDialog
 import app.it.fast4x.rimusic.utils.rememberPreference
@@ -76,11 +76,6 @@ import java.util.Date
 @ExperimentalAnimationApi
 @Composable
 fun About(navController: NavController) {
-    // Function to extract the version suffix
-    fun extractVersionSuffix(versionStr: String): String {
-        val parts = versionStr.removePrefix("v").split("-")
-        return if (parts.size > 1) parts[1] else ""
-    }
     val uriHandler = LocalUriHandler.current
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
     
@@ -217,8 +212,11 @@ fun About(navController: NavController) {
                                     )
                                 )
                                 
-                                val currentSuffix = Updater.extractVersionSuffix(BuildConfig.VERSION_NAME)
-                                if (currentSuffix.isNotEmpty()) {
+                                val badge = Updater.flavorLabel(
+                                    BuildConfig.VERSION_NAME,
+                                    BuildConfig.BUILD_TYPE.equals("foss", ignoreCase = true)
+                                )
+                                if (badge != null) {
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Box(
                                         modifier = Modifier
@@ -228,14 +226,13 @@ fun About(navController: NavController) {
                                             )
                                             .padding(horizontal = 6.dp, vertical = 2.dp)
                                     ) {
-                                        val buildTypeRes = when (currentSuffix) {
-                                            "beta" -> R.string.beta_title
-                                            "m" -> R.string.minified_title
-                                            "dev" -> R.string.dev_title
-                                            else -> R.string.stable_title
-                                        }
+                                        // Single source of truth with the header badge
+                                        // (Updater.flavorLabel): FULL / FULL 32, MINIFIED /
+                                        // MINIFIED 32, BETA / BETA 32, DEV / DEV 32, FOSS, DEBUG
+                                        val badgeText = badge.literal
+                                            ?: stringResource(badge.resId) + if (badge.append32) " 32" else ""
                                         BasicText(
-                                            text = stringResource(buildTypeRes).uppercase(),
+                                            text = badgeText.uppercase(),
                                             style = typography().xxs.bold.copy(color = colorPalette().accent)
                                         )
                                     }
@@ -257,7 +254,7 @@ fun About(navController: NavController) {
                              modifier = Modifier
                                  .fillMaxWidth()
                                  .clip(uiRoundnessShape()).clickable {
-                                     val url = "${Repository.GITHUB}/${Repository.REAL_OWNER}"
+                                     val url = "${UpdateEndpoints.GITHUB}/${UpdateEndpoints.REAL_OWNER}"
                                      uriHandler.openUri(url)
                                  }
                          ) {
@@ -276,7 +273,7 @@ fun About(navController: NavController) {
                              )
                                  Spacer(modifier = Modifier.width(3.dp))
                              BasicText(
-                                 text = Repository.REAL_OWNER,
+                                 text = UpdateEndpoints.REAL_OWNER,
                                      style = typography().xs.secondary.copy(
                                      textDecoration = TextDecoration.Underline,
                                      color = colorPalette().accent,
@@ -408,8 +405,10 @@ fun About(navController: NavController) {
                                     .fillMaxWidth()
                                     .height(36.dp)
                                     .clip(uiRoundnessShape()).clickable {
-                                        val prefs = appContext().getSharedPreferences("settings", 0)
-                                        val checkBeta = prefs.getBoolean(checkBetaUpdatesKey, Updater.extractVersionSuffix(BuildConfig.VERSION_NAME) == "b")
+                                        // Same (profile-scoped) "preferences" file the beta toggle in
+                                        // the updater settings writes to — the legacy "settings"
+                                        // file never holds this key
+                                        val checkBeta = appContext().preferences.getBoolean(checkBetaUpdatesKey, Updater.isBetaFamily(BuildConfig.VERSION_NAME))
                                         Toaster.i(R.string.checking_for_updates)
                                         Updater.checkForUpdate(isForced = true, checkBetaUpdates = checkBeta, showDialog = false)
                                         navController.navigate(NavRoutes.updater.name)
@@ -498,7 +497,7 @@ fun About(navController: NavController) {
                         title = stringResource(R.string.view_the_source_code),
                         text = stringResource(R.string.you_will_be_redirected_to_github),
                         icon = R.drawable.github_icon,
-                        onClick = { uriHandler.openUri(Repository.REPO_URL) }
+                        onClick = { uriHandler.openUri(UpdateEndpoints.REPO_URL) }
                     )
 
                     ModernSettingsEntry(
@@ -507,7 +506,7 @@ fun About(navController: NavController) {
                         icon = R.drawable.trending,
                         onClick = {
                             val issuePath = "/issues/new?assignees=&labels=bug&template=bug_report.yaml"
-                            uriHandler.openUri(Repository.REPO_URL + issuePath)
+                            uriHandler.openUri(UpdateEndpoints.REPO_URL + issuePath)
                         }
                     )
 
@@ -517,7 +516,7 @@ fun About(navController: NavController) {
                         icon = R.drawable.star_brilliant,
                         onClick = {
                             val issuePath = "/issues/new?assignees=&labels=feature_request&template=feature_request.yaml"
-                            uriHandler.openUri(Repository.REPO_URL + issuePath)
+                            uriHandler.openUri(UpdateEndpoints.REPO_URL + issuePath)
                         }
                     )
                 }

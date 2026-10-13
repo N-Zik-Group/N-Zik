@@ -126,7 +126,10 @@ internal fun HeaderBadgeBox(
 }
 
 /**
- * Version badge of the app header (FOSS / BETA / MINIFIED / DEV + 32-bit variants).
+ * Version badge of the app header (FULL / FULL 32, MINIFIED / MINIFIED 32,
+ * BETA / BETA 32, DEV / DEV 32, FOSS, DEBUG) — rendered from
+ * `Updater.flavorLabel`, the single source of truth for flavor labels.
+ * Hidden for versions without a suffix.
  *
  * Same container and width cap as the debug badge: a label longer than "DEBUG"
  * (e.g. "MINIFIED 32") scrolls in a marquee instead of widening the header.
@@ -135,26 +138,14 @@ internal fun HeaderBadgeBox(
 fun HeaderVersionBadge(
     modifier: Modifier = Modifier
 ) {
-    val versionSuffix = Updater.extractVersionSuffix(BuildConfig.VERSION_NAME)
     val isFoss = BuildConfig.BUILD_TYPE.equals("foss", ignoreCase = true)
+    val label = Updater.flavorLabel(BuildConfig.VERSION_NAME, isFoss) ?: return
 
-    if (!isFoss && (versionSuffix.isEmpty() || versionSuffix == "f")) return
-
-    val badgeText = if (isFoss) {
-        "FOSS"
-    } else {
-        when (versionSuffix) {
-            "b" -> stringResource(R.string.beta_title)
-            "m" -> stringResource(R.string.minified_title)
-            "b32" -> "${stringResource(R.string.beta_title)} 32"
-            "m32" -> "${stringResource(R.string.minified_title)} 32"
-            "f32" -> "${stringResource(R.string.full_title)} 32"
-            "debug" -> stringResource(R.string.debug_title)
-            "dev" -> stringResource(R.string.dev_title)
-            "dev32" -> "${stringResource(R.string.dev_title)} 32"
-            else -> versionSuffix.uppercase()
-        }
-    }
+    // Single source of truth for all flavor labels (Updater.flavorLabel):
+    // FULL / FULL 32, MINIFIED / MINIFIED 32, BETA / BETA 32, DEV / DEV 32,
+    // FOSS, DEBUG
+    val badgeText = label.literal
+        ?: stringResource(label.resId) + if (label.append32) " 32" else ""
 
     HeaderBadgeBox(
         text = badgeText,

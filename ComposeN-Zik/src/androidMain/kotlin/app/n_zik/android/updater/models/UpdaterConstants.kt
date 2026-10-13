@@ -2,19 +2,31 @@ package app.n_zik.android.updater.models
 
 object UpdaterConstants {
     const val SUFFIX_FULL = "-f"
+    const val SUFFIX_FULL32 = "-f32"
     const val SUFFIX_BETA = "-beta"
+    const val SUFFIX_BETA32 = "-beta32"
     const val SUFFIX_MINIFIED = "-m"
+    const val SUFFIX_MINIFIED32 = "-m32"
     const val SUFFIX_DEV = "-dev"
+    const val SUFFIX_DEV32 = "-dev32"
 
     const val SUFFIX_CHAR_FULL = "f"
+    const val SUFFIX_CHAR_FULL32 = "f32"
     const val SUFFIX_CHAR_BETA = "beta"
+    const val SUFFIX_CHAR_BETA32 = "beta32"
     const val SUFFIX_CHAR_MINIFIED = "m"
+    const val SUFFIX_CHAR_MINIFIED32 = "m32"
     const val SUFFIX_CHAR_DEV = "dev"
+    const val SUFFIX_CHAR_DEV32 = "dev32"
 
     const val TYPE_FULL = "full"
+    const val TYPE_FULL32 = "full32"
     const val TYPE_BETA = "beta"
+    const val TYPE_BETA32 = "beta32"
     const val TYPE_MINIFIED = "minified"
+    const val TYPE_MINIFIED32 = "minified32"
     const val TYPE_DEV = "dev"
+    const val TYPE_DEV32 = "dev32"
     const val TYPE_STABLE = "stable"
 
     const val PREFIX_VERSION = "v"
