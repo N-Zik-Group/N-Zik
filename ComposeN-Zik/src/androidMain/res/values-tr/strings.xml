@@ -1405,7 +1405,7 @@
     <string name="state_radio_on_discover">Radyo başladı (Bilinen şarkıları filtreler ve yeni keşifleri ekler)</string>
     <string name="state_radio_on_classic">Radyo başladı (Bilinen şarkılar ve yeni keşifler dahil)</string>
     <string name="state_radio_off">Radyo durdu (Normal duruma geri dön)</string>
-    <string name="state_radio_fetch_error">Radio: no songs loaded (Queue kept)</string>
+    <string name="state_radio_fetch_error">Radyo: yüklenmiş şarkı yok (Kuyruk korunuyor)</string>
     <string name="state_discover_on">Keşif modu AÇIK (Bilinen şarkıları filtreler ve yeni keşifler ekler)</string>
     <string name="state_discover_off">Keşif modu KAPALI (Bilinen şarkılar ve yeni keşifler dahil)</string>
     <string name="state_reminder_discover">Hatırlatma: Keşif modu hâlâ etkin</string>
