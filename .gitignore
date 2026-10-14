@@ -37,7 +37,6 @@
 .vars
 assets/notes/Notes.txt
 
-###      BUILDS ARTIFACTS (ne jamais committer les builds)
+### BUILDS ARTIFACTS
 *.apk
 bundletool.jar
-*.mp4
