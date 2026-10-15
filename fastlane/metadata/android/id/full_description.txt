@@ -25,7 +25,7 @@ Pendengar kasual maupun audiofil, N-Zik memberi Anda kendali penuh atas musik ta
 
 💾 <b>Offline, Metadata & Privasi</b>
 - Caching cerdas dan unduhan untuk lagu dan daftar putar, kualitas unduhan dapat dipilih
-- Ekspor bertenaga FFmpeg dengan metadata lengkap (hanya 64-bit)
+- Ekspor bertenaga FFmpeg dengan metadata lengkap (hanya build standar)
 - Editor metadata dalam app (AAC/Opus, sampul album)
 - Statistik mendengarkan dan riwayat lokal
 - Cadangan otomatis dengan interval dan retensi khusus
@@ -61,9 +61,9 @@ Pendengar kasual maupun audiofil, N-Zik memberi Anda kendali penuh atas musik ta
 - Full32/Beta32: Tanpa FFmpeg (32/64-bit)
 - Minified: Ringan, untuk perangkat kelas bawah (64-bit)
 - Minified32: Ringan tanpa FFmpeg (32/64-bit)
-- FOSS: Tanpa auto-updater, untuk F-Droid (64-bit)
+- FOSS: Tanpa auto-updater dan FFmpeg, untuk F-Droid (64-bit)
 - Dev/Dev32: Build pengembangan, hanya untuk pengujian
 
-Build standar 64-bit (FFmpeg); build "32" tanpa FFmpeg untuk kedua arsitektur. Hanya FOSS yang ada di F-Droid.
+Build standar menyertakan FFmpeg; build "32" dan FOSS tidak. Hanya FOSS yang ada di F-Droid.
 
 Mulai <b>Januari 2027</b>, Google mewajibkan verifikasi identitas untuk semua pengembang. Sebagai proyek FOSS, N-Zik menentang ini. <a href="https://keepandroidopen.org">Pelajari lebih lanjut</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Tanda tangani petisi</a>

@@ -25,7 +25,7 @@ Gemiddelde luisteraar of audiofil: N-Zik gee jou volle beheer oor jou musiek son
 
 💾 <b>Offline, Metadata & Privaatheid</b>
 - Slim stasiegeheue en laaie vir snitte en speellyste, met keesbare laaikwaliteit
-- FFmpeg-eksport met volledige metadata (slegs 64-bit)
+- FFmpeg-eksport met volledige metadata (slegs standaard builds)
 - In-app metadata-redigeerder (AAC/Opus, omslagbeelde)
 - Plaaslike luisterstatistieke en geskiedenis
 - Outomatiese rugsteun met verstelbare intervalle en opbewaringstyd
@@ -61,9 +61,9 @@ Gemiddelde luisteraar of audiofil: N-Zik gee jou volle beheer oor jou musiek son
 - Full32/Beta32: Sonder FFmpeg (32/64-bit)
 - Minified: Liggewig vir swak toestelle (64-bit)
 - Minified32: Liggewig sonder FFmpeg (32/64-bit)
-- FOSS: Sonder outomatiese opdateerder vir F-Droid (64-bit)
+- FOSS: Sonder outomatiese opdateerder en FFmpeg, vir F-Droid (64-bit)
 - Dev/Dev32: Ontwikkelingsbuilds, slegs vir toetsing
 
-Standaard builds: 64-bit (FFmpeg); "32"-builds laat FFmpeg weg in beide argitekture. Slegs FOSS op F-Droid.
+Standaard builds bevat FFmpeg; "32"-builds en FOSS nie. Slegs FOSS op F-Droid.
 
 Vanaf <b>Januarie 2027</b> vereis Google identiteitsverifikasie van alle ontwikkelaars; as FOSS is N-Zik daarteen. <a href="https://keepandroidopen.org">Leer meer</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Teken die petisie</a>

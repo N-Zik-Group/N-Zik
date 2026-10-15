@@ -25,7 +25,7 @@ Ouvinte casual ou audiófilo, o N-Zik dá controlo total sobre a música, sem co
 
 💾 <b>Offline, Metadados e Privacidade</b>
 - Cache inteligente e downloads de faixas/playlists, com qualidade selecionável
-- Exportação via FFmpeg com metadados completos (apenas 64-bit)
+- Exportação via FFmpeg com metadados completos (apenas builds padrão)
 - Editor de metadados na app (AAC/Opus, capa)
 - Estatísticas de audição e histórico locais
 - Backup automático com intervalos e retenção próprios
@@ -61,9 +61,9 @@ Ouvinte casual ou audiófilo, o N-Zik dá controlo total sobre a música, sem co
 - Full32/Beta32: Sem FFmpeg (32/64-bit)
 - Minified: Leve, para dispositivos básicos (64-bit)
 - Minified32: Leve sem FFmpeg (32/64-bit)
-- FOSS: Sem atualizador automático, para F-Droid (64-bit)
+- FOSS: Sem atualizador automático nem FFmpeg, para F-Droid (64-bit)
 - Dev/Dev32: Desenvolvimento, apenas para testes
 
-Builds padrão: 64-bit (FFmpeg); builds "32" sem FFmpeg em ambas as arquiteturas. Só FOSS no F-Droid.
+Os builds padrão incluem FFmpeg; os "32" e FOSS não. Só FOSS no F-Droid.
 
 A partir de <b>janeiro de 2027</b>, o Google exigirá verificação de identidade dos devs. Como FOSS, o N-Zik opõe-se. <a href="https://keepandroidopen.org">Saiba mais</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Assine a petição</a>

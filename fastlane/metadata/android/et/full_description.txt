@@ -25,7 +25,7 @@ Oled harrastajakuulaja või audiofiil? N-Zik annab täieliku kontrolli muusika �
 
 💾 <b>Võrguta, metaandmed ja privaatsus</b>
 - Nutikas vahemälu ja allalaadimised laulude ja esitusloendile, kvaliteet valitav
-- FFmpegil põhinev eksport, täis metaandmed (ainult 64-bit)
+- FFmpegil põhinev eksport, täis metaandmed (ainult standardversioonid)
 - Metaandmete redaktor rakenduses (AAC/Opus, kaanepilt)
 - Kohalikud kuulamisstatistikad ja ajalugu
 - Automaatne varundamine, kohandatud vahemikud ja säilitus
@@ -61,9 +61,9 @@ Oled harrastajakuulaja või audiofiil? N-Zik annab täieliku kontrolli muusika �
 - Full32/Beta32: Ilma FFmpegita (32/64-bit)
 - Minified: Kerge, madala võimekusega seadmetele (64-bit)
 - Minified32: Kerge, ilma FFmpegita (32/64-bit)
-- FOSS: Ilma automaatse uuendajata, F-Droidi jaoks (64-bit)
+- FOSS: Ilma automaatse uuendaja ja FFmpegita, F-Droidi jaoks (64-bit)
 - Dev/Dev32: Arendusversioonid, ainult testimiseks
 
-Standardversioonid on 64-bitised (FFmpeg); "32" versioonid on FFmpegita mõlemas arhitektuuris. Ainult FOSS on F-Droidis.
+Standardversioonid sisaldavad FFmpeg; "32" versioonid ja FOSS mitte. Ainult FOSS on F-Droidis.
 
 Alates <b>jaanuarist 2027</b> nõuab Google arendajatelt isikutuvastust. FOSS projektina on N-Zik selle vastu. <a href="https://keepandroidopen.org">Loe lähemalt</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Kirjuta petitsiooni alla</a>

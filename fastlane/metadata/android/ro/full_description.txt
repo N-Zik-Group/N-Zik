@@ -25,7 +25,7 @@ Ascultător ocazional sau audiofil, N-Zik îți oferă control deplin asupra muz
 
 💾 <b>Offline, Metadate și Confidențialitate</b>
 - Cache inteligent, descărcări de piese și liste, calitate aleasă
-- Export prin FFmpeg cu metadate complete (doar 64-bit)
+- Export prin FFmpeg cu metadate complete (doar versiuni standard)
 - Editor de metadate în aplicație (AAC/Opus, copertă)
 - Statistici și istoric local de ascultare
 - Backup automat: intervale personalizate, durată de păstrare
@@ -61,9 +61,9 @@ Ascultător ocazional sau audiofil, N-Zik îți oferă control deplin asupra muz
 - Full32/Beta32: Fără FFmpeg (32/64-bit)
 - Minified: Ușoară, pentru dispozitive entry-level (64-bit)
 - Minified32: Ușoară, fără FFmpeg (32/64-bit)
-- FOSS: Fără actualizator automat, pentru F-Droid (64-bit)
+- FOSS: Fără actualizator automat și FFmpeg, pentru F-Droid (64-bit)
 - Dev/Dev32: Versiuni de dezvoltare, doar pentru testare
 
-Versiunile standard: 64-bit (FFmpeg); „32" fără FFmpeg, ambele arhitecturi. Doar FOSS pe F-Droid.
+Versiunile standard includ FFmpeg; „32" și FOSS nu. Doar FOSS pe F-Droid.
 
 De la <b>ianuarie 2027</b>, Google va cere verificarea identității tuturor dezvoltatorilor. Ca FOSS, N-Zik se opune. <a href="https://keepandroidopen.org">Află mai multe</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Semnează petiția</a>

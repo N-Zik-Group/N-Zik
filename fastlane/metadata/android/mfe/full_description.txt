@@ -25,7 +25,7 @@ Si to enn senp lekouter ouswa enn audiophile, N-Zik donn to kontrol koupe lor to
 
 💾 <b>Offline, Metadone ek Konfidansyalite</b>
 - Kaching zintel ek download pou morsò ek playlist, avek kalite download ki to kapav swazir
-- Eksportasion avek FFmpeg ek metadone koupe (64-bit selman)
+- Eksportasion avek FFmpeg ek metadone koupe (bann build standar selman)
 - Editer metadone dan l'app (AAC/Opus, cover art)
 - Statistik lekout ek l'istwar, tou lokal
 - Back-up otomatik avek interval ek retansyon kastomizab
@@ -61,9 +61,9 @@ Si to enn senp lekouter ouswa enn audiophile, N-Zik donn to kontrol koupe lor to
 - Full32/Beta32: San FFmpeg (32/64-bit)
 - Minified: Build leze, pou bann aparé molè (64-bit)
 - Minified32: Build leze san FFmpeg (32/64-bit)
-- FOSS: San auto-updater, pou F-Droid (64-bit)
+- FOSS: San auto-updater ek san FFmpeg, pou F-Droid (64-bit)
 - Dev/Dev32: Bann build devlopman, pou test selman
 
-Bann build standar se 64-bit (avek FFmpeg); bann build "32" san FFmpeg, pou tou 2 arkitektir. Se build FOSS selman ki lor F-Droid.
+Bann build standar avek FFmpeg; bann build "32" ek FOSS san. Se build FOSS selman ki lor F-Droid.
 
 Koumans <b>Zantrie 2027</b>, Google va mande verifikasion idantite pou tou bann devlope. Kom enn proze FOSS, N-Zik kont sa. <a href="https://keepandroidopen.org">Aprann plis</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Swign sa petision la</a>

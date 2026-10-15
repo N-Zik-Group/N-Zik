@@ -25,7 +25,7 @@ Dù là người nghe thông thường hay tín đồ âm thanh, N-Zik mang đ�
 
 💾 <b>Ngoại tuyến, Siêu dữ liệu & Quyền riêng tư</b>
 - Caching và tải xuống thông minh cho bài hát/danh sách phát, chất lượng tải tùy chọn
-- Xuất tệp bằng FFmpeg với siêu dữ liệu đầy đủ (chỉ 64-bit)
+- Xuất tệp bằng FFmpeg với siêu dữ liệu đầy đủ (chỉ bản dựng tiêu chuẩn)
 - Trình chỉnh sửa siêu dữ liệu trong ứng dụng (AAC/Opus, ảnh bìa)
 - Thống kê và lịch sử nghe nhạc cục bộ
 - Sao lưu tự động, khoảng cách và thời gian lưu tùy chỉnh
@@ -61,9 +61,9 @@ Dù là người nghe thông thường hay tín đồ âm thanh, N-Zik mang đ�
 - Full32/Beta32: Không có FFmpeg (32/64-bit)
 - Minified: Nhẹ, cho thiết bị cấu hình thấp (64-bit)
 - Minified32: Nhẹ không có FFmpeg (32/64-bit)
-- FOSS: Không có trình cập nhật tự động, cho F-Droid (64-bit)
+- FOSS: Không có trình cập nhật tự động và FFmpeg, cho F-Droid (64-bit)
 - Dev/Dev32: Bản dựng phát triển, chỉ để thử nghiệm
 
-Bản dựng tiêu chuẩn là 64-bit (có FFmpeg); bản "32" bỏ FFmpeg ở cả hai kiến trúc. Chỉ FOSS trên F-Droid.
+Bản dựng tiêu chuẩn có FFmpeg; bản "32" và FOSS thì không. Chỉ FOSS trên F-Droid.
 
 Từ <b>tháng 1 năm 2027</b>, Google yêu cầu xác minh danh tính cho mọi nhà phát triển. Là dự án FOSS, N-Zik phản đối. <a href="https://keepandroidopen.org">Tìm hiểu thêm</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Ký vào đơn kiến nghị</a>

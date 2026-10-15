@@ -25,7 +25,7 @@ Sıradan dinleyici ya da odyofil olun, N-Zik gizliliğinizden ödün vermeden m�
 
 💾 <b>Çevrimdışı, Meta Veriler ve Gizlilik</b>
 - Parçalar ve listeler için akıllı önbellekleme/indirme, seçilebilir indirme kalitesi
-- Tam meta veriyle FFmpeg destekli dışa aktarma (yalnız 64-bit)
+- Tam meta veriyle FFmpeg destekli dışa aktarma (yalnız standart yapılar)
 - Uygulama içi meta veri düzenleyici (AAC/Opus, kapak)
 - Yerel dinleme istatistikleri ve geçmişi
 - Özel aralıklı ve saklama süreli otomatik yedekleme
@@ -61,9 +61,9 @@ Sıradan dinleyici ya da odyofil olun, N-Zik gizliliğinizden ödün vermeden m�
 - Full32/Beta32: FFmpeg içermeyen (32/64-bit)
 - Minified: Düşük özellikli cihazlar için hafif (64-bit)
 - Minified32: FFmpeg içermeyen hafif (32/64-bit)
-- FOSS: Otomatik güncelleyici içermeyen, F-Droid için (64-bit)
+- FOSS: Otomatik güncelleyici ve FFmpeg içermeyen, F-Droid için (64-bit)
 - Dev/Dev32: Geliştirme yapıları, yalnızca test için
 
-Standart yapılar 64-bit (FFmpeg); "32" yapılar her iki mimaride de FFmpeg'i çıkartır. F-Droid'de yalnızca FOSS var.
+Standart yapılar FFmpeg içerir; "32" yapılar ve FOSS içermez. F-Droid'de yalnızca FOSS var.
 
 <b>Ocak 2027</b>'den itibaren Google, tüm geliştiricilerden kimlik doğrulaması gerektiriyor. FOSS olarak N-Zik buna karşı çıkıyor. <a href="https://keepandroidopen.org">Daha fazla bilgi</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Petisyonu imzalayın</a>

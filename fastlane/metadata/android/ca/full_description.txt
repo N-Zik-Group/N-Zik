@@ -25,7 +25,7 @@ Sigues oient ocasional o audiòfil, N-Zik et dóna el control absolut de la mús
 
 💾 <b>Fora de línia, metadades i privadesa</b>
 - Cau intel·ligent i descàrregues de cançons i llistes, amb qualitat seleccionable
-- Exportació amb FFmpeg, metadades completes (només 64-bit)
+- Exportació amb FFmpeg, metadades completes (només builds estàndard)
 - Editor de metadades integrat (AAC/Opus, portada)
 - Estadístiques d'escolta i historial locals
 - Còpia de seguretat automàtica amb intervals i retenció personalizables
@@ -61,9 +61,9 @@ Sigues oient ocasional o audiòfil, N-Zik et dóna el control absolut de la mús
 - Full32/Beta32: Sense FFmpeg (32/64-bit)
 - Minified: Lleugera, per a dispositius bàsics (64-bit)
 - Minified32: Lleugera sense FFmpeg (32/64-bit)
-- FOSS: Sense actualitzador automàtic, per a F-Droid (64-bit)
+- FOSS: Sense actualitzador automàtic ni FFmpeg, per a F-Droid (64-bit)
 - Dev/Dev32: Builds de desenvolupament, només per a proves
 
-Builds estàndard: 64-bit (FFmpeg); les "32" ometen FFmpeg. Només FOSS és a F-Droid.
+Els builds estàndard inclouen FFmpeg; les "32" i FOSS no. Només FOSS és a F-Droid.
 
 A partir del <b>gener de 2027</b>, Google exigirà verificar la identitat dels desenvolupadors; com a FOSS, N-Zik s'hi oposa. <a href="https://keepandroidopen.org">Més informació</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Signa la petició</a>

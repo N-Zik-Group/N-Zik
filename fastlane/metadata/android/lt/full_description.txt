@@ -25,7 +25,7 @@ Klausytojas ar melomanas - N-Zik suteikia pilną kontrolę jūsų muzikos be pri
 
 💾 <b>Be interneto, metaduomenys ir privatumas</b>
 - Išmanusis kešas, dainų ir grojaraščių atsisiuntimas, pasirinktina kokybė
-- Eksportavimas per FFmpeg su visais metaduomenimis (tik 64-bit)
+- Eksportavimas per FFmpeg su visais metaduomenimis (tik standartinės versijos)
 - Metaduomenų redaktorius programoje (AAC/Opus, albumo viršelis)
 - Vietinė klausymo statistika ir istorija
 - Automatinės atsarginės kopijos: pasirinktiniai intervalai, trukmė
@@ -61,9 +61,9 @@ Klausytojas ar melomanas - N-Zik suteikia pilną kontrolę jūsų muzikos be pri
 - Full32/Beta32: Be FFmpeg (32/64-bit)
 - Minified: Lengva, silpnesniems įrenginiams (64-bit)
 - Minified32: Lengva versija be FFmpeg (32/64-bit)
-- FOSS: Be automatinio atnaujinimo, skirta F-Droid (64-bit)
+- FOSS: Be automatinio atnaujinimo ir FFmpeg, skirta F-Droid (64-bit)
 - Dev/Dev32: Kūrimo versijos, tik testavimui
 
-Standartinės versijos: 64-bit (FFmpeg); „32" - be FFmpeg abiem architektūroms. Tik FOSS - F-Droid.
+Standartinės versijos turi FFmpeg; „32" ir FOSS - ne. Tik FOSS - F-Droid.
 
 Nuo <b>2027 m. sausio</b> Google reikalaus kūrėjų tapatybės patvirtinimo; N-Zik, kaip FOSS, prieštarauja. <a href="https://keepandroidopen.org">Sužinokite daugiau</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Pasirašykite peticiją</a>

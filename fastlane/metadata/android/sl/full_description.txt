@@ -25,7 +25,7 @@ Ali ste priložnostni poslušalec ali audiofil, N-Zik vam daje popoln nadzor nad
 
 💾 <b>Brez povezave, metapodatki in zasebnost</b>
 - Pametno predpomnjenje in prenosi skladb in playlistov, z izbiro kakovosti prenosa
-- Izvoz prek FFmpeg z polnimi metapodatki (samo 64-bit)
+- Izvoz prek FFmpeg z polnimi metapodatki (samo standardne različice)
 - Urejevalnik metapodatkov v aplikaciji (AAC/Opus, naslovnica)
 - Lokalna statistika in zgodovina poslušanja
 - Samodejno varnostno kopiranje z intervali in obdobjem hranjenja
@@ -61,9 +61,9 @@ Ali ste priložnostni poslušalec ali audiofil, N-Zik vam daje popoln nadzor nad
 - Full32/Beta32: Brez FFmpeg (32/64-bit)
 - Minified: Lahka, za manj zmogljive naprave (64-bit)
 - Minified32: Lahka brez FFmpeg (32/64-bit)
-- FOSS: Brez samodejnega posodabljalnika, za F-Droid (64-bit)
+- FOSS: Brez samodejnega posodabljalnika in FFmpeg, za F-Droid (64-bit)
 - Dev/Dev32: Razvojne različice, samo za testiranje
 
-Standardne različice so 64-bit (FFmpeg); različice "32" izpustijo FFmpeg za obe arhitekturi. Na F-Droidu je le FOSS.
+Standardne različice vsebujejo FFmpeg; različice "32" in FOSS ne. Na F-Droidu je le FOSS.
 
 Od <b>januarja 2027</b> bo Google zahteval preverjanje identitete vseh razvijalcev. Kot FOSS se N-Zik temu upira. <a href="https://keepandroidopen.org">Več o tem</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Podpišite peticijo</a>

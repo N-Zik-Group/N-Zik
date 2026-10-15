@@ -25,7 +25,7 @@ Entzule arrunta edo audiophile, N-Zik-ek musikaren kontrol osoa ematen dizu, pri
 
 💾 <b>Offline, metadatuak eta pribatutasuna</b>
 - Pisten eta playlisten cache adimenduna, deskargak aukeragarriko kalitatez
-- FFmpeg bidezko esportazioa, metadatu osoekin (64-bit bakarrik)
+- FFmpeg bidezko esportazioa, metadatu osoekin (eraikun estandar bakarrik)
 - Metadatu editorea aplikazioan (AAC/Opus, azal-arteak)
 - Entzute-estatistikak eta historia lokalak
 - Babeskopia automatikoa, tarteen eta mantentzeen arabera
@@ -61,9 +61,9 @@ Entzule arrunta edo audiophile, N-Zik-ek musikaren kontrol osoa ematen dizu, pri
 - Full32/Beta32: FFmpeg gabe (32/64-bit)
 - Minified: Arina, gailu ahulentzat (64-bit)
 - Minified32: Arina, FFmpeg gabe (32/64-bit)
-- FOSS: Eguneratzaile automatikorik gabe, F-Droiderako (64-bit)
+- FOSS: Eguneratzaile automatiko eta FFmpeg gabe, F-Droiderako (64-bit)
 - Dev/Dev32: Garapen-eraikunak, probatzeko soilik
 
-Eraikun estandarrak 64-bit (FFmpeg); "32"-ak FFmpeg gabe, bi arkitekturan. FOSS bakarrik F-Droiden.
+Eraikun estandarrak FFmpeg dute; "32"-ek eta FOSS-ek ez. FOSS bakarrik F-Droiden.
 
 <b>2027ko urtarriletik</b> Googlek identitate-egiaztapena eskatuko du garatzaile guztiei; FOSS gisa, N-Zik kontrako dago. <a href="https://keepandroidopen.org">Jakitu gehiago</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Sinatu petizioa</a>

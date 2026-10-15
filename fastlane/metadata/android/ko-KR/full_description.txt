@@ -25,7 +25,7 @@ Android용 다국어 YouTube Music 프론트엔드. 성능, UI/UX 개선, 기능
 
 💾 <b>오프라인, 메타데이터 및 프라이버시</b>
 - 트랙 및 재생 목록용 스마트 캐싱 및 다운로드, 다운로드 품질 선택 가능
-- 전체 메타데이터가 포함된 FFmpeg 기반 내보내기 (64-bit 전용)
+- 전체 메타데이터가 포함된 FFmpeg 기반 내보내기 (표준 빌드 전용)
 - 앱 내 메타데이터 편집기 (AAC/Opus, 커버 아트)
 - 로컬 청취 통계 및 기록
 - 맞춤 간격 및 보존 기간의 자동 백업
@@ -61,9 +61,9 @@ Android용 다국어 YouTube Music 프론트엔드. 성능, UI/UX 개선, 기능
 - Full32/Beta32: FFmpeg 미포함 (32/64-bit)
 - Minified: 경량 빌드, 저사양 기기용 (64-bit)
 - Minified32: FFmpeg 없는 경량 빌드 (32/64-bit)
-- FOSS: 자동 업데이트 없음, F-Droid용 (64-bit)
+- FOSS: 자동 업데이트와 FFmpeg 없음, F-Droid용 (64-bit)
 - Dev/Dev32: 개발 빌드, 테스트 전용
 
-표준 빌드는 64-bit (FFmpeg)이며, "32" 빌드는 두 아키텍처 모두에서 FFmpeg를 생략합니다. F-Droid에는 FOSS만 있습니다.
+표준 빌드는 FFmpeg를 포함하고, "32" 빌드와 FOSS는 포함하지 않습니다. F-Droid에는 FOSS만 있습니다.
 
 <b>2027년 1월</b>부터 Google은 모든 개발자에게 신원 확인을 요구합니다. FOSS 프로젝트로서 N-Zik은 이에 반대합니다. <a href="https://keepandroidopen.org">자세히 알아보기</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">청원 서명하기</a>

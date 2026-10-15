@@ -25,7 +25,7 @@ Ať už jste příležitostný posluchač či audiofil, N-Zik vám dává plnou 
 
 💾 <b>Offline, metadata a soukromí</b>
 - Inteligentní ukládání a stahování skladeb a playlistů, s volitelnou kvalitou stahování
-- Export pomocí FFmpeg s úplnými metadaty (pouze 64-bit)
+- Export pomocí FFmpeg s úplnými metadaty (pouze standardní sestavy)
 - Editor metadat v aplikaci (AAC/Opus, obálka alba)
 - Místní statistiky poslechu a historie
 - Automatické zálohování s vlastními intervaly a dobou uchovávání
@@ -61,9 +61,9 @@ Ať už jste příležitostný posluchač či audiofil, N-Zik vám dává plnou 
 - Full32/Beta32: Bez FFmpeg (32/64-bit)
 - Minified: Odlehčená, pro slabší zařízení (64-bit)
 - Minified32: Odlehčená bez FFmpeg (32/64-bit)
-- FOSS: Bez automatického aktualizátoru, pro F-Droid (64-bit)
+- FOSS: Bez automatického aktualizátoru ani FFmpeg, pro F-Droid (64-bit)
 - Dev/Dev32: Vývojářské sestavy, pouze pro testování
 
-Standardní sestavy jsou 64-bit (FFmpeg); sestavy "32" nemají FFmpeg pro obě architektury. Pouze FOSS je na F-Droid.
+Standardní sestavy obsahují FFmpeg; sestavy "32" a FOSS ne. Pouze FOSS je na F-Droid.
 
 Od <b>ledna 2027</b> bude Google vyžadovat ověření identity od všech vývojářů. Jako FOSS se N-Zik tomuto staví proti. <a href="https://keepandroidopen.org">Dozvědět se více</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Podepište petici</a>
