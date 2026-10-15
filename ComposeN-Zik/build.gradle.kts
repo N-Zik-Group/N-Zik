@@ -24,6 +24,7 @@ plugins {
 
     // Protobuf (Listen Together wire format — Metrolist port)
     alias(libs.plugins.protobuf)
+    kotlin("plugin.lombok")
 }
 
 repositories {
@@ -64,7 +65,7 @@ kotlin {
             implementation(libs.ktor.server.content.negotiation)
             implementation(libs.ktor.serialization.json)
             implementation(libs.zxing.android.embedded)
-            
+
             implementation(projects.discordrpc)
             implementation(projects.nextvisualizer)
 
@@ -136,8 +137,8 @@ android {
         /*
                 UNIVERSAL VARIABLES
          */
-        buildConfigField( "Boolean", "IS_AUTOUPDATE", "true" )
-        buildConfigField( "String", "APP_NAME", "\"$APP_NAME\"" )
+        buildConfigField("Boolean", "IS_AUTOUPDATE", "true")
+        buildConfigField("String", "APP_NAME", "\"$APP_NAME\"")
 
         val localProperties = Properties()
         val localPropertiesFile = rootProject.file("local.properties")
@@ -198,18 +199,18 @@ android {
             versionNameSuffix = libs.versions.nzikSuffixVersionDebug.get()
             applicationIdSuffix = libs.versions.nzikSuffixAppIdDebug.get()
 
-            buildConfigField( "Boolean", "IS_AUTOUPDATE", "false" )
+            buildConfigField("Boolean", "IS_AUTOUPDATE", "false")
             signingConfig = signingConfigs.getByName("debug")
         }
 
-        create( "full" ) {
+        create("full") {
             // App's properties
             versionNameSuffix = libs.versions.nzikSuffixVersionFull.get()
             // Fallback for modules that don't have a 'full' build type (like :discordrpc)
             matchingFallbacks += listOf("release")
         }
 
-        create( "minified" ) {
+        create("minified") {
             // App's properties
             versionNameSuffix = libs.versions.nzikSuffixVersionMinified.get()
             // Fallback for modules that don't have a 'minified' build type (like :discordrpc)
@@ -224,42 +225,42 @@ android {
             )
         }
 
-        create( "full32" ) {
+        create("full32") {
             // App's properties
-            initWith( maybeCreate("full") )
+            initWith(maybeCreate("full"))
             versionNameSuffix = libs.versions.nzikSuffixVersionFull32.get()
             // Fallback for modules that don't have a 'full32' build type
             matchingFallbacks += listOf("release")
         }
 
-        create( "minified32" ) {
+        create("minified32") {
             // App's properties
-            initWith( maybeCreate("minified") )
+            initWith(maybeCreate("minified"))
             versionNameSuffix = libs.versions.nzikSuffixVersionMinified32.get()
             // Fallback for modules that don't have a 'minified32' build type
             matchingFallbacks += listOf("release")
         }
 
-        create( "beta" ) {
-            initWith( maybeCreate("full") )
+        create("beta") {
+            initWith(maybeCreate("full"))
             versionNameSuffix = libs.versions.nzikSuffixVersionBeta.get()
             // Fallback for modules that don't have a 'beta' build type (like :discordrpc)
             matchingFallbacks += listOf("release")
         }
 
-        create( "beta32" ) {
-            initWith( maybeCreate("beta") )
+        create("beta32") {
+            initWith(maybeCreate("beta"))
             versionNameSuffix = libs.versions.nzikSuffixVersionBeta32.get()
             // Fallback for modules that don't have a 'beta32' build type
             matchingFallbacks += listOf("release")
         }
 
-        create( "foss" ) {
+        create("foss") {
             // App's properties
-            initWith( maybeCreate("full") )
+            initWith(maybeCreate("full"))
             manifestPlaceholders += mapOf("appName" to "$APP_NAME${libs.versions.nzikSuffixAppNameFoss.get()}")
             applicationIdSuffix = libs.versions.nzikSuffixAppIdFoss.get()
-            buildConfigField( "Boolean", "IS_AUTOUPDATE", "false" )
+            buildConfigField("Boolean", "IS_AUTOUPDATE", "false")
 
             // Fallback for modules that don't have a 'foss' build type
             matchingFallbacks += listOf("release")
@@ -268,23 +269,23 @@ android {
         val devDate = project.findProperty("devDate")?.toString()
             ?: SimpleDateFormat("yyyyMMdd").format(Date())
 
-        create( "dev" ) {
+        create("dev") {
             manifestPlaceholders += mapOf("appName" to "$APP_NAME${libs.versions.nzikSuffixAppNameDev.get()}")
             applicationIdSuffix = libs.versions.nzikSuffixAppIdDev.get()
             versionNameSuffix = "${libs.versions.nzikSuffixVersionDev.get()}$devDate"
-            buildConfigField( "Boolean", "IS_AUTOUPDATE", "true" )
+            buildConfigField("Boolean", "IS_AUTOUPDATE", "true")
 
             // Fallback for modules that don't have a 'dev' build type (like :discordrpc)
             matchingFallbacks += listOf("release")
         }
 
-        create( "dev32" ) {
+        create("dev32") {
             // App's properties
             manifestPlaceholders += mapOf("appName" to "$APP_NAME${libs.versions.nzikSuffixAppNameDev32.get()}")
             applicationIdSuffix = libs.versions.nzikSuffixAppIdDev.get()
-            initWith( maybeCreate("dev") )
+            initWith(maybeCreate("dev"))
             versionNameSuffix = "${libs.versions.nzikSuffixVersionDev32.get()}$devDate"
-            buildConfigField( "Boolean", "IS_AUTOUPDATE", "true" )
+            buildConfigField("Boolean", "IS_AUTOUPDATE", "true")
 
             // Fallback for modules that don't have a 'dev32' build type
             matchingFallbacks += listOf("release")
@@ -296,7 +297,7 @@ android {
          * just need to change this variable
          */
         forEach {
-            it.manifestPlaceholders.putIfAbsent( "appName", APP_NAME )
+            it.manifestPlaceholders.putIfAbsent("appName", APP_NAME)
             if (it.name == "full32" || it.name == "minified32" || it.name == "beta32" || it.name == "dev32" || it.name == "foss") {
                 it.buildConfigField("Boolean", "ENABLE_FFMPEG", "false")
             } else {
@@ -307,10 +308,10 @@ android {
 
     applicationVariants.all {
         outputs.map { it as BaseVariantOutputImpl }
-               .forEach { output ->
-                   val typeName = buildType.name
-                   output.outputFileName = "$APP_NAME-$typeName.apk"
-               }
+            .forEach { output ->
+                val typeName = buildType.name
+                output.outputFileName = "$APP_NAME-$typeName.apk"
+            }
     }
 
     sourceSets.all {
@@ -435,6 +436,7 @@ dependencies {
 
     // Debug only
     debugImplementation(libs.ui.tooling.preview.android)
+    testImplementation(kotlin("test"))
 }
 
 tasks.withType<Test> {

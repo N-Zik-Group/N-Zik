@@ -23,6 +23,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -240,6 +241,7 @@ internal enum class RewindRevealDirection {
  * Important layout rule: slide content never owns the very bottom edge. That space is
  * reserved for the NZik signature so the brand cannot land on top of slide copy.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun RewindStoryShell(
     page: Int,
