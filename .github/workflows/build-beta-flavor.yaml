@@ -161,7 +161,7 @@ jobs:
 
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           path: upstream/unsigned
           merge-multiple: true
@@ -195,7 +195,7 @@ jobs:
       contents: write  
     steps:
       - name: Download signed APK
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: signed-apk
       - name: Upload built APK to pre-release
