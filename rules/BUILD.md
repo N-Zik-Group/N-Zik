@@ -1,6 +1,6 @@
 # Build & Test Rules
 
-**Version:** 1.6.1 | **Last updated:** 2026-10-16
+**Version:** 1.6.2 | **Last updated:** 2026-10-17
 
 ## Gradle Version Catalog
 
@@ -143,7 +143,7 @@ class ShufflerTest {
 }
 ```
 
-Test files: `ComposeN-Zik/src/test/kotlin/` — mirror source package structure, EXCEPT tests of legacy code (`app.it.fast4x.rimusic.*` / `app.kreate.android.*`): those MUST live under `app.n_zik.android.legacyoffmain.<mirror>` (existing convention — NEVER under the legacy namespace itself, per AGENTS.md and the Step 6 guard check). Grandfathering: 3 pre-existing test files live under the legacy namespace (`app/it/fast4x/rimusic/models/PlaylistTest.kt`, `app/it/fast4x/rimusic/utils/InvincibleServiceTest.kt`, `app/it/fast4x/rimusic/utils/LandscapeBarsTest.kt`) — do NOT move, rewrite or modify them; every NEW legacy test goes under `legacyoffmain`. If one of the 3 fails or no longer compiles → HALT and ask the user for an explicit decision (the Step 6 guard check flags any legacy path in the diff — quote the approval in the report). Also grandfathered: the top-level test packages `test/kotlin/utils/` and `test/kotlin/painters/`, and the packages `app/n_zik/android/database/` (source in `core/database/`) and `app/n_zik/android/lyrics/` (no matching main package) — all predate the mirroring rule, do NOT move them; new tests follow the mirroring rule.
+Test files: `ComposeN-Zik/src/test/kotlin/` — mirror source package structure, EXCEPT tests of legacy code (`app.it.fast4x.*` / `app.kreate.android.*`): those MUST live under `app.n_zik.android.legacyoffmain.<mirror>` (existing convention — NEVER under the legacy namespace itself, per AGENTS.md and the Step 6 guard check). Grandfathering: 3 pre-existing test files live under the legacy namespace (`app/it/fast4x/rimusic/models/PlaylistTest.kt`, `app/it/fast4x/rimusic/utils/InvincibleServiceTest.kt`, `app/it/fast4x/rimusic/utils/LandscapeBarsTest.kt`) — do NOT move, rewrite or modify them; every NEW legacy test goes under `legacyoffmain`. If one of the 3 fails or no longer compiles → HALT and ask the user for an explicit decision (the Step 6 guard check flags any legacy path in the diff — quote the approval in the report). Also grandfathered: the top-level test packages `test/kotlin/utils/` and `test/kotlin/painters/`, and the packages `app/n_zik/android/database/` (source in `core/database/`) and `app/n_zik/android/lyrics/` (no matching main package) — all predate the mirroring rule, do NOT move them; new tests follow the mirroring rule.
 
 New features/bug fixes should include at least one test. If no test framework is available → HALT and note it.
 

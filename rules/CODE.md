@@ -1,6 +1,6 @@
 # Code Quality Rules
 
-**Version:** 1.7.0 | **Last updated:** 2026-10-16
+**Version:** 1.8.1 | **Last updated:** 2026-10-17
 
 ## Naming Conventions
 
@@ -93,13 +93,13 @@ val playlist = requireNotNull(playlistDao.findById(id)) { "Playlist $id not foun
 
 ## File Placement (MANDATORY)
 
-New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app.it.fast4x.rimusic.*` or `app.kreate.android.*`.
+New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app.it.fast4x.*` (legacy `rimusic.*` + `compose.persist.*`) or `app.kreate.android.*`.
 
 | Component type                 | Location                                           |
 | ------------------------------ | -------------------------------------------------- |
 | Generic reusable dialogs       | `components/dialog/common/`                        |
 | Domain-specific dialogs        | `components/dialog/{domain}/` (e.g. `dialog/song/`, `dialog/album/`) |
-| Domain menus                   | `components/menu.{domain}/`                        |
+| Domain menus                   | `components/menu.{domain}/` (+ 4 shared files in `components/menu/` root — FilterMenu, GridMenu, ListMenu, MenuConstants) |
 | Page-level screens             | `components/ui/screens/{screen}/` (exceptions: `components/onboarding/`, `updater/ui/UpdateScreen`, domain screen packages e.g. `components/musicbrainz/insights/`) |
 | ViewModels                     | co-located with their screen (`components/ui/screens/{screen}/`, or the domain screen package, e.g. `components/musicbrainz/insights/`) |
 | Repositories                   | collocated with their domain package (one repository per domain, e.g. `ShazamRepository` in `recognition/`) |
@@ -112,9 +112,12 @@ New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app
 | Listen Together                | `listentogether/` (+ `src/main/proto/listentogether.proto`) |
 | Widgets / shortcuts            | `widget/`, `shortcuts/`                             |
 | Home tabs / chips / toolbars   | `components/tab/` (12 .kt)                          |
-| Domain component trees         | `components/import/` (6 .kt), `components/playlist/` (3), `components/song/` (3) — per-domain component packages (dialogs & menus have their own rows above) |
-| Core feature packages          | `core/rewind/` (5 .kt — incl. the two grandfathered raw-dispatcher files, see "Coroutines & Dispatchers"), `core/youtube/` (5), `core/backup/` (4), `core/profiles/` (2), `core/rescue/` (2), `core/coil/` (2) |
+| Domain component trees         | `components/import/` (6 .kt), `components/playlist/` (3), `components/song/` (3), `components/musicbrainz/` (4 root .kt + `insights/`) — per-domain component packages (dialogs & menus have their own rows above) |
+| Core feature packages          | `core/rewind/` (5 .kt — rewind playlist workers + generation), `core/youtube/` (5), `core/backup/` (4), `core/profiles/` (2), `core/rescue/` (2), `core/coil/` (2) |
 | Updater (in-app)               | `updater/` — `models/` (5 .kt), `services/` (2 .kt), `ui/` (`UpdateScreen`, see the Page-level screens row) |
+| Shared component files         | `components/` root (10 .kt — `CustomBottomSheet`, `VoiceSearchOverlay`, `FolderItem`, `ImportFromFile`, `SongItem`, `Sort`, …) |
+| Playback utilities             | `playback/utils/` (4 .kt — `Shuffler`, `NZikRadio`, `BitmapProvider`, `SessionBitmapLoader`) |
+| UI header & sliders            | `components/ui/header/` (3 .kt), `components/ui/sliders/` (3 .kt) |
 | Network layer                  | `core/network/`                                    |
 | Services (player, download)    | `playback/services/`, `download/services/`         |
 | Dependency injection           | plain constructor injection (no DI framework in the app module); process-lifetime `Application` access goes through the `object Dependencies` service locator in `MainApplication.kt` |

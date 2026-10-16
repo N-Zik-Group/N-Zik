@@ -1,6 +1,6 @@
 # AGENTS.md — NZik
 
-**Version:** 1.7.1 | **Last updated:** 2026-10-16
+**Version:** 1.7.2 | **Last updated:** 2026-10-17
 
 **MANDATORY: Read this file + rules/*.md before any task.**
 
@@ -16,7 +16,7 @@
 
 ## ✅ Always Do
 
-- Code → `app.n_zik.android.*` ONLY — legacy packages (`app.it.fast4x.rimusic.*` / `app.kreate.android.*`) are READ-ONLY: no new files there; MODIFYING an existing legacy file is allowed ONLY when a bug fix cannot be expressed outside it AND ONLY after explicit user approval — prefer implementing the fix in `app.n_zik.android.*` (wrapper/overlay)
+- Code → `app.n_zik.android.*` ONLY — legacy packages (`app.it.fast4x.*` — `rimusic.*` + `compose.persist.*` — / `app.kreate.android.*`) are READ-ONLY: no new files there; MODIFYING an existing legacy file is allowed ONLY when a bug fix cannot be expressed outside it AND ONLY after explicit user approval — prefer implementing the fix in `app.n_zik.android.*` (wrapper/overlay)
 - Use Timber with tags (no println/Log.d)
 - Dispatch coroutines on `NzikDispatchers` named dispatchers only (`UI`, `PLAYBACK`, `VISUALIZER`, `MEDIA`, `DATA` + Room executors); fire-and-forget scopes via `NzikDispatchers.fireAndForget()` (see rules/CODE.md "Coroutines & Dispatchers")
 - Use version catalog refs (`libs.versions.toml`)
@@ -39,7 +39,7 @@
 
 ## 🚫 Never Do
 
-- Create files under `app.it.fast4x.rimusic.*` or `app.kreate.android.*` (legacy tests go under `app.n_zik.android.legacyoffmain.*` — see rules/BUILD.md: 3 pre-existing test files live under the legacy namespace and are grandfathered, do NOT move them)
+- Create files under `app.it.fast4x.*` or `app.kreate.android.*` (legacy tests go under `app.n_zik.android.legacyoffmain.*` — see rules/BUILD.md: 3 pre-existing test files live under the legacy namespace and are grandfathered, do NOT move them)
 - Edit any `values-*/strings.xml` (the only source of truth is `ComposeN-Zik/src/androidMain/res/values/strings.xml`)
 - Write code before completing full BMAD workflow
 - Skip BMAD workflow steps
@@ -109,7 +109,7 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 
 | What         | Where                                      |
 | ------------ | ------------------------------------------ |
-| Main code    | `app/n_zik/android/` (new — 555 .kt) + legacy `app/it/fast4x/rimusic/` (320 .kt) & `app/kreate/android/` (21 .kt) — the legacy tree is being migrated out (READ-ONLY, see rules/CODE.md) |
+| Main code    | `app/n_zik/android/` (new — 555 .kt) + legacy `app/it/fast4x/rimusic/` (315 .kt) + `app/it/fast4x/compose/persist/` (5 .kt) & `app/kreate/android/` (21 .kt) — the legacy tree is being migrated out (READ-ONLY, see rules/CODE.md) |
 | Database     | `app/n_zik/android/core/database/`         |
 | Repositories | collocated with their domain (e.g. `recognition/ShazamRepository.kt`) — no central `core/data/` exists |
 | DI           | no DI framework in the app module (Hilt and Koin declared in the catalog but never applied) — plain constructor injection + `object Dependencies` service locator in `MainApplication.kt` (process-lifetime `Application` access); introducing a DI framework requires user approval |
