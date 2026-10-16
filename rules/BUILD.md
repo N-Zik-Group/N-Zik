@@ -1,6 +1,6 @@
 # Build & Test Rules
 
-**Version:** 1.5.0 | **Last updated:** 2026-09-26
+**Version:** 1.6.0 | **Last updated:** 2026-10-16
 
 ## Gradle Version Catalog
 
@@ -75,7 +75,7 @@ The entry keyword for Done.txt follows the template's sections — it is not aut
 | `foss`  | `assembleFoss`  | Full build without auto-updater and without FFmpeg (suitable for alternative stores) |
 | `beta`  | `assembleBeta`  | Beta build (unsigned locally, signed in CI) |
 
-Other build types (see `ComposeN-Zik/build.gradle.kts`): `full`, `minified` (R8 minify + shrinkResources), `full32`, `minified32`, `beta32`, `dev`, `dev32`. The `release` build type is explicitly **disabled** (`assembleRelease` does not exist). Dedicated per-buildType source sets exist under `ComposeN-Zik/src/`: `src/debug/` holds its own `AndroidManifest.xml` (Compose test-harness activity — see Done.txt), while `src/dev/`, `src/dev32/`, `src/foss/` exist but are currently empty. A custom `assembleFossRelease` task exists as an alias of `assembleFoss`. Variant behavioral differences (see `build.gradle.kts` + CI): `*32` types and `foss` build with `ENABLE_FFMPEG=false` (no Media Export/Metadata Editor); `dev`/`dev32` get a dated `versionNameSuffix` (CI passes `-PdevDate`); `foss` additionally sets `IS_AUTOUPDATE=false` and a `.foss` applicationId suffix.
+Other build types (see `ComposeN-Zik/build.gradle.kts`): `full`, `minified` (R8 minify + shrinkResources), `full32`, `minified32`, `beta32`, `dev`, `dev32`. The `release` build type is explicitly **disabled** (`assembleRelease` does not exist). The only dedicated per-buildType source set is `src/debug/`, which holds its own `AndroidManifest.xml` (Compose test-harness activity — see Done.txt). A custom `assembleFossRelease` task exists as an alias of `assembleFoss`. Variant behavioral differences (see `build.gradle.kts` + CI): `*32` types and `foss` build with `ENABLE_FFMPEG=false` (no Media Export/Metadata Editor); `dev`/`dev32` get a dated `versionNameSuffix` (CI passes `-PdevDate`); `foss` additionally sets `IS_AUTOUPDATE=false` and a `.foss` applicationId suffix.
 
 ## Proguard/R8
 
@@ -150,10 +150,10 @@ New features/bug fixes should include at least one test. If no test framework is
 ## CI Expectations
 
 - No pre-commit hooks are configured in this repo — do not wait for hook signals; run build with the commands in this file
-- **No CI workflow runs the unit test suite** — tests are local-only; always run them yourself before reporting (the only workflow that would run tests, `code-coverage.yml`, is disabled via its `.disabled` extension — if it is ever re-enabled, this line must be revisited)
-- CI signs the unsigned APKs in GitHub Actions via `secrets.RELEASE_KEYSTORE*` (beta manual, weekly all-flavors, dev nightly + manual, test manual full-only — an author gate for the maintainer `NEVARLeVrai` exists in `build-dev.yml` but no `push` trigger is configured, so it is currently unreachable)
+- **No CI workflow runs the unit test suite** — tests are local-only; always run them yourself before reporting
+- CI signs the unsigned APKs in GitHub Actions via `secrets.RELEASE_KEYSTORE*` — the 4 build workflows: `build-beta-flavor.yaml` (beta manual), `build-all-flavors-weekly.yml` (weekly all-flavors), `build-dev.yml` (dev nightly + manual — an author gate for the maintainer `NEVARLeVrai` exists but no `push` trigger is configured, so it is currently unreachable), `build-test.yaml` (test manual full-only)
 - `cache-builder.yaml` is another **active** Gradle workflow: it runs builds for cache warming only (`assembleBeta`/`Full`/`Minified --build-cache`) on 3 triggers — `push` (path-filtered to `**/*.gradle*` + wrapper), weekly `schedule` (Friday 16:00) and manual `workflow_dispatch` — it neither signs nor releases
-- The remaining 9 **active** workflows in `.github/workflows/` are repo-automation bots, NOT Gradle builds: `sync-crowdin-translations.yaml` (edits `values-*/strings.xml` — exempt per CODE.md Translations), `metrics.yml` (auto-commits stats on a 2h cadence + on release), `weekly-update-contributors.yaml` (rewrites `res/raw/contributors.json` weekly), `update-android-lockdown-countdown.yml`, `house-keeper.yaml`, `add-labels.yaml`, `auto-assign-issues.yml`, `close-stale-tickets.yaml`, `comment-on-label.yaml`. Bot commits on `main` from these are expected traffic, not rule violations — do NOT manually edit their targets (`res/raw/contributors.json`, `values-*/`) in a feature commit without flagging it
+- The remaining 11 **active** workflows in `.github/workflows/` (16 total) are repo-automation + security, NOT Gradle builds: `add-labels.yaml`, `auto-assign-issues.yml`, `close-stale-tickets.yaml`, `comment-on-label.yaml`, `house-keeper.yaml`, `metrics.yml` (auto-commits stats on a 2h cadence + on release), `sync-metroproto.yml` (weekly proto sync from Metrolist into `src/main/proto/listentogether.proto`), `update-android-lockdown-countdown.yml`, `weekly-update-contributors.yaml` (rewrites `res/raw/contributors.json` weekly), `weekly-update-translators.yaml` (updates the Crowdin-managed `values-*/strings.xml` locale files — exempt per CODE.md Translations) and `codeql.yml` (security scan). Bot commits on `main` from these are expected traffic, not rule violations — do NOT manually edit their targets (`res/raw/contributors.json`, `values-*/`) in a feature commit without flagging it
 - If CI pipeline fails after push → HALT, investigate, fix
 
 ## Code Formatting

@@ -1,6 +1,6 @@
 # AGENTS.md — NZik
 
-**Version:** 1.6.0 | **Last updated:** 2026-10-16
+**Version:** 1.7.0 | **Last updated:** 2026-10-16
 
 **MANDATORY: Read this file + rules/*.md before any task.**
 
@@ -96,24 +96,28 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 │   ├── commonMain/            KMP shared logic (effectively one file — `app/it/fast4x/rimusic/Utils.kt`)
 │   ├── main/                  res (drawables, mipmap) + proto/listentogether.proto (protobuf source set for Listen Together)
 │   ├── test/                  Tests
-│   └── debug/ + dev/ + dev32/ + foss/   Per-buildType source sets (`debug` holds its own AndroidManifest.xml; the others are currently empty — see rules/BUILD.md)
+│   └── debug/                 Per-buildType source set — `debug` holds its own AndroidManifest.xml (the Compose test-harness activity); the other build types have no source set dir (see rules/BUILD.md)
 ├── extensions/              API Gradle modules (innertube → module `:oldtube`, kugou, lrclib, musicbrainz, invidious, ktor-client-brotli, lastfm — module names in `settings.gradle.kts`); `piped/` removed entirely (v75)
 ├── modules/                 Feature submodules — `betterlyrics`, `discordrpc`, `nextvisualizer` are **git submodules**: after a fresh clone run `git submodule update --init --recursive` or Gradle sync fails
 ├── gradle/libs.versions.toml  Version catalog
 ├── assets/notes/              Done.txt + Changelog_Template.txt + TODO.txt (repo-root working files — NOT an Android assets source set)
-├── fastlane/                  Store metadata (~25 locales: short/full descriptions, en-US title + tvBanner) + released changelogs by versionCode in `fastlane/metadata/android/en-US/changelogs/`
+├── fastlane/                  Store metadata (31 locales: short/full descriptions, en-US title + tvBanner) + released changelogs by versionCode in `fastlane/metadata/android/en-US/changelogs/`
 ├── Updater/                   Released changelogs by versionCode in `Updater/changelogs/` (auto-updater)
-└── (WORKSPACE ROOT, one level above N-Zik/: `docs/` reference projects, Reference READ-ONLY · `N-Zik-Website/` separate project — NOT part of this repo · `db/` log captures + `*.sqlite` DB dumps at the root — artifacts referenced by Done.txt)
+├── opencode.json + .devin/wiki.json   Tracked agent-tooling config (not app code)
+└── (WORKSPACE ROOT, one level above N-Zik/: `docs/` reference projects, Reference READ-ONLY · `N-Zik-Website/` separate project — NOT part of this repo)
 ```
 
 | What         | Where                                      |
 | ------------ | ------------------------------------------ |
-| Main code    | `app/n_zik/android/` (new) + legacy `app/it/fast4x/rimusic/` & `app/kreate/android/` (≈ same file count — READ-ONLY, see rules/CODE.md) |
+| Main code    | `app/n_zik/android/` (new — 555 .kt) + legacy `app/it/fast4x/rimusic/` (320 .kt) & `app/kreate/android/` (21 .kt) — the legacy tree is being migrated out (READ-ONLY, see rules/CODE.md) |
 | Database     | `app/n_zik/android/core/database/`         |
 | Repositories | collocated with their domain (e.g. `recognition/ShazamRepository.kt`) — no central `core/data/` exists |
 | DI           | no DI framework in the app module (Hilt and Koin declared in the catalog but never applied) — plain constructor injection + `object Dependencies` service locator in `MainApplication.kt` (process-lifetime `Application` access); introducing a DI framework requires user approval |
 | Navigation   | `app/n_zik/android/core/navigation/` — interceptors ONLY; routes are the legacy `NavRoutes` enum + string helpers (see rules/CODE.md Navigation) |
 | Player       | `app/n_zik/android/playback/services/`     |
+| Contract server (wire) | `app/n_zik/android/bridge/` — the phone-side local server of the wire contract with the N-Zik-Desktop-Compagnon app (39 .kt: `BridgeServer` + Core/Controller/Service, `DeviceAuthenticator`, sub-pkgs `audio/`, `command/`, `library/`, `pairing/`) — the spec is shared: `{project-root}/_bmad-output/specs/spec-n-zik-pc-bridge/contract/CONTRACT-v1.md` (contract 1.x, current 1.12.0) |
+| Listen Together      | `app/n_zik/android/listentogether/` (12 .kt) + `src/main/proto/listentogether.proto` |
+| Widgets / shortcuts  | `app/n_zik/android/widget/` (6 .kt), `app/n_zik/android/shortcuts/` |
 | UI           | `app/n_zik/android/components/ui/screens/` |
 | Tests        | `ComposeN-Zik/src/test/`                   |
 

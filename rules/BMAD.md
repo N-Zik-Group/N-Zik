@@ -1,6 +1,6 @@
 # BMAD Technical Reference
 
-**Version:** 1.5.0 | **Last updated:** 2026-09-26
+**Version:** 1.5.1 | **Last updated:** 2026-10-16
 
 **MANDATORY: Read this file before executing any BMAD skill.**
 
@@ -14,7 +14,7 @@
 
 > **Re-installation is NOT defined in this workspace** — no installer command is documented in these rules. If a re-install is needed (see RECOVERY.md), HALT and ask the user for the re-installation procedure; the upstream documentation is the reference (https://docs.bmad-method.org/).
 
-**Installed version** (per `_bmad/_config/manifest.yaml`): BMAD **6.12.0** (installed 2026-09-11, last updated 2026-09-14) — modules: `core` 6.12.0, `bmm` 6.12.0, `bmb` v2.2.2, `cis` v0.3.2, `tea` v1.26.0, `bmad-loop` v0.11.1; IDEs installed: `claude-code`, `antigravity`, `opencode`. **57 skills** are installed in each IDE directory (`.agents/skills/`, `.agent/skills/`, `.claude/skills/`). Stray non-BMAD files at the `_bmad/` root (e.g. `lt-1.png`) are NOT part of the installation — do not treat them as config.
+**Installed version** (per `_bmad/_config/manifest.yaml`): BMAD **6.12.4** (installed 2026-09-11, last updated 2026-10-16) — modules: `core` 6.12.4, `bmm` 6.12.4, `bmb` v2.2.2, `cis` v0.3.2, `tea` v1.27.2, `bmad-loop` v0.13.2; IDEs installed: `claude-code`, `antigravity`, `opencode`. **57 skills** are installed in each IDE directory (`.agents/skills/`, `.agent/skills/`, `.claude/skills/`). Stray non-BMAD files at the `_bmad/` root (e.g. `lt-1.png`) are NOT part of the installation — do not treat them as config.
 
 **Skills are NOT in `_bmad/`** — they are in IDE-specific directories at `{project-root}`:
 
@@ -26,7 +26,7 @@
 
 **`_bmad/` contains:** config, scripts, modules, rendered outputs — NOT skills.
 
-> **`_bmad-output/`** (workspace root, sibling of `_bmad/` — NOT part of the installation) is BMAD's output directory: planning/implementation/test artifacts, `problem-solution-*.md` reports, and `DONTREAD/` (archive of older outputs — respect it, do not delete or reorganize). It is separate from the protected `_bmad/` installation. Artifacts currently live in `implementation/` and `DONTREAD/`; `planning/` and `test/` are empty — do NOT infer "never produced" (older outputs may be archived in `DONTREAD/`).
+> **`_bmad-output/`** (workspace root, sibling of `_bmad/` — NOT part of the installation) is BMAD's output directory: planning/implementation/test artifacts, `problem-solution-*.md` reports, and `DONTREAD/` (archive of older outputs — respect it, do not delete or reorganize). It is separate from the protected `_bmad/` installation. Artifacts currently live in `planning-artifacts/`, `implementation-artifacts/`, `test-artifacts/`, `specs/` (incl. the shared `spec-n-zik-pc-bridge/` contract) and `DONTREAD/`; an empty artifact dir means nothing — do NOT infer "never produced" (older outputs may be archived in `DONTREAD/`).
 
 ---
 

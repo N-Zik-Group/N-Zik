@@ -1,6 +1,6 @@
 # Workflow Rules
 
-**Version:** 1.6.0 | **Last updated:** 2026-10-16
+**Version:** 1.6.1 | **Last updated:** 2026-10-16
 
 ## Session Startup Sequence
 
@@ -61,7 +61,7 @@ See rules/*.md for full details.
 
 Before triggering the full BMAD workflow, check if the request is **doc-only and trivial**:
 
-- Applies ONLY to: typo fixes, `Done.txt`/changelog wording, README/markdown prose — **zero changes to `.kt`, `.xml`, `.toml`, `.gradle.kts`, or any build/schema file** (a comment change inside a code file is NOT doc-only — run the full workflow)
+- Applies ONLY to: typo fixes, `Done.txt`/`TODO.txt`/changelog wording, README/markdown prose — **zero changes to `.kt`, `.xml`, `.toml`, `.gradle.kts`, or any build/schema file** (a comment change inside a code file is NOT doc-only — run the full workflow)
 - If it qualifies → SKIP the BMAD workflow, make the edit directly, show the diff, ask for approval before committing (commit approval rule from AGENTS.md still applies)
 - If there is ANY doubt whether a change is "trivial" (e.g. it touches a string resource key, not just prose) → treat it as a normal change and run the full workflow
 - This exception does NOT apply to code, schema, dependency, or config changes, however small
@@ -284,7 +284,7 @@ Some skills use micro-file design where each step is in its own file.
   - No dead code: no commented-out code blocks, no unused functions/classes/variables/parameters (if intentionally kept: `// TODO(author): reason`)
   - Comment hygiene: no comments that restate the code, KDoc on public APIs, TODOs as `// TODO(author): description`
   - Indentation & formatting: consistent with the surrounding code, no trailing whitespace, newline at end of file; run ktlint/detekt if configured in the project
-  - Timber with tags ONLY (no `println`/`Log.d`/`System.out`), no `!!` without a justification comment, no `GlobalScope`/`runBlocking`/`collectAsState()`
+  - Timber with tags ONLY (no `println`/`Log.d`/`System.out`), no `!!` without a justification comment, no `GlobalScope`/`collectAsState()`, no `runBlocking` WITHOUT a justification comment (per AGENTS.md Never Do / CODE.md)
 - Show evidence for the hygiene gate: list the files cleaned + what was removed (or explicitly state "no issues found") — never just claim "clean"
 - Build: `./gradlew :ComposeN-Zik:assembleDebug` (on Windows: `gradlew.bat`)
 - Run tests (new feature/bug fix → at least one new test, per AGENTS.md: list the test file(s) added)
@@ -351,7 +351,7 @@ After the BMAD workflow completes, **MUST follow this exact flow** — NEVER ski
     - Create `fastlane/metadata/android/en-US/changelogs/{newVersionCode}.txt` from the `Done.txt` entries, using its own template (`Changelog_Template.txt` in same folder) — **max 500 characters**
     - Create `Updater/changelogs/{newVersionCode}.txt` from the `Done.txt` entries, using its own template — **no character limit**, include full issue link
     - Both changelogs are written in ENGLISH (fastlane metadata is en-US) — even when the session language is another one
-    - **Known historical gaps:** version #5 and #14 are missing from BOTH changelog folders (sequence jumps 4→6, 13→15) — do NOT backfill them. `Updater/changelogs/` also holds a non-version `dev.txt` and a copy of `Changelog_Template.txt` (besides the canonical one in `assets/notes/`) — treat both as expected, do NOT "clean" them
+    - **Known historical gaps:** versions #5, #14 and #80 are missing from BOTH changelog folders (sequence jumps 4→6, 13→15, 79→81) — do NOT backfill them. `Updater/changelogs/` also holds a non-version `dev.txt` and a copy of `Changelog_Template.txt` (besides the canonical one in `assets/notes/`) — treat both as expected, do NOT "clean" them
     - Empty `assets/notes/Done.txt` (the released entries now live in the changelogs)
   - **2. Done + commit (no release):**
     - Append the new work to `assets/notes/Done.txt` using its own template (`Changelog_Template.txt` in same folder) — format: `<keyword>(<scope>): <short summary> (issue ref)` + technical sub-bullets, include full issue link — NO version bump, NO `fastlane/`/`Updater/` files

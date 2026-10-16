@@ -1,6 +1,6 @@
 # Code Quality Rules
 
-**Version:** 1.5.0 | **Last updated:** 2026-09-26
+**Version:** 1.6.0 | **Last updated:** 2026-10-16
 
 ## Naming Conventions
 
@@ -64,7 +64,7 @@ LazyColumn {
 Rules:
 
 - NEVER use `GlobalScope` — use `viewModelScope`, `lifecycleScope`, or structured scopes
-- NEVER use `runBlocking` in production code (use suspend functions). A few pre-existing production usages carry a justification comment (e.g. ExoPlayer sync APIs) — any NEW one must carry an equivalent comment. In JVM unit tests both `runBlocking` (dominant, 100+ usages) and `runTest` (~24 files) are used — mirror the neighboring tests
+- NEVER use `runBlocking` in production code (use suspend functions). A few pre-existing production usages carry a justification comment (e.g. ExoPlayer sync APIs) — any NEW one must carry an equivalent comment. In JVM unit tests both `runBlocking` (dominant, 500+ usages) and `runTest` (~39 files) are used — mirror the neighboring tests
 - NEVER use `collectAsState()` — use `collectAsStateWithLifecycle()`
 - NEVER do a read-modify-write (`_state.value = _state.value.copy(...)`) — use `_state.update { it.copy(...) }`. Direct assignment (`_state.value = …`) is allowed only to set the initial state
 - Use `StateFlow` over `LiveData` — expose a single `data class *UiState` per feature (sealed state class/interface only when states are mutually exclusive, e.g. `FindUiState`)
@@ -107,7 +107,10 @@ New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app
 | Settings components            | `components/settings/`                             |
 | Enums                          | `enums/`                                           |
 | Extensions (optional features) | package `extensions/{feature}/` under `app.n_zik.android` (the Gradle subprojects in `N-Zik/extensions/` are separate API modules — see `settings.gradle.kts`) |
-| Database tables & migrations   | `core/database/` (migrations in `core/database/migration/`; note: `core/migration/` holds 3 launch-time cleanup objects — NOT Room migrations) |
+| Database tables & migrations   | `core/database/` (migrations in `core/database/migration/`; note: `core/migration/` holds 5 launch-time cleanup objects — NOT Room migrations) |
+| Wire-contract server (bridge)  | `bridge/` (`BridgeServer` + Core/Controller/Service, `DeviceAuthenticator`, `BridgeContract`, sub-pkgs `audio/`, `command/`, `library/`, `pairing/` — the phone-side local server for the N-Zik-Desktop-Compagnon app) |
+| Listen Together                | `listentogether/` (+ `src/main/proto/listentogether.proto`) |
+| Widgets / shortcuts            | `widget/`, `shortcuts/`                             |
 | Network layer                  | `core/network/`                                    |
 | Services (player, download)    | `playback/services/`, `download/services/`         |
 | Dependency injection           | plain constructor injection (no DI framework in the app module); process-lifetime `Application` access goes through the `object Dependencies` service locator in `MainApplication.kt` |
@@ -270,13 +273,13 @@ NEVER edit schema without explicit instruction. Never add, remove, or rename col
 
 - Table naming: **singular** (`Song`, `Playlist`) — all 13 existing tables are singular
 - DAO suffix: **`*Table`** (`SongTable`, `PlaylistTable`) — 13 DAO interfaces, none named `*Dao`
-- DAOs carry `@RewriteQueriesToDropUnusedColumns` (12 of 13 existing — `ImportSongTable` is the exception) — new DAOs must carry it
+- DAOs carry `@RewriteQueriesToDropUnusedColumns` (all 13 existing) — new DAOs must carry it
 - Use `@Insert(onConflict = OnConflictStrategy.IGNORE)` for insert-or-ignore
 - Use `@Upsert` for insert-or-update
 - Use `@Query` with `Flow<T>` for reactive queries
 - Use `@Transaction` for multi-step operations — Room transactions in this app run via `Database.asyncTransaction` (`core/database/Database.kt`), which **retries 3× on `SQLiteDatabaseLockedException`** — keep that resilience when touching transaction code
 - All DAO methods `suspend` (except Flow-returning queries)
-- Migration testing required before reporting — frozen schema JSON fixtures live in `ComposeN-Zik/src/test/resources/schemas/app.n_zik.android.core.database.DatabaseInitializer/` (40-42.json, used by the `From*To*MigrationTest` suite); the LIVE Room export directory is `ComposeN-Zik/schemas/` (`schemaDirectory`) — new version JSONs land there after a DB change (known historical gap: `33.json` is missing from the n_zik export dir — legacy 1-27 + n_zik 34-42 exist; do NOT "fix" or regenerate it without the user)
+- Migration testing required before reporting — frozen schema JSON fixtures live in `ComposeN-Zik/src/test/resources/schemas/app.n_zik.android.core.database.DatabaseInitializer/` (40-42.json, used by the `From*To*MigrationTest` suite); the LIVE Room export directory is `ComposeN-Zik/schemas/` (`schemaDirectory`) — new version JSONs land there after a DB change (the `app.n_zik.android.core.database.DatabaseInitializer/` dir now holds 1–42.json complete, incl. the once-missing `33.json`; two extra historical export dirs also exist — `database.MusicDatabase/23.json` + `database.MusicDatabaseConstructor/23.json` — do NOT clean or regenerate any of them without the user)
 
 ### Migration Safety
 
@@ -304,7 +307,7 @@ NEVER edit schema without explicit instruction. Never add, remove, or rename col
 ## Testing Conventions
 
 - Test method names are backtick descriptive sentences (`` fun `shuffle should return list of same size`() ``) — match this style
-- **Off-main tests** (name suffix `*OffMainTest`, 28 existing): assert that offloaded work actually lands on a named `NzikDispatchers` thread (thread-name prefix assertion, e.g. `nzik-media-`). Any new work moved off the main thread gets one — this is the verification pillar of issue #606
+- **Off-main tests** (name suffix `*OffMainTest`, 29 existing): assert that offloaded work actually lands on a named `NzikDispatchers` thread (thread-name prefix assertion, e.g. `nzik-media-`). Any new work moved off the main thread gets one — this is the verification pillar of issue #606
 - Tests of legacy classes go under `app.n_zik.android.legacyoffmain.<mirror>` — never under the legacy namespace (see rules/BUILD.md, incl. the 3 grandfathered exceptions)
 
 ## Compose UI Testing
