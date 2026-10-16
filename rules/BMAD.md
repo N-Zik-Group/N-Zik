@@ -1,6 +1,6 @@
 # BMAD Technical Reference
 
-**Version:** 1.5.1 | **Last updated:** 2026-10-16
+**Version:** 1.5.2 | **Last updated:** 2026-10-16
 
 **MANDATORY: Read this file before executing any BMAD skill.**
 
@@ -80,7 +80,7 @@ uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root
 > **Path tip:** If running from `N-Zik/`, `{project-root}` resolves to the parent directory. Use `..` or resolve the absolute path to the workspace root (the directory containing `_bmad/`) before running scripts.
 
 **`{skill-root}`** = `{project-root}/{target_dir}/{skill-name}` where `target_dir` depends on your IDE:
-- **Cursor/Copilot/Codex/OpenCode/Windsurf:** `{project-root}/.agents/skills/{skill-name}`
+- **Cursor/Copilot/Codex/OpenCode/Windsurf/Gemini CLI:** `{project-root}/.agents/skills/{skill-name}`
 - **Claude Code:** `{project-root}/.claude/skills/{skill-name}`
 - **Google Antigravity:** `{project-root}/.agent/skills/{skill-name}`
 

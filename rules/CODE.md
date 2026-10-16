@@ -1,6 +1,6 @@
 # Code Quality Rules
 
-**Version:** 1.6.1 | **Last updated:** 2026-10-16
+**Version:** 1.7.0 | **Last updated:** 2026-10-16
 
 ## Naming Conventions
 
@@ -111,6 +111,10 @@ New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app
 | Wire-contract server (bridge)  | `bridge/` (`BridgeServer` + Core/Controller/Service, `DeviceAuthenticator`, `BridgeContract`, sub-pkgs `audio/`, `command/`, `library/`, `pairing/`, `state/` — the phone-side local server for the N-Zik-Desktop-Compagnon app) |
 | Listen Together                | `listentogether/` (+ `src/main/proto/listentogether.proto`) |
 | Widgets / shortcuts            | `widget/`, `shortcuts/`                             |
+| Home tabs / chips / toolbars   | `components/tab/` (12 .kt)                          |
+| Domain component trees         | `components/import/` (6 .kt), `components/playlist/` (3), `components/song/` (3) — per-domain component packages (dialogs & menus have their own rows above) |
+| Core feature packages          | `core/rewind/` (5 .kt — incl. the two grandfathered raw-dispatcher files, see "Coroutines & Dispatchers"), `core/youtube/` (5), `core/backup/` (4), `core/profiles/` (2), `core/rescue/` (2), `core/coil/` (2) |
+| Updater (in-app)               | `updater/` — `models/` (5 .kt), `services/` (2 .kt), `ui/` (`UpdateScreen`, see the Page-level screens row) |
 | Network layer                  | `core/network/`                                    |
 | Services (player, download)    | `playback/services/`, `download/services/`         |
 | Dependency injection           | plain constructor injection (no DI framework in the app module); process-lifetime `Application` access goes through the `object Dependencies` service locator in `MainApplication.kt` |
