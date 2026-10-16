@@ -1,6 +1,6 @@
 # Workflow Rules
 
-**Version:** 1.5.0 | **Last updated:** 2026-09-26
+**Version:** 1.6.0 | **Last updated:** 2026-10-16
 
 ## Session Startup Sequence
 
@@ -13,6 +13,15 @@
 7. If bug or feature: ASK which IDE/tool (ONE at a time), ASK which skill to use
 
 > **"question tool"** = the IDE's interactive ask mechanism. If your IDE has no such tool, ask in chat and WAIT for the reply before proceeding — the blocking semantics are identical for every gate.
+
+## Question Tool — Choices vs. Open Answers
+
+The `question` tool always appends a free-form **"Type your own answer"** field automatically. Use it so the user is never trapped in a loop:
+
+- **Closed set → real choices.** Offer options ONLY when there is a genuine, short set of mutually distinct choices (e.g. Bug / feature / other; which IDE; commit mode 1/2/3). Every option must be a real, actionable choice.
+- **Specific value → open question, NOT a choice.** When you are waiting for the user to TELL you something specific (a path, an issue link, a new version name, a description, or any value that is not a closed set), ask an **open** question. Do NOT frame it as a multiple-choice and do NOT invent a placeholder option such as "répondre", "personnalisé" or "type your answer" — that option just re-triggers the same prompt (infinite loop). Let the tool's built-in free-form field capture the typed answer.
+- **Never fabricate a loop option.** If the only option you could add is "answer / respond / custom", it is meaningless — omit it. A prompt with no genuine closed-set options is simply an open question (ask in plain text if that is cleaner).
+- One question per decision — unrelated decisions are NEVER bundled into a single multi-choice; related questions MAY be grouped in a single question tool call (see Step 1).
 
 ## Announcement Template
 
@@ -68,6 +77,7 @@ Before triggering the full BMAD workflow, check if the request is **doc-only and
 
 ### Step 2: Explore
 
+- Prefer delegating broad exploration to the **`explore` sub-agent** (see AGENTS.md "Sub-agents & Context") — it reads in its own context and returns the findings, keeping the main context lean (avoids premature compaction). You then cite the key paths as evidence.
 - Search existing implementations
 - Read neighboring files for conventions
 - Check imports and dependencies

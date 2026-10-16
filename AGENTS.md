@@ -1,6 +1,6 @@
 # AGENTS.md — NZik
 
-**Version:** 1.5.0 | **Last updated:** 2026-09-26
+**Version:** 1.6.0 | **Last updated:** 2026-10-16
 
 **MANDATORY: Read this file + rules/*.md before any task.**
 
@@ -23,6 +23,9 @@
 - Verify build passes after changes (`./gradlew :ComposeN-Zik:assembleDebug`)
 - New features/bug fixes include at least one test
 - Show evidence (diffs, test output) — never just claim "done"
+- Use the question tool's choice mechanism ONLY for a genuine closed set of options; when waiting for a specific value or free-form input, ask an OPEN question — never a fake "répondre / personnalisé" option that just loops the same prompt (see rules/WORKFLOW.md "Question Tool — Choices vs. Open Answers")
+- Keep AGENTS.md + `rules/` lean and current as the project evolves — see "Rules Maintenance & Evolution"
+- Delegate context-heavy exploration/reading to sub-agents (`explore`/`general`) to keep the main context lean and avoid compaction — see "Sub-agents & Context"
 - Match user's language for communication
 - Code comments & commits in English
 
@@ -132,6 +135,18 @@ HALT after 3 failed build attempts → report with full error log.
 
 ---
 
+## Sub-agents & Context — avoid compaction
+
+The main conversation context is the scarce resource — as it grows, the harness compacts it and detail is lost. Keep it lean by delegating context-heavy work to sub-agents, which run in their own context and return only a result.
+
+- **`explore`** — the default for codebase exploration (find files, search code, "where is X / how does Y work / list usages"). It reads in its own context and returns a concise finding. Do NOT swallow whole files or run many wide searches directly in the main conversation when `explore` can do it.
+- **`general`** — for multi-step / parallelizable work that would bloat the main context (several independent investigations, a long review pass); can run in the background.
+- **Keep in the main context:** orchestration, decisions, the user conversation, and the actual edits (edits must stay coherent in one thread).
+- **When delegating:** the sub-agent starts fresh — pass all relevant context, a precise task, and what to return. Capture its result; don't re-read what it already read.
+- **Threshold:** reads many files / runs many commands / produces long output → delegate. A small, targeted read needed for the next decision → inline is fine.
+
+---
+
 ## BMAD Workflow
 
 - **AGENTS.md wins:** code quality, security, commits, logging, database, build
@@ -154,3 +169,16 @@ HALT after 3 failed build attempts → report with full error log.
 | `rules/WORKFLOW.md`   | BMAD workflow step-by-step enforcement                |
 | `rules/BMAD.md`       | BMAD config, skill customization, scripts             |
 | `rules/BMAD-TOOLS.md` | IDE skill directories reference                       |
+
+---
+
+## Rules Maintenance & Evolution
+
+These files (AGENTS.md + `rules/`) are a **living document** — they evolve with the project. Keep them lean and current, not a one-off spec frozen at setup.
+
+- **Match reality.** When the codebase changes, update the rules to describe the state it is in *now*: a screen or feature lands, a tool is added (ktlint, a new build variant), the legacy→`app.n_zik.android.*` migration reaches a milestone, a convention is fixed, a build type changes.
+- **Lean & project-specific.** Short, actionable rules over prose. Add a generic explanation ONLY when it is necessary or logically required (e.g. *why* legacy packages stay READ-ONLY, *why* `NzikDispatchers` is the single threading source of truth). Cut "best-practice 101" that adds nothing project-specific.
+- **Delete, don't stack.** When a rule is superseded or completed (e.g. a "to be introduced" note once the tool exists; a "known flaky test" note once the test is fixed), rewrite or remove it — never leave stale notes piling up.
+- **Bump on change.** Editing any of these files → bump its `Version` and `Last updated` (patch = wording, minor = new rule/section, major = restructure).
+- **Doc-only.** Rule edits follow the "Doc-Only Exception" flow (show the diff, ask before commit) — the BMAD code workflow does not apply to rule edits.
+- **When to update:** migration state changes · a tool/framework is added or configured · file layout changes · a security/config decision is made · a recurring mistake is found (turn it into a rule).
