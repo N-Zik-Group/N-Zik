@@ -1,6 +1,6 @@
 # Build & Test Rules
 
-**Version:** 1.6.0 | **Last updated:** 2026-10-16
+**Version:** 1.6.1 | **Last updated:** 2026-10-16
 
 ## Gradle Version Catalog
 
@@ -153,7 +153,7 @@ New features/bug fixes should include at least one test. If no test framework is
 - **No CI workflow runs the unit test suite** — tests are local-only; always run them yourself before reporting
 - CI signs the unsigned APKs in GitHub Actions via `secrets.RELEASE_KEYSTORE*` — the 4 build workflows: `build-beta-flavor.yaml` (beta manual), `build-all-flavors-weekly.yml` (weekly all-flavors), `build-dev.yml` (dev nightly + manual — an author gate for the maintainer `NEVARLeVrai` exists but no `push` trigger is configured, so it is currently unreachable), `build-test.yaml` (test manual full-only)
 - `cache-builder.yaml` is another **active** Gradle workflow: it runs builds for cache warming only (`assembleBeta`/`Full`/`Minified --build-cache`) on 3 triggers — `push` (path-filtered to `**/*.gradle*` + wrapper), weekly `schedule` (Friday 16:00) and manual `workflow_dispatch` — it neither signs nor releases
-- The remaining 11 **active** workflows in `.github/workflows/` (16 total) are repo-automation + security, NOT Gradle builds: `add-labels.yaml`, `auto-assign-issues.yml`, `close-stale-tickets.yaml`, `comment-on-label.yaml`, `house-keeper.yaml`, `metrics.yml` (auto-commits stats on a 2h cadence + on release), `sync-metroproto.yml` (weekly proto sync from Metrolist into `src/main/proto/listentogether.proto`), `update-android-lockdown-countdown.yml`, `weekly-update-contributors.yaml` (rewrites `res/raw/contributors.json` weekly), `weekly-update-translators.yaml` (updates the Crowdin-managed `values-*/strings.xml` locale files — exempt per CODE.md Translations) and `codeql.yml` (security scan). Bot commits on `main` from these are expected traffic, not rule violations — do NOT manually edit their targets (`res/raw/contributors.json`, `values-*/`) in a feature commit without flagging it
+- The remaining 11 **active** workflows in `.github/workflows/` (16 total) are repo-automation + security, NOT Gradle builds: `add-labels.yaml`, `auto-assign-issues.yml`, `close-stale-tickets.yaml`, `comment-on-label.yaml`, `house-keeper.yaml`, `metrics.yml` (auto-commits stats on a 2h cadence + on release), `sync-metroproto.yml` (weekly proto sync from Metrolist into `src/main/proto/listentogether.proto`), `update-android-lockdown-countdown.yml`, `weekly-update-contributors.yaml` (rewrites `res/raw/contributors.json` weekly), `weekly-update-translators.yaml` (rewrites `res/raw/translators.json` weekly — the in-app translator credits list fetched from the Crowdin API) and `codeql.yml` (security scan). Bot commits on `main` from these are expected traffic, not rule violations — do NOT manually edit their targets (`res/raw/contributors.json`, `res/raw/translators.json`) in a feature commit without flagging it
 - If CI pipeline fails after push → HALT, investigate, fix
 
 ## Code Formatting

@@ -1,6 +1,6 @@
 # Code Quality Rules
 
-**Version:** 1.6.0 | **Last updated:** 2026-10-16
+**Version:** 1.6.1 | **Last updated:** 2026-10-16
 
 ## Naming Conventions
 
@@ -108,7 +108,7 @@ New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app
 | Enums                          | `enums/`                                           |
 | Extensions (optional features) | package `extensions/{feature}/` under `app.n_zik.android` (the Gradle subprojects in `N-Zik/extensions/` are separate API modules — see `settings.gradle.kts`) |
 | Database tables & migrations   | `core/database/` (migrations in `core/database/migration/`; note: `core/migration/` holds 5 launch-time cleanup objects — NOT Room migrations) |
-| Wire-contract server (bridge)  | `bridge/` (`BridgeServer` + Core/Controller/Service, `DeviceAuthenticator`, `BridgeContract`, sub-pkgs `audio/`, `command/`, `library/`, `pairing/` — the phone-side local server for the N-Zik-Desktop-Compagnon app) |
+| Wire-contract server (bridge)  | `bridge/` (`BridgeServer` + Core/Controller/Service, `DeviceAuthenticator`, `BridgeContract`, sub-pkgs `audio/`, `command/`, `library/`, `pairing/`, `state/` — the phone-side local server for the N-Zik-Desktop-Compagnon app) |
 | Listen Together                | `listentogether/` (+ `src/main/proto/listentogether.proto`) |
 | Widgets / shortcuts            | `widget/`, `shortcuts/`                             |
 | Network layer                  | `core/network/`                                    |
@@ -279,7 +279,7 @@ NEVER edit schema without explicit instruction. Never add, remove, or rename col
 - Use `@Query` with `Flow<T>` for reactive queries
 - Use `@Transaction` for multi-step operations — Room transactions in this app run via `Database.asyncTransaction` (`core/database/Database.kt`), which **retries 3× on `SQLiteDatabaseLockedException`** — keep that resilience when touching transaction code
 - All DAO methods `suspend` (except Flow-returning queries)
-- Migration testing required before reporting — frozen schema JSON fixtures live in `ComposeN-Zik/src/test/resources/schemas/app.n_zik.android.core.database.DatabaseInitializer/` (40-42.json, used by the `From*To*MigrationTest` suite); the LIVE Room export directory is `ComposeN-Zik/schemas/` (`schemaDirectory`) — new version JSONs land there after a DB change (the `app.n_zik.android.core.database.DatabaseInitializer/` dir now holds 1–42.json complete, incl. the once-missing `33.json`; two extra historical export dirs also exist — `database.MusicDatabase/23.json` + `database.MusicDatabaseConstructor/23.json` — do NOT clean or regenerate any of them without the user)
+- Migration testing required before reporting — frozen schema JSON fixtures live in `ComposeN-Zik/src/test/resources/schemas/app.n_zik.android.core.database.DatabaseInitializer/` (40-42.json, used by the `From*To*MigrationTest` suite); the LIVE Room export directory is `ComposeN-Zik/schemas/` (`schemaDirectory`) — new version JSONs land there after a DB change (the `app.n_zik.android.core.database.DatabaseInitializer/` dir now holds 1–42.json complete, incl. the once-missing `33.json`; three extra historical export dirs also exist — `database.MusicDatabase/23.json`, `database.MusicDatabaseConstructor/23.json` and `app.it.fast4x.rimusic.DatabaseInitializer/` (legacy 1–27.json) — do NOT clean or regenerate any of them without the user)
 
 ### Migration Safety
 

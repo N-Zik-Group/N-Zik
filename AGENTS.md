@@ -1,6 +1,6 @@
 # AGENTS.md — NZik
 
-**Version:** 1.7.0 | **Last updated:** 2026-10-16
+**Version:** 1.7.1 | **Last updated:** 2026-10-16
 
 **MANDATORY: Read this file + rules/*.md before any task.**
 
@@ -115,7 +115,7 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 | DI           | no DI framework in the app module (Hilt and Koin declared in the catalog but never applied) — plain constructor injection + `object Dependencies` service locator in `MainApplication.kt` (process-lifetime `Application` access); introducing a DI framework requires user approval |
 | Navigation   | `app/n_zik/android/core/navigation/` — interceptors ONLY; routes are the legacy `NavRoutes` enum + string helpers (see rules/CODE.md Navigation) |
 | Player       | `app/n_zik/android/playback/services/`     |
-| Contract server (wire) | `app/n_zik/android/bridge/` — the phone-side local server of the wire contract with the N-Zik-Desktop-Compagnon app (39 .kt: `BridgeServer` + Core/Controller/Service, `DeviceAuthenticator`, sub-pkgs `audio/`, `command/`, `library/`, `pairing/`) — the spec is shared: `{project-root}/_bmad-output/specs/spec-n-zik-pc-bridge/contract/CONTRACT-v1.md` (contract 1.x, current 1.12.0) |
+| Contract server (wire) | `app/n_zik/android/bridge/` — the phone-side local server of the wire contract with the N-Zik-Desktop-Compagnon app (39 .kt: `BridgeServer` + Core/Controller/Service, `DeviceAuthenticator`, sub-pkgs `audio/`, `command/`, `library/`, `pairing/`, `state/`) — the spec is shared: `{project-root}/_bmad-output/specs/spec-n-zik-pc-bridge/contract/CONTRACT-v1.md` (contract 1.x, current 1.12.0) |
 | Listen Together      | `app/n_zik/android/listentogether/` (12 .kt) + `src/main/proto/listentogether.proto` |
 | Widgets / shortcuts  | `app/n_zik/android/widget/` (6 .kt), `app/n_zik/android/shortcuts/` |
 | UI           | `app/n_zik/android/components/ui/screens/` |
