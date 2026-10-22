@@ -1,6 +1,6 @@
 # Code Quality Rules
 
-**Version:** 1.8.1 | **Last updated:** 2026-10-17
+**Version:** 1.9.0 | **Last updated:** 2026-10-22
 
 ## Naming Conventions
 
@@ -134,9 +134,11 @@ New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app
 
 ## Comments
 
-- Add comments only for complex or non-obvious logic
+- Comments are the exception, not the rule — the code must read without them first
+- Add comments only for complex or non-obvious logic; explain WHY, never WHAT
 - Do NOT restate what the code already says
-- Use KDoc for public APIs (see example below)
+- Single-line `//` is the default; a comment block > 2 lines is a smell — split it or delete it
+- No narrative paragraphs, no wall-of-text blocks, no banner/header comments
 - Mark TODOs with `// TODO(author): description`
 
 ```kotlin
@@ -149,20 +151,30 @@ counter++
 val adjustedIndex = roomIndex - 1
 ```
 
-### KDoc Format
+### KDoc — concise only
+
+- Default: one line, no @tags: `/** Fetches song by id. */`
+- Multi-line KDoc ONLY for genuinely complex APIs; one short sentence per @tag, never restate the type
+- Hard cap: max 3 @tags (one line each) — beyond that, trim until only the non-obvious information remains
 
 ```kotlin
+// GOOD — one-liner for a self-evident API
+/** Marks the videoId as failed for CLIENT_FAILURE_TTL_MS. */
+
+// GOOD — multi-line only when complex, ≤ 3 short @tags
 /**
  * Fetches lyrics for a given song from the LRCLIB API.
  *
- * @param songId The unique identifier of the song
- * @param artistName The artist name for search
- * @param songTitle The song title for search
- * @return LyricsResult containing synced lyrics or error
- * @throws NetworkException if API is unreachable
+ * @param songId Unique song identifier
+ * @param artistName Artist name for search
+ * @param songTitle Song title for search
  */
 suspend fun fetchLyrics(songId: String, artistName: String, songTitle: String): LyricsResult
 ```
+
+### KDoc/comment cleanup (mandatory on touch)
+
+When a diff touches a file whose existing comments/KDoc violate the rules above (wall-of-text block, restated code, over-cap KDoc), trim them in the same commit — minimal trims, no semantic change to the code itself. Do NOT launch a repo-wide comment-cleanup pass on your own initiative — that is a dedicated task, run only on explicit user request.
 
 ## Dead Code
 
