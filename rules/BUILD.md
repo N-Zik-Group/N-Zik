@@ -1,6 +1,6 @@
 # Build & Test Rules
 
-**Version:** 1.6.2 | **Last updated:** 2026-10-17
+**Version:** 1.7.0 | **Last updated:** 2026-10-22
 
 ## Gradle Version Catalog
 
@@ -146,6 +146,15 @@ class ShufflerTest {
 Test files: `ComposeN-Zik/src/test/kotlin/` — mirror source package structure, EXCEPT tests of legacy code (`app.it.fast4x.*` / `app.kreate.android.*`): those MUST live under `app.n_zik.android.legacyoffmain.<mirror>` (existing convention — NEVER under the legacy namespace itself, per AGENTS.md and the Step 6 guard check). Grandfathering: 3 pre-existing test files live under the legacy namespace (`app/it/fast4x/rimusic/models/PlaylistTest.kt`, `app/it/fast4x/rimusic/utils/InvincibleServiceTest.kt`, `app/it/fast4x/rimusic/utils/LandscapeBarsTest.kt`) — do NOT move, rewrite or modify them; every NEW legacy test goes under `legacyoffmain`. If one of the 3 fails or no longer compiles → HALT and ask the user for an explicit decision (the Step 6 guard check flags any legacy path in the diff — quote the approval in the report). Also grandfathered: the top-level test packages `test/kotlin/utils/` and `test/kotlin/painters/`, and the packages `app/n_zik/android/database/` (source in `core/database/`) and `app/n_zik/android/lyrics/` (no matching main package) — all predate the mirroring rule, do NOT move them; new tests follow the mirroring rule.
 
 New features/bug fixes should include at least one test. If no test framework is available → HALT and note it.
+
+### Test volume — a bar, not a quota
+
+"at least one test per fix" is a **minimum**, not a target: one focused test that would have caught the regression (or proves the fix) is enough. A fix spanning N distinct areas → at most one test file per area. Do not pad for coverage — a green, targeted test beats an exhaustive suite nobody re-runs. The repo's large suite (~3k tests) is a byproduct of agent-driven dev where tests are the per-fix evidence pillar (AGENTS.md "Show evidence") — not a per-fix quota.
+
+### Run strategy — targeted locally, full at the gates
+
+- **Local dev:** targeted run on the touched classes only (`--tests "app.n_zik.android…Test"`). A full suite is NOT required for every change.
+- **Full suite** (`:ComposeN-Zik:test`, ~22 min, carries pre-existing env failures — see RECOVERY.md "Known Flaky Tests") → only before a version bump/release, or via CI.
 
 ## CI Expectations
 

@@ -1,6 +1,6 @@
 # AGENTS.md — NZik
 
-**Version:** 1.7.2 | **Last updated:** 2026-10-17
+**Version:** 1.7.3 | **Last updated:** 2026-10-22
 
 **MANDATORY: Read this file + rules/*.md before any task.**
 
@@ -21,7 +21,7 @@
 - Dispatch coroutines on `NzikDispatchers` named dispatchers only (`UI`, `PLAYBACK`, `VISUALIZER`, `MEDIA`, `DATA` + Room executors); fire-and-forget scopes via `NzikDispatchers.fireAndForget()` (see rules/CODE.md "Coroutines & Dispatchers")
 - Use version catalog refs (`libs.versions.toml`)
 - Verify build passes after changes (`./gradlew :ComposeN-Zik:assembleDebug`)
-- New features/bug fixes include at least one test
+- New features/bug fixes include at least one test (minimum bar, not a quota — volume bar + run strategy in rules/BUILD.md "Testing")
 - Show evidence (diffs, test output) — never just claim "done"
 - Use the question tool's choice mechanism ONLY for a genuine closed set of options; when waiting for a specific value or free-form input, ask an OPEN question — never a fake "répondre / personnalisé" option that just loops the same prompt (see rules/WORKFLOW.md "Question Tool — Choices vs. Open Answers")
 - Keep AGENTS.md + `rules/` lean and current as the project evolves — see "Rules Maintenance & Evolution"
