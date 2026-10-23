@@ -65,8 +65,6 @@ fun canPushToYTM(): Boolean = getSyncDirection() != SyncDirection.YT_TO_APP
 fun isBackgroundGuardActive(): Boolean =
     appContext().preferences.getBoolean(syncBackgroundGuardKey, true) && appRunningInBackground
 
-// ============ PLAYLIST EDIT THROTTLE ============
-
 /**
  * Prevents rapid successive edits to the same playlist on YouTube.
  * Tracks last edit time per playlist and enforces a minimum delay.
@@ -556,8 +554,6 @@ suspend fun importYTMUploadedAlbums(force: Boolean = false, showDetails: Boolean
     true
 }
 
-// ============ EPISODES FOR LATER (VLSE) ============
-
 suspend fun importYTMEpisodesForLater(force: Boolean = false, showDetails: Boolean = true): Boolean = withContext(NzikDispatchers.DATA) {
     Timber.tag("SyncYTMusicUtils").d("importYTMEpisodesForLater isYouTubeSyncEnabled() = ${isYouTubeSyncEnabled()}")
     if (!isYouTubeSyncEnabled()) return@withContext false
@@ -620,8 +616,6 @@ fun isSyncCooldownElapsed(): Boolean {
     val cooldownMs = cooldownMinutes * 60 * 1000L
     return System.currentTimeMillis() - lastSync > cooldownMs
 }
-
-// ============ SYNC QUEUE ============
 
 sealed class SyncOperation {
     data object FullSync : SyncOperation()
@@ -856,8 +850,6 @@ private suspend fun executeOperation(operation: SyncOperation) {
     }
 }
 
-// ============ DUPLICATE PLAYLIST CLEANUP ============
-
 suspend fun cleanupDuplicatePlaylists() = withContext(NzikDispatchers.DATA) {
     Timber.tag("SyncYTMusicUtils").d("cleanupDuplicatePlaylists started")
     val playlists = Database.playlistTable.getAll()
@@ -876,8 +868,6 @@ suspend fun cleanupDuplicatePlaylists() = withContext(NzikDispatchers.DATA) {
     }
     Timber.tag("SyncYTMusicUtils").d("cleanupDuplicatePlaylists completed: $cleaned duplicates removed")
 }
-
-// ============ PODCAST PUSH (SAVE/UNSAVE) ============
 
 suspend fun savePodcast(podcastId: String): Boolean = withContext(NzikDispatchers.DATA) {
     if (!isYouTubeSyncEnabled() || !canPushToYTM() || !isNetworkConnected(appContext())) return@withContext false
@@ -898,8 +888,6 @@ suspend fun unsavePodcast(podcastId: String): Boolean = withContext(NzikDispatch
     else Toaster.e( R.string.sync_failed )
     result.isSuccess
 }
-
-// ============ EPISODE PUSH (ADD/REMOVE FROM SE) ============
 
 suspend fun addEpisodeToSavedEpisodes(videoId: String): Boolean = withContext(NzikDispatchers.DATA) {
     if (!isYouTubeSyncEnabled() || !canPushToYTM() || !isNetworkConnected(appContext())) return@withContext false
@@ -922,8 +910,6 @@ suspend fun removeEpisodeFromSavedEpisodes(videoId: String, setVideoId: String? 
     else Toaster.e( R.string.sync_failed )
     result.isSuccess
 }
-
-// ============ BULK PUSH TO YTM ============
 
 suspend fun pushYTMLikedSongs(force: Boolean = false): Boolean = withContext(NzikDispatchers.DATA) {
     Timber.tag("SyncYTMusicUtils").d("pushYTMLikedSongs isYouTubeSyncEnabled() = ${isYouTubeSyncEnabled()}")
@@ -1061,8 +1047,6 @@ suspend fun pushYTMPlaylists(force: Boolean = false): Boolean = withContext(Nzik
     failed == 0
 }
 
-// ============ PUSH SAVED EPISODES TO YTM ============
-
 suspend fun pushYTMSavedEpisodes(force: Boolean = false): Boolean = withContext(NzikDispatchers.DATA) {
     if (!isYouTubeSyncEnabled() || !canPushToYTM() || !isNetworkConnected(appContext())) return@withContext false
     val pushEpisodes = appContext().preferences.getBoolean(syncPushEpisodeKey, false)
@@ -1096,8 +1080,6 @@ suspend fun pushYTMSavedEpisodes(force: Boolean = false): Boolean = withContext(
     Timber.tag("SyncYTMusicUtils").d("pushYTMSavedEpisodes completed: $success success, $failed failed")
     failed == 0
 }
-
-// ============ CLEAR ALL SYNCED DATA ON LOGOUT ============
 
 suspend fun clearAllSyncedData(): Boolean = withContext(NzikDispatchers.DATA) {
     Timber.tag("SyncYTMusicUtils").d("clearAllSyncedData started")

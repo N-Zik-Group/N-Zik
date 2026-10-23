@@ -674,7 +674,6 @@ fun AccountsSettings() {
             )
         }
 
-        // ========== SYNC SETTINGS ==========
         val useLoginForBrowseSync by rememberPreference(useLoginForBrowseKey, true)
         val isYouTubeLoginActive by rememberEncryptedPreference(enableYouTubeLoginKey, false)
 

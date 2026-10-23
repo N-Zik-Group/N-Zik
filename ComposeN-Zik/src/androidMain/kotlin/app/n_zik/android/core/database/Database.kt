@@ -285,8 +285,6 @@ object Database {
     val importSongTable: ImportSongTable
         get() = _internal.importSongTable
 
-    //**********************************************
-
     suspend fun upsert( songItem: Innertube.SongItem ) {
         val song = songItem.asSong
 

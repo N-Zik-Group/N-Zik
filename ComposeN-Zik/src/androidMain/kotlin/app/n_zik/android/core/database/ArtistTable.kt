@@ -544,7 +544,7 @@ interface ArtistTable {
     """)
     fun sortFollowingByPlayCount( limit: Int = Int.MAX_VALUE ): Flow<List<Artist>>
 
-    /** Fetch all following artists and sort them according to [sortBy] and [sortOrder]: [sortBy] sorts all based on each artist's property such as [ArtistSortBy.Name], [ArtistSortBy.DateAdded], etc., while [sortOrder] arranges order of sorted songs to follow alphabetical order A to Z, or numerical order 0 to 9, etc. @param sortBy which artist's property is used to sort @param sortOrder what order should results be in @param limit stop query once number of results reaches this number @return a **SORTED** list of [Artist]'s that are continuously updated to reflect changes within the database - wrapped by [Flow] @see ArtistSortBy @see SortOrder */
+    /** Fetch all following artists sorted per [sortBy]/[sortOrder]: [sortBy] picks the artist property ([ArtistSortBy.Name], [ArtistSortBy.DateAdded], etc.), [sortOrder] the A-to-Z / 0-to-9 direction. @param limit stop once results reach this count @return a continuously-updated **SORTED** [Flow] of [Artist]s */
     fun sortFollowing(
         sortBy: ArtistSortBy,
         sortOrder: SortOrder,

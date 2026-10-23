@@ -874,7 +874,6 @@ fun AppearanceSettings(
                 showNextSongsInPlayer = false
                 colorPaletteName = ColorPaletteName.Dynamic
                 colorPaletteMode = ColorPaletteMode.System
-                ///////ACTION BAR BUTTONS////////////////
                 transparentBackgroundActionBarPlayer = true
                 actionspacedevenly = true
                 showButtonPlayerVideo = false
@@ -891,7 +890,6 @@ fun AppearanceSettings(
                 showButtonPlayerArrow = true
                 showButtonPlayerStartradio = false
                 showButtonPlayerMenu = true
-                ///////////////////////////
                 appearanceChooser = false
             },
             onClick1 = {
@@ -921,7 +919,6 @@ fun AppearanceSettings(
                 showNextSongsInPlayer = true
                 colorPaletteName = ColorPaletteName.Dynamic
                 colorPaletteMode = ColorPaletteMode.System
-                ///////ACTION BAR BUTTONS////////////////
                 transparentBackgroundActionBarPlayer = true
                 actionspacedevenly = true
                 showButtonPlayerVideo = false
@@ -938,7 +935,6 @@ fun AppearanceSettings(
                 showButtonPlayerArrow = true
                 showButtonPlayerStartradio = false
                 showButtonPlayerMenu = true
-                ///////////////////////////
                 appearanceChooser = false
             },
             onClick2 = {
@@ -964,7 +960,6 @@ fun AppearanceSettings(
                 showNextSongsInPlayer = false
                 colorPaletteName = ColorPaletteName.Dynamic
                 colorPaletteMode = ColorPaletteMode.System
-                ///////ACTION BAR BUTTONS////////////////
                 transparentBackgroundActionBarPlayer = true
                 actionspacedevenly = true
                 showButtonPlayerVideo = false
@@ -981,7 +976,6 @@ fun AppearanceSettings(
                 showButtonPlayerArrow = true
                 showButtonPlayerStartradio = false
                 showButtonPlayerMenu = true
-                ///////////////////////////
                 appearanceChooser = false
             },
             onClick3 = {
@@ -1011,7 +1005,6 @@ fun AppearanceSettings(
                 fadingedge = true
                 thumbnailFade = 5f
                 showNextSongsInPlayer = false
-                ///////ACTION BAR BUTTONS////////////////
                 transparentBackgroundActionBarPlayer = true
                 actionspacedevenly = true
                 showButtonPlayerVideo = false
@@ -1028,7 +1021,6 @@ fun AppearanceSettings(
                 showButtonPlayerArrow = true
                 showButtonPlayerStartradio = false
                 showButtonPlayerMenu = true
-                ///////////////////////////
                 appearanceChooser = false
             },
             onClick4 = {
@@ -1059,7 +1051,6 @@ fun AppearanceSettings(
                 thumbnailFadeEx = 5f
                 thumbnailSpacing = -32f
                 showNextSongsInPlayer = false
-                ///////ACTION BAR BUTTONS////////////////
                 transparentBackgroundActionBarPlayer = true
                 actionspacedevenly = true
                 showButtonPlayerVideo = false
@@ -1076,7 +1067,6 @@ fun AppearanceSettings(
                 showButtonPlayerArrow = true
                 showButtonPlayerStartradio = false
                 showButtonPlayerMenu = true
-                ///////////////////////////
                 appearanceChooser = false
             },
             onClick5 = {
@@ -1101,7 +1091,6 @@ fun AppearanceSettings(
                 thumbnailType = ThumbnailType.Modern
                 thumbnailRoundnessDp = 36f
                 showNextSongsInPlayer = false
-                ///////ACTION BAR BUTTONS////////////////
                 transparentBackgroundActionBarPlayer = true
                 actionspacedevenly = true
                 showButtonPlayerVideo = false
@@ -1118,7 +1107,6 @@ fun AppearanceSettings(
                 showButtonPlayerArrow = true
                 showButtonPlayerStartradio = false
                 showButtonPlayerMenu = true
-                ///////////////////////////
                 appearanceChooser = false
             }
             )

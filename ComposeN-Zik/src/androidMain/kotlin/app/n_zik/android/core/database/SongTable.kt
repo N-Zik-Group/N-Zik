@@ -340,7 +340,7 @@ interface SongTable {
     @Query("UPDATE Song SET artistsText = :artistsText WHERE id = :songId")
     fun updateArtists( songId: String, artistsText: String ): Int
 
-    /** Set [Song.totalPlayTimeMs] to: [value] if [isIncrement] is `false`, or the sum of [Song.totalPlayTimeMs] and [value] if [isIncrement] is `true`. @param songId identifier of song to update @param value value to add/set @param isIncrement whether to hard set or add to existing value @return number of rows affected by this operation */
+    /** Set [Song.totalPlayTimeMs] to [value] (hard set when [isIncrement] is `false`, otherwise sum with the existing value). @param songId song to update @return number of rows affected */
     @Query(
         """
         UPDATE Song 
