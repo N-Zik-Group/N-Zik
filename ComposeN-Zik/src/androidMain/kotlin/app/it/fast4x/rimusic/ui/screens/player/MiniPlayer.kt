@@ -588,7 +588,6 @@ fun MiniPlayer(
         }
     ) {
         val colorPalette = colorPalette()
-        /***** */
         Row(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.Top,
@@ -813,8 +812,6 @@ fun MiniPlayer(
                     .width(2.dp)
             )
         }
-        /*****  */
-
 
     }
     }

@@ -184,8 +184,9 @@ private fun HamburgerMenu(
     // whole app lives just below.
 
     // This header stays composed for the entire session (the AppNavigation topBar),
-    // so it is alive on every screen and both sheet entry points (burger +
-    // Misc settings card) share it.
+    // so it is alive on every screen.
+    //
+    // Both sheet entry points (burger + Misc settings card) share it.
 
     // Render() is a singleton: a second Render() would stack a second dialog
     // on top of the first.

@@ -439,7 +439,6 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // Rewind yearly playlist (next 1st of January, WorkManager, self-rescheduling)
         RewindYearlyPlaylistWorker.schedule(this)
 
-        /**** LOG *********/
         val logEnabled = preferences.getBoolean(logDebugEnabledKey, false)
         
         // Always create logs directory and set up crash handler
@@ -496,7 +495,6 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         Timber.tag("Startup").i("Board: ${Build.BOARD} | Hardware: ${Build.HARDWARE}")
         Timber.tag("Startup").i("Build: ${Build.FINGERPRINT}")
         Timber.tag("Startup").i("=".repeat(50))
-        /**** LOG *********/
     }
 
     private fun migrateCredentialsToEncrypted() {
