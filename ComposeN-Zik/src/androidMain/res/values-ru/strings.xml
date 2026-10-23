@@ -1376,7 +1376,6 @@
     <string name="no_items_found">Элементов не найдено</string>
     <string name="no_new_releases">Нет новых релизов для ваших любимых исполнителей</string>
     <string name="not_selectable">Не выбрано</string>
-    <string name="unknown_playback_error">Неизвестная ошибка воспроизведения</string>
     <string name="unknown_error">Неизвестная ошибка</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">Обновления приложений</string>

@@ -1377,7 +1377,6 @@ Volume BAS : titre précédent</string>
     <string name="no_items_found">Aucun élément trouvé</string>
     <string name="no_new_releases">Il n\'y a pas de nouvelles versions pour vos artistes préférés</string>
     <string name="not_selectable">Non sélectionnable</string>
-    <string name="unknown_playback_error">Erreur de lecture inconnue</string>
     <string name="unknown_error">Erreur Inconnue</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">Mises à jour de l\'application</string>

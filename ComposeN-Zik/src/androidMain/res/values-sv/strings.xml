@@ -1376,7 +1376,6 @@
     <string name="no_items_found">Inga objekt hittades</string>
     <string name="no_new_releases">Det finns inga nya utgåvor för dina favoritartister</string>
     <string name="not_selectable">Ej valbar</string>
-    <string name="unknown_playback_error">Okänt uppspelningsfel</string>
     <string name="unknown_error">Unknown error</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">Appens uppdateringar</string>

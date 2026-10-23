@@ -1376,7 +1376,6 @@
     <string name="no_items_found">Keine Elemente gefunden</string>
     <string name="no_new_releases">Es gibt keine neuen Veröffentlichungen für Ihre Lieblingskünstler</string>
     <string name="not_selectable">Nicht wählbar</string>
-    <string name="unknown_playback_error">Unbekannter Wiedergabefehler</string>
     <string name="unknown_error">Unbekannter Fehler</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">App-Updates</string>

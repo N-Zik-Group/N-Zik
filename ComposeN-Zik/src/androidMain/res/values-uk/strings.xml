@@ -1376,7 +1376,6 @@
     <string name="no_items_found">Нічого не знайдено</string>
     <string name="no_new_releases">Немає нових релізів для вашого улюбленого виконавця</string>
     <string name="not_selectable">Не вибране</string>
-    <string name="unknown_playback_error">Невідома помилка відтворення</string>
     <string name="unknown_error">Невідома помилка</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">Оновлення застосунку</string>

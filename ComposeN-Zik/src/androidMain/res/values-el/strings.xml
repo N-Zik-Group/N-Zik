@@ -1376,7 +1376,6 @@
     <string name="no_items_found">Δεν βρέθηκαν στοιχεία</string>
     <string name="no_new_releases">Δεν υπάρχουν νέες κυκλοφορίες για τους αγαπημένους σας καλλιτέχνες</string>
     <string name="not_selectable">Δεν είναι επιλέξιμο</string>
-    <string name="unknown_playback_error">Άγνωστο σφάλμα αναπαραγωγής</string>
     <string name="unknown_error">Unknown error</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">Ενημερώσεις Εφαρμογών</string>

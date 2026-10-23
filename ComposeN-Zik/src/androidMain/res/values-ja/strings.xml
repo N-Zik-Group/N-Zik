@@ -1376,7 +1376,6 @@
     <string name="no_items_found">アイテムが見つかりません</string>
     <string name="no_new_releases">お気に入りのアーティストの新しいリリースはありません。</string>
     <string name="not_selectable">選択不可</string>
-    <string name="unknown_playback_error">不明な再生エラー</string>
     <string name="unknown_error">不明なエラー</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">アプリの更新</string>

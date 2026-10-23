@@ -1376,7 +1376,6 @@
     <string name="no_items_found">لم يتم العثور على عناصر</string>
     <string name="no_new_releases">لا توجد إصدارات جديدة للفنانين المفضلين لديك</string>
     <string name="not_selectable">غير قابل للتحديد</string>
-    <string name="unknown_playback_error">خطأ غير معروف في التشغيل</string>
     <string name="unknown_error">Unknown error</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">تحديثات التطبيق</string>

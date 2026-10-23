@@ -1376,7 +1376,6 @@
     <string name="no_items_found">Kohteita ei löytynyt</string>
     <string name="no_new_releases">Suosikkiartisteillesi ei ole uusia julkaisuja</string>
     <string name="not_selectable">Ei valittavissa</string>
-    <string name="unknown_playback_error">Tuntematon soittovirhe</string>
     <string name="unknown_error">Tuntematon virhe</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">Sovelluksen Päivitykset</string>

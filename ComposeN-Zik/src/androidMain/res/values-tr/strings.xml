@@ -1376,7 +1376,6 @@
     <string name="no_items_found">Hiçbir öğe bulunamadı</string>
     <string name="no_new_releases">Favori sanatçılarınızın yeni albümleri yok</string>
     <string name="not_selectable">Seçilemez</string>
-    <string name="unknown_playback_error">Bilinmeyen oynatma hatası</string>
     <string name="unknown_error">Bilinmeyen hata</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">Uygulama Güncellemeleri</string>
