@@ -4,10 +4,12 @@ import android.content.Context
 import android.os.Looper
 import androidx.core.content.edit
 import androidx.test.core.app.ApplicationProvider
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.logDebugEnabledKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.profilePreferences
 import app.n_zik.android.MainApplication
+import app.n_zik.android.components.ui.screens.profiles.profilePrefsFile
 import app.n_zik.android.core.backup.BackupManager
 import app.n_zik.android.R
 import app.n_zik.android.core.coil.ImageCacheFactory
@@ -133,6 +135,9 @@ class MaintenanceSnapshotLoaderTest {
         seedCrashLog()
         seedPrefs()
         failImagesAndDownloadsChunks()
+        // The active profile's settings file: seed it with a known size so the new
+        // Settings size row reads a deterministic value (the row reads the file directly)
+        profilePrefsFile(context, getActiveProfile(context)).writeBytes(ByteArray(64))
 
         val snapshot = loadSnapshot()
 
@@ -162,6 +167,9 @@ class MaintenanceSnapshotLoaderTest {
         assertNull(snapshot.dedup)
         assertNull(snapshot.convergence)
         assertNull(snapshot.dbCleanup)
+        assertNull("the download re-validation row must be null when the key is absent", snapshot.downloadRevalidation)
+        assertNull("the download self-heal row must be null when the key is absent", snapshot.downloadSelfHeal)
+        assertEquals("the settings size row must read the seeded prefs file", 64L, snapshot.settingsSizeBytes)
         // LT_NEVER_STARTED (stubbed null client): the distinct "Not started" label, not null
         assertEquals(R.string.maintenance_lt_not_started, snapshot.listenTogether?.stateResId)
         assertEquals(MainApplication.CookieStatus.NOT_LOGGED_IN, snapshot.ytSession)
