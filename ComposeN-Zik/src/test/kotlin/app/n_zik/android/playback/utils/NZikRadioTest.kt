@@ -2,6 +2,9 @@ package app.n_zik.android.playback.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.NetworkInfo
 import android.net.Uri
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
@@ -56,6 +59,20 @@ class NZikRadioTest {
         mockPlayer = mockk<ExoPlayer>(relaxed = true)
         every { binder.player } returns mockPlayer
         every { mockPlayer.currentMediaItem } returns null
+
+        // F4 (offline audit, 2026-10-22): the fetch guard in `fetchAndInject` reads the REAL
+        // isNetworkConnected — model an ONLINE context (validated network) so the fetch tests
+        // exercise the fetch itself, not the offline skip (a mocked context reads offline).
+        val connectivity = mockk<ConnectivityManager>()
+        val capabilities = mockk<NetworkCapabilities>()
+        every { context.getSystemService(Context.CONNECTIVITY_SERVICE) } returns connectivity
+        every { connectivity.activeNetwork } returns mockk(relaxed = true)
+        every { connectivity.getNetworkCapabilities(any()) } returns capabilities
+        every { capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) } returns true
+        every { capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) } returns true
+        val networkInfo = mockk<NetworkInfo>()
+        every { connectivity.activeNetworkInfo } returns networkInfo
+        every { networkInfo.isConnected } returns true
 
         // Mock static extension property Context.preferences
         mockkStatic("app.it.fast4x.rimusic.utils.PreferencesKt")

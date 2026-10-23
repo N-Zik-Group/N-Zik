@@ -36,6 +36,7 @@ import android.media.audiofx.LoudnessEnhancer
 import android.media.audiofx.PresetReverb
 import android.os.Build
 import android.os.SystemClock
+import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -129,6 +130,7 @@ import app.n_zik.android.playback.services.diagnostics.PlaybackStallWatchdog
 import app.n_zik.android.playback.services.diagnostics.discontinuityReasonName
 import app.n_zik.android.playback.utils.BitmapProvider
 import app.n_zik.android.playback.utils.NZikRadio
+import app.n_zik.android.download.utils.DownloadValidator
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.download.services.MyDownloadService
 import app.n_zik.android.playback.utils.SessionBitmapLoader
@@ -229,6 +231,7 @@ import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.playback.exceptions.ExplicitContentException
 import app.n_zik.android.playback.exceptions.LoginRequiredException
 import app.n_zik.android.playback.exceptions.PlayableFormatNonSupported
+import app.n_zik.android.playback.exceptions.StreamResolutionOfflineException
 import app.n_zik.android.playback.exceptions.UnmatchedSongException
 import app.n_zik.android.playback.exceptions.UnplayableException
 import app.n_zik.android.playback.exceptions.VideoIdMismatchException
@@ -242,7 +245,6 @@ import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.n_zik.android.widget.NZikWidgetManager
 import app.it.fast4x.rimusic.utils.crossfadeEnabledKey
 import java.net.UnknownHostException
-import java.net.ConnectException
 import java.nio.channels.UnresolvedAddressException
 
 
@@ -1276,6 +1278,8 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        // P16 (2026-10-23): refresh the main-thread locality snapshot read by the load gate.
+        currentMediaIsLocal = mediaItem?.isLocal == true
         if (!isInternalCrossfadeSeek && (reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK || reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)) {
             cancelCrossfadeAndReset()
         }
@@ -1290,6 +1294,27 @@ class PlayerServiceModern : MediaLibraryService(),
 
         // Clear recovery counter for the new media item (fresh start)
         mediaItem?.mediaId?.let { recoveryAttempts.remove(it) }
+
+        // S2 (Phase 1 download fix, 2026-10-21): a track may be marked downloaded in
+        // the index while its files were wiped by the OS/OEM (see DownloadValidator).
+        // Re-check the files at transition: if they are gone, self-heal the index
+        // entry and tell the user the track must be re-downloaded (S3). The transition
+        // still proceeds — the fetch is NOT prevented: online the track streams, and
+        // offline the S5 gate turns the guaranteed failure into a clean "no internet"
+        // toast instead of the old retry storm. One synchronized index read + one file
+        // stat per span — cheap enough for the transition callback thread.
+        mediaItem?.let { item ->
+            val mediaId = item.mediaId
+            if (isStaleDownloadEntry(mediaId, downloadCache)) {
+                Timber.tag("PlayerServiceModern").w("Download re-validation (pre-playback): $mediaId is stale, removing the index entry")
+                MyDownloadHelper.removeDownload(this, item)
+                Toaster.w(
+                    R.string.download_stale_removed,
+                    formatArgs = arrayOf(item.mediaMetadata.title ?: ""),
+                    duration = Toast.LENGTH_LONG
+                )
+            }
+        }
 
         // Safety net: detect if ExoPlayer auto-advanced despite skipMediaOnError being OFF.
         // This should not happen with our fixes, but if it does, show a visible warning.
@@ -1598,16 +1623,6 @@ class PlayerServiceModern : MediaLibraryService(),
     private fun isFileNotFoundError(error: PlaybackException): Boolean =
         error.errorCode == PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND
 
-    private fun isNetworkRelatedError(error: PlaybackException): Boolean {
-        if (isExpiredUrlError(error) || isRangeNotSatisfiableError(error) || isPageReloadError(error)) return false
-        return error.errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED ||
-            error.errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT ||
-            error.errorCode == PlaybackException.ERROR_CODE_IO_INVALID_HTTP_CONTENT_TYPE ||
-            error.cause is ConnectException ||
-            error.cause is UnknownHostException ||
-            (error.cause as? PlaybackException)?.errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
-    }
-
     private fun hasExceededRetryLimit(mediaId: String): Boolean {
         val currentRetries = recoveryAttempts.getOrDefault(mediaId, 0)
         return currentRetries >= MAX_RETRY_PER_SONG || mediaId in recentlyFailedSongs
@@ -1635,6 +1650,20 @@ class PlayerServiceModern : MediaLibraryService(),
         }
     }
 
+    // P16 (2026-10-23): main-thread snapshot of the current item's locality, read by the
+    // load-gate lambda (ExoPlayer playback thread, where a player read would throw).
+    @Volatile
+    private var currentMediaIsLocal: Boolean = false
+
+    // A3 (offline audit, 2026-10-22): stale-monitor hole — raw connection failure while the monitor
+    // is stale-online; a fresh check decides. Remote media only (local I/O errors keep their path).
+    // P16 (2026-10-23): the remote-media check is passed in — the load-gate lambda runs on the
+    // ExoPlayer playback thread, where reading the player (currentMediaItem) throws (main-thread-only).
+    private fun isStaleMonitorOfflineFailure(exception: Throwable, isRemoteMedia: Boolean): Boolean =
+        isRemoteMedia &&
+            isRawConnectionFailure(exception) &&
+            !isNetworkConnected(applicationContext)
+
     override fun onPlayerError(error: PlaybackException) {
         super.onPlayerError(error)
 
@@ -1647,6 +1676,27 @@ class PlayerServiceModern : MediaLibraryService(),
 
         val currentMediaId = player.currentMediaItem?.mediaId
 
+        // S5/S7 (offline gate, 2026-10-21/22): a DNS failure at any depth or the fast-fail
+        // marker must wait for the network, not the retry path; the decision is logged.
+        // BEFORE the retry limit: an offline error must park + report, never be silently
+        // skipped — the counter only increments after this gate (review P4, 2026-10-22).
+        val dnsFailure = isDnsFailure(error)
+        // A3 (offline audit, 2026-10-22): stale-monitor hole — a raw connection failure while
+        // the monitor is stale-online used to burn the recovery storm ("Retrying…" → "failed").
+        val staleMonitorOffline = isStaleMonitorOfflineFailure(error, player.currentMediaItem?.isLocal != true)
+        if (shouldWaitForNetwork(error, isNetworkAvailable.value) || staleMonitorOffline) {
+            Timber.tag("PlayerServiceModern").d(
+                "Offline gate decision: networkAvailable=${isNetworkAvailable.value} " +
+                    "dnsFailure=$dnsFailure " +
+                    "staleMonitorOffline=$staleMonitorOffline " +
+                    "connectionCode=${(error.cause?.cause as? PlaybackException)?.errorCode} " +
+                    "summary=${diagnosticExceptionSummary(error)} -> waiting for network"
+            )
+            waitingForNetwork.value = true
+            Toaster.noInternet()
+            return
+        }
+
         // Per-song retry limit — prevents infinite loops on permanently broken streams
         if (currentMediaId != null && hasExceededRetryLimit(currentMediaId)) {
             Timber.tag("PlayerServiceModern").w("Song $currentMediaId exceeded retry limit, skipping")
@@ -1656,22 +1706,6 @@ class PlayerServiceModern : MediaLibraryService(),
             } else {
                 player.pause()
             }
-            return
-        }
-
-        val playbackConnectionExeptionList = listOf(
-            PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED, //primary error code to manage
-            PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT,
-        )
-
-        // check if error is caused by internet connection
-        val isConnectionError = (error.cause?.cause is PlaybackException && (error.cause?.cause as PlaybackException).errorCode in playbackConnectionExeptionList)
-                || error.cause is UnknownHostException
-                || error.cause is UnresolvedAddressException
-
-        if (!isNetworkAvailable.value || isConnectionError) {
-            waitingForNetwork.value = true
-            Toaster.noInternet()
             return
         }
 
@@ -2101,9 +2135,27 @@ class PlayerServiceModern : MediaLibraryService(),
                 // Issue #881 (gh-881): the stall watchdog report includes this counter
                 diagnosticRetryCount = count
 
+                // P12 (review, 2026-10-23): capture the offline predicates once (onPlayerError
+                // pattern) — the gate log used to re-evaluate them.
+                val dnsFailure = isDnsFailure(loadErrorInfo.exception)
+                val staleMonitorOffline = isStaleMonitorOfflineFailure(loadErrorInfo.exception, !currentMediaIsLocal)
+
                 val delayMs: Long
                 if (loadErrorInfo.exception.isFatalCustomException()) {
                     delayMs = C.TIME_UNSET
+                } else if (isOfflineLoadFailure(loadErrorInfo.exception, isNetworkAvailable.value) ||
+                    staleMonitorOffline
+                ) {
+                    // S5/A3 (offline gate, 2026-10-22): while offline the stream URL can never resolve
+                    // (incl. the stale-monitor hole) — give up now; the onPlayerError gate takes over.
+                    Timber.tag(PLAYBACK_DIAG_TAG).w(
+                        "LOAD_GATE offline=%b dnsFailure=%b staleMonitorOffline=%b mediaId=%s -> giving up, deferring to the onPlayerError gate",
+                        !isNetworkAvailable.value,
+                        dnsFailure,
+                        staleMonitorOffline,
+                        mediaId,
+                    )
+                    return C.TIME_UNSET
                 } else if (count <= 7) {
                     // Normal exponential backoff up to 7 retries
                     delayMs = (count * 2000L).coerceAtMost(10_000L)
@@ -3464,3 +3516,95 @@ internal fun diagnosticExceptionSummary(exception: Throwable): String {
         ?: "-"
     return "${root.javaClass.simpleName}: $message"
 }
+
+/**
+ * S5 (Phase 1 download fix, 2026-10-21): true when [error]'s cause chain contains a DNS
+ * failure — [UnknownHostException] or [UnresolvedAddressException] — at ANY depth.
+ *
+ * Offline playback of a downloaded track still resolves the stream URL, and an expired
+ * local URL forces a network fetch that dies at DNS — ExoPlayer wraps that loader
+ * failure several levels deep (the real offline log shows
+ * `UnexpectedLoaderException -> PlaybackException -> UnknownHostException`), so the
+ * previous depth-1/2 check in `onPlayerError` missed the offline case and fell into the
+ * retry storm. A DNS failure in the chain is sufficient evidence that the network is
+ * unusable for the failing host, whatever the connectivity monitor reports.
+ *
+ * Pure so the gate predicate is unit-testable without a running [PlayerServiceModern]
+ * (same pattern as [diagnosticExceptionSummary], incl. the bounded hop guard against
+ * malformed cyclic cause chains).
+ */
+internal fun isDnsFailure(error: Throwable): Boolean {
+    var current: Throwable? = error
+    var hops = 0
+    while (current != null && hops < DIAGNOSTIC_CAUSE_HOP_LIMIT) {
+        if (current is UnknownHostException || current is UnresolvedAddressException) return true
+        current = current.cause
+        hops++
+    }
+    return false
+}
+
+/**
+ * S5 (offline gate, 2026-10-22): true when the chain carries the offline fast-fail marker
+ * [StreamResolutionOfflineException] at any depth — the marker plugs the stale-monitor hole.
+ */
+internal fun isStreamResolutionOffline(error: Throwable): Boolean {
+    var current: Throwable? = error
+    var hops = 0
+    while (current != null && hops < DIAGNOSTIC_CAUSE_HOP_LIMIT) {
+        if (current is StreamResolutionOfflineException) return true
+        current = current.cause
+        hops++
+    }
+    return false
+}
+
+/**
+ * A3 (offline audit, 2026-10-22): true when the chain carries any [IOException] at any depth
+ * (only the [StreamResolutionOfflineException] marker is excluded) — deliberately broader than
+ * a DNS-only check, socket failures qualify too; the paired fresh network check decides.
+ */
+internal fun isRawConnectionFailure(error: Throwable): Boolean {
+    var current: Throwable? = error
+    var hops = 0
+    while (current != null && hops < DIAGNOSTIC_CAUSE_HOP_LIMIT) {
+        if (current is IOException && current !is StreamResolutionOfflineException) return true
+        current = current.cause
+        hops++
+    }
+    return false
+}
+
+/**
+ * S7 (offline gate, 2026-10-21/22): true when a playback error should wait for the network
+ * instead of the retry path — monitor offline, nested connection error/timeout, a DNS
+ * failure anywhere in the chain, or the offline fast-fail marker. Pure: unit-testable.
+ */
+internal fun shouldWaitForNetwork(error: PlaybackException, networkAvailable: Boolean): Boolean {
+    val connectionErrorCodes = listOf(
+        PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED, // primary error code to manage
+        PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT,
+    )
+    val isConnectionError = error.cause?.cause is PlaybackException &&
+        (error.cause?.cause as PlaybackException).errorCode in connectionErrorCodes
+    return !networkAvailable || isConnectionError || isDnsFailure(error) || isStreamResolutionOffline(error)
+}
+
+/**
+ * S5 (offline gate at the load level, 2026-10-22): true when a load error cannot succeed
+ * offline — monitor offline, a DNS failure in the chain, or the exception IS the fast-fail
+ * marker (unconditional against a stale monitor). Pure: unit-testable.
+ */
+internal fun isOfflineLoadFailure(exception: IOException, networkAvailable: Boolean): Boolean =
+    !networkAvailable || isDnsFailure(exception) || exception is StreamResolutionOfflineException
+
+/**
+ * S2 (Phase 1 download fix, 2026-10-21): true when the download index claims the
+ * track is downloaded but its span files are gone (OS/OEM wipe) — the stale-entry
+ * case that the pre-playback self-heal in `onMediaItemTransition` removes.
+ *
+ * Pure so the compound decision is unit-testable without a running
+ * [PlayerServiceModern] (same pattern as [isDnsFailure]).
+ */
+internal fun isStaleDownloadEntry(mediaId: String, downloadCache: Cache): Boolean =
+    MyDownloadHelper.isSongDownloaded(mediaId) && !DownloadValidator.hasValidDownload(downloadCache, mediaId)

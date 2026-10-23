@@ -58,7 +58,10 @@ import app.n_zik.android.playback.exceptions.TimeoutException
 import app.n_zik.android.playback.exceptions.UnknownException
 import app.n_zik.android.playback.exceptions.UnplayableException
 import app.n_zik.android.playback.exceptions.VideoIdMismatchException
+import app.n_zik.android.playback.services.isDnsFailure
 import app.n_zik.android.playback.services.isLocal
+import app.n_zik.android.playback.services.isRawConnectionFailure
+import app.n_zik.android.playback.services.isStreamResolutionOffline
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.n_zik.android.extensions.nextvisualizer.views.NextVisualizer
@@ -71,6 +74,7 @@ import app.it.fast4x.rimusic.utils.coverThumbnailAnimationKey
 import app.it.fast4x.rimusic.utils.currentWindow
 import app.it.fast4x.rimusic.utils.doubleShadowDrop
 import app.it.fast4x.rimusic.utils.isLandscape
+import app.it.fast4x.rimusic.utils.isNetworkConnected
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.showCoverThumbnailAnimationKey
 import app.it.fast4x.rimusic.utils.showlyricsthumbnailKey
@@ -362,7 +366,16 @@ fun Thumbnail(
                 }
 
                 LaunchedEffect(error) {
-                    if (error != null) {
+                    val currentError = error
+                    if (currentError != null) {
+                        // S5/A3/F5a (offline gate, 2026-10-22): the service gate toasts the offline marker,
+                        // DNS failures (even while the monitor reads "online") and offline raw connection failures — skip the duplicate.
+                        if (isStreamResolutionOffline(currentError) ||
+                            isDnsFailure(currentError) ||
+                            (currentWindow.mediaItem.isLocal == false &&
+                                isRawConnectionFailure(currentError) &&
+                                !isNetworkConnected(context))
+                        ) return@LaunchedEffect
                         Timber.tag("Thumbnail").e("Playback error: ${error?.cause?.cause}")
                         
                         var httpCode: Int? = null

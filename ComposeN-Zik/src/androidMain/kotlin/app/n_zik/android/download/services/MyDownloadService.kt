@@ -32,11 +32,14 @@ import app.n_zik.android.playback.exceptions.LoginRequiredException
 import app.n_zik.android.playback.exceptions.NoInternetException
 import app.n_zik.android.playback.exceptions.PlayableFormatNonSupported
 import app.n_zik.android.playback.exceptions.PlayableFormatNotFoundException
+import app.n_zik.android.playback.exceptions.StreamResolutionOfflineException
 import app.n_zik.android.playback.exceptions.TimeoutException
 import app.n_zik.android.playback.exceptions.UnknownException
 import app.n_zik.android.playback.exceptions.UnplayableException
 import app.n_zik.android.playback.exceptions.VideoIdMismatchException
 import androidx.media3.datasource.HttpDataSource
+import java.io.InterruptedIOException
+import java.net.SocketException
 import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException
 
@@ -206,38 +209,13 @@ class MyDownloadService : DownloadService(
                     }
                     rootCause = rootCause.cause
                 }
-                
-                val specificCause = generateSequence<Throwable>(currentCause) { it.cause }.firstOrNull { 
-                    it is ExplicitContentException || 
-                    it is UnresolvedAddressException || 
-                    it is UnknownHostException || 
-                    it is PlayableFormatNotFoundException || 
-                    it is UnplayableException || 
-                    it is LoginRequiredException || 
-                    it is VideoIdMismatchException || 
-                    it is PlayableFormatNonSupported || 
-                    it is NoInternetException || 
-                    it is TimeoutException || 
-                    it is UnknownException
-                }
+
+                val specificCause = findSpecificDownloadCause(currentCause)
 
                 if (specificCause is ExplicitContentException) {
                     Toaster.w(R.string.parental_control_is_enabled)
                 } else {
-                    val errorMessage = if (httpCode == 403) {
-                        context.getString(R.string.error_this_song_cannot_be_played_due_to_server_restrictions)
-                    } else when (specificCause) {
-                        is UnresolvedAddressException, is UnknownHostException -> context.getString(R.string.error_a_network_error_has_occurred)
-                        is PlayableFormatNotFoundException -> context.getString(R.string.error_couldn_t_find_a_playable_audio_format)
-                        is UnplayableException -> context.getString(R.string.error_the_original_video_source_of_this_song_has_been_deleted)
-                        is LoginRequiredException -> context.getString(R.string.error_this_song_cannot_be_played_due_to_server_restrictions)
-                        is VideoIdMismatchException -> context.getString(R.string.error_the_returned_video_id_doesn_t_match_the_requested_one)
-                        is PlayableFormatNonSupported -> context.getString(R.string.error_file_unsupported_format)
-                        is NoInternetException -> context.getString(R.string.error_no_internet)
-                        is TimeoutException -> context.getString(R.string.error_timeout)
-                        else -> context.getString(R.string.error_an_unknown_playback_error_has_occurred)
-                    }
-                    Toaster.e(errorMessage)
+                    Toaster.e(downloadFailureToastRes(httpCode, specificCause))
                 }
             }
         }
@@ -286,3 +264,48 @@ class MyDownloadService : DownloadService(
     }
 
 }
+
+/**
+ * S5/A5b (offline gate, 2026-10-22): the first "known" exception in [finalException]'s
+ * cause chain at any depth that determines a failed download's toast — incl. the offline
+ * fast-fail marker and the raw network failures (socket timeouts/resets) of A5b.
+ */
+internal fun findSpecificDownloadCause(finalException: Exception?): Throwable? =
+    generateSequence<Throwable>(finalException) { it.cause }.firstOrNull {
+        it is ExplicitContentException ||
+        it is UnresolvedAddressException ||
+        it is UnknownHostException ||
+        it is PlayableFormatNotFoundException ||
+        it is UnplayableException ||
+        it is LoginRequiredException ||
+        it is VideoIdMismatchException ||
+        it is PlayableFormatNonSupported ||
+        it is NoInternetException ||
+        it is StreamResolutionOfflineException ||
+        it is TimeoutException ||
+        it is UnknownException ||
+        it is InterruptedIOException ||
+        it is SocketException
+    }
+
+/**
+ * S5/A5b (offline gate, 2026-10-22): the toast resource for a failed download — network-down
+ * causes (offline fast-fail marker, raw socket timeouts/resets, DNS) map to their specific
+ * string; the fallback is download-domain (`download_failed`, P11 review 2026-10-23).
+ */
+internal fun downloadFailureToastRes(httpCode: Int?, specificCause: Throwable?): Int =
+    if (httpCode == 403) R.string.error_this_song_cannot_be_played_due_to_server_restrictions
+    else when (specificCause) {
+        is UnresolvedAddressException, is UnknownHostException -> R.string.error_a_network_error_has_occurred
+        is PlayableFormatNotFoundException -> R.string.error_couldn_t_find_a_playable_audio_format
+        is UnplayableException -> R.string.error_the_original_video_source_of_this_song_has_been_deleted
+        is LoginRequiredException -> R.string.error_this_song_cannot_be_played_due_to_server_restrictions
+        is VideoIdMismatchException -> R.string.error_the_returned_video_id_doesn_t_match_the_requested_one
+        is PlayableFormatNonSupported -> R.string.error_file_unsupported_format
+        is NoInternetException, is StreamResolutionOfflineException -> R.string.error_no_internet
+        is TimeoutException -> R.string.error_timeout
+        is InterruptedIOException, is SocketException -> R.string.error_a_network_error_has_occurred
+        // P11 (review, 2026-10-23): download-domain fallback — the playback-domain
+        // unknown-error string was misleading for a failed download.
+        else -> R.string.download_failed
+    }

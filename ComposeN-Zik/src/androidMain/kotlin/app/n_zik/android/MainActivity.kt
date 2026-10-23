@@ -968,6 +968,15 @@ class MainActivity :
             MainApplication.CookieStatus.VALID -> { /* all good */ }
         }
 
+        // S1 (Phase 1 download fix, 2026-10-22): the stale-download count can be parked
+        // after the first window focus (the download manager is lazy) — observe it so
+        // the toast still fires while the app is in the foreground.
+        lifecycleScope.launch {
+            MyDownloadHelper.pendingStaleStartupCount.collect { count ->
+                if (count > 0) consumePendingStaleStartupWarning()
+            }
+        }
+
         if (!preferences.getBoolean(closeWithBackButtonKey, false))
             if (Build.VERSION.SDK_INT >= 33) {
                 onBackInvokedDispatcher.registerOnBackInvokedCallback(
@@ -2675,13 +2684,37 @@ class MainActivity :
         setIntent(intent)
     }
 
+    // S1 (Phase 1 download fix, 2026-10-22): the stale-download startup warning is consumed
+    // on the first window focus (see consumePendingStaleStartupWarning).
+    private var hasWindowFocus = false
+
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
+        hasWindowFocus = hasFocus
         // Issue #881 (gh-881), Phase 3.1: correlates window focus with the lifecycle state —
         // a focused window whose lifecycle is below STARTED keeps Compose's frame clock paused.
         Timber.tag(PLAYBACK_DIAG_TAG).i(
             "UI_WINDOW_FOCUS hasFocus=%b lifecycle=%s", hasFocus, lifecycle.currentState
         )
+        if (hasFocus) consumePendingStaleStartupWarning()
+    }
+
+    /**
+     * S1 (Phase 1 download fix, 2026-10-22): shows the startup stale-download warning parked
+     * in [MyDownloadHelper.pendingStaleStartupCount] — the re-validation runs before the app
+     * window is visible, where the system silently drops toasts. Shown (and the counter
+     * reset) only while the window has focus.
+     */
+    private fun consumePendingStaleStartupWarning() {
+        val count = MyDownloadHelper.pendingStaleStartupCount.value
+        if (count > 0 && hasWindowFocus) {
+            MyDownloadHelper.pendingStaleStartupCount.value = 0
+            Toaster.w(
+                R.string.download_stale_startup_removed,
+                count,
+                duration = Toast.LENGTH_LONG
+            )
+        }
     }
 
     override fun onStop() {

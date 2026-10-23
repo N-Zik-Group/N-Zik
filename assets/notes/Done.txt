@@ -1,0 +1,34 @@
+Improved:
+- improve(listentogether): dedicated no-connection toast in the room menu when offline
+  - `ListenTogetherMenu` create/join failures while offline now surface the dedicated "no connection" toast instead of a generic error (offline audit menu branch)
+
+Fixed:
+- fix(download): re-validate completed downloads against disk + actionable re-download toast
+  - New `DownloadValidator.hasValidDownload(cache, mediaId)` in `download/utils/DownloadValidator.kt`: a download only counts as valid when every span recorded in the cache index (`getCachedSpans`) still has its file on disk with the correct length
+  - Root cause: OEM/OS storage management (documented on Samsung devices) can wipe the span files under `cache/exo_downloads/` while the `exoplayer_internal.db` DownloadIndex survives, leaving `STATE_COMPLETED` rows that keep lying forever (badge on, "Nothing to download", offline playback falls through to a network fetch that fails)
+  - S1: `MyDownloadHelper.revalidateCompletedDownloads` at startup (after `getDownloads()`, dispatched on the `NzikDispatchers.fireAndForget(DATA)` scope) re-checks every `STATE_COMPLETED` entry against the real files and removes the stale ones from the index via the existing `downloadManager.removeDownload` flow — the badge self-heals on restart
+  - S2: `PlayerServiceModern.onMediaItemTransition` now self-heals before playback — a track marked downloaded whose files are missing gets its index entry removed before the playback attempt (catches mid-session wipes)
+  - S3: new toast `download_stale_removed` (string added to `values/strings.xml` only) tells the user the download data was missing and was removed — an actionable re-download hint; downloads only, cached songs (stream cache) excluded by design
+- fix(player): recognize nested DNS failures in offline gate + log gate decision
+  - Root cause: offline playback of a downloaded track still resolves the stream URL; an expired local URL forces a network fetch that dies at DNS, nested 3 levels deep (`UnexpectedLoaderException -> PlaybackException -> UnknownHostException`) — the previous offline gate only inspected cause depth 1–2, so the offline case was missed and the track fell into the "Retrying: Source error" storm instead of "no internet"
+  - S5: new top-level `isDnsFailure(PlaybackException)` walks the full cause chain at any depth (bounded at `DIAGNOSTIC_CAUSE_HOP_LIMIT` = 16 hops against cyclic/malformed chains) detecting `UnknownHostException` / `UnresolvedAddressException`; OR'd into the offline gate in `onPlayerError` alongside the existing connection-code check
+  - S7: the offline gate now logs its decision (`networkAvailable` / `dnsFailure` / `connectionCode`) via `Timber.tag("PlayerServiceModern")` — the diagnostic field missing from the field report
+- fix(player): fail fast on offline stream resolution + load-level gate, thread-safe stale check
+  - New `StreamResolutionOfflineException` fast-fail marker: `StreamResolver` throws it when stream resolution is skipped for lack of network instead of letting the load die at DNS; `NZikRadio` auto-fill and `fetchFormatIfMissing` also skip offline (logged)
+  - The offline gate now also fires at load level: `LoadErrorHandlingPolicy.getRetryDelayMsFor` returns `TIME_UNSET` on offline loads (logged as `LOAD_GATE`) and defers to the `onPlayerError` gate, which parks the player waiting for the network — no more "Retrying: Source error" storm
+  - VM-discovered crash fixed: the stale-monitor offline check read `player.currentMediaItem` from the load-gate lambda, which runs on the ExoPlayer playback thread → fatal `IllegalStateException: Player is accessed on the wrong thread`; the predicate now takes the locality flag — `onPlayerError` (main) reads the player, the load gate reads a `@Volatile currentMediaIsLocal` snapshot written on main in `onMediaItemTransition`
+- fix(download): map download failures to specific toasts + defer the toast until the UI is visible
+  - `MyDownloadService` maps the offline fast-fail marker and network failures to the matching toast string; unknown causes fall back to `download_failed`
+  - `MyDownloadHelper.scheduleDownloadRequest` seam: failure toasts are deferred until the main UI is visible, so a background download failure no longer orphans a toast
+
+Removed:
+- remove(player): drop dead `isNetworkRelatedError` helper + unused `ConnectException` import
+  - Zero call sites (verified by repo-wide search); superseded by the full-depth `isDnsFailure` predicate
+- remove(app): drop unused `prewarmPoToken` import in `MainApplication.kt`
+  - The top-level `prewarmPoToken()` in `StreamResolver.kt` has no call site anywhere in the repo; the import was the only reference in `MainApplication.kt`
+
+Other:
+- test(playback+download): full suite — 15 test classes / 123 tests green, covering the offline audit + stale download re-validation fix
+  - New (10): `DownloadValidatorTest` (real `SimpleCache`: intact download survives, wiped span removed, mixed spans, missing entry, truncated span), `MyDownloadHelperStaleRevalidationTest` (intact survives / wiped removed / non-terminal untouched), `MyDownloadHelperInitS1OffMainTest` (S1 dispatch on a named `NzikDispatchers` thread), `MyDownloadHelperScheduleFailureToastTest`, `DownloadFailureToastTest` (failure → toast mapping, fallback pinned to `download_failed`), `MainActivityStaleStartupWarningTest` (startup counter), `OfflineGateDnsTest` (the 3-level chain from the real offline log, `UnresolvedAddressException`, direct cause, non-DNS chain rejected, no-cause rejected, hop-limit boundary — 21-level chain, bounded walk terminates), `StaleDownloadEntryTest`, `StreamResolutionFastFailCallSiteTest`, `NZikRadioOfflineTest`
+  - Updated (3): `FetchFormatIfMissingGateTest`, `StreamResolverPageCacheTest`, `NZikRadioTest`
+- test(vm): full VM suite verified on the Pixel_10_Pro_XL emulator — online/offline playback, load-gate park + recovery on network restore, stale re-validation (S1 startup counter + S2 pre-playback self-heal), offline download, no crashes (incl. the thread-violation load-gate scenario)

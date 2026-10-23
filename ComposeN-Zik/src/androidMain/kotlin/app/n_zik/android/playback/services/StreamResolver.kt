@@ -20,6 +20,7 @@ import app.n_zik.android.R
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.network.client.Store
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 
 import app.n_zik.android.core.security.potoken.PoTokenGenerator
 import it.fast4x.innertube.Innertube
@@ -34,6 +35,7 @@ import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.listentogether.ListenTogetherClient
 import app.n_zik.android.listentogether.ListenTogetherPlayerBridge
 import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.playback.exceptions.StreamResolutionOfflineException
 import app.n_zik.android.playback.exceptions.UnplayableException
 import app.n_zik.android.playback.exceptions.UnmatchedSongException
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -142,22 +144,8 @@ private val fetchingSongInfos = Collections.synchronizedSet(mutableSetOf<String>
 private val fetchingArtists = Collections.synchronizedSet(mutableSetOf<String>())
 private val fetchingAlbums = Collections.synchronizedSet(mutableSetOf<String>())
 
-// Warmup video ID for PoToken pre-generation (first YouTube video)
-private const val POTOKEN_WARMUP_VIDEO_ID = "jNQXAC9IVRw"
-
 // Delay before retrying stream resolution after an InnerTube session change
 private const val SESSION_CHANGE_RETRY_DELAY_MS = 200L
-
-/**
- * Pre-warm the PoToken BotGuard generator to avoid cold-start latency on first playback.
- * Failure is swallowed; playback falls back to lazy init unchanged.
- */
-suspend fun prewarmPoToken() {
-    val sessionId = Store.getIosVisitorData() ?: return
-    runCatching {
-        poTokenGenerator.getWebClientPoToken(POTOKEN_WARMUP_VIDEO_ID, sessionId)
-    }.onFailure { Timber.tag(TAG).w(it, "PoToken prewarm skipped: ${it.message}") }
-}
 
 /**
  * Mark a videoId as having failed with a specific client.
@@ -247,8 +235,32 @@ internal fun mergePageValue(stored: String?, fetched: String?): String? =
     if (fetched.isNullOrBlank()) stored
     else PropUtils.retainIfModified(stored, fetched) ?: fetched
 
+/**
+ * S5 (offline gate, 2026-10-22): the network check behind the [upsertSongInfo] offline
+ * skip. A seam (not an inline call) so the plain-JVM tests in StreamResolverPageCacheTest
+ * can force it online — they exercise the upsert body without a device context.
+ */
+internal var upsertSongInfoNetworkCheck: () -> Boolean =
+    { NetworkQualityHelper.isNetworkConnected(appContext()) }
+
+/**
+ * S5 (offline gate, 2026-10-22): the network check behind [fetchFormatIfMissing]'s offline
+ * skip — a seam (not an inline call) so the plain-JVM FetchFormatIfMissingGateTest can force
+ * it online without a device context (same pattern as [upsertSongInfoNetworkCheck]).
+ */
+internal var fetchFormatIfMissingNetworkCheck: () -> Boolean =
+    { NetworkQualityHelper.isNetworkConnected(appContext()) }
+
 suspend fun upsertSongInfo(videoId: String) {
     if (videoId == justInserted) return
+    // S5 (offline gate, 2026-10-22): pure network work (Innertube nextPage) — skipped
+    // while offline so no call site can launch DNS-failing calls. The guard lives in the
+    // body (not only at call sites) because the legacy Player.forcePlayAtIndex pre-fetch
+    // (READ-ONLY) is a call site no wrapper can cover; the next online playback re-runs it.
+    if (!upsertSongInfoNetworkCheck()) {
+        Timber.tag(TAG).d("upsertSongInfo skipped for $videoId: no network")
+        return
+    }
     if (!fetchingSongInfos.add(videoId)) {
         Timber.tag(TAG).d("upsertSongInfo already in progress for $videoId, skipping duplicate.")
         return
@@ -518,6 +530,13 @@ private fun saveFormatSafe(format: Format) {
 private fun fetchFormatIfMissing(videoId: String) {
     if (videoId.startsWith(LOCAL_KEY_PREFIX)) return
     if (videoId.length != 11) return
+    // S5 (offline gate, 2026-10-22): pure network enrichment — offline it can only
+    // DNS-fail, so skip it (the load itself is already fast-failed in [DataSpec.process]).
+    // Seam (not an inline call): the plain-JVM gate test forces it online.
+    if (!fetchFormatIfMissingNetworkCheck()) {
+        Timber.tag(TAG).d("fetchFormatIfMissing skipped for $videoId: no network")
+        return
+    }
     // Issue #881 (Phase 3, Fix A): mark the id in-flight BEFORE launching. The previous version
     // added it only after the block completed — which it never did for the silent early exits
     // below — so every data-source re-open (one per seek on progressive streams) re-launched a
@@ -1020,6 +1039,18 @@ suspend fun playerResponseForMetadata(
     }
 }
 
+/**
+ * S5 (offline gate, 2026-10-22): true when [videoId] is a network-only stream id
+ * (11 chars — local files carry the [LOCAL_KEY_PREFIX] and a longer id, so they are
+ * never fast-failed) and the network is unavailable: the stream URL can never
+ * resolve, so [DataSpec.process] fails fast before the first Innertube call and the
+ * load-error policy (isOfflineLoadFailure) defers to the onPlayerError gate.
+ *
+ * Pure so the decision is unit-testable (same pattern as isOfflineLoadFailure).
+ */
+internal fun shouldFastFailOffline(videoId: String, networkConnected: Boolean): Boolean =
+    videoId.length == 11 && !networkConnected
+
 @UnstableApi
 fun DataSpec.process(
     videoId: String,
@@ -1034,6 +1065,21 @@ fun DataSpec.process(
     // exception class) in one PlaybackDiag line, warn above the slow threshold (spec S4).
     val startedAtNanos = System.nanoTime()
     fun elapsedMs(): Long = (System.nanoTime() - startedAtNanos) / 1_000_000
+    // S5 (offline gate, 2026-10-22): network-only streams — while offline the stream
+    // URL can never resolve, so fail fast before the first Innertube call instead of
+    // burning a wave of DNS-failing fetches (device log 2026-10-22: the InnerTubeX
+    // attempt + the fire-and-forget enrichments all ran offline before the gate).
+    // Local files (LOCAL_KEY_PREFIX) never need the network and stay untouched. The
+    // load-error policy (isOfflineLoadFailure) then gives up immediately and the
+    // onPlayerError gate takes over (log + noInternet toast + waitingForNetwork,
+    // resumed by the network callback).
+    if (shouldFastFailOffline(videoId, NetworkQualityHelper.isNetworkConnected(appContext()))) {
+        logResolutionOutcome(videoId, "OFFLINE", elapsedMs())
+        // Marker type (not a plain IOException): the offline gates must recognize this
+        // fast-fail even when the connectivity monitor state is stale — see
+        // StreamResolutionOfflineException.
+        throw StreamResolutionOfflineException(videoId)
+    }
     return try {
         runBlocking(NzikDispatchers.DATA) {
             val isLoggedIn = !Innertube.cookie.isNullOrBlank() && Innertube.cookie?.contains("SAPISID") == true
@@ -1143,6 +1189,9 @@ fun PlayerServiceModern.createDataSourceFactory(): DataSource.Factory {
         // PlayerServiceModern, the history placeholder) still keep the host's
         // metadata out of the library.
         val isLtVideo = ListenTogetherPlayerBridge.isListenTogetherVideo(videoId)
+        // S5 (offline gate, 2026-10-22): the offline skip now lives in the upsertSongInfo
+        // body (covers every call site, incl. the legacy forcePlayAtIndex pre-fetch) —
+        // here only the Listen Together gate remains.
         if (ListenTogetherPlayerBridge.shouldRunStreamInfoUpsert(
             isLtVideo,
             DataStoreUtils.getBoolean(appContext(), ListenTogetherClient.PREF_HISTORY, false)

@@ -1,7 +1,9 @@
 package app.n_zik.android.playback.services
 
+import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.FormatTable
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -14,6 +16,7 @@ import java.io.IOException
 import kotlinx.coroutines.CompletableDeferred
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import timber.log.Timber
 
@@ -42,8 +45,16 @@ class FetchFormatIfMissingGateTest {
         }
     }
 
+    @BeforeEach
+    fun setUp() {
+        // S5 offline gate (2026-10-22): force the seam online — this plain-JVM test exercises
+        // the gate wiring without a device context (appContext() is unavailable on the JVM).
+        fetchFormatIfMissingNetworkCheck = { true }
+    }
+
     @AfterEach
     fun tearDown() {
+        fetchFormatIfMissingNetworkCheck = { NetworkQualityHelper.isNetworkConnected(appContext()) }
         unmockkAll()
         Timber.uproot(logCapture)
         capturedLogs.clear()

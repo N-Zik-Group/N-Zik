@@ -2,6 +2,7 @@ package app.n_zik.android.playback.services
 
 import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.models.Artist
+import app.n_zik.android.appContext
 import app.n_zik.android.core.database.AlbumTable
 import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.Database
@@ -9,6 +10,7 @@ import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.core.database.SongAlbumMapTable
 import app.n_zik.android.core.database.SongArtistMapTable
 import app.n_zik.android.core.database.SongTable
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -65,6 +67,10 @@ class StreamResolverPageCacheTest {
 
     @Before
     fun setup() {
+        // S5 (offline gate, 2026-10-22): force the upsertSongInfo offline guard online —
+        // these plain-JVM tests exercise the upsert body without a device context.
+        upsertSongInfoNetworkCheck = { true }
+
         mockkObject(Database)
         coEvery { Database.upsert(any<Innertube.SongItem>()) } just runs
         every { Database.songArtistMapTable } returns songArtistMapTable
@@ -97,6 +103,7 @@ class StreamResolverPageCacheTest {
 
     @After
     fun tearDown() {
+        upsertSongInfoNetworkCheck = { NetworkQualityHelper.isNetworkConnected(appContext()) }
         unmockkAll()
     }
 
@@ -337,5 +344,26 @@ class StreamResolverPageCacheTest {
         assertEquals("Fetched artist", payload.captured.authorsText)
         assertEquals("2021", payload.captured.year)
         assertNotNull(payload.captured.lastFetch)
+    }
+
+    @Test
+    fun offlineSkipLaunchesNoFetchAndLeavesTheDedupeStateClean() = runBlocking {
+        // S5 (offline gate, 2026-10-22): the guard is the only protection for call sites a
+        // wrapper cannot cover (the legacy forcePlayAtIndex pre-fetch) — pin the offline
+        // branch itself, not just the seam's online path.
+        upsertSongInfoNetworkCheck = { false }
+        val videoId = "vid_offline_skip"
+        upsertSongInfo(videoId)
+
+        coVerify(exactly = 0) { Innertube.nextPage(videoId = videoId) }
+        coVerify(exactly = 0) { Database.upsert(any<Innertube.SongItem>()) }
+
+        // The skip must not pollute the in-flight dedupe state: back online, the same id fetches.
+        upsertSongInfoNetworkCheck = { true }
+        stubNextPage(videoId)
+        every { songArtistMapTable.findArtistsOf(videoId) } returns flowOf(emptyList())
+        every { songAlbumMapTable.findAlbumOf(videoId) } returns flowOf(null)
+        upsertSongInfo(videoId)
+        coVerify(timeout = 15_000) { Innertube.nextPage(videoId = videoId) }
     }
 }

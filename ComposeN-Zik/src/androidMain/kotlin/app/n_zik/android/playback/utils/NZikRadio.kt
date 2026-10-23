@@ -16,6 +16,7 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
 import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
 import app.it.fast4x.rimusic.utils.excludeDislikedAlbumsKey
+import app.it.fast4x.rimusic.utils.isNetworkConnected
 import app.it.fast4x.rimusic.enums.DislikeMode
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.NavigationEndpoint
@@ -226,8 +227,14 @@ class NZikRadio(
         source: String = "start"
     ) {
         radioJob = coroutineScope.launch(fetchDispatcher) {
+            // F4 (offline audit, 2026-10-22): offline the fetch can only fail at DNS — skip the
+            // wasted attempt (the player gate toasts the explicit start; the auto-fill retries online).
+            if (!isNetworkConnected(context)) {
+                Timber.tag("NZikRadio").d("Radio fetch skipped, no network (source=%s, videoId=%s)", source, videoId)
+                return@launch
+            }
             isLoading = true
-            
+
             var playlistId = initialPlaylistId
             var mediaItems = emptyList<MediaItem>()
 
@@ -303,27 +310,17 @@ class NZikRadio(
 
     /**
      * Trace policy for an empty radio fetch (issue #880), shared by the pre-filter empty fetch
-     * and the list emptied by the discover/dislike filters:
-     *
-     * - a `Timber.tag("NZikRadio")` log carrying the fetch identity (videoId/playlistId) and the
-     *   path it came from ([source]). The radio-state claim is path-aware, because it is NOT
-     *   uniformly "the radio stays ON": an explicit start leaves the radio ON; an implicit start
-     *   (`quick picks`, `search`) runs `stopRadio()` first, so the radio is OFF; an auto-fill
-     *   leaves the radio as the caller set it. The retry is CONDITIONAL, not a promise: it
-     *   happens at the next NON-REPEAT track transition only while the queue has >1 item
-     *   (`PlayerServiceModern.loadFromRadio` calls `autoFillQueue()` only on non-repeat
-     *   transitions and when `mediaItemCount > 1`), and with the radio OFF (implicit start)
-     *   auto-fill runs at all only when the AutoFill (auto-continue) setting is enabled
-     *   (`autoFillQueue` guard `!isRadioActive && !isAutoFillEnabled`) — an exhausted 1-item
-     *   queue (the forcePlay case) produces no transition and never retries; hence no
-     *   unconditional "the radio will retry" wording here or in the user-facing toast.
-     * - the queue left intact — no trim, nothing injected;
-     * - a `state_radio_fetch_error` toast ONLY when the fetch came from an explicit start
-     *   (`isExplicit = true`). Implicit paths (quick picks, search) and [autoFillQueue] stay
-     *   silent ("Silent fetch (No toast)") — a repeated empty playlist must not spam a toast on
-     *   every track transition. The toast is dispatched on the UI dispatcher: Toaster's API is
-     *   @MainThread-annotated and this function runs on the fetch dispatcher (DATA pool) —
-     *   the Timber log stays on the fetch thread.
+     * and the list emptied by the discover/dislike filters: a `Timber.tag("NZikRadio")` log
+     * (fetch identity + path-aware radio-state claim), the queue left intact, and a toast ONLY
+     * for an explicit start — implicit paths (quick picks, search) and [autoFillQueue] stay
+     * silent so a repeated empty playlist doesn't spam a toast. A5a (offline audit, 2026-10-22):
+     * the explicit-start toast is "No Connection" while offline, else `state_radio_fetch_error`;
+     * an offline fetch is skipped up front in [fetchAndInject] (F4), so this offline branch only
+     * covers a network drop mid-fetch (the fetch started online; the player may not have
+     * errored yet). The auto-fill retry is
+     * CONDITIONAL (next non-repeat track transition, queue >1 item; AutoFill setting when the
+     * radio is OFF), hence no "the radio will retry" wording. The toast hops to the UI
+     * dispatcher (Toaster is @MainThread; the fetch runs on the DATA pool).
      */
     private suspend fun traceEmptyFetch(videoId: String, playlistId: String?, isExplicit: Boolean, source: String, reason: String) {
         val radioOutcome = when (source) {
@@ -343,10 +340,11 @@ class NZikRadio(
             radioOutcome
         )
         if (isExplicit) {
-            // Toaster's toast API is @MainThread — the fetch job runs on the DATA pool, so hop
-            // to the UI dispatcher for the toast.
+            // A5a (offline audit, 2026-10-22): offline -> "No Connection" (a network problem, not
+            // a radio fetch problem). Toaster is @MainThread, so the toast hops to the UI dispatcher.
             withContext(NzikDispatchers.UI) {
-                Toaster.e(R.string.state_radio_fetch_error)
+                if (isRadioFetchNetworkFailure(context)) Toaster.noInternet()
+                else Toaster.e(R.string.state_radio_fetch_error)
             }
         }
     }
@@ -421,3 +419,9 @@ class NZikRadio(
         player.addMediaItems(items)
     }
 }
+
+/**
+ * A5a (offline audit, 2026-10-22): true when an empty explicit radio fetch is a network
+ * problem (a fresh check says offline) — the caller toasts "No Connection", not the fetch error.
+ */
+internal fun isRadioFetchNetworkFailure(context: Context): Boolean = !isNetworkConnected(context)

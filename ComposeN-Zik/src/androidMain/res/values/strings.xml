@@ -1225,6 +1225,8 @@
 <string name="error_playback_failed_with_code">Playback failed: %1$s [%2$s]</string>
 <string name="stream_still_retrying">Still loading… Attempt %1$s</string>
 <string name="stream_unexpected_skip">Unexpected track change detected</string>
+<string name="download_stale_removed">%1$s download data is missing and was removed. Please download it again.</string>
+<string name="download_stale_startup_removed">%1$d downloaded song(s) are missing their files and were removed. Please download them again.</string>
 <string name="songs_remaining">%1$s Songs Remaining</string>
 <string name="failed_to_copy_clipboard">Failed to copy text to clipboard, try again</string>
 <string name="discord_presence_closed">Discord presence closed</string>
@@ -1376,7 +1378,6 @@
 <string name="no_items_found">No items found</string>
 <string name="no_new_releases">There are no new releases for your favorite artists</string>
 <string name="not_selectable">Not selectable</string>
-<string name="unknown_playback_error">Unknown playback error</string>
 <string name="unknown_error">Unknown error</string>
 <string name="github">GitHub</string>
 <string name="update_channel_name">App Updates</string>

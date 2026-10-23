@@ -236,7 +236,9 @@ fun ListenTogetherScreen(
                         isCreatingRoom = false
                         isJoiningRoom = false
                         joinErrorMessage = event.error
-                        Toaster.e(event.error)
+                        // A5d (offline audit, 2026-10-22): localized "No Connection" instead of the raw
+                        // network string — the detail stays in the UI (joinErrorMessage).
+                        Toaster.noInternet()
                     }
                 }
 

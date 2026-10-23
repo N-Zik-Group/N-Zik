@@ -103,6 +103,12 @@ object MyDownloadHelper {
     // Semaphore to limit concurrent download preparation (avoids overwhelming the API)
     private val downloadPreparationSemaphore = Semaphore(3)
 
+    // P14 (review, 2026-10-23): seam behind [addDownloadInternal]'s A2 catch — the legacy
+    // `Context.download` wrapper is `inline reified` (not stubbable), so the failure test
+    // swaps this to fail deterministically.
+    internal var scheduleDownloadRequest: (Context, DownloadRequest) -> Result<Unit> =
+        { context, request -> context.download<MyDownloadService>(request) }
+
     // While the class is not a singleton (lifecycle), there should only be one download state at a time
 //    private val mutableDownloadState = MutableStateFlow(false)
 //    val downloadState = mutableDownloadState.asStateFlow()
@@ -153,6 +159,15 @@ object MyDownloadHelper {
     var downloads = MutableStateFlow<Map<String, Download>>(emptyMap())
     private val mutableProgresses = MutableStateFlow<Map<String, Float>>(emptyMap())
     val progresses = mutableProgresses.asStateFlow()
+
+    /**
+     * S1 (Phase 1 download fix, 2026-10-22): the removed count parked by
+     * [revalidateCompletedDownloads] — the re-validation runs before the app window is
+     * visible (a few seconds after process start, before MainActivity reaches onStart),
+     * where the system silently drops toasts; [MainActivity] consumes this once the
+     * window has focus (shows the toast + resets it to 0).
+     */
+    internal val pendingStaleStartupCount = MutableStateFlow(0)
 
     // Batch download tracking for "download all" progress notification
     var batchTotal = 0
@@ -385,6 +400,13 @@ object MyDownloadHelper {
                 }
             }
             getDownloads()
+            // S1 (Phase 1 download fix, 2026-10-21): the OS/OEM can wipe the span files
+            // while the DownloadIndex survives (documented on Samsung) — re-validate the
+            // completed library against the real files, off the main-Looper callback
+            // that `onInitialized` above runs on (one file stat per span).
+            coroutineScope.launch {
+                revalidateCompletedDownloads(downloadManager)
+            }
         }
     }
 
@@ -402,6 +424,42 @@ object MyDownloadHelper {
         if (ids.isEmpty()) return
         Timber.tag("MyDownloadHelper").d("Removing the ${ids.size} stuck download record(s) on app start")
         ids.forEach { id -> downloadManager.removeDownload(id) }
+    }
+
+    /**
+     * S1 (Phase 1 download fix, 2026-10-21): the startup re-validation of the completed
+     * (offline) library — the complement of [wipeStuckDownloadsOnStart], which only
+     * clears the stuck (non-terminal) records. The OS / OEM storage management
+     * (documented on Samsung) can wipe the span files under the download cache
+     * directory while the DownloadIndex survives, leaving `STATE_COMPLETED` rows that
+     * [isSongDownloaded] then reports forever. Each completed entry is re-checked
+     * against the real files with [DownloadValidator.hasValidDownload]; the stale
+     * ones are removed so the download badge is honest again and the track can be
+     * re-downloaded.
+     *
+     * Called (on [NzikDispatchers.DATA]) from [ensureDownloadManagerInitialized] right
+     * after [getDownloads] has populated [downloads] — once per process.
+     */
+    internal fun revalidateCompletedDownloads(downloadManager: DownloadManager) {
+        val staleIds = downloads.value.values
+            .filter { it.state == Download.STATE_COMPLETED }
+            .filterNot { DownloadValidator.hasValidDownload(downloadCache, it.request.id) }
+            .map { it.request.id }
+        if (staleIds.isEmpty()) {
+            Timber.tag("MyDownloadHelper").d("Download re-validation: completed library intact")
+            return
+        }
+        Timber.tag("MyDownloadHelper").w(
+            "Download re-validation: removing ${staleIds.size} stale completed entr${if (staleIds.size == 1) "y" else "ies"}: $staleIds"
+        )
+        staleIds.forEach { id -> downloadManager.removeDownload(id) }
+        // The per-track S2 toast is unreachable here — the index entries are already gone, so
+        // the startup cleanup is the ONLY user-visible notification of the wipe. This runs a
+        // few seconds after process start, before the app window is visible — the system
+        // silently drops toasts shown by a not-yet-visible app (device-verified 2026-10-22:
+        // toast.show() called, no toast window ever added) — so the count is parked here and
+        // MainActivity shows the toast once the window has focus.
+        pendingStaleStartupCount.value = staleIds.size
     }
 
     @Synchronized
@@ -468,7 +526,9 @@ object MyDownloadHelper {
      * preparation semaphore, schedules it on [MyDownloadService], then preloads
      * lyrics and artwork outside the semaphore so they don't block other downloads.
      */
-    private suspend fun addDownloadInternal( context: Context, mediaItem: MediaItem ) {
+    // internal (not private): the A2 failure test drives the scheduling path directly
+    // (P14, review 2026-10-23) instead of going through the DB-backed [addDownload] entry.
+    internal suspend fun addDownloadInternal( context: Context, mediaItem: MediaItem ) {
         downloadPreparationSemaphore.withPermit {
             val artistTextRaw = mediaItem.artistTextOrDb()
             val artistText = if (artistTextRaw == "null" || artistTextRaw.isBlank()) context.getString(R.string.unknown_artist) else artistTextRaw
@@ -488,11 +548,13 @@ object MyDownloadHelper {
 
             val imageUrl = mediaItem.mediaMetadata.artworkUri.thumbnail(1000)
 
-            context.download<MyDownloadService>(downloadRequest).exceptionOrNull()?.let {
+            scheduleDownloadRequest(context, downloadRequest).exceptionOrNull()?.let {
                 if (it is CancellationException) throw it
 
                 Timber.tag("MyDownloadHelper").e("scheduleDownload exception ${it.stackTraceToString()}")
-                Toaster.e(R.string.error_playback_failed)
+                // A2 (offline audit, 2026-10-22): download-domain string — error_playback_failed was
+                // shown without format args, so the user saw the literal "Playback failed: %1$s"
+                Toaster.e(R.string.download_failed)
             }
         }
         // Lyrics and image preload OUTSIDE semaphore - don't block download preparation
