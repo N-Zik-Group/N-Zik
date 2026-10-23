@@ -71,6 +71,7 @@ internal class RewindYearlyReminderWorker(
 
         // Positive-only jitter (up to 10 minutes AFTER the 1st of January, never before) so
         // installs do not all hit WorkManager at the same 1st-of-January instant without a
+//
         // single work firing before the new year starts
         private const val JITTER_MS = 10L * 60 * 1000
 
@@ -123,11 +124,7 @@ internal class RewindYearlyReminderWorker(
             return Duration.between(now, next).toMillis()
         }
 
-        /**
-         * Applies the positive-only scheduling jitter [deltaMs] (the firing is spread up to
-         * 10 minutes after the 1st of January, never before) and clamps the result to
-         * non-negative as a safety net.
-         */
+        /** Applies the positive-only scheduling jitter [deltaMs] (the firing is spread up to 10 minutes after the 1st of January, never before) and clamps the result to non-negative as a safety net. */
         internal fun applyJitter(delayMs: Long, deltaMs: Long): Long =
             (delayMs + deltaMs).coerceAtLeast(0)
     }
@@ -136,14 +133,17 @@ internal class RewindYearlyReminderWorker(
         return try {
             // Computed at execution, not scheduling: the work fires on the 1st of January of
             // year Y, so the finished year is Y-1 — the same "now minus one" approach the
+//
             // monthly worker uses for its finished month (a one-year delay is subject to
             // WorkManager's realities, so scheduling-time math would be stale).
             val finishedYear = LocalDate.now().year - 1
             if (!isYearlyReminderEnabled(applicationContext)) {
                 // Re-read the toggles at execution time: a flip made after the work was
                 // enqueued must suppress the notification (frozen contract GH-275). The
+//
                 // self-reschedule below still runs and, with the gate off, cancels the
                 // pending work: the yearly cadence resumes at the next app startup while
+//
                 // the gate is on.
                 Timber.tag(TAG).i("Rewind disabled in settings: skipping the %s yearly reminder", finishedYear)
                 Result.success()
@@ -171,6 +171,7 @@ internal class RewindYearlyReminderWorker(
 
         // Year extra only (the shared contract key [RewindReminderWorker.EXTRA_DECK_YEAR]) —
         // the missing month extra is the sentinel that the shared decode in [MainActivity]
+//
         // reads as "open the yearly deck"; the monthly notification always carries a month
         // 1..12, so the two extras sets never confuse each other.
         val intent = Intent(applicationContext, MainActivity::class.java)

@@ -26,10 +26,7 @@ import app.it.fast4x.rimusic.ui.styling.lerpTo
  */
 val LocalPaletteFadeTarget = staticCompositionLocalOf<Appearance?> { null }
 
-/**
- * Returns a copy of this typography with every text style recolored while
- * preserving each style's font size and other attributes.
- */
+/** Returns a copy of this typography with every text style recolored while preserving each style's font size and other attributes. */
 fun Typography.withColor(color: Color): Typography = copy(
     xxxs = xxxs.copy(color = color),
     xxs = xxs.copy(color = color),

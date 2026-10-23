@@ -1,18 +1,26 @@
 // Popup "Listen Together" menu (port of the Metrolist `ListenTogetherDialog` in
 // PlayerMenu.kt), shown through the app's shared menu state from the item menus
+//
 // (song / video / player) via menuState.display { }: the entry point to create or
 // join a room, or to manage the current one (room code, connected users with host
+//
 // kick/block/transfer, pending join requests / suggestions, leave room) plus the
+//
 // full room-page settings (server URL, username, auto-approvals, volume sync,
 // history, logs, blocked users).
 //
+//
 // Design (per user request): styled exactly like the app's own item menus —
 // follows the app's own "menu style" preference (MenuStyle): list mode renders
+//
 // [ListMenu.Menu] + accent section titles + [ListMenu.Entry] rows; grid mode
 // renders [GridMenu.Menu] + full-span section titles + [GridMenu.Entry] cells —
+//
 // no cards in either mode. Form inputs (create room, join room, server URL,
 // username) follow the app's own form-sheet pattern (CustomModalBottomSheet +
+//
 // ListMenu.Menu + app field colors + full-width accent button), same as the
+//
 // settings card's sheets.
 package app.n_zik.android.components.ui.screens.listentogether
 
@@ -367,6 +375,7 @@ fun ListenTogetherMenu() {
     } else {
         // The grid menu's content lambda is not a composable context (GridMenu.Menu's
         // `content` param carries no @Composable annotation, unlike ListMenu.Menu),
+//
         // so the items are emitted by a plain function; composable calls only happen
         // inside the `item { }` lambdas, which are composable.
         GridMenu.Menu(title = stringResource(R.string.listen_together)) {
@@ -467,10 +476,7 @@ private class LtMenuContent(
     val onToggleHistory: () -> Unit,
 )
 
-/**
- * List rendering: [ListMenu.Menu] + accent section titles + [ListMenu.Entry] rows
- * (same design as the app's own list item menus).
- */
+/** List rendering: [ListMenu.Menu] + accent section titles + [ListMenu.Entry] rows (same design as the app's own list item menus). */
 @Composable
 private fun ListLtMenuContent(content: LtMenuContent) {
     val palette = colorPalette()
@@ -1009,10 +1015,7 @@ private fun MenuSectionTitle(title: String) {
     )
 }
 
-/**
- * Non-clickable connection status row (dot + status text), same colors as the
- * room screen's connection card, laid out as a menu row / full-span grid item.
- */
+/** Non-clickable connection status row (dot + status text), same colors as the room screen's connection card, laid out as a menu row / full-span grid item. */
 @Composable
 private fun ConnectionStatusRow(connectionState: ConnectionState) {
     val palette = colorPalette()
@@ -1071,10 +1074,7 @@ private fun LoadingRow() {
     }
 }
 
-/**
- * Waiting-for-host-approval row: app spinner + accent waiting text (same as the
- * room screen's join form).
- */
+/** Waiting-for-host-approval row: app spinner + accent waiting text (same as the room screen's join form). */
 @Composable
 private fun WaitingApprovalRow(waitingText: String) {
     val palette = colorPalette()
@@ -1095,10 +1095,7 @@ private fun WaitingApprovalRow(waitingText: String) {
     }
 }
 
-/**
- * Join/create error box (red tinted container with alert icon), same as the
- * room screen's join form.
- */
+/** Join/create error box (red tinted container with alert icon), same as the room screen's join form. */
 @Composable
 private fun JoinErrorBox(message: String) {
     val palette = colorPalette()
@@ -1134,11 +1131,7 @@ private fun JoinErrorBox(message: String) {
     }
 }
 
-/**
- * Switch rendered in app theme colors (same as the settings entries); the row /
- * cell itself handles the click (the switch is visual only, like the app's
- * `SwitchSettingEntry`).
- */
+/** Switch rendered in app theme colors (same as the settings entries); the row / cell itself handles the click (the switch is visual only, like the app's `SwitchSettingEntry`). */
 @Composable
 private fun ToggleSwitch(checked: Boolean) {
     val palette = colorPalette()
@@ -1152,12 +1145,7 @@ private fun ToggleSwitch(checked: Boolean) {
     )
 }
 
-/**
- * Create-room form sheet, following the app's own form-sheet pattern (LastFm
- * login / display name, settings card server/username sheets): a transparent
- * [CustomModalBottomSheet] with [ListMenu.Menu] chrome, app field colors
- * ([InputDialog]) and a full-width accent button.
- */
+/** Create-room form sheet, following the app's own form-sheet pattern (LastFm login / display name, settings card server/username sheets): a transparent [CustomModalBottomSheet] with [ListMenu.Menu] chrome, app field colors ([InputDialog]) and a full-width accent button. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CreateRoomSheet(
@@ -1198,6 +1186,7 @@ private fun CreateRoomSheet(
     ) {
         // Cap the content at ~50% of the screen: ListMenu.Menu stretches to the
         // full screen height on its own, which would make the Expanded sheet
+//
         // cover the whole window.
         val screenHeightDp = LocalConfiguration.current.screenHeightDp
         Box(
@@ -1234,6 +1223,7 @@ private fun CreateRoomSheet(
                     )
                     // App button pattern (InputDialog / UsernameSheet): always accent —
                     // no material3 `enabled` state, which would render the disabled
+//
                     // button grey/translucent instead of accent. Validation is done
                     // in the click instead.
                     Button(
@@ -1263,11 +1253,7 @@ private fun CreateRoomSheet(
     }
 }
 
-/**
- * Join-room form sheet, same app form-sheet pattern as [CreateRoomSheet]: room
- * code field (8 chars, uppercased, like the room screen's form) + username
- * field + full-width accent button.
- */
+/** Join-room form sheet, same app form-sheet pattern as [CreateRoomSheet]: room code field (8 chars, uppercased, like the room screen's form) + username field + full-width accent button. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun JoinRoomSheet(

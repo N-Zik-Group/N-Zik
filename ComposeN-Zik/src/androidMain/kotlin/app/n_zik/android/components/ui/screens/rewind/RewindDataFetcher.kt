@@ -137,10 +137,7 @@ data class TopArtworks(
     val playlist: PlaylistPreview?
 )
 
-/**
- * One year of the rewind home page: totals plus the 12-month breakdown (months without events
- * stay at zero plays so the grid can grey them out) and each month's top items collage.
- */
+/** One year of the rewind home page: totals plus the 12-month breakdown (months without events stay at zero plays so the grid can grey them out) and each month's top items collage. */
 data class RewindHomeYear(
     val year: Int,
     val minutes: Long,
@@ -162,10 +159,7 @@ data class RewindHomeGlobal(
     val topArtworks: TopArtworks
 )
 
-/**
- * Everything the "My Rewind" home page needs: one row per year that has events
- * (newest first) plus the all-time row.
- */
+/** Everything the "My Rewind" home page needs: one row per year that has events (newest first) plus the all-time row. */
 data class RewindHomeData(
     val years: List<RewindHomeYear>,
     val global: RewindHomeGlobal?
@@ -482,10 +476,7 @@ internal class RewindDataFetcher(
             }
         }
 
-    /**
-     * The 12-slot month grid of [year] (calendar order): months without plays stay
-     * at zero so the grid can grey them out.
-     */
+    /** The 12-slot month grid of [year] (calendar order): months without plays stay at zero so the grid can grey them out. */
     private fun monthGrid(year: Int, rows: List<RewindYearMonthStat>): List<MonthlyStat> {
         val byMonth = rows.associate { it.month to it }
         return (1..12).map { slot ->
@@ -498,10 +489,7 @@ internal class RewindDataFetcher(
         }
     }
 
-    /**
-     * Each month's collage set of [year]'s grid: windowed top queries only for the
-     * months with plays (empty months stay all-null).
-     */
+    /** Each month's collage set of [year]'s grid: windowed top queries only for the months with plays (empty months stay all-null). */
     private suspend fun monthTopArtworks(year: Int, grid: List<MonthlyStat>): List<TopArtworks> =
         grid.mapIndexed { slot, stat ->
             if (stat.plays <= 0) {
@@ -511,10 +499,7 @@ internal class RewindDataFetcher(
             }
         }
 
-    /**
-     * The most-played items of one window: the deck's top-song ranking for the song
-     * plus the limit-1 listening stats queries for the other categories.
-     */
+    /** The most-played items of one window: the deck's top-song ranking for the song plus the limit-1 listening stats queries for the other categories. */
     private suspend fun windowTopArtworks(window: Pair<Long, Long>): TopArtworks {
         val (start, end) = window
         return TopArtworks(
@@ -590,10 +575,7 @@ internal fun allTimeDaysInPeriod(events: List<Event>): Int {
     return ((last - first) / 86_400_000L + 1).toInt()
 }
 
-/**
- * Empty [RewindData] for [period]: a readable empty state, never a blank screen
- * (spec GH-275, PERIODE_VIDE).
- */
+/** Empty [RewindData] for [period]: a readable empty state, never a blank screen (spec GH-275, PERIODE_VIDE). */
 internal fun emptyRewindData(period: RewindPeriod): RewindData = RewindData(
     topSongs = emptyList(),
     topArtists = emptyList(),
@@ -622,10 +604,7 @@ internal fun emptyRewindData(period: RewindPeriod): RewindData = RewindData(
     daysInPeriod = period.daysInPeriod()
 )
 
-/**
- * One entry per calendar day of [month] of [year] (days without plays stay at zero), in day
- * order: the day-by-day chart of a monthly deck.
- */
+/** One entry per calendar day of [month] of [year] (days without plays stay at zero), in day order: the day-by-day chart of a monthly deck. */
 internal fun calendarDayStats(
     year: Int,
     month: Int,

@@ -52,6 +52,7 @@ class HomeQuickPicksState(
     companion object {
         // Outlives the composable so a Quick Picks load keeps running when the
         // user switches pages; on return the results are already there instead
+//
         // of a cancelled load forcing a full reload.
         private val loadScope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
 
@@ -181,6 +182,7 @@ class HomeQuickPicksState(
 
             // Phase 3: Home page sections (sequential but with early exit)
             // Also re-run when no YTM data is available: a stale "loaded" flag
+//
             // left by a cancelled or failed load must not block the re-fetch.
             if (!shouldSkipQuickPicksLoad(loadedData.value, homePageInit.value != null)) {
                 var cumulativeSections = homePageInit.value?.sections.orEmpty()
@@ -253,6 +255,7 @@ class HomeQuickPicksState(
         sharedLoadJob = loadScope.launch {
             // The pull-to-refresh indicator tracks a real data load only: startup,
             // an explicit refresh, or a deferred reload. A cached page change is a
+//
             // no-op load and must not flash the indicator.
             if (!shouldSkipQuickPicksLoad(loadedData.value, homePageInit.value != null)) {
                 refreshing.value = true
@@ -278,6 +281,7 @@ class HomeQuickPicksState(
         if (job != null && job.isActive) {
             // A load is in progress: tearing its state down mid-flight is what
             // caused the corrupted data. Defer a full reload instead; the running
+//
             // load keeps the indicator up until the deferred reload finishes.
             sharedRefreshPending = true
             Timber.tag("HomeQuickPicksState").d("Refresh deferred: load already in progress")

@@ -147,12 +147,7 @@ class SongItemMenu private constructor(
             )
     }
 
-    /**
-     * Index of the first playback button (radio, play next, enqueue, favorite, add to playlist)
-     * of a local song: `2` behind the FFmpeg-only edit-metadata button, `1` without it (the
-     * `*32` builds) — before this fix the menu read fixed indexes and, without FFmpeg, showed
-     * "Start radio" under Management and skipped "Add to playlist".
-     */
+    /** Index of the first playback button (radio, play next, enqueue, favorite, add to playlist) of a local song: `2` behind the FFmpeg-only edit-metadata button, `1` without it (the `*32` builds) — before this fix the menu read fixed indexes and, without FFmpeg, showed "Start radio" under Management and skipped "Add to playlist". */
     private fun localPlaybackStart(): Int = localSongPlaybackStart(BuildConfig.ENABLE_FFMPEG)
 
     lateinit var buttons: List<Button>
@@ -406,6 +401,7 @@ class SongItemMenu private constructor(
         val playNext = PlayNext {
             // Issue #606 review fix: launch on a scope independent of the popup menu's lifecycle.
             // MenuComponent.kt hides the menu (cancelling its rememberCoroutineScope()) right after
+//
             // onShortClick() returns, so a coroutineScope.launch here could be cancelled mid-flight
             // before player.addNextOffMain ever runs, silently dropping the tap.
             NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
@@ -533,6 +529,7 @@ class SongItemMenu private constructor(
 
         // Listen Together room dialog (Metrolist PlayerMenu dialog port): opens the
         // create/join/manage room popup through the shared menu state. Shown for every
+//
         // song regardless of room state or role — it is the menu entry point to a room.
         listenTogetherDialogBtn = remember {
             object : MenuIcon, Descriptive, Clickable {

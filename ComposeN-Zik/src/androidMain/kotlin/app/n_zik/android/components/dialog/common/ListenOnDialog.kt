@@ -6,11 +6,7 @@ import app.n_zik.android.R
 import app.it.fast4x.rimusic.models.Info
 import app.it.fast4x.rimusic.utils.ExternalUris
 
-/**
- * "Listen on" dialog: opens the current media on an external app
- * (YouTube / YouTube Music / Invidious) via the shared
- * [ValueSelectorDialog].
- */
+/** "Listen on" dialog: opens the current media on an external app (YouTube / YouTube Music / Invidious) via the shared [ValueSelectorDialog]. */
 @Composable
 fun ListenOnDialog(
     mediaId: String,

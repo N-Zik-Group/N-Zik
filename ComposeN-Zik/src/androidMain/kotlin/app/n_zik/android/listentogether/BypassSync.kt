@@ -8,10 +8,7 @@ internal const val BYPASS_READY_WAIT_DELAY_MS = 50L
 /** Poll budget for the bounded readiness wait (bypass playback-state apply). */
 internal const val BYPASS_READY_WAIT_ATTEMPTS = 100
 
-/**
- * Outcome of the bounded readiness wait used by bypass (manual sync /
- * reconnect) playback-state applies.
- */
+/** Outcome of the bounded readiness wait used by bypass (manual sync / reconnect) playback-state applies. */
 internal data class BypassReadyWait(
     val ready: Boolean,
     val waitedMs: Long,

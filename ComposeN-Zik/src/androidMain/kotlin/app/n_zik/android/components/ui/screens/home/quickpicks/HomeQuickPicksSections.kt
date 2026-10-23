@@ -736,7 +736,9 @@ fun RewindSection(
                     ) { preview ->
                         // User request 2026-09-30: album-format card — a single square
                         // cover with the localized name below, instead of the
+//
                         // four-track video collage of the generic PlaylistItem. The
+//
                         // cover is the user's custom thumbnail if one was set, else
                         // the most-played track's thumbnail (the old collage's lead).
                         val context = LocalContext.current
@@ -760,6 +762,7 @@ fun RewindSection(
                             thumbnailSizeDp = playlistThumbnailSizeDp,
                             // alternative = true: the album card layout (square cover on
                             // top, title centered below) — the default (false) is a row
+//
                             // with the text to the right of the thumbnail.
                             alternative = true,
                             thumbnailOverlay = {
@@ -775,6 +778,7 @@ fun RewindSection(
                                     contentDescription = stringResource(R.string.cd_origin_indicator),
                                     // Accent tint as in the base PlaylistItem overlay. The white
                                     // XML tint on these drawables targets the Android Auto
+//
                                     // artwork only (drawableUri, no compose tint applied).
                                     tint = colorPalette().accent,
                                     modifier = Modifier.size(40.dp).padding(all = 5.dp)
@@ -1348,6 +1352,7 @@ fun GenericYtmSections(
                         is Innertube.VideoItem -> {
                             // User request 2026-09-30: the YTM "Retrospective" section uses
                             // the album format (square thumbnail, title/artist centered
+//
                             // below) instead of the wide video card; playback and the
                             // long-press menu stay video-based (same as the SongItem branch).
                             if (title.contains("retrospective", ignoreCase = true) ||

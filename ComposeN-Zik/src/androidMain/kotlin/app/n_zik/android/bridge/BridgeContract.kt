@@ -60,10 +60,7 @@ internal object BridgeContract {
     /** A toast the phone showed, relayed to the client (contract §7.9, since 1.10.0). */
     const val TYPE_TOAST = "toast"
 
-    /**
-     * `features` of `GET /api/v1/meta` implemented so far (contract §5); since 1.7.2,
-     * `library.ffmpeg` is only advertised on the builds that ship FFmpeg (not the `*32` ones).
-     */
+    /** `features` of `GET /api/v1/meta` implemented so far (contract §5); since 1.7.2, `library.ffmpeg` is only advertised on the builds that ship FFmpeg (not the `*32` ones). */
     val FEATURES: List<String> = listOf(
         "pairing.qr",
         "pairing.manual",
@@ -322,11 +319,7 @@ internal data class Page<T>(
     val total: Int,
     val offset: Int,
     val limit: Int,
-    /**
-     * Since 1.7.2 (contract §1): the total duration in ms of the FULL list, before pagination
-     * and before `text` — carried by `GET /library/playlists/{id}/songs` (the phone's header
-     * duration), `0` on every other route.
-     */
+    /** Since 1.7.2 (contract §1): the total duration in ms of the FULL list, before pagination and before `text` — carried by `GET /library/playlists/{id}/songs` (the phone's header duration), `0` on every other route. */
     val totalDurationMs: Long = 0L,
 )
 
@@ -371,10 +364,7 @@ internal enum class PlaylistOrigin(val wire: String) {
     /** Since 1.7.1: the generated all-time rewind snapshot (the phone's `musical_notes` icon). */
     @SerialName("rewind-alltime") REWIND_ALLTIME("rewind-alltime"),
     @SerialName("rewind") REWIND("rewind"),
-    /**
-     * Since 1.10.0: the legacy (pre-kind) `monthly:` playlist — the phone's `stat_month` icon, and NOT a
-     * rewind playlist for its screens (sort, toolbar), unlike the generated `rewind-*` ones.
-     */
+    /** Since 1.10.0: the legacy (pre-kind) `monthly:` playlist — the phone's `stat_month` icon, and NOT a rewind playlist for its screens (sort, toolbar), unlike the generated `rewind-*` ones. */
     @SerialName("monthly") MONTHLY("monthly");
 
     companion object {

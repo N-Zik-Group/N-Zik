@@ -34,6 +34,8 @@ internal object BridgeUiSettings {
 
     fun read(source: Source): UiSettingsDto {
         // Both preferences are only read to compute the effective Top N: the wire carries `topN` alone.
+        //
+
         // The fallback is the phone's own default selection, so a default change on the phone
         // propagates here without a silent desync (every other read site uses the same enum default)
         val maxItems = source.string(MaxTopPlaylistItemsKey) ?: MaxTopPlaylistItems.`10`.name

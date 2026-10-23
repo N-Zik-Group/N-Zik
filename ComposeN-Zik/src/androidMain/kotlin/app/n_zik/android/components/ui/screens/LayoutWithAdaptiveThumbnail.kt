@@ -19,12 +19,7 @@ import app.it.fast4x.rimusic.utils.isLandscape
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.thumbnailShape
 
-/**
- * A layout that presents differently based on the screen orientation: in
- * **portrait** the thumbnail is on top (with vertical gradient) and the
- * content below it; in **landscape** the thumbnail is on the left and the
- * content on the right.
- */
+/** A layout that presents differently based on the screen orientation: in **portrait** the thumbnail is on top (with vertical gradient) and the content below it; in **landscape** the thumbnail is on the left and the content on the right. */
 @Composable
 fun DynamicOrientationLayout(
     thumbnail: Painter,

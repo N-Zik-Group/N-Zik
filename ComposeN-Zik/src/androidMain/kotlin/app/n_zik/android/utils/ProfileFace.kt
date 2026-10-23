@@ -39,6 +39,10 @@ sealed interface FaceAvatar {
  * Pure on purpose — shared by the Welcome greeting, the Rewind deck, the Accounts face card
  * and the Profiles page, and unit-tested without any Android dependency.
  *
+ * The three account pairs ([ytLoggedIn] / [ytName], [discordLoggedIn] / [discordName],
+ * [lastfmLoggedIn] / [lastfmName]) are the logged-in state and the name captured by each
+ * login flow (may be blank).
+ *
  * @param source value stored under `faceNameSource` ("profil" default)
  * @param profileName the profile's own display name (never blank in practice)
  * @param defaultName fallback name, never blank (`profile_base_name`)
@@ -86,11 +90,7 @@ fun resolveFaceAvatar(
     else -> FaceAvatar.Initials(profileName)
 }
 
-/**
- * Deterministic initials for the placeholder avatar: the first letter of each of the
- * first two words, uppercased; a blank name renders the fallback letter so the face
- * always renders something.
- */
+/** Deterministic initials for the placeholder avatar: the first letter of each of the first two words, uppercased; a blank name renders the fallback letter so the face always renders something. */
 fun faceInitials(name: String): String {
     val letters = name.trim()
         .split(Regex("\\s+"))
@@ -100,11 +100,7 @@ fun faceInitials(name: String): String {
     return if (letters.isEmpty()) "?" else letters.joinToString("")
 }
 
-/**
- * Deterministic background color index of the initials avatar: the same name always
- * gets the same color, across cards and restarts (the palette itself is resolved by
- * the rendering composable).
- */
+/** Deterministic background color index of the initials avatar: the same name always gets the same color, across cards and restarts (the palette itself is resolved by the rendering composable). */
 fun faceInitialsColorIndex(name: String): Int {
     val seed = name.trim()
     return if (seed.isEmpty()) 0 else (seed.hashCode() and Int.MAX_VALUE) % FACE_INITIALS_COLOR_COUNT

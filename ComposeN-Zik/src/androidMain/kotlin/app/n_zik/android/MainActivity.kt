@@ -550,57 +550,75 @@ class MainActivity :
 
     // Observable so a shortcut tap while the app is already running (delivered via onNewIntent,
     // which never re-triggers onCreate) still recomposes the tab-navigation check below --
+//
     // reading `intent.action` directly only ever saw the launch-time intent.
     // Not re-seeded from the launch intent when the activity is recreated (theme change, settings
+//
     // import): the shortcut was already consumed and would otherwise pop the back stack to home.
+//
     // Internal (not private) so the Robolectric lifecycle tests can assert the profile-shortcut
     // exclusion — a profile tap must never feed this state (it would pop the back stack to home).
+//
     internal var shortcutIntentAction by mutableStateOf<String?>(null)
 
     // Finished month (or finished year, month = 0 yearly sentinel) carried by a rewind
     // reminder's content intent. Set on cold start (onCreate) and warm start (onNewIntent),
+//
     // consumed once by the navigation effect that opens the deck on that month — or the
     // yearly deck on that year. Internal (not private) so the Robolectric lifecycle tests
+//
     // can assert the consumed target (spec GH-275 follow-up).
     internal var rewindDeckTarget by mutableStateOf<Pair<Int, Int>?>(null)
 
     // Database id of the 'Rewind — <period>' playlist carried by a playlist-ready
     // notification's content intent (spec GH-275 follow-up). Set on cold start (onCreate)
+//
     // and warm start (onNewIntent), consumed once by the navigation effect that opens the
     // playlist directly. Internal for the same reason as [rewindDeckTarget].
     internal var rewindPlaylistTarget by mutableStateOf<Long?>(null)
 
     // Generic « Profiles » launcher shortcut (spec-profile-shortcuts): set on cold start
     // (onCreate) and warm start (onNewIntent) when the intent action is [action_profiles],
+//
     // consumed once by the navigation effect that opens the profiles page. Internal for the
     // same reason as [rewindDeckTarget].
     internal var openProfilesShortcut by mutableStateOf(false)
 
     // "Now playing" notification tap — COLD start (spec-notification-click-opens-player):
     // the tap token HELD in memory (Long?) when the launch intent carries one — no persistent
+//
     // marker. Validated at deployment time by a live comparison against the current service's
     // token (via the Binder): equal → legitimate tap (always deploys the full player, the
+//
     // keepPlayerMinimized setting is NOT consulted, decision 2026-10-03); different → stale
     // (process-death re-send, the service restarted and minted a new token) → discarded, no
+//
     // deployment. A valid token with no media yet is HELD and re-checked on every
     // playerUpdateTrigger. Internal for the same reason as [rewindDeckTarget].
     internal var openPlayerColdToken by mutableStateOf<Long?>(null)
 
     // "Now playing" notification tap — WARM start (spec-notification-click-opens-player):
     // set on warm start (onNewIntent) when the new intent carries a fresh open-player
+//
     // token, consumed once by the deployment effect that presents the mini-player (if the
     // sheet is dismissed) then deploys the full player. Internal for the same reason as
+//
     // [rewindDeckTarget].
     internal var openPlayerFromNotificationWarm by mutableStateOf(false)
 
     // Current step of the first-launch onboarding flow, held by the activity so a
     // recreation (rotation) resumes the flow at the right step; null means the flow
+//
     // is complete and the main navigation renders instead. The step is persisted in
     // prefs on every transition (see advanceOnboarding), so a process restart —
+//
     // post-import restart or process death — resumes at the right step too. The
     // onboardingComplete flag is written only when the flow is fully done (leaving
+//
     // the profile step, the last one) — a successful restore or a Discord-token
+//
     // restart from the accounts step never writes it: the flow advances to the next
+//
     // step before the restart, so the restart lands on that step, keeping the user
     // inside onboarding — and a mid-flow crash never marks it as finished.
     private var onboardingStep by mutableStateOf<OnboardingStep?>(null)
@@ -770,6 +788,7 @@ class MainActivity :
             setActiveProfile(it, this)
             // The tapped profile counts as used from this launch (spec-profiles-page-face: the
             // active profile is recorded as used on every app start — the boot-time record in
+//
             // MainApplication still names the previous profile).
             saveProfileLastUsed(it, System.currentTimeMillis())
             Timber.tag("MainActivity").i("Profile shortcut (cold): active profile set to $it before launch")
@@ -796,6 +815,7 @@ class MainActivity :
             executeProfileSwitch(it, this)
             // exit 0, like the profiles page: the new profile's stores can only be loaded in a
             // fresh process. The exit deliberately lives at the call site (not in
+//
             // executeProfileSwitch) so the switch wiring stays pinnable under Robolectric
             // without killing the test JVM (ProfileSwitchTest).
             exitProcess(0)
@@ -834,12 +854,15 @@ class MainActivity :
 
         // Direct profile shortcut (spec-profile-shortcuts, cold path): the active profile is
         // set BEFORE startApp runs (it is dispatched after onCreate returns, via
+//
         // monet.invokeOnReady), so the first per-profile prefs/DB access already sees the
+//
         // tapped profile. The generic « Profiles » shortcut only records the navigation
         // target — the effect below opens the page once the graph is composed.
         consumeProfileShortcut(intent)
         // Gated on isRestoredInstance (like [shortcutIntentAction] below): a recreated/restored
         // activity is handed the kept launch intent again, whose action_profiles cannot be
+//
         // stripped (it is the action, not an extra) — re-deriving the flag would re-open the
         // profiles page on every rotation / theme change / process-death restore.
         openProfilesShortcut = !isRestoredInstance && intent?.action == action_profiles
@@ -850,21 +873,28 @@ class MainActivity :
 
         // Rewind notification deep links (deck / playlist): consume the launch intent's
         // targets synchronously — app OFF path. A task restored after a process death
+//
         // re-sends its original launch intent here; the persistent last-consumed markers
+//
         // reject an already-consumed target while a fresh tap still opens (spec GH-275
+//
         // follow-up). The app ON path is onNewIntent, which shares the same contract.
         consumeRewindDeepLinks(intent)
         // "Now playing" notification tap (spec-notification-click-opens-player): consume the
         // launch intent's open-player token synchronously — app OFF path. A positive token is
+//
         // held in memory ([openPlayerColdToken]) and validated at deployment time by a live
+//
         // comparison against the current service's token (staleness is the service's live
         // token — there is no persistent marker); the extra is stripped off the kept intent
+//
         // either way.
         consumeOpenPlayerDeepLink(intent, cold = true)
 
         checkIfAppIsRunningInBackground()
         // App shortcuts are now registered in MainApplication.onCreate (before Dependencies.init)
         // so they survive initialization crashes. See ShortcutIconSync.kt.
+//
         // Verify backup location exists
         lifecycleScope.launch(NzikDispatchers.DATA) {
             BackupManager.verifyBackupLocation(this@MainActivity)
@@ -970,6 +1000,7 @@ class MainActivity :
 
         // S1 (Phase 1 download fix, 2026-10-22): the stale-download count can be parked
         // after the first window focus (the download manager is lazy) — observe it so
+//
         // the toast still fires while the app is in the foreground.
         lifecycleScope.launch {
             MyDownloadHelper.pendingStaleStartupCount.collect { count ->
@@ -1002,6 +1033,7 @@ class MainActivity :
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
         // The profile-shortcut actions have their own consumption (spec-profile-shortcuts,
         // done in onCreate / onNewIntent) and must not ride the home-tab shortcut state,
+//
         // which would pop the back stack to home.
         shortcutIntentAction =
             initialShortcutAction(intent.action, isRestoredInstance)?.takeUnless { isProfileShortcutAction(it) }
@@ -1011,6 +1043,7 @@ class MainActivity :
             complete = DataStoreUtils.getBoolean(this, DataStoreUtils.KEY_ONBOARDING_COMPLETE, false),
             // Resume at the persisted step after a post-import restart or process death
             // (a restore never completes the onboarding, so this covers it too); fresh
+//
             // installs have nothing persisted and fall back to the first step
             persistedStepName = DataStoreUtils.getString(this, DataStoreUtils.KEY_ONBOARDING_STEP, ""),
         )
@@ -1135,7 +1168,9 @@ class MainActivity :
 
             // Issue #881 (gh-881): tolerant saver on the PLAIN `saver =` overload (the `stateSaver =`
             // overload is prohibited — its `mutableStateSaver` wrapper `require`s a
+//
             // SnapshotMutableState payload and throws IAE on a foreign one, spec M5). The fallback
+//
             // is the same preference-derived default the init lambda computes, so a corrupted
             // payload restores to the real current appearance instead of crashing.
             var appearance by rememberSaveable(saver = TolerantAppearanceStateSaver(::computeAppearance, "main.appearance")) {
@@ -1151,8 +1186,10 @@ class MainActivity :
 
             // Re-cap the restored dynamic palette once at startup (spec-achromatic-ramp-luminance-cap,
             // loopback 2, EC-1): the Saver ColorPalette.Companion persists only accent + isDark and
+//
             // rebuilds through the legacy non-capped dynamicColorPaletteOf, so a process death can
             // restore an uncapped achromatic ramp (near-white app in dark mode, or the mirror)
+//
             // until the next extraction. No-op same-instance for matching/in-range tones, and
             // skipped entirely for static palettes (saved name != Dynamic).
             LaunchedEffect(Unit) {
@@ -1213,6 +1250,7 @@ class MainActivity :
                     if (oldPalette == targetPalette) return
                     // Single global mutation (the perceived fade happens locally
                     // in the player scope, see PaletteFade) — mutating the
+//
                     // global palette N times per track invalidated the whole UI
                     updateAppearance(
                         appearance.copy(
@@ -1675,11 +1713,13 @@ class MainActivity :
 
             // Scroll-hide guard input: whether the full player sheet is currently on screen.
             // Declared before nestedScrollConnection (which reads it live at event time);
+//
             // synced reactively once playerSheetState exists further down in composition.
             val isPlayerSheetExpanded = remember { mutableStateOf(false) }
 
             // Opening the player must restore the hidden bars: while the player is open
             // the scroll-hide re-show is disabled (showPlayer guard), so hidden bars would
+//
             // otherwise stay hidden forever and the player container would keep its offset,
             // leaving an unrecoverable UI state (player mis-positioned, no nav bars).
             fun restoreHiddenBars() {
@@ -1689,6 +1729,7 @@ class MainActivity :
                 offsetAnimationJob.value = coroutineScope.launch {
                     // 800ms (user-tuned): the bars finish settling exactly when the auto-expansion
                     // starts (MINIPLAYER_AUTOEXPAND_DELAY_MS), so restore + deploy read as one
+//
                     // continuous motion instead of two separate jumps.
                     launch { androidx.compose.animation.core.Animatable(topBarOffset).animateTo(0f, androidx.compose.animation.core.tween(800, easing = androidx.compose.animation.core.FastOutSlowInEasing)) { topBarOffset = value } }
                     launch { androidx.compose.animation.core.Animatable(bottomBarOffset).animateTo(0f, androidx.compose.animation.core.tween(800, easing = androidx.compose.animation.core.FastOutSlowInEasing)) { bottomBarOffset = value } }
@@ -1726,6 +1767,7 @@ class MainActivity :
                         if (isPlayerSheetExpanded.value || showQueueOverlay) return Offset.Zero
                         // Bars here are driven by the toggle button, not by scrolling: a slide only
                         // puts them away (nothing scroll-related brings them back) and the scroll
+//
                         // itself must stay whole for the list
                         if (isLandscapeBarless) {
                             if (available.y != 0f && source == NestedScrollSource.UserInput) {
@@ -1821,11 +1863,13 @@ class MainActivity :
                 val navBarBottomPad = Dimensions.navBarBottomPadding(isFloatingNavBar)
                 // Route-aware: only screens that actually render the app nav bar reserve its
                 // height under the mini-player, so it drops to the screen edge on bar-less pages.
+//
                 // Sourced from the nav controller rather than DiscordUiState so layout never
                 // depends on the RPC feature's destination listener
                 val playerRoute = navController.currentBackStackEntryAsState().value?.destination?.route
                 // Home draws one nav bar button per active tab and only shows the bar with two
                 // or more, so pass the real tab count: the same preferences HomeScreen reads,
+//
                 // kept reactive so a tab toggled in settings moves the mini-player live.
                 val quickPicksTabEnabled by rememberPreference(enableQuickPicksPageKey, true)
                 val songsTabEnabled by rememberPreference("hometab_songs_enabled", true)
@@ -1864,6 +1908,7 @@ class MainActivity :
                 } else 5.dp
                 // Follows the nav bar sliding in/out so the mini player glides with it instead of
                 // jumping. Kept as a State and only read at draw time (see CustomBottomSheet): reading
+//
                 // it here would recompose this whole screen on every frame of the slide.
                 val playerPadBottom = androidx.compose.animation.core.animateDpAsState(
                     targetValue = targetPlayerPadBottom,
@@ -1876,6 +1921,7 @@ class MainActivity :
 
                 // Top anchor: the mini-player sits under the app header (and the top nav bar).
                 // The provider is read at draw time so the scroll-hide offset moves it without
+//
                 // recomposing this screen on every frame.
                 val isTopPlayer = playerPos == PlayerPosition.Top
                 val statusBarTopPx = safeDrawingInsets.getTop(density)
@@ -1889,7 +1935,9 @@ class MainActivity :
                 val collapsedPlayerHeight = Dimensions.collapsedPlayer
                 // Side system bars (status bar at the left, nav bar at the right in landscape,
                 // cutout) and a navigation rail on a side: the collapsed mini-player narrows to
+//
                 // stay clear of them. Both are put away with the other bars on the bar-less
+//
                 // landscape screens.
                 val railWidth = if (areBarsHidden) 0.dp else Dimensions.navigationRailWidth
                 val playerStartInset = miniPlayerSideInset(
@@ -1923,6 +1971,7 @@ class MainActivity :
 
                 // Keep the scroll-hide guard in sync with the sheet's real on-screen state.
                 // showPlayer alone is not enough: it stays true after a back-collapsed
+//
                 // player, which would permanently block re-hiding the bars while music plays.
                 LaunchedEffect(playerSheetState) {
                     snapshotFlow { playerSheetState.progress > 0.5f }
@@ -1932,9 +1981,12 @@ class MainActivity :
 
                 // NOT keyed on playerSheetState.value: that changes every drag frame,
                 // which used to recreate the derived state and re-provide
+//
                 // LocalPlayerAwareWindowInsets per frame, recomposing every screen
+//
                 // that consumes the insets while the mini-player is dragged.
                 // The tracker returns the same WindowInsets instance while the
+//
                 // clamped bottom is stable, so no consumer is invalidated per frame.
                 val playerAwareWindowInsets by remember(bottomDp, playerSheetState.collapsedBound) {
                     val insetsTracker = PlayerAwareInsetsTracker(
@@ -1957,17 +2009,24 @@ class MainActivity :
                 }
                 // Consuming (resetting) shortcutIntentAction synchronously during composition
                 // raced with HomeScreen's own LaunchedEffect(openTabFromShortcut): both the -1->X
+//
                 // and the immediate X->-1 recompositions could settle before that effect ever got
                 // to run, silently dropping the navigation (verified on-device). Resetting from an
+//
                 // effect instead -- same pattern as `intentUriData` below -- lets every consumer
                 // downstream observe the value for this composition pass before it's cleared.
+//
                 //
                 // A shortcut tapped while some other screen (search, an album, ...) is on top of
                 // the back stack never reached HomeScreen at all -- it isn't part of the
+//
                 // composition while a different destination is active, so its shortcut-handling
+//
                 // effects never ran (verified on-device: a tab shortcut tapped from the search
                 // screen did nothing). Popping back to home first, and only clearing the sentinel
+//
                 // once we've actually arrived there, gives HomeScreen a real chance to observe it.
+//
                 val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
                 LaunchedEffect(shortcutIntentAction, currentRoute) {
                     if (shortcutIntentAction != null) {
@@ -1981,16 +2040,21 @@ class MainActivity :
 
                 // Rewind reminder notification: open the deck on the finished month (monthly)
                 // or the yearly deck on the finished year (yearly, month = 0 sentinel — extras
+//
                 // set in onCreate / onNewIntent by consumeRewindDeepLinks). Consumed from an
+//
                 // effect, like the shortcut above, so the navigation happens once the graph
                 // is composed. The gate is part of the key: while onboarding is up the
+//
                 // NavHost is not composed (empty graph — navigating would crash), so the
+//
                 // target is held until the flow completes and the effect re-runs.
                 LaunchedEffect(rewindDeckTarget, onboardingStep == null) {
                     if (onboardingStep != null) return@LaunchedEffect
                     rewindDeckTarget?.let { (year, month) ->
                         // rewindDeckRoute omits the month argument for the yearly target:
                         // the route's default month=-1 maps to rewindMonth = null in
+//
                         // RewindScreen, i.e. the year-only deck
                         navController.navigate(rewindDeckRoute(year, month))
                         rewindDeckTarget = null
@@ -1999,8 +2063,10 @@ class MainActivity :
 
                 // Rewind playlist-ready notification: open the generated 'Rewind — <period>'
                 // playlist directly (spec GH-275 follow-up — renegotiated: the playlist
+//
                 // notifications deep-link, they are no longer a bare app open). Consumed from
                 // an effect, like the deck above: the navigation happens once the graph is
+//
                 // composed, and the onboarding gate holds the target until the flow completes.
                 LaunchedEffect(rewindPlaylistTarget, onboardingStep == null) {
                     if (onboardingStep != null) return@LaunchedEffect
@@ -2012,11 +2078,15 @@ class MainActivity :
 
                 // "Now playing" notification tap — WARM start (spec-notification-click-opens-player):
                 // present the mini-player (if the sheet is dismissed) then deploy the full
+//
                 // player, restoring the hidden bars first — the same pacing as the existing
+//
                 // launchedFromNotification path (presentMiniplayerThenExpand). Consumed from an
                 // effect, like the rewind targets above, and gated on onboarding the same way:
+//
                 // while onboarding is up the NavHost is not composed, so the target is held
                 // until the flow completes and the effect re-runs. The token was already
+//
                 // consumed off the intent in onNewIntent (one-shot contract).
                 LaunchedEffect(openPlayerFromNotificationWarm, onboardingStep == null) {
                     if (onboardingStep != null) return@LaunchedEffect
@@ -2025,12 +2095,15 @@ class MainActivity :
                         showPlayer = true
                         // Anti-flicker: a sheet already above the expanded bound is left alone
                         // (a tap while the full player is open must not cause a visible
+//
                         // collapse→expand).
                         if (playerSheetState.value < playerSheetState.expandedBound) {
                             // On the composable's rememberCoroutineScope(), NOT this effect's
                             // scope: the flag reset above changes the effect key → recomposition
+//
                             // cancels the effect scope, which would kill the delayed
                             // launch { delay(800); expandSoft() } child before it runs
+//
                             // (device bug: the mini bar appeared, the expansion never did).
                             coroutineScope.presentMiniplayerThenExpand(playerSheetState, onPresent = { restoreHiddenBars() })
                         }
@@ -2039,10 +2112,14 @@ class MainActivity :
 
                 // Generic « Profiles » launcher shortcut (spec-profile-shortcuts): open the
                 // profiles page once the graph is composed (cold: after the normal start).
+//
                 // Consumed from an effect, like the rewind targets above, and gated on
                 // onboarding the same way: while onboarding is up the NavHost is not
+//
                 // composed, so the target is held until the flow completes and the effect
+//
                 // re-runs. The direct per-profile shortcut does NOT navigate — it only
+//
                 // launches in (cold) or switches to (warm) its profile.
                 LaunchedEffect(openProfilesShortcut, onboardingStep == null) {
                     if (onboardingStep != null) return@LaunchedEffect
@@ -2098,6 +2175,7 @@ class MainActivity :
                         ) {
                             // First-launch onboarding: rendered instead of the main
                             // navigation while the flag is false. Page changes (permissions ->
+//
                             // restore -> accounts -> profile -> main app) animate with the user's chosen
                             // transition effect, same spec as AppNavigation
                             val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Fade)
@@ -2147,6 +2225,7 @@ class MainActivity :
                                     OnboardingStep.IMPORT -> OnboardingImportScreen(
                                         // "Skip" and a successful restore both advance to
                                         // the accounts step; a restore additionally restarts
+//
                                         // the app (flag unwritten), so the restart lands
                                         // on the next step — the user stays inside onboarding
                                         onComplete = { advanceOnboarding() }
@@ -2154,8 +2233,10 @@ class MainActivity :
 
                                     // The accounts step is no longer the last one — the
                                     // profile step follows: leaving (even with a Discord
+//
                                     // token set) advances to NAME, which is persisted
                                     // before any restart, so the restart lands on the
+//
                                     // profile step with the complete flag unwritten
                                     OnboardingStep.ACCOUNTS -> OnboardingAccountsScreen(
                                         onComplete = { advanceOnboarding() }
@@ -2163,8 +2244,10 @@ class MainActivity :
 
                                     // The profile step: the base clone's identity (name,
                                     // face name source, photo, face avatar source) — the
+//
                                     // last step. The enum value stays NAME (the
                                     // persisted step is the enum name — renaming it would
+//
                                     // restart an in-flight onboarding at PERMISSIONS)
                                     OnboardingStep.NAME -> OnboardingProfileScreen(
                                         onComplete = { advanceOnboarding() }
@@ -2174,11 +2257,15 @@ class MainActivity :
 
                             // The restart prompt (a Discord-token restart from the
                             // accounts step, a post-import restart) must survive the
+//
                             // step transition: it is composed in the onboarding
                             // container, not in the leaving step screen — a
+//
                             // screen-local Render would uncompose with the
+//
                             // AnimatedContent exit (0 ms for TransitionEffect.None)
                             // and the prompt would vanish before the user sees it.
+//
                             // Gated on the flow being alive: once complete, the
                             // settings screen composes its own Render
                             if (onboardingStep != null) RestartAppDialog.Render()
@@ -2186,8 +2273,11 @@ class MainActivity :
                             val disableClosingPlayerSwipingDown by rememberPreference(disableClosingPlayerSwipingDownKey, false)
                             // Listen Together guest lock (spec-listen-together-guest-lock-hardening,
                             // matrix row MINIPLAYER_DISMISS_GUEST): the dismiss-swipe's onDismiss is
+//
                             // destructive for the room — it clears the queue synced from the host,
+//
                             // stops the radio and stops the player service. While a guest is locked,
+//
                             // the gesture itself is disabled, so the room cannot be "cleaned" from
                             // a guest device.
                             val ltGuestLocked by app.n_zik.android.listentogether.listenTogetherGuestLock
@@ -2195,14 +2285,17 @@ class MainActivity :
 
                             // Reactive media-item presence: the sheet (including its
                             // collapsed hit target) must not be composed when the
+//
                             // player has nothing to play, otherwise an invisible
                             // tappable strip stays at the bottom of the screen.
                             val currentMediaId by (binder?.player?.currentMediaItemIdAsState() ?: remember { mutableStateOf<String?>(null) })
 
                             // Debounced media presence: Listen Together replaces the whole queue on
                             // every track change (setMediaItems), which briefly clears the current
+//
                             // media item. Reacting to that transient null would close the player
                             // sheet on each track change (user-reported), so "no media" is only
+//
                             // accepted once the absence persists.
                             var mediaPresent by remember(binder) {
                                 mutableStateOf(binder?.player?.currentMediaItem != null)
@@ -2218,6 +2311,7 @@ class MainActivity :
                                     if (!playerSheetState.isDismissed) {
                                         // Animated dismiss instead of the old instant snap: the sheet
                                         // slides out of the screen while the dismissed-zone alpha fades the
+//
                                         // mini-player, instead of vanishing in place.
                                         playerSheetState.dismiss()
                                     }
@@ -2226,6 +2320,7 @@ class MainActivity :
                                     mediaPresent = true
                                     // After recreate() the player service is not bound yet, so media
                                     // reads as absent and the sheet is dismissed above; bring the
+//
                                     // mini-player back once media returns
                                     playerSheetState.showMiniplayerIfDismissed()
                                 }
@@ -2233,9 +2328,12 @@ class MainActivity :
 
                             // Single CustomBottomSheet — only rendered while there's media.
                             // Handles both collapsed (mini-player) and expanded (player) states
+//
                             // in a single composition tree, preventing animation jumps.
                             // Rewind is a full-screen deck: the player sheet (mini-player included) slides
+//
                             // down out of the screen with the same jelly spring as the header, and returns
+//
                             // with the same bounce when leaving the deck
                             val isRewindDeck = currentRoute?.let { route ->
                                 route == NavRoutes.rewind.name || route.startsWith("${NavRoutes.rewind.name}?")
@@ -2251,15 +2349,20 @@ class MainActivity :
 
                             // The sheet subtree stays composed until the animated dismiss has reached
                             // the dismissed bound, so the slide-out is never cut short. The fades come
+//
                             // from the appearance + dismissed-zone alphas below — no AnimatedVisibility:
+//
                             // it would add a second full-screen layer with the default Auto strategy,
                             // i.e. an offscreen buffer of the whole sheet on every frame (lag).
                             if (shouldComposePlayerSheet(mediaPresent, playerSheetState.isDismissed)) {
                                 // Appearance fade, replayed each time the sheet leaves the dismissed
                                 // bound. The mini-player is only composed once the sheet is out of
+//
                                 // dismissed, and that composition (plus the full player's) is heavy:
                                 // a fade started in the same frame has its first frames swallowed and
+//
                                 // the mini-player pops in. So wait for the sheet to leave dismissed,
+//
                                 // let the heavy frames land, then start the fade.
                                 val appearAlpha = remember { Animatable(0f) }
                                 LaunchedEffect(playerSheetState) {
@@ -2279,6 +2382,7 @@ class MainActivity :
                                             translationY = rewindSheetProgress.value * 160.dp.toPx()
                                             // Appearance fade x rewind-deck fade x dismissed-zone fade: the
                                             // mini-player fades with the sheet's value, which follows the
+//
                                             // finger on a drag and the tween on an animated dismiss.
                                             alpha = appearAlpha.value *
                                                 (1f - rewindSheetProgress.value).coerceIn(0f, 1f) *
@@ -2289,8 +2393,10 @@ class MainActivity :
                                                 )
                                             // This layer spans the full screen: with the default Auto strategy,
                                             // an alpha below 1 would render the whole sheet subtree into a
+//
                                             // full-screen offscreen buffer on every frame of a drag (lag).
                                             // ModulateAlpha applies the alpha per draw op instead. Trade-off:
+//
                                             // semi-transparent elements modulate individually rather than as a
                                             // unit — imperceptible on a fast dismiss fade.
                                             compositingStrategy = CompositingStrategy.ModulateAlpha
@@ -2299,6 +2405,7 @@ class MainActivity :
                                 ) {
                                     // Palette fade scope: the global palette switches in one
                                     // step, only this subtree (mini-player + full player)
+//
                                     // animates the transition
                                     PaletteFade {
                                         CustomBottomSheet(
@@ -2321,6 +2428,7 @@ class MainActivity :
                                             disableDismiss = shouldDisablePlayerSheetDismiss(disableClosingPlayerSwipingDown, ltGuestLocked),
                                             // Guest lock: a blocked "clean the player" attempt is explained by the
                                             // shared throttled toast (the destructive onDismiss is unreachable
+//
                                             // while disabled). The "disable closing swiping down" setting alone
                                             // stays silent — it is the user's own choice.
                                             onDismissBlocked = {
@@ -2460,10 +2568,14 @@ class MainActivity :
 
                     // "Now playing" notification tap — COLD start (spec-notification-click-opens-player):
                     // the held tap token is validated against the CURRENT service's token (via
+//
                     // the Binder) on EVERY run of this effect, not only at init: a valid token
+//
                     // with no media yet is HELD and re-checked when media arrives (queue
                     // restore / early binder attach); a stale token (task-record re-send after
+//
                     // a process death — the restarted service minted a new token) is
+//
                     // discarded, no deployment. There is no persistent marker: staleness is
                     // the service's live token, not a stored value.
                     val heldOpenPlayerToken = openPlayerColdToken
@@ -2477,12 +2589,16 @@ class MainActivity :
                             openPlayerColdToken = null
                             // Decision 2026-10-03 (spec-notification-click-opens-player): the
                             // notification tap ALWAYS deploys the full player — the
+//
                             // keepPlayerMinimized setting is NOT consulted on this path
+//
                             // (a deliberate tap, distinct from the widget/historical
+//
                             // cold start that honors the setting).
                             showPlayer = true
                             // Anti-flicker: a sheet already above the expanded bound is left
                             // alone (no visible collapse→expand on a tap while the full player
+//
                             // is open).
                             if (playerSheetState.value < playerSheetState.expandedBound) {
                                 coroutineScope.presentMiniplayerThenExpand(playerSheetState, onPresent = { restoreHiddenBars() })
@@ -2501,6 +2617,7 @@ class MainActivity :
                         } else if (deployedNow) {
                             // The deployment above owns the presentation: the default collapsed
                             // presentation must NOT run in the same effect run (it would undo
+//
                             // the deployment).
                         } else if (launchedFromNotification) {
                             intent.replaceExtras(Bundle())
@@ -2552,6 +2669,7 @@ class MainActivity :
 
             // Same gate guard as the rewind reminder effect above: the NavHost is only
             // composed once onboarding is done — a shared / deep-linked URL must not
+//
             // navigate into an empty graph while the gate is up
             LaunchedEffect(intentUriData, onboardingStep == null) {
                 if (onboardingStep != null) return@LaunchedEffect
@@ -2666,19 +2784,24 @@ class MainActivity :
         openProfilesShortcut = openProfilesShortcut || (intent.action == action_profiles)
         // Direct profile shortcut (warm, app ON path): a different valid profile runs the full
         // CAP-3 switch + process exit; the same/unknown one is a bare consumption — the extras
+//
         // are stripped before the intent is kept, so the next singleTask re-delivery decodes to
         // nothing (same contract as onCreate and the rewind deep links).
         consumeProfileShortcutWarm(intent)
         // Rewind notification deep links (deck / playlist): consume the fresh intent's
         // targets BEFORE keeping it as the current intent — app ON path, same contract as
+//
         // onCreate (spec GH-275 follow-up): an unconsumed target opens, an already-consumed
         // one (task record re-send / singleTask relaunch) is rejected, and the extras are
+//
         // stripped so the kept intent decodes to nothing on the next re-delivery.
         consumeRewindDeepLinks(intent)
         // "Now playing" notification tap (spec-notification-click-opens-player): consume
         // the fresh intent's open-player token BEFORE keeping it as the current intent —
+//
         // app ON path, same contract as onCreate: a positive token arms the warm
         // deployment flag (always fresh — a warm tap is a fresh fire of the PendingIntent,
+//
         // no live comparison needed), and the extra is stripped either way.
         consumeOpenPlayerDeepLink(intent, cold = false)
         setIntent(intent)
@@ -2758,6 +2881,7 @@ class MainActivity :
     private fun setSystemBarAppearance(isDark: Boolean) {
         // The bars only depend on the light/dark state; re-applying the same
         // state on every track change costs a window-level insets update
+//
         // (the hideStatusBar pref change triggers recreate(), so no forced
         // re-apply path is needed)
         if (lastSystemBarIsDark == isDark) return
@@ -2795,14 +2919,17 @@ class MainActivity :
         const val action_library = "app.it.fast4x.rimusic.action.library"
         // Profile shortcuts (spec-profile-shortcuts): the generic one opens the profiles page;
         // the direct per-profile one carries the stable profile ID in [EXTRA_PROFILE_ID] and
+//
         // launches in it (cold) or switches to it (warm).
         const val action_profiles = "app.it.fast4x.rimusic.action.profiles"
         const val action_profile = "app.it.fast4x.rimusic.action.profile"
         const val EXTRA_PROFILE_ID = "profileId"
         // "Now playing" notification tap (spec-notification-click-opens-player): the
         // notification's content intent — PlayerServiceModern's global session activity
+//
         // (the PendingIntent media3 uses as the notification content intent, option B) —
         // carries this one-shot token. The tap always deploys the full player, regardless
+//
         // of the keepPlayerMinimized setting.
         const val EXTRA_OPEN_PLAYER_TOKEN = "openPlayerToken"
     }

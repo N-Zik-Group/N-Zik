@@ -18,10 +18,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/**
- * Loads the artist Insights data: albums, top tracks, listening stats,
- * MusicBrainz relations and external links.
- */
+/** Loads the artist Insights data: albums, top tracks, listening stats, MusicBrainz relations and external links. */
 class ArtistInsightsViewModel(application: Application) : AndroidViewModel(application) {
 
     companion object : ViewModelProvider.Factory {
@@ -95,11 +92,7 @@ class ArtistInsightsViewModel(application: Application) : AndroidViewModel(appli
         }
     }
 
-    /**
-     * Fetches artist relations from MusicBrainz on demand and resolves
-     * the targets against the local database (falling back to the raw
-     * MusicBrainz name when the artist is not in the library).
-     */
+    /** Fetches artist relations from MusicBrainz on demand and resolves the targets against the local database (falling back to the raw MusicBrainz name when the artist is not in the library). */
     private suspend fun fetchRelations(artist: Artist): List<ArtistRelationInfo> {
         val mbId = artist.mbId?.takeIf { it.isNotBlank() } ?: return emptyList()
 

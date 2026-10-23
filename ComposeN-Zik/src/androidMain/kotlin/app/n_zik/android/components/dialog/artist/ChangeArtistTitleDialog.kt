@@ -63,6 +63,7 @@ class ChangeArtistTitleDialog private constructor(
         val cleanNew = NameConvergence.normalizeText( newValue )
         // A row name is ONE name: blank input would store a bare "modified:"
         // row, and a comma (multi-token) input would break the whole-token
+
         // matching rules for every copy of the row.
         if (cleanNew.isEmpty()) {
             Timber.tag("NameConvergence").d("artist rename skipped: blank input for row %s", artist.id)
@@ -80,6 +81,7 @@ class ChangeArtistTitleDialog private constructor(
         Database.asyncTransaction {
             // The row rename and every propagated copy must land in ONE real
             // SQLite transaction (asyncTransaction alone retries on lock
+
             // exceptions but does not group the writes atomically).
             syncTransaction {
                 artistTable.insertIgnore( artist )

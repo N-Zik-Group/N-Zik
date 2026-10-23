@@ -144,11 +144,7 @@ fun playerContentFade(progress: Float): Float =
 fun miniPlayerFade(progress: Float): Float =
     1f - (progress / PLAYER_SHEET_HANDOVER_PROGRESS).coerceIn(0f, 1f)
 
-/**
- * Progress at or below which the deploy card background is skipped: the
- * mini-player still renders its own surface there, so drawing the card would
- * only paint a sliver behind it.
- */
+/** Progress at or below which the deploy card background is skipped: the mini-player still renders its own surface there, so drawing the card would only paint a sliver behind it. */
 internal const val CARD_BG_COLLAPSED_EPSILON = 0.01f
 
 /**
@@ -165,11 +161,7 @@ internal const val CARD_BG_COLLAPSED_EPSILON = 0.01f
 internal fun shouldDrawCardBackground(progress: Float): Boolean =
     progress.coerceIn(0f, 1f) > CARD_BG_COLLAPSED_EPSILON
 
-/**
- * Shape qui suit exactement le rectangle animé de la carte "deploy"
- * (au lieu d'un RoundedCornerShape plein écran qui ne matchait pas
- * la taille réelle de la carte dessinée dans drawBehind).
- */
+/** Shape qui suit exactement le rectangle animé de la carte "deploy" (au lieu d'un RoundedCornerShape plein écran qui ne matchait pas la taille réelle de la carte dessinée dans drawBehind). */
 private class CardClipShape(private val geometry: CardGeometry) : Shape {
     override fun createOutline(
         size: Size,
@@ -237,10 +229,13 @@ fun CustomBottomSheet(
             }
             // ── Clip to the exact animated card rect (same geometry as drawBehind) ──
             // MUST precede the pointerInput below: the hit-test walks this chain
+
             // outside-in, and a clip stops it for any point outside the card. If the
             // drag input were registered first, its hit area would be the whole
+
             // translated box (full screen when collapsed), covering the navbar strip
             // behind the miniplayer and stealing its taps. clip→input restricts the
+
             // input area to the animated card rect (miniplayer band when collapsed,
             // full screen when expanded).
             .graphicsLayer {
@@ -331,6 +326,7 @@ fun CustomBottomSheet(
 
         // Main player content — always in composition, GPU-skipped when dragging down.
         // NOT clipped here: the parent Box's graphicsLayer already clips to the
+
         // animated card shape, so clipping again here would just rebuild the same
         // Outline path a second time per frame for nothing.
         BoxWithConstraints(
@@ -338,12 +334,15 @@ fun CustomBottomSheet(
                 .fillMaxSize()
                 // Player content fade-in (see playerContentFade); the mini-player
                 // fades out on its own, earlier curve (see miniPlayerFade).
+
                 // progress is read only inside these draw-phase lambdas, never in
                 // composition: a composition read would recompose this whole sheet
+
                 // on every frame of a drag or an animated pop/dismiss.
                 .drawWithContent {
                     // Skip the (potentially heavy) draw entirely below the alpha
                     // threshold instead of just setting alpha = 0, which still
+
                     // records the full display list every frame.
                     val progress = state.progress
                     if (progress >= 0.3f && playerContentFade(progress) > 0.01f) {
@@ -358,12 +357,16 @@ fun CustomBottomSheet(
 
         // Mini-player — visible while the card is not fully deployed. Fades
         // out from 0 to 0.45f (miniPlayerFade), so it is fully transparent
+
         // right when the player fade-in starts — the hand-over is smooth,
         // without pop, overlap or empty gap. Excluded when dismissed: at
+
         // the dismissed bound the sheet is closed and keeping the box would
         // leave an invisible tap/drag target at the screen edge.
+
         // Clipped to the collapsed card shape (geometry at progress 0) while
         // deploying so the mini-player's shadow (drawn inside the legacy
+
         // MiniPlayer) cannot leak outside its card as the card grows around it.
         if (!state.isExpanded && !state.isDismissed) {
             Box(

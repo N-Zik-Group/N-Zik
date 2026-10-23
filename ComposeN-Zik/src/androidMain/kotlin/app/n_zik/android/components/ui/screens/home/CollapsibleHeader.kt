@@ -160,6 +160,7 @@ internal fun collapsibleHeaderConnection(
         if (!enabled || pendingDelta == 0f) return Offset.Zero
         // Only a collapse is reverted: an expansion (pendingDelta > 0) with the content
         // stuck at its top edge must stay, otherwise a header snapped shut can never
+//
         // reopen once the list is back at the top (it would leave an empty gap).
         if (consumed.y == 0f && pendingDelta < 0f) {
             headerOffset.floatValue = (headerOffset.floatValue - pendingDelta).coerceIn(-headerHeight.toFloat(), 0f)

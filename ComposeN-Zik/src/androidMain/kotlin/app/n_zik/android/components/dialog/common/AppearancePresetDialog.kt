@@ -34,11 +34,7 @@ import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.n_zik.android.uiRoundnessShape
 
-/**
- * Full-screen pager of appearance preset screenshots (moved verbatim from
- * the legacy tree — it is a dedicated full-screen selection dialog, not a
- * framed one).
- */
+/** Full-screen pager of appearance preset screenshots (moved verbatim from the legacy tree — it is a dedicated full-screen selection dialog, not a framed one). */
 @Composable
 fun AppearancePresetDialog(
     onDismiss: () -> Unit,

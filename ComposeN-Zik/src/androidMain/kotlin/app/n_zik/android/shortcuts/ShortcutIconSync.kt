@@ -234,10 +234,7 @@ internal fun shortcutSpec(shortcutId: String): Triple<Int, Int, String> = when (
     else -> error("Unknown shortcut id $shortcutId")
 }
 
-/**
- * The intent action of a shortcut: the fixed action of the static shortcuts,
- * [MainActivity.action_profile] for the per-profile ones.
- */
+/** The intent action of a shortcut: the fixed action of the static shortcuts, [MainActivity.action_profile] for the per-profile ones. */
 internal fun shortcutIntentAction(shortcutId: String): String =
     if (isProfileShortcut(shortcutId)) MainActivity.action_profile else shortcutSpec(shortcutId).third
 
@@ -297,11 +294,7 @@ private fun buildShortcut(context: Context, shortcutId: String, blackIcon: Boole
         .build()
 }
 
-/**
- * Split out from [buildShortcut] so the icon-type choice is testable: `ShortcutInfo` exposes no
- * public getter for the icon it was built with, so a test asserting on the built `ShortcutInfo`
- * directly cannot see which branch ran.
- */
+/** Split out from [buildShortcut] so the icon-type choice is testable: `ShortcutInfo` exposes no public getter for the icon it was built with, so a test asserting on the built `ShortcutInfo` directly cannot see which branch ran. */
 internal fun shortcutIcon(context: Context, drawableRes: Int, blackIcon: Boolean): Icon =
     if (blackIcon) {
         Icon.createWithBitmap(blackShortcutIcon(context, drawableRes))

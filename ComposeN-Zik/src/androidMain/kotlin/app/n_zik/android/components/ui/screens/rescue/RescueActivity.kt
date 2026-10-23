@@ -67,10 +67,12 @@ class RescueActivity : AppCompatActivity() {
 
         // The Rescue Center exists precisely so its write actions can run without the main
         // process: ask it to end itself the moment the screen opens (broadcast + safety-net
+//
         // flag), whatever the entry point (launcher shortcut or in-app menu).
         //
         // But only when the main process is (likely) alive: when it is already dead (marker
         // stale/absent, or the trustworthy probe says so below 31) no kill request is recorded
+//
         // at all — a stale flag would make the next healthy launch end itself at startup. The
         // status line shows "stopped" immediately in that case and the kill button stays disabled.
         if (RescueProcess.isMainProcessLikelyAlive(this)) {

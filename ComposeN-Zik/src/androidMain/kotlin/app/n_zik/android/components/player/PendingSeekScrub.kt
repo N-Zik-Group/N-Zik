@@ -7,11 +7,7 @@ package app.n_zik.android.components.player
  */
 internal const val PENDING_SEEK_SETTLE_TOLERANCE_MS = 500L
 
-/**
- * Issue #881 (gh-881), Phase 3 Fix E: safety timeout (ms) after which the held seek target is
- * released even if the player never commits (failed seek, error state) so the bar returns to
- * the real position instead of staying stuck on the tapped value.
- */
+/** Issue #881 (gh-881), Phase 3 Fix E: safety timeout (ms) after which the held seek target is released even if the player never commits (failed seek, error state) so the bar returns to the real position instead of staying stuck on the tapped value. */
 internal const val PENDING_SEEK_RELEASE_TIMEOUT_MS = 10_000L
 
 /**

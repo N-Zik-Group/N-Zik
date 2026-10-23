@@ -111,7 +111,9 @@ fun ProfileFaceCard(modifier: Modifier = Modifier) {
 
             // The account login state, the display name and the resolved face come from
             // a one-shot load on the DATA dispatcher — the secure prefs are
+//
             // keystore-backed and must never be built or read in composition. Until the
+//
             // load settles, the account sources stay locked and the face renders the
             // deterministic initials (the face always renders something).
             var account by remember { mutableStateOf<AccountLoginState?>(null) }
@@ -119,6 +121,7 @@ fun ProfileFaceCard(modifier: Modifier = Modifier) {
             var face by remember { mutableStateOf<ProfileFace?>(null) }
             // The face update trigger covers an external face change (a profile state
             // import) while this card stays composed — the card's own edits already
+//
             // bump faceVersion / photoVersion / the sources.
             LaunchedEffect(activeId, nameSource, avatarSource, faceVersion, photoVersion, profileFaceUpdateTrigger) {
                 val loaded = withContext(NzikDispatchers.DATA) {
@@ -316,11 +319,13 @@ fun ProfileFaceCard(modifier: Modifier = Modifier) {
                     onSetValue = { name ->
                         // Same rules as the Profiles page: unique among every profile's
                         // display names (its own is excluded with the same trimmed,
+//
                         // case-insensitive normalization) + the reserved "default"
                         // + file-name safety.
                         val trimmedName = name.trim()
                         // Confirming the name as-is stores nothing: the dialog opens on
                         // the resolved display name, and storing it (the base default
+//
                         // name for the base profile) would make the state archive claim
                         // a state out of nothing.
                         if (trimmedName != profileName) {
@@ -330,6 +335,7 @@ fun ProfileFaceCard(modifier: Modifier = Modifier) {
                                 app.saveProfileDisplayName(activeId, name.trim())
                                 // The names file is the backup format: mirror the new display
                                 // name into it (same contract as the Profiles page rename),
+//
                                 // so an export never carries a stale name.
                                 app.writeProfileEntries(app.currentProfileEntries())
                                 faceVersion++

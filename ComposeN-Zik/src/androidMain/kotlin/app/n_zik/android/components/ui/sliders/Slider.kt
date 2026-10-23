@@ -30,22 +30,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.Canvas
 import androidx.compose.material3.Slider
 
-/**
- * THE unique Slider component of the application.
- *
- * Behavior:
- * - Displays automatic ticks calculated from the step size (stepSize)
- * - Active magnetism: native snapping to the nearest step
- * - Value is always normalized and quantized to the nearest tick
- *
- * @param state        Current value
- * @param setState     Callback emitted during dragging
- * @param onSlideComplete Callback emitted when the finger is lifted
- * @param range        Value range
- * @param stepSize     Size of a step (e.g., 0.1f, 1f, 5f). Default = 0.1f
- * @param isEnabled    Enable/disable the slider
- * @param modifier     Compose Modifier
- */
+/** THE unique Slider component of the application. Behavior: displays automatic ticks calculated from the step size (stepSize), active magnetism (native snapping to the nearest step), value always normalized and quantized to the nearest tick. @param state current value @param setState callback emitted during dragging @param onSlideComplete callback emitted when the finger is lifted @param range value range @param stepSize size of a step (e.g., 0.1f, 1f, 5f), default = 0.1f @param isEnabled enable/disable the slider @param modifier Compose Modifier */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Slider(

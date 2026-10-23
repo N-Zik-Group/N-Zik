@@ -110,11 +110,7 @@ class ListenTogetherGuestGuardPlayer(
         @Volatile
         private var lastUiBlockedToastAtMs: Long? = null
 
-        /**
-         * Test hook: [reportUiBlockedOp]'s throttle state is process-wide, so back-to-back unit
-         * tests would otherwise share the 2 s window and the second blocked toast would be
-         * swallowed nondeterministically.
-         */
+        /** Test hook: [reportUiBlockedOp]'s throttle state is process-wide, so back-to-back unit tests would otherwise share the 2 s window and the second blocked toast would be swallowed nondeterministically. */
         internal fun clearUiBlockedOpThrottleForTests() {
             lastUiBlockedToastAtMs = null
         }
@@ -162,11 +158,7 @@ class ListenTogetherGuestGuardPlayer(
     @Volatile
     private var tailSuppressUntilMs: Long = 0L
 
-    /**
-     * Listeners registered on this facade (kept in parallel with the upstream registration) so
-     * [announceAvailableCommandsChanged] can notify them when the guest lock toggles — MediaSession
-     * only re-evaluates its available commands on that event (no re-polling in media3 1.10.1).
-     */
+    /** Listeners registered on this facade (kept in parallel with the upstream registration) so [announceAvailableCommandsChanged] can notify them when the guest lock toggles — MediaSession only re-evaluates its available commands on that event (no re-polling in media3 1.10.1). */
     private val commandListeners = mutableListOf<Player.Listener>()
 
     // ── Available commands (AD-6: hide next/prev/shuffle/stop for guests) ─────────────────────
@@ -174,7 +166,9 @@ class ListenTogetherGuestGuardPlayer(
     override fun getAvailableCommands(): Player.Commands {
         // Same "all commands" behavior as the service's legacy forwarding player (pre-Android-13
         // compatibility), minus the commands mapping to guest-blocked operations. Commands are
+//
         // removed one at a time (identical FlagSet result to removeAll) so the guest-lock policy
+//
         // is unit-testable on the JVM, where Commands' android.util.SparseBooleanArray cannot run.
         var builder = upstream.getAvailableCommands().buildUpon().addAllCommands()
         if (listenTogetherGuestLock.value) {
@@ -221,12 +215,17 @@ class ListenTogetherGuestGuardPlayer(
 
     // ── Guarded operations (AD-2 matrix) ─────────────────────────────────────────────────────
     // Passing while locked (inherited [ForwardingPlayer] delegation, never overridden):
+//
     // mute/unmute, device volume (setDeviceVolume/increaseDeviceVolume/decreaseDeviceVolume/
     // setDeviceMuted — a guest's own output volume stays theirs, "volume stays available"),
+//
     // every reader/query, addListener/removeListener, release, audioSessionId.
     // The play-state pass-throughs (play/pause/prepare/setVolume/setPlayWhenReady) ARE overridden
+//
     // below — still passing while locked, but no-ops inside the blocked-op tail window
+//
     // (see [inTailSuppression]) and the observation point for the guest's play/pause intent
+//
     // (see [onGuestPlayPause]).
 
     // Play-state pass-throughs (tail-suppressed + guest play/pause intent)
@@ -282,10 +281,7 @@ class ListenTogetherGuestGuardPlayer(
      */
     var onGuestPlayPause: ((Boolean) -> Unit)? = null
 
-    /**
-     * Registers [playWhenReady] as the guest's own play/pause intent — only while locked and
-     * outside the tail window (a suppressed tail call is not an intent).
-     */
+    /** Registers [playWhenReady] as the guest's own play/pause intent — only while locked and outside the tail window (a suppressed tail call is not an intent). */
     private fun registerGuestPlayPause(playWhenReady: Boolean) {
         if (!listenTogetherGuestLock.value) return
         onGuestPlayPause?.invoke(playWhenReady)
@@ -396,6 +392,7 @@ class ListenTogetherGuestGuardPlayer(
 
     // Device volume (setDeviceVolume/increaseDeviceVolume/decreaseDeviceVolume/setDeviceMuted)
     // is intentionally NOT guarded: it is a pass-through like setVolume — a guest's own output
+//
     // volume is theirs to control ("volume stays available"), and it never desynchronizes the
     // room (review finding: the hidden/blocked device-volume commands exceeded that scope).
 
@@ -449,12 +446,7 @@ class ListenTogetherGuestGuardPlayer(
         }
     }
 
-    /**
-     * Opens the tail-suppression window ([TAIL_WINDOW_MS] from [clock]) after a blocked head
-     * op, so the synchronous `prepare()` / `volume = …` / `playWhenReady = …` tail that user
-     * helpers append after the head cannot change the play state of the current track
-     * (spec-listen-together-guest-lock-hardening, resume-leak fix).
-     */
+    /** Opens the tail-suppression window ([TAIL_WINDOW_MS] from [clock]) after a blocked head op, so the synchronous `prepare()` / `volume = …` / `playWhenReady = …` tail that user helpers append after the head cannot change the play state of the current track (spec-listen-together-guest-lock-hardening, resume-leak fix). */
     private fun armTailSuppression() {
         tailSuppressUntilMs = clock() + TAIL_WINDOW_MS
     }
@@ -473,10 +465,7 @@ class ListenTogetherGuestGuardPlayer(
         Timber.tag(TAG).d("blocked: ExoPlayer-only op (guest locked)")
     }
 
-    /**
-     * Emits the "the host controls playback" toast at most once per [TOAST_THROTTLE_MS] so repeated
-     * blocked taps (widgets, medley auto-skip, repeated next taps) do not spam the screen.
-     */
+    /** Emits the "the host controls playback" toast at most once per [TOAST_THROTTLE_MS] so repeated blocked taps (widgets, medley auto-skip, repeated next taps) do not spam the screen. */
     private fun showBlockedToastIfNeeded() {
         val now = clock()
         val last = lastBlockedToastAtMs

@@ -14,10 +14,7 @@ const val MINIPLAYER_POP_ANIMATION_MS = 250L
 /** Fade-in duration of the sheet subtree (mini-player) when it appears with new media. */
 const val MINIPLAYER_APPEAR_FADE_MS = 300L
 
-/**
- * Frames awaited before the appearance fade starts, so the heavy first composition of the
- * mini-player (composed once the sheet leaves the dismissed bound) does not swallow the fade.
- */
+/** Frames awaited before the appearance fade starts, so the heavy first composition of the mini-player (composed once the sheet leaves the dismissed bound) does not swallow the fade. */
 const val MINIPLAYER_APPEAR_FADE_SKIPPED_FRAMES = 2
 
 /**

@@ -793,6 +793,7 @@ internal suspend fun loadMaintenanceSnapshot(context: Context): MaintenanceSnaps
             )
             // The ACTIVE profile's download cache (tracked) + the other distinct
             // download dirs (base + every profile, deduped — spec-profile-data-separation)
+//
             // walked. Null active dir (a Disabled cache lives in a temp dir) is
             // excluded from the dedup, so it is never double-counted.
             val activeDownloadsDir = downloadsDir(app, activeProfileId)
@@ -972,13 +973,17 @@ fun MaintenanceSheet(
     var downloadsExpanded by remember { mutableStateOf(false) }
 
     // Live StateFlows observed with lifecycle awareness (spec: collectAsStateWithLifecycle,
-    // never collectAsState). The sheet composable lives in the persistent header, so the
-    // (passive, no polling) observers are registered for the whole session, not only while
-    // the sheet is visible — the values simply update in place between opens. The rest of
-    // the state is a snapshot loaded at open/refresh.
+    // never collectAsState).
+    //
+    // The sheet composable lives in the persistent header, so the (passive, no polling)
+    // observers are registered for the whole session,
+    //
+    // not only while the sheet is visible — the values simply update in place between
+    // opens. The rest of the state is a snapshot loaded at open/refresh.
     val syncStatus by syncStatus.collectAsStateWithLifecycle()
     // Session-scoped: the Downloads row resets to empty on every process start (the
     // persistent library stays in MyDownloadHelper.downloads, used by the badges and
+//
     // the download manager UI)
     val downloads by MyDownloadHelper.sessionDownloads.collectAsStateWithLifecycle()
     val discordError by DiscordRpcErrorState.error.collectAsStateWithLifecycle()
@@ -997,6 +1002,7 @@ fun MaintenanceSheet(
 
     // One line per value: every row's single-line status (text + color) is resolved here,
     // in the composable body (stringResource is only callable from a composable context),
+//
     // so the rows render the same resolved model.
     val snap = snapshot
     // Boot passes share one trailing format: the last run's date in front, the status after
@@ -1008,8 +1014,9 @@ fun MaintenanceSheet(
     val dedupStatusText = passStatusText(dedupPassStatus)
     val dedupSummary = lastRunLine(dedup?.timestamp, dedupStatusText, stringResource(R.string.maintenance_no_data))
     // The expansion's top summary line: the status repeated on one line above the per-section
-    // detail (user decision 2026-10-23) — null for the fixed sentences, which the expansion
-    // already shows
+    // detail
+    //
+    // (user decision 2026-10-23) — null for the fixed sentences, which the expansion already shows
     val dedupSummaryLine = dedupStatusText.takeIf { passHasState(dedupPassStatus) }
     val dedupGroups = ArrayList<GroupLine>()
     if (dedupExpanded) {
@@ -1060,6 +1067,7 @@ fun MaintenanceSheet(
     }
     // Download re-validation (S1): the row carries the "date · status" line; the
     // expansion lists the stale tracks removed by the last startup (one line per
+//
     // track, like the dedup groups)
     val downloadRevalidation = snap?.downloadRevalidation
     val downloadRevalidationPassStatus = downloadRevalidationStatusRes(downloadRevalidation)
@@ -1117,6 +1125,7 @@ fun MaintenanceSheet(
         ?: stringResource(R.string.maintenance_no_data)
     // Cache rows, aligned with the Data settings cache lines: the settings label is
     // the row title, the "<size> used (<pct>%)" result is the right status (the shared
+//
     // status column); a disabled cache answers "Off", a missing size "No data"
     val imagesCache = snap?.imagesCache
     val imagesStatus = if (imagesCache != null) {
@@ -1286,6 +1295,7 @@ fun MaintenanceSheet(
     val discordColor = if (discordError == null) palette.textSecondary else palette.red
     // The available version comes from the same live Updater source as the About update
     // card (no snapshot field needed); idle then maps to "Update available" (accent)
+//
     // or "Up to date" (neutral), aligned with that card
     val newVersionAvailable = Updater.githubRelease?.let { release ->
         Updater.isVersionNewer(release.tagName, BuildConfig.VERSION_NAME)
@@ -1299,6 +1309,7 @@ fun MaintenanceSheet(
     val crash = snap?.lastCrash
     // The row is always present: "None" without a crash, "A crash occurred (N)" with one
     // (N = the number of complete crash blocks in the log — the details live in the
+//
     // View dialog, not in the one-line status)
     val crashStatus = if (crash == null) {
         stringResource(R.string.maintenance_crash_none)
@@ -1393,8 +1404,10 @@ fun MaintenanceSheet(
 
     // Opens and grows exactly like the main menu sheet (SongItemMenu — MainActivity):
     // transparent container, top-only shape, statusBarsPadding,
+//
     // skipPartiallyExpanded = false (opens at its content height, draggable to full
     // screen) — the menu draws its own background (background0), its own top clip and
+//
     // its own drag handle
     CustomModalBottomSheet(
         showSheet = showSheet,
@@ -1414,6 +1427,7 @@ fun MaintenanceSheet(
     ) {
         // Standard menu header (title + refresh in the header trailing slot), exactly
         // like the Listen Together menu; refresh re-runs the reads (never the boot
+//
         // passes)
         val refreshTrailing: (@Composable RowScope.() -> Unit)? = {
             IconButton(onClick = { refreshTick++ }) {
@@ -1426,6 +1440,7 @@ fun MaintenanceSheet(
         }
         // No height cap on the content — exactly like the main menu sheet (SongItemMenu):
         // with skipPartiallyExpanded = false the sheet opens at its content height and
+//
         // is draggable to full screen. No background here — the menu draws its own.
         ListMenu.Menu(
             title = stringResource(R.string.maintenance),
@@ -1451,6 +1466,7 @@ fun MaintenanceSheet(
         }
         // Both entry points pass renderLogsDialog = false: the single Render() host for
         // the whole app lives in the persistent header (ActionBar.kt) — Render() is a
+//
         // singleton, so a second one anywhere would stack two dialogs on the same
         // showDialog() activation. This branch stays only as a safety valve.
         if (renderLogsDialog) {
@@ -1575,6 +1591,7 @@ private fun ColumnScope.MaintenanceListContent(
     val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
     // One shared status column: the rendered width of the longest status that must
     // stay fully visible — "Not connected" (the longest short status) or a full-width
+//
     // cache result ("9.3 GB used (100%)" — the widest realistic "used (pct%)" line).
     // Every status starts at the same x; anything longer scrolls in a marquee
     val statusColumnWidth = maxOf(
@@ -1694,6 +1711,7 @@ private fun ColumnScope.MaintenanceListContent(
     }
     // Artist link cleanup: expandable row (chevron trailing, the removed links listed
     // underneath — same "summary on top, detail list underneath" shape as dedup and
+//
     // convergence, so the five Database rows open/close consistently)
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_db_cleanup),
@@ -1758,6 +1776,7 @@ private fun ColumnScope.MaintenanceListContent(
     }
     // Download re-validation (S1): expandable row (chevron trailing, the stale tracks
     // removed by the last startup listed underneath — same "summary on top, detail
+//
     // list underneath" shape as the other chevron rows above)
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_download_revalidation),
@@ -2098,6 +2117,7 @@ private fun ColumnScope.MaintenanceListContent(
     )
     // Last crash: View + Export live in the entry's trailing slot (the debug-logs
     // pattern) — View opens the crash log dialog (full content + copy + export +
+//
     // clear), Export the shared export dialog pre-selected on the crash option; both
     // show only when a crash block exists (no empty slot otherwise)
     ListMenu.Entry(
@@ -2158,6 +2178,7 @@ private fun ColumnScope.MaintenanceListContent(
                 )
                 // View + Export show only while the debug switch is ON (off → no
                 // buttons at all; on but not restarted → the dialogs answer "Log
+//
                 // unavailable" until the restart creates the log file)
                 if (content.debugButtonsVisible) {
                     TextButton(onClick = content.onViewDebug) {

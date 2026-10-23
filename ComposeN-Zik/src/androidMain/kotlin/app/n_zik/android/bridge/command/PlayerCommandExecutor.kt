@@ -43,11 +43,7 @@ internal interface PlayerAccess {
     /** Runs [block] on the main thread with the current facade. */
     suspend fun <T> read(block: (Player?) -> T): T
 
-    /**
-     * Runs [block] on the main thread with the current facade, then samples the player at
-     * once and publishes the result; no other sample interleaves between the two, and the
-     * hub revision is read before any other sample can publish.
-     */
+    /** Runs [block] on the main thread with the current facade, then samples the player at once and publishes the result; no other sample interleaves between the two, and the hub revision is read before any other sample can publish. */
     suspend fun <T> applyAndSample(block: (Player?) -> T): Sampled<T>
 }
 
@@ -95,11 +91,7 @@ internal object DatabaseTrackResolver : TrackResolver {
     }
 }
 
-/**
- * Remembers the last command that loaded a track; a player error within
- * [BridgeContract.LATE_FAILURE_WINDOW_MS] is broadcast as a WS `error` carrying its
- * `commandId` (contract §7.6), once.
- */
+/** Remembers the last command that loaded a track; a player error within [BridgeContract.LATE_FAILURE_WINDOW_MS] is broadcast as a WS `error` carrying its `commandId` (contract §7.6), once. */
 internal class LateFailureTracker(
     private val hub: BridgeStateHub,
     private val clock: () -> Long = System::currentTimeMillis,

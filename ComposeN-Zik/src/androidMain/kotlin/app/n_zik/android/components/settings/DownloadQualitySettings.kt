@@ -132,10 +132,7 @@ fun UpdateDownloadsButton() {
     }
 }
 
-/**
- * Confirmation dialog shown before re-downloading all downloads whose recorded quality
- * does not match the selected [DownloadQualityFormat].
- */
+/** Confirmation dialog shown before re-downloading all downloads whose recorded quality does not match the selected [DownloadQualityFormat]. */
 @UnstableApi
 private class UpdateDownloadsDialog(
     activeState: MutableState<Boolean>,

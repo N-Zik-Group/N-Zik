@@ -1,10 +1,14 @@
 // Ported from Metrolist (GPL-3.0, https://github.com/MetrolistGroup/Metrolist):
 // app/src/main/kotlin/com/metrolist/music/listentogether/ListenTogetherManager.kt
+//
 // Adapted for N-Zik: no PlayerConnection (uses [ListenTogetherPlayerBridge]), no Hilt,
 // no queue-title/mute state, volume synced via heartbeat poll, guest controls gated
+//
 // through [listenTogetherGuestLock].
 // NOTE on `!!` usage (Metrolist pattern, kept as-is): `playTarget`/`pauseTarget` reach
+//
 // these calls only when the null-rejecting `guestNeedsTrackReconcile` predicate returned
+//
 // true — a null there would mean a protocol-invariant violation; failing fast over desync.
 package app.n_zik.android.listentogether
 
@@ -362,6 +366,7 @@ class ListenTogetherManager(
                     val wasHost = previousRole == RoomRole.HOST
                     // The local-pause intent is scoped to one guest stint: an in-room role
                     // change (host handover) ends it, so a stale flag cannot keep a new guest
+//
                     // sync-paused across the handover.
                     if (isInRoom && newRole != previousRole) guestLocalPause = false
                     if (newRole == RoomRole.HOST && !wasHost) {
@@ -392,6 +397,7 @@ class ListenTogetherManager(
 
         // Guest lock for the player UI: guests never change playback
         // (predicate centralized in [isGuestLockedForPlayback], tested in
+//
         // GuestLockForPlaybackTest)
         guestLockJob?.cancel()
         guestLockJob =
@@ -407,6 +413,7 @@ class ListenTogetherManager(
 
         // Auto-reconnect to a fresh persisted session (~10 min grace window) once the
         // client finishes loading disk state; otherwise the client sits idle until the
+//
         // user opens the room screen.
         scope.launch {
             client.persistedSessionLoaded.collect { loaded ->
@@ -888,6 +895,7 @@ class ListenTogetherManager(
         val posDiff = kotlin.math.abs(player.currentPosition - targetPos)
         // A local guest pause that landed after the pending state was captured (during the
         // buffer wait) must not be resurrected by the stale host isPlaying — the local pause
+//
         // survives the buffer completion (audit finding, spec-listen-together-guest-lock-hardening).
         val willPlay = pending.isPlaying && !guestLocalPause
 
@@ -1066,6 +1074,7 @@ class ListenTogetherManager(
                         if (guestLocalPause) {
                             // Locally-paused guest: the host's PLAY (skip / resume / heartbeat) must
                             // not resume them — the position is synced above so the guest's play
+//
                             // tap resumes at the host position (spec-listen-together-guest-lock-hardening).
                             Timber.tag(TAG).d("Guest: keeping local pause across host PLAY (position synced only)")
                         } else {
@@ -1308,11 +1317,13 @@ class ListenTogetherManager(
                         if (queue.isEmpty()) {
                             // The host cleaned its player (mini-player dismiss): mirror the clean on
                             // the guest — clear the queue and pause, so the guest's mini-player
+//
                             // disappears too (spec-listen-together-guest-lock-hardening).
                             Timber.tag(TAG).d("Guest: SYNC_QUEUE empty — host cleaned the player, clearing + pausing")
                             activeSyncJob?.cancel()
                             // Reset the sync state machine exactly like cleanup() and every other
                             // transition (review finding): without this, a stale pending sync /
+//
                             // buffer-complete flag would let applyPendingSyncIfReady fire early
                             // with the pre-clean position if the host restarts the same track.
                             pendingSyncState = null
@@ -1409,8 +1420,10 @@ class ListenTogetherManager(
         if (!forceFullState && currentTrack != null && bufferingTrackId == currentTrack.id) {
             // A locally-paused guest must not be resumed by the host's streaming state while
             // the new track is still buffering: the raw host `isPlaying` would otherwise
+//
             // replace the pending state and `applyPendingSyncIfReady` would play once the
             // buffer completes (user report: "il change de buffer pour charger, mais du coup
+//
             // il repart en lecture"). The play/pause decision stays overridden until the
             // guest presses play (spec-listen-together-guest-lock-hardening).
             pendingSyncState = state.copy(isPlaying = state.isPlaying && !guestLocalPause)
@@ -1460,8 +1473,10 @@ class ListenTogetherManager(
         cancelDriftCorrection()
         // A locally-paused guest (their own pause tap, tracked in [guestLocalPause]) must stay
         // paused even when the server state says the host is playing: the position is still
+//
         // synced, but the guest is never resumed until they press play themselves
         // (spec-listen-together-guest-lock-hardening). The host's real state still drives the
+//
         // position projection below — only the play/pause decision is overridden.
         val effectivePlaying = isPlaying && !guestLocalPause
         val initialPosition = client.positionAtServerTime(position, effectiveAtServerTime, isPlaying)
@@ -1542,8 +1557,10 @@ class ListenTogetherManager(
 
                     // Bounded readiness wait — play/pause is applied either way
                     // (ExoPlayer queues playWhenReady until the stream is ready);
+//
                     // dropping the play on a not-ready outcome left guests stuck
                     // paused after a reconnect when the stream took longer than
+//
                     // the budget to load (user report).
                     val readyWait = runBypassReadyWait(
                         isReady = { ListenTogetherPlayerBridge.player?.playbackState == Player.STATE_READY },
@@ -1575,6 +1592,7 @@ class ListenTogetherManager(
                 } else {
                     // Normal sync: pause, store pending, send buffer_ready.
                     // effectivePlaying keeps a locally-paused guest paused after the buffer
+//
                     // completes even when the host is playing.
                     ListenTogetherPlayerBridge.pause()
                     pendingSyncState =
@@ -1597,11 +1615,7 @@ class ListenTogetherManager(
         }
     }
 
-    /**
-     * Load a single track for guest sync without a queue (fallback path): builds the
-     * [MediaItem] through the existing stream pipeline, loads it, waits for STATE_READY,
-     * pauses, stores the pending sync and signals buffer-ready to the server.
-     */
+    /** Load a single track for guest sync without a queue (fallback path): builds the [MediaItem] through the existing stream pipeline, loads it, waits for STATE_READY, pauses, stores the pending sync and signals buffer-ready to the server. */
     @UnstableApi
     private fun syncToTrack(
         track: TrackInfo,
@@ -1862,10 +1876,7 @@ class ListenTogetherManager(
         if (playWhenReady) requestSync()
     }
 
-    /**
-     * Request sync state from server (for guests to re-sync)
-     * Call this when a guest presses play/pause to sync with host
-     */
+    /** Request sync state from server (for guests to re-sync); call this when a guest presses play/pause to sync with host. */
     fun requestSync() {
         if (!isInRoom || isHost) {
             Timber.tag(TAG).d("requestSync: not applicable (isInRoom=$isInRoom, isHost=$isHost)")

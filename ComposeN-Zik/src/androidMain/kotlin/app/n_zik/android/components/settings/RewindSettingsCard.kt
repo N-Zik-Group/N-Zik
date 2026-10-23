@@ -83,6 +83,7 @@ fun RewindSettingsCard() {
             )
             // Deck background music (spec 3): the same key as the deck's mute button — a flip
             // here is live for a deck already open, and off means no player is created when
+//
             // the deck opens.
             OtherSwitchSettingEntry(
                 title = stringResource(R.string.rw_bgmusic_settings),
@@ -99,6 +100,7 @@ fun RewindSettingsCard() {
 
     // "Rewind notifications" card: every notification toggle together. Each entry hides
     // with its parent type (off type = off notification); the card hides only when every
+//
     // parent it can show is off.
     SettingsSectionCard(
         title = stringResource(R.string.rw_settings_notifications),

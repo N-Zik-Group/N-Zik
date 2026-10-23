@@ -30,6 +30,7 @@ class MbBackfillWorker(
 
         // MusicBrainz explicitly asks integrators to avoid synchronized requests across
         // distributed installations (e.g. every install of a new app version hitting MB
+//
         // at the same fixed offset). +/-15min of jitter spreads the fleet out.
         private const val JITTER_MS = 15L * 60 * 1000
 
@@ -54,6 +55,7 @@ class MbBackfillWorker(
 
     // Shares MBMetadataHelper.Default's MusicBrainz client (and its rate-limiting mutex)
     // so this background backfill can't burst past 1 req/sec together with foreground
+//
     // fetches triggered by browsing artist/album pages.
     private val helper = MBMetadataHelper.Default
 

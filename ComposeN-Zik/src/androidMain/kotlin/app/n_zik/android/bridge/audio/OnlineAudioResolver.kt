@@ -20,10 +20,7 @@ private const val TAG = "BridgeAudio"
 /** A resolved entry is dropped this long before the upstream URL itself expires. */
 private const val EXPIRY_MARGIN_MS = 30_000L
 
-/**
- * Shortest time a resolved entry is reused, whatever the upstream lifetime: a URL announced
- * as (nearly) expired would otherwise be resolved again for every chunk.
- */
+/** Shortest time a resolved entry is reused, whatever the upstream lifetime: a URL announced as (nearly) expired would otherwise be resolved again for every chunk. */
 internal const val MIN_ENTRY_LIFETIME_MS = 10_000L
 
 /** Deepest cause chain walked when looking for an upstream HTTP status. */
@@ -120,10 +117,7 @@ internal class OnlineAudioResolver(
         }
     }
 
-    /**
-     * After upstream refused [rejected]: forgets it (unless another request already replaced
-     * it), waits for the shared InnerTubeX refresh, then resolves again.
-     */
+    /** After upstream refused [rejected]: forgets it (unless another request already replaced it), waits for the shared InnerTubeX refresh, then resolves again. */
     suspend fun resolveAfterRejection(videoId: String, quality: InnerTubeXAudioQuality, rejected: ResolvedStream): ResolvedStream {
         val key = Key(videoId, quality)
         entries.computeIfPresent(key) { _, entry -> entry.takeUnless { it.stream == rejected } }
@@ -167,11 +161,7 @@ internal fun interface UpstreamOpener {
     fun open(stream: ResolvedStream, position: Long, length: Long): UpstreamConnection
 }
 
-/**
- * An online track relayed from upstream, pinned to the stream it was first resolved to:
- * its [length] and [contentType] never change, and a later resolution to another format
- * fails the stream ([UpstreamFormatChangedException]) instead of relaying other bytes.
- */
+/** An online track relayed from upstream, pinned to the stream it was first resolved to: its [length] and [contentType] never change, and a later resolution to another format fails the stream ([UpstreamFormatChangedException]) instead of relaying other bytes. */
 internal class OnlineAudioSource(
     private val videoId: String,
     private val quality: InnerTubeXAudioQuality,

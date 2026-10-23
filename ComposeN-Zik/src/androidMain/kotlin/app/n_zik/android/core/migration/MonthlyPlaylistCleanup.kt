@@ -32,10 +32,7 @@ object MonthlyPlaylistCleanup {
     /** Legacy prefix written by the deleted `CheckMonthlyPlaylist()` mechanism. */
     const val LEGACY_MONTHLY_PREFIX = "monthly:"
 
-    /**
-     * Schedules the one-shot cleanup on [NzikDispatchers.DATA] and logs failures without
-     * setting the flag, so the next launch retries.
-     */
+    /** Schedules the one-shot cleanup on [NzikDispatchers.DATA] and logs failures without setting the flag, so the next launch retries. */
     fun run(context: Context) {
         val prefs = context.preferences
         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {

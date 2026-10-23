@@ -30,10 +30,7 @@ import app.it.fast4x.rimusic.PINNED_PREFIX
  */
 internal object LibraryMapping {
 
-    /**
-     * The phone's home tabs hide their disliked rows in every chip but the Disliked tab itself
-     * (`HomeSongs.kt` 342-344, `HomeAlbum.kt` 333-335, `HomeArtist.kt` 334-336).
-     */
+    /** The phone's home tabs hide their disliked rows in every chip but the Disliked tab itself (`HomeSongs.kt` 342-344, `HomeAlbum.kt` 333-335, `HomeArtist.kt` 334-336). */
     fun isListedSong(song: Song): Boolean = (song.likedAt ?: 0L) >= 0L
 
     /**
@@ -54,18 +51,11 @@ internal object LibraryMapping {
             || it.durationText?.let { text -> durationTextToMillis(text) < durationLimit.asMillis } == true }
         .filter { !parentalControl || !it.title.startsWith(EXPLICIT_PREFIX, true) }
 
-    /**
-     * The phone's detail screens' display filter: the parental control hides the explicit `e:`
-     * rows of an album / artist / playlist (`AlbumScreen.kt` 453-455, `ArtistScreen.kt` 345,
-     * `LocalPlaylistSongs.kt` 1058).
-     */
+    /** The phone's detail screens' display filter: the parental control hides the explicit `e:` rows of an album / artist / playlist (`AlbumScreen.kt` 453-455, `ArtistScreen.kt` 345, `LocalPlaylistSongs.kt` 1058). */
     fun detailSongs(shown: List<Song>, parentalControl: Boolean): List<Song> =
         shown.filter { !parentalControl || !it.title.startsWith(EXPLICIT_PREFIX, true) }
 
-    /**
-     * `Track` of a database song: cleaned title and artists, the like tri-state from `likedAt`,
-     * and the phone's row states from [support] (contract §1.1, since 1.7.1).
-     */
+    /** `Track` of a database song: cleaned title and artists, the like tri-state from `likedAt`, and the phone's row states from [support] (contract §1.1, since 1.7.1). */
     fun track(song: Song, support: TrackSupport): TrackDto =
         TrackMapping.track(
             mediaId = song.id,
@@ -87,11 +77,7 @@ internal object LibraryMapping {
             inPlaylist = song.id in support.inPlaylist,
         )
 
-    /**
-     * The answer of `GET /library/songs/recommendations` (contract §10.1, since 1.12.0): the phone's
-     * smart-shuffle songs are online and absent from its database, so each maps with an empty support
-     * (a neutral like, no download, no playlist).
-     */
+    /** The answer of `GET /library/songs/recommendations` (contract §10.1, since 1.12.0): the phone's smart-shuffle songs are online and absent from its database, so each maps with an empty support (a neutral like, no download, no playlist). */
     fun recommendations(state: SongRecommendationsState): SongRecommendationsResponse =
         SongRecommendationsResponse(
             filter = state.filter?.wire,
@@ -157,10 +143,7 @@ internal object LibraryMapping {
         return first
     }
 
-    /**
-     * Every playlist is listed; [displayName] turns the cleaned name into the shown one (Rewind);
-     * [listening] carries the phone's grid overlays (play count / listening time per playlist).
-     */
+    /** Every playlist is listed; [displayName] turns the cleaned name into the shown one (Rewind); [listening] carries the phone's grid overlays (play count / listening time per playlist). */
     fun playlists(
         previews: List<PlaylistPreview>,
         artworkTracks: Map<Long, String>,
@@ -185,12 +168,7 @@ internal object LibraryMapping {
             )
         }
 
-    /**
-     * The phone's origin icon logic (`PlaylistItem.kt` 301-333) as a wire value: the pin is a
-     * separate flag ([PlaylistDto.isPinned]); the generated rewind playlists keep their period
-     * kind (the phone's `stat_month` / `stat_year` / `musical_notes` icons, since 1.7.1), the
-     * other icons map to their origin.
-     */
+    /** The phone's origin icon logic (`PlaylistItem.kt` 301-333) as a wire value: the pin is a separate flag ([PlaylistDto.isPinned]); the generated rewind playlists keep their period kind (the phone's `stat_month` / `stat_year` / `musical_notes` icons, since 1.7.1), the other icons map to their origin. */
     fun originOf(name: String, browseId: String?, isYoutubePlaylist: Boolean): PlaylistOrigin = when {
         RewindPlaylists.isMonthly(name) -> PlaylistOrigin.REWIND_MONTHLY
         RewindPlaylists.isYearly(name) -> PlaylistOrigin.REWIND_YEARLY

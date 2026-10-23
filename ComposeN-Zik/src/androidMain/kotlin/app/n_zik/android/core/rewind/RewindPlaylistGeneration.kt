@@ -7,10 +7,7 @@ import timber.log.Timber
 
 private const val TAG = "RewindPlaylistGeneration"
 
-/**
- * Write mode of [generateRewindPlaylist] (spec 2 — the single write path of every
- * `rewind-*` playlist):
- */
+/** Write mode of [generateRewindPlaylist] (spec 2 — the single write path of every `rewind-*` playlist): */
 internal enum class GenerateMode {
 
     /**

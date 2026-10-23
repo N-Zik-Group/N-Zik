@@ -33,10 +33,7 @@ object RewindPlaylists {
      */
     const val ALLTIME_NAME = "rewind-alltime"
 
-    /**
-     * SharedPreferences key of the selected Month/Year/All chip in the Playlists tab —
-     * stores the [Filter] enum name through `rememberPreference`, default [Filter.All].
-     */
+    /** SharedPreferences key of the selected Month/Year/All chip in the Playlists tab — stores the [Filter] enum name through `rememberPreference`, default [Filter.All]. */
     const val REWIND_PLAYLISTS_FILTER_KEY = "rewindPlaylistsFilter"
 
     /**
@@ -60,21 +57,14 @@ object RewindPlaylists {
     /** Whether [name] belongs to the "Rewind" category (monthly, yearly or all-time). */
     fun isRewind(name: String): Boolean = isMonthly(name) || isYearly(name) || isAlltime(name)
 
-    /**
-     * Builds the database name of a monthly rewind playlist: `rewind-monthly:YYYYMM`
-     * (month zero-padded — spec 2 normalizes the legacy unpadded `monthValue`).
-     */
+    /** Builds the database name of a monthly rewind playlist: `rewind-monthly:YYYYMM` (month zero-padded — spec 2 normalizes the legacy unpadded `monthValue`). */
     fun monthlyName(year: Int, month: Int): String =
         String.format(Locale.ROOT, "%s%04d%02d", MONTHLY_PREFIX, year, month)
 
     /** Builds the database name of a yearly rewind playlist: `rewind-yearly:YYYY`. */
     fun yearlyName(year: Int): String = "$YEARLY_PREFIX$year"
 
-    /**
-     * The Month/Year/All row only exists when BOTH creation toggles are on: with a single
-     * active type there is nothing to filter (the tab shows that type directly), and with
-     * no active type the list is empty.
-     */
+    /** The Month/Year/All row only exists when BOTH creation toggles are on: with a single active type there is nothing to filter (the tab shows that type directly), and with no active type the list is empty. */
     fun rowVisible(monthlyEnabled: Boolean, yearlyEnabled: Boolean): Boolean =
         monthlyEnabled && yearlyEnabled
 
@@ -106,16 +96,7 @@ object RewindPlaylists {
         All,
     }
 
-    /**
-     * The localized display name of a generated rewind playlist (spec 2), formatted at
-     * render time from the language-neutral database name:
-     * - `rewind-monthly:202508` -> "Rewind August 2025" (localized month, existing
-     *   `month_*_s` keys)
-     * - `rewind-yearly:2025` -> "Rewind 2025"
-     * - `rewind-alltime` -> "Rewind All-time"
-     * - anything else -> [name] unchanged (safe no-op, so it can be called
-     *   unconditionally on every display surface).
-     */
+    /** The localized display name of a generated rewind playlist (spec 2), formatted at render time from the language-neutral database name: `rewind-monthly:202508` -> "Rewind August 2025" (localized month, existing `month_*_s` keys), `rewind-yearly:2025` -> "Rewind 2025", `rewind-alltime` -> "Rewind All-time", anything else -> [name] unchanged (safe no-op, so it can be called unconditionally on every display surface). */
     fun Context.rewindDisplayName(name: String): String = when {
         isMonthly(name) -> {
             val tail = name.substringAfter(MONTHLY_PREFIX, "")
@@ -150,6 +131,7 @@ object RewindPlaylists {
                 if (tail.length != 6) return null
                 // toIntOrNull: a user-created playlist can carry a prefix-shaped but
                 // non-numeric tail (e.g. "rewind-monthly:2026ab") — that is "anything
+//
                 // else", which must resolve to null, never an exception
                 val year = tail.substring(0, 4).toIntOrNull() ?: return null
                 val month = tail.substring(4, 6).toIntOrNull() ?: return null

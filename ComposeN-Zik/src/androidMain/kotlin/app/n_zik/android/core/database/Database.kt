@@ -229,12 +229,7 @@ object Database {
         } as T
     }
 
-    /**
-     * One library DAO behind its write proxy, following the underlying instance: in production
-     * the Room DAO is process-stable (one proxy), and a test that swaps [DatabaseInitializer.Instance]
-     * for a fresh in-memory database gets a fresh proxy — a stale DAO (of a closed database) is
-     * never called.
-     */
+    /** One library DAO behind its write proxy, following the underlying instance: in production the Room DAO is process-stable (one proxy), and a test that swaps [DatabaseInitializer.Instance] for a fresh in-memory database gets a fresh proxy — a stale DAO (of a closed database) is never called. */
     private class TrackedDao<T : Any>(
         private val dao: () -> T,
         private val daoClass: Class<T>,
@@ -300,9 +295,12 @@ object Database {
 
         // One author entry = one artist: the channel's browseId is the identity
         // and the row name converges to the channel page name (background fetch,
+//
         // retainIfModified). Entry names are kept whole: the previous split of a
         // single entry's display name (parseArtists: "Bigflo & OLi" -> "Bigflo" +
+//
         // "OLi") lost the browseId, failed the completeness check below, and fell
+//
         // back to the add-only path with one online search + junk row per split
         // part on every playback (device captures 2026-09-26: added=2 -> dropped=2 loop).
         val artistEntries = ArtistMappingReconcile.parseAuthorEntries( songItem.authors )
@@ -313,6 +311,7 @@ object Database {
             if (browseId != null) {
                 // The row name is owned by the channel page: an existing row keeps
                 // its stored name (page name or user-modified), a new row starts
+//
                 // from the entry name and converges to the page name at the next
                 // background fetch.
                 val artist = artistTable.findByIdDirect(browseId) ?: Artist(id = browseId, name = artistName)
@@ -379,14 +378,20 @@ object Database {
             }
             // The stored artist list follows the resolved names: the row name when
             // the channel row exists (table of truth), the entry name for new rows
+//
             // (they converge to the page name at the next background fetch). The
+//
             // split join ("Bigflo, OLi") used to feed the in-app "two artists" view.
             // A storage marker must never be copied into a display copy: a renamed
+//
             // row is stored as "modified:X" on the row only, so clean each existing
+//
             // row name before the join — otherwise every playback re-embeds the
             // prefix mid-string in a natural copy, which retainIfModified below
+//
             // cannot cut (it only protects custom copies).
             // A row name that cleans down to empty (a bare storage marker) is
+//
             // dropped instead of leaving an empty slot ("A, , B") in the join.
             val fetchedArtistsText = artistDataList
                 .map { entry -> entry.third?.name?.let { cleanPrefix(it).trim() } ?: entry.first }
@@ -417,6 +422,7 @@ object Database {
             }
             // Reconcile the artist mapping from this fresh YTM response when it is
             // complete (every parsed artist is backed by a browse ID): the map must
+//
             // reflect the latest playback context, not the union of every context
             // ever seen. A names-only/partial list keeps the legacy add-only path.
             if (ArtistMappingReconcile.isCompleteAuthorList(artistNames, songItem.authors)) {
@@ -430,6 +436,7 @@ object Database {
             } else {
                 // Only path that leaves stale links behind: an incomplete author list must
                 // never erase the mapping it cannot rewrite, so legacy add-only keeps the
+//
                 // previous context's rows — the startup sweep used to catch them silently.
                 Timber.tag("Database").d(
                     "upsert ADD-ONLY song=%s names=%d authors=%d added=%d (stale links may remain until the next reconcile)",
@@ -628,11 +635,15 @@ object Database {
         if (artistsIds.isNotEmpty()) {
             // Reconcile before re-mapping: the mapping must reflect the latest YTM
             // author list, not the union of every list ever seen — YTM lists vary
+//
             // by playback context (a channel playlist/radio credits the channel),
+//
             // so insert-only accumulation pollutes SongArtistMap (bug: a
             // channel-derived row collected hundreds of plays of unrelated songs
+//
             // and ranked as a top artist in the Rewind deck). Guarded: only an
             // existing song has stale rows to drop, and only the id-bearing path
+//
             // reconciles — a names-only/local re-insert must never wipe mappings.
             if (dbSong != null) {
                 logReconcileDrops(songArtistMapTable, artistTable, cleanSongId, mergedSong.title)
@@ -644,6 +655,7 @@ object Database {
             }
             // Normal case: zip names with IDs. `resolvedArtistNames` tracks the name of
             // the row each link actually points to, because the startup sweep (DbCleanup)
+//
             // compares that stored name against artistsText - not the raw context name,
             // which can be a different spelling (JP vs romaji) of the same row.
             artistsNames.zip(artistsIds).forEach { (name, id) ->
@@ -655,6 +667,7 @@ object Database {
                 } else {
                     // insertIgnore is a no-op when the row already exists under another
                     // spelling - it does NOT rename it - so read the stored name back:
+//
                     // the link points to that existing row.
                     artistTable.insertIgnore(Artist(id, name))
                     resolvedArtistNames += artistTable.findByIdDirect(id)?.name ?: name
@@ -665,10 +678,13 @@ object Database {
         } else if (artistsNames.isNotEmpty()) {
             // A names-only author list (search results often carry names without
             // browse IDs) is still the latest authoritative answer for this
+//
             // context, so the same reconcile rule applies: stale rows from other
             // contexts must not survive it. Guarded like above: existing song only.
+//
             // Rows are resolved by name here, so the stored row name equals the
             // context name for every link written synchronously (the async
+//
             // background search prefers an exact-name match).
             resolvedArtistNames += artistsNames
             if (dbSong != null) {
@@ -709,17 +725,24 @@ object Database {
 
         // Single source of truth for the artist display: once the mapping has been
         // (re)written from this context's author list, align artistsText to the names of
+//
         // the rows those links actually point to. The startup sweep (DbCleanup) judges
         // links by name equality against artistsText, so the two must carry the same
+//
         // names - aligning to the stored row names (not the raw context names, which can
         // be a different spelling of the same row) is what breaks the
+//
         // "map on play, drop on restart" loop. `modified:` values are never overwritten,
         // and an already-aligned value skips the write.
+//
         // Every resolved name is a STORAGE value (context extras raw from the prefetch,
         // or the stored row name, which carries `modified:` when the row was pinned or
+//
         // renamed): clean each one before the join, exactly like fetchedArtistsText
         // above. cleanPrefix only cuts at the head, so an uncleaned row name embedded
+//
         // here would survive mid-string in the natural copy and re-appear in the song
+//
         // list right after each playback (the "after the stream it shows modified:X"
         // bug - 3rd write path of the leak).
         if (resolvedArtistNames.isNotEmpty()) {

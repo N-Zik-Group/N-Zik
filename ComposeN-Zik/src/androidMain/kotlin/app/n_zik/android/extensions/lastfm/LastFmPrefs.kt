@@ -20,10 +20,7 @@ const val lastfmMaxScrobbleDelaySecondsKey = "lastfmMaxScrobbleDelaySeconds"
 internal fun isLastFmSetupKey(key: String?): Boolean =
     key == isLastfmScrobblingEnabledKey || key == lastfmSessionKey
 
-/**
- * Sub-option keys applied at runtime via onConfigChanged without
- * recreating the manager.
- */
+/** Sub-option keys applied at runtime via onConfigChanged without recreating the manager. */
 internal fun isLastFmConfigKey(key: String?): Boolean =
     key == isLastfmNowPlayingEnabledKey ||
         key == isLastfmScrobbleEnabledKey ||

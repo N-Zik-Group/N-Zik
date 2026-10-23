@@ -72,8 +72,10 @@ class ImportMigration private constructor(
 
                                            // The ACTIVE profile's cache + downloads dirs (spec-profile-data-separation):
                                            // its own suffixed folders when separate, the base folders when shared
+//
                                            // (the resolvers apply the shared-to-base-settings rule). A null dir is a
                                            // Disabled cache: a process-local temp dir, which deletes itself after close
+//
                                            // (the existing behavior, kept per profile).
                                            val cacheDir = mediaCacheDir( context, profileId ) ?: createTempDirectory( dataDirNames.mediaCacheDir ).toFile()
                                            // Ensure folder is empty
@@ -122,6 +124,7 @@ class ImportMigration private constructor(
                                                if( entry.name.equals( "exoplayer_internal.db", true ) ) {
                                                    // The imported index lands in the ACTIVE profile's resolved index
                                                    // database (spec-profile-data-separation): the single suffixed
+//
                                                    // database when BOTH caches are separate, the base one otherwise
                                                    // (a shared cache indexes into the base).
                                                    val indexName = dataDirNames.downloadsIndexDb
@@ -153,6 +156,7 @@ class ImportMigration private constructor(
 
                             // The full-backup import replaced the database (and the app is
                             // about to restart): recompute every existing rewind-* playlist
+//
                             // from the imported history (one-shot job, silent, not gated — spec 2)
                             RewindPostImportRegenerationWorker.schedule(context)
 

@@ -4,10 +4,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextLayoutResult
 
-/**
- * Preference key for the karaoke clip-rects debug overlay
- * (red = fill envelope, green = per-character clip, blue = text layout bounds).
- */
+/** Preference key for the karaoke clip-rects debug overlay (red = fill envelope, green = per-character clip, blue = text layout bounds). */
 const val karaokeClipRectsDebugKey = "karaokeClipRectsDebug"
 
 /**
@@ -50,9 +47,11 @@ data class ActiveFillLineGeometry(
 /**
  * Collects the [ActiveFillLineGeometry] of the inclusive character range [startIdx, endIdx]:
  * for each physical line the range crosses, the in-range character count plus the bounds of
- * the first and last in-range character of the line (left / right / top / bottom).
+ * the first and last in-range character of the line (left / right / top / bottom), read from
+ * [layout].
  *
- * @param layout the layout to read the line structure and character boxes from
+ * @param startIdx inclusive first character index of the word
+ * @param endIdx inclusive last character index of the word
  * @return one entry per physical line, in reading order
  */
 fun collectActiveFillGeometry(layout: ActiveFillLayout, startIdx: Int, endIdx: Int): ActiveFillLineGeometry {
@@ -86,8 +85,10 @@ fun collectActiveFillGeometry(layout: ActiveFillLayout, startIdx: Int, endIdx: I
 /**
  * Clip rect of the active-word fill envelope on one physical line.
  *
- * The fields are only meaningful while [revealed] is true — unrevealed rects (lines the sweep
- * has not reached yet, or lines with zero in-range characters) carry undefined coordinates.
+ * All edges are in px: [top] is the line content top edge minus headroom and padding,
+ * [bottom] the bottom edge plus headroom and padding. The fields are only meaningful while
+ * [revealed] is true — unrevealed rects (lines the sweep has not reached yet, or lines with
+ * zero in-range characters) carry undefined coordinates.
  *
  * @param left left edge of the line content minus padding (px)
  * @param right current sweep position within the line, plus padding (px)
@@ -115,13 +116,16 @@ data class FillLineRect(
  * construction) and wrapped lines fill sequentially. At `progress == 0f` every line is
  * unrevealed (the legacy 16dp start sliver is intentionally gone: nothing sung, one frame).
  *
- * All five arrays must have the same size — one entry per physical line, in reading order.
- * Headrooms and padding are in px (wave amplitude above/below the line; 8dp in the view).
+ * All five geometry arrays must have the same size — one entry per physical line, in reading
+ * order, in px: [lineCharCounts] the in-range character count, [lineLefts] / [lineRights] the
+ * first / last in-range character x, [lineTops] / [lineBottoms] the first / last in-range
+ * character y of the line. [topHeadroom] is the headroom above the line content (wave
+ * amplitude + rise), [bottomHeadroom] below it (wave amplitude); [padding] is the constant
+ * padding (8dp in the view).
  *
  * @param progress eased sweep progress, 0..1
- * @param topHeadroom headroom above the line content, in px (wave amplitude + rise)
- * @return one rect per physical line in reading order; only rects with
- * [FillLineRect.revealed] == true must be clipped
+ * @param padding constant padding, in px (8dp in the view)
+ * @return one rect per physical line; only rects with [FillLineRect.revealed] == true must be clipped
  */
 fun computeActiveFillRects(
     lineCharCounts: IntArray,
@@ -255,7 +259,8 @@ fun computeActiveLineIndices(lines: List<KaraokeLine>, currentPositionMs: Long):
  * line and retreats when the next main line takes over. When no line is active (gap, before
  * the first line) the last passed non-background line is kept.
  *
- * @param activeIndices the indices from [computeActiveLineIndices]
+ * @param lines all karaoke lines in order
+ * @param activeIndices the indices from [computeActiveLineIndices] at [currentPositionMs]
  * @return the line index the scroll should target (0 for an empty list)
  */
 fun primaryLyricsIndex(lines: List<KaraokeLine>, activeIndices: Set<Int>, currentPositionMs: Long): Int {
@@ -275,13 +280,14 @@ fun primaryLyricsIndex(lines: List<KaraokeLine>, activeIndices: Set<Int>, curren
 /**
  * Item index of every lyric line inside the lyrics list layout.
  *
- * The list starts with the header spacer, then the optional initial gap loader, then each
- * lyric line item, each followed by its gap-loader item when the line owns a gap window and
- * the indicator is enabled (the loaders are separate items, so the scroll index can switch
- * to one). Returns the item index of each line so the re-centering can target the right
- * item even with interleaved gap loaders.
+ * The list starts with the header spacer, then the optional initial gap loader
+ * ([hasInitialLoader]), then each lyric line item ([lineCount] lines), each followed by its
+ * gap-loader item when the line owns a gap window and the indicator is enabled (the loaders
+ * are separate items, so the scroll index can switch to one). Returns the item index of each
+ * line so the re-centering can target the right item even with interleaved gap loaders.
  *
  * @param gapWindows the per-line gap windows from `computeKaraokeGapWindows`
+ * @param showIntervalIndicator whether gap loaders are enabled
  * @return the list-item index of each lyric line
  */
 fun lyricsLineItemIndices(
@@ -321,13 +327,14 @@ fun activeGapLine(gapWindows: Map<Int, Pair<Long, Long>>, currentPositionMs: Lon
  * Target opacity of a karaoke line in the item `graphicsLayer`.
  *
  * Chorus/background lines are HIDDEN (0f) before their reveal, shown at 0.8f while sung or
- * settling, and — once fully in the past state — fade to 0.35f, the same dimmed level as
- * regular past lines. The layout slot is kept either way: the opacity hides/dims the text,
- * it does not remove the line. Regular lines keep the existing behavior: opaque (1f) when
- * active, dimmed (0.35f) when idle.
+ * settling, and — once fully in the past state ([isPastState]) — fade to 0.35f, the same
+ * dimmed level as regular past lines. The layout slot is kept either way: the opacity
+ * hides/dims the text, it does not remove the line. Regular lines keep the existing
+ * behavior: opaque (1f) when active, dimmed (0.35f) when idle.
  *
+ * @param isBackground whether the line is a chorus/background line
  * @param isShown whether the line is currently revealed
- * @param isPastState whether the line is fully in its past state
+ * @return the target opacity
  */
 fun karaokeLineOpacity(isBackground: Boolean, isShown: Boolean, isPastState: Boolean): Float = when {
     isBackground -> when {
@@ -348,6 +355,8 @@ fun karaokeLineOpacity(isBackground: Boolean, isShown: Boolean, isPastState: Boo
  * start onwards — the end of the window [computeActiveLineIndices] keeps
  * them active.
  *
+ * @param line the karaoke line
+ * @param currentPositionMs playback position in ms
  * @param nextLineStartMs start time of the following line, or null when there is none
  */
 fun isKaraokeLineInPastState(line: KaraokeLine, currentPositionMs: Long, nextLineStartMs: Long?): Boolean {
@@ -486,7 +495,8 @@ const val KARAOKE_SUNG_COLOR_SETTLE_MS = 300L
 const val KARAOKE_LINE_HEIGHT_MULTIPLIER = 1.4f
 
 /**
- * Color of a sung karaoke word while it settles after its end.
+ * Color of a sung karaoke word while it settles after its end, from [accent] at full
+ * intensity.
  *
  * Every word fades per-word from the full accent to the dimmed past-line accent the static
  * branch uses (0.5 alpha) over [KARAOKE_SUNG_COLOR_SETTLE_MS] after the word ended, with the
@@ -495,10 +505,9 @@ const val KARAOKE_LINE_HEIGHT_MULTIPLIER = 1.4f
  * dimmed while the line is still active, and once the fade tail is over the branch switch is
  * seamless.
  *
- * @param accent the line accent color at full intensity
  * @param wordEndMs end time of the word, in ms
- * @return the word color at [currentPositionMs]: [accent] just after the word
- * ended, `accent.copy(alpha = 0.5f)` once the settle is done
+ * @param currentPositionMs playback position in ms
+ * @return the word color at [currentPositionMs]: [accent] just after the word ended, `accent.copy(alpha = 0.5f)` once the settle is done
  */
 fun karaokeSungWordSettleColor(accent: Color, wordEndMs: Long, currentPositionMs: Long): Color {
     val fadeProgress = ((currentPositionMs - wordEndMs).toFloat() / KARAOKE_SUNG_COLOR_SETTLE_MS).coerceIn(0f, 1f)

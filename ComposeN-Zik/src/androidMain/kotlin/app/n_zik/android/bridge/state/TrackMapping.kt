@@ -11,10 +11,7 @@ internal object TrackMapping {
     /** Same id convention as `MediaItem.asSong`: media ids may carry a path prefix. */
     fun trackIdOf(mediaId: String): String = mediaId.split("/").lastOrNull { it.isNotEmpty() } ?: mediaId
 
-    /**
-     * The phone's `isCustomImage` predicate (its `SongItem.kt` 251-253, its `MiniPlayer.kt` 631):
-     * the local custom artworks the phone shows with `Crop` instead of `FillHeight`.
-     */
+    /** The phone's `isCustomImage` predicate (its `SongItem.kt` 251-253, its `MiniPlayer.kt` 631): the local custom artworks the phone shows with `Crop` instead of `FillHeight`. */
     fun isCustomArtwork(url: String?): Boolean =
         url?.startsWith("file://") == true ||
             url?.contains("app_covers") == true ||
@@ -23,10 +20,7 @@ internal object TrackMapping {
     fun sourceOf(trackId: String): TrackSource =
         if (trackId.contains(LOCAL_KEY_PREFIX)) TrackSource.LOCAL else TrackSource.ONLINE
 
-    /**
-     * Converts the `durationText` extra (`m:ss` or `h:mm:ss`) to milliseconds; `null` when it
-     * is missing, malformed or zero (the app stores `00:00` for an unknown duration).
-     */
+    /** Converts the `durationText` extra (`m:ss` or `h:mm:ss`) to milliseconds; `null` when it is missing, malformed or zero (the app stores `00:00` for an unknown duration). */
     fun durationTextToMs(durationText: String?): Long? {
         val parts = durationText?.trim()?.split(":") ?: return null
         if (parts.size !in 2..3) return null

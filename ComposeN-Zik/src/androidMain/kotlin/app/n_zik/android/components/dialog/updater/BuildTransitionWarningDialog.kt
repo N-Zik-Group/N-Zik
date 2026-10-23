@@ -24,10 +24,7 @@ import app.it.fast4x.rimusic.utils.bold
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.updater.models.UpdaterConstants
 
-/**
- * Stable<->Beta build transition warning, on the shared [DialogFrame]:
- * alert header, message and a single confirm [ButtonRow] pill.
- */
+/** Stable<->Beta build transition warning, on the shared [DialogFrame]: alert header, message and a single confirm [ButtonRow] pill. */
 object BuildTransitionWarningDialog {
     var isActive: Boolean by mutableStateOf(false)
     var transitionType: String? by mutableStateOf(null)

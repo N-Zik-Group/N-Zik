@@ -37,10 +37,7 @@ object ProfileStateArchive {
     /** Name line prefix: `__name__<id><TAB><display name>` (only the base is ever exported). */
     const val NAME_LINE_PREFIX = "__name__"
 
-    /**
-     * The readable content of an archive: the validated list, the faces (profile id to bytes)
-     * and the stored display names (profile id to name — in practice only the base).
-     */
+    /** The readable content of an archive: the validated list, the faces (profile id to bytes) and the stored display names (profile id to name — in practice only the base). */
     data class Archive(
         val entries: List<Pair<String, String>>,
         val faces: Map<String, ByteArray>,
@@ -54,22 +51,14 @@ object ProfileStateArchive {
         val names: Int = 0
     )
 
-    /**
-     * True when there is anything to archive: a list file, at least one face, or a renamed
-     * base profile (its custom name lives in the prefs store, never in the list file).
-     */
+    /** True when there is anything to archive: a list file, at least one face, or a renamed base profile (its custom name lives in the prefs store, never in the list file). */
     fun hasState(context: Context): Boolean {
         if (File(context.filesDir, PROFILE_NAMES_FILE_NAME).exists()) return true
         if (context.profileDisplayName(DEFAULT_PROFILE_ID)?.isNotBlank() == true) return true
         return faceCandidateIds(context).any { profileAvatarFile(context, it).exists() }
     }
 
-    /**
-     * Writes [context]'s current profile state into [out] as a single text file: the list
-     * lines first, then one face line per profile that has a custom face, then one name line
-     * for the base profile when it was renamed (it is never listed, so its custom name would
-     * otherwise be lost by an export).
-     */
+    /** Writes [context]'s current profile state into [out] as a single text file: the list lines first, then one face line per profile that has a custom face, then one name line for the base profile when it was renamed (it is never listed, so its custom name would otherwise be lost by an export). */
     fun writeArchive(context: Context, out: OutputStream) {
         val entries = context.currentProfileEntries()
         val lines = StringBuilder()
@@ -188,6 +177,7 @@ object ProfileStateArchive {
             archive.entries.forEach { (id, name) ->
                 // A profile listed WITHOUT a name must be un-renamed locally too: the
                 // imported state is the state, and a stale stored name would be
+//
                 // re-mirrored into the names file (and re-exported) on the next write.
                 if (name.isNotEmpty()) context.saveProfileDisplayName(id, name)
                 else context.saveProfileDisplayName(id, "")

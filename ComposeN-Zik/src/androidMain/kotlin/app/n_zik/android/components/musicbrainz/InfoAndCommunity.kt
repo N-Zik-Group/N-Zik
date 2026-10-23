@@ -45,10 +45,7 @@ import dev.rebelonion.translator.Translator
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
 
-/**
- * Collapsible "Info and Community" section with MusicBrainz metadata
- * (rating, year/country, keywords, external links, bio) and the Insights entry.
- */
+/** Collapsible "Info and Community" section with MusicBrainz metadata (rating, year/country, keywords, external links, bio) and the Insights entry. */
 @Composable
 fun InfoAndCommunity(
     modifier: Modifier = Modifier,

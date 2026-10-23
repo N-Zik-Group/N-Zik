@@ -33,6 +33,7 @@ object Store {
 
     // Shared scope for prefetchCookie's fire-and-forget warmup (issue #606): SupervisorJob
     // (via NzikDispatchers.fireAndForget) so a failed prefetch never prevents a later call
+//
     // to prefetchCookie from running.
     internal val scope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
 

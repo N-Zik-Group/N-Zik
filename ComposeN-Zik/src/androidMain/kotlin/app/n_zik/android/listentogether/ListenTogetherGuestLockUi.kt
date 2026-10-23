@@ -2,11 +2,7 @@ package app.n_zik.android.listentogether
 
 import androidx.compose.runtime.Composable
 
-/**
- * Alpha of a playback control locked for a Listen Together guest
- * (spec-listen-together-guest-lock-hardening): locked controls are non-interactive
- * AND visibly disabled (grayed out), not a silent no-op.
- */
+/** Alpha of a playback control locked for a Listen Together guest (spec-listen-together-guest-lock-hardening): locked controls are non-interactive AND visibly disabled (grayed out), not a silent no-op. */
 const val LISTEN_TOGETHER_GUEST_LOCKED_ALPHA = 0.4f
 
 /**

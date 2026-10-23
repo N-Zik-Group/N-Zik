@@ -28,10 +28,7 @@ import app.it.fast4x.rimusic.utils.thumbnailFadeKey
 import app.it.fast4x.rimusic.utils.thumbnailSpacingKey
 import app.it.fast4x.rimusic.utils.thumbnailSpacingLKey
 
-/**
- * Thumbnail layout tuning dialog on the shared [DefaultDialog]:
- * image cover size, edge fade and spacing sliders.
- */
+/** Thumbnail layout tuning dialog on the shared [DefaultDialog]: image cover size, edge fade and spacing sliders. */
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 fun ThumbnailOffsetDialog(

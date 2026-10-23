@@ -73,11 +73,7 @@ internal fun parseSyncedSentences(lrcText: String): List<SyncedSentence> {
     }
 }
 
-/**
- * One-shot computation of the interval-indicator data for synced sentences: for each
- * blank line, the gap to the next sentence (blank-line end estimated from the previous
- * line's singing duration, clamped to a 2s margin before the next line).
- */
+/** One-shot computation of the interval-indicator data for synced sentences: for each blank line, the gap to the next sentence (blank-line end estimated from the previous line's singing duration, clamped to a 2s margin before the next line). */
 internal fun computeSyncedGapWindows(sentences: List<SyncedSentence>): Map<Int, Pair<Long, Long>> {
     return buildMap {
         sentences.forEachIndexed { index, sentence ->

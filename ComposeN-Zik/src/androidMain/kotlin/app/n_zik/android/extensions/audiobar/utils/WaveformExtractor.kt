@@ -38,8 +38,10 @@ object WaveformExtractor {
 
     // 40 x 500ms = 20s. A manual "Update waveform" click always races the terminal-state
     // deleteWaveform + refreshSignal (MyDownloadService's TerminalStateNotificationHelper),
+//
     // which can take seconds to settle (merging, temp files finalizing). The previous 3s
     // budget (copied from the seekbar's per-round count without its outer retry loop) gave
+//
     // up before the cache stabilized; this now runs on requestUpdateWaveform's own persistent
     // scope — no lifecycle reason to keep the budget short.
     private const val DEFAULT_RETRY_ATTEMPTS = 40
@@ -47,6 +49,7 @@ object WaveformExtractor {
 
     // Owned scope for the manual "Update waveform" menu action (SupervisorJob via
     // NzikDispatchers.fireAndForget: one failed request must never cancel another in-flight
+//
     // one). Deliberately NOT the caller's rememberCoroutineScope: menuState.hide() decomposes
     // the menu within ~300ms, but the bounded retry + native extraction can take seconds.
     private val scope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
@@ -235,10 +238,7 @@ object WaveformExtractor {
         }
     }
 
-    /**
-     * Retry loop extracted as a pure helper (dependency-injected [attempt]) so it is
-     * unit-testable without waiting on real delays or mocking the extractor itself.
-     */
+    /** Retry loop extracted as a pure helper (dependency-injected [attempt]) so it is unit-testable without waiting on real delays or mocking the extractor itself. */
     internal suspend fun retryUntilReady(
         maxAttempts: Int,
         retryDelayMs: Long,
@@ -419,6 +419,7 @@ object WaveformExtractor {
                 
                 // Frame sizes usually range from 100 to 1000 bytes.
                 // Because compressed audio frames don't map linearly to visual amplitude (they look like a fat block),
+//
                 // we apply an exponential curve (power of 2.5). Since the UI normalizes to the maximum value,
                 // this mathematically perfectly squashes the quiet parts (S/M)^2.5 and makes it look incredibly dynamic!
                 val aestheticAmp = kotlin.math.max(0.0, maxFrameSize.toDouble()).pow(2.5)

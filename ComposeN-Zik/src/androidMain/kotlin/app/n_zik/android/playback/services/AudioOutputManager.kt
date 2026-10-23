@@ -40,10 +40,7 @@ class AudioOutputManager(private val context: Context, private val audioManager:
     }
 
     companion object {
-        /**
-         * Type of the virtual output "connected PC" of the PC bridge (contract §8.5): outside
-         * the `AudioDeviceInfo.TYPE_*` range, also used as its id.
-         */
+        /** Type of the virtual output "connected PC" of the PC bridge (contract §8.5): outside the `AudioDeviceInfo.TYPE_*` range, also used as its id. */
         const val TYPE_BRIDGE_PC = -100
 
         /**

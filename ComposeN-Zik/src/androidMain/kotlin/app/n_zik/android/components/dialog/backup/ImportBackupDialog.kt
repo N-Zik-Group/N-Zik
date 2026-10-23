@@ -67,6 +67,7 @@ object ImportBackupDialog : Dialog {
         val context = LocalContext.current
         // The flow state survives a rotation mid-flow (same as the onboarding import
         // screen): a rotation must keep the chosen option, the chain mode and the
+
         // already-picked files — plain remember would reset them and silently drop
         // the user's selections.
         var selectedOption by rememberSaveable { mutableIntStateOf(0) }
@@ -75,13 +76,16 @@ object ImportBackupDialog : Dialog {
 
         // A picked file tagged with a profile other than its import target: confirm
         // before importing it. Saveable DATA (tag + target id), not a lambda: the
+
         // pending URIs are saveable, so a rotation must re-offer the half-finished
         // chain instead of dropping the warning while the stale picks stay pending
+
         // (the proceed action is rebuilt from the target id).
         var crossProfilePending by rememberSaveable { mutableStateOf<Pair<String, String>?>(null) }
 
         // The state-only import's cross-profile warning: the import runs straight on
         // the confirm (nothing is pending), so a rotation just means re-picking the
+
         // file — no saveable state needed. Triple: (tag, target profile ID, proceed).
         var stateCrossProfilePending by remember { mutableStateOf<Triple<String, String, () -> Unit>?>(null) }
 
@@ -131,6 +135,7 @@ object ImportBackupDialog : Dialog {
                 onTarget = { target ->
                     // The all chain's state file must carry a tag matching the chosen
                     // target — otherwise confirm first (the state is global, so mixing
+
                     // it in is deliberate).
                     val stateTag = pendingState?.let { profileTagOf(it) }
                     if (stateTag != null && stateTag != target) {
@@ -145,6 +150,7 @@ object ImportBackupDialog : Dialog {
 
         // Every per-profile import (database / settings / both / all) asks where it
         // lands before anything is written — the restart only applies when the chosen
+
         // target is the active profile. In all mode the state file's profile list is
         // read first so the dialog offers every profile the bundle carries.
         fun openTargetDialog() {
@@ -168,6 +174,7 @@ object ImportBackupDialog : Dialog {
                     withContext(NzikDispatchers.UI) {
                         // The host may have been dismissed while the state file was
                         // being read: its Render() is no longer composed, so the target
+
                         // dialog must not be flipped on behind its back (a stale
                         // isActive would surface on the next composition).
                         if (isActive) {
@@ -302,6 +309,7 @@ object ImportBackupDialog : Dialog {
 
             // Cross-profile warning of the chain: the picked file was created for a
             // profile other than its import target. Dismissing it abandons the half
+
             // chain — the pending picks are dropped, so they cannot leak into the
             // next attempt.
             crossProfilePending?.let { (tag, targetId) ->
@@ -356,6 +364,7 @@ object ImportBackupDialog : Dialog {
 
             // Cross-profile warning of the state-only import: the file was created for
             // a profile other than the active one. The import runs on the confirm
+
             // (nothing is pending), so dismissing just drops the question.
             stateCrossProfilePending?.let { (tag, targetId, proceed) ->
                 AlertDialog(

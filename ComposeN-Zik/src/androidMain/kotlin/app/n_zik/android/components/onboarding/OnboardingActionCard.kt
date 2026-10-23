@@ -123,10 +123,7 @@ fun OnboardingActionCard(
     }
 }
 
-/**
- * Titled variant for the one-line section headers ("Permissions" card): same overflow
- * treatment as the card title.
- */
+/** Titled variant for the one-line section headers ("Permissions" card): same overflow treatment as the card title. */
 @Composable
 fun OnboardingSectionCard(title: String, modifier: Modifier = Modifier) {
     Card(

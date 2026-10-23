@@ -251,6 +251,7 @@ fun LyricsScreen(
             }
             // OQ2=B (spec `spec-fix-palette-extractor-riplay-reference`): the "cover" color renders
             // the dominant swatch, the same hue the app's dynamic accent is built from
+//
             // (RiPlay reference).
             dominantColor = coverColors?.let { m3eCoverForegroundArgb(it.dominant, lightTheme) }
                 ?: android.graphics.Color.DKGRAY

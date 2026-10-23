@@ -51,10 +51,7 @@ import android.graphics.Color as AndroidColor
 import app.n_zik.android.uiRoundnessShape
 import android.graphics.LinearGradient
 
-/**
- * HSV color picker on the shared [DefaultDialog]
- * (moved from the legacy tree).
- */
+/** HSV color picker on the shared [DefaultDialog] (moved from the legacy tree). */
 @Composable
 fun DialogColorPicker(
     onDismiss: () -> Unit,

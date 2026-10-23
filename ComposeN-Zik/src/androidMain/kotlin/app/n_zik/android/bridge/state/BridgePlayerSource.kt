@@ -43,11 +43,7 @@ private data class TrackFlags(val like: TrackLike, val isDownloaded: Boolean, va
 internal fun queueLikesMoved(known: Map<String, TrackLike>, fresh: Map<String, TrackLike>): Boolean =
     known.any { (id, like) -> fresh[id]?.let { it != like } == true }
 
-/**
- * Whether a playlist-map write moved the playlist membership of a track of the last sampled queue
- * (contract §1.1 `Track.inPlaylist`, since 1.12.0): [known] is the set each queue track was last
- * published with, [fresh] the set read now, over the same [trackIds].
- */
+/** Whether a playlist-map write moved the playlist membership of a track of the last sampled queue (contract §1.1 `Track.inPlaylist`, since 1.12.0): [known] is the set each queue track was last published with, [fresh] the set read now, over the same [trackIds]. */
 internal fun queueMembershipMoved(trackIds: Collection<String>, known: Set<String>, fresh: Set<String>): Boolean =
     trackIds.any { (it in known) != (it in fresh) }
 
@@ -130,8 +126,9 @@ internal class BridgePlayerSource(
         scope.launch {
             for (check in likeChecks) {
                 // A like alone (the §10.2 write or the phone's own UI) triggers no player event:
-                // re-sample only when a queue track's like actually moved, so the other songs
-                // writes (play counts, ...) never cost a sample
+                // re-sample only when a queue track's like actually moved,
+                //
+                // so the other songs writes (play counts, ...) never cost a sample
                 try {
                     sampleMutex.withLock {
                         val known = flags

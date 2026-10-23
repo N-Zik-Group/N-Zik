@@ -112,6 +112,7 @@ object NameConvergence {
     ): ConvergenceSummary {
         // songId -> cleaned+trimmed names of its linked rows (one cached lookup
         // per row id; trimmed because the live database has row names with
+//
         // trailing spaces)
         val pairs = songArtistMapTable.allPairsDirect()
         val nameCache = HashMap<String, String?>()
@@ -179,6 +180,7 @@ object NameConvergence {
             if (albumSongs.isEmpty()) continue
             // Every song of the album must carry the same non-empty set of linked
             // names; a song without any link silences the whole album. The sets are
+//
             // compared order-insensitively (the link order can vary per song), while
             // the first song's order is kept for the rewrite.
             var consistent = true
@@ -276,6 +278,7 @@ object NameConvergence {
     ): Int {
         // Trimmed where they are cleaned: the live database has row names with
         // trailing spaces, and an untrimmed old/new would silently reach zero
+//
         // copies (the agreement rule is a whole-token equality).
         val old = cleanPrefix(oldName).trim()
         val new = cleanPrefix(newName).trim()
@@ -377,6 +380,7 @@ object NameConvergence {
         val converged = distinctNames.joinToString(SEPARATOR)
         // no-write rule: compare against the ORIGINAL text (a leak, a duet, a
         // duplicate or a broken display is a real change even when the tokens
+//
         // already match)
         return if (converged == text) null else converged
     }

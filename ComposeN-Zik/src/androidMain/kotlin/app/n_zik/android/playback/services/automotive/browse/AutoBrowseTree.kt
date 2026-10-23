@@ -38,6 +38,7 @@ class AutoBrowseTree(
 
         // Every fresh navigation (non-pagination request) reloads from the source:
         // stale entries are dropped so each tab shows current data on open.
+//
         // Pagination of the same parent still hits the cache.
         if (!isPagination) cache.clear()
 

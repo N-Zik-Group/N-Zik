@@ -41,11 +41,7 @@ import timber.log.Timber
 object DbCleanup {
     private const val TAG = "DbCleanup"
 
-    /**
-     * The outcome of one successful artist link cleanup pass: the number of stale links
-     * removed plus the per-link records the boot chain persists (the Maintenance sheet
-     * lists them in the expanded "Artist link cleanup" row).
-     */
+    /** The outcome of one successful artist link cleanup pass: the number of stale links removed plus the per-link records the boot chain persists (the Maintenance sheet lists them in the expanded "Artist link cleanup" row). */
     internal data class DbCleanupResult(
         val removed: Int,
         val removedLinks: List<DbCleanupLinkRecord>,
@@ -79,6 +75,7 @@ object DbCleanup {
             withContext(NzikDispatchers.UI) {
                 // Format the message here: `Toaster.s(Int, Int)` would bind an Int
                 // count to the `duration` parameter of the no-vararg overload,
+//
                 // leaving the `%d` format specifier unfilled.
                 runCatching {
                     Toaster.s(context.getString(R.string.db_artist_link_cleanup_toast, result.removed))
@@ -149,11 +146,15 @@ object DbCleanup {
         val cleaned = cleanPrefix(songArtistsText)
         // The artist name must appear in the stored list as a whole phrase delimited by
         // non-letter characters (separators, punctuation, start/end of the string). The
+//
         // previous split-based matching destroyed legitimate names ("COOL&CREATE" broke into
         // ["COOL", "CREATE"]; "Grand Corps Malade" was cut at the "and" inside "Grand" —
+//
         // device captures 2026-09-26), so both ends are pinned against Unicode letters
         // (\p{L}): a raw substring would admit junk fragments, Java's \b does not exist
+//
         // around CJK characters, and accented-name fragments ("gr" in "Grégoire") must not
+//
         // match. Locale-independent — no localized conjunction list involved.
         val phrase = Regex("(?<!\\p{L})" + Regex.escape(artistName) + "(?!\\p{L})", RegexOption.IGNORE_CASE)
         return !phrase.containsMatchIn(cleaned)

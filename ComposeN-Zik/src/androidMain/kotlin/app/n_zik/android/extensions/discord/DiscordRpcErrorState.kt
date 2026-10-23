@@ -12,16 +12,10 @@ import kotlinx.coroutines.flow.StateFlow
  * on disk.
  */
 enum class DiscordRpcError {
-    /**
-     * The gateway closed with 4004 (token invalid/expired) or the one-shot token
-     * validation reported the token as invalid.
-     */
+    /** The gateway closed with 4004 (token invalid/expired) or the one-shot token validation reported the token as invalid. */
     INVALID_TOKEN,
 
-    /**
-     * The gateway exhausted its reconnection budget (7 attempts): the RPC stays offline
-     * until the next media event, a token change, or an app restart.
-     */
+    /** The gateway exhausted its reconnection budget (7 attempts): the RPC stays offline until the next media event, a token change, or an app restart. */
     RECONNECT_FAILED,
 }
 

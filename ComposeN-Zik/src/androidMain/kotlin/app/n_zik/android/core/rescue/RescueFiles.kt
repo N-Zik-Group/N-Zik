@@ -136,6 +136,7 @@ object RescueFiles {
 
     // Encrypted credential keys, built from the real constants so they cannot drift
     // (const vals are inlined: no app init needed). These lists are the single source of
+//
     // truth — BackupManager and ExportSettingsDialog must reference them, never re-declare.
     internal val YTB_KEYS = listOf(
         ytCookieKey, ytVisitorDataKey, ytDataSyncIdKey,
@@ -145,6 +146,7 @@ object RescueFiles {
     )
     // The legacy section keys plus every advanced-mode key (item 6/7/8): a backup that
     // carries the token but not the customization is an incomplete backup. The advanced
+//
     // keys live in the same encrypted prefs, so import routing covers them too.
     internal val DISCORD_KEYS = listOf(
         discordPersonalAccessTokenKey, discordAvatarKey, discordUsernameKey,
@@ -308,10 +310,7 @@ object RescueFiles {
 
     // Import database (with validation)
 
-    /**
-     * Validates the SQLite header of a stream.
-     * The first 16 bytes of a valid SQLite file are: "SQLite format 3\000"
-     */
+    /** Validates the SQLite header of a stream. The first 16 bytes of a valid SQLite file are: "SQLite format 3\000" */
     internal fun isValidSqliteHeader(headerBytes: ByteArray): Boolean {
         val magic = "SQLite format 3\u0000".toByteArray(Charsets.US_ASCII)
         if (headerBytes.size < magic.size) return false
@@ -453,11 +452,7 @@ object RescueFiles {
         SettingsOutcome(encryptedSkipped)
     }
 
-    /**
-     * Writes settings as `Type,Key,Value` CSV using the same writer as the regular settings
-     * export, so values containing commas, quotes or line breaks round-trip through
-     * [readSettingsCsv].
-     */
+    /** Writes settings as `Type,Key,Value` CSV using the same writer as the regular settings export, so values containing commas, quotes or line breaks round-trip through [readSettingsCsv]. */
     internal fun writeSettingsCsv(outStream: OutputStream, entries: List<Triple<String, String, Any>>) {
         csvWriter().open(outStream) {
             writeRow("Type", "Key", "Value")
@@ -642,6 +637,7 @@ object RescueFiles {
             if (toDelete.isNotEmpty()) {
                 // A deleted active profile must not be the one the next launch starts
                 // on: point the active slot at the base (the one profile that always
+//
                 // exists — it is never a names-file line, so nothing else to update).
                 if (toDelete.contains(getActiveProfile(context))) {
                     setActiveProfile(DEFAULT_PROFILE_ID, context)
@@ -670,6 +666,7 @@ object RescueFiles {
                         }
                     // The profile's 6 notification channels + its pending notifications are
                     // purged with the profile — no orphan channel (or surviving notification)
+//
                     // left behind (the main process is not running, so its non-ongoing
                     // notifications would otherwise survive in the shade).
                     runCatching { deleteProfileChannels(context, id) }
@@ -717,8 +714,10 @@ object RescueFiles {
                     if (id != DEFAULT_PROFILE_ID) {
                         // The remaining SEPARATE data (the regenerable caches — the
                         // non-regenerable dirs + index were moved to the backup above)
+//
                         // is wiped, and the sharing flags are forgotten: the restored
                         // (or never-restored) data is separate, so the default
+//
                         // (separate) matches it (spec-profile-data-separation).
                         deleteProfileDataFiles(context, id)
                         context.clearProfileShareFlags(id)
@@ -759,10 +758,7 @@ object RescueFiles {
     fun hasProfileBackup(context: Context, profileId: String): Boolean =
         profileBackupDir(context, profileId).let { it.exists() && it.list()?.isNotEmpty() == true }
 
-    /**
-     * The profile IDs that carry a reset backup (the non-empty
-     * `rescue_backups/profiles/` subdirectories) — the restore actions' availability.
-     */
+    /** The profile IDs that carry a reset backup (the non-empty `rescue_backups/profiles/` subdirectories) — the restore actions' availability. */
     fun profileBackupIds(context: Context): Set<String> =
         runCatching {
             File(File(context.filesDir, RESCUE_BACKUPS_DIR), "profiles")
@@ -816,8 +812,10 @@ object RescueFiles {
 
         // The SEPARATE non-regenerable data dirs (downloads, covers, waveforms) + the
         // suffixed index (spec-profile-data-separation). The caches (streaming +
+//
         // image) are wiped WITHOUT backup (user decision 2026-10-01). The shared
         // items are NEVER backed up: they belong to the base. The base has no
+//
         // suffixed data, so it is a no-op for the base.
         if (profileId != DEFAULT_PROFILE_ID) {
             val shared = context.profileSharedItems(profileId)
@@ -891,8 +889,10 @@ object RescueFiles {
 
         // The SEPARATE non-regenerable data dirs + the suffixed index — ping-pong
         // (the data written since the reset becomes the new backup). An item the
+//
         // profile SHARES now is not restored into the base location: its backup copy
         // stays parked in [backup] (spec-profile-data-separation). The sharing flags
+//
         // are NOT restored (they were cleared with the reset — the default separate
         // matches the backed-up separate data).
         if (profileId != DEFAULT_PROFILE_ID) {
@@ -951,6 +951,7 @@ object RescueFiles {
         val suffix = if (profileId == DEFAULT_PROFILE_ID) "" else "_$profileId"
         // The same names the app itself uses: plain settings + encrypted settings
         // (secure_preferences — the account credentials). Mirrors PREFS_NAME /
+//
         // ENCRYPTED_PREFS_NAME, computed for [profileId] instead of the active profile.
         listOf("preferences$suffix", "secure_preferences$suffix").forEach { name ->
             // deleteSharedPreferences (API 24+) removes the shared_prefs XML from disk.
@@ -984,6 +985,7 @@ object RescueFiles {
 
     // Per-profile data dirs (spec-profile-data-separation: the SEPARATE data of a
     // profile is wiped with the profile — the shared items are NEVER touched, they
+//
     // belong to the base)
 
     /**
@@ -1004,6 +1006,7 @@ object RescueFiles {
         var deletedCount = 0
         // Downloads / media cache / Coil live under the profile's location setting
         // (System → cacheDir, Private → filesDir): walk BOTH bases — the setting may
+//
         // have changed since the data was written (a Disabled cache wrote none).
         listOf(own.downloadsDir, own.mediaCacheDir, own.imageCacheDir).forEach { name ->
             deletedCount += safeDeleteDir(File(context.cacheDir, name))
@@ -1018,11 +1021,7 @@ object RescueFiles {
         return deletedCount
     }
 
-    /**
-     * Deletes [file] + its SQLite side files (the [DB_FILE_SUFFIXES] set), returning
-     * the number of files removed — the same side-file rule as the global downloads
-     * delete, so a stale journal cannot be replayed onto a fresh index.
-     */
+    /** Deletes [file] + its SQLite side files (the [DB_FILE_SUFFIXES] set), returning the number of files removed — the same side-file rule as the global downloads delete, so a stale journal cannot be replayed onto a fresh index. */
     private fun removeWithSideFiles(file: File): Int {
         var count = 0
         DB_FILE_SUFFIXES.forEach { suffix ->
@@ -1049,11 +1048,7 @@ object RescueFiles {
                 }
             }
 
-    /**
-     * The user profiles' OWN download dirs a global downloads delete must cover
-     * (both bases — see [deleteProfileDataFiles]; the shared base dir is deleted
-     * by [deleteDownloadFiles] itself).
-     */
+    /** The user profiles' OWN download dirs a global downloads delete must cover (both bases — see [deleteProfileDataFiles]; the shared base dir is deleted by [deleteDownloadFiles] itself). */
     private fun profileDownloadDirsToWipe(context: Context): List<File> =
         context.readProfileIds()
             .filterNot { it == DEFAULT_PROFILE_ID }
@@ -1073,10 +1068,7 @@ object RescueFiles {
             .filterNot { it == DEFAULT_PROFILE_ID }
             .map { profileIndexDbFile(context, it) }
 
-    /**
-     * The display name of the document at [uri], or `null` when it cannot be
-     * read — used to detect the profile tag carried by a backup/export file name.
-     */
+    /** The display name of the document at [uri], or `null` when it cannot be read — used to detect the profile tag carried by a backup/export file name. */
     internal fun documentDisplayName(context: Context, uri: Uri): String? =
         runCatching {
             context.contentResolver.query(
@@ -1103,12 +1095,7 @@ object RescueFiles {
         return tag.takeIf { it.isNotEmpty() && isProfileIdSafe(it) }
     }
 
-    /**
-     * The timestamped backup/export suffix: the auto-backup names
-     * (`…_<date>_AutoBackup.sqlite` / `…_<date>_Settings|Profiles|Face_AutoBackup.csv|txt|jpg`)
-     * and the manual profile-state export names
-     * (`…_<date>_Profiles_Export.txt` / `…_<date>_Face_Export.jpg`).
-     */
+    /** The timestamped backup/export suffix: the auto-backup names (`…_<date>_AutoBackup.sqlite` / `…_<date>_Settings|Profiles|Face_AutoBackup.csv|txt|jpg`) and the manual profile-state export names (`…_<date>_Profiles_Export.txt` / `…_<date>_Face_Export.jpg`). */
     private val BACKUP_TAG_SUFFIX = Regex(
         """_(\d{4}-\d{2}-\d{2}_\d{6})(?:_(?:Settings|Profiles|Face))?(?:_AutoBackup\.(?:sqlite|csv|txt|jpg)|_(?:Profiles|Face)_Export\.(?:txt|jpg))$"""
     )
@@ -1361,11 +1348,7 @@ object RescueFiles {
         check(source.delete()) { "Cannot remove ${source.name} after copying it" }
     }
 
-    /**
-     * Moves the directory tree [from] to [to], replacing any stale tree at [to] first
-     * (the same "the set can be left half-moved" contract as [moveDatabaseFiles]: a
-     * failure part-way throws without a rollback).
-     */
+    /** Moves the directory tree [from] to [to], replacing any stale tree at [to] first (the same "the set can be left half-moved" contract as [moveDatabaseFiles]: a failure part-way throws without a rollback). */
     private fun moveDirReplacing(from: File, to: File) {
         if (to.exists()) check(to.deleteRecursively()) { "Cannot replace ${to.absolutePath}" }
         if (from.renameTo(to)) return
@@ -1373,13 +1356,7 @@ object RescueFiles {
         check(from.deleteRecursively()) { "Cannot remove ${from.absolutePath} after copying it" }
     }
 
-    /**
-     * Swaps the live directory [live] with [backupDir] (the ping-pong of
-     * [swapDatabaseFiles] for directory trees): the live tree is parked first under
-     * a per-backup swap name, only then replaced by the backup tree — a tree created
-     * since the reset becomes the new backup, and the normal path never removes the
-     * last good copy of either.
-     */
+    /** Swaps the live directory [live] with [backupDir] (the ping-pong of [swapDatabaseFiles] for directory trees): the live tree is parked first under a per-backup swap name, only then replaced by the backup tree — a tree created since the reset becomes the new backup, and the normal path never removes the last good copy of either. */
     internal fun swapDataDir(live: File, backupDir: File) {
         // The backup dir is per-profile, so the entry name alone is a unique
         // (and filesystem-safe) parking slot.
@@ -1397,11 +1374,7 @@ object RescueFiles {
         }
     }
 
-    /**
-     * Swaps the live suffixed profile index [live] with its backup (the ping-pong of
-     * [swapDatabaseFiles]): the live one is parked first under a per-backup swap
-     * name (the backup dir is per-profile, so the name is unique), then replaced.
-     */
+    /** Swaps the live suffixed profile index [live] with its backup (the ping-pong of [swapDatabaseFiles]): the live one is parked first under a per-backup swap name (the backup dir is per-profile, so the name is unique), then replaced. */
     private fun swapProfileIndex(live: File, backupDb: File) {
         val parkedDb = File(backupDb.parentFile, "${live.name}.swap")
         try {
@@ -1561,10 +1534,7 @@ object RescueFiles {
         return SETTINGS_FILE_NAMES.any { File(backupDir, it).exists() }
     }
 
-    /**
-     * Deletes all backups (database, settings and the profile reset backups) from the
-     * rescue_backups directory.
-     */
+    /** Deletes all backups (database, settings and the profile reset backups) from the rescue_backups directory. */
     fun deleteBackups(context: Context): Result<Unit> = runCatching {
         deleteBackupDir(File(context.filesDir, RESCUE_BACKUPS_DIR))
     }

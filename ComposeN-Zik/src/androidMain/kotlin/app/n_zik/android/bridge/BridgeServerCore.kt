@@ -169,10 +169,7 @@ internal class BridgeServerCore(
     private val listCommandExecutor: ListCommandExecutor = ListCommandExecutor.UNAVAILABLE,
     /** The phone's UI settings of `GET /ui/settings` (contract §10.5, since 1.10.0); the phone's defaults without a phone. */
     private val uiSettings: suspend () -> UiSettingsDto = { UiSettingsDto() },
-    /**
-     * The smart-shuffle recommendations of the phone's Songs tab (contract §10.1, since 1.12.0,
-     * `library.recommendations`): what its `HomeSongs` published, nothing while it is off.
-     */
+    /** The smart-shuffle recommendations of the phone's Songs tab (contract §10.1, since 1.12.0, `library.recommendations`): what its `HomeSongs` published, nothing while it is off. */
     private val songRecommendations: () -> SongRecommendationsState = { SongRecommendations.state.value },
 ) {
     private val stopping = AtomicBoolean(false)
@@ -180,10 +177,7 @@ internal class BridgeServerCore(
     /** Claim of the active session taken by a WebSocket call before its upgrade. */
     private val sessionClaimKey = AttributeKey<SessionClaim>("BridgeSessionClaim")
 
-    /**
-     * Contract §2 then §6.2 on a REST Bearer route: authentication (`401`) first, then the
-     * active-client rule (`409`), both before any other processing of the route.
-     */
+    /** Contract §2 then §6.2 on a REST Bearer route: authentication (`401`) first, then the active-client rule (`409`), both before any other processing of the route. */
     private val bearerAuth = createRouteScopedPlugin("BridgeBearerAuth") {
         onCall { call ->
             val deviceId = call.authenticateOrReject() ?: return@onCall
@@ -617,11 +611,7 @@ internal class BridgeServerCore(
         }
     }
 
-    /**
-     * Contract §10.4 `/library/locate` (since 1.10.0): `trackId` plus the parameters of a list
-     * reference (`kind`, `id`, `filter`, `sort`, `reverse`, `period`, `text`); `index` is `-1`
-     * when the track is not in the list.
-     */
+    /** Contract §10.4 `/library/locate` (since 1.10.0): `trackId` plus the parameters of a list reference (`kind`, `id`, `filter`, `sort`, `reverse`, `period`, `text`); `index` is `-1` when the track is not in the list. */
     private suspend fun ApplicationCall.handleLocate() {
         val params = request.queryParameters
         val trackId = params["trackId"]
@@ -692,11 +682,7 @@ internal class BridgeServerCore(
         return page
     }
 
-    /**
-     * Contract §10 `/library/playlists` (since 1.6): pagination, `filter`, `sort`, `reverse`;
-     * since 1.7.2, `rewind` (applied and persisted by the phone) and `text` (the phone's search,
-     * `total` kept pre-`text`).
-     */
+    /** Contract §10 `/library/playlists` (since 1.6): pagination, `filter`, `sort`, `reverse`; since 1.7.2, `rewind` (applied and persisted by the phone) and `text` (the phone's search, `total` kept pre-`text`). */
     private suspend fun ApplicationCall.handlePlaylists() {
         val params = request.queryParameters
         val page = LibraryQueries.parsePage(params["offset"], params["limit"])
@@ -1048,11 +1034,7 @@ internal class BridgeServerCore(
         }
     }
 
-    /**
-     * State stream of one WebSocket session: the hub subscription (snapshot then deltas),
-     * the heartbeat and the pongs, all funnelled through one non-blocking outgoing channel
-     * drained by a single writer, so frames leave in the order they were queued.
-     */
+    /** State stream of one WebSocket session: the hub subscription (snapshot then deltas), the heartbeat and the pongs, all funnelled through one non-blocking outgoing channel drained by a single writer, so frames leave in the order they were queued. */
     private inner class SessionStream(private val session: DefaultWebSocketServerSession, val deviceId: String) {
         private val lock = Any()
         private val outgoing = Channel<String>(OUTGOING_BUFFER)
@@ -1098,10 +1080,7 @@ internal class BridgeServerCore(
             }
         }
 
-        /**
-         * Stops every state message for good and flushes what is already queued, so that a
-         * closing frame sent afterwards (`serverStopped`, `4003`, `4008`) is the last one.
-         */
+        /** Stops every state message for good and flushes what is already queued, so that a closing frame sent afterwards (`serverStopped`, `4003`, `4008`) is the last one. */
         suspend fun detach() {
             val pendingWriter = synchronized(lock) {
                 if (detached) return
@@ -1125,10 +1104,7 @@ internal class BridgeServerCore(
             is AuthOutcome.Success -> outcome.deviceId.also { attributes.put(DeviceIdKey, it) }
         }
 
-    /**
-     * Contract §2: `UNAUTHORIZED` when the `Authorization` header is missing or not a Bearer
-     * token, `DEVICE_REVOKED` when the token is unknown or revoked, `null` when accepted.
-     */
+    /** Contract §2: `UNAUTHORIZED` when the `Authorization` header is missing or not a Bearer token, `DEVICE_REVOKED` when the token is unknown or revoked, `null` when accepted. */
     fun authorizationFailure(authorizationHeader: String?): ErrorResponse? =
         (authenticate(authorizationHeader) as? AuthOutcome.Failure)?.error
 

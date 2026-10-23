@@ -133,9 +133,10 @@ class BridgeServerService : Service() {
         BridgeServerController.loadAutoStopSettings(this)
         // One hub, one player source and one command executor per server run: the revision starts again at 0
         val stateHub = BridgeStateHub()
-        // Contract §10.3 (since 1.7.3): every library write and songs-sort-menu edit reaches the
-        // clients — an `onDestroy` that already ran (the scope cancelled) must not leave the
-        // observer running: it holds the process-level write notifier and the prefs listener
+        // Contract §10.3 (since 1.7.3): every library write and songs-sort-menu edit reaches the clients —
+        // an `onDestroy` that already ran (the scope cancelled) must not leave the observer running:
+
+        // it holds the process-level write notifier and the prefs listener
         libraryObserver?.stop()
         libraryObserver = if (scope.isActive) BridgeLibraryObserver(this, stateHub, onSongsChanged = { playerSource.get()?.onSongsChanged() }).also { it.start() } else null
         val lateFailures = LateFailureTracker(stateHub)

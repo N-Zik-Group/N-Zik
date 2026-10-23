@@ -65,6 +65,7 @@ class ImportDatabase private constructor(
                 ?: error("Failed to open input stream for $uri")
             // The copy goes to a temp file that is then atomically renamed over the
             // target: a mid-copy failure leaves the existing database intact instead
+            //
             // of truncated (the target is only open by this process when the profile
             // is the active one, and it was closed above).
             val tmp = File(dbFile.parentFile, dbFile.name + ".tmp")
@@ -81,8 +82,9 @@ class ImportDatabase private constructor(
                 throw e
             }
             // renameTo replaces the destination on Android (POSIX rename) but fails
-            // when it exists on the JVM file systems: delete-then-rename fallback,
-            // same pattern as writeProfileEntries.
+            // when it exists on the JVM file systems: delete-then-rename
+            //
+            // fallback, same pattern as writeProfileEntries.
             val replaced = tmp.renameTo(dbFile) || (dbFile.delete() && tmp.renameTo(dbFile))
             if (!replaced) {
                 tmp.delete()

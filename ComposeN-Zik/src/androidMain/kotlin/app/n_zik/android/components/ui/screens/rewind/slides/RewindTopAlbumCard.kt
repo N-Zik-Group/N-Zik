@@ -38,10 +38,7 @@ import app.n_zik.android.R
 import app.n_zik.android.components.ui.screens.rewind.TopAlbum
 import app.n_zik.android.components.ui.screens.rewind.rewindAlbumLevel
 
-/**
- * Full "top album" show: sleeve + vinyl reveal, title swipe, AOTY badge and metrics, shown by
- * the Album of the Year slide.
- */
+/** Full "top album" show: sleeve + vinyl reveal, title swipe, AOTY badge and metrics, shown by the Album of the Year slide. */
 @Composable
 internal fun RewindTopAlbumShow(
     topAlbum: TopAlbum?,
@@ -211,11 +208,7 @@ fun RewindTopAlbumCard(
     )
 }
 
-/**
- * Vinyl + sleeve artwork shared by the Album of the Year slide and the Favorite Album slide:
- * the sleeve enters from the left and the record rolls in from the right, both settling
- * around the center of the hero.
- */
+/** Vinyl + sleeve artwork shared by the Album of the Year slide and the Favorite Album slide: the sleeve enters from the left and the record rolls in from the right, both settling around the center of the hero. */
 @Composable
 internal fun RewindAlbumHero(
     album: Album,

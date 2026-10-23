@@ -51,10 +51,7 @@ internal class BridgeServer(
         throw BindException("No port available on $host among $portCandidates")
     }
 
-    /**
-     * Runs the stop sequence (contract §11.3) within [BridgeContract.STOP_TIMEOUT_MS]:
-     * sessions are closed first (with or without the `serverStopped` frame), then the engine.
-     */
+    /** Runs the stop sequence (contract §11.3) within [BridgeContract.STOP_TIMEOUT_MS]: sessions are closed first (with or without the `serverStopped` frame), then the engine. */
     suspend fun stop(code: BridgeStopCode?) {
         val finished = withTimeoutOrNull(BridgeContract.STOP_TIMEOUT_MS) {
             core.shutdownSessions(code)

@@ -53,6 +53,7 @@ fun MediaItem.artistIdsWithFallback(): List<Info> {
     }
     // The links (and the extras built from them) carry no display order: SQLite
     // returns them in an arbitrary order, so the profile-photo pager used to
+//
     // disagree with the artist text shown in the player. Follow the displayed
     // text order instead (see alignInfosToDisplayOrder for the doubt rule).
     return alignInfosToDisplayOrder(infos, artistTextWithFallback())
@@ -105,13 +106,7 @@ fun MediaItem.albumIdWithFallback(): String? {
     return dbAlbum?.id
 }
 
-/**
- * Pure album-title resolution shared by the Composable preview fallback below: metadata
- * first, then the DB record; fork prefixes ("e:", "modified:", "pinned:", the "🅴 "
- * marker, ...) are stripped from both sources (same contract as [artistTextOrDb] /
- * [titleOrDb]); a blank or literal "null" is treated as missing, and the result `null`
- * means "unknown" (the caller applies its own localized fallback).
- */
+/** Pure album-title resolution shared by the Composable preview fallback below: metadata first, then the DB record; fork prefixes ("e:", "modified:", "pinned:", the "🅴 " marker, ...) are stripped from both sources (same contract as [artistTextOrDb] / [titleOrDb]); a blank or literal "null" is treated as missing, and the result `null` means "unknown" (the caller applies its own localized fallback). */
 fun resolveAlbumTitle(metadataAlbum: String?, dbAlbum: Album?): String? {
     val meta = cleanPrefix(metadataAlbum ?: "")
     if (meta.isNotBlank() && meta != "null") return meta

@@ -21,10 +21,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/**
- * Loads the album Insights data: tracks, artist, other albums by the
- * same artist, listening stats and external links.
- */
+/** Loads the album Insights data: tracks, artist, other albums by the same artist, listening stats and external links. */
 class AlbumInsightsViewModel(application: Application) : AndroidViewModel(application) {
 
     companion object : ViewModelProvider.Factory {
@@ -69,6 +66,7 @@ class AlbumInsightsViewModel(application: Application) : AndroidViewModel(applic
                 val byName = if (authors.isNotBlank()) artistTable.findByNameDirect(authors) else null
                 // Name matching is fragile (casing, "feat.", collab text); fall back to the
                 // actual SongArtistMap relation of the album's own tracks, same source used
+//
                 // by "Go to artist" elsewhere in the app.
                 byName ?: tracks.firstOrNull()?.let { song ->
                     artistTable.findBySongIdDirect(song.id).firstOrNull()
@@ -77,6 +75,7 @@ class AlbumInsightsViewModel(application: Application) : AndroidViewModel(applic
 
             // MusicBrainz-matched local albums carry an albumType ("Album", "Single",
             // "EP", "Live", "Compilation", "Remix"); split on it so a local single/EP
+//
             // lands in the same section as its online counterpart. Albums never matched
             // against MusicBrainz have a null albumType and default to "Other albums".
             val (localOtherAlbums, localSinglesAndEps) = withContext(NzikDispatchers.DATA) {
@@ -93,6 +92,7 @@ class AlbumInsightsViewModel(application: Application) : AndroidViewModel(applic
 
             // Local library only tracks albums the user has already interacted with, so
             // fetch the artist's YouTube Music page to fill in what's missing: full
+//
             // albums go into "Other albums", singles/EPs into their own section
             // (YTM bundles EPs with singles under "Singles & EPs", no way to split them).
             val (missingAlbums, missingSinglesAndEps) = withContext(NzikDispatchers.DATA) {
@@ -176,9 +176,12 @@ class AlbumInsightsViewModel(application: Application) : AndroidViewModel(applic
 
             // "Other albums"/"Singles & EPs" cards only get their rating badge once the
             // user actually opens that specific album (AlbumScreen's own on-view sync) —
+//
             // opening this Insights page must not itself fan out into fetching MusicBrainz
+//
             // metadata for a dozen unrelated albums (missing=4 missingSingles=10 is not
             // unusual), which is exactly the kind of bulk-fetch-on-a-single-view pattern
+//
             // MusicBrainz's rate limiting is meant to discourage.
         }
     }

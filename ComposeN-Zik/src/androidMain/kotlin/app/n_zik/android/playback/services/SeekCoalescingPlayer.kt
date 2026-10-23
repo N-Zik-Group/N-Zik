@@ -56,13 +56,7 @@ internal class SeekCoalescingPlayer(
     /** Safety-net job applying [pendingSeekMs] if the player never reaches `READY`. */
     private var settleJob: Job? = null
 
-    /**
-     * State observer registered directly on [upstream] in `init` — bypassing this facade's own
-     * (delegated) `addListener` so the coalescer's events are not routed through the listener
-     * list exposed to the guard/UI. (media3 1.10.1: the player calls the deprecated single-arg
-     * [Player.Listener.onPlaybackStateChanged] — the form every other listener in this app
-     * already uses — and [Player.Listener.onMediaItemTransition] on every current-item change.)
-     */
+    /** State observer registered directly on [upstream] in `init` — bypassing this facade's own (delegated) `addListener` so the coalescer's events are not routed through the listener list exposed to the guard/UI. (media3 1.10.1: the player calls the deprecated single-arg [Player.Listener.onPlaybackStateChanged] — the form every other listener in this app already uses — and [Player.Listener.onMediaItemTransition] on every current-item change.) */
     private val stateObserver = object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
             when (playbackState) {
@@ -86,6 +80,7 @@ internal class SeekCoalescingPlayer(
     override fun seekTo(positionMs: Long) {
         // Issue #881 (Phase 3, Fix B, review patch): the recovering check and the
         // pending-write happen inside ONE lock section. If the player settles (READY →
+//
         // in-flight cleared) between a separate check and act, the seek must apply
         // immediately — the old check-then-act could silently delay it by a full window.
         var coalesced = false
@@ -245,11 +240,7 @@ internal class SeekCoalescingPlayer(
     }
 
     companion object {
-        /**
-         * Field measurements (gh-881 logs 2026-10-03): per-seek settle 80–760 ms, user burst
-         * intervals 300–500 ms — a 1 s window covers an entire burst while a single seek is
-         * still applied with zero added latency.
-         */
+        /** Field measurements (gh-881 logs 2026-10-03): per-seek settle 80–760 ms, user burst intervals 300–500 ms — a 1 s window covers an entire burst while a single seek is still applied with zero added latency. */
         const val DEFAULT_COALESCE_WINDOW_MS = 1000L
     }
 }

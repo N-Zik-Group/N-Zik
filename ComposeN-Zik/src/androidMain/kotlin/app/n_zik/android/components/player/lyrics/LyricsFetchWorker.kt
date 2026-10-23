@@ -44,6 +44,7 @@ class LyricsFetchWorker(
     private val uiDispatcher: CoroutineDispatcher = NzikDispatchers.UI,
     // Injectable seams for LrcLib/KuGou/Innertube (issue #606): MockK cannot reliably mock
     // `suspend fun`s returning `kotlin.Result<T>` (ABI-level limitation that corrupts the
+//
     // value at runtime). Constructor injection with a real default (AD-1, like the
     // dispatchers above) lets tests pass plain lambdas instead, sidestepping MockK.
     private val lrcLibLyrics: suspend (String, String, Duration, String?) -> Result<LrcLib.Lyrics?>? =
@@ -203,6 +204,7 @@ class LyricsFetchWorker(
                 } else {
                     // BetterLyrics is the Karaoke check's source: in Auto/Karaoke it rewrites and
                     // re-stamps the Karaoke row, so it only runs when that check is needed (a fresh
+//
                     // word-timed row must not be refetched). Synced mode keeps it as the first source
                     // of its Synced check; it never writes a Karaoke row there.
                     if (wantKaraoke && (needKaraokeFetch || lyricsType == LyricsType.Synced)) {

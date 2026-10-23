@@ -29,12 +29,7 @@ internal fun textOutlineColor(effectiveIsDark: Boolean, alpha: Float): Color =
  */
 internal fun monochromeControlsColor(palette: ColorPalette): Color = palette.text
 
-/**
- * The base color for the dimmed title/artist placeholder `compositeOver`
- * (spec-achromatic-ramp-luminance-cap, 2026-09-28): white on a dark-tone ramp, black on a
- * light-tone one — the placeholder (`textDisabled` at 0.35 alpha) must read as a ghost of the
- * tone, not as white on a light background or black on a dark one.
- */
+/** The base color for the dimmed title/artist placeholder `compositeOver` (spec-achromatic-ramp-luminance-cap, 2026-09-28): white on a dark-tone ramp, black on a light-tone one — the placeholder (`textDisabled` at 0.35 alpha) must read as a ghost of the tone, not as white on a light background or black on a dark one. */
 internal fun placeholderCompositeBase(effectiveIsDark: Boolean): Color =
     if (effectiveIsDark) Color.White else Color.Black
 

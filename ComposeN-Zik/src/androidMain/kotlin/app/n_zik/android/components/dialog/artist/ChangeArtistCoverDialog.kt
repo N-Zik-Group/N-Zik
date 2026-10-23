@@ -110,6 +110,7 @@ class ChangeArtistCoverDialog private constructor(
             val coroutineScope = rememberCoroutineScope()
             // Issue #606 review fix: cancel any still-in-flight save before starting a new one, so
             // two rapid picks can't complete out of order and have the slower one overwrite `value`
+
             // with a stale result.
             val saveCoverJob = remember { mutableStateOf<Job?>(null) }
             val launcher = rememberLauncherForActivityResult(

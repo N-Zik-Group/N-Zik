@@ -244,7 +244,9 @@ fun LastFmSettingsCard() {
                         modifier = Modifier.statusBarsPadding(),
                         // Skip PartiallyExpanded: its anchor is a fixed 50% of the window
                         // height, while the sheet window is not resized by the keyboard
+//
                         // (SOFT_INPUT_ADJUST_NOTHING on API 30+), so the fields stay hidden
+//
                         // behind it. The Expanded anchor is content-driven and follows the
                         // IME insets applied to the sheet content by CustomModalBottomSheet.
                         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -265,7 +267,9 @@ fun LastFmSettingsCard() {
                     ) {
                         // Cap the content at ~50% of the screen: ListMenu.Menu stretches to
                         // the full screen height on its own, which would make the Expanded
+//
                         // sheet cover the whole window. Bounded to half the screen, the
+//
                         // sheet keeps its current half-screen look at rest while the anchor
                         // stays content-driven (it grows with the keyboard).
                         val screenHeightDp = LocalConfiguration.current.screenHeightDp

@@ -14,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 
 // Dedup globals: last mediaId a fetch attempt was made for, per type. Written from the
 // DATA dispatcher by LyricsFetchWorker (issue #606); thread-safety is guaranteed by the
+//
 // structured per-song chain (one writer at a time, serialized by the Room flow).
 internal var globalLastKaraokeAttemptMediaId: String? = null
 internal var globalLastSyncedAttemptMediaId: String? = null

@@ -28,6 +28,7 @@ class VoiceSearchUtils(
 
     // The SpeechRecognizer is created inside startListening() on the main thread
     // (SpeechRecognizer.createSpeechRecognizer binds its callbacks to the caller's looper),
+//
     // so every RecognitionListener callback below already runs on Main — no Handler needed.
     private val recognitionListener = object : RecognitionListener {
         override fun onReadyForSpeech(params: Bundle?) {

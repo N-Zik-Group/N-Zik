@@ -10,10 +10,7 @@ import kotlinx.serialization.json.long
 import okio.ByteString.Companion.decodeBase64
 import okio.ByteString.Companion.toByteString
 
-/**
- * Parses the raw challenge data obtained from the Create endpoint and returns an object that can be
- * embedded in a JavaScript snippet.
- */
+/** Parses the raw challenge data obtained from the Create endpoint and returns an object that can be embedded in a JavaScript snippet. */
 fun parseChallengeData(rawChallengeData: String): String {
     val scrambled = Json.parseToJsonElement(rawChallengeData).jsonArray
 
@@ -60,20 +57,13 @@ fun parseChallengeData(rawChallengeData: String): String {
     )
 }
 
-/**
- * Parses the raw integrity token data obtained from the GenerateIT endpoint to a JavaScript
- * `Uint8Array` that can be embedded directly in JavaScript code, and a [Long] representing the
- * duration of this token in seconds.
- */
+/** Parses the raw integrity token data obtained from the GenerateIT endpoint to a JavaScript `Uint8Array` that can be embedded directly in JavaScript code, and a [Long] representing the duration of this token in seconds. */
 fun parseIntegrityTokenData(rawIntegrityTokenData: String): Pair<String, Long> {
     val integrityTokenData = Json.parseToJsonElement(rawIntegrityTokenData).jsonArray
     return base64ToU8(integrityTokenData[0].jsonPrimitive.content) to integrityTokenData[1].jsonPrimitive.long
 }
 
-/**
- * Converts a string (usually the identifier used as input to `obtainPoToken`) to a JavaScript
- * `Uint8Array` that can be embedded directly in JavaScript code.
- */
+/** Converts a string (usually the identifier used as input to `obtainPoToken`) to a JavaScript `Uint8Array` that can be embedded directly in JavaScript code. */
 fun stringToU8(identifier: String): String {
     return newUint8Array(identifier.toByteArray())
 }
@@ -103,10 +93,7 @@ private fun descramble(scrambledChallenge: String): String {
         .decodeToString()
 }
 
-/**
- * Decodes a base64 string encoded in the specific base64 representation used by YouTube, and
- * returns a JavaScript `Uint8Array` that can be embedded directly in JavaScript code.
- */
+/** Decodes a base64 string encoded in the specific base64 representation used by YouTube, and returns a JavaScript `Uint8Array` that can be embedded directly in JavaScript code. */
 private fun base64ToU8(base64: String): String {
     return newUint8Array(base64ToByteString(base64))
 }

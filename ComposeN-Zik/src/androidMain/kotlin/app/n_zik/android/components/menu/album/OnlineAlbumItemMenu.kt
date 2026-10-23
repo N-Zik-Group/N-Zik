@@ -476,6 +476,7 @@ class OnlineAlbumItemMenu private constructor(
             } else if (currentSongs.isNotEmpty()) {
                 // Launch on a scope independent of the popup menu's lifecycle: MenuComponent.kt hides the menu
                 // (cancelling its rememberCoroutineScope()) right after onShortClick() returns, so a scope owned
+//
                 // by the popup could cancel this coroutine before the add ever runs, silently dropping the tap.
                 NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                     val mediaItems = withContext(NzikDispatchers.DATA) { currentSongs.map { it.asMediaItem } }

@@ -47,6 +47,7 @@ class PoTokenWebView private constructor(
 
     // Guards the single-shot init continuation: initialization errors can arrive from several
     // paths (JS console "Uncaught", botguard request failure, renderer-gone) and a second resume
+//
     // on a plain Continuation throws IllegalStateException.
     private val initResumed = AtomicBoolean(false)
 
@@ -98,6 +99,7 @@ class PoTokenWebView private constructor(
                     if (initResumed.get()) {
                         // Post-init: our static HTML already executed fine, so an uncaught error
                         // here comes from Google's remotely-served botguard/minter JS — transient,
+//
                         // NOT a BadWebViewException, which would permanently disable poTokens for
                         // the session in PoTokenGenerator (same rationale as onRenderProcessGone).
                         Timber.tag(TAG).e("Uncaught JS error after init (treating as transient): $fmt")
@@ -161,10 +163,7 @@ class PoTokenWebView private constructor(
         }
     }
 
-    /**
-     * Called during initialization by the JavaScript snippet appended to the HTML page content in
-     * [loadHtmlAndObtainBotguard] after the WebView content has been loaded.
-     */
+    /** Called during initialization by the JavaScript snippet appended to the HTML page content in [loadHtmlAndObtainBotguard] after the WebView content has been loaded. */
     @JavascriptInterface
     fun downloadAndRunBotguard() {
         Timber.tag(TAG).d("downloadAndRunBotguard() called")
@@ -191,10 +190,7 @@ class PoTokenWebView private constructor(
         }
     }
 
-    /**
-     * Called during initialization by the JavaScript snippets from either
-     * [downloadAndRunBotguard] or [onRunBotguardResult].
-     */
+    /** Called during initialization by the JavaScript snippets from either [downloadAndRunBotguard] or [onRunBotguardResult]. */
     @JavascriptInterface
     fun onJsInitializationError(error: String) {
         if (BuildConfig.DEBUG) {
@@ -203,10 +199,7 @@ class PoTokenWebView private constructor(
         onInitializationErrorCloseAndCancel(buildExceptionForJsError(error))
     }
 
-    /**
-     * Called during initialization by the JavaScript snippet from [downloadAndRunBotguard] after
-     * obtaining the BotGuard execution output [botguardResponse].
-     */
+    /** Called during initialization by the JavaScript snippet from [downloadAndRunBotguard] after obtaining the BotGuard execution output [botguardResponse]. */
     @JavascriptInterface
     fun onRunBotguardResult(botguardResponse: String) {
         Timber.tag(TAG).d("botguardResponse: $botguardResponse")
@@ -275,6 +268,7 @@ class PoTokenWebView private constructor(
         }
         // Continuations are keyed by a per-call unique key, not the raw identifier: concurrent
         // calls for the same videoId (player + prefetch/download) would otherwise silently
+//
         // overwrite each other's continuation and orphan one caller into the timeout.
         val requestKey = "$identifier#${requestCounter.incrementAndGet()}"
         return try {
@@ -284,6 +278,7 @@ class PoTokenWebView private constructor(
         } catch (e: TimeoutCancellationException) {
             // A renderer that never answers is wedged/dead (safety net for providers where
             // onRenderProcessGone doesn't fire) — drop the pending continuation and fail fast;
+//
             // PoTokenGenerator's retry recreates the WebView from scratch.
             isDead = true
             popPoTokenContinuation(requestKey)
@@ -299,6 +294,7 @@ class PoTokenWebView private constructor(
                 addPoTokenEmitter(requestKey, cont)
                 // The IIFE keeps requestKey/u8Identifier lexically captured per call: bare globals
                 // here would let a concurrent call reassign them before this call's promise
+//
                 // resolves, delivering this token to the other call's continuation.
                 webView.evaluateJavascript(
                     """(function() {
@@ -320,10 +316,7 @@ class PoTokenWebView private constructor(
         }
     }
 
-    /**
-     * Called by the JavaScript snippet from [generatePoToken] when an error occurs in calling the
-     * JavaScript `obtainPoToken()` function.
-     */
+    /** Called by the JavaScript snippet from [generatePoToken] when an error occurs in calling the JavaScript `obtainPoToken()` function. */
     @JavascriptInterface
     fun onObtainPoTokenError(requestKey: String, error: String) {
         if (BuildConfig.DEBUG) {
@@ -331,15 +324,13 @@ class PoTokenWebView private constructor(
         }
         // Always transient here: the minter was already created successfully, so even a
         // "SyntaxError" comes from Google's challenge/program data, not a broken WebView engine —
+//
         // buildExceptionForJsError's BadWebViewException mapping would permanently disable
         // poTokens for the session in PoTokenGenerator.
         popPoTokenContinuation(requestKey)?.resumeWithException(PoTokenException(error))
     }
 
-    /**
-     * Called by the JavaScript snippet from [generatePoToken] with the per-call request key and the
-     * result of the JavaScript `obtainPoToken()` function.
-     */
+    /** Called by the JavaScript snippet from [generatePoToken] with the per-call request key and the result of the JavaScript `obtainPoToken()` function. */
     @JavascriptInterface
     fun onObtainPoTokenResult(requestKey: String, poTokenU8: String) {
         Timber.tag(TAG).d("Generated poToken (before decoding): requestKey=$requestKey poTokenU8=$poTokenU8")
@@ -424,6 +415,7 @@ class PoTokenWebView private constructor(
 
         // WebView methods must run on the thread that created the WebView (main), but some
         // callers arrive on the JavaBridge thread (onJsInitializationError) — post the teardown
+//
         // there instead of letting it throw and leak the instance.
         if (Looper.myLooper() == Looper.getMainLooper()) {
             destroyWebView()

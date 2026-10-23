@@ -57,6 +57,7 @@ fun Discover(
 
     // Listen Together guest lock (spec-listen-together-guest-lock-hardening): Discover is a
     // host-owned stateful ON/OFF control — a locked guest sees it grayed (disabled) and the
+//
     // toggle is blocked centrally in NZikRadio.toggleDiscover.
     private val guestLocked = rememberListenTogetherGuestLock()
     override val isEnabled: Boolean
@@ -75,6 +76,7 @@ class Repeat private constructor(
     private val typeState: MutableState<QueueLoopType>,
     // Listen Together guest lock (spec-listen-together-guest-lock-hardening): repeat is a
     // playback control — host-only in a room. Read at composition so the button state
+//
     // recomposes when the lock changes
     private val guestLocked: Boolean
 ): MenuIcon, Descriptive {

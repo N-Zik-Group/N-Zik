@@ -445,6 +445,7 @@ class PlayerServiceModern : MediaLibraryService(),
                 Timber.tag("PlayerServiceModern").d("Audio becoming noisy: pausing playback per user setting")
                 // Guarded facade: for a locked Listen Together guest the pause intent is
                 // registered, so the local pause survives the host's next PLAY heartbeat
+//
                 // (spec-listen-together-guest-lock-hardening). Hosts / out-of-room: passthrough.
                 guestGuardPlayer.pause()
             }
@@ -480,6 +481,7 @@ class PlayerServiceModern : MediaLibraryService(),
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             // Issue #881 (gh-881): a new track starts with no load errors — reset the
             // stall-report feed so a later report never carries the previous track's count
+//
             // (review gh-881).
             diagnosticRetryCount = 0
             Timber.tag(PLAYBACK_DIAG_TAG).d(
@@ -521,6 +523,7 @@ class PlayerServiceModern : MediaLibraryService(),
         stallWatchdogJob = null
         // Issue #881 (gh-881): a paused player cannot stall — drop the stall clock so a
         // post-resume report only measures the continuous stalling since the resume
+//
         // (review gh-881).
         stallWatchdog.reset()
     }
@@ -1014,6 +1017,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
             // Local DB history (gated by pauseListenHistoryKey; Listen Together items are
             // recorded only when the user enabled the LT history option — their metadata
+//
             // belongs to the host app, so only a browseId-only placeholder Song row is
             // written for the Event foreign key, no host metadata)
             val isListenTogether = ListenTogetherPlayerBridge.isListenTogetherItem(mediaItem)
@@ -1144,6 +1148,7 @@ class PlayerServiceModern : MediaLibraryService(),
             player.stop()
             // Release through the guarded facade so its commandListeners are cleared before the
             // raw player goes (review finding: the facade's release() was dead on teardown).
+//
             // The stop above stays on the raw player — internal teardown, and a fail-closed
             // guarded stop() would block a locked guest's service shutdown.
             guestGuardPlayer.release()
@@ -1197,6 +1202,7 @@ class PlayerServiceModern : MediaLibraryService(),
         when (key) {
             // Issue #866 (gh-866): the discover state lives in this preference — NZikRadio
             // .toggleDiscover (in-app buttons, AA, notification), the settings toggle, and the
+//
             // showReminderIfNeeded auto-correction all write it in-process, so one listener keeps
             // the discover command button icon (discover / discover_stop) in sync on every path.
             discoverKey -> updateDefaultNotification()
@@ -1288,6 +1294,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
         // S2 (Phase 1 download fix, 2026-10-21): a track may be marked downloaded in
         // the index while its files were wiped by the OS/OEM (see DownloadValidator) —
+//
         // [selfHealStaleDownloadEntry] re-checks the files at transition and removes
         // the stale index entry before the playback attempt; the transition still proceeds.
         mediaItem?.let { item ->
@@ -1308,14 +1315,19 @@ class PlayerServiceModern : MediaLibraryService(),
 
         // Immediately persist the full MediaItem metadata to the DB.
         // This seeds the Song row with real data (title, artist, thumbnail)
+//
         // before StreamResolver can insert a blank placeholder for FK satisfaction.
         // insertIgnore uses merge logic that preserves existing non-empty fields.
+//
         // Listen Together items are excluded: they carry the host app's (Metrolist)
         // metadata, which can differ from N-Zik's YouTube resolution (e.g. a literal
+//
         // "Titre" byline) — persisting it, and the YTM auto-fix that would follow,
         // would pollute the library with garbage Artist/Album rows. Their metadata
+//
         // reaches the library through StreamResolver.upsertSongInfo instead: the
         // track is checked against YouTube first, and only the verified data is
+//
         // upserted (the same flow as every regular stream).
         mediaItem?.takeUnless { ListenTogetherPlayerBridge.isListenTogetherItem(it) }?.let { item ->
             try {
@@ -1324,6 +1336,7 @@ class PlayerServiceModern : MediaLibraryService(),
                 coroutineScope.launch(NzikDispatchers.DATA) {
                     // Immediately persist the full MediaItem metadata to the DB.
                     // This seeds the Song row with real data (title, artist, thumbnail)
+//
                     // before StreamResolver can insert a blank placeholder for FK satisfaction.
                     Database.transaction {
                         insertIgnore(item)
@@ -1628,6 +1641,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
     // A3 (offline audit, 2026-10-22): stale-monitor hole — raw connection failure while the monitor
     // is stale-online; a fresh check decides. Remote media only (local I/O errors keep their path).
+//
     // P16 (2026-10-23): the remote-media check is passed in — the load-gate lambda runs on the
     // ExoPlayer playback thread, where reading the player (currentMediaItem) throws (main-thread-only).
     private fun isStaleMonitorOfflineFailure(exception: Throwable, isRemoteMedia: Boolean): Boolean =
@@ -1649,6 +1663,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
         // S5/S7 (offline gate, 2026-10-21/22): a DNS failure at any depth or the fast-fail
         // marker must wait for the network, not the retry path; the decision is logged.
+//
         // BEFORE the retry limit: an offline error must park + report, never be silently
         // skipped — the counter only increments after this gate (review P4, 2026-10-22).
         val dnsFailure = isDnsFailure(error)
@@ -2010,6 +2025,7 @@ class PlayerServiceModern : MediaLibraryService(),
                     if (!player.isPlaying && addedDevices.any(::canPlayMusic)) {
                         // Guarded facade: for a locked Listen Together guest the play intent is
                         // registered, so the manager resyncs them to the host position
+//
                         // (spec-listen-together-guest-lock-hardening). Hosts / out-of-room: passthrough.
                         guestGuardPlayer.play()
                     }
@@ -2133,6 +2149,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
                 // Issue #881 (gh-881): retry instrumented (spec S3) — exception class + truncated
                 // root-cause message (never the URL) reveal which link breaks; count growth
+//
                 // reveals the infinite-retry loop of the "never skip" policy.
                 Timber.tag(PLAYBACK_DIAG_TAG).w(
                     "LOAD_RETRY count=%d mediaId=%s exception=%s delayMs=%d",
@@ -2203,6 +2220,7 @@ class PlayerServiceModern : MediaLibraryService(),
     private fun buildCustomCommandButtons(): MutableList<CommandButton> {
         // Listen Together guest (AD-6): the notification shows only play/pause — the custom
         // buttons below (like/download/repeat/shuffle/…) are hidden; next/prev are hidden via the
+//
         // guarded available commands. Rebuilt on every lock change (guestLockObserverJob).
         if (listenTogetherGuestLock.value) return mutableListOf()
         val notificationPlayerFirstIcon = preferences.getEnum(notificationPlayerFirstIconKey, NotificationButtons.Download)
@@ -2260,8 +2278,10 @@ class PlayerServiceModern : MediaLibraryService(),
         coroutineScope.launch(NzikDispatchers.UI) {
             // Issue #866 (gh-866): published through setMediaButtonPreferences instead of the legacy
             // customLayout channel (setCustomLayout) — the channel Android Auto (17.x) consumes for its
+//
             // overflow buttons, and the one the media notification reads via MediaNotificationManager →
             // MediaController.getMediaButtonPreferences — so the state icons built by
+//
             // buildCustomCommandButtons now reach both (same channel as Kreate).
             mediaSession.setMediaButtonPreferences( buildCustomCommandButtons() )
         }
@@ -2290,6 +2310,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
     // Issue #866 (gh-866): discover command button (notification + AA overflow) — routed through
     // the central NZikRadio.toggleDiscover() so its guest-lock and radio/auto-fill precheck
+//
     // (error toast) apply exactly as in-app.
     fun toggleDiscover() {
         if (::nzikRadio.isInitialized) nzikRadio.toggleDiscover()
@@ -2403,6 +2424,7 @@ class PlayerServiceModern : MediaLibraryService(),
         Timber.tag("PlayerServiceModern").d("onPositionDiscontinuity oldPosition ${oldPosition.mediaItemIndex} newPosition ${newPosition.mediaItemIndex} reason $reason")
         // Issue #881 (gh-881): full discontinuity journal (spec S2) — positions in ms + the NAMED
         // reason (media3 1.10.1: SEEK=1, SEEK_ADJUSTMENT=2, … — the legacy line above prints the
+//
         // raw int and the index only, which reads misleadingly).
         Timber.tag(PLAYBACK_DIAG_TAG).d(
             "DISCONTINUITY old=%d@%d new=%d@%d reason=%s playerIdentity=%d",
@@ -2495,16 +2517,22 @@ class PlayerServiceModern : MediaLibraryService(),
 
         // prepare() moves the player out of IDLE, and media3 then shows the
         // media notification for a non-empty timeline regardless of
+//
         // playWhenReady — so with auto-resume off the restored queue must
         // NOT be prepared: the player stays IDLE (no notification, no
+//
         // pre-buffer/network), the queue stays visible (setMediaItems builds
         // the timeline). The first play recovers the IDLE state on every
+//
         // surface: session play commands (notification, Android Auto, widget,
         // media button) go through media3's
+//
         // MediaSessionImpl.handleMediaControllerPlayRequest ->
         // Util.handlePlayButtonAction, which prepares an IDLE player before
+//
         // play() (media3 1.10.1 sources, verified), and the in-app play path
         // (gracefulPlay) goes through AudioUtils.fadeInEffect's IDLE->prepare
+//
         // guard.
         val resumePlaybackOnStart = preferences.getBoolean(resumePlaybackOnStartKey, false)
 
@@ -2577,8 +2605,10 @@ class PlayerServiceModern : MediaLibraryService(),
             DefaultMediaNotificationProvider.NotificationIdProvider { session -> DefaultMediaNotificationProvider.DEFAULT_NOTIFICATION_ID },
             // The main player notification is built from the channel ID captured at construction
             // time (media3 1.10.x: createNotification() is final and uses the private channelId
+//
             // field, never getNotificationChannelInfo()): the channel of the active profile. The
             // player service is stopped and the process exits on every profile switch, so the
+//
             // construction-time profile is always the active one at emission.
             channelId(NotificationChannelId, getActiveProfile(context)),
             R.string.player,
@@ -2656,6 +2686,7 @@ class PlayerServiceModern : MediaLibraryService(),
                 }
                 // Full skip semantics on the facade (seek + prepare + restoreGlobalVolume +
                 // playWhenReady=true, as before the guard): unchanged for host/out-of-room users.
+//
                 // For a locked guest the blocked seek arms the guard's 50 ms tail window, so the
                 // pass-through tail (prepare/playWhenReady) is suppressed — clean no-op + toast.
                 Action.next.value -> player.playNext()
@@ -2841,8 +2872,10 @@ class PlayerServiceModern : MediaLibraryService(),
             val duration = preferences.getEnum( playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled )
             // The fade runs on the guarded facade, not the raw player: the fade uses only
             // play/pause/volume (AD-2 pass-through ops, so host behavior is unchanged), but the
+//
             // facade's pause() is the observation point for the guest's pause intent
             // (onGuestPlayPause → guestPlayPause(false) → guestLocalPause). On the raw player the
+//
             // flag was never set and the host's next PLAY resumed an in-app-paused guest
             // (spec-listen-together-guest-lock-hardening).
             this@PlayerServiceModern.guestGuardPlayer.fadeOutEffect( duration.asMillis )
@@ -2856,6 +2889,7 @@ class PlayerServiceModern : MediaLibraryService(),
             val duration = preferences.getEnum( playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled )
             // Same reason as [gracefulPause]: the facade's play() registers the guest's play
             // intent (onGuestPlayPause → guestPlayPause(true) → requestSync, resync to the host
+//
             // position). Raw player would resume from a stale local position without resync.
             this@PlayerServiceModern.guestGuardPlayer.fadeInEffect( duration.asMillis )
         }
@@ -2895,13 +2929,16 @@ class PlayerServiceModern : MediaLibraryService(),
         fun toggleShuffle() {
             // External command (notification / automotive).
             // Issue #866 (gh-866): shuffle the ACTUAL queue — same behavior as the in-app queue
+//
             // button (Shuffler.queue: current song first, rest shuffled). The previous
             // toggleShuffleMode() only flipped the player's internal shuffle mode, which has no
+//
             // visible effect on N-Zik's dynamic (auto-filled) queue. Routed through the guarded
             // facade so a Listen Together guest is no-oped + toasted (spine AD-1/AD-2).
             guestGuardPlayer.shuffleQueue()
             // Transient "shuffle registered" confirmation on the command buttons (Android Auto +
             // media notification only, see triggerShuffleOkFlash) — skipped for a blocked guest,
+//
             // whose operation was no-oped by the guarded facade.
             if (!listenTogetherGuestLock.value) triggerShuffleOkFlash()
             updateDefaultNotification()
@@ -2980,10 +3017,13 @@ class PlayerServiceModern : MediaLibraryService(),
         if (!crossfadeEnabled) return
         // Guest in a Listen Together room (spec-listen-together-guest-lock-hardening): the
         // host drives track transitions (CHANGE_TRACK), so a local crossfade — which starts
+//
         // `crossfadeDuration` (3 s) before the host's own transition — would be reconciled
         // back by the host's next PLAY heartbeat (old track) whenever that 8 s beat lands in
+//
         // the fade window: the fade is audibly cancelled (the old track briefly doubled)
         // before the guest follows the host on the new track. Skip it for a locked guest:
+//
         // the transition becomes the deterministic auto-advance + host CHANGE_TRACK path.
         // Hosts and out-of-room playback keep crossfade unchanged.
         if (listenTogetherGuestLock.value) return
@@ -3015,6 +3055,7 @@ class PlayerServiceModern : MediaLibraryService(),
                 delay(delayUntilPreload)
                 // Re-check the guest lock: a job armed before the lock turned on (a guest joining
                 // a room mid-armed) must not fire the fade — the host drives transitions for a
+//
                 // locked guest (spec-listen-together-guest-lock-hardening).
                 if (isActive && !listenTogetherGuestLock.value && player.isPlaying && player.currentMediaItem?.mediaId == targetMediaId) {
                     preloadCrossfade(triggerTime)
@@ -3099,10 +3140,13 @@ class PlayerServiceModern : MediaLibraryService(),
     private fun createGuestGuardPlayer(targetPlayer: Player): ListenTogetherGuestGuardPlayer {
         // Issue #881 (Phase 3, Fix B): coalesce rapid absolute seeks while the player is still
         // recovering from the previous one — one full data-source re-open + buffer refill per
+//
         // seek kept the progress bar frozen in a user↔player feedback loop (field logs
         // 2026-10-03). The guard stays outermost so the guest lock vetoes seeks before they
+//
         // reach the coalescer; the coalescer wraps the diagnostics facade so SEEK_CALL still
         // sees every seek that actually lands on the player.
+//
         // Review patch: keep the coalescer reachable so the crossfade swap can detach the
         // OLD wrapper before this facade is rebuilt over a new player.
         val coalescer = SeekCoalescingPlayer(targetPlayer)
@@ -3110,6 +3154,7 @@ class PlayerServiceModern : MediaLibraryService(),
         val guard = ListenTogetherGuestGuardPlayer(coalescer, applicationContext)
         // Guest play/pause intent (only the guest's own taps reach the guarded facade): play
         // resyncs the guest to the host's position, pause is kept across host skips
+//
         // (spec-listen-together-guest-lock-hardening).
         guard.onGuestPlayPause = { playWhenReady ->
             ListenTogetherManager.getInstance()?.guestPlayPause(playWhenReady)
@@ -3201,6 +3246,7 @@ class PlayerServiceModern : MediaLibraryService(),
         try {
             // Issue #881 (gh-881), Phase 3 Fix B (review patch): detach the OLD coalescer before
             // rebuilding the facade — its settle job (≤ 1 s) could otherwise fire against the
+//
             // fading player, which cleanupCrossfade() releases later bypassing the wrapper chain.
             currentSeekCoalescer?.detach()
             guestGuardPlayer = createGuestGuardPlayer(player)
@@ -3211,6 +3257,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
         // Issue #881 (gh-881): instance identity across the crossfade swap (spec S6) — a mismatch
         // between the facade/UI trigger and the raw player would prove the UI kept driving an
+//
         // old instance (the "UI attached to the old player" hypothesis).
         Timber.tag(PLAYBACK_DIAG_TAG).i(
             "CROSSFADE_SWAP oldPlayerIdentity=%s newPlayerIdentity=%s facadeIdentity=%s trigger=%d",

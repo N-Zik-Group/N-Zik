@@ -186,6 +186,7 @@ class PlayerItemMenu private constructor(
         if (song.isLocal) {
             // Local songs: 0=info, 1=waves, 2=editMetadata, 3=equalizer, 4=sleep, 5=fav, 6=playlist, 7+=delete/export
             // Decision 6 (spec pc-ui-parity-audit-fixes): editMetadata (index 2) exists only with FFmpeg —
+//
             // without it the playback buttons start at index 2 (see localPlayerPlaybackStart)
             val playbackStart = localPlayerPlaybackStart(BuildConfig.ENABLE_FFMPEG)
             if (BuildConfig.ENABLE_FFMPEG) {
@@ -467,6 +468,7 @@ class PlayerItemMenu private constructor(
                 override fun onShortClick() {
                     // Guest lock (spec-listen-together-guest-lock-hardening): the sleep timer
                     // auto-stops the app — a session-level control, grayed + blocked for a
+//
                     // locked guest with the shared throttled toast.
                     if (listenTogetherGuestLock.value) {
                         ListenTogetherGuestGuardPlayer.reportUiBlockedOp(appContext())
@@ -626,6 +628,7 @@ class PlayerItemMenu private constructor(
 
         // Listen Together room dialog (Metrolist PlayerMenu dialog port): opens the
         // create/join/manage room popup through the shared menu state. Shown for every
+//
         // song regardless of room state or role — it is the menu entry point to a room.
         listenTogetherDialogBtn = remember {
             object : MenuIcon, Descriptive, Clickable {

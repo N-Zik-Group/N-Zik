@@ -119,6 +119,7 @@ fun MaintenanceSettingsCard(
 
     // The debug-log switch moved from the (removed) legacy Debug card into this card —
     // it is the single source of truth for the switch; the Export entry below it stays
+//
     // always visible (the dialog greys out the debug-dependent options when it is off)
     var logDebugEnabled by rememberPreference(logDebugEnabledKey, false)
 
@@ -197,6 +198,7 @@ fun MaintenanceSettingsCard(
             )
             // DEBUG category: the switch (moved here from the removed legacy Debug card)
             // + the restart note + the ALWAYS-visible export entry (the dialog greys out
+//
             // the debug-dependent options while the switch is off)
             CardCategoryLabel(stringResource(R.string.debug))
             OtherSwitchSettingEntry(
@@ -208,6 +210,7 @@ fun MaintenanceSettingsCard(
                     if (!it) {
                         // Only the debug log is purged — the crash log is captured
                         // independently of this switch (always installed at startup)
+//
                         // and wipes itself after two clean boots (CrashLogAutoWipe)
                         purgeDebugLogs(context.filesDir.resolve("logs"))
                     } else {
@@ -225,6 +228,7 @@ fun MaintenanceSettingsCard(
             )
             // The same sheet as the burger item (composed here so the card is self-contained).
             // renderLogsDialog = false: the single CopyLogsDialog.Render() host lives in
+//
             // the persistent header, and Render() is a singleton — a second Render() from
             // this sheet would stack a second dialog on top of the first.
             MaintenanceSheet(

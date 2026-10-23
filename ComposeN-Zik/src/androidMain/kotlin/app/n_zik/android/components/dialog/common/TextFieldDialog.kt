@@ -37,10 +37,7 @@ import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
 import kotlinx.coroutines.delay
 
-/**
- * Single-line text input dialog on the shared [DefaultDialog]:
- * a hint-overlaid [BasicTextField] and a cancel / done [ButtonRow].
- */
+/** Single-line text input dialog on the shared [DefaultDialog]: a hint-overlaid [BasicTextField] and a cancel / done [ButtonRow]. */
 @Composable
 fun TextFieldDialog(
     hintText: String,

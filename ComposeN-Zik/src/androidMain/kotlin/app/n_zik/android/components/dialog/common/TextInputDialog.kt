@@ -34,10 +34,7 @@ abstract class TextInputDialog(
 
     private val constraintRegex: Regex = Regex( constraint )
 
-    /**
-     * Whether the [value] is allow to be empty
-     * when [onSet] is called.
-     */
+    /** Whether the [value] is allow to be empty when [onSet] is called. */
     open val allowEmpty: Boolean = false
 
     /**

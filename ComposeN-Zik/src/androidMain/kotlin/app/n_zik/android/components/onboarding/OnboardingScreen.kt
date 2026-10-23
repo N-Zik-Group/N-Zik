@@ -75,8 +75,10 @@ fun OnboardingScreen(
     var refreshTrigger by remember { mutableStateOf(0) }
     // System dialogs the user has already seen, so a denial without a remaining
     // rationale maps to PERMANENTLY_DENIED (feed for [permissionStatus]).
+//
     // Persisted (comma-joined names) so the mapping survives activity recreation —
     // a rotation right after a denial must keep the "Settings" path, not degrade
+//
     // to a re-askable "Grant".
     var requestedPermissions by remember {
         mutableStateOf(

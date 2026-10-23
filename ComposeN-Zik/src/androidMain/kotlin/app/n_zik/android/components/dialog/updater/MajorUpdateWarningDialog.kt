@@ -24,10 +24,7 @@ import app.it.fast4x.rimusic.utils.bold
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.BuildConfig
 
-/**
- * Major update warning, on the shared [DialogFrame]:
- * alert header, message and a single confirm [ButtonRow] pill.
- */
+/** Major update warning, on the shared [DialogFrame]: alert header, message and a single confirm [ButtonRow] pill. */
 object MajorUpdateWarningDialog {
     var isActive: Boolean by mutableStateOf(false)
 

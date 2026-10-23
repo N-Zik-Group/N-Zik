@@ -21,11 +21,7 @@ import app.it.fast4x.rimusic.utils.bold
 import app.it.fast4x.rimusic.utils.isLandscape
 import app.it.fast4x.rimusic.utils.semiBold
 
-/**
- * Indeterminate / determinate progress dialog on the shared
- * [DefaultDialog]; when [onDismiss] is provided a cancel [ButtonRow]
- * pill is shown.
- */
+/** Indeterminate / determinate progress dialog on the shared [DefaultDialog]; when [onDismiss] is provided a cancel [ButtonRow] pill is shown. */
 @Composable
 fun InProgressDialog(
     total: Int,

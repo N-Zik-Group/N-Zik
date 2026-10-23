@@ -183,8 +183,9 @@ class UpdateSongDialog private constructor(
         val selection = readSelection()
 
         // Nothing ticked: nothing to fetch, write or announce (« Aucune case
-        // cochée » of the spec I/O matrix) - closing without a toast is the
-        // only honest feedback for a no-op.
+        // cochée » of the spec I/O matrix) -
+        //
+        // closing without a toast is the only honest feedback for a no-op.
         if( !selection.isAnySelected ) {
             Timber.tag("Database").d( "update skipped: no box ticked" )
             hideDialog()
@@ -193,8 +194,9 @@ class UpdateSongDialog private constructor(
 
         if( targets != null ) {
             // Batch flavor: local songs carry no YTM id and are skipped, so
-            // compute the remote targets here - with nothing to update the
-            // dialog just closes (no progress mode, no toast).
+            // compute the remote targets here -
+            //
+            // with nothing to update the dialog just closes (no progress mode, no toast).
             val remote = remoteTargets( targets() )
             if( remote.isEmpty() ) {
                 hideDialog()
@@ -218,8 +220,9 @@ class UpdateSongDialog private constructor(
                     Timber.tag("Database").e( e, "update batch failed" )
                 }
                 // Close on the UI thread: the Compose state write must not
-                // happen from the DATA dispatcher (the cancel path already
-                // closed it - the processed songs stay written, no toast).
+                // happen from the DATA dispatcher
+                //
+                // (the cancel path already closed it - the processed songs stay written, no toast).
                 if( coroutineContext[ Job ]?.isActive != false ) {
                     withContext( NzikDispatchers.UI ) {
                         batchProgress = null
@@ -280,10 +283,7 @@ class UpdateSongDialog private constructor(
     }
 }
 
-/**
- * The ticked checkboxes of [UpdateSongDialog], decoupled from the Compose item
- * list so the update logic stays testable without composition.
- */
+/** The ticked checkboxes of [UpdateSongDialog], decoupled from the Compose item list so the update logic stays testable without composition. */
 internal data class SongUpdateSelection(
     val title: Boolean = false,
     val authors: Boolean = false,
@@ -330,8 +330,9 @@ internal fun applySongUpdate(
         updated = updated.copy( totalPlayTimeMs = 0L )
     }
     // Song.copy() only carries constructor parameters: the body property
-    // playCount would silently reset to 0 on every update. Restore the stored
-    // value - the dialog never touches the per-song play count.
+    // playCount would silently reset to 0 on every update. Restore the
+    //
+    // stored value - the dialog never touches the per-song play count.
     if( updated !== storedRow ) {
         updated.playCount = storedRow.playCount
     }
@@ -364,12 +365,7 @@ internal fun mergeFetchedArtistsText(
     return PropUtils.retainIfModified( storedArtistsText, fetchedArtistsText ) ?: storedArtistsText
 }
 
-/**
- * Decision gate for the artist-link reconcile of [UpdateSongDialog]: run only
- * when the authors checkbox is ticked, the fresh author list is complete per
- * [ArtistMappingReconcile.isCompleteAuthorList], and the stored artistsText is
- * not `modified:` (the custom value is authoritative - its links are left alone).
- */
+/** Decision gate for the artist-link reconcile of [UpdateSongDialog]: run only when the authors checkbox is ticked, the fresh author list is complete per [ArtistMappingReconcile.isCompleteAuthorList], and the stored artistsText is not `modified:` (the custom value is authoritative - its links are left alone). */
 internal fun shouldReconcileAuthors(
     authorsChecked: Boolean,
     storedArtistsText: String?,
@@ -414,8 +410,9 @@ internal suspend fun runSongUpdateCore(
     }
 
     // Channel-anchored resolution of the fresh author list (mirrors the upsert
-    // phase 1): one entry = one artist, an existing channel row keeps its stored
-    // name, an entry without a browseId resolves by name.
+    // phase 1): one entry = one artist, an existing channel row keeps
+    //
+    // its stored name, an entry without a browseId resolves by name.
     val parsedEntries = if( selection.authors && fetchedItem != null ) {
         ArtistMappingReconcile.parseAuthorEntries( fetchedItem.authors )
     } else {
@@ -465,11 +462,13 @@ internal suspend fun runSongUpdateCore(
 
         // Only a successful fetch refreshed this song's metadata: reset the
         // 30-day fetch TTLs of its artist pages, album pages and lyrics so
-        // the next playback re-fetches them with the fresh data (lastFetch →
-        // NULL = TTL expired for the StreamResolver / lyrics decision
-        // makers). A skipped (playtime/cache-only) or failed fetch must NOT
-        // invalidate the TTLs: nothing was re-fetched, so the cached pages
-        // are still as fresh as before.
+        //
+        // the next playback re-fetches them with the fresh data (lastFetch → NULL
+        // = TTL expired for the StreamResolver / lyrics decision makers).
+        //
+        // A skipped (playtime/cache-only) or failed fetch must NOT invalidate the TTLs:
+        //
+        // nothing was re-fetched, so the cached pages are still as fresh as before.
         if( fetchedItem != null ) {
             val ttlArtistIds = songArtistMapTable.findArtistsOfDirect( entry.id ).map { it.id }
             ttlArtistIds.forEach { artistTable.resetFetchTtl( it ) }
@@ -487,10 +486,7 @@ internal suspend fun runSongUpdateCore(
     }
 }
 
-/**
- * The single song « Update » action (player menu + song menu):
- * [runSongUpdateCore] followed by its own done toast.
- */
+/** The single song « Update » action (player menu + song menu): [runSongUpdateCore] followed by its own done toast. */
 internal suspend fun runSongUpdate(
     binder: PlayerServiceModern.Binder?,
     entry: Song,
@@ -539,6 +535,7 @@ internal suspend fun runSongUpdateBatch(
     songsToUpdate.forEachIndexed { index, entry ->
         // Cooperative cancel: the progress dialog's cancel button stops the
         // batch between songs (a cancel landing mid-song propagates
+        //
         // CancellationException to the caller instead).
         if( coroutineContext[ Job ]?.isActive == false ) {
             Timber.tag("Database").d( "update batch cancelled processed=%d of %d", index, songsToUpdate.size )

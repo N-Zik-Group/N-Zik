@@ -184,6 +184,7 @@ fun NextVisualizer() {
                         if (coverColors != null) {
                             // OQ2=B (spec `spec-fix-palette-extractor-riplay-reference`): the "cover"
                             // color renders the dominant swatch, the same hue the app's dynamic
+//
                             // accent is built from (RiPlay reference).
                             dominantColor = m3eCoverForegroundArgb(coverColors.dominant, !isDarkTheme)
                         } else {

@@ -13,11 +13,7 @@ object DiscordTemplateRenderer {
 
     private const val TAG = "DiscordPresence"
 
-    /**
-     * Renders the template with the given values; `unknownAlbum` is the localized
-     * fallback for `{album.name}` when the album is unknown (from strings.xml —
-     * no hardcoded user-facing text); `version` feeds the `{app.version}` placeholder.
-     */
+    /** Renders the template with the given values; `unknownAlbum` is the localized fallback for `{album.name}` when the album is unknown (from strings.xml — no hardcoded user-facing text); `version` feeds the `{app.version}` placeholder. */
     fun render(
         template: String,
         title: String,

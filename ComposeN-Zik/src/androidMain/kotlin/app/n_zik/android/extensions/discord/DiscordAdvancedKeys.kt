@@ -66,11 +66,7 @@ val discordAdvancedSettingKeys: Set<String> = setOf(
     discordAdvancedRefreshIntervalMsKey,
 )
 
-/**
- * User status carried by every presence update: fixed to "online" (PW-2 — the
- * user-status selector was removed; Discord manages idle itself, `since = 0` is
- * always carried so the "online since" timestamp is never reset by us).
- */
+/** User status carried by every presence update: fixed to "online" (PW-2 — the user-status selector was removed; Discord manages idle itself, `since = 0` is always carried so the "online since" timestamp is never reset by us). */
 const val DISCORD_STATUS_ONLINE = "online"
 
 /**
@@ -127,10 +123,7 @@ data class DiscordAdvancedSettings(
         /** Hard upper bound of the refresh interval (ms) — the UI slider maximum. */
         const val MAX_REFRESH_INTERVAL_MS = 60_000L
 
-        /**
-         * Defaults: mode off, listening, pause presence on, empty templates, both buttons
-         * on, every presence section shown, 5 s refresh tick.
-         */
+        /** Defaults: mode off, listening, pause presence on, empty templates, both buttons on, every presence section shown, 5 s refresh tick. */
         val DEFAULTS = DiscordAdvancedSettings(
             advancedMode = false,
             activityType = 2,

@@ -164,6 +164,7 @@ fun RescueScreen() {
 
     // Target profile for the data actions — the selector below the section header
     // lets the rescue operate a profile other than the active one (its database is
+//
     // not open, so writing its files directly is safe). In-memory only: the app's
     // active profile is never switched from here.
     var targetProfile by remember { mutableStateOf(getActiveProfile(context)) }
@@ -171,7 +172,9 @@ fun RescueScreen() {
 
     // The rescue TARGET's per-profile secure prefs — never the active profile's:
     // per-profile settings actions operate on the selected profile, whose
+//
     // credentials live in its own encrypted store. Opened lazily, off the main
+//
     // thread, only when an action awaits it (keystore work must not run in
     // composition; database/log actions never need it).
     val encryptedPrefs = remember(scope, targetProfile) {
@@ -252,12 +255,7 @@ fun RescueScreen() {
         fileStateVersion++
     }
 
-    /**
-     * The base row of the reset/restore selection dialogs: the base is in
-     * [profileOptions] only while active (the names file never lists it), so when it
-     * is not active it is built from its stored display name (falling back to the
-     * app default name).
-     */
+    /** The base row of the reset/restore selection dialogs: the base is in [profileOptions] only while active (the names file never lists it), so when it is not active it is built from its stored display name (falling back to the app default name). */
     fun baseProfileOption(): ProfileOption =
         profileOptions.firstOrNull { it.id == DEFAULT_PROFILE_ID } ?: ProfileOption(
             id = DEFAULT_PROFILE_ID,
@@ -282,12 +280,16 @@ fun RescueScreen() {
 
     // Status of the main process, watched by the process guard (guardWrite). Poll every
     // second while it is alive: the kill request sent when the screen opened usually lands
+//
     // within a few seconds, so the status moves on its own. Liveness comes from
     // RescueProcess.isMainProcessLikelyAlive (below 31 the process probe is trustworthy;
+//
     // from 31 on the marker refreshed by the main process decides). When the process is
     // observed dead the pending kill is discarded — a stale flag would make the next
+//
     // healthy launch end itself at startup. From 31 on, the flag consumed by the kill
     // receiver also turns the status to "stopped" while the marker is still fresh.
+//
     // A new kill request restarts the polling via killRequestGeneration.
     var mainProcessRunning by remember { mutableStateOf<Boolean?>(null) }
     var killRequestGeneration by remember { mutableIntStateOf(0) }
@@ -302,6 +304,7 @@ fun RescueScreen() {
                 likelyAlive -> {
                     // From 31 on the marker alone is not enough: the kill may have landed
                     // already — the flag is gone once the kill receiver consumed it, while the
+//
                     // marker is still fresh for up to 15 s. Unknown flag state → still pending.
                     val killPending =
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -322,6 +325,7 @@ fun RescueScreen() {
                 else -> {
                     // The main process is observed dead: discard the pending kill request so it
                     // never leaks into the next launch and makes a healthy app end itself at
+//
                     // startup (below 31 the trustworthy probe says dead; from 31 on the stale
                     // marker does — covering a process that died without consuming the flag).
                     runCatching {
@@ -371,6 +375,7 @@ fun RescueScreen() {
         if (exitPending) return
         // Likely-alive, not raw probe: from 31 on the probe is restricted to the calling
         // process and would always say "not running", letting a live main process through. The
+//
         // DB-busy guard (checkpointWal) stays the last resort when the marker misleads.
         if (RescueProcess.isMainProcessLikelyAlive(context)) {
             Toasty.warning(context, context.getString(R.string.rescue_main_process_running), Toast.LENGTH_LONG, true).show()
@@ -569,6 +574,7 @@ fun RescueScreen() {
 
     // Delete profiles selection: every user profile as a checkbox row (the base is
     // never listed — it is reset by its own action, never deleted). The confirm button
+//
     // is disabled until a profile is checked; the actual deletion is confirmed by the
     // standard confirmation dialog (same pattern as the other destructive actions).
     if (deleteProfilesDialog) {
@@ -580,6 +586,7 @@ fun RescueScreen() {
             val palette = colorPalette()
             // The frame body is non-scrollable and capped at 80 % of the screen
             // height (canon): the profile rows scroll inside this column so the
+//
             // cancel / OK pills stay reachable with many profiles.
             Column(
                 modifier = Modifier
@@ -648,6 +655,7 @@ fun RescueScreen() {
                                         )
                                         // Deleting the CURRENT profile switches the active slot
                                         // to the base: the app must be relaunched to pick the
+//
                                         // change up (the base itself can never be deleted).
                                         if (result.isSuccess && activeId in selected &&
                                             activeId != DEFAULT_PROFILE_ID
@@ -672,6 +680,7 @@ fun RescueScreen() {
     if (resetProfilesDialog) {
         // The base is offered like any other profile (first row, badged): the unified
         // reset covers it too, and the result message already asks for the relaunch
+//
         // it requires.
         val resettableProfiles = listOf(baseProfileOption()) +
             profileOptions.filter { it.id != DEFAULT_PROFILE_ID }
@@ -682,6 +691,7 @@ fun RescueScreen() {
             val palette = colorPalette()
             // The frame body is non-scrollable and capped at 80 % of the screen
             // height (canon): the profile rows scroll inside this column so the
+//
             // cancel / OK pills stay reachable with many profiles.
             Column(
                 modifier = Modifier
@@ -781,6 +791,7 @@ fun RescueScreen() {
             val palette = colorPalette()
             // The frame body is non-scrollable and capped at 80 % of the screen
             // height (canon): the profile rows scroll inside this column so the
+//
             // cancel / OK pills stay reachable with many profiles.
             Column(
                 modifier = Modifier
@@ -869,15 +880,18 @@ fun RescueScreen() {
         containerColor = MaterialTheme.colorScheme.background,
         // Like the app's screens: the scaffold background stretches behind the transparent
         // system bars (full height, no band under the nav buttons) and the content scrolls
+//
         // behind them — the header owns its status-bar padding.
         contentWindowInsets = WindowInsets(0.dp)
     ) { paddingValues ->
         // Fake bottom padding: the room the nav buttons take, appended INSIDE the scroll so
         // the last card can settle above the transparent buttons instead of ending hidden
+//
         // behind them (0 on devices with a side nav bar).
         val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
         // The 16dp margin goes INSIDE the scroll: applied before verticalScroll it shrinks the
         // viewport itself, so the scrolling content is clipped 16dp above the screen bottom
+//
         // instead of running behind the transparent nav buttons.
         Column(
             modifier = Modifier
@@ -1160,8 +1174,10 @@ fun RescueScreen() {
                                         if (result.isSuccess) {
                                             // The XML files were swapped behind this process's in-memory
                                             // SharedPreferences: a later commit() would write the stale map
+//
                                             // back over them. End the :rescue process so nothing does. Armed
                                             // on the main looper, not in the composition scope: leaving the
+//
                                             // screen or recreating the activity cannot cancel it.
                                             exitPending = true
                                             NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
@@ -1198,6 +1214,7 @@ fun RescueScreen() {
                 ) {
                 // Profiles — the profile state of the whole app (the list + every face) and
             // the multi-select operations on the user profiles (the selection is made in
+//
             // the dialog, not in the per-profile target subcategory)
             RescueSectionCard(
                 title = stringResource(R.string.rescue_group_profiles),
@@ -1233,6 +1250,7 @@ fun RescueScreen() {
 
                     // Delete profiles: every user profile is offered as a checkbox in the
                     // selection dialog (the base is never listed — it is reset by its own
+//
                     // action, never deleted). The active profile is NOT skipped: deleting it
                     // switches the active slot to the base, and the app must be relaunched.
                     RescueActionCard(
@@ -1251,8 +1269,10 @@ fun RescueScreen() {
 
                     // Reset profiles: every profile is offered as a checkbox in the selection
                     // dialog (the base included — first row, badged). Unlike deletion, the
+//
                     // profiles are kept in the list: they are simply factory-reset (database,
                     // settings, name and photo deleted), so the active slot is untouched and
+//
                     // the app must be relaunched — the result message says so.
                     RescueActionCard(
                         iconRes = R.drawable.person,
@@ -1268,6 +1288,7 @@ fun RescueScreen() {
 
                     // Restore profiles: brings back the profiles reset earlier — their
                     // last reset backup (database, settings, credentials, face and name),
+//
                     // the base included. The selection dialog offers only the profiles
                     // that carry a backup.
                     RescueActionCard(
@@ -1404,6 +1425,7 @@ fun RescueScreen() {
 
             // Kill the app: re-sends the kill request when the automatic one (sent when this
             // screen opened) failed. Gated on the process still being alive: a stale flag
+//
             // sent to a dead process would be consumed as a self-kill on the next launch.
             // Not gated by guardWrite: its purpose is to release the guard; it writes nothing.
                     RescueActionCard(
@@ -1444,12 +1466,7 @@ private enum class RescueCategory {
     PER_PROFILE
 }
 
-/**
- * Category block transitions: the incoming category expands + fades in (same motion as
- * the settings cards' entry transitions), and the outgoing one is removed instantly —
- * an animated exit would keep both categories on screen at the same time (the old one
- * collapsing below the new one), which reads as overlapping cards.
- */
+/** Category block transitions: the incoming category expands + fades in (same motion as the settings cards' entry transitions), and the outgoing one is removed instantly — an animated exit would keep both categories on screen at the same time (the old one collapsing below the new one), which reads as overlapping cards. */
 private val rescueCategoryEnter: EnterTransition =
     expandVertically(animationSpec = tween(400)) + fadeIn(animationSpec = tween(400))
 private val rescueCategoryExit: ExitTransition =
@@ -1682,11 +1699,7 @@ fun RescueHeader(title: String) {
     }
 }
 
-/**
- * Confirmation dialog of the rescue center: a thin alias of the canonical
- * [ConfirmationDialog] (the `:rescue` process renders the shared [DialogFrame]
- * frame, so the rescue dialogs stay visually in line with the app).
- */
+/** Confirmation dialog of the rescue center: a thin alias of the canonical [ConfirmationDialog] (the `:rescue` process renders the shared [DialogFrame] frame, so the rescue dialogs stay visually in line with the app). */
 @Composable
 fun RescueConfirmationDialog(
     text: String,

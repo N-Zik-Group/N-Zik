@@ -75,11 +75,7 @@ object DiscordActivityBuilder {
     const val DEFAULT_BUTTON1_URL = URL_N_ZIK_GITHUB
     const val DEFAULT_BUTTON2_URL = "$URL_YOUTUBE_WATCH{song.id}"
 
-    /**
-     * Default logo (small image) text template — the manager resolves it live to
-     * "v<app version>" (`v${str.appVersion}`); this const is its template form for the
-     * settings UI (entry fallback + preview tooltip).
-     */
+    /** Default logo (small image) text template — the manager resolves it live to "v<app version>" (`v${str.appVersion}`); this const is its template form for the settings UI (entry fallback + preview tooltip). */
     const val DEFAULT_LOGO_TEXT_TEMPLATE = "v{app.version}"
 
     /**
@@ -148,11 +144,7 @@ object DiscordActivityBuilder {
         )
     }
 
-    /**
-     * Fallback preview content for the idle state (2026-09-21 UI fix): the template
-     * variables as-is — the current customization without any rendered media — so the
-     * settings preview shows what the configured presence looks like at a glance.
-     */
+    /** Fallback preview content for the idle state (2026-09-21 UI fix): the template variables as-is — the current customization without any rendered media — so the settings preview shows what the configured presence looks like at a glance. */
     fun buildIdlePreview(s: DiscordAdvancedSettings, str: DiscordStrings): DiscordPresenceContent {
         return DiscordPresenceContent(
             name = s.activityName.ifBlank { str.nameFallback },
@@ -175,11 +167,7 @@ object DiscordActivityBuilder {
         else -> normalButtons(DiscordMediaInfo("", "", null, ""), str)
     }
 
-    /**
-     * Fork divergence (documented in the spec Implementation Notes): upstream falls back
-     * to the artist name for an empty advanced activity name; NZik keeps its fixed
-     * identity ("N-Zik") instead.
-     */
+    /** Fork divergence (documented in the spec Implementation Notes): upstream falls back to the artist name for an empty advanced activity name; NZik keeps its fixed identity ("N-Zik") instead. */
     private fun renderedName(activityName: String, info: DiscordMediaInfo, str: DiscordStrings): String =
         if (activityName.isBlank()) str.nameFallback else render(activityName, info, str)
 

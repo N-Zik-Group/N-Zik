@@ -49,6 +49,7 @@ internal class RewindPostImportRegenerationWorker(
         if (Database.isClosed) {
             // The import closes the database before the app restarts with the imported
             // file: a live run would hit the dead Room singleton. The work is persisted,
+//
             // so retrying lets it survive the restart and run once the database is open
             // again (deviation from the frozen spec, noted in the implementation report).
             Timber.tag(TAG).i("Database is closed after the import: retrying so the run survives the restart")

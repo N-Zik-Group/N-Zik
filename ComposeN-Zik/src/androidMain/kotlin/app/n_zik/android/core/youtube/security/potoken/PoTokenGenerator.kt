@@ -37,6 +37,7 @@ class PoTokenGenerator {
         } catch (e: TimeoutCancellationException) {
             // The WebView's sandboxed process can be culled by the OS (storage pressure, low
             // memory, etc.) which leaves the PoToken WebView call hung indefinitely. Cap it so
+//
             // playerResponseForPlayback can fall through to non-PoToken fallback clients (e.g.
             // ANDROID_VR) instead of blocking the entire playback path.
             Timber.tag(TAG).w("poToken generation timed out after ${POTOKEN_TIMEOUT_MS}ms; proceeding without PoToken")
@@ -84,6 +85,7 @@ class PoTokenGenerator {
     private companion object {
         // Healthy cold-start (WebView spin-up + botguard JS + token gen) is ~2-5s in practice;
         // 8s leaves slack for a slow device without making the user wait too long before the
+//
         // fallback chain (ANDROID_VR, etc.) takes over when the WebView hangs.
         const val POTOKEN_TIMEOUT_MS = 8_000L
     }
@@ -146,6 +148,7 @@ class PoTokenGenerator {
             } else {
                 // retry, this time recreating the [webPoTokenGenerator] from scratch;
                 // this might happen for example if the app goes in the background and the WebView
+//
                 // content is lost
                 Timber.tag(TAG).e(throwable, "Failed to obtain poToken, retrying")
                 return getWebClientPoToken(videoId = videoId, sessionId = sessionId, forceRecreate = true)

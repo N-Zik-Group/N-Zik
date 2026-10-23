@@ -87,9 +87,12 @@ object ListMenu {
                         if (headerTrailing != null) {
                             // Trailing action next to the title (e.g. refresh): an invisible
                             // (alpha(0f), semantics-cleared) mirror of the action on the left
+//
                             // balances its exact width, so the title is truly centered on the
+//
                             // screen (equal spacers alone would center it in the space left of
                             // the action). The trailing composable is composed twice — safe: it
+//
                             // is side-effect free (an IconButton). Without a trailing, the else
                             // branch renders the original block — pixel-identical for every menu.
                             Row(

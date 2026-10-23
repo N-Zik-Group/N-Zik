@@ -36,11 +36,7 @@ import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.uiRoundnessShape
 
-/**
- * Editable string list dialog on the shared [DialogFrame]:
- * a header with the "add" action, a scrollable list (trash icon per item)
- * and a cancel [ButtonRow].
- */
+/** Editable string list dialog on the shared [DialogFrame]: a header with the "add" action, a scrollable list (trash icon per item) and a cancel [ButtonRow]. */
 @Composable
 inline fun StringListDialog(
     title: String,

@@ -23,10 +23,7 @@ import kotlinx.serialization.json.JsonObject
  * play order, the one of the published queue (shuffle order when enabled).
  */
 internal sealed interface PlayerAction {
-    /**
-     * `false` only for play and pause, which a Listen Together guest may still use; every
-     * other action is refused with `422 PLAYER_REJECTED` while the guest lock is on.
-     */
+    /** `false` only for play and pause, which a Listen Together guest may still use; every other action is refused with `422 PLAYER_REJECTED` while the guest lock is on. */
     val guarded: Boolean get() = true
 
     data object Play : PlayerAction {
@@ -82,10 +79,7 @@ internal sealed interface CommandResult {
 
 /** Changes the audio output of the running server (contract §8.5, §9). */
 internal fun interface AudioOutputSelector {
-    /**
-     * `Applied` (`changed: false` when [output] was already selected) or `Rejected` when
-     * `pc` is asked without an active WebSocket session.
-     */
+    /** `Applied` (`changed: false` when [output] was already selected) or `Rejected` when `pc` is asked without an active WebSocket session. */
     suspend fun select(output: AudioOutput): CommandResult
 }
 

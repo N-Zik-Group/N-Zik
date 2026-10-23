@@ -32,11 +32,7 @@ import android.os.Bundle
 @UnstableApi
 object SessionMediaItemMapper {
 
-    /**
-     * Longest side (px) of artwork embedded into Android Auto items: the head
-     * unit renders queue and browse artwork at list size, so full-resolution
-     * covers only bloat the IPC parcel and the service RAM.
-     */
+    /** Longest side (px) of artwork embedded into Android Auto items: the head unit renders queue and browse artwork at list size, so full-resolution covers only bloat the IPC parcel and the service RAM. */
     private const val EMBEDDED_ARTWORK_MAX_SIDE = 512
 
     private val artworkBytesCache = ArtworkBytesCache()
@@ -59,11 +55,7 @@ object SessionMediaItemMapper {
         return sampleSize
     }
 
-    /**
-     * Decodes [path] downscaled toward [EMBEDDED_ARTWORK_MAX_SIDE]: two passes,
-     * bounds first, then the sampled decode, so the RAM peak never exceeds the
-     * target size.
-     */
+    /** Decodes [path] downscaled toward [EMBEDDED_ARTWORK_MAX_SIDE]: two passes, bounds first, then the sampled decode, so the RAM peak never exceeds the target size. */
     private fun decodeFileDownsampled(path: String): Bitmap? {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(path, bounds)
@@ -107,6 +99,7 @@ object SessionMediaItemMapper {
                 ?: return null
             // The source placeholder is 1200px — downscale toward the 512px
             // embed target like every other embedded cover (one-time decode,
+//
             // the bytes are shared for the process lifetime).
             val bitmap = if (minOf(full.width, full.height) > EMBEDDED_ARTWORK_MAX_SIDE) {
                 Bitmap.createScaledBitmap(
@@ -160,6 +153,7 @@ object SessionMediaItemMapper {
         if (url.isNullOrBlank()) return null
         // Embedded artwork is paid once per source per process lifetime: queue
         // rebuilds (shuffle, next, playback resumption) share the bytes instead
+//
         // of re-decoding and re-compressing every cover.
         artworkBytesCache.get(url)?.let { return it }
         return try {
@@ -248,11 +242,7 @@ object SessionMediaItemMapper {
         return Bitmap.createBitmap(bitmap, x, y, size, size)
     }
 
-    /**
-     * Tracks without title/artist tags must still render on the head unit: the
-     * raw empty (or literal "null") metadata strings are replaced with the
-     * localized placeholders — the same labels the phone lists already show.
-     */
+    /** Tracks without title/artist tags must still render on the head unit: the raw empty (or literal "null") metadata strings are replaced with the localized placeholders — the same labels the phone lists already show. */
     private fun applyMetadataFallbacks(metadataBuilder: MediaMetadata.Builder, metadata: MediaMetadata) {
         val needsTitle = SessionMetadataFallbacks.needsFallback(metadata.title)
         val needsArtist = SessionMetadataFallbacks.needsFallback(metadata.artist)

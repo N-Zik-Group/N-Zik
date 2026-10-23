@@ -33,10 +33,7 @@ import timber.log.Timber
  * so the non-null parameter is a runtime guarantee.
  */
 
-/**
- * Pure restore of a `Boolean` saveable payload: [default] when the payload is null or not a
- * `Boolean` (the foreign-payload case — see the file KDoc).
- */
+/** Pure restore of a `Boolean` saveable payload: [default] when the payload is null or not a `Boolean` (the foreign-payload case — see the file KDoc). */
 fun restoreTolerantBool(payload: Any?, default: Boolean = false): Boolean =
     payload as? Boolean ?: default
 
@@ -47,10 +44,7 @@ fun restoreTolerantBool(payload: Any?, default: Boolean = false): Boolean =
  */
 fun restoreTolerantInt(payload: Any?, default: Int): Int = payload as? Int ?: default
 
-/**
- * Pure restore of a `String?` saveable payload: `null` when the payload is null or not a `String`
- * (the foreign-payload case — see the file KDoc).
- */
+/** Pure restore of a `String?` saveable payload: `null` when the payload is null or not a `String` (the foreign-payload case — see the file KDoc). */
 fun restoreTolerantString(payload: Any?): String? = payload as? String
 
 /**
@@ -138,11 +132,7 @@ class TolerantIntStateSaver(
     }
 }
 
-/**
- * Tolerant saver for `rememberSaveable { mutableStateOf<String?>(…) }` slots (the LyricsScreen
- * edited-title/artist slots, spec M5 review fix): a `null` value saves nothing (the registry
- * takes the `init` lambda on restore), and a foreign payload restores to `null` without crashing.
- */
+/** Tolerant saver for `rememberSaveable { mutableStateOf<String?>(…) }` slots (the LyricsScreen edited-title/artist slots, spec M5 review fix): a `null` value saves nothing (the registry takes the `init` lambda on restore), and a foreign payload restores to `null` without crashing. */
 class TolerantStringStateSaver(private val slot: String) : Saver<MutableState<String?>, Any> {
     // `null` saveable = "nothing was saved" — the registry takes the `init` lambda on restore.
     override fun SaverScope.save(value: MutableState<String?>): Any? = value.value

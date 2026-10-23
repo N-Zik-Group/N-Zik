@@ -98,12 +98,7 @@ fun standbySwapPage(currentPage: Int, standbyHoldPage: Int?, activeTrackPage: In
         currentPage
     }
 
-/**
- * Builds the session background-music pool from the deck window's top songs (the same source
- * as the "Top songs" slide — spec: no extra fetch): distinct by song id, blank ids dropped,
- * downloaded songs first (whole file guaranteed locally — instant start + mid-track offset),
- * each partition shuffled with [random] (seed it for tests), capped at [cap].
- */
+/** Builds the session background-music pool from the deck window's top songs (the same source as the "Top songs" slide — spec: no extra fetch): distinct by song id, blank ids dropped, downloaded songs first (whole file guaranteed locally — instant start + mid-track offset), each partition shuffled with [random] (seed it for tests), capped at [cap]. */
 fun buildBackgroundPool(
     songs: List<Song>,
     isDownloaded: (String) -> Boolean,
@@ -324,11 +319,7 @@ class RewindBackgroundMusicController(
     private var fadeJob: Job? = null
     /** The in-flight yield/mute state fade (v4: no hard cut on pause/resume/mute). */
     private var yieldJob: Job? = null
-    /**
-     * A standby prepare requested while the swap fade is still running (v5): queued here
-     * and run at the fade tail — a `setMediaItem` mid-fade would kill the outgoing track's
-     * audio (a hard cut), so the standby must stay untouched until the fade is over.
-     */
+    /** A standby prepare requested while the swap fade is still running (v5): queued here and run at the fade tail — a `setMediaItem` mid-fade would kill the outgoing track's audio (a hard cut), so the standby must stay untouched until the fade is over. */
     private var deferredPreparePage: Int? = null
 
     private var muted = false
@@ -521,6 +512,7 @@ class RewindBackgroundMusicController(
     private fun createPlayers() {
         // Only the ACTIVE player handles audio focus (v6): a standby that requests focus
         // the moment it starts playing mid-swap would steal it from the outgoing player,
+//
         // and ExoPlayer would pause the outgoing on AUDIOFOCUS_LOSS — the crossfade
         // becomes a hard cut. The hand-over happens at the fade tail of [doSwap].
         playerA = createPlayer(handleFocus = true) // the initial active
@@ -539,8 +531,10 @@ class RewindBackgroundMusicController(
                     .build(),
                 // Spec 3 (renegotiation v1): only the ACTIVE background player handles
                 // system audio focus — a phone call pauses it, focus gain resumes. The
+//
                 // standby is built without focus handling (v6 — see [createPlayers]);
                 // [doSwap] hands it over at the fade tail. No ping-pong with the main
+//
                 // player: the background only plays while it is idle, and the app-level
                 // gate below is idempotent with the system pause.
                 handleFocus
@@ -631,13 +625,17 @@ class RewindBackgroundMusicController(
         if (player !== standby) return
         // The deck's last settled card is the ONLY track the standby may hand over:
         // fast navigation may have moved on while the load was in flight, so a stale
+//
         // READY is ignored (the next settle / scroll-start re-targets the standby).
         // The hold must match the current card, whose track must not already be
+//
         // active (v7: the preloaded track of a fast swipe lands immediately).
+//
         val page = currentPage
         if (standbySwapPage(page, standbyHold?.page, activeTrackPage) != page) return
         // The track only became ready AFTER the settle (the current track kept playing
         // while it loaded): use the longer fade so the hand-over is a soft crossfade
+//
         // between two tracks the user heard apart, not a switch (v5)
         doSwap(page, fadeMs = REWIND_BGM_DELAYED_FADE_MS)
     }
@@ -676,10 +674,14 @@ class RewindBackgroundMusicController(
             incoming.volume = currentVolume()
             // The swap is over: hand the audio-focus handling to the new active player.
             // It deliberately started with focus handling OFF — requesting focus on
+//
             // start would give the outgoing player AUDIOFOCUS_LOSS, hard-pausing it
+//
             // and turning the crossfade into a cut (v6: "le fade marche pas au swap").
             // The old active gives up its handling first (it keeps playing until the
+//
             // explicit pause below), then the new active takes over and requests it.
+//
             outgoing.setAudioAttributes(outgoing.audioAttributes, false)
             incoming.setAudioAttributes(incoming.audioAttributes, true)
             outgoing.pause()
@@ -710,8 +712,9 @@ class RewindBackgroundMusicController(
             return
         }
         // The failed load was for the card on screen: re-arm it (a different track after
-        // the pool shrink / content-fail mark). A stale load (the deck moved on) is left
-        // alone — the next settle / scroll-start re-targets the standby (v7)
+        // the pool shrink / content-fail mark).
+        //
+        // A stale load (the deck moved on) is left alone — the next settle / scroll-start re-targets the standby (v7)
         if (page == currentPage) prepareStandby(currentPage)
     }
 

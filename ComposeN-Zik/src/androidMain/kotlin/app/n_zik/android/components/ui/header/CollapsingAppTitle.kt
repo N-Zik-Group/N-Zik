@@ -55,19 +55,17 @@ import app.n_zik.android.uiRoundnessShape
  */
 private const val APP_TITLE_COLLAPSE_ANIMATION_MS = 250
 
-/**
- * Boundary jitter tolerated before the header title collapses: without it, subpixel
- * differences between the available and ideal widths could flip the collapsed state
- * on and off between frames.
- */
+/** Boundary jitter tolerated before the header title collapses: without it, subpixel differences between the available and ideal widths could flip the collapsed state on and off between frames. */
 private val APP_TITLE_COLLAPSE_TOLERANCE = 2.dp
 
 /**
  * Collapse decision for the header title row: the sliding extras (title text + badges)
  * must slide behind the logo when the width actually available to the row is below its
- * ideal (full) width by more than [tolerancePx].
+ * ideal (full) width by more than [tolerancePx] — the boundary jitter that must NOT
+ * trigger a collapse, in px.
  *
- * @param tolerancePx Boundary jitter that must NOT trigger a collapse, in px
+ * @param availablePx width available to the row from the parent, in px (very large when unconstrained)
+ * @param idealPx ideal (full) width of the row — logo + sliding extras — in px; 0 = not measured yet
  * @return true when the sliding extras should collapse behind the logo
  */
 internal fun shouldCollapseTitle(availablePx: Int, idealPx: Int, tolerancePx: Int): Boolean {
@@ -104,6 +102,7 @@ fun CollapsingAppTitle(
     val logoPx = remember { mutableIntStateOf(0) }
     // Width actually available to this row from the parent. Deliberately NOT the measured
     // row width: while the extras animate, the measured width would track the animation
+//
     // itself and deadlock the re-expansion — the available space is what decides.
     val availablePx = remember { mutableIntStateOf(0) }
 
@@ -163,6 +162,7 @@ fun CollapsingAppTitle(
                     .layout { measurable, constraints ->
                         // Always measure at natural width: the animated Box width above
                         // only clips and slides this content. Measuring inside the clipped
+//
                         // width would report the animation itself as the ideal width and
                         // deadlock the re-expansion (0 -> 0 -> 0).
                         val placeable = measurable.measure(

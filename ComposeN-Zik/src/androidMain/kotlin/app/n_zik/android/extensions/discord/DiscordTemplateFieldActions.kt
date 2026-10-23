@@ -4,13 +4,7 @@ import androidx.compose.runtime.MutableState
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 
-/**
- * Draft-state behavior of the Discord template field dialog — the toolbar settings
- * dialogs' button contract (see ToggleListDialog): Reset restores the built-in
- * default (empties the draft so the default template applies again) WITHOUT saving —
- * the dialog stays open; Cancel discards the draft; OK persists the draft and
- * confirms with the "preference saved" toast.
- */
+/** Draft-state behavior of the Discord template field dialog — the toolbar settings dialogs' button contract (see ToggleListDialog): Reset restores the built-in default (empties the draft so the default template applies again) WITHOUT saving — the dialog stays open; Cancel discards the draft; OK persists the draft and confirms with the "preference saved" toast. */
 class DiscordTemplateFieldActions(private val textState: MutableState<String>) {
 
     /**

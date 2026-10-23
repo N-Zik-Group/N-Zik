@@ -50,11 +50,7 @@ class MuteAudioProcessor(private val isMuted: () -> Boolean) : BaseAudioProcesso
     }
 }
 
-/**
- * [delegate] followed by [mute], last of the chain: after silence skipping and speed, so the
- * silence it writes is never skipped (the position keeps its pace) and the durations computed
- * by [delegate] stay exact.
- */
+/** [delegate] followed by [mute], last of the chain: after silence skipping and speed, so the silence it writes is never skipped (the position keeps its pace) and the durations computed by [delegate] stay exact. */
 @OptIn(UnstableApi::class)
 class MuteAudioProcessorChain(
     private val delegate: AudioProcessorChain,

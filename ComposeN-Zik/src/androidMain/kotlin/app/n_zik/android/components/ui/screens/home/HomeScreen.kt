@@ -51,13 +51,11 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 // Shared scope for fire-and-forget background work started from this screen (issue #606):
 // SupervisorJob (via NzikDispatchers.fireAndForget) so one failure doesn't cancel
+//
 // unrelated future launches on the same scope.
 internal val homeScreenScope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
 
-/**
- * Sentinel passed as [HomeScreen.openTabFromShortcut] when a launcher shortcut
- * requests the search screen instead of a home tab (see MainActivity).
- */
+/** Sentinel passed as [HomeScreen.openTabFromShortcut] when a launcher shortcut requests the search screen instead of a home tab (see MainActivity). */
 internal const val OPEN_SEARCH_SHORTCUT = -2
 
 /**
@@ -226,7 +224,9 @@ fun HomeScreen(
 
     // The search shortcut is not a tab: open the search screen on top of the home tab.
     // `searchShortcutConsumed` only guards against the *same* sentinel occurrence re-firing
+//
     // across an unrelated recomposition while it's still pending (e.g. MainActivity's own reset
+//
     // effect hasn't applied yet) -- it resets as soon as the sentinel moves on, so a shortcut
     // tapped again later (app already running) is a fresh occurrence and opens search again.
     var searchShortcutConsumed by rememberSaveable { mutableStateOf(false) }
@@ -241,8 +241,10 @@ fun HomeScreen(
 
     // Tab shortcuts (songs/albums/artists/library) only drove the tab index once, via the
     // `openTabFromShortcut1` snapshot above -- a shortcut tapped while the app (and this
+//
     // composable) is already running never switched tabs, unlike search's dedicated effect.
     // Redundant on the very first composition (the snapshot already applied the same value); a
+//
     // no-op once the sentinel is consumed back to -1 by MainActivity.
     LaunchedEffect(openTabFromShortcut) {
         if (shouldSwitchTabFromShortcut(openTabFromShortcut)) {

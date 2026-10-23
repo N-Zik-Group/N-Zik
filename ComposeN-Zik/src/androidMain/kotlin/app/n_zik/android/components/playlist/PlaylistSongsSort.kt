@@ -45,10 +45,7 @@ class PlaylistSongsSort private constructor(
         )
     }
 
-    /**
-     * Spec 2: "Rewind Top" exists only in the sort menu of the generated `rewind-*`
-     * playlists; every other playlist keeps the classic option list.
-     */
+    /** Spec 2: "Rewind Top" exists only in the sort menu of the generated `rewind-*` playlists; every other playlist keeps the classic option list. */
     override fun getEnumConstants(): List<PlaylistSongSortBy> =
         super.getEnumConstants().filter { it != PlaylistSongSortBy.RewindTop || isRewind }
 

@@ -41,10 +41,7 @@ import app.n_zik.android.components.ui.screens.rewind.rewindShareCaptureActive
 import app.n_zik.android.components.ui.screens.rewind.rewindSongLevel
 import kotlinx.coroutines.delay
 
-/**
- * Full "top song" show: teaser sequence, framed artwork, #1 badge and stats, shown by the
- * #1 Song slide.
- */
+/** Full "top song" show: teaser sequence, framed artwork, #1 badge and stats, shown by the #1 Song slide. */
 @Composable
 internal fun RewindTopSongShow(
     songs: List<TopSong>,

@@ -115,10 +115,7 @@ internal class BridgeStateHub(private val clock: () -> Long = System::currentTim
         }
     }
 
-    /**
-     * Sends the non-revised [message] to every subscriber (contract §7.6), under the same
-     * lock as the deltas so it never splits a snapshot from its following deltas.
-     */
+    /** Sends the non-revised [message] to every subscriber (contract §7.6), under the same lock as the deltas so it never splits a snapshot from its following deltas. */
     fun broadcast(message: ErrorMessage) {
         synchronized(lock) { subscribers.forEach { it.sink.deliver(message) } }
     }
@@ -185,10 +182,7 @@ internal class BridgeStateHub(private val clock: () -> Long = System::currentTim
     }
 
     companion object {
-        /**
-         * Position of [sample] extrapolated to [nowMs]: `positionMs + elapsed × speed` while
-         * playing, never past the current track's duration when it is known.
-         */
+        /** Position of [sample] extrapolated to [nowMs]: `positionMs + elapsed × speed` while playing, never past the current track's duration when it is known. */
         fun positionAt(sample: PlayerSample, nowMs: Long): Long {
             if (!sample.isPlaying) return sample.positionMs
             val elapsed = (nowMs - sample.sampledAtMs).coerceAtLeast(0L)

@@ -76,7 +76,9 @@ class PaletteFadeModel {
  * transition — the rest of the app applies the new palette instantly, which
  * keeps track changes cheap. The subtree is always wrapped in a
  * [CompositionLocalProvider] (no structural if/else), so the player is never
- * remounted when the fade finishes.
+ * remounted when the fade finishes. The palette currently shown is tracked in
+ * the composable's state, so a new target never flashes for a frame before the
+ * transition begins from the old palette.
  */
 @Composable
 fun PaletteFade(
@@ -90,6 +92,7 @@ fun PaletteFade(
     val fraction = remember { Animatable(1f) }
     // Palette currently shown by this scope. Null before the first target is
     // known; afterwards it always holds the last displayed palette, so a new
+//
     // target never flashes before the fade starts from the previous one.
     var displayed by remember { mutableStateOf<ColorPalette?>(null) }
 

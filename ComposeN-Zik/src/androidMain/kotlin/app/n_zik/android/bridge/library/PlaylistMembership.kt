@@ -7,11 +7,7 @@ import timber.log.Timber
 
 private const val TAG = "BridgeLibrary"
 
-/**
- * `Track.inPlaylist` (contract §1.1, since 1.12.0): which songs sit in at least one of the phone's
- * playlists, read in batched queries — the phone's own `SongPlaylistMapTable.songsInPlaylists`, in
- * chunks under SQLite's 999 bound parameters — never one query per track.
- */
+/** `Track.inPlaylist` (contract §1.1, since 1.12.0): which songs sit in at least one of the phone's playlists, read in batched queries — the phone's own `SongPlaylistMapTable.songsInPlaylists`, in chunks under SQLite's 999 bound parameters — never one query per track. */
 internal object PlaylistMembership {
 
     /** Under SQLite's 999 bound parameters per query. */

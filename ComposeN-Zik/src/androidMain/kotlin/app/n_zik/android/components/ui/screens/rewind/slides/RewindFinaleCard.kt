@@ -160,6 +160,7 @@ fun RewindFinaleCard(
             val compact = maxHeight < 700.dp
             // Scaled at the definition: the tiles read it as-is (fontSize = valueSize).
             // Kept deliberately small (device: at 23/19sp the numbers were still
+//
             // compressed on a tight screen — the adaptive tile then shrank them further):
             // the smaller base means the fit clamp kicks in later and reads larger.
             val statSize = textScale.size(if (compact) 14.sp else 17.sp)
@@ -184,6 +185,7 @@ fun RewindFinaleCard(
                 }
                 // The badge title is already showcased by the LISTENER LEVEL row below (and by
                 // the share footer in shareMode), so the username line stays plain to avoid
+//
                 // repeating it twice on the slide.
                 RewindReveal(active, 190) {
                     Text(
@@ -199,8 +201,10 @@ fun RewindFinaleCard(
                 Spacer(Modifier.height(if (compact) 8.dp else 12.dp))
                 // The stats grid is the slide's shrinkable block: natural height at the
                 // reference, row-by-row yield on a tight screen so the export action
+//
                 // below always stays visible (the deck has no scrolling). Outweights
                 // the bottom spacer 2:1 so the slack goes to the grid first; the
+//
                 // tiles adapt their text to whatever height they get (FinaleStatTile).
                 Column(
                     modifier = Modifier
@@ -293,6 +297,7 @@ fun RewindFinaleCard(
                 Spacer(Modifier.height(if (compact) 8.dp else 10.dp))
                 // In shareMode — and while any capture is in flight — the footer signature
                 // already carries the badge + index, so the big row is hidden there to
+//
                 // avoid showing it twice in the shared image.
                 if (!shareMode && !rewindShareCaptureActive.value) {
                     RewindReveal(active, 740, scaleFrom = 0.94f) {
@@ -424,6 +429,7 @@ fun RewindFinaleCard(
                 Spacer(Modifier.weight(1f))
                 // The brand footer is the "exported" look of the finale: the 16-image deck
                 // export shows it on this page, and a single-page capture of the finale must
+//
                 // produce the same frame — identical content, no interactive pills.
                 if (shareMode || rewindShareCaptureActive.value) {
                     RewindReveal(active, 1_060) {
@@ -443,6 +449,7 @@ fun RewindFinaleCard(
                             )
                             // Same pill as the live listener-level row: a solid surface keeps
                             // the badge readable on the slide background in the exported image,
+//
                             // where a bare text line would vanish.
                             Row(
                                 modifier = Modifier
@@ -475,8 +482,10 @@ fun RewindFinaleCard(
                 } else {
                     // Interactive UI: the "EXPORT OPTIONS" toggle exists only in the live
                     // deck — captured frames render the brand footer above instead, so
+//
                     // shared images never carry clickable chrome. The tap opens the
                     // app-standard menu (CustomModalBottomSheet + ListMenu, same pattern
+//
                     // as the song item menu) holding the individual actions.
                     RewindReveal(active, 1_080) {
                         Row(
@@ -517,8 +526,10 @@ fun RewindFinaleCard(
 
     // The export menu reuses the app-standard sheet recipe (same as the song item menu):
     // transparent container, top-only roundness, statusBarsPadding,
+//
     // skipPartiallyExpanded = false (opens at its content height, draggable to full
     // screen). ListMenu.Menu draws its own background, its own top clip and its own
+//
     // drag handle. Capture-safe: it stays closed while a share capture is in flight.
     CustomModalBottomSheet(
         showSheet = showExportMenu && !rewindShareCaptureActive.value,
@@ -683,15 +694,18 @@ internal fun FinaleStatTile(
     BoxWithConstraints(modifier = modifier) {
         // Natural height at the reference sizes: value line + label line + v-padding.
         // 1sp ≈ 1dp for layout purposes: the TextUnit/Dp unit converters are not
+//
         // available in this Compose version, so the comparison runs on raw values.
         val naturalDp = valueSize.value.dp + textScale.size(8.sp).value.dp + 18.dp
         val tileHeightDp = with(density) { constraints.maxHeight.toDp() }
         // Compressed = the grid yielded vertical space on a tight screen. The tile height
         // is constraint-driven (fillMaxHeight below), so this decision can never feed back
+//
         // into its own size — no oscillation is possible.
         val compressed = tileHeightDp < naturalDp
         // Compressed tile: drop the label and fit the value line into the inner height
         // (tile minus the vertical padding), so the number stays readable instead of
+//
         // clipping top/bottom.
         val fittedValueSize = if (compressed) {
             (tileHeightDp - 18.dp).coerceAtLeast(6.dp).value.sp
@@ -768,6 +782,7 @@ private fun FinaleFeature(
         } else if (playlistId != null) {
             // No cover field on the DB playlist: use the exact same mosaic as the top
             // playlists slide, the statistics screen and the home library (the four
+//
             // most-played track covers, or a single cover when they all match) so the
             // artwork can never disagree with what the user sees elsewhere.
             RewindPlaylistArtwork(

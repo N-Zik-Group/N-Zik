@@ -21,10 +21,7 @@ import app.it.fast4x.rimusic.utils.lyricsSizeKey
 import app.it.fast4x.rimusic.utils.lyricsSizeLKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 
-/**
- * Lyrics size tuning dialog on the shared [DefaultDialog]:
- * one slider in portrait, one in landscape.
- */
+/** Lyrics size tuning dialog on the shared [DefaultDialog]: one slider in portrait, one in landscape. */
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 fun LyricsSizeDialog(

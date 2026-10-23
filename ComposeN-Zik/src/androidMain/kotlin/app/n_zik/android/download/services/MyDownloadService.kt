@@ -52,7 +52,9 @@ class MyDownloadService : DownloadService(
     DEFAULT_FOREGROUND_NOTIFICATION_UPDATE_INTERVAL,
     // The channel this service actually posts on (per-profile — both notification builders
     // below use it): DownloadService.onCreate (re)creates exactly this channel at start, so
+//
     // the base ID here would resurrect the base `download_channel` under every profile.
+//
     // (`this` is not usable in a super-constructor call — appContext() is already set by
     // the time any service can be constructed.)
     channelId(DOWNLOAD_NOTIFICATION_CHANNEL_ID, getActiveProfile(appContext())),
@@ -288,11 +290,7 @@ internal fun findSpecificDownloadCause(finalException: Exception?): Throwable? =
         it is SocketException
     }
 
-/**
- * S5/A5b (offline gate, 2026-10-22): the toast resource for a failed download — network-down
- * causes (offline fast-fail marker, raw socket timeouts/resets, DNS) map to their specific
- * string; the fallback is download-domain (`download_failed`, P11 review 2026-10-23).
- */
+/** S5/A5b (offline gate, 2026-10-22): the toast resource for a failed download — network-down causes (offline fast-fail marker, raw socket timeouts/resets, DNS) map to their specific string; the fallback is download-domain (`download_failed`, P11 review 2026-10-23). */
 internal fun downloadFailureToastRes(httpCode: Int?, specificCause: Throwable?): Int =
     if (httpCode == 403) R.string.error_this_song_cannot_be_played_due_to_server_restrictions
     else when (specificCause) {

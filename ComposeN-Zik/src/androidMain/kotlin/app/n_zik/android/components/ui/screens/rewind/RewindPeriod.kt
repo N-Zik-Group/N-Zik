@@ -21,10 +21,7 @@ sealed interface RewindPeriod {
     /** Inclusive `[start, end]` window (epoch millis) of this period. */
     fun boundaries(now: Long = System.currentTimeMillis()): Pair<Long, Long>
 
-    /**
-     * Calendar days spanned by the period; 0 for [Global] (an all-time window
-     * has no fixed length — see [allTimeDaysInPeriod] for the actual span).
-     */
+    /** Calendar days spanned by the period; 0 for [Global] (an all-time window has no fixed length — see [allTimeDaysInPeriod] for the actual span). */
     fun daysInPeriod(): Int
 
     /** Kicker label shown on the slides: "2026", "JANV. 2026" or "GLOBAL". */
@@ -80,11 +77,7 @@ sealed interface RewindPeriod {
     }
 }
 
-/**
- * Kicker label of a month: the localized short month name uppercased to match
- * the deck's brand style (a dot is appended when the locale does not provide
- * one, so "JAN." in English stays "JANV." in French).
- */
+/** Kicker label of a month: the localized short month name uppercased to match the deck's brand style (a dot is appended when the locale does not provide one, so "JAN." in English stays "JANV." in French). */
 internal fun periodMonthLabel(year: Int, month: Int): String {
     val short = Month.of(month)
         .getDisplayName(TextStyle.SHORT, Locale.getDefault())

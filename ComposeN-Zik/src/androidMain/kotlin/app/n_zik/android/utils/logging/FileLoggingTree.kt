@@ -170,10 +170,7 @@ class FileLoggingTree(
     }
 }
 
-/**
- * Crash handler that first gives [tree] up to [timeoutMs] to write what is queued, then always
- * calls [delegate] (also when the flush throws or times out).
- */
+/** Crash handler that first gives [tree] up to [timeoutMs] to write what is queued, then always calls [delegate] (also when the flush throws or times out). */
 internal fun flushThenDelegate(
     tree: FileLoggingTree,
     timeoutMs: Long = 2000,

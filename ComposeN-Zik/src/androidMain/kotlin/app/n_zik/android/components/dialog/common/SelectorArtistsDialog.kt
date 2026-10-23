@@ -54,10 +54,7 @@ import it.fast4x.innertube.YtMusic
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.player.textOutlineColor
 
-/**
- * Full-screen pager of artist thumbnails (moved verbatim from the legacy
- * tree — it is a dedicated full-screen selection dialog, not a framed one).
- */
+/** Full-screen pager of artist thumbnails (moved verbatim from the legacy tree — it is a dedicated full-screen selection dialog, not a framed one). */
 @Composable
 inline fun SelectorArtistsDialog(
     noinline onDismiss: () -> Unit,

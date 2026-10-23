@@ -57,6 +57,7 @@ class ChangeAlbumAuthorsDialog private constructor(
         val album = getAlbum() ?: return
         // A 1:1 rename (exactly one token changed) that matches exactly one row linked
         // to this album's songs renames that row (modified:) and propagates to all of
+
         // its copies — before the local write, in the same transaction. 0 or 2+
         // candidate rows: nothing moves on the rows, the local custom write happens only.
         val rename = NameConvergence.diffSingleRename( cleanPrefix(album.authorsText ?: ""), newValue )

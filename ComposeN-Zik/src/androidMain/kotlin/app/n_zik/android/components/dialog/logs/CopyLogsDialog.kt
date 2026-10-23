@@ -92,21 +92,14 @@ internal suspend fun loadLogContent(
     read: (File, Int) -> String? = ::readLogContent
 ): String? = withContext(NzikDispatchers.DATA) { read(logsDir, option) }
 
-/**
- * The SAF export file name for a given export [option] (0 = debug, 1 = crash, anything
- * else = both): pinned here so the dialog's launcher and the tests share one mapping.
- */
+/** The SAF export file name for a given export [option] (0 = debug, 1 = crash, anything else = both): pinned here so the dialog's launcher and the tests share one mapping. */
 internal fun logExportFileName(option: Int): String = when (option) {
     0 -> "N-Zik_debug_log.txt"
     1 -> "N-Zik_crash_log.txt"
     else -> "N-Zik_logs.txt"
 }
 
-/**
- * Whether an export [option] is greyed out (not selectable) for the given debug-log state:
- * the "debug log" (0) and "both logs" (2) options are meaningless while debug logging is
- * off (its file is purged on disable), so only the "crash log" (1) option stays selectable.
- */
+/** Whether an export [option] is greyed out (not selectable) for the given debug-log state: the "debug log" (0) and "both logs" (2) options are meaningless while debug logging is off (its file is purged on disable), so only the "crash log" (1) option stays selectable. */
 internal fun isLogExportOptionDisabled(option: Int, debugLogEnabled: Boolean): Boolean =
     option != 1 && !debugLogEnabled
 
@@ -120,11 +113,7 @@ object CopyLogsDialog : Dialog {
 
     private var selectedOption = mutableIntStateOf(0)
 
-    /**
-     * Opens the dialog with a given option pre-selected (the sheet's crash row exports
-     * from the crash option; the sheet's debug row and the settings entry keep the
-     * default debug option).
-     */
+    /** Opens the dialog with a given option pre-selected (the sheet's crash row exports from the crash option; the sheet's debug row and the settings entry keep the default debug option). */
     fun showDialogFor(option: Int) {
         selectedOption.intValue = option
         isActive = true
@@ -140,6 +129,7 @@ object CopyLogsDialog : Dialog {
 
         // Live preview of the selected option's log (re-read on every option change):
         // all three options are viewable + copyable, not just exportable — the same
+
         // "complete" log view the Maintenance sheet rows open
         var content by remember { mutableStateOf<String?>(null) }
         LaunchedEffect(currentOption) {
@@ -179,6 +169,7 @@ object CopyLogsDialog : Dialog {
 
         // "Debug log" and "Both logs" are greyed out while debug logging is off (their
         // debug content doesn't exist then): only the crash log option stays selectable,
+
         // and a stale selection on a now-disabled option falls back to it
         val debugLogEnabled by rememberPreference(logDebugEnabledKey, false)
         LaunchedEffect(currentOption, debugLogEnabled) {
@@ -269,6 +260,7 @@ object CopyLogsDialog : Dialog {
 
             // Copy + Export side by side (the crash/debug log dialog pattern): the
             // export re-reads the file at click time so a log written after the
+
             // preview never exports stale content
             Row(
                 modifier = Modifier

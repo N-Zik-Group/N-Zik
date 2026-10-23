@@ -200,8 +200,10 @@ object ImageCacheFactory {
             .crossfade(true)
             // Decode every image as a software bitmap: Coil defaults to HARDWARE on API 26+,
             // but the Rewind share screenshot replays the view tree on a software canvas,
+//
             // where hardware bitmaps cannot be drawn at all (IllegalArgumentException:
             // "Software rendering doesn't support hardware bitmaps") — the legacy mini
+//
             // player's cover goes through this factory too. loadBitmap() keeps its
             // per-request allowHardware override.
             .allowHardware(false)
@@ -866,6 +868,7 @@ fun String?.thumbnail(size: Int): String? {
 
             // [STRICT LEARNING MODE]
             // We only swap if there is no 'rs=' signature.
+//
             // We manage mwEIC (Low) and mwEUC (Medium) towards mwEKC (High).
             if (quality == ImageCacheFactory.NetworkQuality.HIGH) {
                 return if (!contains("rs=")) {

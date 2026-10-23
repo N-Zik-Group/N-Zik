@@ -35,11 +35,7 @@ abstract class ExportToFileDialog(
         super.onSet( newValue )
         if( errorMessage.isNotEmpty() ) return
 
-        /**
-         *  Create another reference so any changes applied
-         *  to this variable instead of [newValue].
-         *  So that [newValue] remains immutable
-         */
+        /** Create another reference so any changes applied to this variable instead of [newValue]. So that [newValue] remains immutable */
         val fileName = newValue.ifBlank( ::defaultFileName )
 
         try {

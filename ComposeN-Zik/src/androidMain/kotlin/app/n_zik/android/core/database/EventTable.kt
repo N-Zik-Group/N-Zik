@@ -274,11 +274,7 @@ interface EventTable : RewindEventSource {
     @Query("SELECT COUNT(DISTINCT E.songId) FROM Event E WHERE E.timestamp BETWEEN :from AND :to")
     fun countDistinctSongsPlayedBetween(from: Long, to: Long = System.currentTimeMillis()): Flow<Int>
 
-    /**
-     * Return the number of library songs listened to at least once: the distinct songs of
-     * the Song table owning at least one playback event (orphan events for songs removed
-     * from the library do not count).
-     */
+    /** Return the number of library songs listened to at least once: the distinct songs of the Song table owning at least one playback event (orphan events for songs removed from the library do not count). */
     @Query("SELECT COUNT(DISTINCT E.songId) FROM Event E JOIN Song S ON S.id = E.songId")
     suspend fun countListenedSongs(): Int
 
@@ -352,11 +348,7 @@ interface EventTable : RewindEventSource {
     """)
     fun getPlaylistPlayCount(playlistId: Long): Flow<Int>
 
-    /**
-     * The listening totals per album (play count + total play time in ms), one row per album with
-     * events — the batch form of [getAlbumPlayCount] / [getAlbumTotalPlayTime] (the phone's album
-     * grid overlays, `HomeAlbum.kt` 723-754).
-     */
+    /** The listening totals per album (play count + total play time in ms), one row per album with events — the batch form of [getAlbumPlayCount] / [getAlbumTotalPlayTime] (the phone's album grid overlays, `HomeAlbum.kt` 723-754). */
     @Query("""
         SELECT SAM.albumId AS albumId, COUNT(E.id) AS playCount, IFNULL(SUM(E.playtime), 0) AS totalPlayTimeMs
         FROM Event E
@@ -365,11 +357,7 @@ interface EventTable : RewindEventSource {
     """)
     fun getAlbumListeningTotals(): Flow<List<AlbumListening>>
 
-    /**
-     * The listening totals per artist (play count + total play time in ms), one row per artist with
-     * events — the batch form of [getArtistPlayCount] / [getArtistTotalPlayTime] (the phone's artist
-     * grid overlays, `HomeArtist.kt` 687-710).
-     */
+    /** The listening totals per artist (play count + total play time in ms), one row per artist with events — the batch form of [getArtistPlayCount] / [getArtistTotalPlayTime] (the phone's artist grid overlays, `HomeArtist.kt` 687-710). */
     @Query("""
         SELECT SAM.artistId AS artistId, COUNT(E.id) AS playCount, IFNULL(SUM(E.playtime), 0) AS totalPlayTimeMs
         FROM Event E
@@ -378,11 +366,7 @@ interface EventTable : RewindEventSource {
     """)
     fun getArtistListeningTotals(): Flow<List<ArtistListening>>
 
-    /**
-     * The listening totals per playlist (play count + total play time in ms), one row per playlist
-     * with events — the batch form of [getPlaylistPlayCount] / [getPlaylistTotalPlayTime] (the
-     * phone's playlist grid overlays, `HomeLibrary.kt` 887-919).
-     */
+    /** The listening totals per playlist (play count + total play time in ms), one row per playlist with events — the batch form of [getPlaylistPlayCount] / [getPlaylistTotalPlayTime] (the phone's playlist grid overlays, `HomeLibrary.kt` 887-919). */
     @Query("""
         SELECT SPM.playlistId AS playlistId, COUNT(E.id) AS playCount, IFNULL(SUM(E.playtime), 0) AS totalPlayTimeMs
         FROM Event E

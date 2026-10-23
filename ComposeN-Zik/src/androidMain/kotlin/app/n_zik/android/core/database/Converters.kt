@@ -68,8 +68,10 @@ object Converters {
     fun mediaItemToByteArray(mediaItem: MediaItem?): ByteArray? {
         // artworkData contains the raw image bytes. If the image is very large (e.g. custom cover),
         // Android converts it into a Binder object (ashmem) when toBundle() is called.
+//
         // Parcel.marshall() does not support Binder objects and crashes with RuntimeException.
         // We purge artworkData before saving, as the database does not need to store the raw image.
+//
         // Optimization: only rebuild if artworkData is not null to avoid massive GC pauses.
         val sanitizedMediaItem = if (mediaItem?.mediaMetadata?.artworkData != null) {
             mediaItem.buildUpon().setMediaMetadata(

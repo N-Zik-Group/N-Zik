@@ -45,9 +45,10 @@ object HomeSongsSortSettingsDialog : Dialog {
     private val topSortIds = listOf("Today", "OneWeek", "OneMonth", "ThreeMonths", "SixMonths", "OneYear", "All")
 
     // "Custom" is offered on every sort chip, as in the phone's own sort menu (its visibility
-    // flags default to visible, so each tab's real menu shows it); only "Downloaded" stays out
-    // of the downloaded / cached chips (the phone hides it there on its own). Internal so the
-    // tests can pin these sets — the same ones the phone's tabs display
+    // flags default to visible, so each tab's real menu shows it);
+    //
+    // Only "Downloaded" stays out of the downloaded / cached chips (the phone hides it there
+    // on its own). Internal so the tests can pin these sets — the same ones the phone's tabs display
     internal val tabAvailableIds = mapOf(
         BuiltInPlaylist.All to songSortIds,
         BuiltInPlaylist.Favorites to songSortIds,

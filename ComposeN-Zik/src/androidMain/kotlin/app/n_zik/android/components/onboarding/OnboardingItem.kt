@@ -1,9 +1,6 @@
 package app.n_zik.android.components.onboarding
 
-/**
- * One onboarding card (RiPlay pattern): a permission the app can use
- * optionally, its current [status] and the action to take on it.
- */
+/** One onboarding card (RiPlay pattern): a permission the app can use optionally, its current [status] and the action to take on it. */
 data class OnboardingItem(
     val id: String,
     val title: String,

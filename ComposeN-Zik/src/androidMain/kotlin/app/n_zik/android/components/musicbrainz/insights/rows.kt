@@ -39,10 +39,7 @@ import app.n_zik.android.core.coil.ImageCacheFactory
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.models.NavigationEndpoint
 
-/**
- * Builds a synthetic [Innertube.AlbumItem] from a local album so the standard
- * online album menu can be reused for MusicBrainz-sourced rows.
- */
+/** Builds a synthetic [Innertube.AlbumItem] from a local album so the standard online album menu can be reused for MusicBrainz-sourced rows. */
 fun Album.toInnertube(): Innertube.AlbumItem =
     Innertube.AlbumItem(
         info = Innertube.Info(
@@ -57,10 +54,7 @@ fun Album.toInnertube(): Innertube.AlbumItem =
         thumbnail = null
     )
 
-/**
- * Builds a synthetic [Innertube.ArtistItem] from a local artist so the standard
- * online artist menu can be reused for MusicBrainz-sourced rows.
- */
+/** Builds a synthetic [Innertube.ArtistItem] from a local artist so the standard online artist menu can be reused for MusicBrainz-sourced rows. */
 fun Artist.toInnertube(): Innertube.ArtistItem =
     Innertube.ArtistItem(
         info = Innertube.Info(

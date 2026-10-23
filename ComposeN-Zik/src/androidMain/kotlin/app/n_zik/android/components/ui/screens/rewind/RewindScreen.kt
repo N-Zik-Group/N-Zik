@@ -161,6 +161,7 @@ fun RewindScreen(
 ) {
     // Period resolution from the route parameters: the explicit scope wins, then the
     // year+month pair, then the year alone; nothing (or an unknown scope) opens the
+//
     // all-time deck. Smart casts only — no !! anywhere (spec GH-275, patch "global period").
     val period: RewindPeriod = remember(rewindScope, rewindYear, rewindMonth) {
         when {
@@ -172,9 +173,12 @@ fun RewindScreen(
     }
     // Regeneration callbacks of the finale (spec 2): a Month/Year deck regenerates its
     // own playlist (delete-then-recreate — the click means "recompute now", and it also
+//
     // covers the current month, which no auto playlist exists for before the next 1st);
     // the Global deck regenerates the unique all-time snapshot. Each returns the number
+//
     // of songs written so the pill can show its 2 s confirmation only on a real write.
+//
     val (regeneratePlaylist, regenerateAlltime) = remember(period) {
         val forName: (String) -> (suspend () -> Int)? = { name ->
             val window = RewindPlaylists.windowFor(name)
@@ -202,11 +206,13 @@ fun RewindScreen(
 
     // The deck is a full-screen pager that swallows the system edge-swipe, and the app-wide
     // "back goes home" preference would pop past the rewind home: any back event while the
+//
     // deck is on screen pops exactly one level, landing on the rewind home.
     BackHandler { navController.popBackStack() }
 
     // SAF folder picker for the deck export (same flow as the cached-song export): the user
     // chooses where the 16 images land, then the deck plays itself and each settled page is
+//
     // written into the folder. The system share sheet cannot carry a full deck of images
     // through third-party apps, so the deck is exported to a folder instead.
     val exportFolderLauncher = rememberLauncherForActivityResult(
@@ -224,6 +230,7 @@ fun RewindScreen(
             }.onFailure { error ->
                 // A failed persist used to be swallowed silently; the folder may still be
                 // writable for this run, so only the persistence is lost (patch "folder
+//
                 // export has no partial-failure handling")
                 Timber.tag("RewindShare").e(error, "Failed to persist the export folder permission")
             }
@@ -232,6 +239,7 @@ fun RewindScreen(
             withFrameNanos { }
             // The deck plays itself: one PixelCopy per page, each after its settle. The
             // display framebuffer carries the GPU-rendered shader backgrounds, which a
+//
             // software canvas could never replay.
             val deckPages = captureRewindDeckPages(
                 view = rootView,
@@ -244,6 +252,7 @@ fun RewindScreen(
             } else {
                 // Last resort: software-replay only the final slide, exported to the same
                 // folder. The Bitmap canvas cannot draw a RuntimeShader, so the deck
+//
                 // switches to its solid fallback backgrounds for the capture, then restores.
                 val fallbackFile = captureFinaleSlide(context, rootView, pagerState, period)
                 if (fallbackFile != null) {
@@ -288,10 +297,13 @@ fun RewindScreen(
 
     // Background music (spec 3): a hidden A/B ExoPlayer pair plays one library
     // track per card, tied to the card's content (the Top song card plays the #1
+//
     // song, album cards fetch their first track, ...). The active player plays the
     // current card's track while the standby preloads the next, so the swap never
+//
     // goes silent. The players are anonymous (no notification, no playback
     // registration), so the deck's stats stay untouched. Starts after the opening,
+//
     // yields to the main player, and is released when the deck leaves the composition.
     val playerBinder = LocalPlayerServiceBinder.current
     val bgmEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_BGM_ENABLED, true)
@@ -320,8 +332,10 @@ fun RewindScreen(
 
     // Start as soon as the deck data is in — under the opening lockup, so the intro
     // already has its music when revealed (spec v4: "l'intro a pas de musique").
+//
     // The pool comes from the top songs (same source as the Top songs slide — no
     // extra fetch); the resolver ties each card to its content, and stats-only
+//
     // cards roll from the pool. The first swap fades in from silence. A mid-deck
     // toggle flip re-runs the effect; start() is idempotent for the same period.
     LaunchedEffect(bgmController, bgmEnabled, uiState.data, period) {
@@ -355,6 +369,7 @@ fun RewindScreen(
 
     // Yield to the main player: the background pauses while it plays music and resumes
     // when it stops. The service swaps the underlying ExoPlayer on a crossfade and
+//
     // bumps playerUpdateTrigger (only on a swap), so the listener is re-attached on
     // every tick.
     LaunchedEffect(bgmController, playerBinder) {
@@ -383,8 +398,10 @@ fun RewindScreen(
 
     // Per-card BGM: as soon as a swipe starts, the standby preloads the page the pager is
     // heading to (v5: "precharge le prochain a l'avance" — the track is usually READY by
+//
     // settle time, even for a non-cached stream); the controller then decides the track on
     // every settle (debounced; the standby was preloading while the card was on screen).
+//
     // Report only while the pager is no longer scrolling — a flick that keeps going
     // reports nothing until it lands.
     LaunchedEffect(bgmController, pagerState) {
@@ -414,6 +431,7 @@ fun RewindScreen(
 
     // Per-slide system share: captures the displayed slide and hands the PNG to the system
     // share sheet (patch "per-slide system share"). Suppressed while a deck export is in
+//
     // flight, so the two capture paths never fight over the display.
     val onShareSlide: (() -> Unit)? = if (shareMode) {
         null
@@ -520,8 +538,10 @@ fun RewindScreen(
 
         // The mini player is drawn as on every screen; AppNavigation wraps it in a jelly-spring
         // slide-down + fade while the deck is on screen (same animation as the header hide).
+//
         // Hidden during any capture: it is inside the root view that PixelCopy / the software
         // replay copy, and would otherwise appear in every exported or shared frame
+//
         // (patch "mini-player rendered inside the exported frames").
         if (!shareMode && !rewindShareCaptureActive.value && !rewindCaptureMode.value) {
             Box(
@@ -535,11 +555,15 @@ fun RewindScreen(
 
         // Background-music chrome (spec 3): the volume toggle sits in the share
         // button's row (same 40 dp rounded target, 8 dp to its left). A tap cuts or
+//
         // restores the sound; a long press reveals the vertical volume slider below
         // it (another long press hides it). Like the share button, it depops on
+//
         // every slide (scales out on scroll start, pops back in on settle). Hidden
         // during any capture, like the mini player — live chrome must not land in
+//
         // a captured frame.
+//
         if (
             bgmController != null &&
             !shareMode &&

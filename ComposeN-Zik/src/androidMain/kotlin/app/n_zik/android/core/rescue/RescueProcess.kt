@@ -175,16 +175,14 @@ object RescueProcess {
     fun hasKillRequest(context: Context): Boolean =
         File(context.filesDir, KILL_REQUEST_FLAG_NAME).exists()
 
-    /**
-     * The nonce stored in the pending flag, or null when there is no pending flag (or it is
-     * unreadable / was not written by [requestKillMain]).
-     */
+    /** The nonce stored in the pending flag, or null when there is no pending flag (or it is unreadable / was not written by [requestKillMain]). */
     internal fun flagNonce(filesDir: File): String? {
         val flag = File(filesDir, KILL_REQUEST_FLAG_NAME)
         if (!flag.exists()) return null
         val payload = runCatching { flag.readText() }.getOrNull() ?: return null
         // A payload that does not start with the nonce token is a legacy (pre-nonce) flag:
         // it must never yield a "nonce" — otherwise a broadcast crafted with the first
+//
         // token of a legacy payload could match and trigger the kill.
         if (!payload.startsWith("nonce=")) return null
         return payload.substringAfter("nonce=").substringBefore(' ').ifEmpty { null }
@@ -237,6 +235,7 @@ object RescueProcess {
         if (tmp.renameTo(flag)) return flag
         // On Windows File.renameTo cannot replace an existing destination: remove the stale
         // flag and retry, so a re-request never silently keeps the previous (stale) nonce —
+//
         // a stale nonce would make the hot kill be refused by the receiver.
         if (flag.delete() && tmp.renameTo(flag)) return flag
         tmp.delete()
@@ -305,10 +304,7 @@ object RescueProcess {
     internal fun discardStaleKillRequest(context: Context): Boolean =
         discardStaleKillRequest(context.filesDir)
 
-    /**
-     * File-based core of [cancelKillRequest]: removes the flag (and any leftover parking file)
-     * without reporting anything to the caller.
-     */
+    /** File-based core of [cancelKillRequest]: removes the flag (and any leftover parking file) without reporting anything to the caller. */
     internal fun cancelKillRequestFlag(filesDir: File) {
         val flag = File(filesDir, KILL_REQUEST_FLAG_NAME)
         val parking = File(flag.path + ".consumed")
@@ -351,6 +347,7 @@ object RescueProcess {
                 if (consumeKillRequestIfNonceMatches(context.filesDir, nonce)) {
                     // Invalidate the alive marker before dying: without it, the marker would
                     // still claim the process is alive for up to [ALIVE_MARKER_STALE_MS] after
+//
                     // this kill (a re-opened Rescue Center would record a new request for a
                     // dead process — the orphan flag would self-kill the next healthy launch).
                     invalidateMainAliveMarker(context.filesDir)
@@ -363,6 +360,7 @@ object RescueProcess {
         }
         // RECEIVER_NOT_EXPORTED only exists from API 33; below it the intra-app setPackage
         // intent plus the nonce are the only visibility/origin guarantee. The flags overload
+//
         // needs API 26: on older devices the handler-only overload is used.
         val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Context.RECEIVER_NOT_EXPORTED else 0
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -424,11 +422,7 @@ object RescueProcess {
      */
     fun touchMainAliveMarker(context: Context) = touchMainAliveMarker(context.filesDir)
 
-    /**
-     * File-based core of [touchMainAliveMarker], with the payload assembled by the caller —
-     * kept out of the JVM-invisible [Process] API so the marker logic stays unit-testable
-     * (same seam as [writeKillRequestFlag]).
-     */
+    /** File-based core of [touchMainAliveMarker], with the payload assembled by the caller — kept out of the JVM-invisible [Process] API so the marker logic stays unit-testable (same seam as [writeKillRequestFlag]). */
     internal fun touchMainAliveMarker(filesDir: File) {
         touchMainAliveMarker(
             filesDir,
@@ -488,6 +482,7 @@ object RescueProcess {
         val mtime = marker.lastModified()
         // A future mtime (the device clock was rewound or NTP-corrected after the last
         // refresh) must read stale — never fresh — or a dead process would read alive
+//
         // indefinitely. The age is therefore clamped to the window 0..STALE_MS.
         return mtime > 0L && now - mtime in 0L..ALIVE_MARKER_STALE_MS
     }

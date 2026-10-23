@@ -60,16 +60,12 @@ internal class RewindMonthlyPlaylistWorker(
         private const val WORK_NAME = "RewindMonthlyPlaylistWorker"
         private const val NOTIFICATION_ID = 0x7265706C // 'repl', stable across runs (autoCancel)
 
-        /**
-         * PendingIntent request code UNIQUE to this worker — see
-         * [RewindReminderWorker.PENDING_REQUEST_CODE]: all four rewind workers post content
-         * intents to the same MainActivity, and sharing request code 0 made the last poster
-         * overwrite the other notifications' content intents.
-         */
+        /** PendingIntent request code UNIQUE to this worker — see [RewindReminderWorker.PENDING_REQUEST_CODE]: all four rewind workers post content intents to the same MainActivity, and sharing request code 0 made the last poster overwrite the other notifications' content intents. */
         private const val PENDING_REQUEST_CODE = 3
 
         // Positive-only jitter so installs do not all hit WorkManager at the same
         // 1st-of-month instant: it can only push the firing later (up to +10 min), never
+//
         // before the 1st — an early fire would compute the finished month one month too far back
         private const val JITTER_MS = 10L * 60 * 1000
 
@@ -81,11 +77,7 @@ internal class RewindMonthlyPlaylistWorker(
         internal fun isMonthlyPlaylistEnabled(context: Context): Boolean =
             DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true)
 
-        /**
-         * The monthly playlist notification gate: posts only while both the notification
-         * toggle and the creation toggle are on — a type off implies its notification
-         * off, even if the notification toggle is on.
-         */
+        /** The monthly playlist notification gate: posts only while both the notification toggle and the creation toggle are on — a type off implies its notification off, even if the notification toggle is on. */
         internal fun isMonthlyPlaylistNotificationEnabled(context: Context): Boolean =
             isMonthlyPlaylistEnabled(context) &&
             DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_NOTIF_ENABLED, true)
@@ -138,6 +130,7 @@ internal class RewindMonthlyPlaylistWorker(
             if (!isMonthlyPlaylistEnabled(applicationContext)) {
                 // Re-read the toggle at execution time: a flip made after the work was
                 // enqueued must skip the creation. The self-reschedule below still runs
+//
                 // and, with the gate off, cancels the pending work: the cadence resumes
                 // at the next app startup while the gate is on.
                 Timber.tag(TAG).i("Rewind monthly playlist disabled in settings: skipping $name")
@@ -145,6 +138,7 @@ internal class RewindMonthlyPlaylistWorker(
             } else if (Database.playlistTable.findByName(name).first() != null) {
                 // Frozen "already exists" behavior: a total skip (no write, no
                 // notification). A playlist deleted by the user is never recreated by
+//
                 // this worker — it runs once per month, only the deck pill brings it back.
                 Timber.tag(TAG).i("Rewind playlist \"$name\" already exists: total skip (no write, no notification)")
                 Result.success()
@@ -158,6 +152,7 @@ internal class RewindMonthlyPlaylistWorker(
                     if (count > 0) {
                         // The deep link needs the playlist's database id: the creation above
                         // already resolved the name, so one lookup is enough (spec GH-275
+//
                         // follow-up — the notification opens the playlist directly).
                         val playlistId = Database.playlistTable.findByName(name).first()?.id
                         postCreatedNotification(finished.month.getDisplayName(TextStyle.FULL, Locale.getDefault()), playlistId)
@@ -183,6 +178,7 @@ internal class RewindMonthlyPlaylistWorker(
         ) {
             // The runtime grant is the frozen gate for the notification only: the playlist
             // was created regardless (the creation is the purpose, the notification is
+//
             // optional — frozen task WORKER_NOTIF_DENIED).
             Timber.tag(TAG).i("POST_NOTIFICATIONS denied: \"$finishedMonthName\" playlist created without a notification")
             return
@@ -190,8 +186,10 @@ internal class RewindMonthlyPlaylistWorker(
 
         // The content intent deep-links to the just-created playlist: a tap opens it
         // directly (spec GH-275 follow-up — renegotiated: the playlist notification is no
+//
         // longer a bare app open). A missing id (the lookup raced the creation) falls back
         // to the bare app open: the playlist exists either way, the user finds it in the
+//
         // Playlists tab's Rewind category.
         val intent = Intent(applicationContext, MainActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)

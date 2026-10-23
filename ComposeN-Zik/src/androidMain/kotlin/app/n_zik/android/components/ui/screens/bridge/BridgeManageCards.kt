@@ -51,10 +51,7 @@ import timber.log.Timber
 
 private const val TAG = "BridgeManageUi"
 
-/**
- * "Connected PC" card of "Manage server": the PC holding the session and Disconnect, which
- * closes its session with `4001 KICKED` without revoking it (contract §6.4) — no confirmation.
- */
+/** "Connected PC" card of "Manage server": the PC holding the session and Disconnect, which closes its session with `4001 KICKED` without revoking it (contract §6.4) — no confirmation. */
 @Composable
 internal fun ConnectedPcCard(device: ActiveDevice) {
     val palette = colorPalette()

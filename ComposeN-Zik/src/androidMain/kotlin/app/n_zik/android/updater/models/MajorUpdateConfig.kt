@@ -43,13 +43,7 @@ object MajorUpdateConfig {
         }
     }
 
-    /**
-     * Determines if a build transition warning should be shown.
-     * Returns:
-     * - "stable-to-beta"
-     * - "beta-to-stable"
-     * - null if no transition or same build type
-     */
+    /** Determines if a build transition warning should be shown. Returns: - "stable-to-beta" - "beta-to-stable" - null if no transition or same build type */
     fun getTransitionType(lastBuildType: String?): String? {
         if (lastBuildType.isNullOrEmpty()) return null
         val currentBuildType = getCurrentBuildType()

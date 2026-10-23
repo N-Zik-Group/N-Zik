@@ -33,8 +33,10 @@ class SessionArtworkPlayer(upstream: Player) : ForwardingPlayer(upstream) {
         val metadata = super.getMediaMetadata()
         // The placeholders are for LOADED, NON-IDLE tracks without tags (KDoc):
         // with no current media item, or while the player is IDLE (nothing
+//
         // playing — e.g. a persistent queue restored without auto-resume), the
         // metadata must be published as-is, otherwise "unknown title / unknown
+//
         // artist" would surface for a player without music.
         val currentItem = currentMediaItem
         val hasLoadedTrack = currentItem != null && playbackState != Player.STATE_IDLE

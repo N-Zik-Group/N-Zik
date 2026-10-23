@@ -112,8 +112,10 @@ class QuickPicksBrowseHandler : BrowseHandler {
 
         // 2. Network sections in parallel inside a coroutineScope: the page
         // waits for the slowest one (bounded by the fetchSection timeout),
+//
         // never the sum. The related page is ALWAYS fetched — with the app's
         // default seed when there is no local history — so the row fills even
+//
         // with an empty DB, exactly like in the app.
         val (ytmQuickPicks, relatedRaw) = coroutineScope {
             val ytmDeferred = if (isYouTubeLoggedIn() && Innertube.useLoginForBrowse) {

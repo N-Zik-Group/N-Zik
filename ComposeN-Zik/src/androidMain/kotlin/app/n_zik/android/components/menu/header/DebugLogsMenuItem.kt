@@ -65,6 +65,7 @@ fun DebugLogsMenuItem(
     var logDebugEnabled by rememberPreference(logDebugEnabledKey, false)
     // The "Rescue Center" label is the width reference of the burger menu: this label
     // is clamped to its rendered width and scrolls in a marquee when longer (same
+//
     // width-cap pattern as the header badges' "DEBUG" cap).
     val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
     val labelStyle = MaterialTheme.typography.labelLarge

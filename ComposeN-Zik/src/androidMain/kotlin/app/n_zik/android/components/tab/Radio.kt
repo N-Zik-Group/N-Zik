@@ -40,6 +40,7 @@ class Radio private constructor(
     override val iconId: Int get() = radioButtonIconRes(binder)
     // Guest lock (spec-listen-together-guest-lock-hardening): the radio is a host-owned stateful
     // control — a locked guest sees this menu item grayed (the tap is answered by the shared
+//
     // blocked toast via the central startRadio() guard), consistent with the other locked sites
     // (MiniPlayer, ActionBar, PlaylistSongList).
     override val modifier: Modifier

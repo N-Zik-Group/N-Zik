@@ -54,16 +54,12 @@ internal class RewindYearlyPlaylistWorker(
         private const val WORK_NAME = "RewindYearlyPlaylistWorker"
         private const val NOTIFICATION_ID = 0x72657079 // 'repy', stable across runs (autoCancel)
 
-        /**
-         * PendingIntent request code UNIQUE to this worker — see
-         * [RewindReminderWorker.PENDING_REQUEST_CODE]: all four rewind workers post content
-         * intents to the same MainActivity, and sharing request code 0 made the last poster
-         * overwrite the other notifications' content intents.
-         */
+        /** PendingIntent request code UNIQUE to this worker — see [RewindReminderWorker.PENDING_REQUEST_CODE]: all four rewind workers post content intents to the same MainActivity, and sharing request code 0 made the last poster overwrite the other notifications' content intents. */
         private const val PENDING_REQUEST_CODE = 4
 
         // Positive-only jitter so installs do not all hit WorkManager at the same
         // 1st-of-January instant: it can only push the firing later (up to +10 min), never
+//
         // before the 1st — an early fire would compute the finished year one year too far back
         private const val JITTER_MS = 10L * 60 * 1000
 
@@ -75,11 +71,7 @@ internal class RewindYearlyPlaylistWorker(
         internal fun isYearlyPlaylistEnabled(context: Context): Boolean =
             DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
 
-        /**
-         * The yearly playlist notification gate: posts only while both the notification
-         * toggle and the creation toggle are on — a type off implies its notification
-         * off, even if the notification toggle is on.
-         */
+        /** The yearly playlist notification gate: posts only while both the notification toggle and the creation toggle are on — a type off implies its notification off, even if the notification toggle is on. */
         internal fun isYearlyPlaylistNotificationEnabled(context: Context): Boolean =
             isYearlyPlaylistEnabled(context) &&
             DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_NOTIF_ENABLED, true)
@@ -128,12 +120,14 @@ internal class RewindYearlyPlaylistWorker(
         return try {
             // Computed at execution, not scheduling: the work fires on the 1st of January
             // of year Y, so the finished year is Y-1 — the same "now minus one" approach
+//
             // the monthly worker uses for its finished month.
             val finishedYear = LocalDate.now().year - 1
             val name = RewindPlaylists.yearlyName(finishedYear)
             if (!isYearlyPlaylistEnabled(applicationContext)) {
                 // Re-read the toggle at execution time: a flip made after the work was
                 // enqueued must skip the creation. The self-reschedule below still runs
+//
                 // and, with the gate off, cancels the pending work: the cadence resumes
                 // at the next app startup while the gate is on.
                 Timber.tag(TAG).i("Rewind yearly playlist disabled in settings: skipping $name")
@@ -141,6 +135,7 @@ internal class RewindYearlyPlaylistWorker(
             } else if (Database.playlistTable.findByName(name).first() != null) {
                 // Frozen "already exists" behavior: a total skip (no write, no
                 // notification). A playlist deleted by the user is never recreated by
+//
                 // this worker — it runs once per year, only the deck pill brings it back.
                 Timber.tag(TAG).i("Rewind playlist \"$name\" already exists: total skip (no write, no notification)")
                 Result.success()
@@ -154,6 +149,7 @@ internal class RewindYearlyPlaylistWorker(
                     if (count > 0) {
                         // The deep link needs the playlist's database id: the creation above
                         // already resolved the name, so one lookup is enough (spec GH-275
+//
                         // follow-up — the notification opens the playlist directly).
                         val playlistId = Database.playlistTable.findByName(name).first()?.id
                         postCreatedNotification(finishedYear.toString(), playlistId)
@@ -179,6 +175,7 @@ internal class RewindYearlyPlaylistWorker(
         ) {
             // The runtime grant is the frozen gate for the notification only: the playlist
             // was created regardless (the creation is the purpose, the notification is
+//
             // optional — frozen task WORKER_NOTIF_DENIED).
             Timber.tag(TAG).i("POST_NOTIFICATIONS denied: \"$finishedYear\" playlist created without a notification")
             return
@@ -186,8 +183,10 @@ internal class RewindYearlyPlaylistWorker(
 
         // The content intent deep-links to the just-created playlist: a tap opens it
         // directly (spec GH-275 follow-up — renegotiated: the playlist notification is no
+//
         // longer a bare app open). A missing id (the lookup raced the creation) falls back
         // to the bare app open: the playlist exists either way, the user finds it in the
+//
         // Playlists tab's Rewind category.
         val intent = Intent(applicationContext, MainActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)

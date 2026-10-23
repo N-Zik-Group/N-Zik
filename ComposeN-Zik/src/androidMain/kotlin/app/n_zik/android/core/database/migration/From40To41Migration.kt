@@ -21,6 +21,7 @@ val From40To41Migration = object : Migration(40, 41) {
 
         // The view reads SongPlaylistMap: since SQLite 3.26, ALTER TABLE ... RENAME fails with
         // "error in view" while the view points at the dropped table, so it is dropped here and
+//
         // recreated (same definition as schemas/.../41.json) after the last rebuild.
         db.execSQL("DROP VIEW IF EXISTS SortedSongPlaylistMap")
 

@@ -35,8 +35,10 @@ class AlbumsBrowseHandler : BrowseHandler {
             PlayerServiceModern.ALBUM -> {
                 // Mirror the phone's HomeAlbum tabs: same order (homeAlbumsOrderKey)
                 // and visibility (showFavoritesAlbumKey) as the in-app settings
+//
                 // dialog. Disliked albums stay always hidden from All/Favorites
                 // and always shown in their dedicated folder — opening one + the
+//
                 // DISLIKE_ALBUM command removes its dislike (toggle).
                 val showFavoritesAlbum = try { context.preferences.getBoolean(showFavoritesAlbumKey, true) } catch (e: Exception) { true }
                 val libraryCount = database.albumTable.allInLibrary().first().count { it.dislikedAt == null }

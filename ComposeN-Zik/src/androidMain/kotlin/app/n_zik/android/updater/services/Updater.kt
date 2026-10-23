@@ -61,11 +61,7 @@ object Updater {
     lateinit var build: GithubRelease.Build
     var githubRelease: GithubRelease? by mutableStateOf(null)
 
-    /**
-     * Extracts the build type from version string
-     * e.g., "1.0.0-f" returns "full", "1.0.0-beta32" returns "beta",
-     * "1.0.0-m32" returns "minified", "1.0.0-dev32-20261013" returns "dev"
-     */
+    /** Extracts the build type from version string e.g., "1.0.0-f" returns "full", "1.0.0-beta32" returns "beta", "1.0.0-m32" returns "minified", "1.0.0-dev32-20261013" returns "dev" */
     fun extractBuildType(versionStr: String): String {
         return when {
             versionStr.endsWith(UpdaterConstants.SUFFIX_BETA) ||
@@ -77,20 +73,13 @@ object Updater {
         }
     }
 
-    /**
-     * Extracts the version suffix from version string
-     * e.g., "1.0.0-f" returns "f", "1.0.0-beta32" returns "beta32",
-     * "1.0.0-dev-20261013" returns "dev"
-     */
+    /** Extracts the version suffix from version string e.g., "1.0.0-f" returns "f", "1.0.0-beta32" returns "beta32", "1.0.0-dev-20261013" returns "dev" */
     fun extractVersionSuffix(versionStr: String): String {
         val parts = versionStr.removePrefix(UpdaterConstants.PREFIX_VERSION).split("-")
         return if (parts.size > 1) parts[1] else ""
     }
 
-    /**
-     * Returns true for the dev build family — both the "dev" and "dev32"
-     * flavors, which share the same dev releases and release tags.
-     */
+    /** Returns true for the dev build family — both the "dev" and "dev32" flavors, which share the same dev releases and release tags. */
     fun isDevFamily(versionStr: String): Boolean {
         val suffix = extractVersionSuffix(versionStr)
         return suffix == UpdaterConstants.SUFFIX_CHAR_DEV ||
@@ -133,6 +122,7 @@ object Updater {
             isDevFamily(clean) -> {
                 // Dated dev32 shares the dated dev tag; an undated dev32 is not
                 // producible (the build always appends the date) but is mapped to
+//
                 // the undated shared dev tag instead of the non-existent
                 // "-dev32" tag. Any other dev version is kept as-is.
                 val tag = when {
@@ -221,11 +211,7 @@ object Updater {
         return "${UpdateEndpoints.RELEASE_DOWNLOAD_URL}$tag/${assetName(appName, versionStr)}"
     }
 
-    /**
-     * Returns the changelog URL for the given version: dev-family builds
-     * (dev + dev32) share a single "dev.txt", every other flavor uses its
-     * version code.
-     */
+    /** Returns the changelog URL for the given version: dev-family builds (dev + dev32) share a single "dev.txt", every other flavor uses its version code. */
     fun currentChangelogUrl(versionCode: Int, versionStr: String): String {
         return if (isDevFamily(versionStr)) {
             "${UpdateEndpoints.CHANGELOGS_URL}/dev.txt"
@@ -234,10 +220,7 @@ object Updater {
         }
     }
 
-    /**
-     * Returns the version suffix (-beta/-beta32, -m/-m32, -f/-f32) based on
-     * the selected build, keeping the 32-bit marker when the APK is 32-bit.
-     */
+    /** Returns the version suffix (-beta/-beta32, -m/-m32, -f/-f32) based on the selected build, keeping the 32-bit marker when the APK is 32-bit. */
     fun getBuildSuffix(): String {
         if (!::build.isInitialized) return UpdaterConstants.SUFFIX_FULL
         // Anchor on the extension: asset names are "…-<type>32.apk", a bare
@@ -325,10 +308,7 @@ object Updater {
         }
     }
 
-    /**
-     * Visible for testing: selects the APK build matching the current flavor
-     * from a release's assets (see `UpdaterReleaseTagTest`).
-     */
+    /** Visible for testing: selects the APK build matching the current flavor from a release's assets (see `UpdaterReleaseTagTest`). */
     internal fun extractBuild(
         assets: List<GithubRelease.Build>,
         checkBetaUpdates: Boolean = false,
@@ -352,6 +332,7 @@ object Updater {
 
         // Fallback to the original logic — 32-aware, so a 32-bit user is
         // never pointed at a 64-bit APK (the base type name would be
+//
         // un-installable on a 32-bit-only device)
         val fallbackType = when (currentSuffix) {
             UpdaterConstants.SUFFIX_CHAR_FULL32 -> UpdaterConstants.TYPE_FULL32
@@ -459,6 +440,7 @@ object Updater {
         if (bestRelease != null) {
             // Only publish the release once its APK resolved successfully, so a
             // failed extraction (e.g. a 32-bit user whose best release ships no
+//
             // 32-bit asset) reports "no update" instead of a stale or
             // undeliverable one
             build = extractBuild(bestRelease.builds, checkBetaUpdates)
@@ -600,8 +582,10 @@ object Updater {
 
             // Skip releases that ship none of the user's installable assets
             // (e.g. a 32-bit user facing a beta release published without the
+//
             // matching 32-bit asset, or a docs-only release) — the user then
             // falls back to the best release that does ship one. Unknown
+//
             // flavors have no installable list, so the legacy behavior (any
             // release passes) is kept for them.
             val shipsInstallableAsset = installableAssets.isEmpty() ||

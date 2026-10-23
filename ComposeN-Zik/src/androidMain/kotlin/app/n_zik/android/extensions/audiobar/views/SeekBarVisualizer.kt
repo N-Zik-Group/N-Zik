@@ -149,6 +149,7 @@ fun SeekBarVisualizer(
 
             // Issue #606: no more direct Visualizer.getFft() call here. The shared capture
             // coordinator (NzikDispatchers.VISUALIZER) publishes one snapshot per sessionId at
+//
             // 60fps and VisualizerView reads the same instance through VisualizerHelper's
             // snapshotProvider -- this just collects it, lifecycle-aware.
             val snapshot by VisualizerCaptureCoordinator.snapshotFlow(currentSessionId)

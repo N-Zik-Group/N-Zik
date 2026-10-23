@@ -246,6 +246,7 @@ fun HomeQuickPicks(
 
     // Honest loading state: keep the skeleton while data is missing, even if a
     // stale "loaded" flag survived — flag true + no data used to render a
+//
     // silent blank wall instead of a spinner.
     var showLoader by remember { mutableStateOf(!state.loadedData.value || state.homePageInit.value == null) }
     LaunchedEffect(state.loadedData.value, state.homePageInit.value?.sections?.size) {
@@ -299,6 +300,7 @@ fun HomeQuickPicks(
 
             // Spec 2: local rewind-* playlists for the Quick Picks "Rewind" section —
             // direct data, no HomeQuickPicksState detour. The toggle reuses the legacy
+//
             // showMonthlyPlaylistsKey (spec 1 kept the persisted user preference).
             val showRewind by rememberPreference(showMonthlyPlaylistsKey, true)
             val rewindPlaylists by remember {
@@ -391,6 +393,7 @@ fun HomeQuickPicks(
                                         isQuickPicksLoading = true
                                         // Shuffler.play() is fire-and-forget (issue #606 M2): when it's actually
                                         // invoked, isQuickPicksLoading is cleared from its onComplete once work
+//
                                         // actually finishes. shufflerWillClear guards the `finally` below so an
                                         // exception thrown before reaching Shuffler.play() still clears the flag.
                                         var shufflerWillClear = false

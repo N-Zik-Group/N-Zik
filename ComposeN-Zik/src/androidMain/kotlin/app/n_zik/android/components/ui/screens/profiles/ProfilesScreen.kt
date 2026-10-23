@@ -147,8 +147,10 @@ fun ProfileScreen(
     var profileToRename by remember { mutableStateOf("") }
 
     // Profile state (list + faces) import / export — the combined .txt archive, the
-    // same one the backup and the rescue screen use. On its own no restart is needed:
-    // the list, the names and the faces are re-read on recomposition.
+    // same one the backup and the rescue screen use.
+    //
+    // On its own no restart is needed: the list, the names and the faces are
+    // re-read on recomposition.
     val exportProfileState = ExportProfileStateDialog(context)
     var showImportConfirm by remember { mutableStateOf(false) }
     var crossProfilePending by remember { mutableStateOf<Pair<String, () -> Unit>?>(null) }
@@ -162,8 +164,9 @@ fun ProfileScreen(
     }
 
     // Every page read (the names file, the faces, the database sizes) happens on the
-    // DATA dispatcher, never in composition; [refresh] re-resolves everything after a
-    // create / rename / delete.
+    // DATA dispatcher, never in composition;
+    //
+    // [refresh] re-resolves everything after a create / rename / delete.
     LaunchedEffect(refresh) {
         state = withContext(NzikDispatchers.DATA) {
             val ids = context.readProfileIds()
@@ -264,8 +267,9 @@ fun ProfileScreen(
                             showRenamePopup = true
                         },
                         // The active profile cannot be deleted: after a delete,
-                        // activeProfile would point at the gone ID (a fresh empty
-                        // profile with no "active" row).
+                        // activeProfile would point at the gone ID
+                        //
+                        // (a fresh empty profile with no "active" row).
                         onDelete = if (row.id == DEFAULT_PROFILE_ID || row.id == page.activeId) {
                             null
                         } else {
@@ -327,8 +331,9 @@ fun ProfileScreen(
                     context.writeProfileEntries(context.currentProfileEntries() + (trimmedName to ""))
                 ) {
                     // The new profile's direct shortcut must appear in the launcher right away
-                    // (spec-profile-shortcuts: the shortcut set is re-registered after every
-                    // profile add / rename / delete, same call as the settings dialog).
+                    // (spec-profile-shortcuts: the shortcut set is re-registered after
+                    //
+                    // every profile add / rename / delete, same call as the settings dialog).
                     registerAppShortcuts(context)
                     refresh++
                 } else {
@@ -354,6 +359,7 @@ fun ProfileScreen(
                 val trimmedName = name.trim()
                 // Confirming the name as-is stores nothing: for the base profile the
                 // dialog opens on the resolved default name, and storing that as a
+                //
                 // "custom" name would make the state archive claim the base carries a
                 // state (hasState) out of nothing.
                 if (trimmedName != renameRow.displayName) {
@@ -368,11 +374,13 @@ fun ProfileScreen(
                         // name into it so a restore never carries a stale name.
                         context.writeProfileEntries(context.currentProfileEntries())
                         // The shortcut keeps its stable ID (the rename never re-creates it);
-                        // only its label changes — re-register so the launcher shows the new
-                        // name right away (spec-profile-shortcuts).
+                        // only its label changes —
+                        //
+                        // re-register so the launcher shows the new name right away (spec-profile-shortcuts).
                         registerAppShortcuts(context)
                         // The channel labels carry the display name ("Player — Work"); Android
                         // channel names are immutable, so the rename is applied by deleting +
+                        //
                         // re-creating the profile's 6 channels (a no-op for the base, whose
                         // channels keep their base name) (spec per-profile-notifications).
                         recreateProfileChannels(context, profileToRename)
@@ -406,18 +414,22 @@ fun ProfileScreen(
                     context.clearProfileFaceEntries(removingProfile)
                     deleteProfileAvatar(context, removingProfile)
                     // The profile's 6 notification channels + its pending notifications are
-                    // purged with the profile — no orphan channel (or notification) left
-                    // behind for a profile that no longer exists.
+                    // purged with the profile —
+                    //
+                    // no orphan channel (or notification) left behind for a profile that no longer exists.
                     deleteProfileChannels(context, removingProfile)
                     // The profile's SEPARATE data dirs + index are purged with it
-                    // (spec-profile-data-separation) — the shared items stay with the
-                    // base, and its sharing flags are forgotten.
+                    // (spec-profile-data-separation) —
+                    //
+                    // the shared items stay with the base, and its sharing flags are forgotten.
                     purgeProfileData(context, removingProfile)
                     withContext(NzikDispatchers.UI) {
                         // The deleted profile's shortcut must vanish from the launcher right
                         // away (spec-profile-shortcuts: the shortcut set is re-registered after
+                        //
                         // every profile add / rename / delete, same call as the settings dialog).
                         // The names file was rewritten above, so this re-registration no longer
+                        //
                         // sees the deleted profile.
                         registerAppShortcuts(context)
                         refresh++
@@ -459,9 +471,10 @@ fun ProfileScreen(
             onConfirm = {
                 executeProfileSwitch(profileToSwitch, context)
                 // Close the app with exit 0 (no problem occurred): the new profile's stores
-                // can only be loaded in a fresh process. The process exit deliberately lives
-                // HERE (not in executeProfileSwitch) so the switch wiring stays pinnable
-                // under Robolectric without killing the test JVM (ProfileSwitchTest).
+                // can only be loaded in a fresh process.
+                //
+                // The process exit deliberately lives HERE (not in executeProfileSwitch) so the
+                // switch wiring stays pinnable under Robolectric without killing the test JVM (ProfileSwitchTest).
                 exitProcess(0)
             }
         )
@@ -516,8 +529,10 @@ fun ProfileScreen(
 internal fun executeProfileSwitch(profile: String, context: Context) {
     // CAP-3: the notifications pending on the channels of the profile left (rewind, sync,
     // listen-together — the non-ongoing ones survive a process death) are cancelled
+//
     // synchronously, before the switch and the process exit below — per channel, never by
     // tag. Captured here, BEFORE setActiveProfile, so the cancel target can never drift to
+//
     // the destination profile if the statements below are reordered.
     val leftProfile = getActiveProfile(context)
     cancelProfileNotifications(context, leftProfile)
@@ -624,6 +639,7 @@ private fun ProfileStateActionCard(
         shape = uiRoundnessShape(),
         colors = CardDefaults.cardColors(
             // The same rule as the other NZik cards (SettingsSectionCard): the
+//
             // pitch-black themes need the lighter gray, or the card vanishes on
             // pure black.
             containerColor = if (colorPalette() === PureBlackColorPalette ||

@@ -13,10 +13,7 @@ internal val MINI_PLAYER_TOP_GAP: Dp = 8.dp
 /** Breathing room kept between a top-anchored mini-player and the content that starts under it. */
 internal val MINI_PLAYER_CONTENT_GAP: Dp = 8.dp
 
-/**
- * Height of the top navigation bar: the bar's 64dp minus the 10dp trim, plus the 5dp
- * bottom padding it gets at the top (see HorizontalNavigationBar).
- */
+/** Height of the top navigation bar: the bar's 64dp minus the 10dp trim, plus the 5dp bottom padding it gets at the top (see HorizontalNavigationBar). */
 internal val TOP_NAV_BAR_HEIGHT: Dp
     get() = Dimensions.navigationBarHeight - 5.dp
 

@@ -29,16 +29,15 @@ internal class BridgeLibraryObserver(
     private val prefs = context.applicationContext.getSharedPreferences("preferences", Context.MODE_PRIVATE)
 
     // `start` (the server run, a background thread) and `stop` (`onDestroy`, main) can race: the
-    // check-then-act is atomic under one lock, or a late `start` leaves a dangling listener
-    // registered while `started` is back to `false` (the next `stop` then unregisters nothing)
+    // check-then-act is atomic under one lock,
+    //
+    // or a late `start` leaves a dangling listener registered while `started` is back to
+    // `false` (the next `stop` then unregisters nothing)
     private val lock = Any()
     private var started = false
     private var prefsListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
 
-    /**
-     * Registers the library write notifier, the sort-menu preference listener and the smart-shuffle
-     * listener; a no-op while already started.
-     */
+    /** Registers the library write notifier, the sort-menu preference listener and the smart-shuffle listener; a no-op while already started. */
     fun start() {
         synchronized(lock) {
             if (started) return
@@ -73,11 +72,7 @@ internal class BridgeLibraryObserver(
     }
 
     companion object {
-        /**
-         * A preference key one of the phone's songs sort menus reads (a chip's order, an
-         * option's visibility) — [SongsSortMenu.sortMenuKeys], the single source of truth
-         * of those keys (the §10.1 `sortMenu` read that shared it was removed in 1.11.0).
-         */
+        /** A preference key one of the phone's songs sort menus reads (a chip's order, an option's visibility) — [SongsSortMenu.sortMenuKeys], the single source of truth of those keys (the §10.1 `sortMenu` read that shared it was removed in 1.11.0). */
         fun isSongsSortMenuKey(key: String): Boolean = key in SongsSortMenu.sortMenuKeys
     }
 }

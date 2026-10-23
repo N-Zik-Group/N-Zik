@@ -159,11 +159,7 @@ fun mediaCacheDir(context: Context, profileId: String): File? {
     return profileCacheBaseDir(context, settingsProfile).resolve(names.mediaCacheDir)
 }
 
-/**
- * The custom covers directory of [profileId] (`app_covers` / `app_covers_<id>`), ALWAYS
- * under filesDir (the same rule as today: the covers survive a cache clear, so the
- * location setting does not apply to them).
- */
+/** The custom covers directory of [profileId] (`app_covers` / `app_covers_<id>`), ALWAYS under filesDir (the same rule as today: the covers survive a cache clear, so the location setting does not apply to them). */
 fun coversDir(context: Context, profileId: String): File {
     val names = resolveProfileDataDirNames(profileId, context.profileSharedItems(profileId))
     return context.filesDir.resolve(names.coversDir)
@@ -180,19 +176,11 @@ fun coilImageCacheDir(context: Context, profileId: String): File {
     return profileCacheBaseDir(context, settingsProfile).resolve(names.imageCacheDir)
 }
 
-/**
- * The custom covers folder NAME of the ACTIVE profile (`app_covers` for the base,
- * `app_covers_<id>` otherwise) — the single source the cover dialogs pass to their save
- * step, so the save side can never drift back to a literal dir name
- * (spec-profile-data-separation).
- */
+/** The custom covers folder NAME of the ACTIVE profile (`app_covers` for the base, `app_covers_<id>` otherwise) — the single source the cover dialogs pass to their save step, so the save side can never drift back to a literal dir name (spec-profile-data-separation). */
 fun activeCoversDirName(context: Context): String =
     coversDir(context, getActiveProfile(context)).name
 
-/**
- * The waveforms directory of [profileId] (`waveforms` / `waveforms_<id>`), ALWAYS under
- * filesDir (the same rule as today: the waveforms survive a cache clear).
- */
+/** The waveforms directory of [profileId] (`waveforms` / `waveforms_<id>`), ALWAYS under filesDir (the same rule as today: the waveforms survive a cache clear). */
 fun waveformsDir(context: Context, profileId: String): File {
     val names = resolveProfileDataDirNames(profileId, context.profileSharedItems(profileId))
     return context.filesDir.resolve(names.waveformsDir)
@@ -206,13 +194,7 @@ fun waveformsDir(context: Context, profileId: String): File {
 fun profileIndexDbFile(context: Context, profileId: String): File =
     context.getDatabasePath("${ProfileDataDirNames.INDEX_DB_BASE_NAME}_$profileId.db")
 
-/**
- * The [DatabaseProvider] of a cache pointing at [dbName] (the Media3 index): the base
- * database keeps [StandaloneDatabaseProvider] bit-for-bit (Media3 1.10.1 has no
- * custom-name constructor on it); a suffixed profile database wraps an anonymous
- * [SQLiteOpenHelper] with EMPTY `onCreate`/`onUpgrade` — the same behavior as
- * StandaloneDatabaseProvider: the Media3 features create their own tables when missing.
- */
+/** The [DatabaseProvider] of a cache pointing at [dbName] (the Media3 index): the base database keeps [StandaloneDatabaseProvider] bit-for-bit (Media3 1.10.1 has no custom-name constructor on it); a suffixed profile database wraps an anonymous [SQLiteOpenHelper] with EMPTY `onCreate`/`onUpgrade` — the same behavior as StandaloneDatabaseProvider: the Media3 features create their own tables when missing. */
 fun cacheDatabaseProvider(context: Context, dbName: String): DatabaseProvider =
     if (dbName == ProfileDataDirNames.INDEX_DB_FILE) StandaloneDatabaseProvider(context)
     else DefaultDatabaseProvider(

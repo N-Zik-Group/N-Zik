@@ -429,9 +429,12 @@ fun UpdateScreen(navController: NavController) {
                                         .clip(uiRoundnessShape()).clickable {
                                             // Prefer the actual release tag when the target release is
                                             // known, so the link always points to an existing release
+//
                                             // (dev tags carry a dated suffix that cannot be guessed)
                                             // hasUpdate guarantees a non-null githubRelease, so the
+//
                                             // elvis below only applies on the no-update path
+//
                                             val tag = (if (hasUpdate) Updater.githubRelease?.tagName else null)
                                                 ?: Updater.releaseTag(currentVersion)
                                             uriHandler.openUri("${UpdateEndpoints.REPO_URL}/releases/tag/$tag")
@@ -529,6 +532,7 @@ fun UpdateScreen(navController: NavController) {
 
                                     // The beta toggle only makes sense for flavors that can receive
                                     // beta updates (full/full32/beta/beta32); the minified and dev
+//
                                     // families never receive beta updates
                                     val showBetaToggle = !Updater.isMinifiedFamily(BuildConfig.VERSION_NAME) &&
                                         !Updater.isDevFamily(BuildConfig.VERSION_NAME)

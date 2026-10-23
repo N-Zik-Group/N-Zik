@@ -8,10 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
-/**
- * Generic content dialog on the shared [DialogFrame]: a vertically
- * scrolling body (no title, no built-in buttons — the content decides).
- */
+/** Generic content dialog on the shared [DialogFrame]: a vertically scrolling body (no title, no built-in buttons — the content decides). */
 @Composable
 inline fun DefaultDialog(
     noinline onDismiss: () -> Unit,
@@ -26,6 +23,7 @@ inline fun DefaultDialog(
     ) {
         // The frame body itself stays non-scrollable (canon); tall content
         // scrolls inside this column instead of being clipped by the frame's
+
         // 80 % height cap (the legacy DefaultDialog was scrollable).
         Column(
             modifier = Modifier

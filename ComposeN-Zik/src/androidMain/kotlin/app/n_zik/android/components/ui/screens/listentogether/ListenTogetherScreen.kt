@@ -1,12 +1,17 @@
 // Room screen for the Listen Together feature (Metrolist port — N-Zik styling):
 // the UI is built exclusively from the app's own components — SettingsSectionCard /
+//
 // OtherSettingsEntry cards, app menus through the shared MenuState (ListMenu.Menu +
+//
 // ListMenu.Entry, same mechanism as the app's own item menus), themed
 // app-standard Button / IconButton / app spinner (M3 LoadingIndicator, like the
+//
 // app's themed Loader but without its full-page bottom spacer) —
 // with colorPalette(), typography() and uiRoundnessShape() throughout.
+//
 // Covers: connection status, create/join room, room code, connected users, host
 // management (join requests, suggestions, kick/block/transfer) and the settings card.
+//
 // Reference: docs/Metrolist app/src/main/kotlin/com/metrolist/music/ui/screens/ListenTogetherScreen.kt
 package app.n_zik.android.components.ui.screens.listentogether
 
@@ -116,10 +121,7 @@ internal const val PREF_USERNAME = "listen_together_username"
 /** Metrolist web share format for the room invite link (per user request). */
 internal const val LISTEN_INVITE_LINK_BASE = "https://metrolist.cc/listen"
 
-/**
- * Live username preference (SharedPreferences string, same pattern as
- * [DataStoreUtils] readers): seeds from disk on first composition, writes through on change.
- */
+/** Live username preference (SharedPreferences string, same pattern as [DataStoreUtils] readers): seeds from disk on first composition, writes through on change. */
 @Composable
 internal fun rememberUsernamePreference(context: Context): MutableState<String> =
     remember(context) {
@@ -219,7 +221,9 @@ fun ListenTogetherScreen(
 
                 // A failure must end the waiting state instead of leaving it stuck: the server
                 // can reject the operation (e.g. host_not_allowed) or the connection can drop
+//
                 // while a create/join is still in flight (user-reported: stuck on "waiting for
+//
                 // host approval"). A user-initiated cancel already reset the flags, so the
                 // Disconnected branch is a no-op in that case.
                 is ListenTogetherEvent.ServerError -> {
@@ -263,6 +267,7 @@ fun ListenTogetherScreen(
 
     // This screen registers a single nav item, so the app draws no navigation bar
     // (both bars bail out with < 2 items). Reserve only the mini-player room below
+//
     // the content instead of the full Dimensions.bottomSpacer (which assumes a bar).
     val isFloatingNav = NavigationBarPosition.BottomFloating.isCurrent()
     val miniPlayerRoom =
@@ -287,12 +292,17 @@ fun ListenTogetherScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             // App cards (SettingsSectionCard) carry their own 16dp horizontal padding and a
             // trailing 16dp spacer, so the list adds no extra horizontal padding or spacing;
+//
             // top is flush under the app header (the page header brings its own padding,
+//
             // same as the app's settings pages).
             // No imePadding and no own background here (unlike the Metrolist port): the app's
+//
             // screens let the keyboard overlay the list — the app's own search/queue screens do
+//
             // the same — and the Skeleton scaffold paints the screen background. Padding the
             // list with the IME insets left a stuck dark block behind the keyboard on this
+//
             // page (user-reported).
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -487,10 +497,7 @@ fun ListenTogetherScreen(
     }
 }
 
-/**
- * Connection status card built on the app's [SettingsSectionCard]; the status row is the
- * only LT-specific layout (no app equivalent) and uses the app palette/typography.
- */
+/** Connection status card built on the app's [SettingsSectionCard]; the status row is the only LT-specific layout (no app equivalent) and uses the app palette/typography. */
 @Composable
 internal fun ConnectionStatusCard(
     connectionState: ConnectionState,
@@ -556,6 +563,7 @@ internal fun ConnectionStatusCard(
 
                 // One UI per state: connect only when down, spinner only while (re)connecting,
                 // disconnect/reconnect only once connected (the action buttons used to show
+//
                 // ahead of time while the spinner was still running — user-reported).
                 when (connectionState) {
                     ConnectionState.DISCONNECTED,
@@ -628,11 +636,7 @@ internal fun ConnectionStatusCard(
     )
 }
 
-/**
- * Room code card built on the app's [SettingsSectionCard]; the large code display is
- * LT-specific layout rendered in the app typography/palette, the copy action reuses
- * the app's [OtherSettingsEntry] row.
- */
+/** Room code card built on the app's [SettingsSectionCard]; the large code display is LT-specific layout rendered in the app typography/palette, the copy action reuses the app's [OtherSettingsEntry] row. */
 @Composable
 internal fun RoomStatusCard(
     roomCode: String,
@@ -692,10 +696,7 @@ internal fun RoomStatusCard(
     )
 }
 
-/**
- * Connected users card built on the app's [SettingsSectionCard]; the horizontally
- * scrolling avatar row is LT-specific layout (no app avatar component) in app style.
- */
+/** Connected users card built on the app's [SettingsSectionCard]; the horizontally scrolling avatar row is LT-specific layout (no app avatar component) in app style. */
 @Composable
 internal fun ConnectedUsersSection(
     users: List<UserInfo>,
@@ -823,10 +824,7 @@ private fun UserAvatar(
     }
 }
 
-/**
- * Join requests card: app [SettingsSectionCard] container with app [ListMenu.Entry]
- * rows and themed icon buttons for approve/reject.
- */
+/** Join requests card: app [SettingsSectionCard] container with app [ListMenu.Entry] rows and themed icon buttons for approve/reject. */
 @Composable
 internal fun PendingJoinRequestsSection(
     requests: List<JoinRequestPayload>,
@@ -865,10 +863,7 @@ internal fun PendingJoinRequestsSection(
     )
 }
 
-/**
- * Song suggestions card: app [SettingsSectionCard] container with app [ListMenu.Entry]
- * rows and themed icon buttons for approve/reject.
- */
+/** Song suggestions card: app [SettingsSectionCard] container with app [ListMenu.Entry] rows and themed icon buttons for approve/reject. */
 @Composable
 internal fun PendingSuggestionsSection(
     suggestions: List<SuggestionReceivedPayload>,
@@ -908,11 +903,7 @@ internal fun PendingSuggestionsSection(
     )
 }
 
-/**
- * Join/create room card built on the app's [SettingsSectionCard]: app-styled
- * [TextField] inputs with [InputDialog] colors (like the app's own form fields),
- * app spinner ([InlineLoader], same as the connection card) and app standard buttons.
- */
+/** Join/create room card built on the app's [SettingsSectionCard]: app-styled [TextField] inputs with [InputDialog] colors (like the app's own form fields), app spinner ([InlineLoader], same as the connection card) and app standard buttons. */
 @Composable
 internal fun JoinCreateRoomSection(
     usernameInput: String,
@@ -1096,10 +1087,7 @@ internal fun JoinCreateRoomSection(
     )
 }
 
-/**
- * Full-width room action button, app standard (LastFm / SleepTimer pattern): accent
- * [Button] with the native disabled state (M3 dims it automatically) and text only.
- */
+/** Full-width room action button, app standard (LastFm / SleepTimer pattern): accent [Button] with the native disabled state (M3 dims it automatically) and text only. */
 @Composable
 private fun RoomActionButton(
     enabled: Boolean,
@@ -1125,13 +1113,7 @@ private fun RoomActionButton(
     }
 }
 
-/**
- * Inline variant of the app's themed [Loader] for card-sized containers: the exact
- * same M3 expressive LoadingIndicator (accent color, default 100dp) without the
- * themed wrapper's full-page bottom spacer — that spacer reserves room for the
- * floating nav bar / mini-player and creates a large gap under the spinner inside
- * the LT cards (user-reported).
- */
+/** Inline variant of the app's themed [Loader] for card-sized containers: the exact same M3 expressive LoadingIndicator (accent color, default 100dp) without the themed wrapper's full-page bottom spacer — that spacer reserves room for the floating nav bar / mini-player and creates a large gap under the spinner inside the LT cards (user-reported). */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun InlineLoader(modifier: Modifier = Modifier) {
@@ -1141,10 +1123,7 @@ internal fun InlineLoader(modifier: Modifier = Modifier) {
     )
 }
 
-/**
- * Standard menu icon chip (same pattern as the other app menus): tinted rounded
- * 32dp square with an 18dp icon.
- */
+/** Standard menu icon chip (same pattern as the other app menus): tinted rounded 32dp square with an 18dp icon. */
 @Composable
 internal fun SettingIcon(@DrawableRes icon: Int, color: Color) {
     Box(
@@ -1163,11 +1142,7 @@ internal fun SettingIcon(@DrawableRes icon: Int, color: Color) {
     }
 }
 
-/**
- * Host-only user management menu (kick, permanent block, transfer ownership),
- * rendered through the app's shared menu state: same [ListMenu.Menu] +
- * [ListMenu.Entry] rows as the app's own item menus — no local sheet chrome.
- */
+/** Host-only user management menu (kick, permanent block, transfer ownership), rendered through the app's shared menu state: same [ListMenu.Menu] + [ListMenu.Entry] rows as the app's own item menus — no local sheet chrome. */
 @Composable
 internal fun UserActionMenu(
     username: String,
@@ -1297,11 +1272,7 @@ fun ListenTogetherLogsMenu(
     }
 }
 
-/**
- * Single connection log row, styled after the app's own debug-log menu item:
- * leading level icon (palette tinted), message line, monospace timestamp/level
- * metadata and an optional details line.
- */
+/** Single connection log row, styled after the app's own debug-log menu item: leading level icon (palette tinted), message line, monospace timestamp/level metadata and an optional details line. */
 @Composable
 private fun LogEntryRow(log: LogEntry) {
     val palette = colorPalette()
@@ -1364,11 +1335,7 @@ private fun LogEntryRow(log: LogEntry) {
     }
 }
 
-/**
- * Blocked users menu (Metrolist `BlockedUsersDialog` port) shown through the app's
- * shared menu state: app [ListMenu.Menu] with app [ListMenu.Entry] rows; tapping a
- * row unblocks the user (no trailing buttons, like the app's own item menus).
- */
+/** Blocked users menu (Metrolist `BlockedUsersDialog` port) shown through the app's shared menu state: app [ListMenu.Menu] with app [ListMenu.Entry] rows; tapping a row unblocks the user (no trailing buttons, like the app's own item menus). */
 @Composable
 fun ListenTogetherBlockedUsersMenu(
     blockedUsernames: Set<String>,

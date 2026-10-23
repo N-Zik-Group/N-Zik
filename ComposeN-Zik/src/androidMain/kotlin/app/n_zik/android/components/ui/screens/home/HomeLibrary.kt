@@ -658,6 +658,7 @@ fun HomeLibrary(
                     }
                     // Month/Year/All filter: only when the "Rewind" chip is selected AND
                     // both creation toggles are on (one active type -> nothing to filter, the
+//
                     // tab shows that type directly; none -> empty list, no row)
                     val rewindFilterMonthLabel = stringResource(R.string.rewind_filter_month)
                     val rewindFilterYearLabel = stringResource(R.string.rewind_filter_year)

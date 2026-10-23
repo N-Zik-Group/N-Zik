@@ -121,9 +121,12 @@ object Shuffler {
             } catch (e: Exception) {
                 // Preference/DB lookups above (getAllDislikedIds/getSongsByDislikedArtists/
                 // getSongsByDislikedAlbums) run with no caller-side try/finally to fall back on
+//
                 // now that this whole block is dispatched off-main -- without this catch, a
                 // transient DB error would leave onComplete() (and therefore any caller's loading
+//
                 // flag) stuck forever instead of surfacing an error toast like the equivalent
+//
                 // failure a few lines below already does.
                 withContext(NzikDispatchers.UI) {
                     ToastRelay.e(R.string.no_song_found)

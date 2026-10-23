@@ -28,10 +28,7 @@ object PlaylistStateManager {
      */
     private const val CHUNK_SIZE = 500
 
-    /**
-     * Get playlist membership for a list of song IDs as a Flow,
-     * using the production [SongPlaylistMapTable].
-     */
+    /** Get playlist membership for a list of song IDs as a Flow, using the production [SongPlaylistMapTable]. */
     fun getPlaylistStates( songIds: List<String> ): Flow<Map<String, Boolean>> =
         getPlaylistStates( songIds, Database.songPlaylistMapTable )
 
@@ -58,6 +55,7 @@ object PlaylistStateManager {
         return combine(chunkFlows) { chunks ->
             // Explicit falses: the map always covers every requested ID,
             // same contract as likeStatesMap[song.id] — recomputed on the
+//
             // full list after the chunk results are merged
             val mappedSet = chunks.flatMap { it }.toHashSet()
             songIds.associateWith { it in mappedSet }

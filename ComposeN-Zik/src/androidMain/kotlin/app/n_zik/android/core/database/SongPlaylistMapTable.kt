@@ -156,10 +156,7 @@ interface SongPlaylistMapTable {
     @Query("UPDATE SongPlaylistMap SET position = :position WHERE playlistId = :playlistId AND songId = :songId")
     fun updatePosition( playlistId: Long, songId: String, position: Int )
 
-    /**
-     * Inserts [songId] into [playlistId] at the next available position
-     * (MAX(position) + 1, or 0 for an empty playlist); skipped if the pair already exists.
-     */
+    /** Inserts [songId] into [playlistId] at the next available position (MAX(position) + 1, or 0 for an empty playlist); skipped if the pair already exists. */
     @Query("""
         INSERT OR IGNORE INTO SongPlaylistMap ( songId, playlistId, position )
         VALUES( 
@@ -343,10 +340,7 @@ interface SongPlaylistMapTable {
     @Query("SELECT DISTINCT songId FROM SongPlaylistMap")
     fun allMappedSongIds(): Flow<List<String>>
 
-    /**
-     * Synchronous mirror of [sortSongsByPosition] for the PC bridge: only mapped songs
-     * that exist, in playlist order.
-     */
+    /** Synchronous mirror of [sortSongsByPosition] for the PC bridge: only mapped songs that exist, in playlist order. */
     @Query("""
         SELECT S.*
         FROM SongPlaylistMap spm

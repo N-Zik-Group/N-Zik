@@ -80,10 +80,7 @@ object ListenTogetherPlayerBridge {
     private val _upcomingQueue = MutableStateFlow<List<TrackInfo>>(emptyList())
     val upcomingQueue: StateFlow<List<TrackInfo>> = _upcomingQueue.asStateFlow()
 
-    /**
-     * Listener registrations kept so they can be re-attached to the fresh ExoPlayer after a
-     * crossfade player swap (the service swaps `player` and bumps `playerUpdateTrigger`).
-     */
+    /** Listener registrations kept so they can be re-attached to the fresh ExoPlayer after a crossfade player swap (the service swaps `player` and bumps `playerUpdateTrigger`). */
     private val registeredListeners = mutableMapOf<Player.Listener, Boolean>()
 
     /**
@@ -213,8 +210,9 @@ object ListenTogetherPlayerBridge {
 
     fun play() {
         val p = player ?: return
-        // A fresh (IDLE) player never starts on play() alone — see
-        // [shouldPreparePlayerAfterSync]. Defensive: covers raw setMediaItems paths
+        // A fresh (IDLE) player never starts on play() alone —
+        //
+        // see [shouldPreparePlayerAfterSync]. Defensive: covers raw setMediaItems paths
         // (SYNC_QUEUE handler) that bypass setMediaItemsForSync.
         if (shouldPreparePlayerAfterSync(p.playbackState, p.mediaItemCount)) {
             p.prepare()
@@ -300,8 +298,10 @@ object ListenTogetherPlayerBridge {
         }
         // Media3 never moves an IDLE player out of IDLE automatically (verified against the
         // media3 1.10.1 sources: setMediaItems/addMediaItems on a fresh player leave it IDLE
+//
         // and play() only flips playWhenReady). After a process restart the first sync loaded
         // the host queue but never prepared the player, so the guest stayed stuck IDLE and the
+//
         // player "did nothing" (user-reported, 2026-09-26). prepare() starts loading from the
         // pending seek above; it is a no-op for every other state.
         if (shouldPreparePlayerAfterSync(player.playbackState, player.mediaItemCount)) {
@@ -328,11 +328,7 @@ object ListenTogetherPlayerBridge {
     private var headTrimListener: Player.Listener? = null
     private var headTrimJob: Job? = null
 
-    /**
-     * Trims the played head once the player has transitioned to the item with [targetMediaId]
-     * (one-shot [Player.Listener.onMediaItemTransition]), with a [HEAD_TRIM_FALLBACK_MS]
-     * fallback for the case where no transition fires (target already current).
-     */
+    /** Trims the played head once the player has transitioned to the item with [targetMediaId] (one-shot [Player.Listener.onMediaItemTransition]), with a [HEAD_TRIM_FALLBACK_MS] fallback for the case where no transition fires (target already current). */
     private fun scheduleHeadTrim(headToRemove: Int, targetMediaId: String) {
         cancelPendingHeadTrim()
         val player = player ?: return
@@ -391,10 +387,7 @@ object ListenTogetherPlayerBridge {
 
     // ── Track conversions ──────────────────────────────────────────────────────────────
 
-    /**
-     * Video id of a media item (media ids may carry a path prefix — same convention as
-     * `MediaItem.asSong`).
-     */
+    /** Video id of a media item (media ids may carry a path prefix — same convention as `MediaItem.asSong`). */
     private fun videoIdOf(mediaId: String): String = mediaId.split("/").lastOrNull() ?: mediaId
 
     /** Current track as a proto [TrackInfo], or null when nothing is loaded. */
@@ -421,13 +414,7 @@ object ListenTogetherPlayerBridge {
     fun isListenTogetherItem(item: MediaItem?): Boolean =
         item?.mediaMetadata?.extras?.getBoolean(LISTEN_TOGETHER_EXTRA, false) == true
 
-    /**
-     * Decision for the local-DB history write in the player service's
-     * `onPlaybackStatsReady`: the app-wide pause switch always wins; Listen
-     * Together items are recorded only when the user enabled the LT history
-     * option (their metadata belongs to the host app, so at most a browseId-only
-     * placeholder Song row is written for the Event foreign key).
-     */
+    /** Decision for the local-DB history write in the player service's `onPlaybackStatsReady`: the app-wide pause switch always wins; Listen Together items are recorded only when the user enabled the LT history option (their metadata belongs to the host app, so at most a browseId-only placeholder Song row is written for the Event foreign key). */
     fun shouldRecordLocalHistory(
         isListenTogetherItem: Boolean,
         pauseListenHistory: Boolean,
@@ -512,11 +499,7 @@ object ListenTogetherPlayerBridge {
         _upcomingQueue.value = tracks
     }
 
-    /**
-     * Build a playable [MediaItem] for a proto [TrackInfo] through the existing stream
-     * pipeline: raw video id as media id + uri (the service's `ResolvingDataSource` extracts
-     * the video id and resolves the stream, exactly like `Song.asMediaItem` for YouTube ids).
-     */
+    /** Build a playable [MediaItem] for a proto [TrackInfo] through the existing stream pipeline: raw video id as media id + uri (the service's `ResolvingDataSource` extracts the video id and resolves the stream, exactly like `Song.asMediaItem` for YouTube ids). */
     @UnstableApi
     fun trackToMediaItem(track: TrackInfo): MediaItem {
         val metadataBuilder = MediaMetadata.Builder()
@@ -551,10 +534,7 @@ object ListenTogetherPlayerBridge {
             .build()
     }
 
-    /**
-     * Upcoming queue windows after the current item, converted to proto [TrackInfo]
-     * (Metrolist `Timeline.Window.toTrackInfo()` equivalent).
-     */
+    /** Upcoming queue windows after the current item, converted to proto [TrackInfo] (Metrolist `Timeline.Window.toTrackInfo()` equivalent). */
     private fun Timeline.Window.toTrackInfo(): TrackInfo {
         val mediaItem = mediaItem ?: return TrackInfo("unknown", "Unknown", "Unknown", "", 0L, "")
         val metadata = mediaItem.mediaMetadata

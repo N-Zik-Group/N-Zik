@@ -46,6 +46,7 @@ class ArtistDetailHandler : BrowseHandler {
         val artistId = parts[1]
         // The detail list mirrors the phone's artist detail, which shows every track —
         // no triple dislike filter (the phone filters only the playback queue via
+//
         // Shuffler.play, never the detail list; re-negotiation 2026-10-01 « suit l'app »).
 
         if (artistId.startsWith(LOCAL_KEY_PREFIX) || artistId.startsWith("LOCAL_ARTIST_")) {

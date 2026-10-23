@@ -109,6 +109,7 @@ object MyDownloadHelper {
 
     // P14 (review, 2026-10-23): seam behind [addDownloadInternal]'s A2 catch — the legacy
     // `Context.download` wrapper is `inline reified` (not stubbable), so the failure test
+//
     // swaps this to fail deterministically.
     internal var scheduleDownloadRequest: (Context, DownloadRequest) -> Result<Unit> =
         { context, request -> context.download<MyDownloadService>(request) }
@@ -388,6 +389,7 @@ object MyDownloadHelper {
 
                     // Battery optimization: slower polling if nothing is active
                     // Actually, we could potentially stop and restart based on onDownloadChanged,
+//
                     // but a 2s delay when idle is much better than 1s constantly.
                     val delayTime = if (currentDownloads.isNotEmpty()) 1000L else 5000L
                     delay(delayTime)
@@ -396,6 +398,7 @@ object MyDownloadHelper {
             getDownloads()
             // S1 (Phase 1 download fix, 2026-10-21): the OS/OEM can wipe the span files
             // while the DownloadIndex survives (documented on Samsung) — re-validate the
+//
             // completed library against the real files, off the main-Looper callback
             // that `onInitialized` above runs on (one file stat per span).
             coroutineScope.launch {
@@ -482,8 +485,10 @@ object MyDownloadHelper {
         saveSelfHealCleanRun(context)
         // The per-track S2 toast is unreachable here — the index entries are already gone, so
         // the startup cleanup is the ONLY user-visible notification of the wipe. This runs a
+//
         // few seconds after process start, before the app window is visible — the system
         // silently drops toasts shown by a not-yet-visible app (device-verified 2026-10-22:
+//
         // toast.show() called, no toast window ever added) — so the count is parked here and
         // MainActivity shows the toast once the window has focus.
         pendingStaleStartupCount.value = staleIds.size
@@ -746,8 +751,9 @@ object MyDownloadHelper {
             return
 
         // [likeState] is a tri-state value,
-        // only `true` represents like, so
-        // `true` must be value set to download
+        // only `true` represents like,
+        //
+        // so `true` must be value set to download
         if( likeState == true )
             autoDownload( context, mediaItem )
         else

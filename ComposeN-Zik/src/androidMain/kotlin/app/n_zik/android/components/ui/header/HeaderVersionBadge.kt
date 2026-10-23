@@ -30,27 +30,16 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.typography
 import app.n_zik.android.updater.services.Updater
 
-/**
- * Reference label for the header badges: the rendered width of this title at the badge
- * style caps the width of EVERY header badge (version + debug) — no badge may be wider
- * than the "DEBUG" badge; longer labels scroll in a marquee instead.
- */
+/** Reference label for the header badges: the rendered width of this title at the badge style caps the width of EVERY header badge (version + debug) — no badge may be wider than the "DEBUG" badge; longer labels scroll in a marquee instead. */
 internal const val HEADER_BADGE_REF_TITLE = "DEBUG"
 
 private const val HEADER_BADGE_H_PADDING = 4
 private const val HEADER_BADGE_V_PADDING = 1
 
-/**
- * Finite marquee for the header badges: a few full passes, then the scroll stops and the
- * label settles back at its start position — the badges must not spin forever in the
- * action bar (the platform default is [MarqueeDefaults]-equivalent: 3 iterations).
- */
+/** Finite marquee for the header badges: a few full passes, then the scroll stops and the label settles back at its start position — the badges must not spin forever in the action bar (the platform default is [MarqueeDefaults]-equivalent: 3 iterations). */
 private const val HEADER_BADGE_MARQUEE_ITERATIONS = 3
 
-/**
- * The badge style: 14sp bold — the "Rescue Center" burger item size (labelLarge),
- * which is the maximum text size for header badges.
- */
+/** The badge style: 14sp bold — the "Rescue Center" burger item size (labelLarge), which is the maximum text size for header badges. */
 @Composable
 private fun headerBadgeStyle(): TextStyle = typography().xs.bold
 
@@ -100,6 +89,7 @@ internal fun HeaderBadgeBox(
             .clip(uiRoundnessShape())
             // Only the interactive debug badge gets the click modifier: even a
             // disabled clickable would enforce the 48dp minimum touch target and
+//
             // inflate the badge box (see short-badge test).
             .conditional(onToggle != null) {
                 clickable(onClick = { onToggle?.invoke() })
@@ -143,6 +133,7 @@ fun HeaderVersionBadge(
 
     // Single source of truth for all flavor labels (Updater.flavorLabel):
     // FULL / FULL 32, MINIFIED / MINIFIED 32, BETA / BETA 32, DEV / DEV 32,
+//
     // FOSS, DEBUG
     val badgeText = label.literal
         ?: stringResource(label.resId) + if (label.append32) " 32" else ""

@@ -25,11 +25,13 @@ class MBMetadataHelper(
 
         // MusicBrainz aggressively rate-limits (503 "server busy"); without a cooldown,
         // every view of an artist/album whose last fetch failed retries immediately,
+//
         // spamming the API and the logs. Manual resync (force = true) bypasses this.
         private val RETRY_COOLDOWN_MS = java.util.concurrent.TimeUnit.MINUTES.toMillis(5)
 
         // A successful fetch is otherwise never retried (genres/tags being non-null is
         // the "fetched" sentinel). Expire it after 14 days so ratings/tags/bio pick up
+//
         // MusicBrainz-side changes periodically instead of being fetched once forever.
         private val REFRESH_EXPIRY_MS = java.util.concurrent.TimeUnit.DAYS.toMillis(14)
     }
@@ -49,6 +51,7 @@ class MBMetadataHelper(
 
         // genres/tags are always written after a fetch cycle (even when the
         // MusicBrainz search finds no match), so they act as the fetched sentinel;
+//
         // expires after REFRESH_EXPIRY_MS so a stale successful sync gets refreshed
         val alreadyFetched = artist.genres != null && artist.tags != null
         val isExpired = artist.mbLastFetch != null && now - artist.mbLastFetch >= REFRESH_EXPIRY_MS
@@ -78,6 +81,7 @@ class MBMetadataHelper(
 
             // Re-read: the fetch above can take several seconds under rate-limiting, and
             // writing on the snapshot taken before it would clobber anything the user did
+//
             // in the meantime (like/follow, bookmark, etc.) since updateReplace overwrites
             // the whole row.
             val current = artistTable.findByIdDirect(artistId) ?: artist
@@ -120,6 +124,7 @@ class MBMetadataHelper(
 
         // genres/tags are always written after a fetch cycle (even when the
         // MusicBrainz search finds no match), so they act as the fetched sentinel;
+//
         // expires after REFRESH_EXPIRY_MS so a stale successful sync gets refreshed
         val alreadyFetched = album.genres != null && album.tags != null
         val isExpired = album.mbLastFetch != null && now - album.mbLastFetch >= REFRESH_EXPIRY_MS
@@ -135,6 +140,7 @@ class MBMetadataHelper(
 
         // Name matching is fragile (casing, "feat.", collab text); fall back to the
         // actual SongArtistMap relation of the album's own tracks, same source used
+//
         // by "Go to artist" and the Insights "other albums" enrichment.
         val artist = albumAuthor?.let { artistTable.findByNameDirect(it) }
             ?: Database.songAlbumMapTable.allSongsOfDirect(albumId, limit = 1).firstOrNull()
@@ -163,6 +169,7 @@ class MBMetadataHelper(
 
             // Re-read: the fetches above can take several seconds under rate-limiting, and
             // writing on the snapshot taken before them would clobber anything the user did
+//
             // in the meantime (bookmark, dislike, etc.) since updateReplace overwrites the
             // whole row.
             val current = albumTable.findByIdDirect(albumId) ?: album

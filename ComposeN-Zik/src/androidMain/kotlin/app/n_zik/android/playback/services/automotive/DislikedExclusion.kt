@@ -26,10 +26,7 @@ import kotlinx.coroutines.flow.first
  */
 object DislikedExclusion {
 
-    /**
-     * Reads one phone DislikeMode setting with the shuffler read pattern
-     * (corrupt value or missing key -> default [DislikeMode.Enabled]).
-     */
+    /** Reads one phone DislikeMode setting with the shuffler read pattern (corrupt value or missing key -> default [DislikeMode.Enabled]). */
     private fun dislikeMode(context: Context, key: String): DislikeMode =
         context.preferences.getString(key, DislikeMode.Enabled.name)
             ?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() }

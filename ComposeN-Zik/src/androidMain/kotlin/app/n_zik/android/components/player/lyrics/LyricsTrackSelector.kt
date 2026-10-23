@@ -67,11 +67,7 @@ fun SettingIcon(@DrawableRes icon: Int) {
     }
 }
 
-/**
- * Type and text a LrcLib [track] is stored as when picked in [lyricsType] mode, or null when the track
- * has nothing usable in that mode: Unsynced mode takes the plain text (else the synced text without its
- * timestamps), any other mode takes the synced text only, since plain text would break the synced view.
- */
+/** Type and text a LrcLib [track] is stored as when picked in [lyricsType] mode, or null when the track has nothing usable in that mode: Unsynced mode takes the plain text (else the synced text without its timestamps), any other mode takes the synced text only, since plain text would break the synced view. */
 private fun pickedRow(track: Track, lyricsType: LyricsType): Pair<LyricsType, String>? =
     when (lyricsType) {
         LyricsType.Unsynced -> {

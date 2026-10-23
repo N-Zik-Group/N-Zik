@@ -1,8 +1,11 @@
 // Listen Together settings card embedded in the room screen (Metrolist port, N-Zik
 // styling): built from the app's own components (SettingsSectionCard,
+//
 // OtherSettingsEntry, OtherSwitchSettingEntry); logs / blocked users go through the
+//
 // shared MenuState; server URL and username are form sheets following the app's own
 // form-sheet pattern (LastFm login / display name) with ListMenu.Menu chrome.
+//
 // Reference: docs/Metrolist app/src/main/kotlin/com/metrolist/music/ui/screens/settings/integrations/ListenTogetherSettings.kt
 package app.n_zik.android.components.settings
 
@@ -93,6 +96,7 @@ fun ListenTogetherSettingsCard() {
 
     // DataStoreUtils reads are one-shot (plain SharedPreferences): bump the version
     // after every save so the entry texts and toggle states refresh right away,
+//
     // instead of waiting for an unrelated recomposition ("username saves nothing"
     // and "toggles unresponsive until leaving the screen" reports).
     val settingsVersion = remember { mutableStateOf(0) }
@@ -125,6 +129,7 @@ fun ListenTogetherSettingsCard() {
 
     // Form sheets (server URL, username) follow the app's own form-sheet pattern
     // (LastFm login, display name): a dedicated transparent sheet whose anchor
+//
     // stays content-driven, so it grows with the keyboard instead of the shared
     // item-menu sheet, which gets stuck after the keyboard closes.
     var showServerChooserSheet by rememberSaveable { mutableStateOf(false) }
@@ -322,7 +327,9 @@ internal fun ServerChooserSheet(
     ) {
         // Cap the content at ~50% of the screen: ListMenu.Menu stretches to the
         // full screen height on its own, which would make the Expanded sheet
+//
         // cover the whole window. Bounded to half the screen, the sheet keeps
+//
         // its half-screen look at rest while the anchor stays content-driven
         // (it grows with the keyboard).
         val screenHeightDp = LocalConfiguration.current.screenHeightDp
@@ -463,7 +470,9 @@ internal fun UsernameSheet(
     ) {
         // Cap the content at ~50% of the screen: ListMenu.Menu stretches to the
         // full screen height on its own, which would make the Expanded sheet
+//
         // cover the whole window. Bounded to half the screen, the sheet keeps
+//
         // its half-screen look at rest while the anchor stays content-driven
         // (it grows with the keyboard).
         val screenHeightDp = LocalConfiguration.current.screenHeightDp
@@ -524,10 +533,7 @@ internal fun UsernameSheet(
     }
 }
 
-/**
- * Standard menu icon chip (same pattern as the other app menus): tinted rounded
- * 32dp square with an 18dp icon.
- */
+/** Standard menu icon chip (same pattern as the other app menus): tinted rounded 32dp square with an 18dp icon. */
 @Composable
 private fun SettingIcon(@DrawableRes icon: Int, color: Color) {
     Box(

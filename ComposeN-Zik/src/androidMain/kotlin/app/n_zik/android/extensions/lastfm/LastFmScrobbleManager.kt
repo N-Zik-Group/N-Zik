@@ -70,6 +70,7 @@ class LastFmScrobbleManager(
 
     // Dedicated Main scope for the session-expired toast: the service's prefs
     // listener destroys this manager as soon as the session key is removed,
+//
     // which cancels externalScope before a toast launched on it would run.
     private val toastScope = NzikDispatchers.fireAndForget(NzikDispatchers.UI)
 
@@ -204,6 +205,7 @@ class LastFmScrobbleManager(
         if (!config.scrobbleEnabled && (phase == Phase.Active || phase == Phase.Paused)) {
             // Scrobbling disabled while a timer is pending: cancel it.
             // Idle/Done fall through: an eligible Idle track may still send
+//
             // Now Playing (startTrack sends NP only, then stops).
             cancelTrackJob()
             remainingMs = 0L
@@ -282,11 +284,7 @@ class LastFmScrobbleManager(
         launchTrackJob(mediaItem, resume)
     }
 
-    /**
-     * Cancels the pending job and bumps the generation counter so a stale
-     * job woken up by a cancellation still observes itself as outdated and
-     * aborts before sending anything.
-     */
+    /** Cancels the pending job and bumps the generation counter so a stale job woken up by a cancellation still observes itself as outdated and aborts before sending anything. */
     private fun cancelTrackJob() {
         jobGeneration++
         trackJob?.cancel()

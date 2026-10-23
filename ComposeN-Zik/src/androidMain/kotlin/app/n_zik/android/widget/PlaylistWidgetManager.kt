@@ -398,6 +398,7 @@ object PlaylistWidgetManager {
         
         // Responsive layout based on available height:
         // ~320dp needed for player + 2 rows, ~220dp for player + 1 row, ~120dp for player only
+//
         // Real device values: Pixel large=345, Xiaomi large=291, Pixel small=226, Xiaomi small=189
         val widgetMaxHeight = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT) ?: 0
         

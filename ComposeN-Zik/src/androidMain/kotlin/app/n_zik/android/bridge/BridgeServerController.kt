@@ -316,10 +316,7 @@ object BridgeServerController {
         return withContext(NonCancellable) { core.kick(device.deviceId) }
     }
 
-    /**
-     * Contract §4.2 steps 5–6, after the user confirmed the scanned QR: binds the request id
-     * to the active code, then pushes the offer to the PC's candidate addresses.
-     */
+    /** Contract §4.2 steps 5–6, after the user confirmed the scanned QR: binds the request id to the active code, then pushes the offer to the PC's candidate addresses. */
     suspend fun sendOffer(payload: PairingQrPayload): OfferResult {
         val running = _state.value as? BridgeState.Running ?: return OfferResult.Unreachable
         val core = activeCore ?: return OfferResult.Unreachable

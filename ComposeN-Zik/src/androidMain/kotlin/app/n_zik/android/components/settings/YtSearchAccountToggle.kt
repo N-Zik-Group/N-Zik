@@ -61,6 +61,7 @@ fun YtSearchAccountToggle(
         onCheckedChange = {
             // OtherSwitchSettingEntry's inner Switch does not receive `enabled`, so a
             // semantic (accessibility) click can still fire this on the greyed-out row
+//
             // — never write the preference (or the in-memory flag) while logged out.
             if (isLoggedIn) {
                 useLoginForSearch = it
@@ -71,11 +72,7 @@ fun YtSearchAccountToggle(
     )
 }
 
-/**
- * Restores [Innertube.useLoginForSearch] from the persisted preference at startup —
- * called from [MainApplication.onCreate] next to the `useLoginForBrowse` restore
- * (the flag only lives in memory while the app runs).
- */
+/** Restores [Innertube.useLoginForSearch] from the persisted preference at startup — called from [MainApplication.onCreate] next to the `useLoginForBrowse` restore (the flag only lives in memory while the app runs). */
 fun applyUseLoginForSearch(context: Context) {
     Innertube.useLoginForSearch = context.preferences.getBoolean(useLoginForSearchKey, true)
 }

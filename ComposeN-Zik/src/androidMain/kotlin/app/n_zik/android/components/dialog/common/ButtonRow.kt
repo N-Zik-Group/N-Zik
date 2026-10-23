@@ -31,12 +31,12 @@ import app.n_zik.android.uiRoundnessShape
 
 /**
  * One pill button for [ButtonRow]; neither-primary-nor-danger pills use the gray fill
- * ([ColorPalette.background2]).
+ * ([ColorPalette.background2]). [primary] renders the n_zik accent pill with
+ * [ColorPalette.onAccent] text, [icon] an optional fixed-size icon before the label,
+ * [textColor] an explicit label color overriding the resolved one (e.g. dimmed reset).
  *
- * @param text Label on a single line; bounded to the cell and scrolled with a continuous
- *        marquee when it does not fit. May be empty for icon-only pills.
- * @param enabled Disabled pills stay visible ([ColorPalette.textDisabled] text) but do not
- *        fire [onClick].
+ * @param text Label on a single line, bounded to the cell, continuous marquee when it does not fit; may be empty for icon-only pills.
+ * @param enabled Disabled pills stay visible ([ColorPalette.textDisabled] text) but do not fire [onClick].
  * @param danger Renders the filled red cancel pill (the cancel role).
  */
 data class DialogButton(

@@ -58,25 +58,16 @@ internal class RewindReminderWorker(
         internal const val CHANNEL_ID = "rewind"
         private const val NOTIFICATION_ID = 0x72657769 // 'rewi', stable across runs (autoCancel)
 
-        /**
-         * PendingIntent request code UNIQUE to this worker: all four rewind workers post
-         * content intents to the same MainActivity, and a PendingIntent token is identified
-         * by (request code, intent base) — sharing request code 0 made the last poster
-         * overwrite the content intent of the other three notifications (device-observed:
-         * the playlist notification re-fired the reminder intent and opened the deck).
-         */
+        /** PendingIntent request code UNIQUE to this worker: all four rewind workers post content intents to the same MainActivity, and a PendingIntent token is identified by (request code, intent base) — sharing request code 0 made the last poster overwrite the content intent of the other three notifications (device-observed: the playlist notification re-fired the reminder intent and opened the deck). */
         private const val PENDING_REQUEST_CODE = 1
 
-        /**
-         * Extras carried by the notification's content intent so [MainActivity] can open the
-         * deck directly on the finished month (frozen task: contentIntent vers le screen,
-         * période = mois terminé).
-         */
+        /** Extras carried by the notification's content intent so [MainActivity] can open the deck directly on the finished month (frozen task: contentIntent vers le screen, période = mois terminé). */
         internal const val EXTRA_DECK_YEAR = "rewind_deck_year"
         internal const val EXTRA_DECK_MONTH = "rewind_deck_month"
 
         // Positive-only jitter so installs do not all hit WorkManager at the same
         // 1st-of-month instant: it can only push the firing later (up to +10 min), never
+//
         // before the 1st — an early fire would compute the finished month one month too far back
         private const val JITTER_MS = 10L * 60 * 1000
 
@@ -137,6 +128,7 @@ internal class RewindReminderWorker(
             if (!isMonthlyReminderEnabled(applicationContext)) {
                 // Re-read the toggles at execution time: a flip made after the work was
                 // enqueued must suppress the notification (spec GH-275). The self-reschedule
+//
                 // below still runs and, with the gate off, cancels the pending work: the
                 // monthly cadence resumes at the next app startup while the gate is on.
                 Timber.tag(TAG).i("Rewind disabled in settings: skipping the %s reminder",

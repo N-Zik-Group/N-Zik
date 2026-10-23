@@ -58,10 +58,7 @@ data class PairingQrPayload(
             return ParseResult.Valid(PairingQrPayload(requestId, deviceName, port, ips))
         }
 
-        /**
-         * Candidates on the phone's own subnet first, then the others, each group keeping
-         * the QR order (contract §4.3, phone side).
-         */
+        /** Candidates on the phone's own subnet first, then the others, each group keeping the QR order (contract §4.3, phone side). */
         fun orderCandidates(ips: List<String>, phoneIp: String, prefixLength: Int): List<String> {
             val phone = ipv4ToInt(phoneIp) ?: return ips
             val mask = if (prefixLength <= 0) 0 else (-1 shl (32 - prefixLength.coerceAtMost(32)))

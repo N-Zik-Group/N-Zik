@@ -22,12 +22,7 @@ import kotlinx.coroutines.flow.Flow
  */
 interface RewindEventSource {
 
-    /**
-     * Return every raw play event whose timestamp falls inside `[from, to]` — the
-     * single windowed scan from which the Rewind fetcher aggregates the monthly /
-     * daily / hourly breakdowns, calendar days and first/last play in memory
-     * (on the DATA dispatcher).
-     */
+    /** Return every raw play event whose timestamp falls inside `[from, to]` — the single windowed scan from which the Rewind fetcher aggregates the monthly / daily / hourly breakdowns, calendar days and first/last play in memory (on the DATA dispatcher). */
     @Query("SELECT * FROM Event WHERE \"timestamp\" BETWEEN :from AND :to")
     fun eventsBetween(from: Long, to: Long): Flow<List<Event>>
 

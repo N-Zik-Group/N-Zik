@@ -190,11 +190,7 @@ internal data class RewindColors(
         return if (effective.luminance() < 0.45f) lightSide else darkSide
     }
 
-    /**
-     * Readable side of the ink/cream pair for a solid surface the slide scrim does NOT cover
-     * (stat tiles, feature cards, pills): judged on the surface's own luminance, because the
-     * scrim-darkened assumption of [textOn] makes light text land on bright surfaces.
-     */
+    /** Readable side of the ink/cream pair for a solid surface the slide scrim does NOT cover (stat tiles, feature cards, pills): judged on the surface's own luminance, because the scrim-darkened assumption of [textOn] makes light text land on bright surfaces. */
     fun flatTextOn(surface: Color): Color {
         val darkSide = if (ink.luminance() <= cream.luminance()) ink else cream
         val lightSide = if (darkSide == ink) cream else ink
@@ -222,10 +218,7 @@ internal val rewindColors = mutableStateOf(RewindColors.fallback)
  */
 internal val LocalRewindActive = staticCompositionLocalOf { true }
 
-/**
- * Early activation window for slide shaders (current page and one page on each side), so the
- * animated background is already running before a swipe lands — no "pop" on arrival.
- */
+/** Early activation window for slide shaders (current page and one page on each side), so the animated background is already running before a swipe lands — no "pop" on arrival. */
 internal val LocalRewindShaderWarm = staticCompositionLocalOf { false }
 
 internal enum class RewindRevealDirection {
@@ -266,10 +259,12 @@ internal fun RewindStoryShell(
         }
     // During the 16-image share capture the system bars are hidden for clean frames; the
     // ignoring-visibility insets report the bar sizes even while hidden, so the deck keeps
+//
     // exactly the same safe-area padding as on screen (the regular insets would collapse to 0).
     val holdBarPadding = rewindShareCaptureActive.value
     // Per-slide share button (top-right, below the progress row). It is an overlay only —
     // its visibility never changes the content layout, so pages never reflow when it
+//
     // appears or disappears.
     val showShareButton = onShareSlide != null && LocalRewindActive.current && !rewindShareCaptureActive.value
     Box(
@@ -344,8 +339,10 @@ internal fun RewindStoryShell(
         }
         // Per-slide system share (single PNG): only the active page offers it, hidden
         // during the export capture so it never lands in the exported frames. Overlay
+//
         // below the progress row (RewindShareSlideButton) — never in the layout flow,
         // so toggling it can't reflow the slide. Pops in/out with a small scale/fade,
+//
         // with an instant exit during a capture so no copied frame shows it mid-animation
         // (same rule as the deck's reveal snaps).
         AnimatedVisibility(

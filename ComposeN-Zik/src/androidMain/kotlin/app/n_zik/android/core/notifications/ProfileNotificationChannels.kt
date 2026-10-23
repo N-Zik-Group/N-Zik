@@ -41,9 +41,12 @@ private data class ChannelSpec(
 
 // All six base IDs reference their emitters' constants directly — a single source of the
 // profile channel set (HomeSyncService.SYNC_NOTIFICATION_CHANNEL_ID and
+//
 // ListenTogetherClient.NOTIFICATION_CHANNEL_ID were exposed for this; the others were already
-// visible). Renaming an emitter's constant moves the profile set with it, and the
-// profileChannelIds tests pin the agreement.
+// visible).
+//
+// Renaming an emitter's constant moves the profile set with it, and the profileChannelIds
+// tests pin the agreement.
 
 /** The 6 profiled channels, in the same order as the base creation in MainApplication. */
 private val PROFILE_CHANNEL_SPECS = listOf(

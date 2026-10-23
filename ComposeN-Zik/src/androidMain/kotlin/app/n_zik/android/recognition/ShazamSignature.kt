@@ -150,6 +150,7 @@ class ShazamSignature {
                 }
                 // Note: spread[pos] is intentionally NOT updated here.
                 // The new entry stored in spreadFfts should only have frequency spreading applied,
+//
                 // not time spreading. This matches the original C++ vibra implementation.
             }
 

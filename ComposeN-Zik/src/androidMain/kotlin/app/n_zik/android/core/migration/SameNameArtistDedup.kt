@@ -183,6 +183,7 @@ object SameNameArtistDedup {
         var localKept = 0
         // Per-group outcome captured in every terminal branch (name, status, merge/flag
         // counters or skip reason) so the boot chain can persist it — the per-group
+//
         // detail exists only in the Timber logs otherwise.
         val records = mutableListOf<DedupGroupRecord>()
 
@@ -215,7 +216,9 @@ object SameNameArtistDedup {
             }
             // A group already judged, whose composition did not change, keeps its
             // verdict: its remaining rows were flagged on purpose (possible
+//
             // homonyms), re-searching them would only burn the network budget.
+//
             // A fallback-judged composition also carries the selected songs:
             // a changed selection is new evidence and re-opens the group.
             val remembered = skipStore?.rememberedComposition(groupName)
@@ -249,10 +252,12 @@ object SameNameArtistDedup {
                 }
                 // Song-based fallback: the primary artist search found nothing,
                 // so each row is proven by its own songs. A merge needs the
+//
                 // UNANIMOUS agreement of every row on one single browse id.
                 Timber.tag(TAG).d("group '%s': no artist match or failed artist search, proving each row by its songs", groupName)
                 // Resolve the rows one by one and stop as soon as unanimity is
                 // impossible (a row with no candidate, or a row whose browse id
+//
                 // differs from the first): the remaining rows' songs never
                 // reach the network.
                 var truth: ResolvedArtist? = null
@@ -269,6 +274,7 @@ object SameNameArtistDedup {
                 if (truth == null) {
                     // Disagreement between rows (homonyms), or a row no song can
                     // prove (unattributed UGC): nothing moves, and the
+//
                     // composition is remembered like flagged rows — a pure
                     // network failure is NOT remembered (onFailure below).
                     skipped++
@@ -362,10 +368,7 @@ object SameNameArtistDedup {
         skipStore?.remember(groupName, RememberedComposition(remaining.mapTo(mutableSetOf()) { it.id }, songs))
     }
 
-    /**
-     * Merges every mergeable YouTube row of the group into the truth row — the
-     * row whose id is the search browse id, or a freshly created canonical row.
-     */
+    /** Merges every mergeable YouTube row of the group into the truth row — the row whose id is the search browse id, or a freshly created canonical row. */
     private suspend fun mergeGroup(
         groupName: String,
         rows: List<Artist>,
@@ -377,6 +380,7 @@ object SameNameArtistDedup {
         val canonicalName = "$MODIFIED_PREFIX$groupName"
         // The truth row can also already exist UNDER A DIFFERENT NAME (its real
         // channel name, outside the same-name group): it is still the truth by
+//
         // id, and it must be found for the name pin below.
         val existingTruth = rows.firstOrNull { it.id == truthId }
             ?: artistTable.findByIdDirect(truthId)
@@ -397,6 +401,7 @@ object SameNameArtistDedup {
         } else if (existingTruth.name?.startsWith(MODIFIED_PREFIX) != true && existingTruth.name != canonicalName) {
             // Pin the truth row's name to the group name, marked custom:
             // StreamResolver then keeps it (retainIfModified) and DbCleanup never
+//
             // judges its links. A name the user already customized is left alone.
             Database.transaction {
                 artistTable.upsert(existingTruth.copy(name = canonicalName))
@@ -405,6 +410,7 @@ object SameNameArtistDedup {
 
         // Image safety on the stored images (see the class KDoc for the rule):
         // the truth row's picture is the reference when it has one, otherwise the
+//
         // group's strict-majority picture; a tie or a lone row without picture in
         // a conflicting group is doubt -> flagged, never merged.
         val truthImage = existingTruth?.thumbnailUrl
@@ -426,6 +432,7 @@ object SameNameArtistDedup {
             val isFlagged = when {
                 // D4: a row without a picture is neutral only in a group with no
                 // image conflict; in a conflicting group it is doubt -> flagged,
+//
                 // whatever the truth row carries.
                 rowImage == null -> imagesConflict
                 truthImage != null -> rowImage != truthImage
@@ -444,6 +451,7 @@ object SameNameArtistDedup {
             Database.transaction {
                 // A song already linked to the truth row keeps that link: drop the
                 // duplicate link first, otherwise the re-link UPDATE below would
+//
                 // violate the (songId, artistId) primary key.
                 mapTable.dropLinksAlreadyOn(row.id, truthId)
                 // Re-link every remaining song of the duplicate row onto the truth
@@ -481,10 +489,7 @@ internal data class ResolvedArtist(
     val thumbnailUrl: String?,
 )
 
-/**
- * YTM artist search by name, injectable so the sweep core can be tested
- * offline with a fake.
- */
+/** YTM artist search by name, injectable so the sweep core can be tested offline with a fake. */
 internal interface ArtistSearchResolver {
 
     /**
@@ -602,6 +607,7 @@ internal class InnertubeSongTruthResolver : SongTruthResolver {
         ) { Innertube.SongItem.from(it) } ?: return null
         // Only the FIRST page of results is consulted (the continuation is
         // never followed): a song not on the first page yields no candidate
+//
         // for this song.
         if (!page.isSuccess) {
             // A failed page (network error) propagates: the group is then
@@ -720,11 +726,7 @@ internal fun bylineBrowseId(item: Innertube.SongItem, groupName: String): String
         ?.endpoint
         ?.browseId
 
-/**
- * The artist page reached from a byline entry is the truth only when its name
- * equals the group name: "X - Topic" pages and homonym channels are rejected
- * (the byline does not always point at the right artist).
- */
+/** The artist page reached from a byline entry is the truth only when its name equals the group name: "X - Topic" pages and homonym channels are rejected (the byline does not always point at the right artist). */
 internal fun artistPageMatchesGroup(pageName: String?, groupName: String): Boolean =
     pageName?.equals(groupName, ignoreCase = true) == true
 
@@ -800,12 +802,14 @@ internal class PrefsSkipStore(context: Context) : SkipStore {
                             rows = stringSetOf(value.optJSONArray("rows")),
                             // Absent key = songs null (primary-judged); present
                             // but malformed = UNKNOWN -> emptySet() (the group
+//
                             // is re-judged once, then rewritten)
                             songs = if (value.has("songs")) value.optJSONArray("songs")?.let(::stringSetOf) ?: emptySet() else null,
                         )
                     )
                     // Legacy entry: a plain array of row ids, judged by a
                     // build that did not track songs -> songs unknown ->
+//
                     // emptySet() (one re-judgment, then rewritten), never
                     // null (primary semantics would defer it forever)
                     is JSONArray -> put(name, RememberedComposition(stringSetOf(value), emptySet()))
@@ -840,15 +844,16 @@ internal class PrefsSkipStore(context: Context) : SkipStore {
 /**
  * Sweep summary.
  *
- * @param songResolved groups resolved by the song-based fallback (artist search
- * found nothing) — disjoint from [resolved]
- * @param skipped groups left untouched (offline, custom name, song fallback
- * without unanimous candidate, or a network failure during the fallback's OWN
- * calls; a failed PRIMARY artist search is not a direct skip, it enters the
- * fallback)
- * @param records per-group outcome captured in every terminal branch (name,
- * status, merge/flag counters or skip reason) — persisted by the boot chain so
- * the Maintenance sheet can show the last run's detail
+ * Counters: [groups] the same-name groups identified (at least 2 rows per name), [resolved]
+ * the groups fully resolved by the primary artist search (merge completed), [songResolved]
+ * the groups resolved by the song-based fallback (artist search found nothing — disjoint from
+ * [resolved]), [merged] the duplicate rows re-linked and deleted (both resolution paths),
+ * [flagged] the rows left in place because their image conflicts with the group,
+ * [localKept] the `LOCAL_ARTIST_` rows excluded from the merge.
+ *
+ * @param skipped groups left untouched (offline, custom name, song fallback without unanimous candidate, or a network failure during the fallback's OWN calls; a failed PRIMARY artist search is not a direct skip, it enters the fallback)
+ * @param deferred groups skipped because already judged with an unchanged composition
+ * @param records per-group outcome captured in every terminal branch (name, status, merge/flag counters or skip reason) — persisted by the boot chain so the Maintenance sheet can show the last run's detail
  */
 internal data class DedupResult(
     val groups: Int,

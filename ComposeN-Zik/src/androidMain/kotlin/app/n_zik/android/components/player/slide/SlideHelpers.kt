@@ -34,9 +34,7 @@ const val SLIDE_SNAP_POSITIONAL_THRESHOLD = 0.25f
 /** Duration used for player pager settle animations. */
 const val SLIDE_SETTLE_DURATION_MS = 700
 
-/**
- * Single source for the player pager fling behavior.
- */
+/** Single source for the player pager fling behavior. */
 @Composable
 @OptIn(UnstableApi::class)
 fun flingBehaviorFor(state: PagerState) =

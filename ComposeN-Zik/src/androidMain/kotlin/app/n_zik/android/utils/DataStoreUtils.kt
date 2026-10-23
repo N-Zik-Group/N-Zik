@@ -9,11 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 
-/**
- * Minimal port of the Cubic Music "DataStoreUtils" (GPL-3.0, original license header in
- * the Rewind package) backed by plain SharedPreferences instead of Preferences DataStore,
- * so no new dependency is required.
- */
+/** Minimal port of the Cubic Music "DataStoreUtils" (GPL-3.0, original license header in the Rewind package) backed by plain SharedPreferences instead of Preferences DataStore, so no new dependency is required. */
 object DataStoreUtils {
 
     // Key constants
@@ -27,11 +23,7 @@ object DataStoreUtils {
      */
     const val KEY_ONBOARDING_STEP = "onboarding_step"
 
-    /**
-     * Runtime permissions whose system dialog was already shown on the onboarding
-     * permissions screen (comma-joined permission names); lets the
-     * PERMANENTLY_DENIED mapping survive activity recreation.
-     */
+    /** Runtime permissions whose system dialog was already shown on the onboarding permissions screen (comma-joined permission names); lets the PERMANENTLY_DENIED mapping survive activity recreation. */
     const val KEY_ONBOARDING_PERMISSIONS_REQUESTED = "onboarding_permissions_requested"
 
     // Rewind toggles (spec GH-275): all default to `true` on read, so an existing install
@@ -208,11 +200,7 @@ fun rememberDataStoreBooleanPreference(key: String, default: Boolean): MutableSt
     return state
 }
 
-/**
- * Builds a SharedPreferences listener reporting every same-process write to [key] with its
- * new value — the int twin of [createBooleanPreferenceListener] (spec 3, deck background
- * music volume slider).
- */
+/** Builds a SharedPreferences listener reporting every same-process write to [key] with its new value — the int twin of [createBooleanPreferenceListener] (spec 3, deck background music volume slider). */
 internal fun createIntPreferenceListener(
     context: Context,
     key: String,
@@ -225,11 +213,7 @@ internal fun createIntPreferenceListener(
         }
     }
 
-/**
- * Live version of [DataStoreUtils.getInt] (spec 3) — same listener pattern as
- * [rememberDataStoreBooleanPreference], for the deck's volume slider which the deck chrome
- * writes and the settings entry (if ever added) would read live.
- */
+/** Live version of [DataStoreUtils.getInt] (spec 3) — same listener pattern as [rememberDataStoreBooleanPreference], for the deck's volume slider which the deck chrome writes and the settings entry (if ever added) would read live. */
 @Composable
 fun rememberDataStoreIntPreference(key: String, default: Int): MutableState<Int> {
     val context = LocalContext.current

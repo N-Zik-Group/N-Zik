@@ -119,6 +119,7 @@ internal suspend fun resolveVideoArtistFallback(
     if (channel == null || browseId.isNullOrBlank() || channel.name.isNullOrBlank()) {
         // The matched result has no author with a usable channel identity
         // (only the fallback text author, or a blank name) — nothing to
+//
         // copy, no write.
         Timber.tag(TAG).d("[Video Artist] $videoId: matched '${match.info?.name}' has no channel to copy, no write")
         return
@@ -136,6 +137,7 @@ internal suspend fun resolveVideoArtistFallback(
             existing == null ->
                 // insertIgnore instead of a full-row upsert: if a concurrent
                 // writer committed this row between the read and this write,
+//
                 // the insert is a no-op instead of a clobber. The video
                 // thumbnail is NOT the channel avatar.
                 artistTable.insertIgnore(Artist(id = browseId, name = channel.name, thumbnailUrl = null))

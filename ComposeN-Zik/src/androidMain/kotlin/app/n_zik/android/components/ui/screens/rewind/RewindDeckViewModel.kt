@@ -62,6 +62,7 @@ internal class RewindDeckViewModel(
                     val defaultName = application.getString(R.string.profile_base_name)
                     // The deck shows the active profile's face: its display name or a
                     // logged-in account source (spec-profiles-page-face), with the legacy
+//
                     // custom name and the default app name as fallbacks. A failing read
                     // falls back to the default name without an avatar.
                     runCatching {

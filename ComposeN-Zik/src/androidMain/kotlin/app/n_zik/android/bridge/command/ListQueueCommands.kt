@@ -134,10 +134,7 @@ internal fun interface ListItemResolver {
     suspend fun resolve(trackIds: List<String>): List<Pair<String, MediaItem>>
 }
 
-/**
- * Resolves the list against the phone's `Song` table, off the main thread, in batched `IN` queries
- * ([CHUNK] ids each, under SQLite's bound-parameter limit), then back in the list's order.
- */
+/** Resolves the list against the phone's `Song` table, off the main thread, in batched `IN` queries ([CHUNK] ids each, under SQLite's bound-parameter limit), then back in the list's order. */
 @OptIn(UnstableApi::class)
 internal object DatabaseListItemResolver : ListItemResolver {
     private const val CHUNK = 900

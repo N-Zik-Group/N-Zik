@@ -15,11 +15,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-/**
- * UI state of the "My Rewind" home screen: the year rows (newest first) plus
- * the all-time row (null until the first load, or forever when the history is
- * empty).
- */
+/** UI state of the "My Rewind" home screen: the year rows (newest first) plus the all-time row (null until the first load, or forever when the history is empty). */
 internal data class RewindHomeUiState(
     val isLoading: Boolean = true,
     val years: List<RewindHomeYear> = emptyList(),

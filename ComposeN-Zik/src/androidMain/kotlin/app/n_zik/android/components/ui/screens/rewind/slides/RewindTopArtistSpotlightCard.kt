@@ -113,6 +113,7 @@ fun RewindTopArtistSpotlightCard(
             val textScale = LocalRewindTextScale.current
             // The photo scales with the deck's text squared (layoutFactor² = 1.0 at the
             // reference): it yields vertical room quickly on a narrow screen / enlarged
+//
             // font, so the bio below gets space even before its internal scroll kicks in.
             val heroHeight = (if (compact) 238.dp else 292.dp) * (textScale.layoutFactor * textScale.layoutFactor)
             // Length ladder of the design, then the deck sizing policy on top — the ladder
@@ -237,16 +238,21 @@ fun RewindTopArtistSpotlightCard(
                 if (!bio.isNullOrBlank()) {
                     // The bio block takes whatever vertical space is left after the
                     // photo/name/badge/metrics. The text is deliberately small (9sp) so a
+//
                     // typical bio fits; a bio that does NOT fit shows a short preview
                     // (clamped with an ellipsis) with a "SEE MORE" pill opening the full
+//
                     // text in a sheet. No auto-drift and no manual scroll zone: a
                     // swipeable area would leak into the deck's swipe. A running capture
+//
                     // hides the pill, so shared images stay stable.
                     val density = LocalDensity.current
                     // The area box is measured (its full height, in px); a hidden
                     // natural-height copy of the bio is measured too — the overflow is a
+//
                     // plain comparison of the two measurements, neither of which depends
                     // on the decision, so it can never feed back into itself (no
+//
                     // oscillation).
                     var bioAreaPx by remember { mutableStateOf(0) }
                     var bioNaturalPx by remember { mutableStateOf(0) }
@@ -257,8 +263,10 @@ fun RewindTopArtistSpotlightCard(
                     val bioOverflow = bioAreaPx > 0 && bioNaturalPx > bioAreaPx
                     // Overflowing bio: a short fixed preview with the SEE MORE pill
                     // right below — the owner wants a glanceable teaser, not the whole
+//
                     // block; the full text lives in the sheet. The area budget (pill
                     // reserved) stays the hard cap so the pill can never fall off the
+//
                     // slide; a bio that fits renders in full, no pill.
                     val bioMaxLines = if (bioOverflow) {
                         minOf(
@@ -267,6 +275,7 @@ fun RewindTopArtistSpotlightCard(
                                 areaHeightDp = with(density) { bioAreaPx.toDp() },
                                 // 1sp ≈ 1dp for layout purposes: the unit converters are
                                 // not available in this Compose version, so the math
+//
                                 // runs on values.
                                 lineHeightDp = textScale.size(13.sp).value.dp,
                                 reservedDp = BIO_SEE_MORE_RESERVED_DP.dp
@@ -305,9 +314,12 @@ fun RewindTopArtistSpotlightCard(
                             ) {
                                 // Hidden natural-height copy: same text, same sizes, fully
                                 // transparent — its measured height is the bio's real height
+//
                                 // regardless of the visible clamp. unbounded = true so it is
                                 // NOT squashed by the box's bounded constraint — in Compose
+//
                                 // 1.12 a capped Column squashes its children, which makes
+//
                                 // the unbounded measurement mandatory here.
                                 Column(
                                     modifier = Modifier
@@ -324,6 +336,7 @@ fun RewindTopArtistSpotlightCard(
                                 }
                                 // Visible copy: the bio that fits renders in full; the
                                 // bio that overflows shows a short preview (bioMaxLines)
+//
                                 // with an ellipsis instead of a cut-off last line, and
                                 // the SEE MORE pill right below.
                                 Column {
@@ -358,8 +371,10 @@ fun RewindTopArtistSpotlightCard(
                     }
                     // Full bio sheet — the same app-standard menu as the finale's export
                     // options (CustomModalBottomSheet + ListMenu.Menu): the menu draws its
+//
                     // own chrome and its content column is already scrollable — the sheet
                     // is a popup, not part of the deck, so the scroll never leaks into a
+//
                     // swipe. Capture-safe: stays closed while a share capture is in flight.
                     CustomModalBottomSheet(
                         showSheet = showBioSheet && !rewindShareCaptureActive.value,
@@ -379,6 +394,7 @@ fun RewindTopArtistSpotlightCard(
                     ) {
                         // Same style toggle as the app's item menus (settings: list or
                         // grid): the full text renders as the single item of the grid,
+//
                         // or as plain content of the list — the menu chrome (background,
                         // clip, drag handle, title header, scrolling) is shared.
                         if (menuStyle == MenuStyle.List) {
@@ -467,11 +483,7 @@ private fun SpotlightMetric(
     }
 }
 
-/**
- * Vertical space (dp) reserved inside the bio area for the "SEE MORE" pill + its
- * spacer, deducted from the line budget when the bio overflows — so the last clamped
- * line and the pill can never collide.
- */
+/** Vertical space (dp) reserved inside the bio area for the "SEE MORE" pill + its spacer, deducted from the line budget when the bio overflows — so the last clamped line and the pill can never collide. */
 internal const val BIO_SEE_MORE_RESERVED_DP = 28f
 
 /**

@@ -34,10 +34,7 @@ data class AutoStopSettings(
     }
 }
 
-/**
- * Where the auto-stop settings live in the app preferences (read and written by
- * [BridgeServerController]).
- */
+/** Where the auto-stop settings live in the app preferences (read and written by [BridgeServerController]). */
 internal object AutoStopPreferences {
     const val NO_CLIENT_KEY = "bridgeAutoStopNoClientMinutes"
     const val INACTIVITY_KEY = "bridgeAutoStopInactivityMinutes"
@@ -65,10 +62,7 @@ internal object AutoStopPreferences {
 }
 private const val MS_PER_MINUTE = 60_000L
 
-/**
- * Longest single wait: [delay] follows a clock frozen in deep sleep while `now` may not, so the
- * deadline is re-checked against `now` at least this often (expiry at the first wake after it).
- */
+/** Longest single wait: [delay] follows a clock frozen in deep sleep while `now` may not, so the deadline is re-checked against `now` at least this often (expiry at the first wake after it). */
 private const val MAX_WAIT_STEP_MS = 60_000L
 
 /**

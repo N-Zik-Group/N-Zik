@@ -95,11 +95,7 @@ internal sealed interface ArtworkResult {
 internal interface LibraryProvider {
     suspend fun songs(filter: SongFilter, sort: SongSort, reverse: Boolean, period: TopPeriod? = null): List<TrackDto>
 
-    /**
-     * Since 1.7.2: [rewindFilter] (`month` / `year` / `all`) is applied to the `rewind` listing
-     * **and persisted** to the phone's own `rewindPlaylistsFilter` setting (the phone's Rewind
-     * tab reflects it); `null` keeps the phone's current setting.
-     */
+    /** Since 1.7.2: [rewindFilter] (`month` / `year` / `all`) is applied to the `rewind` listing **and persisted** to the phone's own `rewindPlaylistsFilter` setting (the phone's Rewind tab reflects it); `null` keeps the phone's current setting. */
     suspend fun playlists(filter: PlaylistsFilter, sort: PlaylistSort, reverse: Boolean, rewindFilter: RewindPlaylists.Filter? = null): List<PlaylistDto>
     suspend fun playlistSongs(playlistId: Long, sort: PlaylistSongSort, reverse: Boolean): List<TrackDto>?
     suspend fun albums(filter: CollectionFilter, sort: AlbumSort, reverse: Boolean): List<AlbumDto>
@@ -110,11 +106,7 @@ internal interface LibraryProvider {
     suspend fun albumArtwork(albumId: String, size: Int): ArtworkResult
     suspend fun artistArtwork(artistId: String, size: Int): ArtworkResult
 
-    /**
-     * Contract §10 (since 1.7.2): the phone's custom playlist cover (its
-     * `thumbnail/playlist_<id>` file); `NotFound` when there is none (the client falls back to
-     * its mosaic, the phone's own fallback).
-     */
+    /** Contract §10 (since 1.7.2): the phone's custom playlist cover (its `thumbnail/playlist_<id>` file); `NotFound` when there is none (the client falls back to its mosaic, the phone's own fallback). */
     suspend fun playlistArtwork(playlistId: Long): ArtworkResult
 
     /** Contract §10 (since 1.7.1): the phone's disk caches, used space vs configured cap (its Songs-tab bar). */
@@ -136,10 +128,7 @@ internal interface LibraryProvider {
     suspend fun setArtistFollow(artistId: String, state: ArtistFollow): ArtistFollow?
     /** Contract §10.2 (since 1.7): the explicit pin, local Room only; `null` = unknown playlist (`404`). */
     suspend fun setPlaylistPin(playlistId: Long, pinned: Boolean): Boolean?
-    /**
-     * Contract §10.2 (since 1.7.2): the explicit bookmark (the phone's `isYoutubePlaylist`
-     * column), local Room only; `null` = unknown playlist (`404`).
-     */
+    /** Contract §10.2 (since 1.7.2): the explicit bookmark (the phone's `isYoutubePlaylist` column), local Room only; `null` = unknown playlist (`404`). */
     suspend fun setPlaylistBookmark(playlistId: Long, bookmarked: Boolean): Boolean?
 
     companion object {
@@ -180,10 +169,7 @@ internal interface LibraryProvider {
 internal class DatabaseLibraryProvider(
     context: Context,
     private val httpClient: () -> OkHttpClient = NetworkClientFactory::getClient,
-    /**
-     * The bound player service's live streaming-cache size (contract §10, since 1.7.1); `null`
-     * while the service is not yet bound — the phone's own indicator shows `0` then too.
-     */
+    /** The bound player service's live streaming-cache size (contract §10, since 1.7.1); `null` while the service is not yet bound — the phone's own indicator shows `0` then too. */
     private val mediaCacheSpace: () -> Long? = { null },
 ) : LibraryProvider {
     private val appContext = context.applicationContext
@@ -387,11 +373,7 @@ internal class DatabaseLibraryProvider(
     override suspend fun artistArtwork(artistId: String, size: Int): ArtworkResult =
         artwork(size) { Database.artistTable.findByIdDirect(artistId)?.thumbnailUrl }
 
-    /**
-     * Contract §10 (since 1.7.2): the phone's custom playlist cover — the `thumbnail/playlist_<id>`
-     * file of its files dir (its own save path, its `LocalPlaylistItemMenu.kt` 203), raw bytes
-     * (no resizing, like the phone's own display).
-     */
+    /** Contract §10 (since 1.7.2): the phone's custom playlist cover — the `thumbnail/playlist_<id>` file of its files dir (its own save path, its `LocalPlaylistItemMenu.kt` 203), raw bytes (no resizing, like the phone's own display). */
     override suspend fun playlistArtwork(playlistId: Long): ArtworkResult = withContext(NzikDispatchers.DATA) {
         val file = File(appContext.filesDir, "thumbnail/playlist_$playlistId")
         if (!file.exists()) return@withContext ArtworkResult.NotFound
@@ -503,18 +485,11 @@ internal class DatabaseLibraryProvider(
         return resolver.openInputStream(uri)?.let { LocalSource(it, resolver.getType(uri)) }
     }
 
-    /**
-     * The phone's "Downloaded" sort on top of a tab's base list (`HomeSongs.kt`): the downloaded songs
-     * come first when the order is ascending, last when descending; the stable sort keeps the base order.
-     */
+    /** The phone's "Downloaded" sort on top of a tab's base list (`HomeSongs.kt`): the downloaded songs come first when the order is ascending, last when descending; the stable sort keeps the base order. */
     private fun List<Song>.downloadedOrdered(downloaded: Set<String>, reverse: Boolean): List<Song> =
         if (reverse) sortedBy { it.id in downloaded } else sortedByDescending { it.id in downloaded }
 
-    /**
-     * The window and the cap of the phone's Top tab (its own settings: the period and the item
-     * count); a wire [period] overrides the phone's period, exactly like the phone's own
-     * period selector.
-     */
+    /** The window and the cap of the phone's Top tab (its own settings: the period and the item count); a wire [period] overrides the phone's period, exactly like the phone's own period selector. */
     private fun topPlaylist(period: TopPeriod?): Pair<Long, Int> {
         val prefs = appContext.preferences
         val periodType = period?.statisticsType() ?: prefs.getEnum(
@@ -537,11 +512,7 @@ internal class DatabaseLibraryProvider(
         TopPeriod.ALL_TIME -> StatisticsType.All
     }
 
-    /**
-     * The ids of the songs in the player's streaming cache, as the phone's "Cached" tab computes them:
-     * a read-only [SimpleCache] on the active profile's cache directory and index (the player's own
-     * cache — a temp cache, or none at all, leaves nothing to read).
-     */
+    /** The ids of the songs in the player's streaming cache, as the phone's "Cached" tab computes them: a read-only [SimpleCache] on the active profile's cache directory and index (the player's own cache — a temp cache, or none at all, leaves nothing to read). */
     private suspend fun cachedSongIds(): Set<String> = runCatching {
         openMediaCache { cache ->
             Database.formatTable.allWithSongs().first().mapNotNull { format ->
@@ -569,11 +540,7 @@ internal class DatabaseLibraryProvider(
         }
     }
 
-    /**
-     * The per-track download and cache states of the phone's rows (contract §1.1, since 1.7.1): the
-     * completed downloads, the active download states and their progress (from the download manager),
-     * and the streaming-cache membership.
-     */
+    /** The per-track download and cache states of the phone's rows (contract §1.1, since 1.7.1): the completed downloads, the active download states and their progress (from the download manager), and the streaming-cache membership. */
     private suspend fun trackSupport(): TrackSupport = runCatching {
         // The downloads map is only filled once the download manager exists
         MyDownloadHelper.getDownloadManager(appContext)
@@ -594,18 +561,11 @@ internal class DatabaseLibraryProvider(
         )
     }.onFailure { Timber.tag(TAG).w(it, "Download states unavailable") }.getOrDefault(TrackSupport())
 
-    /**
-     * [TrackSupport.inPlaylist] of [songs] (contract §1.1, since 1.12.0): the phone's playlist membership,
-     * read in batched queries ([PlaylistMembership]); a failed read leaves every song out.
-     */
+    /** [TrackSupport.inPlaylist] of [songs] (contract §1.1, since 1.12.0): the phone's playlist membership, read in batched queries ([PlaylistMembership]); a failed read leaves every song out. */
     private suspend fun TrackSupport.withMembership(songs: List<Song>): TrackSupport =
         copy(inPlaylist = PlaylistMembership.readFromDatabase(songs.map { it.id }))
 
-    /**
-     * The used space of the player's streaming cache, exactly as the phone's own
-     * `CacheSpaceIndicator` reads it: the bound service's live cache, `0` while the service is not
-     * bound (the phone shows `0` then too).
-     */
+    /** The used space of the player's streaming cache, exactly as the phone's own `CacheSpaceIndicator` reads it: the bound service's live cache, `0` while the service is not bound (the phone shows `0` then too). */
     private fun mediaCacheUsedBytes(): Long = runCatching {
         mediaCacheSpace()?.coerceAtLeast(0L) ?: 0L
     }.onFailure { Timber.tag(TAG).w(it, "Media cache size unavailable") }.getOrDefault(0L)
@@ -616,10 +576,7 @@ internal class DatabaseLibraryProvider(
         MyDownloadHelper.downloadCache.cacheSpace
     }.onFailure { Timber.tag(TAG).w(it, "Download cache size unavailable") }.getOrDefault(0L)
 
-    /**
-     * The configured streaming-cache cap (`null` when unlimited — the phone hides its bar then);
-     * `Custom` sends the actual custom value, as the player's own evictor uses it.
-     */
+    /** The configured streaming-cache cap (`null` when unlimited — the phone hides its bar then); `Custom` sends the actual custom value, as the player's own evictor uses it. */
     private fun mediaCacheMaxBytes(): Long? {
         val size = appContext.preferences.getEnum(exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`)
         return when (size) {
@@ -629,10 +586,7 @@ internal class DatabaseLibraryProvider(
         }
     }
 
-    /**
-     * The configured download-cache cap (`null` when unlimited — the phone hides its bar then);
-     * read exactly the way the download cache is built (`MyDownloadHelper.initDownloadCache`).
-     */
+    /** The configured download-cache cap (`null` when unlimited — the phone hides its bar then); read exactly the way the download cache is built (`MyDownloadHelper.initDownloadCache`). */
     private fun downloadCacheMaxBytes(): Long? {
         val size = appContext.preferences.getEnum(exoPlayerDiskDownloadCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`)
         return when (size) {
@@ -735,11 +689,7 @@ internal object SongsSortMenu {
 
     val chips: List<ChipKeys> = listOf(all, favs, off, dl, top, onDevice, disliked)
 
-    /**
-     * The option names of each menu: `SongSortBy` for the sort chips, `StatisticsType` for the
-     * Top chip (its period selector is its sort menu) and `OnDeviceSongSortBy` for OnDevice —
-     * exactly the options each tab's menu shows.
-     */
+    /** The option names of each menu: `SongSortBy` for the sort chips, `StatisticsType` for the Top chip (its period selector is its sort menu) and `OnDeviceSongSortBy` for OnDevice — exactly the options each tab's menu shows. */
     private val optionNames: Map<ChipKeys, List<String>> = mapOf(
         top to StatisticsType.entries.map { it.name },
         onDevice to OnDeviceSongSortBy.entries.map { it.name },
@@ -748,11 +698,7 @@ internal object SongsSortMenu {
     private fun optionNamesOf(chip: ChipKeys): List<String> =
         optionNames[chip] ?: SongSortBy.entries.map { it.name }
 
-    /**
-     * Every preference key one of the phone's songs sort menus reads (contract §10.3, since
-     * 1.7.3): each chip's saved order and its per-option visibility flags, with the chip's own
-     * option ids (its `SongSortBy` / `StatisticsType` / `OnDeviceSongSortBy` names).
-     */
+    /** Every preference key one of the phone's songs sort menus reads (contract §10.3, since 1.7.3): each chip's saved order and its per-option visibility flags, with the chip's own option ids (its `SongSortBy` / `StatisticsType` / `OnDeviceSongSortBy` names). */
     val sortMenuKeys: Set<String> = buildSet {
         chips.forEach { chip ->
             add(chip.orderKey)

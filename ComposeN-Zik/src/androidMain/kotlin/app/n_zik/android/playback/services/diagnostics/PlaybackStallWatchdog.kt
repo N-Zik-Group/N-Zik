@@ -1,11 +1,6 @@
 package app.n_zik.android.playback.services.diagnostics
 
-/**
- * Common Timber tag for every line of the issue #881 instrumentation lot (stall watchdog,
- * transition journal, retry log, resolution timing, screen/network markers) — one grep on
- * the exported log file surfaces the whole diagnostic picture
- * (spec problem-solution-2026-10-02-progress-bar-stuck-gh881, S11).
- */
+/** Common Timber tag for every line of the issue #881 instrumentation lot (stall watchdog, transition journal, retry log, resolution timing, screen/network markers) — one grep on the exported log file surfaces the whole diagnostic picture (spec problem-solution-2026-10-02-progress-bar-stuck-gh881, S11). */
 const val PLAYBACK_DIAG_TAG = "PlaybackDiag"
 
 /**
@@ -97,6 +92,7 @@ class PlaybackStallWatchdog(
 
         // IDLE/ENDED (playback legitimately stopped — queue end, stop, error): not a stall.
         // Drop tracking like a pause so no phantom report fires after normal playback ends
+//
         // and no spurious "recovered" line is emitted (review gh-881).
         if (playbackState != PLAYER_STATE_BUFFERING && playbackState != PLAYER_STATE_READY) {
             reset()
@@ -123,6 +119,7 @@ class PlaybackStallWatchdog(
             } else {
                 // A sub-threshold episode healed without a report: disarm the stall clock,
                 // or the NEXT episode inherits its start and reports a phantom stall
+//
                 // (field logs 2026-10-04: stallMs=18155 for a 520 ms BUFFERING, gh-881 3.1).
                 stallStartMs = null
                 Decision.Ok
@@ -165,10 +162,7 @@ class PlaybackStallWatchdog(
         /** Sampling period while `playWhenReady` is true (spec: every 3 s). */
         const val DEFAULT_SAMPLING_INTERVAL_MS = 3_000L
 
-        /**
-         * A stall only reports after this duration (spec: 15 s — deliberately beyond the
-         * initial retry backoff, ~7 × 2 s, so transient buffer fills never report).
-         */
+        /** A stall only reports after this duration (spec: 15 s — deliberately beyond the initial retry backoff, ~7 × 2 s, so transient buffer fills never report). */
         const val DEFAULT_STALL_THRESHOLD_MS = 15_000L
 
         /** `Player.STATE_IDLE` — duplicated so this file stays Android-free (media3: IDLE is 1, not 0). */

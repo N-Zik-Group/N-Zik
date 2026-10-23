@@ -113,10 +113,13 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 
         // Rescue Center safety net: the Rescue writes a kill-request flag when its hot kill
         // (broadcast) may be lost (main process dead or fully frozen). Consume it BEFORE any
+//
         // heavy initialization and end this process. The flag was consumed before the kill,
         // so the next launch cannot self-kill again (no kill loop). If the flag cannot even be
+//
         // read at boot, do not kill: a stale flag is preferable to a broken launch loop.
         // A leftover flag older than the max age (left by an older app version, which
+//
         // recorded the kill request on every Rescue Center open even while the process was
         // alive) is discarded WITHOUT killing — only a fresh request justifies it.
         if (runCatching { RescueProcess.discardStaleKillRequest(this) }.getOrDefault(false)) {
@@ -132,11 +135,13 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 
         // Same Rescue Center: register the receiver that ends this process on demand. Early,
         // BEFORE Dependencies.init, so the receiver exists even if initialization crashes below
+//
         // (same rationale as the shortcuts registration just below).
         RescueProcess.registerKillMainReceiver(this)
 
         // Same Rescue Center: start the alive-marker updater — the only reliable liveness
         // signal the `:rescue` process can see from API 31 on (the process probe is then
+//
         // restricted to the calling process). Background thread: the marker stays fresh even
         // while the main thread is frozen, and it is never stopped (it lives with the process).
         RescueProcess.startAliveMarkerUpdater(this)
@@ -149,12 +154,14 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 
         // Default theme mode (spec-achromatic-ramp-luminance-cap, scope extension 2026-09-28):
         // fresh install / data wipe / profile switch leave `colorPaletteMode` absent from the
+//
         // profile's prefs, where every pre-existing read site falls back to Dark. Seed the
         // default ("Theme mode" = System) before the first composition.
         ensureDefaultColorPaletteMode(preferences)
 
         // Profile "last used" (spec-profiles-page-face): the active profile counts as
         // used on every app start (switches record it themselves) — the Profiles page
+//
         // shows it as a relative time. Failure must not block app startup.
         runCatching {
             saveProfileLastUsed(getActiveProfile(this), System.currentTimeMillis())
@@ -164,6 +171,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 
         // Listen Together (spec-listen-together): create the WebSocket client and the sync
         // manager, bind the player bridge and auto-reconnect to a fresh persisted session
+//
         // when one exists. Failure must not block app startup.
         runCatching {
             val listenTogetherClient = ListenTogetherClient(this)
@@ -216,6 +224,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 
         // Wire the visualizer capture seam (issue #606) here, not in a composable: SeekBarVisualizer
         // (mini-player) can mount before the full NextVisualizer screen ever composes, and this must
+//
         // be set before ANY VisualizerHelper.getFft()/getWave() call — nextvisualizer can't depend
         // on coroutines, so it exposes this plain function-type injection point instead.
         VisualizerHelper.snapshotProvider = VisualizerCaptureCoordinator::currentSnapshot
@@ -237,10 +246,13 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             .onFailure { Timber.tag("MainApplication").w(it, "Monthly playlists cleanup failed") }
         // Artist-data boot chain: strictly sequential in one coroutine, one pass
         // after the other (each pass sees the committed state of the previous
+//
         // one): cleanup of polluted artist↔song links (idempotent) -> dedup of
         // same-name artist rows (rate-limited network pass, no per-launch cap) ->
+//
         // convergence of the denormalized artist-name copies from the links
         // (offline, idempotent). All re-run on every launch, so they also heal
+//
         // data that reappears through database imports or YTM/YT syncs; a failing
         // pass does not block the next (runCatching per pass, logged as warning).
         //
@@ -345,6 +357,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             
             // useLoginForSearch is deliberately NOT force-disabled/persisted like
             // useLoginForBrowse in the cookie branches below: without a valid cookie both
+//
             // ON and OFF send guest requests, and a persisted OFF must survive (re)login
             // (spec matrix "OFF then login" — the Accounts screen never resets it either).
             val savedCookie = encryptedPreferences.getString(ytCookieKey, "")
@@ -407,6 +420,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 
         // The 6 channels of the active profile (no-op for the base profile — its 5 channels are
         // created above, unchanged, and its 6th — listen-together — is created on first use by
+//
         // the Listen Together client): the emitters and the profile switch rely on them existing.
         ensureProfileChannels(this, getActiveProfile(this))
 
@@ -440,6 +454,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
 
         // Crash log auto-wipe (spec-maintenance-dialog): after 2 consecutive boots
         // without a NEW crash block, the crash log is wiped (the Maintenance "Last
+//
         // crash" row falls back to "None"; the crash dialog's Clear button stays the
         // manual path). The small startup read happens before any UI can read the file
         runCatching {

@@ -113,10 +113,7 @@ internal enum class PlaylistSort(val wire: String) {
     CUSTOM("custom"),
 }
 
-/**
- * The per-track download and cache states of a library read (contract §1.1, since 1.7.1): what the
- * phone's rows show beside each song.
- */
+/** The per-track download and cache states of a library read (contract §1.1, since 1.7.1): what the phone's rows show beside each song. */
 internal data class TrackSupport(
     /** The ids of the online songs fully downloaded on the phone. */
     val downloaded: Set<String> = emptySet(),
@@ -178,10 +175,7 @@ internal object LibraryQueries {
     fun parsePlaylistsFilter(filter: String?): PlaylistsFilter? =
         if (filter == null) PlaylistsFilter.ALL else PlaylistsFilter.entries.firstOrNull { it.wire == filter }
 
-    /**
-     * `rewind` of `/library/playlists` (contract §10, since 1.7.2): the phone's Month/Year/All
-     * filter; absent means the phone's own current setting.
-     */
+    /** `rewind` of `/library/playlists` (contract §10, since 1.7.2): the phone's Month/Year/All filter; absent means the phone's own current setting. */
     fun parseRewindFilter(raw: String?): RewindPlaylists.Filter? = when (raw) {
         null -> null
         "month" -> RewindPlaylists.Filter.Month
@@ -231,10 +225,7 @@ internal object LibraryQueries {
     private fun TrackDto.matches(query: String): Boolean =
         title.contains(query, ignoreCase = true) || artists?.contains(query, ignoreCase = true) == true
 
-    /**
-     * Case-insensitive name search of `/library/playlists` (contract §10, since 1.7.2); [query]
-     * `null` keeps every playlist.
-     */
+    /** Case-insensitive name search of `/library/playlists` (contract §10, since 1.7.2); [query] `null` keeps every playlist. */
     fun searchPlaylists(playlists: List<PlaylistDto>, query: String?): List<PlaylistDto> =
         playlists.filter { playlist ->
             query == null || playlist.name.contains(query, ignoreCase = true)
@@ -244,10 +235,7 @@ internal object LibraryQueries {
     fun <T> paginate(items: List<T>, page: PageRequest): Page<T> =
         paginate(items, page, items.size)
 
-    /**
-     * Contract §1 (since 1.7.2): [total] given apart from the [items] size — the phone's
-     * counters keep their pre-search total while the `text` filter narrows the page.
-     */
+    /** Contract §1 (since 1.7.2): [total] given apart from the [items] size — the phone's counters keep their pre-search total while the `text` filter narrows the page. */
     fun <T> paginate(items: List<T>, page: PageRequest, total: Int): Page<T> {
         val from = page.offset.coerceAtMost(items.size)
         val to = (from.toLong() + page.limit).coerceAtMost(items.size.toLong()).toInt()
@@ -259,10 +247,7 @@ internal object LibraryQueries {
         )
     }
 
-    /**
-     * The phone's local playlist header duration (contract §10, since 1.7.2): the sum of the
-     * whole list's durations, unknown ones counted as 0.
-     */
+    /** The phone's local playlist header duration (contract §10, since 1.7.2): the sum of the whole list's durations, unknown ones counted as 0. */
     fun totalDurationMsOf(tracks: List<TrackDto>): Long =
         tracks.sumOf { it.durationMs ?: 0L }
 }

@@ -77,6 +77,7 @@ fun SleepTimerDialog(
 
             // The frame body is non-scrollable and capped at 80 % of the
             // screen height (canon): the stepper / slider area scrolls inside
+
             // this column so the confirm / cancel pills stay reachable on
             // short screens.
             Column(

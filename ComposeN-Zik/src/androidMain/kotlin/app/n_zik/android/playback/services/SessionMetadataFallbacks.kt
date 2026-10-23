@@ -15,13 +15,7 @@ package app.n_zik.android.playback.services
  */
 object SessionMetadataFallbacks {
 
-    /**
-     * True when [text] is missing enough that the surface would render a blank
-     * label: null, blank, or the literal "null" some persistence paths store
-     * for an absent tag (the same contract as the `*WithFallback` display
-     * helpers in `app.n_zik.android.utils.MediaItemUtils` and the legacy
-     * `asMediaItem`).
-     */
+    /** True when [text] is missing enough that the surface would render a blank label: null, blank, or the literal "null" some persistence paths store for an absent tag (the same contract as the `*WithFallback` display helpers in `app.n_zik.android.utils.MediaItemUtils` and the legacy `asMediaItem`). */
     fun needsFallback(text: CharSequence?): Boolean =
         text.isNullOrBlank() || text.toString() == "null"
 }

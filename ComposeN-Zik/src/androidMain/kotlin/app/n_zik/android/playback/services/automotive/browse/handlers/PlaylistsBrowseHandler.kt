@@ -40,12 +40,14 @@ class PlaylistsBrowseHandler : BrowseHandler {
                 val showRewind = try { context.preferences.getBoolean(showMonthlyPlaylistsKey, true) } catch (e: Exception) { true }
                 // Same gate as the phone's Library (HomeLibrary toggleMap): YT
                 // playlists can come from imports (not only live sync), so the
+//
                 // folder follows the showYtPlaylists setting alone.
                 val showYtPlaylists = try { context.preferences.getBoolean(showYtPlaylistsKey, true) } catch (e: Exception) { true }
                 val previews = database.playlistTable.allAsPreview().first()
                 val pinnedCount = previews.count { it.playlist.name.startsWith(PINNED_PREFIX, true) }
                 // Same filter as the phone's "All" tab (HomeLibrary / PlaylistsType.Playlist):
                 // every playlist — YT included (the phone's All tab lists them too), rewind
+//
                 // gated by the showRewind toggle and pinned by the showPinnedPlaylists toggle.
                 val localCount = previews.count { (!RewindPlaylists.isRewind(it.playlist.name) || showRewind) && (!it.playlist.name.startsWith(PINNED_PREFIX, true) || showPinnedPlaylists) }
                 val ytCount = previews.count { it.playlist.isYoutubePlaylist }
@@ -71,6 +73,7 @@ class PlaylistsBrowseHandler : BrowseHandler {
             AutoSessionConstants.ID_PLAYLISTS_REWIND -> {
                 // Read-only of the phone's Month/Year/All chip (REWIND_PLAYLISTS_FILTER_KEY,
                 // default All): the selected sub-group comes first, the other two keep
+//
                 // the canonical order. AA never writes this key.
                 val selected = runCatching {
                     RewindPlaylists.Filter.valueOf(context.preferences.getString(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, null).orEmpty())
@@ -172,10 +175,7 @@ class PlaylistsBrowseHandler : BrowseHandler {
         RewindPlaylists.Filter.All -> R.string.all
     }
 
-    /**
-     * Icon of a Rewind sub-group, mirroring the phone's overlay origin indicator:
-     * Month -> stat_month, Year -> stat_year, All (alltime) -> musical_notes.
-     */
+    /** Icon of a Rewind sub-group, mirroring the phone's overlay origin indicator: Month -> stat_month, Year -> stat_year, All (alltime) -> musical_notes. */
     private fun rewindGroupIcon(filter: RewindPlaylists.Filter): Int = when (filter) {
         RewindPlaylists.Filter.Month -> R.drawable.stat_month
         RewindPlaylists.Filter.Year -> R.drawable.stat_year
@@ -193,12 +193,7 @@ class PlaylistsBrowseHandler : BrowseHandler {
         else -> R.drawable.musical_notes
     }
 
-    /**
-     * Icon of a Library-folder playlist, mirroring the phone's PlaylistItem origin
-     * icon logic: pinned first, then generated rewind-* by type, then Spotify/RiPlay
-     * imports with their source logo bitmap, YouTube playlists with the ytmusic
-     * icon, plain local playlists with the NZik logo.
-     */
+    /** Icon of a Library-folder playlist, mirroring the phone's PlaylistItem origin icon logic: pinned first, then generated rewind-* by type, then Spotify/RiPlay imports with their source logo bitmap, YouTube playlists with the ytmusic icon, plain local playlists with the NZik logo. */
     private fun localPlaylistIcon(name: String, browseId: String?, isYoutube: Boolean = false): Int = when {
         name.startsWith(PINNED_PREFIX, true) -> R.drawable.pin_filled
         RewindPlaylists.isRewind(name) -> rewindPlaylistIcon(name)

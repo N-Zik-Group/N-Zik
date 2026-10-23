@@ -222,10 +222,7 @@ sealed class ListenTogetherEvent {
 /**
  * WebSocket client for Listen Together feature
  */
-/**
- * Instantiated once from [MainApplication] — N-Zik has no DI framework, so this class keeps
- * the original Metrolist instance pattern ([getInstance]/[setInstance]) minus Hilt.
- */
+/** Instantiated once from [MainApplication] — N-Zik has no DI framework, so this class keeps the original Metrolist instance pattern ([getInstance]/[setInstance]) minus Hilt. */
 class ListenTogetherClient(
     private val context: Context,
 ) {
@@ -324,11 +321,7 @@ class ListenTogetherClient(
                 encodeDefaults = true
             }
 
-        /**
-         * Incremented when the user explicitly starts create/join so a late-finishing
-         * [loadPersistedSession] cannot restore disk state over that intent (would make
-         * [onOpen] choose RECONNECT instead of [executePendingAction]).
-         */
+        /** Incremented when the user explicitly starts create/join so a late-finishing [loadPersistedSession] cannot restore disk state over that intent (would make [onOpen] choose RECONNECT instead of [executePendingAction]). */
         private val sessionApplyGeneration = AtomicInteger(0)
 
         init {
@@ -580,11 +573,7 @@ class ListenTogetherClient(
             }
         }
 
-        /**
-         * Stable User-Agent for the Listen Together server: every build variant
-         * (debug / foss / dev) reports the release package name, so a server-side
-         * UA allowlist only needs the single entry `com.nevar.nzik`.
-         */
+        /** Stable User-Agent for the Listen Together server: every build variant (debug / foss / dev) reports the release package name, so a server-side UA allowlist only needs the single entry `com.nevar.nzik`. */
         private fun userAgent(): String =
             context.packageName
                 .removeSuffix(".debug")
@@ -772,6 +761,7 @@ class ListenTogetherClient(
                     while (true) {
                         // Refresh the WakeLock on every ping cycle so it never expires while the
                         // connection is active. Without this, the 10-minute timeout can lapse during
+//
                         // long sessions with the screen off, allowing the CPU to throttle and
                         // causing the WebSocket to degrade, resulting in choppy audio.
                         acquireWakeLock()
@@ -820,9 +810,12 @@ class ListenTogetherClient(
             }
             // Always release before acquiring so that the timeout is reset on each call.
             // This is safe because the ping job calls acquireWakeLock() every PING_INTERVAL_MS
+//
             // (25 s), ensuring the lock is refreshed well before the 10-minute window elapses.
             // Without the release-and-reacquire pattern the first acquire() sets the countdown
+//
             // and subsequent calls while isHeld is true are no-ops, so the lock would still
+//
             // expire after 10 minutes of continuous screen-off sessions.
             if (wakeLock?.isHeld == true) {
                 wakeLock?.release()

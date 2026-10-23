@@ -35,8 +35,10 @@ class ArtistsBrowseHandler : BrowseHandler {
             PlayerServiceModern.ARTIST -> {
                 // Mirror the phone's HomeArtist tabs: same order (homeArtistsOrderKey)
                 // and visibility (showFavoritesArtistKey) as the in-app settings
+//
                 // dialog. Disliked artists stay always hidden from All/Favorites
                 // and always shown in their dedicated folder — opening one + the
+//
                 // DISLIKE_ARTIST command removes its dislike (toggle).
                 val showFavoritesArtist = try { context.preferences.getBoolean(showFavoritesArtistKey, true) } catch (e: Exception) { true }
                 val libraryCount = database.artistTable.allInLibrary().first().count { it.dislikedAt == null }

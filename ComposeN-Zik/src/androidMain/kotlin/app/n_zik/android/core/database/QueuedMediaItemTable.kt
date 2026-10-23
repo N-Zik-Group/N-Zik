@@ -25,10 +25,7 @@ interface QueuedMediaItemTable {
     @Query("SELECT DISTINCT * FROM QueuedMediaItem LIMIT :limit")
     fun allDirect( limit: Int = Int.MAX_VALUE ): List<QueuedMediaItem>
 
-    /**
-     * Inserts [queuedMediaItems]; when even one element fails the whole insert
-     * (or the surrounding transaction) rolls back and the exception propagates.
-     */
+    /** Inserts [queuedMediaItems]; when even one element fails the whole insert (or the surrounding transaction) rolls back and the exception propagates. */
     @Insert
     @Throws(SQLException::class)
     fun insert( queuedMediaItems: List<QueuedMediaItem> )

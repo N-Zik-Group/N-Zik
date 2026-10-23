@@ -87,8 +87,10 @@ internal suspend fun captureRewindDeckPages(
     try {
         // Hide the system bars for the whole pass (see the KDoc above — the
         // first copy waits for the platform bar transition to land).
+//
         // rewindShareCaptureActive is held until the finally below, even when a
         // copy fails or the share coroutine is cancelled (spec GH-275, patch
+//
         // "rewindShareCaptureActive set before the try").
         rewindShareCaptureActive.value = true
         insetsController.hide(WindowInsets.Type.systemBars())
@@ -184,6 +186,7 @@ internal suspend fun captureRewindSlidePng(
         insetsController.hide(WindowInsets.Type.systemBars())
         // Settle: the platform fades the bars out with its own transition — wait for the
         // hide to land in the framebuffer (and the share chrome to leave the slide) before
+//
         // the copy, so the full-bleed frame is clean and never caught mid-fade
         rewindAwaitBarsHidden(view)
         withFrameNanos { }
@@ -283,6 +286,7 @@ internal suspend fun shareRewindSlide(
         if (shared) {
             // The bars stay hidden under the share sheet and fade back in when the user
             // returns to the deck — showing them right after the capture would blink
+//
             // them back before the sheet covers the screen (on-device feedback).
             activity?.showSystemBarsOnNextResume()
         } else {
@@ -355,11 +359,7 @@ internal suspend fun captureRewindScreenshot(
     }
 }
 
-/**
- * Hands [file] to the system share sheet through the app's FileProvider
- * (`<package>.fileprovider` authority, `shared_rewind` cache-path in file_paths.xml):
- * a single `ACTION_SEND` / `image/png` with a read-granting stream URI.
- */
+/** Hands [file] to the system share sheet through the app's FileProvider (`<package>.fileprovider` authority, `shared_rewind` cache-path in file_paths.xml): a single `ACTION_SEND` / `image/png` with a read-granting stream URI. */
 internal fun shareImageFile(context: Context, file: File) {
     val uri = FileProvider.getUriForFile(
         context,

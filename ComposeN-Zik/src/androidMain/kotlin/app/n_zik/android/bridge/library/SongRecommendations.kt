@@ -9,10 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 /** One song the phone's smart shuffle inserted in its Songs tab, at [position] of the tab's list. */
 internal data class RecommendedSong(val position: Int, val song: Song)
 
-/**
- * What the phone's Songs tab shows of its smart shuffle (contract §10.1, since 1.12.0): the tab's
- * [filter] (`null` when the tab has no wire twin) and its recommended songs, in insertion order.
- */
+/** What the phone's Songs tab shows of its smart shuffle (contract §10.1, since 1.12.0): the tab's [filter] (`null` when the tab has no wire twin) and its recommended songs, in insertion order. */
 internal data class SongRecommendationsState(
     val filter: SongFilter?,
     val items: List<RecommendedSong>,
@@ -59,10 +56,7 @@ internal object SongRecommendations {
         if (previous != value) changeListener?.invoke()
     }
 
-    /**
-     * The wire `filter` of a phone tab (contract §10.1 `/library/songs`); `null` for the phone's
-     * "On device" tab, which the bridge does not expose as a chip of its own.
-     */
+    /** The wire `filter` of a phone tab (contract §10.1 `/library/songs`); `null` for the phone's "On device" tab, which the bridge does not expose as a chip of its own. */
     fun filterOf(tab: BuiltInPlaylist): SongFilter? = when (tab) {
         BuiltInPlaylist.All -> SongFilter.ALL
         BuiltInPlaylist.Favorites -> SongFilter.LIKED

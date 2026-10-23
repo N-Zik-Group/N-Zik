@@ -139,6 +139,7 @@ class AutoSessionCallback(
     fun observeRepository(session: MediaLibrarySession) {
         // Disabled: notifyChildrenChanged causes Android Auto to rebuild
         // the browse tree + queue on every DB change, causing queue recomposition
+//
         // and crashes. Metrolist does not call notifyChildrenChanged at all —
         // Android Auto queries onGetChildren() on demand.
         observationJob?.cancel()
@@ -156,8 +157,10 @@ class AutoSessionCallback(
         val connectionResult = super.onConnect(session, controller)
         // Fresh state on every new automotive connection: a leftover search or
         // browse cache from a previous session must not be resumed — the head
+//
         // unit always starts from a clean browse root. currentContainer is reset
         // too, so a DISLIKE_ALBUM/ARTIST command after reconnect cannot target a
+//
         // stale container from the previous session.
         autoBrowseTree.clearCache()
         currentContainer = null
@@ -188,12 +191,17 @@ class AutoSessionCallback(
         super.onPostConnect(session, controller)
         // spec-notification-click-opens-player (option B): the GLOBAL session activity is the
         // "now playing" notification's content intent (media3 hard-wires it to the global
+//
         // session activity — one-shot token opening the phone MainActivity). The AA companion
+//
         // must NOT inherit it: send it null via the per-controller override (official since
         // media3 1.4.0) so AA falls back to the standard session UI. Deliberately in
+//
         // onPostConnect, NOT onConnect: in media3 1.10.1 the controller is only registered
         // after onConnect returns, and setSessionActivity dispatch guards on
+//
         // isConnected(controller) — a call from onConnect would be a silent no-op, leaving AA
+//
         // with the in-app screen (the regression this feature must not reintroduce). Runs on
         // every AA connection.
         if (session.isAutoCompanionController(controller)) {
@@ -378,6 +386,7 @@ class AutoSessionCallback(
 
     // Issue #606 (gh-606 G1): mapping songs via SessionMediaItemMapper decodes cover bitmaps
     // synchronously, so the whole block runs on DATA instead of the Main-bound `scope` dispatcher.
+//
     // onSetMediaItemsInternal touches no Main-affine state (no binder.player; binder.cache is a
     // thread-safe SimpleCache), and the returned future carries the result to Media3's own thread.
     override fun onSetMediaItems(
@@ -412,8 +421,10 @@ class AutoSessionCallback(
     ): MediaSession.MediaItemsWithStartPosition {
         // Triple dislike exclusion mirroring the phone shuffler (Shuffler): disliked songs +
         // songs by disliked artists + songs from disliked albums, each gated by its phone
+//
         // DislikeMode (default Enabled). Applied to every Songs/Albums/Artists queue below;
         // the Disliked category is never filtered. Top is also excluded at the SQL level
+//
         // (EventTable.findSongsMostPlayedBetween drops likedAt == -1) — its in-memory guard is
         // redundant (kept defensively) and it never re-includes them in Disabled mode.
         val excludedIds = DislikedExclusion.excludedSongIds(context, database)
@@ -421,9 +432,12 @@ class AutoSessionCallback(
             val quickPickSongs = (QuickPicksRepository.trendingList.value + (QuickPicksRepository.relatedPage.value?.songs?.map { it.asSong } ?: emptyList())).distinctBy { it.id }
             // QuickPicks data is populated by the phone UI; in the Android Auto
             // service context it can be empty, so fall back to the local library
+//
             // instead of returning an empty queue (issue #777).
             // The local library fallback never queues a song the phone shuffler
+//
             // excludes (DislikedExclusion) — phone/AA consistency.
+//
             val allSongs = if (quickPickSongs.isEmpty()) {
                 database.songTable.sortAll(SongSortBy.DateAdded, SortOrder.Descending, excludeHidden = true).first().filter { it.id !in excludedIds }
             } else {
@@ -486,6 +500,7 @@ class AutoSessionCallback(
         if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_LOCAL_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_LOCAL_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
             // Mirror of the phone Library "All" tab queue (HomeLibrary.getSelectedSongs +
             // Shuffler.play): every playlist in display order — YT, pinned and rewind
+//
             // included, no tab gates — flattened and deduplicated by id, then the
             // triple dislike exclusion (DislikeMode gated, like the phone shuffler).
             val sortBy = try { context.preferences.getEnum(Preference.HOME_LIBRARY_PLAYLIST_SORT_BY.key, PlaylistSortBy.SongCount) } catch (e: Exception) { PlaylistSortBy.SongCount }
@@ -496,6 +511,7 @@ class AutoSessionCallback(
         if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_YT_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_YT_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
             // Triple dislike exclusion (re-negotiation 2026-10-01 « suit l'app »): the phone
             // Shuffler.play filters every queue it builds, so the YT/pinned/rewind playlist
+//
             // shuffles mirror that (the LOCAL "All" shuffle already did).
             val allSongs = database.playlistTable.allAsPreview().first().filter { it.playlist.isYoutubePlaylist }.flatMap { preview -> database.songPlaylistMapTable.allSongsOf(preview.playlist.id).first() }.distinctBy { song -> song.id }.filter { song -> song.id !in excludedIds }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
             if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
@@ -526,6 +542,7 @@ class AutoSessionCallback(
         }
         // Unlike categories shuffles: the songs of the disliked albums / artists only.
         // Deliberately NOT filtered with excludedIds — the category IS the exclusion;
+//
         // filtering it would always produce an empty queue.
         if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ALBUMS_DISLIKED_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ALBUMS_DISLIKED_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
             val allSongs = database.albumTable.allDisliked().first().flatMap { album -> database.songAlbumMapTable.allSongsOf(album.id).first() }.distinctBy { song -> song.id }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
@@ -597,6 +614,7 @@ class AutoSessionCallback(
                         val artistSongs = if (selection.section != null) AutoSearchState.searchedSongs else database.songArtistMapTable.allSongsBy(selection.containerId).first()
                         // Phone parity (re-negotiation 2026-10-01 « suit l'app »): the tap
                         // selection queue mirrors the unfiltered artist detail list — only
+//
                         // the shuffle (Shuffler.play) applies the triple dislike exclusion.
                         queryList = artistSongs
                     }

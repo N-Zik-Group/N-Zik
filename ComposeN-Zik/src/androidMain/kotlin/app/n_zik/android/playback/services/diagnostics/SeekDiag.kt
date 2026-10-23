@@ -2,10 +2,7 @@ package app.n_zik.android.playback.services.diagnostics
 
 import androidx.media3.common.Player
 
-/**
- * Issue #881 (gh-881): pure helpers for the seek-loop instrumentation (spec S1/S2/S3) —
- * JVM-testable, no Android or player state involved.
- */
+/** Issue #881 (gh-881): pure helpers for the seek-loop instrumentation (spec S1/S2/S3) — JVM-testable, no Android or player state involved. */
 
 /**
  * Human-readable name of a [Player] position-discontinuity reason
@@ -72,13 +69,7 @@ fun seekCommandName(playerCommand: Int): String = when (playerCommand) {
     else -> "UNKNOWN($playerCommand)"
 }
 
-/**
- * Framework/JVM prefixes excluded from [seekCallerStack]: everything below the first app
- * frame is either the player internals (media3), the platform, Compose plumbing or the JVM —
- * none of it identifies the caller of the seek. (The `DiagExoPlayer` instrumentation frames
- * themselves are dropped by the caller — see `DiagExoPlayer.logSeek` — before [seekCallerStack]
- * runs.)
- */
+/** Framework/JVM prefixes excluded from [seekCallerStack]: everything below the first app frame is either the player internals (media3), the platform, Compose plumbing or the JVM — none of it identifies the caller of the seek. (The `DiagExoPlayer` instrumentation frames themselves are dropped by the caller — see `DiagExoPlayer.logSeek` — before [seekCallerStack] runs.) */
 private val SEEK_STACK_FRAME_PREFIXES = listOf(
     "androidx.media3.",
     "androidx.",

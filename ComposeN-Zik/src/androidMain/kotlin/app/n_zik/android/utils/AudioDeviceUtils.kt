@@ -101,10 +101,7 @@ fun isCar(name: String?): Boolean {
     return carKeywords.any { lowerName.contains(it) }
 }
 
-/**
- * Returns the appropriate icon (either a drawable resource ID or a Compose ImageVector)
- * based on the audio device type and name.
- */
+/** Returns the appropriate icon (either a drawable resource ID or a Compose ImageVector) based on the audio device type and name. */
 fun getAudioDeviceIcon(type: Int, name: String?, isCarForced: Boolean = false): Any {
     if (isCarForced) return app.n_zik.android.R.drawable.car
     

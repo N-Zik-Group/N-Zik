@@ -81,10 +81,7 @@ import it.fast4x.lastfm.LastFm
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-/**
- * First-composition behavior of the accounts step, as a pure mapping (unit-tested in
- * [OnboardingAccountsStepActionTest]).
- */
+/** First-composition behavior of the accounts step, as a pure mapping (unit-tested in [OnboardingAccountsStepActionTest]). */
 enum class OnboardingAccountsStepAction {
     /** Show the step as usual. */
     SHOW,
@@ -149,6 +146,7 @@ fun OnboardingAccountsScreen(
     var loginYoutube by remember { mutableStateOf(false) }
     // One-shot read of the login state at first composition (a cookie restored by
     // the import step, or a returning state): it can only change from this screen
+//
     // (the login / logoff below flip it explicitly), so a stale read is acceptable
     // by contract.
     var ytLoggedIn by remember { mutableStateOf(isYouTubeLoggedIn()) }
@@ -174,6 +172,7 @@ fun OnboardingAccountsScreen(
 
     // Logoff: the minimal mirror of the Accounts tab logout — the destructive
     // synced-data clear is skipped because onboarding is a fresh install, there
+//
     // is nothing synced to wipe
     fun logOffYouTube() {
         val ep = appContext().encryptedPreferences
@@ -197,6 +196,7 @@ fun OnboardingAccountsScreen(
 
     // All three accounts already connected (restored by the import step, or a
     // returning state): skip the step the same way the skip button would —
+//
     // advance to the profile step, then the restart prompt (a Discord token is
     // only live after a restart; the restart lands on the profile step)
     LaunchedEffect(Unit) {
@@ -329,9 +329,12 @@ fun OnboardingAccountsScreen(
             onClick = {
                 // The accounts step no longer ends the flow — the profile step
                 // follows: advance (the step is persisted), and with a Discord
+//
                 // token set the restart prompt shows after the advance — the
                 // presence manager is created when the player service starts,
+//
                 // so the fresh token is only picked up on a new launch, and the
+//
                 // restart lands on the profile step (flag unwritten)
                 Timber.tag("Onboarding").i(
                     if (discordToken.isNotEmpty()) {
@@ -412,8 +415,10 @@ fun OnboardingAccountsScreen(
             modifier = Modifier.statusBarsPadding(),
             // Skip PartiallyExpanded: its anchor is a fixed 50% of the window
             // height, while the sheet window is not resized by the keyboard
+//
             // (SOFT_INPUT_ADJUST_NOTHING on API 30+), so the fields stay hidden
             // behind it. The Expanded anchor is content-driven
+//
             // (fullHeight - sheetHeight) and follows the IME insets applied to
             // the sheet content by CustomModalBottomSheet.
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -450,6 +455,7 @@ fun OnboardingAccountsScreen(
                             Timber.tag("Onboarding").i("Last.fm account connected as $username")
                             // The connection only updates the card — the user leaves the
                             // step with the skip button. The fetch runs on the
+//
                             // composition scope, which stays alive on this screen
                             lastfmCardScope.launch {
                                 val avatarUrl = LastFm.getUserPicture(username).getOrNull().orEmpty()
@@ -496,6 +502,7 @@ fun OnboardingAccountsScreen(
                 Toaster.i(R.string.discord_connected_to_discord_account)
                 // The connection only updates the card — the restart prompt is deferred
                 // to the skip button (the restart lands on the profile step — the
+//
                 // onboarding-complete flag stays unwritten until the flow ends)
             }
         )
@@ -503,11 +510,7 @@ fun OnboardingAccountsScreen(
 
 }
 
-/**
- * Action button of an onboarding account card (same look as the other onboarding
- * buttons): the label is bounded by [OnboardingActionLabel] so it can never push
- * the card off-screen on small screens / large fonts.
- */
+/** Action button of an onboarding account card (same look as the other onboarding buttons): the label is bounded by [OnboardingActionLabel] so it can never push the card off-screen on small screens / large fonts. */
 @Composable
 private fun OnboardingAccountActionButton(label: String, onClick: () -> Unit) {
     Button(

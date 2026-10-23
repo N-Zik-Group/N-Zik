@@ -34,11 +34,7 @@ interface SongArtistMapTable {
     """)
     fun allSongsBy( artistId: String, limit: Int = Int.MAX_VALUE ): Flow<List<Song>>
 
-    /**
-     * Direct (non-Flow) mirror of [allSongsBy]: Flows are unusable inside a
-     * synchronous transaction, so sweeps and propagations that run on the
-     * transaction executor query the same data synchronously.
-     */
+    /** Direct (non-Flow) mirror of [allSongsBy]: Flows are unusable inside a synchronous transaction, so sweeps and propagations that run on the transaction executor query the same data synchronously. */
     @Query("""
         SELECT DISTINCT Song.*
         FROM SongArtistMap sam
@@ -62,11 +58,7 @@ interface SongArtistMapTable {
     """)
     fun findArtistsOf( songId: String, limit: Int = Int.MAX_VALUE ): Flow<List<Artist>>
 
-    /**
-     * Direct (non-Flow) mirror of [findArtistsOf]: Flows are unusable inside a
-     * synchronous transaction, so sweeps and propagations that run on the
-     * transaction executor query the same data synchronously.
-     */
+    /** Direct (non-Flow) mirror of [findArtistsOf]: Flows are unusable inside a synchronous transaction, so sweeps and propagations that run on the transaction executor query the same data synchronously. */
     @Query("""
         SELECT DISTINCT A.*
         FROM Artist A
@@ -111,11 +103,7 @@ interface SongArtistMapTable {
     @Query("UPDATE SongArtistMap SET artistId = :newId WHERE artistId = :oldId")
     fun updateArtistId(oldId: String, newId: String)
 
-    /**
-     * Delete the (song, :newId) links of every song that also holds a
-     * (song, :oldId) link, so a following [updateArtistId] cannot violate the
-     * (songId, artistId) primary key for songs already linked to the target.
-     */
+    /** Delete the (song, :newId) links of every song that also holds a (song, :oldId) link, so a following [updateArtistId] cannot violate the (songId, artistId) primary key for songs already linked to the target. */
     @Query("""
         DELETE FROM SongArtistMap
         WHERE artistId = :newId

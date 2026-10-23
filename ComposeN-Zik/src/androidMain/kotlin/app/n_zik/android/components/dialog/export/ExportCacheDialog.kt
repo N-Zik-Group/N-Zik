@@ -72,6 +72,7 @@ class ExportCacheDialog(
     companion object {
         // Shared scope for this dialog's fire-and-forget export work (issue #606):
         // SupervisorJob (via NzikDispatchers.fireAndForget) so a failed export
+
         // (onExport or batchExport) never prevents a later export from running
         // on the same scope.
         internal val scope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)

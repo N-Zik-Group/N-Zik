@@ -95,10 +95,7 @@ internal class RewindTextScale(
     val fontScale: Float,
 ) {
 
-    /**
-     * The effective size of a deck base [base] on this screen: width-scaled,
-     * font-scale-absorbing, clamped to the tier's legibility floor.
-     */
+    /** The effective size of a deck base [base] on this screen: width-scaled, font-scale-absorbing, clamped to the tier's legibility floor. */
     fun size(base: TextUnit): TextUnit = size(base.value).sp
 
     /**
@@ -116,8 +113,11 @@ internal class RewindTextScale(
     fun size(baseSp: Float): Float {
         val reference = REWIND_TEXT_REFERENCE_WIDTH_DP.toFloat()
         // Width below the reference shrinks the text proportionally; width above it
-        // does nothing (factor clamped to 1.0). The font-scale part is absorbed with
-        // the ABSORB exponent so the rendered size grows with fontScale^0.5, not fontScale.
+        // does nothing (factor clamped to 1.0).
+        //
+        // The font-scale part is absorbed with the ABSORB exponent so the rendered size
+        // grows with fontScale^0.5, not fontScale.
+        //
         // Scales below 1.0 are clamped to 1.0: the user font-scale floor on Android is
         // 1.0, and clamping keeps the I4 width-budget contract uniform for every scale.
         val effectiveFontScale = fontScale.coerceAtLeast(1f)
@@ -141,10 +141,7 @@ internal val LocalRewindTextScale = staticCompositionLocalOf {
     RewindTextScale(REWIND_TEXT_REFERENCE_WIDTH_DP, 1f)
 }
 
-/**
- * The [RewindTextScale] for the current screen: width from [LocalConfiguration], font
- * scale from [LocalDensity] (remembered, so cards stay cheap on recomposition).
- */
+/** The [RewindTextScale] for the current screen: width from [LocalConfiguration], font scale from [LocalDensity] (remembered, so cards stay cheap on recomposition). */
 @Composable
 internal fun rememberRewindScale(): RewindTextScale {
     val configuration = LocalConfiguration.current

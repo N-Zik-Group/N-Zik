@@ -309,6 +309,7 @@ fun YtmSectionItems(
                                 val menuState = LocalMenuState.current
                                 // Album card format (album-size thumbnail, name centered
                                 // below) so artist items match the album geometry of
+//
                                 // the other cards.
                                 ArtistItem(
                                     artist = item,

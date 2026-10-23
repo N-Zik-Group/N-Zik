@@ -44,10 +44,7 @@ object ToastRelay {
         listeners -= listener
     }
 
-    /**
-     * Called by the legacy [Toaster]'s string-resource overloads: the formatted text (as their former
-     * `getString(messageId, *formatArgs)`), the key and arguments being kept for the next [onLegacyToast].
-     */
+    /** Called by the legacy [Toaster]'s string-resource overloads: the formatted text (as their former `getString(messageId, *formatArgs)`), the key and arguments being kept for the next [onLegacyToast]. */
     fun legacyResource(@StringRes messageId: Int, formatArgs: Array<out Any?>): String {
         // A stale key left by a toast that threw before its hook never tags the next one
         pendingResource.remove()

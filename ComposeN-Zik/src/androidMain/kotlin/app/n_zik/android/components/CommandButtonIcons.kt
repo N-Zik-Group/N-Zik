@@ -18,10 +18,7 @@ fun shuffleButtonIconRes(flashActive: Boolean): Int =
 fun shuffleButtonIconRes(binder: PlayerServiceModern.Binder?): Int =
     shuffleButtonIconRes(binder?.shuffleOkFlashActive == true)
 
-/**
- * Issue #866 (gh-866): [shuffleButtonIconRes] from the composition's binder — for call sites
- * inside composables (`icon = shuffleButtonIcon()`).
- */
+/** Issue #866 (gh-866): [shuffleButtonIconRes] from the composition's binder — for call sites inside composables (`icon = shuffleButtonIcon()`). */
 @Composable
 fun shuffleButtonIcon(): Int = shuffleButtonIconRes(LocalPlayerServiceBinder.current)
 
@@ -38,10 +35,7 @@ fun radioButtonIconRes(isRadioActive: Boolean): Int =
 fun radioButtonIconRes(binder: PlayerServiceModern.Binder?): Int =
     radioButtonIconRes(binder?.isRadioActive == true)
 
-/**
- * Issue #866 (gh-866): [radioButtonIconRes] from the composition's binder — for call sites
- * inside composables (`icon = radioButtonIcon()`).
- */
+/** Issue #866 (gh-866): [radioButtonIconRes] from the composition's binder — for call sites inside composables (`icon = radioButtonIcon()`). */
 @Composable
 fun radioButtonIcon(): Int = radioButtonIconRes(LocalPlayerServiceBinder.current)
 

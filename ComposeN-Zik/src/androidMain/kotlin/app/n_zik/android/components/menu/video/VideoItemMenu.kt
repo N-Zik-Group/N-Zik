@@ -311,6 +311,7 @@ class VideoItemMenu private constructor(
         val playNext = PlayNext {
             // Issue #606 review fix: launch on a scope independent of the popup menu's lifecycle.
             // MenuComponent.kt hides the menu (cancelling its rememberCoroutineScope()) right after
+//
             // onShortClick() returns, so a coroutineScope.launch here could be cancelled mid-flight
             // before player.addNextOffMain ever runs, silently dropping the tap.
             NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
@@ -443,6 +444,7 @@ class VideoItemMenu private constructor(
 
         // Listen Together room dialog (Metrolist PlayerMenu dialog port): opens the
         // create/join/manage room popup through the shared menu state. Shown for every
+//
         // video regardless of room state or role — it is the menu entry point to a room.
         listenTogetherDialogBtn = remember {
             object : MenuIcon, Descriptive, Clickable {

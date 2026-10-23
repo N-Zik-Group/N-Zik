@@ -1,9 +1,6 @@
 package app.n_zik.android.listentogether
 
-/**
- * In-place queue sync plan: how to bring the player's loaded queue in line with the host
- * queue without a full timeline replace.
- */
+/** In-place queue sync plan: how to bring the player's loaded queue in line with the host queue without a full timeline replace. */
 internal data class InPlaceQueueSyncPlan(
     /** Index of the target item in the player queue, after any append. */
     val targetIndex: Int,

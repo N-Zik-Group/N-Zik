@@ -130,10 +130,7 @@ fun OnDeviceSong(
         ContextCompat.checkSelfPermission( context, permission ) == PackageManager.PERMISSION_GRANTED
     ) }
 
-    /**
-     * Opens a prompt saying that a permission (should be either [Manifest.permission.READ_MEDIA_AUDIO] or [Manifest.permission.READ_EXTERNAL_STORAGE])
-     * Then apply result of that prompt.
-     */
+    /** Opens a prompt saying that a permission (should be either [Manifest.permission.READ_MEDIA_AUDIO] or [Manifest.permission.READ_EXTERNAL_STORAGE]) Then apply result of that prompt. */
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isPermissionGranted = it }

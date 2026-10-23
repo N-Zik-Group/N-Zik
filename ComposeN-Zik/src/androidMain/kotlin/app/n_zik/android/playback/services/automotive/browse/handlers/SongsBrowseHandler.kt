@@ -37,8 +37,10 @@ class SongsBrowseHandler : BrowseHandler {
     ): List<MediaItem> {
         // Triple dislike exclusion mirroring the phone shuffler (Shuffler):
         // disliked songs + songs by disliked artists + songs from disliked
+//
         // albums, each gated by its phone DislikeMode (default Enabled).
         // Every song category is filtered with it; the Disliked category
+//
         // itself is never filtered. Empty set = no filter.
         val excludedIds = DislikedExclusion.excludedSongIds(context, database)
         return when (parentId) {
@@ -50,11 +52,15 @@ class SongsBrowseHandler : BrowseHandler {
                 val showTopPlaylist = try { context.preferences.getBoolean(showMyTopPlaylistKey, true) } catch (e: Exception) { true }
                 // Phone/AA consistency: every song category below is filtered with
                 // the shuffler exclusions (excludedIds); the excluded songs only
+//
                 // live in the dedicated Disliked folder. Exception: Top is
                 // excluded at the SQL level — EventTable.findSongsMostPlayedBetween
+//
                 // already drops likedAt == -1 (pre-existing, identical on the
+//
                 // phone) — so its in-memory exclusion guard is redundant (kept
                 // defensively) and Top does NOT re-include them when the songs
+//
                 // DislikeMode is Disabled.
                 val dislikedSongs = database.songTable.allDisliked().first().filter { it.likedAt == -1L }
                 val allCount = database.songTable.sortAll(SongSortBy.DateAdded, SortOrder.Descending, excludeHidden = true).first().count { it.id !in excludedIds }
@@ -66,9 +72,12 @@ class SongsBrowseHandler : BrowseHandler {
                 val dislikedCount = dislikedSongs.size
                 // Order and visibility mirror the in-app HomeSongs settings
                 // (homeSongsOrderKey + the HomeSongsSettingsDialog toggles).
+//
                 // Deliberate visibility divergence from the phone: there the
                 // Disliked chip is hidden when the songs DislikeMode is
+//
                 // disabled, while AA always shows this folder (user decision:
+//
                 // the Disliked category is always shown, never filtered).
                 val categoryItems = mapOf(
                     "all" to browsableMediaItem(AutoSessionConstants.ID_SONGS_ALL, context.getString(R.string.all), allCount.toString(), drawableUri(context, R.drawable.musical_notes), MediaMetadata.MEDIA_TYPE_PLAYLIST),

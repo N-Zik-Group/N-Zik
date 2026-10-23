@@ -239,8 +239,9 @@ object AppShortcutsSettingsDialog : Dialog {
             },
             onReset = {
                 // The per-profile shortcuts keep their place (after the fixed defaults),
-                // all disabled: reset means "the default set" — no profile shortcut is a
-                // default (spec-profile-shortcuts).
+                // all disabled: reset means "the default set" —
+                //
+                // No profile shortcut is a default (spec-profile-shortcuts).
                 workingOrder =
                     (defaultShortcutsOrder + defs.keys.filter { it !in defaultShortcutsOrder }).toMutableList()
                 workingToggles = workingOrder.map { id ->

@@ -44,11 +44,7 @@ internal sealed interface ListResolution {
     data object Invalid : ListResolution
 }
 
-/**
- * Resolves a [ListRef] into the full ordered list the client shows (contract §10.4), through
- * the same [LibraryProvider] reads and the same search as the paged list routes, so an index
- * in the client's list is an index in this list.
- */
+/** Resolves a [ListRef] into the full ordered list the client shows (contract §10.4), through the same [LibraryProvider] reads and the same search as the paged list routes, so an index in the client's list is an index in this list. */
 internal object LibraryLists {
 
     suspend fun resolve(provider: LibraryProvider, ref: ListRef): ListResolution {

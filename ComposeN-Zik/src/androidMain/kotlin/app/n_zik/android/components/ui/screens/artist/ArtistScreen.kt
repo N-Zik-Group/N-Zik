@@ -387,7 +387,9 @@ fun ArtistOverview(
                 isGlobalLoading = true
                 // Shuffler.play() is fire-and-forget (issue #606 M2): when it's actually invoked,
                 // isGlobalLoading is cleared from its onComplete once work actually finishes, not
+//
                 // as soon as play() returns. shufflerWillClear guards the `finally` below so an
+//
                 // exception thrown before reaching Shuffler.play() (e.g. getSongs()) still clears
                 // the flag, matching this block's original exception-safety.
                 var shufflerWillClear = false
@@ -692,6 +694,7 @@ fun ArtistOverview(
                                                 sectionLoadingId = sectionId
                                                 // Shuffler.play() is fire-and-forget (issue #606 M2): when it's actually
                                                 // invoked, sectionLoadingId is cleared from its onComplete once playback
+//
                                                 // dispatch actually finishes. shufflerWillClear guards the `finally`
                                                 // below so an exception before reaching Shuffler.play() still clears it.
                                                 var shufflerWillClear = false

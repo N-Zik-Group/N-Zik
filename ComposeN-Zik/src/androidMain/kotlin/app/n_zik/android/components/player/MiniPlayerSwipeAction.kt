@@ -10,10 +10,7 @@ enum class MiniPlayerSwipeAction {
     SeekToNext,
 }
 
-/**
- * Whether the mini-player's own swipe is on: only while it sits at its original position (the
- * sheet is not being opened) and no action has just run.
- */
+/** Whether the mini-player's own swipe is on: only while it sits at its original position (the sheet is not being opened) and no action has just run. */
 fun isMiniPlayerSwipeEnabled(actionFired: Boolean, sheetProgress: Float): Boolean =
     !actionFired && sheetProgress == 0f
 

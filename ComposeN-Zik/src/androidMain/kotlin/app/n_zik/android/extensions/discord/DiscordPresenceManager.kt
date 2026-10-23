@@ -113,6 +113,7 @@ class DiscordPresenceManager(
 
     // Lazy: the OkHttp client is only needed by validateToken. Building it eagerly in
     // the constructor makes JVM unit tests (no Robolectric) hit android.util.Log
+//
     // "not mocked" during OkHttp platform detection.
     private val client by lazy { NetworkClientFactory.getClientWithTimeout(10L, 10L) }
 
@@ -152,6 +153,7 @@ class DiscordPresenceManager(
                 } else {
                     // connect() resets the flow to null (a fresh attempt) — the moment the
                     // terminal error no longer applies (item 9: clear on the new attempt /
+//
                     // session established). A failed retry re-sets it on the next 4004.
                     DiscordRpcErrorState.clear()
                 }
@@ -159,11 +161,7 @@ class DiscordPresenceManager(
         }
     }
 
-    /**
-     * Item 9: clears the durable error when a fresh connection is created for a new
-     * token (or after the idle close) — a (re)established session is the moment the
-     * banner can safely disappear.
-     */
+    /** Item 9: clears the durable error when a fresh connection is created for a new token (or after the idle close) — a (re)established session is the moment the banner can safely disappear. */
     private fun onConnectionRecreated() {
         DiscordRpcErrorState.clear()
     }
@@ -232,6 +230,7 @@ class DiscordPresenceManager(
 
         // Update the player state BEFORE any conditional return below: a transient
         // token/network condition must never leave lastMediaItem stale, otherwise later
+//
         // events (pause clear, re-sync) would act on an outdated player state.
         lastMediaItem = mediaItem
         lastPosition = position
@@ -243,6 +242,7 @@ class DiscordPresenceManager(
 
         // Item 8: the refresh tick keeps running even while the network is down — each
         // tick re-checks isNetworkAvailable and re-arms the send on return (state is
+//
         // kept in lastMediaItem/lastPosition). It only runs while actively playing;
         // a pause or onStop stops it.
         if (mediaItem != null && isPlaying) {
@@ -290,6 +290,7 @@ class DiscordPresenceManager(
 
         // Debounce: wait DEBOUNCE_DELAY_MS before actually sending the presence update.
         // If another event arrives before the delay elapses, this job is cancelled
+//
         // and a new one starts. This prevents RPC spam during rapid skipping.
         debounceJob = discordScope.launch {
             delay(DEBOUNCE_DELAY_MS)
@@ -403,6 +404,7 @@ class DiscordPresenceManager(
         val rawUri = mediaItem?.mediaMetadata?.artworkUri?.toString()
         // Per-section visibility (advanced mode only — normal mode keeps its frozen
         // identity). A disabled section is sent as null: the module omits the field
+//
         // from the JSON entirely (no empty line, no asset, no progress bar).
         val advanced = settings.advancedMode
         val largeImageUrl = if (advanced && !settings.showArtwork) {
@@ -483,10 +485,7 @@ class DiscordPresenceManager(
 
     private fun speedOrOne(speed: Float): Float = if (speed > 0f) speed else 1f
 
-    /**
-     * Item 6: re-syncs the live presence when an advanced setting changes (upstream
-     * parity notifySettingsChanged) — the module's 500 ms limit prevents spam.
-     */
+    /** Item 6: re-syncs the live presence when an advanced setting changes (upstream parity notifySettingsChanged) — the module's 500 ms limit prevents spam. */
     fun onAdvancedSettingsChanged() {
         if (isStopped) return
         Timber.tag(tag).d("Advanced settings changed — re-syncing presence")
@@ -556,6 +555,7 @@ class DiscordPresenceManager(
                 if (isStopped) break
                 // A pause (or media removed) stops the loop — the presence is frozen.
                 // Callers must pass the live providers: without isPlayingProvider the
+//
                 // tick cannot tell the playback state, so the loop stops here (warned).
                 val isPlayingProvider = lastIsPlayingProvider
                 if (isPlayingProvider == null) {
@@ -564,8 +564,10 @@ class DiscordPresenceManager(
                 }
                 // gh-881 (Phase 3, Fix D): the live providers read ExoPlayer state, which
                 // ExoPlayer only allows on the main thread (verifyApplicationThread). This
+//
                 // loop runs on the DATA (IO) scope — hop to the player-state dispatcher
                 // around the calls (an off-main read throws IllegalStateException and
+//
                 // killed the tick).
                 if (!withContext(playerStateDispatcher) { isPlayingProvider() }) break
                 val media = lastMediaItem ?: break
@@ -722,6 +724,7 @@ class DiscordPresenceManager(
             artist = mediaItem.artistTextOrDb().takeIf { it.isNotBlank() } ?: context.getString(R.string.unknown_artist),
             // Album resolved from metadata then DB (same path as LastFM/lyrics) — a
             // streaming MediaItem usually carries no albumTitle. Null → the renderer
+//
             // applies the localized "Unknown Album" for {album.name}.
             albumName = mediaItem.albumTitleOrDb().takeIf { it.isNotBlank() && it != "null" },
             songId = mediaId,
@@ -757,10 +760,7 @@ class DiscordPresenceManager(
         )
     }
 
-    /**
-     * Localized strings for the presence content (item 6): resolved from strings.xml so
-     * no user-facing text is hardcoded in the builder (translatable per locale).
-     */
+    /** Localized strings for the presence content (item 6): resolved from strings.xml so no user-facing text is hardcoded in the builder (translatable per locale). */
     private fun discordStrings() = DiscordStrings(
         nameFallback = context.getString(R.string.discord_presence_name),
         buttonGetNZik = context.getString(R.string.discord_presence_button_get_nzik),

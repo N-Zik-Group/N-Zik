@@ -107,6 +107,7 @@ fun RewindHomeScreen(
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     // The locked-period spam rotation (user decision, 2026-09-24): each tap on a locked
     // month cell or year row answers with the next funny message; the tap that reaches
+//
     // the threshold kicks the user back from the home ("chépa, j'ai dit non, arrêter").
     // The counter resets when the home leaves the composition.
     var lockedSpam by remember { mutableStateOf(0) }
@@ -128,6 +129,7 @@ fun RewindHomeScreen(
     var selectedYear by rememberSaveable { mutableIntStateOf(-1) }
     // Display orders, same contract as the app's sort toolbars (Sort.ToolBarButton):
     // arrow up = ascending, arrow down (rotated 180deg) = descending, tap flips.
+//
     // Years default to chronological order (oldest first); months to calendar order (Jan to Dec).
     var yearsOrder by rememberSaveable { mutableStateOf(SortOrder.Ascending) }
     var monthsOrder by rememberSaveable { mutableStateOf(SortOrder.Ascending) }
@@ -213,10 +215,7 @@ fun RewindHomeScreen(
     }
 }
 
-/**
- * The page body: a LazyColumn (like QuickPicks) holding the hero, the year rows and the
- * month grid item.
- */
+/** The page body: a LazyColumn (like QuickPicks) holding the hero, the year rows and the month grid item. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun RewindHomeContent(
@@ -251,10 +250,12 @@ private fun RewindHomeContent(
     ) {
         // Brand hero — same recipe as the Listen Together page: the app logo and the
         // title centered as a group (HeaderWithIcon pattern, xxl bold), the tagline
+//
         // centered below (SettingsDescription pattern).
         item(key = "hero") {
             // The app-standard page header (HeaderWithIcon, same sizes as the Listen
             // Together / settings pages) with the monochrome logo — the black & white
+//
             // one the player's media notification uses (ic_launcher_monochrome).
             HeaderWithIcon(
                 title = stringResource(R.string.rw_home_title),
@@ -274,6 +275,7 @@ private fun RewindHomeContent(
 
         // ALL TIME — the lifetime totals, above the years: tap opens the all-time deck
         // (null while the history has no plays at all). Skipped while the all-time recap
+//
         // is disabled in the settings (spec GH-275)
         if (globalEnabled) {
             global?.let { allTime ->
@@ -311,8 +313,10 @@ private fun RewindHomeContent(
                 Column(modifier = Modifier.animateItem()) {
                     // The in-progress year is locked until it is over (user decision,
                     // 2026-09-24): the row shows "LOCKED" instead of its stats, no album
+//
                     // previews, and a padlock instead of the "open" chevron; the tap opens
                     // nothing (the funny replies only come out when it is spammed). The
+//
                     // chips below keep selecting it for the month grid.
                     val yearLocked = !isYearComplete(year.year)
                     RewindHomeYearRow(
@@ -380,6 +384,7 @@ private fun RewindHomeContent(
             selected?.let { year ->
                 // Crossfade the whole grid when the chip switches the year: the cells keep the
                 // same month keys, so a plain recomposition would swap the content instantly.
+//
                 // A sort toggle only reorders the items, which animateItem() handles.
                 item(key = "months_grid") {
                     Crossfade(
@@ -389,6 +394,7 @@ private fun RewindHomeContent(
                         val yearOfKey = years.first { it.year == yearKey }
                         // Calendar months in display order; the number drives navigation
                         // no matter the display order. All twelve months are always shown:
+//
                         // the unfinished ones render a locked cell and open nothing
                         // (user decision, 2026-09-24: a deck opens only once its period is over).
                         val monthEntries = yearOfKey.months
@@ -397,6 +403,7 @@ private fun RewindHomeContent(
 
                         // Fixed-height lazy grid (QuickPicks pattern): 12 months over 4 rows of
                         // 3. The height is derived from the actual cell width so the grid fits
+//
                         // exactly, with no nested scroll.
                         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
                             val spacing = 10.dp
@@ -461,11 +468,7 @@ private fun RewindHomeSectionHeader(
     }
 }
 
-/**
- * Sort direction toggle, reusing the app's shared TabToolBar.Icon component
- * (same visual contract as Sort.ToolBarButton): arrow_up at toolbar size,
- * rotated 180deg with 400ms linear animation, clip(uiRoundnessShape()) + ripple.
- */
+/** Sort direction toggle, reusing the app's shared TabToolBar.Icon component (same visual contract as Sort.ToolBarButton): arrow_up at toolbar size, rotated 180deg with 400ms linear animation, clip(uiRoundnessShape()) + ripple. */
 @Composable
 private fun RewindHomeSortArrow(
     order: SortOrder,
@@ -482,11 +485,7 @@ private fun RewindHomeSortArrow(
     )
 }
 
-/**
- * One tappable home row (a year, or the all-time row): a strip collage of the period's top
- * song/album/artist/playlist behind the label + totals, with the same dark-scrim treatment
- * as the month cells.
- */
+/** One tappable home row (a year, or the all-time row): a strip collage of the period's top song/album/artist/playlist behind the label + totals, with the same dark-scrim treatment as the month cells. */
 @Composable
 private fun RewindHomeYearRow(
     label: String,
@@ -494,6 +493,7 @@ private fun RewindHomeYearRow(
     tops: TopArtworks,
     // Locked = the period is not over yet (the in-progress year): no deck navigation, no
     // album previews, a padlock replaces the "open" chevron; the caller passes "LOCKED"
+//
     // as [stats].
     locked: Boolean,
     onClick: () -> Unit,
@@ -514,6 +514,7 @@ private fun RewindHomeYearRow(
             .clip(uiRoundnessShape())
             // Theme background (not raw black): while the network artworks are loading,
             // the row blends into the page instead of flashing black (same user decision
+//
             // as the month cells, 2026-09-24).
             .background(palette.background1)
             .then(
@@ -525,6 +526,7 @@ private fun RewindHomeYearRow(
         if (locked) {
             // In-progress year: no album/artist previews — they would spoil the annual
             // deck (user decision, 2026-09-24). The N-Zik launcher box under the dark
+//
             // scrim, same treatment as the locked month cells.
             RewindHomeLauncherBox(Modifier.fillMaxSize())
             Box(
@@ -577,6 +579,7 @@ private fun RewindHomeYearRow(
                 }
                 // 4: playlist — the same quadrant as the others. The cover mosaic is sized to
                 // the quadrant's height so its corner-aligned covers fill the whole cell, as in
+//
                 // the month collage.
                 BoxWithConstraints(modifier = Modifier.weight(1f)) {
                     val playlist = tops.playlist
@@ -700,6 +703,7 @@ private fun RewindHomeMonthCell(
             .clip(uiRoundnessShape())
             // Theme background (not raw black): while the network artworks are loading,
             // the cell blends into the page instead of flashing black (user decision,
+//
             // 2026-09-24).
             .background(palette.background1)
             .then(
@@ -724,6 +728,7 @@ private fun RewindHomeMonthCell(
         } else {
             // No artwork: an empty finished month or an unfinished one — the N-Zik launcher
             // box under the same dark scrim as the playable cells (scrim on top of the
+//
             // image, full opacity, so the text stays readable — user decision 2026-09-24).
             RewindHomeLauncherBox(Modifier.fillMaxSize())
             Box(
@@ -734,6 +739,7 @@ private fun RewindHomeMonthCell(
             if (locked) {
                 // Unfinished month: a padlock on top, no stats and no message (the funny
                 // replies only come out when the cell is spammed). The deck unlocks once
+//
                 // the month is over.
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -759,6 +765,7 @@ private fun RewindHomeMonthCell(
             if (locked) {
                 // Locked cell: the "LOCKED" label under the month name (same treatment as
                 // the locked year row — user decision, 2026-09-24); the funny replies still
+//
                 // appear as toasts while the cell is spammed.
                 Spacer(Modifier.height(4.dp))
                 Text(
@@ -832,6 +839,7 @@ private fun RewindHomeMonthCollage(
             RewindHomeThumbnailCell(tops.artist, Modifier.weight(1f))
             // The playlist cover is a mosaic of corner-aligned square covers: sizing it to
             // the quadrant's height makes the top/bottom covers overlap across the (narrower)
+//
             // width, so it fills the whole quadrant instead of a small centered square. The
             // cell is already rounded: no corner radius on the mosaic itself.
             BoxWithConstraints(modifier = Modifier.weight(1f)) {
@@ -876,10 +884,7 @@ private fun RewindHomeThumbnailCell(
     }
 }
 
-/**
- * Compact listening time for the home rows and cells: "38 h 12" over an hour, "45 min" under
- * one (reuses the deck's compact minutes string).
- */
+/** Compact listening time for the home rows and cells: "38 h 12" over an hour, "45 min" under one (reuses the deck's compact minutes string). */
 @Composable
 private fun rewindHomeDuration(minutes: Long): String {
     val hours = (minutes / 60L).toInt()
@@ -891,10 +896,7 @@ private fun rewindHomeDuration(minutes: Long): String {
     }
 }
 
-/**
- * The locked-period spam rotation (user decision, 2026-09-24): the funny replies to a
- * locked month cell or year row being hammered, in order.
- */
+/** The locked-period spam rotation (user decision, 2026-09-24): the funny replies to a locked month cell or year row being hammered, in order. */
 internal val LOCKED_SPAM_MESSAGES = intArrayOf(
     R.string.rw_home_locked_spam_1,
     R.string.rw_home_locked_spam_2,
@@ -929,11 +931,7 @@ internal fun nextLockedSpamReply(
     }
 }
 
-/**
- * The random replies to an empty finished month being tapped (user decision, 2026-09-24):
- * each tap answers with a random sad one-liner (no rotation, no kick — nothing to protect
- * there, just the joke).
- */
+/** The random replies to an empty finished month being tapped (user decision, 2026-09-24): each tap answers with a random sad one-liner (no rotation, no kick — nothing to protect there, just the joke). */
 internal val EMPTY_MONTH_SPAM_MESSAGES = intArrayOf(
     R.string.rw_home_month_empty_spam_1,
     R.string.rw_home_month_empty_spam_2,
@@ -943,10 +941,7 @@ internal val EMPTY_MONTH_SPAM_MESSAGES = intArrayOf(
     R.string.rw_home_month_empty_spam_6
 )
 
-/**
- * Pure random pick of an empty-month reply so it can be unit-tested without UI:
- * [nextIndex] is invoked with the list size and its result is reduced modulo it.
- */
+/** Pure random pick of an empty-month reply so it can be unit-tested without UI: [nextIndex] is invoked with the list size and its result is reduced modulo it. */
 internal fun randomEmptyMonthMessage(
     messages: IntArray,
     nextIndex: (Int) -> Int = { (0 until it).random() }

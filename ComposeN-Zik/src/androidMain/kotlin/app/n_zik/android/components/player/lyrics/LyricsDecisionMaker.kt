@@ -40,10 +40,13 @@ object LyricsDecisionMaker {
         }
 
         // Each active check is decided from its own row only; the cascade above is for display
-        // purposes. Active checks per mode: Karaoke -> K, Synced -> K+S, Unsynced -> U, Auto -> K+S+U.
-        // Absent rows are always wanted so fallback rows stay maintained, and every dedup-based
-        // hunt below stays dedup-gated. One extra gate: the Karaoke hunt stays off in Synced mode
-        // when the displayed row already carries word timings.
+        // purposes.
+        //
+        // Active checks per mode: Karaoke -> K, Synced -> K+S, Unsynced -> U, Auto -> K+S+U.
+        // Absent rows are always wanted so fallback rows stay maintained,
+        //
+        // and every dedup-based hunt below stays dedup-gated. One extra gate: the Karaoke
+        // hunt stays off in Synced mode when the displayed row already carries word timings.
         val needKaraokeFetch = (lyricsType == LyricsType.Karaoke || lyricsType == LyricsType.Synced || lyricsType == LyricsType.Auto) &&
             fetchNeededFor(
                 row = allLyrics.find { it.type == LyricsType.Karaoke.name },

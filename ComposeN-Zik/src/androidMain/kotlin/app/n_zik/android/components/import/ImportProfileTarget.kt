@@ -22,11 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
-/**
- * One row of the "import into which profile?" dialog: the stable [id], the name to
- * show, whether it is the active profile, and whether it only exists in the picked
- * file(s) — a profile carried by the import with no local profile yet.
- */
+/** One row of the "import into which profile?" dialog: the stable [id], the name to show, whether it is the active profile, and whether it only exists in the picked file(s) — a profile carried by the import with no local profile yet. */
 data class ProfileTargetOption(
     val id: String,
     val displayName: String,
@@ -52,6 +48,7 @@ fun buildProfileTargetOptions(
     val known = localIds.toMutableSet()
     // The base is always local, so it never gets its own "from the file" row — but when
     // the file explicitly carries the base's renamed name, the base row adopts it (that
+//
     // is exactly what the base will be named after the import). The raw tag pair of a
     // single/both import (`id` offered as its own name) is excluded.
     val baseNameFromFile = importedProfiles
@@ -121,10 +118,7 @@ object ImportChainRunner {
         }
     }
 
-    /**
-     * The chain body, exposed as a suspend function so its control flow is testable —
-     * [start] only moves it off the UI thread.
-     */
+    /** The chain body, exposed as a suspend function so its control flow is testable — [start] only moves it off the UI thread. */
     internal suspend fun runChain(
         context: Context,
         target: String,
@@ -156,11 +150,13 @@ object ImportChainRunner {
         }
         // runGuardedImport swallows the exception (it already reported it): a failure
         // stops the chain before anything else is written — the host stays open for a
+//
         // retry, so onCompleted must never be reached past a failed db/settings step.
         if (dbSettingsFailed) return
 
         // A target that only exists in the picked file(s) is not in the local profile
         // list yet: register it, so the data just written into it is not orphaned (the
+//
         // all-mode state import carries the full list anyway — this only matters for
         // the database/settings-only chains).
         if ((importDb || importSettingsPart) &&
@@ -175,6 +171,7 @@ object ImportChainRunner {
 
         // The profile state reports through a Result (it never throws): a failure
         // keeps the host open for a retry, and the restart prompt still applies
+//
         // when the target is the active profile and the database or the settings
         // were replaced — the app must reload them.
         stateUri?.let { uri ->
@@ -195,6 +192,7 @@ object ImportChainRunner {
             if (importDb && isActive) {
                 // The active profile's live database was just replaced: reset the login
                 // state so the app starts fresh after the restart (the same reset the
+//
                 // immediate import performs).
                 resetLoginStateAfterDatabaseImport(context)
             }
@@ -215,12 +213,7 @@ object ImportChainRunner {
     }
 }
 
-/**
- * Resets the login state after a live database replacement: the imported database no
- * longer matches the stored session, so the app starts unlogged — and the expired-cookie
- * flag is dropped from the ACTIVE profile's own plain prefs (the per-profile store the
- * flag is written and read in, never the base-only `preferences` file).
- */
+/** Resets the login state after a live database replacement: the imported database no longer matches the stored session, so the app starts unlogged — and the expired-cookie flag is dropped from the ACTIVE profile's own plain prefs (the per-profile store the flag is written and read in, never the base-only `preferences` file). */
 internal fun resetLoginStateAfterDatabaseImport(context: Context) {
     MainApplication.cookieStatus = MainApplication.CookieStatus.NOT_LOGGED_IN
     context.preferences.edit().remove(ytCookieExpiredKey).apply()

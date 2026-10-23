@@ -132,10 +132,7 @@ fun purgeProfileData(context: Context, profileId: String) {
     context.clearProfileShareFlags(profileId)
 }
 
-/**
- * Removes only the profile's custom photo file (the face card's "Remove photo") —
- * never the whole files dir, which belongs exclusively to the profile-deletion purge.
- */
+/** Removes only the profile's custom photo file (the face card's "Remove photo") — never the whole files dir, which belongs exclusively to the profile-deletion purge. */
 fun removeProfileAvatarFile(context: Context, profileId: String) {
     val removed = runCatching { profileAvatarFile(context, profileId).delete() }
         .onFailure { Timber.tag("ProfileCard").w(it, "Could not remove the profile photo of %s", profileId) }
@@ -143,12 +140,7 @@ fun removeProfileAvatarFile(context: Context, profileId: String) {
     if (removed.getOrNull() == true) profileFaceUpdateTrigger++
 }
 
-/**
- * Bumped whenever the active profile's face can change (a photo is saved or removed, the
- * name or the avatar source is switched, faces are restored by an import) so the
- * always-composed app header re-resolves it — the header never leaves composition, so a
- * profile switch or one of these edits is the only moment it refreshes.
- */
+/** Bumped whenever the active profile's face can change (a photo is saved or removed, the name or the avatar source is switched, faces are restored by an import) so the always-composed app header re-resolves it — the header never leaves composition, so a profile switch or one of these edits is the only moment it refreshes. */
 var profileFaceUpdateTrigger by mutableIntStateOf(0)
 
 /** Longest side of a re-encoded face photo (px) — the face renders at 32-64dp. */
@@ -231,12 +223,7 @@ fun profilePrefsFile(context: Context, profileId: String): File =
 private fun profileFileSuffix(profileId: String): String =
     if (profileId == DEFAULT_PROFILE_ID) "" else "_$profileId"
 
-/**
- * Sizes in bytes of ONE profile's own data (spec-profile-data-separation): the
- * profile's images item (Coil image cache + custom covers, merged into one toggle),
- * its song cache and its downloads — each null ("No data") when the item is
- * disabled (temp dir) or empty.
- */
+/** Sizes in bytes of ONE profile's own data (spec-profile-data-separation): the profile's images item (Coil image cache + custom covers, merged into one toggle), its song cache and its downloads — each null ("No data") when the item is disabled (temp dir) or empty. */
 data class ProfileDataSizes(
     val imagesBytes: Long?,
     val songCacheBytes: Long?,
@@ -324,10 +311,7 @@ fun loadProfileFace(context: Context, profileId: String, defaultName: String): P
 fun loadActiveProfileFace(context: Context, defaultName: String): ProfileFace =
     loadProfileFace(context, getActiveProfile(context), defaultName)
 
-/**
- * The relative "last used" label of [lastUsed] (epoch millis), null when the profile
- * was never used (the caller shows "Never").
- */
+/** The relative "last used" label of [lastUsed] (epoch millis), null when the profile was never used (the caller shows "Never"). */
 fun lastUsedRelativeText(context: Context, lastUsed: Long?, nowMillis: Long = System.currentTimeMillis()): String? {
     val millis = lastUsed ?: return null
     val relative = relativeTime(millis, nowMillis)
@@ -419,12 +403,7 @@ private fun ProfileInitialsFace(name: String, size: Dp) {
     }
 }
 
-/**
- * The NZik profile card (Profiles page + Accounts tab): the face (avatar + resolved
- * name), the separate/shared data line, the database size, the last use (relative)
- * and the switch / rename / delete actions (null hides the action; the card click
- * switches when an action is provided).
- */
+/** The NZik profile card (Profiles page + Accounts tab): face (avatar + resolved name), separate/shared data line, database size, last use (relative), and the switch / rename / delete actions (null hides the action; the card click switches when an action is provided). */
 @Composable
 fun ProfileCard(
     face: ProfileFace,
@@ -461,6 +440,7 @@ fun ProfileCard(
         shape = uiRoundnessShape(),
         colors = CardDefaults.cardColors(
             // The same rule as the other NZik cards (SettingsSectionCard): the
+//
             // pitch-black themes need the lighter gray, or the card vanishes on
             // pure black.
             containerColor = if (colorPalette() === PureBlackColorPalette ||
@@ -491,6 +471,7 @@ fun ProfileCard(
                     BasicText(
                         // The status line reflects the profile's sharing state
                         // (spec-profile-data-separation): the profile-scoped data
+//
                         // (database, settings, encrypted sessions) is always separate,
                         // the four heavy data items follow their sharing toggles.
                         text = if (sharedItems.isEmpty()) {
@@ -498,6 +479,7 @@ fun ProfileCard(
                         } else {
                             // stringResource is @Composable: the item labels cannot be resolved
                             // inside a joinToString lambda, so each is resolved here in the
+//
                             // composable scope, keeping the ALL order.
                             val downloadsLabel = stringResource(R.string.profile_data_downloads)
                             val mediaCacheLabel = stringResource(R.string.profile_data_media_cache)
@@ -511,6 +493,7 @@ fun ProfileCard(
                                     .joinToString(", ")
                             // The line lists BOTH sides (spec-profile-data-separation): the
                             // heavy items that stay separate (comma-prefixed, so the format
+//
                             // string keeps "database, settings, sessions" when none do) and
                             // the shared ones.
                             val separateHeavy = labelsOf(ProfileDataItem.ALL.toSet() - sharedItems)
@@ -576,6 +559,7 @@ fun ProfileCard(
                 Spacer(modifier = Modifier.height(12.dp))
                 // The sharing toggles (spec-profile-data-separation): one per shareable
                 // item. The location change applies at the NEXT process boot — the
+//
                 // locations are resolved at boot, never swapped hot in process.
                 OtherSwitchSettingEntry(
                     title = stringResource(R.string.profile_share_downloads),
@@ -704,6 +688,7 @@ fun ProfileAccountCard(modifier: Modifier = Modifier) {
 
     // Re-resolve the snapshot whenever the face state changes: a face edit on the
     // face card above (photo pick / remove, source change, rename) bumps
+//
     // [profileFaceUpdateTrigger], and an account login can change a face sourced
     // from that account — the same trigger pair the always-composed header keys on.
     val faceTrigger = encryptedPreferencesUpdateTrigger + profileFaceUpdateTrigger + shareRefreshTick

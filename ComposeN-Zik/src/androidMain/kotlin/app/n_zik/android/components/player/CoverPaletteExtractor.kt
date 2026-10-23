@@ -50,17 +50,10 @@ const val ACHROMATIC_CHANNEL_DELTA_THRESHOLD = 0.10f
  */
 const val ACHROMATIC_RAMP_LIGHT_TONE_MAX_LIGHTNESS = 0.80f
 
-/**
- * The lightness floor of the darkest background (bg0–bg4) of an achromatic ramp rendered in a
- * light theme (spec-achromatic-ramp-luminance-cap, 2026-09-28) — the mirror case: a near-black
- * cover in light mode would otherwise leave the whole app near-black (bg0 L 0.10).
- */
+/** The lightness floor of the darkest background (bg0–bg4) of an achromatic ramp rendered in a light theme (spec-achromatic-ramp-luminance-cap, 2026-09-28) — the mirror case: a near-black cover in light mode would otherwise leave the whole app near-black (bg0 L 0.10). */
 const val ACHROMATIC_RAMP_DARK_TONE_MIN_LIGHTNESS = 0.30f
 
-/**
- * The normalized channel spread (max − min of the R/G/B channels) of an ARGB color, in
- * [0, 1] — a lightness-independent measure of how far the color is from gray.
- */
+/** The normalized channel spread (max − min of the R/G/B channels) of an ARGB color, in [0, 1] — a lightness-independent measure of how far the color is from gray. */
 internal fun channelDelta(rgb: Int): Float {
     val r = (rgb shr 16) and 0xFF
     val g = (rgb shr 8) and 0xFF
@@ -152,10 +145,7 @@ internal fun M3ECoverColors.m3eNeutralizeIfAchromatic(
     )
 }
 
-/**
- * Whether every swatch is neutral (channel spread below [ACHROMATIC_CHANNEL_DELTA_THRESHOLD]) —
- * true for covers neutralized by [m3eNeutralizeIfAchromatic].
- */
+/** Whether every swatch is neutral (channel spread below [ACHROMATIC_CHANNEL_DELTA_THRESHOLD]) — true for covers neutralized by [m3eNeutralizeIfAchromatic]. */
 val M3ECoverColors.allAchromatic: Boolean
     get() = listOf(dominant, vibrant, lightVibrant, darkVibrant, muted, lightMuted, darkMuted)
         .all { channelDelta(it) < ACHROMATIC_CHANNEL_DELTA_THRESHOLD }

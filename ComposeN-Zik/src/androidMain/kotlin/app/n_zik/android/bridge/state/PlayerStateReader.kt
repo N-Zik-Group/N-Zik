@@ -79,10 +79,7 @@ internal object PlayerStateReader {
         return PlayerRead(items, sample)
     }
 
-    /**
-     * Window indexes of [player] in the effective play order (shuffle order when enabled):
-     * position `i` of the published queue is window `playOrder(player)[i]` (contract §7.1).
-     */
+    /** Window indexes of [player] in the effective play order (shuffle order when enabled): position `i` of the published queue is window `playOrder(player)[i]` (contract §7.1). */
     fun playOrder(player: Player): List<Int> {
         val shuffle = player.shuffleModeEnabled
         val timeline = player.currentTimeline
@@ -96,11 +93,7 @@ internal object PlayerStateReader {
         }
     }
 
-    /**
-     * Window index of the item a client designates by its effective-order [index] and
-     * [trackId], read from [player] right now; `null` when [index] is out of bounds or the
-     * item there is another track (contract §9 `QUEUE_MISMATCH`).
-     */
+    /** Window index of the item a client designates by its effective-order [index] and [trackId], read from [player] right now; `null` when [index] is out of bounds or the item there is another track (contract §9 `QUEUE_MISMATCH`). */
     fun windowIndexOf(player: Player, index: Int, trackId: String): Int? {
         val window = playOrder(player).getOrNull(index) ?: return null
         return window.takeIf { TrackMapping.trackIdOf(player.getMediaItemAt(it).mediaId) == trackId }

@@ -243,11 +243,7 @@ internal fun mergePageValue(stored: String?, fetched: String?): String? =
 internal var upsertSongInfoNetworkCheck: () -> Boolean =
     { NetworkQualityHelper.isNetworkConnected(appContext()) }
 
-/**
- * S5 (offline gate, 2026-10-22): the network check behind [fetchFormatIfMissing]'s offline
- * skip — a seam (not an inline call) so the plain-JVM FetchFormatIfMissingGateTest can force
- * it online without a device context (same pattern as [upsertSongInfoNetworkCheck]).
- */
+/** S5 (offline gate, 2026-10-22): the network check behind [fetchFormatIfMissing]'s offline skip — a seam (not an inline call) so the plain-JVM FetchFormatIfMissingGateTest can force it online without a device context (same pattern as [upsertSongInfoNetworkCheck]). */
 internal var fetchFormatIfMissingNetworkCheck: () -> Boolean =
     { NetworkQualityHelper.isNetworkConnected(appContext()) }
 
@@ -255,6 +251,7 @@ suspend fun upsertSongInfo(videoId: String) {
     if (videoId == justInserted) return
     // S5 (offline gate, 2026-10-22): pure network work (Innertube nextPage) — skipped
     // while offline so no call site can launch DNS-failing calls. The guard lives in the
+//
     // body (not only at call sites) because the legacy Player.forcePlayAtIndex pre-fetch
     // (READ-ONLY) is a call site no wrapper can cover; the next online playback re-runs it.
     if (!upsertSongInfoNetworkCheck()) {
@@ -289,9 +286,12 @@ suspend fun upsertSongInfo(videoId: String) {
                 if (artistIdsFromDb.isNotEmpty() || albumFromDb != null) break
                 // First attempt only: the queue brought no artist (the video case —
                 // a video's byline channel is never a YTM artist) and no link
+//
                 // exists yet, so identify the video's channel through a YTM video
                 // search and copy it as the artist. A link already in the DB
+//
                 // breaks the loop above, so the search never runs for audio or
+//
                 // already-linked videos.
                 if (attempt == 1 && songItem.authors.isNullOrEmpty()) {
                     val storedSong = Database.songTable.findByIdDirect(videoId)
@@ -303,6 +303,7 @@ suspend fun upsertSongInfo(videoId: String) {
                     )
                     // The fallback commits in a suspending transaction before
                     // the re-read, so a new link (if any) is already visible:
+//
                     // re-read the IDs before continuing the retry loop.
                     artistIdsFromDb = Database.songArtistMapTable.findArtistsOf(videoId).firstOrNull().orEmpty()
                     albumFromDb = Database.songAlbumMapTable.findAlbumOf(videoId).firstOrNull()
@@ -341,9 +342,12 @@ suspend fun upsertSongInfo(videoId: String) {
                                             if (artistPage.name.isNullOrBlank()) {
                                                 // Page is empty (classic channel, no music header): stored
                                                 // name/thumbnail are kept, lastFetch still updated so the
+//
                                                 // TTL (30 days) does not re-trigger the fetch on every
                                                 // playback. Only logged here — inside the existing-row guard —
+//
                                                 // because that is where the write actually happens (a row
+//
                                                 // deleted between the TTL check and the fetch is a no-op).
                                                 Timber.tag(TAG).d("[Artist Cache] $artistId page empty — keeping stored name/thumbnail, lastFetch updated")
                                             }
@@ -532,6 +536,7 @@ private fun fetchFormatIfMissing(videoId: String) {
     if (videoId.length != 11) return
     // S5 (offline gate, 2026-10-22): pure network enrichment — offline it can only
     // DNS-fail, so skip it (the load itself is already fast-failed in [DataSpec.process]).
+//
     // Seam (not an inline call): the plain-JVM gate test forces it online.
     if (!fetchFormatIfMissingNetworkCheck()) {
         Timber.tag(TAG).d("fetchFormatIfMissing skipped for $videoId: no network")
@@ -539,8 +544,10 @@ private fun fetchFormatIfMissing(videoId: String) {
     }
     // Issue #881 (Phase 3, Fix A): mark the id in-flight BEFORE launching. The previous version
     // added it only after the block completed — which it never did for the silent early exits
+//
     // below — so every data-source re-open (one per seek on progressive streams) re-launched a
     // redundant player-response fetch (field logs 2026-10-03: 50/50 and 34/34 seeks each
+//
     // re-fetched the same videoId, up to two fetches in parallel).
     if (!formatFetchGate.tryMark(videoId)) return
     scope.launch(NzikDispatchers.PLAYBACK) {
@@ -565,9 +572,12 @@ private fun fetchFormatIfMissing(videoId: String) {
                 ?: run {
                     // Issue #881 (gh-881), Phase 3 Fix A (review patch): split the two "no
                     // format" outcomes. A successful response WITHOUT streamingData is a
+//
                     // degraded/transient answer — release the gate so the next re-open may
                     // retry. The stable "no selectable adaptive audio" outcome (streamingData
+//
                     // present but empty of selectable audio) keeps the gate marked, no retry.
+//
                     if (response.streamingData == null) {
                         formatFetchGate.release(videoId)
                         Timber.tag(TAG).w("fetchFormatIfMissing: no streamingData in response for $videoId (gate released, will retry)")
@@ -714,8 +724,10 @@ private fun upsertSongFormat(
         )
         // Ensure the Song row exists for the Format FK constraint.
         // Only insert a placeholder if the song is NOT already in the DB
+//
         // (e.g., already seeded by onMediaItemTransition with full metadata).
         // This avoids creating a blank row that would propagate empty data
+//
         // to the UI via reactive Flows.
         val songExists = Database.songTable.countById(videoId) > 0
         if (!songExists) {
@@ -810,6 +822,7 @@ private suspend fun resolveStreamUriViaInnerTubeX(
 
     // Retry loop: catches CancellationException from session changes and retries once.
     // InnerTubeX's fetchFreshVisitorData() can cancel in-flight player requests when
+//
     // it publishes a new session — this is expected and recoverable.
     var lastCancellation: CancellationException? = null
     for (attempt in 0..1) {
@@ -849,6 +862,7 @@ private suspend fun resolveStreamUriViaInnerTubeX(
 
                     // Upsert song format in background — skipped for Listen Together
                     // items: no Format row and no blank Song placeholder in the user's
+//
                     // library (the item's library rows must not be created by playback;
                     // the in-memory StreamUrlCache still covers re-resolution).
                     if (!ListenTogetherPlayerBridge.isListenTogetherVideo(videoId)) {
@@ -924,10 +938,14 @@ private suspend fun resolveStreamUriViaInnerTubeX(
         } catch (e: CancellationException) {
             // InnerTubeX cancels in-flight session-bound requests whenever a new session is
             // published (e.g. fetchFreshVisitorData during first-time PoToken generation).
+//
             // Retry once with the stable session instead of letting ExoPlayer re-drive the
             // whole load from scratch. The message is specific to
+//
             // InnerTube.cancelStaleSessionRequests; any other cancellation (caller scope
+//
             // cancelled, ExoPlayer interrupt) propagates as-is. If our own job is being
+//
             // cancelled, delay() below throws immediately and aborts the retry.
             if (isInnerTubeSessionChangeCancellation(e) && attempt == 0) {
                 lastCancellation = e
@@ -973,9 +991,6 @@ private suspend fun resolveStreamUriInternal(
 
     throw UnplayableException("InnerTubeX failed to resolve stream for $videoId")
 }
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// Cache + DataSpec integration
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 /**
  * Cache of resolved stream URLs by videoId, tagged with the quality each URL was resolved at.
@@ -1060,23 +1075,29 @@ fun DataSpec.process(
 ): DataSpec {
     // runBlocking is necessary because ExoPlayer's ResolvingDataSource expects a synchronous return.
     // We catch CancellationException (caused by thread interruption during media item transitions)
+//
     // and re-throw as IOException so ExoPlayer treats it as a recoverable error.
     // Issue #881 (gh-881): every resolution is timed — duration + outcome (cache hit / OK /
+//
     // exception class) in one PlaybackDiag line, warn above the slow threshold (spec S4).
     val startedAtNanos = System.nanoTime()
     fun elapsedMs(): Long = (System.nanoTime() - startedAtNanos) / 1_000_000
     // S5 (offline gate, 2026-10-22): network-only streams — while offline the stream
     // URL can never resolve, so fail fast before the first Innertube call instead of
+//
     // burning a wave of DNS-failing fetches (device log 2026-10-22: the InnerTubeX
     // attempt + the fire-and-forget enrichments all ran offline before the gate).
+//
     // Local files (LOCAL_KEY_PREFIX) never need the network and stay untouched. The
     // load-error policy (isOfflineLoadFailure) then gives up immediately and the
+//
     // onPlayerError gate takes over (log + noInternet toast + waitingForNetwork,
     // resumed by the network callback).
     if (shouldFastFailOffline(videoId, NetworkQualityHelper.isNetworkConnected(appContext()))) {
         logResolutionOutcome(videoId, "OFFLINE", elapsedMs())
         // Marker type (not a plain IOException): the offline gates must recognize this
         // fast-fail even when the connectivity monitor state is stale — see
+//
         // StreamResolutionOfflineException.
         throw StreamResolutionOfflineException(videoId)
     }
@@ -1103,6 +1124,7 @@ fun DataSpec.process(
                 Timber.tag(TAG).d("StreamUrlCache hit for $videoId (client=${cachedStream.clientName})")
                 // Issue #881 (gh-881): the outcome line is written AFTER withResolvedStream
                 // succeeded — a malformed URL would otherwise log OK next to the FAILED line
+//
                 // raised by the same resolution (review gh-881).
                 val dataSpec = withResolvedStream(cachedStream)
                 logResolutionOutcome(videoId, "CACHE_HIT", elapsedMs())
@@ -1122,6 +1144,7 @@ fun DataSpec.process(
             Timber.tag(TAG).w("Stream resolution interrupted for $videoId (media item transition)")
             // Issue #881 (gh-881): the re-thrown IOException bypasses the sibling catch —
             // one PlaybackDiag line of its own keeps the S4 "every resolution is timed"
+//
             // contract whole (review gh-881).
             logResolutionOutcome(videoId, "INTERRUPTED", elapsedMs())
             throw IOException("Stream resolution interrupted for $videoId", e)
@@ -1149,10 +1172,7 @@ fun DataSpec.process(
 internal fun resolutionOutcomeLevel(elapsedMs: Long): Int =
     if (elapsedMs > RESOLUTION_SLOW_THRESHOLD_MS) Log.WARN else Log.DEBUG
 
-/**
- * Issue #881 (gh-881): one PlaybackDiag line per stream resolution — debug normally, warn
- * when the resolution exceeded [RESOLUTION_SLOW_THRESHOLD_MS] (spec S4).
- */
+/** Issue #881 (gh-881): one PlaybackDiag line per stream resolution — debug normally, warn when the resolution exceeded [RESOLUTION_SLOW_THRESHOLD_MS] (spec S4). */
 private fun logResolutionOutcome(videoId: String, outcome: String, elapsedMs: Long) {
     val line = "RESOLUTION videoId=%s outcome=%s elapsedMs=%d"
     val tag = Timber.tag(PLAYBACK_DIAG_TAG)
@@ -1162,9 +1182,6 @@ private fun logResolutionOutcome(videoId: String, outcome: String, elapsedMs: Lo
         tag.d(line, videoId, outcome, elapsedMs)
     }
 }
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // DataSource factories (ExoPlayer integration)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 @UnstableApi
 fun PlayerServiceModern.createDataSourceFactory(): DataSource.Factory {
@@ -1179,18 +1196,25 @@ fun PlayerServiceModern.createDataSourceFactory(): DataSource.Factory {
 
         // Listen Together streams run the same metadata flow as every other
         // stream (user: "si ça vient de listen together, check avant de upsert"),
+//
         // but only when the user enabled the "Local history" option for LT —
         // with it off, LT streams stay fully library-agnostic. upsertSongInfo
+//
         // checks the track against YouTube (nextPage) first and persists only
         // that verified data. The host app's (Metrolist) queue payload — literal
+//
         // "Titre" bylines, title-as-album, comma-joined channel bylines — never
+//
         // enters the library through this path. The other LT gates
         // (upsertSongFormat below, the host-payload insertIgnore in
+//
         // PlayerServiceModern, the history placeholder) still keep the host's
+//
         // metadata out of the library.
         val isLtVideo = ListenTogetherPlayerBridge.isListenTogetherVideo(videoId)
         // S5 (offline gate, 2026-10-22): the offline skip now lives in the upsertSongInfo
         // body (covers every call site, incl. the legacy forcePlayAtIndex pre-fetch) —
+//
         // here only the Listen Together gate remains.
         if (ListenTogetherPlayerBridge.shouldRunStreamInfoUpsert(
             isLtVideo,
@@ -1382,8 +1406,10 @@ private fun DataSpec.processForDownload(
 
                     // Upsert song/artist/album info in background (fire-and-forget, like Cubic Music).
                     // The tracked quality comes from the [downloadQualityFormat] parameter (a
+//
                     // snapshot of the setting at resolution time), not from a later re-read:
                     // upsertSongInfo does network work with retries (up to ~18 s), so reading the
+//
                     // setting inside the coroutine could record a value the download did not use.
                     val trackedDownloadQuality = downloadQualityFormat.name
                     scope.launch(NzikDispatchers.PLAYBACK) {
@@ -1398,6 +1424,7 @@ private fun DataSpec.processForDownload(
                         )
                         // upsertSongFormat is skipped by the justInserted guard when the streaming
                         // path inserted the same Format row first; the dedicated update makes sure
+//
                         // the tracked quality is recorded in that case too.
                         Database.formatTable.updateDownloadQuality(videoId, trackedDownloadQuality)
                     }

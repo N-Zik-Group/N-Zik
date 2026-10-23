@@ -126,6 +126,7 @@ fun RewindIntroCard(
                 Spacer(Modifier.height(if (compact) 14.dp else 18.dp))
                 // The face avatar reveals between the kicker (50 ms) and the hero name
                 // (220 ms); a failed face load (null avatar) still renders the
+//
                 // deterministic initials of the (fallback) name, so the slide always
                 // renders something.
                 RewindReveal(active, 140, direction = RewindRevealDirection.Left, distance = 24.dp) {
@@ -148,6 +149,7 @@ fun RewindIntroCard(
                         overflow = TextOverflow.Ellipsis,
                         // Hero display name: marquee honors the "disable scrolling text" setting.
                         // The 0.90f width cap is kept (not a standalone fillMaxWidth), so the
+//
                         // marquee scrolls within it.
                         modifier = Modifier.fillMaxWidth(0.90f).rewindHeroLine()
                     )
@@ -293,6 +295,7 @@ private fun RewindListeningWave(
         if (!active) return@LaunchedEffect
         // Frame-driven invalidation: advance the phase once per rendered frame, scaled by the
         // real frame delta (a fixed 16 ms tick was off-vsync on 120 Hz displays), and wrap on
+//
         // the wave's common period π so the Float never grows unbounded
         // (spec GH-275, patch "hand-rolled 16 ms tick loop").
         var lastFrameNs = withFrameNanos { it }

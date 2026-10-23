@@ -53,6 +53,7 @@ fun RewindYearsCard(
     val years = data.monthlyStats
     // Highlight the peak by position, not data-class equality: ties must not light several
     // bars, and an all-zero period must not highlight the first bar
+//
     // (spec GH-275, patch "Peak highlighting by data-class equality").
     val peakMinutes = years.maxOfOrNull { it.minutes }?.takeIf { it > 0 }
     val peakIndex = peakMinutes?.let { peak -> years.indexOfFirst { it.minutes == peak } } ?: -1

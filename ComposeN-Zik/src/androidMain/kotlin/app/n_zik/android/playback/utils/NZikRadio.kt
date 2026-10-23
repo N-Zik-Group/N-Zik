@@ -124,9 +124,12 @@ class NZikRadio(
         if (isExplicit) {
             // Issue #880 (scene 2): the "Stop radio" label is global on every entry point, so an
             // explicit tap while the radio is active stops it UNCONDITIONALLY on the first tap —
+//
             // regardless of which song was tapped (the current one or another) and even when
             // `currentMediaItem` is null. The previous mediaId equality check only stopped the
+//
             // radio for the current song; tapping "Stop radio" from any other song re-started the
+//
             // radio on that song instead (two-tap stop, wrong queue).
             if (isRadioActive) {
                 stopRadio(showToast = true)
@@ -164,6 +167,7 @@ class NZikRadio(
     fun stopRadio(showToast: Boolean = false) {
         // Guest lock (spec-listen-together-guest-lock-hardening): stopping the radio flips the
         // host-owned isRadioActive and cancels the radio job — a locked guest gets the shared
+//
         // blocked toast and nothing else, same policy as startRadio().
         if (listenTogetherGuestLock.value) {
             ListenTogetherGuestGuardPlayer.reportUiBlockedOp(context)
@@ -185,6 +189,7 @@ class NZikRadio(
     fun autoFillQueue() {
         // Guest lock (spec-listen-together-guest-lock-hardening): in a room the host owns the
         // queue. The auto-fill fetch+inject would only be no-op'd by the central guard (a
+//
         // throttled "host controls playback" toast + a wasted Innertube fetch and DB insert on
         // every host-side track transition), so skip it entirely while locked.
         if (listenTogetherGuestLock.value) return
@@ -205,6 +210,7 @@ class NZikRadio(
 
             // Guest lock (spec-listen-together-guest-lock-hardening): the auto-correction below
             // mutates the host-owned Discover setting — no state change (and no toast) for a
+//
             // locked guest, same policy as toggleDiscover().
             if (listenTogetherGuestLock.value) return
 
@@ -261,13 +267,16 @@ class NZikRadio(
             if (mediaItems.isEmpty()) {
                 // Liveness guard: a stopRadio() cancel that lands after the fetch returned must
                 // not let this stale job trace or reset isLoading — resetting the flag would
+//
                 // defeat the double-fetch guard of the job that replaces it (two concurrent
                 // fetches could both inject).
                 if (!coroutineContext.isActive) return@launch
                 // Issue #880: a pre-filter empty fetch (Innertube error or legitimately empty
                 // page) must be traced — the queue is left intact and nothing is injected. The
+//
                 // auto-fill retries at the next non-repeat track transition only while the
                 // queue has >1 item (no transition, no retry, on an exhausted 1-item queue;
+//
                 // with the radio OFF the AutoFill setting must be enabled as well).
                 traceEmptyFetch(videoId, playlistId, isExplicit, source, "the Innertube fetch came back empty")
                 isLoading = false
@@ -288,6 +297,7 @@ class NZikRadio(
                 if (!coroutineContext.isActive) return@launch
                 // Issue #880 (EMPTY_AFTER_FILTERS): the discover/dislike filters removed every
                 // song — same trace policy as a pre-filter empty fetch: no trim, nothing
+//
                 // injected; toast only for explicit starts (a silent retry happens at the next
                 // non-repeat track transition only while the queue has >1 item).
                 traceEmptyFetch(videoId, playlistId, isExplicit, source, "the discover/dislike filters removed every song")
@@ -400,6 +410,7 @@ class NZikRadio(
     private fun injectIntoPlayer(items: List<MediaItem>, append: Boolean) {
         // Issue #880: nothing to inject -> the remaining queue must be left intact (no trim, no
         // injection). The trace (Timber log, toast for explicit starts) happens in
+//
         // fetchAndInject before this call.
         if (items.isEmpty()) return
 
@@ -410,6 +421,7 @@ class NZikRadio(
         if (!append && player.mediaItemCount > 1) {
             // Replace remaining queue (issue #880 scene 1): move the current song to the front,
             // then remove everything AFTER it. The previous `removeMediaItems(curIndex + 1,
+//
             // endIndex)` left the list songs BEFORE the current song in the queue, so they
             // played before the radio.
             player.moveMediaItem(curIndex, 0)
@@ -420,8 +432,5 @@ class NZikRadio(
     }
 }
 
-/**
- * A5a (offline audit, 2026-10-22): true when an empty explicit radio fetch is a network
- * problem (a fresh check says offline) — the caller toasts "No Connection", not the fetch error.
- */
+/** A5a (offline audit, 2026-10-22): true when an empty explicit radio fetch is a network problem (a fresh check says offline) — the caller toasts "No Connection", not the fetch error. */
 internal fun isRadioFetchNetworkFailure(context: Context): Boolean = !isNetworkConnected(context)

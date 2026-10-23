@@ -25,11 +25,7 @@ import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.semiBold
 
-/**
- * Numeric input dialog on the shared [DefaultDialog]:
- * a [TextField] (red container while invalid), the error line and
- * a confirm / cancel [ButtonRow].
- */
+/** Numeric input dialog on the shared [DefaultDialog]: a [TextField] (red container while invalid), the error line and a confirm / cancel [ButtonRow]. */
 @Composable
 inline fun InputNumericDialog(
     noinline onDismiss: () -> Unit,

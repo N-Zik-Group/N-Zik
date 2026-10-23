@@ -68,11 +68,7 @@ class ImportProfileState private constructor(
             return ImportProfileState(stateLauncher)
         }
 
-        /**
-         * Runs [onProceed] straight away, or behind a cross-profile confirmation
-         * when the picked file's name carries the tag of a profile other than
-         * the active one.
-         */
+        /** Runs [onProceed] straight away, or behind a cross-profile confirmation when the picked file's name carries the tag of a profile other than the active one. */
         private fun withCrossProfileGuard(
             context: Context,
             uri: Uri,
@@ -104,6 +100,7 @@ class ImportProfileState private constructor(
                                 context.getString(R.string.import_profile_state_complete, profiles)
                             // A base-only archive (empty list + base face and/or name) imports
                             // 0 profiles: say the base profile was restored instead of
+//
                             // "0 profiles".
                             faces > 0 || names > 0 ->
                                 context.getString(R.string.import_profile_state_complete_base)

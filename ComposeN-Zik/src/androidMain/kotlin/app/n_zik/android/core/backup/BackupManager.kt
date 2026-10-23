@@ -189,6 +189,7 @@ object BackupManager {
                 val date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss"))
                 // Every backup file carries the active profile ID in its name: a backup
                 // taken under one profile must stay recognizable as such, so it can never
+//
                 // be mistaken for another profile's data when it is imported later.
                 val profile = getActiveProfile(context)
                 val parts = backupPartsOf(target)
@@ -239,6 +240,7 @@ object BackupManager {
                 if (parts.profileState) {
                     // The profile state that neither the database nor the settings CSV carries:
                     // the list of profile IDs and the base64 face of every profile that has one,
+//
                     // in a single .txt. Nothing to archive (a fresh install) is not a failure —
                     // the backup simply carries no copy of it.
                     Timber.tag("AutoBackup").d("Starting profile state backup...")
