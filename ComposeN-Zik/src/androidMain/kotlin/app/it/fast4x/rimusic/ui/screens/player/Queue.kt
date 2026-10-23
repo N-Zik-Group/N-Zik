@@ -163,7 +163,8 @@ fun Queue(
 
     // Listen Together guest lock (spec-listen-together-guest-lock-hardening): a guest in a
     // room cannot edit the queue (reorder, remove, play-next swipe, clear) — it is host-owned.
-    // `by` delegation so every event-time read gets the latest lock state
+
+    // `by` delegation so every event-time read gets the latest lock state.
     val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
     val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
 
@@ -242,9 +243,12 @@ fun Queue(
         }
 
         // Guest lock (spec-listen-together-guest-lock-hardening): while a guest is locked the
-        // reorder lock ("cadena") stays forced-on — the guest cannot unlock it to reorder the
-        // shared queue. The button itself is grayed + disabled by PositionLock.isEnabled. When
-        // the lock clears (guest leaves the room), the guest's previous setting is restored
+        // reorder lock ("cadena") stays forced-on — the guest cannot unlock it to
+
+        // reorder the shared queue. The button itself is grayed + disabled by
+        // PositionLock.isEnabled.
+
+        // When the lock clears (guest leaves the room), the guest's previous setting is restored
         // (review finding: the forced-on was never rolled back).
         var preLockReorderLock by remember { mutableStateOf<Boolean?>(null) }
         LaunchedEffect( listenTogetherGuestLock ) {

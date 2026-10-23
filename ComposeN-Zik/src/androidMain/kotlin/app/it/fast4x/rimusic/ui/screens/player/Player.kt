@@ -313,12 +313,7 @@ import androidx.compose.ui.layout.layout
 import kotlinx.coroutines.CoroutineScope
 import app.kreate.android.me.knighthat.sync.YouTubeSync
 
-/**
- * Issue #606 H10 -- result bundle for [computePlayerDynamicPalette], mirroring the 8 Compose state
- * variables (`dynamicColorPalette`, `dominant`, `vibrant`, `lightVibrant`, `darkVibrant`, `muted`,
- * `lightMuted`, `darkMuted`) that `Player`'s `LaunchedEffect(currentSwipedMediaItem.mediaId,
- * updateBrush)` used to assign one-by-one, inline, on whatever dispatcher that effect resumes on.
- */
+/** Issue #606 H10 — result bundle for [computePlayerDynamicPalette], mirroring the 8 Compose state variables (`dynamicColorPalette`, `dominant`, `vibrant`, `lightVibrant`, `darkVibrant`, `muted`, `lightMuted`, `darkMuted`) that `Player`'s `LaunchedEffect` used to assign one-by-one, inline, on whatever dispatcher that effect resumes on. */
 internal data class PlayerDynamicPaletteResult(
     val palette: ColorPalette,
     val dominant: Int,
@@ -355,8 +350,10 @@ internal suspend fun computePlayerDynamicPalette(
     val colors = extractM3ECoverColors(bitmap, isDark)
     if (colors == null) {
         // No dominant swatch: propagate the caller's fallback, exactly like
-        // extractM3ECoverColors' null contract. Every raw swatch falls back to the same accent
-        // the shared extraction would have used as each role's fallback.
+        // extractM3ECoverColors' null contract.
+
+        // Every raw swatch falls back to the same accent the shared extraction
+        // would have used as each role's fallback.
         val accent = fallbackColor.accent.toArgb()
         return PlayerDynamicPaletteResult(
             palette = fallbackColor,
@@ -402,8 +399,9 @@ fun Player(
     // Settings
     val disablePlayerHorizontalSwipePref by rememberPreference(disablePlayerHorizontalSwipeKey, false)
     // Also off until the sheet is completely open: a horizontal drag on a half-open player (the
-    // finger stopped in the middle of the opening) must not skip songs. Held as derived State,
-    // because the pointer handlers below read it at drag time
+    // finger stopped in the middle of the opening) must not skip songs.
+
+    // Held as derived State, because the pointer handlers below read it at drag time.
     val currentPlayerSheetState by rememberUpdatedState(playerSheetState)
     val disablePlayerHorizontalSwipe by remember {
         derivedStateOf {
@@ -539,8 +537,10 @@ fun Player(
 
     // The player content stays in composition across open/close (unified
     // sheet), so restore and reset are keyed on the sheet visibility
+
     // transition instead of the composition lifecycle, which only fired
     // once per session and left the saved keys stale after the first open.
+
     // 0.45f matches the draw/alpha hand-over threshold in CustomBottomSheet.
     val playerContentVisible by remember {
         derivedStateOf { playerSheetState.progress > PLAYER_SHEET_HANDOVER_PROGRESS }
@@ -706,8 +706,9 @@ fun Player(
         .collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
 
     // Issue #881 (gh-881), Phase 3.3: no visibility gate — the gated poll froze the bar
-    // whenever gate and visible UI disagreed (see positionAndDurationState KDoc in
-    // PlayerState.kt).
+    // whenever gate and visible UI disagreed.
+
+    // See positionAndDurationState KDoc in PlayerState.kt.
     val positionAndDurationState = binder.player.positionAndDurationState(playerUpdateTrigger)
     val playbackState by binder.player.playbackStateState(playerUpdateTrigger)
     val isBuffering = playbackState == Player.STATE_BUFFERING
@@ -989,8 +990,10 @@ fun Player(
         } else if (playerBackgroundColors == PlayerBackgroundColors.CoverColor){
             // Dominant swatch: the flat background renders the same hue the app's dynamic
             // accent is built from (RiPlay reference, spec
+
             // `spec-fix-palette-extractor-riplay-reference` OQ2=B). Until the swatches load (or
             // when the artwork failed) it falls back to the local dynamic palette's background,
+
             // exactly like the pre-M3E-alignment code did.
             containerModifier = containerModifier
                 .background(
@@ -1147,8 +1150,9 @@ fun Player(
                         shader = BlackCherryCosmos
                     }
                     // if [animatedGradient] is [AnimatedGradient.Random] then it should choose
-                    // [tempGradient]. If [tempGradient] is [AnimatedGradient.Random], you have
-                    // a problem.
+                    // [tempGradient].
+
+                    // If [tempGradient] is [AnimatedGradient.Random], you have a problem.
                     AnimatedGradient.Random -> throw IllegalStateException("Anything but this")
                 }
 
@@ -1333,9 +1337,10 @@ fun Player(
                          Animatable(currentRotation)
                      }
 
-                      // Gated on visibility: the infinite rotation would otherwise
-                      // keep running (and invalidating the cover layer) while the
-                      // player content is hidden behind the mini-player
+                      // Gated on visibility: the infinite rotation would otherwise keep
+                      // running (and invalidating the cover layer) while the player content
+
+                      // is hidden behind the mini-player.
                       LaunchedEffect(playerContentVisible, player.isPlaying, pagerStateFS.settledPage) {
                           if (!playerContentVisible) return@LaunchedEffect
                           if (player.isPlaying && it == pagerStateFS.settledPage) {
@@ -1779,9 +1784,10 @@ fun Player(
                             Animatable(currentRotation)
                         }
 
-                        // Gated on visibility: the infinite rotation would otherwise
-                        // keep running (and invalidating the cover layer) while the
-                        // player content is hidden behind the mini-player
+                        // Gated on visibility: the infinite rotation would otherwise keep
+                        // running (and invalidating the cover layer) while the player content
+
+                        // is hidden behind the mini-player.
                         LaunchedEffect(playerContentVisible, player.isPlaying, pagerStateFS.settledPage) {
                             if (!playerContentVisible) return@LaunchedEffect
                             if (player.isPlaying && it == pagerStateFS.settledPage) {

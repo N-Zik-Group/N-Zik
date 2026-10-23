@@ -20,10 +20,13 @@ import timber.log.Timber
 
 // https://stackoverflow.com/q/53502244/16885569
 // I found four ways to make the system not kill the stopped foreground service: e.g. when
+
 // the player is paused:
 // 1 - Use the solution below - hacky;
+
 // 2 - Do not call stopForeground but provide a button to dismiss the notification - bad UX;
 // 3 - Lower the targetSdk (e.g. to 23) - security concerns;
+
 // 4 - Host the service in a separate process - overkill and pathetic.
 abstract class InvincibleService : Service() {
 
@@ -84,6 +87,7 @@ abstract class InvincibleService : Service() {
                 Intent.ACTION_SCREEN_ON -> {
                     // Equivalent of the former `handler.post(this)`: run a tick now, then
                     // keep ticking. Restarting the loop (instead of posting one more
+
                     // callback) also fixes a former quirk where a still-pending delayed
                     // tick could double the tick chain.
                     tickJob?.cancel()

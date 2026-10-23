@@ -83,8 +83,10 @@ class AppHeader(
         val themeBackground = colorPalette().background0
 
         // We animate only the alpha for the voice search overlay.
-        // This prevents `animateColorAsState` from incorrectly animating 
-        // the application's theme colors (e.g. Dark to AMOLED) at cold start.
+        // This prevents `animateColorAsState` from incorrectly animating the
+
+        // application's theme colors (e.g. Dark to AMOLED) at cold start.
+
         val voiceSearchAlpha by animateFloatAsState(
             targetValue = if (isVoiceSearchActive) 0.85f else 0f,
             animationSpec = tween(200),
@@ -133,16 +135,19 @@ class AppHeader(
                             .clip(uiRoundnessShape())
                             .clickable {
                                 // Structural check instead of a RESUMED lifecycle gate: the
-                                // entry can legitimately be non-RESUMED right after a
-                                // transition, which used to silently swallow the click.
+                                // entry can legitimately be non-RESUMED right after a transition,
+
+                                // which used to silently swallow the click.
                                 if (navController.currentBackStackEntry != null && navController.previousBackStackEntry != null) {
                                     val disableBackStack = context.preferences.getBoolean(disableNavigationBackStackKey, false)
                                     if (disableBackStack) {
                                         // Jump straight to home by popping the pages above the
-                                        // existing home entry. The previous navigate +
-                                        // popUpTo(inclusive = true) destroyed the home entry
-                                        // and rebuilt it, wiping its saved state and forcing a
-                                        // full Quick Picks reload on every jump-to-home.
+                                        // existing home entry.
+
+                                        // The previous navigate + popUpTo(inclusive = true) destroyed
+                                        // the home entry and rebuilt it, wiping its saved state and forcing
+
+                                        // a full Quick Picks reload on every jump-to-home.
                                         if (!navController.popBackStack(NavRoutes.home.name, inclusive = false)) {
                                             navController.navigate(NavRoutes.home.name) {
                                                 popUpTo(NavRoutes.home.name) { inclusive = true }
@@ -168,10 +173,11 @@ class AppHeader(
                     }
                 }
     
-                // Logo + Title — shifts right smoothly as back button expands. Takes the
-                // full remaining width (weight, fill) so its extras can collapse behind
-                // the logo instead of compressing the action bar, which stays pinned to
-                // the right edge.
+                // Logo + Title — shifts right smoothly as back button expands.
+                // Takes the full remaining width (weight, fill) so its extras can
+
+                // collapse behind the logo instead of compressing the action bar, which
+                // stays pinned to the right edge.
                 CollapsingAppTitle(navController, context, Modifier.weight(1f))
 
                 // Action icons (search, settings…)

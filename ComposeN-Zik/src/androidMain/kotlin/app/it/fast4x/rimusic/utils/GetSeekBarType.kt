@@ -96,8 +96,10 @@ fun GetSeekBar(
     }
     // Issue #881 (gh-881), Phase 3 Fix E: the tapped / skip-button seek target held on the bar
     // until the player COMMITS the seek. Without it the bar snaps back to the stale player
+
     // position on every seek (player reports the pre-seek position until the seek commits),
     // the user-visible "l'ancienne position brièvement puis téléport" (field report 2026-10-03).
+
     // Cleared by the release effect below (convergence / safety timeout) or by the next drag.
     var pendingSeekTarget by remember(mediaId) {
         mutableStateOf<Long?>(null)
@@ -115,10 +117,13 @@ fun GetSeekBar(
     val scope = rememberCoroutineScope()
     // Listen Together guest lock (spec-listen-together-guest-lock-hardening): a guest in a room
     // cannot seek — the bar is fully INERT: the scrubber position is never captured (no visual
+
     // jump) and no seek op is issued; every interaction attempt shows the throttled "the host
     // controls playback" toast. The bar keeps full opacity and size — .alpha() must NOT be
+
     // applied to this subtree: alpha < 1 promotes content to a compositing layer sized to the
     // layout bounds and implicitly clips everything drawn outside them, which cut the Wavy bar's
+
     // overflow drawing (15px-stroke wave + 15-20dp scrubber pill around a 6dp box) and made it
     // look "crushed" (user feedback 2026-09-29, confirmed by the Modifier.alpha docs).
     val ltGuestLocked = rememberListenTogetherGuestLock()
@@ -126,18 +131,25 @@ fun GetSeekBar(
 
     // Issue #881 (gh-881), Phase 3 Fix E: release the held target once the player converges on
     // it (see shouldReleasePendingSeekPosition) — or after the safety timeout if the seek never
+
     // commits (error state). Keyed on the target: a new tap/drag restarts the effect with the
     // new value, and remember(mediaId) drops it on track changes.
+
     // Phase 3.2 (R2): the convergence source is the player's LIVE position, not the poll
     // cache `position()`: while that cache was gated on sheet visibility it could freeze on
+
     // a stale value — and converging on a frozen cache kept the hold alive until the 10 s
     // safety timeout, chaining every subsequent skip tap from the stale value (field logs
+
     // 2026-10-04). The player's own state is the release signal (RiMusic/Kreate check
     // convergence against the player, never against a UI cache); the displayed value after
+
     // release is re-anchored by positionAndDurationState's event writes (Phase 3.2 R1; the
     // poll itself has been ungated since Phase 3.3).
+
     // Invariant: the `position()` cache the bar renders from must be built from this SAME
     // player instance (every call site feeds it from this binder's player) — the hold is
+
     // released on the player's live position while the bar displays that cache.
     LaunchedEffect(pendingSeekTarget) {
         val target = pendingSeekTarget ?: return@LaunchedEffect
@@ -214,6 +226,7 @@ fun GetSeekBar(
                 onDragEnd = {
                     // Issue #881 (gh-881), Phase 3 Fix E (review patch): the guest lock may
                     // have engaged DURING the drag — re-check it so a seek the guarded facade
+
                     // vetoes is not held on the bar (parity with the skip-button path, which
                     // guards onSeekIssued).
                     if (ltGuestLocked) {
@@ -221,6 +234,7 @@ fun GetSeekBar(
                     } else {
                         // Hold the tapped position on the bar until the player commits the seek
                         // (pendingSeekTarget release effect) instead of snapping back to the
+
                         // stale player position.
                         scrubbingPosition?.let {
                             holdSeekTarget(it)
@@ -262,6 +276,7 @@ fun GetSeekBar(
                 onDragEnd = {
                     // Issue #881 (gh-881), Phase 3 Fix E (review patch): the guest lock may
                     // have engaged DURING the drag — re-check it so a seek the guarded facade
+
                     // vetoes is not held on the bar (parity with the skip-button path, which
                     // guards onSeekIssued).
                     if (ltGuestLocked) {
@@ -269,6 +284,7 @@ fun GetSeekBar(
                     } else {
                         // Hold the tapped position on the bar until the player commits the seek
                         // (pendingSeekTarget release effect) instead of snapping back to the
+
                         // stale player position.
                         scrubbingPosition?.let {
                             holdSeekTarget(it)
@@ -310,6 +326,7 @@ fun GetSeekBar(
                 onDragEnd = {
                     // Issue #881 (gh-881), Phase 3 Fix E (review patch): the guest lock may
                     // have engaged DURING the drag — re-check it so a seek the guarded facade
+
                     // vetoes is not held on the bar (parity with the skip-button path, which
                     // guards onSeekIssued).
                     if (ltGuestLocked) {
@@ -317,6 +334,7 @@ fun GetSeekBar(
                     } else {
                         // Hold the tapped position on the bar until the player commits the seek
                         // (pendingSeekTarget release effect) instead of snapping back to the
+
                         // stale player position.
                         scrubbingPosition?.let {
                             holdSeekTarget(it)
@@ -358,6 +376,7 @@ fun GetSeekBar(
                 onSeekFinished = {
                     // Issue #881 (gh-881), Phase 3 Fix E (review patch): the guest lock may
                     // have engaged DURING the drag — re-check it so a seek the guarded facade
+
                     // vetoes is not held on the bar (parity with the skip-button path).
                     if (ltGuestLocked) {
                         ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
@@ -429,6 +448,7 @@ fun GetSeekBar(
                 onPositionChangeFinished = {
                     // Issue #881 (gh-881), Phase 3 Fix E (review patch): the guest lock may
                     // have engaged DURING the drag — re-check it so a seek the guarded facade
+
                     // vetoes is not held on the bar (parity with the skip-button path).
                     if (ltGuestLocked) {
                         ListenTogetherGuestGuardPlayer.reportUiBlockedOp(ltContext)
@@ -475,6 +495,7 @@ fun GetSeekBar(
                 onDragEnd = {
                     // Issue #881 (gh-881), Phase 3 Fix E (review patch): the guest lock may
                     // have engaged DURING the drag — re-check it so a seek the guarded facade
+
                     // vetoes is not held on the bar (parity with the skip-button path, which
                     // guards onSeekIssued).
                     if (ltGuestLocked) {
@@ -482,6 +503,7 @@ fun GetSeekBar(
                     } else {
                         // Hold the tapped position on the bar until the player commits the seek
                         // (pendingSeekTarget release effect) instead of snapping back to the
+
                         // stale player position.
                         scrubbingPosition?.let {
                             holdSeekTarget(it)
@@ -504,6 +526,7 @@ fun GetSeekBar(
         scrubbingPosition ?: pendingSeekTarget,
         // Issue #881 (gh-881), Phase 3 Fix E (review patch): the skip buttons must compute
         // their adjustment from the HELD target, not the stale player position — otherwise a
+
         // consecutive tap lands from the old position while the label shows the target.
         scrubbingPosition ?: pendingSeekTarget ?: position(),
         duration(),
@@ -512,6 +535,7 @@ fun GetSeekBar(
         onSeekIssued = { holdSeekTarget(it) },
         // Issue #881 (gh-881), Phase 3.1: the skip base is read LIVE at tap time — the composed
         // position above froze on the previous track after a screen-off track change (field
+
         // logs 2026-10-04), so every tap re-seeked to the same stale value ± 5/30 s.
         seekBasePosition = {
             skipBasePosition(

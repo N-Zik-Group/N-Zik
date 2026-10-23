@@ -54,6 +54,7 @@ fun UpdateYoutubeArtist(browseId: String) {
                                             id = browseId,
                                             // Empty-page guard (approved legacy fix): a channel page without
                                             // a music header returns null/blank values; mergePageValue keeps
+
                                             // the stored name/thumbnail instead of clobbering them.
                                             name = mergePageValue(currentArtist?.name, currentArtistPage.name),
                                             thumbnailUrl = mergePageValue(currentArtist?.thumbnailUrl, currentArtistPage.thumbnail?.url),

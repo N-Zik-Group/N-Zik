@@ -52,11 +52,13 @@ fun WelcomeMessage(){
 
     // The greeting re-resolves on every face change, like the header and the
     // accounts card (the same trigger sum they key on) — not only on the
+
     // time-of-day bucket change.
     LaunchedEffect(baseMessage, encryptedPreferencesUpdateTrigger + profileFaceUpdateTrigger) {
         withContext(NzikDispatchers.DATA) {
             // The greeting follows the active profile's face name
             // (spec-profiles-page-face): its display name or a logged-in account
+
             // source, with the legacy custom name and the default app name as
             // fallbacks — the name is never blank, so the greeting always renders.
             runCatching {

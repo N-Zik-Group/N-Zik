@@ -16,10 +16,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 
-/**
- * From https://stackoverflow.com/a/69780826
- *  From Innertune
- */
+/** From Innertune; https://stackoverflow.com/a/69780826. */
 @Composable
 fun AutoResizeText(
     text: String,

@@ -200,11 +200,6 @@ class VerticalNavigationBar(
             ) {
                 // Show settings and statistics buttons in homepage
                 // Show back button in other screens
-//                if( navController.currentBackStackEntry?.destination?.route == NavRoutes.home.name ) {
-//                    SettingsButton().Draw()
-//                    StatsButton().Draw()
-//                } else
-//                    BackButton().Draw()
                 if(navController.currentBackStackEntry?.destination?.route != NavRoutes.home.name
                     && UiType.ViMusic.isCurrent())
                     BackButton().Draw()

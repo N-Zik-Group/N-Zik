@@ -37,6 +37,7 @@ fun isValidIP(ipStr: String?): Boolean {
 
     // Valid IP string must contain 3 dots
     // This is for cases such as 1...1 where
+
     // originally the number of dots is three but
     // after iteration of the string, we find it is not valid
     if (dots != 3) return false

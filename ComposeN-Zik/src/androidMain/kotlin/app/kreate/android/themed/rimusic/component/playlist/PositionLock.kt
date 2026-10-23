@@ -35,6 +35,7 @@ class PositionLock(
 
     // Guest lock (spec-listen-together-guest-lock-hardening): the reorder lock ("cadena") is a
     // host-owned stateful control — a locked guest sees it grayed (disabled) and can never toggle
+
     // it. The queue keeps it forced-on while locked (see Queue.kt).
     override val isEnabled: Boolean
         get() = !listenTogetherGuestLock.value

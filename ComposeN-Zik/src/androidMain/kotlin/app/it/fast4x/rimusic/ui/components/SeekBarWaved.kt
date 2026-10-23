@@ -234,10 +234,13 @@ private fun SeekBarContent(
     }
 }
 
-// gh-606 M11: sampling step for wavePath()'s Path reconstruction. Was hardcoded to 1px
-// (a sin()+lineTo() call per horizontal pixel, every animated frame while the Wavy seek bar
-// is visible); bumping it to 3px cuts that per-frame CPU cost by ~3x with no perceptible
-// visual change (the wave is a smooth low-frequency sine, not fine detail).
+// gh-606 M11: sampling step for wavePath()'s Path reconstruction.
+// Was hardcoded to 1px (a sin()+lineTo() call per horizontal pixel, every
+
+// animated frame while the Wavy seek bar is visible); bumping it to 3px cuts
+// that per-frame CPU cost by ~3x with no perceptible visual change (the wave
+
+// is a smooth low-frequency sine, not fine detail).
 internal const val WAVE_PATH_STEP_PX = 3f
 
 /**

@@ -1,26 +1,5 @@
 package app.it.fast4x.rimusic.utils
 
-//class Resource<out T>(val hstatus: Status, val data: T?, val message: String?) {
-//    companion object {
-//        fun <T> success(data: T?): Resource<T> {
-//            return Resource(Status.SUCCESS, data, null)
-//        }
-//
-//        fun <T> error(msg: String, data: T?): Resource<T> {
-//            return Resource(Status.ERROR, data, msg)
-//        }
-//
-//        fun <T> loading(data: T?): Resource<T> {
-//            return Resource(Status.LOADING, data, null)
-//        }
-//    }
-//}
-//
-//enum class Status {
-//    SUCCESS,
-//    ERROR,
-//    LOADING
-//}
 sealed class Resource<T>(
     val data: T? = null,
     val message: String? = null

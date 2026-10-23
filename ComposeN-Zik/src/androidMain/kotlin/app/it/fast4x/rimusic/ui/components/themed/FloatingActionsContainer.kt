@@ -47,11 +47,7 @@ import app.it.fast4x.rimusic.utils.scrollingInfo
 import app.it.fast4x.rimusic.utils.smoothScrollToTop
 import kotlinx.coroutines.launch
 
-/**
- * Bottom padding shared by the floating action buttons: the system bar inset, plus room
- * for the collapsed mini player when the player sheet is not visible, plus the extra
- * space a bottom navigation bar needs.
- */
+/** Bottom padding shared by the floating action buttons: the system bar inset + room for the collapsed mini player (player sheet not visible) + the extra space a bottom navigation bar needs. */
 @Composable
 fun floatingActionsBottomPadding(): Dp {
     val additionalBottomPadding =

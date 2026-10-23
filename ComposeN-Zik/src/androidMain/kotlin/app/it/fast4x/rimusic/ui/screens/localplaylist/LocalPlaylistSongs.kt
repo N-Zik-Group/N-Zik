@@ -1021,12 +1021,13 @@ fun LocalPlaylistSongs(
             }
         }
         
-        // Take the target number of recommendations and assign stable positions
-        // Note: We don't force the exact target number because:
-        // 1. YouTube doesn't always return 20 songs per request
-        // 2. Some songs are filtered out (already in playlist)
-        // 3. Some requests may fail
-        // 4. Better to have fewer quality recommendations than many poor ones
+        // Take the target number of recommendations and assign stable positions.
+        // Note: we don't force the exact target number because YouTube doesn't
+
+        // always return 20 songs per request, some songs are filtered out (already
+        // in playlist) and some requests may fail.
+
+        // Better to have fewer quality recommendations than many poor ones.
         val finalRecommendations = allRelatedSongs.take(targetRecommendations)
         val recommendationsWithPositions = finalRecommendations.associate { song ->
             song to (0..items.size).random()
@@ -1067,14 +1068,6 @@ fun LocalPlaylistSongs(
             .let { itemsOnDisplay = it }
     }
     LaunchedEffect( playlist?.name ) {
-//        renameDialog.playlistName = playlistPreview?.playlist?.name?.let { name ->
-//            if( name.startsWith( MONTHLY_PREFIX, true ) )
-//                getTitleMonthlyPlaylist(context, name.substringAfter(MONTHLY_PREFIX))
-//            else
-//                name.substringAfter( PINNED_PREFIX )
-
-//        } ?: "Unknown"
-
         val thumbnailName = "thumbnail/playlist_${playlistId}"
         val presentThumbnailUrl: String? = checkFileExists(context, thumbnailName)
         if (presentThumbnailUrl != null) {
@@ -1171,9 +1164,6 @@ fun LocalPlaylistSongs(
         CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
         LazyColumn(
             state = lazyListState,
-            //contentPadding = LocalPlayerAwareWindowInsets.current
-            //    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End)
-            //    .asPaddingValues(),
             modifier = Modifier
                 .background(colorPalette().background0)
                 .fillMaxSize()

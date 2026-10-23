@@ -42,10 +42,7 @@ data class Typography(
     )
 
     companion object : Saver<Typography, Any> {
-        /**
-         * Process-wide fallback (dark default text color, Rubik) for corrupted payloads — mirrors
-         * the app's default preferences (issue #881, gh-881).
-         */
+        /** Process-wide fallback (dark default text color, Rubik) for corrupted payloads — mirrors the app's default preferences (issue #881, gh-881). */
         val fallback: Typography get() =
             typographyOf(DefaultDarkColorPalette.text, useSystemFont = false, applyFontPadding = false, FontType.Rubik)
 

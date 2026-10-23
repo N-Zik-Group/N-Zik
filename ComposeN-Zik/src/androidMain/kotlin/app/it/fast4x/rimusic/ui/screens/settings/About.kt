@@ -227,8 +227,9 @@ fun About(navController: NavController) {
                                             .padding(horizontal = 6.dp, vertical = 2.dp)
                                     ) {
                                         // Single source of truth with the header badge
-                                        // (Updater.flavorLabel): FULL / FULL 32, MINIFIED /
-                                        // MINIFIED 32, BETA / BETA 32, DEV / DEV 32, FOSS, DEBUG
+                                        // (Updater.flavorLabel).
+
+                                        // FULL / FULL 32, MINIFIED / MINIFIED 32, BETA / BETA 32, DEV / DEV 32, FOSS, DEBUG
                                         val badgeText = badge.literal
                                             ?: stringResource(badge.resId) + if (badge.append32) " 32" else ""
                                         BasicText(
@@ -406,8 +407,9 @@ fun About(navController: NavController) {
                                     .height(36.dp)
                                     .clip(uiRoundnessShape()).clickable {
                                         // Same (profile-scoped) "preferences" file the beta toggle in
-                                        // the updater settings writes to — the legacy "settings"
-                                        // file never holds this key
+                                        // the updater settings writes to.
+
+                                        // The legacy "settings" file never holds this key.
                                         val checkBeta = appContext().preferences.getBoolean(checkBetaUpdatesKey, Updater.isBetaFamily(BuildConfig.VERSION_NAME))
                                         Toaster.i(R.string.checking_for_updates)
                                         Updater.checkForUpdate(isForced = true, checkBetaUpdates = checkBeta, showDialog = false)

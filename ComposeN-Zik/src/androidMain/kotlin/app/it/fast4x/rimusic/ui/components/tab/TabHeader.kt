@@ -80,13 +80,7 @@ interface TabHeader {
     }
 }
 
-/**
- * Display tab's header depends on current theme
- * For instance:
- *  - RiMusic theme has header aligned to the left
- *  - ViMusic theme has header aligned to the right
- *  and slightly bigger than RiMusic
- */
+/** Display tab header per theme: left-aligned in RiMusic, right-aligned and slightly bigger in ViMusic. */
 @Composable
 fun TabHeader(
     titleId: Int,

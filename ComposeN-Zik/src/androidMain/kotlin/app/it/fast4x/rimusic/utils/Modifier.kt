@@ -21,10 +21,7 @@ import androidx.compose.ui.unit.IntSize
 import app.it.fast4x.rimusic.ui.styling.shimmer
 import app.n_zik.android.colorPalette
 
-/**
- * A loading effect that goes from top left
- * to bottom right in 2000 millis (2s).
- */
+/** A loading effect that goes from top left to bottom right in 2000 millis (2s). */
 fun Modifier.shimmerEffect(): Modifier = composed {
     var size by remember { mutableStateOf( IntSize.Zero ) }
     val transition = rememberInfiniteTransition( "infiniteTransition" )

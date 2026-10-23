@@ -59,14 +59,18 @@ private fun HamburgerMenu(
     val enablePictureInPicture by rememberPreference(enablePictureInPictureKey, false)
     val pipHandler = rememberPipHandler()
     // Rewind master switch (spec GH-275): while off, the menu item below is hidden —
-    // same conditional pattern as the PiP item. Live preference read: this header stays
-    // composed across the whole session, so a one-shot remember read would keep a stale
-    // value after a flip in the settings
+    // same conditional pattern as the PiP item.
+
+    // Live preference read: this header stays composed across the whole session,
+    // so a one-shot remember read would keep a stale value after a flip in the settings.
     val rewindEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_ENABLED, true)
-    // Maintenance sheet (spec-maintenance-dialog): the state lives at the HamburgerMenu
-    // body level (NOT inside the DropdownMenu content) because opening the sheet calls
-    // onItemConsumed() which dismisses the menu — a remember inside the menu content
-    // could be destroyed on dismissal. The header stays composed for the whole session.
+    // Maintenance sheet (spec-maintenance-dialog): the state lives at the
+    // HamburgerMenu body level (NOT inside the DropdownMenu content).
+
+    // Opening the sheet calls onItemConsumed(), which dismisses the menu —
+    // a remember inside the menu content could be destroyed on dismissal.
+
+    // The header stays composed for the whole session.
     var showMaintenanceSheet by remember { mutableStateOf(false) }
 
     val menu = DropdownMenu(
@@ -88,10 +92,11 @@ private fun HamburgerMenu(
             R.string.statistics
         ) { onItemClick( NavRoutes.statistics ) }
     )
-    // Rewind button (Cubic-style yearly listening recap, issue #275); hidden while the
-    // feature is disabled in the settings (spec GH-275). Uses the monochrome logo
-    // (ic_launcher_monochrome — the black & white one the player's media notification
-    // uses) instead of a generic icon.
+    // Rewind button (Cubic-style yearly listening recap, issue #275); hidden
+    // while the feature is disabled in the settings (spec GH-275).
+
+    // Uses the monochrome logo (ic_launcher_monochrome — the black & white one
+    // the player's media notification uses) instead of a generic icon.
     if (rewindEnabled)
         menu.add(
             DropdownMenu.Item(
@@ -174,11 +179,16 @@ private fun HamburgerMenu(
     menu.Draw()
     // Maintenance sheet (spec-maintenance-dialog): composed as a SIBLING of the
     // Popup (never inside the menu content), driven by the body-level state above.
-    // renderLogsDialog = false: the single CopyLogsDialog.Render() host for the whole
-    // app lives just below — this header stays composed for the entire session (it is
-    // the AppNavigation topBar), so it is alive on every screen and both sheet entry
-    // points (burger + Misc settings card) share it. Render() is a singleton: a second
-    // Render() would stack a second dialog on top of the first.
+
+    // renderLogsDialog = false: the single CopyLogsDialog.Render() host for the
+    // whole app lives just below.
+
+    // This header stays composed for the entire session (the AppNavigation topBar),
+    // so it is alive on every screen and both sheet entry points (burger +
+    // Misc settings card) share it.
+
+    // Render() is a singleton: a second Render() would stack a second dialog
+    // on top of the first.
     MaintenanceSheet(
         showSheet = showMaintenanceSheet,
         onDismissRequest = { showMaintenanceSheet = false },
@@ -186,8 +196,10 @@ private fun HamburgerMenu(
     )
     CopyLogsDialog.Render()
     // Crash + debug log dialog hosts (spec-maintenance-dialog): same singleton-host
-    // rule as CopyLogsDialog above — this persistent header is the single Render()
-    // host for the whole app, so both sheet entry points share it.
+    // rule as CopyLogsDialog above.
+
+    // This persistent header is the single Render() host for the whole app,
+    // so both sheet entry points share it.
     CrashLogDialog.Render()
     DebugLogDialog.Render()
 }
@@ -202,13 +214,17 @@ fun ActionBar(
     val context = androidx.compose.ui.platform.LocalContext.current
     val defaultName = stringResource(R.string.profile_base_name)
 
-    // Active profile face (spec-profiles-page-face): it takes the burger icon's place — and
-    // the YouTube account thumbnail's, which used to replace the burger only while logged in
-    // — because the profile manages its own face: the header always shows whatever the
-    // active profile resolved (its photo, a logged-in account's avatar when the profile
-    // picked that source, or the deterministic initials). The trigger keys re-resolve it
-    // on a profile switch, an account-state change or any face edit (the header never
-    // leaves composition, so a one-shot read would go stale).
+    // Active profile face (spec-profiles-page-face): it takes the burger icon's place
+    // — and the YouTube account thumbnail's, which used to replace the burger only
+
+    // while logged in — because the profile manages its own face: the header always
+    // shows whatever the active profile resolved (its photo, a logged-in account's
+
+    // avatar when the profile picked that source, or the deterministic initials).
+    // The trigger keys re-resolve it on a profile switch, an account-state change
+
+    // or any face edit (the header never leaves composition, so a one-shot read would
+    // go stale).
     val activeProfile = getActiveProfile(context)
     val faceTrigger = app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger + profileFaceUpdateTrigger
     var activeFace by remember { mutableStateOf<ProfileFace?>(null) }
@@ -231,8 +247,9 @@ fun ActionBar(
                 faceName = face.name,
                 size = 32.dp,
                 // The clip sits BEFORE the clickable so the click ripple follows the
-                // artist shape (a square outline would otherwise flash around it) —
-                // the same treatment as the old YT logo here.
+                // artist shape (a square outline would otherwise flash around it).
+
+                // The same treatment as the old YT logo here.
                 modifier = Modifier
                     .padding(end = 10.dp)
                     .clip(artistThumbnailShape())

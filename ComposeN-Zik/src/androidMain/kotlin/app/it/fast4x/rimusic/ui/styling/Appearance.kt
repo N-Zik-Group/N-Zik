@@ -66,11 +66,7 @@ data class Appearance(
             )
         }
 
-        /**
-         * Process-wide last-resort appearance (dark default palette + default typography and
-         * roundness) used only when a foreign payload reaches [restore] without a site-provided
-         * fallback (issue #881, gh-881).
-         */
+        /** Process-wide last-resort appearance (dark default palette + default typography and roundness) used only when a foreign payload reaches [restore] without a site-provided fallback (issue #881, gh-881). */
         private fun processDefaultAppearance(): Appearance = Appearance(
             colorPalette = ColorPalette.fallback,
             typography = Typography.fallback,

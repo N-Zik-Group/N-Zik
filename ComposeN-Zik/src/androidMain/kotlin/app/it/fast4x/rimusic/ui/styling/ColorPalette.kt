@@ -33,10 +33,7 @@ data class ColorPalette(
     val iconButtonPlayer: Color,
 ) {
     companion object : Saver<ColorPalette, Any> {
-        /**
-         * Process-wide fallback (dark default) for corrupted payloads — the dark default is the
-         * app's own default mode (issue #881, gh-881).
-         */
+        /** Process-wide fallback (dark default) for corrupted payloads — the dark default is the app's own default mode (issue #881, gh-881). */
         val fallback: ColorPalette get() = DefaultDarkColorPalette
 
         /**

@@ -26,10 +26,7 @@ object TimeDateUtils {
     fun localizedDateFormat(): DateFormat =
         SimpleDateFormat.getDateInstance( SimpleDateFormat.SHORT, Locale.getDefault() )
 
-    /**
-     * Get [DateFormat] and convert it
-     * into string.
-     */
+    /** Get [DateFormat] and convert it into string. */
     fun localizedDate(): String = localizedDateFormat().format( Date() )
 
     /**
@@ -40,10 +37,7 @@ object TimeDateUtils {
                        .replace("-", "")
                        .replace(".", "")
 
-    /**
-     * Generate a [SimpleDateFormat] represents time
-     * in format "HHmmss" without colons.
-     */
+    /** Generate a [SimpleDateFormat] represents time in format "HHmmss" without colons. */
     fun timeFormatNoDelimiter(): SimpleDateFormat = SimpleDateFormat( "HHmmss", Locale.getDefault() )
 
     fun timeNoDelimiter(): String = timeFormatNoDelimiter().format( Date() )

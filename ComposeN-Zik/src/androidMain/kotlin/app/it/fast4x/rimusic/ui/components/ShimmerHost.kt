@@ -29,8 +29,10 @@ fun ShimmerHost(
 ) {
     // gh-606 M11: was a hand-rolled `LaunchedEffect { while(true) { ...; delay(16) } }` loop
     // (an approximate ~60 FPS clock). Replaced with the same idiomatic infinite-animation
+
     // pattern already used elsewhere in this M11 lot (SeekBarWaved/FluidGradient/BlurredCover):
     // synced to Compose's real frame clock instead of a fixed delay. 1600ms tween covers the
+
     // same 0..1000 range the old loop did in ~100 steps of 10f at ~16ms/step, so the visual
     // cadence is unchanged.
     val shimmerTranslateAnim by rememberInfiniteTransition(label = "shimmer").animateFloat(

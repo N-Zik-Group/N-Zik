@@ -392,8 +392,9 @@ fun Skeleton(
                 // If beta preferences changed and there's an active update dialog, recheck
                 NewUpdateAvailableDialog.isCancelled = false
                 // Forced: the cached build is already initialized from the
-                // previous channel, so a plain check would re-evaluate the
-                // stale release instead of re-fetching with the new channel
+                // previous channel, so a plain check would re-evaluate the stale release
+
+                // instead of re-fetching with the new channel
                 Updater.checkForUpdate(isForced = true, checkBetaUpdates = checkBetaUpdates)
             }
         }

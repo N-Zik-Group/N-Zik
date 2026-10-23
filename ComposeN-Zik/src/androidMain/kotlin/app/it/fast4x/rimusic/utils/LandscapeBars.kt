@@ -50,7 +50,6 @@ object LandscapeBars {
  *
  * @param isLandscape Whether the device is currently in landscape
  * @param smallestScreenWidthDp Smallest screen width of the device, in dp
- * @param route Current navigation route
  * @param homeTab Id of the current Home tab
  */
 internal fun hidesBarsInLandscape(

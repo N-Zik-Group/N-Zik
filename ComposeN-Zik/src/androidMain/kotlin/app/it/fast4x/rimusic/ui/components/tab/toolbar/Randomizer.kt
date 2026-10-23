@@ -8,10 +8,7 @@ import kotlin.random.Random
 interface Randomizer<T>: Button {
 
     companion object {
-        /**
-         * To ensure true randomness, Random must not
-         * be a constant variable
-         */
+        /** To ensure true randomness, [Random] must not be a constant variable. */
         fun nextInt( until: Int ) =
             Random( System.currentTimeMillis() ).nextInt( until )
     }

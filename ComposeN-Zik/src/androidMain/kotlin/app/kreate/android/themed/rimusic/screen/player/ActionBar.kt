@@ -202,6 +202,7 @@ fun BoxScope.ActionBar(
 
     // Listen Together guest lock (spec-listen-together-guest-lock-hardening): stateful
     // toolbar controls (discover / loop / shuffle / radio / queue editing) are non-interactive
+
     // AND visibly disabled (grayed out) for a guest — the host owns those states.
     val ltGuestLocked = rememberListenTogetherGuestLock()
     val guestLockAlpha = guestLockedAlpha(ltGuestLocked)
@@ -354,6 +355,7 @@ fun BoxScope.ActionBar(
                                         if ( index < mediaItems.size ) {
                                             // Guest lock: addNext is a queue op — the central guard
                                             // blocks it (and toasts); the fake "added next" toast
+
                                             // must not fire for a blocked attempt.
                                             binder.player.addNext( mediaItemAtIndex )
                                             if ( !ltGuestLocked ) Toaster.s( R.string.addednext )
@@ -505,6 +507,7 @@ fun BoxScope.ActionBar(
                                     color = if (ltGuestLocked) colorPalette().textDisabled else colorPalette().accent,
                                     // Guest lock: the video button pauses playback and opens the
                                     // video overlay — a playback-affecting control owned by the
+
                                     // host, grayed for a guest.
                                     enabled = !ltGuestLocked,
                                     onClick = {
@@ -607,6 +610,7 @@ fun BoxScope.ActionBar(
                                     color = colorPalette().accent,
                                     // Guest lock: repeat "loop" is a stateful control owned by the
                                     // host — the preference write is blocked (the service applies
+
                                     // it to the raw player) + the button is grayed
                                     enabled = !ltGuestLocked,
                                     onClick = {
@@ -682,6 +686,7 @@ fun BoxScope.ActionBar(
                                         else Color.Gray,
                                     // Guest lock: the sleep timer auto-stops the app — a session-level
                                     // control, grayed + disabled for a guest
+
                                     // (spec-listen-together-guest-lock-hardening).
                                     enabled = !ltGuestLocked,
                                     onClick = {

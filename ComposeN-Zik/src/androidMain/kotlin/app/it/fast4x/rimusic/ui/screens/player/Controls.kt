@@ -114,8 +114,9 @@ fun Controls(
     },
     mediaId = mediaItem.mediaId,
     // titleWithFallback: the legacy raw-title line rendered a blank title (and never
-    // triggered the player's "unknown" icon) for tracks without a title tag — same
-    // metadata→DB→localized-placeholder contract as the artist line below.
+    // triggered the player's "unknown" icon) for tracks without a title tag.
+
+    // Same metadata→DB→localized-placeholder contract as the artist line below.
     title = mediaItem.titleWithFallback(),
     artist = cleanPrefix( mediaItem.artistTextWithFallback() ),
     artistIds = artistIds,

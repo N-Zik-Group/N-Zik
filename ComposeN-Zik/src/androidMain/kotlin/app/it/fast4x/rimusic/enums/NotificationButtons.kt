@@ -36,8 +36,10 @@ enum class NotificationButtons(
 
     Radio( R.string.start_radio, R.drawable.radio ),
 
-    // Issue #866 (gh-866): discover command button (notification + AA overflow) — joins the
-    // "other" command buttons; its active-state icon (discover_stop) is applied by
+    // Issue #866 (gh-866): discover command button (notification + AA overflow) —
+    // joins the "other" command buttons.
+
+    // Its active-state icon (discover_stop) is applied by
     // PlayerServiceModern.commandButtonIconRes.
     Discover( R.string.discover, R.drawable.discover ),
 

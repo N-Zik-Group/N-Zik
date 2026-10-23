@@ -291,10 +291,7 @@ fun AlbumItemPlaceholder(
     }
 }
 
-/**
- * New component is more resemble to the final
- * [AlbumItem] that's currently being used.
- */
+/** New component that more closely resembles the final [AlbumItem] currently in use. */
 @OptIn(UnstableApi::class)
 @Composable
 fun AlbumPlaceholder(

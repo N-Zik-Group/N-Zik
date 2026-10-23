@@ -31,10 +31,6 @@ fun NowPlayingSongIndicator (
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-//            .background(
-//                color = Color.Black.copy(alpha = 0.25f),
-//                shape = thumbnailShape()
-//            )
             .size(containerSize)
     ) {
             MusicAnimation(

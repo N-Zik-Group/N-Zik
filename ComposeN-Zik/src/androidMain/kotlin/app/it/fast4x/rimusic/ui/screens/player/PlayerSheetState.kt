@@ -123,8 +123,10 @@ class PlayerSheetState(
     }
 
     // Snapping must be remembered like expand/collapse/dismiss: the state is rebuilt from the
-    // last anchor whenever the bounds change (rotation, insets), and a stale "dismissed" anchor
-    // would bring the mini-player back hidden. Values between two anchors keep the last one.
+    // last anchor whenever the bounds change (rotation, insets).
+
+    // A stale "dismissed" anchor would bring the mini-player back hidden. Values between
+    // two anchors keep the last one.
     private fun anchorFor(value: Dp): Int? = when (value) {
         dismissedBound -> dismissedAnchor
         collapsedBound -> collapsedAnchor
@@ -239,7 +241,9 @@ fun rememberPlayerSheetState(
     val coroutineScope = rememberCoroutineScope()
 
     // Issue #881 (gh-881): tolerant Int saver (spec M5). The default MUST be a valid PlayerSheet
-    // anchor — a foreign payload restoring to a value outside {dismissed, collapsed, expanded}
+    // anchor.
+
+    // A foreign payload restoring to a value outside {dismissed, collapsed, expanded}
     // would crash the `when(previousAnchor)` below on error("Unknown PlayerSheet anchor").
     var previousAnchor by rememberSaveable(
         saver = TolerantIntStateSaver(initialAnchor, "playerSheet.previousAnchor") {

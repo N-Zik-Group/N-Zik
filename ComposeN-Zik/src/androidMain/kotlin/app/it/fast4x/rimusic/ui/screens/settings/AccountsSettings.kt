@@ -1084,26 +1084,29 @@ fun AccountsSettings() {
                                 }
 
                                 // PW-5 (revised 2026-09-21): content transition matches the app's
-                                // own pattern (Last.fm card) — the default AnimatedVisibility
-                                // expand/collapse + fade, not a fixed tween fade+scale.
+                                // own pattern (Last.fm card).
+
+                                // The default AnimatedVisibility expand/collapse + fade, not a fixed tween fade+scale.
                                 AnimatedVisibility(visible = isDiscordAdvancedMode) {
                                     DiscordAdvancedSection(search = search)
                                 }
 
                                 // Item 6 + PW-6: live preview of the RPC card — visible in
-                                // both modes (advanced mode only changes the rendered
-                                // content). Fed by the current player state, the position
-                                // is polled ~100 ms (upstream parity). binder == null →
-                                // neutral card.
+                                // both modes (advanced mode only changes the rendered content).
+
+                                // Fed by the current player state, the position is polled
+                                // ~100 ms (upstream parity). binder == null → neutral card.
                                 val player = LocalPlayerServiceBinder.current?.player
                                 var previewPosition by remember { mutableStateOf(0L) }
                                 // The tick advances on every poll even while paused/idle, so
-                                // the card stays reactive to settings changes in real time
-                                // (the position alone only changes while playing).
+                                // the card stays reactive to settings changes in real time.
+
+                                // The position alone only changes while playing.
                                 var previewTick by remember { mutableIntStateOf(0) }
-                                // State-chip selection: -1 = actual state (live follow of
-                                // the real player state); 0/1 = pin the preview card to
-                                // playing / paused.
+                                // State-chip selection: -1 = actual state (live follow of the
+                                // real player state).
+
+                                // 0/1 = pin the preview card to playing / paused.
                                 var previewMode by remember { mutableIntStateOf(-1) }
                                 // The real playback state (0 = playing, 1 = paused, 2 = idle) —
                                 // drives the default chip highlight and the pinned fallback.
@@ -1118,10 +1121,12 @@ fun AccountsSettings() {
                                         runCatching {
                                             // The pinned "Paused" variant must freeze its progress
                                             // bar: while the card shows paused but the real player
+
                                             // still plays (pinned chip during playback), the live
-                                            // position must stop advancing. Live follow (-1) is
-                                            // unaffected — a real pause already keeps
-                                            // currentPosition static.
+                                            // position must stop advancing.
+
+                                            // Live follow (-1) is unaffected — a real pause already
+                                            // keeps currentPosition static.
                                             val effectiveMode =
                                                 if (previewMode >= 0) previewMode
                                                 else when {
@@ -1135,9 +1140,10 @@ fun AccountsSettings() {
                                         }
                                     }
                                 }
-                                // Same visual style as the "Account info" title below:
-                                // regular text color, bold, start inset aligned (13.dp =
-                                // column 8.dp + text 5.dp), vertical spacing kept.
+                                // Same visual style as the "Account info" title below: regular
+                                // text color, bold, start inset aligned (13.dp = column 8.dp +
+
+                                // text 5.dp), vertical spacing kept.
                                 Text(
                                     text = stringResource(R.string.discord_preview_title),
                                     color = colorPalette().text,
@@ -1152,10 +1158,11 @@ fun AccountsSettings() {
                                     mode = if (previewMode >= 0) previewMode else realMode
                                 )
 
-                                // Playback state chips (2026-09-21), centered under the
-                                // preview: "Actual state" (live follow — first), then
-                                // Playing / Paused to pin that variant of the card for
-                                // inspection (tap the pinned chip again to unpin).
+                                // Playback state chips (2026-09-21), centered under the preview:
+                                // "Actual state" (live follow — first), then Playing / Paused to
+
+                                // pin that variant of the card for inspection (tap the pinned
+                                // chip again to unpin).
                                 val chipPalette = colorPalette()
                                 Row(
                                     modifier = Modifier
@@ -1580,13 +1587,15 @@ private fun DiscordAdvancedSection(search: Search) {
         else -> stringResource(R.string.discord_activity_listening)
     }
     // The image text field shows its own template default when empty (the album
-    // template — DiscordActivityBuilder.DEFAULT_LARGE_IMAGE_TEXT_TEMPLATE), exactly like
-    // the state/details fields show theirs; there is no longer a "details - state"
-    // recovery expression for it.
+    // template — DiscordActivityBuilder.DEFAULT_LARGE_IMAGE_TEXT_TEMPLATE).
+
+    // Exactly like the state/details fields show theirs; there is no longer a
+    // "details - state" recovery expression for it.
     Column {
         // Grouped layout (2026-09-22): related entries live under a shared group header —
-        // the presence card parts (lines, images, progress bar), then the actions
-        // (buttons) and the connection behavior.
+        // the presence card parts (lines, images, progress bar).
+
+        // Then the actions (buttons) and the connection behavior.
         DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_identity)) {
             if (search.inputValue.isBlank() || stringResource(R.string.discord_activity_type).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
@@ -1610,9 +1619,12 @@ private fun DiscordAdvancedSection(search: Search) {
         DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_lines)) {
             // Linked visibility: the section toggle comes first, and the linked template
             // entry animates in/out with it (Last.fm card pattern — the app's default
+
             // expand/collapse + fade); the toggle stays reachable so the part can be
-            // restored. The lines follow the CARD display order — the details line (bold)
-            // sits above the state line, so it is configured first.
+            // restored.
+
+            // The lines follow the CARD display order — the details line (bold) sits above
+            // the state line, so it is configured first.
             if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_show_details).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
                     title = stringResource(R.string.discord_advanced_show_details),
@@ -1655,8 +1667,10 @@ private fun DiscordAdvancedSection(search: Search) {
                 }
             }
             // PW-3: pause presence on/off (default on = current ⏸︎ behavior) — the toggle
-            // comes first: with it off, the paused presence is never sent, so the paused
-            // line template is hidden (animated) behind it.
+            // comes first.
+
+            // With it off, the paused presence is never sent, so the paused line template
+            // is hidden (animated) behind it.
             if (search.inputValue.isBlank() || stringResource(R.string.discord_pause_presence).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
                     title = stringResource(R.string.discord_pause_presence),
@@ -1679,9 +1693,10 @@ private fun DiscordAdvancedSection(search: Search) {
                 }
             }
             // The 60 s auto-clear of the stale presence after a pause (advanced option,
-            // default on): only reachable with the pause presence off — with it on, the
-            // paused presence is the active state and stays as long as the player is
-            // paused, so there is nothing to auto-clear and the option is hidden (animated).
+            // default on): only reachable with the pause presence off.
+
+            // With it on, the paused presence is the active state and stays as long as
+            // the player is paused — nothing to auto-clear, the option is hidden (animated).
             AnimatedVisibility(visible = !pausePresenceEnabled) {
                 if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_pause_auto_clear).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
@@ -1706,6 +1721,7 @@ private fun DiscordAdvancedSection(search: Search) {
             }
             // Image tooltips (advanced mode): the hover text over the artwork / the app
             // logo — each customizable with the template placeholders (empty = default).
+
             // No artwork = no hover tooltip — the template is hidden with it (animated).
             AnimatedVisibility(visible = showArtwork) {
                 if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_image_text).contains(search.inputValue, true)) {
@@ -1769,16 +1785,19 @@ private fun DiscordAdvancedSection(search: Search) {
                     isChecked = btn1Enabled,
                     onCheckedChange = { btn1Enabled = it },
                     // Button 1 is the "Get N-Zik" GitHub action by default — give its toggle a
-                    // distinct icon so it is not confused with Button 2 (ytmusic) — reviewer
-                    // finding: the two toggles shared one copy-pasted icon.
+                    // distinct icon so it is not confused with Button 2 (ytmusic).
+
+                    // Reviewer finding: the two toggles shared one copy-pasted icon.
                     icon = R.drawable.github_icon
                 )
             }
             // Content transition (Last.fm card pattern): the button sub-entries animate
             // in/out with the default expand/collapse + fade when the toggle flips.
+
             // Column: AnimatedVisibility lays its content out in a Box, so the two
-            // sibling entries must be stacked explicitly or they overlap (rendered
-            // on top of each other at the same position).
+            // sibling entries must be stacked explicitly.
+
+            // Otherwise they overlap (rendered on top of each other at the same position).
             AnimatedVisibility(visible = btn1Enabled) {
                 Column {
                     if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_button_label).contains(search.inputValue, true)) {
@@ -1992,8 +2011,9 @@ private fun DiscordTemplateFieldDialog(
         )
         Spacer(Modifier.height(12.dp))
         // Palette-explicit colors: the dialog background is colorPalette().background1,
-        // so the default Material3 scheme (dark onSurface text) made the typed text and
-        // the placeholder unreadable on dark themes.
+        // so the default Material3 scheme (dark onSurface text) made the typed text
+
+        // and the placeholder unreadable on dark themes.
         OutlinedTextField(
             value = text,
             onValueChange = { text = it },
@@ -2034,8 +2054,10 @@ private fun DiscordTemplateFieldDialog(
         }
         Spacer(Modifier.height(16.dp))
         // Toolbar settings dialogs' button bar (ToggleListDialog): Reset — Cancel — OK,
-        // same look and same behavior. Reset clears the draft only (the dialog stays
-        // open), Cancel discards it, OK saves it and toasts the confirmation.
+        // same look and same behavior.
+
+        // Reset clears the draft only (the dialog stays open), Cancel discards it,
+        // OK saves it and toasts the confirmation.
         ButtonRow(
             buttons = listOf(
                 DialogButton(
@@ -2058,11 +2080,7 @@ private fun DiscordTemplateFieldDialog(
     }
 }
 
-/**
- * Discord section only: the image text tooltip popup — shown when the preview card's
- * artwork or app logo is tapped, mirroring Discord's hover tooltip (the text shown
- * over the large artwork / the small app logo).
- */
+/** Discord section only: the image text tooltip popup — shown when the preview card's artwork or app logo is tapped, mirroring Discord's hover tooltip (the text shown over the large artwork / the small app logo). */
 @Composable
 private fun DiscordImageTooltipDialog(
     title: String,
@@ -2234,9 +2252,10 @@ private fun DiscordRpcPreviewCard(
         } ?: // Idle state: never used (the fallback card renders the templates as-is).
             DiscordMediaInfo("", "", null, "")
         // Pinned preview state (state chips): 0 = playing, 1 = paused, 2 = idle.
-        // A pinned playing/paused preview without a loaded media renders the raw
-        // templates — the paused variant shows the pause template, so the three
-        // variants stay distinguishable even with nothing playing.
+        // A pinned playing/paused preview without a loaded media renders the raw templates.
+
+        // The paused variant shows the pause template, so the three variants stay
+        // distinguishable even with nothing playing.
         val effectiveMode = mode.coerceIn(0, 2)
         val isIdle = effectiveMode == 2
         val isPlaying = effectiveMode == 0
@@ -2250,8 +2269,10 @@ private fun DiscordRpcPreviewCard(
             appVersion = getVersionName(),
         )
         // PW-3: the pause presence is optional — when disabled, no paused update is
-        // ever sent and the real Discord keeps the last playing presence, so the
-        // preview shows the playing card too (the paused variant does not exist).
+        // ever sent.
+
+        // The real Discord keeps the last playing presence, so the preview shows the
+        // playing card too (the paused variant does not exist).
         val content = when {
             isIdle ->
                 // Fallback card: the template variables as-is (current customization).
@@ -2294,12 +2315,15 @@ private fun DiscordRpcPreviewCard(
         val showTimestampsSection = !settings.advancedMode || settings.showTimestamps
         // The large image text (the artwork's Discord hover tooltip): rendered as its own
         // card line so the customization is visible in the preview (on Discord itself it
+
         // only shows as a tooltip over the artwork). A custom template renders with the
-        // media (as-is on the fallback card). The built-in default is the live album
-        // value when the app knows it, otherwise the current configuration's
-        // "details - state" expression — the same the real presence computes (manager
-        // sendActivity); the paused line renders into details, so the paused state shows
-        // in the image text too.
+        // media (as-is on the fallback card).
+
+        // The built-in default is the live album value when the app knows it,
+        // otherwise the current configuration's "details - state" expression —
+
+        // the same the real presence computes (manager sendActivity). The paused
+        // line renders into details, so the paused state shows in the image text too.
         val imageText =
             if (settings.advancedMode && settings.largeImageTextTemplate.isNotBlank()) {
                 if (item != null) {
@@ -2317,10 +2341,13 @@ private fun DiscordRpcPreviewCard(
                 }
             } else {
                 // Built-in default, exactly like the real presence: the album value when
-                // the app knows it (live — metadata then DB). Unknown album while media
-                // is loaded → the current configuration's "details - state" expression
-                // (never a rendered "Unknown Album"). No media (fallback card) → the
-                // current image template, i.e. the built-in album template as-is.
+                // the app knows it (live — metadata then DB).
+
+                // Unknown album while media is loaded → the current configuration's
+                // "details - state" expression (never a rendered "Unknown Album").
+
+                // No media (fallback card) → the current image template,
+                // i.e. the built-in album template as-is.
                 if (item != null) {
                     info.albumName?.takeIf { it.isNotBlank() }
                         ?: if (content.state.isNotBlank()) "${content.details} - ${content.state}" else content.details
@@ -2329,9 +2356,12 @@ private fun DiscordRpcPreviewCard(
                 }
             }
         // The app logo tooltip content: rendered while media is loaded (the same value
-        // the real presence sends), the template as-is otherwise (the current template
-        // IS the fallback). The artwork tooltip reuses the card line above (`imageText`)
-        // — rendered content with media, template as-is without.
+        // the real presence sends).
+
+        // The template as-is otherwise (the current template IS the fallback).
+        // The artwork tooltip reuses the card line above (`imageText`): rendered content
+
+        // with media, template as-is without.
         val smallImageTooltipText =
             if (item != null) {
                 DiscordTemplateRenderer.render(
@@ -2383,9 +2413,10 @@ private fun DiscordRpcPreviewCard(
                                     .clip(RoundedCornerShape(12.dp))
                             )
                         } else {
-                            // Fallback artwork: the app's standard missing-image icon (the
-                            // same drawable ImageCacheFactory uses for errors/absent
-                            // thumbnails).
+                            // Fallback artwork: the app's standard missing-image icon.
+
+                            // The same drawable ImageCacheFactory uses for errors/absent
+                            // thumbnails.
                             Image(
                                 painter = painterResource(R.drawable.ic_launcher_box),
                                 contentDescription = null,
@@ -2396,6 +2427,7 @@ private fun DiscordRpcPreviewCard(
                         }
                         // Small image overlay at the artwork's bottom-right corner
                         // (Discord's small-image position — the tooltip is the app version).
+
                         // ic_launcher = the circular app icon (the one the import-CSV menu
                         // uses); ic_launcher_box is a square and reads badly at this size.
                         if (showSmallImageSection) {
@@ -2416,8 +2448,10 @@ private fun DiscordRpcPreviewCard(
                 Column(modifier = Modifier.weight(1f)) {
                     // The main (bold) line: the rendered details. The idle fallback card
                     // (no media) keeps the N-Zik identity name when the details template
+
                     // is empty; a DISABLED details section (playing/paused) hides the line
                     // entirely — the preview mirrors the real presence, where a disabled
+
                     // section is omitted, not replaced.
                     val boldLine = when {
                         content.details.isNotEmpty() -> content.details
@@ -2454,9 +2488,10 @@ private fun DiscordRpcPreviewCard(
                     }
                     val duration = player?.duration ?: 0L
                     // The progress bar shows in EVERY preview state (playing / paused /
-                    // fallback): real media -> live progress; no media -> an empty bar
-                    // with "0:00 / 0:00" (the card stays complete). Material's
-                    // LinearProgressIndicator, the app's standard bar.
+                    // fallback): real media -> live progress.
+
+                    // No media -> an empty bar with "0:00 / 0:00" (the card stays complete).
+                    // Material's LinearProgressIndicator, the app's standard bar.
                     if (showTimestampsSection) {
                         val progress =
                             if (duration > 0) (positionMs.toFloat() / duration.toFloat()).coerceIn(0f, 1f)
@@ -2537,20 +2572,13 @@ private fun DiscordRpcPreviewCard(
     }
 }
 
-/**
- * Discord section only: "m:ss" time label for the preview card's progress bar
- * (pure time formatting — not user-facing text, nothing to localize).
- */
+/** Discord section only: "m:ss" time label for the preview card's progress bar (pure time formatting — not user-facing text, nothing to localize). */
 private fun formatPreviewTime(ms: Long): String {
     val totalSeconds = (ms / 1000L).coerceAtLeast(0L)
     return "${totalSeconds / 60}:${(totalSeconds % 60).toString().padStart(2, '0')}"
 }
 
-/**
- * Discord section only: opens a preview card button URL in the external browser —
- * the real Discord buttons open the same link, and the preview must let the user
- * verify where each button points.
- */
+/** Discord section only: opens a preview card button URL in the external browser — the real Discord buttons open the same link, and the preview must let the user verify where each button points. */
 private fun Context.openDiscordButtonUrl(url: String) {
     if (url.isBlank()) return
     runCatching {

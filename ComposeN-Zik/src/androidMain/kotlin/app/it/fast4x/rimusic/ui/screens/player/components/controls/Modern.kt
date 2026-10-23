@@ -433,8 +433,9 @@ fun ControlsModern(
     )
     var jumpPrevious by rememberPreference(jumpPreviousKey, "3")
     // Listen Together guest lock (spec-listen-together): guests in a room cannot
-    // skip tracks; play/pause stays available. Locked controls are also visibly
-    // disabled (spec-listen-together-guest-lock-hardening)
+    // skip tracks; play/pause stays available.
+
+    // Locked controls are also visibly disabled (spec-listen-together-guest-lock-hardening).
     val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
     val context = LocalContext.current
     val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)

@@ -70,22 +70,13 @@ object ImageProcessor {
     }
 
     /**
-     * Processes an image from a given Uri:
+     * Processes an image from a given Uri: a remote one (http/https) is returned as-is; a local
+     * one (file/content) is verified as an image by its MIME type and, when its dimensions exceed
+     * MAX_DIMENSION or its size exceeds MAX_FILE_SIZE_BYTES, is scaled and compressed to meet specs.
      *
-     * 1. If it's a remote Uri (e.g., http/https), returns it directly.
-     * 2. If it's a local Uri (file/content):
-     * a. Verifies if it's an image by its MIME type.
-     * b. Checks if dimensions exceed MAX_DIMENSION or file size exceeds MAX_FILE_SIZE_BYTES.
-     * c. If limits are exceeded, scales and compresses the image to meet specs.
-     * d. If not an image, throws IllegalArgumentException.
-     *
-     * @param context The application context
      * @param artworkUri The Uri of the image file (can be local or remote)
      * @return A Uri to the processed image (original local, compressed/scaled local, or original remote Uri)
      * @throws IllegalArgumentException if the local Uri does not point to an image or local processing fails
-     * @throws SecurityException due to lack of permission
-     * @throws IOException other read/write related issues
-     * @throws OutOfMemoryError when heap is overflown
      */
     @OptIn(ExperimentalContracts::class)
     @Throws(

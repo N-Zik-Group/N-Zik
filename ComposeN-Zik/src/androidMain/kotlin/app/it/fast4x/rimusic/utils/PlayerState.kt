@@ -92,13 +92,15 @@ fun Player.positionAndDurationState(key1: Any? = null): State<Pair<Long, Long>> 
 
     // Issue #881 (gh-881), Phase 3.3: unconditional poll — see the function KDoc for the
     // gate-removal rationale. Restarts on composition, [key1] change and player-instance swap;
+
     // the first iteration writes the live value immediately, so no separate re-seed effect
     // is needed.
     LaunchedEffect(this, key1) {
         while (isActive) {
             // Metrolist's guard: while a stream is resolving the player's duration is
-            // C.TIME_UNSET — keep the cached duration instead of clobbering it (that is also
-            // what the R1 transition write preserves).
+            // C.TIME_UNSET — keep the cached duration instead of clobbering it
+
+            // (that is also what the R1 transition write preserves).
             val sample = currentPosition to (duration.takeIf { it > 0 } ?: state.value.second)
             if (sample != state.value) state.value = sample
             delay(POSITION_POLL_INTERVAL_MS)
@@ -107,6 +109,7 @@ fun Player.positionAndDurationState(key1: Any? = null): State<Pair<Long, Long>> 
 
     // Issue #881 (gh-881), Phase 3.2 (R1): event-driven re-anchoring from the player's own
     // callbacks (RiMusic/Kreate pattern — see the function KDoc): a sub-poll-tick re-anchor
+
     // on track changes and committed seeks, on top of the loop above.
     DisposableListener(key1) {
         object : Player.Listener {

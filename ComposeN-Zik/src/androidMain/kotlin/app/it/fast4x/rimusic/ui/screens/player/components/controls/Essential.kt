@@ -413,8 +413,9 @@ fun ControlsEssential(
         else -> colorPalette().accent
     }
     // Listen Together guest lock (spec-listen-together-guest-lock-hardening): a guest in a
-    // room cannot skip, change speed, or repeat; play/pause stays available. Locked controls
-    // are non-interactive and visibly disabled
+    // room cannot skip, change speed, or repeat; play/pause stays available.
+
+    // Locked controls are non-interactive and visibly disabled.
     val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
     val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
     val context = LocalContext.current

@@ -415,8 +415,9 @@ fun MiniPlayer(
     val playerSheetState = LocalPlayerSheetState.current
 
     // Issue #881 (gh-881), Phase 3.3: unconditional position poll — the previous hand-over
-    // gate left the cache frozen whenever gate and visible UI disagreed (see
-    // positionAndDurationState KDoc in PlayerState.kt).
+    // gate left the cache frozen whenever gate and visible UI disagreed.
+
+    // See positionAndDurationState KDoc in PlayerState.kt.
     val positionAndDurationState = binder.player.positionAndDurationState(playerUpdateTrigger)
     val durationState = remember(positionAndDurationState) {
         derivedStateOf { positionAndDurationState.value.second }
@@ -424,8 +425,9 @@ fun MiniPlayer(
 
     // rememberSwipeToDismissBoxState keeps the confirmValueChange it got at the first composition:
     // read what the swipe needs through these, or it uses the sheet and mini-player type of that
+
     // first composition. The song is not taken from composition at all: it is read from the player
-    // when the swipe happens (issue #816: swipe-to-like liked the first song of the queue)
+    // when the swipe happens (issue #816: swipe-to-like liked the first song of the queue).
     val swipeSheetState by rememberUpdatedState(playerSheetState)
     val swipeMiniPlayerType by rememberUpdatedState(miniPlayerType)
     val swipeBinder by rememberUpdatedState(binder)
@@ -435,7 +437,8 @@ fun MiniPlayer(
     val swipeActionLatch = remember { SwipeActionLatch() }
     // Listen Together guest lock (spec-listen-together-guest-lock-hardening): the like swipe
     // stays available for a guest in a room; seek swipes reach the central guard, which
-    // no-ops them and shows the throttled toast
+
+    // no-ops them and shows the throttled toast.
 
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
@@ -479,9 +482,10 @@ fun MiniPlayer(
         if (swipeActionLatch.isFired) dismissState.reset()
     }
 
-    // The action changes the content (new title, like icon), which recomputes the swipe anchors:
-    // the state can then settle in a dismissed direction and stay displaced, its gestures being off
-    // until it is back at rest. Bring the mini-player back to its position.
+    // The action changes the content (new title, like icon), which recomputes the swipe anchors,
+    // so the state can settle in a dismissed direction and stay displaced (gestures off
+
+    // until back at rest). Bring the mini-player back to its position.
     LaunchedEffect(dismissState) {
         snapshotFlow { dismissState.settledValue }
             .filter { settled -> settled != SwipeToDismissBoxValue.Settled }
@@ -530,8 +534,9 @@ fun MiniPlayer(
         enableDismissFromStartToEnd = playerSheetState.progress == 0f,
         enableDismissFromEndToStart = playerSheetState.progress == 0f,
         // Switched off once the action ran: that ends a drag the finger keeps alive, so the box
-        // goes back to its position without waiting for the release. Also off as soon as the sheet
-        // leaves its original position (being opened)
+        // goes back to its position without waiting for the release.
+
+        // Also off as soon as the sheet leaves its original position (being opened).
         gesturesEnabled = isMiniPlayerSwipeEnabled(swipeActionLatch.isFired, playerSheetState.progress),
         state = dismissState,
         backgroundContent = {

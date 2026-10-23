@@ -40,11 +40,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import androidx.compose.ui.text.font.FontStyle
 
-/**
- * Issue #606 M12+M13 -- result bundle for [loadVideoOrSongInfo], mirroring the two Compose state
- * variables (`info`, `finalArtists`) that `VideoOrSongInfoScreen`'s `LaunchedEffect(videoId)` used
- * to assign as it went, interleaved with every network/DB call below.
- */
+/** Issue #606 M12+M13 — result bundle for [loadVideoOrSongInfo], mirroring the two Compose state variables (`info`, `finalArtists`) that `LaunchedEffect(videoId)` used to assign as it went, interleaved with every network/DB call below. */
 internal data class VideoOrSongInfoResult(
     val info: VideoOrSongInfo?,
     val finalArtists: List<Pair<String, String>>,

@@ -727,10 +727,7 @@ fun SongItem(
     }
 }
 
-/**
- * New component is more resemble to the final
- * SongItem that's currently being used.
- */
+/** New component that more closely resembles the final SongItem currently in use. */
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 fun SongItemPlaceholder( modifier: Modifier = Modifier ) {

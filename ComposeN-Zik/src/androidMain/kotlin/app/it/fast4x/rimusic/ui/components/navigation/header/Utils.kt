@@ -61,8 +61,9 @@ internal class AppBar {
         @Composable
         fun contentColor(): Color =
             // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap):
-            // the palette's own text is always readable on its backgrounds, including
-            // PitchBlack, whose override forces text = Color.White.
+            // the palette's own text is always readable on its backgrounds,
+
+            // including PitchBlack, whose override forces text = Color.White.
             colorPalette().text
     }
 }

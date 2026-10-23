@@ -27,9 +27,10 @@ class AudioVolumeObserver(private val context: Context) {
 
     fun register(audioStreamType: Int, listener: OnAudioVolumeChangedListener) {
         val handler = Handler(Looper.getMainLooper())
-        // with this handler AudioVolumeContentObserver#onChange()
-        //   will be executed in the main thread
-        // To execute in another thread you can use a Looper
+        // With this handler, AudioVolumeContentObserver#onChange() will be
+        //   executed in the main thread.
+
+        // To execute in another thread you can use a Looper.
         // +info: https://stackoverflow.com/a/35261443/904907
         contentObserver = AudioVolumeContentObserver(
             handler,

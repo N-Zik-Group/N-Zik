@@ -208,8 +208,9 @@ fun PlaylistSongList(
     val lazyListState = rememberLazyListState()
 
     // Listen Together guest lock (spec-listen-together-guest-lock-hardening): the
-    // playlist radio control is a host-owned stateful control — grayed out and
-    // non-interactive for a guest.
+    // playlist radio control is a host-owned stateful control.
+
+    // Grayed out and non-interactive for a guest.
     val ltGuestLocked = rememberListenTogetherGuestLock()
     val guestLockAlpha = guestLockedAlpha(ltGuestLocked)
 
@@ -1186,15 +1187,9 @@ internal fun List<Innertube.SongItem>?.applyFilter(filter: String?): List<Innert
     }
 }
 
-/**
- * Runs a playlist download/delete-all batch on the dispatcher it is launched from
- * (issue #606 H2) — one fire-and-forget scope per batch, never one per song.
- *
- * A null [binder] is a safe no-op for the cache eviction; [manageDownload] is always called.
- *
+/** Runs a playlist download/delete-all batch on the dispatcher it is launched from (issue #606 H2) — one fire-and-forget scope per batch, never one per song. A null [binder] is a safe no-op for the cache eviction; [manageDownload] is always called.
  * @param songs the batch to process (already disliked-filtered by the caller); null = no-op
  * @param binder the player service binder, may be null
- * @param context application context passed through to [manageDownload]
  * @param downloadState `false` starts downloads, `true` removes them (see [manageDownload])
  */
 @UnstableApi

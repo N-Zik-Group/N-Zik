@@ -170,8 +170,9 @@ fun ArtistItem(
                     .clip(artistThumbnailShape())
             ) {
                 // Explicit modifier: the default Thumbnail modifier carries the song clip
-                // (thumbnailShape) — without this, the visible radius is min(artist, song) and
-                // the artist roundness setting is masked above the song value.
+                // (thumbnailShape) — without this, the visible radius is min(artist, song),
+
+                // so the artist roundness setting is masked above the song value.
                 ImageCacheFactory.Thumbnail(
                     thumbnailUrl = thumbnailUrl,
                     contentScale = if (alternative) ContentScale.FillWidth else ContentScale.Crop,

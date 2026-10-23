@@ -191,9 +191,12 @@ fun OtherSettings(
     var extraspace by rememberPreference(extraspaceKey, false)
 
     // Scroll to the Maintenance card when the screen was opened with focus=maintenance
-    // (spec-maintenance-dialog) — focus=debug lands here too: the debug section (the
-    // toggle + the export entry) moved INTO the Maintenance card, the separate Debug
-    // card was removed (long press on the Debug entry in the hamburger menu)
+    // (spec-maintenance-dialog).
+
+    // focus=debug lands here too: the debug section (the toggle + the export entry)
+    // moved INTO the Maintenance card.
+
+    // The separate Debug card was removed (long press on the Debug entry in the hamburger menu).
     val scrollState = rememberScrollState()
     var containerTopY by remember { mutableFloatStateOf(-1f) }
     var maintenanceCardTopY by remember { mutableFloatStateOf(-1f) }
@@ -201,8 +204,11 @@ fun OtherSettings(
     LaunchedEffect(focus) {
         if (focus != "debug" && focus != "maintenance") return@LaunchedEffect
         // The card may be off-screen but is still laid out: wait until its position is
-        // measured. The card's top Y must be read INSIDE snapshotFlow — reading it once
-        // here would capture the initial -1f sentinel (the states are only filled by
+        // measured.
+
+        // The card's top Y must be read INSIDE snapshotFlow — reading it once here
+        // would capture the initial -1f sentinel (the states are only filled by
+
         // onGloballyPositioned after layout) and suspend forever on `first`.
         val offset = snapshotFlow {
             val cardTopY = maintenanceCardTopY
@@ -651,8 +657,10 @@ fun OtherSettings(
 
         // Maintenance section (spec-maintenance-dialog): the card that opens the same
         // Maintenance sheet as the burger item; the deep link from the burger long press
+
         // (focus=maintenance, and focus=debug — the debug section moved into this card)
         // scrolls to it. Same search-filter + enter spec as the sibling cards (the card
+
         // must not stay visible on unrelated searches) — it now also hosts the debug
         // switch + the export entry, so their strings match the card too
         val searchCtx_Maintenance = search.inputValue.isBlank() || stringResource(R.string.maintenance).contains(search.inputValue, true) || stringResource(R.string.maintenance_open).contains(search.inputValue, true) || stringResource(R.string.enable_log_debug).contains(search.inputValue, true) || stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors).contains(search.inputValue, true) || stringResource(R.string.export_logs).contains(search.inputValue, true) || stringResource(R.string.export_debug_log_description).contains(search.inputValue, true)

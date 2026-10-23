@@ -28,12 +28,7 @@ fun setActiveProfile(profileName: String, context: Context) {
     prefs.edit { putString(activeProfileKey, profileName).commit() }
 }
 
-/**
- * One row of the profiles page: the stable [id] that owns the data files
- * (`data_<id>.db`, `preferences_<id>`, `secure_preferences_<id>` — renaming the
- * display name never touches them), the resolved [displayName] and the last use
- * timestamp in epoch millis (null when it was never recorded).
- */
+/** One row of the profiles page: the stable [id] that owns the data files (`data_<id>.db`, `preferences_<id>`, `secure_preferences_<id>` — renaming the display name never touches them), the resolved [displayName] and the last use timestamp in epoch millis (null when it was never recorded). */
 data class ProfileInfo(
     val id: String,
     val displayName: String,
@@ -146,11 +141,7 @@ fun takenProfileNames(
 fun Context.profileDisplayName(profileId: String): String? =
     profilePreferences.getString(profileDisplayNameKey(profileId), null)?.trim()?.ifEmpty { null }
 
-/**
- * Renames [profileId]: a single prefs write — the stable ID (and therefore the data
- * files) is left untouched; a blank name clears the stored one, so the profile
- * falls back to its ID (or the base default name for the base profile).
- */
+/** Renames [profileId]: a single prefs write — the stable ID (and therefore the data files) is left untouched; a blank name clears the stored one, so the profile falls back to its ID (or the base default name for the base profile). */
 fun Context.saveProfileDisplayName(profileId: String, name: String) {
     profilePreferences.edit {
         if (name.isBlank()) remove(profileDisplayNameKey(profileId))
@@ -187,10 +178,7 @@ fun Context.profileInfo(profileId: String, defaultName: String): ProfileInfo =
         lastUsed = profileLastUsed(profileId),
     )
 
-/**
- * The profile entries (stable ID + stored display name) read from
- * [PROFILE_NAMES_FILE_NAME] (empty when the file is missing or unreadable).
- */
+/** The profile entries (stable ID + stored display name) read from [PROFILE_NAMES_FILE_NAME] (empty when the file is missing or unreadable). */
 fun Context.readProfileEntries(): List<Pair<String, String>> =
     runCatching {
         filesDir.resolve(PROFILE_NAMES_FILE_NAME).let { file ->
@@ -203,12 +191,7 @@ fun Context.readProfileEntries(): List<Pair<String, String>> =
 /** The user profile IDs read from [PROFILE_NAMES_FILE_NAME] (empty when the file is missing or unreadable). */
 fun Context.readProfileIds(): List<String> = readProfileEntries().map { it.first }
 
-/**
- * The profile entries the names file should currently carry: the IDs of the file
- * with the display name resolved against the `profile_preferences` store (empty
- * name when it was never renamed) — the file is the backup format, so its copy of
- * the names must mirror the store, not go stale after a rename.
- */
+/** The profile entries the names file should currently carry: the IDs of the file with the display name resolved against the `profile_preferences` store (empty name when it was never renamed) — the file is the backup format, so its copy of the names must mirror the store, not go stale after a rename. */
 fun Context.currentProfileEntries(): List<Pair<String, String>> =
     readProfileEntries().map { (id, _) -> id to (profileDisplayName(id).orEmpty()) }
 
@@ -225,6 +208,7 @@ fun Context.writeProfileEntries(entries: List<Pair<String, String>>): Boolean =
         temp.writeText(entries.joinToString("\n") { (id, name) -> if (name.isEmpty()) id else "$id\t$name" })
         // File.renameTo atomically replaces an existing destination on Android (POSIX
         // rename) but fails when the destination already exists on Windows; fall back
+
         // to delete-then-rename so the atomic write stays portable across file systems.
         val replaced = temp.renameTo(file) || (file.delete() && temp.renameTo(file))
         if (!replaced) {

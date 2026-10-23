@@ -76,6 +76,7 @@ class InvincibleServiceTest {
         service.sendBroadcast(Intent(Intent.ACTION_SCREEN_OFF))
         // Robolectric (PAUSED looper mode) delivers the broadcast to the
         // registered receiver through the main looper — flush it before
+
         // asserting on the one-shot startForeground.
         ShadowLooper.idleMainLooper()
         assertEquals(2, startForegroundCalls)

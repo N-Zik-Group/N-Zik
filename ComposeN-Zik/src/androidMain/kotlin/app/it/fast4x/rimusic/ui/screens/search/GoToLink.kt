@@ -146,10 +146,6 @@ fun GoToLink(
         mutableStateOf("")
     }
 
-    //val context = LocalContext.current
-    //val navigationBarPosition by rememberPreference(navigationBarPositionKey, NavigationBarPosition.BottomFloating)
-    //val contentWidth = context.preferences.getFloat(contentWidthKey,0.8f)
-
     Box(
         modifier = Modifier
             .background(colorPalette().background0)

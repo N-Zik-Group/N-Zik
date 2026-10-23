@@ -75,6 +75,7 @@ private fun RowScope.SkipTimeButton(
     binder: PlayerServiceModern.Binder,
     // Issue #881 (gh-881), Phase 3.1: base and bound are read at TAP time — a composed value
     // can be stale when the player UI stops recomposing (screen-off track change, field logs
+
     // 2026-10-04); [composedPosition] is only kept for the SKIP_TAP diagnostic line.
     position: () -> Long,
     composedPosition: Long,
@@ -103,8 +104,10 @@ private fun RowScope.SkipTimeButton(
         )
         // Issue #881 (gh-881), Phase 3 Fix E (review patch): while the stream is still loading
         // `duration` is `C.TIME_UNSET` (Long.MIN_VALUE) — the forward button then computes
+
         // `minOf(x, Long.MIN_VALUE)` = Long.MIN_VALUE, which would hold a garbage target on
         // the label (up to the 10 s release timeout) and feed it to `seekTo`. Rewind clamps
+
         // at 0, so only the forward tap can ever produce a negative target here.
         if ( newPosition < 0 ) return
         if ( !ltGuestLocked ) onSeekIssued( newPosition )
@@ -139,6 +142,7 @@ private fun outlineColorState(): State<Color> {
 
     // The decision is pinned by the pure helper (spec-achromatic-ramp-luminance-cap, loopback 2,
     // VG-3): keyed on the effective tone, and the text-outline opt-out now applies in light
+
     // mode too (the legacy light-mode branch ignored it).
     return remember {
         derivedStateOf {
@@ -192,6 +196,7 @@ fun DurationIndicator(
     duration: Long,
     // Issue #881 (gh-881), Phase 3 Fix E: invoked with the target whenever a skip button
     // issues a seek, so the label can hold that position until the player commits it
+
     // (GetSeekBar publishes its pendingSeekTarget state through it).
     onSeekIssued: (Long) -> Unit = {},
     // Issue #881 (gh-881), Phase 3.1: live skip base evaluated at tap time (GetSeekBar reads
@@ -230,6 +235,7 @@ fun DurationIndicator(
         ) {
             // Issue #881 (gh-881), Phase 3 Fix E (review patch): the held seek target arrives
             // through the `scrubbingPosition` parameter — it must be in the remember key, or
+
             // the label keeps showing the stale player position while the bar holds the target
             // (the captured parameter is a plain value, so only a key change re-derives it).
             val toDisplay by remember( scrubbingPosition, position ) {
@@ -248,6 +254,7 @@ fun DurationIndicator(
             ) {
                 // Issue #881 (gh-881), Phase 3.3: unconditional position poll — the previous
                 // visibility gate froze this cache whenever gate and visible UI disagreed
+
                 // (see positionAndDurationState KDoc in PlayerState.kt).
                 val positionAndDurationState = binder.player.positionAndDurationState()
                 val timeRemainingState = remember {
@@ -264,8 +271,10 @@ fun DurationIndicator(
                 val pauseBetweenSongs by rememberPreference(pauseBetweenSongsKey, PauseBetweenSongs.`0`)
                 // Guest lock (spec-listen-together-guest-lock-hardening): the automatic
                 // pause→delay→play runs through the guarded facade, where it would register
+
                 // spurious guest play/pause intents (pause sets guestLocalPause, play fires a
                 // requestSync the guest never caused; a backgrounded app mid-delay can leave
+
                 // the flag stuck). In a room the host drives track transitions, so skip it.
                 if(pauseBetweenSongs != PauseBetweenSongs.`0` && !rememberListenTogetherGuestLock())
                     LaunchedEffect(timeRemaining) {
@@ -282,6 +291,7 @@ fun DurationIndicator(
 
                 // Label sync (approved legacy fix): the displayed remaining time is derived
                 // from the SAME position as the elapsed label (incl. drag / held seek target)
+
                 // and floored on whole seconds, so both labels tick together. The precise
                 // poller value above only drives the pause-between-songs trigger.
                 val toDisplay = remember( duration, scrubbingPosition, position ) {
