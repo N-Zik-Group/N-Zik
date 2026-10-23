@@ -2100,9 +2100,6 @@
     <string name="maintenance_refresh">Yenile</string>
     <string name="maintenance_no_data">Veri yok</string>
     <string name="maintenance_dedup">Aynı isimli sanatçıların tekrarlanması</string>
-    <string name="maintenance_dedup_summary">%1$d grup · %2$d çözüldü · %3$d atlandı</string>
-    <string name="maintenance_dedup_clean">Tekrarlardan temizlenecek bir şey yok</string>
-    <string name="maintenance_dedup_no_groups">Aynı adlı grup bulunamadı</string>
     <string name="maintenance_dedup_merged">%d satır birleştirildi</string>
     <string name="maintenance_dedup_flagged">%d satır işaretlendi</string>
     <string name="maintenance_dedup_merged_flagged">%1$d satır birleştirildi · %2$d satır işaretlendi</string>
@@ -2115,8 +2112,6 @@
     <string name="maintenance_skip_no_candidate">Oybirliğiyle kabul edilen aday yok</string>
     <string name="maintenance_skip_network_failure">Ağ hatası (bir sonraki başlatmada yeniden denenecek)</string>
     <string name="maintenance_convergence">Adların birleştirilmesi</string>
-    <string name="maintenance_convergence_changed">%d kopya yeniden yazıldı</string>
-    <string name="maintenance_convergence_no_change">Zaten birleştirildi</string>
     <string name="maintenance_convergence_copies_rewritten">%d kopya yeniden yazıldı</string>
     <string name="maintenance_convergence_unbacked_songs">%d desteklenmeyen şarkı</string>
     <string name="maintenance_convergence_unlinked_songs">%d bağlantısı kesilmiş şarkı</string>
@@ -2126,10 +2121,6 @@
     <string name="maintenance_convergence_count_mismatch_albums">%d eşleşmeyen albüm</string>
     <string name="maintenance_convergence_custom_albums">%d özel albüm</string>
     <string name="maintenance_db_cleanup">Sanatçı bağlantılarının temizlenmesi</string>
-    <string name="maintenance_db_cleanup_removed">%d geçersiz bağlantı kaldırıldı</string>
-    <string name="maintenance_db_cleanup_clean">Temizlenecek bir şey yok</string>
-    <string name="maintenance_db_cleanup_detail_removed">Son işlemde %d geçersiz bağlantı kaldırıldı</string>
-    <string name="maintenance_db_cleanup_detail_clean">Son taramada temizlenecek bir şey bulunamadı</string>
     <string name="maintenance_migration_done">Tamam</string>
     <string name="maintenance_live_subsystems">Canlı alt sistemler</string>
     <string name="maintenance_sync_ytm">YTM senkronizasyonu</string>

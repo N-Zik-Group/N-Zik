@@ -381,14 +381,7 @@ object NameConvergence {
         return if (converged == text) null else converged
     }
 
-    /**
-     * Coverage of one copy token by the cleaned+trimmed row names: a whole-token
-     * match (ignoreCase), or a duet "A & B" (separator exactly " & " WITH
-     * surrounding spaces — a bare "&" is never a separator, "COOL&CREATE" stays
-     * one whole token) whose every part (cleaned + trimmed, whole-part match,
-     * ignoreCase) is itself backed by a row name; a blank or unbacked part means
-     * the token is NOT covered.
-     */
+    /** Coverage of one copy token by the cleaned+trimmed row names: a whole-token match (ignoreCase), or a duet "A & B" (separator exactly " & " WITH surrounding spaces — a bare "&" is never a separator, "COOL&CREATE" stays one whole token) whose every part (cleaned + trimmed, whole-part match, ignoreCase) is itself backed by a row name; a blank or unbacked part means the token is NOT covered. */
     private fun isCoveredByRowNames(token: String, cleanedRowNames: List<String>): Boolean {
         if (cleanedRowNames.any { it.equals(token, ignoreCase = true) }) return true
         val parts = token.split(" & ").map { cleanPrefix(it.trim()).trim() }
@@ -418,12 +411,7 @@ object NameConvergence {
         return tokens.filter { !isCoveredByRowNames(it, cleanedRowNames) }
     }
 
-    /**
-     * True when an album copy carries a different NUMBER of names than the
-     * shared row-name set: the refresh-only album rule then skips it (a name is
-     * never added or removed by the sweep), so the mismatch is the reason the
-     * copy was not converged.
-     */
+    /** True when an album copy carries a different NUMBER of names than the shared row-name set: the refresh-only album rule then skips it (a name is never added or removed by the sweep), so the mismatch is the reason the copy was not converged. */
     internal fun albumCountMismatch(text: String, sharedNames: List<String>): Boolean =
         nameCount(text) != sharedNames.filter { it.isNotBlank() }.size
 
@@ -521,12 +509,7 @@ object NameConvergence {
     internal fun normalizeText(text: String): String =
         tokensOf(text).joinToString(SEPARATOR)
 
-    /**
-     * Tokenizes an author text with the shared convention: [cleanPrefix] applied to
-     * the whole text AND to every token (a leaked `modified:` inside a token is
-     * cleaned and matched as the name itself), then split on `,`, trimmed, blanks
-     * dropped.
-     */
+    /** Tokenizes an author text with the shared convention: [cleanPrefix] applied to the whole text AND to every token (a leaked `modified:` inside a token is cleaned and matched as the name itself), then split on `,`, trimmed, blanks dropped. */
     private fun tokensOf(text: String): List<String> =
         cleanPrefix(text).split(",")
             .map { cleanPrefix(it.trim()).trim() }
@@ -553,4 +536,10 @@ data class ConvergenceSummary(
     val inconsistentAlbums: Int,
     val countMismatchAlbums: Int,
     val customAlbums: Int,
-)
+) {
+
+    /** The found-but-uncorrected items (the per-reason skips the sweep reported in detail). */
+    val totalSkipped: Int
+        get() = unbackedSongs + unlinkedSongs + customSongs +
+            unlinkedAlbums + inconsistentAlbums + countMismatchAlbums + customAlbums
+}

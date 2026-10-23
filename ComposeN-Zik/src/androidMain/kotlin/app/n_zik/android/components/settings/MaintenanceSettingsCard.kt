@@ -49,6 +49,8 @@ import app.n_zik.android.components.maintenance.MaintenanceSnapshot
 import app.n_zik.android.components.maintenance.convergenceStatusRes
 import app.n_zik.android.components.maintenance.dbCleanupStatusRes
 import app.n_zik.android.components.maintenance.dedupStatusRes
+import app.n_zik.android.components.maintenance.downloadRevalidationStatusRes
+import app.n_zik.android.components.maintenance.downloadSelfHealStatusRes
 import app.n_zik.android.components.maintenance.lastRunLine
 import app.n_zik.android.components.maintenance.loadMaintenanceSnapshot
 import app.n_zik.android.components.maintenance.maintenanceHealth
@@ -125,6 +127,8 @@ fun MaintenanceSettingsCard(
     val dedup = snapshot?.dedup
     val convergence = snapshot?.convergence
     val dbCleanup = snapshot?.dbCleanup
+    val downloadRevalidation = snapshot?.downloadRevalidation
+    val downloadSelfHeal = snapshot?.downloadSelfHeal
 
     SettingsSectionCard(
         title = stringResource(R.string.maintenance),
@@ -160,6 +164,24 @@ fun MaintenanceSettingsCard(
                     stringResource(R.string.maintenance_no_data),
                 ),
                 icon = R.drawable.data_migration,
+            )
+            MaintenancePassRow(
+                title = stringResource(R.string.maintenance_download_revalidation),
+                status = lastRunLine(
+                    downloadRevalidation?.timestamp,
+                    passStatusText(downloadRevalidationStatusRes(downloadRevalidation)),
+                    stringResource(R.string.maintenance_no_data),
+                ),
+                icon = R.drawable.download,
+            )
+            MaintenancePassRow(
+                title = stringResource(R.string.maintenance_download_self_heal),
+                status = lastRunLine(
+                    downloadSelfHeal?.timestamp,
+                    passStatusText(downloadSelfHealStatusRes(downloadSelfHeal)),
+                    stringResource(R.string.maintenance_no_data),
+                ),
+                icon = R.drawable.refresh,
             )
             MaintenancePassRow(
                 title = stringResource(R.string.maintenance_live_subsystems),
@@ -214,10 +236,7 @@ fun MaintenanceSettingsCard(
     )
 }
 
-/**
- * Accent category label inside the card (the sheet's MenuSectionTitle pattern, compact
- * 8dp vertical padding for the card layout).
- */
+/** Accent category label inside the card (the sheet's MenuSectionTitle pattern, compact 8dp vertical padding for the card layout). */
 @Composable
 private fun CardCategoryLabel(label: String) {
     BasicText(
@@ -232,12 +251,7 @@ private fun CardCategoryLabel(label: String) {
     )
 }
 
-/**
- * One row of the card's pass table: the exact [OtherInfoSettingsEntry] layout (the
- * Network/Quality status cards pattern — icon box, title, trailing status underneath),
- * with an endless marquee on the status so a long "date · status" line scrolls instead
- * of wrapping or truncating.
- */
+/** One row of the card's pass table: the exact [OtherInfoSettingsEntry] layout (the Network/Quality status cards pattern — icon box, title, trailing status underneath), with an endless marquee on the status so a long "date · status" line scrolls instead of wrapping or truncating. */
 @Composable
 private fun MaintenancePassRow(
     title: String,

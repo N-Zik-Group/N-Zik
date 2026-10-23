@@ -246,9 +246,12 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         //
         // Maintenance state (spec "Maintenance — état de l'app en un regard"):
         // each successful pass persists its last result (one key per pass in
-        // app_settings) so the Maintenance sheet can show it. A failing pass
-        // never writes — the previously persisted state is kept and the pass
-        // retries on the next launch, exactly like today.
+        // app_settings) so the Maintenance sheet can show it. The five states are
+        // wiped just below, before the chain: the sheet shows only this launch's
+        // runs, so a failing pass (which never writes) answers "No data" instead
+        // of the previous launch's stale state; the pass still retries on the
+        // next launch.
+        MaintenanceStateStore.wipeAll(this)
         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
             runCatching { DbCleanup.runPass(this@MainApplication) }
                 .onSuccess { result ->

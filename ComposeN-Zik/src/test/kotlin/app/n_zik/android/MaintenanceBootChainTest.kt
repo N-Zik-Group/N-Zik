@@ -21,6 +21,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,8 +35,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  * [MainApplication.onCreate] (`DbCleanup` -> same-name dedup -> name convergence, one
  * fire-and-forget coroutine on the DATA pool):
  *
- * - a FAILING pass never writes: the previously persisted state is kept intact (the pass
- *   retries on the next launch, exactly like before the maintenance state existed);
+ * - the states are wiped at the start of the boot chain, so a FAILING pass leaves no state
+ *   for this launch (the row shows "No data"; the pass retries on the next launch);
  * - a SUCCESSFUL pass rewrites the persisted state with the fresh counters.
  *
  * Precedent: [app.n_zik.android.core.rescue.RescueKillWiringTest] (instantiating
@@ -63,8 +64,8 @@ class MaintenanceBootChainTest {
     }
 
     /**
-     * Seeds the three persisted boot-pass states with distinctive values, so "kept" and
-     * "rewritten" are unambiguous.
+     * Seeds the three persisted boot-pass states with a 2023 timestamp, simulating the
+     * previous launch's results before the startup wipe removes them.
      */
     private fun seedPersistedState() {
         MaintenanceStateStore.saveDbCleanup(
@@ -147,7 +148,7 @@ class MaintenanceBootChainTest {
     }
 
     @Test
-    fun aFailingPassKeepsThePreviouslyPersistedState() {
+    fun aFailingPassLeavesNoStateForThisLaunch() {
         seedPersistedState()
         val chainRan = AtomicBoolean(false)
         redirectDatabaseToFailing(chainRan)
@@ -156,25 +157,21 @@ class MaintenanceBootChainTest {
         // The chain is fire-and-forget: wait until it has at least attempted the passes.
         await(20_000, "the boot chain to attempt the passes") { chainRan.get() }
 
-        // A failed pass never writes: every seeded value must be kept as-is.
+        // The boot chain wipes the persisted states before the passes run, and a failed
+        // pass never writes: the seeded values are gone for this launch and stay gone (the
+        // rows show "No data"; the passes retry on the next launch).
         val dbCleanup = MaintenanceStateStore.readDbCleanup(context)
-        assertNotNull("the persisted db-cleanup state must survive a failing pass", dbCleanup)
-        assertEquals(seedTimestamp, dbCleanup!!.timestamp)
-        assertEquals(42, dbCleanup.removed)
+        assertNull("a failing pass must not write — the wiped state stays absent", dbCleanup)
 
         val dedup = MaintenanceStateStore.readDedup(context)
-        assertNotNull("the persisted dedup state must survive a failing pass", dedup)
-        assertEquals(seedTimestamp, dedup!!.timestamp)
-        assertEquals(7, dedup.groups)
+        assertNull("a failing pass must not write — the wiped state stays absent", dedup)
 
         val convergence = MaintenanceStateStore.readConvergence(context)
-        assertNotNull("the persisted convergence state must survive a failing pass", convergence)
-        assertEquals(seedTimestamp, convergence!!.timestamp)
-        assertEquals(9, convergence.summary.changed)
+        assertNull("a failing pass must not write — the wiped state stays absent", convergence)
     }
 
     @Test
-    fun aSuccessfulPassRewritesThePersistedState() {
+    fun aSuccessfulPassWritesAFreshState() {
         seedPersistedState()
         // An EMPTY in-memory database: all three passes succeed with zero counters.
         db = Room.inMemoryDatabaseBuilder(context, DatabaseInitializer::class.java)
@@ -185,11 +182,12 @@ class MaintenanceBootChainTest {
         launchApp()
 
         // The chain is fire-and-forget: poll until all three passes have written their
-        // fresh state (each keeps the SEQUENCE, so all three rewritten = chain done).
+        // fresh state. The startup wipe emptied the store first, so any present state is
+        // a rewrite (all three written = chain done).
         await(30_000, "the boot chain to write all three states") {
-            MaintenanceStateStore.readDbCleanup(context)?.timestamp != seedTimestamp &&
-                MaintenanceStateStore.readDedup(context)?.timestamp != seedTimestamp &&
-                MaintenanceStateStore.readConvergence(context)?.timestamp != seedTimestamp
+            MaintenanceStateStore.readDbCleanup(context) != null &&
+                MaintenanceStateStore.readDedup(context) != null &&
+                MaintenanceStateStore.readConvergence(context) != null
         }
 
         val dbCleanup = MaintenanceStateStore.readDbCleanup(context)

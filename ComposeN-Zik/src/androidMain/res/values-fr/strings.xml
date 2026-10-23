@@ -2101,9 +2101,6 @@ Volume BAS : titre précédent</string>
     <string name="maintenance_refresh">Actualiser</string>
     <string name="maintenance_no_data">Aucune donnée</string>
     <string name="maintenance_dedup">Suppression des doublons d\'artistes portant le même nom</string>
-    <string name="maintenance_dedup_summary">%1$d groupes · %2$d résolus · %3$d ignorés</string>
-    <string name="maintenance_dedup_clean">Rien à dédupliquer</string>
-    <string name="maintenance_dedup_no_groups">Aucun groupe portant le même nom n\'a été détecté</string>
     <string name="maintenance_dedup_merged">%d ligne(s) fusionnée(s)</string>
     <string name="maintenance_dedup_flagged">%d ligne(s) signalée(s)</string>
     <string name="maintenance_dedup_merged_flagged">%1$d ligne(s) fusionnée(s) · %2$d ligne(s) signalée(s)</string>
@@ -2116,8 +2113,6 @@ Volume BAS : titre précédent</string>
     <string name="maintenance_skip_no_candidate">Aucun candidat n\'a recueilli l\'unanimité</string>
     <string name="maintenance_skip_network_failure">Échec de connexion au réseau (nouvelle tentative au prochain démarrage)</string>
     <string name="maintenance_convergence">Convergence des noms</string>
-    <string name="maintenance_convergence_changed">%d exemplaires réécrits</string>
-    <string name="maintenance_convergence_no_change">Déjà convergées</string>
     <string name="maintenance_convergence_copies_rewritten">%d exemplaires réécrits</string>
     <string name="maintenance_convergence_unbacked_songs">%d titres sans accompagnement</string>
     <string name="maintenance_convergence_unlinked_songs">%d titres non associés</string>
@@ -2127,10 +2122,6 @@ Volume BAS : titre précédent</string>
     <string name="maintenance_convergence_count_mismatch_albums">%d albums dont le nombre ne correspond pas</string>
     <string name="maintenance_convergence_custom_albums">%d albums personnalisés</string>
     <string name="maintenance_db_cleanup">Nettoyage des liens vers les artistes</string>
-    <string name="maintenance_db_cleanup_removed">%d lien(s) obsolète(s) supprimé(s)</string>
-    <string name="maintenance_db_cleanup_clean">Rien à nettoyer</string>
-    <string name="maintenance_db_cleanup_detail_removed">Lors de la dernière exécution, %d lien(s) obsolète(s) a (ont) été supprimé(s)</string>
-    <string name="maintenance_db_cleanup_detail_clean">La dernière analyse n\'a rien détecté à nettoyer</string>
     <string name="maintenance_migration_done">Terminé</string>
     <string name="maintenance_live_subsystems">Sous-systèmes en temps réel</string>
     <string name="maintenance_sync_ytm">Synchronisation YouTube Music</string>

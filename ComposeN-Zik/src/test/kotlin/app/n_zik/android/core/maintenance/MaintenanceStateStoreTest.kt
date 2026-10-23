@@ -24,7 +24,9 @@ import org.robolectric.annotation.Config
  *   to null via runCatching — a bad pass never erases the previous state, and a
  *   bad blob never crashes the sheet);
  * - record entries are tolerant: missing `m`/`f`/`r` fields fall back to their
- *   defaults (forward compatibility for older blobs).
+ *   defaults (forward compatibility for older blobs);
+ * - wipeAll clears every one of the five pass states at startup (the sheet shows
+ *   only this launch's runs — a failing pass answers "no data").
  *
  * Robolectric provides the SharedPreferences backing + the real org.json
  * (same pattern as SameNameArtistDedupPrefsSkipStoreTest).
@@ -186,6 +188,140 @@ class MaintenanceStateStoreTest {
     fun dbCleanupFromJsonThrowsOnCorruptedJson() {
         assertThrows("missing removed") { MaintenanceStateStore.dbCleanupFromJson("""{"ts":1}""") }
         assertThrows("not a json") { MaintenanceStateStore.dbCleanupFromJson("...") }
+    }
+
+    // ---- download re-validation (S1) ----
+
+    @Test
+    fun downloadRevalidationSaveThenReadReturnsTheSameState() {
+        val state = MaintenanceDownloadRevalidationState(
+            timestamp = 1_750_000_003_000L,
+            removed = 2,
+            removedTracks = listOf(
+                DownloadRevalidationRecord("ABXtWqmArUU", "Artist X - Song A"),
+                // A blank title falls back to the mediaId at write time
+                DownloadRevalidationRecord("na47wMFfQCo", "na47wMFfQCo"),
+            ),
+        )
+
+        MaintenanceStateStore.saveDownloadRevalidation(context, state)
+
+        assertEquals(state, MaintenanceStateStore.readDownloadRevalidation(context))
+    }
+
+    @Test
+    fun downloadRevalidationFromJsonWithoutTracksKeyKeepsTheCounterWithNoRecords() {
+        // States written before per-track records existed carry no `tracks` array
+        val state = MaintenanceStateStore.downloadRevalidationFromJson("""{"ts":1,"removed":3}""")
+
+        assertEquals(3, state.removed)
+        assertTrue(state.removedTracks.isEmpty())
+    }
+
+    @Test
+    fun downloadRevalidationReadReturnsNullWhenAbsentOrCorrupted() {
+        assertNull(MaintenanceStateStore.readDownloadRevalidation(context))
+        corrupt(MaintenanceStateStore.KEY_DOWNLOAD_REVALIDATION, """{"ts":"x"}""")
+        assertNull(MaintenanceStateStore.readDownloadRevalidation(context))
+    }
+
+    @Test
+    fun downloadRevalidationFromJsonThrowsOnCorruptedJson() {
+        assertThrows("missing removed") { MaintenanceStateStore.downloadRevalidationFromJson("""{"ts":1}""") }
+        assertThrows("not a json") { MaintenanceStateStore.downloadRevalidationFromJson("...") }
+    }
+
+    // ---- download self-heal (S2) ----
+
+    @Test
+    fun downloadSelfHealSaveThenReadReturnsTheSameState() {
+        val state = MaintenanceDownloadSelfHealState(
+            timestamp = 1_750_000_004_000L,
+            mediaId = "ABXtWqmArUU",
+            title = "Artist X - Song A",
+        )
+
+        MaintenanceStateStore.saveDownloadSelfHeal(context, state)
+
+        assertEquals(state, MaintenanceStateStore.readDownloadSelfHeal(context))
+    }
+
+    @Test
+    fun downloadSelfHealStartupCleanStateRoundTrips() {
+        // The startup clean run carries an empty mediaId (the "nothing to heal" marker)
+        val state = MaintenanceDownloadSelfHealState(
+            timestamp = 1_750_000_005_000L,
+            mediaId = "",
+            title = "",
+        )
+
+        MaintenanceStateStore.saveDownloadSelfHeal(context, state)
+
+        assertEquals(state, MaintenanceStateStore.readDownloadSelfHeal(context))
+    }
+
+    @Test
+    fun downloadSelfHealReadReturnsNullWhenAbsentOrCorrupted() {
+        assertNull(MaintenanceStateStore.readDownloadSelfHeal(context))
+        corrupt(MaintenanceStateStore.KEY_DOWNLOAD_SELF_HEAL, """{"ts":1}""")
+        assertNull(MaintenanceStateStore.readDownloadSelfHeal(context))
+    }
+
+    @Test
+    fun downloadSelfHealFromJsonThrowsOnCorruptedJson() {
+        assertThrows("missing mediaId") { MaintenanceStateStore.downloadSelfHealFromJson("""{"ts":1}""") }
+        assertThrows("not a json") { MaintenanceStateStore.downloadSelfHealFromJson("...") }
+    }
+
+    // ---- startup wipe (renegotiation 6) ----
+
+    @Test
+    fun wipeAllClearsEveryPassState() {
+        MaintenanceStateStore.saveDedup(
+            context,
+            MaintenanceDedupState(
+                timestamp = 1_750_000_002_000L,
+                groups = 1,
+                resolved = 1,
+                songResolved = 0,
+                merged = 0,
+                flagged = 0,
+                skipped = 0,
+                deferred = 0,
+                localKept = 0,
+                records = emptyList(),
+            ),
+        )
+        MaintenanceStateStore.saveConvergence(
+            context,
+            MaintenanceConvergenceState(
+                timestamp = 1_750_000_002_000L,
+                summary = ConvergenceSummary(
+                    changed = 1,
+                    unbackedSongs = 0,
+                    unlinkedSongs = 0,
+                    customSongs = 0,
+                    unlinkedAlbums = 0,
+                    inconsistentAlbums = 1,
+                    countMismatchAlbums = 0,
+                    customAlbums = 0,
+                ),
+            ),
+        )
+        MaintenanceStateStore.saveDbCleanup(context, MaintenanceDbCleanupState(1_750_000_002_000L, 1))
+        MaintenanceStateStore.saveDownloadRevalidation(
+            context,
+            MaintenanceDownloadRevalidationState(1_750_000_002_000L, 1),
+        )
+        MaintenanceStateStore.saveDownloadSelfHeal(context, MaintenanceDownloadSelfHealState(1_750_000_002_000L, "m", "t"))
+
+        MaintenanceStateStore.wipeAll(context)
+
+        assertNull(MaintenanceStateStore.readDedup(context))
+        assertNull(MaintenanceStateStore.readConvergence(context))
+        assertNull(MaintenanceStateStore.readDbCleanup(context))
+        assertNull(MaintenanceStateStore.readDownloadRevalidation(context))
+        assertNull(MaintenanceStateStore.readDownloadSelfHeal(context))
     }
 
     // ---- helpers ----

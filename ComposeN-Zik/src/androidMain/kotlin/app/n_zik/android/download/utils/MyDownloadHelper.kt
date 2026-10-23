@@ -1,6 +1,10 @@
 package app.n_zik.android.download.utils
 
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.maintenance.DownloadRevalidationRecord
+import app.n_zik.android.core.maintenance.MaintenanceDownloadRevalidationState
+import app.n_zik.android.core.maintenance.MaintenanceDownloadSelfHealState
+import app.n_zik.android.core.maintenance.MaintenanceStateStore
 import app.n_zik.android.core.profiles.ProfileDataDirNames
 import app.n_zik.android.core.profiles.cacheDatabaseProvider
 import app.n_zik.android.core.profiles.downloadsDir
@@ -110,10 +114,6 @@ object MyDownloadHelper {
         { context, request -> context.download<MyDownloadService>(request) }
 
     // While the class is not a singleton (lifecycle), there should only be one download state at a time
-//    private val mutableDownloadState = MutableStateFlow(false)
-//    val downloadState = mutableDownloadState.asStateFlow()
-//    private val downloadQueue =
-//        Channel<DownloadManager>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     const val DOWNLOAD_NOTIFICATION_CHANNEL_ID = "download_channel"
 
@@ -127,11 +127,7 @@ object MyDownloadHelper {
     private lateinit var downloadManager: DownloadManager
     lateinit var downloadQualityFormat: DownloadQualityFormat
 
-    /**
-     * Kept as a weak reference so the helper does not prevent the preferences
-     * [SharedPreferences.OnSharedPreferenceChangeListener] from being garbage collected
-     * after [release].
-     */
+    /** Kept as a weak reference so the helper does not prevent the preferences [SharedPreferences.OnSharedPreferenceChangeListener] from being garbage collected after [release]. */
     private var downloadQualityPreferenceListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
 
     // URL cache with LRU eviction (max 500 entries): uses StreamUrlCache for headers/client tracking
@@ -157,16 +153,14 @@ object MyDownloadHelper {
 
 
     var downloads = MutableStateFlow<Map<String, Download>>(emptyMap())
+
+    /** Session-scoped view for the maintenance sheet's Downloads row: populated ONLY by the download-manager events ([syncDownloads]), never by the [getDownloads] index seed at init — so the row resets to empty on every process start, while [downloads] keeps the full persistent library for the badges and the download manager UI. This invariant relies on media3 1.10.1 firing no per-download events at manager init (only `onInitialized`, terminal states excluded from the init list) — re-verify on any media3 upgrade. */
+    var sessionDownloads = MutableStateFlow<Map<String, Download>>(emptyMap())
+
     private val mutableProgresses = MutableStateFlow<Map<String, Float>>(emptyMap())
     val progresses = mutableProgresses.asStateFlow()
 
-    /**
-     * S1 (Phase 1 download fix, 2026-10-22): the removed count parked by
-     * [revalidateCompletedDownloads] — the re-validation runs before the app window is
-     * visible (a few seconds after process start, before MainActivity reaches onStart),
-     * where the system silently drops toasts; [MainActivity] consumes this once the
-     * window has focus (shows the toast + resets it to 0).
-     */
+    /** S1 (Phase 1 download fix, 2026-10-22): the removed count parked by [revalidateCompletedDownloads] — the re-validation runs before the app window is visible (a few seconds after process start, before MainActivity reaches onStart), where the system silently drops toasts; [MainActivity] consumes this once the window has focus (shows the toast + resets it to 0). */
     internal val pendingStaleStartupCount = MutableStateFlow(0)
 
     // Batch download tracking for "download all" progress notification
@@ -405,7 +399,7 @@ object MyDownloadHelper {
             // completed library against the real files, off the main-Looper callback
             // that `onInitialized` above runs on (one file stat per span).
             coroutineScope.launch {
-                revalidateCompletedDownloads(downloadManager)
+                revalidateCompletedDownloads(context, downloadManager)
             }
         }
     }
@@ -439,20 +433,53 @@ object MyDownloadHelper {
      *
      * Called (on [NzikDispatchers.DATA]) from [ensureDownloadManagerInitialized] right
      * after [getDownloads] has populated [downloads] — once per process.
+     *
+     * The run is persisted on EVERY branch (even 0 removed → "Nothing to clean") through
+     * [MaintenanceStateStore], guarded so a failed write never breaks the cleanup — and
+     * so is the S2 startup clean state ([saveSelfHealCleanRun]), keeping all five
+     * maintenance rows on the same "date · status" shape; the stale ids are also purged
+     * from [downloads] immediately so the live Downloads row is clean from startup
+     * (idempotent with [syncDownloads]' STATE_REMOVING removal).
      */
-    internal fun revalidateCompletedDownloads(downloadManager: DownloadManager) {
-        val staleIds = downloads.value.values
+    internal fun revalidateCompletedDownloads(context: Context, downloadManager: DownloadManager) {
+        val stale = downloads.value.values
             .filter { it.state == Download.STATE_COMPLETED }
             .filterNot { DownloadValidator.hasValidDownload(downloadCache, it.request.id) }
-            .map { it.request.id }
+        val staleIds = stale.map { it.request.id }
         if (staleIds.isEmpty()) {
             Timber.tag("MyDownloadHelper").d("Download re-validation: completed library intact")
+            runCatching {
+                MaintenanceStateStore.saveDownloadRevalidation(
+                    context,
+                    MaintenanceDownloadRevalidationState(System.currentTimeMillis(), 0, emptyList()),
+                )
+            }.onFailure { Timber.tag("MyDownloadHelper").w(it, "Failed to save the download re-validation state") }
+            // The S2 row gets its dated startup state too — all five rows share the
+            // "date · status" shape, a real self-heal overwrites the clean state
+            saveSelfHealCleanRun(context)
             return
+        }
+        // Built BEFORE the removal, from the live map (request.data = "artist – title");
+        // a blank title falls back to the mediaId
+        val removedTracks = stale.map { download ->
+            DownloadRevalidationRecord(
+                mediaId = download.request.id,
+                title = download.request.data.decodeToString().takeIf { it.isNotBlank() } ?: download.request.id,
+            )
         }
         Timber.tag("MyDownloadHelper").w(
             "Download re-validation: removing ${staleIds.size} stale completed entr${if (staleIds.size == 1) "y" else "ies"}: $staleIds"
         )
+        downloads.update { map -> map.filterKeys { it !in staleIds } }
         staleIds.forEach { id -> downloadManager.removeDownload(id) }
+        runCatching {
+            MaintenanceStateStore.saveDownloadRevalidation(
+                context,
+                MaintenanceDownloadRevalidationState(System.currentTimeMillis(), staleIds.size, removedTracks),
+            )
+        }.onFailure { Timber.tag("MyDownloadHelper").w(it, "Failed to save the download re-validation state") }
+        // The dated S2 startup state on a removing run too (nothing to heal at startup)
+        saveSelfHealCleanRun(context)
         // The per-track S2 toast is unreachable here — the index entries are already gone, so
         // the startup cleanup is the ONLY user-visible notification of the wipe. This runs a
         // few seconds after process start, before the app window is visible — the system
@@ -462,9 +489,31 @@ object MyDownloadHelper {
         pendingStaleStartupCount.value = staleIds.size
     }
 
+    /** Records the S2 startup clean run (empty mediaId = "nothing to heal") so the "Download self-heal" row carries a date like the other boot-pass rows — a real pre-playback self-heal overwrites it with the healed track. */
+    private fun saveSelfHealCleanRun(context: Context) {
+        runCatching {
+            MaintenanceStateStore.saveDownloadSelfHeal(
+                context,
+                MaintenanceDownloadSelfHealState(System.currentTimeMillis(), "", ""),
+            )
+        }.onFailure { Timber.tag("MyDownloadHelper").w(it, "Failed to save the download self-heal state") }
+    }
+
+    /** Download-manager event sink — internal (not private) as the test seam MyDownloadHelperSessionDownloadsTest drives, so the session-row invariant is covered without a live [DownloadManager]. */
     @Synchronized
-    private fun syncDownloads(download: Download) {
+    internal fun syncDownloads(download: Download) {
         downloads.update { map ->
+            map.toMutableMap().apply {
+                if (download.state == Download.STATE_REMOVING) {
+                    remove(download.request.id)
+                } else {
+                    set(download.request.id, download)
+                }
+            }
+        }
+        // Same event-driven update for the session row (never seeded from the index, so
+        // the Downloads row resets to empty on every process start)
+        sessionDownloads.update { map ->
             map.toMutableMap().apply {
                 if (download.state == Download.STATE_REMOVING) {
                     remove(download.request.id)
@@ -478,12 +527,7 @@ object MyDownloadHelper {
         }
     }
 
-    /**
-     * The Media3 index database of the ACTIVE profile's downloads (spec-profile-data-separation):
-     * the base `exoplayer_internal.db` when the downloads are shared (or the profile is the base),
-     * the suffixed `exoplayer_internal_<id>.db` when they are separate — same resolution as
-     * [downloadCacheLocation].
-     */
+    /** The Media3 index database of the ACTIVE profile's downloads (spec-profile-data-separation): the base `exoplayer_internal.db` when the downloads are shared (or the profile is the base), the suffixed `exoplayer_internal_<id>.db` when they are separate — same resolution as [downloadCacheLocation]. */
     private fun downloadIndexDbName(context: Context): String = downloadCacheLocation(context).indexDbName
 
     @Synchronized
@@ -521,11 +565,7 @@ object MyDownloadHelper {
 
     }
 
-    /**
-     * Suspended core of [addDownload]: prepares the download request under the
-     * preparation semaphore, schedules it on [MyDownloadService], then preloads
-     * lyrics and artwork outside the semaphore so they don't block other downloads.
-     */
+    /** Suspended core of [addDownload]: prepares the download request under the preparation semaphore, schedules it on [MyDownloadService], then preloads lyrics and artwork outside the semaphore so they don't block other downloads. */
     // internal (not private): the A2 failure test drives the scheduling path directly
     // (P14, review 2026-10-23) instead of going through the DB-backed [addDownload] entry.
     internal suspend fun addDownloadInternal( context: Context, mediaItem: MediaItem ) {
@@ -581,10 +621,7 @@ object MyDownloadHelper {
         }
     }
 
-    /**
-     * Refreshes [downloadQualityFormat] whenever the download quality setting changes so
-     * downloads scheduled after the change use the new quality immediately.
-     */
+    /** Refreshes [downloadQualityFormat] whenever the download quality setting changes so downloads scheduled after the change use the new quality immediately. */
     private fun registerDownloadQualityPreferenceListener(context: Context) {
         if (downloadQualityPreferenceListener != null) return
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->

@@ -64,11 +64,7 @@ data class DbCleanupLinkRecord(
     val artistName: String?,
 )
 
-/**
- * Persisted state of the last SUCCESSFUL same-name dedup pass (one key in
- * `app_settings`): the timestamp plus the [app.n_zik.android.core.migration.DedupResult]
- * counters and its per-group [records].
- */
+/** Persisted state of the last SUCCESSFUL same-name dedup pass (one key in `app_settings`): the timestamp plus the [app.n_zik.android.core.migration.DedupResult] counters and its per-group [records]. */
 data class MaintenanceDedupState(
     val timestamp: Long,
     val groups: Int,
@@ -82,32 +78,49 @@ data class MaintenanceDedupState(
     val records: List<DedupGroupRecord>,
 )
 
-/**
- * Persisted state of the last SUCCESSFUL name convergence pass: the timestamp
- * plus the sweep's [summary] (the 8 counters).
- */
+/** Persisted state of the last SUCCESSFUL name convergence pass: the timestamp plus the sweep's [summary] (the 8 counters). */
 data class MaintenanceConvergenceState(
     val timestamp: Long,
     val summary: ConvergenceSummary,
 )
 
-/**
- * Persisted state of the last SUCCESSFUL artist link cleanup pass: the timestamp,
- * the removed counter and the per-link [removedLinks] records.
- */
+/** Persisted state of the last SUCCESSFUL artist link cleanup pass: the timestamp, the removed counter and the per-link [removedLinks] records. */
 data class MaintenanceDbCleanupState(
     val timestamp: Long,
     val removed: Int,
     val removedLinks: List<DbCleanupLinkRecord> = emptyList(),
 )
 
+/** One stale download removed by a successful S1 (startup) download re-validation, persisted so the Maintenance sheet can list what the last run cleaned (the expanded row shows one line per removed track). */
+data class DownloadRevalidationRecord(
+    val mediaId: String,
+    val title: String,
+)
+
+/** Persisted state of the last S1 (startup) download re-validation run: the timestamp, the removed counter and the per-track [removedTracks] records. */
+data class MaintenanceDownloadRevalidationState(
+    val timestamp: Long,
+    val removed: Int,
+    val removedTracks: List<DownloadRevalidationRecord> = emptyList(),
+)
+
+/** Persisted state of the last download self-heal run: the startup clean run (empty [mediaId] = "nothing to heal" — keeps the row's "date · status" shape like the other boot-pass rows) or a real pre-playback self-heal (the healed track, one expanded line: title + mediaId). */
+data class MaintenanceDownloadSelfHealState(
+    val timestamp: Long,
+    val mediaId: String,
+    val title: String,
+)
+
 /**
- * Single persistence base of the three boot passes (spec "Maintenance — état de
- * l'app en un regard"): one SharedPreferences key per pass in the `app_settings`
- * file (via [DataStoreUtils]), written ONLY by the sequential boot chain in
- * [app.n_zik.android.MainApplication] after a successful pass — a failed pass
- * never writes, so the previously persisted state is kept and the pass retries
- * on the next launch.
+ * Single persistence base of the maintenance entries (spec "Maintenance — état de
+ * l'app en un regard"): one SharedPreferences key per entry in the `app_settings`
+ * file (via [DataStoreUtils]). The three boot passes are written ONLY by the
+ * sequential boot chain in [app.n_zik.android.MainApplication] after a successful
+ * pass; the S1 download re-validation and the S2 startup clean run are written on
+ * every run in which the download manager is initialized (even a clean one) — a
+ * real pre-playback self-heal overwrites the S2 state with the healed track. All
+ * five states are wiped at startup by [wipeAll]: a pass that did not run this
+ * launch answers "no data" instead of the previous launch's state.
  *
  * Serialization is `org.json` (already a dependency, no new one). Reads are
  * tolerant: an absent key or a corrupted JSON answers `null`, which the UI maps
@@ -125,6 +138,12 @@ object MaintenanceStateStore {
     /** SharedPreferences key of the artist link cleanup pass. */
     const val KEY_DB_CLEANUP = "maintenance_db_cleanup"
 
+    /** SharedPreferences key of the S1 (startup) download re-validation entry. */
+    const val KEY_DOWNLOAD_REVALIDATION = "maintenance_download_revalidation"
+
+    /** SharedPreferences key of the S2 (pre-playback) download self-heal entry. */
+    const val KEY_DOWNLOAD_SELF_HEAL = "maintenance_download_self_heal"
+
     // -- writes (last successful run only; the caller never writes after a failure) --
 
     fun saveDedup(context: Context, state: MaintenanceDedupState) {
@@ -137,6 +156,31 @@ object MaintenanceStateStore {
 
     fun saveDbCleanup(context: Context, state: MaintenanceDbCleanupState) {
         DataStoreUtils.saveString(context, KEY_DB_CLEANUP, dbCleanupToJson(state))
+    }
+
+    fun saveDownloadRevalidation(context: Context, state: MaintenanceDownloadRevalidationState) {
+        DataStoreUtils.saveString(context, KEY_DOWNLOAD_REVALIDATION, downloadRevalidationToJson(state))
+    }
+
+    fun saveDownloadSelfHeal(context: Context, state: MaintenanceDownloadSelfHealState) {
+        DataStoreUtils.saveString(context, KEY_DOWNLOAD_SELF_HEAL, downloadSelfHealToJson(state))
+    }
+
+    /**
+     * Wipes the five pass states at startup (spec renegotiation 6): the sheet shows only
+     * this launch's runs, so a failing pass answers "No data" instead of the previous
+     * launch's stale state. The boot chain wipes, then each pass re-persists its result.
+     */
+    fun wipeAll(context: Context) {
+        runCatching {
+            DataStoreUtils.prefs(context).edit()
+                .remove(KEY_DEDUP)
+                .remove(KEY_CONVERGENCE)
+                .remove(KEY_DB_CLEANUP)
+                .remove(KEY_DOWNLOAD_REVALIDATION)
+                .remove(KEY_DOWNLOAD_SELF_HEAL)
+                .apply()
+        }.onFailure { Timber.tag(TAG).w(it, "Failed to wipe the maintenance states") }
     }
 
     // -- tolerant reads (absent or corrupted key -> null -> "no data") --
@@ -157,6 +201,18 @@ object MaintenanceStateStore {
     fun readDbCleanup(context: Context): MaintenanceDbCleanupState? =
         runCatching { dbCleanupFromJson(DataStoreUtils.getString(context, KEY_DB_CLEANUP)) }
             .onFailure { Timber.tag(TAG).w(it, "Corrupted cleanup state, reporting no data") }
+            .getOrNull()
+
+    /** @return the persisted re-validation state, or null when absent or unreadable. */
+    fun readDownloadRevalidation(context: Context): MaintenanceDownloadRevalidationState? =
+        runCatching { downloadRevalidationFromJson(DataStoreUtils.getString(context, KEY_DOWNLOAD_REVALIDATION)) }
+            .onFailure { Timber.tag(TAG).w(it, "Corrupted download re-validation state, reporting no data") }
+            .getOrNull()
+
+    /** @return the persisted self-heal state, or null when absent or unreadable. */
+    fun readDownloadSelfHeal(context: Context): MaintenanceDownloadSelfHealState? =
+        runCatching { downloadSelfHealFromJson(DataStoreUtils.getString(context, KEY_DOWNLOAD_SELF_HEAL)) }
+            .onFailure { Timber.tag(TAG).w(it, "Corrupted download self-heal state, reporting no data") }
             .getOrNull()
 
     // -- JSON (top-level required fields read strictly: any missing/corrupted
@@ -288,6 +344,59 @@ object MaintenanceStateStore {
             timestamp = obj.getLong("ts"),
             removed = obj.getInt("removed"),
             removedLinks = links,
+        )
+    }
+
+    internal fun downloadRevalidationToJson(state: MaintenanceDownloadRevalidationState): String {
+        val tracks = JSONArray()
+        for (record in state.removedTracks) {
+            tracks.put(
+                JSONObject()
+                    .put("id", record.mediaId)
+                    .put("t", record.title)
+            )
+        }
+        return JSONObject()
+            .put("ts", state.timestamp)
+            .put("removed", state.removed)
+            .put("tracks", tracks)
+            .toString()
+    }
+
+    internal fun downloadRevalidationFromJson(json: String): MaintenanceDownloadRevalidationState {
+        val obj = JSONObject(json)
+        // `tracks` is read tolerantly (an absent array yields an empty list) —
+        // defensive, mirroring dbCleanupFromJson
+        val tracks = mutableListOf<DownloadRevalidationRecord>()
+        obj.optJSONArray("tracks")?.let { array ->
+            for (i in 0 until array.length()) {
+                val entry = array.getJSONObject(i)
+                tracks += DownloadRevalidationRecord(
+                    mediaId = entry.getString("id"),
+                    title = entry.getString("t"),
+                )
+            }
+        }
+        return MaintenanceDownloadRevalidationState(
+            timestamp = obj.getLong("ts"),
+            removed = obj.getInt("removed"),
+            removedTracks = tracks,
+        )
+    }
+
+    internal fun downloadSelfHealToJson(state: MaintenanceDownloadSelfHealState): String =
+        JSONObject()
+            .put("ts", state.timestamp)
+            .put("id", state.mediaId)
+            .put("t", state.title)
+            .toString()
+
+    internal fun downloadSelfHealFromJson(json: String): MaintenanceDownloadSelfHealState {
+        val obj = JSONObject(json)
+        return MaintenanceDownloadSelfHealState(
+            timestamp = obj.getLong("ts"),
+            mediaId = obj.getString("id"),
+            title = obj.getString("t"),
         )
     }
 }

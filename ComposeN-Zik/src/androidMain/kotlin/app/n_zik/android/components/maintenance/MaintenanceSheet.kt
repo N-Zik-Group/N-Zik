@@ -85,6 +85,7 @@ import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.settings.settingsEntryEnter
 import app.n_zik.android.components.settings.settingsEntryExit
 import app.n_zik.android.components.ui.header.clampedLabelMaxWidth
+import app.n_zik.android.components.ui.screens.profiles.profilePrefsFile
 import app.n_zik.android.core.backup.BackupManager
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.profiles.allDataDirs
@@ -97,6 +98,8 @@ import app.n_zik.android.core.maintenance.DedupSkipReason
 import app.n_zik.android.core.maintenance.MaintenanceConvergenceState
 import app.n_zik.android.core.maintenance.MaintenanceDedupState
 import app.n_zik.android.core.maintenance.MaintenanceDbCleanupState
+import app.n_zik.android.core.maintenance.MaintenanceDownloadRevalidationState
+import app.n_zik.android.core.maintenance.MaintenanceDownloadSelfHealState
 import app.n_zik.android.core.maintenance.MaintenanceStateStore
 import app.n_zik.android.core.migration.ConvergenceSummary
 import app.n_zik.android.core.coil.ImageCacheFactory
@@ -165,79 +168,127 @@ internal fun workStateResId(state: WorkInfo.State): Int = when (state) {
     WorkInfo.State.CANCELLED -> R.string.maintenance_work_cancelled
 }
 
-/**
- * The expansion lines of the artist-link-cleanup row: one line per removed link
- * (song title + removed artist name), mirroring the dedup group lines — so the three
- * chevron rows (dedup / convergence / cleanup) share the same "summary on top, detail
- * list underneath" shape when opened or closed.
- */
+/** The expansion lines of the artist-link-cleanup row: one line per removed link (song title + removed artist name), mirroring the dedup group lines — so the five Database rows share the same "summary on top, detail list underneath" shape when opened or closed. */
 internal fun dbCleanupLines(state: MaintenanceDbCleanupState?): List<GroupLine> =
     state?.removedLinks?.map { link -> GroupLine(link.songTitle, link.artistName.orEmpty()) }
         ?: emptyList()
 
-/**
- * The expanded artist-link-cleanup message when there are no per-link lines: "No data"
- * without a state, the clean sentence on a clean run, the counter sentence on a state
- * predating per-link records (one version cycle).
- */
+/** The expanded artist-link-cleanup message when there are no per-link lines: "No data" without a state, the shared clean sentence on a clean run, the shared counter sentence on a state predating per-link records (one version cycle). */
 internal fun dbCleanupEmptyRes(state: MaintenanceDbCleanupState?): Pair<Int, Int?> = when {
     state == null -> R.string.maintenance_no_data to null
-    state.removed > 0 -> R.string.maintenance_db_cleanup_detail_removed to state.removed
-    else -> R.string.maintenance_db_cleanup_detail_clean to null
+    state.removed > 0 -> R.string.maintenance_pass_cleaned to state.removed
+    else -> R.string.maintenance_pass_clean to null
 }
 
-/**
- * The trailing status of the "Same-name artist dedup" boot-pass row, as string resource +
- * counter arguments. Shared by the sheet's chevron row and the settings card's pass table
- * so the two can never drift.
- */
-internal fun dedupStatusRes(state: MaintenanceDedupState?): Pair<Int, IntArray?> =
-    when {
-        state == null -> R.string.maintenance_no_data to null
-        state.groups > 0 ->
-            R.string.maintenance_dedup_summary to intArrayOf(state.groups, state.resolved, state.skipped)
-        else -> R.string.maintenance_dedup_clean to null
-    }
+/** One part of a pass status cell: the string resource plus its counter argument (null for the fixed "No data" / "Nothing to clean" sentences). */
+internal data class PassStatusPart(
+    val resId: Int,
+    val count: Int? = null,
+)
 
 /**
- * The trailing status of the "Name convergence" boot-pass row (see [dedupStatusRes]):
- * the "N copies rewritten" counter on a changed run, the already-converged sentence
- * otherwise.
+ * The trailing status cell of a boot-pass row: one part per NON-ZERO STATE of the
+ * last run ("N item(s) cleaned" / "N item(s) skipped" / "N item(s) deferred"), joined
+ * by " · " by [passStatusText] — every state that happened is shown, none hidden behind
+ * a single word; the per-reason / per-item breakdown lives in the expansion (user
+ * decision 2026-10-23). Shared by the sheet's chevron row and the settings card's pass
+ * table so the two can never drift.
  */
-internal fun convergenceStatusRes(state: MaintenanceConvergenceState?): Pair<Int, IntArray?> =
+internal data class PassStatus(
+    val parts: List<PassStatusPart>,
+) {
+    companion object {
+        /** No readable state (never ran / the run failed this launch). */
+        val NoData = PassStatus(listOf(PassStatusPart(R.string.maintenance_no_data)))
+
+        /** A run that found nothing to do. */
+        val NothingToClean = PassStatus(listOf(PassStatusPart(R.string.maintenance_pass_clean)))
+    }
+}
+
+/** The trailing status of the "Same-name artist dedup" boot-pass row: one part per non-zero state — cleaned (the groups actually resolved, primary plus song-fallback) / skipped / deferred — the expansion lines name each group with its reason, the fixed "No data" / "Nothing to clean" parts otherwise. */
+internal fun dedupStatusRes(state: MaintenanceDedupState?): PassStatus =
     when {
-        state == null -> R.string.maintenance_no_data to null
-        state.summary.changed > 0 ->
-            R.string.maintenance_convergence_changed to intArrayOf(state.summary.changed)
-        else -> R.string.maintenance_convergence_no_change to null
+        state == null -> PassStatus.NoData
+        else -> {
+            val parts = ArrayList<PassStatusPart>(3)
+            val cleaned = state.resolved + state.songResolved
+            if (cleaned > 0) parts.add(PassStatusPart(R.string.maintenance_pass_cleaned, cleaned))
+            if (state.skipped > 0) parts.add(PassStatusPart(R.string.maintenance_pass_skipped, state.skipped))
+            if (state.deferred > 0) parts.add(PassStatusPart(R.string.maintenance_pass_deferred, state.deferred))
+            if (parts.isEmpty()) PassStatus.NothingToClean else PassStatus(parts)
+        }
     }
 
-/**
- * The trailing status of the "Artist link cleanup" boot-pass row (see [dedupStatusRes]):
- * the "N stale link(s) removed" counter on a removing run, the clean sentence otherwise.
- */
-internal fun dbCleanupStatusRes(state: MaintenanceDbCleanupState?): Pair<Int, IntArray?> =
+/** The trailing status of the "Name convergence" boot-pass row: one part per non-zero state — cleaned (the copies actually rewritten) / skipped (all per-reason skips combined — the expansion lines break them down by reason), the fixed "No data" / "Nothing to clean" parts otherwise. */
+internal fun convergenceStatusRes(state: MaintenanceConvergenceState?): PassStatus =
     when {
-        state == null -> R.string.maintenance_no_data to null
-        state.removed > 0 -> R.string.maintenance_db_cleanup_removed to intArrayOf(state.removed)
-        else -> R.string.maintenance_db_cleanup_clean to null
+        state == null -> PassStatus.NoData
+        else -> {
+            val parts = ArrayList<PassStatusPart>(2)
+            if (state.summary.changed > 0) parts.add(PassStatusPart(R.string.maintenance_pass_cleaned, state.summary.changed))
+            if (state.summary.totalSkipped > 0) parts.add(PassStatusPart(R.string.maintenance_pass_skipped, state.summary.totalSkipped))
+            if (parts.isEmpty()) PassStatus.NothingToClean else PassStatus(parts)
+        }
     }
 
-/**
- * Resolves a pass status cell (string resource + optional args) to its display text —
- * the single formatting point shared by the sheet's chevron rows and the card's table.
- */
+/** The trailing status of the "Artist link cleanup" boot-pass row: the single "N item(s) cleaned" part on a removing run, the fixed "No data" / "Nothing to clean" parts otherwise (removal-only pass — no skip notion). */
+internal fun dbCleanupStatusRes(state: MaintenanceDbCleanupState?): PassStatus =
+    when {
+        state == null -> PassStatus.NoData
+        state.removed > 0 -> PassStatus(listOf(PassStatusPart(R.string.maintenance_pass_cleaned, state.removed)))
+        else -> PassStatus.NothingToClean
+    }
+
+/** The expansion lines of the "Download re-validation" row: one line per stale track removed by the last startup (title + mediaId), mirroring the dedup group lines and the cleanup link lines. */
+internal fun downloadRevalidationLines(state: MaintenanceDownloadRevalidationState?): List<GroupLine> =
+    state?.removedTracks?.map { track -> GroupLine(track.title, track.mediaId) }
+        ?: emptyList()
+
+/** The expanded download re-validation message when there are no per-track lines: "No data" without a state, the shared clean sentence on a clean run, the shared counter sentence on a state predating per-track records (one version cycle). */
+internal fun downloadRevalidationEmptyRes(state: MaintenanceDownloadRevalidationState?): Pair<Int, Int?> = when {
+    state == null -> R.string.maintenance_no_data to null
+    state.removed > 0 -> R.string.maintenance_pass_cleaned to state.removed
+    else -> R.string.maintenance_pass_clean to null
+}
+
+/** The trailing status of the "Download re-validation" boot-pass row: the single "N item(s) cleaned" part on a removing run, the fixed "No data" / "Nothing to clean" parts otherwise (removal-only pass — no skip notion). */
+internal fun downloadRevalidationStatusRes(state: MaintenanceDownloadRevalidationState?): PassStatus =
+    when {
+        state == null -> PassStatus.NoData
+        state.removed > 0 -> PassStatus(listOf(PassStatusPart(R.string.maintenance_pass_cleaned, state.removed)))
+        else -> PassStatus.NothingToClean
+    }
+
+/** The expansion lines of the "Download self-heal" row: the single healed track (title + mediaId); the startup clean run (empty mediaId) has no lines — the expanded row shows the clean sentence instead (see [downloadSelfHealStatusRes]). */
+internal fun downloadSelfHealLines(state: MaintenanceDownloadSelfHealState?): List<GroupLine> =
+    state?.takeIf { it.mediaId.isNotEmpty() }?.let { listOf(GroupLine(it.title, it.mediaId)) }
+        ?: emptyList()
+
+/** The trailing status of the "Download self-heal" row: "No data" before the first startup run, the clean part on a startup run with nothing to heal, the single "1 item(s) cleaned" part once a real self-heal overwrote the startup state. */
+internal fun downloadSelfHealStatusRes(state: MaintenanceDownloadSelfHealState?): PassStatus =
+    when {
+        state == null -> PassStatus.NoData
+        state.mediaId.isEmpty() -> PassStatus.NothingToClean
+        else -> PassStatus(listOf(PassStatusPart(R.string.maintenance_pass_cleaned, 1)))
+    }
+
+/** Resolves a pass status cell to its display text (the parts joined by " · ") — the single formatting point shared by the sheet's chevron rows, the card's table and the expansions' top summary line. */
 @Composable
-internal fun passStatusText(status: Pair<Int, IntArray?>): String {
-    val args = status.second
-    return if (args != null) stringResource(status.first, *args.toTypedArray()) else stringResource(status.first)
+internal fun passStatusText(status: PassStatus): String {
+    val texts = ArrayList<String>(status.parts.size)
+    for (part in status.parts) {
+        val count = part.count
+        texts.add(if (count != null) stringResource(part.resId, count) else stringResource(part.resId))
+    }
+    return texts.joinToString(" · ")
 }
 
-/**
- * The overall app health shown by the settings card: [NoData] when no snapshot could be
- * read at all, [Operational] when nothing is broken, [NeedsAttention] with the broken
- * count otherwise (the card renders "N systems need attention" in RED).
- */
+/** Whether a pass status carries at least one state part (a non-null counter) — the fixed "No data" / "Nothing to clean" sentences carry none. The expanded rows use it to decide whether to repeat the status as their top summary line: a fixed sentence is already what the expansion shows, so it is never repeated on top of it. */
+internal fun passHasState(status: PassStatus): Boolean =
+    status.parts.any { it.count != null }
+
+/** The overall app health shown by the settings card: [NoData] when no snapshot could be read at all, [Operational] when nothing is broken, [NeedsAttention] with the broken count otherwise (the card renders "N systems need attention" in RED). */
 internal sealed interface MaintenanceHealth {
     data object NoData : MaintenanceHealth
     data object Operational : MaintenanceHealth
@@ -265,12 +316,7 @@ internal fun maintenanceHealth(
     }
 }
 
-/**
- * The number of broken systems (the sheet's RED rows) in a readable snapshot: abnormal
- * jobs (FAILED/CANCELLED), a last crash block, an INVALID/EXPIRED YouTube session, a
- * Discord RPC error, a Listen Together error state, a failed update download, a
- * rate-limited MusicBrainz circuit, a failed download.
- */
+/** The number of broken systems (the sheet's RED rows) in a readable snapshot: abnormal jobs (FAILED/CANCELLED), a last crash block, an INVALID/EXPIRED YouTube session, a Discord RPC error, a Listen Together error state, a failed update download, a rate-limited MusicBrainz circuit, a failed download in this session's map. */
 internal fun brokenSystemsCount(
     snapshot: MaintenanceSnapshot,
     discordError: DiscordRpcError?,
@@ -291,10 +337,7 @@ internal fun brokenSystemsCount(
     return count
 }
 
-/**
- * One convergence detail line of the expanded convergence row: the label string
- * resource plus its count argument (null for the "No data" / "No change" fallbacks).
- */
+/** One convergence detail line of the expanded convergence row: the label string resource plus its count argument (null for the "No data" / clean fallbacks). */
 internal data class ConvergenceLine(
     val resId: Int,
     val count: Int? = null,
@@ -302,9 +345,10 @@ internal data class ConvergenceLine(
 
 /**
  * The expanded convergence detail lines, one per NON-ZERO sweep counter, in the
- * [ConvergenceSummary] field order (the "N copies rewritten" row stays the main status —
- * this is the detail track). A null summary (no readable state) answers the shared
- * "No data" line; an all-zero summary answers the shared "Already converged" line.
+ * [ConvergenceSummary] field order (copies rewritten first, then the per-reason
+ * skips) — the per-reason breakdown of the status, which the sheet's expansion repeats
+ * on one line on top (the state totals' only home). A null summary (no readable state)
+ * answers the shared "No data" line; an all-zero summary the shared clean line.
  */
 internal fun convergenceDetailLines(summary: ConvergenceSummary?): List<ConvergenceLine> {
     if (summary == null) return listOf(ConvergenceLine(R.string.maintenance_no_data))
@@ -317,15 +361,11 @@ internal fun convergenceDetailLines(summary: ConvergenceSummary?): List<Converge
     if (summary.inconsistentAlbums > 0) lines.add(ConvergenceLine(R.string.maintenance_convergence_inconsistent_albums, summary.inconsistentAlbums))
     if (summary.countMismatchAlbums > 0) lines.add(ConvergenceLine(R.string.maintenance_convergence_count_mismatch_albums, summary.countMismatchAlbums))
     if (summary.customAlbums > 0) lines.add(ConvergenceLine(R.string.maintenance_convergence_custom_albums, summary.customAlbums))
-    if (lines.isEmpty()) lines.add(ConvergenceLine(R.string.maintenance_convergence_no_change))
+    if (lines.isEmpty()) lines.add(ConvergenceLine(R.string.maintenance_pass_clean))
     return lines
 }
 
-/**
- * One expanded jobs detail line: the job name, the string resource of its WorkManager
- * state (the "Never run" fallback when the job was never enqueued) and whether the job
- * needs attention (FAILED / CANCELLED — the sheet's abnormal predicate).
- */
+/** One expanded jobs detail line: the job name, the string resource of its WorkManager state (the "Never run" fallback when the job was never enqueued) and whether the job needs attention (FAILED / CANCELLED — the sheet's abnormal predicate). */
 internal data class JobDetailLine(
     val name: String,
     val stateResId: Int?,
@@ -352,10 +392,7 @@ internal fun jobDetailLines(jobs: List<JobSnapshot>?): List<JobDetailLine> {
         }
 }
 
-/**
- * A row color key: the pure display mappings return keys instead of Compose colors so
- * they stay unit-testable; [rowColor] resolves a key to the palette color.
- */
+/** A row color key: the pure display mappings return keys instead of Compose colors so they stay unit-testable; [rowColor] resolves a key to the palette color. */
 internal enum class RowColorKey {
     /** the secondary text color (the sheet's single neutral gray) */
     Secondary,
@@ -378,12 +415,7 @@ internal fun ColorPalette.rowColor(key: RowColorKey): Color = when (key) {
     RowColorKey.Blue -> blue
 }
 
-/**
- * One expanded downloads detail line (state mapping): the title (or the "Unknown
- * Title" fallback when the download carries no readable title) plus its state label
- * and row color — waiting and in-progress in accent, failed in red, paused in blue,
- * completed in the neutral gray.
- */
+/** One expanded downloads detail line (state mapping): the title (or the "Unknown Title" fallback when the download carries no readable title) plus its state label and row color — waiting and in-progress in accent, failed in red, paused in blue, completed in the neutral gray. */
 internal data class DownloadDetailLine(
     val titleResId: Int?,
     val stateResId: Int,
@@ -421,12 +453,7 @@ internal fun downloadDetailLine(title: String?, state: Int): DownloadDetailLine 
     )
 }
 
-/**
- * The sync row, aligned with the accounts card: running keeps the sheet's own wording
- * ("Sync in progress", accent — the sheet snapshot has no operation name); the idle
- * states reuse the card's resources ("Last sync: Nmin ago" with the relative whole
- * minutes, "Never synced") in the muted color.
- */
+/** The sync row, aligned with the accounts card: running keeps the sheet's own wording ("Sync in progress", accent — the sheet snapshot has no operation name); the idle states reuse the card's resources ("Last sync: Nmin ago" with the relative whole minutes, "Never synced") in the muted color. */
 internal data class SyncRow(
     val resId: Int,
     val arg: Long? = null,
@@ -523,10 +550,7 @@ internal data class DedupGroupDisplay(
     val detailArgs2: Int? = null,
 )
 
-/**
- * Maps a persisted [DedupGroupRecord] to its display (status + short reason), so the
- * sheet stays a dumb view and the mapping is unit-tested.
- */
+/** Maps a persisted [DedupGroupRecord] to its display (status + short reason), so the sheet stays a dumb view and the mapping is unit-tested. */
 internal fun dedupGroupDisplay(record: DedupGroupRecord): DedupGroupDisplay {
     val statusResId = when (record.status) {
         DedupGroupStatus.RESOLVED -> R.string.maintenance_status_resolved
@@ -611,12 +635,7 @@ internal fun parseLastCrashBlock(content: String): Pair<String, String>? {
     return null
 }
 
-/**
- * The number of COMPLETE crash blocks in a `N-Zik_crash_log.txt` content — the same
- * completeness rule as [parseLastCrashBlock] (a timestamp line followed by the
- * `Stacktrace:` marker), so the count never includes a block cut off by a brutal
- * process death.
- */
+/** The number of COMPLETE crash blocks in a `N-Zik_crash_log.txt` content — the same completeness rule as [parseLastCrashBlock] (a timestamp line followed by the `Stacktrace:` marker), so the count never includes a block cut off by a brutal process death. */
 internal fun countCrashBlocks(content: String): Int {
     val lines = content.lines()
     var count = 0
@@ -630,10 +649,7 @@ internal fun countCrashBlocks(content: String): Int {
     return count
 }
 
-/**
- * The widest realistic cache result line ("9.3 GB used (100%)" — the largest custom cache
- * max with a full usage): the second reference of the shared status column width.
- */
+/** The widest realistic cache result line ("9.3 GB used (100%)" — the largest custom cache max with a full usage): the second reference of the shared status column width. */
 private const val CACHE_STATUS_WIDTH_REF = "9.3 GB used (100%)"
 
 /** Formats a byte count as a human-readable size (always MB, Locale.ROOT decimal). */
@@ -657,11 +673,7 @@ internal fun lastRunLine(
 ): String =
     if (timestamp == null) noDataText else "${formatTimestamp(timestamp, zone)} · $statusText"
 
-/**
- * The cache result line, aligned with the Data settings cache rows: the short file
- * size followed by " used (<pct>%)" — a zero max (Unlimited) answers
- * " used (Unlimited)" instead of a percentage.
- */
+/** The cache result line, aligned with the Data settings cache rows: the short file size followed by " used (<pct>%)" — a zero max (Unlimited) answers " used (Unlimited)" instead of a percentage. */
 @Composable
 private fun cacheUsedStatusText(context: Context, usedBytes: Long, maxBytes: Long): String {
     val used = Formatter.formatShortFileSize(context, usedBytes)
@@ -672,10 +684,7 @@ private fun cacheUsedStatusText(context: Context, usedBytes: Long, maxBytes: Lon
     }
 }
 
-/**
- * One Listen Together reading taken at refresh time (the client's StateFlows are NOT
- * observed live in the sheet — the spec reads them on open/refresh only).
- */
+/** One Listen Together reading taken at refresh time (the client's StateFlows are NOT observed live in the sheet — the spec reads them on open/refresh only). */
 internal data class ListenTogetherSnapshot(
     val stateResId: Int,
     val roleResId: Int?,
@@ -692,11 +701,15 @@ internal data class MaintenanceSnapshot(
     val dedup: MaintenanceDedupState? = null,
     val convergence: MaintenanceConvergenceState? = null,
     val dbCleanup: MaintenanceDbCleanupState? = null,
+    val downloadRevalidation: MaintenanceDownloadRevalidationState? = null,
+    val downloadSelfHeal: MaintenanceDownloadSelfHealState? = null,
     val lastSyncTime: Long = 0L,
     val libraryCounts: IntArray? = null, // [songs, artists, albums, playlists]
     /** distinct library songs with at least one playback event, null when the read failed. */
     val listenedSongs: Int? = null,
     val dbSizeBytes: Long? = null,
+    /** the active profile's settings file size, null when absent/empty or the read failed. */
+    val settingsSizeBytes: Long? = null,
     /** current/max bytes, null when the reading failed. */
     val imagesCache: Pair<Long, Long>? = null,
     /** current/max bytes, null when the reading failed. */
@@ -737,6 +750,8 @@ internal suspend fun loadMaintenanceSnapshot(context: Context): MaintenanceSnaps
         val dedup = runCatching { MaintenanceStateStore.readDedup(app) }.getOrNull()
         val convergence = runCatching { MaintenanceStateStore.readConvergence(app) }.getOrNull()
         val dbCleanup = runCatching { MaintenanceStateStore.readDbCleanup(app) }.getOrNull()
+        val downloadRevalidation = runCatching { MaintenanceStateStore.readDownloadRevalidation(app) }.getOrNull()
+        val downloadSelfHeal = runCatching { MaintenanceStateStore.readDownloadSelfHeal(app) }.getOrNull()
 
         val lastSyncTime = runCatching { getLastSyncTime() }.getOrDefault(0L)
 
@@ -754,6 +769,9 @@ internal suspend fun loadMaintenanceSnapshot(context: Context): MaintenanceSnaps
 
         // Storage: images (coil, memory), downloads (media3 cache, memory)
         val activeProfileId = getActiveProfile(app)
+        // The active profile's settings file (the profile sheet's Settings row source)
+        val settingsSizeBytes =
+            runCatching { profilePrefsFile(app, activeProfileId).length().takeIf { it > 0L } }.getOrNull()
         val imagesCache = runCatching {
             val size = preferences.getEnum(coilDiskCacheMaxSizeKey, CoilDiskCacheMaxSize.`128MB`)
             val max = if (size == CoilDiskCacheMaxSize.Custom) {
@@ -880,10 +898,13 @@ internal suspend fun loadMaintenanceSnapshot(context: Context): MaintenanceSnaps
             dedup = dedup,
             convergence = convergence,
             dbCleanup = dbCleanup,
+            downloadRevalidation = downloadRevalidation,
+            downloadSelfHeal = downloadSelfHeal,
             lastSyncTime = lastSyncTime,
             libraryCounts = libraryCounts,
             listenedSongs = listenedSongs,
             dbSizeBytes = dbSizeBytes,
+            settingsSizeBytes = settingsSizeBytes,
             imagesCache = imagesCache,
             downloadsCache = downloadsCache,
             downloadsCacheDisabled = downloadsCacheDisabled,
@@ -945,6 +966,8 @@ fun MaintenanceSheet(
     var dedupExpanded by remember { mutableStateOf(false) }
     var convergenceExpanded by remember { mutableStateOf(false) }
     var dbCleanupExpanded by remember { mutableStateOf(false) }
+    var downloadRevalidationExpanded by remember { mutableStateOf(false) }
+    var downloadSelfHealExpanded by remember { mutableStateOf(false) }
     var jobsExpanded by remember { mutableStateOf(false) }
     var downloadsExpanded by remember { mutableStateOf(false) }
 
@@ -954,7 +977,10 @@ fun MaintenanceSheet(
     // the sheet is visible — the values simply update in place between opens. The rest of
     // the state is a snapshot loaded at open/refresh.
     val syncStatus by syncStatus.collectAsStateWithLifecycle()
-    val downloads by MyDownloadHelper.downloads.collectAsStateWithLifecycle()
+    // Session-scoped: the Downloads row resets to empty on every process start (the
+    // persistent library stays in MyDownloadHelper.downloads, used by the badges and
+    // the download manager UI)
+    val downloads by MyDownloadHelper.sessionDownloads.collectAsStateWithLifecycle()
     val discordError by DiscordRpcErrorState.error.collectAsStateWithLifecycle()
     val updateState by UpdateDownloadManager.downloadState.collectAsStateWithLifecycle()
 
@@ -978,11 +1004,13 @@ fun MaintenanceSheet(
     // "No data" (never ran / unreadable state) vs "no groups detected" (ran, found none):
     // the expanded detail must not claim a detection when there is no state to detect from
     val dedupNoData = dedup == null
-    val dedupSummary = lastRunLine(
-        dedup?.timestamp,
-        passStatusText(dedupStatusRes(dedup)),
-        stringResource(R.string.maintenance_no_data),
-    )
+    val dedupPassStatus = dedupStatusRes(dedup)
+    val dedupStatusText = passStatusText(dedupPassStatus)
+    val dedupSummary = lastRunLine(dedup?.timestamp, dedupStatusText, stringResource(R.string.maintenance_no_data))
+    // The expansion's top summary line: the status repeated on one line above the per-section
+    // detail (user decision 2026-10-23) — null for the fixed sentences, which the expansion
+    // already shows
+    val dedupSummaryLine = dedupStatusText.takeIf { passHasState(dedupPassStatus) }
     val dedupGroups = ArrayList<GroupLine>()
     if (dedupExpanded) {
         val groups = dedup?.records?.sortedBy { it.name.lowercase(Locale.ROOT) }.orEmpty()
@@ -1002,12 +1030,11 @@ fun MaintenanceSheet(
         }
     }
     val convergence = snap?.convergence
-    val convergenceStatus = lastRunLine(
-        convergence?.timestamp,
-        passStatusText(convergenceStatusRes(convergence)),
-        stringResource(R.string.maintenance_no_data),
-    )
-    // Expanded convergence detail (the "N copies rewritten" row stays the main status)
+    val convergencePassStatus = convergenceStatusRes(convergence)
+    val convergenceStatusText = passStatusText(convergencePassStatus)
+    val convergenceStatus = lastRunLine(convergence?.timestamp, convergenceStatusText, stringResource(R.string.maintenance_no_data))
+    val convergenceSummaryLine = convergenceStatusText.takeIf { passHasState(convergencePassStatus) }
+    // Expanded convergence detail: the status on one line on top, the per-reason counters underneath
     val convergenceDetails = convergenceDetailLines(convergence?.summary).map { line ->
         val count = line.count
         if (count != null) {
@@ -1019,11 +1046,10 @@ fun MaintenanceSheet(
     // The row carries the "date · status" line; the expansion lists the links removed by
     // the last run (one line per link, like the dedup groups)
     val dbCleanup = snap?.dbCleanup
-    val dbCleanupStatus = lastRunLine(
-        dbCleanup?.timestamp,
-        passStatusText(dbCleanupStatusRes(dbCleanup)),
-        stringResource(R.string.maintenance_no_data),
-    )
+    val dbCleanupPassStatus = dbCleanupStatusRes(dbCleanup)
+    val dbCleanupStatusText = passStatusText(dbCleanupPassStatus)
+    val dbCleanupStatus = lastRunLine(dbCleanup?.timestamp, dbCleanupStatusText, stringResource(R.string.maintenance_no_data))
+    val dbCleanupSummaryLine = dbCleanupStatusText.takeIf { passHasState(dbCleanupPassStatus) }
     val dbCleanupLines = dbCleanupLines(dbCleanup)
     val dbCleanupEmpty = dbCleanupEmptyRes(dbCleanup)
     val dbCleanupEmptyArg = dbCleanupEmpty.second
@@ -1031,6 +1057,37 @@ fun MaintenanceSheet(
         stringResource(dbCleanupEmpty.first, dbCleanupEmptyArg)
     } else {
         stringResource(dbCleanupEmpty.first)
+    }
+    // Download re-validation (S1): the row carries the "date · status" line; the
+    // expansion lists the stale tracks removed by the last startup (one line per
+    // track, like the dedup groups)
+    val downloadRevalidation = snap?.downloadRevalidation
+    val downloadRevalidationPassStatus = downloadRevalidationStatusRes(downloadRevalidation)
+    val downloadRevalidationStatusText = passStatusText(downloadRevalidationPassStatus)
+    val downloadRevalidationStatus = lastRunLine(downloadRevalidation?.timestamp, downloadRevalidationStatusText, stringResource(R.string.maintenance_no_data))
+    val downloadRevalidationSummaryLine = downloadRevalidationStatusText.takeIf { passHasState(downloadRevalidationPassStatus) }
+    val downloadRevalidationLines = downloadRevalidationLines(downloadRevalidation)
+    val downloadRevalidationEmpty = downloadRevalidationEmptyRes(downloadRevalidation)
+    val downloadRevalidationEmptyArg = downloadRevalidationEmpty.second
+    val downloadRevalidationEmptyText = if (downloadRevalidationEmptyArg != null) {
+        stringResource(downloadRevalidationEmpty.first, downloadRevalidationEmptyArg)
+    } else {
+        stringResource(downloadRevalidationEmpty.first)
+    }
+    // Download self-heal (S2): every startup run persists a dated state (clean = nothing
+    // to heal), a real self-heal overwrites it with the healed track
+    val downloadSelfHeal = snap?.downloadSelfHeal
+    val downloadSelfHealPassStatus = downloadSelfHealStatusRes(downloadSelfHeal)
+    val downloadSelfHealStatusText = passStatusText(downloadSelfHealPassStatus)
+    val downloadSelfHealStatus = lastRunLine(downloadSelfHeal?.timestamp, downloadSelfHealStatusText, stringResource(R.string.maintenance_no_data))
+    val downloadSelfHealSummaryLine = downloadSelfHealStatusText.takeIf { passHasState(downloadSelfHealPassStatus) }
+    val downloadSelfHealLines = downloadSelfHealLines(downloadSelfHeal)
+    // A missing state is genuinely "no data" (before the first startup run); a startup
+    // clean run shows the shared clean sentence instead
+    val downloadSelfHealEmptyText = if (downloadSelfHeal == null) {
+        stringResource(R.string.maintenance_no_data)
+    } else {
+        stringResource(R.string.maintenance_pass_clean)
     }
     // Aligned with the accounts card: running keeps the sheet's own wording (the snapshot
     // has no operation name); idle reuses the card's resources in the muted color
@@ -1054,6 +1111,9 @@ fun MaintenanceSheet(
         append(parts.joinToString(" · "))
     }
     val dbSizeStatus = snap?.dbSizeBytes?.let { formatBytes(it) }
+        ?: stringResource(R.string.maintenance_no_data)
+    // The active profile's settings size, the profile sheet's Settings row value
+    val settingsStatus = snap?.settingsSizeBytes?.let { formatBytes(it) }
         ?: stringResource(R.string.maintenance_no_data)
     // Cache rows, aligned with the Data settings cache lines: the settings label is
     // the row title, the "<size> used (<pct>%)" result is the right status (the shared
@@ -1086,7 +1146,7 @@ fun MaintenanceSheet(
         songCacheSize == null -> stringResource(R.string.maintenance_no_data)
         else -> cacheUsedStatusText(context, songCacheSize, songCacheMax)
     }
-    // Downloads (live map; the pause flag comes from the persisted state)
+    // Downloads (session map — empty at process start; the pause flag comes from the persisted state)
     val downloadStates = downloads.values.map { it.state }
     val downloadsInProgress = downloadStates.count {
         it == Download.STATE_QUEUED || it == Download.STATE_DOWNLOADING || it == Download.STATE_RESTARTING
@@ -1271,17 +1331,29 @@ fun MaintenanceSheet(
         dedupSummary = dedupSummary,
         dedupNoData = dedupNoData,
         dedupGroups = dedupGroups,
+        dedupSummaryLine = dedupSummaryLine,
         convergenceStatus = convergenceStatus,
         convergenceColor = palette.textSecondary,
         convergenceDetails = convergenceDetails,
+        convergenceSummaryLine = convergenceSummaryLine,
         dbCleanupStatus = dbCleanupStatus,
         dbCleanupColor = palette.textSecondary,
         dbCleanupLines = dbCleanupLines,
         dbCleanupEmptyText = dbCleanupEmptyText,
+        dbCleanupSummaryLine = dbCleanupSummaryLine,
+        downloadRevalidationStatus = downloadRevalidationStatus,
+        downloadRevalidationLines = downloadRevalidationLines,
+        downloadRevalidationEmptyText = downloadRevalidationEmptyText,
+        downloadRevalidationSummaryLine = downloadRevalidationSummaryLine,
+        downloadSelfHealStatus = downloadSelfHealStatus,
+        downloadSelfHealLines = downloadSelfHealLines,
+        downloadSelfHealEmptyText = downloadSelfHealEmptyText,
+        downloadSelfHealSummaryLine = downloadSelfHealSummaryLine,
         syncStatus = syncStatusText,
         syncColor = syncRowColor,
         libraryStatus = libraryStatus,
         dbSizeStatus = dbSizeStatus,
+        settingsStatus = settingsStatus,
         imagesStatus = imagesStatus,
         songCacheStatus = songCacheStatus,
         downloadsCacheStatus = downloadsCacheStatus,
@@ -1367,6 +1439,10 @@ fun MaintenanceSheet(
                 onToggleConvergence = { convergenceExpanded = !convergenceExpanded },
                 dbCleanupExpanded = dbCleanupExpanded,
                 onToggleDbCleanup = { dbCleanupExpanded = !dbCleanupExpanded },
+                downloadRevalidationExpanded = downloadRevalidationExpanded,
+                onToggleDownloadRevalidation = { downloadRevalidationExpanded = !downloadRevalidationExpanded },
+                downloadSelfHealExpanded = downloadSelfHealExpanded,
+                onToggleDownloadSelfHeal = { downloadSelfHealExpanded = !downloadSelfHealExpanded },
                 jobsExpanded = jobsExpanded,
                 onToggleJobs = { jobsExpanded = !jobsExpanded },
                 downloadsExpanded = downloadsExpanded,
@@ -1383,28 +1459,36 @@ fun MaintenanceSheet(
     }
 }
 
-/**
- * One-line-per-value display model of the Maintenance menu rows, resolved in the sheet
- * body (composable context): each row carries its single-line status and its status
- * color (the LT menu's shared content pattern).
- */
+/** One-line-per-value display model of the Maintenance menu rows, resolved in the sheet body (composable context): each row carries its single-line status and its status color (the LT menu's shared content pattern). */
 private class MaintenanceMenuContent(
     // Boot passes
     val dedupSummary: String,
     val dedupNoData: Boolean,
     val dedupGroups: List<GroupLine>,
+    val dedupSummaryLine: String?,
     val convergenceStatus: String,
     val convergenceColor: Color,
     val convergenceDetails: List<ConvergenceDetail>,
+    val convergenceSummaryLine: String?,
     val dbCleanupStatus: String,
     val dbCleanupColor: Color,
     val dbCleanupLines: List<GroupLine>,
     val dbCleanupEmptyText: String,
+    val dbCleanupSummaryLine: String?,
+    val downloadRevalidationStatus: String,
+    val downloadRevalidationLines: List<GroupLine>,
+    val downloadRevalidationEmptyText: String,
+    val downloadRevalidationSummaryLine: String?,
+    val downloadSelfHealStatus: String,
+    val downloadSelfHealLines: List<GroupLine>,
+    val downloadSelfHealEmptyText: String,
+    val downloadSelfHealSummaryLine: String?,
     // Subsystems
     val syncStatus: String,
     val syncColor: Color,
     val libraryStatus: String,
     val dbSizeStatus: String,
+    val settingsStatus: String,
     val imagesStatus: String,
     val songCacheStatus: String,
     val downloadsCacheStatus: String,
@@ -1443,10 +1527,7 @@ private class MaintenanceMenuContent(
     val onExportLogs: () -> Unit,
 )
 
-/**
- * One expanded detail row of a chevron line (name + status): shared by the dedup
- * group list and the artist-link-cleanup removed-link list.
- */
+/** One expanded detail row of a chevron line (name + status): shared by the dedup group list, the artist-link-cleanup removed-link list, the download re-validation removed-track list and the download self-heal healed-track line. */
 internal data class GroupLine(
     val name: String,
     val status: String,
@@ -1471,11 +1552,7 @@ private data class DownloadDetail(
     val color: Color,
 )
 
-/**
- * List rendering: [ListMenu.Menu] + accent section titles + [ListMenu.Entry] rows, each
- * with its 32dp icon chip and its right-aligned colored status (dot + text, the LT
- * ConnectionStatusRow pattern).
- */
+/** List rendering: [ListMenu.Menu] + accent section titles + [ListMenu.Entry] rows, each with its 32dp icon chip and its right-aligned colored status (dot + text, the LT ConnectionStatusRow pattern). */
 @Composable
 private fun ColumnScope.MaintenanceListContent(
     content: MaintenanceMenuContent,
@@ -1485,6 +1562,10 @@ private fun ColumnScope.MaintenanceListContent(
     onToggleConvergence: () -> Unit,
     dbCleanupExpanded: Boolean,
     onToggleDbCleanup: () -> Unit,
+    downloadRevalidationExpanded: Boolean,
+    onToggleDownloadRevalidation: () -> Unit,
+    downloadSelfHealExpanded: Boolean,
+    onToggleDownloadSelfHeal: () -> Unit,
     jobsExpanded: Boolean,
     onToggleJobs: () -> Unit,
     downloadsExpanded: Boolean,
@@ -1533,10 +1614,10 @@ private fun ColumnScope.MaintenanceListContent(
         if (content.dedupGroups.isEmpty()) {
             Text(
                 // No state at all (never ran / unreadable) answers "No data"; a readable
-                // state without groups answers "No groups detected"
+                // state without groups answers the shared clean sentence
                 text = stringResource(
                     if (content.dedupNoData) R.string.maintenance_no_data
-                    else R.string.maintenance_dedup_no_groups
+                    else R.string.maintenance_pass_clean
                 ),
                 style = typography().xs,
                 color = palette.textSecondary,
@@ -1546,6 +1627,7 @@ private fun ColumnScope.MaintenanceListContent(
             )
         } else {
             Column {
+                PassSummaryLine(content.dedupSummaryLine, palette.textSecondary)
                 for (line in content.dedupGroups) {
                     Row(
                         modifier = Modifier.fillMaxWidth()
@@ -1597,6 +1679,7 @@ private fun ColumnScope.MaintenanceListContent(
         exit = settingsEntryExit,
     ) {
         Column {
+            PassSummaryLine(content.convergenceSummaryLine, palette.textSecondary)
             for (line in content.convergenceDetails) {
                 Text(
                     text = line.text,
@@ -1611,7 +1694,7 @@ private fun ColumnScope.MaintenanceListContent(
     }
     // Artist link cleanup: expandable row (chevron trailing, the removed links listed
     // underneath — same "summary on top, detail list underneath" shape as dedup and
-    // convergence, so the three chevron rows open/close consistently)
+    // convergence, so the five Database rows open/close consistently)
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_db_cleanup),
         icon = { SettingIcon(R.drawable.data_migration, palette.accent) },
@@ -1647,7 +1730,135 @@ private fun ColumnScope.MaintenanceListContent(
             )
         } else {
             Column {
+                PassSummaryLine(content.dbCleanupSummaryLine, palette.textSecondary)
                 for (line in content.dbCleanupLines) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(start = detailListIndent)
+                            .padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = line.name,
+                            style = typography().xs,
+                            color = palette.text,
+                            maxLines = 1,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Text(
+                            text = line.status,
+                            style = typography().xs,
+                            color = palette.textSecondary,
+                            maxLines = 1,
+                        )
+                    }
+                }
+            }
+        }
+    }
+    // Download re-validation (S1): expandable row (chevron trailing, the stale tracks
+    // removed by the last startup listed underneath — same "summary on top, detail
+    // list underneath" shape as the other chevron rows above)
+    ListMenu.Entry(
+        text = stringResource(R.string.maintenance_download_revalidation),
+        icon = { SettingIcon(R.drawable.download, palette.accent) },
+        trailingContent = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                StatusTrailing(content.downloadRevalidationStatus, palette.textSecondary, statusColumnWidth)
+                Icon(
+                    painter = painterResource(if (downloadRevalidationExpanded) R.drawable.chevron_up else R.drawable.chevron_down),
+                    contentDescription = null,
+                    tint = palette.textSecondary,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+        },
+        onClick = onToggleDownloadRevalidation,
+    )
+    AnimatedVisibility(
+        visible = downloadRevalidationExpanded,
+        enter = settingsEntryEnter,
+        exit = settingsEntryExit,
+    ) {
+        if (content.downloadRevalidationLines.isEmpty()) {
+            Text(
+                text = content.downloadRevalidationEmptyText,
+                style = typography().xs,
+                color = palette.textSecondary,
+                modifier = Modifier.fillMaxWidth()
+                    .padding(start = detailListIndent)
+                    .padding(vertical = 6.dp),
+            )
+        } else {
+            Column {
+                PassSummaryLine(content.downloadRevalidationSummaryLine, palette.textSecondary)
+                for (line in content.downloadRevalidationLines) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(start = detailListIndent)
+                            .padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = line.name,
+                            style = typography().xs,
+                            color = palette.text,
+                            maxLines = 1,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Text(
+                            text = line.status,
+                            style = typography().xs,
+                            color = palette.textSecondary,
+                            maxLines = 1,
+                        )
+                    }
+                }
+            }
+        }
+    }
+    // Download self-heal (S2): expandable row (chevron trailing, the healed track
+    // underneath — the clean sentence until the first self-heal)
+    ListMenu.Entry(
+        text = stringResource(R.string.maintenance_download_self_heal),
+        icon = { SettingIcon(R.drawable.refresh, palette.accent) },
+        trailingContent = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                StatusTrailing(content.downloadSelfHealStatus, palette.textSecondary, statusColumnWidth)
+                Icon(
+                    painter = painterResource(if (downloadSelfHealExpanded) R.drawable.chevron_up else R.drawable.chevron_down),
+                    contentDescription = null,
+                    tint = palette.textSecondary,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+        },
+        onClick = onToggleDownloadSelfHeal,
+    )
+    AnimatedVisibility(
+        visible = downloadSelfHealExpanded,
+        enter = settingsEntryEnter,
+        exit = settingsEntryExit,
+    ) {
+        if (content.downloadSelfHealLines.isEmpty()) {
+            Text(
+                text = content.downloadSelfHealEmptyText,
+                style = typography().xs,
+                color = palette.textSecondary,
+                modifier = Modifier.fillMaxWidth()
+                    .padding(start = detailListIndent)
+                    .padding(vertical = 6.dp),
+            )
+        } else {
+            Column {
+                PassSummaryLine(content.downloadSelfHealSummaryLine, palette.textSecondary)
+                for (line in content.downloadSelfHealLines) {
                     Row(
                         modifier = Modifier.fillMaxWidth()
                             .padding(start = detailListIndent)
@@ -1682,6 +1893,13 @@ private fun ColumnScope.MaintenanceListContent(
         text = stringResource(R.string.maintenance_library),
         icon = { SettingIcon(R.drawable.library, palette.accent) },
         trailingContent = { StatusTrailing(content.libraryStatus, palette.textSecondary, statusColumnWidth) },
+    )
+    // Active profile's settings size (the profile sheet's Settings row source, labeled
+    // "Settings size" like the "Database size" row)
+    ListMenu.Entry(
+        text = stringResource(R.string.maintenance_settings_size),
+        icon = { SettingIcon(R.drawable.settings, palette.accent) },
+        trailingContent = { StatusTrailing(content.settingsStatus, palette.textSecondary, statusColumnWidth) },
     )
     // DB file size: its own row (separated from the library counts)
     ListMenu.Entry(
@@ -1960,10 +2178,7 @@ private fun ColumnScope.MaintenanceListContent(
     )
 }
 
-/**
- * Accent section title, same styling as the app's own item menus: xxs semiBold accent
- * text with 12dp vertical / 4dp horizontal padding.
- */
+/** Accent section title, same styling as the app's own item menus: xxs semiBold accent text with 12dp vertical / 4dp horizontal padding. */
 @Composable
 private fun MenuSectionTitle(title: String) {
     BasicText(
@@ -1977,6 +2192,21 @@ private fun MenuSectionTitle(title: String) {
                 .fillMaxWidth()
                 .padding(vertical = 12.dp, horizontal = 4.dp),
     )
+}
+
+/** The top line of an expanded boot-pass detail: the row's status repeated on one line above the per-section breakdown — the state words and their totals stay visible in the detail (user decision 2026-10-23). Null (the fixed "No data" / "Nothing to clean" sentences) renders nothing: the expansion already shows that sentence. */
+@Composable
+private fun PassSummaryLine(text: String?, color: Color) {
+    if (text != null) {
+        Text(
+            text = text,
+            style = typography().xs,
+            color = color,
+            modifier = Modifier.fillMaxWidth()
+                .padding(start = detailListIndent)
+                .padding(vertical = 2.dp),
+        )
+    }
 }
 
 /**
@@ -2017,10 +2247,7 @@ private fun StatusTrailing(status: String, color: Color, columnWidth: Dp) {
     }
 }
 
-/**
- * Standard menu icon chip (same pattern as the app's own menus): tinted rounded 32dp
- * square with an 18dp icon.
- */
+/** Standard menu icon chip (same pattern as the app's own menus): tinted rounded 32dp square with an 18dp icon. */
 @Composable
 private fun SettingIcon(@DrawableRes icon: Int, color: Color) {
     Box(

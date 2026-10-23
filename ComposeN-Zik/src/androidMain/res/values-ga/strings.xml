@@ -2103,9 +2103,6 @@
     <string name="maintenance_refresh">Refresh</string>
     <string name="maintenance_no_data">No data</string>
     <string name="maintenance_dedup">Same-name artist dedup</string>
-    <string name="maintenance_dedup_summary">%1$d groups · %2$d resolved · %3$d skipped</string>
-    <string name="maintenance_dedup_clean">Nothing to dedup</string>
-    <string name="maintenance_dedup_no_groups">No same-name groups detected</string>
     <string name="maintenance_dedup_merged">Merged %d row(s)</string>
     <string name="maintenance_dedup_flagged">Flagged %d row(s)</string>
     <string name="maintenance_dedup_merged_flagged">Merged %1$d row(s) · Flagged %2$d row(s)</string>
@@ -2118,8 +2115,6 @@
     <string name="maintenance_skip_no_candidate">No unanimous candidate</string>
     <string name="maintenance_skip_network_failure">Network failure (retried next launch)</string>
     <string name="maintenance_convergence">Name convergence</string>
-    <string name="maintenance_convergence_changed">%d copies rewritten</string>
-    <string name="maintenance_convergence_no_change">Already converged</string>
     <string name="maintenance_convergence_copies_rewritten">%d copies rewritten</string>
     <string name="maintenance_convergence_unbacked_songs">%d unbacked songs</string>
     <string name="maintenance_convergence_unlinked_songs">%d unlinked songs</string>
@@ -2129,10 +2124,6 @@
     <string name="maintenance_convergence_count_mismatch_albums">%d count-mismatched albums</string>
     <string name="maintenance_convergence_custom_albums">%d custom albums</string>
     <string name="maintenance_db_cleanup">Artist link cleanup</string>
-    <string name="maintenance_db_cleanup_removed">%d stale link(s) removed</string>
-    <string name="maintenance_db_cleanup_clean">Nothing to clean</string>
-    <string name="maintenance_db_cleanup_detail_removed">Last run removed %d stale link(s)</string>
-    <string name="maintenance_db_cleanup_detail_clean">Last run found nothing to clean</string>
     <string name="maintenance_migration_done">Déanta</string>
     <string name="maintenance_live_subsystems">Live subsystems</string>
     <string name="maintenance_sync_ytm">YTM sync</string>

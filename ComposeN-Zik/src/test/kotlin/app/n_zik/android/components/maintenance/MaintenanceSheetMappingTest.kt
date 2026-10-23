@@ -9,10 +9,12 @@ import app.n_zik.android.core.maintenance.DedupGroupStatus
 import app.n_zik.android.core.maintenance.DedupSkipReason
 import app.n_zik.android.core.maintenance.DbCleanupLinkRecord
 import app.n_zik.android.core.maintenance.MaintenanceConvergenceState
+import app.n_zik.android.core.maintenance.DownloadRevalidationRecord
 import app.n_zik.android.core.maintenance.MaintenanceDbCleanupState
+import app.n_zik.android.core.maintenance.MaintenanceDownloadRevalidationState
+import app.n_zik.android.core.maintenance.MaintenanceDownloadSelfHealState
 import app.n_zik.android.core.maintenance.MaintenanceDedupState
 import app.n_zik.android.updater.services.UpdateDownloadManager
-import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -170,13 +172,13 @@ class MaintenanceSheetMappingTest {
     fun dbCleanupEmptyResMapsNoDataCleanAndCounterSentence() {
         assertEquals(R.string.maintenance_no_data to null, dbCleanupEmptyRes(null))
         assertEquals(
-            R.string.maintenance_db_cleanup_detail_clean to null,
+            R.string.maintenance_pass_clean to null,
             dbCleanupEmptyRes(MaintenanceDbCleanupState(timestamp = 1L, removed = 0)),
         )
         // A state predating per-link records (no `links` array) still answers the
         // counter sentence — now with its argument (the literal `%d` bug)
         assertEquals(
-            R.string.maintenance_db_cleanup_detail_removed to 3,
+            R.string.maintenance_pass_cleaned to 3,
             dbCleanupEmptyRes(MaintenanceDbCleanupState(timestamp = 1L, removed = 3)),
         )
     }
@@ -202,15 +204,69 @@ class MaintenanceSheetMappingTest {
         assertTrue(dbCleanupLines(null).isEmpty())
     }
 
+    // ---- download re-validation (S1) / self-heal (S2) rows ----
+
+    @Test
+    fun downloadRevalidationLinesMapsOneLinePerRemovedTrack() {
+        val state = MaintenanceDownloadRevalidationState(
+            timestamp = 1L,
+            removed = 2,
+            removedTracks = listOf(
+                DownloadRevalidationRecord("ABXtWqmArUU", "Artist X - Song A"),
+                DownloadRevalidationRecord("na47wMFfQCo", "na47wMFfQCo"),
+            ),
+        )
+
+        val lines = downloadRevalidationLines(state)
+
+        assertEquals(2, lines.size)
+        assertEquals("Artist X - Song A", lines[0].name)
+        assertEquals("ABXtWqmArUU", lines[0].status)
+        assertEquals("na47wMFfQCo", lines[1].name)
+        assertEquals("na47wMFfQCo", lines[1].status)
+        assertTrue(downloadRevalidationLines(null).isEmpty())
+    }
+
+    @Test
+    fun downloadRevalidationEmptyResMapsNoDataCleanAndCounterSentence() {
+        assertEquals(R.string.maintenance_no_data to null, downloadRevalidationEmptyRes(null))
+        assertEquals(
+            R.string.maintenance_pass_clean to null,
+            downloadRevalidationEmptyRes(MaintenanceDownloadRevalidationState(timestamp = 1L, removed = 0)),
+        )
+        assertEquals(
+            R.string.maintenance_pass_cleaned to 3,
+            downloadRevalidationEmptyRes(MaintenanceDownloadRevalidationState(timestamp = 1L, removed = 3)),
+        )
+    }
+
+    @Test
+    fun downloadSelfHealLinesMapsOnlyTheHealedTrack() {
+        val lines = downloadSelfHealLines(
+            MaintenanceDownloadSelfHealState(timestamp = 1L, mediaId = "ABXtWqmArUU", title = "Artist X - Song A"),
+        )
+
+        assertEquals(1, lines.size)
+        assertEquals("Artist X - Song A", lines[0].name)
+        assertEquals("ABXtWqmArUU", lines[0].status)
+        assertTrue(downloadSelfHealLines(null).isEmpty())
+        // The startup clean run has no lines (the expanded row shows the clean sentence)
+        assertTrue(
+            downloadSelfHealLines(MaintenanceDownloadSelfHealState(timestamp = 1L, mediaId = "", title = "")).isEmpty()
+        )
+    }
+
     // ---- shared pass-status cells (the settings card's table reuses them) ----
 
     @Test
-    fun dedupStatusResMapsSummaryCountersCleanAndNoData() {
+    fun dedupStatusResListsEveryNonZeroStateSeparately() {
         val noData = dedupStatusRes(null)
-        assertEquals(R.string.maintenance_no_data, noData.first)
-        assertNull(noData.second)
+        assertEquals(listOf(PassStatusPart(R.string.maintenance_no_data)), noData.parts)
 
-        val pair = dedupStatusRes(
+        // One part per non-zero STATE, in fixed order (cleaned / skipped / deferred) —
+        // the states are never combined into one word (user decision 2026-10-23);
+        // cleaned counts the groups actually resolved (primary plus song-fallback)
+        val mixed = dedupStatusRes(
             MaintenanceDedupState(
                 timestamp = 1L,
                 groups = 4,
@@ -224,11 +280,39 @@ class MaintenanceSheetMappingTest {
                 records = emptyList(),
             ),
         )
-        assertEquals(R.string.maintenance_dedup_summary, pair.first)
-        assertArrayEquals(intArrayOf(4, 2, 1), pair.second)
+        assertEquals(
+            listOf(
+                PassStatusPart(R.string.maintenance_pass_cleaned, 3),
+                PassStatusPart(R.string.maintenance_pass_skipped, 1),
+            ),
+            mixed.parts,
+        )
 
-        // An empty run answers the clean sentence (the "Nothing to clean" pattern),
-        // not a "0 groups · 0 resolved · 0 skipped" counter line
+        // Skipped and deferred are two distinct words, never one combined counter —
+        // the per-group reasons stay in the expansion lines
+        val skippedAndDeferred = dedupStatusRes(
+            MaintenanceDedupState(
+                timestamp = 1L,
+                groups = 3,
+                resolved = 0,
+                songResolved = 0,
+                merged = 0,
+                flagged = 0,
+                skipped = 2,
+                deferred = 1,
+                localKept = 0,
+                records = emptyList(),
+            ),
+        )
+        assertEquals(
+            listOf(
+                PassStatusPart(R.string.maintenance_pass_skipped, 2),
+                PassStatusPart(R.string.maintenance_pass_deferred, 1),
+            ),
+            skippedAndDeferred.parts,
+        )
+
+        // An empty run answers the clean sentence, not a "0 · 0 · 0" counter line
         val clean = dedupStatusRes(
             MaintenanceDedupState(
                 timestamp = 1L,
@@ -243,52 +327,104 @@ class MaintenanceSheetMappingTest {
                 records = emptyList(),
             ),
         )
-        assertEquals(R.string.maintenance_dedup_clean, clean.first)
-        assertNull(clean.second)
+        assertEquals(listOf(PassStatusPart(R.string.maintenance_pass_clean)), clean.parts)
     }
 
     @Test
-    fun convergenceStatusResMapsChangedNoChangeAndNoData() {
+    fun convergenceStatusResListsEveryNonZeroStateSeparately() {
         val noData = convergenceStatusRes(null)
-        assertEquals(R.string.maintenance_no_data, noData.first)
-        assertNull(noData.second)
+        assertEquals(listOf(PassStatusPart(R.string.maintenance_no_data)), noData.parts)
 
+        // Cleaned = the copies actually rewritten (the per-reason words stay in the
+        // expansion lines)
         val changed = convergenceStatusRes(
             MaintenanceConvergenceState(1L, ConvergenceSummary(3, 0, 0, 0, 0, 0, 0, 0)),
         )
-        assertEquals(R.string.maintenance_convergence_changed, changed.first)
-        assertArrayEquals(intArrayOf(3), changed.second)
+        assertEquals(listOf(PassStatusPart(R.string.maintenance_pass_cleaned, 3)), changed.parts)
+
+        // Found but nothing corrected: the shared skipped state, all per-reason skips
+        // combined into one counter — the expansion lines keep the per-reason breakdown
+        val skippedMixed = convergenceStatusRes(
+            MaintenanceConvergenceState(1L, ConvergenceSummary(0, 1, 0, 0, 0, 1, 0, 0)),
+        )
+        assertEquals(listOf(PassStatusPart(R.string.maintenance_pass_skipped, 2)), skippedMixed.parts)
+
+        // All seven per-reason skips non-zero: combined into a single counter of 7
+        val allSkips = convergenceStatusRes(
+            MaintenanceConvergenceState(1L, ConvergenceSummary(0, 1, 1, 1, 1, 1, 1, 1)),
+        )
+        assertEquals(listOf(PassStatusPart(R.string.maintenance_pass_skipped, 7)), allSkips.parts)
+
+        // Cleaned and skipped coexist as two separate parts
+        val mixed = convergenceStatusRes(
+            MaintenanceConvergenceState(1L, ConvergenceSummary(2, 0, 1, 0, 0, 0, 0, 0)),
+        )
+        assertEquals(
+            listOf(
+                PassStatusPart(R.string.maintenance_pass_cleaned, 2),
+                PassStatusPart(R.string.maintenance_pass_skipped, 1),
+            ),
+            mixed.parts,
+        )
 
         val clean = convergenceStatusRes(
-            MaintenanceConvergenceState(1L, ConvergenceSummary(0, 1, 0, 0, 0, 0, 0, 0)),
+            MaintenanceConvergenceState(1L, ConvergenceSummary(0, 0, 0, 0, 0, 0, 0, 0)),
         )
-        assertEquals(R.string.maintenance_convergence_no_change, clean.first)
-        assertNull(clean.second)
+        assertEquals(listOf(PassStatusPart(R.string.maintenance_pass_clean)), clean.parts)
     }
 
     @Test
     fun dbCleanupStatusResMapsRemovedCleanAndNoData() {
-        val noData = dbCleanupStatusRes(null)
-        assertEquals(R.string.maintenance_no_data, noData.first)
-        assertNull(noData.second)
+        // Removal-only pass: a single counter part, never several
+        assertEquals(listOf(PassStatusPart(R.string.maintenance_no_data)), dbCleanupStatusRes(null).parts)
+        assertEquals(
+            listOf(PassStatusPart(R.string.maintenance_pass_cleaned, 2)),
+            dbCleanupStatusRes(MaintenanceDbCleanupState(timestamp = 1L, removed = 2)).parts,
+        )
+        assertEquals(
+            listOf(PassStatusPart(R.string.maintenance_pass_clean)),
+            dbCleanupStatusRes(MaintenanceDbCleanupState(timestamp = 1L, removed = 0)).parts,
+        )
+    }
 
-        val removed = dbCleanupStatusRes(MaintenanceDbCleanupState(timestamp = 1L, removed = 2))
-        assertEquals(R.string.maintenance_db_cleanup_removed, removed.first)
-        assertArrayEquals(intArrayOf(2), removed.second)
+    @Test
+    fun downloadRevalidationStatusResMapsRemovedCleanAndNoData() {
+        assertEquals(listOf(PassStatusPart(R.string.maintenance_no_data)), downloadRevalidationStatusRes(null).parts)
+        assertEquals(
+            listOf(PassStatusPart(R.string.maintenance_pass_cleaned, 2)),
+            downloadRevalidationStatusRes(MaintenanceDownloadRevalidationState(timestamp = 1L, removed = 2)).parts,
+        )
+        assertEquals(
+            listOf(PassStatusPart(R.string.maintenance_pass_clean)),
+            downloadRevalidationStatusRes(MaintenanceDownloadRevalidationState(timestamp = 1L, removed = 0)).parts,
+        )
+    }
 
-        val clean = dbCleanupStatusRes(MaintenanceDbCleanupState(timestamp = 1L, removed = 0))
-        assertEquals(R.string.maintenance_db_cleanup_clean, clean.first)
-        assertNull(clean.second)
+    @Test
+    fun downloadSelfHealStatusResMapsNoDataCleanAndHealed() {
+        // A missing state is "No data" (before the first startup run)
+        assertEquals(listOf(PassStatusPart(R.string.maintenance_no_data)), downloadSelfHealStatusRes(null).parts)
+
+        // The startup clean run (empty mediaId) answers the clean sentence
+        val clean = downloadSelfHealStatusRes(
+            MaintenanceDownloadSelfHealState(timestamp = 1L, mediaId = "", title = ""),
+        )
+        assertEquals(listOf(PassStatusPart(R.string.maintenance_pass_clean)), clean.parts)
+
+        val healed = downloadSelfHealStatusRes(
+            MaintenanceDownloadSelfHealState(timestamp = 1L, mediaId = "ABXtWqmArUU", title = "Artist X - Song A"),
+        )
+        assertEquals(listOf(PassStatusPart(R.string.maintenance_pass_cleaned, 1)), healed.parts)
     }
 
     // ---- convergence detail lines (the expanded convergence row) ----
 
     @Test
-    fun allZeroConvergenceSummaryShowsTheNoChangeLine() {
+    fun allZeroConvergenceSummaryShowsTheSharedCleanLine() {
         val lines = convergenceDetailLines(ConvergenceSummary(0, 0, 0, 0, 0, 0, 0, 0))
 
         assertEquals(1, lines.size)
-        assertEquals(R.string.maintenance_convergence_no_change, lines[0].resId)
+        assertEquals(R.string.maintenance_pass_clean, lines[0].resId)
         assertNull(lines[0].count)
     }
 
@@ -334,6 +470,78 @@ class MaintenanceSheetMappingTest {
         assertEquals(1, lines[0].count)
         assertEquals(R.string.maintenance_convergence_custom_albums, lines[7].resId)
         assertEquals(8, lines[7].count)
+    }
+
+    @Test
+    fun changedOnlyConvergenceSummaryShowsTheCopiesRewrittenLine() {
+        val lines = convergenceDetailLines(ConvergenceSummary(3, 0, 0, 0, 0, 0, 0, 0))
+
+        assertEquals(1, lines.size)
+        assertEquals(R.string.maintenance_convergence_copies_rewritten, lines[0].resId)
+        assertEquals(3, lines[0].count)
+    }
+
+    @Test
+    fun allFivePassStatusesShareTheSameWordsPerState() {
+        // User decision 2026-10-23: every row answers one shared fixed sentence —
+        // "No data" without a state, "Nothing to clean" on an all-zero run
+        for (status in listOf(
+            dedupStatusRes(
+                MaintenanceDedupState(
+                    timestamp = 1L,
+                    groups = 0,
+                    resolved = 0,
+                    songResolved = 0,
+                    merged = 0,
+                    flagged = 0,
+                    skipped = 0,
+                    deferred = 0,
+                    localKept = 0,
+                    records = emptyList(),
+                ),
+            ),
+            convergenceStatusRes(MaintenanceConvergenceState(1L, ConvergenceSummary(0, 0, 0, 0, 0, 0, 0, 0))),
+            dbCleanupStatusRes(MaintenanceDbCleanupState(timestamp = 1L, removed = 0)),
+            downloadRevalidationStatusRes(MaintenanceDownloadRevalidationState(timestamp = 1L, removed = 0)),
+            downloadSelfHealStatusRes(MaintenanceDownloadSelfHealState(timestamp = 1L, mediaId = "", title = "")),
+        )) {
+            assertEquals(listOf(PassStatusPart(R.string.maintenance_pass_clean)), status.parts)
+        }
+        for (status in listOf(
+            dedupStatusRes(null),
+            convergenceStatusRes(null),
+            dbCleanupStatusRes(null),
+            downloadRevalidationStatusRes(null),
+            downloadSelfHealStatusRes(null),
+        )) {
+            assertEquals(listOf(PassStatusPart(R.string.maintenance_no_data)), status.parts)
+        }
+        // The multi-counter cells: the removal-only passes answer the shared
+        // "N item(s) cleaned" part; the per-counter words (resolved / skipped /
+        // per-reason skips) are pinned by the dedicated tests above
+        assertEquals(
+            listOf(PassStatusPart(R.string.maintenance_pass_cleaned, 2)),
+            dbCleanupStatusRes(MaintenanceDbCleanupState(timestamp = 1L, removed = 2)).parts,
+        )
+        assertEquals(
+            listOf(PassStatusPart(R.string.maintenance_pass_cleaned, 2)),
+            downloadRevalidationStatusRes(MaintenanceDownloadRevalidationState(timestamp = 1L, removed = 2)).parts,
+        )
+    }
+
+    @Test
+    fun passHasStateOnlyForCountedStateWords() {
+        // The fixed sentences carry no state part: the expansion never repeats them on top
+        assertFalse(passHasState(dedupStatusRes(null)))
+        assertFalse(passHasState(convergenceStatusRes(MaintenanceConvergenceState(1L, ConvergenceSummary(0, 0, 0, 0, 0, 0, 0, 0)))))
+        assertFalse(passHasState(PassStatus.NothingToClean))
+
+        // A status with at least one counted state part becomes the expansion's top
+        // summary line (the state words and their totals stay visible in the detail)
+        assertTrue(passHasState(dedupStatusRes(MaintenanceDedupState(1L, 1, 0, 0, 0, 0, 1, 0, 0, emptyList()))))
+        assertTrue(passHasState(convergenceStatusRes(MaintenanceConvergenceState(1L, ConvergenceSummary(0, 0, 0, 0, 1, 0, 0, 0)))))
+        assertTrue(passHasState(dbCleanupStatusRes(MaintenanceDbCleanupState(timestamp = 1L, removed = 2))))
+        assertTrue(passHasState(downloadSelfHealStatusRes(MaintenanceDownloadSelfHealState(timestamp = 1L, mediaId = "abc123", title = "Title"))))
     }
 
     // ---- jobs detail lines (the expanded jobs row) ----

@@ -107,6 +107,8 @@ import app.it.fast4x.rimusic.enums.PresetsReverb
 import app.it.fast4x.rimusic.enums.QueueLoopType
 import app.it.fast4x.rimusic.extensions.audiovolume.AudioVolumeObserver
 import app.it.fast4x.rimusic.extensions.audiovolume.OnAudioVolumeChangedListener
+import app.n_zik.android.core.maintenance.MaintenanceDownloadSelfHealState
+import app.n_zik.android.core.maintenance.MaintenanceStateStore
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.core.notifications.channelId
 import app.n_zik.android.core.profiles.ProfileDataDirNames
@@ -396,10 +398,7 @@ class PlayerServiceModern : MediaLibraryService(),
      */
     private var discordPresenceManager: DiscordPresenceManager? = null
 
-    /**
-     * Item 5: last playback speed seen (upstream parity MS L464/L2886) — detects speed
-     * changes in onPlaybackParametersChanged to re-send the presence.
-     */
+    /** Item 5: last playback speed seen (upstream parity MS L464/L2886) — detects speed changes in onPlaybackParametersChanged to re-send the presence. */
     private var lastPlaybackSpeed = 1.0f
 
     /**
@@ -452,10 +451,7 @@ class PlayerServiceModern : MediaLibraryService(),
         }
     }
 
-    /**
-     * Issue #881 (gh-881): screen on/off markers — correlate the stall with the
-     * off→on cycle reported by the reporter (spec S5).
-     */
+    /** Issue #881 (gh-881): screen on/off markers — correlate the stall with the off→on cycle reported by the reporter (spec S5). */
     private val screenStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
@@ -931,9 +927,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
         }
 
-        /**
-         * Discord presence
-         */
+        /** Discord presence */
         if (encryptedPreferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
             val token = encryptedPreferences.getString(discordPersonalAccessTokenKey, "")
             if (token?.isNotEmpty() == true) {
@@ -953,10 +947,7 @@ class PlayerServiceModern : MediaLibraryService(),
         encryptedPreferences.registerOnSharedPreferenceChangeListener(encryptedPrefsListener)
     }
 
-    /**
-     * Creates (or tears down) the LastFM scrobble manager based on the
-     * current settings: toggle ON + session key + API keys all required.
-     */
+    /** Creates (or tears down) the LastFM scrobble manager based on the current settings: toggle ON + session key + API keys all required. */
     private fun maybeSetupLastFmScrobbleManager() {
         val enabled = encryptedPreferences.getBoolean(isLastfmScrobblingEnabledKey, false)
         val sessionKey = encryptedPreferences.getString(lastfmSessionKey, null).orEmpty()
@@ -1296,24 +1287,11 @@ class PlayerServiceModern : MediaLibraryService(),
         mediaItem?.mediaId?.let { recoveryAttempts.remove(it) }
 
         // S2 (Phase 1 download fix, 2026-10-21): a track may be marked downloaded in
-        // the index while its files were wiped by the OS/OEM (see DownloadValidator).
-        // Re-check the files at transition: if they are gone, self-heal the index
-        // entry and tell the user the track must be re-downloaded (S3). The transition
-        // still proceeds — the fetch is NOT prevented: online the track streams, and
-        // offline the S5 gate turns the guaranteed failure into a clean "no internet"
-        // toast instead of the old retry storm. One synchronized index read + one file
-        // stat per span — cheap enough for the transition callback thread.
+        // the index while its files were wiped by the OS/OEM (see DownloadValidator) —
+        // [selfHealStaleDownloadEntry] re-checks the files at transition and removes
+        // the stale index entry before the playback attempt; the transition still proceeds.
         mediaItem?.let { item ->
-            val mediaId = item.mediaId
-            if (isStaleDownloadEntry(mediaId, downloadCache)) {
-                Timber.tag("PlayerServiceModern").w("Download re-validation (pre-playback): $mediaId is stale, removing the index entry")
-                MyDownloadHelper.removeDownload(this, item)
-                Toaster.w(
-                    R.string.download_stale_removed,
-                    formatArgs = arrayOf(item.mediaMetadata.title ?: ""),
-                    duration = Toast.LENGTH_LONG
-                )
-            }
+            selfHealStaleDownloadEntry(this, item, downloadCache)
         }
 
         // Safety net: detect if ExoPlayer auto-advanced despite skipMediaOnError being OFF.
@@ -1534,11 +1512,7 @@ class PlayerServiceModern : MediaLibraryService(),
         }
     }
 
-    /**
-     * Item 5 (upstream parity MS L2884-2897): a playback speed change re-sends the
-     * Discord presence ~1 s later, only while actively playing (playWhenReady &&
-     * STATE_READY) — the timestamps and the "[1.50x]" suffix must reflect the new speed.
-     */
+    /** Item 5 (upstream parity MS L2884-2897): a playback speed change re-sends the Discord presence ~1 s later, only while actively playing (playWhenReady && STATE_READY) — the timestamps and the "[1.50x]" suffix must reflect the new speed. */
     override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
         super.onPlaybackParametersChanged(playbackParameters)
         if (playbackParameters.speed != lastPlaybackSpeed) {
@@ -1559,10 +1533,7 @@ class PlayerServiceModern : MediaLibraryService(),
         }
     }
 
-    /**
-     * Item 5: the effective playback speed — the player's live value, with the
-     * preference as fallback (the player value is set from the same pref at startup).
-     */
+    /** Item 5: the effective playback speed — the player's live value, with the preference as fallback (the player value is set from the same pref at startup). */
     private fun effectivePlaybackSpeed(): Float {
         val speed = player.playbackParameters.speed
         return if (speed > 0f) speed else preferences.getFloat(playbackSpeedKey, 1f)
@@ -1884,13 +1855,6 @@ class PlayerServiceModern : MediaLibraryService(),
 
     }
 
-//    override fun onPlaybackStateChanged(playbackState: Int) {
-//        if (playbackState == STATE_IDLE) {
-//            player.shuffleModeEnabled = false
-//            //player.clearMediaItems()
-//        }
-//    }
-
     override fun onEvents(player: Player, events: Player.Events) {
         if (events.containsAny(Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_PLAY_WHEN_READY_CHANGED)) {
             val isBufferingOrReady = player.playbackState == Player.STATE_BUFFERING || player.playbackState == Player.STATE_READY
@@ -1909,9 +1873,6 @@ class PlayerServiceModern : MediaLibraryService(),
             }
         }
 
-//        if (events.containsAny(EVENT_TIMELINE_CHANGED, EVENT_POSITION_DISCONTINUITY)) {
-//            currentMediaItem.value = player.currentMediaItem
-//        }
     }
 
 
@@ -2194,19 +2155,11 @@ class PlayerServiceModern : MediaLibraryService(),
     private val isRadioActiveForCommandButtons: Boolean
         get() = if (::nzikRadio.isInitialized) nzikRadio.isRadioActive else false
 
-    /**
-     * Issue #866 (gh-866): discover state as seen by the command buttons — the discover filter
-     * lives in the `discoverKey` preference (NZikRadio.isDiscoverEnabled reads it live), so the
-     * read is guarded until `nzikRadio` (lateinit, created in onStart) exists.
-     */
+    /** Issue #866 (gh-866): discover state as seen by the command buttons — the discover filter lives in the `discoverKey` preference (NZikRadio.isDiscoverEnabled reads it live), so the read is guarded until `nzikRadio` (lateinit, created in onStart) exists. */
     private val isDiscoverEnabledForCommandButtons: Boolean
         get() = if (::nzikRadio.isInitialized) nzikRadio.isDiscoverEnabled else false
 
-    /**
-     * Issue #866 (gh-866): the radio button is state-dependent — its label follows
-     * [isRadioActiveForCommandButtons] (`start_radio` → `stop_radio`); every other button keeps
-     * its static legacy [NotificationButtons.textId].
-     */
+    /** Issue #866 (gh-866): the radio button is state-dependent — its label follows [isRadioActiveForCommandButtons] (`start_radio` → `stop_radio`); every other button keeps its static legacy [NotificationButtons.textId]. */
     private fun commandButtonLabelRes(button: NotificationButtons): Int =
         if (button == NotificationButtons.Radio) radioCommandButtonLabelRes(isRadioActiveForCommandButtons)
         else button.textId
@@ -2233,12 +2186,7 @@ class PlayerServiceModern : MediaLibraryService(),
         }
     }
 
-    /**
-     * Issue #866 (gh-866): shows the transient shuffle confirmation icon (`R.drawable.shuffle_ok`)
-     * on every shuffle button — the Android Auto overflow, the media notification (via
-     * `updateDefaultNotification`) and the in-app UI (reactive Compose state) — for
-     * `SHUFFLE_OK_FLASH_MS`, then restores the base icon.
-     */
+    /** Issue #866 (gh-866): shows the transient shuffle confirmation icon (`R.drawable.shuffle_ok`) on every shuffle button — the Android Auto overflow, the media notification (via `updateDefaultNotification`) and the in-app UI (reactive Compose state) — for `SHUFFLE_OK_FLASH_MS`, then restores the base icon. */
     private fun triggerShuffleOkFlash() {
         shuffleOkFlashJob?.cancel()
         shuffleOkFlashActive.value = true
@@ -2827,10 +2775,7 @@ class PlayerServiceModern : MediaLibraryService(),
         val radioActionTextRes: Int
             get() = nzikRadio.radioActionTextRes
 
-        /**
-         * Issue #866 (gh-866): app-wide shuffle confirmation flash state — read by the in-app
-         * shuffle buttons (and the AA / notification command buttons via `updateDefaultNotification`).
-         */
+        /** Issue #866 (gh-866): app-wide shuffle confirmation flash state — read by the in-app shuffle buttons (and the AA / notification command buttons via `updateDefaultNotification`). */
         val shuffleOkFlashActive: Boolean
             get() = this@PlayerServiceModern.shuffleOkFlashActive.value
 
@@ -2890,9 +2835,7 @@ class PlayerServiceModern : MediaLibraryService(),
             }
         }
 
-        /**
-         * Pause with fade out effect
-         */
+        /** Pause with fade out effect */
         @MainThread
         fun gracefulPause() {
             val duration = preferences.getEnum( playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled )
@@ -3152,11 +3095,7 @@ class PlayerServiceModern : MediaLibraryService(),
         )
     }
 
-    /**
-     * Builds the guarded delegation facade for [targetPlayer]: the legacy "all commands"
-     * forwarding behavior (pre-Android-13 compatibility) plus the Listen Together guest-lock
-     * policy (spec-listen-together-guest-lock-hardening, spine AD-1/AD-2/AD-6).
-     */
+    /** Builds the guarded delegation facade for [targetPlayer]: the legacy "all commands" forwarding behavior (pre-Android-13 compatibility) plus the Listen Together guest-lock policy (spec-listen-together-guest-lock-hardening, spine AD-1/AD-2/AD-6). */
     private fun createGuestGuardPlayer(targetPlayer: Player): ListenTogetherGuestGuardPlayer {
         // Issue #881 (Phase 3, Fix B): coalesce rapid absolute seeks while the player is still
         // recovering from the previous one — one full data-source re-open + buffer refill per
@@ -3450,10 +3389,7 @@ fun getErrorCodeName(errorCode: Int): String = when (errorCode) {
     else -> "UNKNOWN_ERROR_$errorCode"
 }
 
-/**
- * Issue #866 (gh-866): label of the state-dependent radio command button — pure so the
- * state → string mapping is unit-testable without a running [PlayerServiceModern].
- */
+/** Issue #866 (gh-866): label of the state-dependent radio command button — pure so the state → string mapping is unit-testable without a running [PlayerServiceModern]. */
 internal fun radioCommandButtonLabelRes(isRadioActive: Boolean): Int =
     if (isRadioActive) R.string.stop_radio else R.string.start_radio
 
@@ -3465,11 +3401,7 @@ internal fun radioCommandButtonLabelRes(isRadioActive: Boolean): Int =
 internal fun radioCommandButtonIconRes(inactiveIconRes: Int, isRadioActive: Boolean): Int =
     if (isRadioActive) R.drawable.radio_stop else inactiveIconRes
 
-/**
- * Issue #866 (gh-866): icon of the shuffle command button while the transient "shuffle
- * registered" confirmation flash is active — pure so the flash → drawable mapping is
- * unit-testable without a running [PlayerServiceModern].
- */
+/** Issue #866 (gh-866): icon of the shuffle command button while the transient "shuffle registered" confirmation flash is active — pure so the flash → drawable mapping is unit-testable without a running [PlayerServiceModern]. */
 internal fun shuffleOkFlashIconRes(flashActive: Boolean, stateIconRes: Int): Int =
     if (flashActive) R.drawable.shuffle_ok else stateIconRes
 
@@ -3483,17 +3415,10 @@ internal fun shuffleOkFlashIconRes(flashActive: Boolean, stateIconRes: Int): Int
 internal fun discoverCommandButtonIconRes(stateIconRes: Int, isDiscoverEnabled: Boolean): Int =
     if (isDiscoverEnabled) R.drawable.discover_stop else stateIconRes
 
-/**
- * Issue #881 (gh-881): hard bound on the root-cause walk — a malformed cyclic cause chain
- * must never spin the retry thread that calls [diagnosticExceptionSummary].
- */
+/** Issue #881 (gh-881): hard bound on the root-cause walk — a malformed cyclic cause chain must never spin the retry thread that calls [diagnosticExceptionSummary]. */
 private const val DIAGNOSTIC_CAUSE_HOP_LIMIT = 16
 
-/**
- * Issue #881 (gh-881): `scheme://…` blobs embedded in exception messages (stream URLs,
- * hosts) — scrubbed so the exported log file, which is shared publicly, never carries the
- * stream URL (spec S3 / M4 confidentiality rule).
- */
+/** Issue #881 (gh-881): `scheme://…` blobs embedded in exception messages (stream URLs, hosts) — scrubbed so the exported log file, which is shared publicly, never carries the stream URL (spec S3 / M4 confidentiality rule). */
 private val DIAGNOSTIC_URL_PATTERN = Regex("""(?i)(?:https?|ftp)://\S+""")
 
 /**
@@ -3544,10 +3469,7 @@ internal fun isDnsFailure(error: Throwable): Boolean {
     return false
 }
 
-/**
- * S5 (offline gate, 2026-10-22): true when the chain carries the offline fast-fail marker
- * [StreamResolutionOfflineException] at any depth — the marker plugs the stale-monitor hole.
- */
+/** S5 (offline gate, 2026-10-22): true when the chain carries the offline fast-fail marker [StreamResolutionOfflineException] at any depth — the marker plugs the stale-monitor hole. */
 internal fun isStreamResolutionOffline(error: Throwable): Boolean {
     var current: Throwable? = error
     var hops = 0
@@ -3559,11 +3481,7 @@ internal fun isStreamResolutionOffline(error: Throwable): Boolean {
     return false
 }
 
-/**
- * A3 (offline audit, 2026-10-22): true when the chain carries any [IOException] at any depth
- * (only the [StreamResolutionOfflineException] marker is excluded) — deliberately broader than
- * a DNS-only check, socket failures qualify too; the paired fresh network check decides.
- */
+/** A3 (offline audit, 2026-10-22): true when the chain carries any [IOException] at any depth (only the [StreamResolutionOfflineException] marker is excluded) — deliberately broader than a DNS-only check, socket failures qualify too; the paired fresh network check decides. */
 internal fun isRawConnectionFailure(error: Throwable): Boolean {
     var current: Throwable? = error
     var hops = 0
@@ -3599,9 +3517,45 @@ internal fun isOfflineLoadFailure(exception: IOException, networkAvailable: Bool
     !networkAvailable || isDnsFailure(exception) || exception is StreamResolutionOfflineException
 
 /**
+ * S2 (Phase 1 download fix, 2026-10-21): the pre-playback self-heal — when
+ * [isStaleDownloadEntry] finds the files gone, the stale index entry is removed,
+ * the re-download toast is shown and the healed track is persisted for the
+ * Maintenance sheet (guarded — a failed write never breaks the transition). The
+ * transition still proceeds after the call: online the track streams, and offline
+ * the S5 gate turns the guaranteed failure into a clean "no internet" toast instead
+ * of the old retry storm. One synchronized index read + one file stat per span —
+ * cheap enough for the transition callback thread.
+ *
+ * @return true when the entry was stale and the self-heal ran.
+ */
+internal fun selfHealStaleDownloadEntry(context: Context, item: MediaItem, downloadCache: Cache): Boolean {
+    if (!isStaleDownloadEntry(item.mediaId, downloadCache)) return false
+    Timber.tag("PlayerServiceModern").w("Download re-validation (pre-playback): ${item.mediaId} is stale, removing the index entry")
+    MyDownloadHelper.removeDownload(context, item)
+    Toaster.w(
+        R.string.download_stale_removed,
+        formatArgs = arrayOf(item.mediaMetadata.title ?: ""),
+        duration = Toast.LENGTH_LONG
+    )
+    // Log the self-heal so the Maintenance sheet can show the healed track;
+    // guarded — a failed write never breaks the transition
+    runCatching {
+        MaintenanceStateStore.saveDownloadSelfHeal(
+            context,
+            MaintenanceDownloadSelfHealState(
+                timestamp = System.currentTimeMillis(),
+                mediaId = item.mediaId,
+                title = item.mediaMetadata.title?.toString()?.takeIf { it.isNotBlank() } ?: item.mediaId,
+            ),
+        )
+    }.onFailure { Timber.tag("PlayerServiceModern").w(it, "Failed to save the download self-heal state") }
+    return true
+}
+
+/**
  * S2 (Phase 1 download fix, 2026-10-21): true when the download index claims the
  * track is downloaded but its span files are gone (OS/OEM wipe) — the stale-entry
- * case that the pre-playback self-heal in `onMediaItemTransition` removes.
+ * case that the pre-playback self-heal in [selfHealStaleDownloadEntry] removes.
  *
  * Pure so the compound decision is unit-testable without a running
  * [PlayerServiceModern] (same pattern as [isDnsFailure]).

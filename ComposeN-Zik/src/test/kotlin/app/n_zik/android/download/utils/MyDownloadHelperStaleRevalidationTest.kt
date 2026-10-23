@@ -10,10 +10,18 @@ import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadManager
 import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.core.maintenance.MaintenanceStateStore
+import app.n_zik.android.utils.DataStoreUtils
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import io.mockk.verify
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -51,6 +59,9 @@ class MyDownloadHelperStaleRevalidationTest {
 
     private lateinit var cache: SimpleCache
 
+    private val context: Context
+        get() = ApplicationProvider.getApplicationContext()
+
     /**
      * The valid (never released) cache left behind by [resetHelperState]. Created lazily in
      * the test that needs it — `MyDownloadHelper.downloadCache` is a process-wide lateinit
@@ -64,6 +75,13 @@ class MyDownloadHelperStaleRevalidationTest {
     fun resetHelperState() {
         MyDownloadHelper.pendingStaleStartupCount.value = 0
         MyDownloadHelper.downloads.value = emptyMap()
+        // The S1 run is persisted by the re-validation — clear the key so the static
+        // never leaks into the next test class of the same JVM fork
+        context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+            .edit()
+            .remove(MaintenanceStateStore.KEY_DOWNLOAD_REVALIDATION)
+            .remove(MaintenanceStateStore.KEY_DOWNLOAD_SELF_HEAL)
+            .apply()
         if (!::cache.isInitialized) return
         MyDownloadHelper.downloadCache = resetCache ?: createResetCache()
         cache.release()
@@ -79,9 +97,10 @@ class MyDownloadHelperStaleRevalidationTest {
         return cache
     }
 
-    private fun download(id: String, state: Int): Download {
-        val request = DownloadRequest.Builder(id, Uri.parse("https://music.example.com/stream/$id")).build()
-        return Download(request, state, 0L, 0L, 0L, Download.STOP_REASON_NONE, Download.FAILURE_REASON_NONE)
+    private fun download(id: String, state: Int, data: String = ""): Download {
+        val builder = DownloadRequest.Builder(id, Uri.parse("https://music.example.com/stream/$id"))
+        if (data.isNotEmpty()) builder.setData(data.encodeToByteArray())
+        return Download(builder.build(), state, 0L, 0L, 0L, Download.STOP_REASON_NONE, Download.FAILURE_REASON_NONE)
     }
 
     /** Creates the cache and commits one complete span under [id]; returns the span file. */
@@ -116,10 +135,21 @@ class MyDownloadHelperStaleRevalidationTest {
         )
         val manager = mockk<DownloadManager>(relaxed = true)
 
-        MyDownloadHelper.revalidateCompletedDownloads(manager)
+        MyDownloadHelper.revalidateCompletedDownloads(context, manager)
 
         verify(exactly = 0) { manager.removeDownload(any()) }
         assertEquals(0, MyDownloadHelper.pendingStaleStartupCount.value)
+        // The map is untouched on a clean run
+        assertEquals(1, MyDownloadHelper.downloads.value.size)
+        // S1 saves on EVERY run: the row answers "Nothing to clean" with its date
+        val state = MaintenanceStateStore.readDownloadRevalidation(context)
+        assertNotNull("the clean run must persist its state", state)
+        assertEquals(0, state!!.removed)
+        assertTrue(state.removedTracks.isEmpty())
+        // The S2 startup clean state is persisted too (empty mediaId = "nothing to heal")
+        val selfHeal = MaintenanceStateStore.readDownloadSelfHeal(context)
+        assertNotNull("the clean run must persist the self-heal state", selfHeal)
+        assertTrue(selfHeal!!.mediaId.isEmpty())
     }
 
     @Test
@@ -129,14 +159,28 @@ class MyDownloadHelperStaleRevalidationTest {
         assertTrue(file.delete())
         MyDownloadHelper.downloadCache = cache
         MyDownloadHelper.downloads.value = mapOf(
-            "ABXtWqmArUU" to download("ABXtWqmArUU", Download.STATE_COMPLETED)
+            "ABXtWqmArUU" to download("ABXtWqmArUU", Download.STATE_COMPLETED, "Artist X - Song A"),
         )
         val manager = mockk<DownloadManager>(relaxed = true)
 
-        MyDownloadHelper.revalidateCompletedDownloads(manager)
+        MyDownloadHelper.revalidateCompletedDownloads(context, manager)
 
         verify(exactly = 1) { manager.removeDownload("ABXtWqmArUU") }
         assertEquals(1, MyDownloadHelper.pendingStaleStartupCount.value)
+        // The stale entry is purged from the live map immediately: the Downloads row
+        // is clean from startup, without waiting for the async service round-trip
+        assertFalse(MyDownloadHelper.downloads.value.containsKey("ABXtWqmArUU"))
+        // The run is persisted with the removed track (title from request.data)
+        val state = MaintenanceStateStore.readDownloadRevalidation(context)
+        assertNotNull("the removing run must persist its state", state)
+        assertEquals(1, state!!.removed)
+        val track = state.removedTracks.single()
+        assertEquals("ABXtWqmArUU", track.mediaId)
+        assertEquals("Artist X - Song A", track.title)
+        // The S2 startup clean state is persisted on a removing run too
+        val selfHeal = MaintenanceStateStore.readDownloadSelfHeal(context)
+        assertNotNull("the removing run must persist the self-heal state", selfHeal)
+        assertTrue(selfHeal!!.mediaId.isEmpty())
     }
 
     @Test
@@ -154,12 +198,14 @@ class MyDownloadHelperStaleRevalidationTest {
         )
         val manager = mockk<DownloadManager>(relaxed = true)
 
-        MyDownloadHelper.revalidateCompletedDownloads(manager)
+        MyDownloadHelper.revalidateCompletedDownloads(context, manager)
 
         verify(exactly = 1) { manager.removeDownload("ABXtWqmArUU") }
         verify(exactly = 0) { manager.removeDownload("na47wMFfQCo") }
         verify(exactly = 0) { manager.removeDownload("inProgress1") }
         assertEquals(1, MyDownloadHelper.pendingStaleStartupCount.value)
+        // Only the stale entry is purged from the live map (intact + non-terminal stay)
+        assertEquals(setOf("na47wMFfQCo", "inProgress1"), MyDownloadHelper.downloads.value.keys)
     }
 
     @Test
@@ -175,9 +221,41 @@ class MyDownloadHelperStaleRevalidationTest {
         MyDownloadHelper.downloads.value = emptyMap()
         val manager = mockk<DownloadManager>(relaxed = true)
 
-        MyDownloadHelper.revalidateCompletedDownloads(manager)
+        MyDownloadHelper.revalidateCompletedDownloads(context, manager)
 
         verify(exactly = 0) { manager.removeDownload(any()) }
         assertEquals(0, MyDownloadHelper.pendingStaleStartupCount.value)
+        // The empty run still persists its state (removed = 0)
+        val state = MaintenanceStateStore.readDownloadRevalidation(context)
+        assertNotNull("the empty run must persist its state", state)
+        assertEquals(0, state!!.removed)
+    }
+
+    @Test
+    fun `a failed state write never breaks the cleanup`() {
+        // Matrix row "write failure": the SharedPreferences write throws — the stale
+        // entry must still be removed and the live map still purged
+        val file = setupCacheWithSpan("ABXtWqmArUU")
+        assertTrue(file.delete())
+        MyDownloadHelper.downloadCache = cache
+        MyDownloadHelper.downloads.value = mapOf(
+            "ABXtWqmArUU" to download("ABXtWqmArUU", Download.STATE_COMPLETED, "Artist X - Song A"),
+        )
+        val manager = mockk<DownloadManager>(relaxed = true)
+        mockkObject(DataStoreUtils)
+        try {
+            every { DataStoreUtils.saveString(any(), any(), any()) } throws RuntimeException("prefs write down")
+
+            MyDownloadHelper.revalidateCompletedDownloads(context, manager)
+        } finally {
+            unmockkObject(DataStoreUtils)
+        }
+
+        verify(exactly = 1) { manager.removeDownload("ABXtWqmArUU") }
+        assertFalse(MyDownloadHelper.downloads.value.containsKey("ABXtWqmArUU"))
+        assertEquals(1, MyDownloadHelper.pendingStaleStartupCount.value)
+        assertNull(MaintenanceStateStore.readDownloadRevalidation(context))
+        // Both writes are guarded: a failed prefs write leaves neither state behind
+        assertNull(MaintenanceStateStore.readDownloadSelfHeal(context))
     }
 }
