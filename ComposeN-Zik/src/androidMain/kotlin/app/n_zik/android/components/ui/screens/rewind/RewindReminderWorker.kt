@@ -27,19 +27,19 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 /**
- * End-of-month rewind reminder (frozen task GH-275): one notification a month, posted by
- * WorkManager on the 1st — even when the app is closed — telling the user that the previous
- * month's rewind is ready to open. Tapping the notification opens the deck on the finished
- * month: the content intent carries the year/month extras consumed by [MainActivity].
+ * End-of-month rewind reminder (frozen task GH-275): one notification a month, posted
+ * by WorkManager on the 1st (even when the app is closed) that the previous month's
+ * rewind is ready to open. Tapping the notification opens the deck on that month:
+ * the content intent carries the year/month extras consumed by [MainActivity].
  *
- * The worker is self-perpetuating: every run reschedules itself for the next 1st, so a
- * single [schedule] at app startup keeps the monthly cadence for the app's whole life.
+ * Self-perpetuating: every run reschedules itself for the next 1st, so a single
+ * [schedule] at app startup keeps the monthly cadence for the app's whole life.
  *
- * Gating has two layers: the settings gate ([isMonthlyReminderEnabled], spec GH-275) is
- * checked when scheduling (off cancels the pending work) and again at execution (off
- * skips the post); the OS-level gate (frozen task contract) skips the notification —
- * with a log, not a failure — when `POST_NOTIFICATIONS` was denied at runtime on API 33+.
- * The channel itself ("rewind", importance LOW) is created by the application.
+ * Gating has two layers: the settings gate ([isMonthlyReminderEnabled], GH-275) is
+ * checked at scheduling (off cancels the pending work) and at execution (off skips
+ * the post); the OS-level gate skips the post — with a log, not a failure — when
+ * `POST_NOTIFICATIONS` was denied at runtime on API 33+. The channel ("rewind",
+ * importance LOW) is created by the application.
  */
 internal class RewindReminderWorker(
     context: Context,

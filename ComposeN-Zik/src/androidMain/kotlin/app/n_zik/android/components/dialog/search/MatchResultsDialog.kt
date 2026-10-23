@@ -21,13 +21,9 @@ import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.utils.semiBold
 
 /**
- * Centralized match results dialog showing matched/failed counts
- * and the list of failed songs. Replaces inline implementations
- * in HomeSongsScreen and LocalPlaylistSongs.
+ * Centralized match results dialog: matched/failed counts and the list of failed songs
+ * (replaces the inline implementations in HomeSongsScreen and LocalPlaylistSongs).
  *
- * @param matched Number of successfully matched songs
- * @param failed Number of failed songs
- * @param failedSongs List of songs that failed to match
  * @param onRetry Called when user taps Retry (only shown if failed > 0)
  * @param onDismiss Called when user taps OK or dismisses the dialog
  */

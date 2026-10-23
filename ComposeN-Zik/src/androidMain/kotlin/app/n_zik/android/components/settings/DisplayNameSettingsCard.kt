@@ -77,17 +77,16 @@ import app.n_zik.android.components.ui.screens.profiles.loadProfileFace
 import app.kreate.android.me.knighthat.utils.Toaster
 
 /**
- * The face card at the top of the Accounts tab: the active profile's face preview
- * (avatar + the name shown in-app), the name / avatar source selectors (an account
- * source is locked while that account is not logged in), the profile name (renamed
- * with the same rules as the Profiles page) and the profile photo (gallery pick via
- * PhotoPicker, removable).
+ * The face card at the top of the Accounts tab: the active profile's face preview,
+ * the name / avatar source selectors (an account source is locked while not logged
+ * in), the profile name (renamed with the same rules as the Profiles page) and the
+ * profile photo (gallery pick via PhotoPicker).
  *
- * The account state and the face are loaded once per profile / source change on the
- * DATA dispatcher (the secure prefs are keystore-backed — never built in composition);
- * the contract is "reflected after the next login / profile switch". The face
- * sources live in the active profile's plain prefs (`preferences`), so a profile
- * switch shows its own face on the next card composition.
+ * Account state and face load once per profile / source change on the DATA dispatcher
+ * (secure prefs are keystore-backed — never built in composition); the contract is
+ * "reflected after the next login / profile switch". Face sources live in the active
+ * profile's plain prefs (`preferences`), so a profile switch shows its own face on
+ * the next composition.
  */
 @Composable
 fun ProfileFaceCard(modifier: Modifier = Modifier) {

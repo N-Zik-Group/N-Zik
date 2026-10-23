@@ -169,13 +169,11 @@ fun RescueScreen() {
     var targetProfile by remember { mutableStateOf(getActiveProfile(context)) }
     var profileOptions by remember { mutableStateOf<List<ProfileOption>>(emptyList()) }
 
-    // The per-profile secure prefs of the rescue TARGET — not the active profile's:
-    // the per-profile settings actions (export / import / reset) operate on the
-    // selected profile, and its credentials live in its own encrypted store
-    // (the active profile's store must never be read, cleared or overwritten by
-    // an action aimed at another profile). Opened lazily and off the main
-    // thread, only when an action awaits it: keystore work must not run in
-    // composition, and the database and log actions never need it.
+    // The rescue TARGET's per-profile secure prefs — never the active profile's:
+    // per-profile settings actions operate on the selected profile, whose
+    // credentials live in its own encrypted store. Opened lazily, off the main
+    // thread, only when an action awaits it (keystore work must not run in
+    // composition; database/log actions never need it).
     val encryptedPrefs = remember(scope, targetProfile) {
         scope.async(NzikDispatchers.DATA, start = CoroutineStart.LAZY) {
             runCatching { profileSecurePrefs(context, targetProfile) }
@@ -282,21 +280,15 @@ fun RescueScreen() {
         }
     }
 
-    // Status of the main process, which the process guard (guardWrite) watches. Poll every
-    // second while it is alive: the kill request sent when the Rescue Center opened usually
-    // lands within a few seconds, so the status moves from "stopping" to "stopped" without
-    // the user doing anything.
-    //
-    // Liveness comes from RescueProcess.isMainProcessLikelyAlive: below 31 the
-    // getRunningAppProcesses() probe is trustworthy; from 31 on it is restricted to the
-    // calling process, so the alive marker (refreshed by the main process itself every ~5 s)
-    // decides. When the process is observed dead — trustworthy probe below 31, stale marker
-    // from 31 on — the pending kill request is discarded: a dead process has no pending kill,
-    // and a stale flag would make the next healthy launch end itself at startup. From 31 on
-    // there is one more "stopped" signal: the flag consumed by the kill receiver (the kill
-    // landed) — the status turns to "stopped" at that instant, even while the marker is
-    // still fresh (the marker stays fresh for up to 15 s after the process dies).
-    // A new kill request (danger zone) restarts the polling via killRequestGeneration.
+    // Status of the main process, watched by the process guard (guardWrite). Poll every
+    // second while it is alive: the kill request sent when the screen opened usually lands
+    // within a few seconds, so the status moves on its own. Liveness comes from
+    // RescueProcess.isMainProcessLikelyAlive (below 31 the process probe is trustworthy;
+    // from 31 on the marker refreshed by the main process decides). When the process is
+    // observed dead the pending kill is discarded — a stale flag would make the next
+    // healthy launch end itself at startup. From 31 on, the flag consumed by the kill
+    // receiver also turns the status to "stopped" while the marker is still fresh.
+    // A new kill request restarts the polling via killRequestGeneration.
     var mainProcessRunning by remember { mutableStateOf<Boolean?>(null) }
     var killRequestGeneration by remember { mutableIntStateOf(0) }
     LaunchedEffect(killRequestGeneration) {
@@ -1411,12 +1403,9 @@ fun RescueScreen() {
                 content = {
 
             // Kill the app: re-sends the kill request when the automatic one (sent when this
-            // screen opened) failed — broadcast lost, main thread fully frozen. Gated on the
-            // process being (still) alive: once it is stopped there is nothing to kill, and a
-            // request sent to a dead process would only record a stale flag that the next
-            // healthy launch consumes as a self-kill. Not gated by guardWrite: its whole
-            // purpose is to release the guard, and it writes nothing (while the process is
-            // alive — which is exactly when this button is enabled).
+            // screen opened) failed. Gated on the process still being alive: a stale flag
+            // sent to a dead process would be consumed as a self-kill on the next launch.
+            // Not gated by guardWrite: its purpose is to release the guard; it writes nothing.
                     RescueActionCard(
                         iconRes = R.drawable.logout,
                         title = stringResource(R.string.rescue_kill_app),

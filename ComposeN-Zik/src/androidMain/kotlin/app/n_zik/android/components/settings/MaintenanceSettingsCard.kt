@@ -65,21 +65,18 @@ import timber.log.Timber
  * Maintenance settings card (Misc tab, spec "Maintenance — état de l'app en un regard"):
  * a section header with the shield icon, two categories (user decision, post-approval
  * iteration):
- * - **Stats**: a pass table in the exact Network/Quality status cards pattern
- *   ([OtherInfoSettingsEntry] layout: icon + title, trailing status underneath — one row
- *   per boot pass with the sheet's "date · status" trailing, plus a live-subsystems health
- *   row), then an "Open" entry that opens the SAME [MaintenanceSheet] as the burger
- *   "Maintenance" item.
+ * - **Stats**: a pass table in the Network/Quality status cards pattern (one row per boot
+ *   pass with the sheet's "date · status" trailing, plus a live-subsystems health row),
+ *   then an "Open" entry that opens the SAME [MaintenanceSheet] as the burger item.
  * - **Debug**: the debug-log switch (moved here from the removed legacy Debug card — the
  *   single source of truth for the switch) with the restart note, then the ALWAYS-visible
- *   "Export logs" entry (the [CopyLogsDialog] greys out the "Debug log" / "Both logs"
- *   options while the switch is off).
+ *   "Export logs" entry (the [CopyLogsDialog] greys out "Debug log" / "Both logs" while
+ *   the switch is off).
  *
- * The pass rows are a one-shot read at composition (the snapshot loader dispatches its
- * disk I/O to the DATA dispatcher and guards every chunk); the Discord error, the update
+ * Pass rows are a one-shot read at composition (the snapshot loader dispatches its disk
+ * I/O to the DATA dispatcher and guards every chunk); the Discord error, the update
  * download state and the failed-download count are observed live, exactly like the sheet.
- * Only the sheet's RED rows count as broken systems — neutral states (not connected
- * services, battery warnings, ...) do not.
+ * Only the sheet's RED rows count as broken systems — neutral states do not.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

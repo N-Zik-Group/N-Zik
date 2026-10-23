@@ -19,19 +19,16 @@ import timber.log.Timber
  * "Rewind notifications" (every notification toggle together) and "Rewind playlists"
  * (the two creation toggles, decoupled from the master switch per spec decision).
  *
- * Card visibility is delegated to [SettingsSectionCard]'s `visible` parameter, which
- * animates the card height to/from zero globally (expand/collapse + fade) so the other
- * cards slide naturally. Entry visibility inside the notifications card uses the shared
- * [settingsEntryEnter]/[settingsEntryExit] specs so the card shrinks smoothly when a
- * type is off.
+ * Card visibility goes through [SettingsSectionCard]'s `visible` parameter (animated
+ * expand/collapse + fade, so the other cards slide naturally); entry visibility inside
+ * the notifications card uses the shared [settingsEntryEnter]/[settingsEntryExit] specs.
  *
  * Every key is read live from [DataStoreUtils]: the master is flipped from the General
  * card and the same keys gate the Rewind home entries, the hamburger menu item and the
  * monthly and yearly reminder workers, so a flip takes effect without an app restart.
- *
  * The four playlist keys are the frozen contract spec 2 reads for its worker (creation
- * gate) and its notification (creation gate + notification gate). A notification entry
- * hides while its parent type is off (off type = off notification).
+ * gate) and its notification (creation gate + notification gate); a notification entry
+ * hides while its parent type is off.
  */
 @Composable
 fun RewindSettingsCard() {

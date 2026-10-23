@@ -54,11 +54,10 @@ val SEEK_PLAYER_COMMANDS: Set<Int> = setOf(
  *
  * SCOPE NOTE (verified in the media3 1.10.1 sources): media3's OWN controllers
  * (`MediaControllerImplBase` — the in-app media notification and the media-button path) do NOT
- * go through `onPlayerCommandRequest`; they apply their seeks straight to the player as
- * dedicated transactions. Those seeks are captured by the S1 `SEEK_CALL` stack instead (their
- * frames show `MediaControllerImplBase`/`MediaSessionStub`), so the ABSENCE of a `SEEK_SESSION`
- * line does NOT rule out the notification/media-button path — only the AOSP-interop path
- * (lockscreen / Android Auto legacy) emits `SEEK_SESSION`.
+ * go through `onPlayerCommandRequest`; their seeks are captured by the S1 `SEEK_CALL` stack
+ * instead, so the ABSENCE of a `SEEK_SESSION` line does NOT rule out the
+ * notification/media-button path — only the AOSP-interop path (lockscreen / Android Auto
+ * legacy) emits `SEEK_SESSION`.
  */
 fun seekCommandName(playerCommand: Int): String = when (playerCommand) {
     Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM -> "SEEK_TO"

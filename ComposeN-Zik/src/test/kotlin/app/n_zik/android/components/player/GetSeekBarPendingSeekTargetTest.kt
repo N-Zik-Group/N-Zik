@@ -48,34 +48,32 @@ import org.robolectric.annotation.Config
 
 /**
  * Issue #881 (gh-881), Phase 3 Fix E (review patch): the composable wiring of the held
- * (optimistic) seek target in [GetSeekBar] + DurationIndicator. The pure release decision is
- * pinned by [PendingSeekScrubTest]; this test pins what the UI does with the state:
+ * (optimistic) seek target in [GetSeekBar] + DurationIndicator. The pure release decision
+ * is pinned by [PendingSeekScrubTest]; this pins what the UI does with it:
  *
- * - a skip-button seek HOLDS its target on the label while the player position is still stale
- *   (the original "snap back to the old position" complaint), and a consecutive tap
- *   accumulates from the HELD position, not the stale player position,
- * - the hold RELEASES once the player position converges on the target (no stuck bar: a
- *   later position change is shown directly, and a fresh tap accumulates from the live
- *   position),
- * - a forward tap with an unset duration issues NO seek (minOf against C.TIME_UNSET is a
- *   garbage target; the `newPosition < 0` guard is pinned at the UI level),
- * - Phase 3.3: the position cache ticks while the sheet is collapsed — the removed
- *   visibility gate would have frozen it there, and the pause-between-songs trigger
- *   (the cache's only consumer in GetSeekBar) would never fire.
+ * - a skip-button seek HOLDS its target on the label while the player position is stale
+ *   (the "snap back" complaint); a consecutive tap accumulates from the HELD position,
+ * - the hold RELEASES once the position converges (no stuck bar; a fresh tap
+ *   accumulates from the live position),
+ * - a forward tap with unset duration issues NO seek (minOf against C.TIME_UNSET is
+ *   garbage; the `newPosition < 0` guard is pinned at the UI level),
+ * - Phase 3.3: the position cache ticks while the sheet is collapsed — the removed gate
+ *   would have frozen it there and the pause-between-songs trigger (the cache's only
+ *   consumer) would never fire.
  *
- * The held value is observed two ways: the label text (formatAsDuration of the held target —
- * the user-visible part) and the NEXT click's seek target (the skip buttons compute their
- * adjustment from `skipBasePosition`: drag ?: un-converged held target ?: the player's LIVE
- * position, read at tap time — Phase 3.1). The label is rendered by OutlinedText as TWO BasicTexts
- * (main + outline), hence `onAllNodesWithText`.
+ * The held value is observed two ways: the label text (formatAsDuration of the held
+ * target) and the NEXT click's seek target (skip buttons adjust from `skipBasePosition`:
+ * drag ?: un-converged held target ?: live position, read at tap time — Phase 3.1).
+ * OutlinedText renders the label as TWO BasicTexts (main + outline), hence
+ * `onAllNodesWithText`.
  *
- * JUnit 4 + [RobolectricTestRunner] (the `createComposeRule()` rule only works with JUnit 4,
- * executed through the project's junit-vintage-engine on the JUnit 5 platform) with the plain
- * [Application] so the app's heavy init (DI, Room, player) is skipped — same pattern as
- * HeaderVersionBadgeTest. The player/binder are mocks; `position()` is test-driven Compose
- * state so convergence is observable. Clicks use `performSemanticsAction(OnClick)` because
- * `performClick()` hit-tests — under Robolectric an off-screen or stale-bounds node is a
- * silent no-op (see the comment in OnboardingProfileScreenWiringTest).
+ * JUnit 4 + [RobolectricTestRunner] through the project's junit-vintage-engine on the
+ * JUnit 5 platform (`createComposeRule()` only works with JUnit 4), plain [Application]
+ * (heavy init skipped; same pattern as HeaderVersionBadgeTest). Player/binder are mocks;
+ * `position()` is test-driven Compose state so convergence is observable. Clicks use
+ * `performSemanticsAction(OnClick)` — `performClick()` hit-tests, and off-screen or
+ * stale-bounds nodes are silent no-ops under Robolectric (see
+ * OnboardingProfileScreenWiringTest).
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)

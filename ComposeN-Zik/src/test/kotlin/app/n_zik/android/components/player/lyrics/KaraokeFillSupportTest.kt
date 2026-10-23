@@ -149,13 +149,11 @@ class KaraokeFillSupportTest {
 
     @Test
     fun `full progress keeps each wrapped line's own bounds for the sung envelope`() {
-        // GH #820 residual: the sung (SING) long-word envelope reuses these
-        // full-progress per-line rects. A long word that starts at the end of
-        // line 1 and wraps to a wider line 2 used to be clipped by a single
-        // first-char..last-char box — a narrow column that cut the wrapped
-        // characters out of the envelope until the static branch redrew the
-        // whole word (visible as the text "reappearing" at the end of the line).
-        // At full progress every line must span its own full bounds.
+        // GH #820 residual: the sung (SING) long-word envelope reuses these full-progress per-line
+        // rects. A long word starting at the end of line 1 and wrapping to a wider line 2 used to
+        // be clipped by a single first-char..last-char box — wrapped characters fell out of the
+        // envelope until the static branch redrew the whole word (text "reappearing" at the line
+        // end); at full progress every line must span its own full bounds.
         val rects = computeActiveFillRects(
             lineCharCounts = intArrayOf(3, 4),
             lineLefts = floatArrayOf(673f, 303f),
@@ -577,13 +575,11 @@ class KaraokeFillSupportTest {
 
     @Test
     fun `every branch shares one line height multiplier so branch switches never resize the item`() {
-        // The animated and the static branch must lay a line out with the same
-        // height: a line flips between the two branches on activation and at
-        // the end of the sung-fade tail. If either branch used a different
-        // line height, the LazyColumn item would resize on the switch and the
-        // whole list would jump. Both branches read this one shared constant,
-        // so the leave animation runs while the settle effects finish without
-        // any layout shift. Pin the value so a drift re-creates the jump.
+        // The animated and the static branch must lay a line out with the same height: a line
+        // flips between the two branches on activation and at the end of the sung-fade tail, so
+        // if either branch used a different line height the LazyColumn item would resize on the
+        // switch and the whole list would jump. Both branches read this one shared constant;
+        // pin the value so a drift re-creates the jump.
         assertEquals(1.4f, KARAOKE_LINE_HEIGHT_MULTIPLIER)
         // The regular line also keeps its full slot fraction in every state,
         // so only pixels (never the layout) change on the switch.
@@ -636,13 +632,10 @@ class KaraokeFillSupportTest {
     @Test
     fun `line item indices account for the header, initial loader and interleaved gap loaders`() {
         // Layout with the initial loader ON and a gap loader owned by line 1:
-        //   0 = header, 1 = initial loader
-        //   2 = line 0
-        //   3 = line 1, 4 = line 1's gap loader
+        //   0 = header, 1 = initial loader, 2 = line 0, 3 = line 1, 4 = line 1's gap loader,
         //   5 = line 2, 6 = line 3
-        // Each line item AND its gap-loader item must advance the cursor,
-        // otherwise the re-centering targets the wrong item and the text
-        // scrolls out of the visible area.
+        // Each line item AND its gap-loader item must advance the cursor, otherwise the
+        // re-centering targets the wrong item and the text scrolls out of the visible area.
         val gapWindows = mapOf(1 to (5000L to 9000L))
         val indices = lyricsLineItemIndices(
             lineCount = 4,

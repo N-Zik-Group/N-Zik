@@ -20,13 +20,11 @@ import app.n_zik.android.appContext
  * reading the original metadata. Embedded artwork bytes are left untouched.
  *
  * The facade also applies the unknown-metadata placeholders
- * ([SessionMetadataFallbacks]): tracks loaded WITHOUT title/artist tags must
- * not render a blank label on the session surfaces (Android Auto home card,
- * media notification — both read this [getMediaMetadata] through the session).
- * The placeholders only apply while a track is loaded and the player is not
- * IDLE: an empty player, or a restored queue nothing is playing (IDLE),
- * publishes its metadata untouched, so no "unknown title / unknown artist"
- * surfaces for a player without music (code review D1, 2026-10-05).
+ * ([SessionMetadataFallbacks]) while a track is LOADED and the player is not
+ * IDLE (code review D1, 2026-10-05): an empty player, or a restored queue
+ * nothing is playing, publishes its metadata untouched, so no "unknown title /
+ * unknown artist" surfaces for a player without music on the session surfaces
+ * (Android Auto home card, media notification).
  */
 @UnstableApi
 class SessionArtworkPlayer(upstream: Player) : ForwardingPlayer(upstream) {

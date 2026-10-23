@@ -67,18 +67,16 @@ import timber.log.Timber
  * backup file (created by the app's Backup & Restore feature or by a previous version).
  *
  * Reuses the existing import pipeline ([ImportDatabase] / [ImportSettings], the same
- * components behind Settings -> Backup and restore). Every per-profile restore
- * (database / settings / both / all) first asks which profile the data lands into
- * ([ImportTargetProfileDialog]); a successful restore into the active profile ends
- * with the restart prompt ([RestartAppDialog]) — its `Render()` lives in the
- * activity's onboarding container (it must survive the step transition, which a
- * screen-local composition would not).
+ * components behind Settings → Backup and Restore). Every per-profile restore first asks
+ * which profile the data lands into ([ImportTargetProfileDialog]); a successful restore
+ * into the active profile ends with the restart prompt ([RestartAppDialog]) — its
+ * `Render()` lives in the activity's onboarding container (it must survive the step
+ * transition, which a screen-local composition would not).
  *
  * Two exits: "skip" calls [onComplete] (the flow moves on to the accounts step); a
- * successful restore advances the flow to the next step and triggers the restart
- * prompt — the complete flag is left unwritten, so the restart lands on the next step
- * and the user stays inside onboarding, with the restored data live once the app
- * re-reads its preferences.
+ * successful restore advances the flow and triggers the restart prompt — the complete
+ * flag is left unwritten, so the restart lands on the next step and the user stays
+ * inside onboarding, with the restored data live once the app re-reads its preferences.
  */
 @Composable
 fun OnboardingImportScreen(

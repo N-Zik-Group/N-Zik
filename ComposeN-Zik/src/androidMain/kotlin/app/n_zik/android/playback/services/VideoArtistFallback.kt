@@ -63,27 +63,24 @@ internal fun channelWithBrowseId(
     result.authors?.firstOrNull { it.endpoint?.browseId != null }
 
 /**
- * Resolves the artist of a video through a YTM video search and copies the
- * matched video's channel as its artist.
+ * Resolves the artist of a video through a YTM video search and copies the matched video's
+ * channel as its artist.
  *
- * Search query: the queue title ([queueTitle]) if non-blank, else the stored
- * DB title ([dbTitle]) with its prefix cleaned. The same cleaned title is
- * used for the [sameVideo] fallback comparison, since YTM result names carry
- * no prefix. A blank query means nothing to search. On a match, in one
- * SUSPENDING transaction (the `[IDs]` loop re-reads the link right after this
- * call returns, so the write must be committed before this function does):
- * the Artist row is created (absent — via insertIgnore, so a concurrent
- * writer committing between the read and the write is never clobbered),
- * repaired (present with a blank name — rows wiped by the empty-page bug) or
- * left alone (present with a non-blank name — the stored name is
- * authoritative); the SongArtistMap link is inserted with insertIgnore
- * (idempotent). The song's own `artistsText` is not touched (owned by the
- * queue/MediaItem upserts + NameConvergence).
+ * Search query: the queue title ([queueTitle]) if non-blank, else the stored DB title
+ * ([dbTitle]) with its prefix cleaned — the same cleaned title is used for the [sameVideo]
+ * fallback comparison (YTM result names carry no prefix). A blank query means nothing to
+ * search. On a match, in one SUSPENDING transaction (the `[IDs]` loop re-reads the link right
+ * after this call returns, so the write must be committed before this function does): the
+ * Artist row is created (absent — via insertIgnore, so a concurrent writer committing between
+ * the read and the write is never clobbered), repaired (present with a blank name — rows
+ * wiped by the empty-page bug) or left alone (present with a non-blank name — the stored name
+ * is authoritative); the SongArtistMap link is inserted with insertIgnore (idempotent). The
+ * song's own `artistsText` is not touched (owned by the queue/MediaItem upserts +
+ * NameConvergence).
  *
- * A match without a usable channel (no browseId, or a blank channel name) is
- * a no-write: a nameless row would be kept by the empty-page guard and the
- * inserted link would stop this fallback from ever re-trying. Network
- * failure or no match: a log, no write, no crash.
+ * A match without a usable channel (no browseId, or a blank channel name) is a no-write: a
+ * nameless row would be kept by the empty-page guard and the inserted link would stop this
+ * fallback from ever re-trying. Network failure or no match: a log, no write, no crash.
  */
 internal suspend fun resolveVideoArtistFallback(
     videoId: String,

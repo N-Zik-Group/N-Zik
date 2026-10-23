@@ -56,9 +56,7 @@ class RewindPlaylistGenerationTest {
         Dependencies.init(mainApplication)
     }
 
-    // ------------------------------------------------------------------
     // Pure contract: names, windows, display names
-    // ------------------------------------------------------------------
 
     @Test
     fun monthlyNameZeroPadsTheMonth() {
@@ -152,9 +150,7 @@ class RewindPlaylistGenerationTest {
         assertEquals("My Playlist", app.rewindDisplayName("My Playlist"))
     }
 
-    // ------------------------------------------------------------------
     // generateRewindPlaylist against the real database
-    // ------------------------------------------------------------------
 
     @Test
     fun creationWritesTheWindowTopSongsToPositionsInTopOrder() = runBlocking {
@@ -273,9 +269,7 @@ class RewindPlaylistGenerationTest {
         assertEquals(listOf("gen_empty_keep"), songsIn(existingId))
     }
 
-    // ------------------------------------------------------------------
     // Helpers
-    // ------------------------------------------------------------------
 
     private suspend fun insertSong(id: String) {
         withContext(NzikDispatchers.DATA) {

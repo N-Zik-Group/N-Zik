@@ -39,14 +39,11 @@ internal fun placeholderCompositeBase(effectiveIsDark: Boolean): Color =
     if (effectiveIsDark) Color.White else Color.Black
 
 /**
- * Re-caps a restored dynamic palette (spec-achromatic-ramp-luminance-cap, loopback 2, EC-1,
- * 2026-09-28): the Saver `ColorPalette.Companion` persists only `accent + isDark` and rebuilds
- * the ramp through the legacy NON-capped `dynamicColorPaletteOf`, so after a process death a
- * capped achromatic ramp (e.g. a light-tone ramp restored in a dark theme) comes back uncapped
- * until the next extraction. Pure gating: only [ColorPaletteName.Dynamic] reaches
- * [m3eCapAchromaticBackgrounds] (which itself is a no-op same-instance when the tone is already
- * in range or matching) — any other name, including static palettes, gets the very same
- * instance back.
+ * Re-caps a restored dynamic palette (spec-achromatic-ramp-luminance-cap, loopback 2, EC-1):
+ * the Saver persists only `accent + isDark` and rebuilds the ramp through the legacy NON-capped
+ * `dynamicColorPaletteOf`, so a capped achromatic ramp comes back uncapped after a process
+ * death. Only [ColorPaletteName.Dynamic] reaches [m3eCapAchromaticBackgrounds] (a no-op
+ * same-instance when the tone is already in range); any other name gets the same instance back.
  *
  * @param colorPaletteName the saved palette name (legacy enum, read-only here)
  * @param themeIsDark the theme the restored palette renders in — the same expression

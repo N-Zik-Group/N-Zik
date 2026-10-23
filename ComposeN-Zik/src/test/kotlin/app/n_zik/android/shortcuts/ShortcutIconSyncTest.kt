@@ -113,9 +113,7 @@ class ShortcutIconSyncTest {
         assertEquals(R.drawable.shortcut_rescue, drawableRes)
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // AppShortcutsSettingsDialog order/enabled parsing
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `parseOrder with empty string returns default order`() {
@@ -161,9 +159,7 @@ class ShortcutIconSyncTest {
         assertFalse(SHORTCUT_ARTISTS_ID in enabled)
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // resolveActiveShortcutIds: the pure function that decides what gets registered
-    // ──────────────────────────────────────────────────────────────────────
 
     private val everyId = ALL_SHORTCUT_IDS.joinToString(",")
 
@@ -286,9 +282,7 @@ class ShortcutIconSyncTest {
         )
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Per-profile shortcuts (spec-profile-shortcuts)
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `profile shortcut id is built from the stable profile id`() {
@@ -383,9 +377,7 @@ class ShortcutIconSyncTest {
         assertEquals(listOf("profile_work", "profile_home", SHORTCUT_SEARCH_ID, SHORTCUT_RESCUE_ID), active)
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Where each shortcut goes
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `rescue opens RescueActivity and every other shortcut opens MainActivity`() {
@@ -449,9 +441,7 @@ class ShortcutIconRenderingTest {
         assertEquals(16, bitmap.height)
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Per-profile shortcuts (spec-profile-shortcuts) — need a real framework runtime
-    // ──────────────────────────────────────────────────────────────────────
 
     private fun namesFile() = context.filesDir.resolve(PROFILE_NAMES_FILE_NAME)
 

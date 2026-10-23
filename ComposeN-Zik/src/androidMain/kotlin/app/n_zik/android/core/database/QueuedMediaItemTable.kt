@@ -26,21 +26,8 @@ interface QueuedMediaItemTable {
     fun allDirect( limit: Int = Int.MAX_VALUE ): List<QueuedMediaItem>
 
     /**
-     * Attempt to write the list of [QueuedMediaItem] to database.
-     *
-     * ### Standalone use
-     *
-     * When **1** element fails, the entire list is
-     * considered failed, database rolls back its operation,
-     * and passes exception to caller.
-     *
-     * ### Transaction use
-     *
-     * When **1** element fails, the entire list is
-     * considered failed, **the entire transaction rolls back**
-     * and passes exception to caller.
-     *
-     * @param queuedMediaItems list of [QueuedMediaItem] to insert to database
+     * Inserts [queuedMediaItems]; when even one element fails the whole insert
+     * (or the surrounding transaction) rolls back and the exception propagates.
      */
     @Insert
     @Throws(SQLException::class)

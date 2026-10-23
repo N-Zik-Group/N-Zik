@@ -116,13 +116,8 @@ fun getFastPathForRange(layout: TextLayoutResult, startIdx: Int, endIdx: Int): P
 /**
  * Parse the extended LRC format produced by TTMLParser.toLRC().
  *
- * Format:
- * ```
- * [MM:SS.cc]{agent:v1}Line text
- * <word1:startSec:endSec|word2:startSec:endSec>
- * [MM:SS.cc]{bg}Background line
- * <word1:startSec:endSec|word2:startSec:endSec>
- * ```
+ * Format: `[MM:SS.cc]{agent:v1|bg}Line text` followed by a word line
+ * `<word1:startSec:endSec|word2:startSec:endSec>`.
  */
 fun parseKaraokeLrc(text: String): List<KaraokeLine> {
     val lines = text.trim().lines()
@@ -584,12 +579,10 @@ fun KaraokeLyricsView(
         )
     }
 
-    // The item the scroll index should point at: an active line (a main line,
-    // else the active chorus — the index switches to the chorus, so it
-    // advances to the center like a main line and retreats when the next main
-    // line takes over); while no line is active, the gap-loader item of the
-    // active gap window (or the initial loader); otherwise null = no
-    // re-centering (the list stays put).
+    // The item the scroll index should point at: an active line (main, else the
+    // active chorus — the index switches to it); while no line is active, the
+    // gap-loader item of the active gap window (or the initial loader);
+    // otherwise null = no re-centering (the list stays put).
     val centerTarget: Int? = when {
         activeLineIndices.isNotEmpty() -> lineItemIndices.getOrNull(primaryActiveIndex)
         !showIntervalIndicator -> null
@@ -616,11 +609,9 @@ fun KaraokeLyricsView(
     // Chorus lines expand their slot (200ms) when they appear (lead-in) —
     // the height change shifts the active line's scroll position, so the
     // canvas appears to jump. (Choruses never de-pop: once sung they stay
-    // shown.) When the set of shown chorus lines changes, wait for the
-    // height animation to settle and re-center on the current target so the
-    // sung line stays put. If the target sits below the visible center its
-    // height change does not move it, and the |offset| > 10 guard inside
-    // recenterOnItem makes this a no-op.
+    // shown.) When the set of shown chorus lines changes, wait for the height
+    // animation to settle and re-center so the sung line stays put (a no-op
+    // when the target sits below the visible center: the |offset| > 10 guard).
     val chorusShownKeys = remember(karaokeLines, currentPositionMs) {
         chorusShownIndices(karaokeLines, currentPositionMs)
     }
@@ -743,10 +734,9 @@ fun KaraokeLyricsView(
             )
             // The pop (scale up) is kept while the leaving line is still settling,
             // so it fades in place instead of popping back down and shifting the
-            // text; it only returns to the base scale once the line is fully in the
-            // background (static branch, already dimmed). Chorus lines never scale
-            // at all (loader behavior: height + opacity only), so their pop cannot
-            // shift their text either.
+            // text; it only returns to the base scale once fully in the background
+            // (static branch, already dimmed). Chorus lines never scale at all
+            // (loader behavior: height + opacity only).
             val animateScale by animateFloatAsState(
                 targetValue = karaokeLineScale(line.isBackground, isActiveLine || isStillAnimating),
                 animationSpec = tween(400, easing = FastOutSlowInEasing),
@@ -763,14 +753,12 @@ fun KaraokeLyricsView(
                     .fillMaxWidth()
                     .graphicsLayer {
                         // Render without an offscreen buffer: with alpha < 1 the default
-                        // strategy implicitly clips content to the item bounds, which
-                        // cuts the rising karaoke characters (up to ~13dp above the
-                        // layout — background lines in particular). ModulateAlpha
-                        // applies the alpha per draw command, so overflow is visible
-                        // and the lift effect is never cropped. Chorus lines are
-                        // clipped while their slot is collapsing so the natural-size
-                        // content cannot be drawn over the neighboring lines; once
-                        // fully expanded the clip is off again.
+                        // strategy clips content to the item bounds, cutting the rising
+                        // characters (up to ~13dp above the layout). ModulateAlpha
+                        // applies the alpha per draw command, so overflow is visible and
+                        // the lift is never cropped. Chorus lines are clipped while
+                        // their slot is collapsing (natural-size content would draw over
+                        // the neighbors); the clip is off once fully expanded.
                         compositingStrategy = CompositingStrategy.ModulateAlpha
                         alpha = animateOpacity
                         scaleX = animateScale
@@ -845,12 +833,11 @@ fun KaraokeLyricsView(
                                         }
                                     }
                                     
-                                    // Word itself — SING words (short or long alike) are transparent
-                                    // in this layer: the foreground clip renders the settled word,
-                                    // so both word types share the exact same final pixels (no dim
-                                    // "halo" behind short words, which made them look brighter than
-                                    // long ones once sung). Long ACTIVE words get a smooth fade
-                                    // under the wave reveal.
+                                    // Word itself — SING words (short or long alike) are
+                                    // transparent in this layer: the foreground clip renders the
+                                    // settled word, so both word types share the exact same final
+                                    // pixels (no dim "halo" behind short words). Long ACTIVE
+                                    // words get a smooth fade under the wave reveal.
                                     val wordColor = when {
                                         isSung -> androidx.compose.ui.graphics.Color.Transparent
                                         isLongWord && isActive -> {
@@ -956,13 +943,11 @@ fun KaraokeLyricsView(
                         }
 
                         // Foreground (active) text with character-level clipping.
-                        // Per-word settle: every word fades from the full accent
-                        // to the dimmed past-line accent (the color the static
-                        // branch uses) over the sung-fade window after its OWN
-                        // end — short words included — so nothing pops in the
-                        // background and the branch switch at the end of the
-                        // fade tail is seamless (all words already sit on the
-                        // static branch color).
+                        // Per-word settle: every word fades from the full accent to the
+                        // dimmed past-line accent (the color the static branch uses) over
+                        // the sung-fade window after its OWN end — short words included — so
+                        // nothing pops in the background and the branch switch at the end of
+                        // the fade tail is seamless (all words already sit on that color).
                         val foregroundText = buildAnnotatedString {
                             if (line.words.isNotEmpty() && !isTextReplaced) {
                                 var searchIdx = 0
@@ -1094,9 +1079,8 @@ fun KaraokeLyricsView(
                                             // Envelope: per-physical-line rects, fully revealed — the same
                                             // geometry the ACTIVE branch ends on (progress 1), so the
                                             // ACTIVE→SING switch is seamless. The legacy single rect
-                                            // (startBox.left..endBox.right) collapsed to a narrow column
-                                            // when a long word started at the end of a line and wrapped:
-                                            // the wrapped part was clipped out / mixed with the column.
+                                            // collapsed to a narrow column for a wrapped word starting at
+                                            // the end of a line (the wrapped part was clipped out).
                                             val pad = with(density) { 8.dp.toPx() }
                                             val sungLayout = object : ActiveFillLayout {
                                                 override fun getLineForOffset(offset: Int) = layout.getLineForOffset(offset)
@@ -1164,12 +1148,11 @@ fun KaraokeLyricsView(
                                         } else {
                                             // Short word: same per-character settle as the long
                                             // words, but at rest (no wave/rise motion) — identical
-                                            // final rendering so short and long sung words look
-                                            // the same (a whole-word path clip left glyph
-                                            // overhangs uncut, which made short words look
-                                            // brighter than long ones once sung).
-                                            // No startBox..endBox envelope: it collapses for a word
-                                            // that wraps; the per-char clips are enough (no motion).
+                                            // final rendering so short and long sung words look the
+                                            // same (a whole-word path clip left glyph overhangs
+                                            // uncut, making short words look brighter). No
+                                            // startBox..endBox envelope: it collapses for a word that
+                                            // wraps; the per-char clips are enough (no motion).
                                             val wordLen = word.text.length
                                             for (charIdx in 0 until wordLen) {
                                                 val globalIdx = (word.charStartIndex + charIdx).coerceIn(0, displayedText.length - 1)
@@ -1273,14 +1256,12 @@ fun KaraokeLyricsView(
                                             // Draw each physical line's characters, gated by that line's own sweep
                                             // rect inset to the true frontier (activeLineGateRect strips the 8dp
                                             // horizontal pad): with the padded edges a short final line (often one
-                                            // CJK char) would open half-revealed as soon as the previous line
-                                            // closes — the visible flash at the end of a wrapped word. The per-line
-                                            // rects also overlap vertically (headroom exceeds the CJK line
-                                            // spacing), so the union envelope alone would light up a sliver of the
-                                            // next line's characters as soon as the previous line is fully filled
-                                            // (GH #820 residual): each line's characters are clipped to that line's
-                                            // rect, so the horizontal reveal stays strictly per-line while the
-                                            // vertical headroom for wave/rise is kept.
+                                            // CJK char) would open half-revealed when the previous line closes —
+                                            // the visible flash at the end of a wrapped word. The per-line rects
+                                            // also overlap vertically (headroom exceeds the CJK line spacing), so
+                                            // each line's characters are clipped to that line's rect: the reveal
+                                            // stays strictly per-line (GH #820 residual) while the vertical
+                                            // headroom for wave/rise is kept.
                                             activeWordLineCharRanges(fillLayout, wStartIdx, wEndIdx).forEachIndexed { k, charRange ->
                                                 val lineRect = fillRects.getOrNull(k) ?: return@forEachIndexed
                                                 if (charRange.isEmpty() || !lineRect.revealed || lineRect.right <= lineRect.left) {

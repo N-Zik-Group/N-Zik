@@ -30,22 +30,14 @@ import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.uiRoundnessShape
 
 /**
- * One pill button for [ButtonRow].
+ * One pill button for [ButtonRow]; neither-primary-nor-danger pills use the gray fill
+ * ([ColorPalette.background2]).
  *
- * @param text label rendered on a single line; when it does not fit in
- *        the cell it is bounded to the cell and scrolled with a continuous
- *        marquee. May be empty for icon-only pills.
- * @param primary renders the n_zik accent pill with [ColorPalette.onAccent] text.
- * @param danger renders the filled red cancel pill (the n_zik cancel role).
- * @param enabled disabled pills stay visible ([ColorPalette.textDisabled] text)
- *        but do not fire [onClick].
- *
- * Every pill that is neither primary nor danger uses the n_zik gray
- * ([ColorPalette.background2]) fill, matching the legacy n_zik button
- * language (gray secondary + accent confirm).
- * @param icon optional fixed-size icon drawn before the label.
- * @param textColor explicit label color overriding the resolved one
- *        (e.g. dimmed reset, red cancel).
+ * @param text Label on a single line; bounded to the cell and scrolled with a continuous
+ *        marquee when it does not fit. May be empty for icon-only pills.
+ * @param enabled Disabled pills stay visible ([ColorPalette.textDisabled] text) but do not
+ *        fire [onClick].
+ * @param danger Renders the filled red cancel pill (the cancel role).
  */
 data class DialogButton(
     val text: String,
@@ -58,15 +50,13 @@ data class DialogButton(
 )
 
 /**
- * Overflow-safe row of pill buttons — the single source of all dialog
- * buttons (issue #896).
+ * Overflow-safe row of pill buttons — the single source of all dialog buttons (issue #896).
  *
- * Every present button gets an equally weighted cell, and every labelled
- * pill fills its cell (the old n_zik ConfirmDialog distribution,
- * `weight(1f)`), so all pills stay visible and tappable on any screen
- * width and any locale: a label wider than the pill is bounded to it and
- * scrolled (continuous marquee, same pattern as [CheckboxDialog]). An
- * icon-only button renders a small pill centered in its cell instead.
+ * Every present button gets an equally weighted cell and every labelled pill fills its cell
+ * (`weight(1f)`, the old ConfirmDialog distribution), so all pills stay visible and tappable
+ * on any width and locale: a label wider than the pill is bounded to it and scrolled
+ * (continuous marquee, same pattern as [CheckboxDialog]); an icon-only button renders a small
+ * pill centered in its cell.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

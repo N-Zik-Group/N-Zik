@@ -26,11 +26,8 @@ import app.n_zik.android.R
 /**
  * Animated circular wavy progress indicator shown during silent gaps between synced lyrics lines.
  *
- * @param gapStartMs  Timestamp (ms) when the silence begins.
- * @param gapEndMs    Timestamp (ms) when the next lyric line starts.
  * @param currentPositionMs Current playback position in ms.
- * @param visible     Whether the gap is currently active (position inside the gap window).
- * @param color       Accent color for the indicator.
+ * @param visible Whether the gap is currently active (position inside the gap window).
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable

@@ -146,9 +146,7 @@ class RescueScreenProcessStatusTest {
         killTitle = context.getString(R.string.rescue_kill_app)
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Status polling
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     @Config(sdk = [30])
@@ -231,9 +229,7 @@ class RescueScreenProcessStatusTest {
         )
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Danger zone: "Kill the app"
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `the kill the app action re-sends the kill request`() {
@@ -304,9 +300,7 @@ class RescueScreenProcessStatusTest {
         RescueProcess.cancelKillRequest(context)
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Process guard (guardWrite)
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `the process guard refuses writes while alive and releases them when dead`() {

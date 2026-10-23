@@ -259,44 +259,15 @@ interface ArtistTable {
     """)
     fun isFollowing( artistId: String ): Flow<Boolean>
 
-    /**
-     * Attempt to write [artist] into database.
-     *
-     * ### Standalone use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * it'll simply be ignored.
-     *
-     * ### Transaction use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * it'll simply be ignored and the transaction continues.
-     *
-     * @param artist data intended to insert in to database
-     */
+    /** Inserts [artist], silently skipping it when the row already exists (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertIgnore( artist: Artist )
 
-    /**
-     * Attempt to write the list of [Artist] to database.
-     *
-     * If record exist (determined by its primary key),
-     * it'll simply be ignored and the transaction continues.
-     *
-     * @param artists list of [Artist] to insert to database
-     */
+    /** Inserts [artists], silently skipping each existing row (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertIgnore( artists: List<Artist> )
 
-    /**
-     * Attempt to write [artist] into database.
-     *
-     * If [artist] exist (determined by its primary key),
-     * existing record's columns will be replaced
-     * by provided [artist]' data.
-     *
-     * @param artist data intended to insert in to database
-     */
+    /** Inserts [artist], replacing the existing row's columns when its primary key already exists. */
     @Upsert
     fun upsert( artist: Artist )
 
@@ -329,33 +300,13 @@ interface ArtistTable {
         position: Int
     ): Long
 
-    /**
-     * Attempt to write the list of [Artist] to database.
-     *
-     * If record exist (determined by its primary key),
-     * existing record's columns will be replaced
-     * by provided data.
-     *
-     * @param artists list of [Artist] to insert to database
-     */
+    /** Inserts [artists], silently skipping each existing row (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun upsert( artists: List<Artist> )
 
     /**
-     * Attempt to replace a record's data with provided [artist].
-     *
-     * ### Standalone use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * the process is cancel and passes exception to caller.
-     *
-     * ### Transaction use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * **the entire transaction rolls back** and passes exception to caller.
-     *
-     *
-     * @param artist intended to update
+     * Replaces the row with [artist]; a conflict throws [SQLException]
+     * (inside a transaction, the entire transaction rolls back).
      *
      * @throws SQLException when there's a conflict
      */
@@ -364,19 +315,8 @@ interface ArtistTable {
     fun update( artist: Artist )
 
     /**
-     * There are 2 possible actions.
-     *
-     * ### If artist IS followed
-     *
-     * This will remove [Artist.bookmarkedAt] timestamp (replace with NULL)
-     *
-     * ## If artist IS NOT followed
-     *
-     * It will assign [Artist.bookmarkedAt] with current time in millis
-     *
-     * @param artistId artist identifier to update its [Artist.bookmarkedAt]
-     *
-     * @return number of artists updated by this operation
+     * Toggles [Artist.bookmarkedAt]: not followed → current time (millis),
+     * followed → NULL. Returns the number of rows updated.
      */
     @Query("""
         UPDATE Artist
@@ -400,8 +340,6 @@ interface ArtistTable {
      *
      * @param artistId artist identifier to update
      * @param followState target state: true = followed, false = disliked, null = neutral
-     *
-     * @return number of artists updated by this operation
      */
     @Query("""
         UPDATE Artist
@@ -683,24 +621,12 @@ interface ArtistTable {
     fun sortInLibraryByPlayCount( limit: Int = Int.MAX_VALUE ): Flow<List<Artist>>
 
     /**
-     * Fetch all artists that have their songs mapped to
-     * at least 1 playlist in library and sort
-     * them according to [sortBy] and [sortOrder].
+     * All library artists, sorted by [sortBy] (an [ArtistSortBy] property)
+     * and [sortOrder] (alphabetical / numerical direction), trimmed to [limit].
      *
-     * [sortBy] sorts all based on each artist's property
-     * such as [ArtistSortBy.Name], [ArtistSortBy.DateAdded], etc.
-     * While [sortOrder] arranges order of sorted songs
-     * to follow alphabetical order A to Z, or numerical order 0 to 9, etc.
-     *
-     * @param sortBy which artist's property is used to sort
-     * @param sortOrder what order should results be in
-     * @param limit stop query once number of results reaches this number
-     *
-     * @return a **SORTED** list of [Artist]'s that are continuously
-     * updated to reflect changes within the database - wrapped by [Flow]
-     *
-     * @see ArtistSortBy
-     * @see SortOrder
+     * @param sortBy which artist property to sort by
+     * @param sortOrder the sort direction
+     * @param limit stop the query once the result count reaches this number
      */
     fun sortInLibrary(
         sortBy: ArtistSortBy,

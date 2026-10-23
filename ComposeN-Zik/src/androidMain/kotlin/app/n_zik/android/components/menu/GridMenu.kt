@@ -89,14 +89,12 @@ object GridMenu {
 
                     if (headerTrailing != null) {
                         // Trailing action next to the title (e.g. refresh): an invisible
-                        // mirror of the action on the left balances its exact width, so the
-                        // title is truly centered on the screen (equal spacers alone would
-                        // center it in the space left of the action). The mirror is alpha(0f)
-                        // and semantics-cleared: invisible to the eye and to TalkBack. The
-                        // trailing composable is composed twice — it is side-effect free in
-                        // its current use (an IconButton), so this is safe. Without a
-                        // trailing, the else branch renders the original block —
-                        // pixel-identical for every existing menu.
+                        // (alpha(0f), semantics-cleared) mirror of the action on the left
+                        // balances its exact width, so the title is truly centered on the
+                        // screen (equal spacers alone would center it in the space left of
+                        // the action). The trailing composable is composed twice — safe: it
+                        // is side-effect free (an IconButton). Without a trailing, the else
+                        // branch renders the original block — pixel-identical for every menu.
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically

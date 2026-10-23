@@ -125,87 +125,36 @@ interface PlaylistTable {
     fun findById( playlistId: Long ): Flow<Playlist?>
 
     /**
-     * Attempt to write [playlist] into database.
+     * Inserts [playlist]; a conflict throws [SQLException] (inside a
+     * transaction, the entire transaction rolls back). Use when the insert
+     * must succeed for the transaction to continue.
      *
-     * ### Standalone use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * the process is cancel and passes exception to caller.
-     *
-     * ### Transaction use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * **the entire transaction rolls back** and passes exception to caller.
-     *
-     * > Note: Use this if inserting record is crucial for
-     * > the transaction to continue.
-     *
-     * @param playlist intended to insert in to database
-     * @return ROWID of this new record, throws exception when fail
+     * @return ROWID of the new record
      * @throws SQLException when there's a conflict
      */
     @Insert
     @Throws(SQLException::class)
     fun insert( playlist: Playlist ): Long
 
-    /**
-     * Attempt to write [playlist] into database.
-     *
-     * ### Standalone use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * it'll simply be ignored.
-     *
-     * ### Transaction use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * it'll simply be ignored and the transaction continues.
-     *
-     * @param playlist data intended to insert in to database
-     */
+    /** Inserts [playlist], silently skipping it when the row already exists (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertIgnore( playlist: Playlist )
 
-    /**
-     * Attempt to write [playlist] into database.
-     *
-     * If [playlist] exist (determined by its primary key),
-     * existing record's columns will be replaced
-     * by provided [playlist]' data.
-     *
-     * @param playlist data intended to insert in to database
-     */
+    /** Inserts [playlist], replacing the existing row's columns when its primary key already exists. */
     @Upsert
     fun upsert( playlist: Playlist )
 
     /**
-     * Attempt to replace a record's data with provided [playlist].
+     * Replaces the row with [playlist]; a conflict throws [SQLException]
+     * (inside a transaction, the entire transaction rolls back).
      *
-     * ### Standalone use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * the process is cancel and passes exception to caller.
-     *
-     * ### Transaction use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * **the entire transaction rolls back** and passes exception to caller.
-     *
-     *
-     * @param playlist intended to update
-     * @return number of rows affected by the this operation
      * @throws SQLException when there's a conflict
      */
     @Update
     @Throws(SQLException::class)
     fun update( playlist: Playlist ): Int
 
-    /**
-     * Attempt to remove a record from database.
-     *
-     * @param playlist intended to delete from database
-     * @return number of rows affected by the this operation
-     */
+    /** Deletes [playlist]; returns the number of rows affected. */
     @Delete
     fun delete( playlist: Playlist ): Int
 
@@ -226,15 +175,8 @@ interface PlaylistTable {
     fun existsDirect( playlistName: String ): Boolean
 
     /**
-     * ### If playlist **IS NOT** pinned
-     *
-     * Add [PINNED_PREFIX] to [Playlist.name]
-     *
-     * ### If playlist **IS** pinned
-     *
-     * Remove [PINNED_PREFIX] from [Playlist.name]
-     *
-     * @return number of rows affected
+     * Toggles the [PINNED_PREFIX] on [Playlist.name]: unpinned → prefixed,
+     * pinned → prefix removed. Returns the number of rows affected.
      */
     @Query("""
         UPDATE Playlist
@@ -332,23 +274,13 @@ interface PlaylistTable {
         }
 
     /**
-     * Fetch all playlists, sort them according to [sortBy] and [sortOrder],
-     * and return [PlaylistPreview] as the result.
+     * All playlists as [PlaylistPreview], sorted by [sortBy] (a
+     * [PlaylistSortBy] property) and [sortOrder] (alphabetical / numerical
+     * direction), trimmed to [limit].
      *
-     * [sortBy] sorts all based on each playlist's property
-     * such as [PlaylistSortBy.Name], [PlaylistSortBy.DateAdded], etc.
-     * While [sortOrder] arranges order of sorted songs
-     * to follow alphabetical order A to Z, or numerical order 0 to 9, etc.
-     *
-     * @param sortBy which playlist's property is used to sorts
-     * @param sortOrder what order should results be in
-     * @param limit stop query once number of results reaches this number
-     *
-     * @return a **SORTED** list of [Artist]'s that are continuously
-     * updated to reflect changes within the database - wrapped by [Flow]
-     *
-     * @see PlaylistSortBy
-     * @see SortOrder
+     * @param sortBy which playlist property to sort by
+     * @param sortOrder the sort direction
+     * @param limit stop the query once the result count reaches this number
      */
     fun sortPreviews(
         sortBy: PlaylistSortBy,

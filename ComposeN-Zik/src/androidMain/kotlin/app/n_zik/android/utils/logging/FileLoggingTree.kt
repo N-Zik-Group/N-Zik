@@ -23,22 +23,20 @@ private const val LOG_DATE_PATTERN = "yyyy-MM-dd HH:mm:ss:SSS"
 private const val FALLBACK_TAG = "NZikFileLog"
 
 /**
- * Timber tree that appends every DEBUG-and-above line to [logFile] without doing any disk I/O
- * on the thread that logs (issue #606, Goal M14).
+ * Timber tree that appends every DEBUG-and-above line to [logFile] without any disk I/O on the
+ * thread that logs (issue #606, Goal M14).
  *
- * [log] only queues an entry into an unbounded channel: it never blocks and never drops a line.
- * A single consumer on [dispatcher] drains the queue in batches, formats the lines, opens the
- * file in append mode, writes the batch, closes it, then applies the size rule ([trimLogFile]).
- * The file is deliberately re-opened for every batch and never kept open, because the Rescue
- * Center and the "debug log" setting delete it from the outside while the tree is planted.
+ * [log] only queues an entry into an unbounded channel: it never blocks and never drops a
+ * line. A single consumer on [dispatcher] drains the queue in batches, formats the lines,
+ * opens the file in append mode, writes the batch, closes it, then applies the size rule
+ * ([trimLogFile]) — re-opened for every batch and never kept open, because the Rescue Center
+ * and the "debug log" setting delete the file from the outside while the tree is planted.
  *
- * A batch that cannot be written stays in memory and is retried, in order, with the next batch.
- * The only loss is a persistent write failure: beyond [maxPendingSize] characters waiting, the
- * oldest waiting lines are abandoned. The writer never calls Timber (that would loop back into
- * this tree).
- *
- * Kept a [Timber.DebugTree] so the tag is still inferred from the call stack, on the caller
- * thread, before [log] is reached.
+ * A batch that cannot be written stays in memory and is retried, in order, with the next
+ * batch; the only loss is a persistent write failure, beyond [maxPendingSize] characters
+ * waiting, where the oldest waiting lines are abandoned. The writer never calls Timber (that
+ * would loop back into this tree). Kept a [Timber.DebugTree] so the tag is still inferred
+ * from the call stack, on the caller thread, before [log] is reached.
  */
 class FileLoggingTree(
     private val logFile: File,

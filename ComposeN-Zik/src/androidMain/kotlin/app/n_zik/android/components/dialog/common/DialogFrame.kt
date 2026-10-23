@@ -24,19 +24,14 @@ import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.uiRoundnessShape
 
 /**
- * Shared dialog window: the canonical n_zik frame, i.e. a card
- * (max width 95% portrait / 60% landscape, max height 80%),
- * [uiRoundnessShape], [colorPalette().background1] and an optional
- * `l` semibold title.
+ * Shared dialog window: the canonical n_zik frame — a card (max width 95% portrait / 60%
+ * landscape, max height 80%), [uiRoundnessShape], [colorPalette().background1] and an
+ * optional `l` semibold title. Every dialog — native or migrated from the legacy tree —
+ * renders through this frame so button rows and content can never overflow (issue #896).
  *
- * Every dialog — native or migrated from the legacy tree — must render
- * through this frame so button rows and content can never overflow
- * (issue #896).
- *
- * The card is the window's root and its body column must NOT be
- * scrollable: `Dialog.Render()` lays out its body with
- * `Modifier.weight(1f, fill = false)`, which collapses in a scrollable
- * column (the body renders 0×0 — the dialog shows its title only).
+ * The card is the window's root and its body column must NOT be scrollable: `Dialog.Render()`
+ * lays out its body with `Modifier.weight(1f, fill = false)`, which collapses in a scrollable
+ * column (the body renders 0×0).
  */
 @Composable
 fun DialogFrame(

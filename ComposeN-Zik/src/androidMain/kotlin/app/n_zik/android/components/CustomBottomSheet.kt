@@ -188,23 +188,15 @@ private class CardClipShape(private val geometry: CardGeometry) : Shape {
 }
 
 /**
- * Bottom Sheet with "Expand / Deploy" animation.
+ * Bottom sheet with an "expand / deploy" animation: the background card deploys from the
+ * mini-player's dimensions to full screen while the mini-player content fades out and the
+ * player content fades in (the content itself does not scale; closing reverses the effect).
  *
- * When the user taps or drags the mini-player, a background card visually
- * deploys from the exact mini-player dimensions to full-screen, while the
- * mini-player content fades out and the full player content fades in.
- * The content itself does NOT scale — only the background card changes size.
- * Closing reverses the effect.
- *
- * @param bottomPadding Padding from the bottom to adjust the collapsed position. A provider,
- *        read at draw time, so an animated value moves the sheet without recomposing it.
- * @param topPadding When non-null the mini-player is anchored at the top of the screen at this
- *        distance from the top edge (also a draw-time provider) instead of the bottom.
- * @param collapsedStartInset Extra room kept free at the start while collapsed, on top of the usual
- *        16dp margin (a navigation rail there). The card still deploys to full width.
- * @param collapsedEndInset Same, at the end.
- * @param collapsedContentHeight The visual height of the mini-player content (without system bar insets).
- *        Used for the collapsed hit target. Defaults to [PlayerSheetState.collapsedBound].
+ * @param bottomPadding Bottom padding for the collapsed position; a draw-time provider, so an
+ *        animated value moves the sheet without recomposing it.
+ * @param topPadding When non-null, anchors the mini-player at the top edge (draw-time provider).
+ * @param collapsedContentHeight Visual height of the mini-player content; the collapsed hit
+ *        target. Defaults to [PlayerSheetState.collapsedBound].
  */
 @Composable
 fun CustomBottomSheet(

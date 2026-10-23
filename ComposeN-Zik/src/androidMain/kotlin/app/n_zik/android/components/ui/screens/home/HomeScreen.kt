@@ -141,11 +141,6 @@ internal fun initialShortcutAction(action: String?, isRestoredInstance: Boolean)
  * https://github.com/N-Zik-Group/N-Zik/issues/832).
  *
  * @param order The tab ids in display order, as parsed from `homeTabsOrderKey`.
- * @param quickPicks Whether the quickpicks tab is enabled.
- * @param songs Whether the songs tab is enabled.
- * @param artists Whether the artists tab is enabled.
- * @param albums Whether the albums tab is enabled.
- * @param playlists Whether the playlists tab is enabled.
  * @return The active tab ids, never empty.
  */
 fun activeHomeTabIds(

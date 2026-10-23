@@ -126,9 +126,7 @@ class HomeSyncService : Service() {
         serviceScope.cancel()
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  ARTISTS SYNC
-    // ═══════════════════════════════════════════════════════════════════
+    // ARTISTS SYNC
     private suspend fun syncArtists(ids: List<String>?, notificationId: Int, resultNotificationId: Int) {
         if (HomeSyncState.isSyncingArtists) return
         HomeSyncState.isSyncingArtists = true
@@ -329,9 +327,7 @@ class HomeSyncService : Service() {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  ALBUMS SYNC
-    // ═══════════════════════════════════════════════════════════════════
+    // ALBUMS SYNC
     private suspend fun syncAlbums(ids: List<String>?, notificationId: Int, resultNotificationId: Int) {
         if (HomeSyncState.isSyncingAlbums) return
         HomeSyncState.isSyncingAlbums = true
@@ -567,9 +563,7 @@ class HomeSyncService : Service() {
         }
     }
     
-    // ═══════════════════════════════════════════════════════════════════
-    //  PLAYLISTS SYNC
-    // ═══════════════════════════════════════════════════════════════════
+    // PLAYLISTS SYNC
     private suspend fun syncPlaylists(ids: List<String>?, notificationId: Int, resultNotificationId: Int) {
         if (HomeSyncState.isSyncingPlaylists) return
         HomeSyncState.isSyncingPlaylists = true

@@ -37,19 +37,18 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 /**
- * Compose UI test for the accounts onboarding step ([OnboardingAccountsScreen]) —
- * the exit contract: leaving the step always advances the flow ([onComplete]), and
- * the restart prompt ([RestartAppDialog]) is requested only when a Discord token is
- * set (a fresh token is picked up only on a new launch; the onboarding-complete
- * flag is left unwritten — the restart lands on the profile step).
+ * Compose UI test for the accounts onboarding step ([OnboardingAccountsScreen]) — the exit
+ * contract: leaving the step always advances the flow ([onComplete]), and the restart
+ * prompt ([RestartAppDialog]) is requested only when a Discord token is set (a fresh token
+ * is picked up only on a new launch; the onboarding-complete flag is left unwritten — the
+ * restart lands on the profile step).
  *
- * JUnit 4 + [RobolectricTestRunner], executed through the project's junit-vintage-engine
- * on the JUnit 5 platform (the `createComposeRule()` rule only works with JUnit 4),
- * with the plain [Application] so the app's heavy init (DI, Room, player) is skipped.
- * Stubs: the app-level keystore-backed [encryptedPreferences] (a JVM has no
- * keystore) and the two appContext-backed one-shot state readers — the plain test
- * Application has no initialized `Dependencies`, and the account login sheets stay
- * closed, so only the card state is composed.
+ * JUnit 4 + [RobolectricTestRunner] through the project's junit-vintage-engine on the JUnit 5
+ * platform (`createComposeRule()` only works with JUnit 4), with the plain [Application] so
+ * the app's heavy init (DI, Room, player) is skipped. Stubs: the keystore-backed
+ * [encryptedPreferences] (a JVM has no keystore) and the two appContext-backed one-shot
+ * state readers — the plain test Application has no initialized `Dependencies`, and the
+ * account login sheets stay closed, so only the card state is composed.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)

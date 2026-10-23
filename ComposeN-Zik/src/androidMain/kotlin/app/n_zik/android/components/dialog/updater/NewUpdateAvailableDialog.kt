@@ -33,19 +33,8 @@ import app.n_zik.android.updater.services.Updater
 object NewUpdateAvailableDialog {
 
     /**
-     * `false` by default.
-     *
-     * When this field is set to `true`, it'll
-     * keep the dialog from showing up even when
-     * [isActive] is `true`.
-     *
-     * This is used to prevent user from getting
-     * annoyed by constant pop-up saying that
-     * there's a new update available.
-     *
-     * This value will be reset once the app is
-     * restart, either by user or by setting it
-     * programmatically.
+     * `false` by default. When set to `true`, the update dialog is not shown even when
+     * [isActive] is `true` — a one-shot dismissal that resets when the app restarts.
      */
     var isCancelled: Boolean by mutableStateOf( !BuildConfig.IS_AUTOUPDATE )
 

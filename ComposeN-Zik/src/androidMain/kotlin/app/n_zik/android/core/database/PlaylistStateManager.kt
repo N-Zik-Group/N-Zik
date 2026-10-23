@@ -6,10 +6,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 
 /**
- * Centralized reactive manager for song playlist membership states.
- *
- * Instead of each SongItem querying the database individually (N queries for N items),
- * this manager provides batch loading: query once for a list of song IDs.
+ * Centralized reactive manager for song playlist membership states: batch-loads
+ * membership for a list of song IDs in one query instead of N individual queries.
  *
  * Usage in Composable:
  *   val playlistStatesMap by remember(songIds) {
@@ -38,17 +36,13 @@ object PlaylistStateManager {
         getPlaylistStates( songIds, Database.songPlaylistMapTable )
 
     /**
-     * Get playlist membership for a list of song IDs as a Flow.
-     * Returns Map<songId, inPlaylist> in which EVERY requested ID is present:
-     * - true  = the song belongs to at least one playlist
-     * - false = the song is not mapped to any playlist
+     * Get playlist membership for [songIds] as a Flow. Returns Map<songId, inPlaylist>
+     * in which EVERY requested ID is present: true = mapped to at least one playlist,
+     * false = not mapped to any.
      *
-     * This is MUCH more efficient than querying each song individually.
-     * One SQL query per chunk of [CHUNK_SIZE] songs instead of N SQL queries,
-     * keeping every query below the SQLite bind-parameter limit even for very
-     * large song lists.
+     * One SQL query per chunk of [CHUNK_SIZE] songs instead of N queries, staying
+     * below the SQLite bind-parameter limit even for very large song lists.
      *
-     * @param songIds song IDs to check
      * @param dao [SongPlaylistMapTable] to query (defaults to the production database
      * via [getPlaylistStates]; overridable for tests)
      */

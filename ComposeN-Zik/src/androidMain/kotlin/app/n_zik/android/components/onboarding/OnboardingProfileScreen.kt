@@ -117,29 +117,29 @@ fun profileStepInitialAction(
  * Last step of the first-launch onboarding flow: the identity of the base clone —
  * its name, the source of the face name shown in the app, its photo and the source
  * of the face avatar (a full mirror of the face card of the settings). The accounts
- * step comes before this one, so the account face sources can be unlocked by a
+ * step comes before this one, so the account face sources are already unlocked by a
  * login made there (or a cookie restored by the import).
  *
  * The step writes only into the profile store: the base display name
  * (`profile_preferences.displayName_default`), the face name source
- * (`preferences.faceNameSource`) and the face avatar source
- * (`preferences.faceAvatarSource`, plain prefs — the active profile is the base
- * during onboarding) and the photo file (`profiles/default/avatar.jpg`, the same
- * helpers as the face card). The no-op rule of the rename flows applies: a name
- * identical to the resolved base name stores nothing; a face source is only
- * written when it differs from the default "profil".
+ * (`preferences.faceNameSource`), the face avatar source
+ * (`preferences.faceAvatarSource`, plain prefs — the active profile is the base during
+ * onboarding) and the photo file (`profiles/default/avatar.jpg`, the same helpers as
+ * the face card). The no-op rule of the rename flows applies: a name identical to the
+ * resolved base name stores nothing; a face source is only written when it differs
+ * from the default "profil".
  *
  * The face sources are the same four as the settings face card (same labels and
- * icons); an account source is locked while that account is not logged in (the
- * state is a one-shot read on the DATA dispatcher — the secure prefs are
- * keystore-backed, never built in composition). The face preview applies the same
- * pure resolvers as the face chain to the state as typed.
+ * icons); an account source is locked while that account is not logged in (the state
+ * is a one-shot read on the DATA dispatcher — the secure prefs are keystore-backed,
+ * never built in composition). The face preview applies the same pure resolvers as
+ * the face chain to the state as typed.
  *
- * Auto-skip: when the import step settled the identity (restored profiles or a
- * custom base name), the step advances on its own ([profileStepInitialAction]).
+ * Auto-skip: when the import step settled the identity (restored profiles or a custom
+ * base name), the step advances on its own ([profileStepInitialAction]).
  *
- * @param onComplete continue pressed (or the auto-skip fired) — the flow
- *   completes (this is the last step)
+ * @param onComplete Continue pressed (or the auto-skip fired) — the flow completes
+ *   (this is the last step).
  */
 @Composable
 fun OnboardingProfileScreen(

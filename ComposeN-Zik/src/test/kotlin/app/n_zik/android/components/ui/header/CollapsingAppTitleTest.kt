@@ -74,9 +74,7 @@ class CollapsingAppTitleTest {
         Dependencies.init(mainApplication)
     }
 
-    // ------------------------------------------------------------------
     // Pure threshold logic
-    // ------------------------------------------------------------------
 
     @Test
     fun `title stays expanded when the available width covers the ideal width`() {
@@ -99,9 +97,7 @@ class CollapsingAppTitleTest {
         assertFalse(shouldCollapseTitle(availablePx = 0, idealPx = 0, tolerancePx = 8))
     }
 
-    // ------------------------------------------------------------------
     // Layout behavior
-    // ------------------------------------------------------------------
 
     @Test
     fun `extras stay expanded when the header has enough width`() {

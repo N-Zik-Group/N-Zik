@@ -26,16 +26,10 @@ import app.kreate.android.me.knighthat.utils.csv.SongCSV
 import java.io.OutputStream
 
 /**
- * Create a custom CSV file with replicable information of
- * provided songs. Can be used to share between users.
+ * Create a custom CSV file with replicable information of provided songs (shareable
+ * between users).
  *
- * This is the template of CSV file:
- *
- * | PlaylistBrowseId | PlaylistName | MediaId | Title | Artists | Duration | ThumbnailUrl |
- * | --- | --- | --- | --- | --- | --- | --- |
- * | 1 | Awesome Playlist | dQw4w9WgXcQ | A song | Anonymous | 212 | https://... |
- * | 2 | Summer | fNFzfwLM72c | Lovely | Anonymous | 250 | https://... |
- * | 3 | New Songs | kPa7bsKwL-c | DWAS | Anonymous | 253 | https://... |
+ * Columns: `PlaylistBrowseId | PlaylistName | MediaId | Title | Artists | Duration | ThumbnailUrl`
  */
 class ExportSongsToCSVDialog private constructor(
     valueState: MutableState<TextFieldValue>,

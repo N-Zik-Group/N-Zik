@@ -234,9 +234,7 @@ object RescueFiles {
         }
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Process guard
-    // ──────────────────────────────────────────────────────────────────────
 
     /**
      * Returns true when the main app process (not `:rescue`) is currently running.
@@ -252,9 +250,7 @@ object RescueFiles {
         } == true
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Export database
-    // ──────────────────────────────────────────────────────────────────────
 
     /**
      * The database could not be checkpointed because another connection (typically the main app
@@ -310,9 +306,7 @@ object RescueFiles {
         }
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Import database (with validation)
-    // ──────────────────────────────────────────────────────────────────────
 
     /**
      * Validates the SQLite header of a stream.
@@ -399,9 +393,7 @@ object RescueFiles {
         moveReplacing(newDb, dbFile)
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Export settings (CSV)
-    // ──────────────────────────────────────────────────────────────────────
 
     /**
      * Outcome of a settings export/import.
@@ -480,9 +472,7 @@ object RescueFiles {
             Triple(row["Type"].orEmpty(), key, row["Value"].orEmpty())
         }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Import settings (CSV)
-    // ──────────────────────────────────────────────────────────────────────
 
     /**
      * Imports settings from a CSV file.
@@ -574,10 +564,8 @@ object RescueFiles {
         return SettingsImportStats(imported, encryptedSkipped)
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Profile state (list + faces) — the archive the auto backup writes, managed
     // here by the manual import/export
-    // ──────────────────────────────────────────────────────────────────────
 
     /**
      * Exports the combined profile state archive (the list + the base64 face of every
@@ -751,10 +739,8 @@ object RescueFiles {
             toReset.size
         }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Profile reset backups + restore (the reset is reversible, like the
     // database and settings resets)
-    // ──────────────────────────────────────────────────────────────────────
 
     /** The database file name of [profileId] (data.db for the base — the app's own rule). */
     private fun profileDatabaseName(profileId: String): String =
@@ -996,11 +982,9 @@ object RescueFiles {
         }
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Per-profile data dirs (spec-profile-data-separation: the SEPARATE data of a
     // profile is wiped with the profile — the shared items are NEVER touched, they
     // belong to the base)
-    // ──────────────────────────────────────────────────────────────────────
 
     /**
      * Deletes the data of [profileId]'s OWN namespace: its suffixed directories
@@ -1129,9 +1113,7 @@ object RescueFiles {
         """_(\d{4}-\d{2}-\d{2}_\d{6})(?:_(?:Settings|Profiles|Face))?(?:_AutoBackup\.(?:sqlite|csv|txt|jpg)|_(?:Profiles|Face)_Export\.(?:txt|jpg))$"""
     )
 
-    // ──────────────────────────────────────────────────────────────────────
     // Export crash logs
-    // ──────────────────────────────────────────────────────────────────────
 
     /**
      * Exports crash and debug logs to the given SAF URI as a combined text file.
@@ -1191,9 +1173,7 @@ object RescueFiles {
         Timber.tag(TAG).i("Logs deleted successfully")
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Clear cache
-    // ──────────────────────────────────────────────────────────────────────
 
     /**
      * Clears streaming cache, image cache, OkHttp cache, and temp files.
@@ -1274,9 +1254,7 @@ object RescueFiles {
         }
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Delete downloads
-    // ──────────────────────────────────────────────────────────────────────
 
     /**
      * Deletes all downloaded media files and the ExoPlayer download database.
@@ -1329,9 +1307,7 @@ object RescueFiles {
         return deletedCount
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Reset database (reversible)
-    // ──────────────────────────────────────────────────────────────────────
 
     /**
      * Moves `data.db` (+ `-wal`, `-shm`) to `filesDir/rescue_backups/`.
@@ -1484,9 +1460,7 @@ object RescueFiles {
         return File(File(context.filesDir, RESCUE_BACKUPS_DIR), DB_FILE_NAME).exists()
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Reset settings
-    // ──────────────────────────────────────────────────────────────────────
 
     /**
      * Backs up current settings, then clears both normal preferences and encrypted preferences.

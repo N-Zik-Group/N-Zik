@@ -26,14 +26,12 @@ import timber.log.Timber
  * equivalent exists in N-Zik).
  *
  * Wraps the shared [PlayerServiceModern] through its own `bindService` (the service `onBind`
- * returns the same binder the UI uses, so no legacy file change is needed) and exposes the
- * small surface the sync manager needs:
- *  - dynamic [Player] access (the service swaps the ExoPlayer on crossfade, `player` is never
- *    cached);
- *  - playback control for sync operations (play/pause/seek/queue manipulation);
- *  - player-listener registration that survives crossfade player swaps
- *    (re-attached when [PlayerServiceModern.playerUpdateTrigger] increments);
- *  - upcoming-queue snapshots and track conversions (proto [TrackInfo] <-> [MediaItem]).
+ * returns the same binder the UI uses) and exposes the small surface the sync manager needs:
+ * dynamic [Player] access (the service swaps the ExoPlayer on crossfade, `player` is never
+ * cached); playback control for sync operations (play/pause/seek/queue manipulation);
+ * player-listener registration that survives crossfade player swaps (re-attached when
+ * [PlayerServiceModern.playerUpdateTrigger] increments); upcoming-queue snapshots and track
+ * conversions (proto [TrackInfo] <-> [MediaItem]).
  *
  * Guests never change playback: the manager only drives this bridge with host commands, and
  * the user-facing controls are disabled via [listenTogetherGuestLock].
@@ -254,10 +252,9 @@ object ListenTogetherPlayerBridge {
      * Mutation order is a Media3 constraint (bug 2026-09-26, "timeline cassée"): a seek to
      * another window is applied *after* this call returns, and removing a window the player
      * is transitioning through (or the item it is playing) cancels that transition — the
-     * player was left IDLE with a dead timeline and never recovered. So the target is
-     * sought first, then only items *after* the target are adjusted, and the played head
-     * (which includes the item that was playing) is trimmed only once the transition has
-     * completed ([scheduleHeadTrim]).
+     * player was left IDLE with a dead timeline. So the target is sought first, then only
+     * items *after* it are adjusted, and the played head is trimmed only once the transition
+     * has completed ([scheduleHeadTrim]).
      */
     @UnstableApi
     fun setMediaItemsForSync(mediaItems: List<MediaItem>, startIndex: Int = 0, startPositionMs: Long = 0L) {

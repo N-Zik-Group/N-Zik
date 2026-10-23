@@ -185,9 +185,7 @@ class RescueFilesProfileOpsTest {
         File(databasesDir, "exoplayer_internal.db").writeText("base-index")
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // deleteProfiles
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun deleteProfilesPurgesNamesSettingsDatabaseAndFace() {
@@ -288,9 +286,7 @@ class RescueFilesProfileOpsTest {
         assertTrue(File(databasesDir, "data_work.db").exists())
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // resetProfiles — the base
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun resetProfilesResetsTheBaseLikeAnyOtherProfile() {
@@ -338,9 +334,7 @@ class RescueFilesProfileOpsTest {
         assertEquals("work", File(filesDir, "Profiles_names.txt").readText().trim())
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // resetProfiles
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun resetProfilesWipesTheDataButKeepsTheProfileInTheList() {
@@ -401,9 +395,7 @@ class RescueFilesProfileOpsTest {
         assertEquals("work", File(filesDir, "Profiles_names.txt").readText().trim())
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Profile reset backups + restore
-    // ──────────────────────────────────────────────────────────────────────
 
     private fun backupDir(profile: String) = File(filesDir, "rescue_backups/profiles/$profile")
 
@@ -555,10 +547,8 @@ class RescueFilesProfileOpsTest {
         assertEquals(42L, store["lastUsed_default"])
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Per-profile data (spec-profile-data-separation: the SEPARATE data is
     // wiped/backup'd with the profile, the SHARED items are never touched)
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun deleteProfileDataFilesWipesTheSeparateDataAndKeepsTheBase() {
@@ -785,12 +775,10 @@ class RescueFilesProfileOpsTest {
         assertEquals("index", File(databasesDir, "exoplayer_internal_work.db").readText())
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Public entry points: the global cache clear / downloads delete must cover
     // the base AND every user profile's own suffixed data
     // (spec-profile-data-separation) — the private enumerators exercised through
     // the public [RescueFiles.clearCache] / [RescueFiles.deleteDownloads].
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun clearCacheCoversTheBaseAndEveryProfilesSeparateCaches() {

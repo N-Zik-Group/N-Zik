@@ -42,12 +42,10 @@ class LyricsFetchWorker(
     private val dataDispatcher: CoroutineDispatcher = NzikDispatchers.DATA,
     private val mediaDispatcher: CoroutineDispatcher = NzikDispatchers.MEDIA,
     private val uiDispatcher: CoroutineDispatcher = NzikDispatchers.UI,
-    // Injectable seams for LrcLib/KuGou/Innertube (issue #606): these are `suspend fun`s that
-    // return `kotlin.Result<T>`, which MockK cannot mock reliably (a known ABI-level limitation
-    // when a suspend function's own declared return type is Result<T> — the coroutine machinery
-    // and the function's Result get confused, corrupting the value at runtime). Constructor
-    // injection with a real default (same pattern as the dispatchers above, AD-1) lets tests pass
-    // plain lambdas instead, sidestepping MockK entirely for these calls.
+    // Injectable seams for LrcLib/KuGou/Innertube (issue #606): MockK cannot reliably mock
+    // `suspend fun`s returning `kotlin.Result<T>` (ABI-level limitation that corrupts the
+    // value at runtime). Constructor injection with a real default (AD-1, like the
+    // dispatchers above) lets tests pass plain lambdas instead, sidestepping MockK.
     private val lrcLibLyrics: suspend (String, String, Duration, String?) -> Result<LrcLib.Lyrics?>? =
         { artist, title, duration, album -> LrcLib.lyrics(artist, title, duration, album) },
     private val lrcLibLyricsUnsynced: suspend (String, String, Duration, String?) -> Result<LrcLib.Lyrics?>? =

@@ -47,29 +47,27 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 /**
- * Compose UI test for the profile onboarding step ([OnboardingProfileScreen]) — the
- * "name inert for the face" regression: the name, the face-name source and the face
- * avatar source typed at onboarding must land in the stores the face chain actually
- * consumes (the profile store `displayName_default` + the plain prefs
- * `faceNameSource` / `faceAvatarSource`), never in the removed legacy `username` /
- * `display_name_source` keys.
+ * Compose UI test for the profile onboarding step ([OnboardingProfileScreen]) — the "name
+ * inert for the face" regression: the name, the face-name source and the face avatar source
+ * typed at onboarding must land in the stores the face chain actually consumes (the profile
+ * store `displayName_default` + the plain prefs `faceNameSource` / `faceAvatarSource`),
+ * never in the removed legacy `username` / `display_name_source` keys.
  *
- * The step's other contracts are pinned too: the auto-advance on a restored
- * identity (a custom base name or a restored profile list), the validation rules
- * (the reserved base ID is rejected, a case variant of the resolved name is
- * accepted, a cleared field is a no-op) and the account row locks.
+ * The step's other contracts are pinned too: the auto-advance on a restored identity (a
+ * custom base name or a restored profile list), the validation rules (the reserved base ID
+ * is rejected, a case variant of the resolved name is accepted, a cleared field is a no-op)
+ * and the account row locks.
  *
- * JUnit 4 + [RobolectricTestRunner], executed through the project's junit-vintage-engine
- * on the JUnit 5 platform (the `createComposeRule()` rule only works with JUnit 4),
- * with the plain [Application] so the app's heavy init (DI, Room, player) is skipped.
- * The keystore-backed [profileSecurePrefs] is the only stub (a JVM has no keystore);
- * the account state loads on the real DATA pool, so the tests wait for the lock state
- * to settle before interacting.
+ * JUnit 4 + [RobolectricTestRunner] through the project's junit-vintage-engine on the JUnit 5
+ * platform (`createComposeRule()` only works with JUnit 4), with the plain [Application] so
+ * the app's heavy init is skipped. The keystore-backed [profileSecurePrefs] is the only stub
+ * (a JVM has no keystore); the account state loads on the real DATA pool, so the tests wait
+ * for the lock state to settle before interacting.
  *
- * The step renders TWO source selectors (name + avatar) with the same four options,
- * so the "locked" badge count is doubled, and an account label matches two nodes
- * (one per section) — the tests disambiguate with first/last in document order
- * (the name section comes first, then the avatar section).
+ * The step renders TWO source selectors (name + avatar) with the same four options, so the
+ * "locked" badge count is doubled, and an account label matches two nodes (one per section)
+ * — the tests disambiguate with first/last in document order (name section first, then
+ * avatar section).
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)

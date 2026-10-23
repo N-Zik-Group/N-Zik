@@ -13,9 +13,7 @@ class AutoBackupFileNameTest {
 
     private val date = "2026-09-29_120000"
 
-    // ──────────────────────────────────────────────────────────────────────
     // File name builder
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `database backup name carries the active profile`() {
@@ -49,9 +47,7 @@ class AutoBackupFileNameTest {
         )
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Retention classifier
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `legacy database backup name is still recognized`() {

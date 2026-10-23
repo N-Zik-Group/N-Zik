@@ -8,12 +8,11 @@ import timber.log.Timber
  * Issue #881 (gh-881): diagnostics wrapper that observes every seek command reaching a real
  * player, with the caller's stack trace (spec S1).
  *
- * media3 1.10.1 `ExoPlayer` is an interface (the concrete class is `InternalExoPlayer`, built
- * privately by `ExoPlayer.Builder`), so a subclassing wrapper is not possible — this class
- * implements the interface by full delegation to the real player and overrides ONLY the
- * `Player` seek family: each override logs one `PlaybackDiag` `SEEK_CALL` line, then delegates
- * to the raw player. Zero behavior change: every other member (and every seek call's side
- * effects) is byte-identical to calling the raw player.
+ * media3 1.10.1 `ExoPlayer` is an interface (the concrete class is `InternalExoPlayer`), so
+ * this class implements it by full delegation and overrides ONLY the `Player` seek family:
+ * each override logs one `PlaybackDiag` `SEEK_CALL` line, then delegates to the raw player.
+ * Zero behavior change: every other member (and every seek call's side effects) is
+ * byte-identical to calling the raw player.
  *
  * All seek paths converge here: the UI drives `binder.player` (guarded facade), the
  * MediaSession (notification / lockscreen / AA) drives the same facade, and the service's

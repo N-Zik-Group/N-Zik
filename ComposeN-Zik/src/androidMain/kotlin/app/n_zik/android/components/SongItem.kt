@@ -164,21 +164,13 @@ fun SongText(
 )
 
 /**
- *  Displays information of a song.
+ * Displays a song row.
  *
- *  [onLongClick] overrides song's menu
- *
- *  @param song record from database
- *  @param itemSelector optional field to enable select box
- *  @param navController optional field to detect whether the
- *  current location is playlist to hide playlist indicator.
- *  @param isRecommended whether this song is selected by algorithm
- *  @param modifier applied to the outermost layer but not its content
- *  @param showThumbnail whether to fetch/show thumbnail of this song.
- *  [thumbnailOverlay] will still being shown regardless the state of this value.
- *  @param onLongClick what happens when user holds this item for a short while
- *  @param trailingContent content being placed to the rightmost of the card
- *  @param onClick what happens when user tap on this item
+ * @param navController Optional: detects whether the current location is a playlist to hide the
+ *        playlist indicator.
+ * @param showThumbnail Whether to fetch/show the thumbnail; [thumbnailOverlay] is shown
+ *        regardless of this value.
+ * @param onLongClick Overrides the song's menu when the user holds the item.
  */
 @UnstableApi
 @ExperimentalFoundationApi

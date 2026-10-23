@@ -32,22 +32,20 @@ import org.robolectric.annotation.Config
 import java.io.File
 
 /**
- * Compose UI tests for [DebugLogsMenuItem], the "Enable debug logs" entry of the
- * hamburger menu.
- *
- * JUnit 4 + [RobolectricTestRunner], executed through the project's junit-vintage-engine
- * on the JUnit 5 platform (the `createComposeRule()` rule only works with JUnit 4),
- * with the plain [Application] so the app's heavy init (DI, Room, player) is skipped.
+ * Compose UI tests for [DebugLogsMenuItem], the "Enable debug logs" entry of the hamburger
+ * menu. JUnit 4 + [RobolectricTestRunner] through the project's junit-vintage-engine on the
+ * JUnit 5 platform (`createComposeRule()` only works with JUnit 4), with the plain
+ * [Application] so the app's heavy init (DI, Room, player) is skipped.
  *
  * Covers the spec's burger-item matrix rows: the label follows the live state (enable
- * off / disable on, no restart), the tap toggles debug logging with the same side
- * effects as the header badge (log files purged on disable) and flips the label.
+ * off / disable on, no restart), the tap toggles debug logging with the same side effects
+ * as the header badge (log files purged on disable) and flips the label.
  *
  * The width clamp of the label (capped at the rendered "Rescue Center" label width,
  * `clampedLabelMaxWidth`) is shared with the header badges and covered through
- * [app.n_zik.android.components.ui.header.HeaderVersionBadgeTest]; it is not
- * observable through this item's own semantics because the clickable Row merges its
- * descendants (material3 convention) and Robolectric's text measurement is degenerate.
+ * [app.n_zik.android.components.ui.header.HeaderVersionBadgeTest]; it is not observable
+ * through this item's own semantics because the clickable Row merges its descendants
+ * (material3 convention) and Robolectric's text measurement is degenerate.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)

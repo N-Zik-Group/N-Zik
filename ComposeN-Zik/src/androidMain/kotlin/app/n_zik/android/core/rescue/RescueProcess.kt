@@ -13,38 +13,31 @@ import java.io.File
 import java.util.UUID
 
 /**
- * Process coordination for the Rescue Center.
+ * Kill coordination for the Rescue Center, shared by the main process (MainApplication) and
+ * the `:rescue` process (RescueActivity / RescueScreen); the data-side file logic lives in
+ * [RescueFiles].
  *
- * When the Rescue Center opens, it asks the main app process to end itself, so that the
- * process guard ([RescueFiles.isMainProcessRunning]) becomes reachable without a manual
- * "Force stop" from Android settings. Two paths cooperate:
+ * When the Rescue Center opens, it asks the main app process to end itself, so the process
+ * guard ([RescueFiles.isMainProcessRunning]) becomes reachable without a manual "Force stop".
+ * Two paths cooperate:
  *
- * 1. [requestKillMain] sends an internal broadcast: while the main process is alive it dies
- *    within a few seconds, even when its main thread is frozen (the main process registers
- *    its receiver on [KILL_REQUEST_HANDLER], a background thread — a manifest receiver would
- *    run on the main thread, which is exactly the thread stuck during an ANR).
- * 2. [requestKillMain] also writes the kill-request flag file: if the broadcast is lost (main
- *    process dead or fully frozen), the flag survives and the next main-process launch consumes
- *    it in [consumeKillRequest] and ends itself BEFORE any heavy initialization.
+ * 1. [requestKillMain] sends an internal broadcast delivered on [KILL_REQUEST_HANDLER], a
+ *    background thread — a main-thread receiver would be frozen during an ANR.
+ * 2. [requestKillMain] also writes the kill-request flag: if the broadcast is lost (main
+ *    process dead or fully frozen), the flag survives and the next launch consumes it in
+ *    [consumeKillRequest] and ends itself BEFORE any heavy initialization.
  *
- * The flag is removed BEFORE the kill, so a failed kill can never re-trigger itself on the
- * next launch (no kill loop). And [cancelKillRequest] discards the flag once the main process
- * is observed dead — but only while the process probe is trustworthy (below API 31, since
- * `getRunningAppProcesses` is restricted to the calling process from 31 on); from 31 the flag
- * stays until the receiver consumes it. Either way the flag must not leak into the next launch
- * and make a perfectly healthy app end itself at startup.
+ * The flag is removed BEFORE the kill, so a failed kill can never re-trigger itself (no kill
+ * loop). [cancelKillRequest] discards the flag once the main process is observed dead — only
+ * while the process probe is trustworthy (below API 31, since `getRunningAppProcesses` is
+ * restricted from 31 on); from 31 the flag stays until the receiver consumes it. Either way
+ * the flag must not leak into the next launch and self-kill a healthy app.
  *
- * This object also carries the main process's liveness detection: from API 31 on the process
- * probe ([RescueFiles.isMainProcessRunning]) is restricted to the calling process, so the
- * `:rescue` process keeps its own signal — the alive marker ([ALIVE_MARKER_NAME]), a small
- * file the main process refreshes every [ALIVE_MARKER_REFRESH_MS] from a background thread
- * ([startAliveMarkerUpdater]). [isMainProcessLikelyAlive] is the single "is the main process
- * alive?" answer used by the Rescue Center to decide whether a kill request is even worth
+ * Main-process liveness from API 31 on: the process probe is restricted to the calling
+ * process, so the main process refreshes the alive marker ([ALIVE_MARKER_NAME], every
+ * [ALIVE_MARKER_REFRESH_MS] via [startAliveMarkerUpdater]) and [isMainProcessLikelyAlive] is
+ * the single "is the main process alive?" answer deciding whether a kill request is worth
  * recording.
- *
- * Kept apart from [RescueFiles] (which is the Rescue Center's data-side file logic): this
- * object is the kill coordination shared by the main process (MainApplication) and the
- * `:rescue` process (RescueActivity / RescueScreen).
  */
 object RescueProcess {
 
@@ -99,18 +92,13 @@ object RescueProcess {
     internal const val EXTRA_KILL_NONCE = "app.n_zik.android.extra.kill_nonce"
 
     /**
-     * Handler on which the main process registers its kill receiver, bound to a dedicated
-     * background thread with its own Looper.
-     *
-     * A manifest-declared receiver (or one registered without a handler) is invoked on the
-     * main thread — precisely the thread that is frozen during an ANR. A broadcast to a
-     * context receiver reaches the app through a one-way binder call to its binder threads,
-     * after which the framework posts the receive to the handler registered with
-     * `registerReceiver`; registering this background handler makes `onReceive` run on that
-     * background thread even while the main thread is stuck. (The public API has no
-     * executor-based `registerReceiver` overload, so a `HandlerThread` looper is the
-     * equivalent.) Daemon and process-lifetime like the rest of
-     * [app.n_zik.android.utils.coroutines.NzikDispatchers]: never closed. Lazy so the
+     * Handler the main process registers its kill receiver on: a dedicated daemon background
+     * thread with its own Looper. A main-thread receiver is frozen during an ANR, while the
+     * framework posts the receive to the handler passed to `registerReceiver` — so
+     * `onReceive` runs here even while the main thread is stuck (no executor-based
+     * `registerReceiver` overload exists, so a `HandlerThread` looper is the equivalent).
+     * Daemon and process-lifetime like
+     * [app.n_zik.android.utils.coroutines.NzikDispatchers]: never closed; lazy so the
      * `:rescue` process, which only uses the flag side, never pays for the thread.
      */
     internal val KILL_REQUEST_HANDLER: Handler by lazy {
@@ -343,19 +331,14 @@ object RescueProcess {
     /**
      * Registers the receiver that ends this (main) process when the Rescue Center requests it.
      *
-     * It is registered on [KILL_REQUEST_HANDLER], a handler bound to a dedicated background
-     * looper: a manifest receiver (or one without a handler) is invoked on the main thread —
-     * precisely the thread that is frozen during an ANR — so the background looper receives
-     * the broadcast while the main thread is stuck.
-     *
-     * Before consuming the request and dying, the broadcast's nonce is verified against the
-     * pending flag: on API < 33 the receiver is exported, so the nonce is the only thing that
-     * stops a third-party app from triggering the kill. The flag is consumed BEFORE the kill,
-     * so the next launch does not end itself again (no kill loop). The alive marker is
-     * invalidated BEFORE the kill as well: it would otherwise stay fresh for up to
-     * [ALIVE_MARKER_STALE_MS] after this very death, and a Rescue Center reopened in that
-     * window would record a NEW kill request for an already-dead process (whose orphan flag
-     * would then self-kill the next healthy launch).
+     * Registered on [KILL_REQUEST_HANDLER] so `onReceive` runs off the frozen main thread (see
+     * that KDoc). Before consuming the request and dying, the broadcast's nonce is verified
+     * against the pending flag: on API < 33 the receiver is exported, so the nonce is the only
+     * thing that stops a third-party app from triggering the kill. The flag is consumed BEFORE
+     * the kill (no kill loop), and the alive marker is invalidated before dying
+     * ([invalidateMainAliveMarker]): left fresh, it would make a re-opened Rescue Center record
+     * a new request for an already-dead process, whose orphan flag would self-kill the next
+     * healthy launch.
      */
     fun registerKillMainReceiver(context: Context) {
         val receiver = object : BroadcastReceiver() {
@@ -395,9 +378,7 @@ object RescueProcess {
         }
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Alive marker (main-process liveness, the only reliable signal from 31 on)
-    // ──────────────────────────────────────────────────────────────────────
 
     /**
      * Starts the alive-marker updater of this (main) process: a background loop on
@@ -515,18 +496,14 @@ object RescueProcess {
      * Best-effort answer to "is the main app process alive right now?", from either process.
      *
      * Below API 31 the [RescueFiles.isMainProcessRunning] probe is trustworthy, so it decides.
-     * From API 31 on `getRunningAppProcesses()` is restricted to the calling process, so that
-     * probe reports "not running" even while the main process is alive — there the alive
-     * marker (refreshed by the main process itself, [ALIVE_MARKER_REFRESH_MS] cadence) is the
-     * only reliable source.
+     * From API 31 on `getRunningAppProcesses()` is restricted to the calling process, so the
+     * alive marker (refreshed by the main process itself) is the only reliable source.
      *
-     * A stale marker reports a dead process. That is the SAFE direction of the misread:
-     * its consequences — no kill request recorded when the Rescue Center opens, the status
-     * row reading "stopped", and the "Kill the app" button staying disabled — all leave
-     * the main process alive. Known blind spot (accepted, see the rescue spec): a main
-     * process throttled in the background may stop refreshing the marker and is then
-     * reported dead; write actions additionally stay protected by the DB-busy guard
-     * ([RescueFiles.checkpointWal]) in that case.
+     * A stale marker reports a dead process — the SAFE direction of the misread: no kill
+     * request is recorded, the status row reads "stopped", the "Kill the app" button stays
+     * disabled, and the main process stays alive. Known blind spot (accepted, see the rescue
+     * spec): a background-throttled main process may stop refreshing the marker and read
+     * dead; write actions stay protected by the DB-busy guard ([RescueFiles.checkpointWal]).
      */
     fun isMainProcessLikelyAlive(context: Context): Boolean {
         return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {

@@ -27,17 +27,16 @@ import org.robolectric.annotation.Config
  * Room database: [NameConvergence.propagateRename] rewrites only the copies
  * linked to the renamed row (whole-token agreement, `modified:` prefix kept,
  * divergent and unlinked copies untouched, a prefixed new name cleaned before
- * embedding), and [NameConvergence.runSweep] re-converges the copies from the
- * links with its guards (a copy is rewritten with the COMPLETE list of linked
- * row names — cleaned+trimmed, distinct case-insensitively, link order — when
+ * embedding); [NameConvergence.runSweep] re-converges the copies from the links
+ * with its guards — a copy is rewritten with the COMPLETE list of linked row
+ * names (cleaned+trimmed, distinct case-insensitively, link order) only when
  * every copy name is backed by a linked row (whole token, or each part of a
- * duet "A & B" with the spaced separator): repairs prefix leaks, duets,
- * duplicates and completes partial lists — a name without a linked id skips the
- * copy, custom `modified:` copies untouched, unlinked copies untouched, albums
- * judged by the shared set of their songs' links) — a converged database
- * yields zero writes, and a second run over a converged database writes
- * nothing (the per-reason skip counters of the returned [ConvergenceSummary]
- * are asserted per scenario).
+ * duet "A & B" with the spaced separator): repairs prefix leaks, duets and
+ * duplicates, completes partial lists — a name without a linked id skips the
+ * copy, custom `modified:` and unlinked copies stay untouched, albums judged by
+ * the shared set of their songs' links. A converged database yields zero writes
+ * and a second run writes nothing (the per-reason skip counters of the returned
+ * [ConvergenceSummary] are asserted per scenario).
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])

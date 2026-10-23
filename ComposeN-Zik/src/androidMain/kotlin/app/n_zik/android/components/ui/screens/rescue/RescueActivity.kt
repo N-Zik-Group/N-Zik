@@ -42,19 +42,18 @@ import timber.log.Timber
 /**
  * Lightweight Activity that runs in the `:rescue` process.
  *
- * Because [app.n_zik.android.MainApplication.onCreate] returns early when
- * `!isMainProcess()`, none of the heavy app initialization runs here:
- * no Room, no Koin/Hilt, no `Dependencies`, no `appContext()`, no player.
- * This Activity uses only [android.content.Context] and raw files.
+ * [MainApplication.onCreate] returns early when `!isMainProcess()`, so no heavy app
+ * initialization runs here (no Room, no `Dependencies`, no `appContext()`, no player):
+ * only [android.content.Context] and raw files.
  *
- * Timber is NOT planted in the `:rescue` process (the tree is set up in MainApplication, which
- * skips init for non-main processes), so debug builds plant a DebugTree here. Release builds
- * stay silent on purpose: this process handles credentials.
+ * Timber is not planted in the `:rescue` process (the tree lives in MainApplication): debug
+ * builds plant a DebugTree here, release stays silent on purpose — this process handles
+ * credentials.
  *
- * An [AppCompatActivity] (not a bare [androidx.activity.ComponentActivity]): the window must be
- * set up exactly like MainActivity's — same theme, same AppCompat sub-decor — so the edge-to-edge
- * content stretches behind the navigation buttons the same way it does in the main app, instead of
- * leaving a band of window background above them.
+ * An [AppCompatActivity] (not a bare [androidx.activity.ComponentActivity]): the window is set
+ * up exactly like MainActivity's (same theme, same AppCompat sub-decor) so the edge-to-edge
+ * content stretches behind the navigation buttons like in the main app, instead of a band of
+ * window background above them.
  */
 class RescueActivity : AppCompatActivity() {
 
@@ -70,11 +69,10 @@ class RescueActivity : AppCompatActivity() {
         // process: ask it to end itself the moment the screen opens (broadcast + safety-net
         // flag), whatever the entry point (launcher shortcut or in-app menu).
         //
-        // But only when the main process is (likely) alive. When it is already dead (alive
-        // marker stale or absent, or the trustworthy probe says so below 31) no kill request
-        // is recorded at all: a stale flag would make the next healthy launch end itself at
-        // startup — the unexpected self-kill this guard removes. The status line shows
-        // "stopped" immediately in that case and the kill button stays disabled.
+        // But only when the main process is (likely) alive: when it is already dead (marker
+        // stale/absent, or the trustworthy probe says so below 31) no kill request is recorded
+        // at all — a stale flag would make the next healthy launch end itself at startup. The
+        // status line shows "stopped" immediately in that case and the kill button stays disabled.
         if (RescueProcess.isMainProcessLikelyAlive(this)) {
             RescueProcess.requestKillMain(this)
         } else {

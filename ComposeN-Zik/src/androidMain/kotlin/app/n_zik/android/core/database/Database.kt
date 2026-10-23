@@ -107,15 +107,14 @@ object Database {
     private val _internal: DatabaseInitializer
         get() = DatabaseInitializer.Instance
 
-    //**********************************************
-    // Contract §10.3 (bridge, since 1.7.3, feature `library.live`): the library DAOs below are
-    // transparent proxies that notify [libraryWriteNotifier] with the changed entity per write,
-    // whatever the origin (the phone's own UI, the client's §10.2 writes, the imports, the play
-    // counters). The album/artist map tables are wrapped too: the client-visible `trackCount` of
-    // an album or artist is derived from their rows, and a standalone map write (a song matched
-    // to an album during playback, an unmatch, a redirect) changes it without touching the main
-    // table. The other DAOs (queue, lyrics, search, import) are left unwrapped: the queue already
-    // has its `queueChanged` delta and the rest is not library listings (§10.3).
+    // Contract §10.3 (bridge, since 1.7.3, feature `library.live`): the library DAOs
+    // below are transparent proxies that notify [libraryWriteNotifier] with the changed
+    // entity per write, whatever the origin (phone UI, client §10.2 writes, imports,
+    // play counters). The album/artist map tables are wrapped too: the client-visible
+    // `trackCount` is derived from their rows, so a standalone map write (match,
+    // unmatch, redirect during playback) changes it without touching the main table.
+    // The other DAOs (queue, lyrics, search, import) are left unwrapped: the queue
+    // already has its `queueChanged` delta; the rest is not library listings (§10.3).
 
     /**
      * Contract §10.3 (since 1.7.3, feature `library.live`): invoked with the changed entity —
@@ -299,15 +298,13 @@ object Database {
         // Phase 1: Read existing data from DB (no lock held)
         val dbSong = songTable.findByIdDirect(song.id)
 
-        // One author entry = one artist: the channel's browseId is the identity and
-        // the row name converges to the channel page name (background fetch,
-        // retainIfModified). The previous split of a single entry's display name
-        // (parseArtists: "Bigflo & OLi" -> "Bigflo" + "OLi") lost the browseId,
-        // failed the completeness check below (split names no longer equal the
-        // entry names) and fell back to the add-only path with one online search
-        // + junk row per split part on every playback (device captures
-        // 2026-09-26 12:11 / 12:18: added=2 -> dropped=2 loop). Entry names are
-        // kept whole; the channel page stays the table of truth for the name.
+        // One author entry = one artist: the channel's browseId is the identity
+        // and the row name converges to the channel page name (background fetch,
+        // retainIfModified). Entry names are kept whole: the previous split of a
+        // single entry's display name (parseArtists: "Bigflo & OLi" -> "Bigflo" +
+        // "OLi") lost the browseId, failed the completeness check below, and fell
+        // back to the add-only path with one online search + junk row per split
+        // part on every playback (device captures 2026-09-26: added=2 -> dropped=2 loop).
         val artistEntries = ArtistMappingReconcile.parseAuthorEntries( songItem.authors )
         val artistNames = artistEntries.map { it.first }
         val artistDataList = mutableListOf<Triple<String, String?, Artist?>>() // name -> browseId -> existing DB artist
@@ -381,16 +378,14 @@ object Database {
                 else -> PropUtils.retainIfModified(dbSong?.title, song.title)
             }
             // The stored artist list follows the resolved names: the row name when
-            // the channel row already exists (page name / user-modified - the table
-            // of truth), the entry name for rows that don't exist yet (they
-            // converge to the page name at the next background fetch). The split
-            // join ("Bigflo, OLi") used to feed the in-app "two artists" view.
-            // A storage marker must never be copied into a display copy: a
-            // renamed row is stored as "modified:X" on the row only, so clean
-            // each existing row name before the join - otherwise every playback
-            // re-embeds the prefix mid-string in a natural (non-custom) copy,
-            // which retainIfModified below cannot cut (it only protects custom
-            // copies).
+            // the channel row exists (table of truth), the entry name for new rows
+            // (they converge to the page name at the next background fetch). The
+            // split join ("Bigflo, OLi") used to feed the in-app "two artists" view.
+            // A storage marker must never be copied into a display copy: a renamed
+            // row is stored as "modified:X" on the row only, so clean each existing
+            // row name before the join — otherwise every playback re-embeds the
+            // prefix mid-string in a natural copy, which retainIfModified below
+            // cannot cut (it only protects custom copies).
             // A row name that cleans down to empty (a bare storage marker) is
             // dropped instead of leaving an empty slot ("A, , B") in the join.
             val fetchedArtistsText = artistDataList
@@ -498,20 +493,17 @@ object Database {
      * [SongArtistMap] row of [songId] is deleted, then the given artists are
      * upserted and re-mapped to the song.
      *
-     * **Contract - complete list only:** the caller must only invoke this when the
-     * fresh author list is complete, i.e. it passes
-     * [ArtistMappingReconcile.isCompleteAuthorList] (every parsed name backed by a
-     * browse ID). A names-only/partial list must never erase the mapping it cannot
-     * rewrite - gate on [ArtistMappingReconcile.isCompleteAuthorList] before calling.
+     * **Contract — complete list only:** only invoke this when the fresh author
+     * list is complete (every parsed name backed by a browse ID —
+     * [ArtistMappingReconcile.isCompleteAuthorList]); a names-only/partial list
+     * must never erase the mapping it cannot rewrite.
      *
-     * Transaction semantics depend on the caller: [upsert] calls it from
-     * inside a Room transaction, so the delete + re-insert is atomic there.
-     * The song update dialog calls it from `asyncTransaction` (an executor
-     * thread with NO surrounding Room transaction): each statement autocommits
-     * on its own, so the delete + re-insert is best-effort there - a failure
-     * between the delete and the re-insert would briefly leave the song
-     * without artist links until the next reconcile heals it. No logging in
-     * here - the caller logs.
+     * Transaction semantics depend on the caller: [upsert] calls it inside a
+     * Room transaction (atomic); the song update dialog calls it from
+     * `asyncTransaction` with NO surrounding transaction, so each statement
+     * autocommits — the delete + re-insert is best-effort there, and a failure
+     * in between briefly leaves the song without artist links until the next
+     * reconcile heals it. No logging in here — the caller logs.
      *
      * @param songId song side of the replaced links
      * @param artists the complete fresh artist list the links are rebuilt from
@@ -634,15 +626,14 @@ object Database {
         val resolvedArtistNames = mutableListOf<String>()
 
         if (artistsIds.isNotEmpty()) {
-            // Reconcile before re-mapping: the mapping must reflect the latest YTM author
-            // list, not the union of every list ever seen. YTM author lists vary by
-            // playback context (a channel playlist/radio credits the channel as an
-            // author), so insert-only accumulation pollutes SongArtistMap over time
-            // (bug: a channel-derived artist row collected hundreds of plays of
-            // unrelated songs and ranked as a top artist in the Rewind deck).
-            // Guarded: only an existing song has stale rows to drop, and only the
-            // id-bearing path reconciles — a names-only/local re-insert must never
-            // wipe existing mappings.
+            // Reconcile before re-mapping: the mapping must reflect the latest YTM
+            // author list, not the union of every list ever seen — YTM lists vary
+            // by playback context (a channel playlist/radio credits the channel),
+            // so insert-only accumulation pollutes SongArtistMap (bug: a
+            // channel-derived row collected hundreds of plays of unrelated songs
+            // and ranked as a top artist in the Rewind deck). Guarded: only an
+            // existing song has stale rows to drop, and only the id-bearing path
+            // reconciles — a names-only/local re-insert must never wipe mappings.
             if (dbSong != null) {
                 logReconcileDrops(songArtistMapTable, artistTable, cleanSongId, mergedSong.title)
                 val dropped = songArtistMapTable.deleteBySongId(cleanSongId)
@@ -677,8 +668,8 @@ object Database {
             // context, so the same reconcile rule applies: stale rows from other
             // contexts must not survive it. Guarded like above: existing song only.
             // Rows are resolved by name here, so the stored row name equals the
-            // context name for every link written synchronously (the async background
-            // search prefers an exact-name match) - the context names are the target.
+            // context name for every link written synchronously (the async
+            // background search prefers an exact-name match).
             resolvedArtistNames += artistsNames
             if (dbSong != null) {
                 logReconcileDrops(songArtistMapTable, artistTable, cleanSongId, mergedSong.title)
@@ -750,14 +741,12 @@ object Database {
      * drops a song's stale artist links, log one line per about-to-be-dropped
      * pair (song id + title, artist name) so the drop can be read back from
      * logcat. Pure logging — no behavior change. Runs only on the delete
-     * paths, never on the add-only one.
+     * paths, never on the add-only one. A missing artist row (orphan link)
+     * is logged as `artist="null"`.
      *
      * @param mapTable source of the stale pairs (targeted by [songId])
      * @param artistTable name lookup for each dropped pair
      * @param songId song side of the dropped pairs
-     * @param songTitle title of the song for the log line
-     *
-     * A missing artist row (orphan link) is logged as `artist="null"`.
      */
     internal fun logReconcileDrops(
         mapTable: SongArtistMapTable,
@@ -773,48 +762,19 @@ object Database {
         }
     }
 
-    /**
-     * Attempt to map [Song] to [Album].
-     *
-     * [song] and [album] are ensured to be existed
-     * in the database before attempting to map two together.
-     *
-     * @param album to map
-     * @param song to map
-     * @param position of song in album, **default** or `-1` results in
-     * database puts song to next available position in map
-     */
+    /** Ensures [album] and [song] exist, then maps them; [position] -1 (default) maps to the next free position. */
     fun mapIgnore( album: Album, song: Song, position: Int = -1 ) {
         albumTable.insertIgnore( album )
         songTable.insertIgnore( song )
         songAlbumMapTable.map( song.id, album.id, position )
     }
 
-    /**
-     * Attempt to put [mediaItem] into `Song` table and map it to [Album].
-     *
-     * [mediaItem] is first inserted to database with [insertIgnore]
-     * then [album] to ensure to be existed in the database  before
-     * attempting to map two together.
-     *
-     * @param album to map
-     * @param mediaItem song to map
-     * @param position of song in album, **default** or `-1` results in
-     * database puts song to next available position in map
-     */
+    /** [mapIgnore] overload for [MediaItem]. */
     fun mapIgnore( album: Album, mediaItem: MediaItem, position: Int = -1 ) =
         mapIgnore( album, mediaItem.asSong, position )
 
 
-    /**
-     * Attempt to map [Song] to [Artist].
-     *
-     * [songs] and [artist] are ensured to be existed in
-     * the database before attempting to map two together.
-     *
-     * @param artist to map
-     * @param songs to map
-     */
+    /** Ensures [artist] and each [songs] entry exist, then maps them. */
     fun mapIgnore( artist: Artist, vararg songs: Song ) {
         if( songs.isEmpty() ) return
 
@@ -827,37 +787,15 @@ object Database {
         }
     }
 
-    /**
-     * Attempt to put [mediaItems] into `Song` table and map it to [Album].
-     *
-     * [mediaItems] are first inserted to database with [insertIgnore]
-     * then [artist] to ensure to be existed in the database  before
-     * attempting to map two together.
-     *
-     * @param artist to map
-     * @param mediaItems list of songs to map
-     */
+    /** [mapIgnore] overload for [MediaItem]s. */
     fun mapIgnore( artist: Artist, vararg mediaItems: MediaItem ) =
         mapIgnore( artist, *mediaItems.map( MediaItem::asSong ).toTypedArray() )
 
-    /**
-     * Attempt to map [Song] to [Playlist].
-     *
-     * [songs] and [playlist] are ensured to be existed in
-     * the database before attempting to map two together.
-     *
-     * @param playlist to map
-     * @param songs to map
-     */
+    /** Ensures [playlist] and each [songs] entry exist, then maps them. */
     fun mapIgnore( playlist: Playlist, vararg songs: Song ) {
         if( songs.isEmpty() ) return
 
-        /**
-         * [Playlist] has its [Playlist.id] `autogenerated`, therefore,
-         * it's unknown until it's inserted into database with [PlaylistTable.insert].
-         *
-         *
-         */
+        // [Playlist.id] is autogenerated, so it's only known after [PlaylistTable.insert].
         val pId =
             if( playlist.id > 0 ) {
                 playlistTable.insertIgnore( playlist )
@@ -871,33 +809,15 @@ object Database {
         }
     }
 
-    /**
-     * Attempt to put [mediaItems] into `Song` table and map it to [Playlist].
-     *
-     * [mediaItems] are first inserted to database with [insertIgnore]
-     * then [playlist] to ensure to be existed in the database  before
-     * attempting to map two together.
-     *
-     * @param playlist to map
-     * @param mediaItems list of songs to map
-     */
+    /** [mapIgnore] overload for [MediaItem]s. */
     fun mapIgnore( playlist: Playlist, vararg mediaItems: MediaItem ) =
         mapIgnore( playlist, *mediaItems.map( MediaItem::asSong ).toTypedArray() )
 
     /**
-     * Commit statements in BULK. If anything goes wrong during the transaction,
-     * other statements will be cancelled and reversed to preserve database's integrity.
-     * [Read more](https://sqlite.org/lang_transaction.html)
-     *
-     * [asyncTransaction] runs all statements on non-blocking
-     * thread to prevent UI from going unresponsive.
-     *
-     * ## Best use cases:
-     * - Commit multiple write statements that require data integrity
-     * - Processes that take longer time to complete
-     *
-     * > Do NOT use this to retrieve data from the database.
-     * > Use [asyncQuery] to retrieve records.
+     * Commit statements in BULK: if anything fails mid-transaction, the other
+     * statements are cancelled and reversed to preserve integrity
+     * ([read more](https://sqlite.org/lang_transaction.html)). Runs all statements
+     * on a non-blocking thread. Do NOT use it to read data — use [asyncQuery].
      *
      * @param block of statements to write to database
      */
@@ -957,18 +877,9 @@ object Database {
 
 
     /**
-     * Access and retrieve records from database.
-     *
-     * [asyncQuery] runs all statements asynchronously to
-     * prevent blocking UI thread from going unresponsive.
-     *
-     * ## Best use cases:
-     * - Background data retrieval
-     * - Non-immediate UI component update (i.e. count number of songs)
-     *
-     * > Do NOT use this method to write data to database
-     * > because it offers no fail-safe during write.
-     * > Use [asyncTransaction] to modify database.
+     * Access and retrieve records from database, on a non-blocking thread.
+     * Do NOT use this to write data (no fail-safe during write) —
+     * use [asyncTransaction] to modify the database.
      *
      * @param block of statements to retrieve data from database
      */

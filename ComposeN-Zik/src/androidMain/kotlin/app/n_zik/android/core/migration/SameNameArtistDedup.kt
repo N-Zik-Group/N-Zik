@@ -41,35 +41,25 @@ import timber.log.Timber
  * 3. No stored row matches -> the canonical row is created (browse id, group name
  *    with the `modified:` prefix, search thumbnail) and the other rows are merged
  *    into it. No rich data is carried over — background fetches fill it in later.
- * 4. The artist search finds NOTHING -> the group is resolved through the rows'
- *    own songs (some artists are indexed by YTM only through their songs — topic
- *    pages, channels absent from the artist search). Each row proves itself
- *    with a bounded per-row budget of songs ([SONGS_PER_ROW], non-blank
- *    cleaned title): precise YTM song search, same-song
- *    confirmation (result video id == local song id, or exact title + same image
- *    + a byline entry named after the group), then navigation to the artist page
- *    from that byline entry. A candidate is valid only when the artist page
- *    exists and its name equals the group name ("X - Topic" is rejected). The
- *    merge needs UNANIMOUS agreement — every row yields a candidate and all of
- *    them point to one single browse id — and then runs the same merge as above.
- *    A single row no song can prove (unattributed UGC, unconfirmable) freezes
- *    the WHOLE group until its composition or song selection changes — by
- *    design, the fallback never merges a subset of the rows.
+ * 4. The artist search finds NOTHING -> song-based fallback ([SongTruthResolver]):
+ *    each row proves itself with a bounded per-row budget of songs
+ *    ([SONGS_PER_ROW], non-blank cleaned title). The merge needs UNANIMOUS
+ *    agreement — every row yields a candidate and all of them point to one
+ *    single browse id. A single row no song can prove (unattributed UGC,
+ *    unconfirmable) freezes the WHOLE group until its composition or song
+ *    selection changes — by design, the fallback never merges a subset.
  *
  * Merging a duplicate row is atomic: its songs are re-linked onto the truth row
  * first, the user's follow/dislike move onto the truth row when the truth does not
  * carry them yet, and only then the row is deleted — no song can be left orphaned.
  *
- * Image safety (in case of doubt, never merge). Rows are judged against the images
- * of the OTHER STORED rows, not against the search thumbnail — YTM search returns
- * a differently sized/cropped photo of the same artist (round avatar vs banner),
- * so a raw URL comparison against it flags even identical pictures (device capture
- * 2026-09-26: the "Camellia" rows share one stored image yet were all flagged).
- * Stored rows of one artist share the picture they were fetched with:
- * - the truth row carries an image -> that image is the reference;
- * - otherwise (truth without image, or freshly created) -> the strict-majority
- *   image of the group is the reference; a tie, or a lone row without image in a
- *   conflicting group, means doubt -> flagged, not merged.
+ * Image safety (in case of doubt, never merge): rows are judged against the images
+ * of the OTHER STORED rows, not the search thumbnail — YTM search returns a
+ * differently sized/cropped photo of the same artist (round avatar vs banner), so
+ * a raw URL comparison against it flags even identical pictures. The truth row's
+ * image is the reference when it has one; otherwise the group's strict-majority
+ * image is. A tie, or a lone row without image in a conflicting group, means
+ * doubt -> flagged, not merged.
  *
  * Other safety rules:
  * - `LOCAL_ARTIST_` rows (user-localized, no browse id) are never a source nor a
@@ -79,11 +69,10 @@ import timber.log.Timber
  * - a group already judged but not fully resolved (rows left flagged — possible
  *   homonyms) is remembered with its composition: on the next launch, an
  *   unchanged composition is skipped without any network search, and a changed
- *   composition is re-searched. Fully resolved groups forget their entry. The
+ *   composition is re-searched; fully resolved groups forget their entry. The
  *   composition carries the row ids and — for groups judged by the song
  *   fallback — also the selected songs (primary-judged groups remember rows
- *   only): a changed composition is a new row, or different selected songs for
- *   a fallback-judged group.
+ *   only);
  * - an offline launch -> the group is skipped and retried on the next launch,
  *   never remembered. The primary artist search answers null both when it
  *   matches nothing AND when the search itself fails (its contract is a single
@@ -326,23 +315,18 @@ object SameNameArtistDedup {
 
     /**
      * The songs the song-based fallback may try for [artistId]: at most
-     * [SONGS_PER_ROW], songs with a non-blank CLEANED title (prefixes can
-     * make a raw title look non-blank while its query degenerates — "e:"
-     * cleans to ""), in Song.ROWID order — the order of
-     * [SongArtistMapTable.allSongsByDirect] (the rest of the row's songs
-     * never reach the network).
+     * [SONGS_PER_ROW], songs with a non-blank CLEANED title (prefixes can make
+     * a raw title look non-blank while its query degenerates — "e:" cleans to
+     * ""), in Song.ROWID order — the order of [SongArtistMapTable.allSongsByDirect].
      *
-     * The [Song.isYoutubeSong] flag is deliberately NOT part of the filter:
-     * it is never set to true anywhere in production (it defaults to false
-     * and no setter exists — the song-update flow only carries the stored
-     * value), so filtering on it would silently empty every list in the field. A non-YouTube-source song is still safe: candidate validity
-     * comes from the same-song confirmation (perfect video id match, or exact
-     * title + same image) and the artist page's name equality, never from the
-     * source flag.
+     * The [Song.isYoutubeSong] flag is deliberately NOT part of the filter: it is
+     * never set to true anywhere in production (defaults to false, no setter
+     * exists), so filtering on it would silently empty every list in the field.
+     * Candidate validity comes from the same-song confirmation and the artist
+     * page's name equality, never from the source flag.
      *
-     * Maintenance: this decision rests on the flag never being set in
-     * production — if a production setter for [Song.isYoutubeSong] ever
-     * appears, revisit this filter.
+     * Maintenance: if a production setter for [Song.isYoutubeSong] ever appears,
+     * revisit this filter.
      */
     private fun rowFallbackSongs(artistId: String, mapTable: SongArtistMapTable): List<Song> =
         mapTable.allSongsByDirect(artistId)
@@ -354,10 +338,8 @@ object SameNameArtistDedup {
      * without network while nothing changes; a fully resolved group (fewer
      * than 2 rows left) forgets its entry.
      *
-     * A [fallbackJudged] verdict carries the selected songs of the remaining
-     * YouTube rows (same selection as the proof): the songs are part of that
-     * verdict, so a changed selection re-opens the group. A primary-judged
-     * verdict remembers rows only.
+     * A [fallbackJudged] verdict also carries the selected songs (see
+     * [RememberedComposition]): a changed selection re-opens the group.
      */
     private suspend fun rememberRemainingComposition(
         groupName: String,
@@ -516,16 +498,11 @@ internal interface ArtistSearchResolver {
 /**
  * Picks the searched artist out of a YTM artist search page.
  *
- * STRICT exact match (case-insensitive) only: the top result of an artist
- * search without an exact name match can be a DIFFERENT artist (homonym), and
- * merging the group onto it would violate "in case of doubt, never merge" —
- * the search thumbnail is not a reliable reference (rule D4), so no image
- * check can catch a foreign artist either. Null here means the group is
- * skipped and retried on the next launch.
- *
- * @param items the parsed items of the search page (may be null)
- * @param name the artist name searched (the group name)
- * @return the item whose name matches exactly, null when nothing does
+ * STRICT exact match (case-insensitive) only: the top result without an exact
+ * name match can be a DIFFERENT artist (homonym), and merging onto it would
+ * violate "in case of doubt, never merge" — the search thumbnail is not a
+ * reliable reference (rule D4), so no image check can catch a foreign artist
+ * either. Null here means the group is skipped and retried on the next launch.
  */
 internal fun pickExactArtistMatch(
     items: List<Innertube.ArtistItem>?,
@@ -564,15 +541,13 @@ internal class InnertubeArtistSearchResolver : ArtistSearchResolver {
 internal interface SongTruthResolver {
 
     /**
-     * @param groupName the group name (the rows share it, case-insensitive)
-     * @param row one row of the group, proven by its own songs
-     * @param songs the row's songs to try — a bounded per-row budget (see
-     * [SameNameArtistDedup]'s `SONGS_PER_ROW`), each with a non-blank cleaned
-     * title
+     * Proves [row] by [songs] — a bounded per-row budget (see `SONGS_PER_ROW`
+     * in [SameNameArtistDedup]), each with a non-blank cleaned title.
+     *
      * @return a valid candidate (the artist page reached from a confirmed
-     * song's byline entry, whose page name equals the group name) or null when
-     * no song yields one; a network failure PROPAGATES instead, so the group
-     * is skipped without being remembered and retried on the next launch
+     * song's byline entry, whose page name equals [groupName]) or null when no
+     * song yields one; a network failure PROPAGATES instead, so the group is
+     * skipped without being remembered and retried on the next launch
      */
     suspend fun resolveSongs(groupName: String, row: Artist, songs: List<Song>): ResolvedArtist?
 }
@@ -583,10 +558,7 @@ internal interface SongTruthResolver {
  * `SONGS_PER_ROW`):
  * 1. precise YTM song search (cleaned local title, + the group name when the
  *    title does not carry it);
- * 2. same-song confirmation: the result's video id equals the local song's id
- *    (perfect match), or the same-song triple holds — exact title
- *    (case-insensitive) + same image + (byline checked below, even for a
- *    perfect match);
+ * 2. same-song confirmation (see [pickConfirmedSong]);
  * 3. navigation to the artist page from the byline entry named after the
  *    group; the page name must equal the group name ("X - Topic" is rejected).
  *
@@ -763,9 +735,8 @@ private val VIDEO_ID_IN_THUMB = Regex("/vi/([A-Za-z0-9_-]{11})/")
  *
  * @param rows the row ids of the group at verdict time
  * @param songs the selected fallback songs of the YouTube rows — null when the
- * group was judged by the PRIMARY artist search (the songs are not part of
- * that verdict); non-null when it was judged by the song fallback, where the
- * selected songs are part of the composition
+ * group was judged by the PRIMARY artist search; non-null when judged by the
+ * song fallback, where the selected songs are part of the composition
  */
 internal data class RememberedComposition(
     val rows: Set<String>,
@@ -782,17 +753,10 @@ internal data class RememberedComposition(
  */
 internal interface SkipStore {
 
-    /**
-     * @param groupName the group name
-     * @return the remembered composition of the group, null when it is not
-     * remembered
-     */
+    /** The remembered composition of [groupName], null when it is not remembered. */
     fun rememberedComposition(groupName: String): RememberedComposition?
 
-    /**
-     * Remember [composition] as the current composition of [groupName].
-     * @param composition null forgets the entry (the group is fully resolved)
-     */
+    /** Remembers [composition] for [groupName]; null forgets the entry (the group is fully resolved). */
     fun remember(groupName: String, composition: RememberedComposition?)
 }
 
@@ -876,19 +840,12 @@ internal class PrefsSkipStore(context: Context) : SkipStore {
 /**
  * Sweep summary.
  *
- * @param groups same-name groups identified (at least 2 rows per name)
- * @param resolved groups fully resolved by the primary artist search (merge
- * completed)
- * @param songResolved groups resolved by the song-based fallback (artist
- * search found nothing) — disjoint from [resolved]
- * @param merged duplicate rows re-linked and deleted (both resolution paths)
- * @param flagged rows left in place because their image conflicts with the group
+ * @param songResolved groups resolved by the song-based fallback (artist search
+ * found nothing) — disjoint from [resolved]
  * @param skipped groups left untouched (offline, custom name, song fallback
  * without unanimous candidate, or a network failure during the fallback's OWN
- * calls — a failed song search or artist page fetch; a failed PRIMARY artist
- * search is not a direct skip, it enters the fallback)
- * @param deferred groups skipped because already judged with an unchanged composition
- * @param localKept `LOCAL_ARTIST_` rows excluded from the merge
+ * calls; a failed PRIMARY artist search is not a direct skip, it enters the
+ * fallback)
  * @param records per-group outcome captured in every terminal branch (name,
  * status, merge/flag counters or skip reason) — persisted by the boot chain so
  * the Maintenance sheet can show the last run's detail

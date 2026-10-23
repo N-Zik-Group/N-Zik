@@ -23,18 +23,18 @@ import org.robolectric.annotation.Config
 /**
  * Unit coverage for the achromatic neutralization guard (renegotiated `NEUTRAL_COVER` case,
  * 2026-09-19 — session `problem-solution-2026-09-19`, solution S3') and for the achromatic
- * ramp luminance cap (spec-achromatic-ramp-luminance-cap, 2026-09-28): nearly achromatic covers
- * must render a neutral gray following the cover's lightness on every cover-based surface, and
- * when that tone mismatches the theme the five ramp backgrounds must be capped (light tone in a
- * dark theme, lightest background = L 0.80) / floored (dark tone in a light theme, darkest
- * background = L 0.30) by a uniform shift keyed on the real max/min lightness -- while
- * colored/pastel covers must be extracted bit-identically to the pre-guard behavior
- * (strict M3E parity).
+ * ramp luminance cap (spec-achromatic-ramp-luminance-cap, 2026-09-28): nearly achromatic
+ * covers must render a neutral gray following the cover's lightness on every cover-based
+ * surface, and when that tone mismatches the theme the five ramp backgrounds must be capped
+ * (light tone in a dark theme, lightest background = L 0.80) / floored (dark tone in a light
+ * theme, darkest background = L 0.30) by a uniform shift keyed on the real max/min
+ * lightness -- while colored/pastel covers must be extracted bit-identically to the
+ * pre-guard behavior (strict M3E parity).
  *
- * Robolectric is required (not a plain JVM unit test) because `Bitmap`/`Palette` need real pixel
- * backing to generate a deterministic swatch -- the same technique
- * `CoverPaletteExtractorTest` uses. Fixture sizes are 32x32 to match the CIS probe's measured
- * values, and fixture channel spreads keep a comfortable margin below
+ * Robolectric is required (not a plain JVM unit test) because `Bitmap`/`Palette` need real
+ * pixel backing to generate a deterministic swatch -- the same technique
+ * `CoverPaletteExtractorTest` uses. Fixture sizes are 32x32 to match the CIS probe's
+ * measured values, and fixture channel spreads keep a comfortable margin below
  * [ACHROMATIC_CHANNEL_DELTA_THRESHOLD] so palette quantization cannot flip the guard.
  */
 @RunWith(RobolectricTestRunner::class)

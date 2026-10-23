@@ -23,14 +23,10 @@ import kotlinx.coroutines.flow.Flow
 interface RewindEventSource {
 
     /**
-     * Return every raw play event whose timestamp falls inside `[from, to]`.
-     *
-     * Used by the Rewind fetcher as the single windowed scan from which the
-     * monthly / daily / hourly breakdowns, calendar days and first/last play
-     * are aggregated in memory (on the DATA dispatcher).
-     *
-     * @param from start of the window (epoch millis, inclusive)
-     * @param to end of the window (epoch millis, inclusive)
+     * Return every raw play event whose timestamp falls inside `[from, to]` — the
+     * single windowed scan from which the Rewind fetcher aggregates the monthly /
+     * daily / hourly breakdowns, calendar days and first/last play in memory
+     * (on the DATA dispatcher).
      */
     @Query("SELECT * FROM Event WHERE \"timestamp\" BETWEEN :from AND :to")
     fun eventsBetween(from: Long, to: Long): Flow<List<Event>>
@@ -40,14 +36,9 @@ interface RewindEventSource {
      * play count and total play time.
      *
      * Songs are ranked by play count, then total play time, then id — the same
-     * order the deck ranking uses — so results are deterministic.
-     * Disliked songs (mirrored in [app.it.fast4x.rimusic.models.Song.likedAt])
-     * are excluded, matching the existing top-song lists.
-     *
-     * @param from start of the window (epoch millis, inclusive)
-     * @param to end of the window (epoch millis, inclusive)
-     * @param limit trim the result to at most this many songs
-     * @return [SongListeningStat]s for every distinct song played in the window
+     * order the deck ranking uses — so results are deterministic. Disliked songs
+     * (mirrored in [app.it.fast4x.rimusic.models.Song.likedAt]) are excluded,
+     * matching the existing top-song lists.
      */
     @Query("""
         SELECT S.*, COUNT(E.id) AS playCountTotal, IFNULL(SUM(E.playtime), 0) AS playTimeMs

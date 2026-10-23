@@ -351,20 +351,10 @@ fun HomeAlbums(
             items.filter { it.thumbnailUrl == null }
                  .forEach { album ->
                      /**
-                      * Topology:
-                      *
-                      * Return the most frequently occurring [Song.thumbnailUrl]
-                      * among all songs of this album.
-                      *
-                      * Explanation:
-                      *
-                      * [Song.thumbnailUrl] can be changed by user.
-                      * If 1 song has its thumbnail changed, the result
-                      * remains the same because all others have the same url.
-                      *
-                      * Even when most changed to different urls, it only needs
-                      * 2 songs to have the same [Song.thumbnailUrl] to return
-                      * the same result.
+                      * The album's cover: the most frequent [Song.thumbnailUrl]
+                      * among its songs. A user-changed thumbnail on one song does
+                      * not shift the result (all others share the url), and even
+                      * when most songs changed, any url shared by 2 songs wins.
                       */
                      val coverUrl = songAlbumMapTable.allSongsOfDirect( album.id )
                                           .groupingBy( Song::thumbnailUrl )

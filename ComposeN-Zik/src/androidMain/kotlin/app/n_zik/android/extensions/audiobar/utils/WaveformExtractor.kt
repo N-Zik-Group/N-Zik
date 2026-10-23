@@ -36,25 +36,19 @@ object WaveformExtractor {
     private const val TARGET_SAMPLES = 150 // We want roughly 150 amplitude values for the UI
     private const val TAG = "NZik_AudioBar"
 
-    // 40 x 500ms = 20s. A download reaching a terminal state ALWAYS triggers its own
-    // deleteWaveform + refreshSignal (MyDownloadService's TerminalStateNotificationHelper,
-    // pre-existing, unrelated to this fix) -- so a manual "Update waveform" click racing that
-    // is the normal case, not a rare edge case, and can take several seconds to settle (spans
-    // merging, temp files finalizing). 6x500ms (3s) was copied from the seekbar's per-round
-    // attempt count without also copying its outer "retry forever while on screen" loop, so it
-    // gave up (falling back to the NotReady info toast) well before the cache actually
-    // stabilized. Now that this runs on requestUpdateWaveform's own persistent scope instead of
-    // the menu's rememberCoroutineScope, there is no lifecycle reason to keep the budget short.
+    // 40 x 500ms = 20s. A manual "Update waveform" click always races the terminal-state
+    // deleteWaveform + refreshSignal (MyDownloadService's TerminalStateNotificationHelper),
+    // which can take seconds to settle (merging, temp files finalizing). The previous 3s
+    // budget (copied from the seekbar's per-round count without its outer retry loop) gave
+    // up before the cache stabilized; this now runs on requestUpdateWaveform's own persistent
+    // scope — no lifecycle reason to keep the budget short.
     private const val DEFAULT_RETRY_ATTEMPTS = 40
     private const val DEFAULT_RETRY_DELAY_MS = 500L
 
     // Owned scope for the manual "Update waveform" menu action (SupervisorJob via
-    // NzikDispatchers.fireAndForget: one failed request must never cancel another
-    // in-flight one). Deliberately NOT the caller's
-    // rememberCoroutineScope: menuState.hide() drives an exit animation that decomposes the
-    // menu content within ~300ms, but updateWaveform's bounded retry + native extraction can
-    // take anywhere from milliseconds to double-digit seconds -- a caller-scoped coroutine
-    // would be cancelled long before its result (and toast) could be delivered.
+    // NzikDispatchers.fireAndForget: one failed request must never cancel another in-flight
+    // one). Deliberately NOT the caller's rememberCoroutineScope: menuState.hide() decomposes
+    // the menu within ~300ms, but the bounded retry + native extraction can take seconds.
     private val scope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
 
     fun deleteWaveform(context: Context, mediaId: String) {

@@ -12,7 +12,6 @@ import androidx.compose.ui.unit.Dp
  *
  * @param value The sheet's current animated value, between the dismissed and expanded bounds.
  * @param dismissedBound The sheet's lower bound, where the mini-player is fully hidden.
- * @param collapsedBound The collapsed bound, where the mini-player is fully visible.
  * @return 1f when [collapsedBound] <= [dismissedBound] (degenerate geometry, no division by
  *   zero); otherwise [value]'s linear fade across the dismissed zone, clamped to [0, 1].
  */

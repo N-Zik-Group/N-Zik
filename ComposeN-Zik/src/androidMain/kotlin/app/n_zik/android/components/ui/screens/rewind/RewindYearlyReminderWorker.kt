@@ -25,23 +25,22 @@ import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
 /**
- * Year-end rewind reminder (roadmap item 2, last point of the frozen contract GH-275): one
- * notification a year, posted by WorkManager on the 1st of January — even when the app is
- * closed — telling the user that the finished year's rewind is ready to open. The firing is
- * spread by a positive jitter of up to 10 minutes AFTER the 1st (never before, so the
- * execution always sees the new year). Tapping the notification opens the yearly deck on the
- * finished year: the content intent carries the year extra only (no month extra), which is
- * the sentinel the shared content-intent decode in [MainActivity] reads as a year-only target.
+ * Year-end rewind reminder (roadmap item 2, last point of the frozen contract GH-275):
+ * one notification a year, posted by WorkManager on the 1st of January (even when the
+ * app is closed) that the finished year's rewind is ready to open. The firing is spread
+ * by a positive jitter of up to 10 minutes AFTER the 1st (never before, so the execution
+ * always sees the new year). Tapping the notification opens the yearly deck: the content
+ * intent carries the year extra only — the sentinel the shared content-intent decode in
+ * [MainActivity] reads as a year-only target.
  *
- * The worker is self-perpetuating: every run reschedules itself for the next 1st of January, so
- * a single [schedule] at app startup keeps the yearly cadence for the app's whole life.
+ * Self-perpetuating: every run reschedules itself for the next 1st of January, so a single
+ * [schedule] at app startup keeps the yearly cadence for the app's whole life.
  *
- * Gating has two layers: the settings gate ([isYearlyReminderEnabled], frozen contract GH-275)
- * is checked when scheduling (off cancels the pending work) and again at execution (off
- * skips the post); the OS-level gate skips the notification — with a log, not a failure —
- * when `POST_NOTIFICATIONS` was denied at runtime on API 33+.
- * The channel itself ("rewind", importance LOW) is shared with the monthly worker and created
- * by the application.
+ * Gating has two layers: the settings gate ([isYearlyReminderEnabled], GH-275) is checked
+ * at scheduling (off cancels the pending work) and at execution (off skips the post); the
+ * OS-level gate skips the post — with a log, not a failure — when `POST_NOTIFICATIONS`
+ * was denied at runtime on API 33+. The channel ("rewind", importance LOW) is shared with
+ * the monthly worker and created by the application.
  */
 internal class RewindYearlyReminderWorker(
     context: Context,

@@ -88,7 +88,6 @@ internal object BridgeAutoStop {
      * Suspends until one of the timers expires, then returns (once). Never returns while both
      * settings are [AutoStopSettings.NEVER]; cancel the caller to stop watching.
      *
-     * @param settings current auto-stop settings
      * @param activeDevice PC holding the session, `null` when none (contract §6.2)
      * @param commandTicks one emission per valid command handed to the executor
      * @param now monotonic clock in ms (virtual time in tests)

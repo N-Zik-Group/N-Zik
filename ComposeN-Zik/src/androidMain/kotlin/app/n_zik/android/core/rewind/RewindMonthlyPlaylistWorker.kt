@@ -32,21 +32,17 @@ import java.util.concurrent.TimeUnit
 /**
  * Monthly rewind playlist worker (spec 2): on the 1st of the month, creates
  * `rewind-monthly:YYYYMM` from the finished month's most-played songs — if it does not
- * exist yet — and posts a notification when the notification toggle allows it. The
- * notification's content intent deep-links to the created playlist (spec GH-275 follow-up
- * — the original frozen spec 2 was a bare app open).
+ * exist yet — and posts a notification deep-linking to the created playlist (spec GH-275
+ * follow-up) when the notification toggle allows it.
  *
- * Pattern copied line-for-line from [RewindReminderWorker] (same package-structure rules),
- * with two deliberate differences (frozen spec 2):
- * - the creation gate is the dedicated `KEY_REWIND_MONTHLY_PLAYLIST_ENABLED` toggle —
- *   deliberately decoupled from the master switch and the deck type toggles;
- * - `POST_NOTIFICATIONS` denied on API 33+ does NOT skip the creation: the playlist is
- *   still created, the notification is the optional part (unlike the reminder workers,
- *   whose only payload is the notification).
+ * Pattern copied from [RewindReminderWorker], with two deliberate differences (frozen spec 2):
+ * the creation gate is the dedicated `KEY_REWIND_MONTHLY_PLAYLIST_ENABLED` toggle (decoupled
+ * from the master switch and the deck toggles), and `POST_NOTIFICATIONS` denied on API 33+
+ * does NOT skip the creation — the playlist is still created, the notification is the
+ * optional part.
  *
- * The worker is self-perpetuating: every run reschedules itself for the next 1st, so a
- * single [schedule] at app startup keeps the monthly cadence for the app's whole life.
- * The notification shares the application-created "rewind" channel (no new channel).
+ * Self-perpetuating: every run reschedules itself for the next 1st, so a single [schedule] at
+ * app startup keeps the monthly cadence. The notification shares the "rewind" channel.
  */
 internal class RewindMonthlyPlaylistWorker(
     context: Context,

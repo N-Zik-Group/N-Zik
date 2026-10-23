@@ -3,26 +3,23 @@ package app.n_zik.android.playback.services.automotive.session
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants.ID_PLAYLIST_SHUFFLE
 
 /**
- * Contract for the Android Auto SELECTION mediaIds of the browse detail
- * containers (artist / album / playlist detail pages) and the playlist
- * shuffle item, emitted by the browse detail handlers and consumed by
- * [AutoSessionCallback] queue resolution.
+ * Contract for the Android Auto SELECTION mediaIds of the browse detail containers
+ * (artist / album / playlist detail pages) and the playlist shuffle item, emitted by the
+ * browse detail handlers and consumed by [AutoSessionCallback] queue resolution.
  *
  * Detail-page songs carry the full navigation context:
  *   "{prefix}/{containerId}/{songId}"            (artist/album/playlist detail pages)
- *   "{prefix}/{containerId}/{section}/{songId}"  (artist section pages only —
- *                                                 the resolver ignores `section`
- *                                                 for album/playlist)
+ *   "{prefix}/{containerId}/{section}/{songId}"  (artist section pages only — the resolver
+ *                                                 ignores `section` for album/playlist)
  *
  * The segment depth is part of the contract: handlers must never emit the bare prefix
- * (e.g. "artist/{songId}") as a song path — that used to produce unresolvable empty
- * queues reported as "Unable to perform the selection" (issue #777).
+ * (e.g. "artist/{songId}") as a song path — that used to produce unresolvable empty queues
+ * reported as "Unable to perform the selection" (issue #777).
  *
- * Scope note: the other resolver inputs (QUICK_PICKS, SONGS_*, SEARCH_*, SONG,
- * SEARCHED) have their own ad-hoc segment depths and are deliberately NOT part of
- * this contract. Song mediaId emission itself is the plain "{path}/{songId}"
- * concatenation in [SessionMediaItemMapper]; the emitted shapes are pinned by
- * `AutoBrowseDetailHandlersMediaIdTest`.
+ * Scope note: the other resolver inputs (QUICK_PICKS, SONGS_*, SEARCH_*, SONG, SEARCHED) have
+ * their own ad-hoc segment depths and are deliberately NOT part of this contract. Song
+ * mediaId emission itself is the plain "{path}/{songId}" concatenation in
+ * [SessionMediaItemMapper]; the emitted shapes are pinned by `AutoBrowseDetailHandlersMediaIdTest`.
  */
 object AutoMediaIdContract {
 

@@ -72,22 +72,15 @@ internal fun channelDelta(rgb: Int): Float {
  * Extracts the 7 M3E morphing cover swatches from [bitmap].
  *
  * The app's single source of cover-color extraction, rebased on the RiPlay reference:
- * `Palette.from(bitmap).maximumColorCount(8).generate()` (capped at 8 swatches) with each
- * `get*Color` falling back to the dynamic palette's accent. The null gate is the legacy
- * reference `dynamicColorPaletteOf(bitmap, isDark)` itself, so `null` means exactly "no
- * dominant swatch".
- *
- * Nearly achromatic covers (maximum swatch channel spread below
- * [ACHROMATIC_CHANNEL_DELTA_THRESHOLD]) are neutralized via [m3eNeutralizeIfAchromatic]
- * before being returned: every downstream surface then renders a neutral gray following the
- * cover instead of the legacy mid-tone fallback's faint tint. The neutralization is
- * evaluated on the capped swatches before any low-saturation rescue, so an achromatic cover
- * is never re-tinted by the rescue.
+ * `Palette.from(bitmap).maximumColorCount(8).generate()` with each `get*Color` falling back
+ * to the dynamic palette's accent; the null gate is `dynamicColorPaletteOf` itself, so
+ * `null` means "no dominant swatch". Nearly achromatic covers are neutralized via
+ * [m3eNeutralizeIfAchromatic] before returning (evaluated on the capped swatches, before any
+ * low-saturation rescue, so an achromatic cover is never re-tinted by it).
  *
  * @param bitmap the cover bitmap
  * @param isDark whether the extraction targets a dark theme
- * @return the 7 swatches, or `null` when `dynamicColorPaletteOf` cannot derive a dominant
- *  swatch from [bitmap]
+ * @return the 7 swatches, or `null` when no dominant swatch can be derived from [bitmap]
  */
 suspend fun extractM3ECoverColors(bitmap: Bitmap, isDark: Boolean): M3ECoverColors? {
     val palette = dynamicColorPaletteOf(bitmap, isDark) ?: return null
@@ -110,22 +103,15 @@ suspend fun extractM3ECoverColors(bitmap: Bitmap, isDark: Boolean): M3ECoverColo
  * solution S3').
  *
  * `androidx.palette` has no vibrant-role swatch for achromatic bitmaps, so every
- * `get*Color(fallback)` falls back to the legacy dynamic accent — a mid-tone (L≈0.5) that
- * carries the cover's faint hue. That faint hue is later amplified by [m3eSaturate]'s
- * dark-theme boost (`S >= 0.1` → +0.35), which is the source of the artificial light
- * brown/blue/pink tints reported on gray/white covers.
+ * `get*Color(fallback)` falls back to the legacy dynamic accent — a mid-tone carrying the
+ * cover's faint hue, which [m3eSaturate]'s dark-theme boost then amplifies into the
+ * artificial light brown/blue/pink tints reported on gray/white covers.
  *
- * When the maximum channel spread of [swatchPalette]'s swatches is below
- * [ACHROMATIC_CHANNEL_DELTA_THRESHOLD], every swatch is returned as a neutral gray:
- * saturation zeroed, each swatch's own lightness kept — except swatches that fell back to
- * [fallbackArgb], which take the dominant swatch's lightness instead ("neutral gray
- * following the cover"). Covers with any swatch at or above the threshold are returned
- * unchanged (strict M3E parity).
- *
- * Applied inside [extractM3ECoverColors] -- the app's single source of cover-color extraction --
- * so every cover-based surface (player background and animated gradients, morphing shapes,
- * `ColorPalette` stripes, lyrics, visualizer, mini-player, app-wide dynamic theme, home-widget
- * fallbacks) renders the same neutral result.
+ * Below [ACHROMATIC_CHANNEL_DELTA_THRESHOLD] every swatch becomes a neutral gray (saturation
+ * zeroed, its own lightness kept — except swatches that fell back to [fallbackArgb], which
+ * take the dominant's lightness, "neutral gray following the cover"); covers at or above the
+ * threshold are unchanged (strict M3E parity). Applied inside [extractM3ECoverColors] so
+ * every cover-based surface renders the same neutral result.
  *
  * @param swatchPalette the capped `Palette.from(bitmap).maximumColorCount(8).generate()`
  *  the swatches came from
@@ -176,21 +162,16 @@ val M3ECoverColors.allAchromatic: Boolean
 
 /**
  * Builds the dynamic [ColorPalette] consumed by the mini-player, the app-wide dynamic theme and
- * the player's local palette, rebased on the RiPlay reference: the palette is built from the
- * **dominant** swatch, not the vibrant one.
+ * the player's local palette, rebased on the RiPlay reference: built from the **dominant**
+ * swatch, not the vibrant one.
  *
- * Colored covers delegate directly to the legacy reference `dynamicColorPaletteOf(bitmap,
- * isDark)` -- bit-identical result (capped 8 palette, dominant swatch, same saturation caps
- * <=0.1/0.3/0.4/0.5 and fixed lightnesses, S<0.08 rescue to the most saturated non-zero
- * swatch), without duplicating the caps/rescue logic.
- *
- * Nearly achromatic (neutralized) covers instead take the neutral ramp from the neutralized
- * dominant swatch, with the tone (dark or light ramp) chosen from the cover's dominant
- * lightness instead of [isDark] (renegotiated `NEUTRAL_COVER` case, 2026-09-19): the theme
- * renders a gray of the cover's family instead of staying light in light mode or dark in dark
- * mode regardless of the cover. The reference's low-saturation rescue must NOT run on them, as
- * it would re-inject the faint hue the neutralization removed (the neutralization is
- * evaluated before the rescue).
+ * Colored covers delegate to the legacy reference `dynamicColorPaletteOf(bitmap, isDark)` --
+ * bit-identical (caps and S<0.08 rescue included), without duplicating that logic. Nearly
+ * achromatic (neutralized) covers take the neutral ramp from the neutralized dominant swatch,
+ * tone chosen from the cover's dominant lightness instead of [isDark] (renegotiated
+ * `NEUTRAL_COVER` case, 2026-09-19) -- the theme renders a gray of the cover's family. The
+ * low-saturation rescue must NOT run on them: it would re-inject the faint hue the
+ * neutralization removed.
  *
  * @param bitmap the cover bitmap
  * @param isDark whether the palette targets a dark theme
@@ -202,15 +183,12 @@ suspend fun m3eDynamicColorPaletteOf(bitmap: Bitmap, isDark: Boolean): ColorPale
 /**
  * The dominant-based dynamic [ColorPalette] for an already-extracted cover [colors]:
  * achromatic (neutralized) covers get the neutral ramp from the neutralized dominant (tone from
- * its lightness), then the ramp's five backgrounds are capped/floored by
- * [m3eCapAchromaticBackgrounds] when that tone mismatches [isDark] (the lightness ceiling of the
- * spec-achromatic-ramp-luminance-cap); colored covers delegate to the legacy reference
- * `dynamicColorPaletteOf(bitmap, isDark)` -- bit-identical to the RiPlay reference, rescue
- * included.
+ * its lightness), capped/floored by [m3eCapAchromaticBackgrounds] when that tone mismatches
+ * [isDark]; colored covers delegate to the legacy reference `dynamicColorPaletteOf` --
+ * bit-identical, rescue included.
  *
  * Shared by [m3eDynamicColorPaletteOf] and the player's `computePlayerDynamicPalette` (legacy)
- * so both build the same dominant-based palette from the same extraction, without
- * re-extracting the swatches.
+ * so both build the same palette from the same extraction, without re-extracting the swatches.
  */
 internal fun m3eDominantDynamicPaletteOf(
     colors: M3ECoverColors,
@@ -233,25 +211,20 @@ internal fun m3eDominantDynamicPaletteOf(
 
 /**
  * Caps (light tone in a dark theme) / floors (dark tone in a light theme) the five background
- * lightnesses of an achromatic dynamic ramp when the ramp's tone mismatches the theme it renders
- * in (spec-achromatic-ramp-luminance-cap, 2026-09-28): a near-white cover in dark mode must not
- * leave the whole app near-white, and the mirror case (near-black cover, light theme) must not
- * leave it near-black.
+ * lightnesses of an achromatic dynamic ramp when the ramp's tone mismatches the theme
+ * (spec-achromatic-ramp-luminance-cap, 2026-09-28): a near-white cover in dark mode must not
+ * leave the whole app near-white (mirror: near-black cover in light theme).
  *
- * The shift is uniform across bg0–bg4 and keyed on the REAL max (cap) / min (floor) lightness of
- * the five backgrounds — bg3/4 are inherited from the default palettes and are the lightest
- * surfaces of a light-tone ramp (≈ L 0.955, lighter than bg0's 0.925) — so the relative spacing
- * and the hierarchy are preserved, and the lightest/darkest background lands exactly on the
- * ceiling ([ACHROMATIC_RAMP_LIGHT_TONE_MAX_LIGHTNESS]) / floor
- * ([ACHROMATIC_RAMP_DARK_TONE_MIN_LIGHTNESS]). Matching tones (dark+dark, light+light) and
- * tones already in range return the very same instance (bit-identical, no log). [ColorPalette.text],
- * [ColorPalette.textSecondary], [ColorPalette.textDisabled] and [ColorPalette.accent] are
- * untouched.
+ * The shift is uniform across bg0–bg4 and keyed on the REAL max/min lightness of the five
+ * backgrounds — bg3/4 are inherited from the default palettes and are the lightest/darkest
+ * surfaces (≈ L 0.955, lighter than bg0's 0.925) — so the spacing is preserved and the
+ * lightest/darkest background lands exactly on the ceiling / floor. Matching tones and tones
+ * already in range return the same instance (bit-identical, no log); text colors and
+ * [ColorPalette.accent] are untouched.
  *
- * The single choke point for dynamic palettes: applied on the achromatic branch of
- * [m3eDominantDynamicPaletteOf] (app theme, mini-player, player's local palette, widgets), and
- * re-applied on a restored dynamic palette via `m3eRecapRestoredDynamicPalette` (loopback 2,
- * EC-1 — the Saver `ColorPalette.Companion` rebuilds the ramp without the cap).
+ * Single choke point for dynamic palettes: applied on the achromatic branch of
+ * [m3eDominantDynamicPaletteOf] and re-applied on restored palettes via
+ * `m3eRecapRestoredDynamicPalette` (loopback 2, EC-1 — the Saver rebuilds the ramp uncapped).
  *
  * @param themeIsDark whether the ramp renders in a dark theme
  * @param toneIsDark the tone of this palette ([ColorPalette.isDark])

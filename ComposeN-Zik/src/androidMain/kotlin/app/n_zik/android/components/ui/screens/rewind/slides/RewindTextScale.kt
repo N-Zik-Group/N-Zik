@@ -68,25 +68,24 @@ internal enum class RewindTextTier(val minFactor: Float) {
 
 /**
  * Shared text sizing policy of the Rewind deck (spec problem-solution-2026-09-28-rewind,
- * solution S-A): every deck text size passes through [size] instead of a raw `sp` literal.
+ * solution S-A): every deck text size passes through [size] instead of a raw `sp`
+ * literal.
  *
  * Calibration contract (pinned by [RewindTextScaleTest]):
  * - I1 — at the reference (400dp wide, font scale 1.0) [size] returns the base size
  *   EXACTLY, so standard-screen renders are unchanged by construction;
- * - I2 — below the reference the factor is non-increasing in the width and clamped to
- *   `[tier.minFactor, 1.0]`; above the reference it is flat (no upscaling);
- * - I3 — at a fixed width the rendered size is non-decreasing in the font scale (the
- *   user's accessibility font choice stays effective — never cancelled);
- * - I4 — overflow guard: the factor is `width / (reference * fontScale^ABSORB)`, so even
- *   at a doubled font scale the rendered size stays within the screen's width budget.
- *   Font scales below 1.0 are clamped to the 1.0 behavior (Android's user font-scale
- *   floor), so the contract is uniform for every font scale.
+ * - I2 — below the reference the factor is non-increasing in the width, clamped to
+ *   `[tier.minFactor, 1.0]`; above it is flat (no upscaling);
+ * - I3 — at a fixed width the rendered size is non-decreasing in the font scale
+ *   (the user's accessibility font choice stays effective — never cancelled);
+ * - I4 — overflow guard: the factor is `width / (reference * fontScale^ABSORB)`, so
+ *   even a doubled font scale stays within the screen's width budget; scales below
+ *   1.0 are clamped to the 1.0 behavior (Android's font-scale floor).
  *
- * The sizing only keeps proportions in budget — it does not by itself prevent a word
- * from overflowing its box. That is the fitting discipline of the slides (single-line
- * display texts are capped with ellipsis or a marquee honoring the "disable scrolling
- * text" setting; multiline texts are capped with `maxLines` + `Ellipsis`), see
- * `RewindStoryComponents`.
+ * This only keeps proportions in budget — it does not prevent a word from
+ * overflowing its box: that is the slides' fitting discipline (single-line:
+ * ellipsis or marquee honoring "disable scrolling text"; multiline: `maxLines` +
+ * `Ellipsis`), see `RewindStoryComponents`.
  *
  * @param screenWidthDp available screen width of the device, dp (not physical pixels)
  * @param fontScale system font-scale (1.0 = default; from [androidx.compose.ui.unit.Density])

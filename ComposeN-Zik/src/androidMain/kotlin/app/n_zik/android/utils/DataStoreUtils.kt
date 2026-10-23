@@ -56,15 +56,13 @@ object DataStoreUtils {
     const val KEY_REWIND_YEARLY_NOTIF_ENABLED = "rewind_yearly_notif_enabled"
 
     // Rewind playlists (spec "Retrait du mécanisme legacy « monthly playlists » + catégorie
-    // « Rewind playlists »"). Frozen contract for spec 2: the playlist worker gates its
-    // CREATION on KEY_REWIND_{TYPE}_PLAYLIST_ENABLED and its NOTIFICATION on
-    // KEY_REWIND_{TYPE}_PLAYLIST_NOTIF_ENABLED. Spec 1 only consumes the two creation keys
-    // to show/hide the Month/Year/All filter row. All default to `true` on read (zero
-    // regression on existing installs), same store as the deck toggles.
-    //
-    // Decoupling (user decision, 2026-09-24): these keys are NOT gated by
-    // [KEY_REWIND_ENABLED] nor by the deck type toggles — a deck type off does not hide its
-    // playlist.
+    // « Rewind playlists »"). Frozen contract for spec 2: the worker gates CREATION on
+    // KEY_REWIND_{TYPE}_PLAYLIST_ENABLED and the NOTIFICATION on
+    // KEY_REWIND_{TYPE}_PLAYLIST_NOTIF_ENABLED; spec 1 only consumes the two creation keys
+    // (Month/Year/All filter row). All default to `true` on read (zero regression on existing
+    // installs), same store as the deck toggles. Decoupling (user decision, 2026-09-24): NOT
+    // gated by [KEY_REWIND_ENABLED] nor by the deck type toggles — a deck type off does not
+    // hide its playlist.
 
     /** Creation of the monthly rewind playlist (`rewind-monthly:YYYYMM`). */
     const val KEY_REWIND_MONTHLY_PLAYLIST_ENABLED = "rewind_monthly_playlist_enabled"

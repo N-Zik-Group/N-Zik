@@ -192,7 +192,6 @@ class SmartTrash private constructor(
  * Deletes the downloads for a batch of songs (issue #606 H4) — one scope per batch,
  * never one per song. Runs on the dispatcher it is launched from; null caches are no-ops.
  *
- * @param songs the songs whose downloads should be removed
  * @param cache the streaming cache, may be null
  * @param downloadCache the download cache, may be null
  * @param context application context passed through to [MyDownloadHelper.removeDownload]

@@ -74,13 +74,9 @@ class PaletteFadeModel {
  *
  * Only the wrapped subtree (player / mini-player) recomposes during the
  * transition — the rest of the app applies the new palette instantly, which
- * keeps track changes cheap.
- *
- * The subtree is always wrapped in a [CompositionLocalProvider] (no structural
- * if/else), so the player is never remounted when the fade finishes. The
- * palette currently shown is tracked in a state that keeps the previous palette
- * until the fade starts, so a new target never flashes for a frame before the
- * transition begins from the old palette.
+ * keeps track changes cheap. The subtree is always wrapped in a
+ * [CompositionLocalProvider] (no structural if/else), so the player is never
+ * remounted when the fade finishes.
  */
 @Composable
 fun PaletteFade(

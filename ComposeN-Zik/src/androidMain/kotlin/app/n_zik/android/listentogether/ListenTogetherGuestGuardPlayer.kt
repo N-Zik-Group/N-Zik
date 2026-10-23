@@ -22,30 +22,29 @@ import timber.log.Timber
  * architecture spine AD-1..AD-7).
  *
  * Delegating [Player] facade: every external entry point (UI / menus / library via
- * `Binder.player`, notification buttons, MediaSession / lockscreen / automotive) reaches
- * the shared ExoPlayer ONLY through this facade. While [listenTogetherGuestLock] is on,
- * every operation that can desynchronize the room is a no-op (fail-closed: any operation
- * not explicitly in the "passing" list is blocked) plus a throttled "the host controls
- * playback" toast. Play/pause, volume and queries always pass through — a guest's play
- * resynchronizes them to the host (Spotify Jam semantics).
+ * `Binder.player`, notification buttons, MediaSession / lockscreen / automotive) reaches the
+ * shared ExoPlayer ONLY through this facade. While [listenTogetherGuestLock] is on, every
+ * operation that can desynchronize the room is a no-op (fail-closed: any operation not
+ * explicitly in the "passing" list is blocked) plus a throttled "the host controls playback"
+ * toast. Play/pause, volume and queries always pass through — a guest's play resynchronizes
+ * them to the host (Spotify Jam semantics).
  *
  * Two extra guarantees while locked:
- *  - **Blocked-op tail suppression.** User helpers (`forcePlay`, `playAtIndex`, `playNext`, …)
- *    call a blocked load/skip op and then — still in the same synchronous chain — call the
- *    pass-through tail `prepare()` / `volume = …` / `playWhenReady = true`. That tail would
- *    resume a paused track after a blocked "play another track" attempt (user report
- *    2026-09-29: clicking a song resumed the paused track). A per-thread call sequence
- *    suppresses exactly the tail of each blocked chain; a real guest play/pause/volume tap
- *    only ever lands on a later event-loop iteration and is never swallowed.
+ *  - **Blocked-op tail suppression.** User helpers (`forcePlay`, `playAtIndex`, …) call a
+ *    blocked load/skip op and then — same synchronous chain — call the pass-through tail
+ *    `prepare()` / `volume = …` / `playWhenReady = true`, which would resume a paused track
+ *    after a blocked "play another track" attempt (user report 2026-09-29). A per-thread
+ *    call sequence suppresses exactly the tail of each blocked chain; a real guest
+ *    play/pause/volume tap only ever lands on a later event-loop iteration and is never
+ *    swallowed.
  *  - **Guest play/pause intent.** [onGuestPlayPause] observes the guest's own play/pause
- *    taps (host sync and service internals mutate the raw player directly and never pass
- *    through this facade) so the sync manager can keep a locally-paused guest paused across
- *    host skips and resync the guest to the host position on play.
+ *    taps (host sync and service internals mutate the raw player directly, never through
+ *    this facade) so the sync manager can keep a locally-paused guest paused across host
+ *    skips and resync it to the host position on play.
  *
- * The policy reads [listenTogetherGuestLock] on EVERY call (AD-3): no lock state is cached
- * in the instance, the wrapper is a pure function of (raw player, lock State). The host
- * sync path and the service's internal logic mutate the raw player and are NEVER guarded
- * (AD-4).
+ * The policy reads [listenTogetherGuestLock] on EVERY call (AD-3): no lock state is cached,
+ * the wrapper is a pure function of (raw player, lock State); the host sync path and the
+ * service's internal logic mutate the raw player and are NEVER guarded (AD-4).
  */
 @UnstableApi
 class ListenTogetherGuestGuardPlayer(

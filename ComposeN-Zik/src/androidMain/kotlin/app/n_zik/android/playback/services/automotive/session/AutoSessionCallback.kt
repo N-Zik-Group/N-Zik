@@ -186,19 +186,16 @@ class AutoSessionCallback(
         controller: MediaSession.ControllerInfo
     ) {
         super.onPostConnect(session, controller)
-        // spec-notification-click-opens-player (option B): the GLOBAL session activity is now
-        // the "now playing" notification's content intent (opens the phone MainActivity with
-        // a one-shot token — media3 hard-wires the notification content intent to the global
-        // session activity). The Android Auto companion must NOT inherit it: send it null via
-        // the per-controller override (official since media3 1.4.0) so AA falls back to the
-        // standard session UI (media library) instead of the in-app screen. Runs on every
-        // AA connection (car re-connects re-send it).
-        // Deliberately done in onPostConnect, NOT onConnect: in media3 1.10.1 the controller
-        // is only registered (ConnectedControllersManager.addController) after onConnect
-        // returns, and the per-controller setSessionActivity dispatch guards on
-        // isConnected(controller) — a call from onConnect would be a silent no-op, leaving
-        // AA with the global activity (the in-app screen regression this feature must not
-        // reintroduce).
+        // spec-notification-click-opens-player (option B): the GLOBAL session activity is the
+        // "now playing" notification's content intent (media3 hard-wires it to the global
+        // session activity — one-shot token opening the phone MainActivity). The AA companion
+        // must NOT inherit it: send it null via the per-controller override (official since
+        // media3 1.4.0) so AA falls back to the standard session UI. Deliberately in
+        // onPostConnect, NOT onConnect: in media3 1.10.1 the controller is only registered
+        // after onConnect returns, and setSessionActivity dispatch guards on
+        // isConnected(controller) — a call from onConnect would be a silent no-op, leaving AA
+        // with the in-app screen (the regression this feature must not reintroduce). Runs on
+        // every AA connection.
         if (session.isAutoCompanionController(controller)) {
             session.setSessionActivity(controller, null)
         }
@@ -206,19 +203,18 @@ class AutoSessionCallback(
 
     /**
      * Issue #881 (gh-881): observe seek commands requested by AOSP-interop session controllers
-     * (lockscreen / Android Auto legacy path) — spec S3. In media3 1.10.1 the legacy `onSeekTo` /
-     * `onSeekForward` / `onSeekBack` overrides are GONE: the AOSP-interop path routes every player
-     * command here, so a `SEEK_SESSION` line synchronized with a seek-loop cycle pins that system
-     * path as the caller.
+     * (lockscreen / Android Auto legacy path) — spec S3. In media3 1.10.1 the legacy
+     * `onSeekTo` / `onSeekForward` / `onSeekBack` overrides are GONE: the AOSP-interop path
+     * routes every player command here, so a `SEEK_SESSION` line synchronized with a
+     * seek-loop cycle pins that system path as the caller.
      *
-     * SCOPE: media3's OWN controllers (`MediaControllerImplBase` — the in-app media notification
-     * and the media-button path) do NOT go through this callback; they apply their seeks straight
-     * to the player as dedicated transactions, and those show up in the S1 `SEEK_CALL` stack
-     * instead. Absence of a `SEEK_SESSION` line therefore does NOT rule out the
-     * notification/media-button path.
+     * SCOPE: media3's OWN controllers (`MediaControllerImplBase` — the in-app media
+     * notification and the media-button path) do NOT go through this callback; their seeks
+     * show up in the S1 `SEEK_CALL` stack instead, so absence of a `SEEK_SESSION` line does
+     * NOT rule out the notification/media-button path.
      *
-     * Purely observational: the command is always delegated to the default handling, which returns
-     * `RESULT_SUCCESS` — a non-SUCCESS return would make media3 skip the command.
+     * Purely observational: the command is always delegated to the default handling — a
+     * non-SUCCESS return would make media3 skip the command.
      */
     // onPlayerCommandRequest is @Deprecated in media3 1.10.1 — it is still the ONLY AOSP-interop
     // hook available (the legacy onSeek* overrides are gone), so the diagnostic stays on it.
@@ -414,14 +410,12 @@ class AutoSessionCallback(
         startIndex: Int,
         startPositionMs: Long,
     ): MediaSession.MediaItemsWithStartPosition {
-        // Triple dislike exclusion mirroring the phone shuffler (Shuffler):
-        // disliked songs + songs by disliked artists + songs from disliked
-        // albums, each gated by its phone DislikeMode (default Enabled).
-        // Applied to every Songs/Albums/Artists queue below; the Disliked
-        // category is never filtered. Empty set = no filter. Top is also
-        // excluded at the SQL level (EventTable.findSongsMostPlayedBetween
-        // drops likedAt == -1), so its in-memory guard is redundant (kept
-        // defensively) and it never re-includes them in Disabled mode.
+        // Triple dislike exclusion mirroring the phone shuffler (Shuffler): disliked songs +
+        // songs by disliked artists + songs from disliked albums, each gated by its phone
+        // DislikeMode (default Enabled). Applied to every Songs/Albums/Artists queue below;
+        // the Disliked category is never filtered. Top is also excluded at the SQL level
+        // (EventTable.findSongsMostPlayedBetween drops likedAt == -1) — its in-memory guard is
+        // redundant (kept defensively) and it never re-includes them in Disabled mode.
         val excludedIds = DislikedExclusion.excludedSongIds(context, database)
         if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_LUCKY_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_LUCKY_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
             val quickPickSongs = (QuickPicksRepository.trendingList.value + (QuickPicksRepository.relatedPage.value?.songs?.map { it.asSong } ?: emptyList())).distinctBy { it.id }

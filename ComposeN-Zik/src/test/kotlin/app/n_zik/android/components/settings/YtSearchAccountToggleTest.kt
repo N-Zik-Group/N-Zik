@@ -40,16 +40,15 @@ import org.robolectric.annotation.Config
  * of the Accounts tab (mirroring the "Login for Browse" row it sits under):
  *
  * - hidden entirely when the YouTube login is disabled;
- * - greyed out (connect-first text) when logged out — the row gate is disabled AND
- *   a tap on the row's inner Switch (which does not receive `enabled`, so it stays
- *   interactive) never writes the preference or flips the flag: the composable
- *   guards the write itself;
+ * - greyed out (connect-first text) when logged out — the row gate is disabled AND a
+ *   tap on the inner Switch (no `enabled` propagation, so it stays interactive) never
+ *   writes the preference or flips the flag: the composable guards the write itself;
  * - toggling it off while logged in persists the guest mode AND sets the in-memory
  *   [Innertube.useLoginForSearch] flag;
- * - a persisted OFF survives a later login (the login never resets the toggle —
- *   matrix line "OFF then login");
- * - the settings search filter matches the title AND the description (and hides the
- *   row on no match).
+ * - a persisted OFF survives a later login (the login never resets the toggle — matrix
+ *   line "OFF then login");
+ * - the settings search filter matches the title AND the description (hides the row on
+ *   no match).
  *
  * JUnit 4 + [RobolectricTestRunner], executed through the project's junit-vintage-engine
  * on the JUnit 5 platform (the `createComposeRule()` rule only works with JUnit 4),

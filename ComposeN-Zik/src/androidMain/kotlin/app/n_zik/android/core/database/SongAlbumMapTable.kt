@@ -13,33 +13,15 @@ import kotlinx.coroutines.flow.Flow
 @RewriteQueriesToDropUnusedColumns
 interface SongAlbumMapTable {
 
-    /**
-     * Attempt to write the list of [SongAlbumMap] to database.
-     *
-     * If record exist (determined by its primary key),
-     * existing record's columns will be replaced
-     * by provided data.
-     *
-     * @param songAlbumMap list of [SongAlbumMap] to insert to database
-     */
+    /** Upsert [songAlbumMap] rows (insert, or replace on primary key). */
     @Upsert
     fun upsert( songAlbumMap: List<SongAlbumMap> )
 
-    /**
-     * Remove all songs belong to album with id [albumId]
-     *
-     * @param albumId album to have its songs wiped
-     *
-     * @return number of rows affected by this operation
-     */
+    /** Remove all songs belonging to album [albumId]. @return number of rows affected. */
     @Query("DELETE FROM SongAlbumMap WHERE albumId = :albumId")
     fun clear( albumId: String ): Int
 
-    /**
-     * Delete all mappings where songs aren't exist in `Song` table
-     *
-     * @return number of rows affected by this operation
-     */
+    /** Delete all mappings whose song no longer exists in `Song`. @return rows affected. */
     @Query("""
         DELETE FROM SongAlbumMap 
         WHERE songId NOT IN (
@@ -49,15 +31,7 @@ interface SongAlbumMapTable {
     """)
     fun clearGhostMaps(): Int
 
-    /**
-     * Results are sorted by [SongAlbumMap.position].
-     *
-     * @param albumId of artist to look for
-     * @param limit number of results cannot go over this value
-     *
-     * @return all [Song]s that were mapped to album has [Album.id] matches [albumId],
-     * sorted by song's position in album
-     */
+    /** All [Song]s mapped to album [albumId], sorted by position in the album, up to [limit]. */
     @Query("""
         SELECT Song.*
         FROM SongAlbumMap
@@ -156,17 +130,14 @@ interface SongAlbumMapTable {
     fun map( songId: String, albumId: String, position: Int = -1 )
 
     /**
-     * Delete the source song's links to every album that the target song
-     * already holds, so a following [updateSongId] cannot violate the
-     * (songId, albumId) primary key for albums already linked to the target.
+     * Delete the source song's links to every album that the target song already holds, so a
+     * following [updateSongId] cannot violate the (songId, albumId) primary key.
      *
-     * Must be called inside the same transaction as [updateSongId], before it,
-     * when merging the source song into an existing target song. The target's
-     * own rows are kept — including their [SongAlbumMap.position], so the
-     * track position curated on the target wins over the source's — and the
-     * merge yields the union of both songs' album mappings with the target's
-     * rows canonical on a conflict (no pair lost, no duplicate created, no
-     * orphaned source row left behind).
+     * Must be called inside the same transaction as [updateSongId], before it, when merging
+     * the source song into an existing target: the target's own rows are kept — including
+     * their [SongAlbumMap.position], so the track position curated on the target wins over
+     * the source's — and the merge yields the union of both songs' album mappings (no pair
+     * lost, no duplicate created, no orphaned source row left behind).
      *
      * @param oldId the source song whose mappings are redirected
      * @param newId the target song that receives the redirection

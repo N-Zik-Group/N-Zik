@@ -111,9 +111,7 @@ class ProfileDataDirsTest {
         assertEquals("exoplayer_internal.db", ProfileDataDirNames.INDEX_DB_FILE)
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // totalDirectorySize (the sizes shown on the profile cards)
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `totalDirectorySize is zero for a missing dir`(@TempDir tmp: File) {

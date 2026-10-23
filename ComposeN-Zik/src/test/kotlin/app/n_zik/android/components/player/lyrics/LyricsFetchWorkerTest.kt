@@ -53,14 +53,12 @@ class LyricsFetchWorkerTest {
     private val checkedInnertube = mutableListOf<Boolean>()
     private val fetchingStates = mutableListOf<Boolean>()
 
-    // LrcLib.lyrics()/lyricsUnsynced(), KuGou.lyrics() and Innertube.lyrics() are `suspend fun`s
-    // whose own declared return type is `kotlin.Result<T>`. MockK cannot mock a suspend function
-    // that returns Result<T> reliably (a known ABI-level limitation: the coroutine continuation's
-    // own Result and the function's declared Result<T> get confused, corrupting the value at
-    // runtime with a ClassCastException) -- confirmed here even with `coAnswers`, not just a bare
-    // `returns null`. LyricsFetchWorker takes these three calls as constructor-injected lambdas
-    // instead (same pattern as its dispatcher parameters), so tests control them as plain values
-    // and call counts below, without MockK ever touching these specific suspend functions.
+    // LrcLib/KuGou/Innertube lyrics() are `suspend fun`s returning `kotlin.Result<T>`;
+    // MockK cannot mock those reliably (ABI-level limitation: the continuation's own
+    // Result and the declared Result<T> get confused -- ClassCastException at runtime,
+    // confirmed even with `coAnswers`). LyricsFetchWorker takes the three calls as
+    // constructor-injected lambdas (like its dispatcher params), so tests control them
+    // as plain values and call counts below, without MockK touching those functions.
     private var lrcLibLyricsResult: Result<LrcLib.Lyrics?>? = Result.success(null)
     private var lrcLibLyricsUnsyncedResult: Result<LrcLib.Lyrics?>? = Result.success(null)
     private var kuGouLyricsResult: Result<KuGou.Lyrics?>? = Result.success(null)

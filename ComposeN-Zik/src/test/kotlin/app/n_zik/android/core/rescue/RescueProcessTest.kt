@@ -22,9 +22,7 @@ class RescueProcessTest {
 
     private fun flagFile(dir: File) = File(dir, RescueProcess.KILL_REQUEST_FLAG_NAME)
 
-    // ──────────────────────────────────────────────────────────────────────
     // Consume without a pending request
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `consuming without a pending flag returns false and creates nothing`(@TempDir tmp: File) {
@@ -33,9 +31,7 @@ class RescueProcessTest {
         assertFalse(File(flagFile(tmp).path + ".consumed").exists())
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Write + consume
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `writing a flag then consuming it removes it and returns true`(@TempDir tmp: File) {
@@ -70,9 +66,7 @@ class RescueProcessTest {
         assertFalse(flagFile(tmp).exists())
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Re-request and overwrite
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `a new request after consumption creates a fresh pending flag`(@TempDir tmp: File) {
@@ -106,9 +100,7 @@ class RescueProcessTest {
         assertFalse(flag.exists())
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Cancel (main process observed dead: the request is moot)
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `cancelling without a pending flag is a no-op`(@TempDir tmp: File) {
@@ -139,9 +131,7 @@ class RescueProcessTest {
         assertFalse(File(flagFile(tmp).path + ".consumed").exists())
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Nonce verification (hot-kill sender check)
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `flagNonce returns the nonce embedded in a requestKillMain-style payload`(@TempDir tmp: File) {
@@ -199,9 +189,7 @@ class RescueProcessTest {
         assertFalse(File(flagFile(tmp).path + ".consumed").exists())
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Alive marker (main-process liveness, the only reliable signal from 31 on)
-    // ──────────────────────────────────────────────────────────────────────
 
     private fun markerFile(dir: File) = File(dir, RescueProcess.ALIVE_MARKER_NAME)
 

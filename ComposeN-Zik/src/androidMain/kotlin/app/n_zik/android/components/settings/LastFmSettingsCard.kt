@@ -245,9 +245,8 @@ fun LastFmSettingsCard() {
                         // Skip PartiallyExpanded: its anchor is a fixed 50% of the window
                         // height, while the sheet window is not resized by the keyboard
                         // (SOFT_INPUT_ADJUST_NOTHING on API 30+), so the fields stay hidden
-                        // behind it. The Expanded anchor is content-driven
-                        // (fullHeight - sheetHeight) and follows the IME insets applied to
-                        // the sheet content by CustomModalBottomSheet.
+                        // behind it. The Expanded anchor is content-driven and follows the
+                        // IME insets applied to the sheet content by CustomModalBottomSheet.
                         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                         shape = (uiRoundnessShape() as? RoundedCornerShape)?.let {
                             RoundedCornerShape(

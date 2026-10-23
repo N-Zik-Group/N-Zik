@@ -15,48 +15,15 @@ import kotlinx.coroutines.flow.Flow
 @RewriteQueriesToDropUnusedColumns
 interface SongArtistMapTable {
 
-    /**
-     * Attempt to write [songArtistMap] into database.
-     *
-     * ### Standalone use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * it'll simply be ignored.
-     *
-     * ### Transaction use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * it'll simply be ignored and the transaction continues.
-     *
-     * @param songArtistMap data intended to insert in to database
-     */
+    /** Inserts [songArtistMap], silently skipping it when the pair already exists (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertIgnore( songArtistMap: SongArtistMap )
 
-    /**
-     * Attempt to write list of [SongArtistMap] into database.
-     *
-     * ### Standalone use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * it'll simply be ignored.
-     *
-     * ### Transaction use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * it'll simply be ignored and the transaction continues.
-     *
-     * @param songArtistMaps data intended to insert in to database
-     */
+    /** Inserts [songArtistMaps], silently skipping pairs that already exist (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertIgnore( songArtistMaps: List<SongArtistMap> )
 
-    /**
-     * @param artistId of artist to look for
-     * @param limit number of results cannot go over this value
-     *
-     * @return all [Song]s mapped to the artist whose [Artist.id] equals [artistId]
-     */
+    /** All [Song]s mapped to the artist whose [Artist.id] equals [artistId]. */
     @Query("""
         SELECT DISTINCT Song.*
         FROM SongArtistMap sam 
@@ -71,11 +38,6 @@ interface SongArtistMapTable {
      * Direct (non-Flow) mirror of [allSongsBy]: Flows are unusable inside a
      * synchronous transaction, so sweeps and propagations that run on the
      * transaction executor query the same data synchronously.
-     *
-     * @param artistId of artist to look for
-     * @param limit number of results cannot go over this value
-     *
-     * @return all [Song]s mapped to the artist whose [Artist.id] equals [artistId]
      */
     @Query("""
         SELECT DISTINCT Song.*
@@ -104,11 +66,6 @@ interface SongArtistMapTable {
      * Direct (non-Flow) mirror of [findArtistsOf]: Flows are unusable inside a
      * synchronous transaction, so sweeps and propagations that run on the
      * transaction executor query the same data synchronously.
-     *
-     * @param songId the song to look for
-     * @param limit number of results cannot go over this value
-     *
-     * @return all [Artist]s featured in this song
      */
     @Query("""
         SELECT DISTINCT A.*
@@ -120,11 +77,7 @@ interface SongArtistMapTable {
     """)
     fun findArtistsOfDirect( songId: String, limit: Int = Int.MAX_VALUE ): List<Artist>
 
-    /**
-     * Delete all mappings where songs aren't exist in `Song` table
-     *
-     * @return number of rows affected by this operation
-     */
+    /** Deletes all mappings whose song no longer exists in the `Song` table. */
     @Query("""
         DELETE FROM SongArtistMap 
         WHERE songId NOT IN (
@@ -135,19 +88,15 @@ interface SongArtistMapTable {
     fun clearGhostMaps(): Int
 
     /**
-     * Delete the source song's links to every artist that the target song
-     * already holds, so a following [updateSongId] cannot violate the
-     * (songId, artistId) primary key for artists already linked to the target.
+     * Deletes the source song's links to every artist that the target song already
+     * holds, so a following [updateSongId] cannot violate the (songId, artistId)
+     * primary key for artists already linked to the target.
      *
-     * Must be called inside the same transaction as [updateSongId], before it,
-     * when merging the source song into an existing target song. The target's
-     * own rows are kept, so the merge yields the union of both songs' artist
-     * mappings with the target's rows canonical on a conflict (no pair lost,
-     * no duplicate created, no orphaned source row left behind).
-     *
-     * @param oldId the source song whose mappings are redirected
-     * @param newId the target song that receives the redirection
-     * @return number of rows affected by this operation
+     * Must be called inside the same transaction as [updateSongId], before it, when
+     * merging the source song into an existing target song. The target's own rows are
+     * kept, so the merge yields the union of both songs' artist mappings, with the
+     * target's rows canonical on a conflict (no pair lost, no duplicate created,
+     * no orphaned source row left behind).
      */
     @Query("""
         DELETE FROM SongArtistMap
@@ -166,8 +115,6 @@ interface SongArtistMapTable {
      * Delete the (song, :newId) links of every song that also holds a
      * (song, :oldId) link, so a following [updateArtistId] cannot violate the
      * (songId, artistId) primary key for songs already linked to the target.
-     *
-     * @return number of rows affected by this operation
      */
     @Query("""
         DELETE FROM SongArtistMap
@@ -176,12 +123,7 @@ interface SongArtistMapTable {
     """)
     fun dropLinksAlreadyOn(oldId: String, newId: String): Int
 
-    /**
-     * Delete all mappings for a specific song
-     *
-     * @param songId the song ID to delete mappings for
-     * @return number of rows affected by this operation
-     */
+    /** Delete all mappings for [songId]. */
     @Query("DELETE FROM SongArtistMap WHERE songId = :songId")
     fun deleteBySongId(songId: String): Int
 
@@ -201,13 +143,7 @@ interface SongArtistMapTable {
     @Query("SELECT songId, artistId FROM SongArtistMap WHERE songId = :songId")
     fun pairsBySongIdDirect(songId: String): List<SongArtistMap>
 
-    /**
-     * Delete a single mapping
-     *
-     * @param songId song side of the pair
-     * @param artistId artist side of the pair
-     * @return number of rows affected by this operation
-     */
+    /** Delete the single mapping between [songId] and [artistId]. */
     @Query("DELETE FROM SongArtistMap WHERE songId = :songId AND artistId = :artistId")
     fun deletePairDirect(songId: String, artistId: String): Int
 

@@ -2,18 +2,15 @@ package app.n_zik.android.playback.services
 
 /**
  * Pure (Android-free) rules behind the signed local-artwork channel served by
- * [ArtworkContentProvider]. Kept as plain string logic so they stay unit-testable
- * off device.
+ * [ArtworkContentProvider] — plain string logic, unit-testable off device.
  *
- * Why the channel exists: the Android Auto home media card is drawn by the
- * Android Auto process (`com.google.android.projection.gearhead`), which loads the
- * session artwork URI with its own Glide — not the embedded artwork bytes. A raw
- * MediaStore `content://media/.../albumart/{id}` URI comes back as a non-seekable
- * stream there (ESPIPE "Illegal seek"), and an `android.resource://` / `file://`
- * URI is not resolvable either, so the card stays empty. Every local track is
- * therefore published with an URI on the app's exported provider, which always
- * answers with a seekable square JPEG (custom cover, then MediaStore art, then the
- * app placeholder).
+ * Why the channel exists: the Android Auto home media card is drawn by the Android Auto
+ * process (`com.google.android.projection.gearhead`), which loads the session artwork URI
+ * with its own Glide — a raw MediaStore `content://media/.../albumart/{id}` URI comes back
+ * as a non-seekable stream there (ESPIPE "Illegal seek"), and an `android.resource://` /
+ * `file://` URI is not resolvable either, so the card stays empty. Every local track is
+ * therefore published with an URI on the app's exported provider, which always answers with
+ * a seekable square JPEG (custom cover, then MediaStore art, then the app placeholder).
  */
 object LocalArtworkRules {
 

@@ -12,13 +12,12 @@ const val PLAYBACK_DIAG_TAG = "PlaybackDiag"
  * Pure stall-detection state machine for playback diagnostics (issue #881).
  *
  * Feed [sample] periodically (every [DEFAULT_SAMPLING_INTERVAL_MS]) while the player is in
- * `playWhenReady`. A stall is detected when the player stays in `BUFFERING`, or the
- * position stops advancing in `READY`, for at least [stallThresholdMs], and it yields
- * exactly ONE [Decision.Stalled] per stall — subsequent samples while still stalled keep
- * returning [Decision.Ok] (no log spam). Once the player recovers the watchdog re-arms and
- * yields a single [Decision.Recovered]. `IDLE`/`ENDED` (playback legitimately stopped —
- * end of queue, stop, error) reset the tracking like a pause: they are not stalls, and
- * counting them would report a phantom stall right after normal playback ends.
+ * `playWhenReady`. A stall is detected when the player stays in `BUFFERING`, or the position
+ * stops advancing in `READY`, for at least [stallThresholdMs], and it yields exactly ONE
+ * [Decision.Stalled] per stall — subsequent samples while still stalled keep returning
+ * [Decision.Ok] (no log spam); on recovery the watchdog re-arms and yields a single
+ * [Decision.Recovered]. `IDLE`/`ENDED` reset the tracking like a pause: they are not
+ * stalls, and counting them would report a phantom stall right after normal playback ends.
  *
  * Android-free on purpose: unit-testable on the JVM (spec, action 2).
  */
@@ -74,7 +73,6 @@ class PlaybackStallWatchdog(
     /**
      * Records one periodic sample.
      *
-     * @param nowMs monotonic clock (ms) — injected so tests can drive time.
      * @param playWhenReady when false all tracking resets (a paused player cannot stall).
      * @param playbackState `Player.STATE_*` value of the sampled player.
      * @param playerIdentity `System.identityHashCode` of the sampled ExoPlayer — a change

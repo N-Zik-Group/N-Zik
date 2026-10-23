@@ -3,24 +3,16 @@ package app.n_zik.android.bridge.state
 import app.n_zik.android.bridge.AudioOutput
 
 /**
- * Revisioned player state of one server run (contract §7). Pure: it only knows
- * [PlayerSample]s and an injectable [clock]. Each new sample is compared to the previous
- * one and turns into the deltas of §7.2, in the order `queueChanged`, `trackChanged`,
- * `playbackChanged`, `modesChanged`, each at `revision + 1`. The revision starts at `0`
- * with every new hub, i.e. with every server start (contract §1).
+ * Revisioned player state of one server run (contract §7). Pure: it only knows [PlayerSample]s
+ * and an injectable [clock]. Each sample becomes the §7.2 deltas in order `queueChanged`,
+ * `trackChanged`, `playbackChanged`, `modesChanged`, each at `revision + 1`; the revision
+ * starts at `0` with every server start (§1). Deltas, snapshots and heartbeats reach [Sink]s
+ * under one lock, so a heartbeat never overtakes the delta it reports; [Sink]s must not block.
  *
- * Deltas, snapshots and heartbeats reach the subscribers under a single lock, so a
- * subscriber always sees its snapshot at revision `r` followed by the deltas `r + 1`,
- * `r + 2`… and a heartbeat never overtakes the delta it reports. [Sink]s must not block.
- *
- * Since 1.4: [PlayerSample.isBuffering] travels with `trackChanged` (a new track loads) and
- * a change of it alone emits a `playbackChanged` — a play after a pause enters buffering
- * with `isPlaying` still `false`, so the ring must not wait for the playback state change.
- *
- * Since 1.5: [PlayerSample.durationMs] (the player's live duration) travels with `trackChanged`
- * (a new track resets it to `C.TIME_UNSET`) and a change of it alone emits a `playbackChanged` —
- * a loaded track goes from `C.TIME_UNSET` to its duration, the moment the phone's bar switches
- * from the indeterminate line to the seek bar.
+ * Since 1.4/1.5: [PlayerSample.isBuffering] and [PlayerSample.durationMs] travel with
+ * `trackChanged`, and a change of either alone emits a `playbackChanged` — a play after a
+ * pause enters buffering while `isPlaying` is still `false`, and a loaded track goes from
+ * `C.TIME_UNSET` to its duration (the phone's bar switching to the seek bar).
  */
 internal class BridgeStateHub(private val clock: () -> Long = System::currentTimeMillis) {
 

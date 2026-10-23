@@ -60,9 +60,7 @@ class RescueKillWiringTest {
         Shadows.shadowOf(RescueProcess.KILL_REQUEST_HANDLER.looper).idle()
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Startup self-kill (safety-net flag consumed before heavy init)
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `startup with a pending kill flag ends the main process before heavy init`() {
@@ -120,9 +118,7 @@ class RescueKillWiringTest {
         )
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Hot-kill receiver: nonce verification
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `the kill receiver ends the process when the broadcast nonce matches the flag`() {
@@ -221,9 +217,7 @@ class RescueKillWiringTest {
         RescueProcess.cancelKillRequest(context)
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Rescue Center entry point
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `opening the rescue center requests the main process kill`() {
@@ -311,9 +305,7 @@ class RescueKillWiringTest {
         context.unregisterReceiver(receiver)
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Liveness decision table (isMainProcessLikelyAlive)
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `from 31 on liveness follows the alive marker, not the probe`() {
@@ -348,9 +340,7 @@ class RescueKillWiringTest {
         File(context.filesDir, RescueProcess.ALIVE_MARKER_NAME).delete()
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Alive marker updater (main-process background loop)
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `the alive marker updater touches the marker and keeps re-touching it`() {

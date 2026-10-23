@@ -32,21 +32,15 @@ sealed interface FaceAvatar {
 /**
  * Resolves the face name of a profile.
  *
- * The selected account source wins only while that account is actually logged in AND
- * a name was captured; otherwise the profile's own display name is used, then the
- * app default name — the result is never blank.
+ * The selected account source wins only while that account is actually logged in AND a name
+ * was captured; otherwise the profile's own display name is used, then the app default name —
+ * the result is never blank.
  *
- * Pure on purpose — shared by the Welcome greeting, the Rewind deck, the Accounts
- * face card and the Profiles page, and unit-tested without any Android dependency.
+ * Pure on purpose — shared by the Welcome greeting, the Rewind deck, the Accounts face card
+ * and the Profiles page, and unit-tested without any Android dependency.
  *
  * @param source value stored under `faceNameSource` ("profil" default)
  * @param profileName the profile's own display name (never blank in practice)
- * @param ytLoggedIn whether the YouTube account of this profile is logged in
- * @param ytName account name captured by the login flow (may be blank)
- * @param discordLoggedIn whether the Discord account of this profile is logged in
- * @param discordName Discord username (may be blank)
- * @param lastfmLoggedIn whether the Last.fm account of this profile is logged in
- * @param lastfmName Last.fm username (may be blank)
  * @param defaultName fallback name, never blank (`profile_base_name`)
  */
 fun resolveFaceName(

@@ -13,29 +13,29 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 /**
- * Issue #881 (Phase 3, Fix B): coalesces rapid absolute seeks issued while the player is still
- * recovering from the previous one.
+ * Issue #881 (Phase 3, Fix B): coalesces rapid absolute seeks issued while the player is
+ * still recovering from the previous one.
  *
  * Every `seekTo` on the progressive streams used by this app re-opens the whole data-source
  * chain (one full `DataSource.open()` + buffer refill per seek — 80 ms to several seconds on
- * field devices). A user seeking again before the refill finishes invalidates the refill and
- * the cycle restarts from zero: the progress bar never resumes, which is the perceived
- * "frozen bar / seek loop" of gh-881 (field logs 2026-10-03: 50+34 seeks, each triggering a
- * re-open, while the player never left BUFFERING).
+ * field devices). A seek issued before the refill finishes invalidates it and the cycle
+ * restarts from zero: the progress bar never resumes — the perceived "frozen bar / seek
+ * loop" of gh-881 (field logs 2026-10-03: 50+34 seeks, each triggering a re-open, while the
+ * player never left BUFFERING).
  *
  * Behavior:
  * - A seek issued while the player is still in `BUFFERING` within [coalesceWindowMs] of the
- *   last applied seek is NOT applied immediately — it overwrites the single pending target.
- * - The pending target is applied as soon as the player reaches `READY` (settle), or after the
- *   window elapses even if the player never recovered (safety net: the user's last seek is
+ *   last applied seek overwrites the single pending target instead of being applied.
+ * - The pending target is applied as soon as the player reaches `READY` (settle), or after
+ *   the window elapses even if the player never recovered (safety net: the last seek is
  *   never lost).
- * - Everything else — item-qualified seeks, relative seeks (back/forward), track navigation,
- *   `release` — passes through immediately and supersedes (clears) any coalesced target: a
- *   fresh explicit intent is always honored without delay.
+ * - Item-qualified seeks, relative seeks, track navigation and `release` pass through
+ *   immediately and supersede (clear) any coalesced target: a fresh explicit intent is
+ *   always honored without delay.
  *
- * Pure delegation otherwise (`Player by upstream`, same pattern as [DiagExoPlayer]); no other
- * member's behavior changes. Sits between the guarded facade and the diagnostics wrapper, so
- * the Listen Together guest lock still vetoes seeks before they reach this coalescer.
+ * Pure delegation otherwise (`Player by upstream`, same pattern as [DiagExoPlayer]). Sits
+ * between the guarded facade and the diagnostics wrapper, so the Listen Together guest lock
+ * still vetoes seeks before they reach this coalescer.
  */
 @UnstableApi
 internal class SeekCoalescingPlayer(

@@ -35,18 +35,14 @@ internal const val REBUFFER_SETTLE_TARGET_MS: Int = 1000
 /**
  * Issue #881 (gh-881), Phase 3 Fix C: playback [LoadControl] with a back buffer so backward
  * seeks within [SEEK_BACK_BUFFER_MS] resolve in-buffer (no data-source re-open, no buffer
- * refill) instead of re-opening the whole chain.
- *
- * `retainBackBufferFromKeyframe = true` keeps the buffer before the seek target across
- * seeks (audio: every sample is a sync sample), so back-and-forth taps stay in-buffer.
+ * refill). `retainBackBufferFromKeyframe = true` keeps the buffer before the seek target
+ * across seeks (audio: every sample is a sync sample), so back-and-forth taps stay in-buffer.
  *
  * [REBUFFER_SETTLE_TARGET_MS] lowers the post-rebuffer settle target (see its KDoc).
- *
- * `setBufferDurationsMs` sets BOTH the streaming and the local-playback variants (the
- * `onlyGenericConfigurationMethodsCalled` builder flag), which is the desired behavior:
- * every other value is passed back as the media3 default, so nothing else changes — in
- * particular the forward in-buffer window (`DEFAULT_MIN_BUFFER_MS`/`DEFAULT_MAX_BUFFER_MS`
- * = 50 s) and the seek-commit target (`DEFAULT_BUFFER_FOR_PLAYBACK_MS` = 1 s).
+ * `setBufferDurationsMs` sets BOTH the streaming and local-playback variants
+ * (`onlyGenericConfigurationMethodsCalled`); every other value is passed back as the media3
+ * default, so nothing else changes — in particular the forward in-buffer window (50 s) and
+ * the seek-commit target (1 s).
  */
 internal fun createSeekFriendlyLoadControl(): LoadControl =
     DefaultLoadControl.Builder()

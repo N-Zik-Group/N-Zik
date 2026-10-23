@@ -30,22 +30,18 @@ internal enum class GenerateMode {
 
 /**
  * The shared generation function of every `rewind-*` playlist (spec 2): the monthly/yearly
- * workers ([GenerateMode.CreateIfMissing]), the deck's regenerate pills and the
- * post-import job ([GenerateMode.Regenerate]) all funnel through this function — no other
- * code writes `rewind-*` names.
+ * workers ([GenerateMode.CreateIfMissing]), the deck's regenerate pills and the post-import
+ * job ([GenerateMode.Regenerate]) all funnel through it — no other code writes `rewind-*`
+ * names.
  *
- * Window -> [Database.eventTable.findSongsMostPlayedBetween] (the `BETWEEN`-inclusive
- * window in epoch millis, results in `ORDER BY SUM(playtime) DESC`) -> (re)create the
- * playlist and map each song in top order, so `SongPlaylistMap.position` becomes 0,1,2…
- * in top order — the "Rewind Top" snapshot read back by `sortSongsByPosition`.
+ * Window (epoch millis) -> [Database.eventTable.findSongsMostPlayedBetween]
+ * (`BETWEEN`-inclusive, results in `ORDER BY SUM(playtime) DESC`) -> (re)create the playlist
+ * and map each song in top order, so `SongPlaylistMap.position` becomes 0,1,2… — the
+ * "Rewind Top" snapshot read back by `sortSongsByPosition`. An empty window is a no-op:
+ * nothing is created or modified, the existing playlist is left intact, and 0 is returned
+ * so the caller shows no success feedback.
  *
- * An empty window is a no-op: nothing is created or modified, the playlist (if it
- * exists) is left intact, and 0 is returned so the caller shows no success feedback.
- *
- * @param name the language-neutral database name (`rewind-monthly:YYYYMM`,
- *        `rewind-yearly:YYYY`, `rewind-alltime`)
- * @param from window start, epoch millis
- * @param to window end, epoch millis
+ * @param name the language-neutral database name (`rewind-monthly:YYYYMM`, …)
  * @param mode see [GenerateMode]
  * @return the number of songs written into the playlist (0 = no-op / skipped)
  */

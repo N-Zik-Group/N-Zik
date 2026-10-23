@@ -47,19 +47,17 @@ object VisualizerCaptureCoordinator {
     private val snapshotFlows = ConcurrentHashMap<Int, StateFlow<VisualizerSnapshot?>>()
 
     /**
-     * A [StateFlow] of the latest [VisualizerSnapshot] for [sessionId]. Backed by a single
-     * capture loop shared by every collector of this exact sessionId -- collecting it from two
-     * places (e.g. `SeekBarVisualizer` and `VisualizerView`, indirectly through
+     * A [StateFlow] of the latest [VisualizerSnapshot] for [sessionId], backed by a single
+     * capture loop shared by every collector of this exact sessionId — collecting it from two
+     * places (e.g. `SeekBarVisualizer` and `VisualizerView`, through
      * [VisualizerHelper.snapshotProvider]) never doubles the underlying native capture.
      *
      * The loop starts lazily on the first collector and stops [subscriptionTimeoutMillis] after
-     * the last one goes away ([SharingStarted.WhileSubscribed]) -- no collector means no polling.
+     * the last one goes away ([SharingStarted.WhileSubscribed]) — no collector means no polling.
      *
-     * Note: when the only "collector" is [currentSnapshot]'s poll-keep-alive proxy (see below),
-     * that proxy itself waits up to [subscriptionTimeoutMillis] of poll inactivity before it lets
-     * go, and only then does `WhileSubscribed`'s own [subscriptionTimeoutMillis] timeout start
-     * counting down. Worst case in that path is therefore roughly *twice* the documented value,
-     * not exactly it.
+     * Note: when the only "collector" is [currentSnapshot]'s poll-keep-alive proxy, that proxy
+     * itself waits up to [subscriptionTimeoutMillis] of poll inactivity before it lets go, so
+     * the worst-case stop delay is roughly *twice* the documented value, not exactly it.
      */
     fun snapshotFlow(sessionId: Int): StateFlow<VisualizerSnapshot?> =
         snapshotFlows.computeIfAbsent(sessionId) {
@@ -91,18 +89,17 @@ object VisualizerCaptureCoordinator {
     private val pollKeepAliveJobs = ConcurrentHashMap<Int, Job>()
 
     /**
-     * Synchronous read of the latest published snapshot for [sessionId]. This is the function
-     * reference wired to [VisualizerHelper.snapshotProvider] -- it matches that property's
-     * `(Int) -> VisualizerSnapshot?` shape exactly, so `nextvisualizer` never needs to know a
-     * `StateFlow` (or coroutines) is involved on the other side of the seam.
+     * Synchronous read of the latest published snapshot for [sessionId] — the reference wired
+     * to [VisualizerHelper.snapshotProvider] (its `(Int) -> VisualizerSnapshot?` shape means
+     * `nextvisualizer` never needs to know a `StateFlow` is involved on the other side of the
+     * seam).
      *
-     * Reading [StateFlow.value] alone is not a real collector, so it does not count towards
-     * [SharingStarted.WhileSubscribed] -- a caller that only ever peeks `.value` (`VisualizerView`,
-     * via [VisualizerHelper], since `View.onDraw()` cannot suspend to `collect{}`) would otherwise
-     * never start the capture loop. Every call here records a poll timestamp and lazily starts a
-     * small proxy collector for [sessionId] that keeps the shared flow's real subscriber count
-     * above zero as long as polling continues, and cancels itself [subscriptionTimeoutMillis]
-     * after the last poll -- at which point `WhileSubscribed`'s own timeout takes over normally.
+     * Reading [StateFlow.value] alone is not a real collector ([SharingStarted.WhileSubscribed]
+     * would never start the loop for a caller that only peeks `.value` — e.g. `VisualizerView`,
+     * since `View.onDraw()` cannot suspend to `collect{}`), so every call records a poll
+     * timestamp and lazily starts a proxy collector keeping the flow's real subscriber count
+     * above zero while polling continues, cancelling itself [subscriptionTimeoutMillis] after
+     * the last poll.
      */
     fun currentSnapshot(sessionId: Int): VisualizerSnapshot? {
         lastPolledAtMs.computeIfAbsent(sessionId) { AtomicLong(0L) }.set(System.currentTimeMillis())

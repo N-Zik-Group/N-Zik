@@ -53,19 +53,17 @@ internal fun queueMembershipMoved(trackIds: Collection<String>, known: Set<Strin
 
 /**
  * Feeds a [BridgeStateHub] with the phone's player state, read-only. Binds
- * [PlayerServiceModern] WITHOUT creating it (the app behaves exactly as before; with no
- * player the empty state is published and the connection happens as soon as the service
- * starts), listens to the guarded facade `Binder.player` on the main thread — re-read at
- * every use and re-attached on `playerUpdateTrigger` (crossfade swap) — and samples the
- * player on each relevant event and every [resampleIntervalMs] (fresh heartbeat position).
+ * [PlayerServiceModern] WITHOUT creating it (with no player the empty state is published;
+ * the connection happens when the service starts), listens to the guarded facade
+ * `Binder.player` on the main thread — re-read at every use and re-attached on
+ * `playerUpdateTrigger` (crossfade swap) — and samples on each relevant event and every
+ * [resampleIntervalMs] (fresh heartbeat position).
  *
- * `like` / `isDownloaded` are re-resolved off the main thread on EVERY sample (cheap
- * indexed reads, contract §1.1): a flag change alone — a like on the phone, a download
- * finishing — reaches the companion as a `queueChanged`. The hub drops the delta when the
- * flags did not actually move.
- *
- * As a [PlayerAccess], it hands the same facade to the remote commands (contract §9) and
- * samples right after each one, serialized with the regular sampling.
+ * `like` / `isDownloaded` are re-resolved off the main thread on EVERY sample (cheap indexed
+ * reads, contract §1.1): a flag change alone reaches the companion as a `queueChanged`; the
+ * hub drops the delta when the flags did not actually move. As a [PlayerAccess], it hands the
+ * same facade to the remote commands (contract §9) and samples right after each one,
+ * serialized with the regular sampling.
  */
 internal class BridgePlayerSource(
     context: Context,

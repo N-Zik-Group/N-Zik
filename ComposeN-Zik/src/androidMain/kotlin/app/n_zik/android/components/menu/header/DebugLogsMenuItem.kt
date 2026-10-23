@@ -41,15 +41,15 @@ import java.io.File
  * against the library source): 48dp min height (`MenuListItemContainerHeight`), 12dp
  * horizontal / 0dp vertical content padding, a 24dp leading icon and a 12dp icon-to-text
  * gap (the text Box's start padding). The label is one line, clamped to the rendered
- * width of the "Rescue Center" menu label — no burger label may be wider than it; a
- * longer label scrolls in a marquee instead of widening the menu (honoring the global
- * "disable scrolling text" setting, which falls back to ellipsis). The label follows
- * the live state ("Enable debug logs" off / "Disable debug logs" on) so the item
- * reads as reactive. A short tap toggles debug logging with the same side effects as
- * the "Enable debug logs" switch in Misc
- * settings ("restart required" toast on enable, log files purged on disable). A long
- * press calls [onLongClick], used to open the Misc settings screen directly on the
- * Debug card.
+ * width of the "Rescue Center" menu label — a longer label scrolls in a marquee instead
+ * of widening the menu (honoring the global "disable scrolling text" setting, which falls
+ * back to ellipsis). The label follows the live state ("Enable debug logs" off /
+ * "Disable debug logs" on) so the item reads as reactive.
+ *
+ * A short tap toggles debug logging with the same side effects as the "Enable debug logs"
+ * switch in Misc settings ("restart required" toast on enable, log files purged on
+ * disable); a long press calls [onLongClick], used to open the Misc settings screen
+ * directly on the Debug card.
  *
  * @param onLongClick called on long press (deep link to the Debug card in Misc settings)
  * @param onConsume called after a short tap so the caller can close the menu

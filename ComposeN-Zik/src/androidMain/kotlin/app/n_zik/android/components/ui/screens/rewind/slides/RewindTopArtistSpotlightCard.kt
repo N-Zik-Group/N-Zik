@@ -238,9 +238,8 @@ fun RewindTopArtistSpotlightCard(
                     // The bio block takes whatever vertical space is left after the
                     // photo/name/badge/metrics. The text is deliberately small (9sp) so a
                     // typical bio fits; a bio that does NOT fit shows a short preview
-                    // (a few lines, clamped with an ellipsis) with a "SEE MORE" pill
-                    // below opening the full text in a sheet.
-                    // There is no auto-drift and no manual scroll zone on the slide: a
+                    // (clamped with an ellipsis) with a "SEE MORE" pill opening the full
+                    // text in a sheet. No auto-drift and no manual scroll zone: a
                     // swipeable area would leak into the deck's swipe. A running capture
                     // hides the pill, so shared images stay stable.
                     val density = LocalDensity.current
@@ -256,12 +255,11 @@ fun RewindTopArtistSpotlightCard(
                     // toggle the song item menu reads.
                     val menuStyle by rememberPreference(menuStyleKey, MenuStyle.List)
                     val bioOverflow = bioAreaPx > 0 && bioNaturalPx > bioAreaPx
-                    // Overflowing bio: a short fixed preview (a few lines) with the
-                    // SEE MORE pill right below — the owner wants a glanceable teaser,
-                    // not the whole block; the full text lives in the sheet. The area
-                    // budget (pill reserved) stays the hard cap, so the pill can never
-                    // fall off the slide on a very tight screen. A bio that fits
-                    // renders in full, no pill.
+                    // Overflowing bio: a short fixed preview with the SEE MORE pill
+                    // right below — the owner wants a glanceable teaser, not the whole
+                    // block; the full text lives in the sheet. The area budget (pill
+                    // reserved) stays the hard cap so the pill can never fall off the
+                    // slide; a bio that fits renders in full, no pill.
                     val bioMaxLines = if (bioOverflow) {
                         minOf(
                             BIO_PREVIEW_LINES,
@@ -306,12 +304,11 @@ fun RewindTopArtistSpotlightCard(
                                     .onSizeChanged { bioAreaPx = it.height }
                             ) {
                                 // Hidden natural-height copy: same text, same sizes, fully
-                                // transparent — its measured height is the bio's real
-                                // height regardless of the visible clamp (unbounded = true
-                                // so it is NOT squashed by the box's bounded constraint —
-                                // in Compose 1.12 a capped Column squashes its children,
-                                // which is exactly what makes the unbounded measurement
-                                // mandatory here).
+                                // transparent — its measured height is the bio's real height
+                                // regardless of the visible clamp. unbounded = true so it is
+                                // NOT squashed by the box's bounded constraint — in Compose
+                                // 1.12 a capped Column squashes its children, which makes
+                                // the unbounded measurement mandatory here.
                                 Column(
                                     modifier = Modifier
                                         .align(Alignment.TopStart)
@@ -361,10 +358,9 @@ fun RewindTopArtistSpotlightCard(
                     }
                     // Full bio sheet — the same app-standard menu as the finale's export
                     // options (CustomModalBottomSheet + ListMenu.Menu): the menu draws its
-                    // own background, top clip and drag handle, and its content column is
-                    // already scrollable — the sheet is a popup, not part of the deck, so
-                    // the scroll never leaks into a swipe. Capture-safe: it stays closed
-                    // while a share capture is in flight.
+                    // own chrome and its content column is already scrollable — the sheet
+                    // is a popup, not part of the deck, so the scroll never leaks into a
+                    // swipe. Capture-safe: stays closed while a share capture is in flight.
                     CustomModalBottomSheet(
                         showSheet = showBioSheet && !rewindShareCaptureActive.value,
                         onDismissRequest = { showBioSheet = false },

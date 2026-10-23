@@ -119,17 +119,14 @@ fun CollapsibleTitleRow(
 
 /**
  * Nested scroll connection for a pinned collapsible header: the header follows
- * the finger during drags and fling frames, then snaps to the nearest bound
- * when the fling ends. Any new non-zero scroll delta cancels a running snap.
- * A collapse only sticks when the scrollable actually consumed the delta: when
- * the content cannot scroll (bottom edge, short list), the pre-scroll movement is
- * reverted so the header stays glued to the content. An expansion always sticks,
- * so a header left shut by a snap reopens once the list is back at its top.
- * While disabled (nothing to display), the header neither follows the scroll
+ * the finger during drags and fling frames, then snaps to the nearest bound when
+ * the fling ends; any new non-zero scroll delta cancels a running snap. A collapse
+ * only sticks when the scrollable actually consumed the delta (bottom edge, short
+ * list): otherwise the pre-scroll movement is reverted so the header stays glued
+ * to the content. An expansion always sticks, so a header left shut by a snap
+ * reopens once the list is back at its top. While disabled, it neither follows
  * nor snaps.
  *
- * @param headerHeight Measured header height in pixels
- * @param headerOffset Header offset state, updated by this connection
  * @param scope Structured scope hosting the snap animation
  * @param snapJob Holds the snap animation job so new deltas can cancel it
  * @param enabled Whether the header may follow the scroll (false when the list is empty)
@@ -192,8 +189,6 @@ internal fun collapsibleHeaderConnection(
  * header height changes (its animation bounds would be stale), and resets the
  * header to the expanded position when it becomes disabled (nothing to display).
  *
- * @param headerHeight Measured header height in pixels
- * @param headerOffset Header offset state, updated by the returned connection
  * @param enabled Whether the header may follow the scroll (false when the list is empty)
  * @return The [NestedScrollConnection] to attach via `Modifier.nestedScroll`
  */

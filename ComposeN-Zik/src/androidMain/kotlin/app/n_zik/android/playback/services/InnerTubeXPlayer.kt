@@ -57,13 +57,9 @@ object InnerTubeXPlayer {
     /**
      * Resolves a playable audio stream for the given video ID.
      *
-     * @param videoId YouTube video ID
-     * @param playlistId Optional playlist ID for context
-     * @param audioQuality Preferred audio quality
-     * @param connectivityManager For network-aware quality selection
-     * @param contentHints Content type hints for client selection
-     * @param allowBoundedRange Whether to allow bounded range requests
-     * @return Result containing [PlaybackData] or failure
+     * @param audioQuality preferred audio quality
+     * @param connectivityManager for network-aware quality selection
+     * @param allowBoundedRange whether to allow bounded range requests
      */
     suspend fun playerResponseForPlayback(
         videoId: String,

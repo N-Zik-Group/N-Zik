@@ -59,18 +59,16 @@ fun MediaItem.artistIdsWithFallback(): List<Info> {
 }
 
 /**
- * Reorders [infos] so they follow the artist order of [displayText] — the artist
- * line the player actually displays — instead of the arbitrary order the link
- * query (or the extras built from it) happens to return.
+ * Reorders [infos] so they follow the artist order of [displayText] — the artist line the
+ * player actually displays — instead of the arbitrary order the link query (or the extras
+ * built from it) happens to return.
  *
- * Rules (doubt → nothing moves):
- * - [displayText] is tokenized with the [cleanPrefix]-then-split-on-"," convention
- *   (same as the rest of the name-convergence code), each token trimmed;
- * - every token picks the FIRST still-unmatched info whose cleaned name equals it
- *   (whole token, ignore case) — names are matched, ids are never guessed;
- * - infos no token claimed are appended at the end, keeping their relative order;
- * - when not a single token matches (unknown artist text, all names null) the
- *   original order is returned untouched.
+ * Rules (doubt → nothing moves): [displayText] is tokenized with the [cleanPrefix]-then-split-
+ * on-"," convention (same as the rest of the name-convergence code), each token trimmed;
+ * every token picks the FIRST still-unmatched info whose cleaned name equals it (whole token,
+ * ignore case) — names are matched, ids are never guessed; infos no token claimed are appended
+ * at the end, keeping their relative order; when not a single token matches (unknown artist
+ * text, all names null) the original order is returned untouched.
  *
  * Pure and non-suspend: unit-testable, no DB access.
  *

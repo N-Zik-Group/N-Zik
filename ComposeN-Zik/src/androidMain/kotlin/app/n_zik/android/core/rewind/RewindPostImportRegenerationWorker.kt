@@ -10,18 +10,15 @@ import app.n_zik.android.core.database.Database
 import timber.log.Timber
 
 /**
- * One-shot post-import regeneration job (spec 2): after a successful listening-data
- * import (the database file was replaced), recomputes every EXISTING `rewind-*`
- * playlist — monthly, yearly and all-time — from the imported history, with the window
- * derived from each playlist's database name.
+ * One-shot post-import regeneration job (spec 2): after a successful listening-data import
+ * (the database file was replaced), recomputes every EXISTING `rewind-*` playlist — monthly,
+ * yearly and all-time — from the imported history, with the window derived from each
+ * playlist's database name.
  *
- * Deliberately different from the cycle workers:
- * - no self-reschedule, no jitter, no notification (silent — Timber only);
- * - no gate on the creation toggles: a toggle off means "do not create NEW playlists",
- *   but an existing playlist whose source data was just replaced is stale, and
- *   consistency wins (frozen spec 2);
- * - deleted playlists stay deleted: only the existing ones are regenerated (the same
- *   "the auto never recreates" rule as the workers).
+ * Deliberately different from the cycle workers: no self-reschedule/jitter/notification
+ * (silent — Timber only); no gate on the creation toggles (a toggle off means "do not create
+ * NEW playlists", but an existing playlist whose source data was replaced is stale —
+ * consistency wins, frozen spec 2); deleted playlists stay deleted (the auto never recreates).
  */
 internal class RewindPostImportRegenerationWorker(
     context: Context,

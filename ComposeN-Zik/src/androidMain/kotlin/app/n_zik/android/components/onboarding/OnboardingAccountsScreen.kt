@@ -111,33 +111,29 @@ fun accountsStepInitialAction(
 /**
  * Step of the first-launch onboarding flow between the import and the profile
  * step: optional account connections (YouTube, Last.fm scrobbling and Discord
- * rich presence). The accounts come before the clone's identity so the account
- * face sources can already be unlocked on the profile step.
+ * rich presence) — placed before the clone's identity so the account face
+ * sources are already unlocked on the profile step.
  *
- * Reuses the existing login components — the same ones behind the Accounts tab:
- * [YouTubeLogin] in its sheet (YouTube), [LastFmLoginContent] in its sheet
- * (Last.fm) and [DiscordLoginAndGetToken] in its sheet (Discord) — writing to the
- * same encrypted prefs, so the onboarding and the Accounts tab observe the same
- * state. A YouTube login applies the same side effects as the Accounts tab (cookie
- * live immediately) and updates the card without a restart.
+ * Reuses the same login components as the Accounts tab ([YouTubeLogin],
+ * [LastFmLoginContent], [DiscordLoginAndGetToken] in their sheets), writing to
+ * the same encrypted prefs, so onboarding and the Accounts tab observe the same
+ * state. A YouTube login applies the same side effects as the Accounts tab
+ * (cookie live immediately) and updates the card without a restart.
  *
- * Everything is optional and connecting an account never advances the flow — the
- * cards only log in (same encrypted prefs as the Accounts tab) and update their
- * status. Leaving the step is always through the skip button — labeled "Skip" while
- * nothing is connected and "I'm done" once at least one account is logged in.
- * Leaving advances to the profile step (persisted); with a Discord token set, the
- * restart prompt ([RestartAppDialog]) shows after the advance — the presence
- * manager is created when the player service starts, so the fresh token is only
- * picked up on a new launch, and the restart lands on the profile step (the
- * onboarding-complete flag stays unwritten). YouTube and Last.fm never need a
- * restart. The prompt's `Render()` lives in the activity's onboarding container —
- * it must survive the step transition, which a screen-local composition would not.
+ * Everything is optional and connecting an account never advances the flow;
+ * leaving the step is always through the skip button ("Skip" while nothing is
+ * connected, "I'm done" once at least one account is logged in). With a Discord
+ * token set, the restart prompt ([RestartAppDialog]) shows after the advance —
+ * the presence manager is created when the player service starts, so the fresh
+ * token is only picked up on a new launch, and the restart lands on the profile
+ * step (the onboarding-complete flag stays unwritten). YouTube and Last.fm never
+ * need a restart. The prompt's `Render()` lives in the activity's onboarding
+ * container — it must survive the step transition, which a screen-local
+ * composition would not.
  *
- * Auto-skip: when ALL THREE accounts are already connected on first composition
- * (restored by the import step, or a returning state), the step is skipped on its
- * own — the same way the skip button would in that state
- * ([accountsStepInitialAction]): the flow advances to the profile step and the
- * restart prompt shows (a Discord token is only live after a restart).
+ * Auto-skip: when ALL THREE accounts are already connected on first composition,
+ * the step is skipped on its own — the same way the skip button would in that
+ * state ([accountsStepInitialAction]).
  *
  * @param onComplete leave the step — the flow advances to the profile step (the
  *   activity persists it; with a Discord token set the restart prompt shows and

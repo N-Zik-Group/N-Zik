@@ -342,13 +342,12 @@ internal fun RewindStoryShell(
                     .padding(end = 16.dp, bottom = 8.dp)
             )
         }
-        // Per-slide system share (single PNG). Only the active page offers it, and it is
-        // hidden during the export capture so it never lands inside the exported frames.
-        // Overlay below the progress row (see RewindShareSlideButton) — never in the layout
-        // flow, so toggling it can't reflow the slide content. It pops in with a small
-        // scale/fade when the page activates and pops back out when it deactivates; while
-        // an export capture is in flight the exit is instant, so a copied frame never shows
-        // the icon mid-animation (same rule as the deck's reveal snaps).
+        // Per-slide system share (single PNG): only the active page offers it, hidden
+        // during the export capture so it never lands in the exported frames. Overlay
+        // below the progress row (RewindShareSlideButton) — never in the layout flow,
+        // so toggling it can't reflow the slide. Pops in/out with a small scale/fade,
+        // with an instant exit during a capture so no copied frame shows it mid-animation
+        // (same rule as the deck's reveal snaps).
         AnimatedVisibility(
             visible = showShareButton,
             enter = scaleIn(
@@ -695,17 +694,15 @@ internal fun RewindPlaylistOriginIcon(
 }
 
 /**
- * Playlist "logo" used on the top playlists slide.
+ * Playlist "logo" used on the top playlists slide — a 2x2 mosaic of the four
+ * most-played track covers (a single cover when they all match), dimmed by the
+ * app scrim with the origin indicator (N-Zik logo / pin / source icon)
+ * top-right. The rank number is not drawn here: it lives in the row, like the
+ * Deep Cuts slide.
  *
- * Copied from the statistics screen pipeline: the four most-played track covers form a 2x2
- * mosaic (a single cover is shown when they all match), dimmed by the app overlay (scrim)
- * with the origin indicator (N-Zik logo / pin / source icon) placed top-right. The rank
- * number is not drawn here: it lives in the row, like the Deep Cuts slide.
- *
- * Uses the exact same pipeline as the statistics screen and Home Library:
- * 1. Check for custom playlist thumbnail file
- * 2. Fall back to sortSongsByPlayTime → mapNotNull(Song::thumbnailUrl).takeLast(4)
- * 3. Render via ImageCacheFactory.Thumbnail (handles HTTP URLs, scaling, etc.)
+ * Same pipeline as the statistics screen and Home Library: custom playlist
+ * thumbnail file, else the four most-played song thumbnails, rendered via
+ * ImageCacheFactory.Thumbnail.
  */
 @Composable
 internal fun RewindPlaylistArtwork(
@@ -892,17 +889,15 @@ internal data class ArtistWikiMetadata(
 )
 
 /**
- * In-app artist bio for the Top Artist spotlight page. Uses the same source the artist
- * screen uses: the description already stored on the artist row (written by the artist
- * screen from the Innertube artist page), then the Innertube artist page fetched by
- * browseId.
+ * In-app artist bio for the Top Artist spotlight page, from the same source the
+ * artist screen uses: the description already stored on the artist row (written
+ * from the Innertube artist page), then the Innertube artist page fetched by
+ * browseId. A by-name Wikipedia lookup is deliberately NOT used: for ambiguous
+ * or channel-derived names it resolves to unrelated pages (e.g. a same-named
+ * song's article), which is what the spotlight used to show.
  *
- * A by-name Wikipedia lookup is deliberately NOT used for the bio: for ambiguous or
- * channel-derived artist names it resolves to unrelated pages (e.g. the Wikipedia article
- * of a same-named song), which is what the spotlight used to show.
- *
- * Returns null while loading or when no description is available — the card renders
- * without the "about" section in that case.
+ * Returns null while loading or when no description is available — the card
+ * renders without the "about" section in that case.
  */
 @Composable
 internal fun rememberArtistBio(

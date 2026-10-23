@@ -31,15 +31,12 @@ import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.uiRoundnessShape
 
 /**
- * Generic value selector on the shared [DialogFrame]: a radio list in the
- * n_zik radio language (20dp [RadioButton] — white when selected,
- * [ColorPalette.textSecondary] when not — plus a single-line
- * `xs.semiBold` label that marquees when it does not fit) and a cancel pill
- * in a [ButtonRow].
+ * Generic value selector on the shared [DialogFrame]: a radio list in the n_zik radio language
+ * (20dp [RadioButton], a single-line `xs.semiBold` label that marquees when it does not fit)
+ * and a cancel pill in a [ButtonRow].
  *
- * [lockedValues] are rows that cannot be selected; when [lockedLabel] is
- * given as well, those rows are dimmed and show the label (e.g.
- * "Not logged in").
+ * [lockedValues] are rows that cannot be selected; with [lockedLabel] given, they are dimmed
+ * and show the label (e.g. "Not logged in").
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

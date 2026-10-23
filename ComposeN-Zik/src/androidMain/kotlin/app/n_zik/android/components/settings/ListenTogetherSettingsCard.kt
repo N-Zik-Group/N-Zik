@@ -1,11 +1,8 @@
-// Listen Together settings card embedded in the room screen (Metrolist port — N-Zik
-// styling): server URL (known servers + custom), username, auto-approval
-// toggles, host volume sync, connection logs and blocked users. The card is built
-// from the app's own components (SettingsSectionCard, OtherSettingsEntry,
-// OtherSwitchSettingEntry); the logs and blocked-users menus go through the shared
-// MenuState like the app's own item menus, while the server URL and username are
-// form sheets following the app's own form-sheet pattern (LastFm login / display
-// name) with ListMenu.Menu chrome, app field colors and a full-width accent button.
+// Listen Together settings card embedded in the room screen (Metrolist port, N-Zik
+// styling): built from the app's own components (SettingsSectionCard,
+// OtherSettingsEntry, OtherSwitchSettingEntry); logs / blocked users go through the
+// shared MenuState; server URL and username are form sheets following the app's own
+// form-sheet pattern (LastFm login / display name) with ListMenu.Menu chrome.
 // Reference: docs/Metrolist app/src/main/kotlin/com/metrolist/music/ui/screens/settings/integrations/ListenTogetherSettings.kt
 package app.n_zik.android.components.settings
 

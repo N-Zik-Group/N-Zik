@@ -271,11 +271,9 @@ class EventTableTest {
         // An orphan row can only be written with foreign_keys OFF (Event.songId FK to Song,
         // CASCADE), and the PRAGMA is per-connection: Room keeps its own connection, so the
         // test uses a FILE database plus a second raw connection (same pattern as the
-        // schema-migration tests) to inject the orphan.
-        //
-        // The file is seeded with the v42 schema BEFORE Room opens it: Room's build() opens
-        // lazily, so a raw connection opened first would otherwise create an empty
-        // version-42 file that fails Room's schema validation.
+        // schema-migration tests) to inject the orphan — the file is seeded with the v42
+        // schema BEFORE Room opens it (Room's build() opens lazily, so a raw connection
+        // opened first would create an empty version-42 file failing schema validation).
         val context = ApplicationProvider.getApplicationContext<Context>()
         val dbName = "event_listened_fk_test"
         val helper = FrameworkSQLiteOpenHelperFactory().create(

@@ -67,16 +67,13 @@ data class ProfileDataDirNames(
 
 /**
  * Pure resolver (unit-tested without Android) of the file names of [profileId]'s data from
- * its sharing flags:
- * - the base profile (`default`) keeps EXACTLY the unsuffixed names, whatever the flags —
- *   bit-for-bit the current locations, no migration, no rename;
- * - a user profile keeps the unsuffixed (base) name for every item it SHARES and the
- *   suffixed `<item>_<id>` name for every item it keeps separate;
- * - the index rule is per cache instance: a shared item points at the base index
- *   `exoplayer_internal.db`, a separate item at the suffixed `exoplayer_internal_<id>.db` —
- *   a separate cache NEVER points at the base database (its entries would mingle with the
- *   base's); when both caches of a profile are separate, the single suffixed database
- *   carries both indexes (distinct tables, exactly like today's shared database).
+ * its sharing flags: the base profile (`default`) keeps EXACTLY the unsuffixed names
+ * whatever the flags (bit-for-bit current locations, no migration); a user profile keeps the
+ * base name for every item it SHARES and the suffixed `<item>_<id>` name for every separate
+ * item. The index rule is per cache instance: a separate cache NEVER points at the base
+ * database `exoplayer_internal.db` (its entries would mingle with the base's); when both
+ * caches of a profile are separate, the single suffixed `exoplayer_internal_<id>.db` carries
+ * both indexes (distinct tables).
  */
 fun resolveProfileDataDirNames(profileId: String, shared: Set<ProfileDataItem>): ProfileDataDirNames {
     val isBase = profileId == DEFAULT_PROFILE_ID

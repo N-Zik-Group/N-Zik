@@ -77,26 +77,20 @@ import app.n_zik.android.utils.rememberDataStoreBooleanPreference
 import java.util.Locale
 
 /**
- * "My Rewind" home page (issue #275): the entry point to the deck.
+ * "My Rewind" home page (issue #275): the entry point to the deck. One row per year
+ * (listening time + plays, newest first) and, for the selected year, a 3x4 grid of its
+ * 12 months; tapping a year row or a month cell opens the annual/monthly deck.
+ * Unfinished periods (the in-progress month, the future months, the in-progress year)
+ * are shown locked and open nothing: a deck unlocks only once its period is over
+ * (user decision, 2026-09-24). Spammer easter eggs (same decision): hammering a locked
+ * cell or row rotates funny messages; the tap that reaches the threshold kicks the user
+ * back from the home. Tapping an empty finished month answers with a random sad
+ * one-liner.
  *
- * One row per year (listening time + plays, newest first) and, for the selected year, a 3x4
- * grid of its 12 months. Tapping a year row opens the annual deck; tapping a month cell opens
- * the monthly deck (same 16 slides, data filtered to that month). Months without events are
- * greyed out and not tappable. Unfinished periods — the in-progress month, the future months
- * and the in-progress year — are shown locked (the N-Zik launcher box under the same dark
- * scrim as the playable cells, at full opacity like them: months without stats and a
- * padlock; the year with "LOCKED" instead of its stats, no album previews, and a padlock
- * instead of the "open" chevron) and open nothing: their deck unlocks only once the period
- * is over (user decision, 2026-09-24).
- * Spammer easter eggs (same decision): hammering a locked cell or year row answers with a
- * rotation of funny messages; the tap that reaches the threshold kicks the user back from
- * the home with the final "I said no" message. Tapping an empty finished month answers with
- * a random sad one-liner (no kick).
- *
- * Layout follows the QuickPicks home section: the whole page is a LazyColumn (the year rows are
- * its items) and the month grid is a fixed-height LazyVerticalGrid inside one of those items.
- * The fixed height is required: a lazy layout nested in a scrollable Column receives infinite
- * height constraints and crashes.
+ * Layout follows the QuickPicks section: the page is a LazyColumn, the month grid a
+ * fixed-height LazyVerticalGrid inside one of its items — the fixed height is required:
+ * a lazy layout nested in a scrollable Column receives infinite height constraints
+ * and crashes.
  */
 @Composable
 fun RewindHomeScreen(
@@ -393,12 +387,10 @@ private fun RewindHomeContent(
                         modifier = Modifier.fillMaxWidth()
                     ) { yearKey ->
                         val yearOfKey = years.first { it.year == yearKey }
-                        // Calendar month numbers in display order; the number drives navigation
+                        // Calendar months in display order; the number drives navigation
                         // no matter the display order. All twelve months are always shown:
-                        // the unfinished ones (the in-progress month and the future months)
-                        // render a locked cell instead of their stats, and open nothing
-                        // (user decision, 2026-09-24: a deck opens only once its period is
-                        // over).
+                        // the unfinished ones render a locked cell and open nothing
+                        // (user decision, 2026-09-24: a deck opens only once its period is over).
                         val monthEntries = yearOfKey.months
                             .mapIndexed { index, month -> index to month }
                             .let { if (monthsOrder == SortOrder.Descending) it.reversed() else it }

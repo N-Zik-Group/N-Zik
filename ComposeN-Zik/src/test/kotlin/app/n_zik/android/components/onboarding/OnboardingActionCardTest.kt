@@ -30,18 +30,17 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 /**
- * Compose UI tests for the shared onboarding card ([OnboardingActionCard]) and its
- * overflow handling on small screens / enlarged fonts.
- *
- * JUnit 4 + [RobolectricTestRunner], executed through the project's junit-vintage-engine
- * on the JUnit 5 platform (the `createComposeRule()` rule only works with JUnit 4),
- * with the plain [Application] so the app's heavy init (DI, Room, player) is skipped.
- * Narrow-screen qualifiers (w360dp) approximate a small phone viewport.
+ * Compose UI tests for the shared onboarding card ([OnboardingActionCard]) and its overflow
+ * handling on small screens / enlarged fonts. JUnit 4 + [RobolectricTestRunner] through the
+ * project's junit-vintage-engine on the JUnit 5 platform (`createComposeRule()` only works
+ * with JUnit 4), with the plain [Application] so the app's heavy init is skipped; narrow-
+ * screen qualifiers (w360dp) approximate a small phone viewport.
  *
  * The marquee itself is draw-only (BasicMarquee animates the drawing offset, not the
  * layout), so it is not observable through layout in a unit test — the tests assert the
- * layout invariants instead: action labels are clamped to [ONBOARDING_ACTION_LABEL_MAX_WIDTH_DP]
- * so they can never push the card past the screen edge.
+ * layout invariants instead: action labels are clamped to
+ * [ONBOARDING_ACTION_LABEL_MAX_WIDTH_DP] so they can never push the card past the screen
+ * edge.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class, qualifiers = "w360dp-h640dp")

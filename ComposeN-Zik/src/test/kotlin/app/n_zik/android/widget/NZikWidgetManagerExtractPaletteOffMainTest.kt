@@ -24,19 +24,20 @@ import org.robolectric.annotation.Config
 
 /**
  * Issue #606 M4 — `NZikWidgetManager.updateWidgets()` now wraps palette extraction and bitmap
- * work (scaling, rounding, circling) in `withContext(NzikDispatchers.MEDIA)` instead of running
- * inline on whatever dispatcher the caller used (`Dispatchers.Main` for the idle widget path via
- * the `AppWidgetProvider`s, raw `Dispatchers.IO` for the playing path via
+ * work (scaling, rounding, circling) in `withContext(NzikDispatchers.MEDIA)` instead of
+ * running inline on whatever dispatcher the caller used (`Dispatchers.Main` for the idle
+ * widget path via the `AppWidgetProvider`s, raw `Dispatchers.IO` for the playing path via
  * `PlayerServiceModern.updateWidgets()`). `extractPalette` (widened from `private` to
- * `internal` for testability) now delegates its fallback to the app's shared M3E extraction
- * `m3eDynamicColorPaletteOf` (RiPlay-based, achromatic neutralization included), so this test
- * asserts both the offload (the same bitmap yields the same palette whether called directly or
- * dispatched to MEDIA, and the dispatched call actually runs on a `nzik-media-*` thread) and
- * the app/widget palette parity of the fallback path.
+ * `internal` for testability) now delegates its fallback to the app's shared M3E
+ * extraction `m3eDynamicColorPaletteOf` (RiPlay-based, achromatic neutralization
+ * included), so this test asserts both the offload (the same bitmap yields the same
+ * palette whether called directly or dispatched to MEDIA, and the dispatched call
+ * actually runs on a `nzik-media-*` thread) and the app/widget palette parity of the
+ * fallback path.
  *
  * Robolectric is required (not a plain JVM unit test) because [NZikWidgetManager.extractPalette]
- * reads `Context.resources.configuration` and `Context.getSharedPreferences`, which need a real
- * Android environment to shadow.
+ * reads `Context.resources.configuration` and `Context.getSharedPreferences`, which need a
+ * real Android environment to shadow.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])

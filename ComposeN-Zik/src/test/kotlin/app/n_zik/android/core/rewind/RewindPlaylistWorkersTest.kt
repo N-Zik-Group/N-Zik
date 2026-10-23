@@ -89,9 +89,7 @@ class RewindPlaylistWorkersTest {
         Dependencies.init(mainApplication)
     }
 
-    // ------------------------------------------------------------------
     // Monthly worker — gates and delay math
-    // ------------------------------------------------------------------
 
     @Test
     fun monthlyGateDefaultsOnAndFollowsTheCreationToggle() {
@@ -130,9 +128,7 @@ class RewindPlaylistWorkersTest {
         assertEquals(0L, RewindMonthlyPlaylistWorker.applyJitter(-50_000L, 10_000L))
     }
 
-    // ------------------------------------------------------------------
     // Monthly worker — doWork
-    // ------------------------------------------------------------------
 
     @Test
     fun monthlyDoWorkCreatesTheFinishedMonthPlaylistAndPostsTheNotification() {
@@ -241,9 +237,7 @@ class RewindPlaylistWorkersTest {
         assertEquals(1, reschedules.size)
     }
 
-    // ------------------------------------------------------------------
     // Yearly worker — gates and delay math
-    // ------------------------------------------------------------------
 
     @Test
     fun yearlyGateDefaultsOnAndFollowsTheCreationToggle() {
@@ -277,9 +271,7 @@ class RewindPlaylistWorkersTest {
         assertEquals(0L, RewindYearlyPlaylistWorker.applyJitter(-50_000L, 10_000L))
     }
 
-    // ------------------------------------------------------------------
     // Yearly worker — doWork
-    // ------------------------------------------------------------------
 
     @Test
     fun yearlyDoWorkCreatesTheFinishedYearPlaylistAndPostsTheNotification() {
@@ -339,9 +331,7 @@ class RewindPlaylistWorkersTest {
         assertEquals(1, reschedules.size)
     }
 
-    // ------------------------------------------------------------------
     // Post-import regeneration
-    // ------------------------------------------------------------------
 
     @Test
     fun postImportRegeneratesEveryExistingRewindType() = runBlocking {
@@ -445,9 +435,7 @@ class RewindPlaylistWorkersTest {
         }
     }
 
-    // ------------------------------------------------------------------
     // Helpers
-    // ------------------------------------------------------------------
 
     private fun finishedMonth(): LocalDate = LocalDate.now().minusMonths(1)
     private fun finishedMonthlyName(): String = RewindPlaylists.monthlyName(finishedMonth().year, finishedMonth().monthValue)

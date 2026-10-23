@@ -136,14 +136,11 @@ object RewindPlaylists {
      * semantics of [app.n_zik.android.core.database.EventTable.findSongsMostPlayedBetween])
      * derived from a generated playlist's database name — the single source of the
      * regeneration window shared by the deck pill and the post-import job (spec 2):
-     * - `rewind-monthly:YYYYMM` -> that month (`[startOfMonth, startOfNextMonth)`)
-     * - `rewind-yearly:YYYY` -> that year (`[Jan 1, Jan 1 of the next year)`)
-     * - `rewind-alltime` -> the whole history (`[0, now]`)
-     * - anything else -> `null`.
+     * `rewind-monthly:YYYYMM` -> that month, `rewind-yearly:YYYY` -> that year,
+     * `rewind-alltime` -> the whole history (`[0, now]`), anything else -> `null`.
      *
-     * The end bound is the start of the *next* period: exactly 1 ms past the last
-     * millisecond of the period, which is acceptable for the inclusive `BETWEEN`
-     * (frozen spec 2 edge).
+     * The end bound is the start of the *next* period: exactly 1 ms past the last millisecond
+     * of the period, acceptable for the inclusive `BETWEEN` (frozen spec 2 edge).
      */
     fun windowFor(name: String, now: Long = System.currentTimeMillis()): Pair<Long, Long>? {
         val zone = ZoneId.systemDefault()

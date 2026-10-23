@@ -21,28 +21,22 @@ import timber.log.Timber
 /**
  * Cleanup of polluted artist↔song links, re-run on every app launch.
  *
- * The old mapping was add-only: YTM author lists vary by playback context (a
- * channel playlist or radio credits the channel as an "author"), so
- * `SongArtistMap` accumulated the union of every context ever seen — a
- * channel-derived artist row could collect plays of hundreds of unrelated
- * songs and rank as a top artist in the Rewind deck. Playback-time
- * reconciliation (see `Database.insertIgnore` / `Database.upsert`) now stops
- * new pollution and self-heals songs that get replayed; this cleanup removes
- * the remaining stale links, including ones that reappear through database
- * imports, without having to replay anything.
+ * The old mapping was add-only: YTM author lists vary by playback context (a channel
+ * playlist or radio credits the channel as an "author"), so `SongArtistMap` accumulated
+ * the union of every context ever seen — a channel-derived artist row could rank as a top
+ * artist in the Rewind deck. Playback-time reconciliation (see `Database.insertIgnore` /
+ * `Database.upsert`) now stops new pollution; this pass removes the remaining stale links,
+ * including ones that reappear through database imports.
  *
- * Rule: a (song, artist) link is stale when the artist's name does not appear
- * in the song's stored artist list. Custom values are untouchable — a
- * `modified:` artist name or a `modified:` song artist text is never judged,
- * and a song without any artist text keeps all its links.
+ * Rule: a (song, artist) link is stale when the artist's name does not appear in the song's
+ * stored artist list. Custom values are untouchable — a `modified:` artist name or a
+ * `modified:` song artist text is never judged, and a song without any artist text keeps all
+ * its links.
  *
- * Idempotent and cheap: a single read pass over `SongArtistMap` plus one
- * cached name lookup per id, on the background DATA dispatcher. A clean
- * database yields zero deletions, so re-running it on every launch is safe
- * and also means a failed run heals itself on the next launch.
- *
- * Wired in [MainApplication] onCreate as the FIRST pass of the sequential
- * artist-data boot chain (`DbCleanup` -> same-name dedup -> name convergence).
+ * Idempotent and cheap (one read pass over `SongArtistMap` + one cached name lookup per id,
+ * on [NzikDispatchers.DATA]): a clean database yields zero deletions, so a failed run heals
+ * itself on the next launch. Wired in [MainApplication] onCreate as the FIRST pass of the
+ * sequential artist-data boot chain (`DbCleanup` -> same-name dedup -> name convergence).
  */
 object DbCleanup {
     private const val TAG = "DbCleanup"
@@ -153,20 +147,14 @@ object DbCleanup {
         if (songArtistsText.isNullOrBlank()) return false
         if (artistName.isNullOrBlank()) return false
         val cleaned = cleanPrefix(songArtistsText)
-        // The artist name must appear in the stored list as a whole phrase delimited
-        // by non-letter characters (list separators, punctuation, start/end of the
-        // string). The previous split-based matching (splitArtistNames) destroyed
-        // legitimate names carrying a delimiter or a localized conjunction substring
-        // - "COOL&CREATE" broke into ["COOL", "CREATE"], and "Grand Corps Malade" was
-        // cut at the "and" inside "Grand" (the localized conjunction word on the
-        // device) - so the sweep removed those links on every launch (device captures
-        // 2026-09-26: 11:40 / 11:59 / 12:02). A raw substring match would be too
-        // permissive (junk fragments), so both ends of the name are pinned against
-        // Unicode letters (\p{L}). Java's \b word boundary does not exist around CJK
-        // characters, so letter-category anchors are used instead: CJK names still
-        // match, while accented-name fragments ("gr" inside "Grégoire") do not. The
-        // rule is locale-independent: it no longer depends on the localized
-        // conjunction list at all.
+        // The artist name must appear in the stored list as a whole phrase delimited by
+        // non-letter characters (separators, punctuation, start/end of the string). The
+        // previous split-based matching destroyed legitimate names ("COOL&CREATE" broke into
+        // ["COOL", "CREATE"]; "Grand Corps Malade" was cut at the "and" inside "Grand" —
+        // device captures 2026-09-26), so both ends are pinned against Unicode letters
+        // (\p{L}): a raw substring would admit junk fragments, Java's \b does not exist
+        // around CJK characters, and accented-name fragments ("gr" in "Grégoire") must not
+        // match. Locale-independent — no localized conjunction list involved.
         val phrase = Regex("(?<!\\p{L})" + Regex.escape(artistName) + "(?!\\p{L})", RegexOption.IGNORE_CASE)
         return !phrase.containsMatchIn(cleaned)
     }

@@ -34,18 +34,14 @@ internal data class LastFmScrobbleConfig(
 )
 
 /**
- * Scrobble manager for LastFM.
- *
- * Metrolist scrobble semantics (now configurable):
- * - Now Playing is sent when an eligible online track starts, if the
- *   Now Playing option is enabled.
- * - The scrobble fires after min(threshold % of duration, max delay)
- *   with the epoch-seconds timestamp of the track start, if the
- *   scrobble option is enabled.
- * - Pausing freezes the remaining delay, resuming continues it.
- * - A new track transition cancels the pending job.
- * - Setting changes apply at runtime via [onConfigChanged] without
- *   recreating the manager or re-sending Now Playing.
+ * Scrobble manager for LastFM (Metrolist semantics, now configurable):
+ * - Now Playing is sent when an eligible online track starts, if the option is enabled.
+ * - The scrobble fires after min(threshold % of duration, max delay), timestamped at track
+ *   start, if the option is enabled.
+ * - Pausing freezes the remaining delay, resuming continues it; a new track cancels the
+ *   pending job.
+ * - Setting changes apply at runtime via [onConfigChanged] without recreating the manager
+ *   or re-sending Now Playing.
  */
 class LastFmScrobbleManager(
     private val context: Context,

@@ -83,9 +83,7 @@ class RescueFilesProfileStateTest {
     private fun nameLine(id: String, name: String): String =
         "__name__$id\t$name"
 
-    // ──────────────────────────────────────────────────────────────────────
     // Export
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun exportWritesTheListLinesAndTheBase64FaceLines() {
@@ -198,9 +196,7 @@ class RescueFilesProfileStateTest {
         assertTrue(result.isFailure)
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Import
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun importRestoresTheNamesFileTheDisplayNamesAndTheFaces() {
@@ -436,9 +432,7 @@ class RescueFilesProfileStateTest {
         assertNull(store["displayName_ghost"], "a name for a profile that does not exist must not be restored")
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Target-dialog read (readProfileStateEntries)
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun readProfileStateEntriesCarriesTheListAndTheRenamedBase() {
@@ -474,9 +468,7 @@ class RescueFilesProfileStateTest {
         assertTrue(entries.isEmpty(), "an unreadable file must not crash the dialog")
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // hasState
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun hasStateIsTrueWhenOnlyTheBaseWasRenamed() {

@@ -85,19 +85,16 @@ class UpdateSongDialog private constructor(
         }
 
         /**
-         * Batch flavor for the Home Songs toolbar: the targets are read from
-         * [batchTargets] at confirmation time (the selected songs, or every
-         * song on display when nothing is selected), never at dialog creation.
-         * While the batch runs, the dialog switches to a progress mode
-         * (spinner + counter) and closes itself once the summary toast is
-         * shown.
+         * Batch flavor for the Home Songs toolbar: the targets are read from [batchTargets] at
+         * confirmation time (the selected songs, or every song on display when nothing is
+         * selected), never at dialog creation. While the batch runs, the dialog switches to a
+         * progress mode (spinner + counter) and closes itself once the summary toast is shown.
          *
-         * Memoized on the binder only - the provider is deliberately NOT a
-         * remember key: a bound method reference gets a fresh identity on
-         * every recomposition and keying on it would recreate the instance
-         * and reset the checkbox selection (the same incident the song key
-         * of the single dialog guards against). The captured provider stays
-         * live because it reads remembered state (selection / display list).
+         * Memoized on the binder only: the provider is deliberately NOT a remember key — a
+         * bound method reference gets a fresh identity on every recomposition and keying on it
+         * would recreate the instance and reset the checkbox selection (the same incident the
+         * song key of the single dialog guards against). The provider stays live because it
+         * reads remembered state (selection / display list).
          */
         @Composable
         operator fun invoke( batchTargets: () -> List<Song> ): UpdateSongDialog {
@@ -304,17 +301,16 @@ internal data class SongUpdateSelection(
 /**
  * Applies the checked update actions of [UpdateSongDialog] to [storedRow].
  *
- * A fetched field is copied only when its checkbox is ticked and the fetched
- * value is non-null, through [PropUtils.retainIfModified] - a `modified:` stored
- * value is never clobbered, and a null fetched field keeps the stored value
- * (`retainIfModified` itself returns null for a null fetch, so the per-field
- * null guard is mandatory). A null [fetchedSong] (fetch failed) writes no fetched
- * field at all. Only [Song.totalPlayTimeMs] is reset - `playCount` is never touched.
+ * A fetched field is copied only when its checkbox is ticked and the fetched value is
+ * non-null, through [PropUtils.retainIfModified] — a `modified:` stored value is never
+ * clobbered, and a null fetched field keeps the stored value (the per-field null guard is
+ * mandatory: `retainIfModified` returns null for a null fetch). A null [fetchedSong]
+ * (fetch failed) writes no fetched field at all. Only [Song.totalPlayTimeMs] is reset —
+ * `playCount` is never touched.
  *
- * The artistsText merge additionally treats a BLANK fetched value as "no data"
- * instead of "no artist" - see [mergeFetchedArtistsText] (the video queue
- * fetch returns an empty author list; overwriting the stored value with `""`
- * would clobber the metadata).
+ * The artistsText merge treats a BLANK fetched value as "no data" instead of "no artist" —
+ * see [mergeFetchedArtistsText] (the video queue fetch returns an empty author list;
+ * overwriting the stored value with `""` would clobber the metadata).
  */
 internal fun applySongUpdate(
     storedRow: Song,
@@ -345,16 +341,13 @@ internal fun applySongUpdate(
 /**
  * Merges the fetched artistsText onto the stored value for the Update action.
  *
- * A BLANK (null or empty) fetched value is "no data", not "no artist": for a
- * music video the queue mono-id fetch (`Innertube.song(videoId)` →
- * `playlistPanelVideoRenderer`) carries the channel byline only, which
- * `SongItem.parse` filters out (artist-only) - the authors list comes back
- * empty and the fetched artistsText is `""`. Overwriting a non-blank stored
- * value with that blank would destroy the metadata, so the stored value is
- * kept - same predicate as the `Database.insertIgnore` merge (blank fetch +
- * non-blank stored → stored value). A non-blank fetch overwrites as before,
- * and a `modified:` stored value stays authoritative through
- * [PropUtils.retainIfModified].
+ * A BLANK (null or empty) fetched value is "no data", not "no artist": for a music video
+ * the queue mono-id fetch (`Innertube.song(videoId)`) carries the channel byline only,
+ * which `SongItem.parse` filters out (artist-only) — the fetched artistsText comes back
+ * `""` and overwriting a non-blank stored value with it would destroy the metadata. The
+ * stored value is kept (same predicate as the `Database.insertIgnore` merge); a
+ * non-blank fetch overwrites as before, and a `modified:` stored value stays
+ * authoritative through [PropUtils.retainIfModified].
  */
 internal fun mergeFetchedArtistsText(
     songId: String,
@@ -388,18 +381,16 @@ internal fun shouldReconcileAuthors(
         ArtistMappingReconcile.isCompleteAuthorList( parsedNames, authors )
 
 /**
- * The whole per-song update of [UpdateSongDialog]: fetch gate, channel-anchored
- * artist resolution, conditional artist-link reconcile, stored-row rewrite and
- * the conditional cache wipe - everything except the done toast, so the batch
- * action of [runSongUpdateBatch] can reuse it without emitting N toasts.
- * Each step is logged (tag `Database`, level `d`): the requested boxes, the
- * fetch outcome, and the fields actually changed.
+ * The whole per-song update of [UpdateSongDialog]: fetch gate, channel-anchored artist
+ * resolution, conditional artist-link reconcile, stored-row rewrite and the conditional
+ * cache wipe — everything except the done toast, so the batch action of
+ * [runSongUpdateBatch] can reuse it without emitting N toasts. Each step is logged
+ * (tag `Database`, level `d`).
  *
- * The stored row is re-read inside the transaction before the merge is applied:
- * the dialog entry may be a 5-field `MediaItem.asSong` snapshot (player menu)
- * whose `likedAt`/`totalPlayTimeMs`/`position`/`isYoutubeSong` carry model
- * defaults (`null`/`0`/`-1`/`false`), so out-of-snapshot fields always come from
- * the stored row, never from the snapshot.
+ * The stored row is re-read inside the transaction before the merge is applied: the
+ * dialog entry may be a 5-field `MediaItem.asSong` snapshot (player menu) whose
+ * `likedAt`/`totalPlayTimeMs`/`position`/`isYoutubeSong` carry model defaults, so
+ * out-of-snapshot fields always come from the stored row, never from the snapshot.
  */
 internal suspend fun runSongUpdateCore(
     binder: PlayerServiceModern.Binder?,
@@ -513,24 +504,21 @@ internal suspend fun runSongUpdate(
 internal fun remoteTargets( targets: List<Song> ): List<Song> = targets.filterNot( Song::isLocal )
 
 /**
- * The Home Songs toolbar batch « Update » action: applies [runSongUpdateCore]
- * sequentially to every non-local target (local songs are skipped silently -
- * they carry no YTM id). YTM fetches are rate-limited with a random 1-5 s
- * gap between requests (same pattern as HomeSyncService), only when a fetch
- * box is ticked (nothing to throttle otherwise, and the first request needs
- * no leading delay). A single summary
- * toast replaces the per-song done toasts.
+ * The Home Songs toolbar batch « Update » action: applies [runSongUpdateCore] sequentially to
+ * every non-local target (local songs are skipped silently — they carry no YTM id). YTM
+ * fetches are rate-limited with a random 1-5 s gap between requests (same pattern as
+ * HomeSyncService), only when a fetch box is ticked; a single summary toast replaces the
+ * per-song done toasts.
  *
- * [onProgress] is invoked on the DATA dispatcher after every processed song
- * with the (done, total) counter; the caller publishes it in a Compose state
- * by hopping to the UI thread. Cancellation is cooperative: between songs the
- * batch returns the processed count (no toast), a cancel landing mid-song
- * propagates [CancellationException] to the caller.
+ * [onProgress] is invoked on the DATA dispatcher after every processed song with the
+ * (done, total) counter; the caller publishes it in a Compose state by hopping to the UI
+ * thread. Cancellation is cooperative: between songs the batch returns the processed count
+ * (no toast), a cancel landing mid-song propagates [CancellationException] to the caller.
  *
- * @param fetchGapMs gap between two YTM fetches in ms - random 1-5 s by
- * default (same pattern as HomeSyncService), injectable to 0 in unit tests
- * @return the number of processed songs (the non-local targets), 0 when there
- * is nothing to update - in which case no fetch, write or toast happens.
+ * @param fetchGapMs Gap between two YTM fetches in ms — random 1-5 s by default, injectable
+ *        to 0 in unit tests.
+ * @return The number of processed songs (the non-local targets); 0 when there is nothing to
+ *        update — no fetch, write or toast.
  */
 internal suspend fun runSongUpdateBatch(
     binder: PlayerServiceModern.Binder?,

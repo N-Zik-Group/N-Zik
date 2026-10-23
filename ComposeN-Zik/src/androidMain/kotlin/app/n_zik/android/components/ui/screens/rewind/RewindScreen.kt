@@ -286,13 +286,12 @@ fun RewindScreen(
         openingDone = true
     }
 
-    // ── Background music (spec 3) ──────────────────────────────────────────────────
-    // A hidden A/B ExoPlayer pair plays one library track per card, tied to the card's
-    // content where the deck shows a song, artist or album (the Top song card plays the
-    // #1 song, the album cards fetch their first track, ...): the active player plays
-    // the current card's track while the standby preloads the next one, so the per-card
-    // swap never goes silent. The players are anonymous — no notification, no playback
-    // registration — so the deck's stats stay untouched. It starts after the opening,
+    // Background music (spec 3): a hidden A/B ExoPlayer pair plays one library
+    // track per card, tied to the card's content (the Top song card plays the #1
+    // song, album cards fetch their first track, ...). The active player plays the
+    // current card's track while the standby preloads the next, so the swap never
+    // goes silent. The players are anonymous (no notification, no playback
+    // registration), so the deck's stats stay untouched. Starts after the opening,
     // yields to the main player, and is released when the deck leaves the composition.
     val playerBinder = LocalPlayerServiceBinder.current
     val bgmEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_BGM_ENABLED, true)
@@ -320,13 +319,11 @@ fun RewindScreen(
     }
 
     // Start as soon as the deck data is in — under the opening lockup, so the intro
-    // already has its music when it is revealed (spec v4: "l'intro a pas de musique").
-    // The pool comes from the top songs (the same source as the Top songs slide — no
-    // extra fetch); the resolver ties each card to its content (song/artist pages play
-    // their track, album pages fetch their first track, deep cuts play their first cut)
-    // and stats-only cards roll from the pool. The first swap fades in from silence.
-    // A mid-deck flip of the toggle re-runs the effect; start() is idempotent for the
-    // same period.
+    // already has its music when revealed (spec v4: "l'intro a pas de musique").
+    // The pool comes from the top songs (same source as the Top songs slide — no
+    // extra fetch); the resolver ties each card to its content, and stats-only
+    // cards roll from the pool. The first swap fades in from silence. A mid-deck
+    // toggle flip re-runs the effect; start() is idempotent for the same period.
     LaunchedEffect(bgmController, bgmEnabled, uiState.data, period) {
         if (!bgmEnabled) return@LaunchedEffect
         val data = uiState.data ?: return@LaunchedEffect
@@ -536,14 +533,13 @@ fun RewindScreen(
             }
         }
 
-        // Background-music chrome (spec 3): the volume toggle sits in the per-slide share
+        // Background-music chrome (spec 3): the volume toggle sits in the share
         // button's row (same 40 dp rounded target, 8 dp to its left). A tap cuts or
-        // restores the sound; a long press reveals the vertical volume slider below it
-        // (another long press hides it). Like the share button, the chrome depops on
-        // every slide — it scales out as soon as the pager starts scrolling and pops
-        // back in when the new card settles (same spring/curves as the share). Hidden
-        // during any capture, like the mini player — it is live chrome and must not land
-        // in a captured frame.
+        // restores the sound; a long press reveals the vertical volume slider below
+        // it (another long press hides it). Like the share button, it depops on
+        // every slide (scales out on scroll start, pops back in on settle). Hidden
+        // during any capture, like the mini player — live chrome must not land in
+        // a captured frame.
         if (
             bgmController != null &&
             !shareMode &&

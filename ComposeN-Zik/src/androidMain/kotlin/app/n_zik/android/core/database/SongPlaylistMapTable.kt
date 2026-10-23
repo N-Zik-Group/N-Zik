@@ -22,37 +22,19 @@ import kotlinx.coroutines.flow.take
 @RewriteQueriesToDropUnusedColumns
 interface SongPlaylistMapTable {
 
-    /**
-     * Song with [songId] will be removed from all playlists
-     *
-     * @return number of rows affected by this operation
-     */
+    /** Removes [songId] from all playlists. */
     @Query("DELETE FROM SongPlaylistMap WHERE songId = :songId")
     fun deleteBySongId( songId: String ): Int
 
-    /**
-     * Remove song with [songId] from playlist with id [playlistId]
-     *
-     * @return number of rows affected by this operation
-     */
+    /** Removes [songId] from playlist [playlistId]. */
     @Query("DELETE FROM SongPlaylistMap WHERE songId = :songId AND playlistId = :playlistId")
     fun deleteBySongId( songId: String, playlistId: Long ): Int
 
-    /**
-     * Remove all songs belong to playlist with id [playlistId]
-     *
-     * @param playlistId playlist to have its songs wiped
-     *
-     * @return number of rows affected by this operation
-     */
+    /** Removes all songs from playlist [playlistId]. */
     @Query("DELETE FROM SongPlaylistMap WHERE playlistId = :playlistId")
     fun clear( playlistId: Long ): Int
 
-    /**
-     * Delete all mappings where songs aren't exist in `Song` table
-     *
-     * @return number of rows affected by this operation
-     */
+    /** Deletes all mappings whose song no longer exists in the `Song` table. */
     @Query("""
         DELETE FROM SongPlaylistMap 
         WHERE songId NOT IN (
@@ -62,10 +44,7 @@ interface SongPlaylistMapTable {
     """)
     fun clearGhostMaps(): Int
 
-    /**
-     * @param playlistId of playlist to look for
-     * @return all [Song]s that were mapped to playlist has [Playlist.id] matches [playlistId]
-     */
+    /** All [Song]s mapped to the playlist whose [Playlist.id] equals [playlistId]. */
     @Query("""
         SELECT DISTINCT S.*
         FROM SongPlaylistMap SPM
@@ -79,12 +58,7 @@ interface SongPlaylistMapTable {
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun updateReplace( songPlaylistMaps: List<SongPlaylistMap> ): Int
 
-    /**
-     * @param songId of playlist to look for
-     * @param playlistId playlist to look into
-     *
-     * @return [SongPlaylistMap] that has [Song.id] matches [songId] and [Playlist.id] matches [playlistId]
-     */
+    /** The [SongPlaylistMap] linking [songId] to [playlistId], if any. */
     @Query("SELECT * FROM SongPlaylistMap WHERE playlistId = :playlistId AND songId = :songId")
     fun findById( songId: String, playlistId: Long ): Flow<SongPlaylistMap?>
 
@@ -121,8 +95,6 @@ interface SongPlaylistMapTable {
     /**
      * Batch variant of [isMapped]: checks a whole list of songs with a single query.
      *
-     * @param songIds song IDs to check
-     *
      * @return the subset of [songIds] that is mapped to at least one playlist;
      * any ID absent from the result is not mapped
      */
@@ -139,12 +111,7 @@ interface SongPlaylistMapTable {
     """)
     fun mappedTo( songId: String ): Flow<List<Long>>
 
-    /**
-     * Randomly assign new [SongPlaylistMap.position] to
-     * each song mapped to playlist with id [playlistId].
-     *
-     * @return number of rows affected by this operation
-     */
+    /** Randomly reassigns [SongPlaylistMap.position] to every song in playlist [playlistId]. */
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     @Query("""
         UPDATE SongPlaylistMap 
@@ -161,13 +128,7 @@ interface SongPlaylistMapTable {
     // aren't exist, that's OK - IGNORE it.
     fun shufflePositions( playlistId: Long ): Int
 
-    /**
-     * Move song from [from] to [to].
-     *
-     * Other songs' positions are updated accordingly
-     *
-     * @return number of rows affected by this operation
-     */
+    /** Moves the song from position [from] to [to] within playlist [playlistId], shifting the other songs accordingly. */
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     @Query("""
         UPDATE SongPlaylistMap
@@ -196,14 +157,8 @@ interface SongPlaylistMapTable {
     fun updatePosition( playlistId: Long, songId: String, position: Int )
 
     /**
-     * Insert provided song into indicated playlist
-     * at the next available position.
-     *
-     * If record exists in the database (determined by [songId] and [playlistId])
-     * then this operation is skipped.
-     *
-     * @param songId     song to add
-     * @param playlistId playlist to add song into
+     * Inserts [songId] into [playlistId] at the next available position
+     * (MAX(position) + 1, or 0 for an empty playlist); skipped if the pair already exists.
      */
     @Query("""
         INSERT OR IGNORE INTO SongPlaylistMap ( songId, playlistId, position )
@@ -347,20 +302,8 @@ interface SongPlaylistMapTable {
         }
 
     /**
-     * Fetch all songs that were mapped to [playlistId] and sort
-     * them according to [sortBy] and [sortOrder].
-     *
-     * [sortBy] sorts all based on each song's property
-     * such as [PlaylistSongSortBy.Artist], [PlaylistSongSortBy.Duration], etc.
-     * While [sortOrder] arranges order of sorted songs
-     * to follow alphabetical order A to Z, or numerical order 0 to 9, etc.
-     *
-     * @param sortBy which song's property is used to sort
-     * @param sortOrder what order should results be in
-     * @param limit stop query once number of results reaches this number
-     *
-     * @return a **SORTED** list of [Song]'s that are continuously
-     * updated to reflect changes within the database - wrapped by [Flow]
+     * Dispatches [sortBy] to the prebuilt playlist sort queries below, then applies
+     * [sortOrder] and truncates to [limit].
      *
      * @see PlaylistSongSortBy
      * @see SortOrder

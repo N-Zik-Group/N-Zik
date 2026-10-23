@@ -40,32 +40,29 @@ import timber.log.Timber
  * - the only rename candidates are the rows LINKED to the edited entity; no global
  *   search, no similarity, no substring replace;
  * - a token is the result of [cleanPrefix] applied to the whole text AND to every
- *   token (a leaked `modified:` inside a token is cleaned and matched as the name
- *   itself), split on `,`, trimmed; matching is whole-token, case-insensitive
+ *   token, split on `,`, trimmed; matching is whole-token, case-insensitive
  *   ("Aran" never touches "Aran One");
  * - a copy follows a rename only if its token equals the row's current name (the
- *   agreement rule) — an assumed divergence is preserved; the copy's `modified:` prefix
- *   is kept on replace;
- * - 0 or 2+ candidate rows -> no action on any row (local write only), in doubt nothing
- *   moves;
- * - no prefix is ever inserted at a token position: row names are cleaned before they
- *   are embedded in a copy, and user input is normalized with [normalizeText] — the
- *   `modified:` marker is applied once, at the head, so copies stay displayable via
- *   [cleanPrefix];
- * - a write only happens when the text actually changes; the sweep is idempotent (a
- *   converged database yields zero writes), so a failed run heals itself on the next
- *   launch.
+ *   agreement rule) — an assumed divergence is preserved; the copy's `modified:`
+ *   prefix is kept on replace;
+ * - 0 or 2+ candidate rows -> no action on any row (local write only), in doubt
+ *   nothing moves;
+ * - no prefix is ever inserted at a token position: row names are cleaned before
+ *   they are embedded in a copy, and user input is normalized with [normalizeText]
+ *   — the `modified:` marker is applied once, at the head, so copies stay
+ *   displayable via [cleanPrefix];
+ * - no write happens when the text actually changes; the sweep is idempotent (a
+ *   converged database yields zero writes), so a failed run heals itself on the
+ *   next launch.
  *
- * No toast: the changes are visible in the song/album lists, the sweep only logs
- * (tag `NameConvergence`): one line per rewritten copy, one line per skipped copy
- * WITH the reason (unbacked token(s) + the available linked row names, missing
- * links, album skip reasons), and a final `name convergence: changed=N | ...`
- * summary with the per-reason skip counters.
+ * No toast: the sweep only logs (tag `NameConvergence`) — one line per rewritten
+ * copy, one line per skipped copy WITH the reason, and a final one-line summary
+ * with the per-reason skip counters.
  *
- * Wired in [MainApplication] onCreate as the LAST pass of the sequential boot chain
- * (`DbCleanup` -> same-name dedup -> this sweep, one coroutine, one pass after the
- * other), so the dedup merges/pins are already in place. The sweep never mutates any
- * link, so a state left mid-way by a previous launch heals itself (idempotent).
+ * Wired in [MainApplication] onCreate as the LAST pass of the sequential boot
+ * chain (`DbCleanup` -> same-name dedup -> this sweep, one sequential coroutine),
+ * so the dedup merges/pins are already in place. The sweep never mutates any link,
+ * so a state left mid-way by a previous launch heals itself (idempotent).
  */
 object NameConvergence {
     private const val TAG = "NameConvergence"
@@ -75,9 +72,6 @@ object NameConvergence {
      * (`DbCleanup` -> same-name dedup -> this sweep) — strictly AFTER the dedup
      * pass has committed its pins/merges (the chain is one sequential coroutine,
      * not concurrent).
-     * Suspend: the chain is one sequential coroutine on the pool thread; the thread
-     * is released while the network-bound dedup pass before it awaits its searches,
-     * and this pass starts only once that one has finished.
      *
      * @return the sweep summary (the 8 counters) so the boot chain can persist it
      * (spec "Maintenance — état de l'app en un regard")
@@ -96,28 +90,15 @@ object NameConvergence {
      * The sweep core, parameterized by the DAOs so it can be exercised in unit tests
      * against an in-memory database.
      *
-     * Rewrites the stale copies from the links, never the other way around:
-     * - song copies: when every token of [app.it.fast4x.rimusic.models.Song.artistsText]
-     *   is covered (whole token or duet "A & B", ignoreCase) by the cleaned+trimmed
-     *   name of one of the song's linked rows, the copy is rewritten with the
-     *   COMPLETE list of those linked names (link order, cleaned+trimmed names,
-     *   distinct case-insensitively) — repairs prefix leaks, duets, duplicates and
-     *   completes partial lists; a name without a linked row skips the whole copy
-     *   (the playback reconcile repairs it later);
-     * - album copies: every song of the album must carry at least one link, and every
-     *   song's set of linked names must be identical (an album mixing {Aran} and
-     *   {Aran, B} is left alone); the album text is then rewritten from that shared
-     *   set — re-cased in place when the names already match, or replaced whole when
-     *   they diverged — but only when the copy carries the same number of names
-     *   (the sweep refreshes, it never adds or removes a name).
-     *
+     * Rewrites the stale copies from the links, never the other way around (see the
+     * class KDoc): a song copy is rewritten when every token is covered by its
+     * linked rows' names; an album copy only when every song carries the same
+     * non-empty set of linked names and the copy holds the same number of names.
      * Custom `modified:` copies and copies without any link are untouched.
      *
      * Every rewritten copy and every skipped copy is logged with its reason
      * (unbacked token(s) + available rows, missing links, album skip reasons),
-     * followed by a one-line summary with the per-reason skip counters — a
-     * fully converged database logs zero change lines and zero unbacked/unlinked
-     * skips.
+     * followed by a one-line summary with the per-reason skip counters.
      *
      * @return the [ConvergenceSummary] of the run (the rewritten-copy count plus
      * the per-reason skip counters; zero on a converged database)
@@ -276,21 +257,16 @@ object NameConvergence {
      *
      * A copy is only rewritten when one of its tokens equals [oldName] (whole token,
      * ignoreCase — the agreement rule); all occurrences of that token become
-     * [newName], the copy's `modified:` prefix is kept, and the user's token order is
-     * preserved. Divergent copies (token differs from the row's old name) are left
-     * alone. No write happens when the text would not actually change.
+     * [newName], the copy's `modified:` prefix is kept, and the user's token order
+     * is preserved. Divergent copies (token differs from the row's old name) are
+     * left alone. No write happens when the text would not actually change.
      *
      * Non-suspend, DAO-direct: call it from inside a [Database.syncTransaction]
      * block (the dialogs do, wrapped in [Database.asyncTransaction] for the
-     * lock-retry), so the row rename and every copy write land in one
-     * transaction.
+     * lock-retry), so the row rename and every copy write land in one transaction.
      *
      * Both names are [cleanPrefix]ed at entry, so a prefixed row name never reaches
      * a copy.
-     *
-     * @param oldName the row's current name (may carry the `modified:` prefix)
-     * @param newName the row's new name (may carry the `modified:` prefix)
-     * @return the number of copies rewritten
      */
     internal fun propagateRename(
         db: Database,
@@ -567,15 +543,6 @@ object NameConvergence {
  * counters (the same 8 numbers the one-line summary log reports). Returned by
  * [NameConvergence.runSweep] so the boot chain can persist the last successful
  * run (spec "Maintenance — état de l'app en un regard").
- *
- * @param changed copies rewritten (0 on a converged database)
- * @param unbackedSongs song skips: a token without a linked row
- * @param unlinkedSongs song skips: no linked rows at all
- * @param customSongs song skips: custom `modified:` copies (untouchable)
- * @param unlinkedAlbums album skips: a song has no linked rows
- * @param inconsistentAlbums album skips: the songs disagree on linked names
- * @param countMismatchAlbums album skips: name count differs from the links
- * @param customAlbums album skips: custom `modified:` copies (untouchable)
  */
 data class ConvergenceSummary(
     val changed: Int,

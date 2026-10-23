@@ -175,70 +175,19 @@ interface AlbumTable {
     """)
     fun getOtherAlbumsByArtistName( artistName: String, albumId: String, limit: Int ): List<Album>
 
-    /**
-     * Attempt to write [Album] into database.
-     *
-     * ### Standalone use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * it'll simply be ignored.
-     *
-     * ### Transaction use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * it'll simply be ignored and the transaction continues.
-     *
-     * @param album intended to insert in to database
-     */
+    /** Inserts [album], silently skipping it when the row already exists (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertIgnore( album: Album )
 
-    /**
-     * Attempt to replace a record's data with provided [album].
-     *
-     * ### Standalone use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * data inside database will be replaced by provided [album].
-     *
-     * ### Transaction use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * data inside database will be replaced by provided [album]
-     * and transaction continues.
-     *
-     * @param album intended to update
-     */
+    /** Replaces the row with [album] (onConflict REPLACE). */
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun updateReplace( album: Album )
 
-    /**
-     * Attempt to replace each record's data with the one provided in records.
-     *
-     * ### Standalone use
-     *
-     * When an element fails to insert, it overrides existing
-     * data with provided one.
-     *
-     * ### Transaction use
-     *
-     * When an element fails to insert, it overrides existing
-     * data with provided one and transaction continues.
-     *
-     * @param albums list of [Album] to update
-     */
+    /** Replaces each existing row with its [albums] entry (onConflict REPLACE). */
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun updateReplace( albums: List<Album> )
 
-    /**
-     * Attempt to write [album] into database.
-     *
-     * If [album] exist (determined by its primary key),
-     * existing record's columns will be replaced
-     * by provided [album]' data.
-     *
-     * @param album data intended to insert in to database
-     */
+    /** Inserts [album], replacing the existing row's columns when its primary key already exists. */
     @Upsert
     fun upsert( album: Album )
 
@@ -311,19 +260,8 @@ interface AlbumTable {
     fun isBookmarked( albumId: String ): Flow<Boolean>
 
     /**
-     * There are 2 possible actions.
-     *
-     * ### If album IS bookmarked
-     *
-     * This will remove [Album.bookmarkedAt] timestamp (replace with NULL)
-     *
-     * ## If album IS NOT bookmarked
-     *
-     * It will assign [Album.bookmarkedAt] with current time in millis
-     *
-     * @param albumId album identifier to update its [Album.bookmarkedAt]
-     *
-     * @return number of albums updated by this operation
+     * Toggles [Album.bookmarkedAt]: not bookmarked → current time (millis),
+     * bookmarked → NULL. Returns the number of rows updated.
      */
     @Query("""
         UPDATE Album
@@ -349,8 +287,6 @@ interface AlbumTable {
      *
      * @param albumId album identifier to update its [Album.bookmarkedAt]
      * @param bookmarked target bookmark state
-     *
-     * @return number of albums updated by this operation
      */
     @Query("""
         UPDATE Album
@@ -382,8 +318,6 @@ interface AlbumTable {
      * @param albumId album identifier to update its [Album.bookmarkedAt] / [Album.dislikedAt]
      * @param bookmarked target bookmark state
      * @param disliked target dislike state
-     *
-     * @return number of albums updated by this operation
      */
     @Query("""
         UPDATE Album
@@ -658,23 +592,12 @@ interface AlbumTable {
     fun sortBookmarkedByDuration( limit: Int = Int.MAX_VALUE ): Flow<List<Album>>
 
     /**
-     * Fetch all bookmarked albums and sort
-     * them according to [sortBy] and [sortOrder].
+     * All bookmarked albums, sorted by [sortBy] (an [AlbumSortBy] property)
+     * and [sortOrder] (alphabetical / numerical direction), trimmed to [limit].
      *
-     * [sortBy] sorts all based on each album's property
-     * such as [AlbumSortBy.Title], [AlbumSortBy.Year], etc.
-     * While [sortOrder] arranges order of sorted songs
-     * to follow alphabetical order A to Z, or numerical order 0 to 9, etc.
-     *
-     * @param sortBy which album's property is used to sort
-     * @param sortOrder what order should results be in
-     * @param limit stop query once number of results reaches this number
-     *
-     * @return a **SORTED** list of [Album]'s that are continuously
-     * updated to reflect changes within the database - wrapped by [Flow]
-     *
-     * @see AlbumSortBy
-     * @see SortOrder
+     * @param sortBy which album property to sort by
+     * @param sortOrder the sort direction
+     * @param limit stop the query once the result count reaches this number
      */
     fun sortBookmarked(
         sortBy: AlbumSortBy,
@@ -784,24 +707,13 @@ interface AlbumTable {
     fun sortInLibraryByDuration( limit: Int = Int.MAX_VALUE ): Flow<List<Album>>
 
     /**
-     * Fetch all albums that have their songs mapped to
-     * at least 1 playlist in library and sort
-     * them according to [sortBy] and [sortOrder].
+     * All albums whose songs are mapped to at least one library playlist, sorted
+     * by [sortBy] (an [AlbumSortBy] property) and [sortOrder] (alphabetical /
+     * numerical direction), trimmed to [limit].
      *
-     * [sortBy] sorts all based on each album's property
-     * such as [AlbumSortBy.Title], [AlbumSortBy.Year], etc.
-     * While [sortOrder] arranges order of sorted songs
-     * to follow alphabetical order A to Z, or numerical order 0 to 9, etc.
-     *
-     * @param sortBy which album's property is used to sort
-     * @param sortOrder what order should results be in
-     * @param limit stop query once number of results reaches this number
-     *
-     * @return a **SORTED** list of [Album]'s that are continuously
-     * updated to reflect changes within the database - wrapped by [Flow]
-     *
-     * @see AlbumSortBy
-     * @see SortOrder
+     * @param sortBy which album property to sort by
+     * @param sortOrder the sort direction
+     * @param limit stop the query once the result count reaches this number
      */
     fun sortInLibrary(
         sortBy: AlbumSortBy,

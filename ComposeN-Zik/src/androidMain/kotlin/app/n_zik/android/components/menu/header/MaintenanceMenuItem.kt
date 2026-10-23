@@ -33,18 +33,16 @@ import app.n_zik.android.components.ui.header.clampedLabelMaxWidth
  * items (same 1:1 layout contract as [DebugLogsMenuItem]: 48dp min height, 12dp
  * horizontal / 0dp vertical padding, 24dp leading icon, 12dp icon-to-text gap). The
  * label is one line, clamped to the rendered width of the "Rescue Center" menu
- * label — no burger label may be wider than it; a longer label scrolls in a
- * marquee instead of widening the menu (honoring the global "disable scrolling
- * text" setting, which falls back to ellipsis).
+ * label — a longer label scrolls in a marquee instead of widening the menu
+ * (honoring the global "disable scrolling text" setting, which falls back to ellipsis).
  *
  * A short tap opens the Maintenance sheet (the app's state at a glance: the last
- * boot passes + the live state of each subsystem) and closes the menu; a long
- * press deep-links to the Misc settings screen directly on the Maintenance card
+ * boot passes + the live state of each subsystem) and closes the menu; a long press
+ * deep-links to the Misc settings screen directly on the Maintenance card
  * (spec "Maintenance — état de l'app en un regard").
  *
  * @param onOpen called on short tap (opens the Maintenance sheet)
- * @param onLongClick called on long press (deep link to the Maintenance card in
- * Misc settings)
+ * @param onLongClick called on long press (deep link to the Maintenance card in Misc settings)
  * @param onConsume called after a short tap so the caller can close the menu
  */
 @OptIn(ExperimentalFoundationApi::class)

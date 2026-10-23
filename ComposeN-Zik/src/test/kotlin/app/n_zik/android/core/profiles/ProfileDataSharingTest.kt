@@ -111,11 +111,9 @@ class ProfileDataSharingTest {
         assertTrue(app.profileShares(ProfileDataItem.DOWNLOADS, "home"))
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Dir resolvers: a SHARED item is governed by the BASE profile's settings
     // (PARTAGE_ON — the base's shared folder + the base's index), a SEPARATE item
     // by the profile's own. (spec-profile-data-separation)
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `a shared item lives in the base folder under the base location setting`() {

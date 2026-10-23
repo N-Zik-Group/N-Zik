@@ -57,33 +57,11 @@ interface FormatTable {
     @Query("SELECT DISTINCT * FROM Format WHERE songId = :songId")
     fun findBySongIdDirect( songId: String ): Format?
 
-    /**
-     * Attempt to write [format] into database.
-     *
-     * ### Standalone use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * it'll simply be ignored.
-     *
-     * ### Transaction use
-     *
-     * When error occurs and [SQLException] is thrown,
-     * it'll simply be ignored and the transaction continues.
-     *
-     * @param format data intended to insert in to database
-     */
+    /** Inserts [format], silently skipping it when the row already exists (onConflict IGNORE). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertIgnore( format: Format )
 
-    /**
-     * Attempt to write [format] into database.
-     *
-     * If [format] exist (determined by its primary key),
-     * existing record's columns will be replaced
-     * by provided [format]' data.
-     *
-     * @param format data intended to insert in to database
-     */
+    /** Inserts [format], replacing the existing row's columns when its primary key already exists. */
     @Upsert
     fun upsert( format: Format )
 
@@ -235,26 +213,11 @@ interface FormatTable {
     fun sortAllWithSongsByPosition( limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false ): Flow<List<FormatWithSong>>
 
     /**
-     * Fetch all formats & songs from the database and sort them
-     * according to [sortBy] and [sortOrder] based on Song's properties.
-     * It also excludes songs if condition of [excludeHidden] is met.
+     * Dispatches [sortBy]/[sortOrder] to the prebuilt queries below — most sorts run in SQL,
+     * a few (Custom, Downloaded) finish in memory or fall back to ROWID.
      *
-     * [sortBy] sorts all based on each song's property
-     * such as [SongSortBy.Title], [SongSortBy.PlayTime], etc.
-     * While [sortOrder] arranges order of sorted songs
-     * to follow alphabetical order A to Z, or numerical order 0 to 9, etc.
-     *
-     * [excludeHidden] is an optional parameter that indicates
-     * whether the final results contain songs that are hidden
-     * (in)directly by the user.
-     * `-1` shows hidden while `0` does not.
-     *
-     * @param sortBy which song's property is used to sort
-     * @param sortOrder what order should results be in
-     * @param excludeHidden whether to include hidden songs in final results or not
-     *
-     * @return a **SORTED** list of [Song]s that are continuously
-     * updated to reflect changes within the database - wrapped by [Flow]
+     * Songs hidden by the user carry a negative [Song.totalPlayTimeMs];
+     * excludeHidden = true drops them from the results.
      *
      * @see SongSortBy
      * @see SortOrder

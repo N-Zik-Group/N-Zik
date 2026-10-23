@@ -67,10 +67,6 @@ private val APP_TITLE_COLLAPSE_TOLERANCE = 2.dp
  * must slide behind the logo when the width actually available to the row is below its
  * ideal (full) width by more than [tolerancePx].
  *
- * @param availablePx Width available to the row from the parent, in px (very large when
- * unconstrained)
- * @param idealPx Ideal (full) width of the row — logo + sliding extras — in px; 0 = not
- * measured yet
  * @param tolerancePx Boundary jitter that must NOT trigger a collapse, in px
  * @return true when the sliding extras should collapse behind the logo
  */
@@ -84,13 +80,12 @@ internal fun shouldCollapseTitle(availablePx: Int, idealPx: Int, tolerancePx: In
  * ("N-ZIK" text, version badge, parental-control shield, debug badge) that collapse
  * behind the logo when the header runs out of horizontal space.
  *
- * Drop-in replacement for the legacy fixed `AppTitle` row: unlike that row, this one is
- * measured against the width actually available in the parent — callers pass
- * `Modifier.weight(1f)`, so the header row gives it exactly the remaining space. When
- * that space is below the row's ideal width, the extras slide to the left,
- * behind the logo, while fading out and their layout width retracts to zero, so the
- * action bar (search + burger) is never compressed. When the space returns, the reverse
- * animation re-expands them from the logo. The logo itself always keeps its full size.
+ * Drop-in replacement for the legacy fixed `AppTitle` row: it is measured against the
+ * width actually available in the parent (callers pass `Modifier.weight(1f)`). When that
+ * space is below the row's ideal width, the extras slide behind the logo while fading out
+ * and their layout width retracts to zero, so the action bar is never compressed; when
+ * the space returns, the reverse animation re-expands them. The logo always keeps its
+ * full size.
  *
  * @param navController Navigation controller (home navigation from the title text, logo
  * easter eggs)

@@ -54,20 +54,17 @@ import org.robolectric.shadows.ShadowProcess
  * behave through it exactly like standalone:
  *
  * - YouTube login enabled + logged in (SAPISID cookie): the row title is present;
- * - YouTube login enabled + logged out (no cookie): the connect-first hint is shown
- *   and a click on the greyed-out row writes nothing;
- * - logged in: a click on the row persists `useLoginForSearchKey = false` AND sets
- *   the in-memory [Innertube.useLoginForSearch] flag.
+ * - YouTube login enabled + logged out (no cookie): the connect-first hint is shown and a
+ *   click on the greyed-out row writes nothing;
+ * - logged in: a click on the row persists `useLoginForSearchKey = false` AND sets the
+ *   in-memory [Innertube.useLoginForSearch] flag.
  *
  * Harness: the real [MainApplication] booted under Robolectric (the
- * [StartupSearchRestoreWiringTest] / `MaintenanceBootChainTest.launchApp` template —
- * it executes the real `onCreate()`, pins the process name, calls the protected
- * `attachBaseContext` reflectively, and swallows the post-restore WorkManager
- * failure of the test harness) so `appContext()` / `Dependencies` resolve; the
- * keystore-backed [encryptedPreferences] is stubbed (a JVM has no keystore) with
- * the cookie / login-enabled values per test — `onCreate()` reads the cookie
- * through it to settle [MainApplication.cookieStatus], and the screen reads its
- * login state the same way.
+ * [StartupSearchRestoreWiringTest] / `MaintenanceBootChainTest.launchApp` template) so
+ * `appContext()` / `Dependencies` resolve; the keystore-backed [encryptedPreferences] is
+ * stubbed (a JVM has no keystore) with the cookie / login-enabled values per test —
+ * `onCreate()` reads the cookie through it to settle [MainApplication.cookieStatus], and
+ * the screen reads its login state the same way.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)

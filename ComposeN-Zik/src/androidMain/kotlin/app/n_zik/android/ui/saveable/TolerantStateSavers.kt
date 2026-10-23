@@ -18,20 +18,19 @@ import timber.log.Timber
  * — main composition and sub-compositions alike — shares one key space. When the composition
  * structure differs between the save and the restore (the Player screen is the only subtree
  * composed in a `BoxWithConstraints` sub-composition AND holds the most conditional saveables),
- * a saved payload lands in a FOREIGN slot — e.g. the `appearance` saveable's `ArrayList`
- * payload arrives at a `rememberSaveable { mutableStateOf(false) }` slot. The auto-saver's
- * `restore` then `checkcast`s the payload to `MutableState` → CCE (or the `stateSaver` overload's
- * `mutableStateSaver` wrapper fails its `require(it is SnapshotMutableState)` → IAE).
+ * a saved payload lands in a FOREIGN slot (e.g. the `appearance` `ArrayList` arriving at a
+ * `mutableStateOf(false)` slot) and the auto-saver's typed `restore` throws — CCE on the
+ * `MutableState` checkcast, or IAE when the `stateSaver` overload's wrapper `require`s a
+ * `SnapshotMutableState`.
  *
  * These savers break that chain: they are passed through the PLAIN `saver =` overload only
  * (the `stateSaver =` overload is prohibited — its wrapper `require`s a `SnapshotMutableState`
- * payload). Their `restore(value: Any)` takes an untyped payload and safe-casts (`as?`) — a
- * foreign payload yields the default value instead of an exception, plus one `SAVEABLE_MISMATCH`
- * diagnostics line naming the SLOT and the payload class (slot + class names only, no sensitive
- * data). The net only exists in the converted in-scope slots: a shift landing on an unconverted
- * slot still crashes (out of scope, spec §3bis). The registry only ever calls `restore` with a
- * non-null payload (a null `consumeRestored` result takes the `init` lambda instead), so the
- * non-null parameter is a runtime guarantee.
+ * payload). Their `restore(value: Any)` safe-casts (`as?`) — a foreign payload yields the
+ * default plus one `SAVEABLE_MISMATCH` line naming the slot and payload class (names only, no
+ * sensitive data). The net only exists in the converted in-scope slots: a shift landing on an
+ * unconverted slot still crashes (out of scope, spec §3bis). The registry only ever calls
+ * `restore` with a non-null payload (a null `consumeRestored` result takes the `init` lambda),
+ * so the non-null parameter is a runtime guarantee.
  */
 
 /**

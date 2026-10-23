@@ -40,16 +40,10 @@ object LikeStateManager {
     private const val CHUNK_SIZE = 500
 
     /**
-     * Get like states for a list of song IDs as a Flow.
-     * Returns Map<songId, likeState?> where:
-     * - true = liked
-     * - false = disliked
-     * - null = neutral
-     *
-     * The requested IDs are split into chunks of [CHUNK_SIZE] so no single
-     * query exceeds the SQLite bind-parameter limit, then composed back into
-     * a single reactive Flow. This is MUCH more efficient than querying each
-     * song individually.
+     * Get like states for a list of song IDs as a single reactive Flow: Map<songId,
+     * likeState?> where true = liked, false = disliked, null = neutral. The IDs are
+     * chunked into [CHUNK_SIZE] groups so no single query exceeds the SQLite
+     * bind-parameter limit, then composed back into one Flow.
      */
     fun getLikeStates(songIds: List<String>): Flow<Map<String, Boolean?>> {
         if (songIds.isEmpty()) {

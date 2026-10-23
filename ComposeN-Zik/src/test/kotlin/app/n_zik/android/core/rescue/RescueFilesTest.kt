@@ -64,9 +64,7 @@ class RescueFilesTest {
         RescueFiles.initialize(context)
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // SQLite header validation
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `valid SQLite header is accepted`() {
@@ -103,9 +101,7 @@ class RescueFilesTest {
         assertFalse(RescueFiles.isValidSqliteHeader(header))
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Settings CSV round trip (writer + reader used by export/import)
-    // ──────────────────────────────────────────────────────────────────────
 
     private fun roundTrip(entries: List<Triple<String, String, Any>>): List<Triple<String, String, String>> {
         val out = ByteArrayOutputStream()
@@ -159,9 +155,7 @@ class RescueFilesTest {
         assertEquals(listOf(Triple("String", "kept", "v")), rows)
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Credential export assembly (shared by the manual export, auto backup, rescue)
-    // ──────────────────────────────────────────────────────────────────────
 
     private val sparseCredentialPrefs: Map<String, Any> = mapOf(
         lastfmSessionKey to "session123",
@@ -301,9 +295,7 @@ class RescueFilesTest {
         verify(exactly = RescueFiles.ALL_ENCRYPTED_KEYS.size) { encrypted.putString(any(), any()) }
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Encrypted key routing
-    // ──────────────────────────────────────────────────────────────────────
 
     private val allKeysMap: Map<String, Any?> = RescueFiles.ALL_ENCRYPTED_KEYS.associateWith { "x" }
 
@@ -392,9 +384,7 @@ class RescueFilesTest {
         assertTrue(empty.isEmpty())
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Clear cache / delete downloads (file-based cores)
-    // ──────────────────────────────────────────────────────────────────────
 
     private fun File.dirWithFile(name: String): File = apply {
         mkdirs()
@@ -544,9 +534,7 @@ class RescueFilesTest {
         assertTrue(File(cacheDir, "exoplayer_work/stream.bin").exists())
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Database files: reset / restore / import
-    // ──────────────────────────────────────────────────────────────────────
 
     /** Writes a database main file, plus the side files that are given, into [dir]. */
     private fun writeDb(dir: File, main: String, wal: String? = null, shm: String? = null): File {
@@ -621,9 +609,7 @@ class RescueFilesTest {
         assertFalse(imported.exists())
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Settings backups / reset / restore
-    // ──────────────────────────────────────────────────────────────────────
 
     @Test
     fun `settings backup then swap brings the old settings back and keeps the current ones as backup`(@TempDir tmp: File) {
@@ -671,9 +657,7 @@ class RescueFilesTest {
         RescueFiles.deleteBackupDir(backupDir) // already gone: no exception
     }
 
-    // ──────────────────────────────────────────────────────────────────────
     // Settings import routing (credentials vs regular settings)
-    // ──────────────────────────────────────────────────────────────────────
 
     private fun editor() = mockk<SharedPreferences.Editor>(relaxed = true)
 

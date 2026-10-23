@@ -47,22 +47,21 @@ internal const val RewindPageSettleMs = 900L
 
 /**
  * Captures one PNG per deck page straight from the display framebuffer.
+ * `PixelCopy` copies what the GPU actually composited — the animated
+ * HypnoticCanvas RuntimeShader backgrounds included — which `view.draw()`
+ * cannot replay on a software canvas (RuntimeShader and hardware bitmaps
+ * both throw there). Each page waits for its reveal to settle, then its
+ * frame is saved as `NZik_Rewind_<token>_NN.png` (token =
+ * [RewindPeriod.fileNameToken]: "2026", "2026_03" or "GLOBAL").
  *
- * `PixelCopy` copies what the GPU actually composited — the animated HypnoticCanvas
- * RuntimeShader backgrounds included — which `view.draw()` cannot replay on a software
- * canvas (RuntimeShader and hardware bitmaps both throw there). The deck visits its pages
- * in order; each one waits for its reveal to settle before its frame is copied and saved
- * as `NZik_Rewind_<token>_NN.png`, where the token is [RewindPeriod.fileNameToken]
- * ("2026", "2026_03" or "GLOBAL").
- * Each image carries the same top/bottom padding as the live deck, but with the system bars
- * hidden for the whole pass: the deck pins the ignoring-visibility bar insets through
- * [rewindShareCaptureActive], so the bar areas show the slide background (no clock, battery
- * icons or nav buttons) instead of the system UI. The hide runs the platform's own bar
- * transition, and the first copy waits for it to land (see rewindAwaitBarsHidden) so no
- * frame is ever captured mid-fade.
+ * The system bars are hidden for the whole pass: the deck pins the
+ * ignoring-visibility bar insets through [rewindShareCaptureActive], so
+ * the bar areas show the slide background instead of the system UI, and
+ * the first copy waits for the platform bar transition to land
+ * (rewindAwaitBarsHidden) so no frame is captured mid-fade.
  *
- * @return the page files in slide order, or null when the display could not be copied
- * or the device is below API 34 (the caller falls back to the single
+ * @return the page files in slide order, or null when the display could
+ * not be copied or the device is below API 34 (fallback: the
  * software-replayed final slide).
  */
 internal suspend fun captureRewindDeckPages(
@@ -86,13 +85,11 @@ internal suspend fun captureRewindDeckPages(
     val insetsController = WindowCompat.getInsetsController(activity.window, view)
     val files = mutableListOf<File>()
     try {
-        // Clean frames for the whole pass: hide the system bars so the bar areas show the
-        // slide background instead of the system UI — the platform runs its own bar
-        // transition on the hide, and the first copy waits for it to land (see
-        // rewindAwaitBarsHidden) so no frame is ever captured mid-fade.
-        // rewindShareCaptureActive is held until the finally below, even when a copy fails
-        // or the share coroutine is cancelled (spec GH-275, patch "rewindShareCaptureActive
-        // set before the try").
+        // Hide the system bars for the whole pass (see the KDoc above — the
+        // first copy waits for the platform bar transition to land).
+        // rewindShareCaptureActive is held until the finally below, even when a
+        // copy fails or the share coroutine is cancelled (spec GH-275, patch
+        // "rewindShareCaptureActive set before the try").
         rewindShareCaptureActive.value = true
         insetsController.hide(WindowInsets.Type.systemBars())
         // Settle: bars out of the framebuffer, capture-mode recomposition landed, two clean frames

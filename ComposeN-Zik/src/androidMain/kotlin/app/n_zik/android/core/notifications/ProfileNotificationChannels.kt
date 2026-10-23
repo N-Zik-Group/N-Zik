@@ -111,16 +111,14 @@ fun profileChannelIds(profileId: String): Set<String> =
 
 /**
  * Creates (idempotently) the 6 channels of [profileId], each named with its base channel's
- * display name plus the profile's display name (e.g. `"Player — Work"`), so the owning profile
- * is visible in the channel name. The channels of a profile are still separated by ID
- * (`<base id>_<profile id>`); the name only disambiguates the owning profile. The profile's
- * display name is the stored name when set, its ID otherwise. The base profile keeps its
- * current names exactly (zero migration) — this is a no-op for it (see below).
+ * display name plus the profile's display name (e.g. `"Player — Work"`); the channels stay
+ * separated by ID, the name only disambiguates the owning profile. The display name is the
+ * stored name when set, its ID otherwise.
  *
- * No-op for the base profile: its channels are created by MainApplication, unchanged. Called
- * at boot for the active profile and at profile switch for the incoming profile. Re-creating an
- * existing channel is a no-op on Android, so its name — like its settings — is fixed at first
- * creation and is not updated by a later profile rename.
+ * No-op for the base profile (its channels are created by MainApplication, unchanged, zero
+ * migration). Called at boot for the active profile and at profile switch for the incoming
+ * profile; re-creating an existing channel is a no-op on Android, so its name — like its
+ * settings — is fixed at first creation and not updated by a later profile rename.
  */
 fun ensureProfileChannels(context: Context, profileId: String) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return

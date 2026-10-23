@@ -168,12 +168,10 @@ object ProfileStateArchive {
      * on this device).
      *
      * The base profile is implicit (never a list line) but always restorable, so a base-only
-     * export — an empty list carrying the base face and/or the base name — is a valid archive:
-     * it restores the base face and name WITHOUT touching the device's existing profile list
-     * (an empty list must not wipe the user's profiles; only a non-empty list replaces it).
+     * export — an empty list carrying the base face and/or name — is valid: it restores them
+     * WITHOUT touching the device's existing profile list (only a non-empty list replaces it).
      *
-     * @return the restored list size, the number of faces actually written and the number of
-     *   names restored (a base-only archive restores 0 profiles but its face and/or name).
+     * @return the restored list size, the faces actually written and the names restored.
      * @throws IllegalArgumentException when the archive holds no profile at all (no list line,
      *   no face, no name) — there is nothing to restore.
      */

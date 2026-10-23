@@ -29,17 +29,14 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 /**
- * Yearly rewind playlist worker (spec 2): on the 1st of January, creates
- * `rewind-yearly:YYYY` from the finished year's most-played songs — if it does not
- * exist yet — and posts a notification when the notification toggle allows it.
+ * Yearly rewind playlist worker (spec 2): on the 1st of January, creates `rewind-yearly:YYYY`
+ * from the finished year's most-played songs — if it does not exist yet — and posts a
+ * notification deep-linking to the created playlist (spec GH-275 follow-up).
  *
  * Same pattern and same deliberate differences as [RewindMonthlyPlaylistWorker]: the
- * dedicated `KEY_REWIND_YEARLY_PLAYLIST_ENABLED` creation gate (decoupled from the
- * master switch and the deck toggles) and creation-on-despite-denied-POST_NOTIFICATIONS
- * (the notification is the optional part). Shares the application-created "rewind"
- * notification channel (no new channel). The notification's content intent deep-links to
- * the created playlist (spec GH-275 follow-up — the original frozen spec 2 was a bare
- * app open), like [RewindMonthlyPlaylistWorker].
+ * dedicated `KEY_REWIND_YEARLY_PLAYLIST_ENABLED` creation gate (decoupled from the master
+ * switch and the deck toggles) and creation despite denied POST_NOTIFICATIONS (the
+ * notification is the optional part). Shares the "rewind" notification channel.
  */
 internal class RewindYearlyPlaylistWorker(
     context: Context,

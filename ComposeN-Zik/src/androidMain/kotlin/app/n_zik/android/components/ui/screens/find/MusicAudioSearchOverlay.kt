@@ -78,9 +78,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
-// ─────────────────────────────────────────────────────────────────────────────
 // State
-// ─────────────────────────────────────────────────────────────────────────────
 
 private sealed interface FindUiState {
     data object Idle : FindUiState
@@ -89,9 +87,7 @@ private sealed interface FindUiState {
     data class Error(val message: String) : FindUiState
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Root Screen
-// ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
 fun MusicAudioSearchOverlay(
@@ -395,9 +391,7 @@ fun MusicAudioSearchOverlay(
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Recognized Track Card
-// ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
 private fun RecognizedTrackCard(

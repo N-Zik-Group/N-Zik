@@ -39,15 +39,14 @@ import java.nio.file.Files
 
 /**
  * Tests the control flow of the deferred per-profile import chain
- * ([ImportChainRunner.runChain], the "Import into which profile?" flow):
- * a database or settings failure stops the chain before anything else is written —
- * the host stays open for a retry ([onCompleted] never reached), the restart prompt
- * only appears when the live database was closed by the failed replacement; a
- * profile-state failure stops the chain the same way; on success into the active
- * profile the login state is reset and the restart prompt appears, on success into
- * any other profile the host closes with a confirmation toast, and a target that
- * only exists in the picked files is registered in the profile list so its data
- * is not orphaned.
+ * ([ImportChainRunner.runChain], the "Import into which profile?" flow): database or
+ * settings failure stops the chain before anything else is written (host stays open for
+ * a retry, [onCompleted] never reached; restart prompt only when the live database was
+ * closed by the failed replacement); profile-state failure stops it the same way;
+ * success into the active profile resets the login state and shows the restart prompt,
+ * success into any other profile closes the host with a confirmation toast; a target
+ * that only exists in the picked files is registered in the profile list so its data is
+ * not orphaned.
  */
 class ImportChainRunnerTest {
 

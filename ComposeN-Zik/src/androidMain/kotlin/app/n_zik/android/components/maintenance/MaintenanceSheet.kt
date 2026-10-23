@@ -187,12 +187,9 @@ internal fun dbCleanupEmptyRes(state: MaintenanceDbCleanupState?): Pair<Int, Int
 }
 
 /**
- * The trailing status of the "Same-name artist dedup" boot-pass row, as string
- * resource + its counter arguments: "No data" without a state, the "N groups · M
- * resolved · K skipped" counters when groups were detected, the "Nothing to dedup"
- * clean sentence on an empty run (the "Nothing to clean" pattern of the cleanup row).
- * Shared by the sheet's chevron row and the settings card's pass table so the two can
- * never drift.
+ * The trailing status of the "Same-name artist dedup" boot-pass row, as string resource +
+ * counter arguments. Shared by the sheet's chevron row and the settings card's pass table
+ * so the two can never drift.
  */
 internal fun dedupStatusRes(state: MaintenanceDedupState?): Pair<Int, IntArray?> =
     when {
@@ -913,27 +910,24 @@ internal suspend fun loadMaintenanceSnapshot(context: Context): MaintenanceSnaps
  * listing the last boot passes (persisted last successful run) and the live state of each
  * subsystem — the whole app state at a glance.
  *
- * Design (per user request): follows the app's own menu design system, exactly like the
- * Listen Together menu — LIST mode ([ListMenu.Menu] + [ListMenu.Entry] rows +
- * right-aligned colored status dot). The sheet is list-only: the grid mode was dropped
- * (this many rows are unreadable in grid cells). The [CustomModalBottomSheet] container
- * stays transparent with an empty drag handle, and the title + refresh header row sits
- * above the menu content.
+ * Design (per user request): the app's own menu design system, exactly like the Listen
+ * Together menu — LIST mode ([ListMenu.Menu] + [ListMenu.Entry] rows + right-aligned colored
+ * status dot); list-only (this many rows are unreadable in grid cells). The
+ * [CustomModalBottomSheet] container stays transparent with an empty drag handle, and the
+ * title + refresh header row sits above the menu content.
  *
- * The sheet reads its data at open (and on the "refresh" action) only: no polling, no
- * background refresh; the refresh re-runs the READS, never the boot passes.
- *
- * Opened from two entry points that compose the same composable:
- * - the burger menu "Maintenance" item (short tap) — [app.n_zik.android.components.menu.header.MaintenanceMenuItem]
- * - the Misc settings "Maintenance" card ([app.n_zik.android.components.settings.MaintenanceSettingsCard])
+ * The sheet reads its data at open (and on "refresh") only: no polling, no background
+ * refresh; the refresh re-runs the READS, never the boot passes. Opened from the burger
+ * menu "Maintenance" item ([app.n_zik.android.components.menu.header.MaintenanceMenuItem])
+ * and the Misc settings "Maintenance" card
+ * ([app.n_zik.android.components.settings.MaintenanceSettingsCard]).
  *
  * @param showSheet whether the sheet is open
  * @param onDismissRequest called when the sheet is dismissed (swipe / outside tap)
- * @param renderLogsDialog whether this composition renders the standard [CopyLogsDialog]
- * for the Export action. Both entry points pass `false`: the single Render() host for
- * the whole app lives in the persistent header (ActionBar.kt, composed for the entire
- * session), which both sheets share — Render() is a singleton and a second Render()
- * would stack a second dialog on top of the first.
+ * @param renderLogsDialog whether this composition renders the standard [CopyLogsDialog] for
+ *        the Export action. Both entry points pass `false`: the single Render() host for
+ *        the whole app lives in the persistent header (ActionBar.kt), which both sheets
+ *        share — Render() is a singleton and a second Render() would stack a second dialog.
  */
 @OptIn(ExperimentalMaterial3Api::class, UnstableApi::class)
 @Composable

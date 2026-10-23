@@ -197,12 +197,11 @@ fun RewindFinaleCard(
                     )
                 }
                 Spacer(Modifier.height(if (compact) 8.dp else 12.dp))
-                // The stats grid is the slide's shrinkable block: at the reference it renders
-                // at its natural height, and on a tight screen (narrow + enlarged font) it
-                // yields vertical space row by row so the export action below always stays
-                // visible — the deck has no scrolling. It outweights the bottom spacer 2:1
-                // so the slack goes to the grid before it is compressed, and the tiles adapt
-                // their text to whatever height they get (FinaleStatTile).
+                // The stats grid is the slide's shrinkable block: natural height at the
+                // reference, row-by-row yield on a tight screen so the export action
+                // below always stays visible (the deck has no scrolling). Outweights
+                // the bottom spacer 2:1 so the slack goes to the grid first; the
+                // tiles adapt their text to whatever height they get (FinaleStatTile).
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -474,12 +473,11 @@ fun RewindFinaleCard(
                         }
                     }
                 } else {
-                    // Interactive UI: a single "EXPORT OPTIONS" toggle only exists in the live
-                    // deck — any captured frame (per-slide share, deck export) renders the brand
-                    // footer above instead, so shared images never carry clickable chrome.
-                    // The tap opens the app-standard menu (CustomModalBottomSheet + ListMenu,
-                    // same pattern as the song item menu) holding the individual actions —
-                    // identical on every screen size.
+                    // Interactive UI: the "EXPORT OPTIONS" toggle exists only in the live
+                    // deck — captured frames render the brand footer above instead, so
+                    // shared images never carry clickable chrome. The tap opens the
+                    // app-standard menu (CustomModalBottomSheet + ListMenu, same pattern
+                    // as the song item menu) holding the individual actions.
                     RewindReveal(active, 1_080) {
                         Row(
                             modifier = Modifier

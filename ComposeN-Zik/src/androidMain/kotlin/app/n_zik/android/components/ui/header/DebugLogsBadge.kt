@@ -17,15 +17,13 @@ import java.io.File
  * Reactive "DEBUG" badge for the app header (title = [HEADER_BADGE_REF_TITLE], which is
  * also the width reference capping every header badge).
  *
- * Only visible while debug logging is enabled. The preference is read live —
- * [rememberPreference] seeds the value from disk and registers a shared-preferences
- * listener, which matters because this header stays composed across the whole session, so
- * a one-shot read would keep a stale value after a flip in the settings or the burger menu.
+ * Only visible while debug logging is enabled. The preference is read live — this header
+ * stays composed across the whole session, so a one-shot read would keep a stale value
+ * after a flip in the settings or the burger menu.
  *
- * A tap toggles the preference with the exact same side effects as the "Enable debug logs"
- * item in the burger menu: a "restart required" toast on enable, a purge of the debug log
- * files on disable. Since the badge is hidden while off, a tap on it can only ever disable
- * the mode (re-enabling goes through the burger menu or Misc settings).
+ * A tap toggles the preference with the same side effects as the burger menu item: a
+ * "restart required" toast on enable, a purge of the debug log files on disable. Since the
+ * badge is hidden while off, a tap on it can only ever disable the mode.
  *
  * @param modifier applied to the badge container
  */

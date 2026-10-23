@@ -6,24 +6,19 @@ import app.n_zik.android.bridge.state.BridgeStateHub
 import app.n_zik.android.core.database.Database
 
 /**
- * Contract §10.3 (since 1.7.3, feature `library.live`): pushes a `libraryChanged` delta for
- * every write to the phone's library database and for every edit of its songs sort menu.
+ * Contract §10.3 (since 1.7.3, `library.live`): emits a `libraryChanged` delta for every write
+ * to the phone's library database and every edit of its songs sort menu.
  *
- * The library DAOs (songs, albums, artists, playlists, formats, playlist maps, play events)
- * are wrapped by [Database] so every write reaches [Database.libraryWriteNotifier], whatever
- * its origin: the phone's own UI (a like, a bookmark, a download, a deletion, …), the
- * client's §10.2 writes (which go through the same DAOs), the imports, the play counters. A
- * write to an unwrapped DAO (queue, lyrics, search) emits nothing: the queue already has its
- * `queueChanged` delta and the rest is not library listings (§10.3).
+ * [Database] wraps the library DAOs (songs, albums, artists, playlists, formats, playlist
+ * maps, play events) so every write — the phone's own UI, the client's §10.2 writes, imports,
+ * play counters — reaches [Database.libraryWriteNotifier]. Unwrapped DAOs (queue, lyrics,
+ * search) emit nothing: the queue has its own `queueChanged` delta, the rest is not
+ * library listings.
  *
- * Sort menu edits (the reordering or the option visibility of the phone's songs sort menus,
- * its `HomeSongsSortSettingsDialog`) are preferences, not database writes: a listener on the
- * `preferences` SharedPreferences watches their keys and emits `songs` — the client reloads
- * its songs lists (since 1.11.0 it no longer receives the menu itself on the wire).
- *
- * Since 1.12.0 (`library.recommendations`), every change of the Songs tab's smart shuffle
- * ([SongRecommendations]: published, or cleared when switched off / the screen left) emits `songs`
- * too — the client re-reads `GET /library/songs/recommendations`.
+ * Sort menu edits are preferences, not writes: a listener on the `preferences` SharedPreferences
+ * watches their keys and emits `songs` (since 1.11.0 the client no longer receives the menu
+ * itself on the wire). Since 1.12.0 (`library.recommendations`), smart-shuffle changes
+ * ([SongRecommendations]) emit `songs` too — the client re-reads `GET /library/songs/recommendations`.
  */
 internal class BridgeLibraryObserver(
     context: Context,

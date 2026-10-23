@@ -18,15 +18,13 @@ const val useLoginForSearchKey = "useLoginForSearch"
  * "Use account for searches" row of the Accounts tab, embedded directly under the
  * "Login for Browse" row.
  *
- * ON (default): searches are sent with the connected account's credentials (the
- * pre-existing behavior). OFF: every search (the automatic metadata lookups and the
- * user's online search alike) is sent as a guest — no account cookie, no auth headers,
- * no dataSyncId — so it stays out of the account's YouTube search history and
- * suggestions.
+ * ON (default): searches are sent with the connected account's credentials. OFF: every
+ * search (automatic metadata lookups and the user's online search alike) is sent as a
+ * guest — no account cookie, no auth headers, no dataSyncId — so it stays out of the
+ * account's YouTube search history and suggestions.
  *
- * The row is hidden when the YouTube login is disabled, and shown greyed out (with a
- * "connect first" hint) when the login is enabled but no account is connected —
- * exactly like the "Login for Browse" row above it.
+ * Hidden when the YouTube login is disabled, greyed out (with a "connect first" hint)
+ * when the login is enabled but no account is connected — like the row above it.
  *
  * @param isYouTubeLoginEnabled whether the YouTube login is enabled at all; renders
  *   nothing when false.

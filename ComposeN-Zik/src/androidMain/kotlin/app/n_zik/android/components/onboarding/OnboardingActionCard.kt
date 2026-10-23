@@ -71,18 +71,14 @@ internal fun OnboardingActionLabel(text: String) {
  * Shared onboarding card: icon, title, description and an optional trailing action — the
  * same pattern behind every onboarding step (permissions, restore, profile, accounts).
  *
- * Overflow-safe by design (small screens / enlarged system font):
- * - the title is a single line capped to the text column and scrolls in a marquee when
- *   it is wider (honoring the global "disable scrolling text" setting)
- * - the description wraps, never capped
- * - the action label is bounded, so it can never push the card past the screen edge
+ * Overflow-safe by design (small screens / enlarged system font): the title is a single
+ * line capped to the text column and scrolls in a marquee when it is wider (honoring the
+ * global "disable scrolling text" setting); the description wraps, never capped; the
+ * action label is bounded, so it can never push the card past the screen edge.
  *
- * @param icon drawable for the leading icon slot
- * @param title card title, one line
- * @param description card description, wrapping
- * @param action optional trailing action (button or status icon); null for header-only cards
- * @param extraContent optional content below the header row, inside the same card
- *   (restore options + button, clone name field + button)
+ * @param action Optional trailing action (button or status icon); null for header-only cards.
+ * @param extraContent Optional content below the header row, inside the same card (restore
+ *   options + button, clone name field + button).
  */
 @Composable
 fun OnboardingActionCard(
