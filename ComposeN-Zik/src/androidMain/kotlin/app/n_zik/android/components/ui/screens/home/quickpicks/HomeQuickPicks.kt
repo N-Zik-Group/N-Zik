@@ -60,6 +60,7 @@ import app.n_zik.android.playback.utils.Shuffler
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.queue
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -237,6 +238,7 @@ fun HomeQuickPicks(
     }
 
     var offlinePullRefreshing by remember { mutableStateOf(false) }
+    var offlinePullJob by remember { mutableStateOf<Job?>(null) }
     val pullRefreshScope = rememberCoroutineScope()
 
     AppPullToRefreshBox(
@@ -250,7 +252,10 @@ fun HomeQuickPicks(
                 // the pull is consumed instead of re-firing the refresh.
                 Toaster.noInternet()
                 offlinePullRefreshing = true
-                pullRefreshScope.launch {
+                // Cancel the previous offline engagement so a stacked pull is only
+                // cleared by its own timer.
+                offlinePullJob?.cancel()
+                offlinePullJob = pullRefreshScope.launch {
                     delay(600)
                     offlinePullRefreshing = false
                 }
@@ -592,7 +597,7 @@ fun HomeQuickPicksContent(
                             val hasRewind = rewindPlaylists.isNotEmpty()
                             item(key = "rewind") {
                                 AnimatedVisibility(visible = showRewind && hasRewind, modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    RewindSection(showRewind, rewindPlaylists, navController, endPaddingValues, sectionTextModifier, itemInHorizontalGridWidth, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText)
+                                    RewindSection(showRewind, rewindPlaylists, navController, endPaddingValues, sectionTextModifier, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText)
                                 }
                             }
                         }

@@ -178,6 +178,15 @@ interface EventTable : RewindEventSource {
      * (default [to]: now), as [PlaylistPreview], sorted by total play time
      * descending, trimmed to [limit].
      *
+     * The generated `rewind-*` playlists are excluded (user decision, 2026-10-24,
+     * same rationale as [findPlaylistListeningStatsBetween]): they hold the user's
+     * most-played songs and would always rank first, making the statistics ranking
+     * self-referential. The exclusion is deliberately broader than
+     * `RewindPlaylists.isRewind`: any `rewind-` prefix is dropped (SQLite's LIKE is
+     * case-insensitive over ASCII), covering the three generated name forms
+     * (`rewind-monthly:`, `rewind-yearly:`, `rewind-alltime`) plus any user-created
+     * playlist that reuses that namespace.
+     *
      * @param from beginning of period in epoch millis
      * @param to end of period in epoch millis
      * @param limit trim the result to this maximum size
@@ -188,6 +197,7 @@ interface EventTable : RewindEventSource {
         JOIN SongPlaylistMap SPM ON SPM.playlistId = P.id
         JOIN Event E ON E.songId = SPM.songId
         WHERE E."timestamp" BETWEEN :from AND :to
+        AND P.name NOT LIKE 'rewind-%'
         GROUP BY P.id
         ORDER BY SUM(E.playtime) DESC
         LIMIT :limit

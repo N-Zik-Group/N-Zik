@@ -62,12 +62,12 @@ class NetworkGateTest {
         val cm = app.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val shadow = shadowOf(cm)
         val network = checkNotNull(cm.activeNetwork)
-        // The API 37 stub removed NetworkCapabilities.Builder and its mutators —
+        // The stubbed SDK (33) keeps no usable NetworkCapabilities.Builder —
         // build the capabilities through Robolectric's shadow (the same pattern
         // its own ShadowConnectivityManager default state uses).
         val caps = ShadowNetworkCapabilities.newInstance()
         // One call per line: the shadow mutators return the real
-        // NetworkCapabilities type, which has no mutators under the API 37 stub.
+        // NetworkCapabilities type, which has no mutators under the stub.
         val shadowCaps = shadowOf(caps)
         if (online) {
             shadowCaps.addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)

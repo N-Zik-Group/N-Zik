@@ -81,7 +81,6 @@ import timber.log.Timber
 import kotlin.io.path.createTempDirectory
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.n_zik.android.R
-import kotlinx.coroutines.cancel
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
 
 @UnstableApi
@@ -128,7 +127,7 @@ object MyDownloadHelper {
     private lateinit var downloadManager: DownloadManager
     lateinit var downloadQualityFormat: DownloadQualityFormat
 
-    /** Kept as a weak reference so the helper does not prevent the preferences [SharedPreferences.OnSharedPreferenceChangeListener] from being garbage collected after [release]. */
+    /** Non-null while the download-quality preferences listener is registered (registration guard). */
     private var downloadQualityPreferenceListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
 
     // URL cache with LRU eviction (max 500 entries): uses StreamUrlCache for headers/client tracking
@@ -793,18 +792,6 @@ object MyDownloadHelper {
         }
     }
 
-    /**
-     * Cancel the coroutine scope tracking download-preparation jobs.
-     * Call this when the download system is being torn down.
-     */
-    fun release() {
-        coroutineScope.cancel()
-        downloadQualityPreferenceListener?.let {
-            appContext().preferences.unregisterOnSharedPreferenceChangeListener(it)
-        }
-        downloadQualityPreferenceListener = null
-        // NzikDispatchers.DATA is a shared, process-lifetime dispatcher - nothing to shut down here.
-    }
 }
 
 /**

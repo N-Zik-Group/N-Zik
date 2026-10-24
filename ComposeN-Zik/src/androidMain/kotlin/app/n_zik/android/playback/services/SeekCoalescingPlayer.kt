@@ -8,6 +8,7 @@ import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -154,6 +155,7 @@ internal class SeekCoalescingPlayer(
 
     override fun release() {
         clearAll()
+        settleScope.cancel()
         upstream.removeListener(stateObserver)
         upstream.release()
     }

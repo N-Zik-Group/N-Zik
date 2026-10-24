@@ -138,7 +138,9 @@ fun GoToLink(
     onAction4: () -> Unit,
 ) {
     val binder = LocalPlayerServiceBinder.current
-    val coroutineScope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
+    // remember: a new fire-and-forget scope per recomposition would churn scope
+    // instances while any of its jobs still run
+    val coroutineScope = remember { NzikDispatchers.fireAndForget(NzikDispatchers.DATA) }
 
     val lazyListState = rememberLazyListState()
 

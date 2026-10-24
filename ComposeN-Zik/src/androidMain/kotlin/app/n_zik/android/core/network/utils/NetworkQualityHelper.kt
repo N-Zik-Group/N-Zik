@@ -165,7 +165,11 @@ object NetworkQualityHelper {
 
             override fun onAvailable(network: Network) {
                 super.onAvailable(network)
-                trySend(true)
+                // Emit the validated state, not a raw true: onAvailable fires before
+                // NET_CAPABILITY_VALIDATED is set, and a raw true desyncs this flow
+                // from isNetworkConnected (the initial value and onCapabilitiesChanged
+                // are both validated-based).
+                trySend(isNetworkConnected(context))
             }
         }
 
