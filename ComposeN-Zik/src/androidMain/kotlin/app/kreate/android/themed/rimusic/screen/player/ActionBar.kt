@@ -2,6 +2,7 @@ package app.kreate.android.themed.rimusic.screen.player
 
 import app.n_zik.android.core.database.*
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.listentogether.guestLockedAlpha
 import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.it.fast4x.rimusic.utils.playerActionBarButtonOrderKey
@@ -206,6 +207,10 @@ fun BoxScope.ActionBar(
     // AND visibly disabled (grayed out) for a guest — the host owns those states.
     val ltGuestLocked = rememberListenTogetherGuestLock()
     val guestLockAlpha = guestLockedAlpha(ltGuestLocked)
+
+    // Full offline mode (spec-full-offline-mode): the network player actions
+    // (video search, discover, download, radio) are removed from the layout.
+    val offlineMode by OfflineMode.rememberEnabled()
 
     Row(
         modifier = Modifier.padding( WindowInsets.navigationBars.only(WindowInsetsSides.Bottom).asPaddingValues() )
@@ -501,7 +506,7 @@ fun BoxScope.ActionBar(
                     when (buttonId) {
                         "video" -> {
                             val showButtonPlayerVideo by rememberPreference( showButtonPlayerVideoKey, true )
-                            if (showButtonPlayerVideo)
+                            if (showButtonPlayerVideo && !offlineMode)
                                 IconButton(
                                     icon = R.drawable.video,
                                     color = if (ltGuestLocked) colorPalette().textDisabled else colorPalette().accent,
@@ -522,7 +527,7 @@ fun BoxScope.ActionBar(
                         "discover" -> {
                             val showButtonPlayerDiscover by rememberPreference( showButtonPlayerDiscoverKey, false )
                             val isAutoFillEnabled by rememberPreference(autoLoadSongsInQueueKey, true)
-                            if (showButtonPlayerDiscover) {
+                            if (showButtonPlayerDiscover && !offlineMode) {
                                 var discoverIsEnabled by discoverState
                                 val isDiscoverClickable = binder.service.nzikRadio.isRadioActive || isAutoFillEnabled
                                 IconButton(
@@ -544,7 +549,7 @@ fun BoxScope.ActionBar(
                         }
                         "download" -> {
                             val showButtonPlayerDownload by rememberPreference( showButtonPlayerDownloadKey, true )
-                            if (showButtonPlayerDownload) {
+                            if (showButtonPlayerDownload && !offlineMode) {
                                 val isDownloaded = isDownloadedSong( mediaItem.mediaId )
                                 DownloadStateIconButton(
                                     icon = if (isDownloaded) R.drawable.downloaded else R.drawable.download,
@@ -760,7 +765,7 @@ fun BoxScope.ActionBar(
                         }
                         "start_radio" -> {
                             val showButtonPlayerStartRadio by rememberPreference( showButtonPlayerStartRadioKey, false )
-                            if (showButtonPlayerStartRadio)
+                            if (showButtonPlayerStartRadio && !offlineMode)
                                 IconButton(
                                     // Issue #866 (gh-866): state icon — radio_stop while the radio is
                                     // active (the state change is the press feedback).

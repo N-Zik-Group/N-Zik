@@ -49,6 +49,7 @@ import app.n_zik.android.R
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.nextPage
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.MenuStyle
@@ -169,6 +170,7 @@ class PlayerItemMenu private constructor(
     lateinit var lastFmUnloveButton: MenuIcon
     private var showLastFmSection = false
     private var showListenTogetherSection = false
+    private var offlineMode = false
     private var listenTogetherDialogBtn: Button? = null
     private var listenTogetherBtn: Button? = null
     override var menuStyle: MenuStyle by styleState
@@ -208,14 +210,16 @@ class PlayerItemMenu private constructor(
         } else {
             // Remote songs: 0=info, 1=waves, 2=rename, 3=author, 4=cover, 5=radio, 6=equalizer, 7=sleep, 8=fav, 9=playlist, 10=refetch, 11+=nav
             SectionTitle(stringResource(R.string.playback))
-            buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
+            if (!offlineMode) buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(6)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(7)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
             // Section: Listen Together (room menu, then suggest-to-host for guests in a room)
-            SectionTitle(stringResource(R.string.listen_together))
-            listenTogetherDialogBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
-            listenTogetherBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
+            if (!offlineMode) {
+                SectionTitle(stringResource(R.string.listen_together))
+                listenTogetherDialogBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
+                listenTogetherBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
+            }
 
             SectionTitle(stringResource(R.string.management))
             if (playerTimelineType == PlayerTimelineType.AudioWaves) {
@@ -226,7 +230,7 @@ class PlayerItemMenu private constructor(
             buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(8)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(9)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            buttons.getOrNull(10)?.let { if (it is MenuIcon) it.ListMenuItem() }
+            if (!offlineMode) buttons.getOrNull(10)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(11)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(12)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.filterIsInstance<DeleteSongDialog>().firstOrNull()?.let { it.ListMenuItem() }
@@ -238,7 +242,7 @@ class PlayerItemMenu private constructor(
                 btn?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
 
-            if (showLastFmSection) {
+            if (showLastFmSection && !offlineMode) {
                 SectionTitle(stringResource(R.string.social_lastfm))
                 lastFmLoveButton.ListMenuItem()
                 lastFmUnloveButton.ListMenuItem()
@@ -285,16 +289,18 @@ class PlayerItemMenu private constructor(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SectionTitle(stringResource(R.string.playback))
             }
-            buttons.getOrNull(5)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            if (!offlineMode) buttons.getOrNull(5)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(6)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(7)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
             // Section: Listen Together (room menu, then suggest-to-host for guests in a room)
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.listen_together))
+            if (!offlineMode) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    SectionTitle(stringResource(R.string.listen_together))
+                }
+                listenTogetherDialogBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+                listenTogetherBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
-            listenTogetherDialogBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            listenTogetherBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SectionTitle(stringResource(R.string.management))
@@ -307,7 +313,7 @@ class PlayerItemMenu private constructor(
             buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(8)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(9)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            buttons.getOrNull(10)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            if (!offlineMode) buttons.getOrNull(10)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(11)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(12)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.filterIsInstance<DeleteSongDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
@@ -321,7 +327,7 @@ class PlayerItemMenu private constructor(
                 btn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
 
-            if (showLastFmSection) {
+            if (showLastFmSection && !offlineMode) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     SectionTitle(stringResource(R.string.social_lastfm))
                 }
@@ -335,6 +341,7 @@ class PlayerItemMenu private constructor(
     @Composable
     override fun MenuComponent() {
         val mContext = LocalContext.current
+        offlineMode = OfflineMode.enabled(mContext)
         val uriHandler = LocalUriHandler.current
         val coroutineScope = rememberCoroutineScope()
         val song = remember(mediaItem) { mediaItem.asSong }

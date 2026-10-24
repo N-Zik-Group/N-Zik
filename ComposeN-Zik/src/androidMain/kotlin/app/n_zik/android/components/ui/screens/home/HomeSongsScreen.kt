@@ -66,6 +66,7 @@ import app.n_zik.android.components.tab.*
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import app.n_zik.android.components.dialog.export.ExportCacheDialog
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.typography
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.getAlbumVersionFromVideoGlobal
@@ -123,6 +124,10 @@ import app.n_zik.android.enums.lyrics.LyricsType
 fun HomeSongsScreen(navController: NavController ) {
     val binder = LocalPlayerServiceBinder.current
     val lazyListState = rememberLazyListState()
+
+    // Full offline mode (spec-full-offline-mode): network toolbar actions are
+    // removed from the layout; local actions stay live.
+    val offlineMode by OfflineMode.rememberEnabled()
 
     var builtInPlaylist by rememberPreference( builtInPlaylistKey, BuiltInPlaylist.All )
     var isRecommendationEnabled by remember { mutableStateOf(false) }
@@ -405,7 +410,10 @@ fun HomeSongsScreen(navController: NavController ) {
             onImportNzik = { import.onShortClick() },
             onImportSpotify = { importSpotify.onShortClick() },
             onImportRiplay = { importRiplay.onShortClick() },
-            onImportYoutubeLink = { showYouTubeLinkDialog = true }
+            onImportYoutubeLink = { showYouTubeLinkDialog = true },
+            // Mixed action (spec-full-offline-mode): the button stays visible,
+            // the dialog prunes the network choices (CSV/NZik local import only).
+            networkOptionsEnabled = { !offlineMode }
         )
     }
 
@@ -540,18 +548,18 @@ fun HomeSongsScreen(navController: NavController ) {
                 "position_lock" -> if ( builtInPlaylist != BuiltInPlaylist.Top && songSort.sortBy == SongSortBy.Custom ) add( positionLock )
                 "search" -> add( search )
                 "locator" -> add( locator )
-                "download_all" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( downloadAllDialog )
+                "download_all" -> if (!offlineMode && builtInPlaylist != BuiltInPlaylist.OnDevice) add( downloadAllDialog )
                 "delete_downloads" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( deleteDownloadsDialog )
-                "update" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( updateSongsDialog )
+                "update" -> if (!offlineMode && builtInPlaylist != BuiltInPlaylist.OnDevice) add( updateSongsDialog )
                 "shuffle" -> add( shuffle )
-                "smart_shuffle" -> add( smartShuffle )
+                "smart_shuffle" -> if (!offlineMode) add( smartShuffle )
                 "item_selector" -> add( itemSelector )
                 "play_next" -> add( playNext )
                 "enqueue" -> add( enqueue )
                 "add_to_favorite" -> add( addToFavorite )
                 "add_to_playlist" -> add( addToPlaylist )
                 "import_menu" -> if (builtInPlaylist == BuiltInPlaylist.All || builtInPlaylist == BuiltInPlaylist.Favorites) add( importMenu )
-                "sync_ytm_likes" -> if (builtInPlaylist == BuiltInPlaylist.Favorites && isYouTubeSyncEnabled()) add( sync )
+                "sync_ytm_likes" -> if (!offlineMode && builtInPlaylist == BuiltInPlaylist.Favorites && isYouTubeSyncEnabled()) add( sync )
                 "export_dialog" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( exportDialog )
                 "export_cache" -> if (BuildConfig.ENABLE_FFMPEG && (builtInPlaylist == BuiltInPlaylist.Offline || builtInPlaylist == BuiltInPlaylist.Downloaded)) add(
                     object : MenuIcon, Descriptive {
@@ -566,7 +574,7 @@ fun HomeSongsScreen(navController: NavController ) {
                     }
                 )
                 "smart_trash" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( smartTrash )
-                "match" -> if ( hasUnmatchedSongs && builtInPlaylist != BuiltInPlaylist.OnDevice ) add( localMatchButton )
+                "match" -> if ( !offlineMode && hasUnmatchedSongs && builtInPlaylist != BuiltInPlaylist.OnDevice ) add( localMatchButton )
             }
         }
     }

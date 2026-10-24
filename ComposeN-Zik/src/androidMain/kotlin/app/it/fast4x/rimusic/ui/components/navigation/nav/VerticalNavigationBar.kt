@@ -52,8 +52,6 @@ class VerticalNavigationBar(
 
     @Composable
     private fun addButton( component: @Composable () -> Unit ) =
-        // buttonList() duplicates button instead of updating them
-        // Do NOT use it
         super.buttonList.add( component )
 
     @OptIn(UnstableApi::class)
@@ -207,7 +205,7 @@ class VerticalNavigationBar(
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                content = { buttonList().forEach { it() } }
+                content = { buttonList.forEach { it() } }
             )
 
             // Only show search icon when UI is ViMusic and

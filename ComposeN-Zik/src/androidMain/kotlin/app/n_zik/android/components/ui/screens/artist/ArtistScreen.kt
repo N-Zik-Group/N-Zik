@@ -137,6 +137,7 @@ import app.n_zik.android.components.OfflineAwareLoader
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
+import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -164,6 +165,14 @@ import app.n_zik.android.utils.player.enqueueOffMain
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 private const val ARTIST_INSIGHTS_ROUTE = "artistInsights"
+
+/**
+ * Offline-mode tab index of the artist screen (spec-full-offline-mode): the
+ * overview tab (online data) is removed offline, so the local library tab
+ * (index 1) is forced; online the index passes through unchanged.
+ */
+internal fun artistScreenTabIndex(offlineMode: Boolean, tabIndex: Int): Int =
+    if (offlineMode) 1 else tabIndex
 
 @OptIn(androidx.compose.animation.ExperimentalAnimationApi::class, ExperimentalTextApi::class)
 @UnstableApi
@@ -200,6 +209,13 @@ fun ArtistScreen(
 
     val context = LocalContext.current
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
+
+    // Full offline mode (spec-full-offline-mode): the artist page collapses to the
+    // local library tab — the online overview is removed, not just failed.
+    val offlineMode by OfflineMode.rememberEnabled()
+    LaunchedEffect(offlineMode) {
+        if (offlineMode && selectedTabIndex != 1) selectedTabIndex = 1
+    }
 
     val scope = rememberCoroutineScope()
 
@@ -266,8 +282,10 @@ fun ArtistScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        fetchArtistPage()
+    // Refetch when full offline mode turns off (overview becomes visible again);
+    // never triggers while the mode is on.
+    LaunchedEffect(offlineMode) {
+        if (!offlineMode) fetchArtistPage()
     }
 
     LaunchedEffect(localArtist?.id) {
@@ -295,11 +313,17 @@ fun ArtistScreen(
         onTabChanged = { index -> selectedTabIndex = index },
         miniPlayer = miniPlayer,
         navBarContent = { item ->
-            item(0, stringResource(R.string.overview), R.drawable.artist)
-            item(1, stringResource(R.string.library), R.drawable.library)
+            if (offlineMode)
+                item(1, stringResource(R.string.library), R.drawable.library)
+            else {
+                item(0, stringResource(R.string.overview), R.drawable.artist)
+                item(1, stringResource(R.string.library), R.drawable.library)
+            }
         }
     ) { currentTabIndex ->
-        when (currentTabIndex) {
+        // Full offline mode: the overview (online data) tab is removed, so the
+        // content is always the local library tab regardless of the raw index.
+        when (artistScreenTabIndex(offlineMode, currentTabIndex)) {
             0 -> {
                 if (artistPage == null) {
                     OfflineAwareLoader(

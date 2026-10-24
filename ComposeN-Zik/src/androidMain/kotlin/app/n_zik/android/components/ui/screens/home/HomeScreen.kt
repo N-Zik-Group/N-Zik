@@ -47,6 +47,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import app.n_zik.android.components.ui.screens.home.quickpicks.HomeQuickPicks
 import app.it.fast4x.rimusic.utils.homeTabsOrderKey
 import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
+import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 // Shared scope for fire-and-forget background work started from this screen (issue #606):
@@ -139,6 +140,8 @@ internal fun initialShortcutAction(action: String?, isRestoredInstance: Boolean)
  * https://github.com/N-Zik-Group/N-Zik/issues/832).
  *
  * @param order The tab ids in display order, as parsed from `homeTabsOrderKey`.
+ * @param offlineMode When true (full offline mode), the quickpicks tab is dropped
+ *   unconditionally and the never-empty fallback is the first local tab.
  * @return The active tab ids, never empty.
  */
 fun activeHomeTabIds(
@@ -147,11 +150,12 @@ fun activeHomeTabIds(
     songs: Boolean,
     artists: Boolean,
     albums: Boolean,
-    playlists: Boolean
+    playlists: Boolean,
+    offlineMode: Boolean = false
 ): List<String> {
     val filtered = order.filter { id ->
         when (id) {
-            "quickpicks" -> quickPicks
+            "quickpicks" -> quickPicks && !offlineMode
             "songs" -> songs
             "artists" -> artists
             "albums" -> albums
@@ -159,7 +163,27 @@ fun activeHomeTabIds(
             else -> false
         }
     }
-    return if (filtered.isEmpty()) listOf("quickpicks") else filtered
+    return if (filtered.isEmpty()) if (offlineMode) listOf("songs") else listOf("quickpicks") else filtered
+}
+
+/**
+ * Preserves the tab identity across a full offline flip (both directions): maps the
+ * tab id under [tabIndex] in the pre-flip list onto its position in the post-flip
+ * list (quickpicks leaves the list on mode-on, so it maps to 0; on mode-off the
+ * restored quickpicks shifts every later tab by one — the same remap applies),
+ * returning the target index only when it differs from [tabIndex] — null when the
+ * index already lands correctly.
+ */
+internal fun forceSwitchHomeTabIndex(
+    preFlipTabs: List<String>,
+    postFlipTabs: List<String>,
+    tabIndex: Int
+): Int? {
+    val preTabId = preFlipTabs.getOrNull(tabIndex) ?: return null
+    val target = if (preTabId == "quickpicks") 0 else postFlipTabs.indexOf(preTabId)
+    // the range guard is unreachable in practice (only quickpicks leaves the list)
+    // but keeps a stale id from ever producing index -1
+    return target.takeIf { it in 0 until postFlipTabs.size && it != tabIndex }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -194,13 +218,18 @@ fun HomeScreen(
     val enableAlbumsTab by rememberPreference("hometab_albums_enabled", true)
     val enablePlaylistsTab by rememberPreference("hometab_playlists_enabled", true)
 
+    // Full offline mode (spec-full-offline-mode): the quickpicks tab leaves the nav
+    // bar; if it was the active tab when the mode turned on, force-switch to the
+    // first local tab so the user is never left on a removed surface.
+    val offlineMode by OfflineMode.rememberEnabled()
+
     val homeTabsOrderSerialized by rememberPreference(homeTabsOrderKey, "")
     val tabOrder = remember(homeTabsOrderSerialized) {
         HomeTabsSettingsDialog.parseOrder(homeTabsOrderSerialized)
     }
 
-    val activeTabs = remember(tabOrder, enableQuickPicksPage, enableSongsTab, enableArtistsTab, enableAlbumsTab, enablePlaylistsTab) {
-        activeHomeTabIds(tabOrder, enableQuickPicksPage, enableSongsTab, enableArtistsTab, enableAlbumsTab, enablePlaylistsTab)
+    val activeTabs = remember(tabOrder, enableQuickPicksPage, enableSongsTab, enableArtistsTab, enableAlbumsTab, enablePlaylistsTab, offlineMode) {
+        activeHomeTabIds(tabOrder, enableQuickPicksPage, enableSongsTab, enableArtistsTab, enableAlbumsTab, enablePlaylistsTab, offlineMode)
     }
 
     val initialtabIndex = run {
@@ -253,6 +282,27 @@ fun HomeScreen(
                 if (foundIndex != -1) onTabChanged(foundIndex)
             }
         }
+    }
+
+    // Full offline mode (spec-full-offline-mode): quickpicks leaves the list on mode-on
+    // and re-enters it on mode-off — in both directions the tabs after it shift one
+    // position, so preserve the tab identity across the flip (quickpicks maps to the
+    // first local tab). The previous-mode guard keeps the effect from acting on the
+    // initial composition, where no flip has happened yet.
+    var previousOfflineMode by remember { mutableStateOf(offlineMode) }
+    LaunchedEffect(offlineMode) {
+        if (previousOfflineMode == offlineMode) return@LaunchedEffect
+        val preFlipTabs = activeHomeTabIds(
+            tabOrder,
+            enableQuickPicksPage,
+            enableSongsTab,
+            enableArtistsTab,
+            enableAlbumsTab,
+            enablePlaylistsTab,
+            previousOfflineMode
+        )
+        forceSwitchHomeTabIndex(preFlipTabs, activeTabs, tabIndex)?.let { onTabChanged(it) }
+        previousOfflineMode = offlineMode
     }
 
     if (tabIndex >= activeTabs.size) tabIndex = 0

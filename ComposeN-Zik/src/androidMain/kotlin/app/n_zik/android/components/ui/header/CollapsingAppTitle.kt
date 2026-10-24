@@ -21,7 +21,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,6 +47,7 @@ import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 
@@ -76,7 +79,9 @@ internal fun shouldCollapseTitle(availablePx: Int, idealPx: Int, tolerancePx: In
 /**
  * The app header's title row — the always-visible app logo plus the sliding extras
  * ("N-ZIK" text, version badge, parental-control shield, debug badge) that collapse
- * behind the logo when the header runs out of horizontal space.
+ * behind the logo when the header runs out of horizontal space, and the full-offline
+ * airplane badge ([OfflineModeBadge]), which rides outside the clipped box as a
+ * sibling of the logo so it stays visible through its whole travel.
  *
  * Drop-in replacement for the legacy fixed `AppTitle` row: it is measured against the
  * width actually available in the parent (callers pass `Modifier.weight(1f)`). When that
@@ -106,9 +111,18 @@ fun CollapsingAppTitle(
     // itself and deadlock the re-expansion — the available space is what decides.
     val availablePx = remember { mutableIntStateOf(0) }
 
+    val offlineMode by OfflineMode.rememberEnabled()
+    // True while the badge is composed — includes the exit animation, when the mode
+    // flag is already off but the badge still occupies its 23dp slot in the row.
+    var badgePresent by remember { mutableStateOf(false) }
+
     val collapsed = shouldCollapseTitle(
         availablePx = availablePx.intValue,
-        idealPx = logoPx.intValue + idealExtrasPx.intValue,
+        idealPx = logoPx.intValue + idealExtrasPx.intValue +
+            // the badge is a layout child of this row while present — its slot counts
+            // in the row's full width need (when it collapses it retracts next to the
+            // logo instead of sliding behind it)
+            (if (offlineMode || badgePresent) with(density) { OFFLINE_BADGE_TOTAL_WIDTH_DP.toPx().toInt() } else 0),
         tolerancePx = with(density) { APP_TITLE_COLLAPSE_TOLERANCE.toPx().toInt() }
     )
 
@@ -175,6 +189,19 @@ fun CollapsingAppTitle(
                     .onSizeChanged { idealExtrasPx.intValue = it.width }
             )
         }
+
+        // Airplane badge: sibling of the logo, deliberately OUTSIDE the clipped extras
+        // box, so it stays visible through its whole entry/exit travel (the same z as
+        // the logo keeps it above the logo and the title text while it glides over
+        // them). The badge gates its own composition: mode off -> 0 space in the row.
+        // The travel uses the LIVE animated extras width (read at composition) so the
+        // entry starts under the logo whether the header is expanded or collapsed.
+        OfflineModeBadge(
+            offlineMode = offlineMode,
+            enterTravelPx = logoPx.intValue + with(density) { extrasWidth.toPx().toInt() },
+            onPresenceChange = { badgePresent = it },
+            modifier = Modifier.zIndex(1f)
+        )
     }
 }
 

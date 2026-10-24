@@ -33,12 +33,24 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.logging.HttpLoggingInterceptor
+import okhttp3.Protocol
+import okhttp3.Response
 
 
 operator fun Url.div(path: String) = URLBuilder(this).apply { path(path) }.build()
 operator fun JsonElement.div(key: String) = jsonObject[key]!!
 
 object Invidious {
+
+    /**
+     * Root-level offline gate, wired by the app at startup (MainApplication).
+     * When non-null and it returns false, every outbound request short-circuits
+     * with a synthetic 503. Read live per request. Null until wired keeps the
+     * module self-contained for standalone/tests use.
+     */
+    @Volatile
+    var offlineGate: (() -> Boolean)? = null
+
     @OptIn(ExperimentalSerializationApi::class)
     private val client by lazy {
         HttpClient(OkHttp) {
@@ -84,7 +96,21 @@ object Invidious {
 
             expectSuccess = true
 
+            // Root-level offline gate (app-wired): fast-fail synthetic 503 while offline.
             engine {
+                addInterceptor { chain ->
+                    val gate = offlineGate
+                    if (gate != null && !gate()) {
+                        val request = chain.request()
+                        return@addInterceptor Response.Builder()
+                            .request(request)
+                            .protocol(Protocol.HTTP_1_1)
+                            .code(503)
+                            .message("No network connection")
+                            .build()
+                    }
+                    chain.proceed(chain.request())
+                }
                 addInterceptor(
                     HttpLoggingInterceptor().apply {
                         level = HttpLoggingInterceptor.Level.BODY

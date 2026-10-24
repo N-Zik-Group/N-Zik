@@ -83,6 +83,8 @@ import app.n_zik.android.LocalTopBarOffset
 import app.it.fast4x.compose.persist.persistList
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.AlbumsType
@@ -141,7 +143,6 @@ import app.it.fast4x.rimusic.utils.homeAlbumsFavoritesSortMenuOrderKey
 import app.it.fast4x.rimusic.utils.homeAlbumsLibrarySortMenuOrderKey
 import app.it.fast4x.rimusic.utils.homeAlbumsDislikedSortMenuOrderKey
 import org.json.JSONArray
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -173,7 +174,7 @@ import app.n_zik.android.components.dialog.common.RetrySyncDialog
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import app.n_zik.android.components.dialog.settings.HomeAlbumsToolbarSettingsDialog
 import androidx.compose.material3.LinearWavyProgressIndicator
-import app.n_zik.android.components.AppPullToRefreshBox
+import app.n_zik.android.components.pullrefresh.OfflineGatedPullRefresh
 import androidx.core.content.ContextCompat
 import java.util.ArrayList
 import android.content.Intent
@@ -368,6 +369,9 @@ fun HomeAlbums(
 
     val sync = autoSyncToolbutton(R.string.autosync_albums, autosyncAlbumsKey) { scope.launch { importYTMLikedAlbums(force = true) } }
 
+    // Full offline mode (spec-full-offline-mode): the network sync action is removed.
+    val offlineMode by OfflineMode.rememberEnabled()
+
     val doAutoSync by rememberPreference(autosyncAlbumsKey, false)
     var justSynced by rememberSaveable { mutableStateOf(!doAutoSync) }
 
@@ -414,7 +418,11 @@ fun HomeAlbums(
         if (HomeSyncState.failedAlbumsList.isNotEmpty()) retryDialog.showDialog()
     }
 
-    AppPullToRefreshBox(
+    val context = LocalContext.current
+    val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
+
+    OfflineGatedPullRefresh(
+        isOnline = isOnline,
         isRefreshing = refreshing,
         onRefresh = { refresh() }
     ) {
@@ -439,7 +447,7 @@ fun HomeAlbums(
 
                 val toolbarButtons = remember { mutableStateListOf<Button>() }
 
-                LaunchedEffect(sort.sortBy, sort.sortOrder, currentToolbarOrderPref) {
+                LaunchedEffect(sort.sortBy, sort.sortOrder, currentToolbarOrderPref, offlineMode) {
                     val defaultToolbarOrder = HomeAlbumsToolbarSettingsDialog.allButtonIds
                     val order = try {
                         if (currentToolbarOrderPref.isBlank()) defaultToolbarOrder else {
@@ -453,7 +461,7 @@ fun HomeAlbums(
                         when(id) {
                             "sort" -> toolbarButtons.add(sort)
                             "position_lock" -> { if (sort.sortBy == AlbumSortBy.Custom) toolbarButtons.add(positionLock) }
-                            "sync" -> { if (isYouTubeSyncEnabled()) toolbarButtons.add(sync) }
+                            "sync" -> { if (isYouTubeSyncEnabled() && !offlineMode) toolbarButtons.add(sync) }
                             "search" -> toolbarButtons.add(search)
                             "randomizer" -> toolbarButtons.add(randomizer)
                             "shuffle" -> toolbarButtons.add(shuffle)

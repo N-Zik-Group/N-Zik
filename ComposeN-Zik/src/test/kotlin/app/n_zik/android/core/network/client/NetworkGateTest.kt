@@ -5,8 +5,10 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import androidx.test.core.app.ApplicationProvider
+import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
+import app.n_zik.android.core.network.fullOfflineModeKey
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
@@ -79,6 +81,10 @@ class NetworkGateTest {
         shadow.setNetworkCapabilities(network, caps)
     }
 
+    private fun setOfflineMode(modeOn: Boolean) {
+        app.preferences.edit().putBoolean(fullOfflineModeKey, modeOn).apply()
+    }
+
     private fun gateRequest() = Request.Builder().url("https://example.invalid/api").build()
 
     @Test
@@ -99,6 +105,49 @@ class NetworkGateTest {
     @Test
     fun `online - request proceeds to the network and the upstream response is returned`() {
         setOnline(true)
+        val request = gateRequest()
+        val upstream = Response.Builder()
+            .request(request)
+            .protocol(Protocol.HTTP_1_1)
+            .code(200)
+            .message("OK")
+            .build()
+        val chain = mockk<Interceptor.Chain>()
+        every { chain.request() } returns request
+        every { chain.proceed(request) } returns upstream
+
+        val response = NetworkGate.interceptor.intercept(chain)
+
+        verify(exactly = 1) { chain.proceed(request) }
+        assertSame(upstream, response)
+    }
+
+    @Test
+    fun `offline mode on - request is short-circuited with a synthetic 503 even while online`() {
+        setOnline(true)
+        setOfflineMode(true)
+        val request = gateRequest()
+        val chain = mockk<Interceptor.Chain>()
+        every { chain.request() } returns request
+
+        val response = NetworkGate.interceptor.intercept(chain)
+
+        assertEquals(503, response.code)
+        assertEquals("No network connection", response.message)
+        verify(exactly = 0) { chain.proceed(any()) }
+    }
+
+    @Test
+    fun `offline mode off again - request proceeds after the mode is switched off`() {
+        setOnline(true)
+        setOfflineMode(true)
+
+        val gatedRequest = gateRequest()
+        val gatedChain = mockk<Interceptor.Chain>()
+        every { gatedChain.request() } returns gatedRequest
+        assertEquals(503, NetworkGate.interceptor.intercept(gatedChain).code)
+
+        setOfflineMode(false)
         val request = gateRequest()
         val upstream = Response.Builder()
             .request(request)

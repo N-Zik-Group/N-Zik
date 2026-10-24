@@ -38,6 +38,7 @@ import app.n_zik.android.R
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.nextPage
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
@@ -139,6 +140,7 @@ class VideoItemMenu private constructor(
     var refreshBtn: Button? = null
     private var showLastFmSection = false
     private var showListenTogetherSection = false
+    private var offlineMode = false
     private var listenTogetherDialogBtn: Button? = null
     private var listenTogetherBtn: Button? = null
     override var menuStyle: MenuStyle by styleState
@@ -152,14 +154,16 @@ class VideoItemMenu private constructor(
 
         // Section: Playback
         SectionTitle(stringResource(R.string.playback))
-        buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
+        if (!offlineMode) buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(6)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         // Section: Listen Together (room menu, then suggest-to-host for guests in a room)
-        SectionTitle(stringResource(R.string.listen_together))
-        listenTogetherDialogBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
-        listenTogetherBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
+        if (!offlineMode) {
+            SectionTitle(stringResource(R.string.listen_together))
+            listenTogetherDialogBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
+            listenTogetherBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
+        }
 
         // Section: Management
         SectionTitle(stringResource(R.string.management))
@@ -179,7 +183,7 @@ class VideoItemMenu private constructor(
             btn?.let { if (it is MenuIcon) it.ListMenuItem() }
         }
 
-        if (showLastFmSection) {
+        if (showLastFmSection && !offlineMode) {
             // Section: Last.fm
             SectionTitle(stringResource(R.string.social_lastfm))
             buttons.getOrNull(buttons.size - 2)?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -200,16 +204,18 @@ class VideoItemMenu private constructor(
         item(span = { GridItemSpan(maxLineSpan) }) {
             SectionTitle(stringResource(R.string.playback))
         }
-        buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+        if (!offlineMode) buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(5)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(6)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
         // Section: Listen Together (room menu, then suggest-to-host for guests in a room)
-        item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.listen_together))
+        if (!offlineMode) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                SectionTitle(stringResource(R.string.listen_together))
+            }
+            listenTogetherDialogBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            listenTogetherBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         }
-        listenTogetherDialogBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-        listenTogetherBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
         // Section: Management
         item(span = { GridItemSpan(maxLineSpan) }) {
@@ -233,7 +239,7 @@ class VideoItemMenu private constructor(
             btn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         }
 
-        if (showLastFmSection) {
+        if (showLastFmSection && !offlineMode) {
             // Section: Last.fm
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SectionTitle(stringResource(R.string.social_lastfm))
@@ -246,6 +252,7 @@ class VideoItemMenu private constructor(
     @Composable
     override fun MenuComponent() {
         val context = LocalContext.current
+        offlineMode = OfflineMode.enabled(context)
         val uriHandler = LocalUriHandler.current
         val binder = LocalPlayerServiceBinder.current
         val coroutineScope = rememberCoroutineScope()

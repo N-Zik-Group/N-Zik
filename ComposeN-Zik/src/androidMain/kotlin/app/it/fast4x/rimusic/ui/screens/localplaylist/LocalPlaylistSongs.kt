@@ -213,6 +213,7 @@ import app.n_zik.android.components.tab.ImportPlaylistsMenu
 import app.n_zik.android.components.tab.ImportSongsFromCSV
 import app.n_zik.android.components.tab.ImportSongsFromServices
 import app.n_zik.android.core.database.ImportSong
+import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.components.dialog.settings.LocalPlaylistToolbarSettingsDialog
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.core.rewind.RewindPlaylists.rewindDisplayName
@@ -247,6 +248,9 @@ fun LocalPlaylistSongs(
     val parentalControlEnabled by rememberPreference( parentalControlEnabledKey, false )
 
     val disableScrollingText by rememberPreference( disableScrollingTextKey, false )
+    // Full offline mode (spec-full-offline-mode): network toolbar actions removed,
+    // the import dialog prunes its network choices; listen_on_yt is EXTERNAL and stays.
+    val offlineMode by OfflineMode.rememberEnabled()
     var isRecommendationEnabled by remember { mutableStateOf(false) }
     var getAlbumVersion by remember { mutableStateOf(false) }
     var showGetAlbumVersionDialogue by remember { mutableStateOf(false) }
@@ -721,7 +725,8 @@ fun LocalPlaylistSongs(
         onImportNzik = { importNzikDialog.onShortClick() },
         onImportSpotify = { importSpotifyDialog.onShortClick() },
         onImportRiplay = { importRiplayDialog.onShortClick() },
-        onImportYoutubeLink = { showYouTubeLinkDialog = true }
+        onImportYoutubeLink = { showYouTubeLinkDialog = true },
+        networkOptionsEnabled = { !offlineMode }
     ) }
     val matchAlbumButton = remember {
         object : MenuIcon, Descriptive {
@@ -1350,16 +1355,16 @@ fun LocalPlaylistSongs(
                             "search" -> add( search )
                             // Spec 2: renumbering/position-lock rewrites position, destroying the top order
                             "position_lock" -> if ( sort.sortBy == PlaylistSongSortBy.Custom && !isRewindPlaylist ) add( positionLock )
-                            "match" -> if ( hasUnmatchedSongs ) add( matchAlbumButton )
+                            "match" -> if ( !offlineMode && hasUnmatchedSongs ) add( matchAlbumButton )
                             "renumber" -> if ( sort.sortBy == PlaylistSongSortBy.Custom && !isRewindPlaylist ) add( renumberDialog )
-                            "download_all" -> add( downloadAllDialog )
+                            "download_all" -> if ( !offlineMode ) add( downloadAllDialog )
                             "delete_downloads" -> add( deleteDownloadsDialog )
                             "item_selector" -> add( itemSelector )
                             "play_next" -> add( playNext )
                             "enqueue" -> add( enqueue )
                             "add_to_favorite" -> add( addToFavorite )
                             "add_to_playlist" -> add( addToPlaylist )
-                            "sync" -> if ( !playlist?.browseId.isNullOrBlank() ) add( syncComponent )
+                            "sync" -> if ( !offlineMode && !playlist?.browseId.isNullOrBlank() ) add( syncComponent )
                             "listen_on_yt" -> if ( !playlist?.browseId.isNullOrBlank() ) add( listenOnYT )
                             "import_menu" -> add( importMenu )
                             // Spec 2: rewind-* keep their language-neutral name — no rename
@@ -1368,7 +1373,7 @@ fun LocalPlaylistSongs(
                             "export" -> add( exportDialog )
                             "thumbnail_picker" -> add( thumbnailPicker )
                             "reset_thumbnail" -> add( resetThumbnail )
-                            "update" -> add( updateSongsDialog )
+                            "update" -> if ( !offlineMode ) add( updateSongsDialog )
                         }
                     }
                 }

@@ -35,6 +35,7 @@ import app.n_zik.android.components.ui.screens.profiles.loadActiveProfileFace
 import app.n_zik.android.components.ui.screens.profiles.profileFaceUpdateTrigger
 import app.n_zik.android.components.ui.screens.rescue.RescueActivity
 import app.n_zik.android.colorPalette
+import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.utils.ProfileFace
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.extensions.pip.isPipSupported
@@ -42,7 +43,9 @@ import app.it.fast4x.rimusic.extensions.pip.rememberPipHandler
 import app.it.fast4x.rimusic.ui.components.themed.DropdownMenu
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.enablePictureInPictureKey
+import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.core.network.fullOfflineModeKey
 import app.n_zik.android.shortcuts.ACTION_RESCUE
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.rememberDataStoreBooleanPreference
@@ -104,13 +107,28 @@ private fun HamburgerMenu(
                 R.string.rewind
             ) { onItemClick( NavRoutes.rewindHome ) }
         )
-    // Listen Together button (spec-listen-together)
+    // Full offline mode toggle (spec-full-offline-mode): per-profile persistent flag
+    // feeding the effective online predicate. The menu stays open (no
+    // onItemConsumed) so the user can re-toggle and watch the surrounding state react.
+    // The label mirrors the live state, like the debug-logs entry.
+    val offlineMode by OfflineMode.rememberEnabled()
     menu.add(
         DropdownMenu.Item(
-            R.drawable.people,
-            R.string.listen_together
-        ) { onItemClick( NavRoutes.listenTogether ) }
+            R.drawable.airplane,
+            R.string.offline_mode,
+            customText = stringResource(if (offlineMode) R.string.disable_offline_mode else R.string.enable_offline_mode)
+        ) { context.preferences.edit().putBoolean(fullOfflineModeKey, !offlineMode).apply() }
     )
+    // Listen Together button (spec-listen-together) — removed while full offline
+    // mode is on (audit hole #2: the WS client stays ungated, only the entry is
+    // closed at UX level; the reconnection monitor goes mode-aware via the predicate)
+    if (!offlineMode)
+        menu.add(
+            DropdownMenu.Item(
+                R.drawable.people,
+                R.string.listen_together
+            ) { onItemClick( NavRoutes.listenTogether ) }
+        )
     // PC server button
     menu.add(
         DropdownMenu.Item(

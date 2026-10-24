@@ -72,6 +72,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import sh.calvin.reorderable.rememberReorderableLazyGridState
 import sh.calvin.reorderable.ReorderableItem
@@ -83,6 +84,8 @@ import app.n_zik.android.components.menu.playlist.LocalPlaylistItemMenu
 import androidx.navigation.NavController
 import app.it.fast4x.compose.persist.persistList
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.it.fast4x.rimusic.PINNED_PREFIX
 import app.n_zik.android.R
 import androidx.compose.foundation.clickable
@@ -143,7 +146,6 @@ import app.it.fast4x.rimusic.utils.homeLibraryPinnedPlaylistSortMenuOrderKey
 import app.it.fast4x.rimusic.utils.homeLibraryMonthlyPlaylistSortMenuOrderKey
 import app.it.fast4x.rimusic.utils.semiBold
 import org.json.JSONArray
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import app.kreate.android.me.knighthat.utils.PropUtils
@@ -186,7 +188,7 @@ import androidx.compose.material3.LinearWavyProgressIndicator
 import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
 import app.n_zik.android.thumbnailShape
 import app.it.fast4x.rimusic.utils.formatAsTime
-import app.n_zik.android.components.AppPullToRefreshBox
+import app.n_zik.android.components.pullrefresh.OfflineGatedPullRefresh
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import androidx.core.content.ContextCompat
@@ -235,6 +237,10 @@ fun HomeLibrary(
     // Non-vital
     var playlistType by rememberPreference(playlistTypeKey, PlaylistsType.Playlist)
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+
+    // Full offline mode (spec-full-offline-mode): network toolbar actions removed;
+    // the import dialog prunes its network choices.
+    val offlineMode by OfflineMode.rememberEnabled()
 
     var items by persistList<PlaylistPreview>("home/playlists/items")
 
@@ -325,7 +331,8 @@ fun HomeLibrary(
             onImportNzik = { importPlaylistDialog.onShortClick() },
             onImportSpotify = { importSpotifyDialog.onShortClick() },
             onImportRiplay = { importRiPlayDialog.onShortClick() },
-            onImportYoutubeLink = { showYouTubeLinkDialog = true }
+            onImportYoutubeLink = { showYouTubeLinkDialog = true },
+            networkOptionsEnabled = { !offlineMode }
         )
     }
     val sync = autoSyncToolbutton(R.string.autosync, autosyncPlaylistsKey) {
@@ -502,7 +509,11 @@ fun HomeLibrary(
         if (HomeSyncState.failedPlaylistsList.isNotEmpty()) retryDialog.showDialog()
     }
 
-    AppPullToRefreshBox(
+    val context = LocalContext.current
+    val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
+
+    OfflineGatedPullRefresh(
+        isOnline = isOnline,
         isRefreshing = refreshing,
         onRefresh = { refresh() }
     ) {
@@ -530,7 +541,7 @@ fun HomeLibrary(
 
                 val toolbarButtons = remember { mutableStateListOf<Button>() }
 
-                LaunchedEffect(sort.sortBy, sort.sortOrder, currentToolbarOrderPref) {
+                LaunchedEffect(sort.sortBy, sort.sortOrder, currentToolbarOrderPref, offlineMode) {
                     val defaultToolbarOrder = HomeLibraryToolbarSettingsDialog.allButtonIds
                     val order = try {
                         if (currentToolbarOrderPref.isBlank()) defaultToolbarOrder else {
@@ -544,7 +555,7 @@ fun HomeLibrary(
                         when(id) {
                             "sort" -> toolbarButtons.add(sort)
                             "position_lock" -> { if (sort.sortBy == PlaylistSortBy.Custom) toolbarButtons.add(positionLock) }
-                            "sync" -> { if (isYouTubeSyncEnabled()) toolbarButtons.add(sync) }
+                            "sync" -> { if (isYouTubeSyncEnabled() && !offlineMode) toolbarButtons.add(sync) }
                             "search" -> toolbarButtons.add(search)
                             "shuffle" -> toolbarButtons.add(shuffle)
                             "item_selector" -> toolbarButtons.add(itemSelector)

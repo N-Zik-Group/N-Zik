@@ -373,6 +373,8 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             KuGou.offlineGate = NetworkGate::isOnline
             BetterLyrics.offlineGate = NetworkGate::isOnline
             GatewayWebSocket.offlineGate = NetworkGate::isOnline
+            // Fully qualified: this file also imports the unrelated me.knighthat.invidious.Invidious.
+            it.fast4x.invidious.Invidious.offlineGate = NetworkGate::isOnline
 
             // useLoginForSearch is deliberately NOT force-disabled/persisted like
             // useLoginForBrowse in the cookie branches below: without a valid cookie both

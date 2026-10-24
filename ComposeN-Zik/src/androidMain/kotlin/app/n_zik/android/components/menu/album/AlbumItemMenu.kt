@@ -42,6 +42,7 @@ import app.n_zik.android.R
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.nextPage
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.MenuStyle
@@ -141,6 +142,7 @@ class AlbumItemMenu private constructor(
     }
 
     lateinit var buttons: List<Button>
+    private var offlineMode = false
     override var menuStyle: MenuStyle by styleState
 
     @Composable
@@ -154,7 +156,7 @@ class AlbumItemMenu private constructor(
         // Section: Management
         SectionTitle(stringResource(R.string.management))
         buttons.getOrNull(3)?.let { if (it is MenuIcon) it.ListMenuItem() }
-        buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
+        if (!offlineMode) buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
         for (i in (buttons.size - 4) until buttons.size) {
             buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -185,7 +187,7 @@ class AlbumItemMenu private constructor(
             SectionTitle(stringResource(R.string.management))
         }
         buttons.getOrNull(3)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-        buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+        if (!offlineMode) buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(5)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         for (i in (buttons.size - 4) until buttons.size) {
             buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -425,6 +427,7 @@ class AlbumItemMenu private constructor(
 
     @Composable
     override fun MenuComponent() {
+        offlineMode = OfflineMode.enabled(appContext())
         val coroutineScope = rememberCoroutineScope()
         val changeTitle = ChangeAlbumTitleDialog { album }
         val changeAuthors = ChangeAlbumAuthorsDialog { album }

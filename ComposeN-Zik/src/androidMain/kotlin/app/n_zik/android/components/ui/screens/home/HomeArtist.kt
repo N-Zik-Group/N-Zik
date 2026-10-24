@@ -41,6 +41,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Checkbox
@@ -87,6 +88,8 @@ import it.fast4x.innertube.utils.from
 import it.fast4x.innertube.YtMusic
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.colorPalette
 import app.n_zik.android.appContext
 import app.n_zik.android.LocalPlayerServiceBinder
@@ -153,7 +156,6 @@ import app.it.fast4x.rimusic.utils.homeArtistsFavoritesSortMenuOrderKey
 import app.it.fast4x.rimusic.utils.homeArtistsLibrarySortMenuOrderKey
 import app.it.fast4x.rimusic.utils.homeArtistsDislikedSortMenuOrderKey
 import org.json.JSONArray
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -170,7 +172,7 @@ import app.n_zik.android.components.dialog.settings.HomeArtistsToolbarSettingsDi
 import androidx.compose.material3.LinearWavyProgressIndicator
 import app.n_zik.android.artistThumbnailShape
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.n_zik.android.components.AppPullToRefreshBox
+import app.n_zik.android.components.pullrefresh.OfflineGatedPullRefresh
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
@@ -359,6 +361,9 @@ fun HomeArtists(
 
     val sync = autoSyncToolbutton(R.string.autosync_channels, autosyncArtistsKey) { coroutineScope.launch { importYTMSubscribedChannels(force = true) } }
 
+    // Full offline mode (spec-full-offline-mode): the network sync action is removed.
+    val offlineMode by OfflineMode.rememberEnabled()
+
     val doAutoSync by rememberPreference(autosyncArtistsKey, false)
     var justSynced by rememberSaveable { mutableStateOf(!doAutoSync) }
 
@@ -405,8 +410,12 @@ fun HomeArtists(
         if (HomeSyncState.failedArtistsList.isNotEmpty()) retryDialog.showDialog()
     }
 
+    val context = LocalContext.current
+    val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
+
     @OptIn(ExperimentalMaterial3Api::class)
-    AppPullToRefreshBox(
+    OfflineGatedPullRefresh(
+        isOnline = isOnline,
         isRefreshing = refreshing,
         onRefresh = { refresh() }
     ) {
@@ -431,7 +440,7 @@ fun HomeArtists(
 
                 val toolbarButtons = remember { mutableStateListOf<Button>() }
 
-                LaunchedEffect(sort.sortBy, sort.sortOrder, currentToolbarOrderPref) {
+                LaunchedEffect(sort.sortBy, sort.sortOrder, currentToolbarOrderPref, offlineMode) {
                     val defaultToolbarOrder = HomeArtistsToolbarSettingsDialog.allButtonIds
                     val order = try {
                         if (currentToolbarOrderPref.isBlank()) defaultToolbarOrder else {
@@ -445,7 +454,7 @@ fun HomeArtists(
                         when(id) {
                             "sort" -> toolbarButtons.add(sort)
                             "position_lock" -> { if (sort.sortBy == ArtistSortBy.Custom) toolbarButtons.add(positionLock) }
-                            "sync" -> { if (isYouTubeSyncEnabled()) toolbarButtons.add(sync) }
+                            "sync" -> { if (isYouTubeSyncEnabled() && !offlineMode) toolbarButtons.add(sync) }
                             "search" -> toolbarButtons.add(search)
                             "randomizer" -> toolbarButtons.add(randomizer)
                             "shuffle" -> toolbarButtons.add(shuffle)

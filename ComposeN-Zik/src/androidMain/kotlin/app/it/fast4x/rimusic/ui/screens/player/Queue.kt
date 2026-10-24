@@ -80,6 +80,7 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
+import app.n_zik.android.core.network.OfflineMode
 import app.it.fast4x.rimusic.enums.QueueLoopType
 import app.it.fast4x.rimusic.enums.QueueType
 import app.it.fast4x.rimusic.models.Song
@@ -295,6 +296,8 @@ fun Queue(
         val isAutoFillEnabled by rememberPreference(autoLoadSongsInQueueKey, true)
         val isDiscoverClickable = binder.service.nzikRadio.isRadioActive || isAutoFillEnabled
         val discover = Discover( isDiscoverClickable, onDiscoverClick )
+        // Full offline mode (spec-full-offline-mode): network queue actions removed
+        val offlineMode by OfflineMode.rememberEnabled()
         val repeat = Repeat.init()
         val deleteDialog = DeleteFromQueue( itemSelector ) {
             // Deleting from the queue (including "clear all") is host-only in a Listen
@@ -350,9 +353,9 @@ fun Queue(
         val buttonsList = buildList {
             add( locator )
             add( search )
-            if( showDiscover )
+            if( showDiscover && !offlineMode )
                 add( discover )
-            add( downloadAllDialog )
+            if ( !offlineMode ) add( downloadAllDialog )
             add( deleteAllDownloadedDialog )
             add( positionLock )
             add( repeat )

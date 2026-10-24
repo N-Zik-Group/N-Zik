@@ -28,6 +28,7 @@ import androidx.compose.ui.zIndex
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +53,7 @@ import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.n_zik.android.components.VoiceSearchUtils
+import app.n_zik.android.core.network.OfflineMode
 import app.it.fast4x.rimusic.utils.VoiceSearchState
 import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.ui.components.Skeleton
@@ -101,6 +103,14 @@ fun SearchScreen(
     var isFindActive by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    // Full offline mode (spec-full-offline-mode): search collapses to the local
+    // library tab — online search and Go-to-link are removed, not just failed.
+    // The nav bar hides itself with a single item, so no grayed-out tabs exist.
+    val offlineMode by OfflineMode.rememberEnabled()
+    LaunchedEffect(offlineMode) {
+        if (offlineMode && tabIndex != 1) onTabChanged(1)
+    }
 
     val voiceSearchUtils = remember {
         VoiceSearchUtils(
@@ -204,39 +214,44 @@ fun SearchScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        IconButton(
-                            onClick = {
-                                if (isListening) {
-                                    voiceSearchUtils.stopListening()
-                                } else {
-                                    isCancelling = false
-                                    errorMessage = null
-                                    keyboardController?.hide()
-                                    if (ContextCompat.checkSelfPermission(
-                                            context, Manifest.permission.RECORD_AUDIO
-                                        ) == PackageManager.PERMISSION_GRANTED
-                                    ) {
-                                        voiceSearchUtils.startListening()
+                        // Full offline mode (spec-full-offline-mode): voice search and
+                        // audio search are online-only — the buttons are removed, not
+                        // grayed out (the overlays behind them become unreachable).
+                        if (!offlineMode) {
+                            IconButton(
+                                onClick = {
+                                    if (isListening) {
+                                        voiceSearchUtils.stopListening()
                                     } else {
-                                        permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                                        isCancelling = false
+                                        errorMessage = null
+                                        keyboardController?.hide()
+                                        if (ContextCompat.checkSelfPermission(
+                                                context, Manifest.permission.RECORD_AUDIO
+                                            ) == PackageManager.PERMISSION_GRANTED
+                                        ) {
+                                            voiceSearchUtils.startListening()
+                                        } else {
+                                            permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                                        }
                                     }
-                                }
-                            },
-                            icon = R.drawable.microphone,
-                            color = if (isListening) colorPalette().text else colorPalette().favoritesIcon,
-                            modifier = Modifier
-                                .size(25.dp)
-                        )
-                        IconButton(
-                            onClick = {
-                                keyboardController?.hide()
-                                isFindActive = true
-                            },
-                            icon = R.drawable.sound_effect,
-                            color = if (isFindActive) colorPalette().text else colorPalette().favoritesIcon,
-                            modifier = Modifier
-                                .size(25.dp)
-                        )
+                                },
+                                icon = R.drawable.microphone,
+                                color = if (isListening) colorPalette().text else colorPalette().favoritesIcon,
+                                modifier = Modifier
+                                    .size(25.dp)
+                            )
+                            IconButton(
+                                onClick = {
+                                    keyboardController?.hide()
+                                    isFindActive = true
+                                },
+                                icon = R.drawable.sound_effect,
+                                color = if (isFindActive) colorPalette().text else colorPalette().favoritesIcon,
+                                modifier = Modifier
+                                    .size(25.dp)
+                            )
+                        }
 
                         AnimatedVisibility(
                             visible = textFieldValue.text.isNotEmpty(),
@@ -263,14 +278,19 @@ fun SearchScreen(
                 onTabChanged,
                 miniPlayer,
                 navBarContent = { item ->
-                    item(0, stringResource(R.string.online), R.drawable.globe)
-                    item(1, stringResource(R.string.library), R.drawable.library)
-                    item(2, stringResource(R.string.go_to_link), R.drawable.link)
-
+                    if (offlineMode)
+                        item(1, stringResource(R.string.library), R.drawable.library)
+                    else {
+                        item(0, stringResource(R.string.online), R.drawable.globe)
+                        item(1, stringResource(R.string.library), R.drawable.library)
+                        item(2, stringResource(R.string.go_to_link), R.drawable.link)
+                    }
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(currentTabIndex) {
-                    when (currentTabIndex) {
+                    // Full offline mode: the content is always the local library tab,
+                    // regardless of the raw index (the removed tabs must never render).
+                    when (if (offlineMode) 1 else currentTabIndex) {
                         0 -> OnlineSearch(
                             navController = navController,
                             textFieldValue = textFieldValue,

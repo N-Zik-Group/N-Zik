@@ -25,7 +25,11 @@ import timber.log.Timber
  */
 object NetworkGate {
 
-    /** Live connectivity check, evaluated per request. */
+    /**
+     * Effective online predicate, evaluated per request: real connectivity AND
+     * the per-profile "full offline mode" off — the mode override is checked
+     * inside `isNetworkConnected`, so a single read of the flag is enough.
+     */
     fun isOnline(): Boolean = NetworkQualityHelper.isNetworkConnected(appContext())
 
     /** OkHttp interceptor applied at every client creation site. */

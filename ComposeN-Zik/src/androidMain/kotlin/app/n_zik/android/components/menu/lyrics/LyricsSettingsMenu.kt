@@ -66,6 +66,8 @@ import app.it.fast4x.rimusic.utils.showSecondLineKey
 import app.it.fast4x.rimusic.utils.showlyricsthumbnailKey
 import app.it.fast4x.rimusic.utils.thumbnailTapEnabledKey
 import app.n_zik.android.R
+import app.n_zik.android.appContext
+import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
@@ -142,6 +144,8 @@ class LyricsSettingsMenu private constructor(
 
     @Composable
     override fun MenuComponent() {
+        // Network-only actions hidden in full offline mode
+        val offlineMode = OfflineMode.enabled(appContext())
         // Preferences
         var landscapeControls by rememberPreference(landscapeControlsKey, true)
         var lyricsAlignment by rememberPreference(lyricsAlignmentKey, LyricsAlignment.Center)
@@ -549,18 +553,20 @@ class LyricsSettingsMenu private constructor(
                 }
             )
 
-            // Fetch Lyrics Again
-            ActionSettingEntry(
-                title = stringResource(R.string.fetch_lyrics_again),
-                icon = R.drawable.sync,
-                enabled = isLyricsNotNull(),
-                onClick = {
-                    if (isLyricsNotNull()) {
-                        menuState.hide()
-                        onFetchLyricsAgain()
+            // Fetch Lyrics Again (network)
+            if (!offlineMode) {
+                ActionSettingEntry(
+                    title = stringResource(R.string.fetch_lyrics_again),
+                    icon = R.drawable.sync,
+                    enabled = isLyricsNotNull(),
+                    onClick = {
+                        if (isLyricsNotNull()) {
+                            menuState.hide()
+                            onFetchLyricsAgain()
+                        }
                     }
-                }
-            )
+                )
+            }
 
             // Lyrics Offset
             ActionSettingEntry(
@@ -572,16 +578,18 @@ class LyricsSettingsMenu private constructor(
                 }
             )
 
-            // Pick from LrcLib
+            // Pick from LrcLib (network)
             if (lyricsType == LyricsType.Synced || lyricsType == LyricsType.Unsynced) {
-                ActionSettingEntry(
-                    title = stringResource(R.string.pick_from) + " LrcLib.net",
-                    icon = R.drawable.search,
-                    onClick = {
-                        menuState.hide()
-                        onPickFromLrcLib()
-                    }
-                )
+                if (!offlineMode) {
+                    ActionSettingEntry(
+                        title = stringResource(R.string.pick_from) + " LrcLib.net",
+                        icon = R.drawable.search,
+                        onClick = {
+                            menuState.hide()
+                            onPickFromLrcLib()
+                        }
+                    )
+                }
             }
 
             // Spacer
@@ -1020,19 +1028,21 @@ class LyricsSettingsMenu private constructor(
                 )
             }
 
-            // Fetch Lyrics Again
-            item {
-                ActionSettingEntry(
-                    title = stringResource(R.string.fetch_lyrics_again),
-                    icon = R.drawable.sync,
-                    enabled = isLyricsNotNull(),
-                    onClick = {
-                        if (isLyricsNotNull()) {
-                            menuState.hide()
-                            onFetchLyricsAgain()
+            // Fetch Lyrics Again (network)
+            if (!offlineMode) {
+                item {
+                    ActionSettingEntry(
+                        title = stringResource(R.string.fetch_lyrics_again),
+                        icon = R.drawable.sync,
+                        enabled = isLyricsNotNull(),
+                        onClick = {
+                            if (isLyricsNotNull()) {
+                                menuState.hide()
+                                onFetchLyricsAgain()
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
 
             // Lyrics Offset
@@ -1047,17 +1057,19 @@ class LyricsSettingsMenu private constructor(
                 )
             }
 
-            // Pick from LrcLib
+            // Pick from LrcLib (network)
             if (lyricsType == LyricsType.Synced || lyricsType == LyricsType.Unsynced) {
-                item {
-                    ActionSettingEntry(
-                        title = stringResource(R.string.pick_from) + " LrcLib.net",
-                        icon = R.drawable.search,
-                        onClick = {
-                            menuState.hide()
-                            onPickFromLrcLib()
-                        }
-                    )
+                if (!offlineMode) {
+                    item {
+                        ActionSettingEntry(
+                            title = stringResource(R.string.pick_from) + " LrcLib.net",
+                            icon = R.drawable.search,
+                            onClick = {
+                                menuState.hide()
+                                onPickFromLrcLib()
+                            }
+                        )
+                    }
                 }
             }
 

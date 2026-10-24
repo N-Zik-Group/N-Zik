@@ -73,8 +73,6 @@ class HorizontalNavigationBar(
 
     @Composable
     private fun addButton(button: Button, modifier: Modifier = Modifier ) =
-        // buttonList() duplicates button instead of updating them.
-        // Do NOT use it
         buttonList.add {
             Box( modifier ) { button.Draw() }
         }
@@ -82,8 +80,6 @@ class HorizontalNavigationBar(
     @SuppressLint("ComposableNaming")
     @Composable
     private fun addButton(index: Int, button: Button, modifier: Modifier = Modifier ) =
-        // buttonList() duplicates button instead of updating them
-        // Do NOT use it
         buttonList.add( index ) {
             Box( modifier ) { button.Draw() }
         }
@@ -217,7 +213,7 @@ class HorizontalNavigationBar(
                         content = { 
                             val isManyButtons = buttonList.size > 5
                             CompositionLocalProvider(LocalIsManyButtons provides isManyButtons) {
-                                buttonList().forEach { it() } 
+                                buttonList.forEach { it() }
                             }
                         }
                     )

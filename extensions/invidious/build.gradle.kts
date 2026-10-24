@@ -19,4 +19,11 @@ dependencies {
     implementation(libs.ktor.serialization)
     implementation(libs.ktor.serialization.json)
     implementation(libs.okhttp3.logging.interceptor)
+
+    testImplementation(libs.bundles.junit5)
+    testRuntimeOnly(libs.junit.platform)
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }

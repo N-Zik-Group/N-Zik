@@ -51,6 +51,7 @@ import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.*
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.core.network.OfflineMode
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
@@ -109,6 +110,7 @@ class LocalPlaylistItemMenu private constructor(
     }
 
     lateinit var buttons: List<Button>
+    private var offlineMode = false
     override var menuStyle: MenuStyle by styleState
 
     @Composable
@@ -122,6 +124,8 @@ class LocalPlaylistItemMenu private constructor(
         SectionTitle(stringResource(R.string.management))
         val mgmtEnd = if (playlistPreview.playlist.isYoutubePlaylist) buttons.size - 1 else buttons.size
         for (i in 2 until mgmtEnd) {
+            // idx 3 = download_all (network)
+            if (offlineMode && i == 3) continue
             buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
         }
 
@@ -147,6 +151,8 @@ class LocalPlaylistItemMenu private constructor(
         }
         val mgmtEnd = if (playlistPreview.playlist.isYoutubePlaylist) buttons.size - 1 else buttons.size
         for (i in 2 until mgmtEnd) {
+            // idx 3 = download_all (network)
+            if (offlineMode && i == 3) continue
             buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         }
 
@@ -329,6 +335,7 @@ class LocalPlaylistItemMenu private constructor(
     @Composable
     override fun MenuComponent() {
         val context = LocalContext.current
+        offlineMode = OfflineMode.enabled(context)
         val binder = LocalPlayerServiceBinder.current
         val coroutineScope = rememberCoroutineScope()
         

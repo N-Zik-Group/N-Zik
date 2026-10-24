@@ -2005,6 +2005,9 @@
 <string name="rewind_top_sort">Rewind Top</string>
 <string name="rewind_alltime_name">All-time</string>
 <string name="listen_together">Listen Together</string>
+<string name="offline_mode">Full offline mode</string>
+<string name="enable_offline_mode">Enable full offline mode</string>
+<string name="disable_offline_mode">Disable full offline mode</string>
 <string name="listen_together_description">Listen to music with your friends in real time. Create a room to host, or join an existing room with a code</string>
 <string name="listen_together_server_url">Server URL</string>
 <string name="listen_together_choose_server">Choose server</string>

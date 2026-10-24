@@ -14,9 +14,11 @@ import androidx.compose.runtime.State
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.it.fast4x.rimusic.utils.isConnectionMeteredEnabledKey
 import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.core.network.OfflineMode
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import timber.log.Timber
@@ -55,6 +57,8 @@ object NetworkQualityHelper {
     }
 
     fun isNetworkConnected(context: Context): Boolean {
+        // Full offline mode overrides real connectivity: every existing gate sees "offline"
+        if (OfflineMode.enabled(context)) return false
         return try {
             val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -71,6 +75,8 @@ object NetworkQualityHelper {
     }
 
     fun isNetworkAvailable(context: Context): Boolean {
+        // Full offline mode overrides real connectivity (same predicate as isNetworkConnected)
+        if (OfflineMode.enabled(context)) return false
         return try {
             val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -138,53 +144,59 @@ object NetworkQualityHelper {
     /**
      * Observe connection status as a Flow (Migration from AndroidConnectivityObserver)
      */
-    fun observeConnection(context: Context): Flow<Boolean> = callbackFlow {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        
-        val callback = object : NetworkCallback() {
-            override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
-                super.onCapabilitiesChanged(network, networkCapabilities)
-                val connected = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-                            networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-                } else {
-                    networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    fun observeConnection(context: Context): Flow<Boolean> = combine(
+        callbackFlow {
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+            val callback = object : NetworkCallback() {
+                override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
+                    super.onCapabilitiesChanged(network, networkCapabilities)
+                    val connected = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                                networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                    } else {
+                        networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                    }
+                    trySend(connected)
                 }
-                trySend(connected)
+
+                override fun onUnavailable() {
+                    super.onUnavailable()
+                    trySend(false)
+                }
+
+                override fun onLost(network: Network) {
+                    super.onLost(network)
+                    trySend(false)
+                }
+
+                override fun onAvailable(network: Network) {
+                    super.onAvailable(network)
+                    // Emit the validated state, not a raw true: onAvailable fires before
+                    // NET_CAPABILITY_VALIDATED is set, and a raw true desyncs this flow
+                    // from isNetworkConnected (the initial value and onCapabilitiesChanged
+                    // are both validated-based).
+                    trySend(isNetworkConnected(context))
+                }
             }
 
-            override fun onUnavailable() {
-                super.onUnavailable()
-                trySend(false)
-            }
-
-            override fun onLost(network: Network) {
-                super.onLost(network)
-                trySend(false)
-            }
-
-            override fun onAvailable(network: Network) {
-                super.onAvailable(network)
-                // Emit the validated state, not a raw true: onAvailable fires before
-                // NET_CAPABILITY_VALIDATED is set, and a raw true desyncs this flow
-                // from isNetworkConnected (the initial value and onCapabilitiesChanged
-                // are both validated-based).
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                connectivityManager.registerDefaultNetworkCallback(callback)
+            } else {
+                // Deprecated way could be added here if needed for API < 24
                 trySend(isNetworkConnected(context))
             }
-        }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            connectivityManager.registerDefaultNetworkCallback(callback)
-        } else {
-            // Deprecated way could be added here if needed for API < 24
             trySend(isNetworkConnected(context))
-        }
 
-        trySend(isNetworkConnected(context))
-
-        awaitClose {
-            connectivityManager.unregisterNetworkCallback(callback)
-        }
+            awaitClose {
+                connectivityManager.unregisterNetworkCallback(callback)
+            }
+        }.distinctUntilChanged(),
+        OfflineMode.enabledFlow(context)
+    ) { connected, modeOn ->
+        // Full offline mode is an explicit "offline" regardless of real connectivity
+        connected && !modeOn
     }.distinctUntilChanged()
 
     @Composable

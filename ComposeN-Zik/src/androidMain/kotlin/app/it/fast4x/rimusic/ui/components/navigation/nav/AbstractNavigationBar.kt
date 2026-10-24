@@ -11,7 +11,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -89,9 +88,6 @@ abstract class AbstractNavigationBar(
 
     @Composable
     abstract fun Draw()
-
-    @Composable
-    fun buttonList(): MutableList<@Composable () -> Unit> = remember { buttonList }
 }
 
 internal class NavigationButton(
