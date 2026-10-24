@@ -22,9 +22,7 @@ import it.fast4x.innertube.YtMusic
 import java.util.Random
 import kotlin.math.sqrt
 import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -288,9 +286,7 @@ class RewindBackgroundMusicController(
     private val isDownloaded: (String) -> Boolean,
     private val random: Random = Random()
 ) {
-    private val scope = CoroutineScope(
-        NzikDispatchers.UI + SupervisorJob() + CoroutineName("RewindBgm")
-    )
+    private val scope = NzikDispatchers.fireAndForget(NzikDispatchers.UI + CoroutineName("RewindBgm"))
 
     private var playerA: ExoPlayer? = null
     private var playerB: ExoPlayer? = null
@@ -491,9 +487,7 @@ class RewindBackgroundMusicController(
             val player = audible
             // Its own scope: the controller's scope is cancelled above, the fade must
             // outlive it
-            CoroutineScope(
-                NzikDispatchers.UI + SupervisorJob() + CoroutineName("RewindBgmRelease")
-            ).launch {
+            NzikDispatchers.fireAndForget(NzikDispatchers.UI + CoroutineName("RewindBgmRelease")).launch {
                 val stepMs = REWIND_BGM_RELEASE_FADE_MS / REWIND_BGM_RELEASE_FADE_STEPS
                 for (i in 1..REWIND_BGM_RELEASE_FADE_STEPS) {
                     delay(stepMs)

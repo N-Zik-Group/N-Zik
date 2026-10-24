@@ -703,7 +703,6 @@ fun RewindSection(
     navController: NavController,
     endPaddingValues: PaddingValues,
     sectionTextModifier: Modifier,
-    itemInHorizontalGridWidth: Dp,
     playlistThumbnailSizePx: Int,
     playlistThumbnailSizeDp: Dp,
     disableScrollingText: Boolean

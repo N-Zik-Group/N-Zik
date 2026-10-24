@@ -53,8 +53,10 @@ fun Playlist(
                 .sortSongsByPlayTime( playlist.id )
                 .distinctUntilChanged()
                 .map { list ->
-                    list.takeLast( 4 ).map {
-                        it.thumbnailUrl.thumbnail( thumbnailSizePx / 2 )
+                    // Same null-filtered selection as the base PlaylistItem, so the
+                    // header collage matches the library/stats collages.
+                    list.mapNotNull { it.thumbnailUrl }.takeLast( 4 ).map { url ->
+                        url.thumbnail( thumbnailSizePx / 2 )
                     }
                 }
     }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
@@ -69,14 +71,16 @@ fun Playlist(
                         .fillMaxSize(),
                     contentScale = ContentScale.Crop,
                 )
-            } else if (thumbnails.toSet().size == 1) {
+            } else if (thumbnails.size in 1..3) {
+                // Base ThumbnailRenderer contract: fewer than four covers render a
+                // single full-size cover instead of a partial two-by-two collage.
                 ImageCacheFactory.AsyncImage(
                     thumbnailUrl = thumbnails.first().thumbnail(thumbnailSizePx),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     //modifier = it KOTLIN 2
                 )
-            } else {
+            } else if (thumbnails.size >= 4) {
                 Box(
                     modifier = Modifier // KOTLIN 2
                         .fillMaxSize()

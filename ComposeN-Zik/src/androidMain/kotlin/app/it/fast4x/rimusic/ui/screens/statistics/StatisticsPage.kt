@@ -15,6 +15,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.PaddingValues
@@ -536,7 +537,10 @@ fun StatisticsPage(
                         PlaylistItem(
                             thumbnailContent = {
                                 Box(modifier = Modifier.fillMaxSize()) {
-                                if (thumbnails.toSet().size == 1) {
+                                // Base ThumbnailRenderer contract: four covers render
+                                // the two-by-two collage, one to three a single
+                                // full-size cover, zero nothing.
+                                if (thumbnails.size in 1..3) {
                                     ImageCacheFactory.AsyncImage(
                                         thumbnailUrl = thumbnails.first(),
                                         contentDescription = null,
@@ -546,10 +550,16 @@ fun StatisticsPage(
                                         }
                                     )
                                 } else {
-                                    Box(
+                                    // The quadrants are sized from the actual container
+                                    // (like the base ThumbnailRenderer): the card can be
+                                    // wider than playlistThumbnailSizeDp, a fixed Dp
+                                    // left visible gaps around the four covers.
+                                    BoxWithConstraints(
                                         modifier = Modifier
                                             .fillMaxSize()
                                     ) {
+                                        val halfWidth = maxWidth / 2
+                                        val halfHeight = maxHeight / 2
                                         listOf(
                                             Alignment.TopStart,
                                             Alignment.TopEnd,
@@ -564,7 +574,7 @@ fun StatisticsPage(
                                                     contentScale = ContentScale.Crop,
                                                     modifier = Modifier
                                                         .align(alignment)
-                                                        .size(playlistThumbnailSizeDp /2),
+                                                        .size(halfWidth, halfHeight),
                                                     onError = {error ->
                                                         Timber.tag("StatisticsPage").e("Failed AsyncImage 1 in PlaylistItem ${error.result.throwable.stackTraceToString()}")
                                                     }
