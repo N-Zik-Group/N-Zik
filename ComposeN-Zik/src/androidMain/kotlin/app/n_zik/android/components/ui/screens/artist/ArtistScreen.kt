@@ -133,10 +133,12 @@ import app.n_zik.android.components.tab.Radio
 import app.n_zik.android.components.ui.screens.DynamicOrientationLayout
 import app.n_zik.android.components.ui.screens.album.Translate
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.components.OfflineAwareLoader
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.core.network.client.NetworkClientFactory
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.extensions.musicbrainz.MBMetadataHelper
 import app.n_zik.android.playback.utils.Shuffler
@@ -196,65 +198,76 @@ fun ArtistScreen(
 
     var artistPage: ArtistPage? by remember { mutableStateOf(null) }
 
-    LaunchedEffect(Unit) {
-        YtMusic.getArtistPage(browseId.removePrefix(MODIFIED_PREFIX))
-            .onSuccess { online ->
-                artistPage = online
+    val context = LocalContext.current
+    val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
 
-                Database.asyncTransaction {
-                    val now = System.currentTimeMillis()
-                    val inserted = artistTable.insertMetadata(
-                        id = browseId,
-                        name = online.artist.title,
-                        thumbnailUrl = online.artist.thumbnail?.url,
-                        timestamp = now,
-                        isYoutubeArtist = false,
-                        position = -1
-                    )
-                    if (inserted == -1L) {
-                        artistTable.updateMetadata(
+    val scope = rememberCoroutineScope()
+
+    fun fetchArtistPage() {
+        scope.launch {
+            YtMusic.getArtistPage(browseId.removePrefix(MODIFIED_PREFIX))
+                .onSuccess { online ->
+                    artistPage = online
+
+                    Database.asyncTransaction {
+                        val now = System.currentTimeMillis()
+                        val inserted = artistTable.insertMetadata(
                             id = browseId,
-                            name = PropUtils.retainIfModified(localArtist?.name, online.artist.title),
-                            thumbnailUrl = PropUtils.retainIfModified(localArtist?.thumbnailUrl, online.artist.thumbnail?.url),
-                            isYoutubeArtist = localArtist?.isYoutubeArtist == true,
-                            position = localArtist?.position ?: -1
+                            name = online.artist.title,
+                            thumbnailUrl = online.artist.thumbnail?.url,
+                            timestamp = now,
+                            isYoutubeArtist = false,
+                            position = -1
                         )
-                    }
-
-                    online.sections
-                        .fastFirstOrNull { section ->
-                            section.items.fastAll { it is Innertube.SongItem }
-                        }
-                        ?.items
-                        ?.map { (it as Innertube.SongItem).asMediaItem }
-                        ?.also {
-                            localArtist?.let { artist -> mapIgnore(artist, *it.toTypedArray()) }
+                        if (inserted == -1L) {
+                            artistTable.updateMetadata(
+                                id = browseId,
+                                name = PropUtils.retainIfModified(localArtist?.name, online.artist.title),
+                                thumbnailUrl = PropUtils.retainIfModified(localArtist?.thumbnailUrl, online.artist.thumbnail?.url),
+                                isYoutubeArtist = localArtist?.isYoutubeArtist == true,
+                                position = localArtist?.position ?: -1
+                            )
                         }
 
-                    // Store the YouTube description so the Insights page can reuse it
-                    // as a bio fallback without refetching the artist page.
-                    val ytDescription = online.description?.takeIf { it.isNotBlank() }
-                    if (ytDescription != null) {
-                        artistTable.findByIdDirect(browseId)?.let { current ->
-                            if (current.description != ytDescription) {
-                                artistTable.update(current.copy(description = ytDescription))
+                        online.sections
+                            .fastFirstOrNull { section ->
+                                section.items.fastAll { it is Innertube.SongItem }
+                            }
+                            ?.items
+                            ?.map { (it as Innertube.SongItem).asMediaItem }
+                            ?.also {
+                                localArtist?.let { artist -> mapIgnore(artist, *it.toTypedArray()) }
+                            }
+
+                        // Store the YouTube description so the Insights page can reuse it
+                        // as a bio fallback without refetching the artist page.
+                        val ytDescription = online.description?.takeIf { it.isNotBlank() }
+                        if (ytDescription != null) {
+                            artistTable.findByIdDirect(browseId)?.let { current ->
+                                if (current.description != ytDescription) {
+                                    artistTable.update(current.copy(description = ytDescription))
+                                }
                             }
                         }
                     }
-                }
 
-                val itemsToFetch = online.sections.flatMap { it.items }
-                    .filter { (it is Innertube.VideoItem && it.durationText == null) || (it is Innertube.SongItem && it.durationText == null) }
-                    .map { it.key }
-                    .distinct()
+                    val itemsToFetch = online.sections.flatMap { it.items }
+                        .filter { (it is Innertube.VideoItem && it.durationText == null) || (it is Innertube.SongItem && it.durationText == null) }
+                        .map { it.key }
+                        .distinct()
 
-                if (itemsToFetch.isNotEmpty()) {
-                    Innertube.queue(videoIds = itemsToFetch)?.onSuccess { queueItems ->
-                        val durationsMap = queueItems?.associate { it.key to it.durationText } ?: emptyMap()
-                        artistPage = artistPage?.withUpdatedVideoDurations(durationsMap)
+                    if (itemsToFetch.isNotEmpty()) {
+                        Innertube.queue(videoIds = itemsToFetch)?.onSuccess { queueItems ->
+                            val durationsMap = queueItems?.associate { it.key to it.durationText } ?: emptyMap()
+                            artistPage = artistPage?.withUpdatedVideoDurations(durationsMap)
+                        }
                     }
                 }
-            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        fetchArtistPage()
     }
 
     LaunchedEffect(localArtist?.id) {
@@ -289,12 +302,11 @@ fun ArtistScreen(
         when (currentTabIndex) {
             0 -> {
                 if (artistPage == null) {
-                    Box(
+                    OfflineAwareLoader(
+                        isOnline = isOnline,
                         modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Loader()
-                    }
+                        onReconnect = ::fetchArtistPage
+                    )
                 } else {
                     ArtistOverview(
                         navController, localArtist, artistPage, thumbnailPainter,

@@ -41,6 +41,7 @@ import java.util.Locale
 import it.fast4x.innertube.models.SectionListRenderer
 import okhttp3.ConnectionPool
 import okhttp3.Protocol
+import okhttp3.Response
 import java.io.File
 
 
@@ -49,6 +50,16 @@ object Innertube {
     private const val YOUTUBE_MUSIC_HOST = "music.youtube.com"
     private const val VISITOR_DATA_PREFIX = "Cgt"
     const val DEFAULT_VISITOR_DATA = "CgtMN0FkbDFaWERfdyi8t4u7BjIKCgJWThIEGgAgWQ%3D%3D"
+
+    /**
+     * Root-level offline gate, wired by the app at startup (MainApplication).
+     * When non-null and it returns false, every outbound request short-circuits
+     * with a synthetic 503 before leaving the process. Read live per request, so
+     * no transport rebuild is needed when the app sets it. Null until wired keeps
+     * the module self-contained for standalone/tests use.
+     */
+    @Volatile
+    var offlineGate: (() -> Boolean)? = null
 
     private fun createClient() = HttpClient(OkHttp) {
         expectSuccess = false
@@ -87,6 +98,22 @@ object Innertube {
                 connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
                 readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
                 writeTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+                // Root-level offline gate (app-wired): short-circuits before the logging
+                // interceptor so a blocked request produces exactly one log line.
+                addInterceptor { chain ->
+                    val gate = offlineGate
+                    if (gate != null && !gate()) {
+                        val request = chain.request()
+                        InnertubeLogger.d("Innertube", "offline: short-circuited ${request.method} ${request.url.encodedPath}")
+                        return@addInterceptor Response.Builder()
+                            .request(request)
+                            .protocol(Protocol.HTTP_1_1)
+                            .code(503)
+                            .message("No network connection")
+                            .build()
+                    }
+                    chain.proceed(chain.request())
+                }
                 // Network logging interceptor
                 addInterceptor { chain ->
                     val request = chain.request()

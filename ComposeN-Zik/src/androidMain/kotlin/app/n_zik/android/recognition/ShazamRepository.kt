@@ -2,6 +2,7 @@ package app.n_zik.android.recognition
 
 import timber.log.Timber
 import app.n_zik.android.BuildConfig
+import app.n_zik.android.core.network.client.NetworkGate
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -31,6 +32,7 @@ class ShazamRepository {
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(20, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
+            .addInterceptor(NetworkGate.interceptor)
             .build()
     }
 

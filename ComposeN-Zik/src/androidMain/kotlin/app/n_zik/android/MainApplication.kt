@@ -57,6 +57,7 @@ import app.n_zik.android.core.migration.NameConvergence
 import app.n_zik.android.core.migration.RemovedSettingsMigration
 import app.n_zik.android.core.migration.SameNameArtistDedup
 import app.n_zik.android.core.network.client.NetworkClientFactory
+import app.n_zik.android.core.network.client.NetworkGate
 import app.n_zik.android.core.network.client.Store
 import app.n_zik.android.core.notifications.ensureProfileChannels
 import app.n_zik.android.core.rescue.RescueProcess
@@ -73,7 +74,9 @@ import app.n_zik.android.utils.debug.crashLogWipeDecision
 import app.n_zik.android.utils.logging.FileLoggingTree
 import app.n_zik.android.utils.logging.flushThenDelegate
 import me.knighthat.invidious.Invidious
+import com.metrolist.music.betterlyrics.BetterLyrics
 import com.metrolist.music.discordrpc.DiscordRpc
+import com.metrolist.music.discordrpc.GatewayWebSocket
 import utils.VisualizerHelper
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -84,6 +87,9 @@ import it.fast4x.innertube.utils.ProxyPreferences
 import java.net.Proxy
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.utils.InnertubeLogger
+import it.fast4x.kugou.KuGou
+import it.fast4x.lastfm.LastFm
+import it.fast4x.lrclib.LrcLib
 import it.fast4x.innertube.models.ArtistConjunctions
 import it.fast4x.invidious.utils.InvidiousLogger
 import app.n_zik.android.extensions.musicbrainz.workers.MbBackfillWorker
@@ -354,7 +360,20 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             )
             Innertube.proxy = proxy
             MBNetwork.proxy = proxy
-            
+
+            // Root-level offline gate: every outbound request short-circuits
+            // while the device has no validated network.
+            //
+            // Modules are plain JVM (no Context), so they read the app-provided
+            // check through their offlineGate slots.
+            Innertube.offlineGate = NetworkGate::isOnline
+            LrcLib.offlineGate = NetworkGate::isOnline
+            MusicBrainz.offlineGate = NetworkGate::isOnline
+            LastFm.offlineGate = NetworkGate::isOnline
+            KuGou.offlineGate = NetworkGate::isOnline
+            BetterLyrics.offlineGate = NetworkGate::isOnline
+            GatewayWebSocket.offlineGate = NetworkGate::isOnline
+
             // useLoginForSearch is deliberately NOT force-disabled/persisted like
             // useLoginForBrowse in the cookie branches below: without a valid cookie both
 //

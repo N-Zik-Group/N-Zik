@@ -9,6 +9,8 @@ import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.it.fast4x.rimusic.enums.*
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.utils.*
+import app.n_zik.android.appContext
+import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.core.database.Database
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic
@@ -276,7 +278,16 @@ class HomeQuickPicksState(
         }
     }
 
-    fun refresh() {
+    fun refresh(notifyWhenOffline: Boolean = false) {
+        if (!isNetworkConnected(appContext())) {
+            // Offline: the refresh is a no-op (no network load). The auto-reload
+            // on the offline→online transition re-fetches the YTM sections;
+            //
+            // an explicit pull-to-refresh gets a "no connection" toast instead
+            // of a silent no-op.
+            if (notifyWhenOffline) Toaster.noInternet()
+            return
+        }
         val job = sharedLoadJob
         if (job != null && job.isActive) {
             // A load is in progress: tearing its state down mid-flight is what

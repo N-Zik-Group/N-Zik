@@ -22,6 +22,8 @@ import it.fast4x.lastfm.utils.getProxy
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import okhttp3.Protocol
+import okhttp3.Response
 
 /**
  * Assembles the raw Now Playing request parameters (unsigned, without session key).
@@ -71,6 +73,15 @@ fun scrobbleParams(
 
 object LastFm {
 
+    /**
+     * Root-level offline gate, wired by the app at startup (MainApplication).
+     * When non-null and it returns false, every outbound request short-circuits
+     * with a synthetic 503. Read live per request. Null until wired keeps the
+     * module self-contained for standalone/tests use.
+     */
+    @Volatile
+    var offlineGate: (() -> Boolean)? = null
+
     private const val BASE_URL = "https://ws.audioscrobbler.com/2.0/"
 
     private var apiKey: String = ""
@@ -101,6 +112,25 @@ object LastFm {
             install(ContentEncoding) {
                 gzip()
                 deflate()
+            }
+
+            // Root-level offline gate (app-wired): fast-fail synthetic 503 while offline.
+            engine {
+                config {
+                    addInterceptor { chain ->
+                        val gate = offlineGate
+                        if (gate != null && !gate()) {
+                            val request = chain.request()
+                            return@addInterceptor Response.Builder()
+                                .request(request)
+                                .protocol(Protocol.HTTP_1_1)
+                                .code(503)
+                                .message("No network connection")
+                                .build()
+                        }
+                        chain.proceed(chain.request())
+                    }
+                }
             }
 
             ProxyPreferences.preference?.let {

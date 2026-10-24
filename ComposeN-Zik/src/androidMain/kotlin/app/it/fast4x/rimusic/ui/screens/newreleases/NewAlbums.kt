@@ -9,7 +9,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -27,14 +26,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
+import app.n_zik.android.components.OfflineAwareLoader
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.it.fast4x.compose.persist.persist
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.discoverPage
@@ -42,7 +43,6 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
-import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.it.fast4x.rimusic.ui.items.AlbumItem
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.px
@@ -66,6 +66,8 @@ fun NewAlbums(
         discoverPage = withContext(NzikDispatchers.DATA) { Innertube.discoverPage() }
     }
 
+    val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(LocalContext.current)
+
     val thumbnailSizeDp = Dimensions.thumbnails.album + 24.dp
     val thumbnailSizePx = thumbnailSizeDp.px
 
@@ -85,12 +87,10 @@ fun NewAlbums(
 
         val page = discoverPage?.getOrNull()
         if (page == null) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Loader()
-            }
+            OfflineAwareLoader(
+                isOnline = isOnline,
+                modifier = Modifier.fillMaxSize()
+            )
         } else {
             val albumKeys = remember(page.newReleaseAlbums) { page.newReleaseAlbums.map { it.key } }
             val bookmarkStatesMap by remember(albumKeys) {

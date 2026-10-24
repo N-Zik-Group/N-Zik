@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.compose.persist.persist
@@ -51,7 +52,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import app.it.fast4x.rimusic.ui.items.AlbumPlaceholder
 import app.it.fast4x.rimusic.ui.items.SongItemPlaceholder
-import app.it.fast4x.rimusic.ui.components.themed.Loader
+import app.n_zik.android.components.OfflineAwareLoader
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
@@ -77,6 +79,7 @@ inline fun <T : Innertube.Item> ItemsPage(
     loadedItemsState: androidx.compose.runtime.MutableState<List<T>>? = null,
 ) {
     val updatedItemsPageProvider by rememberUpdatedState(itemsPageProvider)
+    val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(LocalContext.current)
 
     val lazyListState = rememberLazyListState()
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
@@ -165,12 +168,10 @@ inline fun <T : Innertube.Item> ItemsPage(
                 modifier = Modifier.fillMaxSize()
             ) {
                 headerContent(null)
-                Box(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Loader()
-                }
+                OfflineAwareLoader(
+                    isOnline = isOnline,
+                    modifier = Modifier.weight(1f).fillMaxWidth()
+                )
             }
         } else {
             LazyColumn(
@@ -265,6 +266,7 @@ inline fun <T : Innertube.Item> ItemsGridPage(
     loadedItemsState: androidx.compose.runtime.MutableState<List<T>>? = null,
 ) {
     val updatedItemsPageProvider by rememberUpdatedState(itemsPageProvider)
+    val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(LocalContext.current)
     val lazyGridState = rememberLazyGridState()
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
     var itemsPage by persist<Innertube.ItemsPage<T>?>(tag)
@@ -350,12 +352,10 @@ inline fun <T : Innertube.Item> ItemsGridPage(
                 modifier = Modifier.fillMaxSize()
             ) {
                 headerContent(null)
-                Box(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Loader()
-                }
+                OfflineAwareLoader(
+                    isOnline = isOnline,
+                    modifier = Modifier.weight(1f).fillMaxWidth()
+                )
             }
         } else {
             LazyVerticalGrid(

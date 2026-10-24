@@ -18,6 +18,8 @@ import it.fast4x.innertube.utils.runCatchingNonCancellable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import okhttp3.Protocol
+import okhttp3.Response
 
 // ─── ReturnYouTubeDislike API ────────────────────────────────────────────────
 
@@ -164,6 +166,22 @@ private val youtubeWebClient by lazy {
         }
         engine {
             config {
+                // Root-level offline gate (app-wired): short-circuits before the logging
+                // interceptor so a blocked request produces exactly one log line.
+                addInterceptor { chain ->
+                    val gate = Innertube.offlineGate
+                    if (gate != null && !gate()) {
+                        val request = chain.request()
+                        InnertubeLogger.d("SongInfo", "offline: short-circuited ${request.method} ${request.url.encodedPath}")
+                        return@addInterceptor Response.Builder()
+                            .request(request)
+                            .protocol(Protocol.HTTP_1_1)
+                            .code(503)
+                            .message("No network connection")
+                            .build()
+                    }
+                    chain.proceed(chain.request())
+                }
                 addInterceptor { chain ->
                     val request = chain.request()
                     val url = request.url

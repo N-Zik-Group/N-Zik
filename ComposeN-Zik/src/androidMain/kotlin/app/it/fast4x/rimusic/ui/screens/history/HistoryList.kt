@@ -101,6 +101,8 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
+import app.n_zik.android.components.OfflineContent
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.it.fast4x.rimusic.utils.historySortMenuOrderKey
 import androidx.compose.foundation.text.BasicText
 import app.it.fast4x.rimusic.utils.encryptedPreferences
@@ -121,6 +123,7 @@ fun HistoryList(
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
+    val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
     val lazyListState = rememberLazyListState()
 
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
@@ -266,11 +269,15 @@ fun HistoryList(
         }
 
         if (isLoading) {
-            Box(
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Loader()
+            if (historyType == HistoryType.YTMHistory && !isOnline) {
+                OfflineContent(modifier = Modifier.weight(1f).fillMaxWidth())
+            } else {
+                Box(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Loader()
+                }
             }
         } else if (
             (historyType == HistoryType.History && events.isEmpty()) ||

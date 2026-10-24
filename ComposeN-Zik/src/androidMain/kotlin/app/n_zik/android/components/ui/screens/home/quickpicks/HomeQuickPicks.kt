@@ -14,16 +14,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -41,7 +40,6 @@ import app.it.fast4x.rimusic.enums.*
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.models.PlaylistPreview
 import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.it.fast4x.rimusic.ui.components.themed.MultiFloatingActionsContainer
 import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
@@ -52,7 +50,9 @@ import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.OfflineContent
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.typography
 import app.n_zik.android.playback.utils.Shuffler
@@ -88,9 +88,9 @@ fun HomeQuickPicks(
     onChipClick: (chip: Innertube.Chip) -> Unit,
     onSettingsClick: () -> Unit
 ) {
-    val binder = LocalPlayerServiceBinder.current
-    val menuState = LocalMenuState.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
+    val context = LocalContext.current
+    val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
 
     var playEventType by rememberPreference(playEventsTypeKey, PlayEventsType.MostPlayed)
     var selectedCountryCode by rememberPreference(selectedCountryCodeKey, Countries.ZZ)
@@ -235,12 +235,64 @@ fun HomeQuickPicks(
         }
     }
 
-    val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
-    val gridsContentPadding = PaddingValues(start = 12.dp, end = endPaddingValues.calculateEndPadding(LocalLayoutDirection.current))
-    val sectionTextModifier = Modifier.padding(horizontal = 12.dp).padding(top = 16.dp, bottom = 8.dp).padding(endPaddingValues)
-    val showSearchTab by rememberPreference(showSearchTabKey, false)
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    AppPullToRefreshBox(
+        isRefreshing = state.refreshing.value,
+        onRefresh = { state.refresh(notifyWhenOffline = true) }
+    ) {
+        HomeQuickPicksContent(
+            state = state,
+            scrollState = scrollState,
+            isOnline = isOnline,
+            refresh = { state.refresh() },
+            navController = navController,
+            onAlbumClick = onAlbumClick,
+            onArtistClick = onArtistClick,
+            onPlaylistClick = onPlaylistClick,
+            onSearchClick = onSearchClick,
+            onMoodClick = onMoodClick,
+            onChipClick = onChipClick,
+            onSettingsClick = onSettingsClick,
+            onPlayEventTypeChange = { playEventType = it },
+            onSelectedCountryCodeChange = { selectedCountryCode = it },
+            currentYouTubeLoggedIn = currentYouTubeLoggedIn,
+            playEventType = playEventType,
+            selectedCountryCode = selectedCountryCode,
+            parentalControlEnabled = parentalControlEnabled,
+            windowInsets = windowInsets
+        )
+    }
+}
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@ExperimentalTextApi
+@SuppressLint("SuspiciousIndentation")
+@ExperimentalFoundationApi
+@ExperimentalAnimationApi
+@ExperimentalComposeUiApi
+@UnstableApi
+internal @Composable
+fun HomeQuickPicksContent(
+    state: HomeQuickPicksState,
+    scrollState: LazyListState,
+    isOnline: Boolean,
+    refresh: () -> Unit,
+    navController: NavController,
+    onAlbumClick: (String) -> Unit,
+    onArtistClick: (String) -> Unit,
+    onPlaylistClick: (String) -> Unit,
+    onSearchClick: () -> Unit,
+    onMoodClick: (mood: Innertube.Mood.Item) -> Unit,
+    onChipClick: (chip: Innertube.Chip) -> Unit,
+    onSettingsClick: () -> Unit,
+    onPlayEventTypeChange: (PlayEventsType) -> Unit,
+    onSelectedCountryCodeChange: (Countries) -> Unit,
+    currentYouTubeLoggedIn: Boolean,
+    playEventType: PlayEventsType,
+    selectedCountryCode: Countries,
+    parentalControlEnabled: Boolean,
+    windowInsets: WindowInsets
+) {
+    val binder = LocalPlayerServiceBinder.current
     val scope = rememberCoroutineScope()
     var isQuickPicksLoading by remember { mutableStateOf(false) }
 
@@ -258,11 +310,23 @@ fun HomeQuickPicks(
         }
     }
 
-    AppPullToRefreshBox(
-        isRefreshing = state.refreshing.value,
-        onRefresh = { state.refresh() }
-    ) {
-        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+    // Offline→online transition: trigger the same refresh as the pull-to-refresh.
+    var wasOnline by remember { mutableStateOf(true) }
+    LaunchedEffect(isOnline) {
+        if (isOnline && !wasOnline) {
+            Timber.tag("HomeQuickPicks").d("Network restored, refreshing Quick Picks")
+            refresh()
+        }
+        wasOnline = isOnline
+    }
+
+    val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
+    val gridsContentPadding = PaddingValues(start = 12.dp, end = endPaddingValues.calculateEndPadding(LocalLayoutDirection.current))
+    val sectionTextModifier = Modifier.padding(horizontal = 12.dp).padding(top = 16.dp, bottom = 8.dp).padding(endPaddingValues)
+    val showSearchTab by rememberPreference(showSearchTabKey, false)
+    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             val itemInHorizontalGridWidth = maxWidth * (if (isLandscape && maxWidth * 0.475f >= 320.dp) 0.375f else 0.7f)
             val albumThumbnailSizeDp = 108.dp
             val albumThumbnailSizePx = albumThumbnailSizeDp.px
@@ -363,96 +427,89 @@ fun HomeQuickPicks(
                     WelcomeMessage()
                 }
 
-                if (!state.loadedQuickPicks.value) {
-                    item(key = "loading") {
-                        Box(modifier = Modifier.fillMaxWidth().height(Dimensions.itemsVerticalPadding * 3 * 9), contentAlignment = Alignment.Center) {
-                            LoadingIndicator(color = colorPalette().accent, modifier = Modifier.fillMaxHeight(0.5f).aspectRatio(1f))
-                        }
-                    }
-                } else {
-                    if (isViMusicUi) {
-                        item(key = "header") {
-                            HeaderWithIcon(
-                                title = if (!currentYouTubeLoggedIn) stringResource(R.string.quick_picks) else stringResource(R.string.home),
-                                iconId = R.drawable.search,
-                                enabled = true,
-                                showIcon = !showSearchTab,
-                                modifier = Modifier,
-                                onClick = onSearchClick
-                            )
-                        }
-                    }
-
-                    if (showTips) {
-                        item(key = "quick_picks_header") {
-                            QuickPicksHeader(
-                                playEventType = playEventType,
-                                onPlayEventTypeChange = { playEventType = it },
-                                onDiceClick = {
-                                    scope.launch {
-                                        isQuickPicksLoading = true
-                                        // Shuffler.play() is fire-and-forget (issue #606 M2): when it's actually
-                                        // invoked, isQuickPicksLoading is cleared from its onComplete once work
-//
-                                        // actually finishes. shufflerWillClear guards the `finally` below so an
-                                        // exception thrown before reaching Shuffler.play() still clears the flag.
-                                        var shufflerWillClear = false
-                                        try {
-                                            delay(50)
-                                            val relatedInit = state.relatedPageResult.value?.getOrNull()
-                                            val allItems = listOfNotNull(state.trending.value?.asMediaItem) + (relatedInit?.songs?.map { it.asMediaItem } ?: emptyList())
-                                            val b = binder
-                                            if (b != null) {
-                                                shufflerWillClear = true
-                                                Shuffler.play(b, allItems, onComplete = { isQuickPicksLoading = false })
-                                            }
-                                        } finally {
-                                            if (!shufflerWillClear) isQuickPicksLoading = false
-                                        }
-                                    }
-                                },
-                                onPlayAllClick = {
-                                    scope.launch {
-                                        isQuickPicksLoading = true
-                                        delay(50)
-                                        try {
-                                            binder?.stopRadio()
-                                            state.trending.value?.let { binder?.player?.forcePlay(it.asMediaItem) }
-                                            val relatedInit = state.relatedPageResult.value?.getOrNull()
-                                            binder?.player?.addMediaItems(relatedInit?.songs?.map { it.asMediaItem } ?: emptyList())
-                                        } finally {
-                                            isQuickPicksLoading = false
-                                        }
-                                    }
-                                },
-                                isLoading = isQuickPicksLoading
-                            )
-                        }
-
-                        item(key = "quick_picks_grid") {
-                            QuickPicksGrid(
-                                recommendations = state.recommendations.value,
-                                trendingList = state.trendingList.value,
-                                playEventType = playEventType,
-                                itemInHorizontalGridWidth = itemInHorizontalGridWidth,
-                                navController = navController,
-                                endPaddingValues = endPaddingValues,
-                                onSongClick = { binder?.startRadio(it, true) },
-                                scrollToStartTrigger = state.refreshKey.value
-                            )
-                        }
+                if (isViMusicUi) {
+                    item(key = "header") {
+                        HeaderWithIcon(
+                            title = if (!currentYouTubeLoggedIn) stringResource(R.string.quick_picks) else stringResource(R.string.home),
+                            iconId = R.drawable.search,
+                            enabled = true,
+                            showIcon = !showSearchTab,
+                            modifier = Modifier,
+                            onClick = onSearchClick
+                        )
                     }
                 }
 
-                // Render sections in configured order
-                sectionOrder.forEach { sectionId ->
+                if (showTips) {
+                    item(key = "quick_picks_header") {
+                        QuickPicksHeader(
+                            playEventType = playEventType,
+                            onPlayEventTypeChange = onPlayEventTypeChange,
+                            onDiceClick = {
+                                scope.launch {
+                                    isQuickPicksLoading = true
+                                    // Shuffler.play() is fire-and-forget (issue #606 M2): when it's actually
+                                    // invoked, isQuickPicksLoading is cleared from its onComplete once work
+//
+                                    // actually finishes. shufflerWillClear guards the `finally` below so an
+                                    // exception thrown before reaching Shuffler.play() still clears the flag.
+                                    var shufflerWillClear = false
+                                    try {
+                                        delay(50)
+                                        val relatedInit = state.relatedPageResult.value?.getOrNull()
+                                        val allItems = listOfNotNull(state.trending.value?.asMediaItem) + (relatedInit?.songs?.map { it.asMediaItem } ?: emptyList())
+                                        val b = binder
+                                        if (b != null) {
+                                            shufflerWillClear = true
+                                            Shuffler.play(b, allItems, onComplete = { isQuickPicksLoading = false })
+                                        }
+                                    } finally {
+                                        if (!shufflerWillClear) isQuickPicksLoading = false
+                                    }
+                                }
+                            },
+                            onPlayAllClick = {
+                                scope.launch {
+                                    isQuickPicksLoading = true
+                                    delay(50)
+                                    try {
+                                        binder?.stopRadio()
+                                        state.trending.value?.let { binder?.player?.forcePlay(it.asMediaItem) }
+                                        val relatedInit = state.relatedPageResult.value?.getOrNull()
+                                        binder?.player?.addMediaItems(relatedInit?.songs?.map { it.asMediaItem } ?: emptyList())
+                                    } finally {
+                                        isQuickPicksLoading = false
+                                    }
+                                }
+                            },
+                            isLoading = isQuickPicksLoading
+                        )
+                    }
+
+                    item(key = "quick_picks_grid") {
+                        QuickPicksGrid(
+                            recommendations = state.recommendations.value,
+                            trendingList = state.trendingList.value,
+                            playEventType = playEventType,
+                            itemInHorizontalGridWidth = itemInHorizontalGridWidth,
+                            navController = navController,
+                            endPaddingValues = endPaddingValues,
+                            onSongClick = { binder?.startRadio(it, true) },
+                            scrollToStartTrigger = state.refreshKey.value
+                        )
+                    }
+                }
+
+                // Render sections in configured order — offline, only the local
+                // sections are kept; the YTM ones are replaced by the offline message.
+                sectionOrder.filter { isOnline || it in localSectionIds }.forEach { sectionId ->
                     when (sectionId) {
                         "tips" -> { /* Tips are always shown at top, handled separately */ }
                         "charts" -> {
                             val hasChartsContent = state.chartsPageInit.value?.let { it.playlists?.isNotEmpty() == true || it.songs?.isNotEmpty() == true || it.artists?.isNotEmpty() == true } ?: false
                             item(key = "charts") {
                                 AnimatedVisibility(visible = showCharts && hasChartsContent, modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    ChartsSection(showCharts, state.chartsPageInit.value, selectedCountryCode, { selectedCountryCode = it }, navController, onPlaylistClick, onArtistClick, endPaddingValues, playlistThumbnailSizePx, playlistThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, disableScrollingText, parentalControlEnabled, displayedSectionTitles, itemInHorizontalGridWidth)
+                                    ChartsSection(showCharts, state.chartsPageInit.value, selectedCountryCode, onSelectedCountryCodeChange, navController, onPlaylistClick, onArtistClick, endPaddingValues, playlistThumbnailSizePx, playlistThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, disableScrollingText, parentalControlEnabled, displayedSectionTitles, itemInHorizontalGridWidth)
                                 }
                             }
                         }
@@ -661,7 +718,7 @@ fun HomeQuickPicks(
                     }
                 }
 
-                if (showGenericYtmSections) {
+                if (isOnline && showGenericYtmSections) {
                     item(key = "generic_ytm_sections") {
                         GenericYtmSections(stableHomePageInit, displayedSectionTitles, itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, isLoading = showLoader, showTitle = true)
                     }
@@ -669,7 +726,12 @@ fun HomeQuickPicks(
                 
                 // HomeBottomShimmer removed as shimmers are now inline in their respective positions
 
-                if (state.relatedPageResult.value?.exceptionOrNull() != null) {
+                if (!isOnline) {
+                    item(key = "offline_content") {
+                        Spacer(modifier = Modifier.height(50.dp))
+                        OfflineContent(modifier = Modifier.fillMaxWidth())
+                    }
+                } else if (state.relatedPageResult.value?.exceptionOrNull() != null) {
                     item(key = "error_related") {
                         Spacer(modifier = Modifier.height(50.dp))
                         BasicText(text = stringResource(R.string.page_not_been_loaded), style = typography().s.secondary.center, modifier = Modifier.fillMaxWidth().padding(all = 16.dp))
@@ -699,7 +761,9 @@ fun HomeQuickPicks(
                 }
         }
     }
-}
+
+// Sections fed by local data (Room) — the only ones rendered while offline.
+private val localSectionIds = setOf("my_top", "rewind")
 
 private val defaultQuickPicksSectionOrder = listOf(
     "tips",

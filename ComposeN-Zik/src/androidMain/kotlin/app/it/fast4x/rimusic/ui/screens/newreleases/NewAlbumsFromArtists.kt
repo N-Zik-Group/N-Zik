@@ -11,7 +11,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -31,8 +30,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
@@ -45,11 +44,12 @@ import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.discoverPageNewAlbums
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import app.n_zik.android.components.OfflineAwareLoader
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
-import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.it.fast4x.rimusic.ui.items.AlbumItem
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.px
@@ -75,6 +75,8 @@ fun NewAlbumsFromArtists(
         discoverPage = Innertube.discoverPageNewAlbums()
     }
 
+    val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(LocalContext.current)
+
     val thumbnailSizeDp = Dimensions.thumbnails.album + 24.dp
     val thumbnailSizePx = thumbnailSizeDp.px
 
@@ -94,12 +96,10 @@ fun NewAlbumsFromArtists(
 
         val page = discoverPage?.getOrNull()
         if (page == null) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Loader()
-            }
+            OfflineAwareLoader(
+                isOnline = isOnline,
+                modifier = Modifier.fillMaxSize()
+            )
         } else {
             val artists by remember {
                 Database.artistTable

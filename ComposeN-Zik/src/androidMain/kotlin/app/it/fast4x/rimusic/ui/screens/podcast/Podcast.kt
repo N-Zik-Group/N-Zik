@@ -99,7 +99,7 @@ import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
 import app.it.fast4x.rimusic.ui.components.themed.LayoutWithAdaptiveThumbnail
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsItemMenu
 import app.it.fast4x.rimusic.ui.components.themed.adaptiveThumbnailContent
-import app.it.fast4x.rimusic.ui.components.themed.Loader
+import app.n_zik.android.components.OfflineAwareLoader
 import app.n_zik.android.components.SongItem
 import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.ui.styling.Dimensions
@@ -136,6 +136,7 @@ import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.LocalDownloadStatesMap
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.it.fast4x.rimusic.enums.DownloadedStateMedia
 import androidx.compose.runtime.CompositionLocalProvider
@@ -158,6 +159,8 @@ fun Podcast(
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
     val menuState = LocalMenuState.current
+
+    val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
 
     var podcastPage by persist<Innertube.Podcast?>("podcast/$browseId/listEpisodes")
 
@@ -261,7 +264,10 @@ fun Podcast(
             contentAlignment = Alignment.Center
         ) {
             if (podcastPage == null) {
-                Loader()
+                OfflineAwareLoader(
+                    isOnline = isOnline,
+                    modifier = Modifier.fillMaxSize()
+                )
             } else {
                 CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
                 LazyColumn(

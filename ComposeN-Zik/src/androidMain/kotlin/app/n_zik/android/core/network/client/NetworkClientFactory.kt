@@ -31,6 +31,7 @@ object NetworkClientFactory {
                     .connectTimeout(connectTimeout, TimeUnit.SECONDS)
                     .readTimeout(readTimeout, TimeUnit.SECONDS)
                     .proxy(proxy)
+                    .addInterceptor(NetworkGate.interceptor)
                 
                 if (cacheDir != null) {
                     builder.cache(Cache(cacheDir, 100L * 1024 * 1024)) // 100MB cache
@@ -52,6 +53,7 @@ object NetworkClientFactory {
         return OkHttpClient.Builder()
             .connectTimeout(30L, TimeUnit.SECONDS)
             .readTimeout(30L, TimeUnit.SECONDS)
+            .addInterceptor(NetworkGate.interceptor)
             .build()
     }
 

@@ -71,6 +71,7 @@ import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.center
 import app.it.fast4x.rimusic.utils.color
 import app.it.fast4x.rimusic.utils.forcePlay
+import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.Preference.HOME_ALBUM_ITEM_SIZE
 import app.n_zik.android.core.coil.ImageCacheFactory
@@ -111,7 +112,22 @@ fun ArtistInsightsScreen(
             Loader()
         }
     } else {
-        val artist = state.artist ?: return
+        val artist = state.artist
+        if (artist == null) {
+            // Missing DB row (edge case): a centered message instead of a blank screen.
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(colorPalette().background0),
+                contentAlignment = Alignment.Center
+            ) {
+                BasicText(
+                    text = stringResource(R.string.unable_to_load),
+                    style = typography().m.secondary.center
+                )
+            }
+            return
+        }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()

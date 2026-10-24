@@ -18,8 +18,20 @@ import it.fast4x.kugou.models.SearchLyricsResponse
 import it.fast4x.kugou.models.SearchSongResponse
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import okhttp3.Protocol
+import okhttp3.Response
 
 object KuGou {
+
+    /**
+     * Root-level offline gate, wired by the app at startup (MainApplication).
+     * When non-null and it returns false, every outbound request short-circuits
+     * with a synthetic 503. Read live per request. Null until wired keeps the
+     * module self-contained for standalone/tests use.
+     */
+    @Volatile
+    var offlineGate: (() -> Boolean)? = null
+
     @OptIn(ExperimentalSerializationApi::class)
     private val client by lazy {
         HttpClient(OkHttp) {
@@ -42,6 +54,25 @@ object KuGou {
             install(ContentEncoding) {
                 gzip()
                 deflate()
+            }
+
+            // Root-level offline gate (app-wired): fast-fail synthetic 503 while offline.
+            engine {
+                config {
+                    addInterceptor { chain ->
+                        val gate = offlineGate
+                        if (gate != null && !gate()) {
+                            val request = chain.request()
+                            return@addInterceptor Response.Builder()
+                                .request(request)
+                                .protocol(Protocol.HTTP_1_1)
+                                .code(503)
+                                .message("No network connection")
+                                .build()
+                        }
+                        chain.proceed(chain.request())
+                    }
+                }
             }
 
             defaultRequest {

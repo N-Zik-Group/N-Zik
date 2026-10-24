@@ -30,6 +30,8 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.net.URLEncoder
+import okhttp3.Protocol
+import okhttp3.Response
 
 /**
  * Thrown instead of making a request while the circuit breaker is open
@@ -65,6 +67,19 @@ class MusicBrainz {
     companion object {
         private const val BASE_URL = "https://musicbrainz.org/ws/2"
         private const val WIKI_API_URL = "https://en.wikipedia.org/w/api.php"
+
+        /**
+         * Root-level offline gate, wired by the app at startup (MainApplication).
+         * When non-null and it returns false, every outbound request short-circuits
+         * with a synthetic 503. Read live per request. Null until wired keeps the
+         * module self-contained for standalone/tests use.
+         *
+         * Lives on the companion (not [MBNetwork]) because MusicBrainz is a class
+         * instantiated per-call-site; a companion property is what the app's
+         * `MusicBrainz.offlineGate = ...` wiring resolves to.
+         */
+        @Volatile
+        var offlineGate: (() -> Boolean)? = null
 
         // Set by the Android app from BuildConfig.VERSION_NAME
         var appVersion: String = "dev"
@@ -151,6 +166,27 @@ class MusicBrainz {
             MBNetwork.proxy?.let { proxy ->
                 engine {
                     this.proxy = proxy
+                }
+            }
+
+            // Root-level offline gate (app-wired): fast-fail synthetic 503 while offline.
+            // Reads the companion's [offlineGate] (accessible unqualified from instance scope).
+            engine {
+                config {
+                    addInterceptor { chain ->
+                        val gate = offlineGate
+                        if (gate != null && !gate()) {
+                            val request = chain.request()
+                            MBLogger.d("MusicBrainz", "offline: short-circuited ${request.method} ${request.url.encodedPath}")
+                            return@addInterceptor Response.Builder()
+                                .request(request)
+                                .protocol(Protocol.HTTP_1_1)
+                                .code(503)
+                                .message("No network connection")
+                                .build()
+                        }
+                        chain.proceed(chain.request())
+                    }
                 }
             }
 

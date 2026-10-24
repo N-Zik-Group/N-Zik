@@ -18,7 +18,10 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
 import io.ktor.serialization.kotlinx.json.json
+import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.utils.InnertubeLogger
+import okhttp3.Protocol
+import okhttp3.Response
 import it.fast4x.innertube.utils.ProxyPreferences
 import it.fast4x.innertube.utils.getProxy
 import kotlinx.coroutines.async
@@ -89,6 +92,26 @@ internal object HttpFetcher {
             brotli(1.0F)
             gzip(0.9F)
             deflate(0.8F)
+        }
+        // Root-level offline gate: reuses the app-wired Innertube slot (this object is
+        // internal, so it has no slot of its own that the app could reach).
+        engine {
+            config {
+                addInterceptor { chain ->
+                    val gate = Innertube.offlineGate
+                    if (gate != null && !gate()) {
+                        val request = chain.request()
+                        InnertubeLogger.d("HttpFetcher", "offline: short-circuited ${request.method} ${request.url.encodedPath}")
+                        return@addInterceptor Response.Builder()
+                            .request(request)
+                            .protocol(Protocol.HTTP_1_1)
+                            .code(503)
+                            .message("No network connection")
+                            .build()
+                    }
+                    chain.proceed(chain.request())
+                }
+            }
         }
         ProxyPreferences.preference?.let {
             engine {

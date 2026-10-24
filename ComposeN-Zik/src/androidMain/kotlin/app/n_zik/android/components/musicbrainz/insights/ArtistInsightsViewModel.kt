@@ -49,7 +49,13 @@ class ArtistInsightsViewModel(application: Application) : AndroidViewModel(appli
 
             val artist = withContext(NzikDispatchers.DATA) {
                 artistTable.findByIdDirect(artistId)
-            } ?: return@launch
+            }
+            if (artist == null) {
+                // Missing DB row (edge case): end the load with the entity null
+                // instead of leaving the screen stuck on the Loader forever.
+                _state.value = ArtistDetailUiState(isLoading = false)
+                return@launch
+            }
 
             val albums = withContext(NzikDispatchers.DATA) {
                 artistTable.getAlbumsByArtist(artistId)

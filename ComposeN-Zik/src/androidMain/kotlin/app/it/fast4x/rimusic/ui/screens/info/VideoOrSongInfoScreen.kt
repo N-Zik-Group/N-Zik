@@ -22,6 +22,7 @@ import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.OfflineContent
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
@@ -287,6 +288,19 @@ fun VideoOrSongInfoScreen(
                 }
                 
                 HorizontalDivider(Modifier.height(1.dp))
+            }
+
+            // Offline banner (spec-offline-load-state wave 2): the local params
+            // (title/artist/thumbnail) stay visible, the online info (stats,
+            //
+            // description) is replaced by a centered message instead of the
+            // silent "−" degradation.
+            if (info == null) {
+                OfflineContent(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp)
+                )
             }
 
             // ── Body ───────────────────────────────────────────────────────────
