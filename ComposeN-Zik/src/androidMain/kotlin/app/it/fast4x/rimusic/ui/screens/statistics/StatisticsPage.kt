@@ -523,8 +523,12 @@ fun StatisticsPage(
                                     .sortSongsByPlayTime( playlists[it].playlist.id )
                                     .distinctUntilChanged()
                                     .map { list ->
-                                        list.takeLast( 4 ).map { song ->
-                                            song.thumbnailUrl.thumbnail( playlistThumbnailSizePx / 2 )
+                                        // Same four-track selection as the library's
+                                        // PlaylistItem (null thumbnails filtered before
+                                        // takeLast): the collages must match screen to
+                                        // screen.
+                                        list.mapNotNull( Song::thumbnailUrl ).takeLast( 4 ).map { url ->
+                                            url.thumbnail( playlistThumbnailSizePx / 2 )
                                         }
                                     }
                         }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
@@ -568,21 +572,23 @@ fun StatisticsPage(
                                         }
                                     }
                                     } // end if-else
+                                    } // end outer Box
+                                },
+                                // Rank number as caller overlay: sits on top of the
+                                // base composable's dark scrim instead of carrying
+                                // its own (avoids a double scrim).
+                                thumbnailOverlay = {
                                     Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .clip(thumbnailShape())
-                                            .background(colorPalette().overlay)
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
                                     ) {
                                         BasicText(
                                             text = "${it + 1}",
                                             style = typography().s.semiBold.center.color(colorPalette().onOverlay),
                                             maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            modifier = Modifier.align(Alignment.Center)
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                     }
-                                    } // end outer Box
                                 },
                                 songCount = playlists[it].songCount,
                                 name = playlists[it].playlist.name,

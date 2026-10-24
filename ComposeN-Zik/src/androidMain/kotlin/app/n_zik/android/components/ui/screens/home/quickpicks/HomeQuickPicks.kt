@@ -46,6 +46,7 @@ import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.px
 import app.it.fast4x.rimusic.utils.*
+import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
@@ -235,9 +236,26 @@ fun HomeQuickPicks(
         }
     }
 
+    var offlinePullRefreshing by remember { mutableStateOf(false) }
+    val pullRefreshScope = rememberCoroutineScope()
+
     AppPullToRefreshBox(
-        isRefreshing = state.refreshing.value,
-        onRefresh = { state.refresh(notifyWhenOffline = true) }
+        isRefreshing = state.refreshing.value || offlinePullRefreshing,
+        onRefresh = {
+            if (isOnline) {
+                state.refresh()
+            } else {
+                // Offline: the pull is gated (no network load) with a "no
+                // connection" toast. The box indicator is engaged briefly so
+                // the pull is consumed instead of re-firing the refresh.
+                Toaster.noInternet()
+                offlinePullRefreshing = true
+                pullRefreshScope.launch {
+                    delay(600)
+                    offlinePullRefreshing = false
+                }
+            }
+        }
     ) {
         HomeQuickPicksContent(
             state = state,

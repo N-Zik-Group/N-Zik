@@ -593,6 +593,8 @@ private fun RewindHomeYearRow(
                             sizeDp = maxHeight,
                             shape = RoundedCornerShape(0.dp),
                             emptyFallback = true,
+                            // The year row paints its own dark scrim over the strip.
+                            dimOverlay = false,
                             modifier = Modifier.fillMaxSize()
                         )
                     } else {
@@ -854,6 +856,8 @@ private fun RewindHomeMonthCollage(
                         sizeDp = maxHeight,
                         shape = RoundedCornerShape(0.dp),
                         emptyFallback = true,
+                        // The month cell paints its own dark scrim over the collage.
+                        dimOverlay = false,
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {

@@ -98,19 +98,27 @@ fun Playlist(
                     }
                 }
             }
+        },
+        // Locked badge as caller overlay so it renders on top of the base
+        // composable's dark scrim.
+        thumbnailOverlay = {
             if (playlist.isYoutubePlaylist && !playlist.isEditable){
-                Image(
-                    painter = painterResource(R.drawable.locked),
-                    colorFilter = ColorFilter.tint(Color.Red),
-                    modifier = Modifier
-                        .padding(all = 5.dp)
-                        .background(colorPalette().text, CircleShape)
-                        .padding(all = 5.dp)
-                        .size(18.dp)
-                        .align(Alignment.BottomStart),
-                    contentDescription = stringResource(R.string.cd_background_image),
-                    contentScale = ContentScale.Fit
-                )
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.BottomStart
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.locked),
+                        colorFilter = ColorFilter.tint(Color.Red),
+                        modifier = Modifier
+                            .padding(all = 5.dp)
+                            .background(colorPalette().text, CircleShape)
+                            .padding(all = 5.dp)
+                            .size(18.dp),
+                        contentDescription = stringResource(R.string.cd_background_image),
+                        contentScale = ContentScale.Fit
+                    )
+                }
             }
         },
         songCount = songCount,

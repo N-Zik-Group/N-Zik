@@ -4,8 +4,8 @@ import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.net.NetworkInfo
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import io.mockk.every
 import io.mockk.mockk
@@ -24,6 +24,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowNetworkCapabilities
 
 /**
  * Robolectric tests for the root [NetworkGate] interceptor (spec-offline-load-state):
@@ -52,26 +53,30 @@ class NetworkGateTest {
 
     /**
      * Drives the real [NetworkQualityHelper.isNetworkConnected] read through Robolectric's
-     * shadow [ConnectivityManager]: offline = no active network; online = a WIFI network
-     * exposing the INTERNET + VALIDATED capabilities.
+     * shadow [ConnectivityManager]. The default shadow state already holds an active
+     * MOBILE network whose capabilities only expose TRANSPORT_CELLULAR (which reads as
+     * offline), so the test swaps the capabilities of that active network to flip the
+     * connectivity state — no NetworkInfo construction needed.
      */
     private fun setOnline(online: Boolean) {
         val cm = app.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val shadow = shadowOf(cm)
+        val network = checkNotNull(cm.activeNetwork)
+        // The API 37 stub removed NetworkCapabilities.Builder and its mutators —
+        // build the capabilities through Robolectric's shadow (the same pattern
+        // its own ShadowConnectivityManager default state uses).
+        val caps = ShadowNetworkCapabilities.newInstance()
+        // One call per line: the shadow mutators return the real
+        // NetworkCapabilities type, which has no mutators under the API 37 stub.
+        val shadowCaps = shadowOf(caps)
         if (online) {
-            val info = NetworkInfo()
-            info.type = ConnectivityManager.TYPE_WIFI
-            info.typeName = "Wi-Fi"
-            shadow.setActiveNetworkInfo(info)
-            val caps = NetworkCapabilities.Builder()
-                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-                .build()
-            val network = checkNotNull(cm.activeNetwork)
-            shadow.setNetworkCapabilities(network, caps)
+            shadowCaps.addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            shadowCaps.addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+            shadowCaps.addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
         } else {
-            shadow.setActiveNetworkInfo(null)
+            shadowCaps.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
         }
+        shadow.setNetworkCapabilities(network, caps)
     }
 
     private fun gateRequest() = Request.Builder().url("https://example.invalid/api").build()

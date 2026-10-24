@@ -714,6 +714,9 @@ internal fun RewindPlaylistArtwork(
     // When true, a playlist without artwork shows the app launcher box (ImageCacheFactory's
     // fallback) instead of the initials placeholder.
     emptyFallback: Boolean = false,
+    // When false, the built-in dimming overlay is skipped — for callers that paint their
+    // own scrim over the artwork (the rewind home month cells and year rows).
+    dimOverlay: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val quadrant = sizeDp / 2
@@ -786,15 +789,15 @@ internal fun RewindPlaylistArtwork(
         }
         if (!showFallback) {
             // Same dimming overlay as the statistics screen, without the rank: the rank
-            // number is rendered by the row itself (Deep Cuts style).
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(shape)
-                    .background(colorPalette().overlay)
-            ) {
-                // No rank — it's on the row (Deep Cuts style).
-            }
+            // number is rendered by the row itself (Deep Cuts style). Skipped by callers
+            // that paint their own scrim over the artwork.
+            if (dimOverlay)
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(shape)
+                        .background(colorPalette().overlay)
+                )
             // The statistics screen also paints an origin indicator (N-Zik logo, pin,
             // source icon) over the artwork; it is kept top-right on the deck artworks.
             RewindPlaylistOriginIcon(

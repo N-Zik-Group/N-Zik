@@ -10,8 +10,8 @@ import app.it.fast4x.rimusic.enums.*
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.utils.*
 import app.n_zik.android.appContext
-import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic
 import it.fast4x.innertube.requests.*
@@ -79,11 +79,18 @@ class HomeQuickPicksState(
             return false
         }
 
-        Timber.tag("HomeQuickPicksState").d("Starting loadData...")
+        // Offline: the network phases (1 and 3) can never succeed — the global
+        // network gate would fast-fail every request anyway. Load the local data
+        // only (phase 2); the YTM sections render the offline message, and the
+        // offline->online auto-reload (refresh) re-runs the full load.
+        val online = NetworkQualityHelper.isNetworkConnected(appContext())
+
+        Timber.tag("HomeQuickPicksState").d("Starting loadData... (online=$online)")
 
         runCatching {
             // Phase 1: Parallel network calls for charts, discover, quick picks
-            supervisorScope {
+            // (skipped entirely when offline — see the gate above)
+            if (online) supervisorScope {
                 val chartsDeferred = async(NzikDispatchers.DATA) {
                     Innertube.chartsPageComplete(countryCode = selectedCountryCode.name)
                 }
@@ -184,9 +191,9 @@ class HomeQuickPicksState(
 
             // Phase 3: Home page sections (sequential but with early exit)
             // Also re-run when no YTM data is available: a stale "loaded" flag
-//
             // left by a cancelled or failed load must not block the re-fetch.
-            if (!shouldSkipQuickPicksLoad(loadedData.value, homePageInit.value != null)) {
+            // Skipped entirely when offline (see the gate at the top of the function).
+            if (online && !shouldSkipQuickPicksLoad(loadedData.value, homePageInit.value != null)) {
                 var cumulativeSections = homePageInit.value?.sections.orEmpty()
                 var cumulativeChips = homePageInit.value?.chips.orEmpty()
                 repeat(3) { attempt ->
@@ -234,8 +241,11 @@ class HomeQuickPicksState(
             }
         }.onSuccess {
             // Only mark as loaded when YTM data is actually present; otherwise an
-            // empty/failed phase 3 would block future reloads forever.
-            loadedData.value = homePageInit.value != null
+            // empty/failed phase 3 would block future reloads forever. Offline the
+            // network phases were skipped on purpose, so the load counts as done
+            // (a later entry re-runs the local phase only, silently) instead of
+            // retrying the network on every page visit.
+            loadedData.value = homePageInit.value != null || !online
         }
         return true
     }
@@ -255,11 +265,13 @@ class HomeQuickPicksState(
             return
         }
         sharedLoadJob = loadScope.launch {
-            // The pull-to-refresh indicator tracks a real data load only: startup,
+            // The pull-to-refresh indicator tracks a real network load only: startup,
             // an explicit refresh, or a deferred reload. A cached page change is a
-//
-            // no-op load and must not flash the indicator.
-            if (!shouldSkipQuickPicksLoad(loadedData.value, homePageInit.value != null)) {
+            // no-op load and must not flash the indicator. An offline load is
+            // local-only (the network phases are skipped) and must not flash it
+            // either — the YTM sections show the offline message instead.
+            val online = NetworkQualityHelper.isNetworkConnected(appContext())
+            if (online && !shouldSkipQuickPicksLoad(loadedData.value, homePageInit.value != null)) {
                 refreshing.value = true
             }
             try {
@@ -268,7 +280,9 @@ class HomeQuickPicksState(
                 if (sharedRefreshPending && coroutineContext[Job]?.isActive == true) {
                     sharedRefreshPending = false
                     refreshKey.value++
-                    refreshing.value = true
+                    if (NetworkQualityHelper.isNetworkConnected(appContext())) {
+                        refreshing.value = true
+                    }
                     Timber.tag("HomeQuickPicksState").d("Deferred refresh after load completed")
                     loadData(force = true)
                 }
@@ -278,16 +292,7 @@ class HomeQuickPicksState(
         }
     }
 
-    fun refresh(notifyWhenOffline: Boolean = false) {
-        if (!isNetworkConnected(appContext())) {
-            // Offline: the refresh is a no-op (no network load). The auto-reload
-            // on the offline→online transition re-fetches the YTM sections;
-            //
-            // an explicit pull-to-refresh gets a "no connection" toast instead
-            // of a silent no-op.
-            if (notifyWhenOffline) Toaster.noInternet()
-            return
-        }
+    fun refresh() {
         val job = sharedLoadJob
         if (job != null && job.isActive) {
             // A load is in progress: tearing its state down mid-flight is what

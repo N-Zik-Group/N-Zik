@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
@@ -211,7 +212,8 @@ fun PlaylistItem(
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
     alternative: Boolean = false,
-    showSongsCount: Boolean = true,
+    // Remote YT cards: no song-count badge and no dark scrim.
+    showSongsCount: Boolean = false,
     showName: Boolean = true,
     disableScrollingText: Boolean,
     isYoutubePlaylist : Boolean = false,
@@ -295,6 +297,17 @@ fun PlaylistItem(
                 ) {
                     this@BoxWithConstraints.run {
                         thumbnailContent()
+                        // Full-cover dark scrim on playlist cards, paired with the song
+                        // count badge: both are excluded for online (remote) cards
+                        // (showSongsCount = false) and for icon-tile callers
+                        // (songCount = null). Caller overlays render on top of the scrim.
+                        if( name != null && songCount != null && showSongsCount ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(colorPalette().overlay)
+                            )
+                        }
                         thumbnailOverlay()
                     }
 
@@ -336,7 +349,10 @@ fun PlaylistItem(
                             painter = icon,
                             contentDescription = stringResource(R.string.cd_origin_indicator),
                             tint = color,
+                            // Dark badge background: the origin icon stays legible over
+                            // any cover (same overlay color as the song-count badge).
                             modifier = Modifier.size( 40.dp ).padding( all = 5.dp )
+                                                   .background( colorPalette().overlay, CircleShape )
                         )
 
                         songCount?.let {
