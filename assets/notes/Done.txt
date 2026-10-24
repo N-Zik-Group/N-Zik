@@ -32,6 +32,25 @@ Fixed:
 - fix(download): map download failures to specific toasts + defer the toast until the UI is visible
   - `MyDownloadService` maps the offline fast-fail marker and network failures to the matching toast string; unknown causes fall back to `download_failed`
   - `MyDownloadHelper.scheduleDownloadRequest` seam: failure toasts are deferred until the main UI is visible, so a background download failure no longer orphans a toast
+- fix(ui): unify local playlist cards and statistics collages
+  - PlaylistItem base: full-cover dark scrim paired with the song-count badge so both stay legible on any cover (icon-tile callers without a count are excluded); the origin icon gets a dark badge background in the top-left corner
+  - Remote (YT) cards no longer show the song-count badge — `showSongsCount` defaults to false in the Innertube overload (7 default-relying call sites: Moods, Quick Picks, online search, artist pages)
+  - Statistics: the rank number moves to the caller overlay (renders above the base scrim, no double dim); the four-track collage selection matches the library's pipeline (null thumbnails filtered before takeLast) so the same playlist shows the same collage on every screen; collage quadrants sized from the actual container instead of a fixed Dp (adaptive-grid cards are wider than the design size)
+  - Generated `rewind-*` playlists excluded from the statistics playlist ranking (they hold the most-played songs and would always rank first — a self-referential ranking); `EventTableTest` pins the exclusion
+  - Quick Picks Rewind section: the card reuses the library's `PlaylistItem` (four-track cover collage, origin icon, count badge) instead of the earlier album-format single-cover card
+  - Themed Playlist header: the YT lock badge moves to the caller overlay; Rewind home: the top-playlist quadrants skip their built-in dimming overlay (the cell already paints its own scrim)
+  - Tests: `RewindSectionCollageCardTest` (the rewind card IS the library collage card — four corner cells, localized name, count badge; replaces the obsolete `RewindSectionAlbumFormatTest`), `PlaylistItemRemoteCardContractTest` (the remote default `showSongsCount=false` pinned through the omitted parameter + the explicit-on gate)
+- fix(ui): offline Quick Picks load states
+  - Pull-to-refresh gated when offline: a "no connection" toast and a brief indicator engagement instead of a network load (the box consumes the gesture — no more cascade of re-triggered refreshes)
+  - `HomeQuickPicksState.loadData` skips the network phases when offline (local data only); the `refreshing` indicator tracks network loads only (no flash on offline loads); the load is still marked done so a page revisit does not retry the network
+  - Module-level offline gate: each module exposes an `offlineGate: (() -> Boolean)?` slot wired at startup to `NetworkGate::isOnline` (Innertube, LrcLib, MusicBrainz, LastFm, KuGou, BetterLyrics, DiscordRPC) — outbound requests short-circuit in-process with a synthetic 503 while offline
+  - `betterlyrics` + `discordrpc` submodules shipped the gate (OkHttp interceptor: betterlyrics HTTP requests, discordrpc WebSocket upgrade) — committed + pushed on each repo's `main`, gitlinks bumped in N-Zik
+  - `NetworkQualityHelper.observeConnection` contract: the flow tracks the VALIDATED state only — no raw `true` on `onAvailable` of an unvalidated network (captive portals)
+  - Tests: `HomeQuickPicksStateOfflineTest` (offline gating: every network request skipped, local-only phase still runs, load done without home data, no refreshing flash, refresh wipes then reloads), `NetworkQualityHelperObserveConnectionTest` (no raw true pre-validation, online only once capabilities are validated)
+- fix(threading): audit pass — scope lifecycle + dead code
+  - `GoToLink`: the fire-and-forget scope is now `remember`ed — a fresh `NzikDispatchers.fireAndForget(DATA)` per recomposition churned scope instances while their jobs still ran
+  - `SeekCoalescingPlayer.release()` now cancels `settleScope` — the settle scope used to outlive the player
+  - `MyDownloadHelper`: dead `kotlinx.coroutines.cancel` import removed + download-quality listener KDoc trimmed
 
 Removed:
 - remove(player): drop dead `isNetworkRelatedError` helper + unused `ConnectException` import
@@ -40,6 +59,7 @@ Removed:
   - The top-level `prewarmPoToken()` in `StreamResolver.kt` has no call site anywhere in the repo; the import was the only reference in `MainApplication.kt`
 
 Other:
+- test(ui): offline + card unification — 3 BMAD review rounds (9 + 6 + 8 fixes applied), targeted suites green: 10/10 across the 5 touched classes + an isolated run of `PlaylistItemRemoteCardContractTest` (which caught a missing `Dependencies.init` — the class only passed in batch runs via sandbox leakage)
 - test(playback+download): full suite — 15 test classes / 123 tests green, covering the offline audit + stale download re-validation fix
   - New (10): `DownloadValidatorTest` (real `SimpleCache`: intact download survives, wiped span removed, mixed spans, missing entry, truncated span), `MyDownloadHelperStaleRevalidationTest` (intact survives / wiped removed / non-terminal untouched), `MyDownloadHelperInitS1OffMainTest` (S1 dispatch on a named `NzikDispatchers` thread), `MyDownloadHelperScheduleFailureToastTest`, `DownloadFailureToastTest` (failure → toast mapping, fallback pinned to `download_failed`), `MainActivityStaleStartupWarningTest` (startup counter), `OfflineGateDnsTest` (the 3-level chain from the real offline log, `UnresolvedAddressException`, direct cause, non-DNS chain rejected, no-cause rejected, hop-limit boundary — 21-level chain, bounded walk terminates), `StaleDownloadEntryTest`, `StreamResolutionFastFailCallSiteTest`, `NZikRadioOfflineTest`
   - Updated (3): `FetchFormatIfMissingGateTest`, `StreamResolverPageCacheTest`, `NZikRadioTest`
