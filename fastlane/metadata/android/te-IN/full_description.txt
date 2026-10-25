@@ -54,16 +54,12 @@
 - Rescue Center, మెయింటెనెన్స్ స్క్రీన్, ఆన్‌బోర్డింగ్, అప్ షార్ట్‌కట్‌లు
 - GitHub నుండి OTA అప్‌డేట్లు, స్లీప్ టైమర్, బ్యాక్‌గ్రౌండ్ ప్లేబ్యాక్
 
-🛡️ 100% ఓపెన్‌సోర్స్ (FOSS). ముఖ్య అనుమతులు: INTERNET, RECORD_AUDIO (విజువలైజర్ మాత్రమే), STORAGE (ఎగుమతులు/బ్యాక్‌అప్‌లు), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>అందుబాటులో ఉన్న బిల్డ్లు</b>
-- Full/Beta: పూర్తి బిల్డ్ (64-bit)
-- Full32/Beta32: FFmpeg లేకుండా (32/64-bit)
-- Minified: తేలికైనది, తక్కువ-గ్రేడ్ డివైస్‌లకు (64-bit)
-- Minified32: FFmpeg లేకుండా తేలికైనది (32/64-bit)
-- FOSS: ఆటో-అప్‌డేటర్ మరియు FFmpeg లేకుండా, F-Droid కోసం (64-bit)
-- Dev/Dev32: డెవలప్‌మెంట్ బిల్డ్లు, పరీక్ష కోసం మాత్రమే
+- Release64/Beta64 (`com.nevar.nzik`): పూర్తి బిల్డ్, 64-bit డివైస్‌లకు మాత్రమే
+- Release32/Beta32 (`com.nevar.nzik`): పూర్తి బిల్డ్, 32-bit డివైస్‌లకు మాత్రమే
+- Minified64 (`com.nevar.nzik`): తేలికైన R8 బిల్డ్, తక్కువ-గ్రేడ్ డివైస్‌లకు (64-bit)
+- Minified32 (`com.nevar.nzik`): తేలికైన R8 బిల్డ్ (32-bit)
+- FOSS (`com.nevar.nzik.foss`): ఆటో-అప్‌డేటర్ లేకుండా, F-Droid కోసం (అన్ని ఆర్కిటెక్చర్లు)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): డెవలప్‌మెంట్ బిల్డ్లు, పరీక్ష కోసం మాత్రమే
 
-ప్రమాణ బిల్డ్‌లు FFmpegను కలిగి ఉంటాయి; "32" బిల్డ్‌లు మరియు FOSS లేవు. F-Droid‌లో FOSS మాత్రమే ఉంది.
-
-<b>జనవరి 2027</b> నుండి Google అన్ని డెవలపర్‌లకు గుర్తింపు ధృవీకరణను అవసరం చేస్తుంది. FOSSగా, N-Zik దీని వ్యతిరేకంగా ఉంది. <a href="https://keepandroidopen.org">మరిన్ని వివరాలు</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">పిటిషన్‌పై సంతకం చేయండి</a>
+ఏ బిల్డ్‌లోనూ FFmpeg ఉండదు: ఇది డౌన్‌లోడ్ చేయగల ఎక్స్టెన్షన్ (మొదటిసారి ఉపయోగించినప్పుడు ఇన్స్టాల్ అవుతుంది, సెట్టింగ్‌లు → ఎక్స్టెన్షన్లు లో నిర్వహించబడుతుంది). F-Droid‌లో FOSS మాత్రమే ఉంది.

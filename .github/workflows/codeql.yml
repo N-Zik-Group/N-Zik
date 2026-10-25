@@ -74,8 +74,8 @@ jobs:
         run: |
           chmod +x gradlew
           # assembleDebug is the daily build variant: it compiles the app and
-          # all module main sources without the custom build types (beta,
-          # full, ...) or the unit-test sources.
+          # all module main sources without the custom build types (release64,
+          # release32, minified64, beta64, ...) or the unit-test sources.
           ./gradlew --no-daemon :ComposeN-Zik:assembleDebug
 
       - name: Perform CodeQL Analysis

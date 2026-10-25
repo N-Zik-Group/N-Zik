@@ -3,17 +3,22 @@ package app.n_zik.android.components.menu.player
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-/** Decision 6 (extended to the player menu): a local song without FFmpeg has no edit-metadata button. */
+/**
+ * Pins the local-song slot layout of [PlayerItemMenu] - the pinning tests were
+ * deleted when the FFmpeg gate was removed (spec-ffmpeg-extension-module).
+ */
 class PlayerItemMenuLocalIndexTest {
 
     @Test
-    fun `playback buttons follow the edit-metadata button only when FFmpeg ships`() {
-        val withFfmpeg = listOf("info", "waves", "edit", "eq", "sleep", "fav", "playlist", "albumId", "artistId", "export")
-        val start = localPlayerPlaybackStart(ffmpeg = true)
-        assertEquals(listOf("eq", "sleep", "fav", "playlist", "albumId", "artistId"), withFfmpeg.subList(start, start + LOCAL_PLAYER_PLAYBACK_COUNT))
+    fun `local playback starts right after the editMetadata slot`() {
+        // 0=info, 1=waves, 2=editMetadata, then playback from 3
+        assertEquals(2, LOCAL_PLAYER_PLAYBACK_START - 1)
+        assertEquals(3, LOCAL_PLAYER_PLAYBACK_START)
+    }
 
-        val without = listOf("info", "waves", "eq", "sleep", "fav", "playlist", "albumId", "artistId")
-        val start32 = localPlayerPlaybackStart(ffmpeg = false)
-        assertEquals(listOf("eq", "sleep", "fav", "playlist", "albumId", "artistId"), without.subList(start32, start32 + LOCAL_PLAYER_PLAYBACK_COUNT))
+    @Test
+    fun `local playback buttons fit the 10-slot local layout`() {
+        // 3 fixed slots before playback, 6 playback buttons, 1 export slot after
+        assertEquals(10, LOCAL_PLAYER_PLAYBACK_START + LOCAL_PLAYER_PLAYBACK_COUNT + 1)
     }
 }

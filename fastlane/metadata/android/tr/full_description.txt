@@ -54,16 +54,12 @@ Sıradan dinleyici ya da odyofil olun, N-Zik gizliliğinizden ödün vermeden m�
 - Rescue Center, bakım ekranı, başlangıç rehberi, uygulama kısayolları
 - GitHub'dan OTA güncellemeleri, uyku zamanlayıcısı, arka plan oynatma
 
-🛡️ %100 açık kaynaklı (FOSS). Temel izinler: INTERNET, RECORD_AUDIO (yalnızca görselleştirici), STORAGE (dışa aktarma/yedekleme), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Mevcut Yapılar</b>
-- Full/Beta: Tam yapı (64-bit)
-- Full32/Beta32: FFmpeg içermeyen (32/64-bit)
-- Minified: Düşük özellikli cihazlar için hafif (64-bit)
-- Minified32: FFmpeg içermeyen hafif (32/64-bit)
-- FOSS: Otomatik güncelleyici ve FFmpeg içermeyen, F-Droid için (64-bit)
-- Dev/Dev32: Geliştirme yapıları, yalnızca test için
+- Release64/Beta64 (`com.nevar.nzik`): Tam yapı, yalnızca 64-bit cihazlar
+- Release32/Beta32 (`com.nevar.nzik`): Tam yapı, yalnızca 32-bit cihazlar
+- Minified64 (`com.nevar.nzik`): Hafif R8 yapı, düşük özellikli cihazlar için (64-bit)
+- Minified32 (`com.nevar.nzik`): Hafif R8 yapı (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Otomatik güncelleyicisiz, F-Droid için (tüm mimariler)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Geliştirme yapıları, yalnızca test için
 
-Standart yapılar FFmpeg içerir; "32" yapılar ve FOSS içermez. F-Droid'de yalnızca FOSS var.
-
-<b>Ocak 2027</b>'den itibaren Google, tüm geliştiricilerden kimlik doğrulaması gerektiriyor. FOSS olarak N-Zik buna karşı çıkıyor. <a href="https://keepandroidopen.org">Daha fazla bilgi</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Petisyonu imzalayın</a>
+Hiçbir yapı FFmpeg içermez: indirilebilir bir eklentidir (ilk kullanımda kurulur, Ayarlar → Eklentiler içinde yönetilir). F-Droid'de yalnızca FOSS var.

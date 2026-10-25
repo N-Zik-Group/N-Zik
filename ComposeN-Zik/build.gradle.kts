@@ -1,10 +1,13 @@
 import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+import com.android.build.gradle.internal.tasks.MergeNativeLibsTask
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Properties
+import java.util.zip.ZipFile
 import java.io.FileInputStream
+import java.io.File
 
 val APP_NAME = libs.versions.nzikAppName.get()
 
@@ -139,6 +142,8 @@ android {
          */
         buildConfigField("Boolean", "IS_AUTOUPDATE", "true")
         buildConfigField("String", "APP_NAME", "\"$APP_NAME\"")
+        // Pinned version of the FFmpeg extension module (downloaded on first use — see FfmpegModule)
+        buildConfigField("String", "FFMPEG_MODULE_VERSION", "\"${libs.versions.ffmpegkit.get()}\"")
 
         val localProperties = Properties()
         val localPropertiesFile = rootProject.file("local.properties")
@@ -181,13 +186,103 @@ android {
     packaging {
         jniLibs {
             keepDebugSymbols.add("**/*.so")
+            // FFmpeg's native libraries are NOT bundled in any build
+            // (spec-ffmpeg-extension-module): the vendored FFmpegKit jar
+            // (libs/ffmpeg-kit-audio-6.0.1.jar) provides the Java API only; the
+            // .so files ship as the downloadable extension module and are
+            // dlopen'd from filesDir by FfmpegModule. libc++_shared is excluded
+            // too — it is an orphan of the FFmpegKit AAR (no app library has a
+            // DT_NEEDED on it, verified via readelf on the APK) and the module
+            // ships its own, patched with DF_1_GLOBAL.
+            // Verification: the built APKs must contain zero FFmpeg .so files -
+            // enforced by the per-package check below, which re-scans each APK
+            // right after it is packaged (local builds and CI alike).
+            excludes += listOf(
+                "lib/*/libav*.so",
+                "lib/*/libsw*.so",
+                "lib/*/libffmpegkit*.so",
+                "lib/*/libc++_shared.so"
+            )
         }
     }
 
+    // Global ABI split — kept as a documented no-op (isUniversalApk is the
+    // AGP default; per-build-type ABI splits are not expressible through the
+    // variant API). The per-build-type ABI restriction lives on the
+    // merge<Variant>NativeLibs task instead (below,
+    // spec-ffmpeg-extension-module).
     splits {
         abi {
             reset()
             isUniversalApk = true
+        }
+    }
+
+    // Per-build-type ABI restriction (spec-ffmpeg-extension-module): packaging
+    // excludes are global to the module, so the per-type strip is applied on
+    // the merged-native-libs task (merge<Variant>NativeLibs, output layout
+    // <out>/lib/<abi>/<lib>.so) — 64-bit builds drop the 32-bit ABIs, 32-bit
+    // builds drop the 64-bit ABIs; foss + debug stay universal (4 ABIs).
+    // Composes with the global FFmpegKit .so excludes above (applied by the
+    // same task): those strip the FFmpeg files from every build, this drops
+    // whole ABI dirs per build.
+    val abi64OnlyBuildTypes = setOf("release64", "minified64", "beta64", "dev64")
+    val abi32OnlyBuildTypes = setOf("release32", "minified32", "beta32", "dev32")
+    tasks.withType(MergeNativeLibsTask::class.java).configureEach {
+        val variant = name.removePrefix("merge").removeSuffix("NativeLibs").lowercase()
+        val abisToDrop = when (variant) {
+            in abi64OnlyBuildTypes -> listOf("armeabi-v7a", "x86")
+            in abi32OnlyBuildTypes -> listOf("arm64-v8a", "x86_64")
+            else -> null // foss, debug and test variants: universal
+        }
+        if (abisToDrop != null) {
+            // Always re-run so the drop applies even when the inputs did not
+            // change (a stale universal merge would otherwise survive an
+            // up-to-date check)
+            outputs.upToDateWhen { false }
+            doLast {
+                val lib = File(outputDir.get().asFile, "lib")
+                for (abi in abisToDrop) {
+                    File(lib, abi).deleteRecursively()
+                }
+            }
+        }
+    }
+
+    // Verification (spec-ffmpeg-extension-module): no FFmpeg native library may
+    // ever ship in an APK. The packaging excludes above strip them; each
+    // package task re-checks its own produced APK right after packaging, so a
+    // regression fails the build for any build type, locally and in CI. Stale
+    // APKs left in the outputs dir by older builds are not re-flagged.
+    tasks.matching { it.name.startsWith("package") }.configureEach {
+        val buildType = name.removePrefix("package").lowercase()
+        // Captured at configuration time: Task.project is unavailable at
+        // execution time under the configuration cache
+        val apkFile = project.layout.buildDirectory
+            .file("outputs/apk/$buildType/$APP_NAME-$buildType.apk")
+        doLast {
+            val apk = apkFile.get().asFile
+            if (!apk.exists()) return@doLast
+            val offenders = mutableListOf<String>()
+            val zip = ZipFile(apk)
+            try {
+                for (entry in zip.entries()) {
+                    val slash = entry.name.lastIndexOf('/')
+                    val base = if (slash >= 0) entry.name.substring(slash + 1) else entry.name
+                    if (entry.name.startsWith("lib/") &&
+                        (base.startsWith("libav") || base.startsWith("libsw") ||
+                            base.startsWith("libffmpegkit") || base == "libc++_shared.so")
+                    ) {
+                        offenders.add(entry.name)
+                    }
+                }
+            } finally {
+                zip.close()
+            }
+            check(offenders.isEmpty()) {
+                "FFmpeg native libraries leaked into $apk.name: ${offenders.joinToString(", ")}"
+            }
+            println("FFmpeg native library check: OK, no FFmpeg .so in $apk.name")
         }
     }
 
@@ -203,17 +298,17 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
 
-        create("full") {
+        create("release64") {
             // App's properties
-            versionNameSuffix = libs.versions.nzikSuffixVersionFull.get()
-            // Fallback for modules that don't have a 'full' build type (like :discordrpc)
+            versionNameSuffix = libs.versions.nzikSuffixVersionRelease64.get()
+            // Fallback for modules that don't have a 'release64' build type (like :discordrpc)
             matchingFallbacks += listOf("release")
         }
 
-        create("minified") {
+        create("minified64") {
             // App's properties
-            versionNameSuffix = libs.versions.nzikSuffixVersionMinified.get()
-            // Fallback for modules that don't have a 'minified' build type (like :discordrpc)
+            versionNameSuffix = libs.versions.nzikSuffixVersionMinified64.get()
+            // Fallback for modules that don't have a 'minified64' build type (like :discordrpc)
             matchingFallbacks += listOf("release")
 
             // Package optimization
@@ -225,31 +320,31 @@ android {
             )
         }
 
-        create("full32") {
+        create("release32") {
             // App's properties
-            initWith(maybeCreate("full"))
-            versionNameSuffix = libs.versions.nzikSuffixVersionFull32.get()
-            // Fallback for modules that don't have a 'full32' build type
+            initWith(maybeCreate("release64"))
+            versionNameSuffix = libs.versions.nzikSuffixVersionRelease32.get()
+            // Fallback for modules that don't have a 'release32' build type
             matchingFallbacks += listOf("release")
         }
 
         create("minified32") {
             // App's properties
-            initWith(maybeCreate("minified"))
+            initWith(maybeCreate("minified64"))
             versionNameSuffix = libs.versions.nzikSuffixVersionMinified32.get()
             // Fallback for modules that don't have a 'minified32' build type
             matchingFallbacks += listOf("release")
         }
 
-        create("beta") {
-            initWith(maybeCreate("full"))
-            versionNameSuffix = libs.versions.nzikSuffixVersionBeta.get()
-            // Fallback for modules that don't have a 'beta' build type (like :discordrpc)
+        create("beta64") {
+            initWith(maybeCreate("release64"))
+            versionNameSuffix = libs.versions.nzikSuffixVersionBeta64.get()
+            // Fallback for modules that don't have a 'beta64' build type (like :discordrpc)
             matchingFallbacks += listOf("release")
         }
 
         create("beta32") {
-            initWith(maybeCreate("beta"))
+            initWith(maybeCreate("beta64"))
             versionNameSuffix = libs.versions.nzikSuffixVersionBeta32.get()
             // Fallback for modules that don't have a 'beta32' build type
             matchingFallbacks += listOf("release")
@@ -257,7 +352,7 @@ android {
 
         create("foss") {
             // App's properties
-            initWith(maybeCreate("full"))
+            initWith(maybeCreate("release64"))
             manifestPlaceholders += mapOf("appName" to "$APP_NAME${libs.versions.nzikSuffixAppNameFoss.get()}")
             applicationIdSuffix = libs.versions.nzikSuffixAppIdFoss.get()
             buildConfigField("Boolean", "IS_AUTOUPDATE", "false")
@@ -269,13 +364,13 @@ android {
         val devDate = project.findProperty("devDate")?.toString()
             ?: SimpleDateFormat("yyyyMMdd").format(Date())
 
-        create("dev") {
+        create("dev64") {
             manifestPlaceholders += mapOf("appName" to "$APP_NAME${libs.versions.nzikSuffixAppNameDev.get()}")
             applicationIdSuffix = libs.versions.nzikSuffixAppIdDev.get()
-            versionNameSuffix = "${libs.versions.nzikSuffixVersionDev.get()}$devDate"
+            versionNameSuffix = "${libs.versions.nzikSuffixVersionDev64.get()}$devDate"
             buildConfigField("Boolean", "IS_AUTOUPDATE", "true")
 
-            // Fallback for modules that don't have a 'dev' build type (like :discordrpc)
+            // Fallback for modules that don't have a 'dev64' build type (like :discordrpc)
             matchingFallbacks += listOf("release")
         }
 
@@ -283,7 +378,7 @@ android {
             // App's properties
             manifestPlaceholders += mapOf("appName" to "$APP_NAME${libs.versions.nzikSuffixAppNameDev32.get()}")
             applicationIdSuffix = libs.versions.nzikSuffixAppIdDev.get()
-            initWith(maybeCreate("dev"))
+            initWith(maybeCreate("dev64"))
             versionNameSuffix = "${libs.versions.nzikSuffixVersionDev32.get()}$devDate"
             buildConfigField("Boolean", "IS_AUTOUPDATE", "true")
 
@@ -296,13 +391,11 @@ android {
          * "Forkers" want to change app name across builds
          * just need to change this variable
          */
+        // FFmpeg availability is no longer a build-time flag
+        // (spec-ffmpeg-extension-module): the module is downloaded on first use
+        // and checked at runtime (FfmpegModule.isAvailableOnDevice)
         forEach {
             it.manifestPlaceholders.putIfAbsent("appName", APP_NAME)
-            if (it.name == "full32" || it.name == "minified32" || it.name == "beta32" || it.name == "dev32" || it.name == "foss") {
-                it.buildConfigField("Boolean", "ENABLE_FFMPEG", "false")
-            } else {
-                it.buildConfigField("Boolean", "ENABLE_FFMPEG", "true")
-            }
         }
     }
 
@@ -382,12 +475,10 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.compose.animation)
     implementation(libs.kotlin.csv)
-    compileOnly(libs.ffmpeg.kit.audio)
-    "debugImplementation"(libs.ffmpeg.kit.audio)
-    "fullImplementation"(libs.ffmpeg.kit.audio)
-    "minifiedImplementation"(libs.ffmpeg.kit.audio)
-    "betaImplementation"(libs.ffmpeg.kit.audio)
-    "devImplementation"(libs.ffmpeg.kit.audio)
+    // FFmpegKit Java API for every build — the AAR's native .so are stripped
+    // from every build (packaging.jniLibs.excludes) and dlopen'd at runtime
+    // from the downloaded extension module (spec-ffmpeg-extension-module)
+    implementation(libs.ffmpeg.kit.audio)
     implementation(libs.monetcompat)
     implementation(libs.androidmaterial)
     implementation(libs.timber)

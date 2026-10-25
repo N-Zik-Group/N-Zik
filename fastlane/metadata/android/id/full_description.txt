@@ -54,16 +54,12 @@ Pendengar kasual maupun audiofil, N-Zik memberi Anda kendali penuh atas musik ta
 - Rescue Center, layar pemeliharaan, onboarding, pintasan app
 - Pembaruan OTA dari GitHub, timer tidur, pemutaran latar belakang
 
-🛡️ 100% sumber terbuka (FOSS). Izin utama: INTERNET, RECORD_AUDIO (hanya visualisator), STORAGE (ekspor/cadangan), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Build yang Tersedia</b>
-- Full/Beta: Build lengkap (64-bit)
-- Full32/Beta32: Tanpa FFmpeg (32/64-bit)
-- Minified: Ringan, untuk perangkat kelas bawah (64-bit)
-- Minified32: Ringan tanpa FFmpeg (32/64-bit)
-- FOSS: Tanpa auto-updater dan FFmpeg, untuk F-Droid (64-bit)
-- Dev/Dev32: Build pengembangan, hanya untuk pengujian
+- Release64/Beta64 (`com.nevar.nzik`): Build lengkap, hanya perangkat 64-bit
+- Release32/Beta32 (`com.nevar.nzik`): Build lengkap, hanya perangkat 32-bit
+- Minified64 (`com.nevar.nzik`): Build R8 ringan, untuk perangkat kelas bawah (64-bit)
+- Minified32 (`com.nevar.nzik`): Build R8 ringan (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Tanpa auto-updater, untuk F-Droid (semua arsitektur)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Build pengembangan, hanya untuk pengujian
 
-Build standar menyertakan FFmpeg; build "32" dan FOSS tidak. Hanya FOSS yang ada di F-Droid.
-
-Mulai <b>Januari 2027</b>, Google mewajibkan verifikasi identitas untuk semua pengembang. Sebagai proyek FOSS, N-Zik menentang ini. <a href="https://keepandroidopen.org">Pelajari lebih lanjut</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Tanda tangani petisi</a>
+Tidak ada build yang menyertakan FFmpeg: ini adalah ekstensi yang dapat diunduh (diinstal saat pertama kali digunakan, dikelola di Pengaturan → Ekstensi). Hanya FOSS yang ada di F-Droid.

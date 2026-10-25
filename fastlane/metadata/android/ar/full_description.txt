@@ -54,16 +54,12 @@
 - Rescue Center، شاشة الصيانة، التهيئة، اختصارات التطبيق
 - تحديثات OTA من GitHub، مؤقت النوم، تشغيل في الخلفية
 
-🛡️ 100% مفتوح المصدر (FOSS). الأذونات الرئيسية: INTERNET وRECORD_AUDIO (للمتصور فقط) وSTORAGE (تصدير/نسخ احتياطي) وFOREGROUND_SERVICE وNOTIFICATIONS وREQUEST_INSTALL_PACKAGES (OTA) وBLUETOOTH وWAKE_LOCK.
-
 📦 <b>الإصدارات المتاحة</b>
-- Full/Beta: إصدار كامل (64-bit)
-- Full32/Beta32: بدون FFmpeg (32/64-bit)
-- Minified: خفيف للأجهزة المنخفضة (64-bit)
-- Minified32: خفيف بدون FFmpeg (32/64-bit)
-- FOSS: بدون أداة التحديث التلقائي وFFmpeg، لـ F-Droid (64-bit)
-- Dev/Dev32: إصدارات تطوير للاختبار فقط
+- Release64/Beta64 (`com.nevar.nzik`): إصدار كامل، لأجهزة 64-bit فقط
+- Release32/Beta32 (`com.nevar.nzik`): إصدار كامل، لأجهزة 32-bit فقط
+- Minified64 (`com.nevar.nzik`): إصدار R8 خفيف، للأجهزة المنخفضة (64-bit)
+- Minified32 (`com.nevar.nzik`): إصدار R8 خفيف (32-bit)
+- FOSS (`com.nevar.nzik.foss`): بدون أداة التحديث التلقائي، لـ F-Droid (جميع المعماريات)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): إصدارات تطوير للاختبار فقط
 
-الإصدارات القياسية تتضمن FFmpeg؛ إصدارات "32" وFOSS لا تتضمنه. FOSS فقط هو المتوفر على F-Droid.
-
-بدءاً من <b>يناير 2027</b>، ستطلب Google التحقق من الهوية لجميع المطورين. كمشروع FOSS، يعارض N-Zik هذا. <a href="https://keepandroidopen.org">تعرف على المزيد</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">وقع العريضة</a>
+لا يوجد إصدار يتضمن FFmpeg: فهو إضافة قابلة للتحميل (تُثبَّت عند الاستخدام الأول، تُدار في الإعدادات → الإضافات). FOSS فقط هو المتوفر على F-Droid.

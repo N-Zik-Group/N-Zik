@@ -62,54 +62,14 @@
 
 ## 📦 Available Builds
 
-- **Full** & **Beta**: Complete build with all components, runs on every architecture (universal APK, ≈ 140 MB).
-- **Full32** & **Beta32**: Complete build without FFmpeg, runs on every architecture (universal APK, ≈ 62 MB).
-- **Minified**: Lightweight build, recommended for low-end devices, runs on every architecture (universal APK, ≈ 111 MB).
-- **Minified32**: Lightweight build without FFmpeg, runs on every architecture (universal APK, ≈ 34 MB).
-- **FOSS** (`com.nevar.nzik.foss`): Full build without auto-updater **and without FFmpeg**, suitable for alternative stores, runs on every architecture (universal APK, ≈ 62 MB).
-- **Dev** & **Dev32**: Development builds from latest commits, for testing only, runs on every architecture (universal APK, Dev ≈ 140 MB, Dev32 ≈ 62 MB).
+- **Release64** & **Beta64** (`com.nevar.nzik`): Complete build with all components, 64-bit devices only (arm64-v8a + x86_64).
+- **Release32** & **Beta32** (`com.nevar.nzik`): Complete build with all components, 32-bit devices only (armeabi-v7a + x86).
+- **Minified64** (`com.nevar.nzik`): Lightweight R8-shrunk build, recommended for low-end devices, 64-bit devices only.
+- **Minified32** (`com.nevar.nzik`): Lightweight R8-shrunk build, 32-bit devices only.
+- **FOSS** (`com.nevar.nzik.foss`): Complete build without auto-updater, suitable for alternative stores, runs on every architecture (universal APK).
+- **Dev64** & **Dev32** (`com.nevar.nzik.dev`): Development builds from latest commits, for testing only (Dev64 64-bit only, Dev32 32-bit only).
 
-> ℹ️ Standard builds (Full, Minified, Beta, Dev) bundle FFmpeg, which is why they're bigger. The "32" builds (Full32, Minified32, Beta32, Dev32) and FOSS drop FFmpeg to stay small. All builds are universal APKs and run on every architecture. See the section below for the full explanation.
-
-### Why are the Full builds so big? (FFmpeg)
-
-If the standard builds feel heavy compared to the `*32` builds, that's not a packaging mistake, it's one single thing: **FFmpeg**. Here's the full picture.
-
-**What FFmpeg is used for**
-
-Regular playback, streaming and downloading do *not* run through FFmpeg (that's handled by Media3/ExoPlayer). FFmpeg is only invoked for explicit, user-triggered features:
-
-- 📤 **Media Export**: export cached or downloaded songs to your own storage as proper `.m4a` / `.ogg` files, with full metadata (title, artist, album, year, track position, genre, copyright, composer) and embedded cover art, readable by any music app. The audio stream is transmuxed, never re-encoded, so export is lossless and fast.
-- ✏️ **Metadata Editor**: edit a song's tags (title, artist, album, genre, year, cover art, …) directly in-app, for both AAC and Opus files, with automatic cover art embedding.
-- 🖥️ **Desktop Compagnon**: the `library.ffmpeg` feature flag tells the PC companion whether your phone build offers the two features above, so the matching menu entries appear.
-
-**Why it adds ~77 MB to the APK**
-
-FFmpeg is one of the largest media libraries in existence. Even the slim "audio-only" variant we ship carries the full audio codec stack (AAC, Opus, Vorbis, MP3, FLAC, AMR, ALAC, …), container parsers and demuxers, which is exactly why export and tag editing keep working no matter what a file's real format turns out to be. FFmpeg ships as **native compiled code**, and Android requires native `.so` libraries to be stored **uncompressed** inside the APK, so their full size lands 1:1 in your download. N-Zik's standard builds are **universal APKs**: FFmpeg is bundled for `arm64-v8a` (≈ 24 MB), `armeabi-v7a` (≈ 23 MB) and `x86_64` (≈ 30 MB), which is **≈ 77 MB** of native libraries in total.
-
-**Real sizes**
-
-| Build | Size | FFmpeg |
-| --- | --- | --- |
-| Full | ≈ 140 MB | ✅ (all supported architectures) |
-| Minified | ≈ 111 MB | ✅ (all supported architectures, R8-shrunk) |
-| Full32 | ≈ 62 MB | ❌ |
-| Minified32 | ≈ 34 MB | ❌ (R8-shrunk) |
-| FOSS | ≈ 62 MB | ❌ |
-
-The entire ~77 MB gap between Full and Full32 is FFmpeg, nothing else differs.
-
-**Why a fork (ffmpeg-kit-16KB)?**
-
-The original FFmpegKit was officially retired by its author (no more releases, prebuilt binaries withdrawn), and Android 15+ ships 16 KB memory-page devices, on which native binaries not aligned to 16 KB pages simply won't load. N-Zik therefore uses the community-maintained [ffmpeg-kit-16KB](https://github.com/maxrave-dev/ffmpeg-kit-16KB) fork, rebuilt with 16 KB alignment. Without it, the FFmpeg-based features would fail on those devices.
-
-**What you lose on `*32` builds**
-
-Dropping FFmpeg is what keeps the `*32` builds (and FOSS) small (≈ 62 MB instead of ≈ 140 MB). The trade-off: **no Media Export, no Metadata Editor** (those menu entries simply don't appear) and no `library.ffmpeg` feature for the Desktop Compagnon. Everything else works the same. Note that the standard builds are universal and run on 32-bit devices too, so choosing a `*32` or FOSS build is purely a download-size decision.
-
-**Why the base app is still ≈ 62 MB**
-
-N-Zik is a fork, and it carries the legacy codebase of its ancestors (Kreate, RiMusic, ViMusic): a lot of features that were never designed for a small APK. Even without FFmpeg, the base app (Kotlin/Java code + resources) is ≈ 62 MB, and a meaningful part of it is legacy that can only be removed slowly, feature by feature, without breaking the app. I'm the sole maintainer, working on this in my spare time: keeping the app stable and reducing its size are real, ongoing priorities, not something that gets forgotten. If download size matters more to you than features, the `*32` and FOSS builds are the lightest option, and the alternative clients listed at the top are worth a look.
+> ℹ️ The `64`/`32` in a build name is an honest ABI label, not a feature cutoff.
 
 ---
 
@@ -180,7 +140,8 @@ Join the N-Zik Discord:
 - 📺 **Wide Platform Support**: Compatible with Android Auto, Android Automotive, Android TV, and YouTube video playback.
 - 🪟 **Widgets**: New widgets for your home screen (Compact, Turntable, and Playlist).
 
-- 📤 **Media Export**: Export cached or downloaded music to external storage with full metadata (title, artist, album, cover art, copyright, etc.) powered by FFmpeg. _(Note: Not available on 32-bit builds as they drop FFmpeg)_
+- 🧩 **Extensions**: Heavy features are delivered as small, downloadable modules that add capability without bloating every APK. Manage them from the burger menu → **Extensions**, which opens the Extensions page in Settings with **Installed** (state, size, update/uninstall) and **Marketplace** (browse + download available extensions) tabs. The first extension is **FFmpeg**, which unlocks **Media Export** and the **Metadata Editor**, the app's only FFmpeg-powered features; regular playback, streaming and downloads never use it. It downloads automatically on first use (≈ 25 MB, SHA-256 verified, app-update-style progress notification), updates and uninstalls independently of the app, and is version-pinned to the app. _(Note: the FFmpeg extension is not available on x86 32-bit devices.)_
+- 📤 **Media Export**: Export cached or downloaded music to external storage with full metadata (title, artist, album, cover art, copyright, etc.) powered by FFmpeg. _(Note: requires the **FFmpeg extension**; see the [Extensions](#-features) entry in the Features list. Managed in Settings → Extensions. Not available on x86 32-bit devices.)_
 - ✏️ **Metadata Editor**: Edit song metadata (title, artist, album, genre, year, cover art, and more) directly in-app. Supports both AAC and Opus codecs with automatic cover art embedding.
 - ⚙️ **Settings & Database Auto-Backup**: Save, restore, and automatically back up your complete app configuration and database with customizable intervals, retention limits, and optional YouTube/Discord/Last.fm credential inclusion.
 - 📡 **Offline First**: Enjoy your music library even without an internet connection.
@@ -448,7 +409,7 @@ New:
 
 ## 🛠️ Build & Deployment
 
-[![Build Full and Minified](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-all-flavors-weekly.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-all-flavors-weekly.yml)  
+[![Build Stable Flavors](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-all-flavors-weekly.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-all-flavors-weekly.yml)  
 [![Build Beta](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-beta-flavor.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-beta-flavor.yaml)  
 [![Build Dev](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-dev.yml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/build-dev.yml)  
 [![Automatic Cache Builder](https://github.com/N-Zik-Group/N-Zik/actions/workflows/cache-builder.yaml/badge.svg)](https://github.com/N-Zik-Group/N-Zik/actions/workflows/cache-builder.yaml)

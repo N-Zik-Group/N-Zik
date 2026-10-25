@@ -1134,7 +1134,6 @@
     <string name="beta_title">BETA</string>
     <string name="dev_title">GELİŞTİRİCİ</string>
     <string name="debug_title">HATA AYIKLAMA</string>
-    <string name="full_title">DOLU</string>
     <string name="stable_title">STABLE</string>
     <string name="minified_title">MINIFIED</string>
     <string name="update_file_size">Dosya boyutu: %s</string>

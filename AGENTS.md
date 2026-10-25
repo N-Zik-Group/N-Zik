@@ -1,6 +1,6 @@
 # AGENTS.md — NZik
 
-**Version:** 1.7.3 | **Last updated:** 2026-10-22
+**Version:** 1.8.1 | **Last updated:** 2026-10-25
 
 **MANDATORY: Read this file + rules/*.md before any task.**
 
@@ -131,7 +131,7 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 ./gradlew :ComposeN-Zik:testDebugUnitTest --tests "app.n_zik.android.SomeTest"  # Single test
 ```
 
-> **Build types:** 10 types (`debug`, `full`, `minified`, `full32`, `minified32`, `beta`, `beta32`, `foss`, `dev`, `dev32`) — `release` is disabled, so `assembleRelease` does NOT exist. Variant differences: `*32` and `foss` builds without FFmpeg, `foss` also gets a `.foss` applicationId + no auto-update, `dev` builds get a dated version-name suffix — see rules/BUILD.md "Build Types".
+> **Build types:** 10 types (`debug`, `release64`, `release32`, `minified64`, `minified32`, `beta64`, `beta32`, `foss`, `dev64`, `dev32`) — `release` is disabled, so `assembleRelease` does NOT exist. No build bundles FFmpeg; it ships as a downloadable extension module (the `app.n_zik.android.modules/` system, Extensions page in Settings). ABI: `64` types ship only arm64-v8a + x86_64, `32` types only armeabi-v7a + x86, `foss` + `debug` are universal; `foss` also gets a `.foss` applicationId + no auto-update, `dev` builds get a dated version-name suffix — see rules/BUILD.md "Build Types".
 
 > **Windows:** run `gradlew.bat …` from the repo root `N-Zik/` (e.g. `gradlew.bat :ComposeN-Zik:assembleDebug`). The workspace root (the parent of `N-Zik/`, where `_bmad/` lives) is **not** a git/gradle project — all `git` and `gradlew` commands run from `N-Zik/`.
 

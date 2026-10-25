@@ -54,16 +54,12 @@ Si to enn senp lekouter ouswa enn audiophile, N-Zik donn to kontrol koupe lor to
 - Rescue Center, ekran mantenans, onboarding, shortcut app
 - Update OTA depi GitHub, timer pou dòmi, lekout an bann
 
-🛡️ 100% open-source (FOSS). Bann permision kle: INTERNET, RECORD_AUDIO (pou vizualizater selman), STORAGE (eksport/back-up), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Bann Build Disponib</b>
-- Full/Beta: Build koupe (64-bit)
-- Full32/Beta32: San FFmpeg (32/64-bit)
-- Minified: Build leze, pou bann aparé molè (64-bit)
-- Minified32: Build leze san FFmpeg (32/64-bit)
-- FOSS: San auto-updater ek san FFmpeg, pou F-Droid (64-bit)
-- Dev/Dev32: Bann build devlopman, pou test selman
+- Release64/Beta64 (`com.nevar.nzik`): Build koupe, 64-bit aparé selman
+- Release32/Beta32 (`com.nevar.nzik`): Build koupe, 32-bit aparé selman
+- Minified64 (`com.nevar.nzik`): R8 build leze, pou bann aparé molè (64-bit)
+- Minified32 (`com.nevar.nzik`): R8 build leze (32-bit)
+- FOSS (`com.nevar.nzik.foss`): San auto-updater, pou F-Droid (tous arsitektir)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Bann build devlopman, pou test selman
 
-Bann build standar avek FFmpeg; bann build "32" ek FOSS san. Se build FOSS selman ki lor F-Droid.
-
-Koumans <b>Zantrie 2027</b>, Google va mande verifikasion idantite pou tou bann devlope. Kom enn proze FOSS, N-Zik kont sa. <a href="https://keepandroidopen.org">Aprann plis</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Swign sa petision la</a>
+Bann build pa kontann FFmpeg : sa enn ekstansyon téléchargeable (instal lor premie servi, gesti dan Paramèt → Ekstansyon). Se build FOSS selman ki lor F-Droid.

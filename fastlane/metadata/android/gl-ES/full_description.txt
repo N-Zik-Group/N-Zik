@@ -54,16 +54,12 @@ Sexas escoitador ocasional ou audiófilo, N-Zik dáche control total da túa mú
 - Rescue Center, pantalla de mantemento, onboarding, atallos
 - OTA desde GitHub, temporizador de sono, reprodución en segundo plano
 
-🛡️ 100% código aberto (FOSS). Permisos principais: INTERNET, RECORD_AUDIO (só visualizador), STORAGE (exportacións/copias), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Compilacións dispoñibles</b>
-- Full/Beta: Versión completa (64-bit)
-- Full32/Beta32: Sen FFmpeg (32/64-bit)
-- Minified: Ligera, para equipos de gama baixa (64-bit)
-- Minified32: Ligera sen FFmpeg (32/64-bit)
-- FOSS: Sen actualizador automático nin FFmpeg (64-bit, para F-Droid)
-- Dev/Dev32: Versións de desenvolvemento, só probas
+- Release64/Beta64 (`com.nevar.nzik`): Versión completa, só dispositivos de 64-bit
+- Release32/Beta32 (`com.nevar.nzik`): Versión completa, só dispositivos de 32-bit
+- Minified64 (`com.nevar.nzik`): Versión R8 ligera, para equipos de gama baixa (64-bit)
+- Minified32 (`com.nevar.nzik`): Versión R8 ligera (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Sen actualizador automático, para F-Droid (todas as arquitecturas)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Versións de desenvolvemento, só probas
 
-As compilacións estándar inclúen FFmpeg; as "32" e FOSS non. Só FOSS está en F-Droid.
-
-Desde <b>xaneiro de 2027</b>, Google exixirá verificación de identidade a cada desenvolvedor. Como FOSS, N-Zik opónse. <a href="https://keepandroidopen.org">Saber máis</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Asina a petición</a>
+Ningunha compilación inclúe FFmpeg: é unha extensión descargable (instálase no primeiro uso, xestionada en Axustes → Extensións). Só FOSS está en F-Droid.

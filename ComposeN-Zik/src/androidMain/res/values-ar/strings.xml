@@ -1134,7 +1134,6 @@
     <string name="beta_title">بيتا</string>
     <string name="dev_title">DEV</string>
     <string name="debug_title">DEBUG</string>
-    <string name="full_title">FULL</string>
     <string name="stable_title">ابدأ</string>
     <string name="minified_title">ممنوع</string>
     <string name="update_file_size">حجم الملف: %s</string>

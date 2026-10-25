@@ -54,16 +54,12 @@ Jeni dëgjues i rastësishëm apo audiofil, N-Zik ju jep kontroll të plotë mbi
 - Rescue Center, ekran i mirëmbajtjes, udhëzim fillestar, shkurtore
 - Përditësime OTA nga GitHub, kohëmatës gjumi, riprodhim në sfond
 
-🛡️ 100% burim i hapur (FOSS). Lejet kryesore: INTERNET, RECORD_AUDIO (vetëm vizualizuesi), STORAGE (eksporte/kopje rezervë), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Versionet e disponueshme</b>
-- Full/Beta: I plotë (64-bit)
-- Full32/Beta32: Pa FFmpeg (32/64-bit)
-- Minified: I lehtë për pajisje me performancë të ulët (64-bit)
-- Minified32: I lehtë pa FFmpeg (32/64-bit)
-- FOSS: Pa përditësues automatik dhe FFmpeg, për F-Droid (64-bit)
-- Dev/Dev32: Versione zhvillimi, vetëm për testim
+- Release64/Beta64 (`com.nevar.nzik`): Version i plotë, vetëm pajisje 64-bit
+- Release32/Beta32 (`com.nevar.nzik`): Version i plotë, vetëm pajisje 32-bit
+- Minified64 (`com.nevar.nzik`): Version i lehtë R8, për pajisje me performancë të ulët (64-bit)
+- Minified32 (`com.nevar.nzik`): Version i lehtë R8 (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Pa përditësues automatik, për F-Droid (të gjitha arkitekturat)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Versione zhvillimi, vetëm për testim
 
-Versionet standarde përmbajnë FFmpeg; "32" dhe FOSS jo. Në F-Droid vetëm FOSS.
-
-Nga <b>janari 2027</b>, Google kërkon verifikim identiteti për zhvilluesit. Si FOSS, N-Zik kundërshton këtë. <a href="https://keepandroidopen.org">Mësoni më shumë</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Nënshkruani peticionin</a>
+Asnjë version nuk përmban FFmpeg: është një zgjederi e shkarkueshme (install te përdorimi i parë, menaxhohet në Cilësimet → Zgjederime). Në F-Droid vetëm FOSS.

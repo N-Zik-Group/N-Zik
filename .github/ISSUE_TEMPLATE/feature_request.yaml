@@ -43,7 +43,7 @@ body:
       label: 📱 Device Information (Optional)
       description: If this feature is specific to a certain platform (e.g., Android Auto, Android TV) or hardware, please specify it here.
       placeholder: |
-        App version: 5.0.0-f Full / Full32
+        App version: 5.0.0-r64 Release64 / Release32
         Platform Version: Android X, Android Auto/Automotive X, ...
         Device: Smartphone Brand & Model, Car Brand & Model Year, ...
     validations:

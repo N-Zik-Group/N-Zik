@@ -17,8 +17,8 @@ jobs:
         with:
           script: |
             const buildTypeLabels = [
-              "full", "minified", "full32", "minified32", 
-              "beta", "beta32", "foss", "dev", "dev32"
+              "release64", "release32", "minified64", "minified32", 
+              "beta64", "beta32", "foss", "dev64", "dev32"
             ];
 
             function detectLabel(body) {
@@ -27,15 +27,15 @@ jobs:
               const value = match[1].trim();
               
               // Les versions 32 bits sont vérifiées en premier pour éviter les faux positifs 
-              if (/^Full32/i.test(value)) return "full32";
-              if (/^Full/i.test(value)) return "full";
+              if (/^Release32/i.test(value)) return "release32";
+              if (/^Release64/i.test(value)) return "release64";
               if (/^Minified32/i.test(value)) return "minified32";
-              if (/^Minified/i.test(value)) return "minified";
+              if (/^Minified64/i.test(value)) return "minified64";
               if (/^Beta32/i.test(value)) return "beta32";
-              if (/^Beta/i.test(value)) return "beta";
+              if (/^Beta64/i.test(value)) return "beta64";
               if (/^Foss/i.test(value)) return "foss";
               if (/^Dev32/i.test(value)) return "dev32";
-              if (/^Dev/i.test(value)) return "dev";
+              if (/^Dev64/i.test(value)) return "dev64";
               
               return null;
             }

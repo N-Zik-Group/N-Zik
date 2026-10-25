@@ -54,16 +54,12 @@ Klausytojas ar melomanas - N-Zik suteikia pilną kontrolę jūsų muzikos be pri
 - Rescue Center, priežiūros ekranas, naujokų vedlys, trumpiniai
 - OTA atnaujinimai iš GitHub, miego laikmatis, atkūrimas fone
 
-🛡️ 100% atviro kodo (FOSS). Pagrindiniai leidimai: INTERNET, RECORD_AUDIO (tik vizualizatoriui), STORAGE (eksportas/kopijos), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Galimos versijos</b>
-- Full/Beta: Pilna versija (64-bit)
-- Full32/Beta32: Be FFmpeg (32/64-bit)
-- Minified: Lengva, silpnesniems įrenginiams (64-bit)
-- Minified32: Lengva versija be FFmpeg (32/64-bit)
-- FOSS: Be automatinio atnaujinimo ir FFmpeg, skirta F-Droid (64-bit)
-- Dev/Dev32: Kūrimo versijos, tik testavimui
+- Release64/Beta64 (`com.nevar.nzik`): Pilna versija, tik 64 bit įrenginiams
+- Release32/Beta32 (`com.nevar.nzik`): Pilna versija, tik 32 bit įrenginiams
+- Minified64 (`com.nevar.nzik`): Lengva R8 versija, silpnesniems įrenginiams (64 bit)
+- Minified32 (`com.nevar.nzik`): Lengva R8 versija (32 bit)
+- FOSS (`com.nevar.nzik.foss`): Be automatinio atnaujinimo, skirta F-Droid (visos architektūros)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Kūrimo versijos, tik testavimui
 
-Standartinės versijos turi FFmpeg; „32" ir FOSS - ne. Tik FOSS - F-Droid.
-
-Nuo <b>2027 m. sausio</b> Google reikalaus kūrėjų tapatybės patvirtinimo; N-Zik, kaip FOSS, prieštarauja. <a href="https://keepandroidopen.org">Sužinokite daugiau</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Pasirašykite peticiją</a>
+Jokioje versijoje nėra FFmpeg: tai atsisiunčiamas priedas (instaliuojamas per pirmąjį naudojimą, valdomas per „Nustatymai → Priedai"). Tik FOSS yra F-Droid.

@@ -2,17 +2,17 @@
 nzikSuffixAppNameDebug = "-debug"
 nzikSuffixAppIdDebug = ".debug"
 nzikSuffixVersionDebug = "-debug"
-nzikSuffixVersionFull = "-f"
-nzikSuffixVersionFull32 = "-f32"
-nzikSuffixVersionMinified = "-m"
+nzikSuffixVersionRelease64 = "-r64"
+nzikSuffixVersionRelease32 = "-r32"
+nzikSuffixVersionMinified64 = "-m64"
 nzikSuffixVersionMinified32 = "-m32"
-nzikSuffixVersionBeta = "-beta"
+nzikSuffixVersionBeta64 = "-beta64"
 nzikSuffixVersionBeta32 = "-beta32"
 nzikSuffixAppNameFoss = "-Foss"
 nzikSuffixAppIdFoss = ".foss"
 nzikSuffixAppNameDev = "-dev"
 nzikSuffixAppIdDev = ".dev"
-nzikSuffixVersionDev = "-dev-"
+nzikSuffixVersionDev64 = "-dev64-"
 nzikSuffixAppNameDev32 = "-dev32"
 nzikSuffixVersionDev32 = "-dev32-"
 nzikNamespace = "app.n_zik.android"
@@ -42,6 +42,9 @@ coil3 = "3.6.3"
 room = "2.8.5"
 sqlite = "2.7.0"
 media3 = "1.10.1"
+# FFmpegKit fork (16KB pages, API 35+) — Java API only at build time; the native
+# .so are stripped from every build (packaging.jniLibs.excludes) and ship as the
+# downloadable extension module. Kept as a real dep so dependabot tracks it.
 ffmpegkit = "6.0.1"
 ktor = "3.6.0"
 zxingAndroidEmbedded = "4.3.0"
@@ -220,6 +223,7 @@ compose-shimmer = { group = "com.valentinilk.shimmer", name = "compose-shimmer",
 compose-reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "composeReorderable" }
 media3-muxer = { group = "androidx.media3", name = "media3-muxer", version.ref = "media3" }
 media3-transformer = { group = "androidx.media3", name = "media3-transformer", version.ref = "media3" }
+# Same artifact FfmpegModule downloads at runtime (Maven Central URL in FfmpegModule)
 ffmpeg-kit-audio = { group = "io.github.maxrave-dev", name = "ffmpeg-kit-audio", version.ref = "ffmpegkit" }
 
 [plugins]

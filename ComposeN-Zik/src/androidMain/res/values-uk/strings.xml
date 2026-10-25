@@ -1134,7 +1134,6 @@
     <string name="beta_title">БЕТА</string>
     <string name="dev_title">DEV</string>
     <string name="debug_title">DEBUG</string>
-    <string name="full_title">FULL</string>
     <string name="stable_title">ВИМКНУТИ</string>
     <string name="minified_title">ЗАВЕРШЕНО</string>
     <string name="update_file_size">Розмір файлу: %s</string>

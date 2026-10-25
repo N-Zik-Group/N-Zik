@@ -74,9 +74,9 @@ jobs:
             exit 1
           fi
 
-  build-beta:
+  build-beta64:
     needs: [versioning, verify-version]
-    name: Build Full Beta
+    name: Build Beta64
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -106,13 +106,13 @@ jobs:
           restore-keys: gradle-${{ runner.os }}-
 
       - name: Build with Gradle
-        run: ./gradlew assembleBeta
+        run: ./gradlew assembleBeta64
 
       - name: Upload artifacts for signing
         uses: actions/upload-artifact@v7
         with:
-          name: unsigned-beta
-          path: ComposeN-Zik/build/outputs/apk/beta/*.apk
+          name: unsigned-beta64
+          path: ComposeN-Zik/build/outputs/apk/beta64/*.apk
 
   build-beta32:
     needs: [versioning, verify-version]
@@ -156,7 +156,7 @@ jobs:
 
   sign-apks:
     name: Sign APK
-    needs: [build-beta, build-beta32]
+    needs: [build-beta64, build-beta32]
     runs-on: ubuntu-latest
 
     steps:
@@ -198,6 +198,11 @@ jobs:
         uses: actions/download-artifact@v8.0.2
         with:
           name: signed-apk
+      - name: Duplicate assets under legacy names (migration window)
+        # TODO: remove legacy asset name after the migration window
+        run: |
+          shopt -s nullglob globstar
+          for apk in **/N-Zik-beta64.apk; do cp "$apk" "${apk/N-Zik-beta64/N-Zik-beta}"; done
       - name: Upload built APK to pre-release
         uses: softprops/action-gh-release@v3
         with:
@@ -240,25 +245,21 @@ jobs:
             ⚠️ This is a **BETA release**, not a stable version.  
             It is intended **only for testing and feedback**.
 
-            1. Download the **Full BETA build** below.  
+            1. Download the **Beta64 build** below (or **Beta32** for 32-bit devices).  
             2. Verify its signature using the hashes provided.  
             3. Install on your device (you may need to allow installation from outside the Play Store).  
-
+            
             Please report any crashes, bugs, or unexpected behavior.
 
             ## 📦 Available Build
 
-            - **Full (BETA)**: Complete build with all components (universal APK, runs on every architecture).  
-            - **Beta32**: Complete build without FFmpeg (universal APK, runs on every architecture).  
+            - **Beta64**: Complete build with all components, 64-bit devices only (arm64-v8a + x86_64, ≈ 57 MB).  
+            - **Beta32**: Complete build with all components, 32-bit devices only (armeabi-v7a + x86, ≈ 57 MB).  
               ⚠️ May contain bugs or experimental features.
-
-            > ℹ️ The Full (BETA) build bundles FFmpeg, which is why it's bigger. The "Beta32" build drops FFmpeg. Both builds are universal APKs and run on every architecture.
-
-            > ⚖️ **Why is the Full (BETA) build bigger?** The *only* difference between Full (BETA) (≈ 140 MB) and Beta32 (≈ 62 MB) is **FFmpeg**: ≈ 77 MB of native audio libraries bundled for every architecture. It is **not** used for regular playback, streaming or downloads: it only powers **Media Export** and the in-app **Metadata Editor**. **Beta32** drops FFmpeg to stay small and doesn't include those two features. The rest (≈ 62 MB) is the code and resources inherited from upstream, trimmed gradually by a single maintainer. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
 
             ## 🔄 Update Policy
 
-            - 🟡 **Beta & Beta32 Builds (-b / -b32)**
+            - 🟡 **Beta64 & Beta32 Builds (-beta64 / -beta32)**
               - **Default:** Update notifications for **Beta** are **enabled by default**.  
               - **User options:**  
                 - You can **disable Beta updates** in **Settings > About > Beta update disabled**.  
@@ -340,25 +341,21 @@ jobs:
             ⚠️ This is a **BETA release**, not a stable version.  
             It is intended **only for testing and feedback**.
 
-            1. Download the **Full BETA build** below.  
+            1. Download the **Beta64 build** below (or **Beta32** for 32-bit devices).  
             2. Verify its signature using the hashes provided.  
             3. Install on your device (you may need to allow installation from outside the Play Store).  
-
+            
             Please report any crashes, bugs, or unexpected behavior.
 
             ## 📦 Available Build
 
-            - **Full (BETA)**: Complete build with all components (universal APK, runs on every architecture).  
-            - **Beta32**: Complete build without FFmpeg (universal APK, runs on every architecture).  
+            - **Beta64**: Complete build with all components, 64-bit devices only (arm64-v8a + x86_64, ≈ 57 MB).  
+            - **Beta32**: Complete build with all components, 32-bit devices only (armeabi-v7a + x86, ≈ 57 MB).  
               ⚠️ May contain bugs or experimental features.
-
-            > ℹ️ The Full (BETA) build bundles FFmpeg, which is why it's bigger. The "Beta32" build drops FFmpeg. Both builds are universal APKs and run on every architecture.
-
-            > ⚖️ **Why is the Full (BETA) build bigger?** The *only* difference between Full (BETA) (≈ 140 MB) and Beta32 (≈ 62 MB) is **FFmpeg**: ≈ 77 MB of native audio libraries bundled for every architecture. It is **not** used for regular playback, streaming or downloads: it only powers **Media Export** and the in-app **Metadata Editor**. **Beta32** drops FFmpeg to stay small and doesn't include those two features. The rest (≈ 62 MB) is the code and resources inherited from upstream, trimmed gradually by a single maintainer. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
 
             ## 🔄 Update Policy
 
-            - 🟡 **Beta & Beta32 Builds (-b / -b32)** - **Default:** Update notifications for **Beta** are **enabled by default**.  
+            - 🟡 **Beta64 & Beta32 Builds (-beta64 / -beta32)** - **Default:** Update notifications for **Beta** are **enabled by default**.  
               - **User options:** - You can **disable Beta updates** in **Settings > About > Beta update disabled**.  
                 - You can **enable or disable auto update** in **Settings > About > Auto update enabled**.  
               - **Behavior:** - Without Beta enabled → automatically upgrades to the latest **Stable** release.  
@@ -369,7 +366,7 @@ jobs:
 
             ## 🔗 Changelog & Downloads
 
-            - 📥 **Full BETA APK:** https://github.com/${{ github.repository }}/releases/download/v${{ needs.versioning.outputs.downstream }}-beta/N-Zik-beta.apk
+            - 📥 **Beta64 APK:** https://github.com/${{ github.repository }}/releases/download/v${{ needs.versioning.outputs.downstream }}-beta/N-Zik-beta64.apk
             - 📥 **Beta32 APK:** https://github.com/${{ github.repository }}/releases/download/v${{ needs.versioning.outputs.downstream }}-beta/N-Zik-beta32.apk
             - 📄 **Changelog:** <https://github.com/N-Zik-Group/N-Zik/blob/main/Updater/changelogs/${{ needs.versioning.outputs.code }}.txt>
             - 🚀 **Release page:** <https://github.com/${{ github.repository }}/releases/tag/v${{ needs.versioning.outputs.downstream }}-beta>

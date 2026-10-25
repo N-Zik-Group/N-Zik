@@ -1,6 +1,6 @@
 # Build & Test Rules
 
-**Version:** 1.7.0 | **Last updated:** 2026-10-22
+**Version:** 1.8.1 | **Last updated:** 2026-10-25
 
 ## Gradle Version Catalog
 
@@ -22,7 +22,7 @@ If a needed library isn't in the catalog → HALT and ask user before adding to 
 ```bash
 ./gradlew :ComposeN-Zik:assembleDebug          # Debug build (primary)
 ./gradlew :ComposeN-Zik:assembleFoss           # FOSS build
-./gradlew :ComposeN-Zik:assembleBeta           # Beta build
+./gradlew :ComposeN-Zik:assembleBeta64         # Beta build (64-bit ABIs only)
 ./gradlew :ComposeN-Zik:test                   # All tests
 ./gradlew :ComposeN-Zik:testDebugUnitTest --tests "app.n_zik.android.playback.utils.ShufflerTest"
 ./gradlew clean :ComposeN-Zik:assembleDebug    # Clean + debug
@@ -69,13 +69,13 @@ The entry keyword for Done.txt follows the template's sections — it is not aut
 
 ## Build Types
 
-| Type    | Command         | Notes                         |
-| ------- | --------------- | ----------------------------- |
-| `debug` | `assembleDebug` | Primary development build     |
-| `foss`  | `assembleFoss`  | Full build without auto-updater and without FFmpeg (suitable for alternative stores) |
-| `beta`  | `assembleBeta`  | Beta build (unsigned locally, signed in CI) |
+| Type     | Command          | Notes                                                                    |
+| -------- | ---------------- | ------------------------------------------------------------------------ |
+| `debug`  | `assembleDebug`  | Primary development build (universal, 4 ABIs)                             |
+| `foss`   | `assembleFoss`   | FOSS build without auto-updater (universal, 4 ABIs, suitable for alternative stores) |
+| `beta64` | `assembleBeta64` | Beta build, 64-bit ABIs only (unsigned locally, signed in CI)            |
 
-Other build types (see `ComposeN-Zik/build.gradle.kts`): `full`, `minified` (R8 minify + shrinkResources), `full32`, `minified32`, `beta32`, `dev`, `dev32`. The `release` build type is explicitly **disabled** (`assembleRelease` does not exist). The only dedicated per-buildType source set is `src/debug/`, which holds its own `AndroidManifest.xml` (Compose test-harness activity — see Done.txt). A custom `assembleFossRelease` task exists as an alias of `assembleFoss`. Variant behavioral differences (see `build.gradle.kts` + CI): `*32` types and `foss` build with `ENABLE_FFMPEG=false` (no Media Export/Metadata Editor); `dev`/`dev32` get a dated `versionNameSuffix` (CI passes `-PdevDate`); `foss` additionally sets `IS_AUTOUPDATE=false` and a `.foss` applicationId suffix.
+Other build types (see `ComposeN-Zik/build.gradle.kts`): `release64`, `release32`, `minified64` (R8 minify + shrinkResources), `minified32`, `beta32`, `dev64`, `dev32`. The `release` build type is explicitly **disabled** (`assembleRelease` does not exist). **Build-matrix rename (spec-ffmpeg-extension-module):** every ABI-specific build carries an explicit `64`/`32` suffix; `foss` + `debug` are universal and keep their bare names (`foss` keeps its name for the Obtanium `apkFilterRegEx`). **FFmpeg is no longer bundled in any build**; the FFmpegKit Java classes are in every APK but the native `.so`s are stripped from all builds (`packaging.jniLibs.excludes`); FFmpeg ships as a downloadable extension module at runtime (the `app.n_zik.android.modules/` system, Extensions page in Settings). **ABI restriction:** `64` types ship only arm64-v8a + x86_64, `32` types only armeabi-v7a + x86, `foss` + `debug` ship all 4 ABIs. The only dedicated per-buildType source set is `src/debug/`, which holds its own `AndroidManifest.xml` (Compose test-harness activity, see Done.txt). A custom `assembleFossRelease` task exists as an alias of `assembleFoss`. Variant behavioral differences (see `build.gradle.kts` + CI): `dev`/`dev32` get a dated `versionNameSuffix` (CI passes `-PdevDate`); `foss` additionally sets `IS_AUTOUPDATE=false` and a `.foss` applicationId suffix.
 
 ## Proguard/R8
 

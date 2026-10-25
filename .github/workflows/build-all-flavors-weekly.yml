@@ -1,4 +1,4 @@
-name: Build Full and Minified
+name: Build Stable Flavors
 
 env:
   TZ: Europe/Paris
@@ -98,9 +98,9 @@ jobs:
             exit 1
           fi
 
-  build-full:
+  build-release64:
     needs: [versioning, verify-version]
-    name: Build full version
+    name: Build release64 version
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -129,17 +129,17 @@ jobs:
           restore-keys: gradle-${{ runner.os }}-
 
       - name: Build with Gradle
-        run: ./gradlew assembleFull
+        run: ./gradlew assembleRelease64
 
       - name: Upload artifacts for signing
         uses: actions/upload-artifact@v7
         with:
-          name: unsigned-full
-          path: ComposeN-Zik/build/outputs/apk/full/*.apk
+          name: unsigned-release64
+          path: ComposeN-Zik/build/outputs/apk/release64/*.apk
 
-  build-full32:
+  build-release32:
     needs: [versioning, verify-version]
-    name: Build full32 version
+    name: Build release32 version
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -168,17 +168,17 @@ jobs:
           restore-keys: gradle-${{ runner.os }}-
 
       - name: Build with Gradle
-        run: ./gradlew assembleFull32
+        run: ./gradlew assembleRelease32
 
       - name: Upload artifacts for signing
         uses: actions/upload-artifact@v7
         with:
-          name: unsigned-full32
-          path: ComposeN-Zik/build/outputs/apk/full32/*.apk
+          name: unsigned-release32
+          path: ComposeN-Zik/build/outputs/apk/release32/*.apk
 
-  build-minified:
+  build-minified64:
     needs: [versioning, verify-version]
-    name: Build minified version
+    name: Build minified64 version
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -207,13 +207,13 @@ jobs:
           restore-keys: gradle-${{ runner.os }}-
 
       - name: Build with Gradle
-        run: ./gradlew assembleMinified
+        run: ./gradlew assembleMinified64
 
       - name: Upload artifacts for signing
         uses: actions/upload-artifact@v7
         with:
-          name: unsigned-minified
-          path: ComposeN-Zik/build/outputs/apk/minified/*.apk
+          name: unsigned-minified64
+          path: ComposeN-Zik/build/outputs/apk/minified64/*.apk
 
   build-minified32:
     needs: [versioning, verify-version]
@@ -296,9 +296,9 @@ jobs:
   sign-apks:
     name: Sign all built APKs
     needs:
-      - build-full
-      - build-full32
-      - build-minified
+      - build-release64
+      - build-release32
+      - build-minified64
       - build-minified32
       - build-foss
     runs-on: ubuntu-latest
@@ -341,6 +341,13 @@ jobs:
         uses: actions/download-artifact@v8.0.2
         with:
           name: signed-apks
+      - name: Duplicate assets under legacy names (migration window)
+        # TODO: remove legacy asset name after the migration window
+        run: |
+          shopt -s nullglob globstar
+          for apk in **/N-Zik-release64.apk; do cp "$apk" "${apk/N-Zik-release64/N-Zik-full}"; done
+          for apk in **/N-Zik-release32.apk; do cp "$apk" "${apk/N-Zik-release32/N-Zik-full32}"; done
+          for apk in **/N-Zik-minified64.apk; do cp "$apk" "${apk/N-Zik-minified64/N-Zik-minified}"; done
       - name: Upload built APK to release
         uses: softprops/action-gh-release@v3
         with:
@@ -377,40 +384,36 @@ jobs:
             | MD5       | 5ae0045983899ab7ca5db38ef785d6ab                                   |
             
             ## 📲 Installation
-            
-            1. Download the **Full build** below (recommended for all devices).  
+             
+            1. Download the build matching your device below: **Release64** for 64-bit devices (most devices), **Release32** for 32-bit devices.  
             2. Verify its signature using the hashes provided.  
             3. Install on your device (you may need to allow installation from unknown sources).  
-            
-            > The **Minified build** is available for low-end devices. It contains only core features but is fully stable.
-            
+             
+            > The **Minified builds** (Minified64 / Minified32) are available for low-end devices. They are R8-shrunk but fully stable.
+             
             Please report any crashes, bugs, or unexpected behavior.
-            
+             
             ## 📦 Available Builds
-            
-            - **Full**: Complete build with all components (universal APK, runs on every architecture).  
-            - **Full32**: Complete build without FFmpeg (universal APK, runs on every architecture).  
-            - **Minified**: Lightweight build, recommended for low-end devices (universal APK, runs on every architecture).
-            - **Minified32**: Lightweight build without FFmpeg (universal APK, runs on every architecture).
-            - **FOSS** (`com.nevar.nzik.foss`): Full build without auto-updater and without FFmpeg (universal APK, runs on every architecture).
-
-            > ℹ️ Standard builds (Full, Minified) bundle FFmpeg, which is why they're bigger. The "32" builds (Full32, Minified32) and FOSS drop FFmpeg (and Media Export). All builds are universal APKs and run on every architecture.
-
-            > ⚖️ **Why are the standard builds so big?** The *only* difference between Full (≈ 140 MB) and Full32 (≈ 62 MB) is **FFmpeg**: ≈ 77 MB of native audio libraries bundled for every architecture. It is **not** used for regular playback, streaming or downloads: it only powers **Media Export** (export cached/downloaded songs with full metadata + cover art) and the in-app **Metadata Editor**. The `*32` builds and FOSS drop FFmpeg to stay small (≈ 62 MB) and don't include those two features. The rest (≈ 62 MB) is the code and resources inherited from upstream forks, trimmed gradually by a single maintainer. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
+             
+            - **Release64**: Complete build with all components, 64-bit devices only (arm64-v8a + x86_64, ≈ 57 MB).  
+            - **Release32**: Complete build with all components, 32-bit devices only (armeabi-v7a + x86, ≈ 57 MB).  
+            - **Minified64**: Lightweight R8-shrunk build, recommended for low-end devices, 64-bit devices only (≈ 28 MB).
+            - **Minified32**: Lightweight R8-shrunk build, 32-bit devices only (≈ 28 MB).
+            - **FOSS** (`com.nevar.nzik.foss`): Complete build without auto-updater (universal APK, runs on every architecture, ≈ 57 MB).
 
             ## 🔄 Update Policy
             
-            - 🟢 **Full & Full32 Builds (-f / -f32)** 
+            - 🟢 **Release64 & Release32 Builds (-r64 / -r32)** 
             - **Default:** Update notifications for **Stable** are **enabled by default**.  
               - **User options:** - You can **disable Stable updates** in **Settings > About > Auto update enabled**.  
                 - You can **enable Beta updates** in **Settings > About > Beta update enabled** to test Beta releases.  
               - **Behavior:** - Without Beta enabled → receives **Stable** updates only.  
                 - With Beta enabled → receives both **Stable + Beta** updates.
-                    
-            - 🔵 **Minified & Minified32 Builds (-m / -m32)** 
+                
+            - 🔵 **Minified64 & Minified32 Builds (-m64 / -m32)** 
             - **Default:** Update notifications for **Stable** are **enabled by default**.  
               - **User options:** - You can **disable Stable updates** in **Settings > About > Auto update enabled**.  
-                - Always updates to the corresponding **Full Stable Build**.  
+                - Always updates to the corresponding **Release Stable Build**.  
                 - No Beta option available.
 
             - 🟣 **FOSS Build (`com.nevar.nzik.foss`)**
@@ -466,38 +469,34 @@ jobs:
             🚀 Download now!
           DESCRIPTION: |
             ## 📲 Installation
-
-            1. Download the **Full build** below (recommended for all devices).  
+             
+            1. Download the build matching your device below: **Release64** for 64-bit devices (most devices), **Release32** for 32-bit devices.  
             2. Verify its signature using the hashes provided.  
             3. Install on your device (you may need to allow installation from unknown sources).  
-
-            > The **Minified build** is available for low-end devices. It contains only core features but is fully stable.
-
+             
+            > The **Minified builds** (Minified64 / Minified32) are available for low-end devices. They are R8-shrunk but fully stable.
+             
             Please report any crashes, bugs, or unexpected behavior.
-
+             
             ## 📦 Available Builds
-
-            - **Full**: Complete build with all components (universal APK, runs on every architecture).  
-            - **Full32**: Complete build without FFmpeg (universal APK, runs on every architecture).  
-            - **Minified**: Lightweight build, recommended for low-end devices (universal APK, runs on every architecture).
-            - **Minified32**: Lightweight build without FFmpeg (universal APK, runs on every architecture).
-            - **FOSS** (`com.nevar.nzik.foss`): Full build without auto-updater and without FFmpeg (universal APK, runs on every architecture).
-
-            > ℹ️ Standard builds (Full, Minified) bundle FFmpeg, which is why they're bigger. The "32" builds (Full32, Minified32) and FOSS drop FFmpeg (and Media Export). All builds are universal APKs and run on every architecture.
-
-            > ⚖️ **Why are the standard builds so big?** The *only* difference between Full (≈ 140 MB) and Full32 (≈ 62 MB) is **FFmpeg**: ≈ 77 MB of native audio libraries bundled for every architecture. It is **not** used for regular playback, streaming or downloads: it only powers **Media Export** (export cached/downloaded songs with full metadata + cover art) and the in-app **Metadata Editor**. The `*32` builds and FOSS drop FFmpeg to stay small (≈ 62 MB) and don't include those two features. The rest (≈ 62 MB) is the code and resources inherited from upstream forks, trimmed gradually by a single maintainer. [Full explanation](https://github.com/N-Zik-Group/N-Zik#why-are-the-full-builds-so-big-ffmpeg)
+             
+            - **Release64**: Complete build with all components, 64-bit devices only (arm64-v8a + x86_64, ≈ 57 MB).  
+            - **Release32**: Complete build with all components, 32-bit devices only (armeabi-v7a + x86, ≈ 57 MB).  
+            - **Minified64**: Lightweight R8-shrunk build, recommended for low-end devices, 64-bit devices only (≈ 28 MB).
+            - **Minified32**: Lightweight R8-shrunk build, 32-bit devices only (≈ 28 MB).
+            - **FOSS** (`com.nevar.nzik.foss`): Complete build without auto-updater (universal APK, runs on every architecture, ≈ 57 MB).
 
             ## 🔄 Update Policy
 
-            - 🟢 **Full & Full32 Builds (-f / -f32)** - **Default:** Update notifications for **Stable** are **enabled by default**.  
+            - 🟢 **Release64 & Release32 Builds (-r64 / -r32)** - **Default:** Update notifications for **Stable** are **enabled by default**.  
               - **User options:** - You can **disable Stable updates** in **Settings > About > Auto update enabled**.  
                 - You can **enable Beta updates** in **Settings > About > Beta update enabled** to test Beta releases.  
               - **Behavior:** - Without Beta enabled → receives **Stable** updates only.  
                 - With Beta enabled → receives both **Stable + Beta** updates.
                     
-            - 🔵 **Minified & Minified32 Builds (-m / -m32)** - **Default:** Update notifications for **Stable** are **enabled by default**.  
+            - 🔵 **Minified64 & Minified32 Builds (-m64 / -m32)** - **Default:** Update notifications for **Stable** are **enabled by default**.  
               - **User options:** - You can **disable Stable updates** in **Settings > About > Auto update enabled**.  
-                - Always updates to the corresponding **Full Stable Build**.  
+                - Always updates to the corresponding **Release Stable Build**.  
                 - No Beta option available.
 
             - 🟣 **FOSS Build (`com.nevar.nzik.foss`)** - Auto-update is **off by default and can't be enabled**, since store updates (F-Droid, IzzyOnDroid, Accrescent...) handle it instead.
@@ -506,9 +505,9 @@ jobs:
 
             ## 🔗 Changelog & Downloads
 
-            - 📥 **Full APK:** https://github.com/${{ github.repository }}/releases/download/v${{ needs.versioning.outputs.downstream }}/N-Zik-full.apk
-            - 📥 **Full32 APK:** https://github.com/${{ github.repository }}/releases/download/v${{ needs.versioning.outputs.downstream }}/N-Zik-full32.apk
-            - 📥 **Minified APK:** https://github.com/${{ github.repository }}/releases/download/v${{ needs.versioning.outputs.downstream }}/N-Zik-minified.apk
+            - 📥 **Release64 APK:** https://github.com/${{ github.repository }}/releases/download/v${{ needs.versioning.outputs.downstream }}/N-Zik-release64.apk
+            - 📥 **Release32 APK:** https://github.com/${{ github.repository }}/releases/download/v${{ needs.versioning.outputs.downstream }}/N-Zik-release32.apk
+            - 📥 **Minified64 APK:** https://github.com/${{ github.repository }}/releases/download/v${{ needs.versioning.outputs.downstream }}/N-Zik-minified64.apk
             - 📥 **Minified32 APK:** https://github.com/${{ github.repository }}/releases/download/v${{ needs.versioning.outputs.downstream }}/N-Zik-minified32.apk
             - 📥 **FOSS APK:** https://github.com/${{ github.repository }}/releases/download/v${{ needs.versioning.outputs.downstream }}/N-Zik-foss.apk
             - 📄 **Changelog:** <https://github.com/N-Zik-Group/N-Zik/blob/main/Updater/changelogs/${{ needs.versioning.outputs.code }}.txt>

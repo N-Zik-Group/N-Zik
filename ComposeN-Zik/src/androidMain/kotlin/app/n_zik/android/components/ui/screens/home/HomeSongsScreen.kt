@@ -59,7 +59,6 @@ import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceSong
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.LocalTopBarOffset
-import app.n_zik.android.BuildConfig
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.tab.*
@@ -561,7 +560,9 @@ fun HomeSongsScreen(navController: NavController ) {
                 "import_menu" -> if (builtInPlaylist == BuiltInPlaylist.All || builtInPlaylist == BuiltInPlaylist.Favorites) add( importMenu )
                 "sync_ytm_likes" -> if (!offlineMode && builtInPlaylist == BuiltInPlaylist.Favorites && isYouTubeSyncEnabled()) add( sync )
                 "export_dialog" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( exportDialog )
-                "export_cache" -> if (BuildConfig.ENABLE_FFMPEG && (builtInPlaylist == BuiltInPlaylist.Offline || builtInPlaylist == BuiltInPlaylist.Downloaded)) add(
+                // The FFmpeg gate is gone (spec-ffmpeg-extension-module): the module is
+                // downloaded on first use, so the export is always offered (Offline/Downloaded)
+                "export_cache" -> if (builtInPlaylist == BuiltInPlaylist.Offline || builtInPlaylist == BuiltInPlaylist.Downloaded) add(
                     object : MenuIcon, Descriptive {
                         override val iconId: Int = R.drawable.export_outline
                         override val messageId: Int = R.string.export_cached

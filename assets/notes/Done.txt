@@ -21,6 +21,24 @@ Added:
   - New "Settings size" row above "Database size": active profile's settings file size (`profilePrefsFile(app, activeProfileId)` — the exact file behind `context.preferences`), labeled like "Database size" (new `maintenance_settings_size` key)
   - Tests: `MaintenanceStateStoreTest` (round-trip + tolerant read + `wipeAll`), `MaintenanceSheetMappingTest` (multi-counter status mapping: every non-zero counter as its own part, skipped/deferred separated, shared fixed sentences, single part on removal-only passes), `MaintenanceBootChainTest` (wiped state stays absent after a failing pass; fresh state written on success), `MyDownloadHelperStaleRevalidationTest`, `MyDownloadHelperSessionDownloadsTest` (session log semantics), `MyDownloadHelperInitS1OffMainTest`
 
+- feat(modules): FFmpeg becomes a downloadable extension module (system + Extensions page)
+  - New `app.n_zik.android.modules/` package: `ModuleManager` (download, SHA-256 verify, staged extract into versioned install dirs, orphan sweep, progress throttling, cancel semantics), `FfmpegModule` (device ABI gate, native load, version pinning, free-space check), `ModuleRemoteProbe` (network check for the latest version), `ModuleDownloadNotification` + `ModuleDownloadListener`, `ModuleSource`/`ModuleRemoteSource`
+  - Native load is a small C `dlopen` helper (`jni/module_loader.c` + 4 prebuilt `libmodule_loader.so`, ~24 KB total) loading the module's `.so` files from `filesDir`; the prebuilt loader is user-ratified as committed, no CMake recipe
+  - Settings > Extensions page: per-module status, size, download/update, cancel, remove (`components/extensions/`, `ExtensionsSettingsCard`, `ExtensionsMenuItem`, `extension.xml` drawable), wired in `MainApplication`
+  - First use: "Export cached songs" and "Edit metadata" trigger the download (~25 MB); the features are gated on device ABI only, never on build type
+- feat(build): build matrix restructure with honest ABI names, FFmpeg out of every APK
+  - ABI-specific builds carry an explicit suffix: `release64`/`release32`, `minified64`/`minified32`, `beta64`/`beta32`, `dev64`/`dev32`; `foss` + `debug` stay universal (4 ABIs)
+  - No build bundles FFmpeg anymore: the vendored FFmpegKit jar provides the Java API only, all FFmpeg `.so` files are stripped from every APK via `packaging.jniLibs.excludes`; APK size drops from ~136 MB to ~57 MB (non-R8) / ~28 MB (R8)
+  - Gradle per-package check: every `package*` task rescans the APK it just produced and fails the build if any FFmpeg `.so` leaked in (local builds and CI alike; stale pre-restructure APKs left in the outputs dir are out of scope by design)
+  - CI workflows + issue templates updated for the renamed build types; `gradle/libs.versions.toml` carries the matrix flags
+
+Changed:
+- change(ffmpeg): FFmpeg-powered features are downloaded on first use, not build-gated
+  - `ExportCacheDialog` + `EditMetadataDialog` call `FfmpegModule.ensureReady()` before any FFprobeKit/FFmpegKit touch and show localized toasts on failure (`module_edit_unavailable`, `module_save_failed`)
+  - `values/strings.xml`: 3 new `module_*` keys (incl. the dedicated first-use offline message), 9 dead keys removed, 5 run-on sentences fixed, free-space text aligned to the 70 MB gate
+  - Crowdin-managed follow-ups (user-approved scope): 45 `values-*/strings.xml` + 31 `fastlane/*/full_description.txt` updated after the `full_title` removal
+  - Legacy wiring (user-approved, the change cannot be expressed outside these files): `AccountsSettings.kt` (BUILD_TYPE gate rename dev -> dev64, beta -> beta64), `ActionBar.kt` + `OtherSettings.kt` (Extensions entry)
+
 Improved:
 - improve(listentogether): dedicated no-connection toast in the room menu when offline
   - `ListenTogetherMenu` create/join failures while offline now surface the dedicated "no connection" toast instead of a generic error (offline audit menu branch)
@@ -62,6 +80,14 @@ Fixed:
   - `GoToLink`: the fire-and-forget scope is now `remember`ed — a fresh `NzikDispatchers.fireAndForget(DATA)` per recomposition churned scope instances while their jobs still ran
   - `SeekCoalescingPlayer.release()` now cancels `settleScope` — the settle scope used to outlive the player
   - `MyDownloadHelper`: dead `kotlinx.coroutines.cancel` import removed + download-quality listener KDoc trimmed
+- fix(modules): first-use reliability (review findings)
+  - ANR: `ensureReady()` now runs the multi-second native load on `NzikDispatchers.DATA` instead of the caller's dispatcher
+  - Idempotency: `loadedVersion` is assigned on load success, so a second call does not re-patch and re-dlopen the module
+  - Free-space gate raised 30 MB -> 70 MB (the AAR temp peaks at ~63-68 MB, the old gate failed first-use on tight devices)
+  - Cancel semantics: cancelling an update keeps the previously installed version usable (state READY, not NOT_DOWNLOADED); cancelling a first download reports NOT_DOWNLOADED
+  - Failure messages: dedicated "download needed" wording on first use vs "download failed" on an update
+- fix(bridge): meta endpoint red on JVM tests (500 instead of 200)
+  - The ABI probe is now injectable via a `featuresProvider` on `BridgeServerCore`; the meta test mounts a device that can run the module, and a new test pins the negative case (feature omitted)
 
 Removed:
 - remove(player): drop dead `isNetworkRelatedError` helper + unused `ConnectException` import
@@ -75,3 +101,10 @@ Other:
   - New (10): `DownloadValidatorTest` (real `SimpleCache`: intact download survives, wiped span removed, mixed spans, missing entry, truncated span), `MyDownloadHelperStaleRevalidationTest` (intact survives / wiped removed / non-terminal untouched), `MyDownloadHelperInitS1OffMainTest` (S1 dispatch on a named `NzikDispatchers` thread), `MyDownloadHelperScheduleFailureToastTest`, `DownloadFailureToastTest` (failure → toast mapping, fallback pinned to `download_failed`), `MainActivityStaleStartupWarningTest` (startup counter), `OfflineGateDnsTest` (the 3-level chain from the real offline log, `UnresolvedAddressException`, direct cause, non-DNS chain rejected, no-cause rejected, hop-limit boundary — 21-level chain, bounded walk terminates), `StaleDownloadEntryTest`, `StreamResolutionFastFailCallSiteTest`, `NZikRadioOfflineTest`
   - Updated (3): `FetchFormatIfMissingGateTest`, `StreamResolverPageCacheTest`, `NZikRadioTest`
 - test(vm): full VM suite verified on the Pixel_10_Pro_XL emulator — online/offline playback, load-gate park + recovery on network restore, stale re-validation (S1 startup counter + S2 pre-playback self-heal), offline download, no crashes (incl. the thread-violation load-gate scenario)
+- test(modules+bridge+menus): 10 new tests, 52/52 green across the touched suites
+  - `ModuleManagerTest` (5 new): free-space gate without download, corrupted-cache re-download, cancel path (stop + cleanup + state), staged version swap 1.0.0 -> 1.1.0 (old install dir removed), first-use vs update failure messages
+  - `BridgeServerTest` (1 new): meta omits the ffmpeg library feature when the device cannot run the module
+  - New `PlayerItemMenuLocalIndexTest` (2) + `SongItemMenuLocalIndexTest` (2): the local menu slot layout is pinned again (the pinning tests were deleted with the old FFmpeg gate; the indexes are now named consts `LOCAL_PLAYER_PLAYBACK_START` / `LOCAL_SONG_PLAYBACK_START`)
+  - Independent APK scan confirms 0 FFmpeg `.so` in the debug APK (12 native `.so` total)
+- chore(docs): em-dash cleanup on the lines introduced by the build-matrix restructure
+  - 6 em-dashes replaced in `AGENTS.md`, `rules/BUILD.md`, `README.md`; both rules files bumped to 1.8.1

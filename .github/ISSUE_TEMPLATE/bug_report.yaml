@@ -50,11 +50,11 @@ body:
       label: 🏗️ Build Type
       description: Select the build type you are currently using.
       options:
-        - Dev
+        - Dev64
         - Dev32
-        - Full
-        - Full32
-        - Minified
+        - Release64
+        - Release32
+        - Minified64
         - Minified32
         - Foss (N-Zik-Foss, com.nevar.nzik.foss)
     validations:

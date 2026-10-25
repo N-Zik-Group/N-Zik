@@ -27,7 +27,9 @@ import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.components.dialog.logs.CopyLogsDialog
 import app.n_zik.android.components.dialog.logs.CrashLogDialog
 import app.n_zik.android.components.dialog.logs.DebugLogDialog
+import app.n_zik.android.components.extensions.ExtensionsSheet
 import app.n_zik.android.components.menu.header.DebugLogsMenuItem
+import app.n_zik.android.components.menu.header.ExtensionsMenuItem
 import app.n_zik.android.components.menu.header.MaintenanceMenuItem
 import app.n_zik.android.components.maintenance.MaintenanceSheet
 import app.n_zik.android.components.ui.screens.profiles.ProfileFaceAvatar
@@ -75,6 +77,7 @@ private fun HamburgerMenu(
 
     // The header stays composed for the whole session.
     var showMaintenanceSheet by remember { mutableStateOf(false) }
+    var showExtensionsSheet by remember { mutableStateOf(false) }
 
     val menu = DropdownMenu(
         expanded = expanded,
@@ -159,6 +162,19 @@ private fun HamburgerMenu(
             R.string.settings
         ) { onItemClick( NavRoutes.settings ) }
     )
+    // Extensions button (spec-ffmpeg-extension-module): short tap opens the
+    // Extensions sheet (module state + actions), long press opens the Misc
+    // settings directly on the Extensions card - same pattern as Maintenance
+    menu.add {
+        ExtensionsMenuItem(
+            onOpen = { showExtensionsSheet = true },
+            onLongClick = {
+                navController.navigate("${NavRoutes.settings.name}?tab=7&focus=extensions")
+                onItemConsumed()
+            },
+            onConsume = onItemConsumed
+        )
+    }
     // Debug button (same design as the other items: short tap toggles the debug logs,
     // long press opens the Misc settings directly on the Debug card)
     menu.add {
@@ -214,6 +230,13 @@ private fun HamburgerMenu(
         renderLogsDialog = false,
     )
     CopyLogsDialog.Render()
+    // Extensions sheet (spec-ffmpeg-extension-module): same sibling-of-the-Popup
+    // pattern as the Maintenance sheet above - this persistent header hosts it
+    // for the whole app.
+    ExtensionsSheet(
+        showSheet = showExtensionsSheet,
+        onDismissRequest = { showExtensionsSheet = false },
+    )
     // Crash + debug log dialog hosts (spec-maintenance-dialog): same singleton-host
     // rule as CopyLogsDialog above.
 

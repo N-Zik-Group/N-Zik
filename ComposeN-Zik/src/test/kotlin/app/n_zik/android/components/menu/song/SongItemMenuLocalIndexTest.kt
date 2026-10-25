@@ -1,26 +1,24 @@
-package app.n_zik.android.components.menu.song
-
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
-
-/** Decision 6 of the PC UI parity audit (2026-10-09): a local song's menu without FFmpeg (the `*32` builds) has no edit-metadata button, so its playback buttons start right after "info". */
-class SongItemMenuLocalIndexTest {
-
-    @Test
-    fun `playback buttons start after the edit-metadata button only when FFmpeg ships`() {
-        // [info, editMetadata, radio, next, enqueue, favorite, addToPlaylist, export]
-        assertEquals(2, localSongPlaybackStart(ffmpeg = true))
-        // [info, radio, next, enqueue, favorite, addToPlaylist]
-        assertEquals(1, localSongPlaybackStart(ffmpeg = false))
-    }
-
-    @Test
-    fun `without FFmpeg the five playback buttons are all read, the first one is the radio`() {
-        val buttons = listOf("info", "radio", "next", "enqueue", "favorite", "addToPlaylist")
-        val start = localSongPlaybackStart(ffmpeg = false)
-        assertEquals(
-            listOf("radio", "next", "enqueue", "favorite", "addToPlaylist"),
-            buttons.subList(start, start + LOCAL_PLAYBACK_COUNT),
-        )
-    }
-}
+package app.n_zik.android.components.menu.song
+
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+
+/**
+ * Pins the local-song slot layout of [SongItemMenu] - the pinning tests were
+ * deleted when the FFmpeg gate was removed (spec-ffmpeg-extension-module).
+ */
+class SongItemMenuLocalIndexTest {
+
+    @Test
+    fun `local playback starts right after the editMetadata slot`() {
+        // 0=info, 1=editMetadata, then playback from 2
+        assertEquals(1, LOCAL_SONG_PLAYBACK_START - 1)
+        assertEquals(2, LOCAL_SONG_PLAYBACK_START)
+    }
+
+    @Test
+    fun `local playback buttons fit the layout`() {
+        // 5 playback buttons (2..6), delete/export from 7
+        assertEquals(7, LOCAL_SONG_PLAYBACK_START + LOCAL_PLAYBACK_COUNT)
+    }
+}

@@ -54,16 +54,12 @@ Sigues oient ocasional o audiòfil, N-Zik et dóna el control absolut de la mús
 - Rescue Center, pantalla de manteniment, inici d'usuari, dreceres
 - OTA des de GitHub, temporitzador de son, reproducció en segon pla
 
-🛡️ 100% codi obert (FOSS). Permisos clau: INTERNET, RECORD_AUDIO (només visualitzador), STORAGE (exportacions/copies), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Builds disponibles</b>
-- Full/Beta: Build complet (64-bit)
-- Full32/Beta32: Sense FFmpeg (32/64-bit)
-- Minified: Lleugera, per a dispositius bàsics (64-bit)
-- Minified32: Lleugera sense FFmpeg (32/64-bit)
-- FOSS: Sense actualitzador automàtic ni FFmpeg, per a F-Droid (64-bit)
-- Dev/Dev32: Builds de desenvolupament, només per a proves
+- Release64/Beta64 (`com.nevar.nzik`): Build complet, només dispositius de 64-bit
+- Release32/Beta32 (`com.nevar.nzik`): Build complet, només dispositius de 32-bit
+- Minified64 (`com.nevar.nzik`): Build R8 lleugera, per a dispositius bàsics (64-bit)
+- Minified32 (`com.nevar.nzik`): Build R8 lleugera (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Sense actualitzador automàtic, per a F-Droid (totes les arquitectures)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Builds de desenvolupament, només per a proves
 
-Els builds estàndard inclouen FFmpeg; les "32" i FOSS no. Només FOSS és a F-Droid.
-
-A partir del <b>gener de 2027</b>, Google exigirà verificar la identitat dels desenvolupadors; com a FOSS, N-Zik s'hi oposa. <a href="https://keepandroidopen.org">Més informació</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Signa la petició</a>
+Cap build inclou FFmpeg: és una extensió descarregable (s'instal·la en el primer ús, gestionada a Configuració → Extensions). Només FOSS és a F-Droid.

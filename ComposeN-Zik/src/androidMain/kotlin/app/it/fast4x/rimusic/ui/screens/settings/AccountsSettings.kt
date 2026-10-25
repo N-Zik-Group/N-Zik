@@ -708,7 +708,7 @@ fun AccountsSettings() {
                             title = stringResource(R.string.sync_data_with_ytm_account),
                             text = stringResource(R.string.playlists_albums_artists_history_like_etc),
                             isChecked = isYouTubeSyncEnabled,
-                            enabled = BuildConfig.BUILD_TYPE in listOf("debug", "dev", "dev32", "beta", "beta32"),
+                            enabled = BuildConfig.BUILD_TYPE in listOf("debug", "dev64", "dev32", "beta64", "beta32"),
                             onCheckedChange = {
                                 isYouTubeSyncEnabled = it
                                 if (!it) {
@@ -2591,7 +2591,7 @@ fun isYouTubeLoginEnabled(): Boolean {
 }
 
 fun isYouTubeSyncEnabled(): Boolean {
-    val isDevBuild = BuildConfig.BUILD_TYPE in listOf("debug", "dev", "dev32", "beta", "beta32")
+    val isDevBuild = BuildConfig.BUILD_TYPE in listOf("debug", "dev64", "dev32", "beta64", "beta32")
     if (!isDevBuild) return false
     val isYouTubeSyncEnabled = appContext().encryptedPreferences.getBoolean(enableYouTubeSyncKey, false)
     val useLoginForBrowse = appContext().preferences.getBoolean(useLoginForBrowseKey, true)

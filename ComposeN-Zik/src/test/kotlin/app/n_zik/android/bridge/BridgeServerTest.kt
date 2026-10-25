@@ -61,6 +61,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.concurrent.thread
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -82,7 +83,15 @@ class BridgeServerTest {
 
     @Test
     fun `meta returns the contract version, server name and server time`() = testApplication {
-        mount(BridgeServerCore(serverName = "Pixel test", clock = { 1_790_000_000_000L }))
+        mount(
+            BridgeServerCore(
+                serverName = "Pixel test",
+                clock = { 1_790_000_000_000L },
+                // The ABI probe is unusable in JVM unit tests: inject a device
+                // that can run the FFmpeg module
+                featuresProvider = { BridgeContract.features(ffmpegAvailable = true) },
+            )
+        )
 
         val response = client.get("/api/v1/meta")
 
@@ -108,7 +117,7 @@ class BridgeServerTest {
                 "library.cache",
                 "library.rewind",
                 "library.dislikeMode",
-                // The debug variant of the unit test ships FFmpeg (not the `*32` build types)
+                // Runtime ABI gate (injected in the mount above): the device can run the module
                 "library.ffmpeg",
                 "library.live",
                 "artwork",
@@ -125,6 +134,25 @@ class BridgeServerTest {
             ),
             json["features"]?.jsonArray?.map { it.jsonPrimitive.content },
         )
+    }
+
+    @Test
+    fun `meta omits the ffmpeg library feature when the device cannot run the module`() = testApplication {
+        mount(
+            BridgeServerCore(
+                serverName = "Pixel test",
+                featuresProvider = { BridgeContract.features(ffmpegAvailable = false) },
+            )
+        )
+
+        val response = client.get("/api/v1/meta")
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        val json = BridgeJson.parseToJsonElement(response.bodyAsText()).jsonObject
+        assertNotNull(json["features"]?.jsonArray)
+        val features = (json["features"]?.jsonArray ?: emptyList()).map { it.jsonPrimitive.content }
+        assertFalse("library.ffmpeg" in features)
+        assertTrue("playback" in features)
     }
 
     @Test

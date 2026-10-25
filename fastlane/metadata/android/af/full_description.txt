@@ -54,16 +54,12 @@ Gemiddelde luisteraar of audiofil: N-Zik gee jou volle beheer oor jou musiek son
 - Rescue Center, onderhoudsskerm, gebruikersindagting, app-kortpaaie
 - OTA-opdaterings van GitHub, slaaptimer, agtergrondspeling
 
-🛡️ 100% oopbron (FOSS). Belangrikke toestemmings: INTERNET, RECORD_AUDIO (slegs visualiseerder), STORAGE (eksport/rugsteun), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Beskikbare Builds</b>
-- Full/Beta: Volledige build (64-bit)
-- Full32/Beta32: Sonder FFmpeg (32/64-bit)
-- Minified: Liggewig vir swak toestelle (64-bit)
-- Minified32: Liggewig sonder FFmpeg (32/64-bit)
-- FOSS: Sonder outomatiese opdateerder en FFmpeg, vir F-Droid (64-bit)
-- Dev/Dev32: Ontwikkelingsbuilds, slegs vir toetsing
+- Release64/Beta64 (`com.nevar.nzik`): Volledige build, slegs 64-bit-toestelle
+- Release32/Beta32 (`com.nevar.nzik`): Volledige build, slegs 32-bit-toestelle
+- Minified64 (`com.nevar.nzik`): Ligte R8-build, vir swak toestelle (64-bit)
+- Minified32 (`com.nevar.nzik`): Ligte R8-build (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Sonder outomatiese opdateerder, vir F-Droid (alle argeitekture)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Ontwikkelingsbuilds, slegs vir toetsing
 
-Standaard builds bevat FFmpeg; "32"-builds en FOSS nie. Slegs FOSS op F-Droid.
-
-Vanaf <b>Januarie 2027</b> vereis Google identiteitsverifikasie van alle ontwikkelaars; as FOSS is N-Zik daarteen. <a href="https://keepandroidopen.org">Leer meer</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Teken die petisie</a>
+Geen build bevat FFmpeg nie: dit is 'n oplaadbare uitbreiding (geïnstalleer by eerste gebruik, bestuur in Instellings → Uitbreidings). Slegs FOSS is op F-Droid.

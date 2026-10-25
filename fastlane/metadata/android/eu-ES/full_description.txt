@@ -54,16 +54,12 @@ Entzule arrunta edo audiophile, N-Zik-ek musikaren kontrol osoa ematen dizu, pri
 - Rescue Center, mantentze-pantaila, onboarding, app lasterrbideak
 - OTA eguneratzeak GitHub-etik, lo-timera, hondo-erreprodukzioa
 
-🛡️ 100% iturburu irekia (FOSS). Baimenak: INTERNET, RECORD_AUDIO (visualizagailurako), STORAGE (esportazio/kopia), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Eraikun eskuragarriak</b>
-- Full/Beta: Eraikun osoa (64-bit)
-- Full32/Beta32: FFmpeg gabe (32/64-bit)
-- Minified: Arina, gailu ahulentzat (64-bit)
-- Minified32: Arina, FFmpeg gabe (32/64-bit)
-- FOSS: Eguneratzaile automatiko eta FFmpeg gabe, F-Droiderako (64-bit)
-- Dev/Dev32: Garapen-eraikunak, probatzeko soilik
+- Release64/Beta64 (`com.nevar.nzik`): Eraikun osoa, soilik 64-bit gailuetarako
+- Release32/Beta32 (`com.nevar.nzik`): Eraikun osoa, soilik 32-bit gailuetarako
+- Minified64 (`com.nevar.nzik`): Arin R8 eraikuna, gailu ahulentzat (64-bit)
+- Minified32 (`com.nevar.nzik`): Arin R8 eraikuna (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Eguneratzaile automatikorik gabe, F-Droiderako (arkitektura guztiak)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Garapen-eraikunak, probatzeko soilik
 
-Eraikun estandarrak FFmpeg dute; "32"-ek eta FOSS-ek ez. FOSS bakarrik F-Droiden.
-
-<b>2027ko urtarriletik</b> Googlek identitate-egiaztapena eskatuko du garatzaile guztiei; FOSS gisa, N-Zik kontrako dago. <a href="https://keepandroidopen.org">Jakitu gehiago</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Sinatu petizioa</a>
+Ez dago FFmpeg biltzen duen eraikunik: deskargatu daitekeen hedapena da (lehen erabileran instalatzen da, Ezarpenak → Hedapenak kudeatzen). FOSS bakarrik F-Droiden.

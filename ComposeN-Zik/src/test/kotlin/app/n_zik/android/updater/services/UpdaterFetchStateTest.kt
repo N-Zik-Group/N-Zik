@@ -89,18 +89,31 @@ class UpdaterFetchStateTest {
 
         // helpers the production code uses (dev variants live on the dated
         // dev channel, so they need the dated dev tag)
-        val currentVersion = BuildConfig.VERSION_NAME
-        val tag = if (Updater.isDevFamily(currentVersion)) "v9.0.0-dev-20260101" else "v9.0.0"
-        val assets = Updater.targetBuildTypes(currentVersion, checkBetaUpdates = false)
-            .map { "${BuildConfig.APP_NAME}-$it.apk" }
-            .ifEmpty { listOf("${BuildConfig.APP_NAME}-${Updater.extractBuildType(currentVersion)}.apk") }
-        scriptResponse(code = 200, body = releasesJson(tag, *assets.toTypedArray()))
-
-        Updater.checkForUpdate(isForced = true, showDialog = false)
-
-        awaitUntil { Updater.githubRelease != null }
-        assertEquals(tag, Updater.githubRelease?.tagName)
-        assertEquals(assets.first(), Updater.build.name)
+        val currentVersion = BuildConfig.VERSION_NAME
+        val tag = if (Updater.isDevFamily(currentVersion)) "v9.0.0-dev-20260101" else "v9.0.0"
+        val assets = Updater.targetBuildTypes(currentVersion, checkBetaUpdates = false)
+            .map { "${BuildConfig.APP_NAME}-$it.apk" }
+            .ifEmpty { listOf("${BuildConfig.APP_NAME}-${Updater.extractBuildType(currentVersion)}.apk") }
+        scriptResponse(code = 200, body = releasesJson(tag, *assets.toTypedArray()))
+
+        if (!Updater.isKnownFlavor(currentVersion)) {
+            // Unrecognized flavors (e.g. debug) are targeted at the
+            // non-existent "-unknown" tag — the served stable release with
+            // the matching base asset is never published: a previously
+            // published release is cleared and the no-update path completes
+            // (isCancelled flips) with nothing republished
+            Updater.githubRelease = release("v8.5.0")
+            Updater.checkForUpdate(isForced = true, showDialog = false)
+            awaitUntil { NewUpdateAvailableDialog.isCancelled }
+            assertNull(Updater.githubRelease)
+            return
+        }
+
+        Updater.checkForUpdate(isForced = true, showDialog = false)
+
+        awaitUntil { Updater.githubRelease != null }
+        assertEquals(tag, Updater.githubRelease?.tagName)
+        assertEquals(assets.first(), Updater.build.name)
     }
 
     @Test

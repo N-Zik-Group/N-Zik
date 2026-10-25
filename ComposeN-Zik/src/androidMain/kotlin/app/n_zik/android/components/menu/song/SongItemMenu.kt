@@ -148,9 +148,6 @@ class SongItemMenu private constructor(
             )
     }
 
-    /** Index of the first playback button (radio, play next, enqueue, favorite, add to playlist) of a local song: `2` behind the FFmpeg-only edit-metadata button, `1` without it (the `*32` builds) — before this fix the menu read fixed indexes and, without FFmpeg, showed "Start radio" under Management and skipped "Add to playlist". */
-    private fun localPlaybackStart(): Int = localSongPlaybackStart(BuildConfig.ENABLE_FFMPEG)
-
     lateinit var buttons: List<Button>
     var refreshBtn: Button? = null
     private var showLastFmSection = false
@@ -170,14 +167,12 @@ class SongItemMenu private constructor(
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         if (song.isLocal) {
-            // Local songs: editMetadata at index 1, only on the builds that ship FFmpeg —
-            // without it the playback buttons start at index 1 (see localPlaybackStart)
-            val playbackStart = localPlaybackStart()
-            if (BuildConfig.ENABLE_FFMPEG) {
-                // Section: Management
-                SectionTitle(stringResource(R.string.management))
-                buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            }
+            // Local songs: editMetadata at index 1 (always present — the FFmpeg module
+            // is downloaded on first use, spec-ffmpeg-extension-module)
+            val playbackStart = LOCAL_SONG_PLAYBACK_START
+            // Section: Management
+            SectionTitle(stringResource(R.string.management))
+            buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.filterIsInstance<ChangeAlbumBrowseIdDialog>().firstOrNull()?.let { it.ListMenuItem() }
             buttons.filterIsInstance<ChangeArtistBrowseIdDialog>().firstOrNull()?.let { it.ListMenuItem() }
 
@@ -252,15 +247,14 @@ class SongItemMenu private constructor(
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
         if (song.isLocal) {
-            // Local songs: editMetadata at index 1, only on the builds that ship FFmpeg
-            val playbackStart = localPlaybackStart()
-            if (BuildConfig.ENABLE_FFMPEG) {
-                // Section: Management
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    SectionTitle(stringResource(R.string.management))
-                }
-                buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            // Local songs: editMetadata at index 1 (always present — the FFmpeg module
+            // is downloaded on first use, spec-ffmpeg-extension-module)
+            val playbackStart = LOCAL_SONG_PLAYBACK_START
+            // Section: Management
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                SectionTitle(stringResource(R.string.management))
             }
+            buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.filterIsInstance<ChangeAlbumBrowseIdDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             buttons.filterIsInstance<ChangeArtistBrowseIdDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
 
@@ -565,7 +559,7 @@ class SongItemMenu private constructor(
         buttons = mutableListOf<Button>().apply {
             add( infoButton )
             if (song.isLocal) {
-                if (BuildConfig.ENABLE_FFMPEG) add( editMetadata )
+                add( editMetadata )
             } else {
                 add( renameSong )
                 add( changeAuthor )
@@ -645,7 +639,7 @@ class SongItemMenu private constructor(
             if (!song.isLocal) {
                 add( deleteSongDialog )
             }
-            if (BuildConfig.ENABLE_FFMPEG) add( exportCacheDialog )
+            add( exportCacheDialog )
             if (showLastFmSection) {
                 add( object : MenuIcon, Descriptive, Clickable {
                     override val iconId: Int = R.drawable.heart
@@ -808,8 +802,13 @@ class SongItemMenu private constructor(
 
 
 
+/**
+ * Index of the first playback button (radio, play next, enqueue, favorite, add to
+ * playlist) of a local song, behind the edit-metadata button at index 1. The FFmpeg
+ * gate is gone (spec-ffmpeg-extension-module): the module is downloaded on first use,
+ * so the button is always present and the menu layout is fixed.
+ */
+internal const val LOCAL_SONG_PLAYBACK_START = 2
+
 /** Number of playback buttons of a local song's menu (radio, play next, enqueue, favorite, add to playlist). */
 internal const val LOCAL_PLAYBACK_COUNT = 5
-
-/** Index of the first playback button of a local song's menu: after info, then the edit-metadata button when FFmpeg ships. */
-internal fun localSongPlaybackStart(ffmpeg: Boolean): Int = if (ffmpeg) 2 else 1

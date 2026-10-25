@@ -54,16 +54,12 @@ Príležitostný posluchateľ či audiofil - N-Zik vám dáva plnú kontrolu nad
 - Rescue Center, obrazovka údržby, sprievodca začiatočníkov, skratky
 - OTA aktualizácie z GitHub, časovač spánku, prehrávanie na pozadí
 
-🛡️ 100% open-source (FOSS). Kľúčové povolenia: INTERNET, RECORD_AUDIO (iba pre vizualizátor), STORAGE (exporty/zálohy), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Dostupné verzie</b>
-- Full/Beta: Kompletná verzia (64-bit)
-- Full32/Beta32: Bez FFmpeg (32/64-bit)
-- Minified: Odľahčená verzia, pre slabšie zariadenia (64-bit)
-- Minified32: Odľahčená verzia bez FFmpeg (32/64-bit)
-- FOSS: Bez automatického aktualizátora ani FFmpeg, pre F-Droid (64-bit)
-- Dev/Dev32: Vývojové verzie, len na testovanie
+- Release64/Beta64 (`com.nevar.nzik`): Kompletná verzia, iba 64bitové zariadenia
+- Release32/Beta32 (`com.nevar.nzik`): Kompletná verzia, iba 32bitové zariadenia
+- Minified64 (`com.nevar.nzik`): Odľahčená verzia R8, pre slabšie zariadenia (64-bit)
+- Minified32 (`com.nevar.nzik`): Odľahčená verzia R8 (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Bez automatického aktualizátora, pre F-Droid (všetky architektúry)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Vývojové verzie, len na testovanie
 
-Štandardné verzie obsahujú FFmpeg; „32" a FOSS nie. Na F-Droid len FOSS.
-
-Od <b>januára 2027</b> bude Google vyžadovať overenie identity všetkých vývojárov. N-Zik ako FOSS je proti. <a href="https://keepandroidopen.org">Dozvedieť sa viac</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Podpíšte petíciu</a>
+Žiadna verzia neobsahuje FFmpeg: je to sťahovateľné rozšírenie (inštaluje sa pri prvom použití, riadené v Nastavenia → Rozšírenia). Na F-Droid len FOSS.

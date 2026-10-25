@@ -54,16 +54,12 @@ Ascultător ocazional sau audiofil, N-Zik îți oferă control deplin asupra muz
 - Rescue Center, ecran de menținere, onboarding, scurtături
 - Actualizări OTA de pe GitHub, temporizator de somn, redare în fundal
 
-🛡️ 100% open-source (FOSS). Permisiuni cheie: INTERNET, RECORD_AUDIO (doar vizualizator), STORAGE (exporturi/backup), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Versiuni disponibile</b>
-- Full/Beta: Versiune completă (64-bit)
-- Full32/Beta32: Fără FFmpeg (32/64-bit)
-- Minified: Ușoară, pentru dispozitive entry-level (64-bit)
-- Minified32: Ușoară, fără FFmpeg (32/64-bit)
-- FOSS: Fără actualizator automat și FFmpeg, pentru F-Droid (64-bit)
-- Dev/Dev32: Versiuni de dezvoltare, doar pentru testare
+- Release64/Beta64 (`com.nevar.nzik`): Versiune completă, doar dispozitive 64-bit
+- Release32/Beta32 (`com.nevar.nzik`): Versiune completă, doar dispozitive 32-bit
+- Minified64 (`com.nevar.nzik`): Versiune R8 ușoară, pentru dispozitive entry-level (64-bit)
+- Minified32 (`com.nevar.nzik`): Versiune R8 ușoară (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Fără actualizator automat, pentru F-Droid (toate arhitecturile)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Versiuni de dezvoltare, doar pentru testare
 
-Versiunile standard includ FFmpeg; „32" și FOSS nu. Doar FOSS pe F-Droid.
-
-De la <b>ianuarie 2027</b>, Google va cere verificarea identității tuturor dezvoltatorilor. Ca FOSS, N-Zik se opune. <a href="https://keepandroidopen.org">Află mai multe</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Semnează petiția</a>
+Nicio versiune nu include FFmpeg: este o extensie descărcabilă (installată la prima utilizare, gestionată în Setări → Extensii). Doar FOSS pe F-Droid.

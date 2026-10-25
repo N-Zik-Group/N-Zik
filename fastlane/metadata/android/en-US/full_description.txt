@@ -25,7 +25,7 @@ Whether casual listener or audiophile, N-Zik gives you full control over your mu
 
 💾 <b>Offline, Metadata & Privacy</b>
 - Smart caching and downloads for tracks and playlists, with selectable download quality
-- FFmpeg-powered export with full metadata (standard builds only)
+- FFmpeg-powered export with full metadata (FFmpeg is a downloadable extension, installed on first use)
 - In-app metadata editor (AAC/Opus, cover art)
 - Local listening stats and history
 - Auto-backup with custom intervals and retention
@@ -54,16 +54,12 @@ Whether casual listener or audiophile, N-Zik gives you full control over your mu
 - Rescue Center, maintenance screen, onboarding, app shortcuts
 - OTA updates from GitHub, sleep timer, background playback
 
-🛡️ 100% open-source (FOSS). Key permissions: INTERNET, RECORD_AUDIO (visualizer only), STORAGE (exports/backups), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Available Builds</b>
-- Full/Beta: Complete build (64-bit)
-- Full32/Beta32: Without FFmpeg (32/64-bit)
-- Minified: Lightweight, for low-end devices (64-bit)
-- Minified32: Lightweight without FFmpeg (32/64-bit)
-- FOSS: Without auto-updater and FFmpeg, for F-Droid (64-bit)
-- Dev/Dev32: Development builds, testing only
+- Release64/Beta64 (`com.nevar.nzik`): Complete build, 64-bit devices only
+- Release32/Beta32 (`com.nevar.nzik`): Complete build, 32-bit devices only
+- Minified64 (`com.nevar.nzik`): Lightweight R8 build, for low-end devices (64-bit)
+- Minified32 (`com.nevar.nzik`): Lightweight R8 build (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Without auto-updater, for F-Droid (all architectures)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Development builds, testing only
 
-Standard builds bundle FFmpeg; the "32" builds and FOSS drop it. Only FOSS is on F-Droid.
-
-Starting <b>January 2027</b>, Google requires identity verification for all developers. As FOSS, N-Zik opposes this. <a href="https://keepandroidopen.org">Learn more</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Sign the petition</a>
+No build bundles FFmpeg: it is a downloadable extension (installed on first use, managed in Settings → Extensions). Only FOSS is on F-Droid.

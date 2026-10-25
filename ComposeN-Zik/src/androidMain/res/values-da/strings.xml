@@ -1134,7 +1134,6 @@
     <string name="beta_title">INDSATS</string>
     <string name="dev_title">DEV</string>
     <string name="debug_title">DEBUG</string>
-    <string name="full_title">FULL</string>
     <string name="stable_title">STABEL</string>
     <string name="minified_title">MINIFIKERET</string>
     <string name="update_file_size">Filstørrelse: %s</string>

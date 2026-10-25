@@ -51,6 +51,7 @@ import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.components.dialog.common.StringListDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
+import app.n_zik.android.components.settings.ExtensionsSettingsCard
 import app.n_zik.android.components.settings.MaintenanceSettingsCard
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
@@ -200,9 +201,10 @@ fun OtherSettings(
     val scrollState = rememberScrollState()
     var containerTopY by remember { mutableFloatStateOf(-1f) }
     var maintenanceCardTopY by remember { mutableFloatStateOf(-1f) }
+    var extensionsCardTopY by remember { mutableFloatStateOf(-1f) }
 
     LaunchedEffect(focus) {
-        if (focus != "debug" && focus != "maintenance") return@LaunchedEffect
+        if (focus != "debug" && focus != "maintenance" && focus != "extensions") return@LaunchedEffect
         // The card may be off-screen but is still laid out: wait until its position is
         // measured.
 
@@ -210,8 +212,9 @@ fun OtherSettings(
         // would capture the initial -1f sentinel (the states are only filled by
 
         // onGloballyPositioned after layout) and suspend forever on `first`.
+        val focusedExtensions = focus == "extensions"
         val offset = snapshotFlow {
-            val cardTopY = maintenanceCardTopY
+            val cardTopY = if (focusedExtensions) extensionsCardTopY else maintenanceCardTopY
             if (cardTopY < 0f || containerTopY < 0f) -1f
             else cardTopY - containerTopY + scrollState.value
         }.first { it >= 0f }
@@ -673,6 +676,19 @@ fun OtherSettings(
         ) {
             Box(modifier = Modifier.onGloballyPositioned { maintenanceCardTopY = it.positionInRoot().y }) {
                 MaintenanceSettingsCard()
+            }
+        }
+
+        // Extensions section (spec-ffmpeg-extension-module): the FFmpeg module card,
+        // the burger long press (focus=extensions) scrolls to it. Same search-filter
+        // + enter spec as the sibling cards.
+        val searchCtx_Extensions = search.inputValue.isBlank() || stringResource(R.string.modules_title).contains(search.inputValue, true) || stringResource(R.string.module_ffmpeg).contains(search.inputValue, true) || stringResource(R.string.module_ffmpeg_description).contains(search.inputValue, true)
+        AnimatedVisibility(
+            visible = searchCtx_Extensions,
+            enter = fadeIn(animationSpec = tween(1100)) + scaleIn(animationSpec = tween(1100), initialScale = 0.9f)
+        ) {
+            Box(modifier = Modifier.onGloballyPositioned { extensionsCardTopY = it.positionInRoot().y }) {
+                ExtensionsSettingsCard()
             }
         }
 

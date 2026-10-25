@@ -5,6 +5,7 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.IntentFilter
 import android.os.Build
 import android.os.Process
 import android.os.StrictMode
@@ -66,6 +67,10 @@ import app.n_zik.android.core.settings.ensureDefaultColorPaletteMode
 import app.n_zik.android.extensions.audiobar.VisualizerCaptureCoordinator
 import app.n_zik.android.listentogether.ListenTogetherClient
 import app.n_zik.android.listentogether.ListenTogetherManager
+import app.n_zik.android.modules.FfmpegModule
+import app.n_zik.android.modules.ModuleDownloadCancelReceiver
+import app.n_zik.android.modules.ModuleUpdateStatus
+import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.debug.CRASH_CLEAN_BOOT_STREAK_KEY
 import app.n_zik.android.utils.debug.CRASH_LAST_SEEN_COUNT_KEY
@@ -106,6 +111,7 @@ import app.it.fast4x.rimusic.utils.mbCircuitFailuresKey
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 
 class MainApplication : Application(), SingletonImageLoader.Factory {
@@ -155,6 +161,18 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // Register app shortcuts early, BEFORE Dependencies.init, so that the Rescue
         // shortcut exists even if initialization crashes below.
         app.n_zik.android.shortcuts.registerAppShortcuts(this)
+
+        // Extension modules (spec-ffmpeg-extension-module): the download notification's
+        // Cancel action reaches the in-process ModuleManager through this receiver.
+        // Early, like the other receiver registrations, so it exists even if
+        // initialization crashes below.
+        val moduleCancelReceiver = ModuleDownloadCancelReceiver()
+        val moduleCancelFilter = IntentFilter(ModuleDownloadCancelReceiver.CANCEL_ACTION)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(moduleCancelReceiver, moduleCancelFilter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(moduleCancelReceiver, moduleCancelFilter)
+        }
 
         Dependencies.init(this)
 
@@ -438,6 +456,16 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         }
 
         createNotificationChannels()
+
+        // Extension modules (spec-ffmpeg-extension-module): launch-time update check —
+        // detection only (toast). The download happens on first use or from the
+        // Extensions screen; a failed check must not block app startup.
+        NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+            val moduleUpdate = withContext(NzikDispatchers.DATA) { FfmpegModule.checkForUpdate() }
+            if (moduleUpdate is ModuleUpdateStatus.UpdateAvailable) {
+                Toaster.i(R.string.module_update_available)
+            }
+        }
 
         // The 6 channels of the active profile (no-op for the base profile — its 5 channels are
         // created above, unchanged, and its 6th — listen-together — is created on first use by

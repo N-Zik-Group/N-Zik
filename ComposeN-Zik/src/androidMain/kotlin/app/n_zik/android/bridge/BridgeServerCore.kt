@@ -132,6 +132,8 @@ internal class BridgeServerCore(
     private val pairingCodes: PairingCodeManager = PairingCodeManager(),
     private val rateLimiter: PairingRateLimiter = PairingRateLimiter(),
     private val clock: () -> Long = System::currentTimeMillis,
+    /** `features` served by `GET /api/v1/meta` (contract §5); injectable for the JVM unit tests. */
+    private val featuresProvider: () -> List<String> = { BridgeContract.features() },
     /** Called with the device name once a pairing succeeded. */
     private val onDevicePaired: (String) -> Unit = {},
     /** Player state of this server run: a new server starts again at revision `0`. */
@@ -257,7 +259,7 @@ internal class BridgeServerCore(
                             serverName = serverName,
                             serverTimeMs = clock(),
                             // Each later story adds its identifier once its routes exist
-                            features = BridgeContract.FEATURES,
+                            features = featuresProvider(),
                         )
                     )
                 }

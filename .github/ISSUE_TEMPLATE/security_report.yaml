@@ -34,7 +34,7 @@ body:
     attributes:
       label: 🏷️ App Version
       description: Please specify the exact version of N-Zik affected.
-      placeholder: "5.0.0-f Full / Full32"
+      placeholder: "5.0.0-r64 Release64 / Release32"
     validations:
       required: true
 
@@ -44,13 +44,13 @@ body:
       label: 🏗️ Build Type
       description: Select the build type you are currently using.
       options:
-        - Full
-        - Full32
-        - Minified
+        - Release64
+        - Release32
+        - Minified64
         - Minified32
-        - Beta
+        - Beta64
         - Beta32
-        - Dev
+        - Dev64
         - Dev32
         - Foss (N-Zik-Foss, com.nevar.nzik.foss)
     validations:

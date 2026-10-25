@@ -61,106 +61,135 @@ object Updater {
     lateinit var build: GithubRelease.Build
     var githubRelease: GithubRelease? by mutableStateOf(null)
 
-    /** Extracts the build type from version string e.g., "1.0.0-f" returns "full", "1.0.0-beta32" returns "beta", "1.0.0-m32" returns "minified", "1.0.0-dev32-20261013" returns "dev" */
+    /** Extracts the APK build type name (asset-name base) from the version string: "8.4.5-r64" returns "release64", "8.4.5-beta32" returns "beta32", "8.4.5-m32" returns "minified32", "8.4.5-dev64-20261013" returns "dev64"; unknown suffixes default to "release64" */
     fun extractBuildType(versionStr: String): String {
-        return when {
-            versionStr.endsWith(UpdaterConstants.SUFFIX_BETA) ||
-                versionStr.endsWith(UpdaterConstants.SUFFIX_BETA32) -> UpdaterConstants.TYPE_BETA
-            versionStr.endsWith(UpdaterConstants.SUFFIX_MINIFIED) ||
-                versionStr.endsWith(UpdaterConstants.SUFFIX_MINIFIED32) -> UpdaterConstants.TYPE_MINIFIED
-            versionStr.contains(UpdaterConstants.SUFFIX_DEV) -> UpdaterConstants.TYPE_DEV
-            else -> UpdaterConstants.TYPE_FULL
+        return when (extractVersionSuffix(versionStr)) {
+            UpdaterConstants.SUFFIX_CHAR_RELEASE64 -> UpdaterConstants.TYPE_RELEASE64
+            UpdaterConstants.SUFFIX_CHAR_RELEASE32 -> UpdaterConstants.TYPE_RELEASE32
+            UpdaterConstants.SUFFIX_CHAR_MINIFIED64 -> UpdaterConstants.TYPE_MINIFIED64
+            UpdaterConstants.SUFFIX_CHAR_MINIFIED32 -> UpdaterConstants.TYPE_MINIFIED32
+            UpdaterConstants.SUFFIX_CHAR_BETA64 -> UpdaterConstants.TYPE_BETA64
+            UpdaterConstants.SUFFIX_CHAR_BETA32 -> UpdaterConstants.TYPE_BETA32
+            UpdaterConstants.SUFFIX_CHAR_DEV64 -> UpdaterConstants.TYPE_DEV64
+            UpdaterConstants.SUFFIX_CHAR_DEV32 -> UpdaterConstants.TYPE_DEV32
+            else -> UpdaterConstants.TYPE_RELEASE64
         }
     }
 
-    /** Extracts the version suffix from version string e.g., "1.0.0-f" returns "f", "1.0.0-beta32" returns "beta32", "1.0.0-dev-20261013" returns "dev" */
+    /** Extracts the version suffix from the version string: "8.4.5-r64" returns "r64", "8.4.5-beta32" returns "beta32", "8.4.5-dev64-20261013" returns "dev64" */
     fun extractVersionSuffix(versionStr: String): String {
         val parts = versionStr.removePrefix(UpdaterConstants.PREFIX_VERSION).split("-")
         return if (parts.size > 1) parts[1] else ""
     }
 
-    /** Returns true for the dev build family — both the "dev" and "dev32" flavors, which share the same dev releases and release tags. */
+    /** Returns true for the dev build family — the "dev64"/"dev32" version-name suffixes plus the shared dated release tag's "dev" suffix (tags keep the pre-rename form and are parsed through the same helpers). */
     fun isDevFamily(versionStr: String): Boolean {
         val suffix = extractVersionSuffix(versionStr)
-        return suffix == UpdaterConstants.SUFFIX_CHAR_DEV ||
-            suffix == UpdaterConstants.SUFFIX_CHAR_DEV32
+        return suffix == UpdaterConstants.SUFFIX_CHAR_DEV64 ||
+            suffix == UpdaterConstants.SUFFIX_CHAR_DEV32 ||
+            suffix == UpdaterConstants.SUFFIX_CHAR_DEV_TAG
     }
 
     /**
-     * Returns true for the minified build family — "minified" and "minified32".
+     * Returns true for the minified build family — "minified64" and "minified32".
      */
     fun isMinifiedFamily(versionStr: String): Boolean {
         val suffix = extractVersionSuffix(versionStr)
-        return suffix == UpdaterConstants.SUFFIX_CHAR_MINIFIED ||
+        return suffix == UpdaterConstants.SUFFIX_CHAR_MINIFIED64 ||
             suffix == UpdaterConstants.SUFFIX_CHAR_MINIFIED32
     }
 
     /**
-     * Returns true for the beta build family — "beta" and "beta32".
+     * Returns true for the beta build family — the "beta64"/"beta32"
+     * version-name suffixes plus the beta release tag's "beta" suffix.
      */
     fun isBetaFamily(versionStr: String): Boolean {
         val suffix = extractVersionSuffix(versionStr)
-        return suffix == UpdaterConstants.SUFFIX_CHAR_BETA ||
-            suffix == UpdaterConstants.SUFFIX_CHAR_BETA32
+        return suffix == UpdaterConstants.SUFFIX_CHAR_BETA64 ||
+            suffix == UpdaterConstants.SUFFIX_CHAR_BETA32 ||
+            suffix == UpdaterConstants.SUFFIX_CHAR_BETA_TAG
+    }
+
+    /**
+     * Returns true for the stable build family — the "r64"/"r32"/"m64"/"m32"
+     * version-name suffixes, plus a missing suffix (a plain stable version).
+     */
+    fun isStableFamily(versionStr: String): Boolean {
+        val suffix = extractVersionSuffix(versionStr)
+        return suffix.isEmpty() ||
+            suffix == UpdaterConstants.SUFFIX_CHAR_RELEASE64 ||
+            suffix == UpdaterConstants.SUFFIX_CHAR_RELEASE32 ||
+            suffix == UpdaterConstants.SUFFIX_CHAR_MINIFIED64 ||
+            suffix == UpdaterConstants.SUFFIX_CHAR_MINIFIED32
+    }
+
+    /**
+     * True when the updater knows how to serve the flavor (stable, dev or
+     * beta family, or no suffix). Unrecognized suffixes are targeted at the
+     * non-existent "-unknown" tag, so they end up with a clean "no update".
+     */
+    internal fun isKnownFlavor(versionStr: String): Boolean {
+        return isStableFamily(versionStr) || isDevFamily(versionStr) || isBetaFamily(versionStr)
     }
 
     /**
      * Returns the GitHub release tag matching the given version string.
      *
-     * Dev tags carry a dated suffix that is part of the tag itself, so the
-     * full version name is kept. Dev32 builds share the dev release, so their
-     * suffix is mapped back to the dev tag. Beta keeps its full tag, beta32
-     * maps to the shared beta tag, other flavors use the base version.
-     * e.g., "8.4.0-dev-20261013" returns "v8.4.0-dev-20261013",
-     * "8.4.0-dev32-20261013" returns "v8.4.0-dev-20261013",
+     * Release tags are shared per channel and keep the pre-rename form:
+     * stable "v8.4.5", beta "v8.4.5-beta", dev "v8.4.5-dev-<date>" — both the
+     * 64-bit and the 32-bit APKs ride on the same release, so the per-ABI
+     * suffix is mapped back to the shared channel tag.
+     * e.g., "8.4.0-dev64-20261013" returns "v8.4.0-dev-20261013",
      * "8.4.0-dev32" (undated, not producible by the build) returns "v8.4.0-dev",
-     * "8.4.0-beta32" returns "v8.4.0-beta", "8.4.0-f" returns "v8.4.0"
+     * "8.4.0-beta64" / "8.4.0-beta32" return "v8.4.0-beta",
+     * "8.4.0-r64" / "8.4.0-m32" return "v8.4.0",
+     * "8.4.0-xyz" (unrecognized) returns the non-existent "v8.4.0-unknown"
      */
     fun releaseTag(versionStr: String): String {
         val clean = versionStr.removePrefix(UpdaterConstants.PREFIX_VERSION)
         return when {
             isDevFamily(clean) -> {
-                // Dated dev32 shares the dated dev tag; an undated dev32 is not
-                // producible (the build always appends the date) but is mapped to
-//
-                // the undated shared dev tag instead of the non-existent
-                // "-dev32" tag. Any other dev version is kept as-is.
-                val tag = when {
-                    clean.contains(UpdaterConstants.SUFFIX_DEV32 + "-") ->
-                        clean.replaceFirst(UpdaterConstants.SUFFIX_DEV32 + "-", UpdaterConstants.SUFFIX_DEV + "-")
-                    clean.endsWith(UpdaterConstants.SUFFIX_DEV32) -> clean.removeSuffix("32")
-                    else -> clean
-                }
+                // Both ABIs share the dated dev tag: the per-ABI suffix
+                // ("dev64"/"dev32") maps back to the shared "dev" tag part
+                val tag = clean.replaceFirst(
+                    UpdaterConstants.SUFFIX_CHAR_DEV32,
+                    UpdaterConstants.SUFFIX_CHAR_DEV_TAG
+                ).replaceFirst(
+                    UpdaterConstants.SUFFIX_CHAR_DEV64,
+                    UpdaterConstants.SUFFIX_CHAR_DEV_TAG
+                )
                 UpdaterConstants.PREFIX_VERSION + tag
             }
-            clean.endsWith(UpdaterConstants.SUFFIX_BETA32) -> UpdaterConstants.PREFIX_VERSION +
-                clean.removeSuffix("32")
-            clean.endsWith(UpdaterConstants.SUFFIX_BETA) -> UpdaterConstants.PREFIX_VERSION + clean
-            else -> UpdaterConstants.PREFIX_VERSION + clean.substringBefore("-")
+            clean.endsWith(UpdaterConstants.SUFFIX_BETA64) ->
+                UpdaterConstants.PREFIX_VERSION + clean.removeSuffix("64")
+            clean.endsWith(UpdaterConstants.SUFFIX_BETA32) ->
+                UpdaterConstants.PREFIX_VERSION + clean.removeSuffix("32")
+            isStableFamily(clean) ->
+                UpdaterConstants.PREFIX_VERSION + clean.substringBefore("-")
+            // Unrecognized flavor: target a tag that does not exist, so the
+            // updater reports a clean "no update" instead of offering a
+            // stable APK to an unrecognized build
+            else ->
+                UpdaterConstants.PREFIX_VERSION +
+                clean.substringBefore("-") +
+                UpdaterConstants.SUFFIX_UNKNOWN
         }
     }
 
     /**
      * Returns the APK asset name hosted on the GitHub release matching the
-     * given version, e.g. "N-Zik-dev32.apk" for the dev32 flavor or
-     * "N-Zik-full32.apk" for the full32 flavor.
+     * given version, e.g. "N-Zik-release64.apk" for the release64 flavor or
+     * "N-Zik-dev32.apk" for the dev32 flavor.
      */
     fun assetName(appName: String, versionStr: String): String {
-        val build = when (extractVersionSuffix(versionStr)) {
-            UpdaterConstants.SUFFIX_CHAR_DEV32 -> UpdaterConstants.TYPE_DEV32
-            UpdaterConstants.SUFFIX_CHAR_FULL32 -> UpdaterConstants.TYPE_FULL32
-            UpdaterConstants.SUFFIX_CHAR_MINIFIED32 -> UpdaterConstants.TYPE_MINIFIED32
-            UpdaterConstants.SUFFIX_CHAR_BETA32 -> UpdaterConstants.TYPE_BETA32
-            else -> extractBuildType(versionStr)
-        }
-        return "$appName-$build.apk"
+        return "$appName-${extractBuildType(versionStr)}.apk"
     }
 
     /**
      * The flavor label shared by the header badge, the About badge, the
      * updater screen and the new-update popup — one source of truth so the
-     * same build reads the same everywhere (FULL / FULL 32, MINIFIED /
-     * MINIFIED 32, BETA / BETA 32, DEV / DEV 32, plus FOSS and DEBUG).
+     * same build reads the same everywhere (RELEASE, RELEASE 32, MINIFIED,
+     * MINIFIED 32, BETA, BETA 32, DEV, DEV 32, plus FOSS and DEBUG).
      *
      * [resId] carries the localized label (0 when [literal] is used),
      * [append32] asks the caller to append the " 32" marker, and [literal]
@@ -175,10 +204,10 @@ object Updater {
     /**
      * Returns the flavor label for the given version name, or null when the
      * version carries no suffix (badges stay hidden, label consumers fall
-     * back to the full label).
+     * back to the release label).
      *
      * The foss build type always yields the fixed "FOSS" text. Both version
-     * names ("8.4.0-f32") and display versions ("v8.4.0-f32", the input the
+     * names ("8.4.0-r32") and display versions ("v8.4.0-r32", the input the
      * updater screen and popup derive) work.
      */
     fun flavorLabel(versionName: String, isFoss: Boolean = false): FlavorLabel? {
@@ -186,11 +215,11 @@ object Updater {
         val suffix = extractVersionSuffix(versionName)
         if (suffix.isEmpty()) return null
         return when (suffix) {
-            UpdaterConstants.SUFFIX_CHAR_FULL -> FlavorLabel(R.string.full_title)
-            UpdaterConstants.SUFFIX_CHAR_MINIFIED -> FlavorLabel(R.string.minified_title)
-            UpdaterConstants.SUFFIX_CHAR_DEV -> FlavorLabel(R.string.dev_title)
-            UpdaterConstants.SUFFIX_CHAR_BETA -> FlavorLabel(R.string.beta_title)
-            UpdaterConstants.SUFFIX_CHAR_FULL32 -> FlavorLabel(R.string.full_title, append32 = true)
+            UpdaterConstants.SUFFIX_CHAR_RELEASE64 -> FlavorLabel(R.string.release_title)
+            UpdaterConstants.SUFFIX_CHAR_MINIFIED64 -> FlavorLabel(R.string.minified_title)
+            UpdaterConstants.SUFFIX_CHAR_DEV64 -> FlavorLabel(R.string.dev_title)
+            UpdaterConstants.SUFFIX_CHAR_BETA64 -> FlavorLabel(R.string.beta_title)
+            UpdaterConstants.SUFFIX_CHAR_RELEASE32 -> FlavorLabel(R.string.release_title, append32 = true)
             UpdaterConstants.SUFFIX_CHAR_MINIFIED32 -> FlavorLabel(R.string.minified_title, append32 = true)
             UpdaterConstants.SUFFIX_CHAR_BETA32 -> FlavorLabel(R.string.beta_title, append32 = true)
             UpdaterConstants.SUFFIX_CHAR_DEV32 -> FlavorLabel(R.string.dev_title, append32 = true)
@@ -211,7 +240,7 @@ object Updater {
         return "${UpdateEndpoints.RELEASE_DOWNLOAD_URL}$tag/${assetName(appName, versionStr)}"
     }
 
-    /** Returns the changelog URL for the given version: dev-family builds (dev + dev32) share a single "dev.txt", every other flavor uses its version code. */
+    /** Returns the changelog URL for the given version: dev-family builds (dev64 + dev32) share a single "dev.txt", every other flavor uses its version code. */
     fun currentChangelogUrl(versionCode: Int, versionStr: String): String {
         return if (isDevFamily(versionStr)) {
             "${UpdateEndpoints.CHANGELOGS_URL}/dev.txt"
@@ -220,109 +249,153 @@ object Updater {
         }
     }
 
-    /** Returns the version suffix (-beta/-beta32, -m/-m32, -f/-f32) based on the selected build, keeping the 32-bit marker when the APK is 32-bit. */
+    /**
+     * Returns the version-name suffix ("-r64"/"-r32", "-m64"/"-m32",
+     * "-beta64"/"-beta32", "-dev64"/"-dev32") for the selected build's APK
+     * asset name. Pre-rename asset names (migration window, CI ships the
+     * dual assets) map to their post-rename suffix.
+     */
     fun getBuildSuffix(): String {
-        if (!::build.isInitialized) return UpdaterConstants.SUFFIX_FULL
-        // Anchor on the extension: asset names are "…-<type>32.apk", a bare
-        // "32" substring could otherwise match unrelated future names
-        val is32Bit = build.name.endsWith("32.apk", ignoreCase = true)
+        if (!::build.isInitialized) return UpdaterConstants.SUFFIX_RELEASE64
+        val name = build.name
         return when {
-            build.name.contains(UpdaterConstants.TYPE_BETA, ignoreCase = true) ->
-                if (is32Bit) UpdaterConstants.SUFFIX_BETA32 else UpdaterConstants.SUFFIX_BETA
-            build.name.contains(UpdaterConstants.TYPE_MINIFIED, ignoreCase = true) ->
-                if (is32Bit) UpdaterConstants.SUFFIX_MINIFIED32 else UpdaterConstants.SUFFIX_MINIFIED
-            build.name.contains(UpdaterConstants.TYPE_DEV, ignoreCase = true) ->
-                if (is32Bit) UpdaterConstants.SUFFIX_DEV32 else UpdaterConstants.SUFFIX_DEV
-            else -> if (is32Bit) UpdaterConstants.SUFFIX_FULL32 else UpdaterConstants.SUFFIX_FULL
+            name.contains(UpdaterConstants.TYPE_BETA64, ignoreCase = true) -> UpdaterConstants.SUFFIX_BETA64
+            name.contains(UpdaterConstants.TYPE_BETA32, ignoreCase = true) -> UpdaterConstants.SUFFIX_BETA32
+            name.contains(UpdaterConstants.TYPE_MINIFIED64, ignoreCase = true) -> UpdaterConstants.SUFFIX_MINIFIED64
+            name.contains(UpdaterConstants.TYPE_MINIFIED32, ignoreCase = true) -> UpdaterConstants.SUFFIX_MINIFIED32
+            name.contains(UpdaterConstants.TYPE_DEV64, ignoreCase = true) -> UpdaterConstants.SUFFIX_DEV64
+            name.contains(UpdaterConstants.TYPE_DEV32, ignoreCase = true) -> UpdaterConstants.SUFFIX_DEV32
+            name.contains(UpdaterConstants.TYPE_RELEASE64, ignoreCase = true) -> UpdaterConstants.SUFFIX_RELEASE64
+            name.contains(UpdaterConstants.TYPE_RELEASE32, ignoreCase = true) -> UpdaterConstants.SUFFIX_RELEASE32
+            // Migration window: pre-rename asset names (full→r64, full32→r32,
+            // minified→m64, beta→beta64, dev→dev64)
+            name.contains(UpdaterConstants.LEGACY_TYPE_BETA64, ignoreCase = true) -> UpdaterConstants.SUFFIX_BETA64
+            name.contains(UpdaterConstants.LEGACY_TYPE_DEV64, ignoreCase = true) -> UpdaterConstants.SUFFIX_DEV64
+            name.contains(UpdaterConstants.LEGACY_TYPE_MINIFIED64, ignoreCase = true) -> UpdaterConstants.SUFFIX_MINIFIED64
+            name.contains(UpdaterConstants.LEGACY_TYPE_RELEASE32, ignoreCase = true) -> UpdaterConstants.SUFFIX_RELEASE32
+            name.contains(UpdaterConstants.LEGACY_TYPE_RELEASE64, ignoreCase = true) -> UpdaterConstants.SUFFIX_RELEASE64
+            else -> UpdaterConstants.SUFFIX_RELEASE64
         }
     }
 
     /**
      * Returns the display version with suffix, avoiding duplication.
-     * Release tags carry the base 64-bit suffix ("-beta", "-dev") but never
-     * the 32-bit marker, so the base suffix is swapped for the 32-bit one
-     * instead of appended (appending would duplicate it).
-     * e.g., tagName="v8.4.0-beta", build=N-Zik-beta32.apk returns "v8.4.0-beta32"
-     * e.g., tagName="v8.4.0-dev-20261013", build=N-Zik-dev32.apk returns "v8.4.0-dev32-20261013"
-     * e.g., tagName="v8.4.0" returns "v8.4.0-f" (suffix added)
+     * Release tags are shared per channel ("v8.4.5", "v8.4.5-beta",
+     * "v8.4.5-dev-<date>") and carry no per-ABI marker, so the ABI part of
+     * the build's suffix is composed onto the tag.
+     * e.g., tagName="v8.4.5-beta", build=N-Zik-beta32.apk returns "v8.4.5-beta32"
+     * e.g., tagName="v8.4.5-dev-20261013", build=N-Zik-dev64.apk returns "v8.4.5-dev64-20261013"
+     * e.g., tagName="v8.4.5", build=N-Zik-release32.apk returns "v8.4.5-r32"
      */
     fun getDisplayVersion(): String {
         val tag = githubRelease?.tagName ?: return BuildConfig.VERSION_NAME
         val suffix = getBuildSuffix()
-        val baseSuffix = when (suffix) {
-            UpdaterConstants.SUFFIX_BETA32 -> UpdaterConstants.SUFFIX_BETA
-            UpdaterConstants.SUFFIX_MINIFIED32 -> UpdaterConstants.SUFFIX_MINIFIED
-            UpdaterConstants.SUFFIX_FULL32 -> UpdaterConstants.SUFFIX_FULL
-            UpdaterConstants.SUFFIX_DEV32 -> UpdaterConstants.SUFFIX_DEV
-            else -> suffix
-        }
         return when {
-            // Tag already carries the exact suffix
-            tag.contains(suffix) -> tag
-            // 32-bit flavor: the tag carries the base suffix -> swap in the 32 marker
-            baseSuffix != suffix && tag.contains(baseSuffix) -> tag.replaceFirst(baseSuffix, suffix)
-            // Plain tag (e.g. stable "v8.4.0") -> append the suffix
+            // Beta tag: append only the ABI part ("v8.4.5-beta" + "-beta64" → "v8.4.5-beta64")
+            tag.endsWith(UpdaterConstants.SUFFIX_BETA_TAG) ->
+                tag + suffix.substringAfter(UpdaterConstants.SUFFIX_CHAR_BETA_TAG, "")
+            // Dated dev tag: the ABI marker sits between "dev" and the date
+            // ("v8.4.5-dev-20261013" + "-dev32" → "v8.4.5-dev32-20261013")
+            tag.contains(UpdaterConstants.SUFFIX_DEV_TAG) ->
+                tag.replaceFirst(UpdaterConstants.SUFFIX_DEV_TAG, "$suffix-")
+            // Plain stable tag → append the full suffix
             else -> "$tag$suffix"
         }
     }
 
     /**
      * The APK build types a user on [currentVersion] can install, in
-     * priority order, given their beta preference.
+     * priority order, given their beta preference. Returns the post-rename
+     * build type names (spec-ffmpeg-extension-module) — the pre-rename
+     * equivalents are appended by [extractBuild]/[findBestRelease] via
+     * [legacyBuildType] for the migration window.
      *
      * Shared by [extractBuild] (asset selection) and [findBestRelease]
      * (releases must ship at least one of these assets). Empty for unknown
-     * flavors — [extractBuild] then falls back to the base build type.
-     * Visible for testing (see `UpdaterReleaseTagTest`).
+     * flavors — they target the non-existent "-unknown" tag, so no release
+     * is ever offered to them. Visible for testing (`UpdaterReleaseTagTest`).
      */
     internal fun targetBuildTypes(
         currentVersion: String,
         checkBetaUpdates: Boolean
     ): List<String> {
-        val currentSuffix = extractVersionSuffix(currentVersion)
-        return when {
-            // Dev users: check only dev
-            currentSuffix == UpdaterConstants.SUFFIX_CHAR_DEV -> listOf(UpdaterConstants.TYPE_DEV)
-            // Dev32 users: same dev releases, dev32 asset
-            currentSuffix == UpdaterConstants.SUFFIX_CHAR_DEV32 -> listOf(UpdaterConstants.TYPE_DEV32)
-            // Full users with beta enabled: check beta and full
-            currentSuffix == UpdaterConstants.SUFFIX_CHAR_FULL && checkBetaUpdates -> listOf(UpdaterConstants.TYPE_BETA, UpdaterConstants.TYPE_FULL)
-            // Full users with beta disabled: check only full
-            currentSuffix == UpdaterConstants.SUFFIX_CHAR_FULL && !checkBetaUpdates -> listOf(UpdaterConstants.TYPE_FULL)
-            // Full32 users: same channels, 32-bit assets
-            currentSuffix == UpdaterConstants.SUFFIX_CHAR_FULL32 && checkBetaUpdates -> listOf(UpdaterConstants.TYPE_BETA32, UpdaterConstants.TYPE_FULL32)
-            currentSuffix == UpdaterConstants.SUFFIX_CHAR_FULL32 && !checkBetaUpdates -> listOf(UpdaterConstants.TYPE_FULL32)
-            // Beta users with beta enabled: check beta and full
-            currentSuffix == UpdaterConstants.SUFFIX_CHAR_BETA && checkBetaUpdates -> listOf(UpdaterConstants.TYPE_BETA, UpdaterConstants.TYPE_FULL)
-            // Beta users with beta disabled: check only full
-            currentSuffix == UpdaterConstants.SUFFIX_CHAR_BETA && !checkBetaUpdates -> listOf(UpdaterConstants.TYPE_FULL)
-            // Beta32 users: same channels, 32-bit assets
-            currentSuffix == UpdaterConstants.SUFFIX_CHAR_BETA32 && checkBetaUpdates -> listOf(UpdaterConstants.TYPE_BETA32, UpdaterConstants.TYPE_FULL32)
-            currentSuffix == UpdaterConstants.SUFFIX_CHAR_BETA32 && !checkBetaUpdates -> listOf(UpdaterConstants.TYPE_FULL32)
-            // Minified users: check only minified
-            currentSuffix == UpdaterConstants.SUFFIX_CHAR_MINIFIED -> listOf(UpdaterConstants.TYPE_MINIFIED)
-            // Minified32 users: same channel, 32-bit asset
-            currentSuffix == UpdaterConstants.SUFFIX_CHAR_MINIFIED32 -> listOf(UpdaterConstants.TYPE_MINIFIED32)
-            // Default: unknown flavor — extractBuild falls back to the base type
+        return when (extractVersionSuffix(currentVersion)) {
+            // Dev users: only their own ABI's dev asset (both ABIs share the releases)
+            UpdaterConstants.SUFFIX_CHAR_DEV64 -> listOf(UpdaterConstants.TYPE_DEV64)
+            UpdaterConstants.SUFFIX_CHAR_DEV32 -> listOf(UpdaterConstants.TYPE_DEV32)
+            // Release users: the beta channel first when enabled, then their own release asset
+            UpdaterConstants.SUFFIX_CHAR_RELEASE64 ->
+                if (checkBetaUpdates) listOf(UpdaterConstants.TYPE_BETA64, UpdaterConstants.TYPE_RELEASE64)
+                else listOf(UpdaterConstants.TYPE_RELEASE64)
+            UpdaterConstants.SUFFIX_CHAR_RELEASE32 ->
+                if (checkBetaUpdates) listOf(UpdaterConstants.TYPE_BETA32, UpdaterConstants.TYPE_RELEASE32)
+                else listOf(UpdaterConstants.TYPE_RELEASE32)
+            // Beta users: the beta channel first when enabled, otherwise the release channel
+            UpdaterConstants.SUFFIX_CHAR_BETA64 ->
+                if (checkBetaUpdates) listOf(UpdaterConstants.TYPE_BETA64, UpdaterConstants.TYPE_RELEASE64)
+                else listOf(UpdaterConstants.TYPE_RELEASE64)
+            UpdaterConstants.SUFFIX_CHAR_BETA32 ->
+                if (checkBetaUpdates) listOf(UpdaterConstants.TYPE_BETA32, UpdaterConstants.TYPE_RELEASE32)
+                else listOf(UpdaterConstants.TYPE_RELEASE32)
+            // Minified users: only the minified assets
+            UpdaterConstants.SUFFIX_CHAR_MINIFIED64 -> listOf(UpdaterConstants.TYPE_MINIFIED64)
+            UpdaterConstants.SUFFIX_CHAR_MINIFIED32 -> listOf(UpdaterConstants.TYPE_MINIFIED32)
+            // Unknown flavor — no targeted asset, and the "-unknown" tag
+            // gate in findBestRelease keeps every release out
             else -> emptyList()
         }
     }
 
-    /** Visible for testing: selects the APK build matching the current flavor from a release's assets (see `UpdaterReleaseTagTest`). */
+    /**
+     * The pre-rename asset-name base for a post-rename build type
+     * (spec-ffmpeg-extension-module): release64→full, release32→full32,
+     * minified64→minified, beta64→beta, dev64→dev. Unrenamed bases
+     * (minified32/beta32/dev32) map to themselves. Used to accept both
+     * naming schemes while CI ships the dual assets.
+     */
+    private fun legacyBuildType(buildType: String): String = when (buildType) {
+        UpdaterConstants.TYPE_RELEASE64 -> UpdaterConstants.LEGACY_TYPE_RELEASE64
+        UpdaterConstants.TYPE_RELEASE32 -> UpdaterConstants.LEGACY_TYPE_RELEASE32
+        UpdaterConstants.TYPE_MINIFIED64 -> UpdaterConstants.LEGACY_TYPE_MINIFIED64
+        UpdaterConstants.TYPE_BETA64 -> UpdaterConstants.LEGACY_TYPE_BETA64
+        UpdaterConstants.TYPE_DEV64 -> UpdaterConstants.LEGACY_TYPE_DEV64
+        else -> buildType
+    }
+
+    /** The asset-name bases to look for a user: post-rename first, then pre-rename (migration window). */
+    private fun candidateBuildTypes(
+        currentVersion: String,
+        checkBetaUpdates: Boolean
+    ): List<String> {
+        val targets = targetBuildTypes(currentVersion, checkBetaUpdates)
+        return (targets + targets.map(::legacyBuildType)).distinct()
+    }
+
+    /**
+     * Visible for testing: selects the APK build matching the current flavor
+     * from a release's assets (see `UpdaterReleaseTagTest`). Post-rename asset
+     * names are tried first, then their pre-rename equivalents — the list
+     * stays 32-aware, so a 32-bit user is never pointed at a 64-bit APK
+     * (un-installable on a 32-bit-only device). Unknown flavors have no
+     * matching asset and report "no update".
+     */
     internal fun extractBuild(
         assets: List<GithubRelease.Build>,
         checkBetaUpdates: Boolean = false,
         currentVersion: String = BuildConfig.VERSION_NAME
     ): GithubRelease.Build {
         val appName = BuildConfig.APP_NAME
-        val currentBuildType = extractBuildType(currentVersion)
-        val currentSuffix = extractVersionSuffix(currentVersion)
 
-        // Determine which build types to look for based on current build and beta preferences
-        val targetBuildTypes = targetBuildTypes(currentVersion, checkBetaUpdates)
+        // Unknown flavors target the non-existent "-unknown" tag — there is no
+        // base asset to fall back to, so a clean "no update" is the correct
+        // outcome (a missing suffix, i.e. foss, still falls back below)
+        if (!isKnownFlavor(currentVersion)) {
+            Timber.tag("Updater").w("No matching build found for $currentVersion")
+            throw NoSuchFileException("")
+        }
 
-        // Try to find the best matching build
-        for (buildType in targetBuildTypes) {
+        // Known flavors: post-rename names, then pre-rename (migration window)
+        for (buildType in candidateBuildTypes(currentVersion, checkBetaUpdates)) {
             val fileName = "$appName-$buildType.apk"
             val foundBuild = assets.fastFirstOrNull { it.name == fileName }
             if (foundBuild != null) {
@@ -330,29 +403,20 @@ object Updater {
             }
         }
 
-        // Fallback to the original logic — 32-aware, so a 32-bit user is
-        // never pointed at a 64-bit APK (the base type name would be
-//
-        // un-installable on a 32-bit-only device)
-        val fallbackType = when (currentSuffix) {
-            UpdaterConstants.SUFFIX_CHAR_FULL32 -> UpdaterConstants.TYPE_FULL32
-            UpdaterConstants.SUFFIX_CHAR_MINIFIED32 -> UpdaterConstants.TYPE_MINIFIED32
-            UpdaterConstants.SUFFIX_CHAR_BETA32 -> UpdaterConstants.TYPE_BETA32
-            UpdaterConstants.SUFFIX_CHAR_DEV32 -> UpdaterConstants.TYPE_DEV32
-            else -> currentBuildType
+        // Known flavors whose targeted assets are missing (e.g. a beta user
+        // with beta disabled facing a beta-only release): fall back to the
+        // asset of their own build type — new name, then pre-rename
+        val base = extractBuildType(currentVersion)
+        for (fileName in listOf(base, legacyBuildType(base)).distinct().map { "$appName-$it.apk" }) {
+            val fallbackBuild = assets.fastFirstOrNull { it.name == fileName }
+            if (fallbackBuild != null) {
+                Timber.tag("Updater").w("No targeted build found, falling back to $fileName")
+                return fallbackBuild
+            }
         }
-        val fileName = "$appName-$fallbackType.apk"
-        val fallbackBuild = assets.fastFirstOrNull {
-            it.name == fileName
-        }
-        
-        if (fallbackBuild != null) {
-            Timber.tag("Updater").w("No targeted build found, falling back to $fileName")
-            return fallbackBuild
-        } else {
-            Timber.tag("Updater").w("No matching build found (tried target list + $fileName)")
-            throw NoSuchFileException("")
-        }
+
+        Timber.tag("Updater").w("No matching build found for $currentVersion")
+        throw NoSuchFileException("")
     }
 
     /**
@@ -388,7 +452,7 @@ object Updater {
     }
 
     /**
-     * Turns `v1.0.0` to `1.0.0`, `1.0.0-m` to `1.0.0`
+     * Turns `v1.0.0` to `1.0.0`, `1.0.0-m64` to `1.0.0`
      */
     private fun trimVersion(versionStr: String): String {
         return versionStr.removePrefix(UpdaterConstants.PREFIX_VERSION).substringBefore("-")
@@ -542,21 +606,19 @@ object Updater {
     ): GithubRelease? {
         val currentSuffix = extractVersionSuffix(currentVersion)
 
-        // Surface flavors the matching branches below do not know about
-        // (e.g. debug), instead of silently defaulting to full releases
-        val knownFlavor = currentSuffix.isEmpty() ||
-            isDevFamily(currentVersion) ||
-            isMinifiedFamily(currentVersion) ||
-            isBetaFamily(currentVersion) ||
-            currentSuffix == UpdaterConstants.SUFFIX_CHAR_FULL ||
-            currentSuffix == UpdaterConstants.SUFFIX_CHAR_FULL32
-        if (!knownFlavor) {
-            Timber.tag("Updater").w("Unknown version suffix '$currentSuffix', defaulting to full releases")
+        // Unrecognized flavors (e.g. debug) target the non-existent
+        // "-unknown" tag in the channel check below, so the updater reports
+        // a clean "no update" instead of silently defaulting to stable
+        if (!isKnownFlavor(currentVersion)) {
+            Timber.tag("Updater").d("Unknown version suffix '$currentSuffix' — targeting the unknown tag, no update is offered")
         }
 
-        // Assets this user can actually install (empty for unknown flavors —
-        // the legacy release matching is kept for those)
-        val installableAssets = targetBuildTypes(currentVersion, checkBetaUpdates)
+        // Assets this user can actually install (empty for unknown flavors,
+        // which the "-unknown" tag gate below keeps out anyway). Both the
+        // post-rename and the pre-rename asset names are accepted during the
+        // migration window when CI ships the dual assets
+        // (spec-ffmpeg-extension-module)
+        val installableAssets = candidateBuildTypes(currentVersion, checkBetaUpdates)
             .map { "${BuildConfig.APP_NAME}-$it.apk" }
 
         // Filter releases based on current build type and beta preferences
@@ -564,20 +626,24 @@ object Updater {
             val releaseSuffix = extractVersionSuffix(release.tagName)
 
             val channelOk = when {
-                // Dev users (dev + dev32): only accept dev releases
-                isDevFamily(currentVersion) -> releaseSuffix.startsWith(UpdaterConstants.SUFFIX_CHAR_DEV)
-                // Full users (full + full32) with beta enabled: accept both beta and full
-                currentSuffix in listOf(UpdaterConstants.SUFFIX_CHAR_FULL, UpdaterConstants.SUFFIX_CHAR_FULL32) && checkBetaUpdates -> releaseSuffix == "" || releaseSuffix == UpdaterConstants.SUFFIX_BETA.removePrefix("-")
-                // Full users (full + full32) with beta disabled: only accept full
-                currentSuffix in listOf(UpdaterConstants.SUFFIX_CHAR_FULL, UpdaterConstants.SUFFIX_CHAR_FULL32) && !checkBetaUpdates -> releaseSuffix == ""
-                // Beta users (beta + beta32) with beta enabled: accept both beta and full
-                isBetaFamily(currentVersion) && checkBetaUpdates -> releaseSuffix == UpdaterConstants.SUFFIX_BETA.removePrefix("-") || releaseSuffix == ""
-                // Beta users (beta + beta32) with beta disabled: only accept full
+                // Dev users (dev64 + dev32): only accept the dev channel
+                isDevFamily(currentVersion) -> releaseSuffix.startsWith(UpdaterConstants.SUFFIX_CHAR_DEV_TAG)
+                // Release users with beta enabled: accept both beta and stable tags
+                currentSuffix in listOf(UpdaterConstants.SUFFIX_CHAR_RELEASE64, UpdaterConstants.SUFFIX_CHAR_RELEASE32) && checkBetaUpdates ->
+                    releaseSuffix == "" || releaseSuffix == UpdaterConstants.SUFFIX_CHAR_BETA_TAG
+                // Release users with beta disabled: only stable tags
+                currentSuffix in listOf(UpdaterConstants.SUFFIX_CHAR_RELEASE64, UpdaterConstants.SUFFIX_CHAR_RELEASE32) && !checkBetaUpdates ->
+                    releaseSuffix == ""
+                // Beta users with beta enabled: accept both beta and stable tags
+                isBetaFamily(currentVersion) && checkBetaUpdates ->
+                    releaseSuffix == UpdaterConstants.SUFFIX_CHAR_BETA_TAG || releaseSuffix == ""
+                // Beta users with beta disabled: only stable tags
                 isBetaFamily(currentVersion) && !checkBetaUpdates -> releaseSuffix == ""
-                // Minified users (minified + minified32): only accept full releases (minified assets ship in full releases)
-                isMinifiedFamily(currentVersion) -> releaseSuffix == ""
-                // Default case: only accept full releases
-                else -> releaseSuffix == ""
+                // Stable users (minified and plain stable): only stable tags
+                isStableFamily(currentVersion) -> releaseSuffix == ""
+                // Unrecognized flavor: only the non-existent "-unknown" tag —
+                // no release matches, so the updater reports a clean "no update"
+                else -> releaseSuffix == UpdaterConstants.SUFFIX_CHAR_UNKNOWN
             }
 
             // Skip releases that ship none of the user's installable assets
@@ -586,8 +652,9 @@ object Updater {
             // matching 32-bit asset, or a docs-only release) — the user then
             // falls back to the best release that does ship one. Unknown
 //
-            // flavors have no installable list, so the legacy behavior (any
-            // release passes) is kept for them.
+            // flavors have no installable list, so the asset filter passes
+            // for them (the "-unknown" tag gate above already excludes every
+            // real release).
             val shipsInstallableAsset = installableAssets.isEmpty() ||
                 release.builds.any { it.name in installableAssets }
 

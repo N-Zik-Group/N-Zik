@@ -116,7 +116,7 @@ internal fun HeaderBadgeBox(
 }
 
 /**
- * Version badge of the app header (FULL / FULL 32, MINIFIED / MINIFIED 32,
+ * Version badge of the app header (RELEASE / RELEASE 32, MINIFIED / MINIFIED 32,
  * BETA / BETA 32, DEV / DEV 32, FOSS, DEBUG) — rendered from
  * `Updater.flavorLabel`, the single source of truth for flavor labels.
  * Hidden for versions without a suffix.
@@ -132,9 +132,9 @@ fun HeaderVersionBadge(
     val label = Updater.flavorLabel(BuildConfig.VERSION_NAME, isFoss) ?: return
 
     // Single source of truth for all flavor labels (Updater.flavorLabel):
-    // FULL / FULL 32, MINIFIED / MINIFIED 32, BETA / BETA 32, DEV / DEV 32,
-//
-    // FOSS, DEBUG
+    // RELEASE / RELEASE 32, MINIFIED / MINIFIED 32, BETA / BETA 32,
+    //
+    // DEV / DEV 32, FOSS, DEBUG
     val badgeText = label.literal
         ?: stringResource(label.resId) + if (label.append32) " 32" else ""
 

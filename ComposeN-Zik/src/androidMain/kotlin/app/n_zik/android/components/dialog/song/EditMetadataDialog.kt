@@ -53,6 +53,8 @@ import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.modules.FfmpegModule
+import app.n_zik.android.modules.ModuleState
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.models.Song
@@ -269,6 +271,16 @@ class EditMetadataDialog private constructor(
 
         LaunchedEffect(isActive) {
             if (!isActive || song == null) return@LaunchedEffect
+            // The FFmpeg module (spec-ffmpeg-extension-module) must be ready before
+            // ANY FFprobeKit/FFmpegKit touch
+            val moduleState = FfmpegModule.ensureReady()
+            if (moduleState !is ModuleState.READY) {
+                if (moduleState is ModuleState.FAILED) {
+                    Toaster.e(appContext().getString(R.string.module_edit_unavailable, moduleState.message))
+                }
+                hideDialog()
+                return@LaunchedEffect
+            }
             isLoading = true
             fields.clear()
             coverArtBytes = null
@@ -419,6 +431,17 @@ class EditMetadataDialog private constructor(
         val song = getSong() ?: return
 
         coroutineScope.launch(NzikDispatchers.DATA) {
+            // The FFmpeg module (spec-ffmpeg-extension-module) must be ready before
+            // ANY FFprobeKit/FFmpegKit touch
+            val moduleState = FfmpegModule.ensureReady()
+            if (moduleState !is ModuleState.READY) {
+                withContext(NzikDispatchers.UI) {
+                    val reason = (moduleState as? ModuleState.FAILED)?.message
+                        ?: appContext().getString(R.string.module_not_available_arch)
+                    Toaster.e(appContext().getString(R.string.module_save_failed, reason))
+                }
+                return@launch
+            }
             val context = appContext()
             val cacheDir = context.cacheDir
             val originalFile = File(path)

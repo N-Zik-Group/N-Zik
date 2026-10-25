@@ -1,8 +1,8 @@
 package app.n_zik.android.bridge
 
-import app.n_zik.android.BuildConfig
 import app.n_zik.android.bridge.state.RepeatModeDto
 import app.n_zik.android.bridge.state.TrackLike
+import app.n_zik.android.modules.FfmpegModule
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -60,8 +60,14 @@ internal object BridgeContract {
     /** A toast the phone showed, relayed to the client (contract §7.9, since 1.10.0). */
     const val TYPE_TOAST = "toast"
 
-    /** `features` of `GET /api/v1/meta` implemented so far (contract §5); since 1.7.2, `library.ffmpeg` is only advertised on the builds that ship FFmpeg (not the `*32` ones). */
-    val FEATURES: List<String> = listOf(
+    /**
+     * `features` of `GET /api/v1/meta` implemented so far (contract §5).
+     * `library.ffmpeg` is advertised at RUNTIME (spec-ffmpeg-extension-module):
+     * whenever the device can run the module, it is installed on first use
+     * instead of being baked into the build. [ffmpegAvailable] is injectable
+     * because the ABI probe is unusable in the JVM unit tests.
+     */
+    fun features(ffmpegAvailable: Boolean = FfmpegModule.isAvailableOnDevice()): List<String> = listOf(
         "pairing.qr",
         "pairing.manual",
         "playback",
@@ -76,7 +82,7 @@ internal object BridgeContract {
         "library.rewind",
         "library.dislikeMode",
     ) +
-        (if (BuildConfig.ENABLE_FFMPEG) listOf("library.ffmpeg") else emptyList()) +
+        (if (ffmpegAvailable) listOf("library.ffmpeg") else emptyList()) +
         listOf(
             "library.live",
             "artwork",

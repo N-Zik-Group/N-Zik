@@ -54,16 +54,12 @@
 - Rescue Center, екран за поддръжка, напътствия при старт, бързи връзки
 - OTA актуализации от GitHub, таймер за сън, фоново възпроизвеждане
 
-🛡️ 100% отворен код (FOSS). Ключови разрешения: INTERNET, RECORD_AUDIO (само визуализатор), STORAGE (експорт/архивиране), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Налични версии</b>
-- Full/Beta: Пълна версия (64-bit)
-- Full32/Beta32: Без FFmpeg (32/64-bit)
-- Minified: Лека, за по-слаби устройства (64-bit)
-- Minified32: Лека версия без FFmpeg (32/64-bit)
-- FOSS: Без автоматично актуализиране и FFmpeg, за F-Droid (64-bit)
-- Dev/Dev32: Развойни версии, само за тестване
+- Release64/Beta64 (`com.nevar.nzik`): Пълна версия, само за 64-битови устройства
+- Release32/Beta32 (`com.nevar.nzik`): Пълна версия, само за 32-битови устройства
+- Minified64 (`com.nevar.nzik`): Лека версия R8, за по-слаби устройства (64-bit)
+- Minified32 (`com.nevar.nzik`): Лека версия R8 (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Без автоматично актуализиране, за F-Droid (всички архитектури)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Развойни версии, само за тестване
 
-Стандартните версии включват FFmpeg; „32" и FOSS - не. Само FOSS в F-Droid.
-
-От <b>януари 2027</b> Google изисква проверка на самоличност за всички разработчици; като FOSS, N-Zik е против. <a href="https://keepandroidopen.org">Научете повече</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Подпишете петицията</a>
+Нито една версия не съдържа FFmpeg: това е зареждаемо разширение (инсталира се при първа употреба, управлява се в Настройки → Разширения). Само FOSS е в F-Droid.

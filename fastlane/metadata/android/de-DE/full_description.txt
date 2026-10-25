@@ -54,16 +54,12 @@ Ob Gelegenheitshörer oder Audiophile: N-Zik gibt dir volle Kontrolle über dein
 - Rescue Center, Wartungsbildschirm, Onboarding, App-Shortcuts
 - OTA-Updates von GitHub, Sleep-Timer, Hintergrundwiedergabe
 
-🛡️ 100% Open Source (FOSS). Wichtige Berechtigungen: INTERNET, RECORD_AUDIO (nur Visualizer), STORAGE (Exporte/Backups), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Verfügbare Builds</b>
-- Full/Beta: Vollständiger Build (64-bit)
-- Full32/Beta32: Ohne FFmpeg (32/64-bit)
-- Minified: Leicht, für schwächere Geräte (64-bit)
-- Minified32: Leicht ohne FFmpeg (32/64-bit)
-- FOSS: Ohne Auto-Updater und FFmpeg, für F-Droid (64-bit)
-- Dev/Dev32: Entwicklungs-Builds, nur zum Testen
+- Release64/Beta64 (`com.nevar.nzik`): Vollständiger Build, nur 64-Bit-Geräte
+- Release32/Beta32 (`com.nevar.nzik`): Vollständiger Build, nur 32-Bit-Geräte
+- Minified64 (`com.nevar.nzik`): Leichtgewichtiger R8-Build, für schwächere Geräte (64-Bit)
+- Minified32 (`com.nevar.nzik`): Leichtgewichtiger R8-Build (32-Bit)
+- FOSS (`com.nevar.nzik.foss`): Ohne Auto-Updater, für F-Droid (alle Architekturen)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Entwicklungs-Builds, nur zum Testen
 
-Standard-Builds enthalten FFmpeg; "32"-Builds und FOSS verzichten darauf. Nur FOSS ist auf F-Droid.
-
-Ab <b>Januar 2027</b> verlangt Google eine Identitätsprüfung für alle Entwickler. Als FOSS lehnt N-Zik das ab. <a href="https://keepandroidopen.org">Mehr erfahren</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Petition unterschreiben</a>
+Kein Build bündelt FFmpeg: er ist eine herunterladbare Erweiterung (wird bei Erstverwendung installiert, verwaltet unter Einstellungen → Erweiterungen). Nur FOSS ist auf F-Droid.

@@ -1,4 +1,4 @@
-name: Build & Sign Full Flavor Only (TEST)
+name: Build & Sign Release64 Flavor Only (TEST)
 
 env:
   TZ: Europe/Paris
@@ -21,9 +21,9 @@ jobs:
         run: |
           echo "code=$(grep -E '^\s*nzikVersionCode\s*=' gradle/libs.versions.toml | awk -F '\"' '{print $2}')" >> $GITHUB_OUTPUT
 
-  build-full:
+  build-release64:
     needs: [versioning]
-    name: Build full version
+    name: Build release64 version
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -53,21 +53,21 @@ jobs:
           restore-keys: gradle-${{ runner.os }}-
 
       - name: Build with Gradle
-        run: ./gradlew assembleFull
+        run: ./gradlew assembleRelease64
 
       - name: List APK outputs (debug)
-        run: ls -l ComposeN-Zik/build/outputs/apk/full/
+        run: ls -l ComposeN-Zik/build/outputs/apk/release64/
 
       - name: Upload artifacts for signing
         uses: actions/upload-artifact@v7
         with:
           name: unsigned-release
-          path: ComposeN-Zik/build/outputs/apk/full/*.apk
+          path: ComposeN-Zik/build/outputs/apk/release64/*.apk
 
   sign-apks:
     name: Sign all built APKs
     needs:
-      - build-full
+      - build-release64
     runs-on: ubuntu-latest
 
     steps:

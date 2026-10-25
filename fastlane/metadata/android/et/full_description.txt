@@ -54,16 +54,12 @@ Oled harrastajakuulaja või audiofiil? N-Zik annab täieliku kontrolli muusika �
 - Rescue Center, hoolduskuvar, sisseviimine, rakenduse lühendid
 - OTA uuendused GitHubist, unetaimer, esitus taustal
 
-🛡️ 100% avatud lähtekoodiga (FOSS). Peamised lubad: INTERNET, RECORD_AUDIO (ainult visualiseerijaks), STORAGE (eksport/varundamine), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Saadaval olevad versioonid</b>
-- Full/Beta: Täielik versioon (64-bit)
-- Full32/Beta32: Ilma FFmpegita (32/64-bit)
-- Minified: Kerge, madala võimekusega seadmetele (64-bit)
-- Minified32: Kerge, ilma FFmpegita (32/64-bit)
-- FOSS: Ilma automaatse uuendaja ja FFmpegita, F-Droidi jaoks (64-bit)
-- Dev/Dev32: Arendusversioonid, ainult testimiseks
+- Release64/Beta64 (`com.nevar.nzik`): Täielik versioon, ainult 64-bit seadmetele
+- Release32/Beta32 (`com.nevar.nzik`): Täielik versioon, ainult 32-bit seadmetele
+- Minified64 (`com.nevar.nzik`): Kerge R8 versioon, madala võimekusega seadmetele (64-bit)
+- Minified32 (`com.nevar.nzik`): Kerge R8 versioon (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Ilma automaatse uuendaja, F-Droidi jaoks (kõik arhitektuurid)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Arendusversioonid, ainult testimiseks
 
-Standardversioonid sisaldavad FFmpeg; "32" versioonid ja FOSS mitte. Ainult FOSS on F-Droidis.
-
-Alates <b>jaanuarist 2027</b> nõuab Google arendajatelt isikutuvastust. FOSS projektina on N-Zik selle vastu. <a href="https://keepandroidopen.org">Loe lähemalt</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Kirjuta petitsiooni alla</a>
+Ükski versioon ei sisalda FFmpeg-i: see on alla laaditav laiendus (installitakse esmakordsel kasutamisel, haldatud Seaded → Laiendused). Ainult FOSS on F-Droidis.

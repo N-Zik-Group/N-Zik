@@ -1,0 +1,6 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24" android:tint="?attr/colorControlNormal">
+  <!-- The path's glyph spans the full 0..24 viewport (the top tab reaches y=0, the right arc reaches x=24): scale it to the ~21dp glyph footprint of the other burger icons (shield_checkmark spans ~447/512 of its viewport), kept centered on (12,12) -->
+  <group android:scaleX="0.875" android:scaleY="0.875" android:translateX="1.5" android:translateY="1.5">
+    <path android:fillColor="@android:color/black" android:pathData="M20,10.5a10.01,10.01,0,0,0-2,.273A5.006,5.006,0,0,0,13,6h-.272A9.929,9.929,0,0,0,13,4,4,4,0,0,0,5,4a9.929,9.929,0,0,0,.272,2H5a5,5,0,0,0-5,5v8a5,5,0,0,0,5,5H6.224a.772.772,0,0,0,.748-.975C6.623,21.766,6,21,6,20a3,3,0,0,1,6,0c0,1-.632,1.768-.973,3.029a.772.772,0,0,0,.748.971H13a5,5,0,0,0,5-5v-.772a10.02,10.02,0,0,0,2,.272,4,4,0,0,0,0-8Z"/>
+  </group>
+</vector>

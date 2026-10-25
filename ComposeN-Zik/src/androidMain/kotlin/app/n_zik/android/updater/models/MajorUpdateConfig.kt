@@ -29,17 +29,17 @@ object MajorUpdateConfig {
     }
 
     /**
-     * Extracts the build type from version name.
-     * - Returns "beta" if version name contains "-b" (Beta).
-     * - Returns "stable" if version name contains "-f" (Stable Full) or "-m" (Stable Minimal).
-     * Default fallback is "stable".
+     * The update channel of the current build: "beta" when the version name
+     * carries a beta suffix ("-beta64"/"-beta32"), "stable" otherwise.
      */
     fun getCurrentBuildType(): String {
         val version = BuildConfig.VERSION_NAME.lowercase()
-        return when {
-            version.contains(UpdaterConstants.SUFFIX_BETA) -> UpdaterConstants.TYPE_BETA
-            version.contains(UpdaterConstants.SUFFIX_MINIFIED) || version.contains(UpdaterConstants.SUFFIX_FULL) -> UpdaterConstants.TYPE_STABLE
-            else -> UpdaterConstants.TYPE_STABLE
+        return if (version.contains(UpdaterConstants.SUFFIX_BETA64) ||
+            version.contains(UpdaterConstants.SUFFIX_BETA32)
+        ) {
+            UpdaterConstants.TYPE_BETA
+        } else {
+            UpdaterConstants.TYPE_STABLE
         }
     }
 

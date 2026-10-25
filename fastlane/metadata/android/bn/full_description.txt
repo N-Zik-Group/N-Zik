@@ -54,16 +54,12 @@
 - Rescue Center, মেইনটেন্যান্স স্ক্রিন, অনবোর্ডিং, অ্যাপ শর্টকাট
 - GitHub-এর থেকে OTA আপডেট, স্লিপ টাইমার, ব্যাকগ্রাউন্ড প্লেব্যাক
 
-🛡️ ১০০% ওপেন-সোর্স (FOSS)। মূল পারমিশন: INTERNET, RECORD_AUDIO (শুধুমাত্র ভিজ্যুয়ালাইজার), STORAGE (এক্সপোর্ট/ব্যাকআপ), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK।
-
 📦 <b>উপলব্ধ বিল্ড</b>
-- Full/Beta: সম্পূর্ণ বিল্ড (64-bit)
-- Full32/Beta32: FFmpeg-হীন (32/64-bit)
-- Minified: হালকা, লো-এন্ড ডিভাইসের জন্য (64-bit)
-- Minified32: FFmpeg-হীন হালকা বিল্ড (32/64-bit)
-- FOSS: অটো-আপডেটার ও FFmpeg-হীন, F-Droid-এর জন্য (64-bit)
-- Dev/Dev32: ডেভেলপমেন্ট বিল্ড, শুধুমাত্র পরীক্ষার জন্য
+- Release64/Beta64 (`com.nevar.nzik`): সম্পূর্ণ বিল্ড, শুধুমাত্র 64-bit ডিভাইস
+- Release32/Beta32 (`com.nevar.nzik`): সম্পূর্ণ বিল্ড, শুধুমাত্র 32-bit ডিভাইস
+- Minified64 (`com.nevar.nzik`): হালকা R8 বিল্ড, লো-এন্ড ডিভাইসের জন্য (64-bit)
+- Minified32 (`com.nevar.nzik`): হালকা R8 বিল্ড (32-bit)
+- FOSS (`com.nevar.nzik.foss`): অটো-আপডেটার ছাড়া, F-Droid-এর জন্য (সব আর্কিটেকচার)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): ডেভেলপমেন্ট বিল্ড, শুধুমাত্র পরীক্ষার জন্য
 
-স্ট্যান্ডার্ড বিল্ডগুলো FFmpeg নিয়ে আসে; "32" বিল্ড ও FOSS তা বাদ দেয়। F-Droid-এ শুধুমাত্র FOSS আছে।
-
-<b>জানুয়ারি 2027</b>-এর থেকে Google সব ডেভেলপারের জন্য পরিচয় যাচাই আবশ্যক করবে। FOSS হিসেবে N-Zik এই চাহিদার বিরোধিতা করে। <a href="https://keepandroidopen.org">আরও জানুন</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">পেটিশনে সই করুন</a>
+কোনো বিল্ডে FFmpeg নেই: এটি একটি ডাউনলোডযোগ্য এক্সটেনশন (প্রথম ব্যবহারে ইনস্টল হয়, সেটিংস → এক্সটেনশন-এ ব্যবস্থাপিত)। F-Droid-এ শুধুমাত্র FOSS আছে।

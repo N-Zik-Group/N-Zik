@@ -14,7 +14,8 @@ import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -171,7 +172,7 @@ object HomeAlbumsSortSettingsDialog : Dialog {
                     )
                 }
             }
-            HorizontalDivider(color = colorPalette().textDisabled)
+            Spacer(modifier = Modifier.height(12.dp))
             ToggleListDialog(
                 items = items, lazyListState = lazyListState, reorderableState = reorderableState,
                 enforceMinOneChecked = true,

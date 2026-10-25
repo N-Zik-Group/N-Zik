@@ -1134,7 +1134,6 @@
     <string name="beta_title">BETA</string>
     <string name="dev_title">DEV</string>
     <string name="debug_title">DEBUG</string>
-    <string name="full_title">FULL</string>
     <string name="stable_title">STABILNÍ</string>
     <string name="minified_title">MINIFIKOVANÉ</string>
     <string name="update_file_size">Velikost souboru: %s</string>

@@ -1135,7 +1135,6 @@ Volume BAS : titre précédent</string>
     <string name="beta_title">BETA</string>
     <string name="dev_title">DÉVELOPPEMENT</string>
     <string name="debug_title">DÉBOGAGE</string>
-    <string name="full_title">COMPLET</string>
     <string name="stable_title">STABLE</string>
     <string name="minified_title">MINIFIÉ</string>
     <string name="update_file_size">Taille du fichier : %s</string>

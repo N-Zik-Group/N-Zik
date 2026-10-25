@@ -54,16 +54,12 @@
 - Rescue Center, экран обслуживания, онбординг, ярлыки приложения
 - OTA-обновления с GitHub, таймер сна, фоновое воспроизведение
 
-🛡️ 100% open-source (FOSS). Ключевые разрешения: INTERNET, RECORD_AUDIO (только визуализатор), STORAGE (экспорт/бэкапы), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Доступные сборки</b>
-- Full/Beta: Полная (64-bit)
-- Full32/Beta32: Без FFmpeg (32/64-bit)
-- Minified: Облегчённая, для слабых устройств (64-bit)
-- Minified32: Облегчённая без FFmpeg (32/64-bit)
-- FOSS: Без автообновления и FFmpeg, для F-Droid (64-bit)
-- Dev/Dev32: Разработчикам, только для тестирования
+- Release64/Beta64 (`com.nevar.nzik`): Полная сборка, только 64-битовые устройства
+- Release32/Beta32 (`com.nevar.nzik`): Полная сборка, только 32-битовые устройства
+- Minified64 (`com.nevar.nzik`): Облегчённая сборка R8, для слабых устройств (64-бит)
+- Minified32 (`com.nevar.nzik`): Облегчённая сборка R8 (32-бит)
+- FOSS (`com.nevar.nzik.foss`): Без автообновления, для F-Droid (все архитектуры)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Для разработчиков, только для тестирования
 
-Стандартные сборки содержат FFmpeg; "32" и FOSS без него. Только FOSS на F-Droid.
-
-Начиная с <b>января 2027</b>, Google потребует верификации личности от всех разработчиков. Как FOSS, N-Zik выступает против этого. <a href="https://keepandroidopen.org">Узнать больше</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Подписать петицию</a>
+Ни одна сборка не содержит FFmpeg: это загрузочное расширение (устанавливается при первом использовании, управляется в Настройки → Расширения). Только FOSS на F-Droid.

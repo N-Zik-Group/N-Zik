@@ -160,10 +160,10 @@ fun UpdateScreen(navController: NavController) {
     val hasUpdate = Updater.githubRelease != null && Updater.isVersionNewer(Updater.githubRelease?.tagName ?: "", BuildConfig.VERSION_NAME)
     val currentVersion = BuildConfig.VERSION_NAME
     val isFoss = BuildConfig.BUILD_TYPE.equals("foss", ignoreCase = true)
-    val currentLabel = Updater.flavorLabel(currentVersion, isFoss) ?: Updater.FlavorLabel(R.string.full_title)
+    val currentLabel = Updater.flavorLabel(currentVersion, isFoss) ?: Updater.FlavorLabel(R.string.release_title)
     val currentBuildTypeLabel = if (currentLabel.literal != null) currentLabel.literal
     else stringResource(currentLabel.resId) + if (currentLabel.append32) " 32" else ""
-    val updateLabel = Updater.flavorLabel(newVersion, isFoss) ?: Updater.FlavorLabel(R.string.full_title)
+    val updateLabel = Updater.flavorLabel(newVersion, isFoss) ?: Updater.FlavorLabel(R.string.release_title)
     val updateBuildTypeLabel = if (updateLabel.literal != null) updateLabel.literal
     else stringResource(updateLabel.resId) + if (updateLabel.append32) " 32" else ""
     // Only shown while an update is actually selected — Updater.build may keep

@@ -187,14 +187,11 @@ class PlayerItemMenu private constructor(
 
         if (song.isLocal) {
             // Local songs: 0=info, 1=waves, 2=editMetadata, 3=equalizer, 4=sleep, 5=fav, 6=playlist, 7+=delete/export
-            // Decision 6 (spec pc-ui-parity-audit-fixes): editMetadata (index 2) exists only with FFmpeg —
-//
-            // without it the playback buttons start at index 2 (see localPlayerPlaybackStart)
-            val playbackStart = localPlayerPlaybackStart(BuildConfig.ENABLE_FFMPEG)
-            if (BuildConfig.ENABLE_FFMPEG) {
-                SectionTitle(stringResource(R.string.management))
-                buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            }
+            // The FFmpeg gate is gone (spec-ffmpeg-extension-module): the module is downloaded on
+            // first use, so editMetadata (index 2) is always present and the indexes are fixed
+            val playbackStart = LOCAL_PLAYER_PLAYBACK_START
+            SectionTitle(stringResource(R.string.management))
+            buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
             SectionTitle(stringResource(R.string.playback))
             if (playerTimelineType == PlayerTimelineType.AudioWaves) {
@@ -264,13 +261,13 @@ class PlayerItemMenu private constructor(
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
         if (song.isLocal) {
-            val playbackStart = localPlayerPlaybackStart(BuildConfig.ENABLE_FFMPEG)
-            if (BuildConfig.ENABLE_FFMPEG) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    SectionTitle(stringResource(R.string.management))
-                }
-                buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            // editMetadata (index 2) is always present — the FFmpeg module is downloaded on
+            // first use (spec-ffmpeg-extension-module)
+            val playbackStart = LOCAL_PLAYER_PLAYBACK_START
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                SectionTitle(stringResource(R.string.management))
             }
+            buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SectionTitle(stringResource(R.string.playback))
@@ -661,7 +658,7 @@ class PlayerItemMenu private constructor(
 
                 if (song.isLocal) {
                     // Local songs: editMetadata, then player controls, then favorites/playlist, then export
-                    if (BuildConfig.ENABLE_FFMPEG) add(editMetadata)        // 2
+                    add(editMetadata)          // 2
                     add(equalizerButton)     // 3
                     add(sleepTimerButton)    // 4
                     add(addToFavorite)       // 5
@@ -670,7 +667,7 @@ class PlayerItemMenu private constructor(
                     add(changeAlbumId)       // 7
                     add(changeArtistId)      // 8
                     
-                    if (BuildConfig.ENABLE_FFMPEG) add(exportCacheDialog)
+                    add(exportCacheDialog)
                 } else {
                     // Remote songs
                     add(renameSong)          // 2
@@ -930,8 +927,8 @@ class PlayerItemMenu private constructor(
 
 
 
+/** First playback button of a local song's player menu, behind editMetadata at `start - 1`. */
+internal const val LOCAL_PLAYER_PLAYBACK_START = 3
+
 /** Local song's player-menu playback buttons: equalizer, sleep timer, favorite, playlist, album id, artist id. */
 internal const val LOCAL_PLAYER_PLAYBACK_COUNT = 6
-
-/** Their first index: after info and waves, then the FFmpeg-only edit-metadata button (decision 6). */
-internal fun localPlayerPlaybackStart(ffmpeg: Boolean): Int = if (ffmpeg) 3 else 2

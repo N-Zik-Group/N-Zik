@@ -12,8 +12,8 @@ body:
         ****
         ### ❗ READ BEFORE SUBMITTING ❗
 
-        This form is for bugs found specifically in the **Dev** and **Dev32** builds of N-Zik.
-        If you're on the **Beta/Beta32**, **Full/Full32**, **Minified/Minified32** or **Foss** build, please use the corresponding Bug report template instead.
+        This form is for bugs found specifically in the **Dev64** and **Dev32** builds of N-Zik.
+        If you're on the **Beta64/Beta32**, **Release64/Release32**, **Minified64/Minified32** or **Foss** build, please use the corresponding Bug report template instead.
 
         * **Media cannot be played / Unknown Error / Login required:**
         YouTube is likely blocking you. Please **do not** open a ticket for this.
@@ -51,7 +51,7 @@ body:
       label: 🏗️ Build Type
       description: Select the dev build type you are currently using.
       options:
-        - Dev
+        - Dev64
         - Dev32
     validations:
       required: true

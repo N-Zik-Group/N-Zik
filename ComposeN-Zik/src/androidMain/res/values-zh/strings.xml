@@ -1134,7 +1134,6 @@
     <string name="beta_title"> Beta</string>
     <string name="dev_title">DEV</string>
     <string name="debug_title">DEBUG</string>
-    <string name="full_title">FULL</string>
     <string name="stable_title">已开始</string>
     <string name="minified_title">迷你的</string>
     <string name="update_file_size">文件大小： %s</string>

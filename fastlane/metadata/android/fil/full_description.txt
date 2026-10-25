@@ -54,16 +54,12 @@ Kaswal man o audiophile, ibibigay ng N-Zik ang buong kontrol sa musika mo walang
 - Rescue Center, maintenance screen, onboarding, app shortcuts
 - OTA updates mula sa GitHub, sleep timer, background playback
 
-🛡️ 100% open-source (FOSS). Pangunahing pahintulot: INTERNET, RECORD_AUDIO (visualizer lamang), STORAGE (export/backup), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Mga Available na Build</b>
-- Full/Beta: Kumpletong build (64-bit)
-- Full32/Beta32: Walang FFmpeg (32/64-bit)
-- Minified: Magaan, para sa low-end na device (64-bit)
-- Minified32: Magaan, walang FFmpeg (32/64-bit)
-- FOSS: Walang auto-updater at FFmpeg, para sa F-Droid (64-bit)
-- Dev/Dev32: Development build, testing lamang
+- Release64/Beta64 (`com.nevar.nzik`): Kumpletong build, para sa 64-bit na device lang
+- Release32/Beta32 (`com.nevar.nzik`): Kumpletong build, para sa 32-bit na device lang
+- Minified64 (`com.nevar.nzik`): Magaan na R8 build, para sa low-end na device (64-bit)
+- Minified32 (`com.nevar.nzik`): Magaan na R8 build (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Walang auto-updater, para sa F-Droid (lahat ng arkitektura)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Development build, testing lamang
 
-Ang standard build ay may FFmpeg; ang "32" at FOSS ay walang FFmpeg. FOSS lang sa F-Droid.
-
-Simula <b>Enero 2027</b>, hihilingin ng Google ang identity verification ng lahat ng developer; tumututol ang N-Zik bilang FOSS. <a href="https://keepandroidopen.org">Matuto pa</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Lagadan ang petisyon</a>
+Ang anumang build ay walang kasamang FFmpeg: ito ay isang downloadable na extension (ini-install sa unang paggamit, pinangangasiwan sa Settings → Extensions). FOSS lang sa F-Droid.

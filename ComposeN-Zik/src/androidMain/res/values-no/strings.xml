@@ -1134,7 +1134,6 @@
     <string name="beta_title">META</string>
     <string name="dev_title">DEV</string>
     <string name="debug_title">DEBUG</string>
-    <string name="full_title">FULL</string>
     <string name="stable_title">TILBAKESTILL</string>
     <string name="minified_title">MINIFISTRER</string>
     <string name="update_file_size">Filstørrelse: %s</string>

@@ -57,7 +57,7 @@ object NewUpdateAvailableDialog {
 
         DialogFrame(onDismiss = { onDismiss() }) {
             val updateVersion = Updater.getDisplayVersion()
-            val updateLabelModel = Updater.flavorLabel(updateVersion) ?: Updater.FlavorLabel(R.string.full_title)
+            val updateLabelModel = Updater.flavorLabel(updateVersion) ?: Updater.FlavorLabel(R.string.release_title)
             val updateLabel = if (updateLabelModel.literal != null) updateLabelModel.literal
             else stringResource(updateLabelModel.resId) + if (updateLabelModel.append32) " 32" else ""
 

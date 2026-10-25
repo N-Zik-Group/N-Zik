@@ -113,6 +113,6 @@ jobs:
         # That explicitly tell compiler to generate reusable files.
         # Combine with "--exclude-task" to skip unnecessary tasks
         run: |
-          ./gradlew assembleBeta --build-cache --exclude-task packageBeta
-          ./gradlew assembleFull --build-cache --exclude-task packageFull
-          ./gradlew assembleMinified --build-cache --exclude-task packageMinified
+          ./gradlew assembleBeta64 --build-cache --exclude-task packageBeta64
+          ./gradlew assembleRelease64 --build-cache --exclude-task packageRelease64
+          ./gradlew assembleMinified64 --build-cache --exclude-task packageMinified64

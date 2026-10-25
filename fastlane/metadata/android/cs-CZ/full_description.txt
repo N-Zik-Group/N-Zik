@@ -54,16 +54,12 @@ Ať už jste příležitostný posluchač či audiofil, N-Zik vám dává plnou 
 - Rescue Center, údržbová obrazovka, onboarding, zkratky aplikace
 - OTA aktualizace z GitHub, spánkový časovač, přehrávání na pozadí
 
-🛡️ 100% open-source (FOSS). Klíčová oprávnění: INTERNET, RECORD_AUDIO (pouze vizualizér), STORAGE (exporty/zálohy), FOREGROUND_SERVICE, NOTIFICATIONS, REQUEST_INSTALL_PACKAGES (OTA), BLUETOOTH, WAKE_LOCK.
-
 📦 <b>Dostupné sestavy</b>
-- Full/Beta: Kompletní sestava (64-bit)
-- Full32/Beta32: Bez FFmpeg (32/64-bit)
-- Minified: Odlehčená, pro slabší zařízení (64-bit)
-- Minified32: Odlehčená bez FFmpeg (32/64-bit)
-- FOSS: Bez automatického aktualizátoru ani FFmpeg, pro F-Droid (64-bit)
-- Dev/Dev32: Vývojářské sestavy, pouze pro testování
+- Release64/Beta64 (`com.nevar.nzik`): Kompletní sestava, pouze 64bitová zařízení
+- Release32/Beta32 (`com.nevar.nzik`): Kompletní sestava, pouze 32bitová zařízení
+- Minified64 (`com.nevar.nzik`): Odlehčená sestava R8, pro slabší zařízení (64-bit)
+- Minified32 (`com.nevar.nzik`): Odlehčená sestava R8 (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Bez automatického aktualizátoru, pro F-Droid (všechny architektury)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Vývojářské sestavy, pouze pro testování
 
-Standardní sestavy obsahují FFmpeg; sestavy "32" a FOSS ne. Pouze FOSS je na F-Droid.
-
-Od <b>ledna 2027</b> bude Google vyžadovat ověření identity od všech vývojářů. Jako FOSS se N-Zik tomuto staví proti. <a href="https://keepandroidopen.org">Dozvědět se více</a> · <a href="https://www.change.org/p/stop-google-from-limiting-apk-file-usage/">Podepište petici</a>
+Žádná sestava neobsahuje FFmpeg: jedná se o stažitelné rozšíření (instaluje se při prvním použití, spravováno v Nastavení → Rozšíření). Pouze FOSS je na F-Droid.

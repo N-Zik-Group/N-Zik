@@ -37,6 +37,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.modules.FfmpegModule
+import app.n_zik.android.modules.ModuleState
 import app.kreate.android.me.knighthat.utils.Toaster
 import timber.log.Timber
 import com.arthenica.ffmpegkit.FFmpegKit
@@ -86,6 +88,17 @@ class ExportCacheDialog(
             showResultToast: Boolean = true
         ) = scope.launch {
             kotlinx.coroutines.withContext(NzikDispatchers.UI) { isExporting.value = true }
+            // The FFmpeg module (spec-ffmpeg-extension-module) must be ready before
+            // ANY FFmpegKit/FFprobeKit touch
+            val moduleState = FfmpegModule.ensureReady()
+            if (moduleState !is ModuleState.READY) {
+                withContext(NzikDispatchers.UI) {
+                    isExporting.value = false
+                    if (moduleState is ModuleState.FAILED) Toaster.e(R.string.export_error, moduleState.message)
+                }
+                try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (_: Exception) {}
+                return@launch
+            }
             try {
                 Timber.tag("ExportCache").i("onExport triggered for song: ${song.title}")
                 val format = Database.formatTable.findBySongId( song.id ).first()
@@ -414,6 +427,17 @@ class ExportCacheDialog(
             onProgress: (current: Int, total: Int, songTitle: String) -> Unit,
             onComplete: (successCount: Int, failCount: Int) -> Unit
         ) = scope.launch {
+            // The FFmpeg module (spec-ffmpeg-extension-module) must be ready before
+            // ANY FFmpegKit/FFprobeKit touch; onComplete() still runs so the caller's
+            // UI state resets
+            val moduleState = FfmpegModule.ensureReady()
+            if (moduleState !is ModuleState.READY) {
+                withContext(NzikDispatchers.UI) {
+                    if (moduleState is ModuleState.FAILED) Toaster.e(R.string.export_failed, moduleState.message)
+                    onComplete(0, 0)
+                }
+                return@launch
+            }
             val cr = appContext().contentResolver
             var successCount = 0
             var failCount = 0
