@@ -1,6 +1,6 @@
 # Code Quality Rules
 
-**Version:** 1.9.0 | **Last updated:** 2026-10-22
+**Version:** 1.10.0 | **Last updated:** 2026-10-25
 
 ## Naming Conventions
 
@@ -140,6 +140,7 @@ New files MUST go under `app.n_zik.android.*`. NEVER create new files under `app
 - Single-line `//` is the default; a comment block > 2 lines is a smell — split it or delete it
 - No narrative paragraphs, no wall-of-text blocks, no banner/header comments
 - Mark TODOs with `// TODO(author): description`
+- NEVER use the em dash (—) in comments, code (identifiers, string literals), or text (KDoc, string resources, docs, commit messages), in ANY position, including as a mid-sentence separator (`foo — bar` is forbidden); use the regular hyphen (-), a comma, or a period instead (the em dash shown above is the one forbidden character; the short hyphen remains the default separator everywhere)
 
 ```kotlin
 // BAD - restates the code
