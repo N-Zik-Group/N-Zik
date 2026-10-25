@@ -27,7 +27,9 @@ import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.components.dialog.logs.CopyLogsDialog
 import app.n_zik.android.components.dialog.logs.CrashLogDialog
 import app.n_zik.android.components.dialog.logs.DebugLogDialog
+import app.n_zik.android.components.dialog.settings.BurgerMenuSettingsDialog
 import app.n_zik.android.components.extensions.ExtensionsSheet
+import app.n_zik.android.components.menu.header.BurgerMenuItem
 import app.n_zik.android.components.menu.header.DebugLogsMenuItem
 import app.n_zik.android.components.menu.header.ExtensionsMenuItem
 import app.n_zik.android.components.menu.header.MaintenanceMenuItem
@@ -84,132 +86,213 @@ private fun HamburgerMenu(
         containerColor = colorPalette().background0.copy(0.90f),
         onDismissRequest = onDismissRequest
     )
-    // History button
-    menu.add(
-        DropdownMenu.Item(
-            R.drawable.history,
-            R.string.history
-        ) { onItemClick( NavRoutes.history ) }
-    )
-    // Statistics button
-    menu.add(
-        DropdownMenu.Item(
-            R.drawable.stats_chart,
-            R.string.statistics
-        ) { onItemClick( NavRoutes.statistics ) }
-    )
-    // Rewind button (Cubic-style yearly listening recap, issue #275); hidden
-    // while the feature is disabled in the settings (spec GH-275).
-
-    // Uses the monochrome logo (ic_launcher_monochrome — the black & white one
-    // the player's media notification uses) instead of a generic icon.
-    if (rewindEnabled)
-        menu.add(
-            DropdownMenu.Item(
-                R.drawable.ic_launcher_monochrome,
-                R.string.rewind
-            ) { onItemClick( NavRoutes.rewindHome ) }
-        )
-    // Full offline mode toggle (spec-full-offline-mode): per-profile persistent flag
-    // feeding the effective online predicate. The menu stays open (no
-    // onItemConsumed) so the user can re-toggle and watch the surrounding state react.
-    // The label mirrors the live state, like the debug-logs entry.
+    // Customizable burger menu (spec-customizable-burger-menu): the stored order (parsed
+    // defensively), the stored per-item toggles and the runtime conditions (rewind, offline
+    // mode, PiP) intersect - a runtime condition always wins over a stored toggle. Legacy
+    // items render through the shared BurgerMenuItem; the n_zik items keep their own
+    // composables - only the rank/visibility changes.
     val offlineMode by OfflineMode.rememberEnabled()
-    menu.add(
-        DropdownMenu.Item(
-            R.drawable.airplane,
-            R.string.offline_mode,
-            customText = stringResource(if (offlineMode) R.string.disable_offline_mode else R.string.enable_offline_mode)
-        ) { context.preferences.edit().putBoolean(fullOfflineModeKey, !offlineMode).apply() }
-    )
-    // Listen Together button (spec-listen-together) — removed while full offline
-    // mode is on (audit hole #2: the WS client stays ungated, only the entry is
-    // closed at UX level; the reconnection monitor goes mode-aware via the predicate)
-    if (!offlineMode)
-        menu.add(
-            DropdownMenu.Item(
-                R.drawable.people,
-                R.string.listen_together
-            ) { onItemClick( NavRoutes.listenTogether ) }
-        )
-    // PC server button
-    menu.add(
-        DropdownMenu.Item(
-            R.drawable.devices,
-            R.string.bridge_server
-        ) { onItemClick( NavRoutes.bridgeServer ) }
-    )
-    // Profiles button
-    menu.add(
-        DropdownMenu.Item(
-            R.drawable.person,
-            R.string.profiles
-        ) { onItemClick( NavRoutes.profiles ) }
-    )
-    // Picture in picture button
-    if (isPipSupported && enablePictureInPicture)
-        menu.add(
-            DropdownMenu.Item(
-                R.drawable.images_sharp,
-                R.string.menu_go_to_picture_in_picture
-            ) { pipHandler.enterPictureInPictureMode() }
-        )
-    menu.add { HorizontalDivider() }
-    // Settings button
-    menu.add(
-        DropdownMenu.Item(
-            R.drawable.settings,
-            R.string.settings
-        ) { onItemClick( NavRoutes.settings ) }
-    )
-    // Extensions button (spec-ffmpeg-extension-module): short tap opens the
-    // Extensions sheet (module state + actions), long press opens the Misc
-    // settings directly on the Extensions card - same pattern as Maintenance
-    menu.add {
-        ExtensionsMenuItem(
-            onOpen = { showExtensionsSheet = true },
-            onLongClick = {
-                navController.navigate("${NavRoutes.settings.name}?tab=7&focus=extensions")
-                onItemConsumed()
-            },
-            onConsume = onItemConsumed
-        )
+    // Snapshot the stored order + toggles at each menu-open: the header stays composed
+    // all session, and keying on `expanded` re-reads the store whenever the menu is
+    // opened, so a reorder confirmed in the settings card applies on the next open
+    // without a mid-open store read tearing the order/toggle pair.
+    val burgerOrder = remember(expanded) {
+        BurgerMenuSettingsDialog.parseOrder(DataStoreUtils.getString(context, DataStoreUtils.KEY_BURGER_MENU_ORDER))
     }
-    // Debug button (same design as the other items: short tap toggles the debug logs,
-    // long press opens the Misc settings directly on the Debug card)
-    menu.add {
-        DebugLogsMenuItem(
-            onLongClick = {
-                navController.navigate("${NavRoutes.settings.name}?tab=7&focus=debug")
-                onItemConsumed()
-            },
-            onConsume = onItemConsumed
-        )
-    }
-    // Maintenance button (spec-maintenance-dialog): short tap opens the app-state
-    // sheet, long press opens the Misc settings directly on the Maintenance card
-    menu.add {
-        MaintenanceMenuItem(
-            onOpen = { showMaintenanceSheet = true },
-            onLongClick = {
-                navController.navigate("${NavRoutes.settings.name}?tab=7&focus=maintenance")
-                onItemConsumed()
-            },
-            onConsume = onItemConsumed
-        )
-    }
-    // Rescue Center button (opens the :rescue process activity, same intent as the launcher shortcut)
-    menu.add(
-        DropdownMenu.Item(
-            R.drawable.shortcut_rescue,
-            R.string.rescue_center
-        ) {
-            context.startActivity(
-                Intent(context, RescueActivity::class.java).setAction(ACTION_RESCUE)
-            )
-            onItemConsumed()
+    val burgerToggles = remember(expanded) {
+        BurgerMenuSettingsDialog.allItemIds.associateWith { id ->
+            DataStoreUtils.getBoolean(context, DataStoreUtils.burgerMenuToggleKey(id), true)
         }
-    )
+    }
+    // Every legacy item is rendered through the shared BurgerMenuItem (short tap = the
+    // feature, long press = deep link to the item's settings card); the three n_zik items
+    // below keep their own composables.
+    BurgerMenuSettingsDialog.resolveVisibleIds(burgerOrder, burgerToggles).forEach { id ->
+        when (id) {
+            // History button
+            "history" -> menu.add {
+                BurgerMenuItem(
+                    iconRes = R.drawable.history,
+                    label = stringResource(R.string.history),
+                    onShortTap = { onItemClick(NavRoutes.history) },
+                    onLongTap = {
+                        navController.navigate("${NavRoutes.settings.name}?tab=4&focus=history")
+                        onItemConsumed()
+                    },
+                    onConsume = onItemConsumed
+                )
+            }
+            // Statistics button
+            "statistics" -> menu.add {
+                BurgerMenuItem(
+                    iconRes = R.drawable.stats_chart,
+                    label = stringResource(R.string.statistics),
+                    onShortTap = { onItemClick(NavRoutes.statistics) },
+                    onLongTap = {
+                        navController.navigate("${NavRoutes.settings.name}?tab=3&focus=statistics")
+                        onItemConsumed()
+                    },
+                    onConsume = onItemConsumed
+                )
+            }
+            // Rewind button (Cubic-style yearly listening recap, issue #275); hidden
+            // while the feature is disabled in the settings (spec GH-275).
+            // Uses the monochrome logo (ic_launcher_monochrome - the black & white one
+            // the player's media notification uses) instead of a generic icon.
+            "rewind" -> if (rewindEnabled)
+                menu.add {
+                    BurgerMenuItem(
+                        iconRes = R.drawable.ic_launcher_monochrome,
+                        label = stringResource(R.string.rewind),
+                        onShortTap = { onItemClick(NavRoutes.rewindHome) },
+                        onLongTap = {
+                            navController.navigate("${NavRoutes.settings.name}?tab=3&focus=rewind")
+                            onItemConsumed()
+                        },
+                        onConsume = onItemConsumed
+                    )
+                }
+            // Full offline mode toggle (spec-full-offline-mode): per-profile persistent flag
+            // feeding the effective online predicate. The menu stays open (no
+            // onItemConsumed) so the user can re-toggle and watch the surrounding state react.
+            // The label mirrors the live state, like the debug-logs entry.
+            "offline_mode" -> menu.add {
+                BurgerMenuItem(
+                    iconRes = R.drawable.airplane,
+                    label = stringResource(if (offlineMode) R.string.disable_offline_mode else R.string.enable_offline_mode),
+                    onShortTap = { context.preferences.edit().putBoolean(fullOfflineModeKey, !offlineMode).apply() },
+                    onLongTap = {
+                        navController.navigate("${NavRoutes.settings.name}?tab=6&focus=offline")
+                        onItemConsumed()
+                    }
+                )
+            }
+            // Listen Together button (spec-listen-together) - removed while full offline
+            // mode is on (audit hole #2: the WS client stays ungated, only the entry is
+            // closed at UX level; the reconnection monitor goes mode-aware via the predicate)
+            "listen_together" -> if (!offlineMode)
+                menu.add {
+                    BurgerMenuItem(
+                        iconRes = R.drawable.people,
+                        label = stringResource(R.string.listen_together),
+                        onShortTap = { onItemClick(NavRoutes.listenTogether) },
+                        onLongTap = {
+                            navController.navigate("${NavRoutes.settings.name}?tab=5&focus=listentogether")
+                            onItemConsumed()
+                        },
+                        onConsume = onItemConsumed
+                    )
+                }
+            // PC server button
+            "bridge_server" -> menu.add {
+                BurgerMenuItem(
+                    iconRes = R.drawable.devices,
+                    label = stringResource(R.string.bridge_server),
+                    onShortTap = { onItemClick(NavRoutes.bridgeServer) },
+                    onLongTap = {
+                        navController.navigate("${NavRoutes.settings.name}?tab=6&focus=pcserver")
+                        onItemConsumed()
+                    },
+                    onConsume = onItemConsumed
+                )
+            }
+            // Profiles button
+            "profiles" -> menu.add {
+                BurgerMenuItem(
+                    iconRes = R.drawable.person,
+                    label = stringResource(R.string.profiles),
+                    onShortTap = { onItemClick(NavRoutes.profiles) },
+                    onLongTap = {
+                        navController.navigate("${NavRoutes.settings.name}?tab=5&focus=profiles")
+                        onItemConsumed()
+                    },
+                    onConsume = onItemConsumed
+                )
+            }
+            // Picture in picture button
+            "pip" -> if (isPipSupported && enablePictureInPicture)
+                menu.add {
+                    BurgerMenuItem(
+                        iconRes = R.drawable.images_sharp,
+                        label = stringResource(R.string.menu_go_to_picture_in_picture),
+                        onShortTap = { pipHandler.enterPictureInPictureMode() },
+                        onLongTap = {
+                            navController.navigate("${NavRoutes.settings.name}?tab=0&focus=pip")
+                            onItemConsumed()
+                        }
+                    )
+                }
+            // Separator (G5 renegotiated): each stored instance renders one divider; all
+            // instances share the single customizer toggle (off hides every one)
+            "separator" -> menu.add { HorizontalDivider() }
+            // Settings button
+            "settings" -> menu.add {
+                BurgerMenuItem(
+                    iconRes = R.drawable.settings,
+                    label = stringResource(R.string.settings),
+                    onShortTap = { onItemClick(NavRoutes.settings) },
+                    onLongTap = {
+                        navController.navigate("${NavRoutes.settings.name}?tab=1&focus=burger")
+                        onItemConsumed()
+                    },
+                    onConsume = onItemConsumed
+                )
+            }
+            // Extensions button (spec-ffmpeg-extension-module): short tap opens the
+            // Extensions sheet (module state + actions), long press opens the Misc
+            // settings directly on the Extensions card - same pattern as Maintenance
+            "extensions" -> menu.add {
+                ExtensionsMenuItem(
+                    onOpen = { showExtensionsSheet = true },
+                    onLongClick = {
+                        navController.navigate("${NavRoutes.settings.name}?tab=7&focus=extensions")
+                        onItemConsumed()
+                    },
+                    onConsume = onItemConsumed
+                )
+            }
+            // Debug button (same design as the other items: short tap toggles the debug logs,
+            // long press opens the Misc settings directly on the Debug card)
+            "debug_logs" -> menu.add {
+                DebugLogsMenuItem(
+                    onLongClick = {
+                        navController.navigate("${NavRoutes.settings.name}?tab=7&focus=debug")
+                        onItemConsumed()
+                    },
+                    onConsume = onItemConsumed
+                )
+            }
+            // Maintenance button (spec-maintenance-dialog): short tap opens the app-state
+            // sheet, long press opens the Misc settings directly on the Maintenance card
+            "maintenance" -> menu.add {
+                MaintenanceMenuItem(
+                    onOpen = { showMaintenanceSheet = true },
+                    onLongClick = {
+                        navController.navigate("${NavRoutes.settings.name}?tab=7&focus=maintenance")
+                        onItemConsumed()
+                    },
+                    onConsume = onItemConsumed
+                )
+            }
+            // Rescue Center button (opens the :rescue process activity, same intent as the launcher shortcut)
+            "rescue_center" -> menu.add {
+                BurgerMenuItem(
+                    iconRes = R.drawable.shortcut_rescue,
+                    label = stringResource(R.string.rescue_center),
+                    onShortTap = {
+                        context.startActivity(
+                            Intent(context, RescueActivity::class.java).setAction(ACTION_RESCUE)
+                        )
+                    },
+                    onLongTap = {
+                        navController.navigate("${NavRoutes.settings.name}?tab=7&focus=rescue")
+                        onItemConsumed()
+                    },
+                    onConsume = onItemConsumed
+                )
+            }
+        }
+    }
     menu.Draw()
     // Maintenance sheet (spec-maintenance-dialog): composed as a SIBLING of the
     // Popup (never inside the menu content), driven by the body-level state above.

@@ -2088,7 +2088,6 @@
     <string name="approve">Onayla</string>
     <string name="reject">Reddet</string>
     <string name="maintenance">Bakım</string>
-    <string name="maintenance_card_desc">Uygulama durumuna genel bakış: son önyükleme testleri ve çalışan alt sistemler</string>
     <string name="maintenance_all_systems_ok">Tüm sistemler çalışıyor</string>
     <plurals name="maintenance_systems_need_attention">
         <item quantity="one">%d sistem dikkat gerektiriyor</item>

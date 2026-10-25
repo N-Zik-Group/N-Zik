@@ -48,13 +48,14 @@ object DataStoreUtils {
     const val KEY_REWIND_YEARLY_NOTIF_ENABLED = "rewind_yearly_notif_enabled"
 
     // Rewind playlists (spec "Retrait du mécanisme legacy « monthly playlists » + catégorie
-    // « Rewind playlists »"). Frozen contract for spec 2: the worker gates CREATION on
+    // « Rewind playlists »"). Contract for spec 2: the worker gates CREATION on
     // KEY_REWIND_{TYPE}_PLAYLIST_ENABLED and the NOTIFICATION on
     // KEY_REWIND_{TYPE}_PLAYLIST_NOTIF_ENABLED; spec 1 only consumes the two creation keys
     // (Month/Year/All filter row). All default to `true` on read (zero regression on existing
-    // installs), same store as the deck toggles. Decoupling (user decision, 2026-09-24): NOT
-    // gated by [KEY_REWIND_ENABLED] nor by the deck type toggles — a deck type off does not
-    // hide its playlist.
+    // installs), same store as the deck toggles. Master gating (user decision, 2026-10-25):
+    // the creation gates also carry [KEY_REWIND_ENABLED] - the master off stops every
+    // rewind feature, playlists included; the deck type toggles do not gate the playlists
+    // (a deck type off does not hide its playlist).
 
     /** Creation of the monthly rewind playlist (`rewind-monthly:YYYYMM`). */
     const val KEY_REWIND_MONTHLY_PLAYLIST_ENABLED = "rewind_monthly_playlist_enabled"
@@ -101,6 +102,33 @@ object DataStoreUtils {
      * of the 'Rewind — <period>' playlist. 0 = nothing consumed yet.
      */
     const val KEY_REWIND_PLAYLIST_LAST_CONSUMED = "rewind_playlist_last_consumed"
+
+    // Customizable burger menu (spec-customizable-burger-menu): the hamburger menu's layout
+    // (order + per-item visibility). The layout is cosmetic and global, so it lives in the
+    // app_settings store, not the profile-scoped "preferences" file (the toolbar-dialog
+    // quirk is deliberately NOT copied).
+
+    /** Stored burger menu order: a JSON array string of item ids, validated defensively on read (blank/corrupt -> default). */
+    const val KEY_BURGER_MENU_ORDER = "burger_menu_order"
+
+    /** Prefix of the per-item burger menu visibility toggles; each defaults to `true` on read. */
+    const val KEY_BURGER_MENU_TOGGLE_PREFIX = "burger_menu_toggle_"
+
+    /** Default burger menu order (the pre-customization layout, the separator included). */
+    val DEFAULT_BURGER_MENU_ORDER = listOf(
+        "history", "statistics", "rewind", "offline_mode", "listen_together",
+        "bridge_server", "profiles", "pip", "separator", "settings",
+        "extensions", "debug_logs", "maintenance", "rescue_center"
+    )
+
+    /** The burger items that can never be hidden (G3, renegotiated: only Settings, G5); every other item is maskable. */
+    val LOCKED_BURGER_MENU_ITEMS = setOf("settings")
+
+    /** Max separator instances in the burger menu (G5 renegotiated); the customizer's order parser trims the surplus defensively. */
+    const val MAX_BURGER_MENU_SEPARATORS = 5
+
+    /** The visibility toggle key of one burger item. */
+    fun burgerMenuToggleKey(id: String): String = KEY_BURGER_MENU_TOGGLE_PREFIX + id
 
     private const val PREFS_NAME = "app_settings"
 

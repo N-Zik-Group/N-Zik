@@ -2088,7 +2088,6 @@
     <string name="approve">Approve</string>
     <string name="reject">Reject</string>
     <string name="maintenance">Maintenance</string>
-    <string name="maintenance_card_desc">App state at a glance: last boot passes and live subsystems</string>
     <string name="maintenance_all_systems_ok">All systems operational</string>
     <plurals name="maintenance_systems_need_attention">
         <item quantity="other">%d systems need attention</item>

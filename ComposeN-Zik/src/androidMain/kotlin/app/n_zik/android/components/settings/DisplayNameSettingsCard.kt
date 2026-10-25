@@ -80,7 +80,8 @@ import app.kreate.android.me.knighthat.utils.Toaster
  * The face card at the top of the Accounts tab: the active profile's face preview,
  * the name / avatar source selectors (an account source is locked while not logged
  * in), the profile name (renamed with the same rules as the Profiles page) and the
- * profile photo (gallery pick via PhotoPicker).
+ * profile photo (gallery pick via PhotoPicker). [onOpenProfiles] optionally adds the
+ * "Open" row (deep link to the Profiles screen) under the face preview.
  *
  * Account state and face load once per profile / source change on the DATA dispatcher
  * (secure prefs are keystore-backed — never built in composition); the contract is
@@ -89,7 +90,10 @@ import app.kreate.android.me.knighthat.utils.Toaster
  * the next composition.
  */
 @Composable
-fun ProfileFaceCard(modifier: Modifier = Modifier) {
+fun ProfileFaceCard(
+    modifier: Modifier = Modifier,
+    onOpenProfiles: (() -> Unit)? = null
+) {
     SettingsSectionCard(
         title = stringResource(R.string.profile_face),
         icon = R.drawable.person,
@@ -197,6 +201,17 @@ fun ProfileFaceCard(modifier: Modifier = Modifier) {
                         overflow = TextOverflow.Ellipsis
                     )
                 }
+            }
+
+            // Optional deep link to the Profiles screen (wired by the Accounts tab,
+            // spec-customizable-burger-menu goal B).
+            onOpenProfiles?.let { onOpen ->
+                OtherSettingsEntry(
+                    title = stringResource(R.string.module_open),
+                    text = stringResource(R.string.profiles_open_desc),
+                    icon = R.drawable.chevron_forward,
+                    onClick = onOpen
+                )
             }
 
             OtherSettingsEntry(

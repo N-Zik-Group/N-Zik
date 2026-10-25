@@ -185,6 +185,7 @@
 <string name="player_rotating_buttons">Rotating buttons</string>
 <string name="player_enable_rotation_buttons">Enable button rotation upon click</string>
 <string name="statistics">Statistics</string>
+<string name="statistics_open_desc">Open the Statistics screen</string>
 <string name="today">Today</string>
 <string name="_1_week">1 Week</string>
 <string name="_1_month">1 Month</string>
@@ -530,6 +531,7 @@
 <string name="shake_sensitivity_theme_medium">Medium (3.5G)</string>
 <string name="shake_sensitivity_theme_low">Low (5.0G)</string>
 <string name="history">History</string>
+<string name="history_open_desc">Open the History screen</string>
 <string name="yesterday">Yesterday</string>
 <string name="last_week">Last week</string>
 <string name="by_casual_played_song">Random</string>
@@ -1557,6 +1559,11 @@
 <string name="unlink">Unlink</string>
 <string name="toolbar">Toolbar</string>
 <string name="customize_toolbar">Customize the toolbar</string>
+<string name="burger_menu">Burger menu</string>
+<string name="burger_menu_customize">Customize the burger menu</string>
+<string name="burger_separator">Separator</string>
+<string name="burger_menu_separator_instance">Separator (%1$d)</string>
+<string name="add_separator">Add separator</string>
 <string name="album_art">Album art</string>
 <string name="play_pause">Play / Pause</string>
 <string name="not_playing">Not playing</string>
@@ -1967,6 +1974,7 @@
 <string name="rw_meta_plays">%1$s plays</string>
 <string name="rw_meta_songs">%1$s songs</string>
 <string name="profiles">Profiles</string>
+<string name="profiles_open_desc">Open the Profiles screen</string>
 <string name="profiles_description">Each profile has its own database, settings and face. Switching profiles requires a restart</string>
 <string name="profiles_export_profiles">Export profiles</string>
 <string name="profiles_import_profiles">Import profiles</string>
@@ -2008,7 +2016,8 @@
 <string name="rw_settings_notifications">Rewind notifications</string>
 <string name="rw_settings_playlists_title">Rewind playlists</string>
 <string name="rw_settings_master">Enable Rewind</string>
-<string name="rw_settings_master_description">Enable or disable the menu item and the reminders.</string>
+<string name="rw_settings_master_description">Enable or disable the whole rewind feature: menu item, reminders and playlists.</string>
+<string name="rewind_open_desc">Open the Rewind home screen</string>
 <string name="rw_settings_yearly">Yearly rewind</string>
 <string name="rw_settings_yearly_description">Show the yearly recaps on the Rewind home.</string>
 <string name="rw_settings_yearly_notification">Yearly rewind notification</string>
@@ -2043,7 +2052,9 @@
 <string name="offline_mode">Full offline mode</string>
 <string name="enable_offline_mode">Enable full offline mode</string>
 <string name="disable_offline_mode">Disable full offline mode</string>
+<string name="offline_mode_description">Simulates a network failure for this profile: online features are hidden or disabled as if offline</string>
 <string name="listen_together_description">Listen to music with your friends in real time. Create a room to host, or join an existing room with a code</string>
+<string name="listen_together_open_desc">Open the Listen Together screen</string>
 <string name="listen_together_server_url">Server URL</string>
 <string name="listen_together_choose_server">Choose server</string>
 <string name="listen_together_custom_server">Custom server</string>
@@ -2131,7 +2142,6 @@
 <string name="approve">Approve</string>
 <string name="reject">Reject</string>
 <string name="maintenance">Maintenance</string>
-<string name="maintenance_card_desc">App state at a glance: last boot passes and live subsystems</string>
 <string name="maintenance_all_systems_ok">All systems operational</string>
 <plurals name="maintenance_systems_need_attention">
     <item quantity="one">%d system needs attention</item>

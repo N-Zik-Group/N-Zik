@@ -77,10 +77,11 @@ private const val PREF_USERNAME = "listen_together_username"
  * Preferences are read straight from [DataStoreUtils] (SharedPreferences) on every
  * composition, so a value saved elsewhere (e.g. the username field in the room screen)
  * stays in sync without shared state. Writes go through the same keys the client
- * reads, so changes apply on the next connection attempt.
+ * reads, so changes apply on the next connection attempt. [onOpenScreen] optionally
+ * adds the "Open" row (deep link to the Listen Together screen) as the first entry.
  */
 @Composable
-fun ListenTogetherSettingsCard() {
+fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
     val context = LocalContext.current
     val manager = remember { ListenTogetherManager.getInstance() }
     if (manager == null) {
@@ -146,6 +147,17 @@ fun ListenTogetherSettingsCard() {
         icon = R.drawable.people,
         description = stringResource(R.string.listen_together_settings_desc),
         content = {
+        // Optional deep link to the Listen Together screen (wired by the Accounts
+        // tab, spec-customizable-burger-menu goal B); first row of the card.
+        onOpenScreen?.let { onOpen ->
+            OtherSettingsEntry(
+                title = stringResource(R.string.module_open),
+                text = stringResource(R.string.listen_together_open_desc),
+                icon = R.drawable.chevron_forward,
+                onClick = onOpen,
+            )
+        }
+
         // Server URL
         OtherSettingsEntry(
             title = stringResource(R.string.listen_together_server_url),

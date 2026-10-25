@@ -2089,7 +2089,6 @@ Volume BAS : titre précédent</string>
     <string name="approve">Approuver</string>
     <string name="reject">Refuser</string>
     <string name="maintenance">Maintenance</string>
-    <string name="maintenance_card_desc">Aperçu de l\'état de l\'application : tests de démarrage réussis et sous-systèmes actifs</string>
     <string name="maintenance_all_systems_ok">Tous les systèmes sont opérationnels</string>
     <plurals name="maintenance_systems_need_attention">
         <item quantity="one">Le système %d nécessite une intervention</item>

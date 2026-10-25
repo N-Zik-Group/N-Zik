@@ -31,6 +31,15 @@ Added:
   - No build bundles FFmpeg anymore: the vendored FFmpegKit jar provides the Java API only, all FFmpeg `.so` files are stripped from every APK via `packaging.jniLibs.excludes`; APK size drops from ~136 MB to ~57 MB (non-R8) / ~28 MB (R8)
   - Gradle per-package check: every `package*` task rescans the APK it just produced and fails the build if any FFmpeg `.so` leaked in (local builds and CI alike; stale pre-restructure APKs left in the outputs dir are out of scope by design)
   - CI workflows + issue templates updated for the renamed build types; `gradle/libs.versions.toml` carries the matrix flags
+- feat(settings): customizable burger menu (drag reorder + per-item show/hide + long-press deep links)
+  - New `components/dialog/settings/BurgerMenuSettingsDialog.kt`: customizer dialog modeled on `HomeSongsToolbarSettingsDialog` + `ToggleListDialog`, persisted in the global `app_settings` store (`DataStoreUtils`, not per-profile: the burger layout is cosmetic); defensive `parseOrder` (blank/corrupt -> default, unknown ids dropped, missing ids appended at the end, separator cap `MAX_BURGER_MENU_SEPARATORS` = 5); static `reset(context)` hooked into the UI-tab global settings reset
+  - Separator (G5 renegotiated): maskable via one shared per-id toggle, multiple instances via the "Add separator" footer button (cap 5); each instance renders its own draggable row with a per-row remove button (`ToggleListDialog` gained `onRowAction` + `extraFooterButton`, both optional null-default so existing callers are untouched); "Separator (n)" label when more than one instance
+  - `BurgerMenuSettingsCard` (UI tab, auto-contained, Maintenance-card model): the only entry point to the dialog; a `DisposableEffect` hides the dialog when the card leaves composition so a stale `isActive` cannot re-open it on re-entry
+  - Every burger item gained an independent Settings entry (G2 renegotiated): new `OfflineModeSettingsCard` (Network tab, live per-profile `fullOfflineModeKey`), new `RescueCenterSettingsCard` (Misc tab), "Open" rows added to the History card (Data tab), the Statistics card (AI tab), `ProfileFaceCard` (-> profiles screen) and `ListenTogetherSettingsCard` (-> room screen) in the Accounts tab
+  - Long-press on EVERY burger item deep-links to `settings?tab=N&focus=<card>` with an auto-scroll to the card (the focus mechanism of the Misc tab extended to the 6 other tabs); short tap keeps the original behavior (the offline_mode and pip items keep the menu open, no consume - behavior preserved)
+  - Consumption in legacy `ActionBar.kt` (spec-approved edit): stored order intersect stored toggles intersect runtime conditions (rewind enabled, offline mode, PiP), a runtime condition always wins over a stored toggle; the order + 14 toggles are read once per menu open (`remember(expanded)`) instead of on every recomposition; new shared `BurgerMenuItem` composable (short tap + long tap, label clamped to the "Rescue Center" reference width, marquee with ellipsis fallback) - the 3 existing n_zik items keep their own composables
+  - Review hardening (bmad-code-review, 11 patches applied): the menu assembly boundary, the deep-link tab/focus mapping, the focus-scroll, the master-toggle store writes and the "Open" rows are now pinned by tests (see the test entry under Other)
+  - Tests: `BurgerMenuSettingsDialogTest` (19), `BurgerMenuSettingsDialogComposeTest` (6), `BurgerMenuItemTest` (5), `AccountsSettingsEmbeddingWiringTest` (5), `SettingsNewCardsWiringTest` (3), `BurgerMenuAssemblyTest` (3), `BurgerMenuFocusScrollTest` (3), `RewindMasterToggleSettingsTest` (3), `BurgerMenuDeepLinkMappingTest` (1) - 48 tests, all green
 
 Changed:
 - change(ffmpeg): FFmpeg-powered features are downloaded on first use, not build-gated
@@ -38,6 +47,11 @@ Changed:
   - `values/strings.xml`: 3 new `module_*` keys (incl. the dedicated first-use offline message), 9 dead keys removed, 5 run-on sentences fixed, free-space text aligned to the 70 MB gate
   - Crowdin-managed follow-ups (user-approved scope): 45 `values-*/strings.xml` + 31 `fastlane/*/full_description.txt` updated after the `full_title` removal
   - Legacy wiring (user-approved, the change cannot be expressed outside these files): `AccountsSettings.kt` (BUILD_TYPE gate rename dev -> dev64, beta -> beta64), `ActionBar.kt` + `OtherSettings.kt` (Extensions entry)
+- change(rewind): the "Enable Rewind" master switch is now the total switch
+  - Master OFF unchecks both playlist-creation gates (no worker keeps running, the whole Rewind section - 3 cards - is hidden); master ON re-checks them - replaces the 2026-09-24 decoupling decision (user decision, manual test round 2)
+  - Both `RewindMonthlyPlaylistWorker` and `RewindYearlyPlaylistWorker` gates now AND `KEY_REWIND_ENABLED` too (fixes existing installs where the master was off but the creation gates stayed on)
+  - The 3 Rewind cards are wrapped in an internal `Column` (the focus-scroll measurement Box used to stack them) + an "Open" row -> `NavRoutes.rewindHome` (same destination as the burger item tap)
+  - `rw_settings_master_description` updated to describe the whole-feature semantics
 
 Improved:
 - improve(listentogether): dedicated no-connection toast in the room menu when offline
@@ -94,6 +108,8 @@ Removed:
   - Zero call sites (verified by repo-wide search); superseded by the full-depth `isDnsFailure` predicate
 - remove(app): drop unused `prewarmPoToken` import in `MainApplication.kt`
   - The top-level `prewarmPoToken()` in `StreamResolver.kt` has no call site anywhere in the repo; the import was the only reference in `MainApplication.kt`
+- remove(settings): dead string `maintenance_card_desc` from source + every locale
+  - The Maintenance card no longer renders the duplicated description parameter (manual test fix 2026-10-25), which left the key dead; removed from `values/strings.xml` and all 45 `values-*/strings.xml` per the new "remove a string key everywhere" rule (removal-only, no translation-value edits - Crowdin drops it from its side on the next sync)
 
 Other:
 - test(ui): offline + card unification — 3 BMAD review rounds (9 + 6 + 8 fixes applied), targeted suites green: 10/10 across the 5 touched classes + an isolated run of `PlaylistItemRemoteCardContractTest` (which caught a missing `Dependencies.init` — the class only passed in batch runs via sandbox leakage)
@@ -108,3 +124,9 @@ Other:
   - Independent APK scan confirms 0 FFmpeg `.so` in the debug APK (12 native `.so` total)
 - chore(docs): em-dash cleanup on the lines introduced by the build-matrix restructure
   - 6 em-dashes replaced in `AGENTS.md`, `rules/BUILD.md`, `README.md`; both rules files bumped to 1.8.1
+- chore(rules): new rule "removing a string key from values/strings.xml requires removing it from every values-*/strings.xml"
+  - AGENTS.md 1.9.0 (Always Do + Never Do exception), rules/CODE.md 1.10.1 (Translations), rules/WORKFLOW.md 1.6.4 (Step 6 guard check: a `values-*` change is legal only when it is a removal-only of a key now absent from `values/`) - rationale: a dead key left in a locale degrades translator context
+  - Same rule mirrored in the N-Zik-Desktop-Compagnon repo rules (separate repo, separate commit)
+- test(settings): bmad-code-review on the customizable burger menu - 27 findings triaged, 11 patches applied
+  - 4 layers (blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor, full mode against the spec); verdicts: 11 patch (all applied), 1 decision (separator UX, resolved by the user: one row per instance), 1 defer (global-reset hook - the pre-existing untested 19-call legacy reset block, tracked in deferred-work.md), 7 rejected (5 confirmed spec-consistent behavior, 2 low not worth adding guards)
+  - The new tests pin what the review proved unverified: the menu assembly boundary (stored order x toggles x runtime conditions, all 14 branch ids), the deep-link mapping (tab/focus values vs the SettingsScreen tab mapping), the focus-scroll on a representative tab, the master-toggle store writes, the "Open" rows at their 4 sites, the per-profile `fullOfflineModeKey` contract of the Offline mode card, the label clamp/marquee of `BurgerMenuItem`

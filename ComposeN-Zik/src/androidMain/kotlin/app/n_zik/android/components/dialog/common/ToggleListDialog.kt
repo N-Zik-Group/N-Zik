@@ -21,6 +21,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -53,6 +54,11 @@ data class ToggleItem(
     val description: String? = null
 )
 
+/**
+ * Checkbox list with optional drag reorder. Rows are keyed by [ToggleItem.id], so
+ * callers must pass unique ids. [onRowAction] (optional) renders a per-row remove icon
+ * before the drag handle; it is hidden for the ids in [lockedCheckedIds].
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ToggleListDialog(
@@ -67,6 +73,8 @@ fun ToggleListDialog(
     lockedCheckedIds: Set<String> = emptySet(),
     checkedStatesOverride: List<Boolean>? = null,
     onCheckedChange: ((Int, Boolean) -> Unit)? = null,
+    onRowAction: ((Int) -> Unit)? = null,
+    extraFooterButton: DialogButton? = null,
     onReset: (() -> Unit)? = null,
     onCancel: (() -> Unit)? = null,
     onConfirm: (() -> Unit)? = null
@@ -83,7 +91,8 @@ fun ToggleListDialog(
         }
     }
     val checkedCount = effectiveCheckedStates.count { it }
-    val hasButtons = onReset != null || onCancel != null || onConfirm != null
+    val hasButtons =
+        onReset != null || onCancel != null || onConfirm != null || extraFooterButton != null
 
     Column(
         modifier = modifier
@@ -121,7 +130,8 @@ fun ToggleListDialog(
                             description = item.description,
                             enabled = enabled,
                             useLocalState = checkedStatesOverride != null,
-                            onCheckedChange = if (onCheckedChange != null) { { onCheckedChange(index, it) } } else null
+                            onCheckedChange = if (onCheckedChange != null) { { onCheckedChange(index, it) } } else null,
+                            onRowAction = if (onRowAction != null && !isLocked) { { onRowAction(index) } } else null
                         )
                     }
                 } else {
@@ -136,7 +146,8 @@ fun ToggleListDialog(
                         description = item.description,
                         enabled = enabled,
                         useLocalState = checkedStatesOverride != null,
-                        onCheckedChange = if (onCheckedChange != null) { { onCheckedChange(index, it) } } else null
+                        onCheckedChange = if (onCheckedChange != null) { { onCheckedChange(index, it) } } else null,
+                        onRowAction = if (onRowAction != null && !isLocked) { { onRowAction(index) } } else null
                     )
                 }
             }
@@ -147,6 +158,12 @@ fun ToggleListDialog(
 
             ButtonRow(
                 buttons = buildList {
+                    // Optional dialog-specific pill (e.g. the burger dialog's "Add
+                    // separator"), rendered leftmost so the standard Reset/Cancel/OK
+                    // trio keeps its order and styling.
+                    extraFooterButton?.let { extra ->
+                        add(extra)
+                    }
                     onReset?.let { reset ->
                         add(
                             DialogButton(
@@ -193,7 +210,8 @@ private fun ToggleRow(
     description: String? = null,
     enabled: Boolean = true,
     useLocalState: Boolean = false,
-    onCheckedChange: ((Boolean) -> Unit)? = null
+    onCheckedChange: ((Boolean) -> Unit)? = null,
+    onRowAction: (() -> Unit)? = null
 ) {
     val ctx = LocalContext.current
 
@@ -263,6 +281,22 @@ private fun ToggleRow(
                 tint = if (!enabled) colorPalette().textDisabled else if (isChecked) colorPalette().accent else colorPalette().textDisabled,
                 modifier = Modifier.size(20.dp)
             )
+        }
+
+        if (onRowAction != null) {
+            IconButton(
+                onClick = { onRowAction() },
+                modifier = Modifier
+                    .size(24.dp)
+                    .padding(4.dp)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.close),
+                    contentDescription = stringResource(R.string.delete),
+                    tint = colorPalette().textDisabled,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
 
         if (showReorder) {

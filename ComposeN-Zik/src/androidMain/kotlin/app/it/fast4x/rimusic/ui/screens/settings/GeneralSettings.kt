@@ -28,7 +28,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -37,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.os.LocaleListCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.first
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.kreate.android.me.knighthat.utils.Toaster
@@ -210,7 +215,8 @@ fun DefaultGeneralSettings(context: Context) {
 @UnstableApi
 @Composable
 fun GeneralSettings(
-    navController: NavController
+    navController: NavController,
+    focus: String = ""
 ) {
     val binder = LocalPlayerServiceBinder.current
 
@@ -278,12 +284,30 @@ fun GeneralSettings(
     var pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
     var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
 
+    // Scroll to the Picture in picture card when the screen was opened with focus=pip
+    // (spec-customizable-burger-menu: long press on the PiP burger item).
+    val scrollState = rememberScrollState()
+    var containerTopY by remember { mutableFloatStateOf(-1f) }
+    var pipCardTopY by remember { mutableFloatStateOf(-1f) }
+
+    LaunchedEffect(focus) {
+        if (focus != "pip") return@LaunchedEffect
+        // The card may be off-screen but is still laid out: wait until its position is
+        // measured (read inside snapshotFlow, see the same mechanism in OtherSettings).
+        val offset = snapshotFlow {
+            if (pipCardTopY < 0f || containerTopY < 0f) -1f
+            else pipCardTopY - containerTopY + scrollState.value
+        }.first { it >= 0f }
+        scrollState.animateScrollTo(offset.roundToInt())
+    }
+
     Column(
         modifier = Modifier
             .background(colorPalette().background0)
             .fillMaxHeight()
             .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
+            .onGloballyPositioned { containerTopY = it.positionInRoot().y }
     ) {
 
         HeaderWithIcon(
@@ -1291,9 +1315,11 @@ if (search.inputValue.isBlank() || stringResource(R.string.max_songs_in_queue_an
                  initialScale = 0.9f
              )
          ) {
+             // The burger long press (focus=pip) scrolls to this card.
              SettingsSectionCard(
                  title = stringResource(R.string.picture_in_picture),
                  icon = R.drawable.video,
+                 modifier = Modifier.onGloballyPositioned { pipCardTopY = it.positionInRoot().y },
                  content = {
         if (search.inputValue.isBlank() || stringResource(R.string.settings_enable_pip).contains(search.inputValue,true)) {
                          OtherSwitchSettingEntry(

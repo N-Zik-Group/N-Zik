@@ -80,14 +80,26 @@ class RewindPlaylistWorkersTest {
 
     // Monthly worker — gates and delay math
 
-    @Test
-    fun monthlyGateDefaultsOnAndFollowsTheCreationToggle() {
-        val app = RuntimeEnvironment.getApplication()
-        assertTrue(RewindMonthlyPlaylistWorker.isMonthlyPlaylistEnabled(app))
-        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, false)
-        assertFalse(RewindMonthlyPlaylistWorker.isMonthlyPlaylistEnabled(app))
-        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true)
-        assertTrue(RewindMonthlyPlaylistWorker.isMonthlyPlaylistEnabled(app))
+    @Test
+    fun monthlyGateDefaultsOnAndFollowsTheCreationToggle() {
+        val app = RuntimeEnvironment.getApplication()
+        assertTrue(RewindMonthlyPlaylistWorker.isMonthlyPlaylistEnabled(app))
+        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, false)
+        assertFalse(RewindMonthlyPlaylistWorker.isMonthlyPlaylistEnabled(app))
+        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true)
+        assertTrue(RewindMonthlyPlaylistWorker.isMonthlyPlaylistEnabled(app))
+    }
+
+    @Test
+    fun monthlyGateIsOffWhileTheMasterIsOff() {
+        val app = RuntimeEnvironment.getApplication()
+        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_ENABLED, false)
+        assertFalse(
+            "the master off stops every rewind feature, the playlist workers included",
+            RewindMonthlyPlaylistWorker.isMonthlyPlaylistEnabled(app)
+        )
+        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_ENABLED, true)
+        assertTrue(RewindMonthlyPlaylistWorker.isMonthlyPlaylistEnabled(app))
     }
 
     @Test
@@ -228,14 +240,26 @@ class RewindPlaylistWorkersTest {
 
     // Yearly worker — gates and delay math
 
-    @Test
-    fun yearlyGateDefaultsOnAndFollowsTheCreationToggle() {
-        val app = RuntimeEnvironment.getApplication()
-        assertTrue(RewindYearlyPlaylistWorker.isYearlyPlaylistEnabled(app))
-        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, false)
-        assertFalse(RewindYearlyPlaylistWorker.isYearlyPlaylistEnabled(app))
-        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
-        assertTrue(RewindYearlyPlaylistWorker.isYearlyPlaylistEnabled(app))
+    @Test
+    fun yearlyGateDefaultsOnAndFollowsTheCreationToggle() {
+        val app = RuntimeEnvironment.getApplication()
+        assertTrue(RewindYearlyPlaylistWorker.isYearlyPlaylistEnabled(app))
+        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, false)
+        assertFalse(RewindYearlyPlaylistWorker.isYearlyPlaylistEnabled(app))
+        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
+        assertTrue(RewindYearlyPlaylistWorker.isYearlyPlaylistEnabled(app))
+    }
+
+    @Test
+    fun yearlyGateIsOffWhileTheMasterIsOff() {
+        val app = RuntimeEnvironment.getApplication()
+        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_ENABLED, false)
+        assertFalse(
+            "the master off stops every rewind feature, the playlist workers included",
+            RewindYearlyPlaylistWorker.isYearlyPlaylistEnabled(app)
+        )
+        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_ENABLED, true)
+        assertTrue(RewindYearlyPlaylistWorker.isYearlyPlaylistEnabled(app))
     }
 
     @Test

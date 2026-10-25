@@ -140,13 +140,13 @@ fun SettingsScreen(
     ) { currentTabIndex ->
         saveableStateHolder.SaveableStateProvider(currentTabIndex) {
             when (currentTabIndex) {
-                0 -> GeneralSettings(navController = navController)
-                1 -> UiSettings(navController = navController)
+                0 -> GeneralSettings(navController = navController, focus = focus)
+                1 -> UiSettings(navController = navController, focus = focus)
                 2 -> AppearanceSettings(navController = navController)
-                3 -> AIRecommendationSettings(navController = navController, ytLoggedIn = ytLoggedIn)
-                4 -> DataSettings()
-                5 -> AccountsSettings()
-                6 -> NetworkSettings(navController = navController)
+                3 -> AIRecommendationSettings(navController = navController, ytLoggedIn = ytLoggedIn, focus = focus)
+                4 -> DataSettings(navController = navController, focus = focus)
+                5 -> AccountsSettings(navController = navController, focus = focus)
+                6 -> NetworkSettings(navController = navController, focus = focus)
                 7 -> OtherSettings(focus = focus)
                 8 -> About(navController = navController)
 

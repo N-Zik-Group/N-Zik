@@ -75,6 +75,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import java.io.File
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.navigation.NavController
+import app.it.fast4x.rimusic.enums.NavRoutes
+import kotlin.math.roundToInt
 
 
 @Composable
@@ -124,7 +129,10 @@ fun DefaultDataSettings() {
 @ExperimentalAnimationApi
 @UnstableApi
 @Composable
-fun DataSettings() {
+fun DataSettings(
+    navController: NavController,
+    focus: String = ""
+) {
     val search = Search()
 
 
@@ -252,12 +260,30 @@ fun DataSettings() {
 
     var restartService by rememberSaveable { mutableStateOf(false) }
 
+    // Scroll to the History card when the screen was opened with focus=history
+    // (spec-customizable-burger-menu: long press on the History burger item).
+    val scrollState = rememberScrollState()
+    var containerTopY by remember { mutableFloatStateOf(-1f) }
+    var historyCardTopY by remember { mutableFloatStateOf(-1f) }
+
+    LaunchedEffect(focus) {
+        if (focus != "history") return@LaunchedEffect
+        // The card may be off-screen but is still laid out: wait until its position is
+        // measured (read inside snapshotFlow, see the same mechanism in OtherSettings).
+        val offset = snapshotFlow {
+            if (historyCardTopY < 0f || containerTopY < 0f) -1f
+            else historyCardTopY - containerTopY + scrollState.value
+        }.first { it >= 0f }
+        scrollState.animateScrollTo(offset.roundToInt())
+    }
+
     Column(
         modifier = Modifier
             .background(colorPalette().background0)
             .fillMaxHeight()
             .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
+            .onGloballyPositioned { containerTopY = it.positionInRoot().y }
     ) {
 
         HeaderWithIcon(
@@ -560,7 +586,7 @@ fun DataSettings() {
 
         /* Removed Spacer */
 
-        // History Section
+        // History Section; the burger long press (focus=history) scrolls to it.
         AnimatedVisibility(
             visible = true,
             enter = fadeIn(animationSpec = tween(1000)) + scaleIn(
@@ -571,7 +597,16 @@ fun DataSettings() {
             SettingsSectionCard(
                 title = stringResource(R.string.history),
                 icon = R.drawable.history,
+                modifier = Modifier.onGloballyPositioned { historyCardTopY = it.positionInRoot().y },
                 content = {
+                    // The burger History item only reaches this partial card: the "Ouvrir"
+                    // row (spec-customizable-burger-menu goal B) opens the full History screen.
+                    OtherSettingsEntry(
+                        title = stringResource(R.string.module_open),
+                        text = stringResource(R.string.history_open_desc),
+                        icon = R.drawable.chevron_forward,
+                        onClick = { navController.navigate(NavRoutes.history.name) }
+                    )
                     OtherSwitchSettingEntry(
                         title = stringResource(R.string.pause_search_history),
                         text = stringResource(R.string.neither_save_new_searched_query),

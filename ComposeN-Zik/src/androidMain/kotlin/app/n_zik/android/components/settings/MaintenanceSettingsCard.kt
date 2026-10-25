@@ -134,7 +134,6 @@ fun MaintenanceSettingsCard(
     SettingsSectionCard(
         title = stringResource(R.string.maintenance),
         icon = R.drawable.shield_checkmark,
-        description = stringResource(R.string.maintenance_card_desc),
         modifier = modifier,
         content = {
             // STATS category: the boot-pass table + the live health row

@@ -15,9 +15,11 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.AnnotatedString
+import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.FontType
+import app.it.fast4x.rimusic.enums.FontType
+import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.ui.screens.settings.AccountsSettings
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
@@ -36,8 +38,9 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.mockkStatic
-import io.mockk.runs
-import io.mockk.unmockkAll
+import io.mockk.runs
+import io.mockk.unmockkAll
+import io.mockk.verify
 import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Rule
@@ -70,10 +73,14 @@ import org.robolectric.shadows.ShadowProcess
 @Config(sdk = [33], application = Application::class)
 class AccountsSettingsEmbeddingWiringTest {
 
-    @get:Rule
-    val composeRule = createComposeRule()
-
-    private val context: Context = ApplicationProvider.getApplicationContext()
+    @get:Rule
+    val composeRule = createComposeRule()
+
+    private val context: Context = ApplicationProvider.getApplicationContext()
+
+    // The screen navigates through it on the "Open" rows (the Profiles / Listen Together
+    // tests below stub and verify it); a bare mock is enough for the render assertions
+    private val navController = mockk<NavController>()
 
     private val title = context.getString(R.string.use_account_for_searches)
     private val connectFirst = context.getString(R.string.youtube_connect_first)
@@ -142,7 +149,7 @@ class AccountsSettingsEmbeddingWiringTest {
     private fun showScreen() {
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
-                AccountsSettings()
+                AccountsSettings(navController = navController)
             }
         }
     }
@@ -197,10 +204,47 @@ class AccountsSettingsEmbeddingWiringTest {
             .performClick()
         composeRule.waitForIdle()
 
-        assertFalse(
-            "the toggle must persist OFF through the real screen",
-            context.preferences.getBoolean(useLoginForSearchKey, true)
-        )
-        assertFalse("the in-memory flag must follow the toggle", Innertube.useLoginForSearch)
-    }
+        assertFalse(
+            "the toggle must persist OFF through the real screen",
+            context.preferences.getBoolean(useLoginForSearchKey, true)
+        )
+        assertFalse("the in-memory flag must follow the toggle", Innertube.useLoginForSearch)
+    }
+
+    // The Accounts screen carries two "Open" rows (the burger deep links' target cards);
+    // they are disambiguated by their unique description texts, not by the shared
+    // "Open" title.
+    @Test
+    fun theProfilesOpenRowNavigatesToTheProfilesScreen() {
+        mockEncryptedPrefs(cookie = "SAPISID=test", loginEnabled = true)
+        launchApp()
+        showScreen()
+        composeRule.waitForIdle()
+
+        every { navController.navigate(any<String>()) } just runs
+        composeRule
+            .onNodeWithText(context.getString(R.string.profiles_open_desc))
+            .performScrollTo()
+            .performClick()
+        composeRule.waitForIdle()
+
+        verify { navController.navigate(NavRoutes.profiles.name) }
+    }
+
+    @Test
+    fun theListenTogetherOpenRowNavigatesToTheListenTogetherScreen() {
+        mockEncryptedPrefs(cookie = "SAPISID=test", loginEnabled = true)
+        launchApp()
+        showScreen()
+        composeRule.waitForIdle()
+
+        every { navController.navigate(any<String>()) } just runs
+        composeRule
+            .onNodeWithText(context.getString(R.string.listen_together_open_desc))
+            .performScrollTo()
+            .performClick()
+        composeRule.waitForIdle()
+
+        verify { navController.navigate(NavRoutes.listenTogether.name) }
+    }
 }

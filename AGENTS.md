@@ -1,6 +1,6 @@
 # AGENTS.md — NZik
 
-**Version:** 1.8.1 | **Last updated:** 2026-10-25
+**Version:** 1.9.0 | **Last updated:** 2026-10-25
 
 **MANDATORY: Read this file + rules/*.md before any task.**
 
@@ -28,6 +28,7 @@
 - Delegate context-heavy exploration/reading to sub-agents (`explore`/`general`) to keep the main context lean and avoid compaction — see "Sub-agents & Context"
 - Match user's language for communication
 - Code comments & commits in English
+- Removing a string key from `values/strings.xml` requires removing it from every `values-*/strings.xml` too (a dead key left in a locale degrades translator context; Crowdin then drops it from its side) - see rules/CODE.md "Translations"
 
 ## ⚠️ Ask First
 
@@ -40,7 +41,7 @@
 ## 🚫 Never Do
 
 - Create files under `app.it.fast4x.*` or `app.kreate.android.*` (legacy tests go under `app.n_zik.android.legacyoffmain.*` — see rules/BUILD.md: 3 pre-existing test files live under the legacy namespace and are grandfathered, do NOT move them)
-- Edit any `values-*/strings.xml` (the only source of truth is `ComposeN-Zik/src/androidMain/res/values/strings.xml`)
+- Edit `values-*/strings.xml` translation values (source of truth for translator content: `ComposeN-Zik/src/androidMain/res/values/strings.xml`) - EXCEPTION: removing a string key from the source also requires removing it from every `values-*/strings.xml` (a dead key in a locale degrades translator context) - see rules/CODE.md "Translations"
 - Write code before completing full BMAD workflow
 - Skip BMAD workflow steps
 - Skip the Step 8b code-review gate, or edit `fastlane/`/`Updater/`/`Done.txt` before the user chose a commit mode (Step 8d) — exception: doc-only edits (rules/WORKFLOW.md "Doc-Only Exception") follow their own commit-approval flow and are NOT subject to the Step 8d mode question

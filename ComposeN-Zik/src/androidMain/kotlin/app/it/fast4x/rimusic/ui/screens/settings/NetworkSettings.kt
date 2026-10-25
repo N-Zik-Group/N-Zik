@@ -19,10 +19,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -64,6 +68,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.LaunchedEffect
 import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.components.settings.OfflineModeSettingsCard
+import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.first
 
 @Composable
 fun DefaultNetworkSettings() {
@@ -106,7 +113,8 @@ fun DefaultNetworkSettings() {
 @UnstableApi
 @Composable
 fun NetworkSettings(
-    navController: NavController
+    navController: NavController,
+    focus: String = ""
 ) {
     val search = Search()
     val context = LocalContext.current
@@ -135,12 +143,33 @@ fun NetworkSettings(
         }
     }
 
+    // Scroll to the PC server / Offline mode card when the screen was opened with
+    // focus=pcserver / focus=offline (spec-customizable-burger-menu burger long press).
+    val scrollState = rememberScrollState()
+    var containerTopY by remember { mutableFloatStateOf(-1f) }
+    var pcServerCardTopY by remember { mutableFloatStateOf(-1f) }
+    var offlineCardTopY by remember { mutableFloatStateOf(-1f) }
+
+    LaunchedEffect(focus) {
+        if (focus != "pcserver" && focus != "offline") return@LaunchedEffect
+        // The card may be off-screen but is still laid out: wait until its position is
+        // measured (read inside snapshotFlow, see the same mechanism in OtherSettings).
+        val focusedOffline = focus == "offline"
+        val offset = snapshotFlow {
+            val cardTopY = if (focusedOffline) offlineCardTopY else pcServerCardTopY
+            if (cardTopY < 0f || containerTopY < 0f) -1f
+            else cardTopY - containerTopY + scrollState.value
+        }.first { it >= 0f }
+        scrollState.animateScrollTo(offset.roundToInt())
+    }
+
     Column(
         modifier = Modifier
             .background(colorPalette().background0)
             .fillMaxHeight()
             .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
+            .onGloballyPositioned { containerTopY = it.positionInRoot().y }
     ) {
         HeaderWithIcon(
             title = stringResource(R.string.tab_network),
@@ -162,11 +191,13 @@ fun NetworkSettings(
 
         /* Removed Spacer */
 
-        // PC server ("Manage server") entry
+        // PC server ("Manage server") entry; the burger long press (focus=pcserver)
+        // scrolls to it.
         if (search.inputValue.isBlank() || stringResource(R.string.bridge_server).contains(search.inputValue, true)) {
             SettingsSectionCard(
                 title = stringResource(R.string.bridge_server),
                 icon = R.drawable.server,
+                modifier = Modifier.onGloballyPositioned { pcServerCardTopY = it.positionInRoot().y },
                 content = {
                     OtherSettingsEntry(
                         title = stringResource(R.string.bridge_server),
@@ -353,6 +384,20 @@ fun NetworkSettings(
                 }
             }
         )
+
+        /* Removed Spacer */
+
+        // Offline mode card (spec-customizable-burger-menu goal B): the self-contained
+        // card hosting the live per-profile toggle the burger item also flips; the burger
+        // long press (focus=offline) scrolls to it.
+        val offlineSearchMatch = search.inputValue.isBlank() ||
+            stringResource(R.string.offline_mode).contains(search.inputValue, true) ||
+            stringResource(R.string.offline_mode_description).contains(search.inputValue, true)
+        if (offlineSearchMatch) {
+            OfflineModeSettingsCard(
+                modifier = Modifier.onGloballyPositioned { offlineCardTopY = it.positionInRoot().y }
+            )
+        }
 
         /* Removed Spacer */
 

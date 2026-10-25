@@ -52,12 +52,14 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -74,7 +76,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import app.it.fast4x.rimusic.enums.NavRoutes
 import app.n_zik.android.R
 
 import app.n_zik.android.components.dialog.common.RestartAppDialog
@@ -199,6 +203,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.first
 
 import app.kreate.android.me.knighthat.utils.Toaster
 
@@ -292,11 +300,14 @@ fun DefaultAccountsSettings() {
 @SuppressLint("BatteryLife")
 @ExperimentalAnimationApi
 @Composable
-fun AccountsSettings() {
+fun AccountsSettings(
+    navController: NavController,
+    focus: String = ""
+) {
     val search = Search()
 
     val context = LocalContext.current
-    
+
     var restartActivity by rememberPreference(restartActivityKey, false)
     var restartService by rememberSaveable { mutableStateOf(false) }
     var showClearSyncDialog by remember { mutableStateOf(false) }
@@ -317,12 +328,33 @@ fun AccountsSettings() {
         )
     }
 
+    // Scroll to the Profiles / Listen Together card when the screen was opened with
+    // focus=profiles / focus=listentogether (spec-customizable-burger-menu burger long press).
+    val scrollState = rememberScrollState()
+    var containerTopY by remember { mutableFloatStateOf(-1f) }
+    var profilesCardTopY by remember { mutableFloatStateOf(-1f) }
+    var listenTogetherCardTopY by remember { mutableFloatStateOf(-1f) }
+
+    LaunchedEffect(focus) {
+        if (focus != "profiles" && focus != "listentogether") return@LaunchedEffect
+        // The card may be off-screen but is still laid out: wait until its position is
+        // measured (read inside snapshotFlow, see the same mechanism in OtherSettings).
+        val focusedProfiles = focus == "profiles"
+        val offset = snapshotFlow {
+            val cardTopY = if (focusedProfiles) profilesCardTopY else listenTogetherCardTopY
+            if (cardTopY < 0f || containerTopY < 0f) -1f
+            else cardTopY - containerTopY + scrollState.value
+        }.first { it >= 0f }
+        scrollState.animateScrollTo(offset.roundToInt())
+    }
+
     Column(
         modifier = Modifier
             .background(colorPalette().background0)
             .fillMaxHeight()
             .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
+            .onGloballyPositioned { containerTopY = it.positionInRoot().y }
     ) {
 
         HeaderWithIcon(
@@ -346,9 +378,14 @@ fun AccountsSettings() {
         /* Removed Spacer */
 
         // The face card owns the face edits; the profile card below shows the active
-        // profile's state (face, data, database size) without actions.
-        ProfileFaceCard()
-        ProfileAccountCard()
+        // profile's state (face, data, database size) without actions. The burger
+        // long press (focus=profiles) scrolls to the profile card.
+        ProfileFaceCard(
+            onOpenProfiles = { navController.navigate(NavRoutes.profiles.name) }
+        )
+        ProfileAccountCard(
+            modifier = Modifier.onGloballyPositioned { profilesCardTopY = it.positionInRoot().y }
+        )
 
         // YouTube Music Section
         AnimatedVisibility(
@@ -982,8 +1019,13 @@ fun AccountsSettings() {
         // Last.fm Section
         LastFmSettingsCard()
 
-        // Listen Together Section (reuses the room-screen settings card, same pattern)
-        ListenTogetherSettingsCard()
+        // Listen Together Section (reuses the room-screen settings card, same pattern);
+        // the burger long press (focus=listentogether) scrolls to it.
+        Box(modifier = Modifier.onGloballyPositioned { listenTogetherCardTopY = it.positionInRoot().y }) {
+            ListenTogetherSettingsCard(
+                onOpenScreen = { navController.navigate(NavRoutes.listenTogether.name) }
+            )
+        }
 
         // Discord Section
         if (isAtLeastAndroid7) {

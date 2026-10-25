@@ -16,12 +16,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
+import app.n_zik.android.components.dialog.settings.BurgerMenuSettingsDialog
 import app.n_zik.android.components.dialog.settings.HomeAlbumsToolbarSettingsDialog
 import app.n_zik.android.components.dialog.settings.HomeArtistsToolbarSettingsDialog
 import app.n_zik.android.components.dialog.settings.HomeLibraryToolbarSettingsDialog
@@ -199,6 +204,9 @@ import app.it.fast4x.rimusic.utils.searchDisplayOrderKey
 import androidx.compose.ui.text.style.TextAlign
 import app.it.fast4x.rimusic.utils.disableNavigationBackStackKey
 import androidx.compose.runtime.LaunchedEffect
+import app.n_zik.android.components.settings.BurgerMenuSettingsCard
+import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.first
 
 @Composable
 fun DefaultUiSettings() {
@@ -468,7 +476,8 @@ fun DefaultUiSettings() {
 @UnstableApi
 @Composable
 fun UiSettings(
-    navController: NavController
+    navController: NavController,
+    focus: String = ""
 ) {
     val binder = LocalPlayerServiceBinder.current
 
@@ -650,12 +659,31 @@ fun UiSettings(
     )
 
     var customColor by rememberPreference(customColorKey, Color.Green.hashCode())
+
+    // Scroll to the Burger menu card when the screen was opened with focus=burger
+    // (spec-customizable-burger-menu: long press on the Settings burger item).
+    val scrollState = rememberScrollState()
+    var containerTopY by remember { mutableFloatStateOf(-1f) }
+    var burgerCardTopY by remember { mutableFloatStateOf(-1f) }
+
+    LaunchedEffect(focus) {
+        if (focus != "burger") return@LaunchedEffect
+        // The card may be off-screen but is still laid out: wait until its position is
+        // measured (read inside snapshotFlow, see the same mechanism in OtherSettings).
+        val offset = snapshotFlow {
+            if (burgerCardTopY < 0f || containerTopY < 0f) -1f
+            else burgerCardTopY - containerTopY + scrollState.value
+        }.first { it >= 0f }
+        scrollState.animateScrollTo(offset.roundToInt())
+    }
+
     Column(
         modifier = Modifier
             .background(colorPalette().background0)
             .fillMaxHeight()
             .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
+            .onGloballyPositioned { containerTopY = it.positionInRoot().y }
     ) {
 
         HomeTabsSettingsDialog.Render()
@@ -1746,6 +1774,21 @@ if (search.inputValue.isBlank() || stringResource(R.string.queue_and_local_playl
                 }
             )
         }
+
+        // Customizable burger menu entry (spec-customizable-burger-menu, G1 = A): the
+        // self-contained card (the burger long press, focus=burger, scrolls to it).
+        val burgerSearchContextMatch = search.inputValue.isBlank() ||
+            stringResource(R.string.burger_menu).contains(search.inputValue, true) ||
+            stringResource(R.string.burger_menu_customize).contains(search.inputValue, true)
+
+        AnimatedVisibility(
+            visible = burgerSearchContextMatch,
+            enter = fadeIn(animationSpec = tween(1000)) + scaleIn(animationSpec = tween(1000), initialScale = 0.9f)
+        ) {
+            BurgerMenuSettingsCard(
+                modifier = Modifier.onGloballyPositioned { burgerCardTopY = it.positionInRoot().y }
+            )
+        }
         /* Removed Spacer */
 
         
@@ -1779,6 +1822,7 @@ if (search.inputValue.isBlank() || stringResource(R.string.queue_and_local_playl
                                 HomeAlbumsToolbarSettingsDialog.reset(context)
                                 HomeLibraryToolbarSettingsDialog.reset(context)
                                 LocalPlaylistToolbarSettingsDialog.reset(context)
+                                BurgerMenuSettingsDialog.reset(context)
                                 PlayerActionBarSettingsDialog.reset(context)
                                 MiniPlayerButtonsSettingsDialog.reset(context)
                                 HomeSongsSortSettingsDialog.reset(context)

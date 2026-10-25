@@ -3,6 +3,7 @@ package app.it.fast4x.rimusic.ui.screens.settings
 import app.n_zik.android.core.database.*
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -13,10 +14,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -25,6 +30,7 @@ import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
+import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.PlayEventsType
 import app.it.fast4x.rimusic.enums.LocalRecommandationsNumber
 import app.it.fast4x.rimusic.enums.RecommendationsNumber
@@ -65,6 +71,8 @@ import androidx.navigation.NavController
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.dialog.settings.QuickPicksContentSettingsDialog
 import androidx.compose.runtime.LaunchedEffect
+import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.first
 
 @Composable
 fun DefaultAIRecommendationSettings() {
@@ -122,7 +130,8 @@ fun DefaultAIRecommendationSettings() {
 @Composable
 fun AIRecommendationSettings(
     navController: NavController,
-    ytLoggedIn: Boolean = false
+    ytLoggedIn: Boolean = false,
+    focus: String = ""
 ) {
     var playEventType by rememberPreference(
         playEventsTypeKey,
@@ -183,12 +192,33 @@ fun AIRecommendationSettings(
         )
     }
 
+    // Scroll to the Rewind / Statistics card when the screen was opened with
+    // focus=rewind / focus=statistics (spec-customizable-burger-menu burger long press).
+    val scrollState = rememberScrollState()
+    var containerTopY by remember { mutableFloatStateOf(-1f) }
+    var rewindCardTopY by remember { mutableFloatStateOf(-1f) }
+    var statisticsCardTopY by remember { mutableFloatStateOf(-1f) }
+
+    LaunchedEffect(focus) {
+        if (focus != "rewind" && focus != "statistics") return@LaunchedEffect
+        // The card may be off-screen but is still laid out: wait until its position is
+        // measured (read inside snapshotFlow, see the same mechanism in OtherSettings).
+        val focusedRewind = focus == "rewind"
+        val offset = snapshotFlow {
+            val cardTopY = if (focusedRewind) rewindCardTopY else statisticsCardTopY
+            if (cardTopY < 0f || containerTopY < 0f) -1f
+            else cardTopY - containerTopY + scrollState.value
+        }.first { it >= 0f }
+        scrollState.animateScrollTo(offset.roundToInt())
+    }
+
     Column(
         modifier = Modifier
             .background(colorPalette().background0)
             .fillMaxHeight()
             .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
+            .onGloballyPositioned { containerTopY = it.positionInRoot().y }
     ) {
 
         QuickPicksContentSettingsDialog.Render()
@@ -237,6 +267,11 @@ fun AIRecommendationSettings(
                         isChecked = rewindEnabled,
                         onCheckedChange = {
                             DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, it)
+                            // The master is the total switch (user decision, 2026-10-25): off
+                            // unchecks the playlist creation gates so no worker keeps
+                            // running, on re-checks them (both default true).
+                            DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, it)
+                            DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, it)
                         },
                         icon = R.drawable.sparkles
                     )
@@ -302,8 +337,11 @@ fun AIRecommendationSettings(
             }
         )
 
-        // Rewind settings cards (master switch above, in the General card)
-        RewindSettingsCard()
+        // Rewind settings cards (master switch above, in the General card); the
+        // burger long press (focus=rewind) scrolls to it.
+        Box(modifier = Modifier.onGloballyPositioned { rewindCardTopY = it.positionInRoot().y }) {
+            RewindSettingsCard(onOpenRewind = { navController.navigate(NavRoutes.rewindHome.name) })
+        }
 
         /* Removed Spacer */
 
@@ -344,12 +382,21 @@ fun AIRecommendationSettings(
 
         /* Removed Spacer */
 
-        // Statistics Section
+        // Statistics Section; the burger long press (focus=statistics) scrolls to it.
         SettingsSectionCard(
             title = stringResource(R.string.statistics),
             icon = R.drawable.trending,
+            modifier = Modifier.onGloballyPositioned { statisticsCardTopY = it.positionInRoot().y },
             visible = searchCtx_5,
             content = {
+                // The burger Statistics item only reaches this partial card: the "Ouvrir"
+                // row (spec-customizable-burger-menu goal B) opens the full Statistics screen.
+                OtherSettingsEntry(
+                    title = stringResource(R.string.module_open),
+                    text = stringResource(R.string.statistics_open_desc),
+                    icon = R.drawable.chevron_forward,
+                    onClick = { navController.navigate(NavRoutes.statistics.name) }
+                )
                 var showStatisticsDialog by remember { mutableStateOf(false) }
                 var showCustomStatisticsItemsDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.statistics_max_number_of_items).contains(search.inputValue, true)) {

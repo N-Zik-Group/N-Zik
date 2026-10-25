@@ -34,8 +34,9 @@ import java.util.concurrent.TimeUnit
  * notification deep-linking to the created playlist (spec GH-275 follow-up).
  *
  * Same pattern and same deliberate differences as [RewindMonthlyPlaylistWorker]: the
- * dedicated `KEY_REWIND_YEARLY_PLAYLIST_ENABLED` creation gate (decoupled from the master
- * switch and the deck toggles) and creation despite denied POST_NOTIFICATIONS (the
+ * dedicated `KEY_REWIND_YEARLY_PLAYLIST_ENABLED` creation gate, which also carries the
+ * master switch (user decision, 2026-10-25 - the master off stops every rewind feature,
+ * the playlist workers included), and creation despite denied POST_NOTIFICATIONS (the
  * notification is the optional part). Shares the "rewind" notification channel.
  */
 internal class RewindYearlyPlaylistWorker(
@@ -64,11 +65,13 @@ internal class RewindYearlyPlaylistWorker(
         private const val JITTER_MS = 10L * 60 * 1000
 
         /**
-         * The yearly playlist creation gate (spec 1 contract): only the dedicated
-         * creation toggle. Internal so unit tests can verify the decision without a
-         * WorkManager.
+         * The yearly playlist creation gate: the master switch AND the dedicated
+         * creation toggle (user decision, 2026-10-25 - the master off stops every
+         * rewind feature, the playlist workers included). Internal so unit tests can
+         * verify the decision without a WorkManager.
          */
         internal fun isYearlyPlaylistEnabled(context: Context): Boolean =
+            DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, true) &&
             DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
 
         /** The yearly playlist notification gate: posts only while both the notification toggle and the creation toggle are on — a type off implies its notification off, even if the notification toggle is on. */

@@ -53,6 +53,7 @@ import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.ExtensionsSettingsCard
 import app.n_zik.android.components.settings.MaintenanceSettingsCard
+import app.n_zik.android.components.settings.RescueCenterSettingsCard
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -202,19 +203,25 @@ fun OtherSettings(
     var containerTopY by remember { mutableFloatStateOf(-1f) }
     var maintenanceCardTopY by remember { mutableFloatStateOf(-1f) }
     var extensionsCardTopY by remember { mutableFloatStateOf(-1f) }
+    var rescueCardTopY by remember { mutableFloatStateOf(-1f) }
 
     LaunchedEffect(focus) {
-        if (focus != "debug" && focus != "maintenance" && focus != "extensions") return@LaunchedEffect
+        if (focus != "debug" && focus != "maintenance" && focus != "extensions" && focus != "rescue") return@LaunchedEffect
         // The card may be off-screen but is still laid out: wait until its position is
         // measured.
 
-        // The card's top Y must be read INSIDE snapshotFlow — reading it once here
+        // The card's top Y must be read INSIDE snapshotFlow - reading it once here
         // would capture the initial -1f sentinel (the states are only filled by
 
         // onGloballyPositioned after layout) and suspend forever on `first`.
+        val focusedRescue = focus == "rescue"
         val focusedExtensions = focus == "extensions"
         val offset = snapshotFlow {
-            val cardTopY = if (focusedExtensions) extensionsCardTopY else maintenanceCardTopY
+            val cardTopY = when {
+                focusedRescue -> rescueCardTopY
+                focusedExtensions -> extensionsCardTopY
+                else -> maintenanceCardTopY
+            }
             if (cardTopY < 0f || containerTopY < 0f) -1f
             else cardTopY - containerTopY + scrollState.value
         }.first { it >= 0f }
@@ -689,6 +696,19 @@ fun OtherSettings(
         ) {
             Box(modifier = Modifier.onGloballyPositioned { extensionsCardTopY = it.positionInRoot().y }) {
                 ExtensionsSettingsCard()
+            }
+        }
+
+        // Rescue Center card (spec-customizable-burger-menu goal B): the self-contained
+        // card launching the Recovery Center; the burger long press (focus=rescue)
+        // scrolls to it. Same search-filter + enter spec as the sibling cards.
+        val searchCtx_Rescue = search.inputValue.isBlank() || stringResource(R.string.rescue_center).contains(search.inputValue, true) || stringResource(R.string.rescue_center_description).contains(search.inputValue, true)
+        AnimatedVisibility(
+            visible = searchCtx_Rescue,
+            enter = fadeIn(animationSpec = tween(1100)) + scaleIn(animationSpec = tween(1100), initialScale = 0.9f)
+        ) {
+            Box(modifier = Modifier.onGloballyPositioned { rescueCardTopY = it.positionInRoot().y }) {
+                RescueCenterSettingsCard()
             }
         }
 
