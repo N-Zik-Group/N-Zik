@@ -23,8 +23,8 @@ import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.updater.models.CheckUpdateState
 import app.it.fast4x.rimusic.ui.components.themed.SecondaryTextButton
-import app.it.fast4x.rimusic.ui.screens.settings.EnumValueSelectorSettingsEntry
-import app.it.fast4x.rimusic.ui.screens.settings.SettingsDescription
+import app.n_zik.android.components.settings.common.EnumValueSelectorSettingsEntry
+import app.n_zik.android.components.settings.common.SettingsDescription
 import app.it.fast4x.rimusic.utils.checkUpdateStateKey
 import app.it.fast4x.rimusic.utils.checkBetaUpdatesKey
 import app.it.fast4x.rimusic.utils.updateCancelledKey

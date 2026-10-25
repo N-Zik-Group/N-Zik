@@ -40,7 +40,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
-import app.it.fast4x.rimusic.ui.screens.settings.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.R
 import app.n_zik.android.bridge.BridgeServerController

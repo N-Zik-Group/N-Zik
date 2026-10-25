@@ -71,6 +71,12 @@ import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.components.settings.OfflineModeSettingsCard
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.first
+import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsGroupSpacer
+import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.OtherSettingsEntry
+import app.n_zik.android.components.settings.common.OtherInfoSettingsEntry
 
 @Composable
 fun DefaultNetworkSettings() {

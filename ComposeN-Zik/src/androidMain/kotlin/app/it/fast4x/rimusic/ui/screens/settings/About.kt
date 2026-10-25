@@ -72,6 +72,10 @@ import androidx.navigation.NavController
 import app.it.fast4x.rimusic.utils.checkBetaUpdatesKey
 import java.util.Locale
 import java.util.Date
+import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsGroupSpacer
+import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.ModernSettingsEntry
 
 @ExperimentalAnimationApi
 @Composable

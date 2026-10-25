@@ -21,7 +21,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.n_zik.android.components.ui.sliders.SliderControl
-import app.it.fast4x.rimusic.ui.screens.settings.SwitchSettingEntry
+import app.n_zik.android.components.settings.common.SwitchSettingEntry
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.blurStrengthKey
 import app.it.fast4x.rimusic.utils.playerBackdropKey

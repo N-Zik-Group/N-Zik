@@ -32,10 +32,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.exoplayer.offline.Download
-import app.it.fast4x.rimusic.ui.screens.settings.ImportantSettingsDescription
-import app.it.fast4x.rimusic.ui.screens.settings.OtherSettingsEntry
-import app.it.fast4x.rimusic.ui.screens.settings.OtherSwitchSettingEntry
-import app.it.fast4x.rimusic.ui.screens.settings.SettingsSectionCard
+import app.n_zik.android.components.settings.common.ImportantSettingsDescription
+import app.n_zik.android.components.settings.common.OtherSettingsEntry
+import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.it.fast4x.rimusic.utils.logDebugEnabledKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold

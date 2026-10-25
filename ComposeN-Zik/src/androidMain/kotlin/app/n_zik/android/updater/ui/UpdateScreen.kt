@@ -86,7 +86,7 @@ import app.it.fast4x.rimusic.utils.colorPaletteModeKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
-import app.it.fast4x.rimusic.ui.screens.settings.SettingsDescription
+import app.n_zik.android.components.settings.common.SettingsDescription
 import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.BuildConfig

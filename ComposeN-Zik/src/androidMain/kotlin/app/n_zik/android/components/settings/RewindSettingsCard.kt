@@ -1,14 +1,16 @@
 package app.n_zik.android.components.settings
 
 import androidx.compose.animation.AnimatedVisibility
+import app.n_zik.android.components.settings.common.settingsEntryEnter
+import app.n_zik.android.components.settings.common.settingsEntryExit
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import app.it.fast4x.rimusic.ui.screens.settings.OtherSettingsEntry
-import app.it.fast4x.rimusic.ui.screens.settings.OtherSwitchSettingEntry
-import app.it.fast4x.rimusic.ui.screens.settings.SettingsSectionCard
+import app.n_zik.android.components.settings.common.OtherSettingsEntry
+import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.R
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.rememberDataStoreBooleanPreference

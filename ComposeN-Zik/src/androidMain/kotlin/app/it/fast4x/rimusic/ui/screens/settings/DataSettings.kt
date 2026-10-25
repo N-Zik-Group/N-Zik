@@ -80,6 +80,13 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.navigation.NavController
 import app.it.fast4x.rimusic.enums.NavRoutes
 import kotlin.math.roundToInt
+import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsGroupSpacer
+import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.ImportantSettingsDescription
+import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.OtherSettingsEntry
+import app.n_zik.android.components.settings.common.CacheSettingsEntry
 
 
 @Composable

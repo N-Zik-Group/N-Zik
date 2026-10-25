@@ -48,8 +48,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
-import app.it.fast4x.rimusic.ui.screens.settings.OtherSettingsEntry
-import app.it.fast4x.rimusic.ui.screens.settings.SettingsSectionCard
+import app.n_zik.android.components.settings.common.OtherSettingsEntry
+import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.it.fast4x.rimusic.utils.DOWNLOAD_INDICATOR_SIZE_NORMAL
 import app.it.fast4x.rimusic.utils.DOWNLOAD_INDICATOR_STROKE_WIDTH
 import app.it.fast4x.rimusic.utils.semiBold

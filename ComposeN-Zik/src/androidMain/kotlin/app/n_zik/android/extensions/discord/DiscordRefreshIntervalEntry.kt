@@ -8,7 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import app.it.fast4x.rimusic.ui.screens.settings.SliderSettingsEntry
+import app.n_zik.android.components.settings.common.SliderSettingsEntry
 import app.it.fast4x.rimusic.utils.rememberEncryptedPreference
 import app.n_zik.android.R
 

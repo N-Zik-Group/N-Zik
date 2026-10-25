@@ -76,7 +76,7 @@ import app.it.fast4x.rimusic.ui.items.ArtistItem
 import app.n_zik.android.components.menu.artist.LocalArtistItemMenu
 import app.it.fast4x.rimusic.ui.items.PlaylistItem
 import app.n_zik.android.components.SongItem
-import app.it.fast4x.rimusic.ui.screens.settings.SettingsEntry
+import app.n_zik.android.components.settings.common.SettingsEntry
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.px
 import app.it.fast4x.rimusic.ui.styling.shimmer

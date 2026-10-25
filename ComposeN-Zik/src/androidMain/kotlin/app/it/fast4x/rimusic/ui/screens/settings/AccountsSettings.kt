@@ -229,6 +229,14 @@ import app.n_zik.android.extensions.discord.discordAdvancedShowTimestampsKey
 import app.n_zik.android.extensions.discord.discordAdvancedSmallImageTextKey
 import app.n_zik.android.typography
 import it.fast4x.innertube.Innertube.cookie
+import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsGroupSpacer
+import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.OtherSettingsEntry
+import app.n_zik.android.components.settings.common.OtherInfoSettingsEntry
+import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettingsEntry
+import app.n_zik.android.components.settings.common.SliderSettingsEntry
 
 
 @Composable

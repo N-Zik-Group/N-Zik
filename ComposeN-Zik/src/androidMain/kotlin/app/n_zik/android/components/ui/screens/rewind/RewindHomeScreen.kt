@@ -63,7 +63,7 @@ import app.it.fast4x.rimusic.enums.SortOrder
 import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
-import app.it.fast4x.rimusic.ui.screens.settings.SettingsDescription
+import app.n_zik.android.components.settings.common.SettingsDescription
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R

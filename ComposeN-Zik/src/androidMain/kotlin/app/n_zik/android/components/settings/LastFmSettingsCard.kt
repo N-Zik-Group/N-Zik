@@ -1,6 +1,8 @@
 package app.n_zik.android.components.settings
 
 import androidx.compose.animation.AnimatedVisibility
+import app.n_zik.android.components.settings.common.settingsEntryEnter
+import app.n_zik.android.components.settings.common.settingsEntryExit
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,10 +47,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
-import app.it.fast4x.rimusic.ui.screens.settings.OtherSettingsEntry
-import app.it.fast4x.rimusic.ui.screens.settings.OtherSwitchSettingEntry
-import app.it.fast4x.rimusic.ui.screens.settings.SettingsSectionCard
-import app.it.fast4x.rimusic.ui.screens.settings.SliderSettingsEntry
+import app.n_zik.android.components.settings.common.OtherSettingsEntry
+import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SliderSettingsEntry
 import app.it.fast4x.rimusic.utils.rememberEncryptedPreference
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.BuildConfig

@@ -48,7 +48,7 @@ import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.components.dialog.common.DefaultDialog
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
-import app.it.fast4x.rimusic.ui.screens.settings.SettingsDescription
+import app.n_zik.android.components.settings.common.SettingsDescription
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.ModernBlackColorPalette
 import app.it.fast4x.rimusic.ui.styling.PureBlackColorPalette

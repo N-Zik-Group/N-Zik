@@ -73,6 +73,11 @@ import app.n_zik.android.components.dialog.settings.QuickPicksContentSettingsDia
 import androidx.compose.runtime.LaunchedEffect
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.first
+import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsGroupSpacer
+import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.OtherSettingsEntry
 
 @Composable
 fun DefaultAIRecommendationSettings() {

@@ -40,8 +40,8 @@ import app.n_zik.android.components.dialog.settings.HomeLibrarySortSettingsDialo
 import app.n_zik.android.components.dialog.settings.HistorySortSettingsDialog
 import app.n_zik.android.components.dialog.settings.LocalPlaylistSortSettingsDialog
 import app.n_zik.android.components.dialog.settings.LocalPlaylistToolbarSettingsDialog
-import app.it.fast4x.rimusic.ui.screens.settings.ColorSettingEntry
-import app.it.fast4x.rimusic.ui.screens.settings.ButtonBarSettingEntry
+import app.n_zik.android.components.settings.common.ColorSettingEntry
+import app.n_zik.android.components.settings.common.ButtonBarSettingEntry
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -207,6 +207,11 @@ import androidx.compose.runtime.LaunchedEffect
 import app.n_zik.android.components.settings.BurgerMenuSettingsCard
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.first
+import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsGroupSpacer
+import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.OtherSettingsEntry
 
 @Composable
 fun DefaultUiSettings() {

@@ -200,6 +200,15 @@ import androidx.compose.runtime.LaunchedEffect
 import app.it.fast4x.rimusic.utils.visualizerLineThicknessKey
 import app.it.fast4x.rimusic.utils.visualizerCustomColorKey
 import androidx.compose.foundation.shape.RoundedCornerShape
+import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsGroupSpacer
+import app.n_zik.android.components.settings.common.SettingsEntryGroupText
+import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.ImportantSettingsDescription
+import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.OtherSettingsEntry
+import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettingsEntry
+import app.n_zik.android.components.settings.common.SliderSettingsEntry
 
 @Composable
 fun DefaultAppearanceSettings() {

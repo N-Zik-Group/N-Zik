@@ -64,7 +64,7 @@ import app.it.fast4x.rimusic.utils.showvisthumbnailKey
 import app.it.fast4x.rimusic.utils.visualizerLineThicknessKey
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
-import app.it.fast4x.rimusic.ui.screens.settings.SliderSettingsEntry
+import app.n_zik.android.components.settings.common.SliderSettingsEntry
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.foundation.lazy.grid.LazyGridScope

@@ -33,8 +33,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
-import app.it.fast4x.rimusic.ui.screens.settings.SettingsSectionCard
-import app.it.fast4x.rimusic.ui.screens.settings.OtherSettingsEntry
+import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.it.fast4x.rimusic.utils.isIgnoringBatteryOptimizations
 import app.it.fast4x.rimusic.utils.semiBold
 import app.kreate.android.me.knighthat.utils.Toaster

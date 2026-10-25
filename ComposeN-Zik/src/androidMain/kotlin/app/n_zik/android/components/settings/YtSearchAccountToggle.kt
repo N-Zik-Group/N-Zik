@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
-import app.it.fast4x.rimusic.ui.screens.settings.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.R

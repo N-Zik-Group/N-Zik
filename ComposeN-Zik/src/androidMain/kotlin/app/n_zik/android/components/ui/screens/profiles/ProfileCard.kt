@@ -50,7 +50,7 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import it.fast4x.innertube.utils.parseCookieString
 import app.it.fast4x.rimusic.enums.ColorPaletteMode
-import app.it.fast4x.rimusic.ui.screens.settings.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.it.fast4x.rimusic.ui.styling.ModernBlackColorPalette
 import app.it.fast4x.rimusic.ui.styling.PureBlackColorPalette
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID

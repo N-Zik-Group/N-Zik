@@ -82,8 +82,8 @@ import app.n_zik.android.components.dialog.logs.CopyLogsDialog
 import app.n_zik.android.components.dialog.logs.CrashLogDialog
 import app.n_zik.android.components.dialog.logs.DebugLogDialog
 import app.n_zik.android.components.menu.ListMenu
-import app.n_zik.android.components.settings.settingsEntryEnter
-import app.n_zik.android.components.settings.settingsEntryExit
+import app.n_zik.android.components.settings.common.settingsEntryEnter
+import app.n_zik.android.components.settings.common.settingsEntryExit
 import app.n_zik.android.components.ui.header.clampedLabelMaxWidth
 import app.n_zik.android.components.ui.screens.profiles.profilePrefsFile
 import app.n_zik.android.core.backup.BackupManager

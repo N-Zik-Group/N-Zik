@@ -132,6 +132,12 @@ import app.it.fast4x.rimusic.utils.crossfadeGaplessKey
 import androidx.compose.animation.scaleIn
 import android.content.Context
 import app.n_zik.android.components.dialog.settings.AppShortcutsSettingsDialog
+import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsGroupSpacer
+import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.OtherSettingsEntry
+import app.n_zik.android.components.settings.common.SliderSettingsEntry
 
 @Composable
 fun DefaultGeneralSettings(context: Context) {
