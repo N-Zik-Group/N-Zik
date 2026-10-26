@@ -157,6 +157,8 @@ import app.n_zik.android.components.onboarding.OnboardingImportScreen
 import app.n_zik.android.components.onboarding.OnboardingProfileScreen
 import app.n_zik.android.components.onboarding.OnboardingScreen
 import app.n_zik.android.components.dialog.common.RestartAppDialog
+import app.n_zik.android.components.dialog.common.SamsungStorageAdviceDialog
+import app.n_zik.android.components.dialog.common.triggerSamsungStorageAdvice
 import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
 import app.n_zik.android.components.ui.screens.home.OPEN_SEARCH_SHORTCUT
 import app.n_zik.android.components.ui.screens.profiles.executeProfileSwitch
@@ -2129,6 +2131,17 @@ class MainActivity :
                     }
                 }
 
+                // One-time Samsung storage advice (spec-samsung-storage-advice-dialog):
+                // the effect re-runs only when its key (onboardingStep == null) changes;
+                // the Samsung/shown/location gate is evaluated inside
+                // triggerSamsungStorageAdvice (pure Samsung check before any I/O), and the
+                // shown flag is persisted when the dialog is shown, so a re-run is a no-op
+                // and keeping system storage never re-triggers it.
+                LaunchedEffect(onboardingStep == null) {
+                    if (onboardingStep != null) return@LaunchedEffect
+                    triggerSamsungStorageAdvice(applicationContext)
+                }
+
                         CrossfadeContainer(state = pipState.value) { isCurrentInPip ->
                             Timber.tag("MainActivity").d("pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
                             val pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
@@ -2269,6 +2282,12 @@ class MainActivity :
                             // Gated on the flow being alive: once complete, the
                             // settings screen composes its own Render
                             if (onboardingStep != null) RestartAppDialog.Render()
+
+                            // The one-time Samsung storage advice: the mirror of the
+                            // restart prompt above (that one shows DURING onboarding,
+                            // this one once it is done), and the non-PiP branch only,
+                            // the same placement as RestartAppDialog.
+                            if (onboardingStep == null) SamsungStorageAdviceDialog.Render()
 
                             val disableClosingPlayerSwipingDown by rememberPreference(disableClosingPlayerSwipingDownKey, false)
                             // Listen Together guest lock (spec-listen-together-guest-lock-hardening,
