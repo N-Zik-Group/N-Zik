@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.other
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -49,6 +51,7 @@ internal fun OtherOnDeviceCard(search: Search) {
             var showBlacklistDialog by remember { mutableStateOf(false) }
             if (search.inputValue.isBlank() || stringResource(R.string.blacklisted_folders).contains(search.inputValue, true) || stringResource(R.string.edit_blacklist_for_on_device_songs).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("other.on_device.blacklisted_folders"),
                     title = stringResource(R.string.blacklisted_folders),
                     text = stringResource(R.string.edit_blacklist_for_on_device_songs),
                     icon = R.drawable.blacklisted_folder,
@@ -92,6 +95,7 @@ internal fun OtherOnDeviceCard(search: Search) {
 
             if (search.inputValue.isBlank() || stringResource(R.string.folders).contains(search.inputValue, true) || stringResource(R.string.show_folders_in_on_device_page).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("other.on_device.folders"),
                     title = stringResource(R.string.folders),
                     text = stringResource(R.string.show_folders_in_on_device_page),
                     isChecked = showFolders,
@@ -105,6 +109,7 @@ internal fun OtherOnDeviceCard(search: Search) {
                 var showFolderDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.folder_that_will_show_when_you_open_on_device_page).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("other.on_device.folder_that_will_show_when_you_open_on_device_page"),
                         title = stringResource(R.string.folder_that_will_show_when_you_open_on_device_page),
                         text = defaultFolder,
                         icon = R.drawable.music_file,

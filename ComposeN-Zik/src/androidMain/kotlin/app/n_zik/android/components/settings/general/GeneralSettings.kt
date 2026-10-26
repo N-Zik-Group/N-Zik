@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -80,7 +81,6 @@ fun GeneralSettings(
     // frame, no appearance animation), below the description, like the base
     // settings tabs.
     val search = Search(initialVisible = true)
-    val visibleCards = visibleCardTitleRes(context, 0, search.inputValue)
     val searchFocus = rememberSettingsSearchFocus(search.isFocused, search.inputValue.isBlank())
 
     val isHistoryPaused by rememberPreference(pauseSearchHistoryKey, false)
@@ -91,9 +91,6 @@ fun GeneralSettings(
     fun recordSearchQuery(query: String = search.inputValue) {
         history.value = SearchHistoryStore.record(context.preferences, SearchHistoryStore.PAGE_SETTINGS_GENERAL, query)
     }
-
-    var restartService by rememberSaveable { mutableStateOf(false) }
-    var restartActivity by rememberSaveable { mutableStateOf(false) }
 
     // Scroll to the Picture in picture card when the screen was opened with focus=pip
     // (spec-customizable-burger-menu: long press on the PiP burger item).
@@ -153,59 +150,116 @@ fun GeneralSettings(
         LaunchedEffect(hasSearchResults) {
             if (!hasSearchResults) scrollState.scrollTo(0)
         }
-        settingsSearchContent(searchFocus, hasResults = hasSearchResults) {
-            GeneralLanguageCard(visible = visibleCards.contains(R.string.languages))
-            GeneralPlaybackCard(visible = visibleCards.contains(R.string.playback))
-            GeneralPlayerControlsCard(
-                visible = visibleCards.contains(R.string.player_controls),
-                restartService = restartService,
-                onRestartServiceSet = { restartService = true },
-                onRestartServiceClear = { restartService = false }
-            )
-            GeneralQueueManagementCard(visible = visibleCards.contains(R.string.queue_management))
-            GeneralAppBehaviorCard(
-                visible = visibleCards.contains(R.string.app_behavior),
-                restartService = restartService,
-                onRestartServiceSet = { restartService = true },
-                onRestartServiceClear = { restartService = false },
-                restartActivity = restartActivity,
-                onRestartActivitySet = { restartActivity = true },
-                onRestartActivityClear = { restartActivity = false }
-            )
-            GeneralAudioEffectsCard(
-                visible = visibleCards.contains(R.string.audio_effects),
-                restartService = restartService,
-                onRestartServiceSet = { restartService = true },
-                onRestartServiceClear = { restartService = false }
-            )
-            GeneralGesturesCard(
-                visible = visibleCards.contains(R.string.gestures_events),
-                restartService = restartService,
-                onRestartServiceSet = { restartService = true },
-                onRestartServiceClear = { restartService = false }
-            )
-            GeneralPipCard(
-                visible = visibleCards.contains(R.string.picture_in_picture),
-                restartActivity = restartActivity,
-                onRestartActivitySet = { restartActivity = true },
-                onRestartActivityClear = { restartActivity = false },
-                onCardTopYChanged = { pipCardTopY = it }
-            )
-
-            GeneralAppShortcutsCard(visible = visibleCards.contains(R.string.app_shortcuts_settings))
-
-            GeneralResetCard(
-                visible = visibleCards.contains(R.string.settings_reset),
-                onRestartServiceSet = { restartService = true }
-            )
-        }
-
-        AppShortcutsSettingsDialog.Render()
-
-        RestartPlayerService(restartService, onRestart = { restartService = false })
+        GeneralSettingsContent(
+            search = search,
+            onCardPosition = { _, top -> pipCardTopY = top },
+            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, content = cards) },
+        )
 
         SettingsGroupSpacer(
             modifier = Modifier.height(Dimensions.bottomSpacer)
         )
     }
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+internal fun GeneralSettingsContent(
+    search: Search,
+    selectedCards: Set<Int>? = null,
+    cardModifier: @Composable (Int) -> Modifier = { Modifier },
+    onCardPosition: (String, Float) -> Unit = { _, _ -> },
+    cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
+) {
+    val visibleCards = visibleCardTitleRes(LocalContext.current, 0, search.inputValue)
+    var restartService by rememberSaveable { mutableStateOf(false) }
+    var restartActivity by rememberSaveable { mutableStateOf(false) }
+    cardsContainer {
+        if (selectedCards == null || R.string.languages in selectedCards) {
+            Box(modifier = cardModifier(R.string.languages)) {
+                GeneralLanguageCard(visible = visibleCards.contains(R.string.languages))
+            }
+        }
+        if (selectedCards == null || R.string.playback in selectedCards) {
+            Box(modifier = cardModifier(R.string.playback)) {
+                GeneralPlaybackCard(visible = visibleCards.contains(R.string.playback))
+            }
+        }
+        if (selectedCards == null || R.string.player_controls in selectedCards) {
+            Box(modifier = cardModifier(R.string.player_controls)) {
+                GeneralPlayerControlsCard(
+                    visible = visibleCards.contains(R.string.player_controls),
+                    restartService = restartService,
+                    onRestartServiceSet = { restartService = true },
+                    onRestartServiceClear = { restartService = false }
+                )
+            }
+        }
+        if (selectedCards == null || R.string.queue_management in selectedCards) {
+            Box(modifier = cardModifier(R.string.queue_management)) {
+                GeneralQueueManagementCard(visible = visibleCards.contains(R.string.queue_management))
+            }
+        }
+        if (selectedCards == null || R.string.app_behavior in selectedCards) {
+            Box(modifier = cardModifier(R.string.app_behavior)) {
+                GeneralAppBehaviorCard(
+                    visible = visibleCards.contains(R.string.app_behavior),
+                    restartService = restartService,
+                    onRestartServiceSet = { restartService = true },
+                    onRestartServiceClear = { restartService = false },
+                    restartActivity = restartActivity,
+                    onRestartActivitySet = { restartActivity = true },
+                    onRestartActivityClear = { restartActivity = false }
+                )
+            }
+        }
+        if (selectedCards == null || R.string.audio_effects in selectedCards) {
+            Box(modifier = cardModifier(R.string.audio_effects)) {
+                GeneralAudioEffectsCard(
+                    visible = visibleCards.contains(R.string.audio_effects),
+                    restartService = restartService,
+                    onRestartServiceSet = { restartService = true },
+                    onRestartServiceClear = { restartService = false }
+                )
+            }
+        }
+        if (selectedCards == null || R.string.gestures_events in selectedCards) {
+            Box(modifier = cardModifier(R.string.gestures_events)) {
+                GeneralGesturesCard(
+                    visible = visibleCards.contains(R.string.gestures_events),
+                    restartService = restartService,
+                    onRestartServiceSet = { restartService = true },
+                    onRestartServiceClear = { restartService = false }
+                )
+            }
+        }
+        if (selectedCards == null || R.string.picture_in_picture in selectedCards) {
+            Box(modifier = cardModifier(R.string.picture_in_picture)) {
+                GeneralPipCard(
+                    visible = visibleCards.contains(R.string.picture_in_picture),
+                    restartActivity = restartActivity,
+                    onRestartActivitySet = { restartActivity = true },
+                    onRestartActivityClear = { restartActivity = false },
+                    onCardTopYChanged = { onCardPosition("pip", it) }
+                )
+            }
+        }
+
+        if (selectedCards == null || R.string.app_shortcuts_settings in selectedCards) {
+            Box(modifier = cardModifier(R.string.app_shortcuts_settings)) {
+                GeneralAppShortcutsCard(visible = visibleCards.contains(R.string.app_shortcuts_settings))
+            }
+        }
+
+        if (selectedCards == null || R.string.settings_reset in selectedCards) {
+            Box(modifier = cardModifier(R.string.settings_reset)) {
+                GeneralResetCard(
+                    visible = visibleCards.contains(R.string.settings_reset),
+                    onRestartServiceSet = { restartService = true }
+                )
+            }
+        }
+    }
+    AppShortcutsSettingsDialog.Render()
+    RestartPlayerService(restartService, onRestart = { restartService = false })
 }

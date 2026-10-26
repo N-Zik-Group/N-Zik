@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -76,6 +77,7 @@ internal fun UiSwipeCard(search: Search) {
             content = {
                 if (search.inputValue.isBlank() || stringResource(R.string.swipe_to_action).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.swipe_to_action"),
                         title = stringResource(R.string.swipe_to_action),
                         text = stringResource(R.string.activate_the_action_menu_by_swiping_the_song_left_or_right),
                         isChecked = isSwipeToActionEnabled,
@@ -89,6 +91,7 @@ internal fun UiSwipeCard(search: Search) {
                         var showQSLeftDialog by remember { mutableStateOf(false) }
                         if (search.inputValue.isBlank() || stringResource(R.string.queue_and_local_playlists_left_swipe).contains(search.inputValue, true) || stringResource(R.string.swipe_to_action).contains(search.inputValue, true)) {
                             OtherSettingsEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.queue_and_local_playlists_left_swipe"),
                                 title = stringResource(R.string.queue_and_local_playlists_left_swipe),
                                 text = queueSwipeLeftAction.text,
                                 icon = R.drawable.arrow_left,
@@ -109,6 +112,7 @@ internal fun UiSwipeCard(search: Search) {
                         var showPLLeftDialog by remember { mutableStateOf(false) }
                         if (search.inputValue.isBlank() || stringResource(R.string.playlist_left_swipe).contains(search.inputValue, true) || stringResource(R.string.swipe_to_action).contains(search.inputValue, true)) {
                             OtherSettingsEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.playlist_left_swipe"),
                                 title = stringResource(R.string.playlist_left_swipe),
                                 text = playlistSwipeLeftAction.text,
                                 icon = R.drawable.arrow_left,
@@ -129,6 +133,7 @@ internal fun UiSwipeCard(search: Search) {
                         var showPLRightDialog by remember { mutableStateOf(false) }
                         if (search.inputValue.isBlank() || stringResource(R.string.playlist_right_swipe).contains(search.inputValue, true) || stringResource(R.string.swipe_to_action).contains(search.inputValue, true)) {
                             OtherSettingsEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.playlist_right_swipe"),
                                 title = stringResource(R.string.playlist_right_swipe),
                                 text = playlistSwipeRightAction.text,
                                 icon = R.drawable.arrow_right,
@@ -149,6 +154,7 @@ internal fun UiSwipeCard(search: Search) {
                         var showALeftDialog by remember { mutableStateOf(false) }
                         if (search.inputValue.isBlank() || stringResource(R.string.album_left_swipe).contains(search.inputValue, true) || stringResource(R.string.swipe_to_action).contains(search.inputValue, true)) {
                             OtherSettingsEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.album_left_swipe"),
                                 title = stringResource(R.string.album_left_swipe),
                                 text = albumSwipeLeftAction.text,
                                 icon = R.drawable.arrow_left,
@@ -169,6 +175,7 @@ internal fun UiSwipeCard(search: Search) {
                         var showARightDialog by remember { mutableStateOf(false) }
                         if (search.inputValue.isBlank() || stringResource(R.string.album_right_swipe).contains(search.inputValue, true) || stringResource(R.string.swipe_to_action).contains(search.inputValue, true)) {
                             OtherSettingsEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.album_right_swipe"),
                                 title = stringResource(R.string.album_right_swipe),
                                 text = albumSwipeRightAction.text,
                                 icon = R.drawable.arrow_right,
@@ -189,6 +196,7 @@ internal fun UiSwipeCard(search: Search) {
                         var showQSRightDialog by remember { mutableStateOf(false) }
                         if (search.inputValue.isBlank() || stringResource(R.string.queue_and_local_playlists_right_swipe).contains(search.inputValue, true) || stringResource(R.string.swipe_to_action).contains(search.inputValue, true)) {
                             OtherSettingsEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.queue_and_local_playlists_right_swipe"),
                                 title = stringResource(R.string.queue_and_local_playlists_right_swipe),
                                 text = queueSwipeRightAction.text,
                                 icon = R.drawable.arrow_right,

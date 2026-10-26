@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.general
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
@@ -18,6 +20,7 @@ fun GeneralAppShortcutsCard(
         visible = visible,
         content = {
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.app_shortcuts_settings.app_shortcuts_settings"),
                 title = stringResource(R.string.app_shortcuts_settings),
                 text = stringResource(R.string.app_shortcuts_settings_description),
                 icon = R.drawable.shortcut_rescue,

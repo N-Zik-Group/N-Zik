@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.accounts
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import android.webkit.CookieManager
 import android.webkit.WebStorage
 import androidx.compose.animation.AnimatedVisibility
@@ -152,6 +153,7 @@ internal fun AccountsYouTubeCard(search: Search) {
 
                 if (search.inputValue.isBlank() || stringResource(R.string.enable_youtube_music_login).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("accounts.youtube_music.enable_youtube_music_login"),
                         title = stringResource(R.string.enable_youtube_music_login),
                         text = "",
                         isChecked = isYouTubeLoginEnabled,
@@ -345,6 +347,7 @@ internal fun AccountsYouTubeCard(search: Search) {
 
                         if (search.inputValue.isBlank() || true) {
                             OtherSettingsEntry(
+                                modifier = Modifier.settingsSearchTarget(if (isLoggedIn) "accounts.youtube_music.account_logoff" else "accounts.youtube_music.account_login"),
                                 title = if (isLoggedIn) stringResource(R.string.account_logoff) else stringResource(R.string.account_login),
                                 text = "",
                                 icon = if (isLoggedIn) R.drawable.logout else R.drawable.person,
@@ -406,6 +409,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                         var useLoginForBrowse by rememberPreference(useLoginForBrowseKey, true)
                         if (search.inputValue.isBlank() || stringResource(R.string.login_for_browse).contains(search.inputValue, true)) {
                             OtherSwitchSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("accounts.youtube_music.login_for_browse"),
                                 title = stringResource(R.string.login_for_browse),
                                 text = if (!isLoggedIn) stringResource(R.string.youtube_connect_first) else stringResource(R.string.login_for_browse_description),
                                 isChecked = isLoggedIn && useLoginForBrowse,

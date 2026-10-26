@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -40,6 +41,7 @@ internal fun UiHomeTabsCard(search: Search) {
             content = {
                 if (search.inputValue.isBlank() || stringResource(R.string.quick_picks).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.home_tabs_settings.quick_picks"),
                         title = stringResource(R.string.quick_picks),
                         text = stringResource(R.string.library_visibility_description),
                         onClick = { QuickPicksContentSettingsDialog.showDialog() },
@@ -48,6 +50,7 @@ internal fun UiHomeTabsCard(search: Search) {
                 }
                 if (search.inputValue.isBlank() || stringResource(R.string.songs).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.home_tabs_settings.songs"),
                         title = stringResource(R.string.songs),
                         text = stringResource(R.string.library_visibility_description),
                         onClick = { HomeSongsSettingsDialog.showDialog() },
@@ -56,6 +59,7 @@ internal fun UiHomeTabsCard(search: Search) {
                 }
                 if (search.inputValue.isBlank() || stringResource(R.string.artists).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.home_tabs_settings.artists"),
                         title = stringResource(R.string.artists),
                         text = stringResource(R.string.library_visibility_description),
                         onClick = { HomeArtistsSettingsDialog.showDialog() },
@@ -64,6 +68,7 @@ internal fun UiHomeTabsCard(search: Search) {
                 }
                 if (search.inputValue.isBlank() || stringResource(R.string.albums).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.home_tabs_settings.albums"),
                         title = stringResource(R.string.albums),
                         text = stringResource(R.string.library_visibility_description),
                         onClick = { HomeAlbumsSettingsDialog.showDialog() },
@@ -72,6 +77,7 @@ internal fun UiHomeTabsCard(search: Search) {
                 }
                 if (search.inputValue.isBlank() || stringResource(R.string.playlists).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.home_tabs_settings.playlists"),
                         title = stringResource(R.string.playlists),
                         text = stringResource(R.string.library_visibility_description),
                         onClick = { HomePlaylistsSettingsDialog.showDialog() },

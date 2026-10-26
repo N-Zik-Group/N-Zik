@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -33,6 +34,7 @@ internal fun UiResetCard(search: Search) {
             content = {
                 if (matches) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.settings_reset.settings_reset"),
                         title = stringResource(R.string.settings_reset),
                         text = stringResource(R.string.settings_restore_default_settings),
                         icon = R.drawable.refresh,

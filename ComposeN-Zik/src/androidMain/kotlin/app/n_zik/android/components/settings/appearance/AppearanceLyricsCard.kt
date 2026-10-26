@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.BorderStroke
@@ -73,6 +74,7 @@ internal fun AppearanceLyricsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.show_lyrics_thumbnail).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.show_lyrics_thumbnail"),
                         icon = R.drawable.image,
                         title = stringResource(R.string.show_lyrics_thumbnail),
                         text = "",
@@ -88,6 +90,7 @@ internal fun AppearanceLyricsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.toggle_lyrics).contains(search.inputValue, true) || (stringResource(R.string.by_tapping_on_the_thumbnail)).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.toggle_lyrics"),
                         icon = R.drawable.song_lyrics,
                         title = stringResource(R.string.toggle_lyrics),
                         text = stringResource(R.string.by_tapping_on_the_thumbnail),
@@ -103,6 +106,7 @@ internal fun AppearanceLyricsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.click_lyrics_text).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.click_lyrics_text"),
                         icon = R.drawable.arrow_down,
                         title = stringResource(R.string.click_lyrics_text),
                         text = "",
@@ -113,6 +117,7 @@ internal fun AppearanceLyricsCard(search: Search) {
 
                 if (search.inputValue.isBlank() || stringResource(R.string.lyricscolor).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.lyricscolor"),
                         title = stringResource(R.string.lyricscolor),
                         selectedValue = lyricsColor,
                         onValueSelected = { lyricsColor = it },
@@ -130,7 +135,7 @@ internal fun AppearanceLyricsCard(search: Search) {
                             text = "",
                             icon = R.drawable.color_palette,
                             onClick = { showColorPicker = true },
-                            modifier = Modifier.padding(start = 25.dp),
+                            modifier = (Modifier.padding(start = 25.dp)).settingsSearchTarget("appearance.txt_lyrics.color_custom"),
                             trailingContent = {
                                 Box(
                                     modifier = Modifier
@@ -157,6 +162,7 @@ internal fun AppearanceLyricsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.save_lyrics_state).contains(search.inputValue, true) || (stringResource(R.string.save_lyrics_state_description)).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.save_lyrics_state"),
                         icon = R.drawable.bookmark,
                         title = stringResource(R.string.save_lyrics_state),
                         text = stringResource(R.string.save_lyrics_state_description),
@@ -173,6 +179,7 @@ internal fun AppearanceLyricsCard(search: Search) {
                 )
                     if (search.inputValue.isBlank() || stringResource(R.string.show_background_in_lyrics).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.show_background_in_lyrics"),
                         icon = R.drawable.image,
                             title = stringResource(R.string.show_background_in_lyrics),
                             text = "",
@@ -188,6 +195,7 @@ internal fun AppearanceLyricsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.player_enable_lyrics_popup_message).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.player_enable_lyrics_popup_message"),
                         icon = R.drawable.alert,
                         title = stringResource(R.string.player_enable_lyrics_popup_message),
                         text = "",

@@ -97,7 +97,6 @@ fun AIRecommendationSettings(
             .onGloballyPositioned { containerTopY = it.positionInRoot().y }
     ) {
 
-        QuickPicksContentSettingsDialog.Render()
 
         settingsSearchTitle(searchFocus, if (!ytLoggedIn) R.string.ai_recommendations else R.string.home, if (!ytLoggedIn) R.drawable.sparkles else R.drawable.ytmusic)
 
@@ -127,32 +126,77 @@ fun AIRecommendationSettings(
         LaunchedEffect(hasSearchResults) {
             if (!hasSearchResults) scrollState.scrollTo(0)
         }
-        settingsSearchContent(searchFocus, hasResults = hasSearchResults) {
+        AIRecommendationSettingsContent(
+            search = search,
+            navController = navController,
+            onCardPosition = { id, top ->
+                when (id) {
+                    "rewind" -> rewindCardTopY = top
+                    "statistics" -> statisticsCardTopY = top
+                }
+            },
+            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults) { cards() } },
+        )
 
-            AiGeneralCard(search)
-
-
-            AiQuickPicksCard(search)
-
-
-            Box(modifier = Modifier.onGloballyPositioned { rewindCardTopY = it.positionInRoot().y }) {
-                RewindSettingsCard(onOpenRewind = { navController.navigate(NavRoutes.rewindHome.name) })
-            }
-
-            AiRecommendationsCard(search)
-
-            AiStatisticsCard(search, navController, Modifier.onGloballyPositioned { statisticsCardTopY = it.positionInRoot().y })
-
-            AiTopPlaylistsCard(search)
-
-            AiDataCard(search)
-
-            AiResetCard(search)
-        }
 
         SettingsGroupSpacer(
             modifier = Modifier.height(Dimensions.bottomSpacer)
         )
 
+    }
+}
+
+@UnstableApi
+@Composable
+internal fun AIRecommendationSettingsContent(
+    search: Search,
+    navController: NavController,
+    selectedCards: Set<Int>? = null,
+    cardModifier: @Composable (Int) -> Modifier = { Modifier },
+    onCardPosition: (String, Float) -> Unit = { _, _ -> },
+    cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
+) {
+    QuickPicksContentSettingsDialog.Render()
+    cardsContainer {
+        if (selectedCards == null || R.string.tab_general in selectedCards) {
+            Box(modifier = cardModifier(R.string.tab_general)) {
+                AiGeneralCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.quick_picks in selectedCards) {
+            Box(modifier = cardModifier(R.string.quick_picks)) {
+                AiQuickPicksCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.rw_settings_title in selectedCards) {
+            Box(modifier = cardModifier(R.string.rw_settings_title).onGloballyPositioned { onCardPosition("rewind", it.positionInRoot().y) }) {
+                RewindSettingsCard(onOpenRewind = { navController.navigate(NavRoutes.rewindHome.name) })
+            }
+        }
+        if (selectedCards == null || R.string.smart_recommendations in selectedCards) {
+            Box(modifier = cardModifier(R.string.smart_recommendations)) {
+                AiRecommendationsCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.statistics in selectedCards) {
+            Box(modifier = cardModifier(R.string.statistics).onGloballyPositioned { onCardPosition("statistics", it.positionInRoot().y) }) {
+                AiStatisticsCard(search, navController)
+            }
+        }
+        if (selectedCards == null || R.string.playlist_top in selectedCards) {
+            Box(modifier = cardModifier(R.string.playlist_top)) {
+                AiTopPlaylistsCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.tab_data in selectedCards) {
+            Box(modifier = cardModifier(R.string.tab_data)) {
+                AiDataCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.settings_reset in selectedCards) {
+            Box(modifier = cardModifier(R.string.settings_reset)) {
+                AiResetCard(search)
+            }
+        }
     }
 }

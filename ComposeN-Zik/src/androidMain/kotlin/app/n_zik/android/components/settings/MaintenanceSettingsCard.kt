@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
@@ -190,6 +192,7 @@ fun MaintenanceSettingsCard(
                 icon = R.drawable.shield_checkmark,
             )
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("embedded.maintenance.maintenance_open"),
                 title = stringResource(R.string.maintenance_open),
                 text = stringResource(R.string.maintenance_open_desc),
                 icon = R.drawable.chevron_forward,
@@ -201,6 +204,7 @@ fun MaintenanceSettingsCard(
             // the debug-dependent options while the switch is off)
             CardCategoryLabel(stringResource(R.string.debug))
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("embedded.maintenance.enable_log_debug"),
                 title = stringResource(R.string.enable_log_debug),
                 text = stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors),
                 isChecked = logDebugEnabled,
@@ -220,6 +224,7 @@ fun MaintenanceSettingsCard(
             )
             ImportantSettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("embedded.maintenance.export_logs"),
                 title = stringResource(R.string.export_logs),
                 text = stringResource(R.string.export_debug_log_description),
                 icon = R.drawable.copy,

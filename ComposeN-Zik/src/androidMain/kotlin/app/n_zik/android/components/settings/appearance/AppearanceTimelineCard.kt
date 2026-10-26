@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Spacer
@@ -79,6 +80,7 @@ internal fun AppearanceTimelineCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.timelinesize).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.timelinesize"),
                         icon = R.drawable.resize,
                         title = stringResource(R.string.timelinesize),
                         selectedValue = playerTimelineSize,
@@ -98,6 +100,7 @@ internal fun AppearanceTimelineCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.miniplayer_buttons_config).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.miniplayer_buttons_config"),
                         icon = R.drawable.ui,
                         title = stringResource(R.string.miniplayer_buttons_config),
                         text = stringResource(R.string.miniplayer_buttons_config_description),
@@ -112,6 +115,7 @@ internal fun AppearanceTimelineCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.player_swap_controls_with_timeline).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.player_swap_controls_with_timeline"),
                         icon = R.drawable.sync,
                         title = stringResource(R.string.player_swap_controls_with_timeline),
                         text = "",
@@ -127,6 +131,7 @@ internal fun AppearanceTimelineCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.timeline).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.timeline"),
                         icon = R.drawable.playing_indicator,
                         title = stringResource(R.string.timeline),
                         selectedValue = playerTimelineType,
@@ -145,6 +150,7 @@ internal fun AppearanceTimelineCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.transparentbar).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.transparentbar"),
                         icon = R.drawable.eye_off,
                         title = stringResource(R.string.transparentbar),
                         text = "",
@@ -162,6 +168,7 @@ internal fun AppearanceTimelineCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.player_controls_colors).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.player_controls_colors"),
                         icon = R.drawable.color_palette,
                         title = stringResource(R.string.player_controls_colors),
                         selectedValue = playerControlsColors,
@@ -180,6 +187,7 @@ internal fun AppearanceTimelineCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.play_button).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.play_button"),
                         icon = R.drawable.play,
                         title = stringResource(R.string.play_button),
                         selectedValue = playerPlayButtonType,
@@ -198,6 +206,7 @@ internal fun AppearanceTimelineCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.buttonzoomout).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.buttonzoomout"),
                         icon = R.drawable.resize,
                         title = stringResource(R.string.buttonzoomout),
                         text = "",
@@ -214,6 +223,7 @@ internal fun AppearanceTimelineCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.icon_like_button).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.icon_like_button"),
                         icon = R.drawable.play,
                         title = stringResource(R.string.icon_like_button),
                         selectedValue = iconLikeType,

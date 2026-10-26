@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -50,6 +51,7 @@ internal fun UiFontCard(search: Search) {
                 var showFontDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.settings_use_font_type).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.settings_use_font_type.settings_use_font_type"),
                         title = stringResource(R.string.settings_use_font_type),
                         text = fontType.name,
                         icon = R.drawable.text,
@@ -69,6 +71,7 @@ internal fun UiFontCard(search: Search) {
 
                 if (search.inputValue.isBlank() || stringResource(R.string.use_system_font).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.settings_use_font_type.use_system_font"),
                         title = stringResource(R.string.use_system_font),
                         text = stringResource(R.string.use_font_by_the_system),
                         isChecked = useSystemFont,
@@ -79,6 +82,7 @@ internal fun UiFontCard(search: Search) {
 
                 if (search.inputValue.isBlank() || stringResource(R.string.apply_font_padding).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.settings_use_font_type.apply_font_padding"),
                         title = stringResource(R.string.apply_font_padding),
                         text = stringResource(R.string.add_spacing_around_texts),
                         isChecked = applyFontPadding,
@@ -89,6 +93,7 @@ internal fun UiFontCard(search: Search) {
 
                 if (search.inputValue.isBlank() || stringResource(R.string.hide_status_bar).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.settings_use_font_type.hide_status_bar"),
                         title = stringResource(R.string.hide_status_bar),
                         text = "",
                         isChecked = hideStatusBar,

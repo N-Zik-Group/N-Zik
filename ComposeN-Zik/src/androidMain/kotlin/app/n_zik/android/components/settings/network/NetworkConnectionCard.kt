@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.network
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
@@ -20,6 +22,7 @@ internal fun NetworkConnectionCard(query: String) {
         content = {
             if (query.isBlank() || stringResource(R.string.enable_connection_metered).contains(query, true) || stringResource(R.string.info_enable_connection_metered).contains(query, true)) {
                 OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("network.connection_settings.enable_connection_metered"),
                     title = stringResource(R.string.enable_connection_metered),
                     text = stringResource(R.string.info_enable_connection_metered),
                     isChecked = isConnectionMeteredEnabled,

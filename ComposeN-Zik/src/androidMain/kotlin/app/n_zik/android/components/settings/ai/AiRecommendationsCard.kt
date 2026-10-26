@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.ai
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +32,7 @@ internal fun AiRecommendationsCard(search: Search) {
             var showRecommendationsDialog by remember { mutableStateOf(false) }
             if (search.inputValue.isBlank() || stringResource(R.string.smart_recommendations_number).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("ai.smart_recommendations.smart_recommendations_number"),
                     title = stringResource(R.string.smart_recommendations_number),
                     text = if (recommendationsNumber == RecommendationsNumber.Adaptive)
                         stringResource(R.string.smart_recommendations_adaptive_description) else recommendationsNumber.text,

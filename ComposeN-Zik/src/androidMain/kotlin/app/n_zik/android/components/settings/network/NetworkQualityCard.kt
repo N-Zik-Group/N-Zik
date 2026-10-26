@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.network
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.res.stringResource
@@ -34,6 +36,7 @@ internal fun NetworkQualityCard(query: String, restartService: Boolean, audioDia
 
             if (query.isBlank() || stringResource(R.string.audio_quality_format).contains(query, true)) {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("network.quality.audio_quality_format"),
                     title = stringResource(R.string.audio_quality_format),
                     text = when (audioQualityFormat) {
                         AudioQualityFormat.Auto -> stringResource(R.string.audio_quality_automatic)
@@ -47,6 +50,7 @@ internal fun NetworkQualityCard(query: String, restartService: Boolean, audioDia
 
             if (query.isBlank() || stringResource(R.string.image_quality_format).contains(query, true)) {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("network.quality.image_quality_format"),
                     title = stringResource(R.string.image_quality_format),
                     text = when (imageQualityFormat) {
                         ImageQualityFormat.Auto -> stringResource(R.string.audio_quality_automatic)

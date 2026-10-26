@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+
 import androidx.compose.animation.AnimatedVisibility
 import app.n_zik.android.components.settings.common.settingsEntryEnter
 import app.n_zik.android.components.settings.common.settingsEntryExit
@@ -108,6 +110,7 @@ fun LastFmSettingsCard() {
             var maxDelayUi by remember(maxDelayInitial) { mutableFloatStateOf(maxDelayInitial) }
 
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("embedded.lastfm.lastfm_enable_scrobbling"),
                 title = stringResource(R.string.lastfm_enable_scrobbling),
                 text = stringResource(R.string.social_lastfm_info),
                 isChecked = isLastfmScrobblingEnabled,
@@ -163,6 +166,7 @@ fun LastFmSettingsCard() {
                     }
 
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("embedded.lastfm.account_login"),
                         title = if (lastfmSession.isNotEmpty()) stringResource(R.string.account_logoff) else stringResource(R.string.account_login),
                         text = if (lastfmSession.isNotEmpty()) stringResource(R.string.lastfm_connected) else stringResource(R.string.social_lastfm_info),
                         icon = R.drawable.logout,
@@ -179,6 +183,7 @@ fun LastFmSettingsCard() {
                     )
 
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("embedded.lastfm.lastfm_now_playing"),
                         title = stringResource(R.string.lastfm_now_playing),
                         text = stringResource(R.string.lastfm_now_playing_info),
                         isChecked = isLastfmNowPlayingEnabled,
@@ -187,6 +192,7 @@ fun LastFmSettingsCard() {
                     )
 
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("embedded.lastfm.lastfm_scrobble"),
                         title = stringResource(R.string.lastfm_scrobble),
                         text = stringResource(R.string.lastfm_scrobble_info),
                         isChecked = isLastfmScrobbleEnabled,
@@ -196,6 +202,7 @@ fun LastFmSettingsCard() {
 
                     // Gates Now Playing too, so it stays visible even when scrobbling is off
                     SliderSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("embedded.lastfm.lastfm_min_track_duration"),
                         title = stringResource(R.string.lastfm_min_track_duration),
                         text = stringResource(R.string.lastfm_min_track_duration_info),
                         state = minDurationUi,
@@ -211,6 +218,7 @@ fun LastFmSettingsCard() {
                     AnimatedVisibility(visible = isLastfmScrobbleEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
                         Column {
                             SliderSettingsEntry(
+                                modifier = Modifier.settingsSearchTarget("embedded.lastfm.lastfm_scrobble_threshold"),
                                 title = stringResource(R.string.lastfm_scrobble_threshold),
                                 text = stringResource(R.string.lastfm_scrobble_threshold_info),
                                 state = thresholdUi,
@@ -223,6 +231,7 @@ fun LastFmSettingsCard() {
                                 icon = R.drawable.playbackduration
                             )
                             SliderSettingsEntry(
+                                modifier = Modifier.settingsSearchTarget("embedded.lastfm.lastfm_max_scrobble_delay"),
                                 title = stringResource(R.string.lastfm_max_scrobble_delay),
                                 text = stringResource(R.string.lastfm_max_scrobble_delay_info),
                                 state = maxDelayUi,

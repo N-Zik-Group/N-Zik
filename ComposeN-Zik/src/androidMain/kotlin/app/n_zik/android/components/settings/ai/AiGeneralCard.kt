@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.ai
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -30,6 +32,7 @@ internal fun AiGeneralCard(search: Search) {
         content = {
             if (search.inputValue.isBlank() || stringResource(R.string.enable_quick_picks_page).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("ai.tab_general.enable_quick_picks_page"),
                     title = stringResource(R.string.enable_quick_picks_page),
                     text = "",
                     isChecked = enableQuickPicksPage,
@@ -41,6 +44,7 @@ internal fun AiGeneralCard(search: Search) {
             }
             if (search.inputValue.isBlank() || stringResource(R.string.rw_settings_master).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("ai.tab_general.rw_settings_master"),
                     title = stringResource(R.string.rw_settings_master),
                     text = stringResource(R.string.rw_settings_master_description),
                     isChecked = rewindEnabled,

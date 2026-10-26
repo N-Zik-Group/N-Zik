@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.general
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +33,7 @@ fun GeneralLanguageCard(
         visible = visible,
         content = {
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.languages.app_language"),
                 title = stringResource(R.string.app_language),
                 text = languageApp.text,
                 onClick = { showLanguageDialog = true },

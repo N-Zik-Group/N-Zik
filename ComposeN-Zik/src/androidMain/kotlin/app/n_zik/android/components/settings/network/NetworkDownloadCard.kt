@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.network
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -34,6 +35,7 @@ internal fun NetworkDownloadCard(query: String) {
         content = {
             if (query.isBlank() || stringResource(R.string.settings_enable_autodownload_song).contains(query, true) || stringResource(R.string.auto_download_song_description).contains(query, true)) {
                 OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("network.download.settings_enable_autodownload_song"),
                     title = stringResource(R.string.settings_enable_autodownload_song),
                     text = stringResource(R.string.auto_download_song_description),
                     isChecked = autoDownloadSong,
@@ -60,6 +62,7 @@ internal fun NetworkDownloadCard(query: String) {
                 ) {
                     if (query.isBlank() || stringResource(R.string.settings_enable_autodownload_song_when_liked).contains(query, true) || stringResource(R.string.auto_download_when_liked_description).contains(query, true)) {
                         OtherSwitchSettingEntry(
+                            modifier = Modifier.settingsSearchTarget("network.download.settings_enable_autodownload_song_when_liked"),
                             title = stringResource(R.string.settings_enable_autodownload_song_when_liked),
                             text = stringResource(R.string.auto_download_when_liked_description),
                             isChecked = autoDownloadSongWhenLiked,
@@ -72,6 +75,7 @@ internal fun NetworkDownloadCard(query: String) {
 
                     if (query.isBlank() || stringResource(R.string.settings_enable_autodownload_song_when_album_bookmarked).contains(query, true) || stringResource(R.string.auto_download_when_album_bookmarked_description).contains(query, true)) {
                         OtherSwitchSettingEntry(
+                            modifier = Modifier.settingsSearchTarget("network.download.settings_enable_autodownload_song_when_album_bookmarked"),
                             title = stringResource(R.string.settings_enable_autodownload_song_when_album_bookmarked),
                             text = stringResource(R.string.auto_download_when_album_bookmarked_description),
                             isChecked = autoDownloadSongWhenAlbumBookmarked,

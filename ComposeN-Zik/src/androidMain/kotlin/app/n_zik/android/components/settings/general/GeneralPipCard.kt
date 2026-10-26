@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.general
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -52,6 +53,7 @@ fun GeneralPipCard(
         visible = visible,
         content = {
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("general.picture_in_picture.settings_enable_pip"),
                 title = stringResource(R.string.settings_enable_pip),
                 text = "",
                 isChecked = enablePictureInPicture,
@@ -67,6 +69,7 @@ fun GeneralPipCard(
                     modifier = Modifier.padding(start = 25.dp)
                 ) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("general.picture_in_picture.settings_pip_module"),
                         title = stringResource(R.string.settings_pip_module),
                         text = when (pipModule) {
                             PipModule.Cover -> stringResource(R.string.pipmodule_cover)
@@ -95,6 +98,7 @@ fun GeneralPipCard(
 
                     if (isAtLeastAndroid12) {
                         OtherSwitchSettingEntry(
+                            modifier = Modifier.settingsSearchTarget("general.picture_in_picture.settings_enable_pip_auto"),
                             title = stringResource(R.string.settings_enable_pip_auto),
                             text = stringResource(R.string.pip_info_from_android_12_pip_can_be_automatically_enabled),
                             isChecked = enablePictureInPictureAuto,

@@ -2,6 +2,7 @@ package app.n_zik.android.components.settings.appearance
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -61,16 +62,7 @@ fun AppearanceSettings(
     navController: NavController,
 ) {
 
-    var showthumbnail by rememberPreference(showthumbnailKey, true)
-    var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, true)
     val isHistoryPaused by rememberPreference(pauseSearchHistoryKey, false)
-    var playerBackgroundColors by rememberPreference(
-        playerBackgroundColorsKey,
-        PlayerBackgroundColors.AnimatedGradient
-    )
-    var showvisthumbnail by rememberPreference(showvisthumbnailKey, true)
-    var thumbnailpause by rememberPreference(thumbnailpauseKey, true)
-    var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
     val scrollState = rememberScrollState()
     val search = Search(initialVisible = true)
     val searchFocus = rememberSettingsSearchFocus(search.isFocused, search.inputValue.isBlank())
@@ -84,9 +76,6 @@ fun AppearanceSettings(
     fun recordSearchQuery(query: String = search.inputValue) {
         history.value = SearchHistoryStore.record(context.preferences, SearchHistoryStore.PAGE_SETTINGS_APPEARANCE, query)
     }
-
-    val restartState = rememberSaveable { mutableStateOf(false) }
-    var restartService by restartState
 
     Column(
         modifier = Modifier
@@ -123,45 +112,109 @@ fun AppearanceSettings(
             }
         )
 
-        if (playerBackgroundColors != PlayerBackgroundColors.BlurredCoverColor)
-            showthumbnail = true
-        if (!showthumbnail) {showlyricsthumbnail = false}
-        if (playerType == PlayerType.Modern) {
-            showlyricsthumbnail = false
-            showvisthumbnail = false
-            thumbnailpause = false
-
-        }
-        PlayerActionBarSettingsDialog.Render()
-        MiniPlayerButtonsSettingsDialog.Render()
         val hasSearchResults = search.inputValue.isBlank() || visibleCardTitleRes(context, 2, search.inputValue).isNotEmpty()
         LaunchedEffect(hasSearchResults) {
             if (!hasSearchResults) scrollState.scrollTo(0)
         }
-        settingsSearchContent(searchFocus, hasResults = hasSearchResults) {
-            Column {
-            AppearancePresetsCard(search)
-            AppearanceCoverCard(search)
-            AppearanceTimelineCard(search)
-            AppearanceColorsCard(search)
-            AppearanceBehaviorCard(search)
-            }
-
-            AppearanceLyricsCard(search)
-
-            AppearanceActionBarCard(search)
-
-            AppearanceFullscreenLyricsCard(search)
-
-            AppearanceNotificationCard(search, restartState)
-
-            AppearanceResetCard(search, restartState)
-        }
-
-        RestartPlayerService(restartService, onRestart = { restartService = false })
+        AppearanceSettingsContent(
+            search = search,
+            navController = navController,
+            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, content = cards) },
+        )
 
         SettingsGroupSpacer(
             modifier = Modifier.height(Dimensions.bottomSpacer)
         )
     }
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@UnstableApi
+@Suppress("UNUSED_PARAMETER")
+@Composable
+internal fun AppearanceSettingsContent(
+    search: Search,
+    navController: NavController,
+    selectedCards: Set<Int>? = null,
+    normalizePreferences: Boolean = true,
+    cardModifier: @Composable (Int) -> Modifier = { Modifier },
+    cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
+) {
+    var showthumbnail by rememberPreference(showthumbnailKey, true)
+    var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, true)
+    var playerBackgroundColors by rememberPreference(
+        playerBackgroundColorsKey,
+        PlayerBackgroundColors.AnimatedGradient
+    )
+    var showvisthumbnail by rememberPreference(showvisthumbnailKey, true)
+    var thumbnailpause by rememberPreference(thumbnailpauseKey, true)
+    var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
+    val restartState = rememberSaveable { mutableStateOf(false) }
+    var restartService by restartState
+    if (normalizePreferences && (selectedCards == null || R.string.player_presets_and_layout in selectedCards || R.string.cover_and_thumbnail in selectedCards)) {
+    if (playerBackgroundColors != PlayerBackgroundColors.BlurredCoverColor)
+        showthumbnail = true
+    if (!showthumbnail) {showlyricsthumbnail = false}
+    if (playerType == PlayerType.Modern) {
+        showlyricsthumbnail = false
+        showvisthumbnail = false
+        thumbnailpause = false
+
+    }
+    }
+    PlayerActionBarSettingsDialog.Render()
+    MiniPlayerButtonsSettingsDialog.Render()
+    cardsContainer {
+        if (selectedCards == null || R.string.player_presets_and_layout in selectedCards) {
+            Box(modifier = cardModifier(R.string.player_presets_and_layout)) {
+                AppearancePresetsCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.cover_and_thumbnail in selectedCards) {
+            Box(modifier = cardModifier(R.string.cover_and_thumbnail)) {
+                AppearanceCoverCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.timeline_and_controls in selectedCards) {
+            Box(modifier = cardModifier(R.string.timeline_and_controls)) {
+                AppearanceTimelineCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.colors_and_background in selectedCards) {
+            Box(modifier = cardModifier(R.string.colors_and_background)) {
+                AppearanceColorsCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.player_behavior_and_visuals in selectedCards) {
+            Box(modifier = cardModifier(R.string.player_behavior_and_visuals)) {
+                AppearanceBehaviorCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.txt_lyrics in selectedCards) {
+            Box(modifier = cardModifier(R.string.txt_lyrics)) {
+                AppearanceLyricsCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.player_action_bar in selectedCards) {
+            Box(modifier = cardModifier(R.string.player_action_bar)) {
+                AppearanceActionBarCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.full_screen_lyrics_components in selectedCards) {
+            Box(modifier = cardModifier(R.string.full_screen_lyrics_components)) {
+                AppearanceFullscreenLyricsCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.notification_player in selectedCards) {
+            Box(modifier = cardModifier(R.string.notification_player)) {
+                AppearanceNotificationCard(search, restartState)
+            }
+        }
+        if (selectedCards == null || R.string.settings_reset in selectedCards) {
+            Box(modifier = cardModifier(R.string.settings_reset)) {
+                AppearanceResetCard(search, restartState)
+            }
+        }
+    }
+    RestartPlayerService(restartService, onRestart = { restartService = false })
 }

@@ -1,5 +1,11 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.components.tab.Search
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Column
 import java.time.Duration
 import android.app.Application
 import android.content.Context
@@ -91,6 +97,27 @@ class UiSettingsWiringTest {
             }
         }
         if (composeRule.mainClock.autoAdvance) composeRule.waitForIdle()
+    }
+
+    @Test fun selectedContentDoesNotNestThePageShell() {
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    UiSettingsContent(
+                        search = Search(initialVisible = true),
+                        navController = mockk(relaxed = true),
+                        selectedCards = setOf(R.string.home_tabs_settings),
+                        cardModifier = { Modifier.testTag("ui.selected") },
+                    )
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("ui.selected").assertExists()
+        composeRule.onAllNodes(isEditable()).assertCountEquals(0)
+        composeRule.onNodeWithTag("ui.card.home-tabs", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("ui.card.theme", useUnmergedTree = true).assertDoesNotExist()
+        composeRule.onNodeWithTag("ui.card.reset", useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test fun `unfiltered cards retain order and opening writes no preferences`() {

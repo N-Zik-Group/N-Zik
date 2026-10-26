@@ -4,6 +4,14 @@ import android.app.Application
 import android.content.Context
 import android.os.Looper
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Text
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import app.n_zik.android.components.settings.common.OrganizedSettingsCategories
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.assert
@@ -54,30 +62,7 @@ import java.time.Duration
 import java.util.Date
 import java.util.Locale
 
-/**
- * Wiring tests for the global settings entry page (spec-settings-global-page,
- * rows ENTRY_DEFAULT, UPDATE_ITEM, UPDATE_ROW, SEARCH_GLOBAL): the empty query
- * renders the registry's two titleless group cards (card 1 = About + Update,
- * card 2 = the 8 categories); each row is a single line (no displayed
- * description); tapping an item reports the right target (route for Update,
- * tab index for categories); the Update row carries on the right the same
- * status + last-check info the About tab's removed update block showed (same
- * strings, same sources), and is greyed + non-clickable + carries the
- * explanation on the right on builds without auto-update; the search bar
- * filters to card results, with the Update item indexed too; an unmatched
- * query shows the no-results message.
- *
- * The page is composed on a FROZEN clock and pumped by hand: the Update row
- * trailing text (and the blocked explanation) is an infinite marquee, which
- * would keep the real clock from ever settling (same harness as
- * GeneralSettingsWiringTest.thePipFocusScrollsThePipCardIntoView). The debug
- * build ships with IS_AUTOUPDATE=false, so [hasAutoUpdate] is stubbed per test
- * (the blocked-state test overrides it back to false).
- *
- * JUnit 4 + [RobolectricTestRunner] through the project's junit-vintage-engine
- * on the JUnit 5 platform (`createComposeRule()` only works with JUnit 4),
- * with the plain [Application] so the app's heavy init is skipped.
- */
+/** The thematic hub keeps update gating, search callbacks and navigation state. */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class, qualifiers = "w360dp-h640dp")
 class SettingsGlobalPageWiringTest {
@@ -157,85 +142,32 @@ class SettingsGlobalPageWiringTest {
 
     private fun pageIsComposed(): Boolean = runCatching {
         composeRule.onNodeWithTag("settings_global_update").fetchSemanticsNode()
-        composeRule.onNodeWithTag("settings_global_category_7").fetchSemanticsNode()
+        composeRule.onNodeWithTag("settings_global_category_system").fetchSemanticsNode()
     }.isSuccess
 
     @Test
-    fun thePageListsAboutFirstThenUpdateThenTheBaseCategories() {
+    fun thePageListsAboutThenUpdateAndEveryThematicDestination() {
         showGlobalPage()
-
-        // The 10 rows: About, Update, then the 8 base categories in tab order.
-        composeRule.onNodeWithTag("settings_global_category_8").fetchSemanticsNode()
-        composeRule.onNodeWithTag("settings_global_update").fetchSemanticsNode()
-        (0..7).forEach { tab ->
-            composeRule.onNodeWithTag("settings_global_category_$tab").fetchSemanticsNode()
+        OrganizedSettingsCategories.forEach { category ->
+            composeRule.onNodeWithTag("settings_global_category_${category.id}").assertExists()
         }
-
-        // The top of the page is above the fold: no scroll needed for these.
-        val aboutTop = composeRule
-            .onNodeWithTag("settings_global_category_8")
-            .fetchSemanticsNode()
-            .positionInRoot.y
-        val updateTop = composeRule
-            .onNodeWithTag("settings_global_update")
-            .fetchSemanticsNode()
-            .positionInRoot.y
-        val generalTop = composeRule
-            .onNodeWithTag("settings_global_category_0")
-            .fetchSemanticsNode()
-            .positionInRoot.y
-
-        assertTrue("About must be listed above Update", aboutTop < updateTop)
-        assertTrue("Update must be listed above General", updateTop < generalTop)
-
-        // The 8 category rows may reach below the fold: scroll to each pair's
-        // lower row before comparing their tops (relative order is preserved).
-        (0..6).forEach { tab ->
-
-            val upper = composeRule
-                .onNodeWithTag("settings_global_category_$tab")
-                .fetchSemanticsNode()
-                .positionInRoot.y
-            val lower = composeRule
-                .onNodeWithTag("settings_global_category_${tab + 1}")
-                .fetchSemanticsNode()
-                .positionInRoot.y
-            assertTrue("category $tab must be listed above category ${tab + 1}", upper < lower)
-        }
+        val about = composeRule.onNodeWithTag("settings_global_category_about").fetchSemanticsNode().positionInRoot.y
+        val update = composeRule.onNodeWithTag("settings_global_update").fetchSemanticsNode().positionInRoot.y
+        val playback = composeRule.onNodeWithTag("settings_global_category_playback").fetchSemanticsNode().positionInRoot.y
+        assertTrue(about < update)
+        assertTrue(update < playback)
     }
 
     @Test
-    fun theItemsRenderInsideTheirTitlelessGroupCards() {
+    fun theItemsRenderInsideTheirThematicTitlelessGroups() {
         showGlobalPage()
-
-        val appCard = composeRule.onNodeWithTag("settings_global_group_1").fetchSemanticsNode()
-        val categoriesCard = composeRule.onNodeWithTag("settings_global_group_2").fetchSemanticsNode()
-        assertTrue(
-            "the About + Update card must be above the categories card",
-            appCard.positionInRoot.y < categoriesCard.positionInRoot.y
-        )
-
-        val aboutTop = composeRule
-            .onNodeWithTag("settings_global_category_8")
-            .fetchSemanticsNode()
-            .positionInRoot.y
-        val updateTop = composeRule
-            .onNodeWithTag("settings_global_update")
-            .fetchSemanticsNode()
-            .positionInRoot.y
-        val generalTop = composeRule
-            .onNodeWithTag("settings_global_category_0")
-            .fetchSemanticsNode()
-            .positionInRoot.y
-
-        assertTrue(
-            "About and Update must both be inside the first card",
-            aboutTop >= appCard.positionInRoot.y && updateTop <= appCard.boundsInRoot.bottom
-        )
-        assertTrue(
-            "the categories must be inside the second card",
-            generalTop >= categoriesCard.positionInRoot.y && generalTop <= categoriesCard.boundsInRoot.bottom
-        )
+        (1..7).forEach { group -> composeRule.onNodeWithTag("settings_global_group_$group").assertExists() }
+        OrganizedSettingsCategories.forEach { category ->
+            composeRule.onNodeWithTag("settings_global_category_${category.id}")
+                .assert(hasAnyAncestor(hasTestTag("settings_global_group_${category.group}")))
+        }
+        composeRule.onNodeWithTag("settings_global_update")
+            .assert(hasAnyAncestor(hasTestTag("settings_global_group_1")))
     }
 
     @Test
@@ -369,33 +301,34 @@ class SettingsGlobalPageWiringTest {
     }
 
     @Test
-    fun tappingACategoryItemReportsItsTab() {
+    fun tappingACategoryItemReportsItsStableCategory() {
         showGlobalPage()
 
         // Exercise the route callback directly; this is not a scrolling test.
-        composeRule.onNodeWithTag("settings_global_category_5").performSemanticsAction(SemanticsActions.OnClick) { it() }
+        composeRule.onNodeWithTag("settings_global_category_youtube").performSemanticsAction(SemanticsActions.OnClick) { it() }
         settle()
 
         val item = selectedItem
-        assertEquals(5, item?.tab)
+        assertEquals("youtube", item?.categoryId)
+        assertEquals(null, item?.tab)
         assertEquals(null, item?.route)
     }
 
     @Test
-    fun theSearchShowsTheMatchingCardAndHidesTheItemList() {
+    fun theSearchShowsTheExactSettingAndHidesTheItemList() {
         showGlobalPage()
 
         composeRule
             .onNodeWithTag("settings_global_search")
             .performTextInput(context.getString(R.string.skip_silence))
 
-        val result = composeRule.onNodeWithTag("settings_global_result_0_${R.string.audio_effects}")
-        pumpUntil("the card result is composed", 30_000) {
+        val result = composeRule.onNodeWithTag("settings_global_entry_general.audio_effects.skip_silence")
+        pumpUntil("the exact setting result is composed", 30_000) {
             runCatching { result.fetchSemanticsNode() }.isSuccess
         }
         assertTrue(
             "the default item list must disappear with a non-blank query",
-            composeRule.onAllNodesWithTag("settings_global_category_0").fetchSemanticsNodes().isEmpty()
+            composeRule.onAllNodesWithTag("settings_global_category_playback").fetchSemanticsNodes().isEmpty()
         )
         // "Skip silence" matches none of the Update item's keywords, so it has
         // no item result either.
@@ -407,7 +340,7 @@ class SettingsGlobalPageWiringTest {
         result.performClick()
         settle()
 
-        assertEquals("tapping a card result must report its tab and focus", 0 to "", selectedCard)
+        assertEquals("legacy callback fallback must retain the source tab", 0 to "", selectedCard)
     }
 
     @Test
@@ -422,13 +355,46 @@ class SettingsGlobalPageWiringTest {
         }
         assertTrue(
             "the default item list must disappear with a non-blank query",
-            composeRule.onAllNodesWithTag("settings_global_category_5").fetchSemanticsNodes().isEmpty()
+            composeRule.onAllNodesWithTag("settings_global_category_youtube").fetchSemanticsNodes().isEmpty()
         )
 
         result.performClick()
         settle()
 
         assertEquals(NavRoutes.updater.name, selectedItem?.route)
+    }
+
+    @Test
+    fun returningFromADestinationRestoresTheGlobalQuery() {
+        lateinit var navigation: NavHostController
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                navigation = rememberNavController()
+                NavHost(navigation, startDestination = "global") {
+                    composable("global") {
+                        SettingsGlobalPage(
+                            onItemSelected = { navigation.navigate("destination") },
+                            onCardSelected = { _, _ -> navigation.navigate("destination") },
+                        )
+                    }
+                    composable("destination") { Text("Destination") }
+                }
+            }
+        }
+        pumpUntil("global navigation entry", 30_000) { pageIsComposed() }
+        val query = context.getString(R.string.audio_effects)
+        composeRule.onNodeWithTag("settings_global_search").performTextInput(query)
+        val result = composeRule.onNodeWithTag("settings_global_result_0_${R.string.audio_effects}")
+        pumpUntil("audio result", 30_000) { runCatching { result.fetchSemanticsNode() }.isSuccess }
+        result.performSemanticsAction(SemanticsActions.OnClick) { it() }
+        pumpUntil("destination", 30_000) {
+            runCatching { composeRule.onNodeWithText("Destination").fetchSemanticsNode() }.isSuccess
+        }
+        composeRule.runOnIdle { navigation.popBackStack() }
+        pumpUntil("restored result", 30_000) { runCatching { result.fetchSemanticsNode() }.isSuccess }
+        composeRule.onNodeWithTag("settings_global_search").assertTextEquals(query)
+        composeRule.onNodeWithTag("settings_global_category_playback").assertDoesNotExist()
     }
 
     @Test
@@ -444,7 +410,7 @@ class SettingsGlobalPageWiringTest {
         }
         assertTrue(
             "the default item list must disappear with a non-blank query",
-            composeRule.onAllNodesWithTag("settings_global_category_0").fetchSemanticsNodes().isEmpty()
+            composeRule.onAllNodesWithTag("settings_global_category_playback").fetchSemanticsNodes().isEmpty()
         )
     }
 }

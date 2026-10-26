@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
@@ -42,6 +43,7 @@ internal fun AppearanceResetCard(search: Search, restartState: MutableState<Bool
                         val context = LocalContext.current
                         if (search.inputValue.isBlank() || stringResource(R.string.settings_restore_default_settings).contains(search.inputValue, true) || stringResource(R.string.settings_reset).contains(search.inputValue, true)) {
                             OtherSettingsEntry(
+                                modifier = Modifier.settingsSearchTarget("appearance.settings_reset.settings_reset"),
                                 title = stringResource(R.string.settings_reset),
                                 text = stringResource(R.string.settings_restore_default_settings),
                                 icon = R.drawable.refresh,

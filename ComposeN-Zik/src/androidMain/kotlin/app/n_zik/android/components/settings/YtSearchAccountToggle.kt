@@ -1,5 +1,9 @@
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+
+import androidx.compose.ui.Modifier
+
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -54,6 +58,7 @@ fun YtSearchAccountToggle(
     ) return
 
     OtherSwitchSettingEntry(
+        modifier = Modifier.settingsSearchTarget("embedded.youtube.use_account_for_searches"),
         title = title,
         text = if (!isLoggedIn) stringResource(R.string.youtube_connect_first) else description,
         isChecked = isLoggedIn && useLoginForSearch,

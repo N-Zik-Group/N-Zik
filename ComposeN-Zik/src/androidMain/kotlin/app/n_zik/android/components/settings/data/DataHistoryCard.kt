@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.data
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -50,12 +51,14 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
             // The burger History item only reaches this partial card: the "Ouvrir"
             // row (spec-customizable-burger-menu goal B) opens the full History screen.
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("data.history.module_open"),
                 title = stringResource(R.string.module_open),
                 text = stringResource(R.string.history_open_desc),
                 icon = R.drawable.chevron_forward,
                 onClick = { navController.navigate(NavRoutes.history.name) }
             )
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("data.history.pause_search_history"),
                 title = stringResource(R.string.pause_search_history),
                 text = stringResource(R.string.neither_save_new_searched_query),
                 isChecked = pauseSearchHistory,
@@ -68,6 +71,7 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
             val queriesCount by rememberSearchHistoryCount()
 
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("data.history.player_pause_listen_history"),
                 title = stringResource(R.string.player_pause_listen_history),
                 text = stringResource(R.string.player_pause_listen_history_info),
                 isChecked = pauseListenHistory,
@@ -84,6 +88,7 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
 
             if (search.inputValue.isBlank() || stringResource(R.string.clear_search_history).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("data.history.clear_search_history"),
                     title = stringResource(R.string.clear_search_history),
                     text = if (queriesCount > 0) {
                         "${stringResource(R.string.delete)} " + queriesCount + stringResource(R.string.search_queries)
@@ -100,6 +105,7 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
 
             if (search.inputValue.isBlank() || stringResource(R.string.clear_listen_history).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("data.history.clear_listen_history"),
                     title = stringResource(R.string.clear_listen_history),
                     text = if (eventsCount > 0) {
                         stringResource(R.string.delete_playback_events, eventsCount.toString())

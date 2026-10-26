@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.ai
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,6 +46,7 @@ internal fun AiQuickPicksCard(search: Search) {
         content = {
             if (search.inputValue.isBlank() || stringResource(R.string.quick_picks_content).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("ai.quick_picks.quick_picks_content"),
                     title = stringResource(R.string.quick_picks_content),
                     text = stringResource(R.string.quick_picks_content_description),
                     onClick = { QuickPicksContentSettingsDialog.showDialog() },
@@ -53,6 +56,7 @@ internal fun AiQuickPicksCard(search: Search) {
 
             if (showTips && (search.inputValue.isBlank() || stringResource(R.string.tips).contains(search.inputValue, true))) {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("ai.quick_picks.tips"),
                     title = stringResource(R.string.tips),
                     text = playEventType.text,
                     icon = R.drawable.sort_vertical,
@@ -72,6 +76,7 @@ internal fun AiQuickPicksCard(search: Search) {
 
             if (showTips && (search.inputValue.isBlank() || stringResource(R.string.quick_selection_type).contains(search.inputValue, true) || (stringResource(R.string.quick_selection, localRecommandationsNumber.value)).contains(search.inputValue, true))) {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("ai.quick_picks.quick_selection_type"),
                     title = stringResource(R.string.quick_selection_type),
                     text = stringResource(R.string.quick_selection, localRecommandationsNumber.value),
                     icon = R.drawable.sparkles,

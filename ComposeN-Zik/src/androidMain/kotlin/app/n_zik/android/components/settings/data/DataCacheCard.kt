@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.data
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import android.text.format.Formatter
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -191,6 +192,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
                 key(cacheCleanedCounter) {
                     CacheSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("data.cache.image_cache_max_size"),
                         title = stringResource(R.string.image_cache_max_size),
                         text = when (coilDiskCacheMaxSize) {
                             CoilDiskCacheMaxSize.Custom -> "${stringResource(R.string.custom)}: ${coilCustomDiskCache}MB"
@@ -251,6 +253,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
                 key(cacheCleanedCounter) {
                     CacheSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("data.cache.song_cache_max_size"),
                         title = stringResource(R.string.song_cache_max_size),
                         text = when (exoPlayerDiskCacheMaxSize) {
                             ExoPlayerDiskCacheMaxSize.Custom -> "${stringResource(R.string.custom)}: ${exoPlayerCustomCache}MB"
@@ -311,6 +314,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
                 key(cacheCleanedCounter) {
                     CacheSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("data.cache.song_download_max_size"),
                         title = stringResource(R.string.song_download_max_size),
                         text = exoPlayerDiskDownloadCacheMaxSize.text,
                         icon = R.drawable.download,
@@ -343,6 +347,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
             var showCacheLocationDialog by remember { mutableStateOf(false) }
             if (search.inputValue.isBlank() || stringResource(R.string.set_cache_location).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("data.cache.set_cache_location"),
                     title = stringResource(R.string.set_cache_location),
                     text = exoPlayerCacheLocation.text,
                     icon = R.drawable.folder,

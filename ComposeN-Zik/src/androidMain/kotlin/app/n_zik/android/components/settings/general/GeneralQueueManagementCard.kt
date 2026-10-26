@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.general
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +43,7 @@ fun GeneralQueueManagementCard(
         visible = visible,
         content = {
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.queue_management.max_songs_in_queue"),
                 title = stringResource(R.string.max_songs_in_queue),
                 text = when (maxSongsInQueue) {
                     MaxSongs.Unlimited -> stringResource(R.string.unlimited)
@@ -58,6 +61,7 @@ fun GeneralQueueManagementCard(
             )
 
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.queue_management.max_songs_in_queue_android_auto"),
                 title = stringResource(R.string.max_songs_in_queue_android_auto),
                 text = when (maxSongsInQueueAndroidAuto) {
                     MaxSongs.Unlimited -> stringResource(R.string.unlimited)
@@ -121,6 +125,7 @@ fun GeneralQueueManagementCard(
             }
 
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("general.queue_management.discover"),
                 title = stringResource(R.string.discover),
                 text = stringResource(R.string.discoverinfo),
                 isChecked = discoverIsEnabled,
@@ -129,6 +134,7 @@ fun GeneralQueueManagementCard(
             )
 
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("general.queue_management.playlistindicator"),
                 title = stringResource(R.string.playlistindicator),
                 text = stringResource(R.string.playlistindicatorinfo),
                 isChecked = playlistindicator,
@@ -137,6 +143,7 @@ fun GeneralQueueManagementCard(
             )
 
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.queue_management.now_playing_indicator"),
                 title = stringResource(R.string.now_playing_indicator),
                 text = nowPlayingIndicator.text,
                 onClick = { showNowPlayingIndicatorDialog = true },

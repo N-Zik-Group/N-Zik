@@ -2,6 +2,7 @@ package app.n_zik.android.components.settings.data
 
 import kotlin.math.roundToInt
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -68,9 +69,6 @@ fun DataSettings(
     fun recordSearchQuery(query: String = search.inputValue) {
         history.value = SearchHistoryStore.record(context.preferences, SearchHistoryStore.PAGE_SETTINGS_DATA, query)
     }
-    val restartState = rememberSaveable { mutableStateOf(false) }
-    ExportBackupDialog.Render()
-    ImportBackupDialog.Render()
     val scrollState = rememberScrollState()
     var containerTopY by remember { mutableFloatStateOf(-1f) }
     var historyCardTopY by remember { mutableFloatStateOf(-1f) }
@@ -122,17 +120,47 @@ fun DataSettings(
         LaunchedEffect(hasSearchResults) {
             if (!hasSearchResults) scrollState.scrollTo(0)
         }
-        settingsSearchContent(searchFocus, hasResults = hasSearchResults) {
-            DataCacheCard(search, restartState)
-            DataBackupCard(search)
-            DataAutoBackupCard()
-            DataHistoryCard(search, navController, restartState, Modifier.onGloballyPositioned { historyCardTopY = it.positionInRoot().y })
-            DataResetCard(search)
-        }
+        DataSettingsContent(
+            search, navController,
+            onCardPosition = { _, y -> historyCardTopY = y },
+            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults) { cards() } }
+        )
 
         SettingsGroupSpacer(
             modifier = Modifier.height(Dimensions.bottomSpacer)
         )
 
+    }
+}
+
+@UnstableApi
+@Composable
+internal fun DataSettingsContent(
+    search: Search,
+    navController: NavController,
+    selectedCards: Set<Int>? = null,
+    cardModifier: @Composable (Int) -> Modifier = { Modifier },
+    onCardPosition: (String, Float) -> Unit = { _, _ -> },
+    cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
+) {
+    val restartState = rememberSaveable { mutableStateOf(false) }
+    ExportBackupDialog.Render()
+    ImportBackupDialog.Render()
+    cardsContainer {
+        if (selectedCards == null || R.string.cache in selectedCards) {
+            Box(cardModifier(R.string.cache)) { DataCacheCard(search, restartState) }
+        }
+        if (selectedCards == null || R.string.title_backup_and_restore in selectedCards) {
+            Box(cardModifier(R.string.title_backup_and_restore)) { DataBackupCard(search) }
+        }
+        if (selectedCards == null || R.string.auto_backup_title in selectedCards) {
+            Box(cardModifier(R.string.auto_backup_title)) { DataAutoBackupCard() }
+        }
+        if (selectedCards == null || R.string.history in selectedCards) {
+            Box(cardModifier(R.string.history)) { DataHistoryCard(search, navController, restartState, Modifier.onGloballyPositioned { onCardPosition("history", it.positionInRoot().y) }) }
+        }
+        if (selectedCards == null || R.string.settings_reset in selectedCards) {
+            Box(cardModifier(R.string.settings_reset)) { DataResetCard(search) }
+        }
     }
 }

@@ -140,38 +140,69 @@ fun AccountsSettings(
         LaunchedEffect(hasSearchResults) {
             if (!hasSearchResults) scrollState.scrollTo(0)
         }
-        settingsSearchContent(searchFocus, hasResults = hasSearchResults) {
-            // Keep the legacy profiles shortcut anchored to the profile editor.
-            ProfileFaceCard(
-                modifier = Modifier.onGloballyPositioned { profilesCardTopY = it.positionInRoot().y },
-                onOpenProfiles = { navController.navigate(NavRoutes.profiles.name) }
-            )
+        AccountsSettingsContent(
+            search = search,
+            navController = navController,
+            onCardPosition = { id, top ->
+                when (id) {
+                    "profiles" -> profilesCardTopY = top
+                    "listentogether" -> listenTogetherCardTopY = top
+                }
+            },
+            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults) { cards() } },
+        )
 
-            AccountsYouTubeCard(search)
-
-            AccountsSyncCards()
-
-            // Last.fm Section
-            LastFmSettingsCard()
-
-            // Listen Together Section (reuses the room-screen settings card, same pattern);
-            // the burger long press (focus=listentogether) scrolls to it.
-            Box(modifier = Modifier.onGloballyPositioned { listenTogetherCardTopY = it.positionInRoot().y }) {
-                ListenTogetherSettingsCard(
-                    onOpenScreen = { navController.navigate(NavRoutes.listenTogether.name) }
-                )
-            }
-
-            AccountsDiscordCard(search)
-
-            AccountsResetCard(search)
-
-        }
 
         SettingsGroupSpacer(
             modifier = Modifier.height(Dimensions.bottomSpacer)
         )
 
+    }
+}
+
+@androidx.annotation.OptIn(UnstableApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@Composable
+internal fun AccountsSettingsContent(
+    search: Search,
+    navController: NavController,
+    selectedCards: Set<Int>? = null,
+    cardModifier: @Composable (Int) -> Modifier = { Modifier },
+    onCardPosition: (String, Float) -> Unit = { _, _ -> },
+    cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
+) {
+    cardsContainer {
+        if (selectedCards == null || R.string.profile_face in selectedCards) {
+            Box(modifier = cardModifier(R.string.profile_face).onGloballyPositioned { onCardPosition("profiles", it.positionInRoot().y) }) {
+                ProfileFaceCard(onOpenProfiles = { navController.navigate(NavRoutes.profiles.name) })
+            }
+        }
+        if (selectedCards == null || R.string.youtube_music in selectedCards) {
+            Box(modifier = cardModifier(R.string.youtube_music)) {
+                AccountsYouTubeCard(search)
+            }
+        }
+        AccountsSyncCards(selectedCards, cardModifier)
+        if (selectedCards == null || R.string.social_lastfm in selectedCards) {
+            Box(modifier = cardModifier(R.string.social_lastfm)) {
+                LastFmSettingsCard()
+            }
+        }
+        if (selectedCards == null || R.string.listen_together in selectedCards) {
+            Box(modifier = cardModifier(R.string.listen_together).onGloballyPositioned { onCardPosition("listentogether", it.positionInRoot().y) }) {
+                ListenTogetherSettingsCard(onOpenScreen = { navController.navigate(NavRoutes.listenTogether.name) })
+            }
+        }
+        if (selectedCards == null || R.string.social_discord in selectedCards) {
+            Box(modifier = cardModifier(R.string.social_discord)) {
+                AccountsDiscordCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.settings_reset in selectedCards) {
+            Box(modifier = cardModifier(R.string.settings_reset)) {
+                AccountsResetCard(search)
+            }
+        }
     }
 }
 

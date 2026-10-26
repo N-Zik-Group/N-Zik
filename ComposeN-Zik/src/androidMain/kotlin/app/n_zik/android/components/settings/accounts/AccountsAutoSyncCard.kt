@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.accounts
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -26,6 +28,7 @@ internal fun AccountsAutoSyncCard() {
             var autosyncLikes by rememberPreference(autosyncLikesKey, false)
 
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("accounts.autosync.autosync_channels"),
                 title = stringResource(R.string.autosync_channels),
                 text = stringResource(R.string.autosync_channels_description),
                 isChecked = autosyncArtists,
@@ -33,6 +36,7 @@ internal fun AccountsAutoSyncCard() {
                 icon = R.drawable.people
             )
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("accounts.autosync.autosync_albums"),
                 title = stringResource(R.string.autosync_albums),
                 text = stringResource(R.string.autosync_albums_description),
                 isChecked = autosyncAlbums,
@@ -40,6 +44,7 @@ internal fun AccountsAutoSyncCard() {
                 icon = R.drawable.album
             )
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("accounts.autosync.autosync"),
                 title = stringResource(R.string.autosync),
                 text = stringResource(R.string.autosync_playlists_description),
                 isChecked = autosyncPlaylists,
@@ -47,6 +52,7 @@ internal fun AccountsAutoSyncCard() {
                 icon = R.drawable.playlist
             )
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("accounts.autosync.autosync_likes"),
                 title = stringResource(R.string.autosync_likes),
                 text = stringResource(R.string.autosync_likes_description),
                 isChecked = autosyncLikes,

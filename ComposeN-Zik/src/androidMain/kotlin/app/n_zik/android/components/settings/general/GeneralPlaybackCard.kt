@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.general
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import android.text.TextUtils
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
@@ -70,6 +71,7 @@ fun GeneralPlaybackCard(
         visible = visible,
         content = {
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.playback.jump_previous"),
                 title = stringResource(R.string.jump_previous),
                 text = jumpPrevious,
                 onClick = { showJumpPreviousDialog = true },
@@ -93,6 +95,7 @@ fun GeneralPlaybackCard(
             }
 
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.playback.min_listening_time"),
                 title = stringResource(R.string.min_listening_time),
                 text = when (exoPlayerMinTimeForEvent) {
                     ExoPlayerMinTimeForEvent.`10s` -> "10s"
@@ -127,6 +130,7 @@ fun GeneralPlaybackCard(
             }
 
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.playback.exclude_songs_with_duration_limit"),
                 title = stringResource(R.string.exclude_songs_with_duration_limit),
                 text = when (excludeSongWithDurationLimit) {
                     DurationInMinutes.Disabled -> stringResource(R.string.vt_disabled)
@@ -168,6 +172,7 @@ fun GeneralPlaybackCard(
 
             // Dislike exclusion settings
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.playback.exclude_disliked_songs"),
                 title = stringResource(R.string.exclude_disliked_songs),
                 text = excludeDislikedSongs.text,
                 onClick = { showDislikeSongsDialog = true },
@@ -193,6 +198,7 @@ fun GeneralPlaybackCard(
             }
 
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.playback.exclude_disliked_artists"),
                 title = stringResource(R.string.exclude_disliked_artists),
                 text = excludeDislikedArtists.text,
                 onClick = { showDislikeArtistsDialog = true },
@@ -218,6 +224,7 @@ fun GeneralPlaybackCard(
             }
 
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.playback.exclude_disliked_albums"),
                 title = stringResource(R.string.exclude_disliked_albums),
                 text = excludeDislikedAlbums.text,
                 onClick = { showDislikeAlbumsDialog = true },
@@ -243,6 +250,7 @@ fun GeneralPlaybackCard(
             }
 
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.playback.pause_between_songs"),
                 title = stringResource(R.string.pause_between_songs),
                 text = when (pauseBetweenSongs) {
                     PauseBetweenSongs.`0` -> "0s"
@@ -283,6 +291,7 @@ fun GeneralPlaybackCard(
             }
 
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("general.playback.crossfade"),
                 title = stringResource(R.string.crossfade),
                 text = stringResource(R.string.crossfade_description),
                 isChecked = crossfadeEnabled,
@@ -296,6 +305,7 @@ fun GeneralPlaybackCard(
                 ) {
                     var showCrossfadeDurationDialog by remember { mutableStateOf(false) }
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("general.playback.crossfade_duration"),
                         title = stringResource(R.string.crossfade_duration),
                         text = "${crossfadeDuration / 1000}s",
                         onClick = { showCrossfadeDurationDialog = true },
@@ -314,6 +324,7 @@ fun GeneralPlaybackCard(
                     }
 
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("general.playback.crossfade_gapless"),
                         title = stringResource(R.string.crossfade_gapless),
                         text = stringResource(R.string.crossfade_gapless_description),
                         isChecked = crossfadeGapless,

@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.accounts
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
@@ -57,6 +59,7 @@ internal fun AccountsSyncOverviewCard(isYouTubeSyncEnabled: Boolean, isSyncEnabl
         icon = R.drawable.sync,
         content = {
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("accounts.sync_data_with_ytm_account.sync_data_with_ytm_account"),
                 title = stringResource(R.string.sync_data_with_ytm_account),
                 text = stringResource(R.string.playlists_albums_artists_history_like_etc),
                 isChecked = isYouTubeSyncEnabled,
@@ -108,6 +111,7 @@ internal fun AccountsSyncOverviewCard(isYouTubeSyncEnabled: Boolean, isSyncEnabl
 
                     // Sync status detail
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("accounts.sync_data_with_ytm_account.sync_status_detail"),
                         title = stringResource(R.string.sync_status_detail),
                         text = stringResource(R.string.sync_status_detail_description),
                         icon = R.drawable.information,
@@ -116,6 +120,7 @@ internal fun AccountsSyncOverviewCard(isYouTubeSyncEnabled: Boolean, isSyncEnabl
                     SyncStatusDialog.Render()
 
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("accounts.sync_data_with_ytm_account.sync_now"),
                         title = stringResource(R.string.sync_now),
                         text = stringResource(R.string.sync_now_description),
                         icon = R.drawable.sync,
@@ -130,6 +135,7 @@ internal fun AccountsSyncOverviewCard(isYouTubeSyncEnabled: Boolean, isSyncEnabl
                         }
                     )
                     OtherEnumValueSelectorSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("accounts.sync_data_with_ytm_account.sync_direction"),
                         icon = R.drawable.sync,
                         title = stringResource(R.string.sync_direction),
                         selectedValue = syncDirection,
@@ -139,6 +145,7 @@ internal fun AccountsSyncOverviewCard(isYouTubeSyncEnabled: Boolean, isSyncEnabl
 
                     var syncCooldown by rememberPreference(syncCooldownKey, 30)
                     SliderSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("accounts.sync_data_with_ytm_account.sync_cooldown"),
                         title = stringResource(R.string.sync_cooldown),
                         text = stringResource(R.string.sync_cooldown_description),
                         state = syncCooldown.toFloat(),
@@ -151,6 +158,7 @@ internal fun AccountsSyncOverviewCard(isYouTubeSyncEnabled: Boolean, isSyncEnabl
                     )
                     var syncShowDetails by rememberPreference(syncShowDetailsKey, true)
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("accounts.sync_data_with_ytm_account.sync_show_details"),
                         title = stringResource(R.string.sync_show_details),
                         text = stringResource(R.string.sync_show_details_description),
                         isChecked = syncShowDetails,
@@ -159,6 +167,7 @@ internal fun AccountsSyncOverviewCard(isYouTubeSyncEnabled: Boolean, isSyncEnabl
                     )
                     var syncBackgroundGuard by rememberPreference(syncBackgroundGuardKey, true)
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("accounts.sync_data_with_ytm_account.sync_background_guard"),
                         title = stringResource(R.string.sync_background_guard),
                         text = stringResource(R.string.sync_background_guard_description),
                         isChecked = syncBackgroundGuard,

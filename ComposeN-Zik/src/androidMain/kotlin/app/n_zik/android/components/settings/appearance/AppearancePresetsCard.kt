@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Column
@@ -437,6 +438,7 @@ internal fun AppearancePresetsCard(search: Search) {
             if (!isLandscape) {
                 if (search.inputValue.isBlank() || stringResource(R.string.appearancepresets).contains(search.inputValue, true) || (stringResource(R.string.appearancepresetssecondary)).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.player_presets_and_layout.appearancepresets"),
                         title = stringResource(R.string.appearancepresets),
                         text = stringResource(R.string.appearancepresetssecondary),
                         icon = R.drawable.ui,
@@ -452,6 +454,7 @@ internal fun AppearancePresetsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.playertype).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.player_presets_and_layout.playertype"),
                         icon = R.drawable.play,
                         title = stringResource(R.string.playertype),
                         selectedValue = playerType,
@@ -469,6 +472,7 @@ internal fun AppearancePresetsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.queuetype).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.player_presets_and_layout.queuetype"),
                         icon = R.drawable.sort_grid,
                         title = stringResource(R.string.queuetype),
                         selectedValue = queueType,
@@ -493,7 +497,7 @@ internal fun AppearancePresetsCard(search: Search) {
                             thumbnailType = it
                         },
                         valueText = { it.text },
-                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                        modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.player_presets_and_layout.thumbnailtype")
                     )
                 }
 
@@ -504,6 +508,7 @@ internal fun AppearancePresetsCard(search: Search) {
             ) {
                 if (search.inputValue.isBlank() || stringResource(R.string.pinfo_type).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.player_presets_and_layout.pinfo_type"),
                         icon = R.drawable.information,
                         title = stringResource(R.string.pinfo_type),
                         selectedValue = playerInfoType,
@@ -529,8 +534,8 @@ internal fun AppearancePresetsCard(search: Search) {
                                     text = "",
                                     isChecked = playerInfoShowIcons,
                                     onCheckedChange = { playerInfoShowIcons = it },
-                                    modifier = Modifier
-                                        .padding(start = 25.dp)
+                                    modifier = (Modifier
+                                        .padding(start = 25.dp)).settingsSearchTarget("appearance.player_presets_and_layout.pinfo_show_icons")
                                 )
                             }
                     }
@@ -545,6 +550,7 @@ internal fun AppearancePresetsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.pcontrols_type).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.player_presets_and_layout.pcontrols_type"),
                         icon = R.drawable.burger,
                         title = stringResource(R.string.pcontrols_type),
                         selectedValue = playerControlsType,
@@ -562,6 +568,7 @@ internal fun AppearancePresetsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.icon_like_button).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.player_presets_and_layout.icon_like_button"),
                         icon = R.drawable.heart,
                         title = stringResource(R.string.icon_like_button),
                         selectedValue = iconLikeType,

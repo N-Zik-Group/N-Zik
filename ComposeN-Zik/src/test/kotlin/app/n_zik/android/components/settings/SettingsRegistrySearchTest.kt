@@ -6,7 +6,9 @@ import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.n_zik.android.R
 import app.n_zik.android.components.settings.common.SETTINGS_GROUP_ABOUT_UPDATE
-import app.n_zik.android.components.settings.common.SETTINGS_GROUP_CATEGORIES
+import app.n_zik.android.components.settings.common.OrganizedSettingsCategories
+import app.n_zik.android.components.settings.common.cardsForCategory
+import app.n_zik.android.components.settings.common.categoryId
 import app.n_zik.android.components.settings.common.SettingsCategories
 import app.n_zik.android.components.settings.common.SettingsCards
 import app.n_zik.android.components.settings.common.SettingsPageGroups
@@ -22,18 +24,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-/**
- * Registry contract test for the global settings page (spec-settings-global-page,
- * rows UPDATE_ITEM and the card-level search): the page lists the About
- * category first, then the Update item (targeting the existing
- * [NavRoutes.updater] route, not a tab), then the remaining categories in tab
- * order. The item-level search indexes the Update item only; the card-level
- * search indexes card titles and keywords.
- *
- * JUnit 4 + [RobolectricTestRunner] through the project's junit-vintage-engine
- * on the JUnit 5 platform, with the plain [Application] so string resources
- * resolve without the app's heavy init.
- */
+/** Registry contracts for thematic destinations and legacy tab compatibility. */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
 class SettingsRegistrySearchTest {
@@ -41,59 +32,43 @@ class SettingsRegistrySearchTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
 
     @Test
-    fun theGlobalPageListsAboutFirstThenUpdateThenTheBaseCategories() {
-        assertEquals("the page must list 10 items", 10, SettingsPageItems.size)
-
+    fun theGlobalPageListsAboutThenUpdateAndThematicDestinations() {
+        assertEquals(17, SettingsPageItems.size)
+        assertEquals("about", SettingsPageItems.first().categoryId)
+        assertTrue(SettingsPageItems[1] === SettingsUpdateItem)
         assertEquals(
-            "the About category must be the first item on the global page",
-            8,
-            SettingsPageItems.first().tab
+            listOf("playback", "audio", "behavior", "interface", "player", "data", "downloads", "network",
+                "youtube", "profiles", "services", "ai", "rewind", "maintenance", "system"),
+            SettingsPageItems.drop(2).map { it.categoryId },
         )
-        assertTrue(
-            "the Update item must be the second item on the global page",
-            SettingsPageItems[1] === SettingsUpdateItem
-        )
-        assertEquals(
-            "the remaining items must be the 8 base categories in tab order",
-            (0..7).toList(),
-            SettingsPageItems.drop(2).map { it.tab }
-        )
-
         assertEquals(NavRoutes.updater.name, SettingsUpdateItem.route)
-        assertEquals("the Update item targets a route, not a settings tab", null, SettingsUpdateItem.tab)
-
+        assertEquals(null, SettingsUpdateItem.tab)
+        assertTrue(SettingsPageItems.filter { it !== SettingsUpdateItem }.all { it.tab == null && it.route == null })
+        // Legacy deep links retain their original tab numbers independently of hub order.
         assertEquals((0..8).toList(), SettingsCategories.map { it.tab })
-        SettingsCategories.forEach { category ->
-            assertEquals("categories target tabs, not routes", null, category.route)
-        }
     }
 
     @Test
-    fun theItemsCarryTheirGroupAndDescription() {
-        // Grouping is registry data only: card 1 = About + Update, card 2 =
-        // the 8 categories. A later re-grouping edits these entries, never
-        // the page code.
-        assertEquals(2, SettingsPageGroups.size)
-        assertEquals(SETTINGS_GROUP_ABOUT_UPDATE, SettingsPageGroups[0].group)
-        assertEquals(SETTINGS_GROUP_CATEGORIES, SettingsPageGroups[1].group)
-
+    fun thematicGroupsAreCompleteAndKeepAboutAndUpdateTogether() {
+        assertEquals((1..7).toList(), SettingsPageGroups.map { it.group })
         assertEquals(SETTINGS_GROUP_ABOUT_UPDATE, SettingsUpdateItem.group)
-        assertEquals(
-            SETTINGS_GROUP_ABOUT_UPDATE,
-            SettingsCategories.first { it.tab == 8 }.group
-        )
-        SettingsCategories.filter { it.tab in 0..7 }.forEach {
-            assertEquals(
-                "category ${it.tab} must be in the categories group",
-                SETTINGS_GROUP_CATEGORIES,
-                it.group
-            )
-        }
-
-        // The row descriptions reuse each tab's existing header description.
+        assertEquals(listOf(R.string.about, R.string.update), SettingsPageItems.filter { it.group == 1 }.map { it.labelRes })
+        assertTrue(SettingsPageGroups.all { group -> SettingsPageItems.any { it.group == group.group } })
         assertEquals(R.string.settings_global_update_description, SettingsUpdateItem.descriptionRes)
-        assertEquals(R.string.general_settings_description, SettingsCategories.first { it.tab == 0 }.descriptionRes)
-        assertEquals(R.string.about_description, SettingsCategories.first { it.tab == 8 }.descriptionRes)
+    }
+
+    @Test
+    fun everyCardHasOneDestinationAndResetsRetainDistinctSourceScopes() {
+        val cards = OrganizedSettingsCategories.flatMap { cardsForCategory(it.id) }
+        assertEquals(SettingsCards.size, cards.size)
+        assertEquals(SettingsCards.toSet(), cards.toSet())
+        assertEquals(cards.size, cards.map { it.tab to it.titleRes }.toSet().size)
+        val resets = cards.filter { it.titleRes == R.string.settings_reset }
+        assertEquals((0..7).toSet(), resets.map { it.tab }.toSet())
+        assertTrue(resets.all { it.categoryId() == "system" })
+        assertTrue(cardsForCategory("profiles").all { it.titleRes == R.string.profile_face })
+        assertTrue(cardsForCategory("player").any { it.tab == 0 })
+        assertTrue(cardsForCategory("player").any { it.tab == 2 })
     }
 
     @Test

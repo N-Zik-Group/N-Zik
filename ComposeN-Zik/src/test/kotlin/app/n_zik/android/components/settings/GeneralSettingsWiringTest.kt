@@ -1,5 +1,14 @@
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.components.settings.general.GeneralSettingsContent
+import app.n_zik.android.components.tab.Search
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Column
 import android.app.Application
 import android.content.Context
 import android.os.Looper
@@ -137,6 +146,26 @@ class GeneralSettingsWiringTest {
             .onNodeWithText(context.getString(descriptionRes))
             .performScrollTo()
             .performClick()
+    }
+
+    @Test fun selectedContentDoesNotNestThePageShell() {
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    GeneralSettingsContent(
+                        search = Search(initialVisible = true),
+                        selectedCards = setOf(R.string.playback),
+                        cardModifier = { Modifier.testTag("general.selected") },
+                    )
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("general.selected").assertExists()
+        composeRule.onAllNodes(isEditable()).assertCountEquals(0)
+        assertTrue(cardTitleIsShown(R.string.playback))
+        assertTrue(!cardTitleIsShown(R.string.languages))
+        assertTrue(!cardTitleIsShown(R.string.settings_reset))
     }
 
     @Test

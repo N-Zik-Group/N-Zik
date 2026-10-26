@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
@@ -31,6 +33,7 @@ fun BurgerMenuSettingsCard(modifier: Modifier = Modifier) {
         modifier = modifier,
         content = {
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("embedded.burger.burger_menu"),
                 title = stringResource(R.string.burger_menu),
                 text = stringResource(R.string.burger_menu_customize),
                 icon = R.drawable.burger,

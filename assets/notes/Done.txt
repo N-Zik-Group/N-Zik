@@ -58,6 +58,8 @@ Improved:
   - `ListenTogetherMenu` create/join failures while offline now surface the dedicated "no connection" toast instead of a generic error (offline audit menu branch)
 
 Fixed:
+- test(dialogs): align overflow assertions with wrapping footer actions
+  - Verify bounds, non-overlap, wrapping, clickability and single-line labels instead of obsolete equal-width cells; all nine overflow tests pass.
 - fix(settings): use full width for Player Appearance
   - Remove obsolete 12-percent sidebar reservation from Player Appearance.
   - Validation: Four Appearance tests pass, including measured width for floating and right navigation; assembleDebug succeeds.
@@ -113,6 +115,11 @@ Fixed:
   - The ABI probe is now injectable via a `featuresProvider` on `BridgeServerCore`; the meta test mounts a device that can run the module, and a new test pins the negative case (feature omitted)
 
 Refactor:
+- feat(settings): organize categories and add exact setting search
+  - Add 17 hub destinations in thematic groups and reusable selected-card content hosts while preserving legacy tab deep links.
+  - Index 359 explicit setting/action targets with localized paths, measured scrolling, temporary highlights and unavailable-setting fallback; preserve query on back navigation.
+  - Keep original reset scopes explicit in System and preserve the removed Accounts storage summary and full-width Player Appearance fixes.
+  - Validation: assembleDebug and 38 focused tests pass; final legacy parity comparison and remaining regressions are still in progress.
 - refactor(settings): extract Network cards
   - Extract seven Network cards with page-owned dialog hosts; preserve reset store boundaries, search and offline/server focus.
   - Validation: Four Network tests pass; assembleDebug succeeds.

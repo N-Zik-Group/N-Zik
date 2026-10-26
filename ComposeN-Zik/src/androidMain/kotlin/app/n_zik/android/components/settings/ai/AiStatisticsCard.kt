@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ai
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import android.text.TextUtils
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,6 +42,7 @@ internal fun AiStatisticsCard(search: Search, navController: NavController, modi
 
 
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("ai.statistics.module_open"),
                 title = stringResource(R.string.module_open),
                 text = stringResource(R.string.statistics_open_desc),
                 icon = R.drawable.chevron_forward,
@@ -50,6 +52,7 @@ internal fun AiStatisticsCard(search: Search, navController: NavController, modi
             var showCustomStatisticsItemsDialog by remember { mutableStateOf(false) }
             if (search.inputValue.isBlank() || stringResource(R.string.statistics_max_number_of_items).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("ai.statistics.statistics_max_number_of_items"),
                     title = stringResource(R.string.statistics_max_number_of_items),
                     text = maxStatisticsItems.displayName(maxStatisticsItemsCustomValue),
                     icon = R.drawable.musical_notes,
@@ -89,6 +92,7 @@ internal fun AiStatisticsCard(search: Search, navController: NavController, modi
 
             if (search.inputValue.isBlank() || stringResource(R.string.listening_time).contains(search.inputValue, true) || (stringResource(R.string.shows_the_number_of_songs_heard_and_their_listening_time)).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("ai.statistics.listening_time"),
                     title = stringResource(R.string.listening_time),
                     text = stringResource(R.string.shows_the_number_of_songs_heard_and_their_listening_time),
                     isChecked = showStatsListeningTime,

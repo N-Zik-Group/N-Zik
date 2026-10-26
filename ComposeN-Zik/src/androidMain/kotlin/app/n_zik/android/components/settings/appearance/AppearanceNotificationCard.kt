@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
@@ -48,6 +49,7 @@ internal fun AppearanceNotificationCard(search: Search, restartState: MutableSta
             ) {
                 if (search.inputValue.isBlank() || stringResource(R.string.notificationPlayerFirstIcon).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.notification_player.notificationPlayerFirstIcon"),
                         icon = R.drawable.notification2,
                         title = stringResource(R.string.notificationPlayerFirstIcon),
                         selectedValue = notificationPlayerFirstIcon,
@@ -60,6 +62,7 @@ internal fun AppearanceNotificationCard(search: Search, restartState: MutableSta
                 }
                 if (search.inputValue.isBlank() || stringResource(R.string.notificationPlayerSecondIcon).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.notification_player.notificationPlayerSecondIcon"),
                         icon = R.drawable.notification2,
                         title = stringResource(R.string.notificationPlayerSecondIcon),
                         selectedValue = notificationPlayerSecondIcon,

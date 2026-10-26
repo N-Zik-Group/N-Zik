@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -41,6 +42,7 @@ internal fun UiSortMenusCard(search: Search) {
             content = {
                 if (search.inputValue.isBlank() || stringResource(R.string.songs).contains(search.inputValue, true) || stringResource(R.string.sort_menu).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.sort_menu.songs"),
                         title = stringResource(R.string.songs),
                         text = stringResource(R.string.customize_sort_options),
                         onClick = { HomeSongsSortSettingsDialog.showDialog() },
@@ -49,6 +51,7 @@ internal fun UiSortMenusCard(search: Search) {
                 }
                 if (search.inputValue.isBlank() || stringResource(R.string.artists).contains(search.inputValue, true) || stringResource(R.string.sort_menu).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.sort_menu.artists"),
                         title = stringResource(R.string.artists),
                         text = stringResource(R.string.customize_sort_options),
                         onClick = { HomeArtistsSortSettingsDialog.showDialog() },
@@ -57,6 +60,7 @@ internal fun UiSortMenusCard(search: Search) {
                 }
                 if (search.inputValue.isBlank() || stringResource(R.string.albums).contains(search.inputValue, true) || stringResource(R.string.sort_menu).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.sort_menu.albums"),
                         title = stringResource(R.string.albums),
                         text = stringResource(R.string.customize_sort_options),
                         onClick = { HomeAlbumsSortSettingsDialog.showDialog() },
@@ -65,6 +69,7 @@ internal fun UiSortMenusCard(search: Search) {
                 }
                 if (search.inputValue.isBlank() || stringResource(R.string.playlists).contains(search.inputValue, true) || stringResource(R.string.sort_menu).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.sort_menu.playlists"),
                         title = stringResource(R.string.playlists),
                         text = stringResource(R.string.customize_sort_options),
                         onClick = { HomeLibrarySortSettingsDialog.showDialog() },
@@ -73,6 +78,7 @@ internal fun UiSortMenusCard(search: Search) {
                 }
                 if (search.inputValue.isBlank() || stringResource(R.string.playlists).contains(search.inputValue, true) || stringResource(R.string.sort_menu).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.sort_menu.local_playlist_sort"),
                         title = stringResource(R.string.local_playlist_sort),
                         text = stringResource(R.string.customize_sort_options),
                         onClick = { LocalPlaylistSortSettingsDialog.showDialog() },
@@ -81,6 +87,7 @@ internal fun UiSortMenusCard(search: Search) {
                 }
                 if (search.inputValue.isBlank() || stringResource(R.string.history).contains(search.inputValue, true) || stringResource(R.string.sort_menu).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.sort_menu.history"),
                         title = stringResource(R.string.history),
                         text = stringResource(R.string.customize_sort_options),
                         onClick = { HistorySortSettingsDialog.showDialog() },

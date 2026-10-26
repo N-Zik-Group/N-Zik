@@ -39,6 +39,23 @@ object SearchHistoryStore {
         PAGE_SETTINGS_GENERAL, PAGE_SETTINGS_UI, PAGE_SETTINGS_APPEARANCE,
         PAGE_SETTINGS_AI, PAGE_SETTINGS_DATA, PAGE_SETTINGS_ACCOUNTS,
         PAGE_SETTINGS_NETWORK, PAGE_SETTINGS_OTHER,
+        "settings_category_about",
+        "settings_category_playback",
+        "settings_category_audio",
+        "settings_category_behavior",
+        "settings_category_interface",
+        "settings_category_player",
+        "settings_category_data",
+        "settings_category_downloads",
+        "settings_category_network",
+        "settings_category_youtube",
+        "settings_category_profiles",
+        "settings_category_services",
+        "settings_category_ai",
+        "settings_category_rewind",
+        "settings_category_maintenance",
+        "settings_category_system",
+
     )
 
     /** Per-profile page preference, independent from the global pause switch. */

@@ -3,6 +3,7 @@ package app.n_zik.android.components.settings.network
 import app.n_zik.android.components.tab.Search
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -71,16 +72,6 @@ fun NetworkSettings(
         history.value = SearchHistoryStore.record(context.preferences, SearchHistoryStore.PAGE_SETTINGS_NETWORK, query)
     }
 
-    var restartService by rememberSaveable { mutableStateOf(false) }
-    val audioDialog = rememberSaveable { mutableStateOf(false) }
-    val imageDialog = rememberSaveable { mutableStateOf(false) }
-    val networkQuality by produceState(initialValue = ImageCacheFactory.getCurrentNetworkQuality()) {
-        while (true) {
-            value = ImageCacheFactory.getCurrentNetworkQuality()
-            delay(5000)
-        }
-    }
-
     val scrollState = rememberScrollState()
     var containerTopY by remember { mutableFloatStateOf(-1f) }
     var pcServerCardTopY by remember { mutableFloatStateOf(-1f) }
@@ -134,30 +125,62 @@ fun NetworkSettings(
         LaunchedEffect(hasSearchResults) {
             if (!hasSearchResults) scrollState.scrollTo(0)
         }
-        settingsSearchContent(searchFocus, hasResults = hasSearchResults) {
-            NetworkServerCard(search.inputValue, navController,
-                Modifier.onGloballyPositioned { pcServerCardTopY = it.positionInRoot().y })
-            NetworkStatusCard(networkQuality)
-            NetworkQualityCard(search.inputValue, restartService, audioDialog, imageDialog) { restartService = it }
-            NetworkConnectionCard(search.inputValue)
-
-            val offlineSearchMatch = search.inputValue.isBlank() ||
-                stringResource(R.string.offline_mode).contains(search.inputValue, true) ||
-                stringResource(R.string.offline_mode_description).contains(search.inputValue, true)
-            if (offlineSearchMatch) {
-                OfflineModeSettingsCard(
-                    modifier = Modifier.onGloballyPositioned { offlineCardTopY = it.positionInRoot().y }
-                )
-            }
-
-            NetworkDownloadCard(search.inputValue)
-            NetworkResetCard(search.inputValue) { restartService = true }
-
-        }
+        NetworkSettingsContent(
+            search, navController,
+            onCardPosition = { id, y -> if (id == "offline") offlineCardTopY = y else pcServerCardTopY = y },
+            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults) { cards() } }
+        )
 
         SettingsGroupSpacer(
             modifier = Modifier.height(Dimensions.bottomSpacer)
         )
 
+    }
+}
+
+@ExperimentalAnimationApi
+@UnstableApi
+@Composable
+internal fun NetworkSettingsContent(
+    search: Search,
+    navController: NavController,
+    selectedCards: Set<Int>? = null,
+    cardModifier: @Composable (Int) -> Modifier = { Modifier },
+    onCardPosition: (String, Float) -> Unit = { _, _ -> },
+    cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
+) {
+    var restartService by rememberSaveable { mutableStateOf(false) }
+    val audioDialog = rememberSaveable { mutableStateOf(false) }
+    val imageDialog = rememberSaveable { mutableStateOf(false) }
+    val networkQuality by produceState(initialValue = ImageCacheFactory.getCurrentNetworkQuality()) {
+        while (true) {
+            value = ImageCacheFactory.getCurrentNetworkQuality()
+            delay(5000)
+        }
+    }
+
+    cardsContainer {
+        if (selectedCards == null || R.string.bridge_server in selectedCards) {
+            Box(cardModifier(R.string.bridge_server)) { NetworkServerCard(search.inputValue, navController, Modifier.onGloballyPositioned { onCardPosition("pcserver", it.positionInRoot().y) }) }
+        }
+        if (selectedCards == null || R.string.network_status in selectedCards) {
+            Box(cardModifier(R.string.network_status)) { NetworkStatusCard(networkQuality) }
+        }
+        if (selectedCards == null || R.string.quality in selectedCards) {
+            Box(cardModifier(R.string.quality)) { NetworkQualityCard(search.inputValue, restartService, audioDialog, imageDialog) { restartService = it } }
+        }
+        if (selectedCards == null || R.string.connection_settings in selectedCards) {
+            Box(cardModifier(R.string.connection_settings)) { NetworkConnectionCard(search.inputValue) }
+        }
+        if (selectedCards == null || R.string.offline_mode in selectedCards) {
+            Box(cardModifier(R.string.offline_mode)) { val matches = search.inputValue.isBlank() || stringResource(R.string.offline_mode).contains(search.inputValue, true) || stringResource(R.string.offline_mode_description).contains(search.inputValue, true)
+                if (matches) OfflineModeSettingsCard(Modifier.onGloballyPositioned { onCardPosition("offline", it.positionInRoot().y) }) }
+        }
+        if (selectedCards == null || R.string.download in selectedCards) {
+            Box(cardModifier(R.string.download)) { NetworkDownloadCard(search.inputValue) }
+        }
+        if (selectedCards == null || R.string.settings_reset in selectedCards) {
+            Box(cardModifier(R.string.settings_reset)) { NetworkResetCard(search.inputValue) { restartService = true } }
+        }
     }
 }

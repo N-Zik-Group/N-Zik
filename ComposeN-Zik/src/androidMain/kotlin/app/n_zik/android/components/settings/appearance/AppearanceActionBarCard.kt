@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
@@ -53,6 +54,7 @@ internal fun AppearanceActionBarCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.action_bar_transparent_background).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.player_action_bar.action_bar_transparent_background"),
                         icon = R.drawable.eye,
                         title = stringResource(R.string.action_bar_transparent_background),
                         text = "",
@@ -68,6 +70,7 @@ internal fun AppearanceActionBarCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.actionspacedevenly).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.player_action_bar.actionspacedevenly"),
                         icon = R.drawable.horizontal_bold_line,
                         title = stringResource(R.string.actionspacedevenly),
                         text = "",
@@ -83,6 +86,7 @@ internal fun AppearanceActionBarCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.tapqueue).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.player_action_bar.tapqueue"),
                         icon = R.drawable.gesture,
                         title = stringResource(R.string.tapqueue),
                         text = "",
@@ -98,6 +102,7 @@ internal fun AppearanceActionBarCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.swipe_up_to_open_the_queue).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.player_action_bar.swipe_up_to_open_the_queue"),
                         icon = R.drawable.gesture,
                         title = stringResource(R.string.swipe_up_to_open_the_queue),
                         text = "",
@@ -113,6 +118,7 @@ internal fun AppearanceActionBarCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.player_action_bar_buttons).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.player_action_bar.player_action_bar_buttons"),
                         icon = R.drawable.ellipsis_vertical,
                         title = stringResource(R.string.player_action_bar_buttons),
                         text = stringResource(R.string.player_action_bar_buttons_description),

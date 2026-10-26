@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -39,6 +40,7 @@ internal fun UiToolbarsCard(search: Search) {
             content = {
                 if (search.inputValue.isBlank() || stringResource(R.string.songs).contains(search.inputValue, true) || stringResource(R.string.toolbar).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.toolbar.songs"),
                         title = stringResource(R.string.songs),
                         text = stringResource(R.string.customize_toolbar),
                         onClick = { HomeSongsToolbarSettingsDialog.showDialog() },
@@ -47,6 +49,7 @@ internal fun UiToolbarsCard(search: Search) {
                 }
                 if (search.inputValue.isBlank() || stringResource(R.string.artists).contains(search.inputValue, true) || stringResource(R.string.toolbar).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.toolbar.artists"),
                         title = stringResource(R.string.artists),
                         text = stringResource(R.string.customize_toolbar),
                         onClick = { HomeArtistsToolbarSettingsDialog.showDialog() },
@@ -55,6 +58,7 @@ internal fun UiToolbarsCard(search: Search) {
                 }
                 if (search.inputValue.isBlank() || stringResource(R.string.albums).contains(search.inputValue, true) || stringResource(R.string.toolbar).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.toolbar.albums"),
                         title = stringResource(R.string.albums),
                         text = stringResource(R.string.customize_toolbar),
                         onClick = { HomeAlbumsToolbarSettingsDialog.showDialog() },
@@ -63,6 +67,7 @@ internal fun UiToolbarsCard(search: Search) {
                 }
                 if (search.inputValue.isBlank() || stringResource(R.string.playlists).contains(search.inputValue, true) || stringResource(R.string.toolbar).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.toolbar.playlists"),
                         title = stringResource(R.string.playlists),
                         text = stringResource(R.string.customize_toolbar),
                         onClick = { HomeLibraryToolbarSettingsDialog.showDialog() },
@@ -71,6 +76,7 @@ internal fun UiToolbarsCard(search: Search) {
                 }
                 if (search.inputValue.isBlank() || stringResource(R.string.playlists).contains(search.inputValue, true) || stringResource(R.string.toolbar).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.toolbar.local_playlist_sort"),
                         title = stringResource(R.string.local_playlist_sort),
                         text = stringResource(R.string.customize_toolbar),
                         onClick = { LocalPlaylistToolbarSettingsDialog.showDialog() },

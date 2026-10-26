@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.accounts
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -28,6 +30,7 @@ internal fun AccountsSyncImportCard() {
             var syncImportEpisodes by rememberPreference(syncImportEpisodesKey, false)
 
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("accounts.sync_import_from_youtube.sync_import_history"),
                 title = stringResource(R.string.sync_import_history),
                 text = stringResource(R.string.sync_import_history_description),
                 isChecked = syncImportHistory,
@@ -35,6 +38,7 @@ internal fun AccountsSyncImportCard() {
                 icon = R.drawable.history
             )
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("accounts.sync_import_from_youtube.sync_import_library_songs"),
                 title = stringResource(R.string.sync_import_library_songs),
                 text = stringResource(R.string.sync_import_library_songs_description),
                 isChecked = syncImportLibrarySongs,
@@ -42,6 +46,7 @@ internal fun AccountsSyncImportCard() {
                 icon = R.drawable.heart
             )
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("accounts.sync_import_from_youtube.sync_import_uploaded_songs"),
                 title = stringResource(R.string.sync_import_uploaded_songs),
                 text = stringResource(R.string.sync_import_uploaded_songs_description),
                 isChecked = syncImportUploadedSongs,
@@ -49,6 +54,7 @@ internal fun AccountsSyncImportCard() {
                 icon = R.drawable.download
             )
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("accounts.sync_import_from_youtube.sync_import_uploaded_albums"),
                 title = stringResource(R.string.sync_import_uploaded_albums),
                 text = stringResource(R.string.sync_import_uploaded_albums_description),
                 isChecked = syncImportUploadedAlbums,
@@ -56,6 +62,7 @@ internal fun AccountsSyncImportCard() {
                 icon = R.drawable.album
             )
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("accounts.sync_import_from_youtube.sync_import_episodes"),
                 title = stringResource(R.string.sync_import_episodes),
                 text = stringResource(R.string.sync_import_episodes_description),
                 isChecked = syncImportEpisodes,

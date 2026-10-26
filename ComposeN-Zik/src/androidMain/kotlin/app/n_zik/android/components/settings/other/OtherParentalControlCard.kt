@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.other
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -23,6 +25,7 @@ internal fun OtherParentalControlCard(search: Search) {
         content = {
             if (search.inputValue.isBlank() || stringResource(R.string.parental_control).contains(search.inputValue, true) || stringResource(R.string.info_prevent_play_songs_with_age_limitation).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("other.parental_control.parental_control"),
                     title = stringResource(R.string.parental_control),
                     text = stringResource(R.string.info_prevent_play_songs_with_age_limitation),
                     isChecked = parentalControlEnabled,

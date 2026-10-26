@@ -9,6 +9,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -33,6 +34,8 @@ import app.n_zik.android.core.navigation.LocalSettingsBackNavigation
 import app.n_zik.android.core.navigation.SettingsBackNavigation
 import app.n_zik.android.components.settings.common.hasAutoUpdate
 import app.it.fast4x.rimusic.utils.encryptedPreferences
+import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.n_zik.android.updater.services.Updater
 import io.mockk.every
 import io.mockk.just
@@ -56,13 +59,13 @@ import java.time.Duration
  * Wiring tests for the settings host (spec-settings-global-page, rows
  * ENTRY_DEFAULT, ENTRY_DEEPLINK, NAV_ITEM, UPDATE_ITEM, SEARCH_GLOBAL,
  * SUBPAGE_BACK, SUBPAGE_TRANSITION): entering without deep-link params shows
- * the global page; tapping an item opens the matching tab (its own
+ * the global page; tapping an item opens the matching category (its own
  * navigation destination, so the standard screen transition plays and back
  * returns to the global page); tapping Update navigates to the existing
  * updater route on the app-level NavHost; a deep link (tab + focus) opens the
  * tab directly, bypassing the global page, but back still returns to the
  * global page first (the tab is pushed on top of it); tapping a card search
- * result opens the tab with the card's focus.
+ * result opens its category and brings the card into view.
  *
  * The host is composed on a FROZEN clock and pumped by hand: the global
  * page's Update row trailing text is an infinite marquee, which would keep
@@ -104,6 +107,8 @@ class SettingsScreenHostWiringTest {
 
     @Before
     fun setUp() {
+        setActiveProfile("default", context)
+        context.preferences.edit().clear().commit()
         val mainApplication = mockk<MainApplication>()
         every { mainApplication.applicationContext } returns context
         Dependencies.init(mainApplication)
@@ -175,7 +180,7 @@ class SettingsScreenHostWiringTest {
     private fun globalPageIsComposed(): Boolean =
         runCatching {
             composeRule.onNodeWithTag("settings_global_update").fetchSemanticsNode()
-            composeRule.onNodeWithTag("settings_global_category_8").fetchSemanticsNode()
+            composeRule.onNodeWithTag("settings_global_category_about").fetchSemanticsNode()
         }.isSuccess
 
     private fun globalPageIsGone(): Boolean =
@@ -191,12 +196,16 @@ class SettingsScreenHostWiringTest {
             .fetchSemanticsNodes()
             .isNotEmpty()
 
+    private fun categoryIsComposed(): Boolean = runCatching {
+        composeRule.onNodeWithTag("settings.target.card.0.playback", useUnmergedTree = true).fetchSemanticsNode()
+    }.isSuccess
+
     @Test
     fun enteringWithoutADeepLinkShowsTheGlobalPage() {
         showHost(initialTab = 0, focus = "")
 
         composeRule.onNodeWithTag("settings_global_update").fetchSemanticsNode()
-        composeRule.onNodeWithTag("settings_global_category_8").fetchSemanticsNode()
+        composeRule.onNodeWithTag("settings_global_category_about").fetchSemanticsNode()
     }
 
     @Test
@@ -208,14 +217,14 @@ class SettingsScreenHostWiringTest {
     }
 
     @Test
-    fun tappingACategoryFromTheGlobalPageOpensThatTab() {
+    fun tappingACategoryFromTheGlobalPageOpensItsThematicContent() {
         showHost(initialTab = 0, focus = "")
 
-        composeRule.onNodeWithTag("settings_global_category_0").performClick()
-        pumpUntil("the General tab is composed", 30_000) {
+        composeRule.onNodeWithTag("settings_global_category_playback").performClick()
+        pumpUntil("the Playback category is composed", 30_000) {
             // The global page and the tab overlap during the 350 ms
             // transition: pump until the page is fully gone too
-            tabIsComposed() && globalPageIsGone()
+            categoryIsComposed() && globalPageIsGone()
         }
 
         assertTrue("the global page must not stay composed once the tab is open", globalPageIsGone())
@@ -226,44 +235,44 @@ class SettingsScreenHostWiringTest {
         context.getSharedPreferences("preferences", Context.MODE_PRIVATE).edit()
             .putString(app.it.fast4x.rimusic.utils.transitionEffectKey, "None").commit()
         showHost()
-        composeRule.onNodeWithTag("settings_global_category_0").performClick()
+        composeRule.onNodeWithTag("settings_global_category_playback").performClick()
         repeat(4) {
             composeRule.mainClock.advanceTimeByFrame()
             composeRule.waitForIdle()
         }
         assertTrue(globalPageIsGone())
-        assertTrue(tabIsComposed())
+        assertTrue(categoryIsComposed())
     }
 
     @Test
-    fun forwardFadeKeepsBothPagesDuringOneTransitionThenOnlyTheTab() {
+    fun forwardFadeKeepsBothPagesDuringOneTransitionThenOnlyTheCategory() {
         context.getSharedPreferences("preferences", Context.MODE_PRIVATE).edit()
             .putString(app.it.fast4x.rimusic.utils.transitionEffectKey, "Fade").commit()
         showHost()
-        composeRule.onNodeWithTag("settings_global_category_0").performClick()
+        composeRule.onNodeWithTag("settings_global_category_playback").performClick()
         repeat(5) {
             composeRule.mainClock.advanceTimeByFrame()
             composeRule.waitForIdle()
         }
         assertTrue("Global remains during the shared fade", globalPageIsComposed())
-        assertTrue("The tab enters during the same fade", tabIsComposed())
+        assertTrue("The category enters during the same fade", categoryIsComposed())
         repeat(30) {
             composeRule.mainClock.advanceTimeByFrame()
             composeRule.waitForIdle()
         }
         assertTrue("One 350ms transition removes Global", globalPageIsGone())
-        assertTrue(tabIsComposed())
+        assertTrue(categoryIsComposed())
     }
 
     @Test
-    fun backFromATabReturnsToTheGlobalPage() {
+    fun backFromACategoryReturnsToTheGlobalPage() {
         showHost(initialTab = 0, focus = "")
 
-        composeRule.onNodeWithTag("settings_global_category_0").performClick()
-        pumpUntil("the General tab is composed", 30_000) {
+        composeRule.onNodeWithTag("settings_global_category_playback").performClick()
+        pumpUntil("the Playback category is composed", 30_000) {
             // The global page and the tab overlap during the 350 ms
             // transition: pump until the page is fully gone too
-            tabIsComposed() && globalPageIsGone()
+            categoryIsComposed() && globalPageIsGone()
         }
         assertTrue("the global page must not stay composed once the tab is open", globalPageIsGone())
 
@@ -271,10 +280,10 @@ class SettingsScreenHostWiringTest {
         // to the global page (the standard screen transition plays).
         testActivity.onBackPressedDispatcher.onBackPressed()
         pumpUntil("the global page is back after the tab pop", 30_000) {
-            globalPageIsComposed() && !tabIsComposed()
+            globalPageIsComposed() && !categoryIsComposed()
         }
 
-        assertTrue("the tab must not stay composed after back", !tabIsComposed())
+        assertTrue("the tab must not stay composed after back", !categoryIsComposed())
     }
 
     @Test
@@ -333,25 +342,25 @@ class SettingsScreenHostWiringTest {
     }
 
     @Test
-    fun theCardSearchResultOpensTheTabWithItsFocus() {
+    fun theCardSearchResultOpensItsCategoryAndScrollsToTheCard() {
         showHost(initialTab = 0, focus = "")
-
-        composeRule
-            .onNodeWithTag("settings_global_search")
-            .performTextInput(context.getString(R.string.picture_in_picture))
-
-        val result = composeRule
-            .onNodeWithTag("settings_global_result_0_${R.string.picture_in_picture}")
+        composeRule.onNodeWithTag("settings_global_search")
+            .performTextInput(context.getString(R.string.queue_management))
+        val result = composeRule.onNodeWithTag("settings_global_result_0_${R.string.queue_management}")
         pumpUntil("the card result is composed", 30_000) {
             runCatching { result.fetchSemanticsNode() }.isSuccess
         }
         result.performSemanticsAction(SemanticsActions.OnClick) { it() }
-        pumpUntil("the General tab is composed", 30_000) {
-            // The global page and the tab overlap during the 350 ms
-            // transition: pump until the page is fully gone too
-            tabIsComposed() && globalPageIsGone()
+        pumpUntil("the Playback category is composed", 30_000) {
+            categoryIsComposed() && globalPageIsGone()
         }
-
-        assertTrue("the global page must not stay composed once the tab is open", globalPageIsGone())
+        pumpUntil("the searched card is visible", 30_000) {
+            runCatching {
+                composeRule.onNodeWithTag("settings.target.card.0.queue_management", useUnmergedTree = true)
+                    .assertIsDisplayed()
+            }.isSuccess
+        }
+        // New category navigation must remain inside Settings, not the outer app controller.
+        verify(exactly = 0) { navController.navigate(any<String>()) }
     }
 }

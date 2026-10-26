@@ -1,6 +1,12 @@
 package app.n_zik.android.components.ui.screens.settings
 
 import androidx.activity.compose.BackHandler
+import android.net.Uri
+import androidx.compose.ui.platform.LocalContext
+import app.n_zik.android.components.settings.common.SettingsCategoryPage
+import app.n_zik.android.components.settings.common.parentCard
+import app.n_zik.android.components.settings.common.categoryId
+import app.n_zik.android.components.settings.common.settingsCardTargetId
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberUpdatedState
 import app.it.fast4x.rimusic.enums.NavRoutes
@@ -120,6 +126,7 @@ fun SettingsScreen(
     // so the global page <-> tab switches play the standard screen transition.
     val transitions = remember(transitionEffect) { ScreenTransitions(transitionEffect) }
 
+    val context = LocalContext.current
     SearchResultsViewport {
         NavHost(
             navController = innerNavController,
@@ -132,7 +139,9 @@ fun SettingsScreen(
             composable(route = SETTINGS_GLOBAL_ROUTE) {
                 SettingsGlobalPage(
                     onItemSelected = { item: SettingsPageItem ->
-                        item.tab?.let { tab ->
+                        item.categoryId?.let { id ->
+                            innerNavController.navigate("settingsCategory/$id")
+                        } ?: item.tab?.let { tab ->
                             innerNavController.navigate(settingsTabRoute(tab, ""))
                         } ?: item.route?.let { route ->
                             navController.navigate(route)
@@ -141,6 +150,30 @@ fun SettingsScreen(
                     onCardSelected = { tab, cardFocus ->
                         innerNavController.navigate(settingsTabRoute(tab, cardFocus))
                     },
+                    onEntrySelected = { result ->
+                        val card = result.parentCard()
+                        val parent = Uri.encode(settingsCardTargetId(context, card.tab, card.titleRes))
+                        innerNavController.navigate("settingsCategory/${card.categoryId()}?target=${Uri.encode(result.id)}&parent=$parent")
+                    },
+                    onOrganizedCardSelected = { card ->
+                        val target = Uri.encode(settingsCardTargetId(context, card.tab, card.titleRes))
+                        innerNavController.navigate("settingsCategory/${card.categoryId()}?target=$target")
+                    },
+                )
+            }
+            composable(
+                route = "settingsCategory/{category}?target={target}&parent={parent}",
+                arguments = listOf(
+                    navArgument("category") { type = NavType.StringType },
+                    navArgument("target") { type = NavType.StringType; defaultValue = "" },
+                    navArgument("parent") { type = NavType.StringType; defaultValue = "" },
+                ),
+            ) { entry ->
+                SettingsCategoryPage(
+                    categoryId = entry.arguments?.getString("category").orEmpty(),
+                    navController = navController,
+                    target = entry.arguments?.getString("target").orEmpty(),
+                    parentTarget = entry.arguments?.getString("parent").orEmpty(),
                 )
             }
             composable(

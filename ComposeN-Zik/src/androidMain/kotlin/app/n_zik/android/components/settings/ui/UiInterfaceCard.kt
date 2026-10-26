@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -90,6 +91,7 @@ internal fun UiInterfaceCard(search: Search) {
                 var showNavPosDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.navigation_bar_position).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.user_interface.navigation_bar_position"),
                         title = stringResource(R.string.navigation_bar_position),
                         text = navigationBarPosition.text,
                         icon = R.drawable.locate,
@@ -110,6 +112,7 @@ internal fun UiInterfaceCard(search: Search) {
                 var showNavTypeDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.navigation_bar_type).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.user_interface.navigation_bar_type"),
                         title = stringResource(R.string.navigation_bar_type),
                         text = navigationBarType.text,
                         icon = R.drawable.burger,
@@ -130,6 +133,7 @@ internal fun UiInterfaceCard(search: Search) {
                 var showPlayerPosDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.player_position).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.user_interface.player_position"),
                         title = stringResource(R.string.player_position),
                         text = playerPosition.text,
                         icon = R.drawable.position,
@@ -150,6 +154,7 @@ internal fun UiInterfaceCard(search: Search) {
                 var showMenuStyleDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.menu_style).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.user_interface.menu_style"),
                         title = stringResource(R.string.menu_style),
                         text = menuStyle.text,
                         icon = R.drawable.reorder,
@@ -170,6 +175,7 @@ internal fun UiInterfaceCard(search: Search) {
                 var showMessageTypeDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.message_type).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.user_interface.message_type"),
                         title = stringResource(R.string.message_type),
                         text = messageType.text,
                         icon = R.drawable.information,
@@ -190,6 +196,7 @@ internal fun UiInterfaceCard(search: Search) {
                 var showDefPageDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.default_page).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.user_interface.default_page"),
                         title = stringResource(R.string.default_page),
                         text = indexNavigationTab.text,
                         icon = R.drawable.star_brilliant,
@@ -209,6 +216,7 @@ internal fun UiInterfaceCard(search: Search) {
 
                 if (search.inputValue.isBlank() || stringResource(R.string.home_tabs_settings).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.user_interface.home_tabs_settings"),
                         title = stringResource(R.string.home_tabs_settings),
                         text = stringResource(R.string.home_tabs_settings_description),
                         onClick = { HomeTabsSettingsDialog.showDialog() },
@@ -219,6 +227,7 @@ internal fun UiInterfaceCard(search: Search) {
                 var showTransDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.transition_effect).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.user_interface.transition_effect"),
                         title = stringResource(R.string.transition_effect),
                         text = transitionEffect.text,
                         icon = R.drawable.images_sharp,
@@ -238,6 +247,7 @@ internal fun UiInterfaceCard(search: Search) {
 
                 if (search.inputValue.isBlank() || stringResource(R.string.disable_navigation_back_stack).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.user_interface.disable_navigation_back_stack"),
                         title = stringResource(R.string.disable_navigation_back_stack),
                         text = stringResource(R.string.disable_navigation_back_stack_description),
                         icon = R.drawable.chevron_back,
@@ -255,6 +265,7 @@ internal fun UiInterfaceCard(search: Search) {
                 var showSearchOrderDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.search_display_order).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.user_interface.search_display_order"),
                         title = stringResource(R.string.search_display_order),
                         text = stringResource(R.string.search_display_order_description),
                         icon = R.drawable.search,
@@ -280,6 +291,7 @@ internal fun UiInterfaceCard(search: Search) {
                 if (UiType.ViMusic.isCurrent()) {
                     if (search.inputValue.isBlank() || stringResource(R.string.vimusic_show_search_button_in_navigation_bar).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
+                            modifier = Modifier.settingsSearchTarget("ui.user_interface.vimusic_show_search_button_in_navigation_bar"),
                             title = stringResource(R.string.vimusic_show_search_button_in_navigation_bar),
                             text = stringResource(R.string.vismusic_only_in_left_right_navigation_bar),
                             isChecked = showSearchTab,
@@ -289,6 +301,7 @@ internal fun UiInterfaceCard(search: Search) {
                     }
                     if (search.inputValue.isBlank() || stringResource(R.string.show_statistics_in_navigation_bar).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
+                            modifier = Modifier.settingsSearchTarget("ui.user_interface.show_statistics_in_navigation_bar"),
                             title = stringResource(R.string.show_statistics_in_navigation_bar),
                             text = "",
                             isChecked = showStatsInNavbar,
@@ -300,6 +313,7 @@ internal fun UiInterfaceCard(search: Search) {
 
                 if (search.inputValue.isBlank() || stringResource(R.string.show_floating_icon).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.user_interface.show_floating_icon"),
                         title = stringResource(R.string.show_floating_icon),
                         text = "",
                         isChecked = showFloatingIcon,
@@ -311,6 +325,7 @@ internal fun UiInterfaceCard(search: Search) {
                 var rememberQueueScrollPosition by rememberPreference(rememberQueueScrollPositionKey, true)
                 if (search.inputValue.isBlank() || stringResource(R.string.remember_queue_scroll_position).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.user_interface.remember_queue_scroll_position"),
                         title = stringResource(R.string.remember_queue_scroll_position),
                         text = stringResource(R.string.remember_queue_scroll_position_description),
                         isChecked = rememberQueueScrollPosition,

@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
@@ -115,6 +116,7 @@ internal fun AppearanceCoverCard(search: Search) {
                 )
                     if (search.inputValue.isBlank() || stringResource(R.string.show_thumbnail).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.show_thumbnail"),
                         icon = R.drawable.image,
                             title = stringResource(R.string.show_thumbnail),
                             text = "",
@@ -144,7 +146,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                     SwipeAnimationNoThumbnail.Circle -> stringResource(R.string.vt_circular)
                                 }
                             },
-                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                            modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.swipe_Animation_No_Thumbnail")
                         )
                     }
             }
@@ -163,7 +165,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                     text = "",
                                     isChecked = fadingedge,
                                     onCheckedChange = { fadingedge = it },
-                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                    modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.fadingedge")
                                 )
                             }
                     }
@@ -181,7 +183,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                     text = "",
                                     isChecked = carousel,
                                     onCheckedChange = { carousel = it },
-                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                    modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.carousel")
                                 )
                             }
 
@@ -197,7 +199,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                     selectedValue = carouselSize,
                                     onValueSelected = { carouselSize = it },
                                     valueText = { it.text },
-                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                    modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.carouselsize")
                                 )
                             }
                     }
@@ -215,7 +217,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                     text = "",
                                     isChecked = thumbnailpause,
                                     onCheckedChange = { thumbnailpause = it },
-                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                    modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.thumbnailpause")
                                 )
                             }
 
@@ -228,7 +230,7 @@ internal fun AppearanceCoverCard(search: Search) {
                             text = "",
                             isChecked = cropVideoThumbnails,
                             onCheckedChange = { cropVideoThumbnails = it },
-                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                            modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.crop_video_thumbnails")
                         )
                     }
 
@@ -244,7 +246,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                 text = "",
                                 isChecked = showCoverThumbnailAnimation,
                                 onCheckedChange = { showCoverThumbnailAnimation = it },
-                                modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.show_cover_thumbnail_animation")
                             )
                         }
                         AnimatedVisibility(visible = showCoverThumbnailAnimation) {
@@ -256,7 +258,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                         selectedValue = coverThumbnailAnimation,
                                         onValueSelected = { coverThumbnailAnimation = it },
                                         valueText = { it.text },
-                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 50.dp else 25.dp)
+                                        modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 50.dp else 25.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.cover_thumbnail_animation_type")
                                     )
                                 }
                             }
@@ -274,6 +276,7 @@ internal fun AppearanceCoverCard(search: Search) {
                             if (search.inputValue.isBlank() || stringResource(R.string.player_thumbnail_size).contains(search.inputValue, true)) {
                                 Column(modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)) {
                                     SliderSettingsEntry(
+                                        modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.player_thumbnail_size"),
                                         icon = R.drawable.resize,
                                         title = stringResource(R.string.player_thumbnail_size),
                                         text = "",
@@ -316,6 +319,7 @@ internal fun AppearanceCoverCard(search: Search) {
                             if (search.inputValue.isBlank() || stringResource(R.string.player_thumbnail_size).contains(search.inputValue, true)) {
                                 Column(modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)) {
                                     SliderSettingsEntry(
+                                        modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.player_thumbnail_size"),
                                         icon = R.drawable.resize,
                                         title = stringResource(R.string.player_thumbnail_size),
                                         text = "",
@@ -360,6 +364,7 @@ internal fun AppearanceCoverCard(search: Search) {
                         if (search.inputValue.isBlank() || stringResource(R.string.thumbnail_roundness).contains(search.inputValue, true)) {
                             Column(modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)) {
                                 SliderSettingsEntry(
+                                    modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.thumbnail_roundness"),
                                     icon = R.drawable.image,
                                     title = stringResource(R.string.thumbnail_roundness),
                                     text = "",
@@ -402,6 +407,7 @@ internal fun AppearanceCoverCard(search: Search) {
                         if (search.inputValue.isBlank() || stringResource(R.string.artist_roundness).contains(search.inputValue, true)) {
                             Column(modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)) {
                                 SliderSettingsEntry(
+                                    modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.artist_roundness"),
                                     icon = R.drawable.image,
                                     title = stringResource(R.string.artist_roundness),
                                     text = "",
@@ -455,7 +461,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                 onSlide = { uiRoundnessDp = kotlin.math.round(it) },
                                 toDisplay = { it.toInt().toString() },
                                 trailingContent = @Composable { Row(verticalAlignment = Alignment.CenterVertically) { Spacer(modifier = Modifier.size(36.dp).background(color = colorPalette().accent.copy(alpha = 0.5f), shape = RoundedCornerShape(BoundedCornerSize(uiRoundnessDp.dp, 0.4f))).border(width = 1.dp, color = colorPalette().accent, shape = RoundedCornerShape(BoundedCornerSize(uiRoundnessDp.dp, 0.4f)))) } },
-                                modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.ui_roundness")
                             )
 
                             Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
@@ -487,6 +493,7 @@ internal fun AppearanceCoverCard(search: Search) {
                 )
                     if (search.inputValue.isBlank() || stringResource(R.string.noblur).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.noblur"),
                         icon = R.drawable.eye_off,
                             title = stringResource(R.string.noblur),
                             text = "",
@@ -506,6 +513,7 @@ internal fun AppearanceCoverCard(search: Search) {
                 )
                     if (search.inputValue.isBlank() || stringResource(R.string.statsfornerdsplayer).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.statsfornerdsplayer"),
                         icon = R.drawable.stats_chart,
                             title = stringResource(R.string.statsfornerdsplayer),
                             text = "",

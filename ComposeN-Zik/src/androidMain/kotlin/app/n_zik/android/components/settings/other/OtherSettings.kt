@@ -129,56 +129,98 @@ fun OtherSettings(
         LaunchedEffect(hasSearchResults) {
             if (!hasSearchResults) scrollState.scrollTo(0)
         }
-        settingsSearchContent(searchFocus, hasResults = hasSearchResults) {
-            OtherOnDeviceCard(search)
-
-            OtherHeadUnitCard(search)
-
-            OtherServiceLifetimeCard(search)
-
-            OtherProxyCard(search)
-
-            OtherParentalControlCard(search)
-
-            val searchCtx_Maintenance = search.inputValue.isBlank() || stringResource(R.string.maintenance).contains(search.inputValue, true) || stringResource(R.string.maintenance_open).contains(search.inputValue, true) || stringResource(R.string.enable_log_debug).contains(search.inputValue, true) || stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors).contains(search.inputValue, true) || stringResource(R.string.export_logs).contains(search.inputValue, true) || stringResource(R.string.export_debug_log_description).contains(search.inputValue, true)
-            AnimatedVisibility(
-                visible = searchCtx_Maintenance,
-                enter = settingsCardEnter,
-                exit = settingsCardExit
-            ) {
-                Box(modifier = Modifier.onGloballyPositioned { maintenanceCardTopY = it.positionInRoot().y }) {
-                    MaintenanceSettingsCard()
+        OtherSettingsContent(
+            search = search,
+            onCardPosition = { id, top ->
+                when (id) {
+                    "maintenance" -> maintenanceCardTopY = top
+                    "extensions" -> extensionsCardTopY = top
+                    "rescue" -> rescueCardTopY = top
                 }
-            }
+            },
+            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults) { cards() } },
+        )
 
-            val searchCtx_Extensions = search.inputValue.isBlank() || stringResource(R.string.modules_title).contains(search.inputValue, true) || stringResource(R.string.module_ffmpeg).contains(search.inputValue, true) || stringResource(R.string.module_ffmpeg_description).contains(search.inputValue, true)
-            AnimatedVisibility(
-                visible = searchCtx_Extensions,
-                enter = settingsCardEnter,
-                exit = settingsCardExit
-            ) {
-                Box(modifier = Modifier.onGloballyPositioned { extensionsCardTopY = it.positionInRoot().y }) {
-                    ExtensionsSettingsCard()
-                }
-            }
-
-            val searchCtx_Rescue = search.inputValue.isBlank() || stringResource(R.string.rescue_center).contains(search.inputValue, true) || stringResource(R.string.rescue_center_description).contains(search.inputValue, true)
-            AnimatedVisibility(
-                visible = searchCtx_Rescue,
-                enter = settingsCardEnter,
-                exit = settingsCardExit
-            ) {
-                Box(modifier = Modifier.onGloballyPositioned { rescueCardTopY = it.positionInRoot().y }) {
-                    RescueCenterSettingsCard()
-                }
-            }
-
-            OtherResetCard(search)
-        }
 
         SettingsGroupSpacer(
             modifier = Modifier.height(Dimensions.bottomSpacer)
         )
 
+    }
+}
+
+@androidx.annotation.OptIn(UnstableApi::class)
+@Composable
+internal fun OtherSettingsContent(
+    search: Search,
+    selectedCards: Set<Int>? = null,
+    cardModifier: @Composable (Int) -> Modifier = { Modifier },
+    onCardPosition: (String, Float) -> Unit = { _, _ -> },
+    cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
+) {
+    cardsContainer {
+        if (selectedCards == null || R.string.on_device in selectedCards) {
+            Box(modifier = cardModifier(R.string.on_device)) {
+                OtherOnDeviceCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.androidheadunit in selectedCards) {
+            Box(modifier = cardModifier(R.string.androidheadunit)) {
+                OtherHeadUnitCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.service_lifetime in selectedCards) {
+            Box(modifier = cardModifier(R.string.service_lifetime)) {
+                OtherServiceLifetimeCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.proxy in selectedCards) {
+            Box(modifier = cardModifier(R.string.proxy)) {
+                OtherProxyCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.parental_control in selectedCards) {
+            Box(modifier = cardModifier(R.string.parental_control)) {
+                OtherParentalControlCard(search)
+            }
+        }
+        val searchCtx_Maintenance = search.inputValue.isBlank() || stringResource(R.string.maintenance).contains(search.inputValue, true) || stringResource(R.string.maintenance_open).contains(search.inputValue, true) || stringResource(R.string.enable_log_debug).contains(search.inputValue, true) || stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors).contains(search.inputValue, true) || stringResource(R.string.export_logs).contains(search.inputValue, true) || stringResource(R.string.export_debug_log_description).contains(search.inputValue, true)
+        AnimatedVisibility(
+            visible = (selectedCards == null || R.string.maintenance in selectedCards) && searchCtx_Maintenance,
+            enter = settingsCardEnter,
+            exit = settingsCardExit
+        ) {
+            Box(modifier = cardModifier(R.string.maintenance).onGloballyPositioned { onCardPosition("maintenance", it.positionInRoot().y) }) {
+                MaintenanceSettingsCard()
+            }
+        }
+
+        val searchCtx_Extensions = search.inputValue.isBlank() || stringResource(R.string.modules_title).contains(search.inputValue, true) || stringResource(R.string.module_ffmpeg).contains(search.inputValue, true) || stringResource(R.string.module_ffmpeg_description).contains(search.inputValue, true)
+        AnimatedVisibility(
+            visible = (selectedCards == null || R.string.modules_title in selectedCards) && searchCtx_Extensions,
+            enter = settingsCardEnter,
+            exit = settingsCardExit
+        ) {
+            Box(modifier = cardModifier(R.string.modules_title).onGloballyPositioned { onCardPosition("extensions", it.positionInRoot().y) }) {
+                ExtensionsSettingsCard()
+            }
+        }
+
+        val searchCtx_Rescue = search.inputValue.isBlank() || stringResource(R.string.rescue_center).contains(search.inputValue, true) || stringResource(R.string.rescue_center_description).contains(search.inputValue, true)
+        AnimatedVisibility(
+            visible = (selectedCards == null || R.string.rescue_center in selectedCards) && searchCtx_Rescue,
+            enter = settingsCardEnter,
+            exit = settingsCardExit
+        ) {
+            Box(modifier = cardModifier(R.string.rescue_center).onGloballyPositioned { onCardPosition("rescue", it.positionInRoot().y) }) {
+                RescueCenterSettingsCard()
+            }
+        }
+
+        if (selectedCards == null || R.string.settings_reset in selectedCards) {
+            Box(modifier = cardModifier(R.string.settings_reset)) {
+                OtherResetCard(search)
+            }
+        }
     }
 }

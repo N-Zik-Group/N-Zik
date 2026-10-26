@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.data
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -23,6 +24,7 @@ internal fun DataResetCard(search: Search) {
         visible = visible,
         content = {
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("data.settings_reset.settings_reset"),
                 title = stringResource(R.string.settings_reset),
                 text = stringResource(R.string.settings_restore_default_settings),
                 icon = R.drawable.refresh,

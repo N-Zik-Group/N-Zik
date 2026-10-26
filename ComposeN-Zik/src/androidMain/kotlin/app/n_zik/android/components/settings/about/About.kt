@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings.about
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -54,20 +55,28 @@ fun About(navController: NavController) {
             textAlign = TextAlign.Center
         )
 
-        AboutAppCard()
-
-
-
-        AboutSupportCard()
-
-
-
-        AboutContributorsCard()
-
+        AboutSettingsContent()
 
         SettingsGroupSpacer(
             modifier = Modifier.height(Dimensions.bottomSpacer)
         )
 
+    }
+}
+
+/** Content-only host shared by the legacy About page and thematic category shell. */
+@Composable
+internal fun AboutSettingsContent(
+    selectedCards: Set<Int>? = null,
+    cardModifier: @Composable (Int) -> Modifier = { Modifier },
+) {
+    if (selectedCards == null || R.string.about in selectedCards) {
+        Box(cardModifier(R.string.about)) { AboutAppCard() }
+    }
+    if (selectedCards == null || R.string.troubleshooting in selectedCards) {
+        Box(cardModifier(R.string.troubleshooting)) { AboutSupportCard() }
+    }
+    if (selectedCards == null || R.string.contributors in selectedCards) {
+        Box(cardModifier(R.string.contributors)) { AboutContributorsCard() }
     }
 }

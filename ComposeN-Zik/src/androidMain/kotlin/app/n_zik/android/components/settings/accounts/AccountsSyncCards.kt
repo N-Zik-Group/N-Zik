@@ -2,8 +2,11 @@ package app.n_zik.android.components.settings.accounts
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.ui.Modifier
+import app.n_zik.android.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,7 +23,15 @@ import app.n_zik.android.components.settings.common.settingsCardExit
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
-internal fun AccountsSyncCards() {
+internal fun AccountsSyncCards(
+    selectedCards: Set<Int>? = null,
+    cardModifier: @Composable (Int) -> Modifier = { Modifier },
+) {
+    if (selectedCards != null && selectedCards.none {
+        it == R.string.sync_data_with_ytm_account || it == R.string.autosync ||
+            it == R.string.sync_import_from_youtube || it == R.string.sync_push_to_youtube
+    }) return
+
     val useLoginForBrowseSync by rememberPreference(useLoginForBrowseKey, true)
     val isYouTubeLoginActive by rememberEncryptedPreference(enableYouTubeLoginKey, false)
 
@@ -40,23 +51,31 @@ internal fun AccountsSyncCards() {
         }
 
         Column {
-            // Sync data toggle + Sync Now + Direction
-            AccountsSyncOverviewCard(isYouTubeSyncEnabled, isSyncEnabled) { isYouTubeSyncEnabled = it }
+            if (selectedCards == null || R.string.sync_data_with_ytm_account in selectedCards) {
+                Box(modifier = cardModifier(R.string.sync_data_with_ytm_account)) {
+                    AccountsSyncOverviewCard(isYouTubeSyncEnabled, isSyncEnabled) { isYouTubeSyncEnabled = it }
+                }
+            }
 
-            // Auto-Sync, Import, Push (only when sync is enabled)
             AnimatedVisibility(visible = isSyncEnabled) {
                 Column {
-                    // Auto-Sync (per feature)
-                    AccountsAutoSyncCard()
-
-                    // Import from YouTube
-                    AccountsSyncImportCard()
-
-                    // Push to YouTube
-                    AccountsSyncPushCard()
+                    if (selectedCards == null || R.string.autosync in selectedCards) {
+                        Box(modifier = cardModifier(R.string.autosync)) {
+                            AccountsAutoSyncCard()
+                        }
+                    }
+                    if (selectedCards == null || R.string.sync_import_from_youtube in selectedCards) {
+                        Box(modifier = cardModifier(R.string.sync_import_from_youtube)) {
+                            AccountsSyncImportCard()
+                        }
+                    }
+                    if (selectedCards == null || R.string.sync_push_to_youtube in selectedCards) {
+                        Box(modifier = cardModifier(R.string.sync_push_to_youtube)) {
+                            AccountsSyncPushCard()
+                        }
+                    }
                 }
             }
         }
-
     }
 }

@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -26,6 +28,7 @@ fun OfflineModeSettingsCard(modifier: Modifier = Modifier) {
         modifier = modifier,
         content = {
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("embedded.offline.offline_mode"),
                 title = stringResource(R.string.offline_mode),
                 text = stringResource(R.string.offline_mode_description),
                 isChecked = offlineMode,

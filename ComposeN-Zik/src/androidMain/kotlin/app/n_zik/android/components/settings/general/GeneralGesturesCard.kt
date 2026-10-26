@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.general
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -27,6 +29,7 @@ fun GeneralGesturesCard(
         visible = visible,
         content = {
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("general.gestures_events.event_volumekeys"),
                 title = stringResource(R.string.event_volumekeys),
                 text = stringResource(R.string.event_volumekeysinfo),
                 isChecked = useVolumeKeysToChangeSong,

@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +29,7 @@ fun ExtensionsSettingsCard(modifier: Modifier = Modifier) {
         modifier = modifier,
         content = {
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("embedded.extensions.module_open"),
                 title = stringResource(R.string.module_open),
                 text = stringResource(R.string.module_open_desc),
                 icon = R.drawable.chevron_forward,

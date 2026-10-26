@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.network
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -19,6 +20,7 @@ internal fun NetworkServerCard(query: String, navController: NavController, modi
             modifier = modifier,
             content = {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("network.bridge_server.bridge_server"),
                     title = stringResource(R.string.bridge_server),
                     text = stringResource(R.string.bridge_server_description),
                     icon = R.drawable.devices,

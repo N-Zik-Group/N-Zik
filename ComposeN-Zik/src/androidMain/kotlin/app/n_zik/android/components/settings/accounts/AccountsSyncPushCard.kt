@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.accounts
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -29,6 +31,7 @@ internal fun AccountsSyncPushCard() {
             var syncPushHistory by rememberPreference(syncPushHistoryKey, false)
 
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("accounts.sync_push_to_youtube.sync_push_history"),
                 title = stringResource(R.string.sync_push_history),
                 text = stringResource(R.string.sync_push_history_description),
                 isChecked = syncPushHistory,
@@ -36,6 +39,7 @@ internal fun AccountsSyncPushCard() {
                 icon = R.drawable.history
             )
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("accounts.sync_push_to_youtube.sync_push_song_like"),
                 title = stringResource(R.string.sync_push_song_like),
                 text = stringResource(R.string.sync_push_song_like_description),
                 isChecked = syncPushSongLike,
@@ -43,6 +47,7 @@ internal fun AccountsSyncPushCard() {
                 icon = R.drawable.heart
             )
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("accounts.sync_push_to_youtube.sync_push_album_bookmark"),
                 title = stringResource(R.string.sync_push_album_bookmark),
                 text = stringResource(R.string.sync_push_album_bookmark_description),
                 isChecked = syncPushAlbumBookmark,
@@ -50,6 +55,7 @@ internal fun AccountsSyncPushCard() {
                 icon = R.drawable.album
             )
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("accounts.sync_push_to_youtube.sync_push_artist_follow"),
                 title = stringResource(R.string.sync_push_artist_follow),
                 text = stringResource(R.string.sync_push_artist_follow_description),
                 isChecked = syncPushArtistFollow,
@@ -57,6 +63,7 @@ internal fun AccountsSyncPushCard() {
                 icon = R.drawable.people
             )
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("accounts.sync_push_to_youtube.sync_push_playlist"),
                 title = stringResource(R.string.sync_push_playlist),
                 text = stringResource(R.string.sync_push_playlist_description),
                 isChecked = syncPushPlaylist,
@@ -65,6 +72,7 @@ internal fun AccountsSyncPushCard() {
             )
             var syncPushEpisode by rememberPreference(syncPushEpisodeKey, false)
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("accounts.sync_push_to_youtube.sync_push_episode"),
                 title = stringResource(R.string.sync_push_episode),
                 text = stringResource(R.string.sync_push_episode_description),
                 isChecked = syncPushEpisode,

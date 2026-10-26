@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -45,6 +47,7 @@ fun DownloadQualityEntry(onQualityChanged: () -> Unit = {}) {
     var downloadQualityFormat by rememberPreference(downloadQualityFormatKey, DownloadQualityFormat.Auto)
 
     OtherSettingsEntry(
+        modifier = Modifier.settingsSearchTarget("embedded.network.download_quality_format"),
         title = stringResource(R.string.download_quality_format),
         text = when (downloadQualityFormat) {
             DownloadQualityFormat.Auto -> stringResource(R.string.audio_quality_automatic)
@@ -92,6 +95,7 @@ fun UpdateDownloadsButton() {
     var isChecking by remember { mutableStateOf(false) }
 
     OtherSettingsEntry(
+        modifier = Modifier.settingsSearchTarget("embedded.network.update_downloads"),
         title = stringResource(R.string.update_downloads),
         text = stringResource(R.string.update_downloads_description),
         icon = R.drawable.download,

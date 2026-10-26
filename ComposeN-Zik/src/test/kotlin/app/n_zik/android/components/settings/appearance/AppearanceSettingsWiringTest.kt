@@ -1,5 +1,14 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.R
+import app.n_zik.android.components.tab.Search
+import androidx.compose.ui.test.isEditable
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Column
 import android.app.Application
 import android.content.Context
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -63,6 +72,27 @@ class AppearanceSettingsWiringTest {
             }
         }
         composeRule.waitForIdle()
+    }
+
+    @Test fun selectedContentDoesNotNestThePageShell() {
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    AppearanceSettingsContent(
+                        search = Search(initialVisible = true),
+                        navController = mockk(relaxed = true),
+                        selectedCards = setOf(R.string.notification_player),
+                        cardModifier = { Modifier.testTag("appearance.selected") },
+                    )
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("appearance.selected").assertExists()
+        composeRule.onAllNodes(isEditable()).assertCountEquals(0)
+        composeRule.onNodeWithTag("appearance.card.notification", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("appearance.card.presets", useUnmergedTree = true).assertDoesNotExist()
+        composeRule.onNodeWithTag("appearance.card.reset", useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test fun cardsUseAvailableWidthForFloatingAndSideNavigation() {

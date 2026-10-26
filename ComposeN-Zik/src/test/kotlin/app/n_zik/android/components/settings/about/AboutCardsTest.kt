@@ -5,6 +5,10 @@ import android.content.Context
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.test.onNodeWithTag
+import app.n_zik.android.components.settings.common.AboutSettingsEntryTargets
+import app.n_zik.android.components.settings.common.LocalSettingsTargets
+import app.n_zik.android.components.settings.common.SettingsTargetRegistry
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -42,11 +46,17 @@ class AboutCardsTest {
             uiRoundnessShape = CircleShape,
             artistThumbnailShape = CircleShape,
         )
+        val registry = SettingsTargetRegistry()
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance, LocalUriHandler provides handler) {
-                AboutSupportCard()
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalUriHandler provides handler, LocalSettingsTargets provides registry) {
+                AboutSettingsContent(selectedCards = setOf(R.string.troubleshooting))
             }
         }
+        AboutSettingsEntryTargets.filter { it.cardTitleRes == R.string.troubleshooting }.forEach { entry ->
+            composeRule.onNodeWithTag("settings.target.${entry.id}", useUnmergedTree = true).assertExists()
+        }
+        composeRule.onNodeWithText(context.getString(R.string.contributors)).assertDoesNotExist()
+        assertEquals("Rendering a search destination must not open a browser", emptyList<String>(), opened)
         composeRule.onNodeWithText(context.getString(R.string.view_the_source_code)).performClick()
         composeRule.onNodeWithText(context.getString(R.string.report_an_issue)).performClick()
         composeRule.onNodeWithText(context.getString(R.string.request_a_feature_or_suggest_an_idea)).performClick()

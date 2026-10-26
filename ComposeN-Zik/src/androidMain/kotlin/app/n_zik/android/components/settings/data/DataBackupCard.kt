@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.data
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -30,6 +31,7 @@ internal fun DataBackupCard(search: Search) {
 
             if (search.inputValue.isBlank() || stringResource(R.string.export_backup).contains(search.inputValue, true) || stringResource(R.string.export_backup_description).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("data.title_backup_and_restore.export_backup"),
                     title = stringResource(R.string.export_backup),
                     text = stringResource(R.string.export_backup_description),
                     icon = R.drawable.export_outline,
@@ -42,6 +44,7 @@ internal fun DataBackupCard(search: Search) {
 
             if (search.inputValue.isBlank() || stringResource(R.string.import_backup).contains(search.inputValue, true) || stringResource(R.string.import_backup_description).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("data.title_backup_and_restore.import_backup"),
                     title = stringResource(R.string.import_backup),
                     text = stringResource(R.string.import_backup_description),
                     icon = R.drawable.import_outline,
@@ -57,6 +60,7 @@ internal fun DataBackupCard(search: Search) {
 
             if (search.inputValue.isBlank() || stringResource(R.string.title_import_settings_migration).contains(search.inputValue, true) || stringResource(R.string.description_import_settings_migration).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("data.title_backup_and_restore.title_import_settings_migration"),
                     title = stringResource(R.string.title_import_settings_migration),
                     text = stringResource(R.string.description_import_settings_migration),
                     icon = R.drawable.data_migration,

@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,6 +62,7 @@ internal fun AboutContributorsCard() {
 
                     Row(
                         modifier = Modifier
+                            .settingsSearchTarget("about.contributors.translators")
                             .fillMaxWidth()
                             .clip(uiRoundnessShape())
                             .clip(uiRoundnessShape()).clickable { translatorsExpanded = !translatorsExpanded }
@@ -112,6 +114,7 @@ internal fun AboutContributorsCard() {
 
                     Row(
                         modifier = Modifier
+                            .settingsSearchTarget("about.contributors.about_developers_designers")
                             .fillMaxWidth()
                             .clip(uiRoundnessShape())
                             .clip(uiRoundnessShape()).clickable { developersExpanded = !developersExpanded }

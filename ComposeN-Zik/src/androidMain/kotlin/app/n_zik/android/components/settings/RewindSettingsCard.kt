@@ -1,5 +1,9 @@
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+
+import androidx.compose.ui.Modifier
+
 import androidx.compose.animation.AnimatedVisibility
 import app.n_zik.android.components.settings.common.settingsEntryEnter
 import app.n_zik.android.components.settings.common.settingsEntryExit
@@ -66,6 +70,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                 // spec-customizable-burger-menu goal B).
                 onOpenRewind?.let { onOpen ->
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("embedded.rewind.module_open"),
                         title = stringResource(R.string.module_open),
                         text = stringResource(R.string.rewind_open_desc),
                         icon = R.drawable.chevron_forward,
@@ -73,6 +78,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                     )
                 }
                 OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_yearly"),
                     title = stringResource(R.string.rw_settings_yearly),
                     text = stringResource(R.string.rw_settings_yearly_description),
                     isChecked = yearlyEnabled,
@@ -83,6 +89,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                     icon = R.drawable.trending
                 )
                 OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_monthly"),
                     title = stringResource(R.string.rw_settings_monthly),
                     text = stringResource(R.string.rw_settings_monthly_description),
                     isChecked = monthlyEnabled,
@@ -93,6 +100,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                     icon = R.drawable.calendar
                 )
                 OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_global"),
                     title = stringResource(R.string.rw_settings_global),
                     text = stringResource(R.string.rw_settings_global_description),
                     isChecked = globalEnabled,
@@ -106,6 +114,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                 // here is live for a deck already open, and off means no player is created
                 // when the deck opens.
                 OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_bgmusic_settings"),
                     title = stringResource(R.string.rw_bgmusic_settings),
                     text = stringResource(R.string.rw_bgmusic_mute_cd),
                     isChecked = bgmEnabled,
@@ -127,6 +136,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
             content = {
                 AnimatedVisibility(visible = rewindEnabled && yearlyEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_yearly_notification"),
                         title = stringResource(R.string.rw_settings_yearly_notification),
                         text = stringResource(R.string.rw_settings_yearly_notification_description),
                         isChecked = yearlyNotifEnabled,
@@ -139,6 +149,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                 }
                 AnimatedVisibility(visible = rewindEnabled && monthlyEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_monthly_notification"),
                         title = stringResource(R.string.rw_settings_monthly_notification),
                         text = stringResource(R.string.rw_settings_monthly_notification_description),
                         isChecked = monthlyNotifEnabled,
@@ -151,6 +162,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                 }
                 AnimatedVisibility(visible = monthlyPlaylistEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_playlists_monthly_notification"),
                         title = stringResource(R.string.rw_settings_playlists_monthly_notification),
                         text = stringResource(R.string.rw_settings_playlists_monthly_notification_description),
                         isChecked = monthlyPlaylistNotifEnabled,
@@ -163,6 +175,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                 }
                 AnimatedVisibility(visible = yearlyPlaylistEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_playlists_yearly_notification"),
                         title = stringResource(R.string.rw_settings_playlists_yearly_notification),
                         text = stringResource(R.string.rw_settings_playlists_yearly_notification_description),
                         isChecked = yearlyPlaylistNotifEnabled,
@@ -184,6 +197,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
             visible = rewindEnabled,
             content = {
                 OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_playlists_monthly"),
                     title = stringResource(R.string.rw_settings_playlists_monthly),
                     text = stringResource(R.string.rw_settings_playlists_monthly_description),
                     isChecked = monthlyPlaylistEnabled,
@@ -194,6 +208,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                     icon = R.drawable.calendar
                 )
                 OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_playlists_yearly"),
                     title = stringResource(R.string.rw_settings_playlists_yearly),
                     text = stringResource(R.string.rw_settings_playlists_yearly_description),
                     isChecked = yearlyPlaylistEnabled,

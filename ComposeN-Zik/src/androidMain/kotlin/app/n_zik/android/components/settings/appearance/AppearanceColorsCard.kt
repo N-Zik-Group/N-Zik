@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Spacer
@@ -76,6 +77,7 @@ internal fun AppearanceColorsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.background_colors).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.background_colors"),
                         icon = R.drawable.droplet,
                         title = stringResource(R.string.background_colors),
                         selectedValue = playerBackgroundColors,
@@ -101,7 +103,7 @@ internal fun AppearanceColorsCard(search: Search) {
                                 animatedGradient = it
                             },
                             valueText = { it.text },
-                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) 25.dp else 0.dp)
+                            modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) 25.dp else 0.dp)).settingsSearchTarget("appearance.colors_and_background.gradienttype")
                         )
                     }
             }
@@ -115,7 +117,7 @@ internal fun AppearanceColorsCard(search: Search) {
                         selectedValue = shakeSensitivityTheme,
                         onValueSelected = { shakeSensitivityTheme = it },
                         valueText = { it.text },
-                        modifier = Modifier.padding(start = 25.dp)
+                        modifier = (Modifier.padding(start = 25.dp)).settingsSearchTarget("appearance.colors_and_background.shake_sensitivity_theme")
                     )
                 }
             }
@@ -129,7 +131,7 @@ internal fun AppearanceColorsCard(search: Search) {
                             text = "",
                             isChecked = isRotatingCoverEnabled,
                             onCheckedChange = { isRotatingCoverEnabled = it },
-                            modifier = Modifier.padding( start = 25.dp )
+                            modifier = (Modifier.padding( start = 25.dp )).settingsSearchTarget("appearance.colors_and_background.rotating_cover_title")
                         )
                     }
             }
@@ -143,6 +145,7 @@ internal fun AppearanceColorsCard(search: Search) {
                 )
                     if (search.inputValue.isBlank() || stringResource(R.string.blackgradient).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.blackgradient"),
                         icon = R.drawable.drop_half_fill,
                             title = stringResource(R.string.blackgradient),
                             text = "",
@@ -164,8 +167,8 @@ internal fun AppearanceColorsCard(search: Search) {
                             text = "",
                             isChecked = albumCoverRotation,
                             onCheckedChange = { albumCoverRotation = it },
-                            modifier = Modifier
-                                .padding(start = 25.dp)
+                            modifier = (Modifier
+                                .padding(start = 25.dp)).settingsSearchTarget("appearance.colors_and_background.albumCoverRotation")
                         )
                     }
 
@@ -177,6 +180,7 @@ internal fun AppearanceColorsCard(search: Search) {
                 )
                     if (search.inputValue.isBlank() || stringResource(R.string.bottomgradient).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.bottomgradient"),
                         icon = R.drawable.droplet,
                             title = stringResource(R.string.bottomgradient),
                             text = "",
@@ -191,6 +195,7 @@ internal fun AppearanceColorsCard(search: Search) {
              )
                  if (search.inputValue.isBlank() || stringResource(R.string.textoutline).contains(search.inputValue, true)) {
                      OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.textoutline"),
                         icon = R.drawable.text,
                          title = stringResource(R.string.textoutline),
                          text = "",
@@ -206,6 +211,7 @@ internal fun AppearanceColorsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.show_total_time_of_queue).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.show_total_time_of_queue"),
                         icon = R.drawable.time,
                         title = stringResource(R.string.show_total_time_of_queue),
                         text = "",
@@ -221,6 +227,7 @@ internal fun AppearanceColorsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.show_remaining_song_time).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.show_remaining_song_time"),
                         icon = R.drawable.time,
                         title = stringResource(R.string.show_remaining_song_time),
                         text = "",
@@ -236,6 +243,7 @@ internal fun AppearanceColorsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.skip_time_buttons).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.skip_time_buttons"),
                         title = stringResource(R.string.skip_time_buttons),
                         text = "",
                         isChecked = showSkipTimeButtons,

@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.general
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -81,6 +82,7 @@ fun GeneralAudioEffectsCard(
         visible = visible,
         content = {
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("general.audio_effects.skip_silence"),
                 title = stringResource(R.string.skip_silence),
                 text = stringResource(R.string.skip_silent_parts_during_playback),
                 isChecked = skipSilence,
@@ -96,6 +98,7 @@ fun GeneralAudioEffectsCard(
                     modifier = Modifier.padding(start = 25.dp)
                 ) {
                     SliderSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("general.audio_effects.minimum_silence_length"),
                         title = stringResource(R.string.minimum_silence_length),
                         text = stringResource(R.string.minimum_silence_length_description),
                         state = newValue,
@@ -118,6 +121,7 @@ fun GeneralAudioEffectsCard(
             }
 
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("general.audio_effects.loudness_normalization"),
                 title = stringResource(R.string.loudness_normalization),
                 text = stringResource(R.string.autoadjust_the_volume),
                 isChecked = volumeNormalization,
@@ -135,6 +139,7 @@ fun GeneralAudioEffectsCard(
                     modifier = Modifier.padding(start = 25.dp)
                 ) {
                     SliderSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("general.audio_effects.settings_loudness_base_gain"),
                         title = stringResource(R.string.settings_loudness_base_gain),
                         text = stringResource(R.string.settings_target_gain_loudness_info),
                         state = newValue,
@@ -172,6 +177,7 @@ fun GeneralAudioEffectsCard(
                     }
 
                     SliderSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("general.audio_effects.loudness_boost_level"),
                         title = stringResource(R.string.loudness_boost_level),
                         text = stringResource(R.string.loudness_boost_level_info),
                         state = newValueVolume,
@@ -211,6 +217,7 @@ fun GeneralAudioEffectsCard(
             }
 
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("general.audio_effects.settings_audio_bass_boost"),
                 title = stringResource(R.string.settings_audio_bass_boost),
                 text = "",
                 isChecked = bassboostEnabled,
@@ -225,6 +232,7 @@ fun GeneralAudioEffectsCard(
                     modifier = Modifier.padding(start = 25.dp)
                 ) {
                     SliderSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("general.audio_effects.settings_bass_boost_level"),
                         title = stringResource(R.string.settings_bass_boost_level),
                         text = "",
                         state = newValue,
@@ -264,6 +272,7 @@ fun GeneralAudioEffectsCard(
             }
 
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.audio_effects.settings_audio_reverb"),
                 title = stringResource(R.string.settings_audio_reverb),
                 text = stringResource(audioReverb.textRes),
                 onClick = { showAudioReverbDialog = true },
@@ -286,6 +295,7 @@ fun GeneralAudioEffectsCard(
             }
 
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("general.audio_effects.settings_audio_focus"),
                 title = stringResource(R.string.settings_audio_focus),
                 text = stringResource(R.string.settings_audio_focus_info),
                 isChecked = audioFocusEnabled,
@@ -294,6 +304,7 @@ fun GeneralAudioEffectsCard(
             )
 
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.audio_effects.equalizer"),
                 title = stringResource(R.string.equalizer),
                 text = stringResource(R.string.interact_with_the_system_equalizer),
                 onClick = launchEqualizer,

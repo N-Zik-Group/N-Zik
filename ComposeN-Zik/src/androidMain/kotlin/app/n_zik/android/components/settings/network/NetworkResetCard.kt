@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.network
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
@@ -27,6 +29,7 @@ internal fun NetworkResetCard(query: String, onRestartRequired: () -> Unit) {
 
                 if (query.isBlank() || stringResource(R.string.settings_restore_default_settings).contains(query, true) || stringResource(R.string.settings_reset).contains(query, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("network.settings_reset.settings_reset"),
                         title = stringResource(R.string.settings_reset),
                         text = stringResource(R.string.settings_restore_default_settings),
                         icon = R.drawable.refresh,

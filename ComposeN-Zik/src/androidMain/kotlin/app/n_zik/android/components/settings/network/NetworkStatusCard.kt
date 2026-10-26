@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.network
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
@@ -43,6 +45,7 @@ internal fun NetworkStatusCard(networkQuality: ImageCacheFactory.NetworkQuality)
             }
 
             OtherInfoSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("network.network_status.image_quality_format"),
                 title = stringResource(R.string.image_quality_format),
                 text = imageStatusText,
                 icon = R.drawable.image
@@ -59,6 +62,7 @@ internal fun NetworkStatusCard(networkQuality: ImageCacheFactory.NetworkQuality)
             }
 
             OtherInfoSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("network.network_status.audio_quality_format"),
                 title = stringResource(R.string.audio_quality_format),
                 text = audioStatusText,
                 icon = R.drawable.audio_quality
@@ -75,6 +79,7 @@ internal fun NetworkStatusCard(networkQuality: ImageCacheFactory.NetworkQuality)
             }
 
             OtherInfoSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("network.network_status.download_quality_format"),
                 title = stringResource(R.string.download_quality_format),
                 text = downloadStatusText,
                 icon = R.drawable.download

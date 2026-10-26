@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -207,6 +209,7 @@ fun ProfileFaceCard(
             // spec-customizable-burger-menu goal B).
             onOpenProfiles?.let { onOpen ->
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("embedded.profile.module_open"),
                     title = stringResource(R.string.module_open),
                     text = stringResource(R.string.profiles_open_desc),
                     icon = R.drawable.chevron_forward,
@@ -215,6 +218,7 @@ fun ProfileFaceCard(
             }
 
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("embedded.profile.face_name_source"),
                 title = stringResource(R.string.face_name_source),
                 text = faceSourceLabel(nameSource),
                 icon = faceSourceIcon(nameSource),
@@ -222,6 +226,7 @@ fun ProfileFaceCard(
             )
 
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("embedded.profile.face_avatar_source"),
                 title = stringResource(R.string.face_avatar_source),
                 text = faceSourceLabel(avatarSource),
                 icon = faceSourceIcon(avatarSource),
@@ -229,6 +234,7 @@ fun ProfileFaceCard(
             )
 
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("embedded.profile.face_profile_name"),
                 title = stringResource(R.string.face_profile_name),
                 text = profileName,
                 icon = R.drawable.pencil,
@@ -236,6 +242,7 @@ fun ProfileFaceCard(
             )
 
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("embedded.profile.face_photo"),
                 title = stringResource(R.string.face_photo),
                 text = stringResource(
                     if (hasPhoto) R.string.face_photo_set else R.string.face_photo_not_set
@@ -251,6 +258,7 @@ fun ProfileFaceCard(
                 trailingContent = if (hasPhoto) {
                     {
                         IconButton(
+                            modifier = Modifier.settingsSearchTarget("embedded.profile.face_photo_remove"),
                             onClick = {
                                 // File IO off the main thread — the photo file is
                                 // removed alone (never the whole profile files dir).

@@ -19,6 +19,7 @@ data class SettingsPageItem(
     val tab: Int? = null,
     val route: String? = null,
     val keywordRes: List<Int> = emptyList(),
+    val categoryId: String? = null,
 )
 
 /** Group card holding About + Update (spec layout, card 1). */
@@ -62,10 +63,7 @@ data class SettingsPageGroup(
     val group: Int,
 )
 
-val SettingsPageGroups: List<SettingsPageGroup> = listOf(
-    SettingsPageGroup(SETTINGS_GROUP_ABOUT_UPDATE),
-    SettingsPageGroup(SETTINGS_GROUP_CATEGORIES),
-)
+val SettingsPageGroups: List<SettingsPageGroup> = (1..7).map(::SettingsPageGroup)
 
 /** The About category, hoisted to the first position of the global page. */
 val SettingsAboutItem = SettingsCategories.first { it.tab == 8 }
@@ -75,9 +73,9 @@ val SettingsAboutItem = SettingsCategories.first { it.tab == 8 }
  * category first, the Update item second, then the remaining categories in
  * tab order (General..Misc). [SettingsCategories] itself keeps tab order 0..8.
  */
-val SettingsPageItems: List<SettingsPageItem> =
-    listOf(SettingsAboutItem, SettingsUpdateItem) +
-        SettingsCategories.filter { it.tab in 0..7 }
+val SettingsPageItems: List<SettingsPageItem> = OrganizedSettingsCategories.map { category ->
+    SettingsPageItem(category.labelRes, category.iconRes, category.labelRes, category.group, categoryId = category.id)
+}.let { listOf(it.first(), SettingsUpdateItem) + it.drop(1) }
 
 /**
  * One settings card in the global search registry. [focusId] is the deep-link
@@ -432,6 +430,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(7, R.string.settings_reset, R.drawable.refresh,
         keywordRes = listOf(R.string.settings_reset, R.string.settings_restore_default_settings)),
     // Tab 8 - About
+    SettingsCardRegistryEntry(8, R.string.about, R.drawable.information),
     SettingsCardRegistryEntry(8, R.string.troubleshooting, R.drawable.information,
         keywordRes = listOf(
             R.string.troubleshooting, R.string.view_the_source_code,
@@ -449,9 +448,10 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
  */
 fun searchSettingsCards(context: Context, query: String): List<SettingsCardRegistryEntry> {
     if (query.isBlank()) return emptyList()
+    val entryMatches = searchSettingsEntries(context, query).map { it.tab to it.cardTitleRes }.toSet()
     return SettingsCards.filter { card ->
         val queryLower = query.lowercase()
-        context.getString(card.titleRes).contains(queryLower, true) ||
+        (card.tab to card.titleRes) in entryMatches || context.getString(card.titleRes).contains(queryLower, true) ||
             card.keywordRes.any { context.getString(it).contains(queryLower, true) }
     }
 }
@@ -464,13 +464,7 @@ fun searchSettingsCards(context: Context, query: String): List<SettingsCardRegis
 fun visibleCardTitleRes(context: Context, tab: Int, query: String): Set<Int> {
     val cards = SettingsCards.filter { it.tab == tab }
     if (query.isBlank()) return cards.mapTo(HashSet(cards.size)) { it.titleRes }
-    val queryLower = query.lowercase()
-    return cards
-        .filter { card ->
-            context.getString(card.titleRes).contains(queryLower, true) ||
-                card.keywordRes.any { context.getString(it).contains(queryLower, true) }
-        }
-        .mapTo(HashSet(cards.size)) { it.titleRes }
+    return searchSettingsCards(context, query).filter { it.tab == tab }.mapTo(HashSet()) { it.titleRes }
 }
 
 /**

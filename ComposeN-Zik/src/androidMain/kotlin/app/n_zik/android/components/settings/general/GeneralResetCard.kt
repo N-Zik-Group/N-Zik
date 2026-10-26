@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.general
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,6 +30,7 @@ fun GeneralResetCard(
         visible = visible,
         content = {
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.settings_reset.settings_reset"),
                 title = stringResource(R.string.settings_reset),
                 text = stringResource(R.string.settings_restore_default_settings),
                 icon = R.drawable.refresh,

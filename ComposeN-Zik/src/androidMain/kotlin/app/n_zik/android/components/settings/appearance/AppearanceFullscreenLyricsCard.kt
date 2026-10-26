@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
@@ -96,6 +97,7 @@ AnimatedVisibility(
                     )
                         if (search.inputValue.isBlank() || stringResource(R.string.show_total_time_of_queue).contains(search.inputValue, true)) {
                             OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.show_total_time_of_queue"),
                         icon = R.drawable.time,
                                 title = stringResource(R.string.show_total_time_of_queue),
                                 text = "",
@@ -112,6 +114,7 @@ AnimatedVisibility(
                 )
                     if (search.inputValue.isBlank() || stringResource(R.string.titleartist).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.titleartist"),
                         icon = R.drawable.title_edit,
                             title = stringResource(R.string.titleartist),
                             text = "",
@@ -127,6 +130,7 @@ AnimatedVisibility(
                 )
                     if (search.inputValue.isBlank() || stringResource(R.string.timeline).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.timeline"),
                         icon = R.drawable.ellipsis_horizontal,
                             title = stringResource(R.string.timeline),
                             text = "",
@@ -142,6 +146,7 @@ AnimatedVisibility(
                 )
                     if (search.inputValue.isBlank() || stringResource(R.string.controls).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.controls"),
                         icon = R.drawable.ellipsis_horizontal,
                             title = stringResource(R.string.controls),
                             text = "",
@@ -159,6 +164,7 @@ AnimatedVisibility(
                     )
                         if (search.inputValue.isBlank() || stringResource(R.string.statsfornerds).contains(search.inputValue, true)) {
                             OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.statsfornerds"),
                         icon = R.drawable.stats_chart,
                                 title = stringResource(R.string.statsfornerds),
                                 text = "",
@@ -189,6 +195,7 @@ AnimatedVisibility(
                     )
                         if (search.inputValue.isBlank() || stringResource(R.string.actionbar).contains(search.inputValue, true)) {
                             OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.actionbar"),
                         icon = R.drawable.menu,
                                 title = stringResource(R.string.actionbar),
                                 text = "",
@@ -207,6 +214,7 @@ AnimatedVisibility(
                     )
                         if (search.inputValue.isBlank() || stringResource(R.string.miniqueue).contains(search.inputValue, true)) {
                             OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.miniqueue"),
                         icon = R.drawable.sort_vertical,
                                 title = stringResource(R.string.miniqueue),
                                 text = "",

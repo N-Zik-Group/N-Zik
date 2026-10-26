@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -129,6 +130,7 @@ internal fun UiThemeCard(search: Search) {
                 var showUiTypeDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.interface_in_use).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.theme.interface_in_use"),
                         title = stringResource(R.string.interface_in_use),
                         text = uiType.text,
                         icon = R.drawable.ui,
@@ -153,6 +155,7 @@ internal fun UiThemeCard(search: Search) {
                 var showThemeDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.theme).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.theme.theme"),
                         title = stringResource(R.string.theme),
                         text = colorPaletteName.text,
                         icon = R.drawable.color_palette,
@@ -186,7 +189,7 @@ internal fun UiThemeCard(search: Search) {
                                 text = "",
                                 color = Color(customColor),
                                 onColorSelected = { customColor = it.hashCode() },
-                                modifier = Modifier.padding(start = 25.dp)
+                                modifier = (Modifier.padding(start = 25.dp)).settingsSearchTarget("ui.theme.customcolor")
                             )
                         }
                     }
@@ -197,6 +200,7 @@ internal fun UiThemeCard(search: Search) {
 
                         if (search.inputValue.isBlank() || stringResource(R.string.info_click_to_reset_default_light_colors).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true) || stringResource(R.string.title_reset_customized_light_colors).contains(search.inputValue, true)) {
                             ButtonBarSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.title_reset_customized_light_colors"),
                                 title = stringResource(R.string.title_reset_customized_light_colors),
                                 text = stringResource(R.string.info_click_to_reset_default_light_colors),
                                 icon = R.drawable.trash,
@@ -206,6 +210,7 @@ internal fun UiThemeCard(search: Search) {
 
                         if (search.inputValue.isBlank() || stringResource(R.string._light).contains(search.inputValue, true) || stringResource(R.string.color_background_1).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_background_1"),
                                 title = stringResource(R.string.color_background_1),
                                 text = stringResource(R.string._light),
                                 color = Color(customThemeLight_Background0),
@@ -214,6 +219,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string._light).contains(search.inputValue, true) || stringResource(R.string.color_background_2).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_background_2"),
                                 title = stringResource(R.string.color_background_2),
                                 text = stringResource(R.string._light),
                                 color = Color(customThemeLight_Background1),
@@ -222,6 +228,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string._light).contains(search.inputValue, true) || stringResource(R.string.color_background_3).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_background_3"),
                                 title = stringResource(R.string.color_background_3),
                                 text = stringResource(R.string._light),
                                 color = Color(customThemeLight_Background2),
@@ -230,6 +237,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string._light).contains(search.inputValue, true) || stringResource(R.string.color_background_4).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_background_4"),
                                 title = stringResource(R.string.color_background_4),
                                 text = stringResource(R.string._light),
                                 color = Color(customThemeLight_Background3),
@@ -238,6 +246,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string._light).contains(search.inputValue, true) || stringResource(R.string.color_background_5).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_background_5"),
                                 title = stringResource(R.string.color_background_5),
                                 text = stringResource(R.string._light),
                                 color = Color(customThemeLight_Background4),
@@ -246,6 +255,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string._light).contains(search.inputValue, true) || stringResource(R.string.color_text).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_text"),
                                 title = stringResource(R.string.color_text),
                                 text = stringResource(R.string._light),
                                 color = Color(customThemeLight_Text),
@@ -254,6 +264,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string._light).contains(search.inputValue, true) || stringResource(R.string.color_text_secondary).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_text_secondary"),
                                 title = stringResource(R.string.color_text_secondary),
                                 text = stringResource(R.string._light),
                                 color = Color(customThemeLight_TextSecondary),
@@ -262,6 +273,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string._light).contains(search.inputValue, true) || stringResource(R.string.color_text_disabled).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_text_disabled"),
                                 title = stringResource(R.string.color_text_disabled),
                                 text = stringResource(R.string._light),
                                 color = Color(customThemeLight_TextDisabled),
@@ -270,6 +282,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string._light).contains(search.inputValue, true) || stringResource(R.string.color_icon_button_player).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_icon_button_player"),
                                 title = stringResource(R.string.color_icon_button_player),
                                 text = stringResource(R.string._light),
                                 color = Color(customThemeLight_IconButtonPlayer),
@@ -278,6 +291,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string._light).contains(search.inputValue, true) || stringResource(R.string.color_accent).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_accent"),
                                 title = stringResource(R.string.color_accent),
                                 text = stringResource(R.string._light),
                                 color = Color(customThemeLight_Accent),
@@ -288,6 +302,7 @@ internal fun UiThemeCard(search: Search) {
 
                         if (search.inputValue.isBlank() || stringResource(R.string.click_to_reset_default_dark_colors).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true) || stringResource(R.string.title_reset_customized_dark_colors).contains(search.inputValue, true)) {
                             ButtonBarSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.title_reset_customized_dark_colors"),
                                 title = stringResource(R.string.title_reset_customized_dark_colors),
                                 text = stringResource(R.string.click_to_reset_default_dark_colors),
                                 icon = R.drawable.trash,
@@ -297,6 +312,7 @@ internal fun UiThemeCard(search: Search) {
 
                         if (search.inputValue.isBlank() || stringResource(R.string.color_background_1).contains(search.inputValue, true) || stringResource(R.string.dark).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_background_1.dark"),
                                 title = stringResource(R.string.color_background_1),
                                 text = stringResource(R.string.dark),
                                 color = Color(customThemeDark_Background0),
@@ -305,6 +321,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string.color_background_2).contains(search.inputValue, true) || stringResource(R.string.dark).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_background_2.dark"),
                                 title = stringResource(R.string.color_background_2),
                                 text = stringResource(R.string.dark),
                                 color = Color(customThemeDark_Background1),
@@ -313,6 +330,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string.color_background_3).contains(search.inputValue, true) || stringResource(R.string.dark).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_background_3.dark"),
                                 title = stringResource(R.string.color_background_3),
                                 text = stringResource(R.string.dark),
                                 color = Color(customThemeDark_Background2),
@@ -321,6 +339,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string.color_background_4).contains(search.inputValue, true) || stringResource(R.string.dark).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_background_4.dark"),
                                 title = stringResource(R.string.color_background_4),
                                 text = stringResource(R.string.dark),
                                 color = Color(customThemeDark_Background3),
@@ -329,6 +348,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string.color_background_5).contains(search.inputValue, true) || stringResource(R.string.dark).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_background_5.dark"),
                                 title = stringResource(R.string.color_background_5),
                                 text = stringResource(R.string.dark),
                                 color = Color(customThemeDark_Background4),
@@ -337,6 +357,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string.color_text).contains(search.inputValue, true) || stringResource(R.string.dark).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_text.dark"),
                                 title = stringResource(R.string.color_text),
                                 text = stringResource(R.string.dark),
                                 color = Color(customThemeDark_Text),
@@ -345,6 +366,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string.color_text_secondary).contains(search.inputValue, true) || stringResource(R.string.dark).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_text_secondary.dark"),
                                 title = stringResource(R.string.color_text_secondary),
                                 text = stringResource(R.string.dark),
                                 color = Color(customThemeDark_TextSecondary),
@@ -353,6 +375,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string.color_text_disabled).contains(search.inputValue, true) || stringResource(R.string.dark).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_text_disabled.dark"),
                                 title = stringResource(R.string.color_text_disabled),
                                 text = stringResource(R.string.dark),
                                 color = Color(customThemeDark_TextDisabled),
@@ -361,6 +384,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string.color_icon_button_player).contains(search.inputValue, true) || stringResource(R.string.dark).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_icon_button_player.dark"),
                                 title = stringResource(R.string.color_icon_button_player),
                                 text = stringResource(R.string.dark),
                                 color = Color(customThemeDark_IconButtonPlayer),
@@ -369,6 +393,7 @@ internal fun UiThemeCard(search: Search) {
                         }
                         if (search.inputValue.isBlank() || stringResource(R.string.color_accent).contains(search.inputValue, true) || stringResource(R.string.dark).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.color_accent.dark"),
                                 title = stringResource(R.string.color_accent),
                                 text = stringResource(R.string.dark),
                                 color = Color(customThemeDark_Accent),
@@ -387,6 +412,7 @@ internal fun UiThemeCard(search: Search) {
                 }
                 if (search.inputValue.isBlank() || stringResource(R.string.theme_mode).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.theme.theme_mode"),
                         title = stringResource(R.string.theme_mode),
                         text = colorPaletteMode.text,
                         icon = R.drawable.sparkles,

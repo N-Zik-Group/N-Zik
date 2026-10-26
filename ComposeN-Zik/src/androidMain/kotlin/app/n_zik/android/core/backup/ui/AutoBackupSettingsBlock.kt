@@ -1,5 +1,6 @@
 package app.n_zik.android.core.backup.ui
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -70,6 +71,7 @@ fun AutoBackupSettingsBlock() {
     val decodedUri = runCatching { Uri.parse(autoBackupUri).lastPathSegment?.let { Uri.decode(it) } }.getOrNull() ?: autoBackupUri
 
     OtherSettingsEntry(
+        modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_location"),
         title = stringResource(R.string.auto_backup_location),
         text = if (autoBackupUri.isEmpty()) stringResource(R.string.auto_backup_location_not_set) else decodedUri,
         icon = R.drawable.folder,
@@ -81,6 +83,7 @@ fun AutoBackupSettingsBlock() {
     }
 
     OtherSettingsEntry(
+        modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_target"),
         title = stringResource(R.string.auto_backup_target),
         text = when (autoBackupTarget) {
             BackupManager.TARGET_DATABASE -> stringResource(R.string.database)
@@ -104,7 +107,7 @@ fun AutoBackupSettingsBlock() {
                 isChecked = autoBackupIncludeYtb,
                 onCheckedChange = { autoBackupIncludeYtb = it },
                 icon = R.drawable.logo_youtube,
-                modifier = Modifier.padding(start = 24.dp)
+                modifier = Modifier.settingsSearchTarget("embedded.auto_backup.include_youtube_credentials").padding(start = 24.dp)
             )
             OtherSwitchSettingEntry(
                 title = stringResource(R.string.include_discord_credentials),
@@ -112,7 +115,7 @@ fun AutoBackupSettingsBlock() {
                 isChecked = autoBackupIncludeDiscord,
                 onCheckedChange = { autoBackupIncludeDiscord = it },
                 icon = R.drawable.logo_discord,
-                modifier = Modifier.padding(start = 24.dp)
+                modifier = Modifier.settingsSearchTarget("embedded.auto_backup.include_discord_credentials").padding(start = 24.dp)
             )
             OtherSwitchSettingEntry(
                 title = stringResource(R.string.include_lastfm_credentials),
@@ -120,7 +123,7 @@ fun AutoBackupSettingsBlock() {
                 isChecked = autoBackupIncludeLastfm,
                 onCheckedChange = { autoBackupIncludeLastfm = it },
                 icon = R.drawable.logo_lastfm,
-                modifier = Modifier.padding(start = 24.dp)
+                modifier = Modifier.settingsSearchTarget("embedded.auto_backup.include_lastfm_credentials").padding(start = 24.dp)
             )
             OtherSwitchSettingEntry(
                 title = stringResource(R.string.include_proxy_credentials),
@@ -128,12 +131,13 @@ fun AutoBackupSettingsBlock() {
                 isChecked = autoBackupIncludeProxy,
                 onCheckedChange = { autoBackupIncludeProxy = it },
                 icon = R.drawable.shield_checkmark,
-                modifier = Modifier.padding(start = 24.dp)
+                modifier = Modifier.settingsSearchTarget("embedded.auto_backup.include_proxy_credentials").padding(start = 24.dp)
             )
         }
     }
 
     OtherSettingsEntry(
+        modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_max_backups"),
         title = stringResource(R.string.auto_backup_max_backups),
         text = if (autoBackupMaxBackups == -1) stringResource(R.string.unlimited) else autoBackupMaxBackups.toString(),
         icon = R.drawable.server,
@@ -141,6 +145,7 @@ fun AutoBackupSettingsBlock() {
     )
 
     OtherSwitchSettingEntry(
+        modifier = Modifier.settingsSearchTarget("embedded.auto_backup.pre_install_backup"),
         title = stringResource(R.string.pre_install_backup),
         text = stringResource(R.string.pre_install_backup_description),
         isChecked = autoBackupPreInstall,
@@ -151,6 +156,7 @@ fun AutoBackupSettingsBlock() {
     )
 
     OtherSettingsEntry(
+        modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_interval"),
         title = stringResource(R.string.auto_backup_interval),
         text = when (autoBackupInterval) {
             BackupManager.INTERVAL_HOURLY -> stringResource(R.string.auto_backup_interval_hourly)
@@ -202,7 +208,7 @@ fun AutoBackupSettingsBlock() {
                 text = autoBackupCustomIntervalValue.toString(),
                 icon = R.drawable.time,
                 onClick = { showCustomValueDialog = true },
-                modifier = Modifier.padding(start = 24.dp)
+                modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_custom_interval_value").padding(start = 24.dp)
             )
             OtherSettingsEntry(
                 title = stringResource(R.string.auto_backup_custom_interval_unit),
@@ -216,7 +222,7 @@ fun AutoBackupSettingsBlock() {
                 },
                 icon = R.drawable.calendar,
                 onClick = { showCustomUnitDialog = true },
-                modifier = Modifier.padding(start = 24.dp)
+                modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_custom_interval_unit").padding(start = 24.dp)
             )
         }
     }
@@ -273,7 +279,7 @@ fun AutoBackupSettingsBlock() {
                 text = "${autoBackupScheduleHour.toString().padStart(2, '0')}:00",
                 icon = R.drawable.time,
                 onClick = { showScheduleHourDialog = true },
-                modifier = Modifier.padding(start = 24.dp)
+                modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_schedule_time").padding(start = 24.dp)
             )
         }
     }
@@ -309,7 +315,7 @@ fun AutoBackupSettingsBlock() {
                 },
                 icon = R.drawable.calendar,
                 onClick = { showScheduleDayOfWeekDialog = true },
-                modifier = Modifier.padding(start = 24.dp)
+                modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_schedule_day_of_week").padding(start = 24.dp)
             )
         }
     }
@@ -341,7 +347,7 @@ fun AutoBackupSettingsBlock() {
                 text = autoBackupScheduleDayOfMonth.toString(),
                 icon = R.drawable.calendar_clear,
                 onClick = { showScheduleDayOfMonthDialog = true },
-                modifier = Modifier.padding(start = 24.dp)
+                modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_schedule_day_of_month").padding(start = 24.dp)
             )
         }
     }
@@ -364,6 +370,7 @@ fun AutoBackupSettingsBlock() {
     AnimatedVisibility(visible = autoBackupInterval != BackupManager.INTERVAL_NONE) {
         Column {
             OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_on_change"),
                 title = stringResource(R.string.auto_backup_on_change),
                 text = stringResource(R.string.auto_backup_on_change_description),
                 isChecked = autoBackupOnDbChange,

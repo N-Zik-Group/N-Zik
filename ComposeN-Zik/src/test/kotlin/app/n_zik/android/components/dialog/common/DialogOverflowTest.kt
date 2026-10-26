@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
@@ -36,22 +37,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-/**
- * Regression tests for issue #896 — dialog button rows must never overflow the dialog frame:
- * every pill is bounded to its equally weighted cell and kept on a single line
- * (continuous marquee), on any screen width and any locale.
- *
- * The #896 defect was the legacy pill rows sizing themselves to their labels: on narrow
- * dialogs a long label pushed the later pills off-screen. The canon [ButtonRow] (and the
- * [ToggleListDialog] pills and labels, which reuse it) must instead stay single-line and
- * cell-bounded. The assertions below are relative — density- and font-independent:
- *  - cell-bounded: a long label renders no wider than its weighted cell, not its natural width;
- *  - single-line: a long label is no taller than a short label (a wrapped one would be taller).
- *
- * JUnit 4 + [RobolectricTestRunner], executed through the project's junit-vintage-engine on the
- * JUnit 5 platform (the `createComposeRule()` rule only works with JUnit 4), with the plain
- * [Application] so the app's heavy init (DI, Room, player) is skipped.
- */
+/** Regression coverage for dialog bounds, wrapping footer actions and single-line labels. */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class, qualifiers = "w360dp-h640dp")
 class DialogOverflowTest {
@@ -86,42 +72,46 @@ class DialogOverflowTest {
     // A wrapped second line adds far more than this; a height spread within it ⇒ single line.
     private val singleLineTolerance = 10.dp
 
-    @Test
-    fun `button row pills stay single-line and cell-bounded in a narrow dialog`() {
-        val labels = listOf("A very long reset label", "A very long cancel label", "ok")
-
-        content {
-            Box(modifier = Modifier.width(150.dp)) {
-                ButtonRow(
-                    buttons = labels.map { label ->
-                        DialogButton(text = label, primary = label == "ok", onClick = {})
-                    }
-                )
-            }
-        }
-        composeRule.waitForIdle()
-
-        // Each equally weighted cell is (150 - 2·16 padding - 2·8 spacing) / 3 ≈ 34dp. A #896
-        // regression (pills sized to their label) would render the long labels >100dp wide;
+    @Test
+    fun `button row pills wrap without overflow and retain single-line labels`() {
+        val labels = listOf("A very long reset label", "A very long cancel label", "ok")
+        val clicked = mutableListOf<String>()
+        content {
+            Box(modifier = Modifier.width(150.dp).testTag("narrowButtonContainer")) {
+                ButtonRow(buttons = labels.map { label ->
+                    DialogButton(text = label, primary = label == "ok", onClick = { clicked += label })
+                })
+            }
+        }
+        composeRule.waitForIdle()
 
-        // the fix bounds every pill to its ~34dp cell regardless of label length.
-        labels.forEach { label ->
-            val node = composeRule.onNodeWithText(label)
-            node.assertIsDisplayed()
-            val w = widthOf(node.getBoundsInRoot())
-            assertTrue("pill '$label' overflows its ~34dp cell (width=$w)", w < 40.dp)
-        }
-
-        // Single line: every pill has the same height — a long label that wrapped to a second
-        // line would be taller than the short single-line "ok" pill.
-        val heights = labels.map { heightOf(composeRule.onNodeWithText(it).getBoundsInRoot()) }
-        val spread = heights.maxOrNull()!! - heights.minOrNull()!!
-        assertTrue(
-            "a long pill wrapped to a second line (heights=$heights, spread=$spread)",
-            spread <= singleLineTolerance
-        )
-    }
-
+        val container = composeRule.onNodeWithTag("narrowButtonContainer").getBoundsInRoot()
+        val bounds = labels.map { label ->
+            val node = composeRule.onNodeWithText(label)
+            node.assertIsDisplayed()
+            val pill = node.getBoundsInRoot()
+            assertTrue("pill '$label' overflows horizontally ($pill)",
+                pill.left >= container.left + 16.dp && pill.right <= container.right - 16.dp)
+            assertTrue("pill '$label' overflows vertically ($pill)",
+                pill.top >= container.top && pill.bottom <= container.bottom)
+            node.performClick()
+            pill
+        }
+        // Content-sized pills may wrap to new rows, but cannot overlap or hide an action.
+        bounds.forEachIndexed { index, pill ->
+            bounds.drop(index + 1).forEach { other ->
+                assertTrue("wrapped pills overlap: $pill and $other",
+                    pill.right <= other.left || other.right <= pill.left ||
+                        pill.bottom <= other.top || other.bottom <= pill.top)
+            }
+        }
+        assertTrue("narrow container must wrap the long actions", bounds.map { it.top }.distinct().size > 1)
+        assertTrue("all actions remain clickable", clicked == labels)
+        val heights = bounds.map { heightOf(it) }
+        val spread = heights.max() - heights.min()
+        assertTrue("a label wrapped inside its pill (heights=$heights)", spread <= singleLineTolerance)
+    }
+
     @Test
     fun `toggle list dialog renders its three pills single-line`() {
         content {

@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+
 import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -26,6 +28,7 @@ fun RescueCenterSettingsCard(modifier: Modifier = Modifier) {
         modifier = modifier,
         content = {
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("embedded.rescue.rescue_center"),
                 title = stringResource(R.string.rescue_center),
                 text = stringResource(R.string.rescue_center_description),
                 icon = R.drawable.chevron_forward,

@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.other
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -52,6 +54,7 @@ internal fun OtherServiceLifetimeCard(search: Search) {
         content = {
             if (search.inputValue.isBlank() || stringResource(R.string.keep_screen_on).contains(search.inputValue, true) || stringResource(R.string.prevents_screen_timeout).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("other.service_lifetime.keep_screen_on"),
                     title = stringResource(R.string.keep_screen_on),
                     text = stringResource(R.string.prevents_screen_timeout),
                     isChecked = isKeepScreenOnEnabled,
@@ -70,6 +73,7 @@ internal fun OtherServiceLifetimeCard(search: Search) {
 
             if (search.inputValue.isBlank() || stringResource(R.string.ignore_battery_optimizations).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("other.service_lifetime.ignore_battery_optimizations"),
                     title = stringResource(R.string.ignore_battery_optimizations),
                     text = if (isIgnoringBatteryOptimizations) {
                         stringResource(R.string.already_unrestricted)

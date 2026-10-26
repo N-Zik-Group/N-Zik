@@ -4,6 +4,7 @@ import kotlin.math.roundToInt
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -111,24 +112,6 @@ fun UiSettings(navController: NavController, focus: String = "") {
             .onGloballyPositioned { containerTopY = it.positionInRoot().y }
     ) {
 
-        HomeTabsSettingsDialog.Render()
-        HomePlaylistsSettingsDialog.Render()
-        HomeSongsSettingsDialog.Render()
-        HomeArtistsSettingsDialog.Render()
-        HomeAlbumsSettingsDialog.Render()
-        QuickPicksContentSettingsDialog.Render()
-        HomeSongsToolbarSettingsDialog.Render()
-        HomeArtistsToolbarSettingsDialog.Render()
-        HomeAlbumsToolbarSettingsDialog.Render()
-        HomeLibraryToolbarSettingsDialog.Render()
-        HomeSongsSortSettingsDialog.Render()
-        HomeAlbumsSortSettingsDialog.Render()
-        HomeArtistsSortSettingsDialog.Render()
-        HomeLibrarySortSettingsDialog.Render()
-        HistorySortSettingsDialog.Render()
-        LocalPlaylistSortSettingsDialog.Render()
-        LocalPlaylistToolbarSettingsDialog.Render()
-
         settingsSearchTitle(searchFocus, R.string.user_interface, R.drawable.ic_launcher_monochrome)
 
         settingsSearchDescription(searchFocus) {
@@ -157,30 +140,103 @@ fun UiSettings(navController: NavController, focus: String = "") {
         LaunchedEffect(hasSearchResults) {
             if (!hasSearchResults) scrollState.scrollTo(0)
         }
-        settingsSearchContent(searchFocus, hasResults = hasSearchResults) {
-            UiThemeCard(search)
-            UiInterfaceCard(search)
-            UiFontCard(search)
-            UiSwipeCard(search)
-            UiHomeTabsCard(search)
-            UiSortMenusCard(search)
-            UiToolbarsCard(search)
-
-            val burgerSearchContextMatch = search.inputValue.isBlank() ||
-                stringResource(R.string.burger_menu).contains(search.inputValue, true) ||
-                stringResource(R.string.burger_menu_customize).contains(search.inputValue, true)
-            AnimatedVisibility(
-                visible = burgerSearchContextMatch,
-                enter = settingsCardEnter,
-                exit = settingsCardExit,
-            ) {
-                BurgerMenuSettingsCard(
-                    modifier = Modifier.testTag("ui.card.burger")
-                        .onGloballyPositioned { burgerCardTopY = it.positionInRoot().y }
-                )
-            }
-            UiResetCard(search)
-        }
+        UiSettingsContent(
+            search = search,
+            navController = navController,
+            onCardPosition = { _, top -> burgerCardTopY = top },
+            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, content = cards) },
+        )
         SettingsGroupSpacer(modifier = Modifier.height(Dimensions.bottomSpacer))
+    }
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@UnstableApi
+@Suppress("UNUSED_PARAMETER")
+@Composable
+internal fun UiSettingsContent(
+    search: Search,
+    navController: NavController,
+    selectedCards: Set<Int>? = null,
+    cardModifier: @Composable (Int) -> Modifier = { Modifier },
+    onCardPosition: (String, Float) -> Unit = { _, _ -> },
+    cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
+) {
+    HomeTabsSettingsDialog.Render()
+    HomePlaylistsSettingsDialog.Render()
+    HomeSongsSettingsDialog.Render()
+    HomeArtistsSettingsDialog.Render()
+    HomeAlbumsSettingsDialog.Render()
+    QuickPicksContentSettingsDialog.Render()
+    HomeSongsToolbarSettingsDialog.Render()
+    HomeArtistsToolbarSettingsDialog.Render()
+    HomeAlbumsToolbarSettingsDialog.Render()
+    HomeLibraryToolbarSettingsDialog.Render()
+    HomeSongsSortSettingsDialog.Render()
+    HomeAlbumsSortSettingsDialog.Render()
+    HomeArtistsSortSettingsDialog.Render()
+    HomeLibrarySortSettingsDialog.Render()
+    HistorySortSettingsDialog.Render()
+    LocalPlaylistSortSettingsDialog.Render()
+    LocalPlaylistToolbarSettingsDialog.Render()
+    cardsContainer {
+        if (selectedCards == null || R.string.theme in selectedCards) {
+            Box(modifier = cardModifier(R.string.theme)) {
+                UiThemeCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.user_interface in selectedCards) {
+            Box(modifier = cardModifier(R.string.user_interface)) {
+                UiInterfaceCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.settings_use_font_type in selectedCards) {
+            Box(modifier = cardModifier(R.string.settings_use_font_type)) {
+                UiFontCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.swipe_to_action in selectedCards) {
+            Box(modifier = cardModifier(R.string.swipe_to_action)) {
+                UiSwipeCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.home_tabs_settings in selectedCards) {
+            Box(modifier = cardModifier(R.string.home_tabs_settings)) {
+                UiHomeTabsCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.sort_menu in selectedCards) {
+            Box(modifier = cardModifier(R.string.sort_menu)) {
+                UiSortMenusCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.toolbar in selectedCards) {
+            Box(modifier = cardModifier(R.string.toolbar)) {
+                UiToolbarsCard(search)
+            }
+        }
+
+        if (selectedCards == null || R.string.burger_menu in selectedCards) {
+            Box(modifier = cardModifier(R.string.burger_menu)) {
+                val burgerSearchContextMatch = search.inputValue.isBlank() ||
+                    stringResource(R.string.burger_menu).contains(search.inputValue, true) ||
+                    stringResource(R.string.burger_menu_customize).contains(search.inputValue, true)
+                AnimatedVisibility(
+                    visible = burgerSearchContextMatch,
+                    enter = settingsCardEnter,
+                    exit = settingsCardExit,
+                ) {
+                    BurgerMenuSettingsCard(
+                        modifier = Modifier.testTag("ui.card.burger")
+                            .onGloballyPositioned { onCardPosition("burger", it.positionInRoot().y) }
+                    )
+                }
+            }
+        }
+        if (selectedCards == null || R.string.settings_reset in selectedCards) {
+            Box(modifier = cardModifier(R.string.settings_reset)) {
+                UiResetCard(search)
+            }
+        }
     }
 }

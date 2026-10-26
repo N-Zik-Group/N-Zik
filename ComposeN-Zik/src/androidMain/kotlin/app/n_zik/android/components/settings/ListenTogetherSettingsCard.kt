@@ -9,6 +9,8 @@
 // Reference: docs/Metrolist app/src/main/kotlin/com/metrolist/music/ui/screens/settings/integrations/ListenTogetherSettings.kt
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -151,6 +153,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         // tab, spec-customizable-burger-menu goal B); first row of the card.
         onOpenScreen?.let { onOpen ->
             OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("embedded.listen_together.module_open"),
                 title = stringResource(R.string.module_open),
                 text = stringResource(R.string.listen_together_open_desc),
                 icon = R.drawable.chevron_forward,
@@ -160,6 +163,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
 
         // Server URL
         OtherSettingsEntry(
+            modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_server_url"),
             title = stringResource(R.string.listen_together_server_url),
             text =
                 selectedServer?.let { server -> "${server.name} — ${server.location}" }
@@ -170,6 +174,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
 
         // Username (read-only while in a room, per protocol)
         OtherSettingsEntry(
+            modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_username"),
             title = stringResource(R.string.listen_together_username),
             text = username.ifEmpty { stringResource(R.string.listen_together_not_set) },
             icon = R.drawable.person,
@@ -184,6 +189,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
 
         // Auto-approve join requests
         OtherSwitchSettingEntry(
+            modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_auto_approval_joins"),
             title = stringResource(R.string.listen_together_auto_approval_joins),
             text = stringResource(R.string.listen_together_auto_approval_joins_desc),
             isChecked = autoApprovalJoins,
@@ -198,6 +204,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
 
         // Auto-approve suggestions
         OtherSwitchSettingEntry(
+            modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_auto_approval_suggestions"),
             title = stringResource(R.string.listen_together_auto_approval_suggestions),
             text = stringResource(R.string.listen_together_auto_approval_suggestions_desc),
             isChecked = autoApproveSuggestions,
@@ -216,6 +223,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
 
         // Host volume sync (live, in-memory on the manager)
         OtherSwitchSettingEntry(
+            modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_sync_volume"),
             title = stringResource(R.string.listen_together_sync_volume),
             text = stringResource(R.string.listen_together_sync_volume_desc),
             isChecked = syncHostVolume,
@@ -226,6 +234,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         // Record LT tracks in the local history (off by default — host metadata
         // belongs to the host app; only a browseId-only placeholder row is written)
         OtherSwitchSettingEntry(
+            modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_history"),
             title = stringResource(R.string.listen_together_history),
             text = stringResource(R.string.listen_together_history_desc),
             isChecked = historyEnabled,
@@ -239,6 +248,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
 
         // Connection logs
         OtherSettingsEntry(
+            modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_view_logs"),
             title = stringResource(R.string.listen_together_view_logs),
             text = stringResource(R.string.listen_together_view_logs_desc),
             icon = R.drawable.bugs,
@@ -251,6 +261,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
 
         // Blocked users
         OtherSettingsEntry(
+            modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_blocked_users"),
             title = stringResource(R.string.listen_together_blocked_users),
             text =
                 if (blockedUsernames.isNotEmpty()) {

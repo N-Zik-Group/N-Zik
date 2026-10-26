@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.ai
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import android.text.TextUtils
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,6 +40,7 @@ internal fun AiTopPlaylistsCard(search: Search) {
             var showCustomTopPlaylistsItemsDialog by remember { mutableStateOf(false) }
             if (search.inputValue.isBlank() || stringResource(R.string.statistics_max_number_of_items).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("ai.playlist_top.statistics_max_number_of_items"),
                     title = stringResource(R.string.statistics_max_number_of_items),
                     text = maxTopPlaylistItems.displayName(maxTopPlaylistItemsCustomValue),
                     icon = R.drawable.musical_notes,
@@ -77,6 +80,7 @@ internal fun AiTopPlaylistsCard(search: Search) {
 
             if (search.inputValue.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.my_playlist_top1)}".contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("ai.playlist_top.show"),
                     title = "${stringResource(R.string.show)} ${stringResource(R.string.my_playlist_top1)}",
                     text = "",
                     isChecked = showMyTopPlaylist,

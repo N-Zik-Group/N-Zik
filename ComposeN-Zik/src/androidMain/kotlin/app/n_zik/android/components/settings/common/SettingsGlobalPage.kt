@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -80,11 +81,13 @@ import java.util.Locale
 fun SettingsGlobalPage(
     onItemSelected: (SettingsPageItem) -> Unit,
     onCardSelected: (tab: Int, focus: String) -> Unit,
+    onOrganizedCardSelected: ((SettingsCardRegistryEntry) -> Unit)? = null,
+    onEntrySelected: ((SettingsEntryTarget) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
 
-    var searchInput by remember { mutableStateOf(TextFieldValue("")) }
+    var searchInput by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
     var isSearchFocused by remember { mutableStateOf(false) }
     val query = searchInput.text
     val contentAlpha by animateFloatAsState(
@@ -93,8 +96,13 @@ fun SettingsGlobalPage(
         label = "settingsGlobalPageContentAlpha"
     )
     val itemResults = if (query.isBlank()) emptyList<SettingsPageItem>() else searchSettingsPageItems(context, query)
-    val cardResults = if (query.isBlank()) emptyList<SettingsCardRegistryEntry>() else searchSettingsCards(context, query)
-    val noResults = query.isNotBlank() && itemResults.isEmpty() && cardResults.isEmpty()
+    val cardResults = if (query.isBlank()) emptyList<SettingsCardRegistryEntry>() else
+        SettingsCards.filter { context.getString(it.titleRes).contains(query.trim(), true) }
+    val entryResults = searchSettingsEntries(context, query)
+    val categoryResults = if (query.isBlank()) emptyList() else OrganizedSettingsCategories.filter {
+        context.getString(it.labelRes).contains(query.trim(), true)
+    }
+    val noResults = query.isNotBlank() && itemResults.isEmpty() && cardResults.isEmpty() && entryResults.isEmpty() && categoryResults.isEmpty()
     LaunchedEffect(noResults) {
         if (noResults) scrollState.scrollTo(0)
     }
@@ -180,9 +188,31 @@ fun SettingsGlobalPage(
                     )
                 }
             }
-        } else if (itemResults.isEmpty() && cardResults.isEmpty()) {
+        } else if (itemResults.isEmpty() && cardResults.isEmpty() && entryResults.isEmpty() && categoryResults.isEmpty()) {
             SearchNoResults(fillRemainingViewport = true)
         } else {
+            entryResults.forEach { result ->
+                val card = result.parentCard()
+                val category = OrganizedSettingsCategories.first { it.id == card.categoryId() }
+                GlobalPageCard(testTag = "settings_result_entry_${result.id}") {
+                    OtherSettingsEntry(
+                        title = stringResource(result.labelRes),
+                        text = "${stringResource(category.labelRes)} › ${card.displayTitle(context)}",
+                        icon = card.iconRes,
+                        modifier = Modifier.testTag("settings_global_entry_${result.id}"),
+                        onClick = {
+                            recordSearchQuery()
+                            onEntrySelected?.invoke(result) ?: onCardSelected(card.tab, card.focusId)
+                        },
+                    )
+                }
+            }
+            categoryResults.forEach { category ->
+                val item = SettingsPageItems.first { it.categoryId == category.id }
+                GlobalPageCard(testTag = "settings_result_category_${category.id}") {
+                    GlobalPageItemRow(item = item, onItemSelected = { recordSearchQuery(); onItemSelected(it) })
+                }
+            }
             itemResults.forEach { item ->
                 GlobalPageCard(testTag = "settings_result_card_update") {
                 OtherSettingsEntry(
@@ -195,14 +225,14 @@ fun SettingsGlobalPage(
                 }
             }
             cardResults.forEach { card ->
-                val section = SettingsCategories.first { it.tab == card.tab }
+                val section = OrganizedSettingsCategories.first { it.id == card.categoryId() }
                 GlobalPageCard(testTag = "settings_result_card_${card.tab}_${card.titleRes}") {
                 OtherSettingsEntry(
-                    title = stringResource(card.titleRes),
+                    title = card.displayTitle(context),
                     text = stringResource(section.labelRes),
                     icon = card.iconRes,
                     modifier = Modifier.testTag("settings_global_result_${card.tab}_${card.titleRes}"),
-                    onClick = { recordSearchQuery(); onCardSelected(card.tab, card.focusId) }
+                    onClick = { recordSearchQuery(); onOrganizedCardSelected?.invoke(card) ?: onCardSelected(card.tab, card.focusId) }
                 )
                 }
             }
@@ -259,7 +289,7 @@ private fun GlobalPageItemRow(
             title = stringResource(item.labelRes),
             text = "",
             icon = item.iconRes,
-            modifier = Modifier.testTag("settings_global_category_${item.tab}"),
+            modifier = Modifier.testTag("settings_global_category_${item.categoryId ?: item.tab}"),
             onClick = { onItemSelected(item) }
         )
     } else {

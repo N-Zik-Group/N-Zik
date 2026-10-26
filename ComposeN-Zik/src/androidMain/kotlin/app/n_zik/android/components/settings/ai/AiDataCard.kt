@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.ai
 
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +52,7 @@ internal fun AiDataCard(search: Search) {
 
             if (search.inputValue.isBlank() || stringResource(R.string.reset_quick_picks).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("ai.tab_data.reset_quick_picks"),
                     title = stringResource(R.string.reset_quick_picks),
                     text = if (eventsCount > 0) {
                         stringResource(R.string.delete_playback_events, eventsCount)

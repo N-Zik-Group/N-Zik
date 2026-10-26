@@ -31,6 +31,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import app.n_zik.android.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -48,6 +50,9 @@ fun SettingsSectionCard(
     description: String? = null,
     visible: Boolean = true
 ) {
+    val resetScope = LocalSettingsResetScope.current
+    val displayTitle = if (resetScope != null && title == stringResource(R.string.settings_reset))
+        stringResource(R.string.settings_reset_scope, stringResource(resetScope)) else title
     AnimatedVisibility(
         visible = visible,
         enter = settingsCardEnter,
@@ -97,7 +102,7 @@ fun SettingsSectionCard(
                         Spacer(modifier = Modifier.width(12.dp))
 
                         BasicText(
-                            text = title,
+                            text = displayTitle,
                             style = typography().xs.semiBold.copy(
                                 color = colorPalette().accent
                             ),
