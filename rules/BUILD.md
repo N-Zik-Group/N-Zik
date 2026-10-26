@@ -1,6 +1,6 @@
 # Build & Test Rules
 
-**Version:** 1.8.1 | **Last updated:** 2026-10-25
+**Version:** 1.9.0 | **Last updated:** 2026-10-26
 
 ## Gradle Version Catalog
 
@@ -66,6 +66,29 @@ The entry keyword for Done.txt follows the template's sections — it is not aut
 ## Git Submodules
 
 `modules/betterlyrics`, `modules/discordrpc`, `modules/nextvisualizer` are **git submodules** (see `.gitmodules`) and are included in `settings.gradle.kts`. After a fresh clone, run `git submodule update --init --recursive` BEFORE any Gradle command — sync fails without them (CI always checks out with submodules). A changed submodule pointer in a diff → HALT and ask before touching it.
+
+## Git Worktrees — Parallel Work
+
+When a new task starts while the main checkout holds in-progress work (uncommitted changes), do NOT work in the dirty tree: propose a git worktree via the question tool; on approval, create it and run the whole task there, so the user keeps working in `N-Zik/` in parallel.
+
+- **Base on remote code, never on the local dirty state** (from `N-Zik/`):
+
+  ```bash
+  git fetch origin
+  git worktree add ../worktrees/n-zik/<branch> -b <branch> origin/main
+  ```
+
+  `<branch>` follows "Branching" (`feat/<name>`, `fix/<name>`, `chore/<name>`); `../worktrees/n-zik/` = the `worktrees/` folder at the workspace root (one level above `N-Zik/`, outside the repo — the Desktop Compagnon uses `worktrees/compagnon/`, so the two repos never collide).
+- **Set it up exactly like the README's fresh clone** (README "Clone the repo"):
+  1. `git submodule update --init --recursive` — a worktree does not auto-init submodules; Gradle sync fails without them
+  2. Create `ComposeN-Zik/src/androidMain/res/raw/release_notes.txt` (gitignored — it does not exist in a fresh checkout) with the README's initial content:
+     ```
+     New:
+     - Initial release
+     ```
+- Run all `gradlew`/`git` commands from the worktree root, exactly as from `N-Zik/`
+- Git refuses a branch already checked out elsewhere — worktree branches are always fresh
+- Cleanup after the branch is merged/pushed: `git worktree remove ../worktrees/n-zik/<branch>` — ask the user before removing; never `--force` on a worktree with uncommitted work
 
 ## Build Types
 

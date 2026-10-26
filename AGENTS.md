@@ -1,6 +1,6 @@
 # AGENTS.md — NZik
 
-**Version:** 1.9.0 | **Last updated:** 2026-10-25
+**Version:** 1.10.0 | **Last updated:** 2026-10-26
 
 **MANDATORY: Read this file + rules/*.md before any task.**
 
@@ -135,6 +135,8 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 > **Build types:** 10 types (`debug`, `release64`, `release32`, `minified64`, `minified32`, `beta64`, `beta32`, `foss`, `dev64`, `dev32`) — `release` is disabled, so `assembleRelease` does NOT exist. No build bundles FFmpeg; it ships as a downloadable extension module (the `app.n_zik.android.modules/` system, Extensions page in Settings). ABI: `64` types ship only arm64-v8a + x86_64, `32` types only armeabi-v7a + x86, `foss` + `debug` are universal; `foss` also gets a `.foss` applicationId + no auto-update, `dev` builds get a dated version-name suffix — see rules/BUILD.md "Build Types".
 
 > **Windows:** run `gradlew.bat …` from the repo root `N-Zik/` (e.g. `gradlew.bat :ComposeN-Zik:assembleDebug`). The workspace root (the parent of `N-Zik/`, where `_bmad/` lives) is **not** a git/gradle project — all `git` and `gradlew` commands run from `N-Zik/`.
+
+> **Parallel work (worktrees):** when a new task starts while `N-Zik/` holds in-progress (uncommitted) work, do NOT work in the dirty tree — propose a git worktree from remote code per rules/BUILD.md "Git Worktrees — Parallel Work" (setup = the README fresh clone: submodules + `release_notes.txt`).
 
 HALT after 3 failed build attempts → report with full error log.
 
