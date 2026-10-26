@@ -25,7 +25,7 @@
 - Show evidence (diffs, test output) — never just claim "done"
 - Use the question tool's choice mechanism ONLY for a genuine closed set of options; when waiting for a specific value or free-form input, ask an OPEN question — never a fake "répondre / personnalisé" option that just loops the same prompt (see rules/WORKFLOW.md "Question Tool — Choices vs. Open Answers")
 - Keep AGENTS.md + `rules/` lean and current as the project evolves — see "Rules Maintenance & Evolution"
-- Delegate context-heavy exploration/reading to sub-agents (`explore`/`general`) to keep the main context lean and avoid compaction — see "Sub-agents & Context"
+- Use sub-agents by default for substantial, separable work; prioritize fresh, focused contexts and reuse only when useful and still light — see "Sub-agents & Context"
 - Match user's language for communication
 - Code comments & commits in English
 - Removing a string key from `values/strings.xml` requires removing it from every `values-*/strings.xml` too (a dead key left in a locale degrades translator context; Crowdin then drops it from its side) - see rules/CODE.md "Translations"
@@ -144,13 +144,14 @@ HALT after 3 failed build attempts → report with full error log.
 
 ## Sub-agents & Context — avoid compaction
 
-The main conversation context is the scarce resource — as it grows, the harness compacts it and detail is lost. Keep it lean by delegating context-heavy work to sub-agents, which run in their own context and return only a result.
+Context control takes priority over agent reuse. Delegate substantial, separable work by default; keep the main conversation focused on decisions and integration.
 
-- **`explore`** — the default for codebase exploration (find files, search code, "where is X / how does Y work / list usages"). It reads in its own context and returns a concise finding. Do NOT swallow whole files or run many wide searches directly in the main conversation when `explore` can do it.
-- **`general`** — for multi-step / parallelizable work that would bloat the main context (several independent investigations, a long review pass); can run in the background.
-- **Keep in the main context:** orchestration, decisions, the user conversation, and the actual edits (edits must stay coherent in one thread).
-- **When delegating:** the sub-agent starts fresh — pass all relevant context, a precise task, and what to return. Capture its result; don't re-read what it already read.
-- **Threshold:** reads many files / runs many commands / produces long output → delegate. A small, targeted read needed for the next decision → inline is fine.
+- **Delegate broadly:** exploration, reading, independent investigations, reviews, tests and separable implementation. Parallelize independent tasks within the available agent limit; keep small targeted actions inline when delegation adds no value.
+- **One bounded scope:** prefer an agent per task or screen. Reuse it within that scope only while its retained context is directly useful and still light. After a long investigation, repeated follow-ups, a scope change or compaction, start a fresh agent instead. Never reuse an agent merely because it already exists.
+- **Compact handoff:** give a fresh agent the repository, objective, constraints, relevant decisions, rule/spec paths, owned files, completed checks and remaining work. Avoid inheriting the full conversation when this brief is enough.
+- **Concise returns:** request findings with file/line evidence, decisions, changed files, verification and unresolved issues. Avoid raw file dumps or full investigation transcripts. Preserve useful results before replacing an agent; re-read source only to verify a finding or resolve uncertainty.
+- **Main agent ownership:** retain orchestration, user communication, decisions, integration and final verification. Delegated edits need disjoint file ownership; never edit the same files concurrently or run competing builds in one checkout.
+- **Same safeguards:** delegation never bypasses repository rules, workflow checkpoints or human commit approval.
 
 ---
 

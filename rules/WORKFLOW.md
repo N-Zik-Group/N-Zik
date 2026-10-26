@@ -1,6 +1,6 @@
 # Workflow Rules
 
-**Version:** 1.6.4 | **Last updated:** 2026-10-25
+**Version:** 1.7.0 | **Last updated:** 2026-10-26
 
 ## Session Startup Sequence
 
@@ -77,7 +77,7 @@ Before triggering the full BMAD workflow, check if the request is **doc-only and
 
 ### Step 2: Explore
 
-- Prefer delegating broad exploration to the **`explore` sub-agent** (see AGENTS.md "Sub-agents & Context") — it reads in its own context and returns the findings, keeping the main context lean (avoids premature compaction). You then cite the key paths as evidence.
+- Delegate broad exploration and independent investigations under AGENTS.md "Sub-agents & Context". Prefer fresh agents with compact briefs for new scopes; reuse only while relevant context remains light. Capture concise evidence and cite the key paths instead of reloading the entire investigation. Context control takes priority over reuse.
 - Search existing implementations
 - Read neighboring files for conventions
 - Check imports and dependencies
