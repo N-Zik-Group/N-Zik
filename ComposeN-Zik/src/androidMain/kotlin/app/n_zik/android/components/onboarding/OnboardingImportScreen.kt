@@ -270,10 +270,11 @@ fun OnboardingImportScreen(
         modifier = modifier
             .fillMaxSize()
             .background(colorPalette().background0)
-            // The flow replaces AppNavigation here: keep the app's edge-to-edge
-            // behavior — background full-bleed, content clear of the system bars
+            // The flow replaces AppNavigation here: keep the app's edge-to-edge behavior
+            // - background full-bleed, content extends under the nav bar, the top bar is
+            // still cleared; the nav inset is re-applied to the last child (the restart
+            // note), so the final text never lands on the system nav buttons
             .statusBarsPadding()
-            .navigationBarsPadding()
             // Small screens / enlarged fonts: header + both cards + the note can exceed
             // the viewport — the whole step scrolls instead of clipping
             .verticalScroll(rememberScrollState())
@@ -410,10 +411,13 @@ fun OnboardingImportScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // The note is the last child of the step: it re-applies the nav inset the column
+        // dropped, so the final text stays clear of the system nav buttons
         Text(
             text = stringResource(R.string.onboard_restore_restart_note),
             style = typography().xxs,
-            color = colorPalette().textSecondary
+            color = colorPalette().textSecondary,
+            modifier = Modifier.navigationBarsPadding()
         )
     }
 
