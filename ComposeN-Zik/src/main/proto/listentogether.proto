@@ -14,6 +14,9 @@ message Envelope {
   string type = 1;
   bytes payload = 2;
   bool compressed = 3;  // Indicates if payload is gzip compressed
+  // Client-chosen correlation ID. The server echoes it on every direct reply
+  // and error caused by that request (feature "request_id").
+  uint64 request_id = 4;
 }
 
 // Track information
@@ -47,6 +50,7 @@ message RoomState {
   float volume = 8;
   repeated TrackInfo queue = 9;
   uint64 revision = 10;
+  string queue_title = 11;
 }
 
 // Client -> Server messages
@@ -83,15 +87,34 @@ message PlaybackActionPayload {
   int64 server_time = 9;
   uint64 revision = 10;
   int64 captured_at_server_time = 11;
+  // change_track: replace the upcoming queue even when `queue` is empty.
+  bool replace_queue = 12;
+  // Server -> client: user whose request produced this broadcast ("" = server).
+  string origin_user_id = 13;
+  // Client -> server: monotonically increasing per host connection; older
+  // play/pause/seek observations are rejected as stale.
+  uint64 host_sequence = 14;
 }
 
 message PingPayload {
   int64 client_time = 1;
   uint64 sequence = 2;
+  // Drift report (feature "drift_report"): the sender's playback position for
+  // track_id, sampled at position_captured_at_server_time.
+  bool has_position = 3;
+  string track_id = 4;
+  int64 position = 5;
+  int64 position_captured_at_server_time = 6;
+  // Desync canary (feature "desync_canary"): CRC-32 (IEEE) of the current
+  // track ID followed by each upcoming queue track ID, each terminated by '\n'.
+  bool has_state_hash = 7;
+  uint32 state_hash = 8;
 }
 
 message BufferReadyPayload {
   string track_id = 1;
+  // Revision of the change_track broadcast being acknowledged (0 = unknown).
+  uint64 track_revision = 2;
 }
 
 message KickUserPayload {
@@ -185,6 +208,7 @@ message SyncStatePayload {
   repeated TrackInfo queue = 5;
   float volume = 6;
   uint64 revision = 7;
+  string queue_title = 8;
 }
 
 message PongPayload {
@@ -192,6 +216,11 @@ message PongPayload {
   int64 server_receive_time = 2;
   int64 server_send_time = 3;
   uint64 sequence = 4;
+  // Reported position minus the room's canonical position (positive = ahead).
+  bool drift_valid = 5;
+  int64 drift_ms = 6;
+  // The reported state_hash did not match; a sync_state follows.
+  bool state_mismatch = 7;
 }
 
 message ReconnectedPayload {
@@ -233,10 +262,29 @@ message ClientCapabilities {
   bool supports_protobuf = 1;
   bool supports_compression = 2;
   string client_version = 3;
+  // Optional protocol features the client understands. The server only sends
+  // feature-specific messages to clients that list the feature.
+  repeated string features = 4;
 }
 
 message ServerCapabilities {
   bool supports_protobuf = 1;
   bool supports_compression = 2;
   string server_version = 3;
+  // Features enabled for this connection (client features the server supports).
+  repeated string features = 4;
+  bool can_host = 5;
+}
+
+// Feature "server_restarting": sent before a graceful shutdown. Keep playing
+// locally and reconnect after eta_ms (plus jitter).
+message ServerRestartingPayload {
+  int64 eta_ms = 1;
+  string reason = 2;
+}
+
+// Feature "suggestion_ack": tells a guest the ID of the suggestion it submitted.
+message SuggestionSubmittedPayload {
+  string suggestion_id = 1;
+  TrackInfo track_info = 2;
 }
