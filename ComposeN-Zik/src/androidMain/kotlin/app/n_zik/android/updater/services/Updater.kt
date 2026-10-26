@@ -756,6 +756,18 @@ object Updater {
         }
     }
 
+    /**
+     * Builds without auto-update (debug/foss) never run an update check and never fetch the
+     * beta channel: the stored settings (possibly written by an updater build on the same
+     * device) are forced off so they cannot leak into a manual check or the displayed state.
+     */
+    internal fun effectiveUpdaterSettings(
+        storedState: CheckUpdateState,
+        storedBeta: Boolean,
+        autoUpdateEnabled: Boolean
+    ): Pair<CheckUpdateState, Boolean> =
+        if (autoUpdateEnabled) storedState to storedBeta else CheckUpdateState.Disabled to false
+
     @Composable
     fun SettingEntry() {
         var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Enabled)

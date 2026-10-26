@@ -56,16 +56,17 @@ class MainActivityProfileShortcutDecisionTest {
         assertNull(profileSwitchTarget("", "default", listOf("work")))
     }
 
-    @Test
-    fun `the profile shortcut actions are the ones excluded from the home-tab shortcut state`() {
-        // Feeding them to shortcutIntentAction would pop the back stack to home, which is not
-        // the profile shortcuts' job (they have their own consumption paths).
-        assertTrue(isProfileShortcutAction(MainActivity.action_profiles))
-        assertTrue(isProfileShortcutAction(MainActivity.action_profile))
-        assertFalse(isProfileShortcutAction(MainActivity.action_search))
-        assertFalse(isProfileShortcutAction(MainActivity.action_library))
-        assertFalse(isProfileShortcutAction(null))
-        assertFalse(isProfileShortcutAction(Intent.ACTION_MAIN))
+    @Test
+    fun `the self-consumed shortcut actions are the ones excluded from the home-tab shortcut state`() {
+        // Feeding them to shortcutIntentAction would pop the back stack to home, which is not
+        // their job (they have their own consumption paths).
+        assertTrue(isSelfConsumedShortcutAction(MainActivity.action_profiles))
+        assertTrue(isSelfConsumedShortcutAction(MainActivity.action_profile))
+        assertTrue(isSelfConsumedShortcutAction(MainActivity.action_debug_open_updater))
+        assertFalse(isSelfConsumedShortcutAction(MainActivity.action_search))
+        assertFalse(isSelfConsumedShortcutAction(MainActivity.action_library))
+        assertFalse(isSelfConsumedShortcutAction(null))
+        assertFalse(isSelfConsumedShortcutAction(Intent.ACTION_MAIN))
     }
 }
 
@@ -250,7 +251,7 @@ class MainActivityProfileShortcutLifecycleTest {
 
     @Test
     fun `a warm profile tap never feeds the home-tab shortcut state`() {
-        // The onNewIntent exclusion (takeUnless isProfileShortcutAction): a profile tap must not
+        // The onNewIntent exclusion (takeUnless isSelfConsumedShortcutAction): a profile tap must not
         // leave its action in shortcutIntentAction — the home-tab effect would pop the back stack
 
         // to home on every warm profile tap.

@@ -120,6 +120,12 @@ fun UpdateScreen(navController: NavController) {
     // Beta-family flavors (beta/beta32) start with the beta channel enabled
     var checkBetaUpdates by rememberPreference(checkBetaUpdatesKey, Updater.isBetaFamily(BuildConfig.VERSION_NAME))
 
+    // Builds without auto-update (debug/foss): the stored preferences can be stale leftovers
+    // from an updater build, so force auto-check off and beta off - they must never change
+    // the channel of a manual check or the displayed state
+    val (effectiveCheckState, effectiveCheckBeta) =
+        Updater.effectiveUpdaterSettings(checkUpdateState, checkBetaUpdates, BuildConfig.IS_AUTOUPDATE)
+
     var otherLanguageApp by rememberPreference(otherLanguageAppUpdateKey, Languages.System)
     val appLang = Locale.getDefault().language
     val activeTranslateLang = remember(otherLanguageApp, appLang) {
@@ -391,7 +397,7 @@ fun UpdateScreen(navController: NavController) {
                                             .weight(1f)
                                             .clip(uiRoundnessShape()).clickable {
                                                 Toaster.i(R.string.checking_for_updates)
-                                                Updater.checkForUpdate(true, checkBetaUpdates, showDialog = false)
+                                                Updater.checkForUpdate(true, effectiveCheckBeta, showDialog = false)
                                             },
                                         colors = CardDefaults.cardColors(containerColor = colorPalette().background1),
                                         shape = uiRoundnessShape(),
@@ -535,13 +541,15 @@ fun UpdateScreen(navController: NavController) {
                                         menu.add(
                                             DropdownMenu.Item(
                                                 iconId = R.drawable.shield_checkmark,
-                                                customText = "${stringResource(R.string.beta_updates)}: ${if (checkBetaUpdates) stringResource(R.string.on) else stringResource(R.string.off)}"
+                                                customText = "${stringResource(R.string.beta_updates)}: ${if (effectiveCheckBeta) stringResource(R.string.on) else stringResource(R.string.off)}",
+                                                // Without auto-update the beta value is forced off above
+                                                enabled = BuildConfig.IS_AUTOUPDATE
                                             ) {
                                                 checkBetaUpdates = !checkBetaUpdates
                                             }
                                         )
                                     }
-                                    val stateStr = when(checkUpdateState) {
+                                    val stateStr = when(effectiveCheckState) {
                                         CheckUpdateState.Enabled -> stringResource(R.string.on)
                                         CheckUpdateState.Ask -> stringResource(R.string.ask)
                                         CheckUpdateState.Disabled -> stringResource(R.string.off)
@@ -549,7 +557,9 @@ fun UpdateScreen(navController: NavController) {
                                     menu.add(
                                         DropdownMenu.Item(
                                             iconId = R.drawable.update,
-                                            customText = "${stringResource(R.string.enable_check_for_update)}: $stateStr"
+                                            customText = "${stringResource(R.string.enable_check_for_update)}: $stateStr",
+                                            // Without auto-update the check state is forced off above
+                                            enabled = BuildConfig.IS_AUTOUPDATE
                                         ) {
                                             checkUpdateState = when (checkUpdateState) {
                                                 CheckUpdateState.Enabled -> CheckUpdateState.Ask
@@ -722,7 +732,7 @@ fun UpdateScreen(navController: NavController) {
                                             style = typography().l.bold.copy(color = colorPalette().text, textAlign = TextAlign.Center)
                                         )
                                         Spacer(modifier = Modifier.height(4.dp))
-                                        val stateStr = when(checkUpdateState) {
+                                        val stateStr = when(effectiveCheckState) {
                                             CheckUpdateState.Enabled -> stringResource(R.string.auto_update_enabled)
                                             CheckUpdateState.Ask -> stringResource(R.string.auto_update_ask)
                                             CheckUpdateState.Disabled -> stringResource(R.string.auto_update_disabled)
