@@ -24,7 +24,7 @@ import androidx.navigation.navArgument
 import app.it.fast4x.rimusic.enums.TransitionEffect
 import app.n_zik.android.components.settings.accounts.AccountsSettings
 import app.n_zik.android.components.settings.ai.AIRecommendationSettings
-import app.it.fast4x.rimusic.ui.screens.settings.About
+import app.n_zik.android.components.settings.about.About
 import app.n_zik.android.components.settings.appearance.AppearanceSettings
 import app.n_zik.android.components.settings.data.DataSettings
 import app.it.fast4x.rimusic.ui.screens.settings.NetworkSettings
