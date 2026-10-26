@@ -36,7 +36,17 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
+import androidx.compose.ui.text.input.TextFieldValue
+import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
+import app.n_zik.android.components.search.SearchHistoryStore
+import app.n_zik.android.components.search.SearchHistorySection
+import app.n_zik.android.components.search.filterSearchHistory
+import app.n_zik.android.components.search.rememberSearchHistory
+import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
+import app.n_zik.android.components.settings.common.visibleCardTitleRes
+import app.n_zik.android.components.settings.common.settingsSearchContent
+import app.n_zik.android.components.settings.common.settingsSearchDescription
+import app.n_zik.android.components.settings.common.settingsSearchTitle
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.autoDownloadSongKey
 import app.it.fast4x.rimusic.utils.autoDownloadSongWhenAlbumBookmarkedKey
@@ -122,8 +132,18 @@ fun NetworkSettings(
     navController: NavController,
     focus: String = ""
 ) {
-    val search = Search()
+    val search = Search(initialVisible = true)
+    val searchFocus = rememberSettingsSearchFocus(search.isFocused, search.inputValue.isBlank())
     val context = LocalContext.current
+
+    val isHistoryPaused by rememberPreference(pauseSearchHistoryKey, false)
+    val history = rememberSearchHistory(SearchHistoryStore.PAGE_SETTINGS_NETWORK, isHistoryPaused)
+    val historyMatches = filterSearchHistory(history.value, search.inputValue)
+    val historyVisible = search.isFocused && historyMatches.isNotEmpty()
+
+    fun recordSearchQuery(query: String = search.inputValue) {
+        history.value = SearchHistoryStore.record(context.preferences, SearchHistoryStore.PAGE_SETTINGS_NETWORK, query)
+    }
 
 
     var isConnectionMeteredEnabled by rememberPreference(isConnectionMeteredEnabledKey, false)
@@ -139,7 +159,7 @@ fun NetworkSettings(
     val isWebRemixEnabled by rememberPreference(streamClientWebRemixEnabledKey, true)
     val isAndroidVrEnabled by rememberPreference(streamClientAndroidVrEnabledKey, true)
     val isStreamRestartNeeded by rememberPreference(streamClientRestartNeededKey, false)
-    
+
     var navigationBarPosition by rememberPreference(navigationBarPositionKey, NavigationBarPosition.BottomFloating)
 
     val networkQuality by produceState(initialValue = ImageCacheFactory.getCurrentNetworkQuality()) {
@@ -177,382 +197,391 @@ fun NetworkSettings(
             .verticalScroll(scrollState)
             .onGloballyPositioned { containerTopY = it.positionInRoot().y }
     ) {
-        HeaderWithIcon(
-            title = stringResource(R.string.tab_network),
-            iconId = R.drawable.network,
-            enabled = false,
-            showIcon = true,
-            modifier = Modifier,
-            onClick = {}
-        )
+        settingsSearchTitle(searchFocus, R.string.tab_network, R.drawable.network)
 
-        SettingsDescription(
-            text = stringResource(R.string.network_settings_description),
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        ) 
-
-        search.ToolBarButton()
-        search.SearchBar( this )
-
-        /* Removed Spacer */
-
-        // PC server ("Manage server") entry; the burger long press (focus=pcserver)
-        // scrolls to it.
-        if (search.inputValue.isBlank() || stringResource(R.string.bridge_server).contains(search.inputValue, true)) {
-            SettingsSectionCard(
-                title = stringResource(R.string.bridge_server),
-                icon = R.drawable.server,
-                modifier = Modifier.onGloballyPositioned { pcServerCardTopY = it.positionInRoot().y },
-                content = {
-                    OtherSettingsEntry(
-                        title = stringResource(R.string.bridge_server),
-                        text = stringResource(R.string.bridge_server_description),
-                        icon = R.drawable.devices,
-                        onClick = { navController.navigate(NavRoutes.bridgeServer.name) }
-                    )
-                }
+        settingsSearchDescription(searchFocus) {
+            SettingsDescription(
+                text = stringResource(R.string.network_settings_description),
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
             )
         }
 
-        // Network Status Section (Informative, non-clickable)
-        SettingsSectionCard(
-            title = stringResource(R.string.network_status),
-            icon = R.drawable.network,
-            content = {
-                val detectedText = when(networkQuality) {
-                    ImageCacheFactory.NetworkQuality.LOW -> stringResource(R.string.network_quality_low)
-                    ImageCacheFactory.NetworkQuality.MEDIUM -> stringResource(R.string.network_quality_medium)
-                    ImageCacheFactory.NetworkQuality.HIGH -> stringResource(R.string.network_quality_high)
-                }
-                
-                // Image Status
-                val imageStatusText = if (imageQualityFormat == ImageQualityFormat.Auto) {
-                    stringResource(R.string.audio_quality_auto_fmt, detectedText)
-                } else {
-                    when(imageQualityFormat) {
-                        ImageQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
-                        ImageQualityFormat.Medium -> stringResource(R.string.audio_quality_format_medium)
-                        ImageQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
-                        else -> detectedText
-                    }
-                }
+        search.SearchBar(this, barPadding = searchFocus.barPadding, onSearch = { recordSearchQuery() })
 
-                OtherInfoSettingsEntry(
-                    title = stringResource(R.string.image_quality_format),
-                    text = imageStatusText,
-                    icon = R.drawable.image
-                )
-                
-                // Audio Status
-                val audioStatusText = if (audioQualityFormat == AudioQualityFormat.Auto) {
-                    stringResource(R.string.audio_quality_auto_fmt, detectedText)
-                } else {
-                    when(audioQualityFormat) {
-                        AudioQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
-                        AudioQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
-                        else -> detectedText
-                    }
-                }
-                
-                OtherInfoSettingsEntry(
-                    title = stringResource(R.string.audio_quality_format),
-                    text = audioStatusText,
-                    icon = R.drawable.audio_quality
-                )
-
-                // Download Status
-                val downloadStatusText = if (downloadQualityFormat == DownloadQualityFormat.Auto) {
-                    stringResource(R.string.audio_quality_auto_fmt, detectedText)
-                } else {
-                    when(downloadQualityFormat) {
-                        DownloadQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
-                        DownloadQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
-                        else -> detectedText
-                    }
-                }
-
-                OtherInfoSettingsEntry(
-                    title = stringResource(R.string.download_quality_format),
-                    text = downloadStatusText,
-                    icon = R.drawable.download
-                )
+        SearchHistorySection(
+            visible = historyVisible,
+            queries = historyMatches,
+            onQueryClick = { search.input = TextFieldValue(it); recordSearchQuery(it); search.isFocused = false },
+            onQueryDelete = {
+                history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_SETTINGS_NETWORK, it)
+            },
+            onQueryDeleteAll = {
+                history.value = SearchHistoryStore.deleteAll(context.preferences, SearchHistoryStore.PAGE_SETTINGS_NETWORK)
             }
         )
 
         /* Removed Spacer */
 
-        // Quality Settings Section (Clickable override)
-        SettingsSectionCard(
-            title = stringResource(R.string.quality),
-            icon = R.drawable.audio_quality,
-            content = {
-                // Audio Quality Entry
-                if (search.inputValue.isBlank() || stringResource(R.string.audio_quality_format).contains(search.inputValue, true)) {
-                    OtherSettingsEntry(
+        val hasSearchResults = search.inputValue.isBlank() || visibleCardTitleRes(context, 6, search.inputValue).isNotEmpty()
+        LaunchedEffect(hasSearchResults) {
+            if (!hasSearchResults) scrollState.scrollTo(0)
+        }
+        settingsSearchContent(searchFocus, hasResults = hasSearchResults) {
+            // PC server ("Manage server") entry; the burger long press (focus=pcserver)
+            // scrolls to it.
+            if (search.inputValue.isBlank() || stringResource(R.string.bridge_server).contains(search.inputValue, true)) {
+                SettingsSectionCard(
+                    title = stringResource(R.string.bridge_server),
+                    icon = R.drawable.server,
+                    modifier = Modifier.onGloballyPositioned { pcServerCardTopY = it.positionInRoot().y },
+                    content = {
+                        OtherSettingsEntry(
+                            title = stringResource(R.string.bridge_server),
+                            text = stringResource(R.string.bridge_server_description),
+                            icon = R.drawable.devices,
+                            onClick = { navController.navigate(NavRoutes.bridgeServer.name) }
+                        )
+                    }
+                )
+            }
+
+            // Network Status Section (Informative, non-clickable)
+            SettingsSectionCard(
+                title = stringResource(R.string.network_status),
+                icon = R.drawable.network,
+                content = {
+                    val detectedText = when(networkQuality) {
+                        ImageCacheFactory.NetworkQuality.LOW -> stringResource(R.string.network_quality_low)
+                        ImageCacheFactory.NetworkQuality.MEDIUM -> stringResource(R.string.network_quality_medium)
+                        ImageCacheFactory.NetworkQuality.HIGH -> stringResource(R.string.network_quality_high)
+                    }
+
+                    // Image Status
+                    val imageStatusText = if (imageQualityFormat == ImageQualityFormat.Auto) {
+                        stringResource(R.string.audio_quality_auto_fmt, detectedText)
+                    } else {
+                        when(imageQualityFormat) {
+                            ImageQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
+                            ImageQualityFormat.Medium -> stringResource(R.string.audio_quality_format_medium)
+                            ImageQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
+                            else -> detectedText
+                        }
+                    }
+
+                    OtherInfoSettingsEntry(
+                        title = stringResource(R.string.image_quality_format),
+                        text = imageStatusText,
+                        icon = R.drawable.image
+                    )
+
+                    // Audio Status
+                    val audioStatusText = if (audioQualityFormat == AudioQualityFormat.Auto) {
+                        stringResource(R.string.audio_quality_auto_fmt, detectedText)
+                    } else {
+                        when(audioQualityFormat) {
+                            AudioQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
+                            AudioQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
+                            else -> detectedText
+                        }
+                    }
+
+                    OtherInfoSettingsEntry(
                         title = stringResource(R.string.audio_quality_format),
-                        text = when (audioQualityFormat) {
+                        text = audioStatusText,
+                        icon = R.drawable.audio_quality
+                    )
+
+                    // Download Status
+                    val downloadStatusText = if (downloadQualityFormat == DownloadQualityFormat.Auto) {
+                        stringResource(R.string.audio_quality_auto_fmt, detectedText)
+                    } else {
+                        when(downloadQualityFormat) {
+                            DownloadQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
+                            DownloadQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
+                            else -> detectedText
+                        }
+                    }
+
+                    OtherInfoSettingsEntry(
+                        title = stringResource(R.string.download_quality_format),
+                        text = downloadStatusText,
+                        icon = R.drawable.download
+                    )
+                }
+            )
+
+            /* Removed Spacer */
+
+            // Quality Settings Section (Clickable override)
+            SettingsSectionCard(
+                title = stringResource(R.string.quality),
+                icon = R.drawable.audio_quality,
+                content = {
+                    // Audio Quality Entry
+                    if (search.inputValue.isBlank() || stringResource(R.string.audio_quality_format).contains(search.inputValue, true)) {
+                        OtherSettingsEntry(
+                            title = stringResource(R.string.audio_quality_format),
+                            text = when (audioQualityFormat) {
+                                AudioQualityFormat.Auto -> stringResource(R.string.audio_quality_automatic)
+                                AudioQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
+                                AudioQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
+                            },
+                            icon = R.drawable.speaker,
+                            onClick = { showAudioQualityDialog = true }
+                        )
+                    }
+
+                    // Image Quality Entry
+                    if (search.inputValue.isBlank() || stringResource(R.string.image_quality_format).contains(search.inputValue, true)) {
+                        OtherSettingsEntry(
+                            title = stringResource(R.string.image_quality_format),
+                            text = when (imageQualityFormat) {
+                                ImageQualityFormat.Auto -> stringResource(R.string.audio_quality_automatic)
+                                ImageQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
+                                ImageQualityFormat.Medium -> stringResource(R.string.audio_quality_format_medium)
+                                ImageQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
+                            },
+                            icon = R.drawable.image,
+                            onClick = { showImageQualityDialog = true }
+                        )
+                    }
+
+                    // Download Quality Entry + Update downloads button
+                    if (search.inputValue.isBlank() || stringResource(R.string.download_quality_format).contains(search.inputValue, true) || stringResource(R.string.update_downloads).contains(search.inputValue, true)) {
+                        DownloadQualityEntry(onQualityChanged = { restartService = true })
+                        UpdateDownloadsButton()
+                    }
+
+                    if (search.inputValue.isBlank() || stringResource(R.string.audio_quality_format).contains(search.inputValue, true) || stringResource(R.string.download_quality_format).contains(search.inputValue, true)) {
+                        RestartPlayerService(restartService, onRestart = { restartService = false })
+                    }
+                }
+            )
+
+            if (showAudioQualityDialog) {
+                ValueSelectorDialog(
+                    title = stringResource(R.string.audio_quality_format),
+                    values = AudioQualityFormat.values().toList(),
+                    selectedValue = audioQualityFormat,
+                    onValueSelected = {
+                        audioQualityFormat = it
+                        restartService = true
+                        showAudioQualityDialog = false
+                    },
+                    onDismiss = { showAudioQualityDialog = false },
+                    valueText = {
+                        when (it) {
                             AudioQualityFormat.Auto -> stringResource(R.string.audio_quality_automatic)
                             AudioQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
                             AudioQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
-                        },
-                        icon = R.drawable.speaker,
-                        onClick = { showAudioQualityDialog = true }
-                    )
-                }
-                
-                // Image Quality Entry
-                if (search.inputValue.isBlank() || stringResource(R.string.image_quality_format).contains(search.inputValue, true)) {
-                    OtherSettingsEntry(
-                        title = stringResource(R.string.image_quality_format),
-                        text = when (imageQualityFormat) {
+                        }
+                    }
+                )
+            }
+
+            if (showImageQualityDialog) {
+                ValueSelectorDialog(
+                    title = stringResource(R.string.image_quality_format),
+                    values = ImageQualityFormat.values().toList(),
+                    selectedValue = imageQualityFormat,
+                    onValueSelected = {
+                        imageQualityFormat = it
+                        showImageQualityDialog = false
+                    },
+                    onDismiss = { showImageQualityDialog = false },
+                    valueText = {
+                        when (it) {
                             ImageQualityFormat.Auto -> stringResource(R.string.audio_quality_automatic)
                             ImageQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
                             ImageQualityFormat.Medium -> stringResource(R.string.audio_quality_format_medium)
                             ImageQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
-                        },
-                        icon = R.drawable.image,
-                        onClick = { showImageQualityDialog = true }
-                    )
-                }
-
-                // Download Quality Entry + Update downloads button
-                if (search.inputValue.isBlank() || stringResource(R.string.download_quality_format).contains(search.inputValue, true) || stringResource(R.string.update_downloads).contains(search.inputValue, true)) {
-                    DownloadQualityEntry(onQualityChanged = { restartService = true })
-                    UpdateDownloadsButton()
-                }
-
-                if (search.inputValue.isBlank() || stringResource(R.string.audio_quality_format).contains(search.inputValue, true) || stringResource(R.string.download_quality_format).contains(search.inputValue, true)) {
-                    RestartPlayerService(restartService, onRestart = { restartService = false })
-                }
-            }
-        )
-
-        if (showAudioQualityDialog) {
-            ValueSelectorDialog(
-                title = stringResource(R.string.audio_quality_format),
-                values = AudioQualityFormat.values().toList(),
-                selectedValue = audioQualityFormat,
-                onValueSelected = {
-                    audioQualityFormat = it
-                    restartService = true
-                    showAudioQualityDialog = false
-                },
-                onDismiss = { showAudioQualityDialog = false },
-                valueText = {
-                    when (it) {
-                        AudioQualityFormat.Auto -> stringResource(R.string.audio_quality_automatic)
-                        AudioQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
-                        AudioQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
+                        }
                     }
-                }
-            )
-        }
-        
-        if (showImageQualityDialog) {
-            ValueSelectorDialog(
-                title = stringResource(R.string.image_quality_format),
-                values = ImageQualityFormat.values().toList(),
-                selectedValue = imageQualityFormat,
-                onValueSelected = {
-                    imageQualityFormat = it
-                    showImageQualityDialog = false
-                },
-                onDismiss = { showImageQualityDialog = false },
-                valueText = {
-                    when (it) {
-                        ImageQualityFormat.Auto -> stringResource(R.string.audio_quality_automatic)
-                        ImageQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
-                        ImageQualityFormat.Medium -> stringResource(R.string.audio_quality_format_medium)
-                        ImageQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
-                    }
-                }
-            )
-        }
-
-        /* Removed Spacer */
-
-        // Connection Settings Section
-        SettingsSectionCard(
-            title = stringResource(R.string.connection_settings),
-            icon = R.drawable.network,
-            content = {
-                if (search.inputValue.isBlank() || stringResource(R.string.enable_connection_metered).contains(search.inputValue, true) || stringResource(R.string.info_enable_connection_metered).contains(search.inputValue, true)) {
-                    OtherSwitchSettingEntry(
-                        title = stringResource(R.string.enable_connection_metered),
-                        text = stringResource(R.string.info_enable_connection_metered),
-                        isChecked = isConnectionMeteredEnabled,
-                        onCheckedChange = {
-                            isConnectionMeteredEnabled = it
-                        },
-                        icon = R.drawable.wifi
-                    )
-                }
+                )
             }
-        )
 
-        /* Removed Spacer */
+            /* Removed Spacer */
 
-        // Offline mode card (spec-customizable-burger-menu goal B): the self-contained
-        // card hosting the live per-profile toggle the burger item also flips; the burger
-        // long press (focus=offline) scrolls to it.
-        val offlineSearchMatch = search.inputValue.isBlank() ||
-            stringResource(R.string.offline_mode).contains(search.inputValue, true) ||
-            stringResource(R.string.offline_mode_description).contains(search.inputValue, true)
-        if (offlineSearchMatch) {
-            OfflineModeSettingsCard(
-                modifier = Modifier.onGloballyPositioned { offlineCardTopY = it.positionInRoot().y }
-            )
-        }
-
-        /* Removed Spacer */
-
-        // Stream Clients Section — DISABLED: InnerTubeX handles client selection automatically
-        // Settings below are kept for reference but have no effect on playback
-        /*
-        SettingsSectionCard(
-            title = stringResource(R.string.stream_clients),
-            icon = R.drawable.musical_notes,
-            content = {
-                if (isWebRemixEnabled && isAndroidVrEnabled) {
-                    if (search.inputValue.isBlank() || stringResource(R.string.preferred_stream_client).contains(search.inputValue, true) || stringResource(R.string.preferred_stream_client_description).contains(search.inputValue, true)) {
-                        OtherSettingsEntry(
-                            title = stringResource(R.string.preferred_stream_client),
-                            text = stringResource(R.string.preferred_stream_client_description),
-                            icon = R.drawable.musical_notes,
-                            onClick = { PreferredStreamClientDialog.showDialog() }
+            // Connection Settings Section
+            SettingsSectionCard(
+                title = stringResource(R.string.connection_settings),
+                icon = R.drawable.network,
+                content = {
+                    if (search.inputValue.isBlank() || stringResource(R.string.enable_connection_metered).contains(search.inputValue, true) || stringResource(R.string.info_enable_connection_metered).contains(search.inputValue, true)) {
+                        OtherSwitchSettingEntry(
+                            title = stringResource(R.string.enable_connection_metered),
+                            text = stringResource(R.string.info_enable_connection_metered),
+                            isChecked = isConnectionMeteredEnabled,
+                            onCheckedChange = {
+                                isConnectionMeteredEnabled = it
+                            },
+                            icon = R.drawable.wifi
                         )
                     }
                 }
-                if (search.inputValue.isBlank() || stringResource(R.string.disabled_stream_clients).contains(search.inputValue, true) || stringResource(R.string.configure_which_stream_clients_are_enabled).contains(search.inputValue, true)) {
-                    OtherSettingsEntry(
-                        title = stringResource(R.string.disabled_stream_clients),
-                        text = stringResource(R.string.configure_which_stream_clients_are_enabled),
-                        icon = R.drawable.musical_notes,
-                        onClick = { StreamClientsSettingsDialog.showDialog() }
-                    )
-                }
-                if (search.inputValue.isBlank() || true) {
-                    RestartPlayerService(
-                        restartService = isStreamRestartNeeded,
-                        onRestart = {
-                            appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, false).apply()
-                        }
-                    )
-                }
+            )
+
+            /* Removed Spacer */
+
+            // Offline mode card (spec-customizable-burger-menu goal B): the self-contained
+            // card hosting the live per-profile toggle the burger item also flips; the burger
+            // long press (focus=offline) scrolls to it.
+            val offlineSearchMatch = search.inputValue.isBlank() ||
+                stringResource(R.string.offline_mode).contains(search.inputValue, true) ||
+                stringResource(R.string.offline_mode_description).contains(search.inputValue, true)
+            if (offlineSearchMatch) {
+                OfflineModeSettingsCard(
+                    modifier = Modifier.onGloballyPositioned { offlineCardTopY = it.positionInRoot().y }
+                )
             }
-        )
 
-        if (isWebRemixEnabled && isAndroidVrEnabled) {
-            PreferredStreamClientDialog.Render()
-        }
-        StreamClientsSettingsDialog.Render()
-        */
+            /* Removed Spacer */
 
-        /* Removed Spacer */
-
-        // Auto Download Settings Section
-        SettingsSectionCard(
-            title = stringResource(R.string.download),
-            icon = R.drawable.arrow_down,
-            content = {
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_enable_autodownload_song).contains(search.inputValue, true) || stringResource(R.string.auto_download_song_description).contains(search.inputValue, true)) {
-                    OtherSwitchSettingEntry(
-                        title = stringResource(R.string.settings_enable_autodownload_song),
-                        text = stringResource(R.string.auto_download_song_description),
-                        isChecked = autoDownloadSong,
-                        onCheckedChange = {
-                            autoDownloadSong = it
-                        },
-                        icon = R.drawable.download
-                    )
-                }
-
-                AnimatedVisibility(
-                    visible = autoDownloadSong,
-                    enter = fadeIn(animationSpec = tween(400)) + scaleIn(
-                        animationSpec = tween(400),
-                        initialScale = 0.9f
-                    ),
-                    exit = fadeOut(animationSpec = tween(200)) + scaleOut(
-                        animationSpec = tween(200),
-                        targetScale = 0.9f
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(start = 16.dp)
-                    ) {
-                        if (search.inputValue.isBlank() || stringResource(R.string.settings_enable_autodownload_song_when_liked).contains(search.inputValue, true) || stringResource(R.string.auto_download_when_liked_description).contains(search.inputValue, true)) {
-                            OtherSwitchSettingEntry(
-                                title = stringResource(R.string.settings_enable_autodownload_song_when_liked),
-                                text = stringResource(R.string.auto_download_when_liked_description),
-                                isChecked = autoDownloadSongWhenLiked,
-                                onCheckedChange = {
-                                    autoDownloadSongWhenLiked = it
-                                },
-                                icon = R.drawable.heart
-                            )
-                        }
-
-                        if (search.inputValue.isBlank() || stringResource(R.string.settings_enable_autodownload_song_when_album_bookmarked).contains(search.inputValue, true) || stringResource(R.string.auto_download_when_album_bookmarked_description).contains(search.inputValue, true)) {
-                            OtherSwitchSettingEntry(
-                                title = stringResource(R.string.settings_enable_autodownload_song_when_album_bookmarked),
-                                text = stringResource(R.string.auto_download_when_album_bookmarked_description),
-                                isChecked = autoDownloadSongWhenAlbumBookmarked,
-                                onCheckedChange = {
-                                    autoDownloadSongWhenAlbumBookmarked = it
-                                },
-                                icon = R.drawable.bookmark
+            // Stream Clients Section — DISABLED: InnerTubeX handles client selection automatically
+            // Settings below are kept for reference but have no effect on playback
+            /*
+            SettingsSectionCard(
+                title = stringResource(R.string.stream_clients),
+                icon = R.drawable.musical_notes,
+                content = {
+                    if (isWebRemixEnabled && isAndroidVrEnabled) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.preferred_stream_client).contains(search.inputValue, true) || stringResource(R.string.preferred_stream_client_description).contains(search.inputValue, true)) {
+                            OtherSettingsEntry(
+                                title = stringResource(R.string.preferred_stream_client),
+                                text = stringResource(R.string.preferred_stream_client_description),
+                                icon = R.drawable.musical_notes,
+                                onClick = { PreferredStreamClientDialog.showDialog() }
                             )
                         }
                     }
-                }
-            }
-        )
-
-        
-        val searchCtx_Reset = search.inputValue.isBlank() || stringResource(R.string.settings_reset).contains(search.inputValue, true) || stringResource(R.string.settings_restore_default_settings).contains(search.inputValue, true)
-        AnimatedVisibility(
-            visible = searchCtx_Reset,
-            enter = fadeIn(animationSpec = tween(1100)) + scaleIn(animationSpec = tween(1100), initialScale = 0.9f)
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.settings_reset),
-                icon = R.drawable.refresh,
-                content = {
-                    var resetToDefault by remember { mutableStateOf(false) }
-                    
-                    if (search.inputValue.isBlank() || stringResource(R.string.settings_restore_default_settings).contains(search.inputValue, true) || stringResource(R.string.settings_reset).contains(search.inputValue, true)) {
+                    if (search.inputValue.isBlank() || stringResource(R.string.disabled_stream_clients).contains(search.inputValue, true) || stringResource(R.string.configure_which_stream_clients_are_enabled).contains(search.inputValue, true)) {
                         OtherSettingsEntry(
-                            title = stringResource(R.string.settings_reset),
-                            text = stringResource(R.string.settings_restore_default_settings),
-                            icon = R.drawable.refresh,
-                            onClick = { 
-                                resetToDefault = true
-                                restartService = true
-                                PreferredStreamClientDialog.reset(context)
-                                StreamClientsSettingsDialog.reset(context)
-                                Toaster.done()
+                            title = stringResource(R.string.disabled_stream_clients),
+                            text = stringResource(R.string.configure_which_stream_clients_are_enabled),
+                            icon = R.drawable.musical_notes,
+                            onClick = { StreamClientsSettingsDialog.showDialog() }
+                        )
+                    }
+                    if (search.inputValue.isBlank() || true) {
+                        RestartPlayerService(
+                            restartService = isStreamRestartNeeded,
+                            onRestart = {
+                                appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, false).apply()
                             }
                         )
                     }
+                }
+            )
 
-                    if (resetToDefault) {
-                        DefaultNetworkSettings()
-                        LaunchedEffect(Unit) {
-                            resetToDefault = false
+            if (isWebRemixEnabled && isAndroidVrEnabled) {
+                PreferredStreamClientDialog.Render()
+            }
+            StreamClientsSettingsDialog.Render()
+            */
+
+            /* Removed Spacer */
+
+            // Auto Download Settings Section
+            SettingsSectionCard(
+                title = stringResource(R.string.download),
+                icon = R.drawable.arrow_down,
+                content = {
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_enable_autodownload_song).contains(search.inputValue, true) || stringResource(R.string.auto_download_song_description).contains(search.inputValue, true)) {
+                        OtherSwitchSettingEntry(
+                            title = stringResource(R.string.settings_enable_autodownload_song),
+                            text = stringResource(R.string.auto_download_song_description),
+                            isChecked = autoDownloadSong,
+                            onCheckedChange = {
+                                autoDownloadSong = it
+                            },
+                            icon = R.drawable.download
+                        )
+                    }
+
+                    AnimatedVisibility(
+                        visible = autoDownloadSong,
+                        enter = fadeIn(animationSpec = tween(400)) + scaleIn(
+                            animationSpec = tween(400),
+                            initialScale = 0.9f
+                        ),
+                        exit = fadeOut(animationSpec = tween(200)) + scaleOut(
+                            animationSpec = tween(200),
+                            targetScale = 0.9f
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(start = 16.dp)
+                        ) {
+                            if (search.inputValue.isBlank() || stringResource(R.string.settings_enable_autodownload_song_when_liked).contains(search.inputValue, true) || stringResource(R.string.auto_download_when_liked_description).contains(search.inputValue, true)) {
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.settings_enable_autodownload_song_when_liked),
+                                    text = stringResource(R.string.auto_download_when_liked_description),
+                                    isChecked = autoDownloadSongWhenLiked,
+                                    onCheckedChange = {
+                                        autoDownloadSongWhenLiked = it
+                                    },
+                                    icon = R.drawable.heart
+                                )
+                            }
+
+                            if (search.inputValue.isBlank() || stringResource(R.string.settings_enable_autodownload_song_when_album_bookmarked).contains(search.inputValue, true) || stringResource(R.string.auto_download_when_album_bookmarked_description).contains(search.inputValue, true)) {
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.settings_enable_autodownload_song_when_album_bookmarked),
+                                    text = stringResource(R.string.auto_download_when_album_bookmarked_description),
+                                    isChecked = autoDownloadSongWhenAlbumBookmarked,
+                                    onCheckedChange = {
+                                        autoDownloadSongWhenAlbumBookmarked = it
+                                    },
+                                    icon = R.drawable.bookmark
+                                )
+                            }
                         }
                     }
                 }
             )
+
+
+            val searchCtx_Reset = search.inputValue.isBlank() || stringResource(R.string.settings_reset).contains(search.inputValue, true) || stringResource(R.string.settings_restore_default_settings).contains(search.inputValue, true)
+            AnimatedVisibility(
+                visible = searchCtx_Reset,
+                enter = fadeIn(animationSpec = tween(1100)) + scaleIn(animationSpec = tween(1100), initialScale = 0.9f)
+            ) {
+                SettingsSectionCard(
+                    title = stringResource(R.string.settings_reset),
+                    icon = R.drawable.refresh,
+                    content = {
+                        var resetToDefault by remember { mutableStateOf(false) }
+
+                        if (search.inputValue.isBlank() || stringResource(R.string.settings_restore_default_settings).contains(search.inputValue, true) || stringResource(R.string.settings_reset).contains(search.inputValue, true)) {
+                            OtherSettingsEntry(
+                                title = stringResource(R.string.settings_reset),
+                                text = stringResource(R.string.settings_restore_default_settings),
+                                icon = R.drawable.refresh,
+                                onClick = {
+                                    resetToDefault = true
+                                    restartService = true
+                                    PreferredStreamClientDialog.reset(context)
+                                    StreamClientsSettingsDialog.reset(context)
+                                    Toaster.done()
+                                }
+                            )
+                        }
+
+                        if (resetToDefault) {
+                            DefaultNetworkSettings()
+                            LaunchedEffect(Unit) {
+                                resetToDefault = false
+                            }
+                        }
+                    }
+                )
+            }
         }
-        
+
         SettingsGroupSpacer(
             modifier = Modifier.height(Dimensions.bottomSpacer)
         )
-        
+
     }
 }
-
-
-

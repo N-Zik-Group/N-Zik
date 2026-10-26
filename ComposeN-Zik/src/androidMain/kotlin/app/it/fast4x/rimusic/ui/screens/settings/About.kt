@@ -11,7 +11,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import app.n_zik.android.BuildConfig
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -38,6 +37,7 @@ import app.kreate.android.drawable.APP_ICON_IMAGE_BITMAP
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.extensions.contributors.ShowDevelopers
@@ -49,29 +49,13 @@ import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.*
 import app.n_zik.android.updater.models.UpdateEndpoints
-import app.n_zik.android.updater.services.Updater
-import app.n_zik.android.components.dialog.updater.NewUpdateAvailableDialog
-import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.ui.styling.PureBlackColorPalette
-import app.it.fast4x.rimusic.ui.styling.ModernBlackColorPalette
-import app.it.fast4x.rimusic.utils.colorPaletteModeKey
-import androidx.compose.ui.graphics.Color
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
-import java.text.SimpleDateFormat
 import java.util.*
 import app.n_zik.android.uiRoundnessShape
-import app.it.fast4x.rimusic.enums.NavRoutes
-import app.kreate.android.me.knighthat.utils.Toaster
 import androidx.compose.runtime.remember
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import app.it.fast4x.rimusic.utils.lastUpdateCheckKey
 import androidx.navigation.NavController
-import app.it.fast4x.rimusic.utils.checkBetaUpdatesKey
-import java.util.Locale
-import java.util.Date
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.SettingsGroupSpacer
 import app.n_zik.android.components.settings.common.SettingsDescription
@@ -81,8 +65,6 @@ import app.n_zik.android.components.settings.common.ModernSettingsEntry
 @Composable
 fun About(navController: NavController) {
     val uriHandler = LocalUriHandler.current
-    val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
-    
 
     Column(
         modifier = Modifier
@@ -112,7 +94,7 @@ fun About(navController: NavController) {
             textAlign = TextAlign.Center
         ) 
  
-         // Header Cards Row - App Info & Update Check
+         // Header Card - App Info
         AnimatedVisibility(
             visible = true,
             enter = fadeIn(animationSpec = tween(600)) + scaleIn(
@@ -143,11 +125,7 @@ fun About(navController: NavController) {
                     ),
                 shape = uiRoundnessShape(),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (colorPalette() === PureBlackColorPalette || colorPalette() === ModernBlackColorPalette || colorPaletteMode == ColorPaletteMode.PitchBlack) {
-                        Color(0xFF1A1A1A) // Gray dark for pitch black themes
-                    } else {
-                        colorPalette().background1
-                    }
+                    containerColor = surfaceColor(colorPalette().background1)
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
@@ -200,49 +178,6 @@ fun About(navController: NavController) {
                          modifier = Modifier.fillMaxWidth()
                      )
 
-                             Spacer(modifier = Modifier.height(6.dp))
-
-                                                                                     // Version
-                            // Version and Badge
-                            Row(
-                                modifier = Modifier.fillMaxWidth().basicMarquee(iterations = Int.MAX_VALUE),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                BasicText(
-                                    text = "v${getVersionName()}",
-                                    style = typography().xs.secondary.copy(
-                                        textAlign = TextAlign.Center
-                                    )
-                                )
-                                
-                                val badge = Updater.flavorLabel(
-                                    BuildConfig.VERSION_NAME,
-                                    BuildConfig.BUILD_TYPE.equals("foss", ignoreCase = true)
-                                )
-                                if (badge != null) {
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Box(
-                                        modifier = Modifier
-                                            .background(
-                                                color = colorPalette().accent.copy(alpha = 0.2f),
-                                                shape = uiRoundnessShape()
-                                            )
-                                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                                    ) {
-                                        // Single source of truth with the header badge
-                                        // (Updater.flavorLabel).
-
-                                        // FULL / FULL 32, MINIFIED / MINIFIED 32, BETA / BETA 32, DEV / DEV 32, FOSS, DEBUG
-                                        val badgeText = badge.literal
-                                            ?: stringResource(badge.resId) + if (badge.append32) " 32" else ""
-                                        BasicText(
-                                            text = badgeText.uppercase(),
-                                            style = typography().xxs.bold.copy(color = colorPalette().accent)
-                                        )
-                                    }
-                                }
-                            }
                               
                             /* Removed Spacer */
                         }
@@ -290,197 +225,7 @@ fun About(navController: NavController) {
                 }
             }
 
-                     // Update Check Card
-                     Card(
-                         modifier = Modifier
-                             .weight(1f)
-                             .fillMaxHeight()
-                             .run {
-                                 if (BuildConfig.IS_AUTOUPDATE) {
-                                     clickable { navController.navigate(NavRoutes.updater.name) }
-                                 } else this
-                             }
-                             .shadow(
-                                 elevation = 8.dp,
-                                 shape = uiRoundnessShape(),
-                                 spotColor = colorPalette().accent.copy(alpha = 0.3f)
-                             ),
-                     shape = uiRoundnessShape(),
-                     colors = CardDefaults.cardColors(
-                         containerColor = if (colorPalette() === PureBlackColorPalette || colorPalette() === ModernBlackColorPalette || colorPaletteMode == ColorPaletteMode.PitchBlack) {
-                             Color(0xFF1A1A1A) // Gray dark for pitch black themes
-                         } else {
-                             colorPalette().background1
-                         }
-                     ),
-                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .padding(20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Top
-                    ) {
-                        if (BuildConfig.IS_AUTOUPDATE) {
-                            // Top content
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                // Update Icon
-                                Box(
-                                    modifier = Modifier
-                                        .size(60.dp)
-                                        .background(
-                                            brush = Brush.radialGradient(
-                                                colors = listOf(
-                                                    colorPalette().accent.copy(alpha = 0.1f),
-                                                    colorPalette().accent.copy(alpha = 0.05f)
-                                                )
-                                            ),
-                                            shape = CircleShape
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.update),
-                                        tint = colorPalette().accent,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(28.dp)
-                                    )
-                                }
-    
-                                Spacer(modifier = Modifier.height(12.dp))
-    
-                                // Update Title
-                                BasicText(
-                                    text = stringResource(R.string.update),
-                                    style = TextStyle(
-                                        fontSize = typography().l.bold.fontSize,
-                                        fontWeight = typography().l.bold.fontWeight,
-                                        color = colorPalette().text,
-                                        textAlign = TextAlign.Center
-                                    ),
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-    
-                                Spacer(modifier = Modifier.height(6.dp))
-    
-                                val newVersion = Updater.githubRelease?.tagName ?: ""
-                                val hasUpdate = Updater.githubRelease != null && Updater.isVersionNewer(newVersion, BuildConfig.VERSION_NAME)
-                                if (Updater.githubRelease != null) {
-                                    BasicText(
-                                        text = stringResource(if (hasUpdate) R.string.update_available else R.string.up_to_date),
-                                        style = typography().xs.secondary.copy(
-                                            textAlign = TextAlign.Center,
-                                            color = if (hasUpdate) colorPalette().accent else colorPalette().textSecondary
-                                        ),
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                } else {
-                                    BasicText(
-                                        text = stringResource(R.string.audio_quality_format_unknown),
-                                        style = typography().xs.secondary.copy(
-                                            textAlign = TextAlign.Center,
-                                            color = colorPalette().textSecondary
-                                        ),
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                }
-                                
-                                val lastCheckTime by rememberPreference(lastUpdateCheckKey, 0L)
-                                val sdf = SimpleDateFormat("dd MMM HH:mm", Locale.getDefault())
-                                val lastCheckStr = if (lastCheckTime > 0) sdf.format(Date(lastCheckTime)) else stringResource(R.string.never_checked)
-                                BasicText(
-                                    text = if (lastCheckTime > 0) stringResource(R.string.last_check, lastCheckStr) else stringResource(R.string.never_checked),
-                                    style = typography().xxs.secondary.copy(
-                                        textAlign = TextAlign.Center,
-                                        color = colorPalette().textSecondary.copy(alpha = 0.7f)
-                                    ),
-                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
-                                )
-                                
-                                /* Removed Spacer */
-                            }
-    
-                            Spacer(modifier = Modifier.weight(1f))
-    
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(36.dp)
-                                    .clip(uiRoundnessShape()).clickable {
-                                        // Same (profile-scoped) "preferences" file the beta toggle in
-                                        // the updater settings writes to.
-
-                                        // The legacy "settings" file never holds this key.
-                                        val checkBeta = appContext().preferences.getBoolean(checkBetaUpdatesKey, Updater.isBetaFamily(BuildConfig.VERSION_NAME))
-                                        Toaster.i(R.string.checking_for_updates)
-                                        Updater.checkForUpdate(isForced = true, checkBetaUpdates = checkBeta, showDialog = false)
-                                        navController.navigate(NavRoutes.updater.name)
-                                    },
-                                colors = CardDefaults.cardColors(containerColor = colorPalette().accent),
-                                shape = uiRoundnessShape()
-                            ) {
-                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                    BasicText(
-                                        text = stringResource(R.string.check_update),
-                                        style = typography().xs.semiBold.copy(color = Color.White)
-                                    )
-                                }
-                            }
-                        } else {
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(60.dp)
-                                        .background(
-                                            brush = Brush.radialGradient(
-                                                colors = listOf(
-                                                    colorPalette().accent.copy(alpha = 0.1f),
-                                                    colorPalette().accent.copy(alpha = 0.05f)
-                                                )
-                                            ),
-                                            shape = CircleShape
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.update),
-                                        tint = colorPalette().textSecondary.copy(alpha = 0.5f),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(28.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(12.dp))
-                                BasicText(
-                                    text = stringResource(R.string.update),
-                                    style = TextStyle(
-                                        fontSize = typography().l.bold.fontSize,
-                                        fontWeight = typography().l.bold.fontWeight,
-                                        color = colorPalette().textSecondary.copy(alpha = 0.5f),
-                                        textAlign = TextAlign.Center
-                                    ),
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                BasicText(
-                                    text = stringResource(R.string.description_app_not_installed_by_apk),
-                                    style = typography().xxs.secondary.copy(
-                                        textAlign = TextAlign.Center,
-                                        color = colorPalette().textSecondary.copy(alpha = 0.7f)
-                                    ),
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+             }
         }
     }
 

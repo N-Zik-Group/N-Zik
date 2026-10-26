@@ -121,7 +121,17 @@ import androidx.compose.material3.Text
 
 import androidx.compose.foundation.text.BasicText
 
-import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
+import androidx.compose.ui.text.input.TextFieldValue
+import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
+import app.n_zik.android.components.search.SearchHistoryStore
+import app.n_zik.android.components.search.SearchHistorySection
+import app.n_zik.android.components.search.filterSearchHistory
+import app.n_zik.android.components.search.rememberSearchHistory
+import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
+import app.n_zik.android.components.settings.common.visibleCardTitleRes
+import app.n_zik.android.components.settings.common.settingsSearchContent
+import app.n_zik.android.components.settings.common.settingsSearchDescription
+import app.n_zik.android.components.settings.common.settingsSearchTitle
 
 import androidx.compose.ui.res.painterResource
 import app.it.fast4x.rimusic.ui.styling.Dimensions
@@ -312,9 +322,19 @@ fun AccountsSettings(
     navController: NavController,
     focus: String = ""
 ) {
-    val search = Search()
+    val search = Search(initialVisible = true)
+    val searchFocus = rememberSettingsSearchFocus(search.isFocused, search.inputValue.isBlank())
 
     val context = LocalContext.current
+
+    val isHistoryPaused by rememberPreference(pauseSearchHistoryKey, false)
+    val history = rememberSearchHistory(SearchHistoryStore.PAGE_SETTINGS_ACCOUNTS, isHistoryPaused)
+    val historyMatches = filterSearchHistory(history.value, search.inputValue)
+    val historyVisible = search.isFocused && historyMatches.isNotEmpty()
+
+    fun recordSearchQuery(query: String = search.inputValue) {
+        history.value = SearchHistoryStore.record(context.preferences, SearchHistoryStore.PAGE_SETTINGS_ACCOUNTS, query)
+    }
 
     var restartActivity by rememberPreference(restartActivityKey, false)
     var restartService by rememberSaveable { mutableStateOf(false) }
@@ -365,911 +385,161 @@ fun AccountsSettings(
             .onGloballyPositioned { containerTopY = it.positionInRoot().y }
     ) {
 
-        HeaderWithIcon(
-            title = stringResource(R.string.tab_accounts),
-            iconId = R.drawable.person,
-            enabled = false,
-            showIcon = true,
-            modifier = Modifier,
-            onClick = {}
+        settingsSearchTitle(searchFocus, R.string.tab_accounts, R.drawable.person)
+
+        settingsSearchDescription(searchFocus) {
+            SettingsDescription(
+                text = stringResource(R.string.accounts_settings_description),
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        }
+
+        search.SearchBar(this, barPadding = searchFocus.barPadding, onSearch = { recordSearchQuery() })
+
+        SearchHistorySection(
+            visible = historyVisible,
+            queries = historyMatches,
+            onQueryClick = { search.input = TextFieldValue(it); recordSearchQuery(it); search.isFocused = false },
+            onQueryDelete = {
+                history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_SETTINGS_ACCOUNTS, it)
+            },
+            onQueryDeleteAll = {
+                history.value = SearchHistoryStore.deleteAll(context.preferences, SearchHistoryStore.PAGE_SETTINGS_ACCOUNTS)
+            }
         )
-
-        SettingsDescription(
-            text = stringResource(R.string.accounts_settings_description),
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        ) 
-
-        search.ToolBarButton()
-        search.SearchBar( this )
 
         /* Removed Spacer */
 
-        // The face card owns the face edits; the profile card below shows the active
-        // profile's state (face, data, database size) without actions. The burger
-        // long press (focus=profiles) scrolls to the profile card.
-        ProfileFaceCard(
-            onOpenProfiles = { navController.navigate(NavRoutes.profiles.name) }
-        )
-        ProfileAccountCard(
-            modifier = Modifier.onGloballyPositioned { profilesCardTopY = it.positionInRoot().y }
-        )
-
-        // YouTube Music Section
-        AnimatedVisibility(
-            visible = true,
-            enter = fadeIn(animationSpec = tween(600)) + scaleIn(
-                animationSpec = tween(600),
-                initialScale = 0.9f
-            )
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.youtube_music),
-                icon = R.drawable.ytmusic,
-                content = {
-                    // rememberEncryptedPreference only works correct with API 24 and up
-                    var isYouTubeLoginEnabled by rememberEncryptedPreference(enableYouTubeLoginKey, false)
-                    var isYouTubeSyncEnabled by rememberEncryptedPreference(enableYouTubeSyncKey, false)
-                    var loginYouTube by remember { mutableStateOf(false) }
-                    val binder = LocalPlayerServiceBinder.current
-
-                    LaunchedEffect(isYouTubeLoginEnabled) {
-                        if (!isYouTubeLoginEnabled && isYouTubeSyncEnabled) {
-                            isYouTubeSyncEnabled = false
-                        }
-                    }
-
-                    if (search.inputValue.isBlank() || stringResource(R.string.enable_youtube_music_login).contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                            title = stringResource(R.string.enable_youtube_music_login),
-                            text = "",
-                            isChecked = isYouTubeLoginEnabled,
-                            onCheckedChange = {
-                                isYouTubeLoginEnabled = it
-                                app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger++
-                                if (!it) {
-                                    // Only clear Innertube singleton (stop using account)
-                                    // Keep account info so user doesn't have to reconnect
-                                    Innertube.cookie = null
-                                    Innertube.dataSyncId = null
-                                    Innertube.visitorData = Innertube.DEFAULT_VISITOR_DATA
-                                    Innertube.useLoginForBrowse = false
-                                    // Reset cookie status
-                                    app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
-                                    appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
-
-                                    // Disable sync and all sub-toggles
-                                    appContext().encryptedPreferences.edit {
-                                        putBoolean(enableYouTubeSyncKey, false)
-                                    }
-                                    appContext().preferences.edit {
-                                        putBoolean(useLoginForBrowseKey, false)
-                                        putBoolean(autosyncArtistsKey, false)
-                                        putBoolean(autosyncAlbumsKey, false)
-                                        putBoolean(autosyncPlaylistsKey, false)
-                                        putBoolean(autosyncLikesKey, false)
-                                        putBoolean(syncImportHistoryKey, false)
-                                        putBoolean(syncImportLibrarySongsKey, false)
-                                        putBoolean(syncImportUploadedSongsKey, false)
-                                        putBoolean(syncImportUploadedAlbumsKey, false)
-                                        putBoolean(syncImportEpisodesKey, false)
-                                        putBoolean(syncPushHistoryKey, false)
-                                        putBoolean(syncPushSongLikeKey, false)
-                                        putBoolean(syncPushAlbumBookmarkKey, false)
-                                        putBoolean(syncPushArtistFollowKey, false)
-                                        putBoolean(syncPushPlaylistKey, false)
-                                        putBoolean(syncPushEpisodeKey, false)
-                                    }
-
-                                    // Clear cached data
-                                    appContext().preferences.edit {
-                                        remove(quickPicsHomePageKey)
-                                        remove(quickPicsYtmQuickPicksKey)
-                                        remove(quickPicsDiscoverPageKey)
-                                    }
-                                } else {
-                                    // Re-enable: restore Innertube from saved preferences
-                                    val savedCookie = appContext().encryptedPreferences.getString(ytCookieKey, "") ?: ""
-                                    if (savedCookie.isNotEmpty()) {
-                                        Innertube.cookie = savedCookie
-                                        Innertube.dataSyncId = appContext().encryptedPreferences.getString(ytDataSyncIdKey, null)
-                                        Innertube.visitorData = appContext().encryptedPreferences.getString(ytVisitorDataKey, null) ?: Innertube.DEFAULT_VISITOR_DATA
-                                        // Only activate browse if we have real credentials
-                                        if ("SAPISID" in parseCookieString(savedCookie)) {
-                                            appContext().preferences.edit().putBoolean(useLoginForBrowseKey, true).apply()
-                                            Innertube.useLoginForBrowse = true
-                                        }
-                                    }
-                                    // Reset cookie status — will be revalidated on next playback
-                                    app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
-                                    appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
-                                }
-                                // Clear stream caches and mark restart needed
-                                clearStreamCaches()
-                                appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, true).apply()
-                                // Clear audio cache
-                                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                    clearAudioCache(binder?.cache)
-                                }
-                                Toaster.i(R.string.preferred_stream_client_changed)
-                                Toaster.w(R.string.stream_client_redownload_recommendation)
-                            },
-                            icon = R.drawable.ytmusic
-                        )
-                    }
-
-                    val isStreamRestartNeeded by rememberPreference(streamClientRestartNeededKey, false)
-                    RestartPlayerService(
-                        restartService = isStreamRestartNeeded,
-                        onRestart = {
-                            appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, false).apply()
-                        }
-                    )
-
-                    AnimatedVisibility(visible = isYouTubeLoginEnabled) {
-                        Column {
-                            if (isLoggedIn) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .padding(start = 8.dp)
-                                    ) {
-                                        Text(
-                                            text = stringResource(R.string.account_info),
-                                            color = colorPalette().text,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(start = 5.dp),
-                                        )
-
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(top = 8.dp, bottom = 8.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            if (accountThumbnail.isNotEmpty()) {
-                                                ImageCacheFactory.AsyncImage(
-                                                    thumbnailUrl = accountThumbnail,
-                                                    contentDescription = null,
-                                                    modifier = Modifier
-                                                        .padding(start = 5.dp, top = 8.dp, bottom = 8.dp)
-                                                        .size(50.dp)
-                                                        .clip(thumbnailShape())
-                                                )
-                                            } else {
-                                                Icon(
-                                                    painter = painterResource(R.drawable.person),
-                                                    contentDescription = null,
-                                                    modifier = Modifier
-                                                        .padding(start = 5.dp, top = 8.dp, bottom = 8.dp)
-                                                        .size(50.dp)
-                                                        .clip(thumbnailShape()),
-                                                    tint = colorPalette().textSecondary
-                                                )
-                                            }
-
-                                            Box(
-                                                modifier = Modifier
-                                                    .weight(1f)
-                                                    .padding(start = 8.dp, top = 8.dp, bottom = 8.dp),
-                                                contentAlignment = Alignment.CenterStart
-                                            ) {
-                                                Column(modifier = Modifier.fillMaxWidth()) {
-                                                    Text(
-                                                        text = accountName,
-                                                        color = colorPalette().text,
-                                                        modifier = Modifier.padding(start = 5.dp),
-                                                        style = typography().m
-                                                    )
-                                                    if (accountChannelHandle.isNotEmpty()) {
-                                                        Text(
-                                                            text = accountChannelHandle,
-                                                            color = colorPalette().textSecondary,
-                                                            modifier = Modifier.padding(start = 5.dp),
-                                                            style = typography().xs
-                                                        )
-                                                    }
-                                                    if (accountEmail.isNotEmpty()) {
-                                                        Text(
-                                                            text = accountEmail,
-                                                            color = colorPalette().textSecondary,
-                                                            modifier = Modifier.padding(start = 5.dp),
-                                                            style = typography().xs
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            // Cookie status warning — show when cookie is invalid/expired
-                            if (isLoggedIn && app.n_zik.android.MainApplication.cookieStatus in listOf(app.n_zik.android.MainApplication.CookieStatus.INVALID, app.n_zik.android.MainApplication.CookieStatus.EXPIRED)) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.information),
-                                        contentDescription = null,
-                                        tint = colorPalette().textSecondary,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Text(
-                                        text = stringResource(R.string.error_cookie_invalid),
-                                        color = colorPalette().textSecondary,
-                                        modifier = Modifier.padding(start = 8.dp),
-                                        style = typography().xs
-                                    )
-                                }
-                            }
-
-                            if (search.inputValue.isBlank() || true) {
-                                OtherSettingsEntry(
-                                    title = if (isLoggedIn) stringResource(R.string.account_logoff) else stringResource(R.string.account_login),
-                                    text = "",
-                                    icon = if (isLoggedIn) R.drawable.logout else R.drawable.person,
-                                    onClick = {
-                                        if (isLoggedIn) {
-                                            showClearSyncDialog = true
-                                        } else {
-                                            loginYouTube = true
-                                        }
-                                    }
-                                )
-                            }
-
-                            CustomModalBottomSheet(
-                                showSheet = loginYouTube,
-                                onDismissRequest = {
-                                    loginYouTube = false
-                                },
-                                containerColor = colorPalette().background0,
-                                contentColor = colorPalette().background0,
-                                modifier = Modifier.fillMaxWidth().statusBarsPadding(),
-                                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-                                shape = uiRoundnessShape(),
-                                dragHandle = {
-                                    Box(
-                                        modifier = Modifier
-                                            .padding(top = 18.dp, bottom = 6.dp)
-                                            .size(width = 40.dp, height = 4.dp)
-                                            .clip(RoundedCornerShape(2.dp))
-                                            .background(Color.White)
-                                    )
-                                }
-                            ) {
-                                YouTubeLogin(
-                                    onLogin = { cookieRetrieved ->
-                                        if (cookieRetrieved.contains("SAPISID")) {
-                                            isLoggedIn = true
-                                            loginYouTube = false
-                                            // Clear expired flag on fresh login
-                                            appContext().preferences.edit().putBoolean(ytCookieExpiredKey, false).apply()
-                                            app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.VALID
-                                            // Re-enable useLoginForBrowse since we now have valid credentials
-                                            appContext().preferences.edit().putBoolean(useLoginForBrowseKey, true).apply()
-                                            Innertube.useLoginForBrowse = true
-                                            // Force re-read account info from encrypted prefs (YouTubeLogin saved them)
-                                            val ep = appContext().encryptedPreferences
-                                            accountName = ep.getString(ytAccountNameKey, "") ?: ""
-                                            accountEmail = ep.getString(ytAccountEmailKey, "") ?: ""
-                                            accountChannelHandle = ep.getString(ytAccountChannelHandleKey, "") ?: ""
-                                            accountThumbnail = ep.getString(ytAccountThumbnailKey, "") ?: ""
-                                            Toaster.i( context.getString(R.string.youtube_login_successful) )
-                                        }
-                                    }
-                                )
-                            }
-
-                            // Login for Browse option (must be enabled for sync to work)
-                            if (isYouTubeLoginEnabled) {
-                            var useLoginForBrowse by rememberPreference(useLoginForBrowseKey, true)
-                            if (search.inputValue.isBlank() || stringResource(R.string.login_for_browse).contains(search.inputValue, true)) {
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.login_for_browse),
-                                    text = if (!isLoggedIn) stringResource(R.string.youtube_connect_first) else stringResource(R.string.login_for_browse_description),
-                                    isChecked = isLoggedIn && useLoginForBrowse,
-                                    enabled = isLoggedIn,
-                                    onCheckedChange = {
-                                        useLoginForBrowse = it
-                                        Innertube.useLoginForBrowse = it
-                                        if (!it) {
-                                            // Reset sync and all sub-toggles when Login for Browse is disabled
-                                            appContext().encryptedPreferences.edit {
-                                                putBoolean(enableYouTubeSyncKey, false)
-                                            }
-                                            appContext().preferences.edit {
-                                                putBoolean(autosyncArtistsKey, false)
-                                                putBoolean(autosyncAlbumsKey, false)
-                                                putBoolean(autosyncPlaylistsKey, false)
-                                                putBoolean(autosyncLikesKey, false)
-                                                putBoolean(syncImportHistoryKey, false)
-                                                putBoolean(syncImportLibrarySongsKey, false)
-                                                putBoolean(syncImportUploadedSongsKey, false)
-                                                putBoolean(syncImportUploadedAlbumsKey, false)
-                                                putBoolean(syncImportEpisodesKey, false)
-                                                putBoolean(syncPushHistoryKey, false)
-                                                putBoolean(syncPushSongLikeKey, false)
-                                                putBoolean(syncPushAlbumBookmarkKey, false)
-                                                putBoolean(syncPushArtistFollowKey, false)
-                                                putBoolean(syncPushPlaylistKey, false)
-                                                putBoolean(syncPushEpisodeKey, false)
-                                            }
-                                        }
-                                    },
-                                    icon = R.drawable.person
-                                )
-                            }
-                            }
-                            YtSearchAccountToggle(isYouTubeLoginEnabled = isYouTubeLoginEnabled, isLoggedIn = isLoggedIn, searchQuery = search.inputValue)
-
-
-                        }
-                    }
-                }
-            )
+        val hasSearchResults = search.inputValue.isBlank() || visibleCardTitleRes(context, 5, search.inputValue).isNotEmpty()
+        LaunchedEffect(hasSearchResults) {
+            if (!hasSearchResults) scrollState.scrollTo(0)
         }
-
-        val useLoginForBrowseSync by rememberPreference(useLoginForBrowseKey, true)
-        val isYouTubeLoginActive by rememberEncryptedPreference(enableYouTubeLoginKey, false)
-
-        AnimatedVisibility(
-            visible = useLoginForBrowseSync && isYouTubeLoginActive,
-            enter = fadeIn(animationSpec = tween(600)) + scaleIn(
-                animationSpec = tween(600),
-                initialScale = 0.9f
+        settingsSearchContent(searchFocus, hasResults = hasSearchResults) {
+            // The face card owns the face edits; the profile card below shows the active
+            // profile's state (face, data, database size) without actions. The burger
+            // long press (focus=profiles) scrolls to the profile card.
+            ProfileFaceCard(
+                onOpenProfiles = { navController.navigate(NavRoutes.profiles.name) }
             )
-        ) {
-            var isYouTubeSyncEnabled by rememberEncryptedPreference(enableYouTubeSyncKey, false)
-            val isSyncEnabled = isYouTubeSyncEnabled && useLoginForBrowseSync
-            var syncDirection by rememberPreference(syncDirectionKey, SyncDirection.TWO_WAY)
-            val coroutineScope = rememberCoroutineScope()
-            val syncStatusState by syncStatus.collectAsStateWithLifecycle(initialValue = SyncStatus(), context = NzikDispatchers.DATA)
-            val lastSyncTime = remember { getLastSyncTime() }
-
-            // Re-sync state when Login for Browse changes (prefs reset externally)
-            LaunchedEffect(useLoginForBrowseSync) {
-                if (!useLoginForBrowseSync) {
-                    isYouTubeSyncEnabled = false
-                }
-            }
-
-            Column {
-                // Sync data toggle + Sync Now + Direction
-                SettingsSectionCard(
-                    title = stringResource(R.string.sync_data_with_ytm_account),
-                    icon = R.drawable.sync,
-                    content = {
-                        OtherSwitchSettingEntry(
-                            title = stringResource(R.string.sync_data_with_ytm_account),
-                            text = stringResource(R.string.playlists_albums_artists_history_like_etc),
-                            isChecked = isYouTubeSyncEnabled,
-                            enabled = BuildConfig.BUILD_TYPE in listOf("debug", "dev64", "dev32", "beta64", "beta32"),
-                            onCheckedChange = {
-                                isYouTubeSyncEnabled = it
-                                if (!it) {
-                                    // Reset all sub-toggles when sync is disabled
-                                    appContext().preferences.edit {
-                                        putBoolean(autosyncArtistsKey, false)
-                                        putBoolean(autosyncAlbumsKey, false)
-                                        putBoolean(autosyncPlaylistsKey, false)
-                                        putBoolean(autosyncLikesKey, false)
-                                        putBoolean(syncImportHistoryKey, false)
-                                        putBoolean(syncImportLibrarySongsKey, false)
-                                        putBoolean(syncImportUploadedSongsKey, false)
-                                        putBoolean(syncImportUploadedAlbumsKey, false)
-                                        putBoolean(syncImportEpisodesKey, false)
-                                        putBoolean(syncPushHistoryKey, false)
-                                        putBoolean(syncPushSongLikeKey, false)
-                                        putBoolean(syncPushAlbumBookmarkKey, false)
-                                        putBoolean(syncPushArtistFollowKey, false)
-                                        putBoolean(syncPushPlaylistKey, false)
-                                        putBoolean(syncPushEpisodeKey, false)
-                                    }
-                                }
-                            },
-                            icon = R.drawable.sync
-                        )
-
-                        AnimatedVisibility(visible = isSyncEnabled) {
-                            Column {
-                                // Sync status overview
-                                val statusText = when {
-                                    syncStatusState.isRunning -> stringResource(R.string.sync_status_running, syncStatusState.currentOperation)
-                                    else -> {
-                                        val lastSync = getLastSyncTime()
-                                        if (lastSync > 0) {
-                                            val elapsed = ((System.currentTimeMillis() - lastSync) / 60000).toInt()
-                                            stringResource(R.string.sync_status_last, elapsed)
-                                        } else stringResource(R.string.sync_status_never)
-                                    }
-                                }
-                                val statusColor = when {
-                                    syncStatusState.isRunning -> colorPalette().accent
-                                    else -> colorPalette().textDisabled
-                                }
-                                OtherInfoSettingsEntry(
-                                    title = statusText,
-                                    text = "",
-                                    icon = R.drawable.sync
-                                )
-
-                                // Sync status detail
-                                OtherSettingsEntry(
-                                    title = stringResource(R.string.sync_status_detail),
-                                    text = stringResource(R.string.sync_status_detail_description),
-                                    icon = R.drawable.information,
-                                    onClick = { SyncStatusDialog.showDialog() }
-                                )
-                                SyncStatusDialog.Render()
-
-                                OtherSettingsEntry(
-                                    title = stringResource(R.string.sync_now),
-                                    text = stringResource(R.string.sync_now_description),
-                                    icon = R.drawable.sync,
-                                    onClick = {
-                                        // Queue all imports + pushes via sync queue (forced)
-                                        queueSync(SyncOperation.FullSync)
-                                        queueSync(SyncOperation.PushLikedSongs(force = true))
-                                        queueSync(SyncOperation.PushAlbumBookmarks(force = true))
-                                        queueSync(SyncOperation.PushArtistFollows(force = true))
-                                        queueSync(SyncOperation.PushPlaylists(force = true))
-                                        queueSync(SyncOperation.PushEpisodes(force = true))
-                                    }
-                                )
-                                OtherEnumValueSelectorSettingsEntry(
-                                    icon = R.drawable.sync,
-                                    title = stringResource(R.string.sync_direction),
-                                    selectedValue = syncDirection,
-                                    onValueSelected = { syncDirection = it },
-                                    valueText = { stringResource(it.stringResource) }
-                                )
-
-                                var syncCooldown by rememberPreference(syncCooldownKey, 30)
-                                SliderSettingsEntry(
-                                    title = stringResource(R.string.sync_cooldown),
-                                    text = stringResource(R.string.sync_cooldown_description),
-                                    state = syncCooldown.toFloat(),
-                                    range = 5f..120f,
-                                    stepSize = 15f,
-                                    onSlide = { syncCooldown = it.toInt() },
-                                    toDisplay = { "${it.toInt()} min" },
-                                    isIntegerOnly = true,
-                                    icon = R.drawable.time
-                                )
-                                var syncShowDetails by rememberPreference(syncShowDetailsKey, true)
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.sync_show_details),
-                                    text = stringResource(R.string.sync_show_details_description),
-                                    isChecked = syncShowDetails,
-                                    onCheckedChange = { syncShowDetails = it },
-                                    icon = R.drawable.information
-                                )
-                                var syncBackgroundGuard by rememberPreference(syncBackgroundGuardKey, true)
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.sync_background_guard),
-                                    text = stringResource(R.string.sync_background_guard_description),
-                                    isChecked = syncBackgroundGuard,
-                                    onCheckedChange = { syncBackgroundGuard = it },
-                                    icon = R.drawable.pause
-                                )
-                            }
-                        }
-                    }
-                )
-
-                // Auto-Sync, Import, Push (only when sync is enabled)
-                AnimatedVisibility(visible = isSyncEnabled) {
-                    Column {
-                        // Auto-Sync (per feature)
-                        SettingsSectionCard(
-                            title = stringResource(R.string.autosync),
-                            icon = R.drawable.sync,
-                            content = {
-                                var autosyncArtists by rememberPreference(autosyncArtistsKey, false)
-                                var autosyncAlbums by rememberPreference(autosyncAlbumsKey, false)
-                                var autosyncPlaylists by rememberPreference(autosyncPlaylistsKey, false)
-                                var autosyncLikes by rememberPreference(autosyncLikesKey, false)
-
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.autosync_channels),
-                                    text = stringResource(R.string.autosync_channels_description),
-                                    isChecked = autosyncArtists,
-                                    onCheckedChange = { autosyncArtists = it },
-                                    icon = R.drawable.people
-                                )
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.autosync_albums),
-                                    text = stringResource(R.string.autosync_albums_description),
-                                    isChecked = autosyncAlbums,
-                                    onCheckedChange = { autosyncAlbums = it },
-                                    icon = R.drawable.album
-                                )
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.autosync),
-                                    text = stringResource(R.string.autosync_playlists_description),
-                                    isChecked = autosyncPlaylists,
-                                    onCheckedChange = { autosyncPlaylists = it },
-                                    icon = R.drawable.playlist
-                                )
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.autosync_likes),
-                                    text = stringResource(R.string.autosync_likes_description),
-                                    isChecked = autosyncLikes,
-                                    onCheckedChange = { autosyncLikes = it },
-                                    icon = R.drawable.heart
-                                )
-                            }
-                        )
-
-                        // Import from YouTube
-                        SettingsSectionCard(
-                            title = stringResource(R.string.sync_import_from_youtube),
-                            icon = R.drawable.download,
-                            content = {
-                                var syncImportHistory by rememberPreference(syncImportHistoryKey, false)
-                                var syncImportLibrarySongs by rememberPreference(syncImportLibrarySongsKey, false)
-                                var syncImportUploadedSongs by rememberPreference(syncImportUploadedSongsKey, false)
-                                var syncImportUploadedAlbums by rememberPreference(syncImportUploadedAlbumsKey, false)
-                                var syncImportEpisodes by rememberPreference(syncImportEpisodesKey, false)
-
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.sync_import_history),
-                                    text = stringResource(R.string.sync_import_history_description),
-                                    isChecked = syncImportHistory,
-                                    onCheckedChange = { syncImportHistory = it },
-                                    icon = R.drawable.history
-                                )
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.sync_import_library_songs),
-                                    text = stringResource(R.string.sync_import_library_songs_description),
-                                    isChecked = syncImportLibrarySongs,
-                                    onCheckedChange = { syncImportLibrarySongs = it },
-                                    icon = R.drawable.heart
-                                )
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.sync_import_uploaded_songs),
-                                    text = stringResource(R.string.sync_import_uploaded_songs_description),
-                                    isChecked = syncImportUploadedSongs,
-                                    onCheckedChange = { syncImportUploadedSongs = it },
-                                    icon = R.drawable.download
-                                )
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.sync_import_uploaded_albums),
-                                    text = stringResource(R.string.sync_import_uploaded_albums_description),
-                                    isChecked = syncImportUploadedAlbums,
-                                    onCheckedChange = { syncImportUploadedAlbums = it },
-                                    icon = R.drawable.album
-                                )
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.sync_import_episodes),
-                                    text = stringResource(R.string.sync_import_episodes_description),
-                                    isChecked = syncImportEpisodes,
-                                    onCheckedChange = { syncImportEpisodes = it },
-                                    icon = R.drawable.podcast
-                                )
-                            }
-                        )
-
-                        // Push to YouTube
-                        SettingsSectionCard(
-                            title = stringResource(R.string.sync_push_to_youtube),
-                            icon = R.drawable.arrow_up,
-                            content = {
-                                var syncPushSongLike by rememberPreference(syncPushSongLikeKey, false)
-                                var syncPushAlbumBookmark by rememberPreference(syncPushAlbumBookmarkKey, false)
-                                var syncPushArtistFollow by rememberPreference(syncPushArtistFollowKey, false)
-                                var syncPushPlaylist by rememberPreference(syncPushPlaylistKey, false)
-                                var syncPushHistory by rememberPreference(syncPushHistoryKey, false)
-
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.sync_push_history),
-                                    text = stringResource(R.string.sync_push_history_description),
-                                    isChecked = syncPushHistory,
-                                    onCheckedChange = { syncPushHistory = it },
-                                    icon = R.drawable.history
-                                )
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.sync_push_song_like),
-                                    text = stringResource(R.string.sync_push_song_like_description),
-                                    isChecked = syncPushSongLike,
-                                    onCheckedChange = { syncPushSongLike = it },
-                                    icon = R.drawable.heart
-                                )
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.sync_push_album_bookmark),
-                                    text = stringResource(R.string.sync_push_album_bookmark_description),
-                                    isChecked = syncPushAlbumBookmark,
-                                    onCheckedChange = { syncPushAlbumBookmark = it },
-                                    icon = R.drawable.album
-                                )
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.sync_push_artist_follow),
-                                    text = stringResource(R.string.sync_push_artist_follow_description),
-                                    isChecked = syncPushArtistFollow,
-                                    onCheckedChange = { syncPushArtistFollow = it },
-                                    icon = R.drawable.people
-                                )
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.sync_push_playlist),
-                                    text = stringResource(R.string.sync_push_playlist_description),
-                                    isChecked = syncPushPlaylist,
-                                    onCheckedChange = { syncPushPlaylist = it },
-                                    icon = R.drawable.playlist
-                                )
-                                var syncPushEpisode by rememberPreference(syncPushEpisodeKey, false)
-                                OtherSwitchSettingEntry(
-                                    title = stringResource(R.string.sync_push_episode),
-                                    text = stringResource(R.string.sync_push_episode_description),
-                                    isChecked = syncPushEpisode,
-                                    onCheckedChange = { syncPushEpisode = it },
-                                    icon = R.drawable.podcast
-                                )
-                            }
-                        )
-                    }
-                }
-            }
-
-        }
-
-        /* Removed Spacer */
-
-        // Last.fm Section
-        LastFmSettingsCard()
-
-        // Listen Together Section (reuses the room-screen settings card, same pattern);
-        // the burger long press (focus=listentogether) scrolls to it.
-        Box(modifier = Modifier.onGloballyPositioned { listenTogetherCardTopY = it.positionInRoot().y }) {
-            ListenTogetherSettingsCard(
-                onOpenScreen = { navController.navigate(NavRoutes.listenTogether.name) }
+            ProfileAccountCard(
+                modifier = Modifier.onGloballyPositioned { profilesCardTopY = it.positionInRoot().y }
             )
-        }
 
-        // Discord Section
-        if (isAtLeastAndroid7) {
+            // YouTube Music Section
             AnimatedVisibility(
                 visible = true,
-                enter = fadeIn(animationSpec = tween(1000)) + scaleIn(
-                    animationSpec = tween(1000),
+                enter = fadeIn(animationSpec = tween(600)) + scaleIn(
+                    animationSpec = tween(600),
                     initialScale = 0.9f
                 )
             ) {
                 SettingsSectionCard(
-                    title = stringResource(R.string.social_discord) + " " + stringResource(R.string.beta_title),
-                    icon = R.drawable.logo_discord,
+                    title = stringResource(R.string.youtube_music),
+                    icon = R.drawable.ytmusic,
                     content = {
                         // rememberEncryptedPreference only works correct with API 24 and up
-                        var isDiscordPresenceEnabled by rememberEncryptedPreference(isDiscordPresenceEnabledKey, false)
-                        var loginDiscord by remember { mutableStateOf(false) }
-                        var discordPersonalAccessToken by rememberEncryptedPreference(
-                            key = discordPersonalAccessTokenKey,
-                            defaultValue = ""
-                        )
-                        var discordAvatar by rememberEncryptedPreference(
-                            key = discordAvatarKey,
-                            defaultValue = ""
-                        )
-                        var discordUsername by rememberEncryptedPreference(
-                            key = discordUsernameKey,
-                            defaultValue = ""
-                        )
-                        var isTokenValid by remember { mutableStateOf(true) }
-                        var showTokenError by remember { mutableStateOf(false) }
+                        var isYouTubeLoginEnabled by rememberEncryptedPreference(enableYouTubeLoginKey, false)
+                        var isYouTubeSyncEnabled by rememberEncryptedPreference(enableYouTubeSyncKey, false)
+                        var loginYouTube by remember { mutableStateOf(false) }
+                        val binder = LocalPlayerServiceBinder.current
 
-                        LaunchedEffect(discordPersonalAccessToken) {
-                            if (discordPersonalAccessToken.isNotEmpty()) {
-                                val presenceManager = DiscordPresenceManager(context, { discordPersonalAccessToken })
-                                when (presenceManager.validateToken(discordPersonalAccessToken)) {
-                                    true -> {
-                                        isTokenValid = true
-                                        showTokenError = false
-                                    }
-                                    false -> {
-                                        isTokenValid = false
-                                        showTokenError = true
-                                        discordPersonalAccessToken = ""
-                                        discordUsername = ""
-                                        discordAvatar = ""
-                                        Toaster.e(R.string.discord_token_text_invalid)
-                                    }
-                                    null -> { // Network error
-                                        isTokenValid = false
-                                        showTokenError = false
-                                    }
-                                }
+                        LaunchedEffect(isYouTubeLoginEnabled) {
+                            if (!isYouTubeLoginEnabled && isYouTubeSyncEnabled) {
+                                isYouTubeSyncEnabled = false
                             }
                         }
 
-                        if (search.inputValue.isBlank() || stringResource(R.string.discord_enable_rich_presence).contains(search.inputValue, true) || stringResource(R.string.beta_text).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.enable_youtube_music_login).contains(search.inputValue, true)) {
                             OtherSwitchSettingEntry(
-                                title = stringResource(R.string.discord_enable_rich_presence),
-                                text = stringResource(R.string.beta_text),
-                                isChecked = isDiscordPresenceEnabled,
-                                onCheckedChange = { 
-                                    isDiscordPresenceEnabled = it
+                                title = stringResource(R.string.enable_youtube_music_login),
+                                text = "",
+                                isChecked = isYouTubeLoginEnabled,
+                                onCheckedChange = {
+                                    isYouTubeLoginEnabled = it
+                                    app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger++
                                     if (!it) {
-                                        RestartAppDialog.showDialog()
+                                        // Only clear Innertube singleton (stop using account)
+                                        // Keep account info so user doesn't have to reconnect
+                                        Innertube.cookie = null
+                                        Innertube.dataSyncId = null
+                                        Innertube.visitorData = Innertube.DEFAULT_VISITOR_DATA
+                                        Innertube.useLoginForBrowse = false
+                                        // Reset cookie status
+                                        app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
+                                        appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
+
+                                        // Disable sync and all sub-toggles
+                                        appContext().encryptedPreferences.edit {
+                                            putBoolean(enableYouTubeSyncKey, false)
+                                        }
+                                        appContext().preferences.edit {
+                                            putBoolean(useLoginForBrowseKey, false)
+                                            putBoolean(autosyncArtistsKey, false)
+                                            putBoolean(autosyncAlbumsKey, false)
+                                            putBoolean(autosyncPlaylistsKey, false)
+                                            putBoolean(autosyncLikesKey, false)
+                                            putBoolean(syncImportHistoryKey, false)
+                                            putBoolean(syncImportLibrarySongsKey, false)
+                                            putBoolean(syncImportUploadedSongsKey, false)
+                                            putBoolean(syncImportUploadedAlbumsKey, false)
+                                            putBoolean(syncImportEpisodesKey, false)
+                                            putBoolean(syncPushHistoryKey, false)
+                                            putBoolean(syncPushSongLikeKey, false)
+                                            putBoolean(syncPushAlbumBookmarkKey, false)
+                                            putBoolean(syncPushArtistFollowKey, false)
+                                            putBoolean(syncPushPlaylistKey, false)
+                                            putBoolean(syncPushEpisodeKey, false)
+                                        }
+
+                                        // Clear cached data
+                                        appContext().preferences.edit {
+                                            remove(quickPicsHomePageKey)
+                                            remove(quickPicsYtmQuickPicksKey)
+                                            remove(quickPicsDiscoverPageKey)
+                                        }
+                                    } else {
+                                        // Re-enable: restore Innertube from saved preferences
+                                        val savedCookie = appContext().encryptedPreferences.getString(ytCookieKey, "") ?: ""
+                                        if (savedCookie.isNotEmpty()) {
+                                            Innertube.cookie = savedCookie
+                                            Innertube.dataSyncId = appContext().encryptedPreferences.getString(ytDataSyncIdKey, null)
+                                            Innertube.visitorData = appContext().encryptedPreferences.getString(ytVisitorDataKey, null) ?: Innertube.DEFAULT_VISITOR_DATA
+                                            // Only activate browse if we have real credentials
+                                            if ("SAPISID" in parseCookieString(savedCookie)) {
+                                                appContext().preferences.edit().putBoolean(useLoginForBrowseKey, true).apply()
+                                                Innertube.useLoginForBrowse = true
+                                            }
+                                        }
+                                        // Reset cookie status — will be revalidated on next playback
+                                        app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
+                                        appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
                                     }
+                                    // Clear stream caches and mark restart needed
+                                    clearStreamCaches()
+                                    appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, true).apply()
+                                    // Clear audio cache
+                                    NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                        clearAudioCache(binder?.cache)
+                                    }
+                                    Toaster.i(R.string.preferred_stream_client_changed)
+                                    Toaster.w(R.string.stream_client_redownload_recommendation)
                                 },
-                                icon = R.drawable.musical_notes
+                                icon = R.drawable.ytmusic
                             )
                         }
 
-                        AnimatedVisibility(visible = isDiscordPresenceEnabled) {
+                        val isStreamRestartNeeded by rememberPreference(streamClientRestartNeededKey, false)
+                        RestartPlayerService(
+                            restartService = isStreamRestartNeeded,
+                            onRestart = {
+                                appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, false).apply()
+                            }
+                        )
+
+                        AnimatedVisibility(visible = isYouTubeLoginEnabled) {
                             Column {
-                                // Item 9: durable error banner (invalid token / reconnect abandoned),
-                                // dismissible — observed with collectAsStateWithLifecycle (app rule).
-                                val discordRpcError by DiscordRpcErrorState.error.collectAsStateWithLifecycle()
-                                // Content transition (Last.fm card pattern): the banner
-                                // animates in/out with the default expand/collapse + fade.
-                                AnimatedVisibility(discordRpcError != null) {
-                                    discordRpcError?.let { error ->
-                                        DiscordRpcErrorBanner(error = error)
-                                    }
-                                }
-
-                                // Item 6: advanced presence settings + live preview (visible when
-                                // the presence is on, i.e. inside this AnimatedVisibility).
-                                var isDiscordAdvancedMode by rememberEncryptedPreference(isDiscordAdvancedModeKey, false)
-
-                                if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_mode).contains(search.inputValue, true)) {
-                                    OtherSwitchSettingEntry(
-                                        title = stringResource(R.string.discord_advanced_mode),
-                                        text = stringResource(R.string.discord_advanced_mode_text),
-                                        isChecked = isDiscordAdvancedMode,
-                                        onCheckedChange = { isDiscordAdvancedMode = it },
-                                        icon = R.drawable.pencil
-                                    )
-                                }
-
-                                // PW-5 (revised 2026-09-21): content transition matches the app's
-                                // own pattern (Last.fm card).
-
-                                // The default AnimatedVisibility expand/collapse + fade, not a fixed tween fade+scale.
-                                AnimatedVisibility(visible = isDiscordAdvancedMode) {
-                                    DiscordAdvancedSection(search = search)
-                                }
-
-                                // Item 6 + PW-6: live preview of the RPC card — visible in
-                                // both modes (advanced mode only changes the rendered content).
-
-                                // Fed by the current player state, the position is polled
-                                // ~100 ms (upstream parity). binder == null → neutral card.
-                                val player = LocalPlayerServiceBinder.current?.player
-                                var previewPosition by remember { mutableStateOf(0L) }
-                                // The tick advances on every poll even while paused/idle, so
-                                // the card stays reactive to settings changes in real time.
-
-                                // The position alone only changes while playing.
-                                var previewTick by remember { mutableIntStateOf(0) }
-                                // State-chip selection: -1 = actual state (live follow of the
-                                // real player state).
-
-                                // 0/1 = pin the preview card to playing / paused.
-                                var previewMode by remember { mutableIntStateOf(-1) }
-                                // The real playback state (0 = playing, 1 = paused, 2 = idle) —
-                                // drives the default chip highlight and the pinned fallback.
-                                val realMode = when {
-                                    player != null && player.currentMediaItem != null && player.isPlaying -> 0
-                                    player != null && player.currentMediaItem != null -> 1
-                                    else -> 2
-                                }
-                                LaunchedEffect(player) {
-                                    while (isActive) {
-                                        delay(100)
-                                        runCatching {
-                                            // The pinned "Paused" variant must freeze its progress
-                                            // bar: while the card shows paused but the real player
-
-                                            // still plays (pinned chip during playback), the live
-                                            // position must stop advancing.
-
-                                            // Live follow (-1) is unaffected — a real pause already
-                                            // keeps currentPosition static.
-                                            val effectiveMode =
-                                                if (previewMode >= 0) previewMode
-                                                else when {
-                                                    player != null && player.currentMediaItem != null && player.isPlaying -> 0
-                                                    player != null && player.currentMediaItem != null -> 1
-                                                    else -> 2
-                                                }
-                                            val frozen = effectiveMode == 1 && player?.isPlaying == true
-                                            if (player != null && !frozen) previewPosition = player.currentPosition
-                                            previewTick++
-                                        }
-                                    }
-                                }
-                                // Same visual style as the "Account info" title below: regular
-                                // text color, bold, start inset aligned (13.dp = column 8.dp +
-
-                                // text 5.dp), vertical spacing kept.
-                                Text(
-                                    text = stringResource(R.string.discord_preview_title),
-                                    color = colorPalette().text,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(start = 13.dp, top = 8.dp, bottom = 8.dp)
-                                )
-                                DiscordRpcPreviewCard(
-                                    player = player,
-                                    positionMs = previewPosition,
-                                    tick = previewTick,
-                                    settings = DiscordAdvancedSettings.read(context.encryptedPreferences),
-                                    mode = if (previewMode >= 0) previewMode else realMode
-                                )
-
-                                // Playback state chips (2026-09-21), centered under the preview:
-                                // "Actual state" (live follow — first), then Playing / Paused to
-
-                                // pin that variant of the card for inspection (tap the pinned
-                                // chip again to unpin).
-                                val chipPalette = colorPalette()
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 6.dp, bottom = 10.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)
-                                ) {
-                                    listOf(
-                                        R.string.discord_preview_state_actual,
-                                        R.string.discord_preview_state_playing,
-                                        R.string.discord_preview_state_paused,
-                                    ).forEachIndexed { index, labelRes ->
-                                        // index 0 = actual (previewMode -1), 1 = playing (0), 2 = paused (1)
-                                        val selected = when (index) {
-                                            0 -> previewMode == -1
-                                            1 -> previewMode == 0
-                                            else -> previewMode == 1
-                                        }
-                                        Text(
-                                            text = stringResource(labelRes),
-                                            style = typography().s.copy(
-                                                color = if (selected) chipPalette.onAccent else chipPalette.accent
-                                            ),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            modifier = Modifier
-                                                .clip(uiRoundnessShape())
-                                                .background(
-                                                    if (selected) chipPalette.accent
-                                                    else chipPalette.accent.copy(alpha = 0.15f),
-                                                    uiRoundnessShape()
-                                                )
-                                                .clickable {
-                                                    when (index) {
-                                                        0 -> previewMode = -1
-                                                        1 -> previewMode = if (previewMode == 0) -1 else 0
-                                                        else -> previewMode = if (previewMode == 1) -1 else 1
-                                                    }
-                                                }
-                                                .padding(horizontal = 10.dp, vertical = 4.dp)
-                                        )
-                                    }
-                                }
-
-                                // Content transition (Last.fm card pattern): the token error
-                                // line animates in/out with the default expand/collapse + fade.
-                                AnimatedVisibility(visible = showTokenError) {
-                                    Text(
-                                        text = stringResource(R.string.discord_token_text_invalid),
-                                        color = colorPalette().red,
-                                        style = typography().s,
-                                        modifier = Modifier.padding(bottom = 8.dp)
-                                    )
-                                }
-
-                                // Content transition (Last.fm card pattern): the account info
-                                // row animates in/out with the default expand/collapse + fade.
-                                AnimatedVisibility(visible = discordPersonalAccessToken.isNotEmpty()) {
+                                if (isLoggedIn) {
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -1290,12 +560,12 @@ fun AccountsSettings(
                                             Row(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .padding(top = 8.dp),
+                                                    .padding(top = 8.dp, bottom = 8.dp),
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
-                                                if (discordAvatar.isNotEmpty()) {
+                                                if (accountThumbnail.isNotEmpty()) {
                                                     ImageCacheFactory.AsyncImage(
-                                                        thumbnailUrl = discordAvatar,
+                                                        thumbnailUrl = accountThumbnail,
                                                         contentDescription = null,
                                                         modifier = Modifier
                                                             .padding(start = 5.dp, top = 8.dp, bottom = 8.dp)
@@ -1316,45 +586,82 @@ fun AccountsSettings(
 
                                                 Box(
                                                     modifier = Modifier
-                                                        .padding(start = 8.dp)
-                                                        .height(50.dp)
-                                                        .padding(top = 8.dp, bottom = 8.dp),
+                                                        .weight(1f)
+                                                        .padding(start = 8.dp, top = 8.dp, bottom = 8.dp),
                                                     contentAlignment = Alignment.CenterStart
                                                 ) {
-                                                    Text(
-                                                        text = discordUsername,
-                                                        color = colorPalette().textSecondary,
-                                                        modifier = Modifier.padding(start = 5.dp),
-                                                        style = typography().m
-                                                    )
+                                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                                        Text(
+                                                            text = accountName,
+                                                            color = colorPalette().text,
+                                                            modifier = Modifier.padding(start = 5.dp),
+                                                            style = typography().m
+                                                        )
+                                                        if (accountChannelHandle.isNotEmpty()) {
+                                                            Text(
+                                                                text = accountChannelHandle,
+                                                                color = colorPalette().textSecondary,
+                                                                modifier = Modifier.padding(start = 5.dp),
+                                                                style = typography().xs
+                                                            )
+                                                        }
+                                                        if (accountEmail.isNotEmpty()) {
+                                                            Text(
+                                                                text = accountEmail,
+                                                                color = colorPalette().textSecondary,
+                                                                modifier = Modifier.padding(start = 5.dp),
+                                                                style = typography().xs
+                                                            )
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }
 
-                                if (search.inputValue.isBlank() || stringResource(R.string.account_login).contains(search.inputValue, true) || stringResource(R.string.account_logoff).contains(search.inputValue, true)) {
+                                // Cookie status warning — show when cookie is invalid/expired
+                                if (isLoggedIn && app.n_zik.android.MainApplication.cookieStatus in listOf(app.n_zik.android.MainApplication.CookieStatus.INVALID, app.n_zik.android.MainApplication.CookieStatus.EXPIRED)) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.information),
+                                            contentDescription = null,
+                                            tint = colorPalette().textSecondary,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.error_cookie_invalid),
+                                            color = colorPalette().textSecondary,
+                                            modifier = Modifier.padding(start = 8.dp),
+                                            style = typography().xs
+                                        )
+                                    }
+                                }
+
+                                if (search.inputValue.isBlank() || true) {
                                     OtherSettingsEntry(
-                                        title = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.account_logoff) else stringResource(R.string.account_login),
-                                        text = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.discord_connected_to_discord_account) else "",
-                                        icon = R.drawable.logout,
+                                        title = if (isLoggedIn) stringResource(R.string.account_logoff) else stringResource(R.string.account_login),
+                                        text = "",
+                                        icon = if (isLoggedIn) R.drawable.logout else R.drawable.person,
                                         onClick = {
-                                            if (discordPersonalAccessToken.isNotEmpty()) {
-                                                discordPersonalAccessToken = ""
-                                                discordUsername = ""
-                                                discordAvatar = ""
-                                                showTokenError = false
-                                                RestartAppDialog.showDialog()
-                                            } else
-                                                loginDiscord = true
+                                            if (isLoggedIn) {
+                                                showClearSyncDialog = true
+                                            } else {
+                                                loginYouTube = true
+                                            }
                                         }
                                     )
                                 }
 
                                 CustomModalBottomSheet(
-                                    showSheet = loginDiscord,
+                                    showSheet = loginYouTube,
                                     onDismissRequest = {
-                                        loginDiscord = false
+                                        loginYouTube = false
                                     },
                                     containerColor = colorPalette().background0,
                                     contentColor = colorPalette().background0,
@@ -1371,137 +678,862 @@ fun AccountsSettings(
                                         )
                                     }
                                 ) {
-                                    DiscordLoginAndGetToken(
-                                        navController = rememberNavController(),
-                                        onGetToken = { token, username, avatar ->
-                                            loginDiscord = false
-                                            discordPersonalAccessToken = token
-                                            discordUsername = username
-                                            discordAvatar = avatar
-                                            Toaster.i(context.getString(R.string.discord_connected_to_discord_account))
-                                            RestartAppDialog.showDialog()
+                                    YouTubeLogin(
+                                        onLogin = { cookieRetrieved ->
+                                            if (cookieRetrieved.contains("SAPISID")) {
+                                                isLoggedIn = true
+                                                loginYouTube = false
+                                                // Clear expired flag on fresh login
+                                                appContext().preferences.edit().putBoolean(ytCookieExpiredKey, false).apply()
+                                                app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.VALID
+                                                // Re-enable useLoginForBrowse since we now have valid credentials
+                                                appContext().preferences.edit().putBoolean(useLoginForBrowseKey, true).apply()
+                                                Innertube.useLoginForBrowse = true
+                                                // Force re-read account info from encrypted prefs (YouTubeLogin saved them)
+                                                val ep = appContext().encryptedPreferences
+                                                accountName = ep.getString(ytAccountNameKey, "") ?: ""
+                                                accountEmail = ep.getString(ytAccountEmailKey, "") ?: ""
+                                                accountChannelHandle = ep.getString(ytAccountChannelHandleKey, "") ?: ""
+                                                accountThumbnail = ep.getString(ytAccountThumbnailKey, "") ?: ""
+                                                Toaster.i( context.getString(R.string.youtube_login_successful) )
+                                            }
                                         }
                                     )
                                 }
+
+                                // Login for Browse option (must be enabled for sync to work)
+                                if (isYouTubeLoginEnabled) {
+                                var useLoginForBrowse by rememberPreference(useLoginForBrowseKey, true)
+                                if (search.inputValue.isBlank() || stringResource(R.string.login_for_browse).contains(search.inputValue, true)) {
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.login_for_browse),
+                                        text = if (!isLoggedIn) stringResource(R.string.youtube_connect_first) else stringResource(R.string.login_for_browse_description),
+                                        isChecked = isLoggedIn && useLoginForBrowse,
+                                        enabled = isLoggedIn,
+                                        onCheckedChange = {
+                                            useLoginForBrowse = it
+                                            Innertube.useLoginForBrowse = it
+                                            if (!it) {
+                                                // Reset sync and all sub-toggles when Login for Browse is disabled
+                                                appContext().encryptedPreferences.edit {
+                                                    putBoolean(enableYouTubeSyncKey, false)
+                                                }
+                                                appContext().preferences.edit {
+                                                    putBoolean(autosyncArtistsKey, false)
+                                                    putBoolean(autosyncAlbumsKey, false)
+                                                    putBoolean(autosyncPlaylistsKey, false)
+                                                    putBoolean(autosyncLikesKey, false)
+                                                    putBoolean(syncImportHistoryKey, false)
+                                                    putBoolean(syncImportLibrarySongsKey, false)
+                                                    putBoolean(syncImportUploadedSongsKey, false)
+                                                    putBoolean(syncImportUploadedAlbumsKey, false)
+                                                    putBoolean(syncImportEpisodesKey, false)
+                                                    putBoolean(syncPushHistoryKey, false)
+                                                    putBoolean(syncPushSongLikeKey, false)
+                                                    putBoolean(syncPushAlbumBookmarkKey, false)
+                                                    putBoolean(syncPushArtistFollowKey, false)
+                                                    putBoolean(syncPushPlaylistKey, false)
+                                                    putBoolean(syncPushEpisodeKey, false)
+                                                }
+                                            }
+                                        },
+                                        icon = R.drawable.person
+                                    )
+                                }
+                                }
+                                YtSearchAccountToggle(isYouTubeLoginEnabled = isYouTubeLoginEnabled, isLoggedIn = isLoggedIn, searchQuery = search.inputValue)
+
+
                             }
                         }
                     }
                 )
             }
-        }
 
-    
+            val useLoginForBrowseSync by rememberPreference(useLoginForBrowseKey, true)
+            val isYouTubeLoginActive by rememberEncryptedPreference(enableYouTubeLoginKey, false)
 
-        val searchCtx_Reset = search.inputValue.isBlank() || stringResource(R.string.settings_reset).contains(search.inputValue, true) || stringResource(R.string.settings_restore_default_settings).contains(search.inputValue, true)
-        AnimatedVisibility(
-            visible = searchCtx_Reset,
-            enter = fadeIn(animationSpec = tween(1100)) + scaleIn(animationSpec = tween(1100), initialScale = 0.9f)
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.settings_reset),
-                icon = R.drawable.refresh,
-                content = {
-                    var resetToDefault by remember { mutableStateOf(false) }
-                    
-                    if (search.inputValue.isBlank() || stringResource(R.string.settings_restore_default_settings).contains(search.inputValue, true) || stringResource(R.string.settings_reset).contains(search.inputValue, true)) {
-                        OtherSettingsEntry(
-                            title = stringResource(R.string.settings_reset),
-                            text = stringResource(R.string.settings_restore_default_settings),
-                            icon = R.drawable.refresh,
-                            onClick = { 
-                                resetToDefault = true
-                                Toaster.done()
-                            }
-                        )
+            AnimatedVisibility(
+                visible = useLoginForBrowseSync && isYouTubeLoginActive,
+                enter = fadeIn(animationSpec = tween(600)) + scaleIn(
+                    animationSpec = tween(600),
+                    initialScale = 0.9f
+                )
+            ) {
+                var isYouTubeSyncEnabled by rememberEncryptedPreference(enableYouTubeSyncKey, false)
+                val isSyncEnabled = isYouTubeSyncEnabled && useLoginForBrowseSync
+                var syncDirection by rememberPreference(syncDirectionKey, SyncDirection.TWO_WAY)
+                val coroutineScope = rememberCoroutineScope()
+                val syncStatusState by syncStatus.collectAsStateWithLifecycle(initialValue = SyncStatus(), context = NzikDispatchers.DATA)
+                val lastSyncTime = remember { getLastSyncTime() }
+
+                // Re-sync state when Login for Browse changes (prefs reset externally)
+                LaunchedEffect(useLoginForBrowseSync) {
+                    if (!useLoginForBrowseSync) {
+                        isYouTubeSyncEnabled = false
                     }
+                }
 
-                    if (resetToDefault) {
-                        DefaultAccountsSettings()
-                        LaunchedEffect(Unit) {
-                            resetToDefault = false
+                Column {
+                    // Sync data toggle + Sync Now + Direction
+                    SettingsSectionCard(
+                        title = stringResource(R.string.sync_data_with_ytm_account),
+                        icon = R.drawable.sync,
+                        content = {
+                            OtherSwitchSettingEntry(
+                                title = stringResource(R.string.sync_data_with_ytm_account),
+                                text = stringResource(R.string.playlists_albums_artists_history_like_etc),
+                                isChecked = isYouTubeSyncEnabled,
+                                enabled = BuildConfig.BUILD_TYPE in listOf("debug", "dev64", "dev32", "beta64", "beta32"),
+                                onCheckedChange = {
+                                    isYouTubeSyncEnabled = it
+                                    if (!it) {
+                                        // Reset all sub-toggles when sync is disabled
+                                        appContext().preferences.edit {
+                                            putBoolean(autosyncArtistsKey, false)
+                                            putBoolean(autosyncAlbumsKey, false)
+                                            putBoolean(autosyncPlaylistsKey, false)
+                                            putBoolean(autosyncLikesKey, false)
+                                            putBoolean(syncImportHistoryKey, false)
+                                            putBoolean(syncImportLibrarySongsKey, false)
+                                            putBoolean(syncImportUploadedSongsKey, false)
+                                            putBoolean(syncImportUploadedAlbumsKey, false)
+                                            putBoolean(syncImportEpisodesKey, false)
+                                            putBoolean(syncPushHistoryKey, false)
+                                            putBoolean(syncPushSongLikeKey, false)
+                                            putBoolean(syncPushAlbumBookmarkKey, false)
+                                            putBoolean(syncPushArtistFollowKey, false)
+                                            putBoolean(syncPushPlaylistKey, false)
+                                            putBoolean(syncPushEpisodeKey, false)
+                                        }
+                                    }
+                                },
+                                icon = R.drawable.sync
+                            )
+
+                            AnimatedVisibility(visible = isSyncEnabled) {
+                                Column {
+                                    // Sync status overview
+                                    val statusText = when {
+                                        syncStatusState.isRunning -> stringResource(R.string.sync_status_running, syncStatusState.currentOperation)
+                                        else -> {
+                                            val lastSync = getLastSyncTime()
+                                            if (lastSync > 0) {
+                                                val elapsed = ((System.currentTimeMillis() - lastSync) / 60000).toInt()
+                                                stringResource(R.string.sync_status_last, elapsed)
+                                            } else stringResource(R.string.sync_status_never)
+                                        }
+                                    }
+                                    val statusColor = when {
+                                        syncStatusState.isRunning -> colorPalette().accent
+                                        else -> colorPalette().textDisabled
+                                    }
+                                    OtherInfoSettingsEntry(
+                                        title = statusText,
+                                        text = "",
+                                        icon = R.drawable.sync
+                                    )
+
+                                    // Sync status detail
+                                    OtherSettingsEntry(
+                                        title = stringResource(R.string.sync_status_detail),
+                                        text = stringResource(R.string.sync_status_detail_description),
+                                        icon = R.drawable.information,
+                                        onClick = { SyncStatusDialog.showDialog() }
+                                    )
+                                    SyncStatusDialog.Render()
+
+                                    OtherSettingsEntry(
+                                        title = stringResource(R.string.sync_now),
+                                        text = stringResource(R.string.sync_now_description),
+                                        icon = R.drawable.sync,
+                                        onClick = {
+                                            // Queue all imports + pushes via sync queue (forced)
+                                            queueSync(SyncOperation.FullSync)
+                                            queueSync(SyncOperation.PushLikedSongs(force = true))
+                                            queueSync(SyncOperation.PushAlbumBookmarks(force = true))
+                                            queueSync(SyncOperation.PushArtistFollows(force = true))
+                                            queueSync(SyncOperation.PushPlaylists(force = true))
+                                            queueSync(SyncOperation.PushEpisodes(force = true))
+                                        }
+                                    )
+                                    OtherEnumValueSelectorSettingsEntry(
+                                        icon = R.drawable.sync,
+                                        title = stringResource(R.string.sync_direction),
+                                        selectedValue = syncDirection,
+                                        onValueSelected = { syncDirection = it },
+                                        valueText = { stringResource(it.stringResource) }
+                                    )
+
+                                    var syncCooldown by rememberPreference(syncCooldownKey, 30)
+                                    SliderSettingsEntry(
+                                        title = stringResource(R.string.sync_cooldown),
+                                        text = stringResource(R.string.sync_cooldown_description),
+                                        state = syncCooldown.toFloat(),
+                                        range = 5f..120f,
+                                        stepSize = 15f,
+                                        onSlide = { syncCooldown = it.toInt() },
+                                        toDisplay = { "${it.toInt()} min" },
+                                        isIntegerOnly = true,
+                                        icon = R.drawable.time
+                                    )
+                                    var syncShowDetails by rememberPreference(syncShowDetailsKey, true)
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.sync_show_details),
+                                        text = stringResource(R.string.sync_show_details_description),
+                                        isChecked = syncShowDetails,
+                                        onCheckedChange = { syncShowDetails = it },
+                                        icon = R.drawable.information
+                                    )
+                                    var syncBackgroundGuard by rememberPreference(syncBackgroundGuardKey, true)
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.sync_background_guard),
+                                        text = stringResource(R.string.sync_background_guard_description),
+                                        isChecked = syncBackgroundGuard,
+                                        onCheckedChange = { syncBackgroundGuard = it },
+                                        icon = R.drawable.pause
+                                    )
+                                }
+                            }
+                        }
+                    )
+
+                    // Auto-Sync, Import, Push (only when sync is enabled)
+                    AnimatedVisibility(visible = isSyncEnabled) {
+                        Column {
+                            // Auto-Sync (per feature)
+                            SettingsSectionCard(
+                                title = stringResource(R.string.autosync),
+                                icon = R.drawable.sync,
+                                content = {
+                                    var autosyncArtists by rememberPreference(autosyncArtistsKey, false)
+                                    var autosyncAlbums by rememberPreference(autosyncAlbumsKey, false)
+                                    var autosyncPlaylists by rememberPreference(autosyncPlaylistsKey, false)
+                                    var autosyncLikes by rememberPreference(autosyncLikesKey, false)
+
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.autosync_channels),
+                                        text = stringResource(R.string.autosync_channels_description),
+                                        isChecked = autosyncArtists,
+                                        onCheckedChange = { autosyncArtists = it },
+                                        icon = R.drawable.people
+                                    )
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.autosync_albums),
+                                        text = stringResource(R.string.autosync_albums_description),
+                                        isChecked = autosyncAlbums,
+                                        onCheckedChange = { autosyncAlbums = it },
+                                        icon = R.drawable.album
+                                    )
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.autosync),
+                                        text = stringResource(R.string.autosync_playlists_description),
+                                        isChecked = autosyncPlaylists,
+                                        onCheckedChange = { autosyncPlaylists = it },
+                                        icon = R.drawable.playlist
+                                    )
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.autosync_likes),
+                                        text = stringResource(R.string.autosync_likes_description),
+                                        isChecked = autosyncLikes,
+                                        onCheckedChange = { autosyncLikes = it },
+                                        icon = R.drawable.heart
+                                    )
+                                }
+                            )
+
+                            // Import from YouTube
+                            SettingsSectionCard(
+                                title = stringResource(R.string.sync_import_from_youtube),
+                                icon = R.drawable.download,
+                                content = {
+                                    var syncImportHistory by rememberPreference(syncImportHistoryKey, false)
+                                    var syncImportLibrarySongs by rememberPreference(syncImportLibrarySongsKey, false)
+                                    var syncImportUploadedSongs by rememberPreference(syncImportUploadedSongsKey, false)
+                                    var syncImportUploadedAlbums by rememberPreference(syncImportUploadedAlbumsKey, false)
+                                    var syncImportEpisodes by rememberPreference(syncImportEpisodesKey, false)
+
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.sync_import_history),
+                                        text = stringResource(R.string.sync_import_history_description),
+                                        isChecked = syncImportHistory,
+                                        onCheckedChange = { syncImportHistory = it },
+                                        icon = R.drawable.history
+                                    )
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.sync_import_library_songs),
+                                        text = stringResource(R.string.sync_import_library_songs_description),
+                                        isChecked = syncImportLibrarySongs,
+                                        onCheckedChange = { syncImportLibrarySongs = it },
+                                        icon = R.drawable.heart
+                                    )
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.sync_import_uploaded_songs),
+                                        text = stringResource(R.string.sync_import_uploaded_songs_description),
+                                        isChecked = syncImportUploadedSongs,
+                                        onCheckedChange = { syncImportUploadedSongs = it },
+                                        icon = R.drawable.download
+                                    )
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.sync_import_uploaded_albums),
+                                        text = stringResource(R.string.sync_import_uploaded_albums_description),
+                                        isChecked = syncImportUploadedAlbums,
+                                        onCheckedChange = { syncImportUploadedAlbums = it },
+                                        icon = R.drawable.album
+                                    )
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.sync_import_episodes),
+                                        text = stringResource(R.string.sync_import_episodes_description),
+                                        isChecked = syncImportEpisodes,
+                                        onCheckedChange = { syncImportEpisodes = it },
+                                        icon = R.drawable.podcast
+                                    )
+                                }
+                            )
+
+                            // Push to YouTube
+                            SettingsSectionCard(
+                                title = stringResource(R.string.sync_push_to_youtube),
+                                icon = R.drawable.arrow_up,
+                                content = {
+                                    var syncPushSongLike by rememberPreference(syncPushSongLikeKey, false)
+                                    var syncPushAlbumBookmark by rememberPreference(syncPushAlbumBookmarkKey, false)
+                                    var syncPushArtistFollow by rememberPreference(syncPushArtistFollowKey, false)
+                                    var syncPushPlaylist by rememberPreference(syncPushPlaylistKey, false)
+                                    var syncPushHistory by rememberPreference(syncPushHistoryKey, false)
+
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.sync_push_history),
+                                        text = stringResource(R.string.sync_push_history_description),
+                                        isChecked = syncPushHistory,
+                                        onCheckedChange = { syncPushHistory = it },
+                                        icon = R.drawable.history
+                                    )
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.sync_push_song_like),
+                                        text = stringResource(R.string.sync_push_song_like_description),
+                                        isChecked = syncPushSongLike,
+                                        onCheckedChange = { syncPushSongLike = it },
+                                        icon = R.drawable.heart
+                                    )
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.sync_push_album_bookmark),
+                                        text = stringResource(R.string.sync_push_album_bookmark_description),
+                                        isChecked = syncPushAlbumBookmark,
+                                        onCheckedChange = { syncPushAlbumBookmark = it },
+                                        icon = R.drawable.album
+                                    )
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.sync_push_artist_follow),
+                                        text = stringResource(R.string.sync_push_artist_follow_description),
+                                        isChecked = syncPushArtistFollow,
+                                        onCheckedChange = { syncPushArtistFollow = it },
+                                        icon = R.drawable.people
+                                    )
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.sync_push_playlist),
+                                        text = stringResource(R.string.sync_push_playlist_description),
+                                        isChecked = syncPushPlaylist,
+                                        onCheckedChange = { syncPushPlaylist = it },
+                                        icon = R.drawable.playlist
+                                    )
+                                    var syncPushEpisode by rememberPreference(syncPushEpisodeKey, false)
+                                    OtherSwitchSettingEntry(
+                                        title = stringResource(R.string.sync_push_episode),
+                                        text = stringResource(R.string.sync_push_episode_description),
+                                        isChecked = syncPushEpisode,
+                                        onCheckedChange = { syncPushEpisode = it },
+                                        icon = R.drawable.podcast
+                                    )
+                                }
+                            )
                         }
                     }
                 }
-            )
-        }
-        
-        // Clear synced data confirmation dialog
-        val dialogCoroutineScope = rememberCoroutineScope()
-        if (showClearSyncDialog) {
-            DefaultDialog(
-                onDismiss = { showClearSyncDialog = false }
-            ) {
-                BasicText(
-                    text = stringResource(R.string.clear_synced_data_confirm),
-                    style = typography().s.copy(color = colorPalette().text)
+
+            }
+
+            /* Removed Spacer */
+
+            // Last.fm Section
+            LastFmSettingsCard()
+
+            // Listen Together Section (reuses the room-screen settings card, same pattern);
+            // the burger long press (focus=listentogether) scrolls to it.
+            Box(modifier = Modifier.onGloballyPositioned { listenTogetherCardTopY = it.positionInRoot().y }) {
+                ListenTogetherSettingsCard(
+                    onOpenScreen = { navController.navigate(NavRoutes.listenTogether.name) }
                 )
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth()
+            }
+
+            // Discord Section
+            if (isAtLeastAndroid7) {
+                AnimatedVisibility(
+                    visible = true,
+                    enter = fadeIn(animationSpec = tween(1000)) + scaleIn(
+                        animationSpec = tween(1000),
+                        initialScale = 0.9f
+                    )
                 ) {
-                    Button(
-                        onClick = { showClearSyncDialog = false },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colorPalette().background2,
-                            contentColor = colorPalette().text
-                        ),
-                        shape = uiRoundnessShape()
-                    ) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                    Button(
-                        onClick = {
-                            showClearSyncDialog = false
-                            dialogCoroutineScope.launch(NzikDispatchers.DATA) {
-                                val cleared = runCatching { clearAllSyncedData() }.getOrElse { false }
-                                withContext(NzikDispatchers.UI) {
-                                    val ep = appContext().encryptedPreferences
-                                    ep.edit().putString(ytCookieKey, "").apply()
-                                    ep.edit().putString(ytAccountNameKey, "").apply()
-                                    ep.edit().putString(ytAccountChannelHandleKey, "").apply()
-                                    ep.edit().putString(ytAccountEmailKey, "").apply()
-                                    ep.edit().putString(ytAccountThumbnailKey, "").apply()
-                                    ep.edit().putString(ytVisitorDataKey, "").apply()
-                                    ep.edit().putString(ytDataSyncIdKey, "").apply()
-                                    
-                                    // Manually update states to force UI recomposition
-                                    cookie = ""
-                                    accountName = ""
-                                    accountEmail = ""
-                                    accountChannelHandle = ""
-                                    accountThumbnail = ""
-                                    visitorData = ""
-                                    dataSyncId = ""
-                                    
-                                    app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger++
-                                    
-                                    appContext().preferences.edit().putBoolean(enableYouTubeSyncKey, false).apply()
-                                    app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
-                                    appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
-                                    clearStreamCaches()
-                                    appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, true).apply()
-                                    val cookieManager = CookieManager.getInstance()
-                                    cookieManager.removeAllCookies(null)
-                                    cookieManager.flush()
-                                    WebStorage.getInstance().deleteAllData()
-                                    if (cleared) {
-                                        Toaster.s(R.string.account_logoff)
-                                    } else {
-                                        Toaster.w(R.string.account_logoff)
+                    SettingsSectionCard(
+                        title = stringResource(R.string.social_discord) + " " + stringResource(R.string.beta_title),
+                        icon = R.drawable.logo_discord,
+                        content = {
+                            // rememberEncryptedPreference only works correct with API 24 and up
+                            var isDiscordPresenceEnabled by rememberEncryptedPreference(isDiscordPresenceEnabledKey, false)
+                            var loginDiscord by remember { mutableStateOf(false) }
+                            var discordPersonalAccessToken by rememberEncryptedPreference(
+                                key = discordPersonalAccessTokenKey,
+                                defaultValue = ""
+                            )
+                            var discordAvatar by rememberEncryptedPreference(
+                                key = discordAvatarKey,
+                                defaultValue = ""
+                            )
+                            var discordUsername by rememberEncryptedPreference(
+                                key = discordUsernameKey,
+                                defaultValue = ""
+                            )
+                            var isTokenValid by remember { mutableStateOf(true) }
+                            var showTokenError by remember { mutableStateOf(false) }
+
+                            LaunchedEffect(discordPersonalAccessToken) {
+                                if (discordPersonalAccessToken.isNotEmpty()) {
+                                    val presenceManager = DiscordPresenceManager(context, { discordPersonalAccessToken })
+                                    when (presenceManager.validateToken(discordPersonalAccessToken)) {
+                                        true -> {
+                                            isTokenValid = true
+                                            showTokenError = false
+                                        }
+                                        false -> {
+                                            isTokenValid = false
+                                            showTokenError = true
+                                            discordPersonalAccessToken = ""
+                                            discordUsername = ""
+                                            discordAvatar = ""
+                                            Toaster.e(R.string.discord_token_text_invalid)
+                                        }
+                                        null -> { // Network error
+                                            isTokenValid = false
+                                            showTokenError = false
+                                        }
                                     }
                                 }
                             }
-                        },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colorPalette().accent,
-                            contentColor = colorPalette().textSecondary
-                        ),
-                        shape = uiRoundnessShape()
+
+                            if (search.inputValue.isBlank() || stringResource(R.string.discord_enable_rich_presence).contains(search.inputValue, true) || stringResource(R.string.beta_text).contains(search.inputValue, true)) {
+                                OtherSwitchSettingEntry(
+                                    title = stringResource(R.string.discord_enable_rich_presence),
+                                    text = stringResource(R.string.beta_text),
+                                    isChecked = isDiscordPresenceEnabled,
+                                    onCheckedChange = {
+                                        isDiscordPresenceEnabled = it
+                                        if (!it) {
+                                            RestartAppDialog.showDialog()
+                                        }
+                                    },
+                                    icon = R.drawable.musical_notes
+                                )
+                            }
+
+                            AnimatedVisibility(visible = isDiscordPresenceEnabled) {
+                                Column {
+                                    // Item 9: durable error banner (invalid token / reconnect abandoned),
+                                    // dismissible — observed with collectAsStateWithLifecycle (app rule).
+                                    val discordRpcError by DiscordRpcErrorState.error.collectAsStateWithLifecycle()
+                                    // Content transition (Last.fm card pattern): the banner
+                                    // animates in/out with the default expand/collapse + fade.
+                                    AnimatedVisibility(discordRpcError != null) {
+                                        discordRpcError?.let { error ->
+                                            DiscordRpcErrorBanner(error = error)
+                                        }
+                                    }
+
+                                    // Item 6: advanced presence settings + live preview (visible when
+                                    // the presence is on, i.e. inside this AnimatedVisibility).
+                                    var isDiscordAdvancedMode by rememberEncryptedPreference(isDiscordAdvancedModeKey, false)
+
+                                    if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_mode).contains(search.inputValue, true)) {
+                                        OtherSwitchSettingEntry(
+                                            title = stringResource(R.string.discord_advanced_mode),
+                                            text = stringResource(R.string.discord_advanced_mode_text),
+                                            isChecked = isDiscordAdvancedMode,
+                                            onCheckedChange = { isDiscordAdvancedMode = it },
+                                            icon = R.drawable.pencil
+                                        )
+                                    }
+
+                                    // PW-5 (revised 2026-09-21): content transition matches the app's
+                                    // own pattern (Last.fm card).
+
+                                    // The default AnimatedVisibility expand/collapse + fade, not a fixed tween fade+scale.
+                                    AnimatedVisibility(visible = isDiscordAdvancedMode) {
+                                        DiscordAdvancedSection(search = search)
+                                    }
+
+                                    // Item 6 + PW-6: live preview of the RPC card — visible in
+                                    // both modes (advanced mode only changes the rendered content).
+
+                                    // Fed by the current player state, the position is polled
+                                    // ~100 ms (upstream parity). binder == null → neutral card.
+                                    val player = LocalPlayerServiceBinder.current?.player
+                                    var previewPosition by remember { mutableStateOf(0L) }
+                                    // The tick advances on every poll even while paused/idle, so
+                                    // the card stays reactive to settings changes in real time.
+
+                                    // The position alone only changes while playing.
+                                    var previewTick by remember { mutableIntStateOf(0) }
+                                    // State-chip selection: -1 = actual state (live follow of the
+                                    // real player state).
+
+                                    // 0/1 = pin the preview card to playing / paused.
+                                    var previewMode by remember { mutableIntStateOf(-1) }
+                                    // The real playback state (0 = playing, 1 = paused, 2 = idle) —
+                                    // drives the default chip highlight and the pinned fallback.
+                                    val realMode = when {
+                                        player != null && player.currentMediaItem != null && player.isPlaying -> 0
+                                        player != null && player.currentMediaItem != null -> 1
+                                        else -> 2
+                                    }
+                                    LaunchedEffect(player) {
+                                        while (isActive) {
+                                            delay(100)
+                                            runCatching {
+                                                // The pinned "Paused" variant must freeze its progress
+                                                // bar: while the card shows paused but the real player
+
+                                                // still plays (pinned chip during playback), the live
+                                                // position must stop advancing.
+
+                                                // Live follow (-1) is unaffected — a real pause already
+                                                // keeps currentPosition static.
+                                                val effectiveMode =
+                                                    if (previewMode >= 0) previewMode
+                                                    else when {
+                                                        player != null && player.currentMediaItem != null && player.isPlaying -> 0
+                                                        player != null && player.currentMediaItem != null -> 1
+                                                        else -> 2
+                                                    }
+                                                val frozen = effectiveMode == 1 && player?.isPlaying == true
+                                                if (player != null && !frozen) previewPosition = player.currentPosition
+                                                previewTick++
+                                            }
+                                        }
+                                    }
+                                    // Same visual style as the "Account info" title below: regular
+                                    // text color, bold, start inset aligned (13.dp = column 8.dp +
+
+                                    // text 5.dp), vertical spacing kept.
+                                    Text(
+                                        text = stringResource(R.string.discord_preview_title),
+                                        color = colorPalette().text,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(start = 13.dp, top = 8.dp, bottom = 8.dp)
+                                    )
+                                    DiscordRpcPreviewCard(
+                                        player = player,
+                                        positionMs = previewPosition,
+                                        tick = previewTick,
+                                        settings = DiscordAdvancedSettings.read(context.encryptedPreferences),
+                                        mode = if (previewMode >= 0) previewMode else realMode
+                                    )
+
+                                    // Playback state chips (2026-09-21), centered under the preview:
+                                    // "Actual state" (live follow — first), then Playing / Paused to
+
+                                    // pin that variant of the card for inspection (tap the pinned
+                                    // chip again to unpin).
+                                    val chipPalette = colorPalette()
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 6.dp, bottom = 10.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)
+                                    ) {
+                                        listOf(
+                                            R.string.discord_preview_state_actual,
+                                            R.string.discord_preview_state_playing,
+                                            R.string.discord_preview_state_paused,
+                                        ).forEachIndexed { index, labelRes ->
+                                            // index 0 = actual (previewMode -1), 1 = playing (0), 2 = paused (1)
+                                            val selected = when (index) {
+                                                0 -> previewMode == -1
+                                                1 -> previewMode == 0
+                                                else -> previewMode == 1
+                                            }
+                                            Text(
+                                                text = stringResource(labelRes),
+                                                style = typography().s.copy(
+                                                    color = if (selected) chipPalette.onAccent else chipPalette.accent
+                                                ),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                modifier = Modifier
+                                                    .clip(uiRoundnessShape())
+                                                    .background(
+                                                        if (selected) chipPalette.accent
+                                                        else chipPalette.accent.copy(alpha = 0.15f),
+                                                        uiRoundnessShape()
+                                                    )
+                                                    .clickable {
+                                                        when (index) {
+                                                            0 -> previewMode = -1
+                                                            1 -> previewMode = if (previewMode == 0) -1 else 0
+                                                            else -> previewMode = if (previewMode == 1) -1 else 1
+                                                        }
+                                                    }
+                                                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                                            )
+                                        }
+                                    }
+
+                                    // Content transition (Last.fm card pattern): the token error
+                                    // line animates in/out with the default expand/collapse + fade.
+                                    AnimatedVisibility(visible = showTokenError) {
+                                        Text(
+                                            text = stringResource(R.string.discord_token_text_invalid),
+                                            color = colorPalette().red,
+                                            style = typography().s,
+                                            modifier = Modifier.padding(bottom = 8.dp)
+                                        )
+                                    }
+
+                                    // Content transition (Last.fm card pattern): the account info
+                                    // row animates in/out with the default expand/collapse + fade.
+                                    AnimatedVisibility(visible = discordPersonalAccessToken.isNotEmpty()) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(top = 8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column(
+                                                modifier = Modifier
+                                                    .padding(start = 8.dp)
+                                            ) {
+                                                Text(
+                                                    text = stringResource(R.string.account_info),
+                                                    color = colorPalette().text,
+                                                    fontWeight = FontWeight.Bold,
+                                                    modifier = Modifier.padding(start = 5.dp),
+                                                )
+
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(top = 8.dp),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    if (discordAvatar.isNotEmpty()) {
+                                                        ImageCacheFactory.AsyncImage(
+                                                            thumbnailUrl = discordAvatar,
+                                                            contentDescription = null,
+                                                            modifier = Modifier
+                                                                .padding(start = 5.dp, top = 8.dp, bottom = 8.dp)
+                                                                .size(50.dp)
+                                                                .clip(thumbnailShape())
+                                                        )
+                                                    } else {
+                                                        Icon(
+                                                            painter = painterResource(R.drawable.person),
+                                                            contentDescription = null,
+                                                            modifier = Modifier
+                                                                .padding(start = 5.dp, top = 8.dp, bottom = 8.dp)
+                                                                .size(50.dp)
+                                                                .clip(thumbnailShape()),
+                                                            tint = colorPalette().textSecondary
+                                                        )
+                                                    }
+
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .padding(start = 8.dp)
+                                                            .height(50.dp)
+                                                            .padding(top = 8.dp, bottom = 8.dp),
+                                                        contentAlignment = Alignment.CenterStart
+                                                    ) {
+                                                        Text(
+                                                            text = discordUsername,
+                                                            color = colorPalette().textSecondary,
+                                                            modifier = Modifier.padding(start = 5.dp),
+                                                            style = typography().m
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (search.inputValue.isBlank() || stringResource(R.string.account_login).contains(search.inputValue, true) || stringResource(R.string.account_logoff).contains(search.inputValue, true)) {
+                                        OtherSettingsEntry(
+                                            title = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.account_logoff) else stringResource(R.string.account_login),
+                                            text = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.discord_connected_to_discord_account) else "",
+                                            icon = R.drawable.logout,
+                                            onClick = {
+                                                if (discordPersonalAccessToken.isNotEmpty()) {
+                                                    discordPersonalAccessToken = ""
+                                                    discordUsername = ""
+                                                    discordAvatar = ""
+                                                    showTokenError = false
+                                                    RestartAppDialog.showDialog()
+                                                } else
+                                                    loginDiscord = true
+                                            }
+                                        )
+                                    }
+
+                                    CustomModalBottomSheet(
+                                        showSheet = loginDiscord,
+                                        onDismissRequest = {
+                                            loginDiscord = false
+                                        },
+                                        containerColor = colorPalette().background0,
+                                        contentColor = colorPalette().background0,
+                                        modifier = Modifier.fillMaxWidth().statusBarsPadding(),
+                                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                                        shape = uiRoundnessShape(),
+                                        dragHandle = {
+                                            Box(
+                                                modifier = Modifier
+                                                    .padding(top = 18.dp, bottom = 6.dp)
+                                                    .size(width = 40.dp, height = 4.dp)
+                                                    .clip(RoundedCornerShape(2.dp))
+                                                    .background(Color.White)
+                                            )
+                                        }
+                                    ) {
+                                        DiscordLoginAndGetToken(
+                                            navController = rememberNavController(),
+                                            onGetToken = { token, username, avatar ->
+                                                loginDiscord = false
+                                                discordPersonalAccessToken = token
+                                                discordUsername = username
+                                                discordAvatar = avatar
+                                                Toaster.i(context.getString(R.string.discord_connected_to_discord_account))
+                                                RestartAppDialog.showDialog()
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+
+
+
+            val searchCtx_Reset = search.inputValue.isBlank() || stringResource(R.string.settings_reset).contains(search.inputValue, true) || stringResource(R.string.settings_restore_default_settings).contains(search.inputValue, true)
+            AnimatedVisibility(
+                visible = searchCtx_Reset,
+                enter = fadeIn(animationSpec = tween(1100)) + scaleIn(animationSpec = tween(1100), initialScale = 0.9f)
+            ) {
+                SettingsSectionCard(
+                    title = stringResource(R.string.settings_reset),
+                    icon = R.drawable.refresh,
+                    content = {
+                        var resetToDefault by remember { mutableStateOf(false) }
+
+                        if (search.inputValue.isBlank() || stringResource(R.string.settings_restore_default_settings).contains(search.inputValue, true) || stringResource(R.string.settings_reset).contains(search.inputValue, true)) {
+                            OtherSettingsEntry(
+                                title = stringResource(R.string.settings_reset),
+                                text = stringResource(R.string.settings_restore_default_settings),
+                                icon = R.drawable.refresh,
+                                onClick = {
+                                    resetToDefault = true
+                                    Toaster.done()
+                                }
+                            )
+                        }
+
+                        if (resetToDefault) {
+                            DefaultAccountsSettings()
+                            LaunchedEffect(Unit) {
+                                resetToDefault = false
+                            }
+                        }
+                    }
+                )
+            }
+
+            // Clear synced data confirmation dialog
+            val dialogCoroutineScope = rememberCoroutineScope()
+            if (showClearSyncDialog) {
+                DefaultDialog(
+                    onDismiss = { showClearSyncDialog = false }
+                ) {
+                    BasicText(
+                        text = stringResource(R.string.clear_synced_data_confirm),
+                        style = typography().s.copy(color = colorPalette().text)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(stringResource(R.string.confirm))
+                        Button(
+                            onClick = { showClearSyncDialog = false },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorPalette().background2,
+                                contentColor = colorPalette().text
+                            ),
+                            shape = uiRoundnessShape()
+                        ) {
+                            Text(stringResource(R.string.cancel))
+                        }
+                        Button(
+                            onClick = {
+                                showClearSyncDialog = false
+                                dialogCoroutineScope.launch(NzikDispatchers.DATA) {
+                                    val cleared = runCatching { clearAllSyncedData() }.getOrElse { false }
+                                    withContext(NzikDispatchers.UI) {
+                                        val ep = appContext().encryptedPreferences
+                                        ep.edit().putString(ytCookieKey, "").apply()
+                                        ep.edit().putString(ytAccountNameKey, "").apply()
+                                        ep.edit().putString(ytAccountChannelHandleKey, "").apply()
+                                        ep.edit().putString(ytAccountEmailKey, "").apply()
+                                        ep.edit().putString(ytAccountThumbnailKey, "").apply()
+                                        ep.edit().putString(ytVisitorDataKey, "").apply()
+                                        ep.edit().putString(ytDataSyncIdKey, "").apply()
+
+                                        // Manually update states to force UI recomposition
+                                        cookie = ""
+                                        accountName = ""
+                                        accountEmail = ""
+                                        accountChannelHandle = ""
+                                        accountThumbnail = ""
+                                        visitorData = ""
+                                        dataSyncId = ""
+
+                                        app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger++
+
+                                        appContext().preferences.edit().putBoolean(enableYouTubeSyncKey, false).apply()
+                                        app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
+                                        appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
+                                        clearStreamCaches()
+                                        appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, true).apply()
+                                        val cookieManager = CookieManager.getInstance()
+                                        cookieManager.removeAllCookies(null)
+                                        cookieManager.flush()
+                                        WebStorage.getInstance().deleteAllData()
+                                        if (cleared) {
+                                            Toaster.s(R.string.account_logoff)
+                                        } else {
+                                            Toaster.w(R.string.account_logoff)
+                                        }
+                                    }
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorPalette().accent,
+                                contentColor = colorPalette().textSecondary
+                            ),
+                            shape = uiRoundnessShape()
+                        ) {
+                            Text(stringResource(R.string.confirm))
+                        }
                     }
                 }
             }
@@ -2653,8 +2685,3 @@ fun isYouTubeLoggedIn(): Boolean {
     val isLoggedIn = cookie?.let { parseCookieString(it) }?.contains("SAPISID") == true
     return isLoggedIn
 }
-
-
-
-
-

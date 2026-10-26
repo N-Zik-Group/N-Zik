@@ -1,11 +1,13 @@
 package app.it.fast4x.rimusic.ui.screens
 
+import app.n_zik.android.core.navigation.ScreenTransitions
+import app.n_zik.android.core.navigation.LocalSettingsBackNavigation
+import app.n_zik.android.core.navigation.SettingsBackNavigation
+import app.n_zik.android.components.search.SearchResultsViewport
+
 import app.n_zik.android.core.database.*
 
 import android.net.Uri
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
@@ -17,14 +19,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandIn
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,7 +44,6 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.media3.common.util.UnstableApi
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -73,7 +69,6 @@ import app.it.fast4x.rimusic.enums.StatisticsType
 import app.it.fast4x.rimusic.enums.TransitionEffect
 import app.n_zik.android.components.ui.screens.easter.EasterScreen
 import app.it.fast4x.rimusic.models.Mood
-import app.it.fast4x.rimusic.models.SearchQuery
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
 import app.n_zik.android.components.musicbrainz.insights.AlbumInsightsScreen
 import app.n_zik.android.components.musicbrainz.insights.ArtistInsightsScreen
@@ -92,13 +87,12 @@ import app.it.fast4x.rimusic.ui.screens.playlist.PlaylistScreen
 import app.it.fast4x.rimusic.ui.screens.podcast.PodcastScreen
 import app.it.fast4x.rimusic.ui.screens.search.SearchScreen
 import app.it.fast4x.rimusic.ui.screens.searchresult.SearchResultScreen
-import app.it.fast4x.rimusic.ui.screens.settings.SettingsScreen
+import app.n_zik.android.components.ui.screens.settings.SettingsScreen
 import app.it.fast4x.rimusic.ui.screens.statistics.StatisticsScreen
 import app.n_zik.android.components.ui.screens.rewind.RewindHomeScreen
 import app.n_zik.android.components.ui.screens.rewind.RewindScreen
 import app.it.fast4x.rimusic.utils.clearPreference
 import app.it.fast4x.rimusic.utils.homeScreenTabIndexKey
-import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.transitionEffectKey
@@ -180,55 +174,13 @@ fun AppNavigation(
         clearPreference(context, homeScreenTabIndexKey)
     }
 
-    val enterTransition: (@JvmSuppressWildcards AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition) =
-        {
-            when (transitionEffect) {
-                TransitionEffect.None -> EnterTransition.None
-                TransitionEffect.Expand -> scaleIn(animationSpec = tween(350), initialScale = 2.0f)
-                TransitionEffect.Fade -> fadeIn(animationSpec = tween(350))
-                TransitionEffect.Scale -> scaleIn(animationSpec = tween(350))
-                TransitionEffect.SlideVertical -> slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
-                TransitionEffect.SlideHorizontal -> slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
-            }
-        }
-    val exitTransition: (@JvmSuppressWildcards AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition) =
-        {
-            when (transitionEffect) {
-                TransitionEffect.None -> ExitTransition.None
-                TransitionEffect.Expand -> scaleOut(animationSpec = tween(350), targetScale = 2.0f)
-                TransitionEffect.Fade -> fadeOut(animationSpec = tween(350))
-                TransitionEffect.Scale -> scaleOut(animationSpec = tween(350))
-                TransitionEffect.SlideVertical -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Up)
-                TransitionEffect.SlideHorizontal -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
-            }
-        }
-
-    val popEnterTransition: (@JvmSuppressWildcards AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition) =
-        {
-            when (transitionEffect) {
-                TransitionEffect.None -> EnterTransition.None
-                TransitionEffect.Expand -> scaleIn(animationSpec = tween(350), initialScale = 2.0f)
-                TransitionEffect.Fade -> fadeIn(animationSpec = tween(350))
-                TransitionEffect.Scale -> scaleIn(animationSpec = tween(350))
-                TransitionEffect.SlideVertical -> EnterTransition.None
-                TransitionEffect.SlideHorizontal -> EnterTransition.None
-            }
-        }
-
-    val popExitTransition: (@JvmSuppressWildcards AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition) =
-        {
-            when (transitionEffect) {
-                TransitionEffect.None -> ExitTransition.None
-                TransitionEffect.Expand -> scaleOut(animationSpec = tween(350), targetScale = 2.0f)
-                TransitionEffect.Fade -> fadeOut(animationSpec = tween(350))
-                TransitionEffect.Scale -> scaleOut(animationSpec = tween(350))
-                TransitionEffect.SlideVertical -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
-                TransitionEffect.SlideHorizontal -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
-            }
-        }
+    val transitions = remember(transitionEffect) { ScreenTransitions(transitionEffect) }
 
     val disableBackStack by rememberPreference(disableNavigationBackStackKey, false)
     val currentEntry by navController.currentBackStackEntryAsState()
+    val settingsBackNavigation = remember(navController) {
+        SettingsBackNavigation { currentEntry?.destination?.route }
+    }
     val isHome = currentEntry?.destination?.route?.startsWith(NavRoutes.home.name) ?: true
     val isRewind = currentEntry?.destination?.route?.let { route ->
         route == NavRoutes.rewind.name || route.startsWith("${NavRoutes.rewind.name}?")
@@ -237,10 +189,12 @@ fun AppNavigation(
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    val backCallback = remember {
+    val backCallback = remember(navController, settingsBackNavigation) {
         object : OnBackPressedCallback(false) {
             override fun handleOnBackPressed() {
-                navController.popBackStack(NavRoutes.home.name, inclusive = false)
+                if (!settingsBackNavigation.handleBack()) {
+                    navController.popBackStack(NavRoutes.home.name, inclusive = false)
+                }
             }
         }
     }
@@ -309,6 +263,7 @@ fun AppNavigation(
         }
     }
 
+    CompositionLocalProvider(LocalSettingsBackNavigation provides settingsBackNavigation) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         // Always composed: when slid out it simply sits above the screen, which keeps the
@@ -321,6 +276,7 @@ fun AppNavigation(
         containerColor = androidx.compose.ui.graphics.Color.Transparent,
         contentWindowInsets = WindowInsets(0.dp)
     ) { innerPadding ->
+    SearchResultsViewport {
     NavHost(
         modifier = Modifier.fillMaxSize()
             .layout { measurable, constraints ->
@@ -345,10 +301,10 @@ fun AppNavigation(
         },
         navController = navController,
         startDestination = NavRoutes.home.name,
-        enterTransition = enterTransition,
-        exitTransition = exitTransition,
-        popEnterTransition = popEnterTransition,
-        popExitTransition = popExitTransition
+        enterTransition = transitions.enterTransition,
+        exitTransition = transitions.exitTransition,
+        popEnterTransition = transitions.popEnterTransition,
+        popExitTransition = transitions.popExitTransition
     ) {
         val navigateToPlaylist =
             { browseId: String -> navController.navigateClean("${NavRoutes.playlist.name}/$browseId", context) }
@@ -614,12 +570,8 @@ fun AppNavigation(
                     navController.navigate(
                         route = "${NavRoutes.searchResults.name}/${Uri.encode( query )}",
                     )
-
-                    if ( !context.preferences.getBoolean(pauseSearchHistoryKey, false) )
-                        Database.asyncTransaction {
-                            // Must ignore to prevent "UNIQUE constraint" exception
-                            searchTable.insertIgnore( SearchQuery(query = query) )
-                        }
+                    // Search history is recorded per screen by the search tabs
+                    // themselves (SearchHistoryStore), not here
                 },
             )
         }
@@ -763,6 +715,8 @@ fun AppNavigation(
         }
     }
     } // end Scaffold
+    }
+    }
 }
 
 

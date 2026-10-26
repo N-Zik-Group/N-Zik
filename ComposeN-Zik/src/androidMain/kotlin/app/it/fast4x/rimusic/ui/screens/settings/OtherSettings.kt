@@ -47,7 +47,18 @@ import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.ValidationType
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
+import androidx.compose.ui.text.input.TextFieldValue
+import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
+import app.n_zik.android.components.search.SearchHistoryStore
+import app.n_zik.android.components.search.SearchHistorySection
+import app.n_zik.android.components.search.filterSearchHistory
+import app.n_zik.android.components.search.rememberSearchHistory
+import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
+import app.n_zik.android.components.settings.common.visibleCardTitleRes
+import app.n_zik.android.components.settings.common.settingsSearchContent
+import app.n_zik.android.components.settings.common.settingsSearchDescription
+import app.n_zik.android.components.settings.common.settingsSearchTitle
 import app.n_zik.android.components.dialog.common.StringListDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
@@ -143,9 +154,19 @@ fun DefaultOtherSettings() {
 fun OtherSettings(
     focus: String = ""
 ) {
-    val search = Search()
+    val search = Search(initialVisible = true)
+    val searchFocus = rememberSettingsSearchFocus(search.isFocused, search.inputValue.isBlank())
 
     val context = LocalContext.current
+
+    val isHistoryPaused by rememberPreference(pauseSearchHistoryKey, false)
+    val history = rememberSearchHistory(SearchHistoryStore.PAGE_SETTINGS_OTHER, isHistoryPaused)
+    val historyMatches = filterSearchHistory(history.value, search.inputValue)
+    val historyVisible = search.isFocused && historyMatches.isNotEmpty()
+
+    fun recordSearchQuery(query: String = search.inputValue) {
+        history.value = SearchHistoryStore.record(context.preferences, SearchHistoryStore.PAGE_SETTINGS_OTHER, query)
+    }
 
     var isIgnoringBatteryOptimizations by remember {
         mutableStateOf(context.isIgnoringBatteryOptimizations)
@@ -161,12 +182,12 @@ fun OtherSettings(
     var proxyPort by rememberPreference(proxyPortKey, 1080)
     var proxyMode by rememberPreference(proxyModeKey, Proxy.Type.HTTP)
     var proxyUsername by rememberPreference(proxyUsernameKey, "")
-    
+
     // Migrate proxy password to encrypted preferences
     var isPasswordMigrated by rememberPreference(proxyPasswordMigratedKey, false)
     val oldPassword by rememberPreference(proxyPasswordKey, "")
     var proxyPassword by rememberEncryptedPreference(proxyPasswordEncryptedKey, "")
-    
+
     // One-time migration from regular to encrypted preferences
     LaunchedEffect(Unit) {
         if (!isPasswordMigrated && oldPassword.isNotEmpty()) {
@@ -179,7 +200,7 @@ fun OtherSettings(
                 .apply()
         }
     }
-    
+
     var regionOverride by rememberPreference(regionOverrideKey, "")
 
     var defaultFolder by rememberPreference(defaultFolderKey, "/")
@@ -243,523 +264,530 @@ fun OtherSettings(
             .onGloballyPositioned { containerTopY = it.positionInRoot().y }
     ) {
 
-        HeaderWithIcon(
-            title = stringResource(R.string.tab_miscellaneous),
-            iconId = R.drawable.equalizer,
-            enabled = false,
-            showIcon = true,
-            modifier = Modifier,
-            onClick = {}
+        settingsSearchTitle(searchFocus, R.string.tab_miscellaneous, R.drawable.equalizer)
+
+        settingsSearchDescription(searchFocus) {
+            SettingsDescription(
+                text = stringResource(R.string.other_settings_description),
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        }
+
+        search.SearchBar(this, barPadding = searchFocus.barPadding, onSearch = { recordSearchQuery() })
+
+        SearchHistorySection(
+            visible = historyVisible,
+            queries = historyMatches,
+            onQueryClick = { search.input = TextFieldValue(it); recordSearchQuery(it); search.isFocused = false },
+            onQueryDelete = {
+                history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_SETTINGS_OTHER, it)
+            },
+            onQueryDeleteAll = {
+                history.value = SearchHistoryStore.deleteAll(context.preferences, SearchHistoryStore.PAGE_SETTINGS_OTHER)
+            }
         )
 
-        SettingsDescription(
-            text = stringResource(R.string.other_settings_description),
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        ) 
-
-        search.ToolBarButton()
-        search.SearchBar( this )
-
         /* Removed Spacer */
 
-        // On Device Section
-        AnimatedVisibility(
-            visible = true,
-            enter = fadeIn(animationSpec = tween(600)) + scaleIn(
-                animationSpec = tween(600),
-                initialScale = 0.9f
-            )
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.on_device),
-                icon = R.drawable.folder,
-                content = {
-                    // Modern wrapper with icon
-                    var showBlacklistDialog by remember { mutableStateOf(false) }
-                    if (search.inputValue.isBlank() || stringResource(R.string.blacklisted_folders).contains(search.inputValue, true) || stringResource(R.string.edit_blacklist_for_on_device_songs).contains(search.inputValue, true)) {
-                        OtherSettingsEntry(
-                            title = stringResource(R.string.blacklisted_folders),
-                            text = stringResource(R.string.edit_blacklist_for_on_device_songs),
-                            icon = R.drawable.blacklisted_folder,
-                            onClick = { showBlacklistDialog = true }
-                        )
-                    }
-                    
-                    // Only the dialog, not the old component
-                    if (showBlacklistDialog) {
-                        StringListDialog(
-                            title = stringResource(R.string.blacklisted_folders),
-                            addTitle = stringResource(R.string.add_folder),
-                            addPlaceholder = if (isAtLeastAndroid10) {
-                                "Android/media/com.whatsapp/WhatsApp/Media"
-                            } else {
-                                "/storage/emulated/0/Android/media/com.whatsapp/"
-                            },
-                            conflictTitle = stringResource(R.string.this_folder_already_exists),
-                            removeTitle = stringResource(R.string.are_you_sure_you_want_to_remove_this_folder_from_the_blacklist),
-                            list = blackListedPaths,
-                            add = { newPath: String ->
-                                blackListedPaths = blackListedPaths + newPath
-                                val snapshot = blackListedPaths.toList()
-                                NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                                    withContext(NzikDispatchers.DATA) {
-                                        File(context.filesDir, "Blacklisted_paths.txt").writeText(snapshot.joinToString("\n"))
-                                    }
-                                }
-                            },
-                            remove = { path: String ->
-                                blackListedPaths = blackListedPaths.filter { it != path }
-                                val snapshot = blackListedPaths.toList()
-                                NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                                    withContext(NzikDispatchers.DATA) {
-                                        File(context.filesDir, "Blacklisted_paths.txt").writeText(snapshot.joinToString("\n"))
-                                    }
-                                }
-                            },
-                            onDismiss = { showBlacklistDialog = false }
-                        )
-                    }
-                    
-
-
-                    if (search.inputValue.isBlank() || stringResource(R.string.folders).contains(search.inputValue, true) || stringResource(R.string.show_folders_in_on_device_page).contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                            title = stringResource(R.string.folders),
-                            text = stringResource(R.string.show_folders_in_on_device_page),
-                            isChecked = showFolders,
-                            onCheckedChange = { showFolders = it },
-                            icon = R.drawable.playlist
-                        )
-                    }
-                    
-                    AnimatedVisibility(visible = showFolders) {
+        val hasSearchResults = search.inputValue.isBlank() || visibleCardTitleRes(context, 7, search.inputValue).isNotEmpty()
+        LaunchedEffect(hasSearchResults) {
+            if (!hasSearchResults) scrollState.scrollTo(0)
+        }
+        settingsSearchContent(searchFocus, hasResults = hasSearchResults) {
+            // On Device Section
+            AnimatedVisibility(
+                visible = true,
+                enter = fadeIn(animationSpec = tween(600)) + scaleIn(
+                    animationSpec = tween(600),
+                    initialScale = 0.9f
+                )
+            ) {
+                SettingsSectionCard(
+                    title = stringResource(R.string.on_device),
+                    icon = R.drawable.folder,
+                    content = {
                         // Modern wrapper with icon
-                        var showFolderDialog by remember { mutableStateOf(false) }
-                        if (search.inputValue.isBlank() || stringResource(R.string.folder_that_will_show_when_you_open_on_device_page).contains(search.inputValue, true)) {
+                        var showBlacklistDialog by remember { mutableStateOf(false) }
+                        if (search.inputValue.isBlank() || stringResource(R.string.blacklisted_folders).contains(search.inputValue, true) || stringResource(R.string.edit_blacklist_for_on_device_songs).contains(search.inputValue, true)) {
                             OtherSettingsEntry(
-                                title = stringResource(R.string.folder_that_will_show_when_you_open_on_device_page),
-                                text = defaultFolder,
-                                icon = R.drawable.music_file,
-                                onClick = { showFolderDialog = true }
+                                title = stringResource(R.string.blacklisted_folders),
+                                text = stringResource(R.string.edit_blacklist_for_on_device_songs),
+                                icon = R.drawable.blacklisted_folder,
+                                onClick = { showBlacklistDialog = true }
                             )
                         }
-                        
+
                         // Only the dialog, not the old component
-                        if (showFolderDialog) {
-                            SettingsInputDialog(
-                                title = stringResource(R.string.folder_that_will_show_when_you_open_on_device_page),
-                                initialValue = defaultFolder,
-                                placeholder = stringResource(R.string.folder_that_will_show_when_you_open_on_device_page),
-                                onDismiss = { showFolderDialog = false },
-                                onSetValue = { defaultFolder = it }
-                            ).apply {
-                                showDialog()
-                                Render()
+                        if (showBlacklistDialog) {
+                            StringListDialog(
+                                title = stringResource(R.string.blacklisted_folders),
+                                addTitle = stringResource(R.string.add_folder),
+                                addPlaceholder = if (isAtLeastAndroid10) {
+                                    "Android/media/com.whatsapp/WhatsApp/Media"
+                                } else {
+                                    "/storage/emulated/0/Android/media/com.whatsapp/"
+                                },
+                                conflictTitle = stringResource(R.string.this_folder_already_exists),
+                                removeTitle = stringResource(R.string.are_you_sure_you_want_to_remove_this_folder_from_the_blacklist),
+                                list = blackListedPaths,
+                                add = { newPath: String ->
+                                    blackListedPaths = blackListedPaths + newPath
+                                    val snapshot = blackListedPaths.toList()
+                                    NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+                                        withContext(NzikDispatchers.DATA) {
+                                            File(context.filesDir, "Blacklisted_paths.txt").writeText(snapshot.joinToString("\n"))
+                                        }
+                                    }
+                                },
+                                remove = { path: String ->
+                                    blackListedPaths = blackListedPaths.filter { it != path }
+                                    val snapshot = blackListedPaths.toList()
+                                    NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+                                        withContext(NzikDispatchers.DATA) {
+                                            File(context.filesDir, "Blacklisted_paths.txt").writeText(snapshot.joinToString("\n"))
+                                        }
+                                    }
+                                },
+                                onDismiss = { showBlacklistDialog = false }
+                            )
+                        }
+
+
+
+                        if (search.inputValue.isBlank() || stringResource(R.string.folders).contains(search.inputValue, true) || stringResource(R.string.show_folders_in_on_device_page).contains(search.inputValue, true)) {
+                            OtherSwitchSettingEntry(
+                                title = stringResource(R.string.folders),
+                                text = stringResource(R.string.show_folders_in_on_device_page),
+                                isChecked = showFolders,
+                                onCheckedChange = { showFolders = it },
+                                icon = R.drawable.playlist
+                            )
+                        }
+
+                        AnimatedVisibility(visible = showFolders) {
+                            // Modern wrapper with icon
+                            var showFolderDialog by remember { mutableStateOf(false) }
+                            if (search.inputValue.isBlank() || stringResource(R.string.folder_that_will_show_when_you_open_on_device_page).contains(search.inputValue, true)) {
+                                OtherSettingsEntry(
+                                    title = stringResource(R.string.folder_that_will_show_when_you_open_on_device_page),
+                                    text = defaultFolder,
+                                    icon = R.drawable.music_file,
+                                    onClick = { showFolderDialog = true }
+                                )
+                            }
+
+                            // Only the dialog, not the old component
+                            if (showFolderDialog) {
+                                SettingsInputDialog(
+                                    title = stringResource(R.string.folder_that_will_show_when_you_open_on_device_page),
+                                    initialValue = defaultFolder,
+                                    placeholder = stringResource(R.string.folder_that_will_show_when_you_open_on_device_page),
+                                    onDismiss = { showFolderDialog = false },
+                                    onSetValue = { defaultFolder = it }
+                                ).apply {
+                                    showDialog()
+                                    Render()
+                                }
                             }
                         }
                     }
-                }
-            )
-        }
+                )
+            }
 
-        /* Removed Spacer */
+            /* Removed Spacer */
 
-        // Android Head Unit Section
-        AnimatedVisibility(
-            visible = true,
-            enter = fadeIn(animationSpec = tween(800)) + scaleIn(
-                animationSpec = tween(800),
-                initialScale = 0.9f
-            )
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.androidheadunit),
-                icon = R.drawable.car,
-                content = {
-                    if (search.inputValue.isBlank() || stringResource(R.string.extra_space).contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                            title = stringResource(R.string.extra_space),
-                            text = "",
-                            isChecked = extraspace,
-                            onCheckedChange = { extraspace = it },
-                            icon = R.drawable.space
-                        )
+            // Android Head Unit Section
+            AnimatedVisibility(
+                visible = true,
+                enter = fadeIn(animationSpec = tween(800)) + scaleIn(
+                    animationSpec = tween(800),
+                    initialScale = 0.9f
+                )
+            ) {
+                SettingsSectionCard(
+                    title = stringResource(R.string.androidheadunit),
+                    icon = R.drawable.car,
+                    content = {
+                        if (search.inputValue.isBlank() || stringResource(R.string.extra_space).contains(search.inputValue, true)) {
+                            OtherSwitchSettingEntry(
+                                title = stringResource(R.string.extra_space),
+                                text = "",
+                                isChecked = extraspace,
+                                onCheckedChange = { extraspace = it },
+                                icon = R.drawable.space
+                            )
+                        }
                     }
-                }
-            )
-        }
+                )
+            }
 
-        /* Removed Spacer */
+            /* Removed Spacer */
 
-        // Service Lifetime Section
-        AnimatedVisibility(
-            visible = true,
-            enter = fadeIn(animationSpec = tween(1000)) + scaleIn(
-                animationSpec = tween(1000),
-                initialScale = 0.9f
-            )
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.service_lifetime),
-                icon = R.drawable.battery,
-                content = {
-                    if (search.inputValue.isBlank() || stringResource(R.string.keep_screen_on).contains(search.inputValue, true) || stringResource(R.string.prevents_screen_timeout).contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                            title = stringResource(R.string.keep_screen_on),
-                            text = stringResource(R.string.prevents_screen_timeout),
-                            isChecked = isKeepScreenOnEnabled,
-                            onCheckedChange = { isKeepScreenOnEnabled = it },
-                            icon = R.drawable.devices
-                        )
-                    }
+            // Service Lifetime Section
+            AnimatedVisibility(
+                visible = true,
+                enter = fadeIn(animationSpec = tween(1000)) + scaleIn(
+                    animationSpec = tween(1000),
+                    initialScale = 0.9f
+                )
+            ) {
+                SettingsSectionCard(
+                    title = stringResource(R.string.service_lifetime),
+                    icon = R.drawable.battery,
+                    content = {
+                        if (search.inputValue.isBlank() || stringResource(R.string.keep_screen_on).contains(search.inputValue, true) || stringResource(R.string.prevents_screen_timeout).contains(search.inputValue, true)) {
+                            OtherSwitchSettingEntry(
+                                title = stringResource(R.string.keep_screen_on),
+                                text = stringResource(R.string.prevents_screen_timeout),
+                                isChecked = isKeepScreenOnEnabled,
+                                onCheckedChange = { isKeepScreenOnEnabled = it },
+                                icon = R.drawable.devices
+                            )
+                        }
 
-                    ImportantSettingsDescription(text = stringResource(R.string.battery_optimizations_applied))
+                        ImportantSettingsDescription(text = stringResource(R.string.battery_optimizations_applied))
 
-                    if (isAtLeastAndroid12) {
-                        SettingsDescription(text = stringResource(R.string.is_android12))
-                    }
+                        if (isAtLeastAndroid12) {
+                            SettingsDescription(text = stringResource(R.string.is_android12))
+                        }
 
-                    val msgNoBatteryOptim = stringResource(R.string.not_find_battery_optimization_settings)
+                        val msgNoBatteryOptim = stringResource(R.string.not_find_battery_optimization_settings)
 
-                                            if (search.inputValue.isBlank() || stringResource(R.string.ignore_battery_optimizations).contains(search.inputValue, true)) {
-                                                OtherSettingsEntry(
-                                title = stringResource(R.string.ignore_battery_optimizations),
-                                text = if (isIgnoringBatteryOptimizations) {
-                                    stringResource(R.string.already_unrestricted)
-                                } else {
-                                    stringResource(R.string.disable_background_restrictions)
-                                },
-                                icon = R.drawable.battery_opti,
-                            onClick = {
-                                if (!isAtLeastAndroid6) return@OtherSettingsEntry
+                                                if (search.inputValue.isBlank() || stringResource(R.string.ignore_battery_optimizations).contains(search.inputValue, true)) {
+                                                    OtherSettingsEntry(
+                                    title = stringResource(R.string.ignore_battery_optimizations),
+                                    text = if (isIgnoringBatteryOptimizations) {
+                                        stringResource(R.string.already_unrestricted)
+                                    } else {
+                                        stringResource(R.string.disable_background_restrictions)
+                                    },
+                                    icon = R.drawable.battery_opti,
+                                onClick = {
+                                    if (!isAtLeastAndroid6) return@OtherSettingsEntry
 
-                                try {
-                                    activityResultLauncher.launch(
-                                        Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                                            data = Uri.parse("package:${context.packageName}")
-                                        }
-                                    )
-                                } catch (e: ActivityNotFoundException) {
                                     try {
                                         activityResultLauncher.launch(
-                                            Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                                            Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                                                data = Uri.parse("package:${context.packageName}")
+                                            }
                                         )
                                     } catch (e: ActivityNotFoundException) {
-                                        Toaster.i(R.string.battery_optimization_msg, formatArgs = arrayOf(msgNoBatteryOptim, BuildConfig.APP_NAME))
+                                        try {
+                                            activityResultLauncher.launch(
+                                                Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                                            )
+                                        } catch (e: ActivityNotFoundException) {
+                                            Toaster.i(R.string.battery_optimization_msg, formatArgs = arrayOf(msgNoBatteryOptim, BuildConfig.APP_NAME))
+                                        }
                                     }
                                 }
-                            }
-                        )
-                                            }
-                }
-            )
-        }
-
-        /* Removed Spacer */
-
-        // Proxy Section
-        AnimatedVisibility(
-            visible = true,
-            enter = fadeIn(animationSpec = tween(1200)) + scaleIn(
-                animationSpec = tween(1200),
-                initialScale = 0.9f
-            )
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.proxy),
-                icon = R.drawable.network,
-                content = {
-                    SettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
-                    
-                    if (search.inputValue.isBlank() || stringResource(R.string.enable_proxy).contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                            title = stringResource(R.string.enable_proxy),
-                            text = "",
-                            isChecked = isProxyEnabled,
-                            onCheckedChange = { 
-                                isProxyEnabled = it
-                                // Cascade: disable region override when proxy is disabled
-                                if (!it) {
-                                    regionOverride = ""
-                                    Innertube.regionOverride = ""
-                                    Innertube.regionOverrideActive = false
-                                }
-                            },
-                            icon = R.drawable.server
-                        )
+                            )
+                                                }
                     }
+                )
+            }
 
-                    AnimatedVisibility(visible = isProxyEnabled) {
-                        Column {
-                            // Modern wrapper with icon
-                            var showProxyModeDialog by remember { mutableStateOf(false) }
-                            if (search.inputValue.isBlank() || stringResource(R.string.proxy_mode).contains(search.inputValue, true)) {
-                                OtherSettingsEntry(
-                                    title = stringResource(R.string.proxy_mode),
-                                    text = proxyMode.name,
-                                    icon = R.drawable.server,
-                                    onClick = { showProxyModeDialog = true }
-                                )
-                            }
-                            
-                            // Only the dialog, not the old component
-                            if (showProxyModeDialog) {
-                                ValueSelectorDialog(
-                                    title = stringResource(R.string.proxy_mode),
-                                    selectedValue = proxyMode,
-                                    values = Proxy.Type.values().toList(),
-                                    onValueSelected = { proxyMode = it },
-                                    valueText = { it.name },
-                                    onDismiss = { showProxyModeDialog = false }
-                                )
-                            }
-                            // Modern wrapper with icon
-                            var showProxyHostDialog by remember { mutableStateOf(false) }
-                            if (search.inputValue.isBlank() || stringResource(R.string.proxy_host).contains(search.inputValue, true)) {
-                                OtherSettingsEntry(
-                                    title = stringResource(R.string.proxy_host),
-                                    text = proxyHost,
-                                    icon = R.drawable.server,
-                                    onClick = { showProxyHostDialog = true }
-                                )
-                            }
-                            
-                            // Only the dialog, not the old component
-                            if (showProxyHostDialog) {
-                                SettingsInputDialog(
-                                    title = stringResource(R.string.proxy_host),
-                                    initialValue = proxyHost,
-                                    placeholder = stringResource(R.string.proxy_host),
-                                    onDismiss = { showProxyHostDialog = false },
-                                    onSetValue = { proxyHost = it }
-                                ).apply {
-                                    showDialog()
-                                    Render()
-                                }
-                            }
-                            // Modern wrapper with icon
-                            var showProxyPortDialog by remember { mutableStateOf(false) }
-                            if (search.inputValue.isBlank() || stringResource(R.string.proxy_port).contains(search.inputValue, true)) {
-                                OtherSettingsEntry(
-                                    title = stringResource(R.string.proxy_port),
-                                    text = proxyPort.toString(),
-                                    icon = R.drawable.server,
-                                    onClick = { showProxyPortDialog = true }
-                                )
-                            }
-                            
-                            // Only the dialog, not the old component
-                            if (showProxyPortDialog) {
-                                SettingsInputDialog(
-                                    title = stringResource(R.string.proxy_port),
-                                    initialValue = proxyPort.toString(),
-                                    placeholder = stringResource(R.string.proxy_port),
-                                    onDismiss = { showProxyPortDialog = false },
-                                    onSetValue = { proxyPort = it.toIntOrNull() ?: 1080 }
-                                ).apply {
-                                    showDialog()
-                                    Render()
-                                }
-                            }
-                            // Proxy Username
-                            var showProxyUsernameDialog by remember { mutableStateOf(false) }
-                            if (search.inputValue.isBlank() || "proxy username".contains(search.inputValue, true)) {
-                                OtherSettingsEntry(
-                                    title = "Proxy Username",
-                                    text = if (proxyUsername.isBlank()) "None" else proxyUsername,
-                                    icon = R.drawable.server,
-                                    onClick = { showProxyUsernameDialog = true }
-                                )
-                            }
-                            if (showProxyUsernameDialog) {
-                                SettingsInputDialog(
-                                    title = "Proxy Username",
-                                    initialValue = proxyUsername,
-                                    placeholder = "Username (optional)",
-                                    allowEmpty = true,
-                                    onDismiss = { showProxyUsernameDialog = false },
-                                    onSetValue = { proxyUsername = it }
-                                ).apply {
-                                    showDialog()
-                                    Render()
-                                }
-                            }
-                            // Proxy Password
-                            var showProxyPasswordDialog by remember { mutableStateOf(false) }
-                            if (search.inputValue.isBlank() || "proxy password".contains(search.inputValue, true)) {
-                                OtherSettingsEntry(
-                                    title = "Proxy Password",
-                                    text = if (proxyPassword.isBlank()) "None" else "••••••",
-                                    icon = R.drawable.server,
-                                    onClick = { showProxyPasswordDialog = true }
-                                )
-                            }
-                            if (showProxyPasswordDialog) {
-                                SettingsInputDialog(
-                                    title = "Proxy Password",
-                                    initialValue = proxyPassword,
-                                    placeholder = "Password (optional)",
-                                    allowEmpty = true,
-                                    isPassword = true,
-                                    onDismiss = { showProxyPasswordDialog = false },
-                                    onSetValue = { proxyPassword = it }
-                                ).apply {
-                                    showDialog()
-                                    Render()
-                                }
-                            }
-                            // Region Override
-                            var showRegionOverrideDialog by remember { mutableStateOf(false) }
-                            if (search.inputValue.isBlank() || "region override".contains(search.inputValue, true)) {
-                                OtherSettingsEntry(
-                                    title = "Region Override",
-                                    text = if (regionOverride.isBlank()) "Auto (from phone)" else regionOverride,
-                                    icon = R.drawable.server,
-                                    onClick = { showRegionOverrideDialog = true }
-                                )
-                            }
-                            if (showRegionOverrideDialog) {
-                                SettingsInputDialog(
-                                    title = "Region Override",
-                                    initialValue = regionOverride,
-                                    placeholder = "e.g. US, FR, DE (empty = auto)",
-                                    allowEmpty = true,
-                                    onDismiss = { showRegionOverrideDialog = false },
-                                    onSetValue = { 
-                                        regionOverride = it
-                                        Innertube.regionOverride = it
-                                        Innertube.regionOverrideActive = it.isNotBlank()
+            /* Removed Spacer */
+
+            // Proxy Section
+            AnimatedVisibility(
+                visible = true,
+                enter = fadeIn(animationSpec = tween(1200)) + scaleIn(
+                    animationSpec = tween(1200),
+                    initialScale = 0.9f
+                )
+            ) {
+                SettingsSectionCard(
+                    title = stringResource(R.string.proxy),
+                    icon = R.drawable.network,
+                    content = {
+                        SettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
+
+                        if (search.inputValue.isBlank() || stringResource(R.string.enable_proxy).contains(search.inputValue, true)) {
+                            OtherSwitchSettingEntry(
+                                title = stringResource(R.string.enable_proxy),
+                                text = "",
+                                isChecked = isProxyEnabled,
+                                onCheckedChange = {
+                                    isProxyEnabled = it
+                                    // Cascade: disable region override when proxy is disabled
+                                    if (!it) {
+                                        regionOverride = ""
+                                        Innertube.regionOverride = ""
+                                        Innertube.regionOverrideActive = false
                                     }
-                                ).apply {
-                                    showDialog()
-                                    Render()
+                                },
+                                icon = R.drawable.server
+                            )
+                        }
+
+                        AnimatedVisibility(visible = isProxyEnabled) {
+                            Column {
+                                // Modern wrapper with icon
+                                var showProxyModeDialog by remember { mutableStateOf(false) }
+                                if (search.inputValue.isBlank() || stringResource(R.string.proxy_mode).contains(search.inputValue, true)) {
+                                    OtherSettingsEntry(
+                                        title = stringResource(R.string.proxy_mode),
+                                        text = proxyMode.name,
+                                        icon = R.drawable.server,
+                                        onClick = { showProxyModeDialog = true }
+                                    )
+                                }
+
+                                // Only the dialog, not the old component
+                                if (showProxyModeDialog) {
+                                    ValueSelectorDialog(
+                                        title = stringResource(R.string.proxy_mode),
+                                        selectedValue = proxyMode,
+                                        values = Proxy.Type.values().toList(),
+                                        onValueSelected = { proxyMode = it },
+                                        valueText = { it.name },
+                                        onDismiss = { showProxyModeDialog = false }
+                                    )
+                                }
+                                // Modern wrapper with icon
+                                var showProxyHostDialog by remember { mutableStateOf(false) }
+                                if (search.inputValue.isBlank() || stringResource(R.string.proxy_host).contains(search.inputValue, true)) {
+                                    OtherSettingsEntry(
+                                        title = stringResource(R.string.proxy_host),
+                                        text = proxyHost,
+                                        icon = R.drawable.server,
+                                        onClick = { showProxyHostDialog = true }
+                                    )
+                                }
+
+                                // Only the dialog, not the old component
+                                if (showProxyHostDialog) {
+                                    SettingsInputDialog(
+                                        title = stringResource(R.string.proxy_host),
+                                        initialValue = proxyHost,
+                                        placeholder = stringResource(R.string.proxy_host),
+                                        onDismiss = { showProxyHostDialog = false },
+                                        onSetValue = { proxyHost = it }
+                                    ).apply {
+                                        showDialog()
+                                        Render()
+                                    }
+                                }
+                                // Modern wrapper with icon
+                                var showProxyPortDialog by remember { mutableStateOf(false) }
+                                if (search.inputValue.isBlank() || stringResource(R.string.proxy_port).contains(search.inputValue, true)) {
+                                    OtherSettingsEntry(
+                                        title = stringResource(R.string.proxy_port),
+                                        text = proxyPort.toString(),
+                                        icon = R.drawable.server,
+                                        onClick = { showProxyPortDialog = true }
+                                    )
+                                }
+
+                                // Only the dialog, not the old component
+                                if (showProxyPortDialog) {
+                                    SettingsInputDialog(
+                                        title = stringResource(R.string.proxy_port),
+                                        initialValue = proxyPort.toString(),
+                                        placeholder = stringResource(R.string.proxy_port),
+                                        onDismiss = { showProxyPortDialog = false },
+                                        onSetValue = { proxyPort = it.toIntOrNull() ?: 1080 }
+                                    ).apply {
+                                        showDialog()
+                                        Render()
+                                    }
+                                }
+                                // Proxy Username
+                                var showProxyUsernameDialog by remember { mutableStateOf(false) }
+                                if (search.inputValue.isBlank() || "proxy username".contains(search.inputValue, true)) {
+                                    OtherSettingsEntry(
+                                        title = "Proxy Username",
+                                        text = if (proxyUsername.isBlank()) "None" else proxyUsername,
+                                        icon = R.drawable.server,
+                                        onClick = { showProxyUsernameDialog = true }
+                                    )
+                                }
+                                if (showProxyUsernameDialog) {
+                                    SettingsInputDialog(
+                                        title = "Proxy Username",
+                                        initialValue = proxyUsername,
+                                        placeholder = "Username (optional)",
+                                        allowEmpty = true,
+                                        onDismiss = { showProxyUsernameDialog = false },
+                                        onSetValue = { proxyUsername = it }
+                                    ).apply {
+                                        showDialog()
+                                        Render()
+                                    }
+                                }
+                                // Proxy Password
+                                var showProxyPasswordDialog by remember { mutableStateOf(false) }
+                                if (search.inputValue.isBlank() || "proxy password".contains(search.inputValue, true)) {
+                                    OtherSettingsEntry(
+                                        title = "Proxy Password",
+                                        text = if (proxyPassword.isBlank()) "None" else "••••••",
+                                        icon = R.drawable.server,
+                                        onClick = { showProxyPasswordDialog = true }
+                                    )
+                                }
+                                if (showProxyPasswordDialog) {
+                                    SettingsInputDialog(
+                                        title = "Proxy Password",
+                                        initialValue = proxyPassword,
+                                        placeholder = "Password (optional)",
+                                        allowEmpty = true,
+                                        isPassword = true,
+                                        onDismiss = { showProxyPasswordDialog = false },
+                                        onSetValue = { proxyPassword = it }
+                                    ).apply {
+                                        showDialog()
+                                        Render()
+                                    }
+                                }
+                                // Region Override
+                                var showRegionOverrideDialog by remember { mutableStateOf(false) }
+                                if (search.inputValue.isBlank() || "region override".contains(search.inputValue, true)) {
+                                    OtherSettingsEntry(
+                                        title = "Region Override",
+                                        text = if (regionOverride.isBlank()) "Auto (from phone)" else regionOverride,
+                                        icon = R.drawable.server,
+                                        onClick = { showRegionOverrideDialog = true }
+                                    )
+                                }
+                                if (showRegionOverrideDialog) {
+                                    SettingsInputDialog(
+                                        title = "Region Override",
+                                        initialValue = regionOverride,
+                                        placeholder = "e.g. US, FR, DE (empty = auto)",
+                                        allowEmpty = true,
+                                        onDismiss = { showRegionOverrideDialog = false },
+                                        onSetValue = {
+                                            regionOverride = it
+                                            Innertube.regionOverride = it
+                                            Innertube.regionOverrideActive = it.isNotBlank()
+                                        }
+                                    ).apply {
+                                        showDialog()
+                                        Render()
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            )
-        }
-
-        /* Removed Spacer */
-
-        // Parental Control Section
-        AnimatedVisibility(
-            visible = true,
-            enter = fadeIn(animationSpec = tween(1400)) + scaleIn(
-                animationSpec = tween(1400),
-                initialScale = 0.9f
-            )
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.parental_control),
-                icon = R.drawable.shield_checkmark,
-                content = {
-                    if (search.inputValue.isBlank() || stringResource(R.string.parental_control).contains(search.inputValue, true) || stringResource(R.string.info_prevent_play_songs_with_age_limitation).contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                            title = stringResource(R.string.parental_control),
-                            text = stringResource(R.string.info_prevent_play_songs_with_age_limitation),
-                            isChecked = parentalControlEnabled,
-                            onCheckedChange = { parentalControlEnabled = it },
-                            icon = R.drawable.parental_control
-                        )
-                    }
-                }
-            )
-        }
-
-        /* Removed Spacer */
-
-        // Maintenance section (spec-maintenance-dialog): the card that opens the same
-        // Maintenance sheet as the burger item; the deep link from the burger long press
-
-        // (focus=maintenance, and focus=debug — the debug section moved into this card)
-        // scrolls to it. Same search-filter + enter spec as the sibling cards (the card
-
-        // must not stay visible on unrelated searches) — it now also hosts the debug
-        // switch + the export entry, so their strings match the card too
-        val searchCtx_Maintenance = search.inputValue.isBlank() || stringResource(R.string.maintenance).contains(search.inputValue, true) || stringResource(R.string.maintenance_open).contains(search.inputValue, true) || stringResource(R.string.enable_log_debug).contains(search.inputValue, true) || stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors).contains(search.inputValue, true) || stringResource(R.string.export_logs).contains(search.inputValue, true) || stringResource(R.string.export_debug_log_description).contains(search.inputValue, true)
-        AnimatedVisibility(
-            visible = searchCtx_Maintenance,
-            enter = fadeIn(animationSpec = tween(1100)) + scaleIn(
-                animationSpec = tween(1100),
-                initialScale = 0.9f
-            )
-        ) {
-            Box(modifier = Modifier.onGloballyPositioned { maintenanceCardTopY = it.positionInRoot().y }) {
-                MaintenanceSettingsCard()
+                )
             }
-        }
 
-        // Extensions section (spec-ffmpeg-extension-module): the FFmpeg module card,
-        // the burger long press (focus=extensions) scrolls to it. Same search-filter
-        // + enter spec as the sibling cards.
-        val searchCtx_Extensions = search.inputValue.isBlank() || stringResource(R.string.modules_title).contains(search.inputValue, true) || stringResource(R.string.module_ffmpeg).contains(search.inputValue, true) || stringResource(R.string.module_ffmpeg_description).contains(search.inputValue, true)
-        AnimatedVisibility(
-            visible = searchCtx_Extensions,
-            enter = fadeIn(animationSpec = tween(1100)) + scaleIn(animationSpec = tween(1100), initialScale = 0.9f)
-        ) {
-            Box(modifier = Modifier.onGloballyPositioned { extensionsCardTopY = it.positionInRoot().y }) {
-                ExtensionsSettingsCard()
-            }
-        }
+            /* Removed Spacer */
 
-        // Rescue Center card (spec-customizable-burger-menu goal B): the self-contained
-        // card launching the Recovery Center; the burger long press (focus=rescue)
-        // scrolls to it. Same search-filter + enter spec as the sibling cards.
-        val searchCtx_Rescue = search.inputValue.isBlank() || stringResource(R.string.rescue_center).contains(search.inputValue, true) || stringResource(R.string.rescue_center_description).contains(search.inputValue, true)
-        AnimatedVisibility(
-            visible = searchCtx_Rescue,
-            enter = fadeIn(animationSpec = tween(1100)) + scaleIn(animationSpec = tween(1100), initialScale = 0.9f)
-        ) {
-            Box(modifier = Modifier.onGloballyPositioned { rescueCardTopY = it.positionInRoot().y }) {
-                RescueCenterSettingsCard()
-            }
-        }
-
-        
-        val searchCtx_Reset = search.inputValue.isBlank() || stringResource(R.string.settings_reset).contains(search.inputValue, true) || stringResource(R.string.settings_restore_default_settings).contains(search.inputValue, true)
-        AnimatedVisibility(
-            visible = searchCtx_Reset,
-            enter = fadeIn(animationSpec = tween(1100)) + scaleIn(animationSpec = tween(1100), initialScale = 0.9f)
-        ) {
-            SettingsSectionCard(
-                title = stringResource(R.string.settings_reset),
-                icon = R.drawable.refresh,
-                content = {
-                    var resetToDefault by remember { mutableStateOf(false) }
-                    
-                    if (search.inputValue.isBlank() || stringResource(R.string.settings_restore_default_settings).contains(search.inputValue, true) || stringResource(R.string.settings_reset).contains(search.inputValue, true)) {
-                        OtherSettingsEntry(
-                            title = stringResource(R.string.settings_reset),
-                            text = stringResource(R.string.settings_restore_default_settings),
-                            icon = R.drawable.refresh,
-                            onClick = { 
-                                resetToDefault = true
-                                Toaster.done()
-                            }
-                        )
-                    }
-
-                    if (resetToDefault) {
-                        DefaultOtherSettings()
-                        LaunchedEffect(Unit) {
-                            resetToDefault = false
+            // Parental Control Section
+            AnimatedVisibility(
+                visible = true,
+                enter = fadeIn(animationSpec = tween(1400)) + scaleIn(
+                    animationSpec = tween(1400),
+                    initialScale = 0.9f
+                )
+            ) {
+                SettingsSectionCard(
+                    title = stringResource(R.string.parental_control),
+                    icon = R.drawable.shield_checkmark,
+                    content = {
+                        if (search.inputValue.isBlank() || stringResource(R.string.parental_control).contains(search.inputValue, true) || stringResource(R.string.info_prevent_play_songs_with_age_limitation).contains(search.inputValue, true)) {
+                            OtherSwitchSettingEntry(
+                                title = stringResource(R.string.parental_control),
+                                text = stringResource(R.string.info_prevent_play_songs_with_age_limitation),
+                                isChecked = parentalControlEnabled,
+                                onCheckedChange = { parentalControlEnabled = it },
+                                icon = R.drawable.parental_control
+                            )
                         }
                     }
+                )
+            }
+
+            /* Removed Spacer */
+
+            // Maintenance section (spec-maintenance-dialog): the card that opens the same
+            // Maintenance sheet as the burger item; the deep link from the burger long press
+
+            // (focus=maintenance, and focus=debug — the debug section moved into this card)
+            // scrolls to it. Same search-filter + enter spec as the sibling cards (the card
+
+            // must not stay visible on unrelated searches) — it now also hosts the debug
+            // switch + the export entry, so their strings match the card too
+            val searchCtx_Maintenance = search.inputValue.isBlank() || stringResource(R.string.maintenance).contains(search.inputValue, true) || stringResource(R.string.maintenance_open).contains(search.inputValue, true) || stringResource(R.string.enable_log_debug).contains(search.inputValue, true) || stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors).contains(search.inputValue, true) || stringResource(R.string.export_logs).contains(search.inputValue, true) || stringResource(R.string.export_debug_log_description).contains(search.inputValue, true)
+            AnimatedVisibility(
+                visible = searchCtx_Maintenance,
+                enter = fadeIn(animationSpec = tween(1100)) + scaleIn(
+                    animationSpec = tween(1100),
+                    initialScale = 0.9f
+                )
+            ) {
+                Box(modifier = Modifier.onGloballyPositioned { maintenanceCardTopY = it.positionInRoot().y }) {
+                    MaintenanceSettingsCard()
                 }
-            )
+            }
+
+            // Extensions section (spec-ffmpeg-extension-module): the FFmpeg module card,
+            // the burger long press (focus=extensions) scrolls to it. Same search-filter
+            // + enter spec as the sibling cards.
+            val searchCtx_Extensions = search.inputValue.isBlank() || stringResource(R.string.modules_title).contains(search.inputValue, true) || stringResource(R.string.module_ffmpeg).contains(search.inputValue, true) || stringResource(R.string.module_ffmpeg_description).contains(search.inputValue, true)
+            AnimatedVisibility(
+                visible = searchCtx_Extensions,
+                enter = fadeIn(animationSpec = tween(1100)) + scaleIn(animationSpec = tween(1100), initialScale = 0.9f)
+            ) {
+                Box(modifier = Modifier.onGloballyPositioned { extensionsCardTopY = it.positionInRoot().y }) {
+                    ExtensionsSettingsCard()
+                }
+            }
+
+            // Rescue Center card (spec-customizable-burger-menu goal B): the self-contained
+            // card launching the Recovery Center; the burger long press (focus=rescue)
+            // scrolls to it. Same search-filter + enter spec as the sibling cards.
+            val searchCtx_Rescue = search.inputValue.isBlank() || stringResource(R.string.rescue_center).contains(search.inputValue, true) || stringResource(R.string.rescue_center_description).contains(search.inputValue, true)
+            AnimatedVisibility(
+                visible = searchCtx_Rescue,
+                enter = fadeIn(animationSpec = tween(1100)) + scaleIn(animationSpec = tween(1100), initialScale = 0.9f)
+            ) {
+                Box(modifier = Modifier.onGloballyPositioned { rescueCardTopY = it.positionInRoot().y }) {
+                    RescueCenterSettingsCard()
+                }
+            }
+
+
+            val searchCtx_Reset = search.inputValue.isBlank() || stringResource(R.string.settings_reset).contains(search.inputValue, true) || stringResource(R.string.settings_restore_default_settings).contains(search.inputValue, true)
+            AnimatedVisibility(
+                visible = searchCtx_Reset,
+                enter = fadeIn(animationSpec = tween(1100)) + scaleIn(animationSpec = tween(1100), initialScale = 0.9f)
+            ) {
+                SettingsSectionCard(
+                    title = stringResource(R.string.settings_reset),
+                    icon = R.drawable.refresh,
+                    content = {
+                        var resetToDefault by remember { mutableStateOf(false) }
+
+                        if (search.inputValue.isBlank() || stringResource(R.string.settings_restore_default_settings).contains(search.inputValue, true) || stringResource(R.string.settings_reset).contains(search.inputValue, true)) {
+                            OtherSettingsEntry(
+                                title = stringResource(R.string.settings_reset),
+                                text = stringResource(R.string.settings_restore_default_settings),
+                                icon = R.drawable.refresh,
+                                onClick = {
+                                    resetToDefault = true
+                                    Toaster.done()
+                                }
+                            )
+                        }
+
+                        if (resetToDefault) {
+                            DefaultOtherSettings()
+                            LaunchedEffect(Unit) {
+                                resetToDefault = false
+                            }
+                        }
+                    }
+                )
+            }
         }
-        
+
         SettingsGroupSpacer(
             modifier = Modifier.height(Dimensions.bottomSpacer)
         )
 
     }
 }
-
-
-
-
-

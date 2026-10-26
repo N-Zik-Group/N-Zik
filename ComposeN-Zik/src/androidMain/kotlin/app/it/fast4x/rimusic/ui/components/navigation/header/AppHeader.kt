@@ -1,5 +1,7 @@
 package app.it.fast4x.rimusic.ui.components.navigation.header
 
+import app.n_zik.android.core.navigation.LocalSettingsBackNavigation
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -74,6 +76,7 @@ class AppHeader(
 
     @Composable
     fun Draw() {
+        val settingsBackNavigation = LocalSettingsBackNavigation.current
         val context = LocalContext.current
         val currentEntry by navController.currentBackStackEntryAsState()
         val isHome = currentEntry?.destination?.route?.let { route ->
@@ -134,6 +137,7 @@ class AppHeader(
                             .size(48.dp)
                             .clip(uiRoundnessShape())
                             .clickable {
+                                if (settingsBackNavigation?.handleBack() == true) return@clickable
                                 // Structural check instead of a RESUMED lifecycle gate: the
                                 // entry can legitimately be non-RESUMED right after a transition,
 
