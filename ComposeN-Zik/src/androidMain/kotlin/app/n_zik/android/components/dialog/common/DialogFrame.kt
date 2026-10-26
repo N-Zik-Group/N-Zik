@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Card
@@ -17,23 +18,15 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import app.it.fast4x.rimusic.utils.isLandscape
+import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.isLandscape
-import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.uiRoundnessShape
 
-/**
- * Shared dialog window: the canonical n_zik frame — a card (max width 95% portrait / 60%
- * landscape, max height 80%), [uiRoundnessShape], [colorPalette().background1] and an
- * optional `l` semibold title. Every dialog — native or migrated from the legacy tree —
- * renders through this frame so button rows and content can never overflow (issue #896).
- *
- * The card is the window's root and its body column must NOT be scrollable: `Dialog.Render()`
- * lays out its body with `Modifier.weight(1f, fill = false)`, which collapses in a scrollable
- * column (the body renders 0×0).
- */
+/** Shared dialog surface with bounded width and height. */
 @Composable
 fun DialogFrame(
     onDismiss: () -> Unit,
@@ -49,7 +42,7 @@ fun DialogFrame(
     val maxHeight =
         if (isLandscape) Dialog.MAX_HEIGHT_LANDSCAPE else Dialog.MAX_HEIGHT_PORTRAIT
 
-    Dialog(onDismiss) {
+    Dialog(onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Card(
             modifier = modifier
                 .testTag("dialogFrameCard")
@@ -58,6 +51,8 @@ fun DialogFrame(
                     maxWidth = screenWidthDp * maxWidth,
                     maxHeight = screenHeightDp * maxHeight
                 )
+                // Tight width prevents marquee children from repeatedly changing the window size.
+                .width(screenWidthDp * maxWidth)
                 .padding(16.dp),
             shape = uiRoundnessShape(),
             colors = CardDefaults.cardColors(
@@ -66,6 +61,7 @@ fun DialogFrame(
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
+            // Keep this column unscrollable: dialog bodies use a weighted scroll container.
             Column(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = horizontalAlignment

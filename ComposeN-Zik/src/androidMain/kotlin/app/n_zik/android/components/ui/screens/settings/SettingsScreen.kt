@@ -29,7 +29,7 @@ import app.it.fast4x.rimusic.ui.screens.settings.AppearanceSettings
 import app.it.fast4x.rimusic.ui.screens.settings.DataSettings
 import app.it.fast4x.rimusic.ui.screens.settings.NetworkSettings
 import app.it.fast4x.rimusic.ui.screens.settings.OtherSettings
-import app.it.fast4x.rimusic.ui.screens.settings.UiSettings
+import app.n_zik.android.components.settings.ui.UiSettings
 import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoginEnabled
 import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
 import app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger

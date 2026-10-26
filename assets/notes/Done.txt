@@ -58,6 +58,9 @@ Improved:
   - `ListenTogetherMenu` create/join failures while offline now surface the dedicated "no connection" toast instead of a generic error (offline audit menu branch)
 
 Fixed:
+- fix(dialogs): stabilize shared dialog width during native measurement
+  - Use an explicit screen-bounded card width and disable platform default window width to avoid wrap-content feedback with marquee children, including landscape; short-content dialogs may expand within existing caps.
+  - Add four passing default-width selector regressions: initial and dynamic composition in portrait and landscape; preserve height caps and a single native dialog.
 - fix(download): re-validate completed downloads against disk + actionable re-download toast
   - New `DownloadValidator.hasValidDownload(cache, mediaId)` in `download/utils/DownloadValidator.kt`: a download only counts as valid when every span recorded in the cache index (`getCachedSpans`) still has its file on disk with the correct length
   - Root cause: OEM/OS storage management (documented on Samsung devices) can wipe the span files under `cache/exo_downloads/` while the `exoplayer_internal.db` DownloadIndex survives, leaving `STATE_COMPLETED` rows that keep lying forever (badge on, "Nothing to download", offline playback falls through to a network fetch that fails)
@@ -102,6 +105,12 @@ Fixed:
   - Failure messages: dedicated "download needed" wording on first use vs "download failed" on an update
 - fix(bridge): meta endpoint red on JVM tests (500 instead of 200)
   - The ABI probe is now injectable via a `featuresProvider` on `BridgeServerCore`; the meta test mounts a device that can run the module, and a new test pins the negative case (feature omitted)
+
+Refactor:
+- refactor(settings): extract Interface into autonomous cards
+  - Move UiSettings and eight owned cards to app.n_zik.android.components.settings.ui; reuse Burger as the ninth card without changing setting order, keys, stores or internal filters.
+  - Preserve 17 dialog hosts and 19 auxiliary resets; apply the original 105 reset values once per explicit action, retain asymmetric ViMusic/RiMusic changes and measured Burger focus.
+  - Add stable target metadata and 14 passing preference/Compose tests covering history, filtering, dialogs, resets, restart and focus; correct General search test to target the visible editable field (5 passing tests).
 
 Removed:
 - remove(player): drop dead `isNetworkRelatedError` helper + unused `ConnectException` import

@@ -7,8 +7,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.SemanticsActions
-import androidx.compose.ui.test.hasClickAction
-import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.isEditable
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -163,13 +161,6 @@ class GeneralSettingsWiringTest {
     @Test
     fun theTabSearchFiltersTheCardsToTheMatchingOne() {
         showGeneralTab()
-
-        // The search bar starts hidden; its toggle is the first enabled clickable
-        // on the screen (the header icon is disabled and the description is
-        // plain text).
-        composeRule.onAllNodes(hasClickAction() and isEnabled())[0]
-            .performSemanticsAction(SemanticsActions.OnClick)
-        composeRule.waitForIdle()
 
         composeRule
             .onNode(isEditable())
