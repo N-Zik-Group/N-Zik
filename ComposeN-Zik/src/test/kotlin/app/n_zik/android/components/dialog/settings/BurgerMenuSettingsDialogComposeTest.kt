@@ -10,7 +10,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.click
+import androidx.compose.ui.test.performTouchInput
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.FontType
 import app.it.fast4x.rimusic.ui.styling.Appearance
@@ -81,6 +85,7 @@ class BurgerMenuSettingsDialogComposeTest {
 
     @After
     fun tearDown() {
+        BurgerMenuSettingsDialog.hideDialog()
         unmockkAll()
         dataStore.edit()
             .remove(DataStoreUtils.KEY_BURGER_MENU_ORDER)
@@ -106,6 +111,44 @@ class BurgerMenuSettingsDialogComposeTest {
         assertTrue("the order should be persisted on confirm", raw != null)
         val array = JSONArray(raw)
         return (0 until array.length()).map { array.getString(it) }
+    }
+
+    @Test
+    fun resetAndConfirmReceivePhysicalTapsInsideTheCompleteDialog() {
+        dataStore.edit().putBoolean(DataStoreUtils.burgerMenuToggleKey("rewind"), false).commit()
+        BurgerMenuSettingsDialog.showDialog()
+        content { BurgerMenuSettingsDialog.Render() }
+        composeRule.onNodeWithText(app.getString(R.string.reset)).assertIsDisplayed().performTouchInput { click() }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText(app.getString(R.string.ok)).assertIsDisplayed().performTouchInput { click() }
+        composeRule.waitForIdle()
+        assertFalse(BurgerMenuSettingsDialog.isActive)
+        assertTrue(dataStore.getBoolean(DataStoreUtils.burgerMenuToggleKey("rewind"), false))
+        assertEquals(DataStoreUtils.DEFAULT_BURGER_MENU_ORDER, storedOrder())
+    }
+
+    @Test
+    fun onlySeparatorRowsExposeTheRemoveButton() {
+        dataStore.edit().putString(
+            DataStoreUtils.KEY_BURGER_MENU_ORDER,
+            BurgerMenuSettingsDialog.serializeOrder(
+                listOf("separator", "separator") +
+                    DataStoreUtils.DEFAULT_BURGER_MENU_ORDER.filter { it != "separator" }
+            ),
+        ).commit()
+        content { BurgerMenuSettingsDialog.DialogBody() }
+        val removeButtons = composeRule.onAllNodesWithContentDescription(app.getString(R.string.delete))
+        removeButtons.assertCountEquals(2)
+        removeButtons[0].performClick()
+        repeat(30) {
+            composeRule.mainClock.advanceTimeByFrame()
+            composeRule.waitForIdle()
+        }
+        removeButtons.assertCountEquals(1)
+        composeRule.onNodeWithText(app.getString(R.string.ok)).performClick()
+        composeRule.waitForIdle()
+        assertEquals(1, storedOrder().count { it == "separator" })
+        assertTrue(storedOrder().containsAll(DataStoreUtils.DEFAULT_BURGER_MENU_ORDER))
     }
 
     @Test

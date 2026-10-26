@@ -154,8 +154,9 @@ object BurgerMenuSettingsDialog : Dialog {
                 m[id] = newValue
                 workingToggles = m
             },
+            isRowActionEnabled = { index -> workingOrder.getOrNull(index) == "separator" },
             onRowAction = { index ->
-                // Locked rows render no remove button, so the index is always removable.
+                if (workingOrder.getOrNull(index) != "separator") return@ToggleListDialog
                 val o = workingOrder.toMutableList()
                 o.removeAt(index)
                 workingOrder = o

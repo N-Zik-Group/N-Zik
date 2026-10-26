@@ -1,6 +1,7 @@
 package app.n_zik.android.components.dialog.common
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -74,6 +75,7 @@ fun ToggleListDialog(
     checkedStatesOverride: List<Boolean>? = null,
     onCheckedChange: ((Int, Boolean) -> Unit)? = null,
     onRowAction: ((Int) -> Unit)? = null,
+    isRowActionEnabled: (Int) -> Boolean = { true },
     extraFooterButton: DialogButton? = null,
     onReset: (() -> Unit)? = null,
     onCancel: (() -> Unit)? = null,
@@ -131,7 +133,7 @@ fun ToggleListDialog(
                             enabled = enabled,
                             useLocalState = checkedStatesOverride != null,
                             onCheckedChange = if (onCheckedChange != null) { { onCheckedChange(index, it) } } else null,
-                            onRowAction = if (onRowAction != null && !isLocked) { { onRowAction(index) } } else null
+                            onRowAction = if (onRowAction != null && !isLocked && isRowActionEnabled(index)) { { onRowAction(index) } } else null
                         )
                     }
                 } else {
@@ -147,7 +149,7 @@ fun ToggleListDialog(
                         enabled = enabled,
                         useLocalState = checkedStatesOverride != null,
                         onCheckedChange = if (onCheckedChange != null) { { onCheckedChange(index, it) } } else null,
-                        onRowAction = if (onRowAction != null && !isLocked) { { onRowAction(index) } } else null
+                        onRowAction = if (onRowAction != null && !isLocked && isRowActionEnabled(index)) { { onRowAction(index) } } else null
                     )
                 }
             }
@@ -227,7 +229,8 @@ private fun ToggleRow(
                 .clip(uiRoundnessShape())
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
+                    indication = LocalIndication.current,
+                    enabled = enabled,
                     onClick = {
                         if (enabled) {
                             if (useLocalState) {
