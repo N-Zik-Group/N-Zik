@@ -26,6 +26,9 @@ object DataStoreUtils {
     /** Runtime permissions whose system dialog was already shown on the onboarding permissions screen (comma-joined permission names); lets the PERMANENTLY_DENIED mapping survive activity recreation. */
     const val KEY_ONBOARDING_PERMISSIONS_REQUESTED = "onboarding_permissions_requested"
 
+    /** One-shot marker: the Samsung storage advice dialog was shown (persisted when the dialog is shown, spec-samsung-storage-advice-dialog). */
+    const val KEY_SAMSUNG_STORAGE_ADVICE_SHOWN = "samsung_storage_advice_shown"
+
     // Rewind toggles (spec GH-275): all default to `true` on read, so an existing install
     // keeps the current behavior until the user flips something (zero regression)
 
