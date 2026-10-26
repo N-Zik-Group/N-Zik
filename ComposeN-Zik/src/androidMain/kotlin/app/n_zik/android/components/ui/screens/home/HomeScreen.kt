@@ -5,6 +5,8 @@ import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
@@ -19,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -307,6 +310,15 @@ fun HomeScreen(
 
     if (tabIndex >= activeTabs.size) tabIndex = 0
 
+    // The initial destination is composed without the NavHost enter
+    // transition, so fade the content in instead of letting it pop after
+    // the loader
+    val contentAlpha by animateFloatAsState(
+        targetValue = if (isReady) 1f else 0f,
+        animationSpec = tween(300),
+        label = "homeContentEntrance"
+    )
+
     // Show loader while services are not ready
     if (!isReady) {
         Box(
@@ -318,114 +330,120 @@ fun HomeScreen(
         return
     }
 
-    Skeleton(
-        navController,
-        tabIndex,
-        onTabChanged,
-        miniPlayer,
-        navBarContent = { Item ->
-            activeTabs.forEachIndexed { index, id ->
-                when (id) {
-                    "quickpicks" -> Item(index, stringResource(R.string.quick_picks), R.drawable.sparkles)
-                    "songs" -> Item(index, stringResource(R.string.songs), R.drawable.musical_notes)
-                    "artists" -> Item(index, stringResource(R.string.artists), R.drawable.people)
-                    "albums" -> Item(index, stringResource(R.string.albums), R.drawable.album)
-                    "playlists" -> Item(index, stringResource(R.string.playlists), R.drawable.library)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .graphicsLayer { alpha = contentAlpha }
+    ) {
+        Skeleton(
+            navController,
+            tabIndex,
+            onTabChanged,
+            miniPlayer,
+            navBarContent = { Item ->
+                activeTabs.forEachIndexed { index, id ->
+                    when (id) {
+                        "quickpicks" -> Item(index, stringResource(R.string.quick_picks), R.drawable.sparkles)
+                        "songs" -> Item(index, stringResource(R.string.songs), R.drawable.musical_notes)
+                        "artists" -> Item(index, stringResource(R.string.artists), R.drawable.people)
+                        "albums" -> Item(index, stringResource(R.string.albums), R.drawable.album)
+                        "playlists" -> Item(index, stringResource(R.string.playlists), R.drawable.library)
+                    }
                 }
             }
-        }
-    ) { currentTabIndex ->
-        saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
-            val currentTabId = activeTabs.getOrNull(currentTabIndex)
-            
-            LaunchedEffect(currentTabId) {
-                app.n_zik.android.extensions.discord.DiscordUiState.currentHomeTab.value = currentTabId
-            }
-            
-            when (currentTabId) {
-                "quickpicks" -> HomeQuickPicks(
-                    onAlbumClick = {
-                        navController.navigate(route = "${NavRoutes.album.name}/$it")
-                    },
-                    onArtistClick = {
-                        navController.navigate(route = "${NavRoutes.artist.name}/$it")
-                    },
-                    onPlaylistClick = {
-                        navController.navigate(route = "${NavRoutes.playlist.name}/$it")
-                    },
-                    onSearchClick = {
-                        navController.navigate(NavRoutes.search.name)
-                    },
-                    onMoodClick = { mood ->
-                        navController.currentBackStackEntry?.savedStateHandle?.set(
-                            "mood",
-                            mood.toUiMood()
-                        )
-                        navController.navigate(NavRoutes.mood.name)
-                    },
-                    onChipClick = { chip ->
-                        navController.currentBackStackEntry?.savedStateHandle?.set(
-                            "mood",
-                            chip.toUiMood()
-                        )
-                        navController.navigate(NavRoutes.mood.name)
-                    },
-                    onSettingsClick = {
-                        navController.navigate(NavRoutes.settings.name)
-                    },
-                    navController = navController
+        ) { currentTabIndex ->
+            saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
+                val currentTabId = activeTabs.getOrNull(currentTabIndex)
 
-                )
+                LaunchedEffect(currentTabId) {
+                    app.n_zik.android.extensions.discord.DiscordUiState.currentHomeTab.value = currentTabId
+                }
 
-                "songs" -> HomeSongsScreen( navController )
+                when (currentTabId) {
+                    "quickpicks" -> HomeQuickPicks(
+                        onAlbumClick = {
+                            navController.navigate(route = "${NavRoutes.album.name}/$it")
+                        },
+                        onArtistClick = {
+                            navController.navigate(route = "${NavRoutes.artist.name}/$it")
+                        },
+                        onPlaylistClick = {
+                            navController.navigate(route = "${NavRoutes.playlist.name}/$it")
+                        },
+                        onSearchClick = {
+                            navController.navigate(NavRoutes.search.name)
+                        },
+                        onMoodClick = { mood ->
+                            navController.currentBackStackEntry?.savedStateHandle?.set(
+                                "mood",
+                                mood.toUiMood()
+                            )
+                            navController.navigate(NavRoutes.mood.name)
+                        },
+                        onChipClick = { chip ->
+                            navController.currentBackStackEntry?.savedStateHandle?.set(
+                                "mood",
+                                chip.toUiMood()
+                            )
+                            navController.navigate(NavRoutes.mood.name)
+                        },
+                        onSettingsClick = {
+                            navController.navigate(NavRoutes.settings.name)
+                        },
+                        navController = navController
 
-                "artists" -> HomeArtists(
-                    navController = navController,
-                    onArtistClick = {
-                        navController.navigate(route = "${NavRoutes.artist.name}/${it.id}")
-                    },
-                    onSearchClick = {
-                        //searchRoute("")
-                        navController.navigate(NavRoutes.search.name)
-                    },
-                    onSettingsClick = {
-                        //settingsRoute()
-                        navController.navigate(NavRoutes.settings.name)
-                    }
-                )
+                    )
 
-                "albums" -> HomeAlbums(
-                    navController = navController,
-                    onAlbumClick = {
-                        //albumRoute(it.id)
-                        navController.navigate(route = "${NavRoutes.album.name}/${it.id}")
-                    },
-                    onSearchClick = {
-                        //searchRoute("")
-                        navController.navigate(NavRoutes.search.name)
-                    },
-                    onSettingsClick = {
-                        //settingsRoute()
-                        navController.navigate(NavRoutes.settings.name)
-                    }
-                )
+                    "songs" -> HomeSongsScreen( navController )
 
-                "playlists" -> HomeLibrary(
-                    navController = navController,
-                    onPlaylistClick = {
-                        //localPlaylistRoute(it.id)
-                        navController.navigate(route = "${NavRoutes.localPlaylist.name}/${it.id}")
-                    },
-                    onSearchClick = {
-                        //searchRoute("")
-                        navController.navigate(NavRoutes.search.name)
-                    },
-                    onSettingsClick = {
-                        //settingsRoute()
-                        navController.navigate(NavRoutes.settings.name)
-                    }
+                    "artists" -> HomeArtists(
+                        navController = navController,
+                        onArtistClick = {
+                            navController.navigate(route = "${NavRoutes.artist.name}/${it.id}")
+                        },
+                        onSearchClick = {
+                            //searchRoute("")
+                            navController.navigate(NavRoutes.search.name)
+                        },
+                        onSettingsClick = {
+                            //settingsRoute()
+                            navController.navigate(NavRoutes.settings.name)
+                        }
+                    )
 
-                )
+                    "albums" -> HomeAlbums(
+                        navController = navController,
+                        onAlbumClick = {
+                            //albumRoute(it.id)
+                            navController.navigate(route = "${NavRoutes.album.name}/${it.id}")
+                        },
+                        onSearchClick = {
+                            //searchRoute("")
+                            navController.navigate(NavRoutes.search.name)
+                        },
+                        onSettingsClick = {
+                            //settingsRoute()
+                            navController.navigate(NavRoutes.settings.name)
+                        }
+                    )
+
+                    "playlists" -> HomeLibrary(
+                        navController = navController,
+                        onPlaylistClick = {
+                            //localPlaylistRoute(it.id)
+                            navController.navigate(route = "${NavRoutes.localPlaylist.name}/${it.id}")
+                        },
+                        onSearchClick = {
+                            //searchRoute("")
+                            navController.navigate(NavRoutes.search.name)
+                        },
+                        onSettingsClick = {
+                            //settingsRoute()
+                            navController.navigate(NavRoutes.settings.name)
+                        }
+
+                    )
+                }
             }
         }
     }
