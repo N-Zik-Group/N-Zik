@@ -113,6 +113,9 @@ Fixed:
   - The ABI probe is now injectable via a `featuresProvider` on `BridgeServerCore`; the meta test mounts a device that can run the module, and a new test pins the negative case (feature omitted)
 
 Refactor:
+- refactor(settings): extract Network cards
+  - Extract seven Network cards with page-owned dialog hosts; preserve reset store boundaries, search and offline/server focus.
+  - Validation: Four Network tests pass; assembleDebug succeeds.
 - refactor(settings): extract About cards
   - Extract app, support and contributor cards; preserve support destinations and contributor expansion.
   - Validation: integrated assembleDebug passes; 1 focused tests pass with zero skips.

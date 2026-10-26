@@ -27,7 +27,7 @@ import app.n_zik.android.components.settings.ai.AIRecommendationSettings
 import app.n_zik.android.components.settings.about.About
 import app.n_zik.android.components.settings.appearance.AppearanceSettings
 import app.n_zik.android.components.settings.data.DataSettings
-import app.it.fast4x.rimusic.ui.screens.settings.NetworkSettings
+import app.n_zik.android.components.settings.network.NetworkSettings
 import app.n_zik.android.components.settings.other.OtherSettings
 import app.n_zik.android.components.settings.ui.UiSettings
 import app.n_zik.android.components.settings.accounts.isYouTubeLoginEnabled
