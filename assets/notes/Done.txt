@@ -107,6 +107,10 @@ Fixed:
   - The ABI probe is now injectable via a `featuresProvider` on `BridgeServerCore`; the meta test mounts a device that can run the module, and a new test pins the negative case (feature omitted)
 
 Refactor:
+- refactor(settings): extract AI settings cards and one-shot defaults
+  - Extract seven autonomous cards alongside the existing Rewind group, preserving order, filters, measured Rewind/Statistics focus, PAGE_SETTINGS_AI history and the singleton Quick Picks dialog host.
+  - Preserve the 19 profile reset values and Quick Picks reset without resetting Rewind; retain event-deletion confirmation and navigation callbacks, and add stable target metadata.
+  - Validation: integrated assembleDebug and two baseline/reset-isolation metadata tests pass; existing Rewind toggle test imports follow the new namespace.
 - refactor(settings): extract Appearance into ten autonomous cards
   - Move the complete page, ten cards, defaults and stable target inventory into components/settings/appearance; preserve initial thumbnail normalization, presets, restart state, conditional lyrics and both dialog hosts.
   - Preserve all 108 reset values and storage boundaries; add three passing reset, target/order and Compose tests and migrate existing crop/artist-roundness test imports.
