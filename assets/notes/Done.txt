@@ -137,3 +137,39 @@ Other:
 - test(settings): bmad-code-review on the customizable burger menu - 27 findings triaged, 11 patches applied
   - 4 layers (blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor, full mode against the spec); verdicts: 11 patch (all applied), 1 decision (separator UX, resolved by the user: one row per instance), 1 defer (global-reset hook - the pre-existing untested 19-call legacy reset block, tracked in deferred-work.md), 7 rejected (5 confirmed spec-consistent behavior, 2 low not worth adding guards)
   - The new tests pin what the review proved unverified: the menu assembly boundary (stored order x toggles x runtime conditions, all 14 branch ids), the deep-link mapping (tab/focus values vs the SettingsScreen tab mapping), the focus-scroll on a representative tab, the master-toggle store writes, the "Open" rows at their 4 sites, the per-profile `fullOfflineModeKey` contract of the Offline mode card, the label clamp/marquee of `BurgerMenuItem`
+
+- feat(settings): add the global settings hub and migrate General into reusable cards
+  - SettingsGlobalPage and SettingsRegistry provide grouped category navigation, searchable card results and the Update entry; General is split into ten app.n_zik cards with the legacy host replaced by SettingsScreen.
+  - SettingsBackNavigation routes every subpage back to Global regardless of Back-to-home; Global returns Home. ScreenTransitions is shared with AppNavigation so forward/back animations follow the user's selected effect without an extra settings fade.
+  - Global contains ten entries in two untitled groups, with About and Update first; the former tab bar and About update block are removed. Update shows date/status or a disabled explanation when unsupported. Deep-links tab/focus, saved subpage state, PiP targeting, reset and restart behavior remain available.
+  - The registry currently indexes 71 cards and their internal keywords. Categories and individual setting results are not yet fully indexed.
+  - SettingsSearchFocus keeps animation State objects and reads padding during measurement and alpha during drawing to avoid recomposing whole pages each frame.
+  - Detailed per-setting search labels, exact scroll targets and the final category reorganization remain planned for the subsequent per-tab migrations.
+- fix(search): centralize history, explicit submission and empty-result handling
+  - UnifiedSearchBar, SearchHistorySection and SearchHistoryStore share animated history filtering, deletion, per-profile/page storage and immediate preference observation across History, Local, Online and Settings.
+  - The common pill aligns placeholders and animates its width with rounded bubbles; Online keeps microphone/audio actions and offline behavior, while other hosts use the close bubble.
+  - Twelve per-profile histories retain up to twenty trimmed, deduplicated entries in recency order. Global pause overrides page enablement without erasing it; disabling keeps data, and global clear/count observe JSON storage and profile changes immediately.
+  - History entry uses descent from -height/4, expansion from Top and fade for 200ms, including lazy mounts; exit retains outgoing rows for the existing 150ms shrink/fade.
+  - History is recorded only on explicit IME/search/result selection; per-page switches live beside search display order in Interface, while global pause/clear remain in Data. Room migration 42 to 43 removes only the obsolete SearchQuery table.
+  - Search buttons request focus after their entry transition; initial unfocused callbacks cannot cancel opening. IME submission releases focus/keyboard, and bubble drawing/exit lifetime avoids sibling clipping.
+  - SearchNoResults reuses the translated message and centers it in the available results area; Home excludes its visible header and bottom inset. Empty history dates and empty Online suggestion headings are hidden.
+  - QueueToolBar animates mini-player displacement over 250ms. Queue search expands both queue hosts and overlays the list without an opaque footer; keyboard and toolbar spacing are handled separately.
+- fix(ui): align Pitch Black surfaces and theme application
+  - surfaceColor is applied across menus, dialogs, sheets, navigation, profile cards, lyrics controls and updater surfaces; the updater overflow menu matches the burger surface and its 90 percent opacity.
+  - MainActivity computes customized/current-mode appearance at startup, normalizes restored Pitch Black palettes before drawing, and no longer overwrites an extracted dynamic palette with the initial fallback. New palette requests cancel stale extraction jobs.
+  - List/grid menus and custom item-menu bodies now use the same surface as their header, keeping the whole menu gray instead of a black action list.
+  - AppearanceMode preserves dynamic accents while applying black backgrounds and matching text colors; non-Pitch-Black modes retain their own palettes.
+- fix(dialogs): keep footer buttons readable and restrict burger deletion to separators
+  - ButtonRow uses content-sized pills capped at 180dp, preserves marquee labels and action order, and wraps into additional rows with distributed placement instead of compressing every action onto one line.
+  - ToggleListDialog supports per-row action eligibility; BurgerMenuSettingsDialog exposes the X only for separator instances and guards deletion accordingly. History settings reuse the standard icon/toggle rows and title/footer spacing.
+  - Regression coverage includes physical taps on Reset and OK inside the complete burger dialog, separator-only removal, narrow footer layouts and larger font scaling.
+- fix(chips): let horizontal chips scroll to both edges while preserving their content gutters
+  - Home Songs, Album, Artist, Library, History and Statistics move horizontal padding inside the shared ButtonsRow scroll viewport. Rewind years and Rescue profiles expand only their chip viewport through the parent gutter.
+  - Other content keeps its alignment; existing chip spacing and order remain unchanged. A layout regression checks both viewport edges, initial inset and trailing inset after scrolling.
+- improve(home): fade in the initial Home content after the readiness loader
+  - HomeScreen applies a 300ms entrance fade; this is separate from the user-selected navigation transitions.
+- chore(checkpoint): document and split all current changes into local feature commits
+  - Includes concurrent/pre-existing changes at the user's request, without version bump, release changelog or push. Code review stays deferred until the end of the Settings work.
+  - Final automated validation: 41 dialog/theme/chip tests passed and assembleDebug succeeded. Earlier runs separately passed 42 search/navigation tests and 71 broader search/settings/database tests; these counts are not one combined suite.
+  - Human validation: the user confirmed all delivered fixes work on 2026-10-26.
+  - Next: convert the eight remaining Settings pages into cards one screen at a time, then apply the new categories, then complete detailed global search and exact-setting navigation.
