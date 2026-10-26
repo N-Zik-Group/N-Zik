@@ -77,6 +77,23 @@ fun gridMenuShape(): Shape {
 }
 
 @Composable
+fun searchBubbleShape(): Shape {
+    val appearance = LocalAppearance.current
+    val shape = appearance.uiRoundnessShape
+    return if (shape is RoundedCornerShape) {
+        val size = shape.topStart
+        // 0.5f caps corners at 50% of the smallest dimension, so large global radii render as full circles
+        if (size is BoundedCornerSize) {
+            RoundedCornerShape(BoundedCornerSize(size.dp, 0.5f))
+        } else {
+            shape
+        }
+    } else {
+        shape
+    }
+}
+
+@Composable
 fun topUiRoundnessShape(): Shape {
     val appearance = LocalAppearance.current
     val shape = appearance.uiRoundnessShape

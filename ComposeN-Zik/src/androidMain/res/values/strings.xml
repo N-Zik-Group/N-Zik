@@ -224,6 +224,8 @@
 <string name="search_queries">" search queries"</string>
 <string name="not_find_battery_optimization_settings">Couldn\'t find battery optimization settings, please whitelist manually</string>
 <string name="search">Search</string>
+<string name="voice_search">Voice search</string>
+<string name="music_search">Music search</string>
 <string name="voice_search_error_permissions">Microphone permission required</string>
 <string name="voice_search_listening">Listening...</string>
 <string name="voice_search_speak_now">Speak now</string>
@@ -875,6 +877,9 @@
 <string name="discord_presence_pause_default">⏸︎ Paused: {song.name}</string>
 <string name="discord_template_unknown_album">Unknown Album</string>
 <string name="settings_reset">Reset</string>
+<string name="settings_global_title">Settings</string>
+<string name="settings_global_search_hint">Search settings</string>
+<string name="settings_global_update_description">Check for a new version of the app</string>
 <string name="settings_restore_default_settings">Restore default settings</string>
 <string name="create_new_playlist">Create new playlist</string>
 <string name="settings_loudness_base_gain">Loudness base gain</string>
@@ -2323,4 +2328,10 @@
 <string name="bridge_audio_output_pc_unavailable">This PC is not available</string>
 <string name="onboard_perm_camera">Camera</string>
 <string name="onboard_perm_camera_desc">Scan the QR code of N-Zik Desktop Compagnon to pair a PC</string>
+    <string name="search_history_pages">Search history by page</string>
+    <string name="search_history_pages_description">Choose which pages can display and save searches you submit</string>
+    <string name="search_history_local">Local search</string>
+    <string name="search_history_online">Online search</string>
+    <string name="search_history_settings_page">Settings › %1$s</string>
+    <string name="search_history_close">Close</string>
 </resources>

@@ -1,35 +1,20 @@
 package app.n_zik.android.components.tab
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.ui.draw.shadow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -37,32 +22,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.R
-import app.n_zik.android.colorPalette
-import app.n_zik.android.thumbnailShape
-import app.n_zik.android.typography
+import androidx.compose.ui.zIndex
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.it.fast4x.rimusic.ui.components.themed.IconButton
-import app.it.fast4x.rimusic.ui.styling.favoritesIcon
-import app.it.fast4x.rimusic.utils.conditional
-import app.it.fast4x.rimusic.utils.secondary
-import app.it.fast4x.rimusic.utils.semiBold
-import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.R
+import app.n_zik.android.colorPalette
+import app.n_zik.android.components.search.UnifiedSearchBar
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.first
 
 class Search private constructor(
     inputState: MutableState<TextFieldValue>,
@@ -99,6 +76,26 @@ class Search private constructor(
             null,
             null
         )
+
+        /** Variant for hosts that keep the bar visible from the first frame (no appearance animation). */
+        @Composable
+        operator fun invoke( initialVisible: Boolean ) = Search(
+            remember { mutableStateOf( TextFieldValue("") ) },
+            remember { mutableStateOf( initialVisible ) },
+            remember { mutableStateOf( false ) },
+            null,
+            null
+        )
+
+        /** Variant for hosts that keep the bar visible from the first frame and still scroll the list to the top on input. */
+        @Composable
+        operator fun invoke( lazyListState: LazyListState, initialVisible: Boolean ) = Search(
+            remember { mutableStateOf( TextFieldValue("") ) },
+            remember { mutableStateOf( initialVisible ) },
+            remember { mutableStateOf( false ) },
+            lazyListState,
+            null
+        )
     }
 
     val inputValue: String
@@ -124,59 +121,6 @@ class Search private constructor(
         isFocused = isVisible
     }
 
-    @Composable
-    private fun ColumnScope.DecorationBox(
-        innerTextField: @Composable () -> Unit,
-        onBackClick: () -> Unit
-    ) {
-        Box(
-            contentAlignment = Alignment.CenterStart,
-            modifier = Modifier.padding( horizontal = 10.dp )
-        ) {
-            IconButton(
-                onClick = {},
-                icon = R.drawable.search,
-                color = colorPalette().favoritesIcon,
-                modifier = Modifier.align( Alignment.CenterStart )
-                                   .size( 16.dp )
-            )
-        }
-        Box(
-            contentAlignment = Alignment.CenterStart,
-            modifier = Modifier.weight(1f)
-                               .padding( horizontal = 30.dp )
-        ) {
-            // Placeholder
-            BasicText(
-                text = stringResource(R.string.search),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = typography().xs
-                                    .semiBold
-                                    .secondary
-                                    .copy(
-                                        color = colorPalette().textDisabled
-                                    ),
-                modifier = Modifier.conditional( inputValue.isNotBlank() ) { alpha( 0f ) }
-            )
-
-            // Actual text from user
-            innerTextField()
-        }
-        Box(
-            contentAlignment = Alignment.CenterEnd,
-            modifier = Modifier.padding( start = 30.dp, end = 15.dp )
-        ) {
-            IconButton(
-                onClick = onBackClick,
-                icon = R.drawable.backspace_outline,
-                color = colorPalette().text.copy( alpha = .8f ), // A little dimmer to prevent eye-candy
-                modifier = Modifier.align( Alignment.CenterEnd )
-                                   .size( 16.dp )
-            )
-        }
-    }
-
     /**
      * Attempt to hide search bar if it's empty
      */
@@ -189,21 +133,17 @@ class Search private constructor(
     }
 
     @Composable
-    fun SearchBar( columnScope: ColumnScope ) {
+    fun SearchBar(
+        columnScope: ColumnScope,
+        barPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+        onSearch: () -> Unit = {},
+    ) {
         // Auto focus on search bar when it's visible
         val focusRequester = remember { FocusRequester() }
         val focusManager = LocalFocusManager.current
         val keyboardController = LocalSoftwareKeyboardController.current
-        LaunchedEffect( isVisible, isFocused ) {
-            if( !isVisible ) return@LaunchedEffect
-
-            if( isFocused )
-                focusRequester.requestFocus()
-            else {
-                keyboardController?.hide()
-                focusManager.clearFocus()
-            }
-        }
+        val visibility = remember { MutableTransitionState(isVisible) }
+        visibility.targetState = isVisible
         val isFirstRun = remember { mutableStateOf(true) }
         LaunchedEffect( input ) {
             if (isFirstRun.value) {
@@ -214,139 +154,64 @@ class Search private constructor(
             lazyGridState?.scrollToItem( 0, 0 )
         }
 
-                 AnimatedVisibility(
-             visible = isVisible,
-             modifier = Modifier.padding( horizontal = 16.dp, vertical = 16.dp )
-                                .fillMaxWidth()
-         ) {
-            Card(
+        // Reserve animated height without clipping the bubbles' downward travel.
+        with(columnScope) {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .shadow(
-                        elevation = 8.dp,
-                        shape = uiRoundnessShape(),
-                        spotColor = colorPalette().accent.copy(alpha = 0.3f)
-                    ),
-                shape = uiRoundnessShape(),
-                colors = CardDefaults.cardColors(
-                    containerColor = colorPalette().background1
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    .zIndex(1f)
             ) {
-                                 BasicTextField(
-                     value = input,
-                     onValueChange = {
-                         input = it.copy(
-                             text = it.text,
-                             selection = it.selection
-                         )
-                     },
-                     textStyle = typography().xs.semiBold,
-                     singleLine = true,
-                     maxLines = 1,
-                     keyboardOptions = KeyboardOptions( imeAction = ImeAction.Search ),
-                     keyboardActions = KeyboardActions(onSearch = {
-                         isVisible = inputValue.isNotBlank()
-                         isFocused = false
-                         keyboardController?.hide()
-                     }),
-                     cursorBrush = SolidColor(colorPalette().text),
-                                           decorationBox = { innerTextField ->
-                          Row(
-                              modifier = Modifier
-                                  .fillMaxWidth()
-                                  .background(
-                                      color = colorPalette().background1,
-                                      shape = uiRoundnessShape()
-                                  )
-                                  .padding(horizontal = 20.dp, vertical = 16.dp),
-                              verticalAlignment = Alignment.CenterVertically
-                          ) {
-                             // Leading Icon
-                             Box(
-                                 modifier = Modifier
-                                     .size(32.dp)
-                                     .background(
-                                         color = colorPalette().accent.copy(alpha = 0.1f),
-                                         shape = uiRoundnessShape()
-                                     ),
-                                 contentAlignment = Alignment.Center
-                             ) {
-                                 Icon(
-                                     painter = painterResource(R.drawable.search),
-                                     contentDescription = stringResource(R.string.search),
-                                     tint = colorPalette().accent,
-                                     modifier = Modifier.size(18.dp)
-                                 )
-                             }
-                             
-                             Spacer(modifier = Modifier.width(12.dp))
-                             
-                                                                                         // Text Field
-                               Box(
-                                   modifier = Modifier
-                                       .weight(1f)
-                                       .background(
-                                           color = colorPalette().background2,
-                                           shape = uiRoundnessShape()
-                                       )
-                                       .padding(horizontal = 12.dp, vertical = 8.dp),
-                                   contentAlignment = Alignment.CenterStart
-                               ) {
-                                   if (inputValue.isEmpty()) {
-                                       BasicText(
-                                           text = stringResource(R.string.search),
-                                           maxLines = 1,
-                                           overflow = TextOverflow.Ellipsis,
-                                           style = typography().xs.semiBold.secondary
-                                       )
-                                   }
-                                   
-                                   innerTextField()
-                               }
-                               
-                               Spacer(modifier = Modifier.width(8.dp))
-                               
-                                                               // Trailing Icon (always present to maintain size)
-                                Box(
-                                    modifier = Modifier.width(40.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    if (inputValue.isNotBlank()) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(32.dp)
-                                                .background(
-                                                    color = colorPalette().accent.copy(alpha = 0.1f),
-                                                    shape = uiRoundnessShape()
-                                                ),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            IconButton(
-                                                onClick = {
-                                                    input = TextFieldValue("")
-                                                    isFocused = true
-                                                }
-                                            ) {
-                                                Icon(
-                                                    painter = painterResource(R.drawable.backspace_outline),
-                                                    contentDescription = stringResource(R.string.clear),
-                                                    tint = colorPalette().accent,
-                                                    modifier = Modifier.size(18.dp)
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                         }
-                     },
-                     modifier = Modifier
-                         .fillMaxWidth()
-                         .focusRequester(focusRequester)
-                 )
+                AnimatedVisibility(
+                    visibleState = visibility,
+                    enter = expandVertically(
+                        tween(200, easing = FastOutSlowInEasing),
+                        expandFrom = Alignment.Top,
+                        clip = false
+                    ) + fadeIn(tween(200)),
+                    exit = shrinkVertically(
+                        tween(200, delayMillis = 250, easing = FastOutSlowInEasing),
+                        shrinkTowards = Alignment.Top,
+                        clip = false
+                    ) + fadeOut(tween(200, delayMillis = 250)),
+                ) {
+                    var fieldFocused by remember { mutableStateOf(false) }
+                    // Request only after AnimatedVisibility has attached the field. Its initial
+                    // unfocused notification must not cancel a toolbar's pending focus request.
+                    LaunchedEffect(isVisible, isFocused) {
+                        if (isVisible && isFocused) {
+                            snapshotFlow { visibility.isIdle && visibility.currentState }.first { it }
+                            focusRequester.requestFocus()
+                            keyboardController?.show()
+                        } else if (fieldFocused) {
+                            keyboardController?.hide()
+                            focusManager.clearFocus(force = true)
+                        }
+                    }
+                    Box(modifier = Modifier.padding(barPadding)) {
+                        UnifiedSearchBar(
+                            input = input,
+                            onInputChanged = { input = it },
+                            placeholderRes = R.string.search,
+                            baseSurface = colorPalette().background1,
+                            onClear = {
+                                input = TextFieldValue("")
+                                isFocused = true
+                            },
+                            onSearch = {
+                                onSearch()
+                                isVisible = inputValue.isNotBlank()
+                                isFocused = false
+                                keyboardController?.hide()
+                            },
+                            onFocused = { focused ->
+                                if (focused || fieldFocused) isFocused = focused
+                                fieldFocused = focused
+                            },
+                            focusRequester = focusRequester,
+                        )
+                    }
+                }
             }
         }
     }
 }
-
-
