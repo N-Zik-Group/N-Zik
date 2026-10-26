@@ -1,6 +1,6 @@
 # Build & Test Rules
 
-**Version:** 1.10.0 | **Last updated:** 2026-10-26
+**Version:** 1.11.0 | **Last updated:** 2026-10-26
 
 ## Gradle Version Catalog
 
@@ -71,15 +71,17 @@ The entry keyword for Done.txt follows the template's sections — it is not aut
 
 When a new task starts while the main checkout holds in-progress work (uncommitted changes), do NOT work in the dirty tree: propose a git worktree via the question tool; on approval, create it and run the whole task there, so the user keeps working in `N-Zik/` in parallel.
 
-- **Base on remote code, never on the local dirty state** (from `N-Zik/`):
+- **Work on `main` directly — no feature branch** (user preference 2026-10-26: avoids useless branches + merges): the worktree is DETACHED on `origin/main`, commits land on the detached HEAD, and after approval they are pushed straight to `origin/main` — the user's local `main` checkout (unpushed commits, uncommitted work) is never touched; the user syncs it at their own pace (from `N-Zik/`):
 
   ```bash
   git fetch origin
-  git worktree add ../worktrees/n-zik/<branch> -b <branch> origin/main
+  git worktree add --detach ../worktrees/n-zik/main origin/main
+  # ... work, commit on the detached HEAD ...
+  git push origin HEAD:main        # fast-forward: the base is origin/main
   ```
 
-  `<branch>` follows "Branching" (`feat/<name>`, `fix/<name>`, `chore/<name>`); `../worktrees/n-zik/` = the `worktrees/` folder at the workspace root (one level above `N-Zik/`, outside the repo — the Desktop Compagnon uses `worktrees/compagnon/`, so the two repos never collide).
-- **Set it up exactly like the README's fresh clone** (README "Clone the repo"):
+  `../worktrees/n-zik/` = the `worktrees/` folder at the workspace root (one level above `N-Zik/`, outside the repo — the Desktop Compagnon uses `worktrees/compagnon/`, so the two repos never collide). If `origin/main` moved between the fetch and the push, redo on top of the new `origin/main`.
+- **Set a code task up exactly like the README's fresh clone** (a doc-only task needs nothing beyond the checkout; README "Clone the repo"):
   1. `git submodule update --init --recursive` — a worktree does not auto-init submodules; Gradle sync fails without them
   2. Create `ComposeN-Zik/src/androidMain/res/raw/release_notes.txt` (gitignored — it does not exist in a fresh checkout) with the README's initial content:
      ```
@@ -87,9 +89,14 @@ When a new task starts while the main checkout holds in-progress work (uncommitt
      - Initial release
      ```
 - Run all `gradlew`/`git` commands from the worktree root, exactly as from `N-Zik/`
-- Git refuses a branch already checked out elsewhere — worktree branches are always fresh
-- Cleanup after the branch is merged/pushed: `git worktree remove ../worktrees/n-zik/<branch>` — ask the user before removing; never `--force` on a worktree with uncommitted work
-- **End of task (merge + cleanup):** when the worktree task is complete and verified, propose merging the branch into `main`; after the user's approval execute the merge remotely when possible, without touching the user's local checkout (fast-forward: `git push origin <branch>:main`; otherwise open a PR), then remove the worktree and delete the branch (local `git branch -d <branch>` + remote `git push origin --delete <branch>`) — every step only after the user's approval
+- **Removal (Windows, validated 2026-10-26):** plain `git worktree remove` fails on this machine — do it in order:
+  1. Verify clean first: `git -C <wt> status --porcelain` empty (the "never `--force` on a worktree with uncommitted work" rule still applies)
+  2. `git -C <wt> submodule deinit -f --all` (only when submodules were initialized) — unregisters them; leftover checkout dirs are removed manually; the main checkout's submodules are unaffected (their data lives in `N-Zik/.git/modules/`)
+  3. `git worktree remove <wt>` errors "working trees containing submodules cannot be moved or removed": the worktree gitdir (path in the `gitdir:` line of `<wt>/.git`, e.g. `N-Zik/.git/worktrees/main`) keeps leftover `modules/` dirs — `cmd /c rmdir /s /q "<gitdir>\modules"`
+  4. after the deinit the status shows ` D modules/<name>` gitlink artifacts, so `git worktree remove --force <wt>`
+  5. `--force` removes the git metadata but can fail on the physical dir: "Filename too long" (Windows MAX_PATH, deep `ComposeN-Zik/build/` paths); the worktree no longer appears in `git worktree list`
+  6. delete the physical tree with robocopy: mirror an empty temp dir onto it (`robocopy <empty> <wt> /MIR /R:1 /W:1 /NFL /NDL /NJH /NJS`, exit 1-3 = success), then `cmd /c rmdir <wt>` + remove the empty parent dirs
+- **End of task (push + cleanup):** when the worktree task is complete and verified, propose the push to `origin/main`; after the user's approval: `git push origin HEAD:main`, then remove the worktree per the procedure above (ask the user before removing)
 
 ## Build Types
 
