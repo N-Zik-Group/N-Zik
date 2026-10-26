@@ -22,7 +22,7 @@ import java.nio.file.NoSuchFileException
  * Release tags are shared per channel and keep the pre-rename form
  * ("v8.4.0", "v8.4.0-beta", "v8.4.0-dev-20261013") — both the 64-bit and
  * the 32-bit APKs ride on the same release. During the migration window CI
- * also ships the pre-rename assets (full/full32/minified/beta/dev), so the
+ * also ships the pre-rename assets (full/full32/minified), so the
  * migration-window tests pin both naming schemes.
  */
 class UpdaterReleaseTagTest {
@@ -295,12 +295,6 @@ class UpdaterReleaseTagTest {
 
         Updater.build = build("N-Zik-minified.apk")
         assertEquals("-m64", Updater.getBuildSuffix())
-
-        Updater.build = build("N-Zik-beta.apk")
-        assertEquals("-beta64", Updater.getBuildSuffix())
-
-        Updater.build = build("N-Zik-dev.apk")
-        assertEquals("-dev64", Updater.getBuildSuffix())
     }
 
     // endregion
@@ -353,16 +347,6 @@ class UpdaterReleaseTagTest {
         val minified32 = build("N-Zik-minified32.apk")
         Updater.build = minified32
         assertEquals("v8.4.0-m32", Updater.getDisplayVersion())
-    }
-
-    @Test
-    fun `getDisplayVersion composes the suffix onto the shared tag for pre-rename assets`() {
-        // Migration window: the legacy asset name still resolves to a suffix
-        val build = build("N-Zik-beta.apk")
-        Updater.build = build
-        Updater.githubRelease = release("v8.4.0-beta", build)
-
-        assertEquals("v8.4.0-beta64", Updater.getDisplayVersion())
     }
 
     @Test
@@ -586,19 +570,6 @@ class UpdaterReleaseTagTest {
         assertEquals("v8.4.0", best?.tagName)
     }
 
-    @Test
-    fun `findBestRelease accepts a dev release shipping only the pre-rename asset for a dev64 user`() {
-        val legacyDev = release("v8.4.0-dev-20261013", build("N-Zik-dev.apk"))
-
-        val best = Updater.findBestRelease(
-            listOf(legacyDev),
-            checkBetaUpdates = false,
-            currentVersion = "8.4.0-dev64-20261012"
-        )
-
-        assertEquals("v8.4.0-dev-20261013", best?.tagName)
-    }
-
     // endregion
 
     // region targetBuildTypes
@@ -752,13 +723,6 @@ class UpdaterReleaseTagTest {
 
         assertEquals("N-Zik-full.apk", Updater.extractBuild(assets, currentVersion = "8.4.0-r64").name)
         assertEquals("N-Zik-full32.apk", Updater.extractBuild(assets, currentVersion = "8.4.0-r32").name)
-    }
-
-    @Test
-    fun `extractBuild gives the dev64 user the pre-rename dev asset when only it ships`() {
-        val assets = listOf(build("N-Zik-dev.apk"))
-
-        assertEquals("N-Zik-dev.apk", Updater.extractBuild(assets, currentVersion = "8.4.0-dev64-20261012").name)
     }
 
     // endregion

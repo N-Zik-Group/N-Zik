@@ -110,6 +110,13 @@ Removed:
   - The top-level `prewarmPoToken()` in `StreamResolver.kt` has no call site anywhere in the repo; the import was the only reference in `MainApplication.kt`
 - remove(settings): dead string `maintenance_card_desc` from source + every locale
   - The Maintenance card no longer renders the duplicated description parameter (manual test fix 2026-10-25), which left the key dead; removed from `values/strings.xml` and all 45 `values-*/strings.xml` per the new "remove a string key everywhere" rule (removal-only, no translation-value edits - Crowdin drops it from its side on the next sync)
+- remove(updater): drop the dev + beta build-rename migration window
+  - CI no longer ships the pre-rename `dev`/`beta` assets (a new dev + beta were published under the post-rename `dev64`/`dev32` + `beta64`/`beta32` names), so the migration fallback for them is dead
+  - `UpdaterConstants`: deleted `LEGACY_TYPE_BETA64` ("beta") + `LEGACY_TYPE_DEV64` ("dev"); the release (`full`/`full32`) + minified (`minified`) legacy bases are kept
+  - `Updater.getBuildSuffix()`: dropped the 2 legacy branches (`beta` to `-beta64`, `dev` to `-dev64`); `legacyBuildType()`: dropped the `beta64` to `beta` + `dev64` to `dev` mappings (they now map to themselves), KDoc updated
+  - `UpdaterReleaseTagTest`: removed the 4 dev/beta migration-window test blocks (getBuildSuffix beta/dev asserts, getDisplayVersion pre-rename-beta, findBestRelease dev pre-rename, extractBuild dev pre-rename) + header KDoc; the release/minified migration tests stay
+  - Behavior: a dev64/dev32 or beta64/beta32 user is no longer pointed at a legacy `N-Zik-dev.apk`/`N-Zik-beta.apk`; such stale assets now resolve to "no update" instead of an undeliverable APK
+  - Tests: 75 updater tests green (UpdaterReleaseTagTest 64, UpdaterFetchStateTest 3, UpdateScreenChangelogOffMainTest 3, UpdateDownloadManagerClearCacheTest 1, UpdateDownloadManagerCleanupTest 4)
 
 Other:
 - test(ui): offline + card unification — 3 BMAD review rounds (9 + 6 + 8 fixes applied), targeted suites green: 10/10 across the 5 touched classes + an isolated run of `PlaylistItemRemoteCardContractTest` (which caught a missing `Dependencies.init` — the class only passed in batch runs via sandbox leakage)

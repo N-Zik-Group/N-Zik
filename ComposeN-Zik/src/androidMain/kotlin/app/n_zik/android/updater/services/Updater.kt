@@ -268,9 +268,7 @@ object Updater {
             name.contains(UpdaterConstants.TYPE_RELEASE64, ignoreCase = true) -> UpdaterConstants.SUFFIX_RELEASE64
             name.contains(UpdaterConstants.TYPE_RELEASE32, ignoreCase = true) -> UpdaterConstants.SUFFIX_RELEASE32
             // Migration window: pre-rename asset names (full→r64, full32→r32,
-            // minified→m64, beta→beta64, dev→dev64)
-            name.contains(UpdaterConstants.LEGACY_TYPE_BETA64, ignoreCase = true) -> UpdaterConstants.SUFFIX_BETA64
-            name.contains(UpdaterConstants.LEGACY_TYPE_DEV64, ignoreCase = true) -> UpdaterConstants.SUFFIX_DEV64
+            // minified→m64)
             name.contains(UpdaterConstants.LEGACY_TYPE_MINIFIED64, ignoreCase = true) -> UpdaterConstants.SUFFIX_MINIFIED64
             name.contains(UpdaterConstants.LEGACY_TYPE_RELEASE32, ignoreCase = true) -> UpdaterConstants.SUFFIX_RELEASE32
             name.contains(UpdaterConstants.LEGACY_TYPE_RELEASE64, ignoreCase = true) -> UpdaterConstants.SUFFIX_RELEASE64
@@ -349,16 +347,14 @@ object Updater {
     /**
      * The pre-rename asset-name base for a post-rename build type
      * (spec-ffmpeg-extension-module): release64→full, release32→full32,
-     * minified64→minified, beta64→beta, dev64→dev. Unrenamed bases
-     * (minified32/beta32/dev32) map to themselves. Used to accept both
-     * naming schemes while CI ships the dual assets.
+     * minified64→minified. All other bases (minified32/beta64/beta32/dev64/
+     * dev32) map to themselves. Used to accept both naming schemes while CI
+     * ships the dual assets.
      */
     private fun legacyBuildType(buildType: String): String = when (buildType) {
         UpdaterConstants.TYPE_RELEASE64 -> UpdaterConstants.LEGACY_TYPE_RELEASE64
         UpdaterConstants.TYPE_RELEASE32 -> UpdaterConstants.LEGACY_TYPE_RELEASE32
         UpdaterConstants.TYPE_MINIFIED64 -> UpdaterConstants.LEGACY_TYPE_MINIFIED64
-        UpdaterConstants.TYPE_BETA64 -> UpdaterConstants.LEGACY_TYPE_BETA64
-        UpdaterConstants.TYPE_DEV64 -> UpdaterConstants.LEGACY_TYPE_DEV64
         else -> buildType
     }
 

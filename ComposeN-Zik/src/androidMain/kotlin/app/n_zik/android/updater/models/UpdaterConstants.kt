@@ -52,8 +52,6 @@ object UpdaterConstants {
     const val LEGACY_TYPE_RELEASE64 = "full"
     const val LEGACY_TYPE_RELEASE32 = "full32"
     const val LEGACY_TYPE_MINIFIED64 = "minified"
-    const val LEGACY_TYPE_BETA64 = "beta"
-    const val LEGACY_TYPE_DEV64 = "dev"
 
     // Channel names (MajorUpdateConfig, stable↔beta transition warnings)
     const val TYPE_BETA = "beta"
