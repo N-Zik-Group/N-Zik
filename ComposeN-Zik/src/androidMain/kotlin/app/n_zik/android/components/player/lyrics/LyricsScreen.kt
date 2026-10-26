@@ -162,7 +162,7 @@ fun LyricsScreen(
         }
 
         var copyToClipboard by remember { mutableStateOf(false) }
-        if (copyToClipboard) text?.let { textCopyToClipboard(it, context) }
+        LyricsCopyEffect(copyToClipboard, text) { copyToClipboard = false }
 
         var fontSize by rememberPreference(lyricsFontSizeKey, LyricsFontSize.DEFAULT)
         val showBackgroundLyrics by rememberPreference(showBackgroundLyricsKey, false)

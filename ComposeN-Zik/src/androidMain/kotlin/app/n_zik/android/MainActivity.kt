@@ -516,14 +516,17 @@ internal fun profileSwitchTarget(tapId: String?, activeId: String, validIds: Col
     tapId?.takeIf { it != activeId && it in validIds }
 
 /**
- * True when [action] is one of the two profile-shortcut actions (generic « Profiles » or a
- * direct per-profile one). Those are consumed by their own paths (spec-profile-shortcuts) and
- * must NOT feed [shortcutIntentAction] — doing so would make the home-tab effect pop the back
- * stack to home, which is not the profile shortcuts' job. Top-level so the exclusion is
+ * True when [action] is consumed by its own dedicated path: the profile-shortcut actions
+ * (generic « Profiles » or a direct per-profile one, spec-profile-shortcuts) and the
+ * debug-only updater backdoor ([MainActivity.action_debug_open_updater]). Those must NOT
+ * feed [shortcutIntentAction]: doing so would make the home-tab effect pop the back
+ * stack to home, undoing their own navigation. Top-level so the exclusion is
  * unit-testable without launching the activity.
  */
-internal fun isProfileShortcutAction(action: String?): Boolean =
-    action == MainActivity.action_profiles || action == MainActivity.action_profile
+internal fun isSelfConsumedShortcutAction(action: String?): Boolean =
+    action == MainActivity.action_profiles ||
+        action == MainActivity.action_profile ||
+        action == MainActivity.action_debug_open_updater
 
 @UnstableApi
 class MainActivity :
@@ -558,8 +561,9 @@ class MainActivity :
 //
     // import): the shortcut was already consumed and would otherwise pop the back stack to home.
 //
-    // Internal (not private) so the Robolectric lifecycle tests can assert the profile-shortcut
-    // exclusion — a profile tap must never feed this state (it would pop the back stack to home).
+    // Internal (not private) so the Robolectric lifecycle tests can assert the self-consumed
+    // exclusion: a profile tap (or the debug updater backdoor) must never feed this state
+    // (it would pop the back stack to home).
 //
     internal var shortcutIntentAction by mutableStateOf<String?>(null)
 
@@ -585,6 +589,12 @@ class MainActivity :
     // consumed once by the navigation effect that opens the profiles page. Internal for the
     // same reason as [rewindDeckTarget].
     internal var openProfilesShortcut by mutableStateOf(false)
+
+    // Debug-only backdoor (see [action_debug_open_updater]): the OTA updater screen has no
+    // entry point in debug builds, so a debug build accepts the intent action and opens the
+    // route directly. Set on cold start (onCreate) and warm start (onNewIntent), consumed
+    // once by the navigation effect that opens the updater route.
+    internal var openUpdaterDebugShortcut by mutableStateOf(false)
 
     // "Now playing" notification tap — COLD start (spec-notification-click-opens-player):
     // the tap token HELD in memory (Long?) when the launch intent carries one — no persistent
@@ -868,6 +878,10 @@ class MainActivity :
         // stripped (it is the action, not an extra) — re-deriving the flag would re-open the
         // profiles page on every rotation / theme change / process-death restore.
         openProfilesShortcut = !isRestoredInstance && intent?.action == action_profiles
+        // Debug-only updater backdoor: same restored-instance gating as [openProfilesShortcut]
+        // (a re-created activity re-receives the kept launch intent).
+        openUpdaterDebugShortcut =
+            BuildConfig.DEBUG && !isRestoredInstance && intent?.action == action_debug_open_updater
 
         monet.invokeOnReady {
             startApp(isRestoredInstance)
@@ -1033,12 +1047,13 @@ class MainActivity :
         Timber.tag("MainActivity").d("onCreate launchedFromNotification: $launchedFromNotification intent ${intent.action}")
 
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
-        // The profile-shortcut actions have their own consumption (spec-profile-shortcuts,
-        // done in onCreate / onNewIntent) and must not ride the home-tab shortcut state,
+        // The self-consumed shortcut actions (profile shortcuts, spec-profile-shortcuts,
+        // and the debug updater backdoor) have their own consumption (done in
+        // onCreate / onNewIntent) and must not ride the home-tab shortcut state,
 //
         // which would pop the back stack to home.
         shortcutIntentAction =
-            initialShortcutAction(intent.action, isRestoredInstance)?.takeUnless { isProfileShortcutAction(it) }
+            initialShortcutAction(intent.action, isRestoredInstance)?.takeUnless { isSelfConsumedShortcutAction(it) }
         // Rewind deep links are consumed synchronously in onCreate / onNewIntent
         // (consumeRewindDeepLinks), before startApp runs — see those call sites.
         onboardingStep = OnboardingStep.resolveStartupStep(
@@ -2131,6 +2146,17 @@ class MainActivity :
                     }
                 }
 
+                // Debug-only backdoor: open the OTA updater screen (unreachable in debug
+                // builds, where IS_AUTOUPDATE is false). Gated on onboarding like the
+                // profiles effect above: the NavHost is not composed while onboarding is up.
+                LaunchedEffect(openUpdaterDebugShortcut, onboardingStep == null) {
+                    if (onboardingStep != null) return@LaunchedEffect
+                    if (openUpdaterDebugShortcut) {
+                        navController.navigate(NavRoutes.updater.name)
+                        openUpdaterDebugShortcut = false
+                    }
+                }
+
                 // One-time Samsung storage advice (spec-samsung-storage-advice-dialog):
                 // the effect re-runs only when its key (onboardingStep == null) changes;
                 // the Samsung/shown/location gate is evaluated inside
@@ -2349,21 +2375,20 @@ class MainActivity :
                             // Handles both collapsed (mini-player) and expanded (player) states
 //
                             // in a single composition tree, preventing animation jumps.
-                            // Rewind is a full-screen deck: the player sheet (mini-player included) slides
+                            // Rewind and the OTA updater are full-screen decks: the player sheet
+                            // (mini-player included) slides down out of the screen with the same
 //
-                            // down out of the screen with the same jelly spring as the header, and returns
+                            // jelly spring as the header, and returns with the same bounce when
 //
-                            // with the same bounce when leaving the deck
-                            val isRewindDeck = currentRoute?.let { route ->
-                                route == NavRoutes.rewind.name || route.startsWith("${NavRoutes.rewind.name}?")
-                            } ?: false
-                            val rewindSheetProgress = animateFloatAsState(
-                                targetValue = if (isRewindDeck) 1f else 0f,
+                            // leaving the route
+                            val isMiniplayerHiddenRoute = isMiniplayerHiddenRoute(currentRoute)
+                            val miniplayerHideProgress = animateFloatAsState(
+                                targetValue = if (isMiniplayerHiddenRoute) 1f else 0f,
                                 animationSpec = spring(
                                     dampingRatio = Spring.DampingRatioLowBouncy,
                                     stiffness = Spring.StiffnessMediumLow
                                 ),
-                                label = "rewindSheetDismiss"
+                                label = "miniplayerHideDismiss"
                             )
 
                             // The sheet subtree stays composed until the animated dismiss has reached
@@ -2398,13 +2423,13 @@ class MainActivity :
                                     // Top anchor follows the header through topPadding instead
                                     modifier = Modifier.fillMaxSize()
                                         .graphicsLayer {
-                                            translationY = rewindSheetProgress.value * 160.dp.toPx()
-                                            // Appearance fade x rewind-deck fade x dismissed-zone fade: the
+                                            translationY = miniplayerHideProgress.value * 160.dp.toPx()
+                                            // Appearance fade x route-hide fade x dismissed-zone fade: the
                                             // mini-player fades with the sheet's value, which follows the
 //
                                             // finger on a drag and the tween on an animated dismiss.
                                             alpha = appearAlpha.value *
-                                                (1f - rewindSheetProgress.value).coerceIn(0f, 1f) *
+                                                (1f - miniplayerHideProgress.value).coerceIn(0f, 1f) *
                                                 miniPlayerDismissAlpha(
                                                     value = playerSheetState.value,
                                                     dismissedBound = playerSheetState.dismissedBound,
@@ -2797,10 +2822,13 @@ class MainActivity :
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
         // The profile-shortcut actions have their own consumption (spec-profile-shortcuts) and
         // must not ride the home-tab shortcut state (which would pop the back stack to home).
-        shortcutIntentAction = intent.action?.takeUnless { isProfileShortcutAction(it) }
+        shortcutIntentAction = intent.action?.takeUnless { isSelfConsumedShortcutAction(it) }
         // Generic « Profiles » shortcut (warm): record the navigation target without
         // clobbering a pending one (the navigation effect consumes it, gated on onboarding).
         openProfilesShortcut = openProfilesShortcut || (intent.action == action_profiles)
+        // Debug-only updater backdoor (warm, app ON path).
+        openUpdaterDebugShortcut = openUpdaterDebugShortcut ||
+            (BuildConfig.DEBUG && intent.action == action_debug_open_updater)
         // Direct profile shortcut (warm, app ON path): a different valid profile runs the full
         // CAP-3 switch + process exit; the same/unknown one is a bare consumption — the extras
 //
@@ -2942,6 +2970,11 @@ class MainActivity :
         // launches in it (cold) or switches to it (warm).
         const val action_profiles = "app.it.fast4x.rimusic.action.profiles"
         const val action_profile = "app.it.fast4x.rimusic.action.profile"
+
+        // Debug-only backdoor to the OTA updater screen (unreachable in debug builds, where
+        // IS_AUTOUPDATE is false and the About card is not clickable):
+        // adb shell am start -n <pkg>/<activity> -a app.n_zik.android.action.debug_open_updater
+        const val action_debug_open_updater = "app.n_zik.android.action.debug_open_updater"
         const val EXTRA_PROFILE_ID = "profileId"
         // "Now playing" notification tap (spec-notification-click-opens-player): the
         // notification's content intent — PlayerServiceModern's global session activity
@@ -2996,3 +3029,15 @@ val LocalIsShowingVisualizer = staticCompositionLocalOf<MutableState<Boolean>> {
 val LocalTopBarOffset = staticCompositionLocalOf<State<Float>> { mutableStateOf(0f) }
 val LocalBottomBarOffset = staticCompositionLocalOf<State<Float>> { mutableStateOf(0f) }
 val LocalDownloadStatesMap = staticCompositionLocalOf<Map<String, app.it.fast4x.rimusic.enums.DownloadedStateMedia>> { emptyMap() }
+
+/**
+ * Routes where the full-screen sheet (mini-player included) must be hidden: the Rewind
+ * deck (plain or with a query prefix) and the OTA updater screen. Pure function of the
+ * current back-stack route so it can be tested without a nav host.
+ */
+internal fun isMiniplayerHiddenRoute(currentRoute: String?): Boolean =
+    currentRoute?.let { route ->
+        route == NavRoutes.rewind.name ||
+            route.startsWith("${NavRoutes.rewind.name}?") ||
+            route == NavRoutes.updater.name
+    } ?: false
