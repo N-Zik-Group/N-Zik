@@ -1,6 +1,6 @@
 # Error Recovery & Rollback Rules
 
-**Version:** 1.5.0 | **Last updated:** 2026-09-26
+**Version:** 1.5.1 | **Last updated:** 2026-10-26
 
 **HALT semantics (applies to every HALT in every rule file):** HALT = stop ALL autonomous work (no edits, no builds, no commits, no skills). Present the required report, then wait for an explicit user instruction before resuming. The only exception is when the HALT rule itself prescribes follow-up actions — run them, then HALT again.
 
@@ -61,7 +61,7 @@ Symptom: Gradle sync or build fails before compilation with unresolved module er
 2. Rebuild
 3. If a submodule pointer itself changed unexpectedly (not by the user) → HALT, report to user
 
-> **Config caveat:** `.git/config` also carries a legacy `upstream` remote (`knighthat/Kreate`) and a stale `[submodule "discord"]` section that no longer exists in `.gitmodules`. `git remote -v` / `git submodule` output will show them — ignore them, and do NOT delete or act on them without explicit instruction.
+> **Config caveat:** `.git/config` carries a stale `[submodule "discord"]` section that no longer exists in `.gitmodules` — `git submodule` output will show it; ignore it and do NOT delete or act on it without explicit instruction. (The legacy `upstream` remote `knighthat/Kreate` was removed on 2026-10-26 at the user's request; if it reappears, treat it as stale config and ask before acting.)
 
 ## Known Flaky Tests
 

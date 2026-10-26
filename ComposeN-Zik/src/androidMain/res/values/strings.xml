@@ -2347,4 +2347,9 @@
     <string name="settings_proxy_password">Proxy Password</string>
     <string name="settings_region_override">Region Override</string>
     <string name="settings_target_unavailable">This setting is unavailable with the current configuration. Its section is shown instead.</string>
+    <string name="samsung_storage_advice_title">Samsung storage advice</string>
+    <string name="samsung_storage_advice_message">Samsung\'s automatic memory management can delete N-Zik\'s downloads and cache files, even when you did not ask for it. To keep your downloads safe, use the private (app) storage location instead of system storage.</string>
+    <string name="samsung_storage_advice_primary_button">Use private storage</string>
+    <string name="samsung_storage_advice_secondary_button">Keep system storage</string>
+    <string name="samsung_storage_advice_storage">You currently have %1$s of downloads and cache on system storage.</string>
 </resources>
