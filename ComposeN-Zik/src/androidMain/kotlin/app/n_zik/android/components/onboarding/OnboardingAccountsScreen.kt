@@ -214,10 +214,11 @@ fun OnboardingAccountsScreen(
         modifier = modifier
             .fillMaxSize()
             .background(colorPalette().background0)
-            // The flow replaces AppNavigation here: keep the app's edge-to-edge
-            // behavior — background full-bleed, content clear of the system bars
+            // The flow replaces AppNavigation here: keep the app's edge-to-edge behavior
+            // - background full-bleed, content extends under the nav bar, the top bar is
+            // still cleared; the nav inset is re-applied to the last child (the skip
+            // button), so the final text never lands on the system nav buttons
             .statusBarsPadding()
-            .navigationBarsPadding()
             // Small screens / enlarged fonts: header + cards + the skip button can exceed
             // the viewport — the whole step scrolls instead of clipping
             .verticalScroll(rememberScrollState())
@@ -325,6 +326,8 @@ fun OnboardingAccountsScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // The skip button is the last child: it re-applies the nav inset the column
+        // dropped, so the final text stays clear of the system nav buttons
         Button(
             onClick = {
                 // The accounts step no longer ends the flow — the profile step
@@ -351,7 +354,9 @@ fun OnboardingAccountsScreen(
                 contentColor = colorPalette().textSecondary
             ),
             shape = uiRoundnessShape(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
         ) {
             Text(
                 // "Skip" while nothing is connected, "I'm done" once at least one

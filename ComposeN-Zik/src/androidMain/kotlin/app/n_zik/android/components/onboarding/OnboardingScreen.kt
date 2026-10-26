@@ -290,10 +290,11 @@ fun OnboardingScreen(
         modifier = modifier
             .fillMaxSize()
             .background(colorPalette().background0)
-            // The flow replaces AppNavigation here: keep the app's edge-to-edge
-            // behavior — background full-bleed, content clear of the system bars
+            // The flow replaces AppNavigation here: keep the app's edge-to-edge behavior
+            // - background full-bleed, content extends under the nav bar, the top bar is
+            // still cleared; the nav inset is re-applied to the last child (the CTA), so
+            // the final text never lands on the system nav buttons
             .statusBarsPadding()
-            .navigationBarsPadding()
             // Small screens / enlarged fonts: the card list and the fixed header can
             // exceed the viewport — the whole step scrolls instead of clipping
             .verticalScroll(rememberScrollState())
@@ -343,6 +344,8 @@ fun OnboardingScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // The CTA is the last child: it re-applies the nav inset the column dropped, so
+        // the final text stays clear of the system nav buttons
         Button(
             onClick = { onComplete() },
             colors = ButtonDefaults.buttonColors(
@@ -350,7 +353,9 @@ fun OnboardingScreen(
                 contentColor = colorPalette().textSecondary
             ),
             shape = uiRoundnessShape(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
         ) {
             Text(stringResource(R.string.onboard_start))
         }

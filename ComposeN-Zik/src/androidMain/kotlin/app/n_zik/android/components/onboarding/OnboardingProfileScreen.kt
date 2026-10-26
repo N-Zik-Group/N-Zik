@@ -298,10 +298,12 @@ fun OnboardingProfileScreen(
         modifier = modifier
             .fillMaxSize()
             .background(colorPalette().background0)
-            // The flow replaces AppNavigation here: keep the app's edge-to-edge
-            // behavior — background full-bleed, content clear of the system bars
+            // The flow replaces AppNavigation here: keep the app's edge-to-edge behavior
+            // - background full-bleed, content extends under the nav bar, the top bar is
+            // still cleared; the nav inset is re-applied to the last child (the card that
+            // holds the continue button), so the final text never lands on the system nav
+            // buttons
             .statusBarsPadding()
-            .navigationBarsPadding()
             // Small screens / enlarged fonts: header + the card (preview + name
             // field + the two source selectors + the photo + the button) can
 //
@@ -340,10 +342,14 @@ fun OnboardingProfileScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // The card is the last child of the step: it re-applies the nav inset the column
+        // dropped, so the continue button (its last element) stays clear of the system
+        // nav buttons
         OnboardingActionCard(
             icon = R.drawable.person,
             title = stringResource(R.string.face_profile_name),
             description = "",
+            modifier = Modifier.navigationBarsPadding(),
             extraContent = {
                 // Face preview: the resolved face as it will be saved on
                 // continue — the same treatment as the settings face card
