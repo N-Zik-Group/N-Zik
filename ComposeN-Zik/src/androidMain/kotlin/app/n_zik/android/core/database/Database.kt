@@ -27,7 +27,6 @@ import app.it.fast4x.rimusic.models.Format
 import app.n_zik.android.models.Lyrics
 import app.it.fast4x.rimusic.models.Playlist
 import app.it.fast4x.rimusic.models.QueuedMediaItem
-import app.it.fast4x.rimusic.models.SearchQuery
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.models.SongAlbumMap
 import app.it.fast4x.rimusic.models.SongArtistMap
@@ -47,7 +46,6 @@ import app.n_zik.android.core.database.FormatTable
 import app.n_zik.android.core.database.LyricsTable
 import app.n_zik.android.core.database.PlaylistTable
 import app.n_zik.android.core.database.QueuedMediaItemTable
-import app.n_zik.android.core.database.SearchQueryTable
 import app.n_zik.android.core.database.SongAlbumMapTable
 import app.n_zik.android.core.database.SongArtistMapTable
 import app.n_zik.android.core.database.SongPlaylistMapTable
@@ -80,6 +78,7 @@ import app.n_zik.android.core.database.migration.From38To39Migration
 import app.n_zik.android.core.database.migration.From39To40Migration
 import app.n_zik.android.core.database.migration.From40To41Migration
 import app.n_zik.android.core.database.migration.From41To42Migration
+import app.n_zik.android.core.database.migration.From42To43Migration
 import app.kreate.android.me.knighthat.utils.PropUtils
 import app.n_zik.android.core.backup.BackupManager
 import androidx.room.InvalidationTracker
@@ -271,8 +270,6 @@ object Database {
         get() = playlistTableDao.get()
     val queueTable: QueuedMediaItemTable
         get() = _internal.queueTable
-    val searchTable: SearchQueryTable
-        get() = _internal.searchQueryTable
     private val songAlbumMapTableDao = TrackedDao({ _internal.songAlbumMapTable }, SongAlbumMapTable::class.java)
     val songAlbumMapTable: SongAlbumMapTable
         get() = songAlbumMapTableDao.get()
@@ -955,7 +952,6 @@ object Database {
         SongArtistMap::class,
         Album::class,
         SongAlbumMap::class,
-        SearchQuery::class,
         QueuedMediaItem::class,
         Format::class,
         Event::class,
@@ -965,7 +961,7 @@ object Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 42,
+    version = 43,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -998,7 +994,6 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
     abstract val lyricsTable: LyricsTable
     abstract val playlistTable: PlaylistTable
     abstract val queueTable: QueuedMediaItemTable
-    abstract val searchQueryTable: SearchQueryTable
     abstract val songAlbumMapTable: SongAlbumMapTable
     abstract val songArtistMapTable: SongArtistMapTable
     abstract val songPlaylistMapTable: SongPlaylistMapTable
@@ -1036,7 +1031,8 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                     From38To39Migration,
                     From39To40Migration,
                     From40To41Migration,
-                    From41To42Migration
+                    From41To42Migration,
+                    From42To43Migration
                 )
                 .fallbackToDestructiveMigration()
                 .build()

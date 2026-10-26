@@ -1,4 +1,6 @@
 package app.it.fast4x.rimusic.ui.screens.searchresult
+
+import app.n_zik.android.components.search.SearchNoResults
 import androidx.compose.animation.ExperimentalAnimationApi
 import kotlinx.coroutines.flow.first
 import androidx.compose.foundation.background
@@ -157,6 +159,28 @@ inline fun <T : Innertube.Item> ItemsPage(
         loadedItemsState?.value = itemsPage?.items ?: emptyList()
     }
 
+    val visibleItems = remember(itemsPage, parentalControlEnabled, filterContentType) {
+        itemsPage?.items?.filter { item ->
+                        if (parentalControlEnabled && item is Innertube.SongItem && item.explicit) return@filter false
+                        when {
+                            item is Innertube.SongItem -> {
+                                when (filterContentType) {
+                                    ContentType.All -> true
+                                    ContentType.Official -> !item.isUserGeneratedContent
+                                    ContentType.UserGenerated -> item.isUserGeneratedContent
+                                }
+                            }
+                            item is Innertube.VideoItem -> {
+                                when (filterContentType) {
+                                    ContentType.All -> true
+                                    ContentType.Official -> !item.isUserGeneratedContent
+                                    ContentType.UserGenerated -> item.isUserGeneratedContent
+                                }
+                            }
+                            else -> true
+                        }
+                    }?.distinctBy { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" } ?: emptyList()
+    }
     Box(
         modifier = Modifier
             .background(colorPalette().background0)
@@ -189,38 +213,16 @@ inline fun <T : Innertube.Item> ItemsPage(
                 }
 
                 items(
-                    itemsPage?.items?.filter { item ->
-                        if (parentalControlEnabled && item is Innertube.SongItem && item.explicit) return@filter false
-                        when {
-                            item is Innertube.SongItem -> {
-                                when (filterContentType) {
-                                    ContentType.All -> true
-                                    ContentType.Official -> !item.isUserGeneratedContent
-                                    ContentType.UserGenerated -> item.isUserGeneratedContent
-                                }
-                            }
-                            item is Innertube.VideoItem -> {
-                                when (filterContentType) {
-                                    ContentType.All -> true
-                                    ContentType.Official -> !item.isUserGeneratedContent
-                                    ContentType.UserGenerated -> item.isUserGeneratedContent
-                                }
-                            }
-                            else -> true
-                        }
-                    }?.distinctBy { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" } ?: emptyList(),
+                    visibleItems,
                     key = { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" },
                     itemContent = itemContent
                 )
 
-                if (itemsPage != null && itemsPage?.items.isNullOrEmpty()) {
+                if (itemsPage != null && visibleItems.isEmpty() && itemsPage?.continuation == null) {
                     item {
-                        BasicText(
+                        SearchNoResults(
                             text = emptyItemsText.ifEmpty { stringResource(R.string.no_items_found) },
-                            style = typography().xs.secondary.center,
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 32.dp)
-                                .fillMaxWidth()
+                            fillRemainingViewport = true,
                         )
                     }
                 }
@@ -341,6 +343,28 @@ inline fun <T : Innertube.Item> ItemsGridPage(
         loadedItemsState?.value = itemsPage?.items ?: emptyList()
     }
 
+    val visibleItems = remember(itemsPage, parentalControlEnabled, filterContentType) {
+        itemsPage?.items?.filter { item ->
+                        if (parentalControlEnabled && item is Innertube.SongItem && item.explicit) return@filter false
+                        when {
+                            item is Innertube.SongItem -> {
+                                when (filterContentType) {
+                                    ContentType.All -> true
+                                    ContentType.Official -> !item.isUserGeneratedContent
+                                    ContentType.UserGenerated -> item.isUserGeneratedContent
+                                }
+                            }
+                            item is Innertube.VideoItem -> {
+                                when (filterContentType) {
+                                    ContentType.All -> true
+                                    ContentType.Official -> !item.isUserGeneratedContent
+                                    ContentType.UserGenerated -> item.isUserGeneratedContent
+                                }
+                            }
+                            else -> true
+                        }
+                    }?.distinctBy { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" } ?: emptyList()
+    }
     Box(
         modifier = Modifier
             .background(colorPalette().background0)
@@ -377,40 +401,18 @@ inline fun <T : Innertube.Item> ItemsGridPage(
                 }
 
                 items(
-                    itemsPage?.items?.filter { item ->
-                        if (parentalControlEnabled && item is Innertube.SongItem && item.explicit) return@filter false
-                        when {
-                            item is Innertube.SongItem -> {
-                                when (filterContentType) {
-                                    ContentType.All -> true
-                                    ContentType.Official -> !item.isUserGeneratedContent
-                                    ContentType.UserGenerated -> item.isUserGeneratedContent
-                                }
-                            }
-                            item is Innertube.VideoItem -> {
-                                when (filterContentType) {
-                                    ContentType.All -> true
-                                    ContentType.Official -> !item.isUserGeneratedContent
-                                    ContentType.UserGenerated -> item.isUserGeneratedContent
-                                }
-                            }
-                            else -> true
-                        }
-                    }?.distinctBy { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" } ?: emptyList(),
+                    visibleItems,
                     key = { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" },
                     itemContent = itemContent
                 )
 
-                if (itemsPage != null && itemsPage?.items.isNullOrEmpty()) {
+                if (itemsPage != null && visibleItems.isEmpty() && itemsPage?.continuation == null) {
                     item(
                         span = { GridItemSpan(maxLineSpan) }
                     ) {
-                        BasicText(
+                        SearchNoResults(
                             text = emptyItemsText.ifEmpty { stringResource(R.string.no_items_found) },
-                            style = typography().xs.secondary.center,
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 32.dp)
-                                .fillMaxWidth()
+                            fillRemainingViewport = true,
                         )
                     }
                 }

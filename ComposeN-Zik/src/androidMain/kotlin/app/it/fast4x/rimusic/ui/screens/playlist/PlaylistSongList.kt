@@ -16,10 +16,10 @@ import android.content.Context
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -36,7 +36,6 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -45,9 +44,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -61,13 +57,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -76,7 +71,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -185,7 +180,7 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import androidx.media3.exoplayer.offline.Download
 import timber.log.Timber
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.n_zik.android.thumbnailShape
+import app.n_zik.android.components.search.UnifiedSearchBar
 import java.util.Locale
 
 
@@ -864,85 +859,56 @@ fun PlaylistSongList(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalAlignment = Alignment.Bottom,
                         modifier = Modifier
+                            .zIndex(1f)
                             .padding(all = 10.dp)
                             .fillMaxWidth()
                     ) {
-                        AnimatedVisibility(visible = searching) {
+                        val searchVisibility = remember { androidx.compose.animation.core.MutableTransitionState(false) }
+                        searchVisibility.targetState = searching
+                        // Fade-only so the bar pops in place (the default
+                        // expandVertically reads as a slide/offset)
+                        AnimatedVisibility(
+                            visibleState = searchVisibility,
+                            enter = fadeIn(tween(200)),
+                            exit = fadeOut(tween(200)),
+                        ) {
                             val focusRequester = remember { FocusRequester() }
                             val focusManager = LocalFocusManager.current
                             val keyboardController = LocalSoftwareKeyboardController.current
 
+                            var fieldFocused by remember { mutableStateOf(false) }
                             LaunchedEffect(searching) {
-                                focusRequester.requestFocus()
+                                if (searching) {
+                                    androidx.compose.runtime.snapshotFlow {
+                                        searchVisibility.isIdle && searchVisibility.currentState
+                                    }.first { it }
+                                    focusRequester.requestFocus()
+                                    keyboardController?.show()
+                                } else if (fieldFocused) focusManager.clearFocus()
                             }
 
-                            BasicTextField(
-                                value = filter ?: "",
-                                onValueChange = { filter = it },
-                                textStyle = typography().xs.semiBold,
-                                singleLine = true,
-                                maxLines = 1,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(onDone = {
+                            UnifiedSearchBar(
+                                input = TextFieldValue(filter ?: ""),
+                                onInputChanged = { filter = it.text },
+                                placeholderRes = R.string.search,
+                                baseSurface = colorPalette().background4,
+                                onClear = { filter = "" },
+                                onSearch = {
                                     if (filter.isNullOrBlank()) filter = ""
                                     focusManager.clearFocus()
-                                }),
-                                cursorBrush = SolidColor(colorPalette().text),
-                                decorationBox = { innerTextField ->
-                                    Box(
-                                        contentAlignment = Alignment.CenterStart,
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .padding(horizontal = 10.dp)
-                                    ) {
-                                        IconButton(
-                                            onClick = {},
-                                            icon = R.drawable.search,
-                                            color = colorPalette().favoritesIcon,
-                                            modifier = Modifier
-                                                .align(Alignment.CenterStart)
-                                                .size(16.dp)
-                                        )
-                                    }
-                                    Box(
-                                        contentAlignment = Alignment.CenterStart,
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .padding(horizontal = 30.dp)
-                                    ) {
-                                        androidx.compose.animation.AnimatedVisibility(
-                                            visible = filter?.isEmpty() ?: true,
-                                            enter = fadeIn(tween(100)),
-                                            exit = fadeOut(tween(100)),
-                                        ) {
-                                            BasicText(
-                                                text = stringResource(R.string.search),
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis,
-                                                style = typography().xs.semiBold.secondary.copy(color = colorPalette().textDisabled)
-                                            )
+                                },
+                                focusRequester = focusRequester,
+                                onFocused = { focused ->
+                                    val lostFocus = fieldFocused && !focused
+                                    fieldFocused = focused
+                                    if (lostFocus) {
+                                        keyboardController?.hide()
+                                        if (filter?.isBlank() == true) {
+                                            filter = null
+                                            searching = false
                                         }
-
-                                        innerTextField()
                                     }
                                 },
-                                modifier = Modifier
-                                    .height(30.dp)
-                                    .fillMaxWidth()
-                                    .background(
-                                        colorPalette().background4,
-                                        shape = thumbnailShape()
-                                    )
-                                    .focusRequester(focusRequester)
-                                    .onFocusChanged {
-                                        if (!it.hasFocus) {
-                                            keyboardController?.hide()
-                                            if (filter?.isBlank() == true) {
-                                                filter = null
-                                                searching = false
-                                            }
-                                        }
-                                    }
                             )
                         }
                     }

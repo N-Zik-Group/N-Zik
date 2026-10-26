@@ -1,5 +1,8 @@
 package app.n_zik.android.components.dialog.artist
 
+import androidx.compose.foundation.layout.height
+import app.n_zik.android.components.search.SearchNoResults
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -134,6 +137,8 @@ class ChangeArtistBrowseIdDialog private constructor(
 
             if (isSearching) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally).padding(20.dp))
+            } else if (results?.isEmpty() == true) {
+                SearchNoResults(Modifier.height(160.dp))
             } else if (results != null) {
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp)

@@ -1,5 +1,8 @@
 package app.it.fast4x.rimusic.ui.components.themed
 
+import androidx.compose.foundation.layout.height
+import app.n_zik.android.components.search.SearchNoResults
+
 import app.n_zik.android.core.database.*
 
 import androidx.annotation.DrawableRes
@@ -212,7 +215,7 @@ class PlaylistsMenu private constructor(
                         .size(20.dp)
                 )
                 IconButton(
-                    onClick = { search.isVisible = !search.isVisible },
+                    onClick = { search.onShortClick() },
                     icon = R.drawable.search_circle,
                     color = colorPalette().accent,
                     modifier = Modifier
@@ -227,7 +230,12 @@ class PlaylistsMenu private constructor(
                 newPlaylistButton.ToolBarButton()
             }
             search.SearchBar(this)
-            if (filteredPinnedPlaylists.isNotEmpty()) {
+            if (search.inputValue.isNotBlank() && filteredPinnedPlaylists.isEmpty() &&
+                        filteredUnpinnedPlaylists.isEmpty()
+                    ) {
+                        SearchNoResults(Modifier.height(160.dp))
+                    }
+                    if (filteredPinnedPlaylists.isNotEmpty()) {
                 BasicText(
                     text = stringResource(R.string.pinned_playlists),
                     style = typography().xxs.semiBold.copy(

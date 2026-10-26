@@ -12,6 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -149,11 +150,9 @@ fun MiniPlayerQueueOverlay(
                 }
                 .clip(topUiRoundnessShape())
                 .background(queuePanelBackground)
-                .padding(
-                    WindowInsets.navigationBars.union(
+                .windowInsetsPadding(WindowInsets.navigationBars.union(
                         WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)
-                    ).asPaddingValues()
-                )
+                    ))
         ) {
             // Queue content - padding top for drag handle
             Box(
@@ -162,6 +161,14 @@ fun MiniPlayerQueueOverlay(
             ) {
                 Queue(
                     navController = navController,
+                    onSearchOpened = {
+                        queuePanelCoroutineScope.launch {
+                            queuePanelHeightFraction.animateTo(
+                                maxFraction,
+                                spring(dampingRatio = 0.8f, stiffness = 300f),
+                            )
+                        }
+                    },
                     onDismiss = {
                         queueLoopState.value = it
                         onDismiss()

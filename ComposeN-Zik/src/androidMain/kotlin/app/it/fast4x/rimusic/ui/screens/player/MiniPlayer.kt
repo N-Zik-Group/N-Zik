@@ -90,6 +90,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.it.fast4x.rimusic.enums.BackgroundProgress
 import app.it.fast4x.rimusic.enums.MiniPlayerType
 import app.it.fast4x.rimusic.enums.NavRoutes
@@ -555,7 +556,7 @@ fun MiniPlayer(
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(colorPalette().background1)
+                    .background(surfaceColor(colorPalette().background1))
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = when {
                     offset > 0 -> Arrangement.Start
@@ -605,7 +606,7 @@ fun MiniPlayer(
                     }
                 )
                 //.clip(uiRoundnessShape()).clickable(onClick = showPlayer)
-                .background(colorPalette().background2)
+                .background(surfaceColor(colorPalette().background2))
                 .fillMaxWidth()
                 .drawBehind {
                     if (backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.MiniPlayer) {
@@ -724,6 +725,8 @@ fun MiniPlayer(
                                     }
                                     if (effectRotationEnabled) isRotated = !isRotated
                                 }
+                                // Deliberately raw background2: in pitch black the play/pause
+                                // circle stays pure black as a visible accent on the gray pill
                                 .background(colorPalette().background2)
                                 .size(42.dp)
                         ) {

@@ -1,5 +1,7 @@
 package app.it.fast4x.rimusic.ui.components.themed
 
+import app.n_zik.android.components.search.SearchNoResults
+
 import app.n_zik.android.core.database.*
 
 import android.annotation.SuppressLint
@@ -260,7 +262,7 @@ fun PlaylistsItemMenu(
                                 .size(20.dp)
                         )
                         IconButton(
-                            onClick = { search.isVisible = !search.isVisible },
+                            onClick = { search.onShortClick() },
                             icon = R.drawable.search_circle,
                             color = colorPalette().accent,
                             modifier = Modifier
@@ -283,13 +285,16 @@ fun PlaylistsItemMenu(
                             )
                         }
                     }
-                    if (search.isVisible) {
-                        search.SearchBar(this)
-                    }
+                    search.SearchBar(this)
                     val filteredPinnedPlaylists = pinnedPlaylists.filter { it.playlist.name.contains(search.inputValue, true) }
                     val filteredYoutubePlaylists = youtubePlaylists.filter { it.playlist.name.contains(search.inputValue, true) }
                     val filteredUnpinnedPlaylists = unpinnedPlaylists.filter { it.playlist.name.contains(search.inputValue, true) }
 
+                    if (search.inputValue.isNotBlank() && filteredPinnedPlaylists.isEmpty() &&
+                        filteredUnpinnedPlaylists.isEmpty() && (!isNetworkConnected(context) || filteredYoutubePlaylists.isEmpty())
+                    ) {
+                        SearchNoResults(Modifier.height(160.dp))
+                    }
                     if (filteredPinnedPlaylists.isNotEmpty()) {
                         BasicText(
                             text = stringResource(R.string.pinned_playlists),

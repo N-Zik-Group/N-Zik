@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -677,7 +678,8 @@ fun HomeSongsScreen(navController: NavController ) {
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding( horizontal = 16.dp )
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
                             .padding( bottom = 8.dp )
                             .fillMaxWidth()
                     ) {
@@ -819,7 +821,7 @@ fun HomeSongsScreen(navController: NavController ) {
             val headerPadding = with(androidx.compose.ui.platform.LocalDensity.current) { headerHeight.toDp() }
             when( builtInPlaylist ) {
                 BuiltInPlaylist.OnDevice -> OnDeviceSong( navController, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, headerPadding )
-                else                     -> HomeSongs( navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, matchButton = null, onRecommendationCountChange = { count -> recommendationCount = count }, onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading }, isRecommendationEnabled = isRecommendationEnabled, refreshKey = matchRefreshKey, onMatchClick = { showConfirmMatchAllDialog = true }, headerPadding = headerPadding )
+                else                     -> HomeSongs( navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, matchButton = null, onRecommendationCountChange = { count -> recommendationCount = count }, onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading }, isRecommendationEnabled = isRecommendationEnabled, refreshKey = matchRefreshKey, onMatchClick = { showConfirmMatchAllDialog = true }, headerPadding = headerPadding, visibleHeaderPadding = with(androidx.compose.ui.platform.LocalDensity.current) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() } )
             }
         }
 
@@ -827,6 +829,7 @@ fun HomeSongsScreen(navController: NavController ) {
         // content fades, otherwise the black backdrop stays put and turns transparent.
         Box(
             modifier = Modifier
+                .zIndex(1f)
                 .onGloballyPositioned { headerHeight = it.size.height }
                 .offset { androidx.compose.ui.unit.IntOffset(0, kotlin.math.round(headerOffset).toInt()) }
                 .background(colorPalette().background0)

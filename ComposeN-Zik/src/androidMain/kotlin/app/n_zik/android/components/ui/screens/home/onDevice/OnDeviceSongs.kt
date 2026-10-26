@@ -1,5 +1,7 @@
 package app.n_zik.android.components.ui.screens.home.onDevice
 
+import app.n_zik.android.components.search.SearchNoResults
+
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -313,12 +315,7 @@ fun OnDeviceSong(
                     modifier = Modifier.fillParentMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    BasicText(
-                        text = stringResource(R.string.no_items),
-                        style = typography().m.semiBold.copy(
-                            color = colorPalette().textSecondary
-                        )
-                    )
+                    SearchNoResults(text = stringResource(if (search.inputValue.isNotBlank()) R.string.no_results_found else R.string.no_items))
                 }
             }
         }

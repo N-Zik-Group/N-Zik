@@ -14,6 +14,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -28,13 +30,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,47 +40,48 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.paint
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.offset
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.searchSuggestionsWithItems
-import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.search.SearchBarBubble
+import app.n_zik.android.components.search.hasContent
+import app.n_zik.android.components.search.filterSearchHistory
+import app.n_zik.android.components.search.SearchNoResults
+import app.n_zik.android.components.search.SearchResultsViewport
+import app.n_zik.android.components.search.SearchHistorySection
+import app.n_zik.android.components.search.SearchHistoryStore
+import app.n_zik.android.components.search.UnifiedSearchBar
+import app.n_zik.android.components.search.rememberSearchHistory
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.SearchDisplayOrder
-import app.it.fast4x.rimusic.models.SearchQuery
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import app.it.fast4x.rimusic.ui.components.themed.Header
-import app.n_zik.android.components.menu.song.SongItemMenu
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
 import app.n_zik.android.components.menu.artist.OnlineArtistItemMenu
 import app.n_zik.android.components.menu.playlist.OnlinePlaylistItemMenu
 import app.n_zik.android.components.menu.video.VideoItemMenu
 import app.it.fast4x.rimusic.utils.asSong
 import app.it.fast4x.rimusic.utils.asMediaItem
-import app.it.fast4x.rimusic.ui.components.themed.NowPlayingSongIndicator
 import app.it.fast4x.rimusic.ui.components.themed.TitleMiniSection
 import app.it.fast4x.rimusic.ui.items.AlbumItem
 import app.it.fast4x.rimusic.ui.items.ArtistItem
@@ -92,19 +91,14 @@ import app.n_zik.android.components.SongItem
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.px
 import app.it.fast4x.rimusic.utils.align
-import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.forcePlay
-import app.it.fast4x.rimusic.utils.isNowPlaying
-import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
+import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.searchDisplayOrderKey
 import app.it.fast4x.rimusic.utils.secondary
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -119,27 +113,30 @@ fun OnlineSearch(
     textFieldValue: TextFieldValue,
     onTextFieldValueChanged: (TextFieldValue) -> Unit,
     onSearch: (String) -> Unit,
-    decorationBox: @Composable (@Composable () -> Unit) -> Unit,
+    actionBubbles: List<SearchBarBubble>,
 ) {
     // Settings
     val isHistoryPaused by rememberPreference( pauseSearchHistoryKey, false )
     val searchDisplayOrder by rememberPreference( searchDisplayOrderKey, SearchDisplayOrder.SuggestionsFirst )
 
-    var reloadHistory by remember {
-        mutableStateOf(false)
+    // Saved searches: this tab's own store (not shared with the other screens)
+    val context = LocalContext.current
+    val history = rememberSearchHistory( SearchHistoryStore.PAGE_ONLINE, isHistoryPaused )
+    val historyMatches = filterSearchHistory(history.value, textFieldValue.text)
+
+    // Opening the online tab should land the user in the search (keyboard up)
+    val barFocusRequester = remember { FocusRequester() }
+    LaunchedEffect( Unit ) { barFocusRequester.requestFocus() }
+
+    // Record only explicit submissions; fetching suggestions never persists input.
+    fun recordOnlineQuery(input: String = textFieldValue.text) {
+        val query = input.trim()
+        if( query.isEmpty() || isHistoryPaused ) return
+        history.value = SearchHistoryStore.record( context.preferences, SearchHistoryStore.PAGE_ONLINE, query )
     }
 
-    val history by remember( textFieldValue.text, isHistoryPaused, reloadHistory ) {
-        if( isHistoryPaused ) return@remember flowOf()
-
-        Database.searchTable
-                .findAllContain( textFieldValue.text )
-                .distinctUntilChanged()
-                .map{ list -> list.reversed() }
-    }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
-
     //var suggestionsResult by persist<Result<List<String>?>?>("search/online/suggestionsResult")
-    var suggestionsResult by remember {
+    var suggestionsResult by remember(textFieldValue.text) {
         mutableStateOf<Result<Innertube.SearchSuggestions>?>(null)
     }
 
@@ -149,6 +146,10 @@ fun OnlineSearch(
             suggestionsResult = withContext(NzikDispatchers.DATA) {
                 Innertube.searchSuggestionsWithItems(input = textFieldValue.text)
             }
+        } else {
+            // The query was cleared (X bubble): drop the previous query's
+            // suggestions so the history is shown again, not stale results
+            suggestionsResult = null
         }
     }
 
@@ -166,16 +167,9 @@ fun OnlineSearch(
     */
 
     val rippleIndication = ripple(bounded = false)
-    val timeIconPainter = painterResource(R.drawable.search_circle)
-    val closeIconPainter = painterResource(R.drawable.trash)
 
     val coroutineScope = rememberCoroutineScope()
 
-    val focusRequester = remember {
-        FocusRequester()
-    }
-
-    
     val lazyListState = rememberLazyListState()
 
     //val navigationBarPosition by rememberPreference(navigationBarPositionKey, NavigationBarPosition.BottomFloating)
@@ -191,760 +185,534 @@ fun OnlineSearch(
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
-    Box(
+    SearchResultsViewport(
         modifier = Modifier
             .background(colorPalette().background0)
-            //.fillMaxSize()
             .fillMaxHeight()
             .fillMaxWidth()
     ) {
-        LazyColumn(
-            state = lazyListState,
-            contentPadding = LocalPlayerAwareWindowInsets.current
-                .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
+        Column(
             modifier = Modifier
-                .fillMaxSize()
-                .offset(y = (-10).dp)
+                .fillMaxWidth()
         ) {
-            item(
-                key = "header",
-                contentType = 0
-            ) {
-                /*
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    HeaderWithIcon(
-                        title = "${stringResource(R.string.search)} ${stringResource(R.string.online)}",
-                        iconId = R.drawable.globe,
-                        enabled = true,
-                        showIcon = true,
-                        modifier = Modifier
-                            .padding(bottom = 8.dp),
-                        onClick = {}
+            // 16dp horizontal on the bar only: the list below stays
+            // full-width so the rows touch the screen edges
+            Header(
+                modifier = Modifier
+                .zIndex(1f)
+                    .padding(top = 16.dp, start = 16.dp, end = 16.dp)
+                    .fillMaxWidth(),
+                titleContent = {
+                    UnifiedSearchBar(
+                        input = textFieldValue,
+                        onInputChanged = onTextFieldValueChanged,
+                        placeholderRes = R.string.search,
+                        actionBubbles = actionBubbles,
+                        onClear = { onTextFieldValueChanged(TextFieldValue("")) },
+                        onSearch = {
+                            if (textFieldValue.text.isNotEmpty()) {
+                                recordOnlineQuery()
+                                onSearch( textFieldValue.text )
+                            }
+                        },
+                        focusRequester = barFocusRequester,
+                        modifier = Modifier.fillMaxWidth(),
                     )
+                },
+                actionsContent = {},
+            )
 
-                }
-                 */
-                Header(
-                    modifier = Modifier.offset(y = (-10).dp),
-                    titleContent = {
-                        BasicTextField(
-                            value = textFieldValue,
-                            onValueChange = onTextFieldValueChanged,
-                            textStyle = typography().l.medium.align(TextAlign.Start),
-                            singleLine = true,
-                            maxLines = 1,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            keyboardActions = KeyboardActions(
-                                onSearch = {
-                                    if ( textFieldValue.text.isNotEmpty() )
-                                        onSearch( textFieldValue.text )
-                                }
-                            ),
-                            cursorBrush = SolidColor(colorPalette().text),
-                            decorationBox = decorationBox,
-                            modifier = Modifier
-                                .background(
-                                    //colorPalette().background4,
-                                    colorPalette().background1,
-                                    shape = uiRoundnessShape()
-                                )
-                                .padding(horizontal = 24.dp, vertical = 16.dp)
-                                .focusRequester(focusRequester)
-                                .fillMaxWidth(0.95f)
-                        )
-                    },
-                    actionsContent = {
-                        /*
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .padding(horizontal = 40.dp)
-                                .fillMaxWidth()
-                        ) {
-                            IconButton(
-                                onClick = onAction1,
-                                icon = R.drawable.globe,
-                                color = colorPalette().favoritesIcon,
-                                modifier = Modifier
-                                    .size(24.dp)
-                            )
-                            IconButton(
-                                onClick = onAction2,
-                                icon = R.drawable.library,
-                                color = colorPalette().favoritesIcon,
-                                modifier = Modifier
-                                    .size(24.dp)
-                            )
-                            IconButton(
-                                onClick = onAction3,
-                                icon = R.drawable.link,
-                                color = colorPalette().favoritesIcon,
-                                modifier = Modifier
-                                    .size(24.dp)
-                            )
+            Spacer(
+                modifier = Modifier
+                    .height(16.dp)
+            )
 
-                            /*
-                            IconButton(
-                                onClick = onAction4,
-                                icon = R.drawable.chevron_back,
-                                color = colorPalette().favoritesIcon,
-                                modifier = Modifier
-                                    .size(24.dp)
-                            )
-                             */
-                        }
-                        /*
-                        if (playlistId != null) {
-                            val isAlbum = playlistId.startsWith("OLAK5uy_")
-
-                            SecondaryTextButton(
-                                text = "View ${if (isAlbum) "album" else "playlist"}",
-                                onClick = { onViewPlaylist(textFieldValue.text) }
-                            )
-                        }
-
-                        Spacer(
-                            modifier = Modifier
-                                .weight(1f)
-                        )
-
-                         */
-                        /*
-                        if (textFieldValue.text.isNotEmpty()) {
-                            SecondaryTextButton(
-                                text = stringResource(R.string.clear),
-                                onClick = { onTextFieldValueChanged(TextFieldValue()) }
-                            )
-                        }
-                         */
-
-                         */
-                    },
-                    /*
-                    modifier = Modifier
-                        .drawBehind {
-
-                            val strokeWidth = 1 * density
-                            val y = size.height - strokeWidth / 2
-
-                            drawLine(
-                                color = colorPalette().textDisabled,
-                                start = Offset(x = 0f, y = y/2),
-                                end = Offset(x = size.maxDimension, y = y/2),
-                                strokeWidth = 2.dp.toPx()
-                            )
-                        }
-                     */
-                )
-            }
-
-            // Affichage conditionnel selon l'ordre choisi
-            when (searchDisplayOrder) {
-                SearchDisplayOrder.SuggestionsFirst -> {
-                    // Afficher d'abord les suggestions
-                    suggestionsResult?.getOrNull()?.let { suggestions ->
-                        item {
-                            TitleMiniSection(title = stringResource(R.string.searches_suggestions),
-                                modifier = Modifier.padding(start = 12.dp).padding(vertical = 10.dp)
-                            )
-                        }
-
-                        suggestions.recommendedSong.let {
-                            item{
-                                it?.asMediaItem?.let { mediaItem ->
-                                    SongItem(
-                                        song = mediaItem.asSong,
-                                        navController = navController,
-                                        modifier = Modifier
-                                            .clip(uiRoundnessShape()),
-                                        onClick = {
-                                            binder?.player?.forcePlay(mediaItem)
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                        suggestions.recommendedAlbum?.let { album ->
-                            item{
-                                AlbumItem(
-                                    yearCentered = false,
-                                    album = album,
-                                    thumbnailSizePx = songThumbnailSizePx,
-                                    thumbnailSizeDp = songThumbnailSizeDp,
-                                    modifier = Modifier
-                                        .clip(uiRoundnessShape()).combinedClickable(
-                                            onLongClick = {
-                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                menuState.display {
-                                                    OnlineAlbumItemMenu(
-                                                        navController = navController,
-                                                        album = album
-                                                    ).MenuComponent()
-                                                }
-                                            },
-                                            onClick = {
-                                                navController.navigate(route = "${NavRoutes.album.name}/${album.key}")
-                                            }
-                                        ),
-                                    disableScrollingText = disableScrollingText
-                                )
-                            }
-                        }
-                        suggestions.recommendedArtist?.let { artist ->
-                            item{
-                                ArtistItem(
-                                    artist = artist,
-                                    thumbnailSizePx = songThumbnailSizePx,
-                                    thumbnailSizeDp = songThumbnailSizeDp,
-                                    modifier = Modifier
-                                        .clip(uiRoundnessShape()).combinedClickable(
-                                            onLongClick = {
-                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                menuState.display {
-                                                    OnlineArtistItemMenu(
-                                                        navController = navController,
-                                                        artist = artist
-                                                    ).MenuComponent()
-                                                }
-                                            },
-                                            onClick = {
-                                                navController.navigate(route = "${NavRoutes.artist.name}/${artist.key}")
-                                            }
-                                        ),
-                                    disableScrollingText = disableScrollingText
-                                )
-                            }
-                        }
-                        suggestions.recommendedPlaylist?.let { playlist ->
-                            item{
-                                PlaylistItem(
-                                    playlist = playlist,
-                                    thumbnailSizePx = songThumbnailSizePx,
-                                    thumbnailSizeDp = songThumbnailSizeDp,
-                                    modifier = Modifier
-                                        .clip(uiRoundnessShape()).combinedClickable(
-                                            onLongClick = {
-                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                menuState.display {
-                                                    OnlinePlaylistItemMenu(
-                                                        navController = navController,
-                                                        playlist = playlist
-                                                    ).MenuComponent()
-                                                }
-                                            },
-                                            onClick = {
-                                                navController.navigate(route = "${NavRoutes.playlist.name}/${playlist.key}")
-                                            }
-                                        ),
-                                    disableScrollingText = disableScrollingText
-                                )
-                            }
-                        }
-                        suggestions.recommendedVideo?.let { video ->
-                            item{
-                                VideoItem(
-                                    video = video,
-                                    thumbnailHeightDp = songThumbnailSizeDp,
-                                    thumbnailWidthDp = songThumbnailSizeDp,
-                                    modifier = Modifier
-                                        .clip(uiRoundnessShape()).combinedClickable(
-                                            onLongClick = {
-                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                menuState.display {
-                                                    VideoItemMenu(
-                                                        navController = navController,
-                                                        song = video.asMediaItem.asSong
-                                                    ).MenuComponent()
-                                                }
-                                            },
-                                            onClick = {
-                                                binder?.player?.forcePlay(video.asMediaItem)
-                                            }
-                                        ),
-                                    disableScrollingText = disableScrollingText
-                                )
-                            }
-                        }
-
-                        items(items = suggestions.queries) { query ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .clip(uiRoundnessShape()).clickable (
-                                        onClick = {
-                                            onSearch(query.replace("/", "", true))
-                                            /*
-                                            onTextFieldValueChanged(
-                                                TextFieldValue(
-                                                    cleanString(query)
-                                                )
-                                            )
-                                             */
-                                        }
-                                    )
-                                    .fillMaxWidth()
-                                    .padding(all = 16.dp)
-                            ) {
-                                Spacer(
-                                    modifier = Modifier
-                                        .padding(horizontal = 8.dp)
-                                        .size(20.dp)
-                                )
-
-                                BasicText(
-                                    text = query,
-                                    style = typography().s.secondary,
-                                    modifier = Modifier
-                                        .padding(horizontal = 8.dp)
-                                        .weight(1f)
-                                )
-
-                                Image(
-                                    painter = painterResource(R.drawable.pencil),
-                                    contentDescription = null,
-                                    colorFilter = ColorFilter.tint(colorPalette().textDisabled),
-                                    modifier = Modifier
-                                        .clip(uiRoundnessShape()).clickable(
-                                            indication = rippleIndication,
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            onClick = {
-                                                onTextFieldValueChanged(
-                                                    TextFieldValue(
-                                                        text = query,
-                                                        selection = TextRange(query.length)
-                                                    )
-                                                )
-                                                coroutineScope.launch {
-                                                    lazyListState.animateScrollToItem(0)
-                                                }
-                                            }
-                                        )
-                                        //.rotate(225f)
-                                        .padding(horizontal = 8.dp)
-                                        .size(22.dp)
-                                )
-                            }
-                        }
-                    } ?: suggestionsResult?.exceptionOrNull()?.let {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                            ) {
-                                TitleMiniSection(title = stringResource(R.string.searches_no_suggestions),
-                                    modifier = Modifier.padding(start = 12.dp).padding(vertical = 10.dp)
-                                )
-                                /*
-                                BasicText(
-                                    text = stringResource(R.string.error),
-                                    style = typography().s.secondary.center,
-                                    modifier = Modifier
-                                        .align(Alignment.Center)
-                                )
-                                 */
-                            }
-                        }
-                    }
-
-                    // Puis afficher l'historique
-                    if(history.isNotEmpty())
-                        item {
-                            TitleMiniSection(title = stringResource(R.string.searches_saved_searches), modifier = Modifier.padding(start = 12.dp))
-                        }
-
-                    items(
-                        items = history,
-                        key = SearchQuery::id
-                    ) { searchQuery ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clip(uiRoundnessShape()).clickable(onClick = {
-                                    onSearch(searchQuery.query.replace("/", "", true))
-                                    /*
-                                    onTextFieldValueChanged(
-                                        TextFieldValue(
-                                            cleanString(searchQuery.query)
-                                        )
-                                    )
-                                     */
-                                })
-                                .fillMaxWidth()
-                                .padding(all = 16.dp)
-                        ) {
-                            Spacer(
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp)
-                                    .size(20.dp)
-                                    .paint(
-                                        painter = timeIconPainter,
-                                        colorFilter = ColorFilter.tint(colorPalette().textDisabled)
-                                    )
-                            )
-
-                            BasicText(
-                                text = searchQuery.query,
-                                style = typography().s.secondary,
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp)
-                                    .weight(1f)
-                            )
-
-                            Image(
-                                painter = closeIconPainter,
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette().textDisabled),
-                                modifier = Modifier
-                                    .clip(uiRoundnessShape()).combinedClickable(
-                                        indication = rippleIndication,
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = {
-                                            Database.asyncTransaction {
-                                                searchTable.delete( searchQuery )
-                                            }
-                                        },
-                                        onLongClick = {
-                                            Database.asyncTransaction {
-                                                history.also( searchTable::delete )
-                                            }
-                                            reloadHistory = !reloadHistory
-                                        }
-                                    )
-                                    .padding(horizontal = 8.dp)
-                                    .size(20.dp)
-                            )
-
-                            Image(
-                                painter = painterResource(R.drawable.pencil),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette().textDisabled),
-                                modifier = Modifier
-                                    .clip(uiRoundnessShape()).clickable(
-                                        indication = rippleIndication,
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = {
-                                            onTextFieldValueChanged(
-                                                TextFieldValue(
-                                                    text = searchQuery.query,
-                                                    selection = TextRange(searchQuery.query.length)
-                                                )
-                                            )
-                                            coroutineScope.launch {
-                                                lazyListState.animateScrollToItem(0)
-                                            }
-                                        }
-                                    )
-                                    //.rotate(310f)
-                                    .padding(horizontal = 8.dp)
-                                    .size(22.dp)
-                            )
-                        }
+            LazyColumn(
+                state = lazyListState,
+                // Bottom inset only: the top inset is already applied by the
+                // Skeleton scaffold
+                contentPadding = LocalPlayerAwareWindowInsets.current
+                    .only(WindowInsetsSides.Bottom).asPaddingValues(),
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                if (textFieldValue.text.isNotBlank() && suggestionsResult?.getOrNull()?.hasContent() == false && historyMatches.isEmpty()) {
+                    item(key = "search_no_results") {
+                        SearchNoResults(fillRemainingViewport = true)
                     }
                 }
-                
-                SearchDisplayOrder.SavedSearchesFirst -> {
-                    // Afficher d'abord l'historique
-                    if(history.isNotEmpty())
-                        item {
-                            TitleMiniSection(title = stringResource(R.string.searches_saved_searches), modifier = Modifier.padding(start = 12.dp))
-                        }
+                // Results display order (user preference)
+                when (searchDisplayOrder) {
+                    SearchDisplayOrder.SuggestionsFirst -> {
+                        // Afficher d'abord les suggestions
+                        suggestionsResult?.getOrNull()?.takeIf { it.hasContent() }?.let { suggestions ->
+                            item {
+                                TitleMiniSection(title = stringResource(R.string.searches_suggestions),
+                                    modifier = Modifier.padding(start = 24.dp)
+                                )
+                            }
 
-                    items(
-                        items = history,
-                        key = SearchQuery::id
-                    ) { searchQuery ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clip(uiRoundnessShape()).clickable(onClick = {
-                                    onSearch(searchQuery.query.replace("/", "", true))
-                                    /*
-                                    onTextFieldValueChanged(
-                                        TextFieldValue(
-                                            cleanString(searchQuery.query)
+                            suggestions.recommendedSong.let {
+                                item{
+                                    it?.asMediaItem?.let { mediaItem ->
+                                        SongItem(
+                                            song = mediaItem.asSong,
+                                            navController = navController,
+                                            modifier = Modifier
+                                                .clip(uiRoundnessShape()),
+                                            onClick = {
+                                                recordOnlineQuery()
+                                                binder?.player?.forcePlay(mediaItem)
+                                            }
                                         )
+                                    }
+                                }
+                            }
+                            suggestions.recommendedAlbum?.let { album ->
+                                item{
+                                    AlbumItem(
+                                        yearCentered = false,
+                                        album = album,
+                                        thumbnailSizePx = songThumbnailSizePx,
+                                        thumbnailSizeDp = songThumbnailSizeDp,
+                                        modifier = Modifier
+                                            .clip(uiRoundnessShape()).combinedClickable(
+                                                onLongClick = {
+                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    menuState.display {
+                                                        OnlineAlbumItemMenu(
+                                                            navController = navController,
+                                                            album = album
+                                                        ).MenuComponent()
+                                                    }
+                                                },
+                                                onClick = {
+                                                    recordOnlineQuery()
+                                                    navController.navigate(route = "${NavRoutes.album.name}/${album.key}")
+                                                }
+                                            ),
+                                        disableScrollingText = disableScrollingText
+                                    )
+                                }
+                            }
+                            suggestions.recommendedArtist?.let { artist ->
+                                item{
+                                    ArtistItem(
+                                        artist = artist,
+                                        thumbnailSizePx = songThumbnailSizePx,
+                                        thumbnailSizeDp = songThumbnailSizeDp,
+                                        modifier = Modifier
+                                            .clip(uiRoundnessShape()).combinedClickable(
+                                                onLongClick = {
+                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    menuState.display {
+                                                        OnlineArtistItemMenu(
+                                                            navController = navController,
+                                                            artist = artist
+                                                        ).MenuComponent()
+                                                    }
+                                                },
+                                                onClick = {
+                                                    recordOnlineQuery()
+                                                    navController.navigate(route = "${NavRoutes.artist.name}/${artist.key}")
+                                                }
+                                            ),
+                                        disableScrollingText = disableScrollingText
+                                    )
+                                }
+                            }
+                            suggestions.recommendedPlaylist?.let { playlist ->
+                                item{
+                                    PlaylistItem(
+                                        playlist = playlist,
+                                        thumbnailSizePx = songThumbnailSizePx,
+                                        thumbnailSizeDp = songThumbnailSizeDp,
+                                        modifier = Modifier
+                                            .clip(uiRoundnessShape()).combinedClickable(
+                                                onLongClick = {
+                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    menuState.display {
+                                                        OnlinePlaylistItemMenu(
+                                                            navController = navController,
+                                                            playlist = playlist
+                                                        ).MenuComponent()
+                                                    }
+                                                },
+                                                onClick = {
+                                                    recordOnlineQuery()
+                                                    navController.navigate(route = "${NavRoutes.playlist.name}/${playlist.key}")
+                                                }
+                                            ),
+                                        disableScrollingText = disableScrollingText
+                                    )
+                                }
+                            }
+                            suggestions.recommendedVideo?.let { video ->
+                                item{
+                                    VideoItem(
+                                        video = video,
+                                        thumbnailHeightDp = songThumbnailSizeDp,
+                                        thumbnailWidthDp = songThumbnailSizeDp,
+                                        modifier = Modifier
+                                            .clip(uiRoundnessShape()).combinedClickable(
+                                                onLongClick = {
+                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    menuState.display {
+                                                        VideoItemMenu(
+                                                            navController = navController,
+                                                            song = video.asMediaItem.asSong
+                                                        ).MenuComponent()
+                                                    }
+                                                },
+                                                onClick = {
+                                                    recordOnlineQuery()
+                                                    binder?.player?.forcePlay(video.asMediaItem)
+                                                }
+                                            ),
+                                        disableScrollingText = disableScrollingText
+                                    )
+                                }
+                            }
+
+                            items(items = suggestions.queries) { query ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .clip(uiRoundnessShape()).clickable (
+                                            onClick = {
+                                                recordOnlineQuery(query)
+                                                onSearch(query.replace("/", "", true))
+                                                /*
+                                                onTextFieldValueChanged(
+                                                    TextFieldValue(
+                                                        cleanString(query)
+                                                    )
+                                                )
+                                                 */
+                                            }
+                                        )
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 24.dp)
+                                        .padding(all = 16.dp)
+                                ) {
+                                    Spacer(
+                                        modifier = Modifier
+                                            .padding(horizontal = 8.dp)
+                                            .size(20.dp)
+                                    )
+
+                                    BasicText(
+                                        text = query,
+                                        style = typography().s.secondary,
+                                        modifier = Modifier
+                                            .padding(horizontal = 8.dp)
+                                            .weight(1f)
+                                    )
+
+                                    Image(
+                                        painter = painterResource(R.drawable.pencil),
+                                        contentDescription = null,
+                                        colorFilter = ColorFilter.tint(colorPalette().textDisabled),
+                                        modifier = Modifier
+                                            .clip(uiRoundnessShape()).clickable(
+                                                indication = rippleIndication,
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                onClick = {
+                                                    onTextFieldValueChanged(
+                                                        TextFieldValue(
+                                                            text = query,
+                                                            selection = TextRange(query.length)
+                                                        )
+                                                    )
+                                                    coroutineScope.launch {
+                                                        lazyListState.animateScrollToItem(0)
+                                                    }
+                                                }
+                                            )
+                                            //.rotate(225f)
+                                            .padding(horizontal = 8.dp)
+                                            .size(22.dp)
+                                    )
+                                }
+                            }
+                        } ?: suggestionsResult?.exceptionOrNull()?.let {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                ) {
+                                    TitleMiniSection(title = stringResource(R.string.searches_no_suggestions),
+                                        modifier = Modifier.padding(start = 24.dp)
+                                    )
+                                    /*
+                                    BasicText(
+                                        text = stringResource(R.string.error),
+                                        style = typography().s.secondary.center,
+                                        modifier = Modifier
+                                            .align(Alignment.Center)
                                     )
                                      */
-                                })
-                                .fillMaxWidth()
-                                .padding(all = 16.dp)
-                        ) {
-                            Spacer(
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp)
-                                    .size(20.dp)
-                                    .paint(
-                                        painter = timeIconPainter,
-                                        colorFilter = ColorFilter.tint(colorPalette().textDisabled)
-                                    )
-                            )
+                                }
+                            }
+                        }
 
-                            BasicText(
-                                text = searchQuery.query,
-                                style = typography().s.secondary,
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp)
-                                    .weight(1f)
-                            )
-
-                            Image(
-                                painter = closeIconPainter,
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette().textDisabled),
-                                modifier = Modifier
-                                    .clip(uiRoundnessShape()).combinedClickable(
-                                        indication = rippleIndication,
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = {
-                                            Database.asyncTransaction {
-                                                searchTable.delete( searchQuery )
-                                            }
-                                        },
-                                        onLongClick = {
-                                            Database.asyncTransaction {
-                                                history.also( searchTable::delete )
-                                            }
-                                            reloadHistory = !reloadHistory
-                                        }
-                                    )
-                                    .padding(horizontal = 8.dp)
-                                    .size(20.dp)
-                            )
-
-                            Image(
-                                painter = painterResource(R.drawable.pencil),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette().textDisabled),
-                                modifier = Modifier
-                                    .clip(uiRoundnessShape()).clickable(
-                                        indication = rippleIndication,
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = {
-                                            onTextFieldValueChanged(
-                                                TextFieldValue(
-                                                    text = searchQuery.query,
-                                                    selection = TextRange(searchQuery.query.length)
-                                                )
-                                            )
-                                            coroutineScope.launch {
-                                                lazyListState.animateScrollToItem(0)
-                                            }
-                                        }
-                                    )
-                                    //.rotate(310f)
-                                    .padding(horizontal = 8.dp)
-                                    .size(22.dp)
+                        // Puis afficher l'historique (toujours visible)
+                        item(key = "search_history") {
+                            SearchHistorySection(
+                                visible = historyMatches.isNotEmpty(),
+                                queries = historyMatches,
+                                onQueryClick = { query ->
+                                    recordOnlineQuery(query)
+                                    onSearch(query.replace("/", "", true))
+                                },
+                                onQueryDelete = {
+                                    history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_ONLINE, it)
+                                },
+                                onQueryDeleteAll = {
+                                    history.value = SearchHistoryStore.deleteAll(context.preferences, SearchHistoryStore.PAGE_ONLINE)
+                                },
+                                onQueryEdit = { query ->
+                                    onTextFieldValueChanged(TextFieldValue(query, selection = TextRange(query.length)))
+                                    barFocusRequester.requestFocus()
+                                    coroutineScope.launch { lazyListState.animateScrollToItem(0) }
+                                },
                             )
                         }
                     }
 
-                    // Puis afficher les suggestions
-                    suggestionsResult?.getOrNull()?.let { suggestions ->
-                        item {
-                            TitleMiniSection(title = stringResource(R.string.searches_suggestions),
-                                modifier = Modifier.padding(start = 12.dp).padding(vertical = 10.dp)
+                    SearchDisplayOrder.SavedSearchesFirst -> {
+                        // Afficher d'abord l'historique (toujours visible)
+                        item(key = "search_history") {
+                            SearchHistorySection(
+                                visible = historyMatches.isNotEmpty(),
+                                queries = historyMatches,
+                                onQueryClick = { query ->
+                                    recordOnlineQuery(query)
+                                    onSearch(query.replace("/", "", true))
+                                },
+                                onQueryDelete = {
+                                    history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_ONLINE, it)
+                                },
+                                onQueryDeleteAll = {
+                                    history.value = SearchHistoryStore.deleteAll(context.preferences, SearchHistoryStore.PAGE_ONLINE)
+                                },
+                                onQueryEdit = { query ->
+                                    onTextFieldValueChanged(TextFieldValue(query, selection = TextRange(query.length)))
+                                    barFocusRequester.requestFocus()
+                                    coroutineScope.launch { lazyListState.animateScrollToItem(0) }
+                                },
                             )
                         }
 
-                        suggestions.recommendedSong.let {
-                            item{
-                                it?.asMediaItem?.let { mediaItem ->
-                                    SongItem(
-                                        song = mediaItem.asSong,
-                                        navController = navController,
+                        // Puis afficher les suggestions
+                        suggestionsResult?.getOrNull()?.takeIf { it.hasContent() }?.let { suggestions ->
+                            item {
+                                TitleMiniSection(title = stringResource(R.string.searches_suggestions),
+                                    modifier = Modifier.padding(start = 24.dp)
+                                )
+                            }
+
+                            suggestions.recommendedSong.let {
+                                item{
+                                    it?.asMediaItem?.let { mediaItem ->
+                                        SongItem(
+                                            song = mediaItem.asSong,
+                                            navController = navController,
+                                            modifier = Modifier
+                                                .clip(uiRoundnessShape()),
+                                            onClick = {
+                                                recordOnlineQuery()
+                                                binder?.player?.forcePlay(mediaItem)
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                            suggestions.recommendedAlbum?.let { album ->
+                                item{
+                                    AlbumItem(
+                                        yearCentered = false,
+                                        album = album,
+                                        thumbnailSizePx = songThumbnailSizePx,
+                                        thumbnailSizeDp = songThumbnailSizeDp,
                                         modifier = Modifier
-                                            .clip(uiRoundnessShape()),
-                                        onClick = {
-                                            binder?.player?.forcePlay(mediaItem)
-                                        }
+                                            .clip(uiRoundnessShape()).combinedClickable(
+                                                onLongClick = {
+                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    menuState.display {
+                                                        OnlineAlbumItemMenu(
+                                                            navController = navController,
+                                                            album = album
+                                                        ).MenuComponent()
+                                                    }
+                                                },
+                                                onClick = {
+                                                    recordOnlineQuery()
+                                                    navController.navigate(route = "${NavRoutes.album.name}/${album.key}")
+                                                }
+                                            ),
+                                        disableScrollingText = disableScrollingText
                                     )
                                 }
                             }
-                        }
-                        suggestions.recommendedAlbum?.let { album ->
-                            item{
-                                AlbumItem(
-                                    yearCentered = false,
-                                    album = album,
-                                    thumbnailSizePx = songThumbnailSizePx,
-                                    thumbnailSizeDp = songThumbnailSizeDp,
-                                    modifier = Modifier
-                                        .clip(uiRoundnessShape()).combinedClickable(
-                                            onLongClick = {
-                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                menuState.display {
-                                                    OnlineAlbumItemMenu(
-                                                        navController = navController,
-                                                        album = album
-                                                    ).MenuComponent()
+                            suggestions.recommendedArtist?.let { artist ->
+                                item{
+                                    ArtistItem(
+                                        artist = artist,
+                                        thumbnailSizePx = songThumbnailSizePx,
+                                        thumbnailSizeDp = songThumbnailSizeDp,
+                                        modifier = Modifier
+                                            .clip(uiRoundnessShape()).combinedClickable(
+                                                onLongClick = {
+                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    menuState.display {
+                                                        OnlineArtistItemMenu(
+                                                            navController = navController,
+                                                            artist = artist
+                                                        ).MenuComponent()
+                                                    }
+                                                },
+                                                onClick = {
+                                                    recordOnlineQuery()
+                                                    navController.navigate(route = "${NavRoutes.artist.name}/${artist.key}")
                                                 }
-                                            },
-                                            onClick = {
-                                                navController.navigate(route = "${NavRoutes.album.name}/${album.key}")
-                                            }
-                                        ),
-                                    disableScrollingText = disableScrollingText
-                                )
-                            }
-                        }
-                        suggestions.recommendedArtist?.let { artist ->
-                            item{
-                                ArtistItem(
-                                    artist = artist,
-                                    thumbnailSizePx = songThumbnailSizePx,
-                                    thumbnailSizeDp = songThumbnailSizeDp,
-                                    modifier = Modifier
-                                        .clip(uiRoundnessShape()).combinedClickable(
-                                            onLongClick = {
-                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                menuState.display {
-                                                    OnlineArtistItemMenu(
-                                                        navController = navController,
-                                                        artist = artist
-                                                    ).MenuComponent()
-                                                }
-                                            },
-                                            onClick = {
-                                                navController.navigate(route = "${NavRoutes.artist.name}/${artist.key}")
-                                            }
-                                        ),
-                                    disableScrollingText = disableScrollingText
-                                )
-                            }
-                        }
-                        suggestions.recommendedPlaylist?.let { playlist ->
-                            item{
-                                PlaylistItem(
-                                    playlist = playlist,
-                                    thumbnailSizePx = songThumbnailSizePx,
-                                    thumbnailSizeDp = songThumbnailSizeDp,
-                                    modifier = Modifier
-                                        .clip(uiRoundnessShape()).combinedClickable(
-                                            onLongClick = {
-                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                menuState.display {
-                                                    OnlinePlaylistItemMenu(
-                                                        navController = navController,
-                                                        playlist = playlist
-                                                    ).MenuComponent()
-                                                }
-                                            },
-                                            onClick = {
-                                                navController.navigate(route = "${NavRoutes.playlist.name}/${playlist.key}")
-                                            }
-                                        ),
-                                    disableScrollingText = disableScrollingText
-                                )
-                            }
-                        }
-                        suggestions.recommendedVideo?.let { video ->
-                            item{
-                                VideoItem(
-                                    video = video,
-                                    thumbnailHeightDp = songThumbnailSizeDp,
-                                    thumbnailWidthDp = songThumbnailSizeDp,
-                                    modifier = Modifier
-                                        .clip(uiRoundnessShape()).combinedClickable(
-                                            onLongClick = {
-                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                menuState.display {
-                                                    VideoItemMenu(
-                                                        navController = navController,
-                                                        song = video.asMediaItem.asSong
-                                                    ).MenuComponent()
-                                                }
-                                            },
-                                            onClick = {
-                                                binder?.player?.forcePlay(video.asMediaItem)
-                                            }
-                                        ),
-                                    disableScrollingText = disableScrollingText
-                                )
-                            }
-                        }
-
-                        items(items = suggestions.queries) { query ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .clip(uiRoundnessShape()).clickable (
-                                        onClick = {
-                                            onSearch(query.replace("/", "", true))
-                                            /*
-                                            onTextFieldValueChanged(
-                                                TextFieldValue(
-                                                    cleanString(query)
-                                                )
-                                            )
-                                             */
-                                        }
+                                            ),
+                                        disableScrollingText = disableScrollingText
                                     )
-                                    .fillMaxWidth()
-                                    .padding(all = 16.dp)
-                            ) {
-                                Spacer(
-                                    modifier = Modifier
-                                        .padding(horizontal = 8.dp)
-                                        .size(20.dp)
-                                )
+                                }
+                            }
+                            suggestions.recommendedPlaylist?.let { playlist ->
+                                item{
+                                    PlaylistItem(
+                                        playlist = playlist,
+                                        thumbnailSizePx = songThumbnailSizePx,
+                                        thumbnailSizeDp = songThumbnailSizeDp,
+                                        modifier = Modifier
+                                            .clip(uiRoundnessShape()).combinedClickable(
+                                                onLongClick = {
+                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    menuState.display {
+                                                        OnlinePlaylistItemMenu(
+                                                            navController = navController,
+                                                            playlist = playlist
+                                                        ).MenuComponent()
+                                                    }
+                                                },
+                                                onClick = {
+                                                    recordOnlineQuery()
+                                                    navController.navigate(route = "${NavRoutes.playlist.name}/${playlist.key}")
+                                                }
+                                            ),
+                                        disableScrollingText = disableScrollingText
+                                    )
+                                }
+                            }
+                            suggestions.recommendedVideo?.let { video ->
+                                item{
+                                    VideoItem(
+                                        video = video,
+                                        thumbnailHeightDp = songThumbnailSizeDp,
+                                        thumbnailWidthDp = songThumbnailSizeDp,
+                                        modifier = Modifier
+                                            .clip(uiRoundnessShape()).combinedClickable(
+                                                onLongClick = {
+                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    menuState.display {
+                                                        VideoItemMenu(
+                                                            navController = navController,
+                                                            song = video.asMediaItem.asSong
+                                                        ).MenuComponent()
+                                                    }
+                                                },
+                                                onClick = {
+                                                    recordOnlineQuery()
+                                                    binder?.player?.forcePlay(video.asMediaItem)
+                                                }
+                                            ),
+                                        disableScrollingText = disableScrollingText
+                                    )
+                                }
+                            }
 
-                                BasicText(
-                                    text = query,
-                                    style = typography().s.secondary,
+                            items(items = suggestions.queries) { query ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
-                                        .padding(horizontal = 8.dp)
-                                        .weight(1f)
-                                )
-
-                                Image(
-                                    painter = painterResource(R.drawable.pencil),
-                                    contentDescription = null,
-                                    colorFilter = ColorFilter.tint(colorPalette().textDisabled),
-                                    modifier = Modifier
-                                        .clip(uiRoundnessShape()).clickable(
-                                            indication = rippleIndication,
-                                            interactionSource = remember { MutableInteractionSource() },
+                                        .clip(uiRoundnessShape()).clickable (
                                             onClick = {
+                                                recordOnlineQuery(query)
+                                                onSearch(query.replace("/", "", true))
+                                                /*
                                                 onTextFieldValueChanged(
                                                     TextFieldValue(
-                                                        text = query,
-                                                        selection = TextRange(query.length)
+                                                        cleanString(query)
                                                     )
                                                 )
-                                                coroutineScope.launch {
-                                                    lazyListState.animateScrollToItem(0)
-                                                }
+                                                 */
                                             }
                                         )
-                                        //.rotate(225f)
-                                        .padding(horizontal = 8.dp)
-                                        .size(22.dp)
-                                )
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 24.dp)
+                                        .padding(all = 16.dp)
+                                ) {
+                                    Spacer(
+                                        modifier = Modifier
+                                            .padding(horizontal = 8.dp)
+                                            .size(20.dp)
+                                    )
+
+                                    BasicText(
+                                        text = query,
+                                        style = typography().s.secondary,
+                                        modifier = Modifier
+                                            .padding(horizontal = 8.dp)
+                                            .weight(1f)
+                                    )
+
+                                    Image(
+                                        painter = painterResource(R.drawable.pencil),
+                                        contentDescription = null,
+                                        colorFilter = ColorFilter.tint(colorPalette().textDisabled),
+                                        modifier = Modifier
+                                            .clip(uiRoundnessShape()).clickable(
+                                                indication = rippleIndication,
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                onClick = {
+                                                    onTextFieldValueChanged(
+                                                        TextFieldValue(
+                                                            text = query,
+                                                            selection = TextRange(query.length)
+                                                        )
+                                                    )
+                                                    coroutineScope.launch {
+                                                        lazyListState.animateScrollToItem(0)
+                                                    }
+                                                }
+                                            )
+                                            //.rotate(225f)
+                                            .padding(horizontal = 8.dp)
+                                            .size(22.dp)
+                                    )
+                                }
                             }
-                        }
-                    } ?: suggestionsResult?.exceptionOrNull()?.let {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                            ) {
-                                TitleMiniSection(title = stringResource(R.string.searches_no_suggestions),
-                                    modifier = Modifier.padding(start = 12.dp).padding(vertical = 10.dp)
-                                )
-                                /*
-                                BasicText(
-                                    text = stringResource(R.string.error),
-                                    style = typography().s.secondary.center,
+                        } ?: suggestionsResult?.exceptionOrNull()?.let {
+                            item {
+                                Box(
                                     modifier = Modifier
-                                        .align(Alignment.Center)
-                                )
-                                 */
+                                        .fillMaxSize()
+                                ) {
+                                    TitleMiniSection(title = stringResource(R.string.searches_no_suggestions),
+                                        modifier = Modifier.padding(start = 24.dp)
+                                    )
+                                    /*
+                                    BasicText(
+                                        text = stringResource(R.string.error),
+                                        style = typography().s.secondary.center,
+                                        modifier = Modifier
+                                            .align(Alignment.Center)
+                                    )
+                                     */
+                                }
                             }
                         }
                     }
@@ -955,18 +723,4 @@ fun OnlineSearch(
         FloatingActionsContainerWithScrollToTop(lazyListState = lazyListState)
     }
 
-    LaunchedEffect(Unit) {
-        delay(300)
-        focusRequester.requestFocus()
-    }
-
 }
-
-
-
-
-
-
-
-
-

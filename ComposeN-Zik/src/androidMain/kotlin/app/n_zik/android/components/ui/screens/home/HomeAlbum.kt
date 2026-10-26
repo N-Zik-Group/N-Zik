@@ -1,6 +1,8 @@
 @file:Suppress("OPT_IN_USAGE", "OPT_IN_USAGE_ERROR")
 package app.n_zik.android.components.ui.screens.home
 
+import app.n_zik.android.components.search.SearchNoResults
+
 import app.n_zik.android.uiRoundnessShape
 
 import android.annotation.SuppressLint
@@ -760,7 +762,8 @@ fun HomeAlbums(
 
                         Box(
                             modifier = Modifier
-                                .onGloballyPositioned { headerHeight = it.size.height }
+                                .zIndex(1f)
+                .onGloballyPositioned { headerHeight = it.size.height }
                                 .offset { androidx.compose.ui.unit.IntOffset(0, kotlin.math.round(headerOffset).toInt()) }
                                 .background(colorPalette().background0)
                         ) {
@@ -772,15 +775,10 @@ fun HomeAlbums(
 
                 if (itemsOnDisplay.isEmpty()) {
                     Box(
-                        modifier = Modifier.fillMaxSize().padding(bottom = 47.dp),
+                        modifier = Modifier.fillMaxSize().padding(top = with(androidx.compose.ui.platform.LocalDensity.current) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() }, bottom = Dimensions.bottomSpacer),
                         contentAlignment = Alignment.Center
                     ) {
-                        BasicText(
-                            text = stringResource(R.string.no_items),
-                            style = typography.m.semiBold.copy(
-                                color = colorPalette().textSecondary
-                            )
-                        )
+                        SearchNoResults(text = stringResource(if (search.inputValue.isNotBlank()) R.string.no_results_found else R.string.no_items))
                     }
                 }
             }

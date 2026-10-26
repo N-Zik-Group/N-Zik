@@ -1,4 +1,6 @@
 package app.it.fast4x.rimusic.ui.components.themed
+
+import app.n_zik.android.components.search.SearchNoResults
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -95,12 +97,9 @@ inline fun <T : Innertube.Item> ItemsList(
 
             if (itemsPage != null && itemsPage?.items.isNullOrEmpty()) {
                 item(key = "empty") {
-                    BasicText(
+                    SearchNoResults(
+                        modifier = Modifier.fillParentMaxSize(),
                         text = emptyItemsText.ifEmpty { stringResource(R.string.no_items_found) },
-                        style = typography().xs.secondary.center,
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 32.dp)
-                            .fillMaxWidth()
                     )
                 }
             }

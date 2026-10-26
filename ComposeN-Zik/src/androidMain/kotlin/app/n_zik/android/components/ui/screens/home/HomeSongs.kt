@@ -1,5 +1,7 @@
 package app.n_zik.android.components.ui.screens.home
 
+import app.n_zik.android.components.search.SearchNoResults
+
 import android.annotation.SuppressLint
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -123,7 +125,8 @@ fun HomeSongs(
     isRecommendationEnabled: Boolean = false,
     refreshKey: Int = 0,
     onMatchClick: (() -> Unit)? = null,
-    headerPadding: androidx.compose.ui.unit.Dp = 0.dp
+    headerPadding: androidx.compose.ui.unit.Dp = 0.dp,
+    visibleHeaderPadding: androidx.compose.ui.unit.Dp = headerPadding
 ) {
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
@@ -689,15 +692,10 @@ fun HomeSongs(
 
         if (showNoItems) {
             Box(
-                modifier = Modifier.fillMaxSize().padding(bottom = 47.dp),
+                modifier = Modifier.fillMaxSize().padding(top = visibleHeaderPadding, bottom = Dimensions.bottomSpacer),
                 contentAlignment = Alignment.Center
             ) {
-                BasicText(
-                    text = stringResource(R.string.no_items),
-                    style = typography().m.semiBold.copy(
-                        color = colorPalette().textSecondary
-                    )
-                )
+                SearchNoResults(text = stringResource(if (search.inputValue.isNotBlank()) R.string.no_results_found else R.string.no_items))
             }
         }
     }

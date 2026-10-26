@@ -1,43 +1,35 @@
 package app.it.fast4x.rimusic.ui.screens.player
 
-import androidx.compose.ui.draw.clip
+import app.n_zik.android.components.search.SearchNoResults
 
-import app.n_zik.android.uiRoundnessShape
+
 
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.ime
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -51,14 +43,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.glance.layout.Box
@@ -69,7 +57,6 @@ import androidx.media3.common.Timeline
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import com.valentinilk.shimmer.shimmer
-import app.it.fast4x.compose.persist.persist
 import app.it.fast4x.compose.persist.persistList
 import app.it.fast4x.compose.persist.persistMap
 import sh.calvin.reorderable.ReorderableItem
@@ -77,7 +64,6 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.binder
 import app.n_zik.android.colorPalette
-import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.core.network.OfflineMode
@@ -85,9 +71,7 @@ import app.it.fast4x.rimusic.enums.QueueLoopType
 import app.it.fast4x.rimusic.enums.QueueType
 import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.playback.services.isLocal
-import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.SwipeableQueueItem
-import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Dialog
 import app.it.fast4x.rimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
@@ -102,7 +86,6 @@ import app.it.fast4x.rimusic.utils.autoLoadSongsInQueueKey
 import app.it.fast4x.rimusic.utils.enqueue
 import app.it.fast4x.rimusic.utils.findMediaItemIndexById
 import app.it.fast4x.rimusic.utils.isDownloadedSong
-import app.it.fast4x.rimusic.utils.isLandscape
 import app.it.fast4x.rimusic.utils.isNowPlaying
 import app.it.fast4x.rimusic.utils.manageDownload
 import app.it.fast4x.rimusic.utils.mediaItems
@@ -122,7 +105,6 @@ import app.it.fast4x.rimusic.enums.DownloadedStateMedia
 import app.it.fast4x.rimusic.enums.QueueSwipeAction
 import app.it.fast4x.rimusic.utils.queueSwipeLeftActionKey
 import app.it.fast4x.rimusic.utils.queueSwipeRightActionKey
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.CompositionLocalProvider
 import app.n_zik.android.download.utils.MyDownloadHelper
 import androidx.media3.exoplayer.offline.Download
@@ -136,7 +118,6 @@ import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import timber.log.Timber
 import app.kreate.android.themed.rimusic.component.playlist.PositionLock
-import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import androidx.compose.runtime.DisposableEffect
 
@@ -151,6 +132,7 @@ fun Queue(
     navController: NavController,
     onDismiss: (QueueLoopType) -> Unit,
     onDiscoverClick: () -> Unit,
+    onSearchOpened: () -> Unit = {},
 ) {
     // Essentials
     val context = LocalContext.current
@@ -267,6 +249,9 @@ fun Queue(
         fun getSongs() = itemSelector.ifEmpty { items }
 
         val search = Search(lazyListState)
+        LaunchedEffect(search.isVisible) {
+            if (search.isVisible) onSearchOpened()
+        }
         val windowsOnDisplay = remember(windowsInQueue, search.inputValue) {
             if (search.inputValue.isEmpty()) {
                 windowsInQueue
@@ -376,7 +361,7 @@ fun Queue(
             onDispose { QueueToolBarState.reset() }
         }
 
-        Column {
+        Box(Modifier.fillMaxSize()) {
             val queueType by rememberPreference( queueTypeKey, QueueType.Modern )
             val backgroundAlpha = if( queueType == QueueType.Modern ) .5f else 1f
             val itemBackground = if ( queueType == QueueType.Modern ) androidx.compose.ui.graphics.Color.Transparent else colorPalette().background0
@@ -416,12 +401,17 @@ fun Queue(
                 state = lazyListState,
                 horizontalAlignment = Alignment.CenterHorizontally,
                 contentPadding = WindowInsets(bottom = Dimensions.bottomSpacer).asPaddingValues(),
-                modifier = Modifier.weight( 1f )
+                modifier = Modifier.fillMaxSize()
                                    .background(
                                        colorPalette().background0.copy( alpha = backgroundAlpha )
                                    )
 
             ) {
+                if (search.inputValue.isNotBlank() && windowsOnDisplay.isEmpty()) {
+                    item(key = "search_no_results") {
+                        SearchNoResults(Modifier.fillParentMaxSize())
+                    }
+                }
                 itemsIndexed(
                     items = windowsOnDisplay,
                     key = { _, window -> window.uid.toString() }
@@ -596,14 +586,14 @@ fun Queue(
             }
             }
 
-            // Search box
-            val searchBottomPadding by animateDpAsState(if (search.isVisible) 64.dp else 0.dp)
-            Box(
-                modifier = Modifier.fillMaxWidth()
-                                   .background( colorPalette().background1 )
-                                   .padding(bottom = searchBottomPadding)
-                                   .imePadding(),
-            ) { search.SearchBar( this@Column ) }
+            // Search overlays the queue: opening the keyboard must not resize the list.
+            // The toolbar overlaps the panel's bottom only while the keyboard is closed.
+            val keyboardOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+            Column(
+                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+                    .padding(bottom = if (search.isVisible && !keyboardOpen) 60.dp else 0.dp)
+                    .imePadding(),
+            ) { search.SearchBar(this) }
         }
 
         FloatingActionsContainerWithScrollToTop(

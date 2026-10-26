@@ -1,5 +1,7 @@
 package app.n_zik.android.database
 
+import app.n_zik.android.core.database.migration.From42To43Migration
+
 import android.content.Context
 import androidx.room.Room
 import androidx.sqlite.db.SupportSQLiteDatabase
@@ -292,6 +294,7 @@ class EventTableTest {
         rawDb.execSQL("PRAGMA user_version = 42")
 
         val fileDb = Room.databaseBuilder(context, DatabaseInitializer::class.java, dbName)
+            .addMigrations(From42To43Migration)
             .openHelperFactory(FrameworkSQLiteOpenHelperFactory())
             .allowMainThreadQueries()
             .build()

@@ -131,7 +131,6 @@ fun GoToLink(
     navController: NavController,
     textFieldValue: TextFieldValue,
     onTextFieldValueChanged: (TextFieldValue) -> Unit,
-    decorationBox: @Composable (@Composable () -> Unit) -> Unit,
     onAction1: () -> Unit,
     onAction2: () -> Unit,
     onAction3: () -> Unit,
@@ -158,10 +157,15 @@ fun GoToLink(
 
         LazyColumn(
             state = lazyListState,
+            // Bottom inset only: the top inset is already applied by the
+            // Skeleton scaffold, so Vertical would pad the header twice.
+            // The static 16dp top margin gives the header the same rhythm as
+            // the other search screens
             contentPadding = LocalPlayerAwareWindowInsets.current
-                .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
+                .only(WindowInsetsSides.Bottom + WindowInsetsSides.End).asPaddingValues(),
             modifier = Modifier
                 .fillMaxSize()
+                .padding(top = 16.dp)
         ) {
             item(
                 key = "header",

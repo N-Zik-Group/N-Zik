@@ -1,5 +1,7 @@
 package app.it.fast4x.rimusic.ui.screens.localplaylist
 
+import app.n_zik.android.components.search.SearchNoResults
+
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
@@ -286,7 +288,7 @@ fun LocalPlaylistSongs(
 
     val sort = PlaylistSongsSort(playlistId, isRewind = isRewindPlaylist)
 
-    val items by remember( sort.sortBy, sort.sortOrder ) {
+    val loadedItems by remember( sort.sortBy, sort.sortOrder ) {
         if (sort.sortBy == PlaylistSongSortBy.Downloaded) {
             val downloaded: List<String> = MyDownloadHelper.downloads
                                                            .value
@@ -310,7 +312,9 @@ fun LocalPlaylistSongs(
                     .flowOn( NzikDispatchers.DATA )
                     .distinctUntilChanged()
         }
-    }.collectAsStateWithLifecycle( emptyList(), context = NzikDispatchers.DATA )
+    }.collectAsStateWithLifecycle( null, context = NzikDispatchers.DATA )
+    val items = loadedItems.orEmpty()
+    var filteredQuery by remember { mutableStateOf<String?>(null) }
     var itemsOnDisplay by persistList<Song>("localPlaylist/$playlistId/songs/on_display")
 
     val importedBrowseIds = remember {
@@ -1071,6 +1075,7 @@ fun LocalPlaylistSongs(
                  containsName || containsArtist
              }
             .let { itemsOnDisplay = it }
+        filteredQuery = search.inputValue
     }
     LaunchedEffect( playlist?.name ) {
         val thumbnailName = "thumbnail/playlist_${playlistId}"
@@ -1409,7 +1414,13 @@ fun LocalPlaylistSongs(
 
                 Column { search.SearchBar( this ) }
             }
-
+                if (search.inputValue.isNotBlank() && loadedItems != null &&
+                    filteredQuery == search.inputValue && itemsOnDisplay.isEmpty()
+                ) {
+                    item(key = "search_no_results") {
+                        SearchNoResults(fillRemainingViewport = true)
+                    }
+                }
             itemsIndexed(
                 items = itemsOnDisplay,
                 key = { _, song -> song.id },

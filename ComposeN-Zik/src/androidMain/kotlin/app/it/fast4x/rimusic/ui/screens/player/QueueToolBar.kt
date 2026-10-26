@@ -1,6 +1,9 @@
 package app.it.fast4x.rimusic.ui.screens.player
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -75,7 +78,13 @@ fun QueueToolBar(
         if (!isLandscape) {
             val miniPlayerOffset = Dimensions.miniPlayerHeight
             val searchBarHeight = 96.dp
-            val yOffset = if (QueueToolBarState.isVisible > 0) -(miniPlayerOffset + searchBarHeight) else -miniPlayerOffset
+            // Eased so the mini-player glides instead of jumping when the
+            // queue search bar toggles (the offset shifts by a full bar)
+            val yOffset by animateDpAsState(
+                targetValue = if (QueueToolBarState.isVisible > 0) -(miniPlayerOffset + searchBarHeight) else -miniPlayerOffset,
+                animationSpec = tween(250, easing = FastOutSlowInEasing),
+                label = "queueMiniPlayerYOffset"
+            )
 
             Box(
                 Modifier.offset(0.dp, yOffset)

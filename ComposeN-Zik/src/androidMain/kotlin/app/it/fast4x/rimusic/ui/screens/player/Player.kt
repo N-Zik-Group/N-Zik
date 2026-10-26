@@ -175,6 +175,7 @@ import app.n_zik.android.LocalPlayerSheetState
 import app.n_zik.android.enums.PendingMiniPlayerAction
 import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.it.fast4x.rimusic.enums.AnimatedGradient
 import app.n_zik.android.components.player.animatedM3EBackground
 import app.it.fast4x.rimusic.enums.BackgroundProgress
@@ -1170,13 +1171,13 @@ fun Player(
                     .background(
                         Brush.verticalGradient(
                             0.5f to if (playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient)
-                                (if (coverSwatchesLoaded) m3eSaturate(dominant, lightTheme).m3eDarkenBy(lightTheme) else dynamicColorPalette.background1)
-                            else colorPalette().background1,
+                                (if (coverSwatchesLoaded) m3eSaturate(dominant, lightTheme).m3eDarkenBy(lightTheme) else surfaceColor(dynamicColorPalette.background1))
+                            else surfaceColor(colorPalette().background1),
                             // OQ2=B: the whole "cover color" gradient renders the dominant swatch,
                             // the same hue the app's dynamic accent is built from (RiPlay reference).
                             1.0f to if (blackgradient) Color.Black else if (playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient)
-                                (if (coverSwatchesLoaded) m3eSaturate(dominant, lightTheme).m3eDarkenBy(lightTheme) else dynamicColorPalette.background2)
-                            else colorPalette().background2,
+                                (if (coverSwatchesLoaded) m3eSaturate(dominant, lightTheme).m3eDarkenBy(lightTheme) else surfaceColor(dynamicColorPalette.background2))
+                            else surfaceColor(colorPalette().background2),
                             startY = 0.0f,
                             endY = 1500.0f
                         )
@@ -2453,11 +2454,9 @@ fun Player(
                     }
                     .clip(topUiRoundnessShape())
                     .background(queuePanelBackground)
-                    .padding(
-                        WindowInsets.navigationBars.union(
+                    .windowInsetsPadding(WindowInsets.navigationBars.union(
                             WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)
-                        ).asPaddingValues()
-                    )
+                        ))
             ) {
                 // Queue content - padding top for drag handle
                 Box(
@@ -2466,6 +2465,14 @@ fun Player(
                 ) {
                     Queue(
                         navController = navController,
+                    onSearchOpened = {
+                        queuePanelCoroutineScope.launch {
+                            queuePanelHeightFraction.animateTo(
+                                maxFraction,
+                                spring(dampingRatio = 0.8f, stiffness = 300f),
+                            )
+                        }
+                    },
                         onDismiss = {
                             queueLoopState.value = it
                             showQueue = false
