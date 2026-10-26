@@ -322,19 +322,11 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(4, R.string.settings_reset, R.drawable.refresh,
         keywordRes = listOf(R.string.settings_reset, R.string.settings_restore_default_settings)),
     // Tab 5 - Accounts
-    SettingsCardRegistryEntry(5, R.string.profile_face, R.drawable.person,
+    SettingsCardRegistryEntry(5, R.string.profile_face, R.drawable.person, focusId = "profiles",
         keywordRes = listOf(
             R.string.profile_face, R.string.profile_face_description, R.string.display_name_shown_as,
             R.string.module_open, R.string.profiles_open_desc, R.string.face_name_source,
             R.string.face_avatar_source, R.string.face_profile_name, R.string.face_photo,
-        )),
-    SettingsCardRegistryEntry(5, R.string.profiles, R.drawable.person, focusId = "profiles",
-        keywordRes = listOf(
-            R.string.profiles, R.string.profile_active, R.string.profile_base_name,
-            R.string.profile_data_downloads, R.string.profile_data_media_cache,
-            R.string.profile_data_images, R.string.profile_data_waveforms,
-            R.string.profile_share_downloads, R.string.profile_share_media_cache,
-            R.string.profile_share_images, R.string.profile_share_waveforms,
         )),
     SettingsCardRegistryEntry(5, R.string.youtube_music, R.drawable.ytmusic,
         keywordRes = listOf(

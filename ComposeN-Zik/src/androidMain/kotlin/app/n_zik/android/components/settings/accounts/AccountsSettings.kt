@@ -56,7 +56,6 @@ import app.n_zik.android.components.settings.common.settingsSearchDescription
 import app.n_zik.android.components.settings.common.settingsSearchTitle
 import app.n_zik.android.components.settings.common.visibleCardTitleRes
 import app.n_zik.android.components.tab.Search
-import app.n_zik.android.components.ui.screens.profiles.ProfileAccountCard
 import it.fast4x.innertube.utils.parseCookieString
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.first
@@ -142,14 +141,10 @@ fun AccountsSettings(
             if (!hasSearchResults) scrollState.scrollTo(0)
         }
         settingsSearchContent(searchFocus, hasResults = hasSearchResults) {
-            // The face card owns the face edits; the profile card below shows the active
-            // profile's state (face, data, database size) without actions. The burger
-            // long press (focus=profiles) scrolls to the profile card.
+            // Keep the legacy profiles shortcut anchored to the profile editor.
             ProfileFaceCard(
+                modifier = Modifier.onGloballyPositioned { profilesCardTopY = it.positionInRoot().y },
                 onOpenProfiles = { navController.navigate(NavRoutes.profiles.name) }
-            )
-            ProfileAccountCard(
-                modifier = Modifier.onGloballyPositioned { profilesCardTopY = it.positionInRoot().y }
             )
 
             AccountsYouTubeCard(search)

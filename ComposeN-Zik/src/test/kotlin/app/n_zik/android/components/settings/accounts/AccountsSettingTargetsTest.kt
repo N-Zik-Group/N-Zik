@@ -7,9 +7,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AccountsSettingTargetsTest {
-    @Test fun inventoryKeepsTheOriginalCardOrder() {
+    @Test fun inventoryExcludesRemovedProfileStorageCard() {
         assertEquals(
-            listOf("face", "profiles", "youtube", "sync", "autosync", "sync_import", "sync_push", "lastfm", "listentogether", "discord", "reset"),
+            listOf("face", "youtube", "sync", "autosync", "sync_import", "sync_push", "lastfm", "listentogether", "discord", "reset"),
             AccountsSettingTargets.cards.map { it.id.removePrefix("accounts.card.") },
         )
     }

@@ -133,6 +133,15 @@ class SettingsRegistrySearchTest {
     }
 
     @Test
+    fun removedProfileStorageCardIsNotSearchableAndProfilesFocusUsesEditor() {
+        val cards = SettingsCards.filter { it.tab == 5 }
+        assertTrue(cards.none { it.titleRes == R.string.profiles })
+        assertEquals("profiles", cards.single { it.titleRes == R.string.profile_face }.focusId)
+        assertTrue(searchSettingsCards(context, context.getString(R.string.profile_data_waveforms))
+            .none { it.tab == 5 })
+    }
+
+    @Test
     fun theVisibleCardTitlesForTheGeneralTabCoverItsTenCards() {
         assertEquals(
             "a blank query keeps every card of the tab",
