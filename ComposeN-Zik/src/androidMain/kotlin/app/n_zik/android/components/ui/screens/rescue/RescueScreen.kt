@@ -15,6 +15,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import app.n_zik.android.components.ui.chipsViewport
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -984,7 +985,9 @@ fun RescueScreen() {
                     Row(
                         modifier = Modifier
                             .weight(1f)
+                            .chipsViewport(16.dp)
                             .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp)
                     ) {
                         profileOptions.forEach { option ->
                             val selected = option.id == targetProfile

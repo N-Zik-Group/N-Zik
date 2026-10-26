@@ -505,11 +505,11 @@ fun HomeArtists(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 16.dp)
                             .padding(bottom = 8.dp)
                             .fillMaxWidth()
                     ) {
                         ButtonsRow(
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp),
                             chips = buttonsList,
                             currentValue = artistType,
                             onValueUpdate = { artistType = it },

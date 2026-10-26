@@ -679,7 +679,6 @@ fun HomeSongsScreen(navController: NavController ) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 16.dp)
                             .padding( bottom = 8.dp )
                             .fillMaxWidth()
                     ) {
@@ -727,13 +726,15 @@ fun HomeSongsScreen(navController: NavController ) {
                             }
 
                             ButtonsRow(
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 28.dp),
                                 chips = chips,
                                 currentValue = builtInPlaylist,
                                 onValueUpdate = { builtInPlaylist = it },
-                                modifier = Modifier.padding(end = 12.dp)
+                                modifier = Modifier
                             )
 
                             androidx.compose.animation.AnimatedVisibility(
+                                modifier = Modifier.padding(start = 16.dp),
                                 visible = isYouTubeSyncEnabled() && (builtInPlaylist == BuiltInPlaylist.Favorites || builtInPlaylist == BuiltInPlaylist.Disliked),
                                 enter = androidx.compose.animation.fadeIn(animationSpec = tween(200)) + androidx.compose.animation.expandVertically(animationSpec = tween(200)),
                                 exit = androidx.compose.animation.fadeOut(animationSpec = tween(200)) + androidx.compose.animation.shrinkVertically(animationSpec = tween(200))
@@ -782,6 +783,7 @@ fun HomeSongsScreen(navController: NavController ) {
                             }
 
                             androidx.compose.animation.AnimatedVisibility(
+                                modifier = Modifier.padding(start = 16.dp),
                                 visible = showCacheIndicator
                             ) {
                                 CacheSpaceIndicator(

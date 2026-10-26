@@ -656,16 +656,16 @@ fun HomeLibrary(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 16.dp)
                             .padding(bottom = 8.dp)
                             .fillMaxWidth()
                     ) {
                         Box {
                             ButtonsRow(
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 28.dp),
                                 chips = buttonsList,
                                 currentValue = playlistType,
                                 onValueUpdate = { playlistType = it },
-                                modifier = Modifier.padding(end = 12.dp)
+                                modifier = Modifier
                             )
                         }
                     }

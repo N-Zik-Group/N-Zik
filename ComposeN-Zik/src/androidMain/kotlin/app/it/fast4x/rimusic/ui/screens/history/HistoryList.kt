@@ -308,18 +308,19 @@ fun HistoryList(
         settingsSearchDescription(searchFocus) {
             Row(
                 modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp)
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 ButtonsRow(
                     chips = buttonsList,
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp),
                     currentValue = historyType,
                     onValueUpdate = { historyType = it },
                     modifier = Modifier.weight(1f)
                 )
                 Row(
+                    modifier = Modifier.padding(end = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     sort.ToolBarButton()

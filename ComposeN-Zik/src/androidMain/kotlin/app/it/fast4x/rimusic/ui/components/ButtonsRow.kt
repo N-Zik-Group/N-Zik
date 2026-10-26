@@ -1,6 +1,8 @@
 package app.it.fast4x.rimusic.ui.components
 
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,11 +28,13 @@ fun <E> ButtonsRow(
     currentValue: E,
     onValueUpdate: (E) -> Unit,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
     Row(
         modifier = modifier
             .horizontalScroll(rememberScrollState())
+            .padding(contentPadding)
     ) {
         chips.forEach { (value, label) ->
             FilterChip(
@@ -58,11 +62,13 @@ fun ButtonsRow(
     currentValue: BuiltInPlaylist,
     onValueUpdate: (BuiltInPlaylist) -> Unit,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
     Row(
         modifier = modifier
             .horizontalScroll(rememberScrollState())
+            .padding(contentPadding)
     ) {
         chips.forEach { playlistType ->
             FilterChip(

@@ -326,7 +326,7 @@ fun StatisticsPage(
                         chips = buttonsList,
                         currentValue = statisticsCategory,
                         onValueUpdate = { statisticsCategory = it },
-                        modifier = Modifier.padding(horizontal = 12.dp)
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp)
                     )
 
                 }

@@ -1,6 +1,7 @@
 package app.n_zik.android.components.ui.screens.rewind
 
 import androidx.compose.animation.Crossfade
+import app.n_zik.android.components.ui.chipsViewport
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -358,8 +359,10 @@ private fun RewindHomeContent(
             item(key = "year_chips") {
                 Row(
                     modifier = Modifier
+                        .chipsViewport(20.dp)
                         .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 20.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     // Chips keep the stable data order (newest first) — the year sort above only
