@@ -11,7 +11,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.FontType
-import app.it.fast4x.rimusic.ui.screens.settings.AppearanceSettings
+import app.n_zik.android.components.settings.appearance.AppearanceSettings
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance

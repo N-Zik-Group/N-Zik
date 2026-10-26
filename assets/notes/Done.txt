@@ -107,6 +107,10 @@ Fixed:
   - The ABI probe is now injectable via a `featuresProvider` on `BridgeServerCore`; the meta test mounts a device that can run the module, and a new test pins the negative case (feature omitted)
 
 Refactor:
+- refactor(settings): extract Appearance into ten autonomous cards
+  - Move the complete page, ten cards, defaults and stable target inventory into components/settings/appearance; preserve initial thumbnail normalization, presets, restart state, conditional lyrics and both dialog hosts.
+  - Preserve all 108 reset values and storage boundaries; add three passing reset, target/order and Compose tests and migrate existing crop/artist-roundness test imports.
+  - Validation: assembleDebug passes in the integrated page batch; three new Appearance tests pass with zero skips.
 - refactor(settings): extract Interface into autonomous cards
   - Move UiSettings and eight owned cards to app.n_zik.android.components.settings.ui; reuse Burger as the ninth card without changing setting order, keys, stores or internal filters.
   - Preserve 17 dialog hosts and 19 auxiliary resets; apply the original 105 reset values once per explicit action, retain asymmetric ViMusic/RiMusic changes and measured Burger focus.

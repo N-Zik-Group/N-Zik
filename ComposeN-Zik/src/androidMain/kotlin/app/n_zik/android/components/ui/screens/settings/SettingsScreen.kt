@@ -25,7 +25,7 @@ import app.it.fast4x.rimusic.enums.TransitionEffect
 import app.it.fast4x.rimusic.ui.screens.settings.AccountsSettings
 import app.it.fast4x.rimusic.ui.screens.settings.AIRecommendationSettings
 import app.it.fast4x.rimusic.ui.screens.settings.About
-import app.it.fast4x.rimusic.ui.screens.settings.AppearanceSettings
+import app.n_zik.android.components.settings.appearance.AppearanceSettings
 import app.it.fast4x.rimusic.ui.screens.settings.DataSettings
 import app.it.fast4x.rimusic.ui.screens.settings.NetworkSettings
 import app.it.fast4x.rimusic.ui.screens.settings.OtherSettings
