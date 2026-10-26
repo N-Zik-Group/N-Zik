@@ -107,6 +107,10 @@ Fixed:
   - The ABI probe is now injectable via a `featuresProvider` on `BridgeServerCore`; the meta test mounts a device that can run the module, and a new test pins the negative case (feature omitted)
 
 Refactor:
+- refactor(settings): extract Accounts cards and preserve service integration
+  - Move Accounts, YouTube, four synchronization cards, Discord helpers, reset and target metadata into components/settings/accounts; reuse profile, Last.fm, Listen Together and bridge cards.
+  - Preserve 17 plain/encrypted reset values, credentials, dialog hosts, sync operations and restart callbacks; migrate public YouTube helper imports and MockK facade names mechanically.
+  - Validation: integrated assembleDebug and five baseline store/reset and metadata tests pass with zero skips; no live authentication or external-account operation executed.
 - refactor(settings): extract AI settings cards and one-shot defaults
   - Extract seven autonomous cards alongside the existing Rewind group, preserving order, filters, measured Rewind/Statistics focus, PAGE_SETTINGS_AI history and the singleton Quick Picks dialog host.
   - Preserve the 19 profile reset values and Quick Picks reset without resetting Rewind; retain event-deletion confirmation and navigation callbacks, and add stable target metadata.

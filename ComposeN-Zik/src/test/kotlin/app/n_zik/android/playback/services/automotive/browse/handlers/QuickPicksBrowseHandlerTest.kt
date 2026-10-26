@@ -6,7 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.it.fast4x.rimusic.enums.PlayEventsType
 import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
+import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
 import app.it.fast4x.rimusic.utils.playEventsTypeKey
@@ -80,7 +80,7 @@ class QuickPicksBrowseHandlerTest {
 
         // is never read (both call sites short-circuit on isYouTubeLoggedIn).
         mockkStatic("it.fast4x.innertube.requests.RelatedPageKt")
-        mockkStatic("app.it.fast4x.rimusic.ui.screens.settings.AccountsSettingsKt")
+        mockkStatic("app.n_zik.android.components.settings.accounts.AccountsSettingsKt")
         every { isYouTubeLoggedIn() } returns false
     }
 

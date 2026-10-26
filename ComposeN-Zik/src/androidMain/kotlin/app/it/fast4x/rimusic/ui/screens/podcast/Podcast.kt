@@ -97,7 +97,7 @@ import app.it.fast4x.rimusic.ui.components.themed.adaptiveThumbnailContent
 import app.n_zik.android.components.OfflineAwareLoader
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.search.UnifiedSearchBar
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.px
 import app.it.fast4x.rimusic.utils.addNext

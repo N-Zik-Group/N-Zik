@@ -67,7 +67,7 @@ import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.utils.syncPushAlbumBookmarkKey
 import app.it.fast4x.rimusic.utils.syncDirectionKey
 import app.it.fast4x.rimusic.utils.getSyncDirection

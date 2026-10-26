@@ -67,7 +67,7 @@ import app.it.fast4x.rimusic.ui.components.SwipeablePlaylistItem
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.it.fast4x.rimusic.ui.components.themed.Title
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.utils.enableYouTubeSyncKey
 import app.it.fast4x.rimusic.utils.syncImportHistoryKey
 import app.it.fast4x.rimusic.utils.addNext

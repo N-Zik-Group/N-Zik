@@ -103,7 +103,7 @@ import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
 import app.n_zik.android.playback.services.automotive.DislikedExclusion
 import androidx.media3.session.MediaConstants
 import app.it.fast4x.rimusic.enums.MaxSongs
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
+import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import androidx.media3.common.Player
 @UnstableApi
 class AutoSessionCallback(

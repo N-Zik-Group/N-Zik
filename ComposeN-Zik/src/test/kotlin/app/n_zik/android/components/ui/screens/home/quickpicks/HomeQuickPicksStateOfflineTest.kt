@@ -11,7 +11,7 @@ import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.Countries
 import app.it.fast4x.rimusic.enums.PlayEventsType
 import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
+import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.core.database.Database
@@ -118,7 +118,7 @@ class HomeQuickPicksStateOfflineTest {
         // isYouTubeLoggedIn() reads EncryptedSharedPreferences (AndroidKeyStore —
         // unavailable on the Robolectric JVM); the offline load never needs a
         // logged-in session.
-        mockkStatic("app.it.fast4x.rimusic.ui.screens.settings.AccountsSettingsKt")
+        mockkStatic("app.n_zik.android.components.settings.accounts.AccountsSettingsKt")
         every { isYouTubeLoggedIn() } returns false
     }
 

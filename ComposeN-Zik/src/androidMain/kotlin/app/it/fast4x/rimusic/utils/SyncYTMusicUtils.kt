@@ -20,7 +20,7 @@ import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.models.Playlist
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.syncImportLibrarySongsKey
 import app.it.fast4x.rimusic.utils.syncImportUploadedSongsKey

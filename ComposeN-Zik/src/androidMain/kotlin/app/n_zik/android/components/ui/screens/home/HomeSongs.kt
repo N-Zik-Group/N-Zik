@@ -72,7 +72,7 @@ import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.core.database.ext.FormatWithSong
 import app.it.fast4x.rimusic.utils.autosyncLikesKey
 import app.it.fast4x.rimusic.utils.importYTMLikedSongs
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import androidx.compose.runtime.saveable.rememberSaveable
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX

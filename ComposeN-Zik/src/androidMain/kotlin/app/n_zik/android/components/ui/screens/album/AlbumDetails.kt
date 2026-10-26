@@ -22,7 +22,7 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.DynamicColor
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Icon
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.ui.components.themed.IDialog
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.utils.syncPushAlbumBookmarkKey
 import app.it.fast4x.rimusic.utils.syncDirectionKey
 import app.it.fast4x.rimusic.utils.getSyncDirection

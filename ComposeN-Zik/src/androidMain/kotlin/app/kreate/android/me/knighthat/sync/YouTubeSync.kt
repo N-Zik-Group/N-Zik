@@ -15,7 +15,7 @@ import it.fast4x.innertube.YtMusic.removelikeVideoOrSong
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.appContext
 import app.n_zik.android.download.utils.MyDownloadHelper
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.utils.isNetworkConnected
 import app.it.fast4x.rimusic.utils.syncPushSongLikeKey
 import app.it.fast4x.rimusic.utils.syncDirectionKey

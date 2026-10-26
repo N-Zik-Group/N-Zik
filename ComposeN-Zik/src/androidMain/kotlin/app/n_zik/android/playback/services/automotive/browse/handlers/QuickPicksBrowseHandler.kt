@@ -6,7 +6,7 @@ import androidx.media3.common.MediaMetadata
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.it.fast4x.rimusic.enums.LocalRecommandationsNumber
 import app.it.fast4x.rimusic.enums.PlayEventsType
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
+import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.it.fast4x.rimusic.utils.asSong
 import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey

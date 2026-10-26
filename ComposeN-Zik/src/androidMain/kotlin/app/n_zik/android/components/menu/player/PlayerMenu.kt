@@ -44,7 +44,7 @@ import app.it.fast4x.rimusic.enums.MenuStyle
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.utils.addSongToYtPlaylist
 import app.it.fast4x.rimusic.utils.addToYtPlaylist
 import app.it.fast4x.rimusic.utils.asSong

@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import kotlin.time.Duration.Companion.days
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
+import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 
 @UnstableApi
 class HomeQuickPicksState(

@@ -22,7 +22,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import app.it.fast4x.rimusic.enums.TransitionEffect
-import app.it.fast4x.rimusic.ui.screens.settings.AccountsSettings
+import app.n_zik.android.components.settings.accounts.AccountsSettings
 import app.n_zik.android.components.settings.ai.AIRecommendationSettings
 import app.it.fast4x.rimusic.ui.screens.settings.About
 import app.n_zik.android.components.settings.appearance.AppearanceSettings
@@ -30,8 +30,8 @@ import app.it.fast4x.rimusic.ui.screens.settings.DataSettings
 import app.it.fast4x.rimusic.ui.screens.settings.NetworkSettings
 import app.it.fast4x.rimusic.ui.screens.settings.OtherSettings
 import app.n_zik.android.components.settings.ui.UiSettings
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoginEnabled
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
+import app.n_zik.android.components.settings.accounts.isYouTubeLoginEnabled
+import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.transitionEffectKey

@@ -9,7 +9,7 @@ import app.it.fast4x.rimusic.enums.PlayEventsType
 import app.it.fast4x.rimusic.enums.Countries
 import app.it.fast4x.rimusic.enums.LocalRecommandationsNumber
 import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
+import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.it.fast4x.rimusic.utils.*
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic

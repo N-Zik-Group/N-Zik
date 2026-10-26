@@ -57,7 +57,7 @@ import app.it.fast4x.rimusic.stripExplicitEmoji
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.playback.services.isLocal
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import app.kreate.android.me.knighthat.utils.Toaster

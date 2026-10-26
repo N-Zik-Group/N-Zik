@@ -187,7 +187,7 @@ import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.rememberDataStoreBooleanPreference
 import androidx.compose.material3.LinearWavyProgressIndicator
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.thumbnailShape
 import app.it.fast4x.rimusic.utils.formatAsTime
 import app.n_zik.android.components.pullrefresh.OfflineGatedPullRefresh

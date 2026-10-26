@@ -123,7 +123,7 @@ import app.it.fast4x.rimusic.utils.addNext
 
 import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.autosyncKey
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.utils.center
 import app.it.fast4x.rimusic.utils.checkFileExists
 import app.it.fast4x.rimusic.utils.color

@@ -12,7 +12,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.FontType
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
+import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
@@ -90,7 +90,7 @@ class OnboardingAccountsScreenWiringTest {
         every { any<Context>().encryptedPreferences } returns secure
         // The one-shot state readers are appContext-backed (Dependencies is not
         // initialized on the plain test Application)
-        mockkStatic("app.it.fast4x.rimusic.ui.screens.settings.AccountsSettingsKt")
+        mockkStatic("app.n_zik.android.components.settings.accounts.AccountsSettingsKt")
         every { isYouTubeLoggedIn() } returns false
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { ytAccountName() } returns ""

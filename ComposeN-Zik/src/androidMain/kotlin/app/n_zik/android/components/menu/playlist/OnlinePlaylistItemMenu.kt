@@ -52,7 +52,7 @@ import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

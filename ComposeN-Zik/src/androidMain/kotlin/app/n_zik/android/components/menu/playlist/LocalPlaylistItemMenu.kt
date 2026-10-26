@@ -27,7 +27,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.utils.syncPushPlaylistKey
 import app.it.fast4x.rimusic.utils.syncDirectionKey
 import app.it.fast4x.rimusic.utils.getSyncDirection

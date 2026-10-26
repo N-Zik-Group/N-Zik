@@ -41,7 +41,7 @@ import app.it.fast4x.rimusic.ui.components.tab.TabHeader
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
 import app.it.fast4x.rimusic.ui.components.themed.*
 import app.it.fast4x.rimusic.utils.*
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.enums.FilterBy
 import app.n_zik.android.components.menu.FilterMenu
 import app.it.fast4x.rimusic.utils.filterByKey

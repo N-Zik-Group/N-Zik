@@ -43,7 +43,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.navigation.compose.rememberNavController
 import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
-import app.it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
+import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.it.fast4x.rimusic.utils.discordAvatarKey
 import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
 import app.it.fast4x.rimusic.utils.discordUsernameKey
