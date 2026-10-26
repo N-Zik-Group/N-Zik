@@ -107,6 +107,9 @@ Fixed:
   - The ABI probe is now injectable via a `featuresProvider` on `BridgeServerCore`; the meta test mounts a device that can run the module, and a new test pins the negative case (feature omitted)
 
 Refactor:
+- refactor(settings): extract DataSettings cards
+  - Extract five cards, preserve eight reset values, backup dialog hosts, search history and focus.
+  - Validation: integrated assembleDebug passes; 10 focused tests pass with zero skips.
 - refactor(settings): extract Accounts cards and preserve service integration
   - Move Accounts, YouTube, four synchronization cards, Discord helpers, reset and target metadata into components/settings/accounts; reuse profile, Last.fm, Listen Together and bridge cards.
   - Preserve 17 plain/encrypted reset values, credentials, dialog hosts, sync operations and restart callbacks; migrate public YouTube helper imports and MockK facade names mechanically.
