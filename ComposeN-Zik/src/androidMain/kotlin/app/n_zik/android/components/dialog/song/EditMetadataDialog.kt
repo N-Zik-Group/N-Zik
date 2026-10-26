@@ -48,6 +48,7 @@ import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.InteractiveDialog
 import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.typography
@@ -348,7 +349,7 @@ class EditMetadataDialog private constructor(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(uiRoundnessShape())
-                .background(colorPalette().background1)
+                .background(surfaceColor(colorPalette().background1))
                 .padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
             if (coverBytes != null) {
@@ -372,7 +373,7 @@ class EditMetadataDialog private constructor(
                     modifier = Modifier
                         .size(56.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(colorPalette().background2)
+                        .background(surfaceColor(colorPalette().background2))
                 ) {}
             }
 

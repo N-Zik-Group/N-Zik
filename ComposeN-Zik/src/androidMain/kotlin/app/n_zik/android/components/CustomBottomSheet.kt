@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 
 /**
  * Géométrie de la carte "deploy" à un instant t (progress p).
@@ -210,7 +211,9 @@ fun CustomBottomSheet(
     val baseShape = app.n_zik.android.uiRoundnessShape()
     val scope = rememberCoroutineScope()
 
-    val miniPlayerColor = colorPalette().background2
+    // Elevated surface: the deployed card stays on the mini-player's surface
+    // color (dark gray in pitch black) instead of pure black
+    val miniPlayerColor = surfaceColor(colorPalette().background2)
     val anchoredAtTop = topPadding != null
 
     Box(

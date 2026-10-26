@@ -52,6 +52,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -530,6 +532,7 @@ fun OtherSettingsEntry(
     icon: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    isEnabled: Boolean = true,
     trailingContent: (@Composable () -> Unit)? = null
 ) {
     Surface(
@@ -537,7 +540,9 @@ fun OtherSettingsEntry(
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clip(uiRoundnessShape())
-            .clickable(onClick = onClick),
+            .alpha(if (isEnabled) 1f else 0.5f)
+            .semantics { if (!isEnabled) this[SemanticsProperties.Disabled] = Unit }
+            .clickable(enabled = isEnabled, onClick = onClick),
         color = Color.Transparent
     ) {
         Box(

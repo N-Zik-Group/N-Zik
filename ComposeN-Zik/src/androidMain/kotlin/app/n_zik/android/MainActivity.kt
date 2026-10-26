@@ -75,6 +75,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import app.n_zik.android.components.theme.forPaletteMode
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -1112,8 +1113,6 @@ class MainActivity :
             val isShowingLyrics = rememberSaveable(saver = TolerantBoolStateSaver("main.isShowingLyrics")) { mutableStateOf(false) }
             val isShowingVisualizer = rememberSaveable(saver = TolerantBoolStateSaver("main.isShowingVisualizer")) { mutableStateOf(false) }
             var animatedGradient by rememberPreference(animatedGradientKey, AnimatedGradient.M3EMorphingCover)
-            var customColor by rememberPreference(customColorKey, Color.Green.hashCode())
-            val lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
 
 
             LocalePreferences.preference =
@@ -1128,6 +1127,9 @@ class MainActivity :
                 val colorPaletteName =
                     getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
                 val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
+                val paletteIsDark = colorPaletteMode == ColorPaletteMode.Dark ||
+                    colorPaletteMode == ColorPaletteMode.PitchBlack ||
+                    (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
                 val thumbnailRoundnessDp = getFloat(thumbnailRoundnessDpKey, 12f)
                 val artistThumbnailRoundnessDp = getFloat(artistThumbnailRoundnessDpKey, 48f)
                 val uiRoundnessDp = getFloat("uiRoundnessDpKey", 25f)
@@ -1135,23 +1137,26 @@ class MainActivity :
                 val applyFontPadding = getBoolean(applyFontPaddingKey, false)
 
                 var colorPalette =
-                    colorPaletteOf(colorPaletteName, colorPaletteMode, !lightTheme)
+                    colorPaletteOf(colorPaletteName, colorPaletteMode, isSystemInDarkTheme)
 
                 val fontType = getEnum(fontTypeKey, FontType.Rubik)
 
                 if (colorPaletteName == ColorPaletteName.MaterialYou) {
                     colorPalette = dynamicColorPaletteOf(
                         Color(monet.getAccentColor(this@MainActivity)),
-                        !lightTheme
+                        paletteIsDark
                     )
                 }
                 if (colorPaletteName == ColorPaletteName.CustomColor) {
                     colorPalette = dynamicColorPaletteOf(
-                        Color(customColor),
-                        !lightTheme
+                        Color(getInt(customColorKey, Color.Green.hashCode())),
+                        paletteIsDark
                     )
                 }
 
+                if (colorPaletteName == ColorPaletteName.Customized) {
+                    colorPalette = customColorPalette(colorPalette, this@MainActivity, isSystemInDarkTheme)
+                }
                 Appearance(
                     colorPalette = colorPalette,
                     typography = typographyOf(
@@ -1163,7 +1168,7 @@ class MainActivity :
                     thumbnailShape = if (thumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(thumbnailRoundnessDp.dp, 0.25f)),
                     uiRoundnessShape = RoundedCornerShape(BoundedCornerSize(uiRoundnessDp.dp, 0.4f)),
                     artistThumbnailShape = if (artistThumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(artistThumbnailRoundnessDp.dp, 0.25f))
-                )
+                ).forPaletteMode(colorPaletteMode)
             }
 
             // Issue #881 (gh-881): tolerant saver on the PLAIN `saver =` overload (the `stateSaver =`
@@ -1181,7 +1186,7 @@ class MainActivity :
 
             fun updateAppearance(newAppearance: Appearance, animateGlobal: Boolean = false) {
                 if (animateGlobal) fadeFromAppearance = appearance
-                appearance = newAppearance
+                appearance = newAppearance.forPaletteMode(preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark))
             }
 
             // Re-cap the restored dynamic palette once at startup (spec-achromatic-ramp-luminance-cap,
@@ -1226,6 +1231,7 @@ class MainActivity :
                             playerBackgroundColors == PlayerBackgroundColors.CoverColor ||
                             animatedGradient == AnimatedGradient.FluidCoverColorGradient
 
+                paletteJob.value?.cancel()
                 if (!isDynamicPalette) {
                     return
                 }
@@ -1264,7 +1270,6 @@ class MainActivity :
 
                 val colorPaletteMode =
                     preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
-                paletteJob.value?.cancel()
                 paletteJob.value = coroutineScope.launch(NzikDispatchers.DATA) {
                     try {
                         val bitmap: Bitmap? = ImageCacheFactory.loadBitmap(url, allowHardware = false)
@@ -1352,10 +1357,10 @@ class MainActivity :
             LaunchedEffect(isSystemInDarkTheme) {
                 if (!hasInitializedAppearance) {
                     hasInitializedAppearance = true
-                    val computed = computeAppearance()
-                    if (appearance.colorPalette != computed.colorPalette) {
-                        appearance = computed
-                    }
+                    // The binder may already have extracted/restored the dynamic accent.
+                    // Do not replace it with the startup fallback just because this effect runs later.
+                    val paletteName = preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
+                    updateAppearance(if (paletteName == ColorPaletteName.Dynamic) appearance else computeAppearance())
                     return@LaunchedEffect
                 }
                 val colorPaletteName = preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
@@ -1533,6 +1538,7 @@ class MainActivity :
                                     setDynamicPalette(currentArtworkUri, animateTheme = true)
                                 } else {
                                     //bitmapListenerJob?.cancel()
+                                    paletteJob.value?.cancel()
                                     //binder?.setBitmapListener(null)
 
                                     if (colorPaletteName == ColorPaletteName.MaterialYou) {
@@ -1662,27 +1668,11 @@ class MainActivity :
                 )
             }
 
-            LaunchedEffect(Unit) {
-                val colorPaletteName =
-                    preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
-                if (colorPaletteName == ColorPaletteName.Customized) {
-                    val customPalette = customColorPalette(
-                        appearance.colorPalette,
-                        this@MainActivity,
-                        isSystemInDarkTheme
-                    )
-                    updateAppearance(
-                        appearance.copy(
-                            colorPalette = customPalette,
-                            typography = appearance.typography.withColor(customPalette.text)
-                        )
-                    )
-                }
+            // Saved palettes retain accent + darkness, not the Pitch Black mode. Normalize
+            // before the first frame, without waiting for a binder or playback callback.
+            val finalAppearance = remember(appearance, colorPaletteMode) {
+                appearance.forPaletteMode(colorPaletteMode)
             }
-
-
-            // Using appearance directly, Pitch Black is managed in setDynamicPalette
-            val finalAppearance = appearance
 
             SideEffect {
                 setSystemBarAppearance(finalAppearance.colorPalette.isDark)

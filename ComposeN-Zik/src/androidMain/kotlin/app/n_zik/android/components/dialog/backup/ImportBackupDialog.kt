@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.it.fast4x.rimusic.utils.getActiveProfile
@@ -352,7 +353,7 @@ object ImportBackupDialog : Dialog {
                                 abortChain()
                             },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = colorPalette().background0,
+                                containerColor = surfaceColor(colorPalette().background0),
                                 contentColor = colorPalette().textSecondary
                             )
                         ) {
@@ -400,7 +401,7 @@ object ImportBackupDialog : Dialog {
                         Button(
                             onClick = { stateCrossProfilePending = null },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = colorPalette().background0,
+                                containerColor = surfaceColor(colorPalette().background0),
                                 contentColor = colorPalette().textSecondary
                             )
                         ) {

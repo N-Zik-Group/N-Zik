@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.bold
@@ -158,7 +159,7 @@ object CheckForUpdateDialog {
                         checkUpdateState = CheckUpdateState.Disabled
                         onDismiss()
                     }
-                    .background(colorPalette().background2)
+                    .background(surfaceColor(colorPalette().background2))
                     .padding(16.dp)
             ) {
                 BasicText(

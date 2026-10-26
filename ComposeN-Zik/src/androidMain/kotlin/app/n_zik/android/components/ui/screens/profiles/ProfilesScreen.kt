@@ -28,7 +28,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
@@ -41,7 +40,6 @@ import androidx.core.content.edit
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.it.fast4x.rimusic.ui.components.Skeleton
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
@@ -50,12 +48,9 @@ import app.n_zik.android.components.dialog.common.DialogButton
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.it.fast4x.rimusic.ui.styling.Dimensions
-import app.it.fast4x.rimusic.ui.styling.ModernBlackColorPalette
-import app.it.fast4x.rimusic.ui.styling.PureBlackColorPalette
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.center
 import app.it.fast4x.rimusic.utils.clearProfileFaceEntries
-import app.it.fast4x.rimusic.utils.colorPaletteModeKey
 import app.it.fast4x.rimusic.utils.currentProfileEntries
 import app.it.fast4x.rimusic.utils.encryptedPreferences
 import app.it.fast4x.rimusic.utils.getActiveProfile
@@ -67,7 +62,6 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.profileDisplayName
 import app.it.fast4x.rimusic.utils.profileLastUsed
 import app.it.fast4x.rimusic.utils.readProfileIds
-import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
 import app.it.fast4x.rimusic.utils.saveProfileDisplayName
 import app.it.fast4x.rimusic.utils.saveProfileLastUsed
@@ -77,6 +71,7 @@ import app.it.fast4x.rimusic.utils.takenProfileNames
 import app.it.fast4x.rimusic.utils.writeProfileEntries
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.components.dialog.export.ExportProfileStateDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.import.ImportProfileState
@@ -625,7 +620,6 @@ private fun ProfileStateActionCard(
     modifier: Modifier = Modifier,
 ) {
     val palette = colorPalette()
-    val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -638,18 +632,7 @@ private fun ProfileStateActionCard(
             .clickable(enabled = enabled) { onClick() },
         shape = uiRoundnessShape(),
         colors = CardDefaults.cardColors(
-            // The same rule as the other NZik cards (SettingsSectionCard): the
-//
-            // pitch-black themes need the lighter gray, or the card vanishes on
-            // pure black.
-            containerColor = if (colorPalette() === PureBlackColorPalette ||
-                colorPalette() === ModernBlackColorPalette ||
-                colorPaletteMode == ColorPaletteMode.PitchBlack
-            ) {
-                Color(0xFF1A1A1A) // Gray dark for pitch black themes
-            } else {
-                colorPalette().background1
-            }
+            containerColor = surfaceColor(colorPalette().background1)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {

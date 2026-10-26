@@ -8,12 +8,34 @@ import androidx.compose.ui.unit.sp
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.it.fast4x.rimusic.ui.styling.Typography
+import app.it.fast4x.rimusic.enums.ColorPaletteMode
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class AppearanceFadeTest {
+    @Test
+    fun `restored palette obeys pitch black without losing its dynamic accent`() {
+        val normalized = fromAppearance.forPaletteMode(ColorPaletteMode.PitchBlack)
+        assertEquals(Color.Black, normalized.colorPalette.background0)
+        assertEquals(Color.Black, normalized.colorPalette.background1)
+        assertEquals(Color.Black, normalized.colorPalette.background2)
+        assertEquals(Color.Black, normalized.colorPalette.background3)
+        assertEquals(Color.Black, normalized.colorPalette.background4)
+        assertEquals(fromAppearance.colorPalette.accent, normalized.colorPalette.accent)
+        assertEquals(Color.White, normalized.typography.s.color)
+        assertTrue(normalized.colorPalette.isDark)
+        assertSame(normalized, normalized.forPaletteMode(ColorPaletteMode.PitchBlack))
+    }
+
+    @Test
+    fun `other modes keep their selected palette unchanged`() {
+        for (mode in ColorPaletteMode.entries.filter { it != ColorPaletteMode.PitchBlack }) {
+            assertSame(fromAppearance, fromAppearance.forPaletteMode(mode))
+        }
+    }
 
     private fun palette(background: Color, text: Color, isDark: Boolean = true): ColorPalette =
         ColorPalette(

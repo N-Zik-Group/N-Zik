@@ -45,6 +45,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.splitArtistNames
@@ -219,7 +220,7 @@ class AlbumItemMenu private constructor(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
                 .fillMaxWidth()
-                .background(colorPalette().background1)
+                .background(surfaceColor(colorPalette().background1))
         ) {
             Box(
                 modifier = Modifier
@@ -558,7 +559,7 @@ class AlbumItemMenu private constructor(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colorPalette().background0)
+                .background(surfaceColor(colorPalette().background1))
         ) {
             downloadAll.Render()
             deleteAll.Render()

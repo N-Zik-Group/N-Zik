@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.it.fast4x.rimusic.utils.conditional
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.rememberPreference
@@ -65,7 +66,7 @@ object GridMenu {
             Modifier.heightIn( max = (screenHeight * CONTENT_HEIGHT_FRACTION).dp )
                        .fillMaxWidth()
                        .clip(topUiRoundnessShape())
-                       .background(colorPalette().background0),
+                       .background(surfaceColor(colorPalette().background1)),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (hasHeader) {
@@ -75,7 +76,7 @@ object GridMenu {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(topUiRoundnessShape())
-                        .background(colorPalette().background1)
+                        .background(surfaceColor(colorPalette().background1))
                 ) {
                     if (showDragHandle) {
                         Box(
@@ -147,7 +148,7 @@ object GridMenu {
                     .fillMaxWidth()
                     .weight(1f)
                     .clip(if (!hasHeader) topUiRoundnessShape() else RoundedCornerShape(0.dp))
-                    .background(colorPalette().background0),
+                    .background(surfaceColor(colorPalette().background1)),
                 content = content
             )
         }

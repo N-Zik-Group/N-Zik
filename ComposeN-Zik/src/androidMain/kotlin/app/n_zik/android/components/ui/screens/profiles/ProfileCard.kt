@@ -49,12 +49,8 @@ import java.util.Date
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import it.fast4x.innertube.utils.parseCookieString
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
-import app.it.fast4x.rimusic.ui.styling.ModernBlackColorPalette
-import app.it.fast4x.rimusic.ui.styling.PureBlackColorPalette
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
-import app.it.fast4x.rimusic.utils.colorPaletteModeKey
 import app.it.fast4x.rimusic.utils.discordAvatarKey
 import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
 import app.it.fast4x.rimusic.utils.discordUsernameKey
@@ -63,7 +59,6 @@ import app.it.fast4x.rimusic.utils.faceNameSourceKey
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.profileDisplayName
 import app.it.fast4x.rimusic.utils.profileLastUsed
-import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
 import app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger
 import app.it.fast4x.rimusic.utils.semiBold
@@ -72,6 +67,7 @@ import app.it.fast4x.rimusic.utils.ytAccountThumbnailKey
 import app.it.fast4x.rimusic.utils.ytCookieKey
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.components.maintenance.formatBytes
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
@@ -423,7 +419,6 @@ fun ProfileCard(
 ) {
     val context = LocalContext.current
     val palette = colorPalette()
-    val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -439,18 +434,7 @@ fun ProfileCard(
             .clickable(enabled = onSwitch != null) { onSwitch?.invoke() },
         shape = uiRoundnessShape(),
         colors = CardDefaults.cardColors(
-            // The same rule as the other NZik cards (SettingsSectionCard): the
-//
-            // pitch-black themes need the lighter gray, or the card vanishes on
-            // pure black.
-            containerColor = if (colorPalette() === PureBlackColorPalette ||
-                colorPalette() === ModernBlackColorPalette ||
-                colorPaletteMode == ColorPaletteMode.PitchBlack
-            ) {
-                Color(0xFF1A1A1A) // Gray dark for pitch black themes
-            } else {
-                colorPalette().background1
-            }
+            containerColor = surfaceColor(colorPalette().background1)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {

@@ -52,6 +52,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.models.Info
@@ -826,11 +827,11 @@ class PlayerItemMenu private constructor(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colorPalette().background0)
+                .background(surfaceColor(colorPalette().background1))
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.background(colorPalette().background1)
+                modifier = Modifier.background(surfaceColor(colorPalette().background1))
             ) {
                 Box(
                     modifier = Modifier

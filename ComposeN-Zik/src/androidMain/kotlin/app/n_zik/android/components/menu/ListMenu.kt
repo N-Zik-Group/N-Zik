@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.it.fast4x.rimusic.utils.conditional
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.rememberPreference
@@ -62,7 +63,7 @@ object ListMenu {
             Modifier.heightIn( max = (screenHeight * CONTENT_HEIGHT_FRACTION).dp )
                     .fillMaxWidth()
                     .clip(topUiRoundnessShape())
-                    .background(colorPalette().background0),
+                    .background(surfaceColor(colorPalette().background1)),
             horizontalAlignment = Alignment.CenterHorizontally,
             content = {
                 if (hasHeader) {
@@ -72,7 +73,7 @@ object ListMenu {
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(topUiRoundnessShape())
-                            .background(colorPalette().background1)
+                            .background(surfaceColor(colorPalette().background1))
                     ) {
                         if (showDragHandle) {
                             Box(
@@ -137,7 +138,7 @@ object ListMenu {
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .background(colorPalette().background0)
+                        .background(surfaceColor(colorPalette().background1))
                         .conditional(!hasHeader) {
                             clip(topShape)
                         }

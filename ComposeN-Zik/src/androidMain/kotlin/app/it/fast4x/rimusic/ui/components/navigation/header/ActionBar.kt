@@ -39,6 +39,7 @@ import app.n_zik.android.components.ui.screens.profiles.loadActiveProfileFace
 import app.n_zik.android.components.ui.screens.profiles.profileFaceUpdateTrigger
 import app.n_zik.android.components.ui.screens.rescue.RescueActivity
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.utils.ProfileFace
 import app.it.fast4x.rimusic.enums.NavRoutes
@@ -83,7 +84,9 @@ private fun HamburgerMenu(
 
     val menu = DropdownMenu(
         expanded = expanded,
-        containerColor = colorPalette().background0.copy(0.90f),
+        // Alpha applied AFTER surfaceColor: wrapping the pre-alpha color would
+        // drop the 0.90 in pitch black (surfaceColor returns an opaque gray)
+        containerColor = surfaceColor(colorPalette().background0).copy(0.90f),
         onDismissRequest = onDismissRequest
     )
     // Customizable burger menu (spec-customizable-burger-menu): the stored order (parsed

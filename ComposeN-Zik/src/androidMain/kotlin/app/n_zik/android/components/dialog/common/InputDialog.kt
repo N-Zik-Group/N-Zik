@@ -13,6 +13,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 
 interface InputDialog: InteractiveDialog {
 
@@ -23,7 +24,7 @@ interface InputDialog: InteractiveDialog {
             TextFieldDefaults.colors(
                 focusedTextColor = colorPalette().text,
                 unfocusedTextColor = colorPalette().textDisabled,
-                focusedContainerColor = colorPalette().background1,
+                focusedContainerColor = surfaceColor(colorPalette().background1),
                 unfocusedContainerColor = colorPalette().background0,
                 focusedIndicatorColor = colorPalette().accent,
                 unfocusedIndicatorColor = colorPalette().textDisabled,

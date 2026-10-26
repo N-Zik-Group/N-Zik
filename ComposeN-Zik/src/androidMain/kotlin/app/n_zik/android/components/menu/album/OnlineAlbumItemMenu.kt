@@ -59,6 +59,7 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.artistEntryNames
@@ -185,7 +186,7 @@ class OnlineAlbumItemMenu private constructor(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
                 .fillMaxWidth()
-                .background(colorPalette().background1)
+                .background(surfaceColor(colorPalette().background1))
         ) {
             Box(
                 modifier = Modifier
@@ -614,7 +615,7 @@ class OnlineAlbumItemMenu private constructor(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colorPalette().background0)
+                .background(surfaceColor(colorPalette().background1))
         ) {
             changeTitle.Render()
             changeAuthors.Render()

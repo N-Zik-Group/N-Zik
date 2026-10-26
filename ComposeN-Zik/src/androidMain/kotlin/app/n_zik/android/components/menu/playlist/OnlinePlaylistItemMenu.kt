@@ -46,6 +46,7 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
@@ -166,7 +167,7 @@ class OnlinePlaylistItemMenu private constructor(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
                 .fillMaxWidth()
-                .background(colorPalette().background1)
+                .background(surfaceColor(colorPalette().background1))
         ) {
             Box(
                 modifier = Modifier
@@ -513,7 +514,7 @@ class OnlinePlaylistItemMenu private constructor(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colorPalette().background0)
+                .background(surfaceColor(colorPalette().background1))
         ) {
             downloadAllDialog.Render()
             deleteAllDialog.Render()

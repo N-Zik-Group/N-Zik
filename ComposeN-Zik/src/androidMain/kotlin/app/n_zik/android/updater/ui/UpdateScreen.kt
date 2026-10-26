@@ -74,11 +74,10 @@ import androidx.navigation.NavController
 import app.n_zik.android.updater.models.UpdateEndpoints
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.updater.models.CheckUpdateState
 import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.ui.styling.ModernBlackColorPalette
-import app.it.fast4x.rimusic.ui.styling.PureBlackColorPalette
 import app.it.fast4x.rimusic.utils.bold
 import app.it.fast4x.rimusic.utils.checkBetaUpdatesKey
 import app.it.fast4x.rimusic.utils.checkUpdateStateKey
@@ -497,11 +496,7 @@ fun UpdateScreen(navController: NavController) {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(
-                                containerColor = if (colorPalette() === PureBlackColorPalette || colorPalette() === ModernBlackColorPalette || colorPaletteMode == ColorPaletteMode.PitchBlack) {
-                                    Color(0xFF1A1A1A)
-                                } else {
-                                    colorPalette().background1
-                                }
+                                containerColor = surfaceColor(colorPalette().background1)
                             ),
                             shape = uiRoundnessShape(),
                             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -526,7 +521,7 @@ fun UpdateScreen(navController: NavController) {
                                     }
                                     val menu = DropdownMenu(
                                         expanded = showMenu,
-                                        containerColor = colorPalette().background0.copy(0.90f),
+                                        containerColor = surfaceColor(colorPalette().background0).copy(0.90f),
                                         onDismissRequest = { showMenu = false }
                                     )
 
@@ -812,11 +807,7 @@ fun UpdateScreen(navController: NavController) {
                         Card(
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = if (colorPalette() === PureBlackColorPalette || colorPalette() === ModernBlackColorPalette || colorPaletteMode == ColorPaletteMode.PitchBlack) {
-                                    Color(0xFF1A1A1A)
-                                } else {
-                                    colorPalette().background1
-                                }
+                                containerColor = surfaceColor(colorPalette().background1)
                             ),
                             shape = uiRoundnessShape(),
                             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)

@@ -14,19 +14,18 @@ import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.models.Lyrics
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.core.database.Database
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.n_zik.android.components.dialog.common.DefaultDialog
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import androidx.compose.material3.Icon
-import androidx.compose.ui.res.painterResource
 import app.n_zik.android.components.menu.ListMenu
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.uiRoundnessShape
@@ -44,7 +43,9 @@ private val trackSelectorTextFieldColors: TextFieldColors
         unfocusedTextColor = colorPalette().text,
         focusedTextColor = colorPalette().text,
         unfocusedIndicatorColor = colorPalette().text,
-        focusedIndicatorColor = colorPalette().text
+        focusedIndicatorColor = colorPalette().text,
+        focusedContainerColor = surfaceColor(colorPalette().background1),
+        unfocusedContainerColor = colorPalette().background0
     )
 
 @Composable
@@ -177,7 +178,7 @@ fun LyricsTrackSelector(
                                 )
                                 IconButton(
                                     icon = R.drawable.search,
-                                    color = Color.Black,
+                                    color = colorPalette().text,
                                     onClick = {
                                         menuState.hide()
                                         onSearchRetry()
@@ -185,7 +186,7 @@ fun LyricsTrackSelector(
                                     modifier = Modifier
                                         .background(
                                             shape = uiRoundnessShape(),
-                                            color = Color.White
+                                            color = surfaceColor(colorPalette().background2)
                                         )
                                         .padding(all = 4.dp)
                                         .size(24.dp)
@@ -266,13 +267,16 @@ fun LyricsTrackSelector(
                         )
                         IconButton(
                             icon = R.drawable.search,
-                            color = Color.Black,
+                            color = colorPalette().text,
                             onClick = {
                                 menuState.hide()
                                 onSearchRetry()
                             },
                             modifier = Modifier
-                                .background(shape = uiRoundnessShape(), color = Color.White)
+                                .background(
+                                    shape = uiRoundnessShape(),
+                                    color = surfaceColor(colorPalette().background2)
+                                )
                                 .padding(all = 4.dp)
                                 .size(24.dp)
                                 .align(Alignment.CenterVertically)

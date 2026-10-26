@@ -40,6 +40,7 @@ import app.it.fast4x.rimusic.utils.colorPaletteModeKey
 import app.it.fast4x.rimusic.utils.isLandscape
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import timber.log.Timber
 import app.it.fast4x.rimusic.utils.hideStatusBarKey
 import androidx.core.view.WindowInsetsCompat
@@ -87,13 +88,19 @@ fun CustomModalBottomSheet(
         }
     }
 
+    // Pitch black centralization: an opaque sheet gets the elevated surface
+    // color (dark gray), the same treatment as the mini player; a transparent
+    // sheet draws its own background and stays untouched.
+    val sheetContainerColor =
+        if (containerColor == Color.Transparent) containerColor else surfaceColor(containerColor)
+
     if (isComposing) {
         ModalBottomSheet(
             onDismissRequest = onDismissRequest,
             modifier = modifier,
             sheetState = sheetState,
             shape = shape,
-            containerColor = containerColor,
+            containerColor = sheetContainerColor,
             contentColor = contentColor,
             tonalElevation = tonalElevation,
             scrimColor = scrimColor,
@@ -111,8 +118,8 @@ fun CustomModalBottomSheet(
                 val colorPalette = colorPalette()
                 (view.parent as? DialogWindowProvider)?.window?.let { window ->
                     val hideStatusBar by rememberPreference(hideStatusBarKey, false)
-                    DisposableEffect(window, containerColor, colorPalette, hideStatusBar) {
-                        val luminance = ColorUtils.calculateLuminance(containerColor.toArgb())
+                    DisposableEffect(window, sheetContainerColor, colorPalette, hideStatusBar) {
+                        val luminance = ColorUtils.calculateLuminance(sheetContainerColor.toArgb())
                         val isLightBackground = luminance > 0.5 
 
                         val applyInsets = {

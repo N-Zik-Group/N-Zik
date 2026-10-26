@@ -25,6 +25,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.textCopyFromClipboard
@@ -62,7 +63,7 @@ inline fun InputTextField(
     Column(
         modifier = modifier
             .padding(all = 10.dp)
-            .background(color = palette.background1, shape = uiRoundnessShape())
+            .background(color = surfaceColor(palette.background1), shape = uiRoundnessShape())
             .padding(vertical = 16.dp)
     ) {
         BasicText(
@@ -86,8 +87,8 @@ inline fun InputTextField(
                     cursorColor = palette.text,
                     focusedTextColor = palette.text,
                     unfocusedTextColor = palette.text,
-                    focusedContainerColor = if (txtFieldError.value.isEmpty()) palette.background1 else palette.red,
-                    unfocusedContainerColor = if (txtFieldError.value.isEmpty()) palette.background1 else palette.red,
+                    focusedContainerColor = if (txtFieldError.value.isEmpty()) surfaceColor(palette.background1) else palette.red,
+                    unfocusedContainerColor = if (txtFieldError.value.isEmpty()) surfaceColor(palette.background1) else palette.red,
                     focusedIndicatorColor = palette.accent,
                     unfocusedIndicatorColor = palette.textDisabled
                 ),

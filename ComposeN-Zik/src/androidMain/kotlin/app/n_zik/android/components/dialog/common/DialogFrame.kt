@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.isLandscape
 import app.it.fast4x.rimusic.utils.semiBold
@@ -60,7 +61,8 @@ fun DialogFrame(
                 .padding(16.dp),
             shape = uiRoundnessShape(),
             colors = CardDefaults.cardColors(
-                containerColor = colorPalette().background1
+                // Elevated surface: dark gray in pitch black instead of pure black
+                containerColor = surfaceColor(colorPalette().background1)
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {

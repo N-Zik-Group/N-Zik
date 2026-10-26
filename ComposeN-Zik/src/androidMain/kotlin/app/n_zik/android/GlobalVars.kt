@@ -4,10 +4,15 @@ import android.content.Context
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.it.fast4x.rimusic.ui.styling.BoundedCornerSize
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
+import app.it.fast4x.rimusic.ui.styling.ModernBlackColorPalette
+import app.it.fast4x.rimusic.ui.styling.PureBlackColorPalette
 import app.it.fast4x.rimusic.utils.autosyncKey
+import app.it.fast4x.rimusic.utils.colorPaletteModeKey
 import app.it.fast4x.rimusic.utils.bassboostEnabledKey
 import app.it.fast4x.rimusic.utils.handleAudioFocusEnabledKey
 import app.it.fast4x.rimusic.utils.isConnectionMeteredEnabledKey
@@ -110,5 +115,19 @@ fun isHandleAudioFocusEnabled() = appContext().preferences.getBoolean(handleAudi
 fun isPauseOnHeadphoneDisconnectEnabled() = appContext().preferences.getBoolean(pauseOnHeadphoneDisconnectKey, true)
 fun isBassBoostEnabled() = appContext().preferences.getBoolean(bassboostEnabledKey, false)
 fun isDebugModeEnabled() = appContext().preferences.getBoolean(logDebugEnabledKey, false)
+
+/** Surface color for elevated components (cards, sheets, burger menu, navigation bar): [base] normally, dark gray in pitch black (see [isPitchBlackSurface]). */
+@Composable
+fun surfaceColor(base: Color): Color =
+    if (isPitchBlackSurface()) Color(0xFF1A1A1A) else base
+
+/** True when the active palette renders surfaces on pure black. */
+@Composable
+fun isPitchBlackSurface(): Boolean {
+    val colorPaletteMode = rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark).value
+    return colorPalette() === PureBlackColorPalette ||
+        colorPalette() === ModernBlackColorPalette ||
+        colorPaletteMode == ColorPaletteMode.PitchBlack
+}
 
 

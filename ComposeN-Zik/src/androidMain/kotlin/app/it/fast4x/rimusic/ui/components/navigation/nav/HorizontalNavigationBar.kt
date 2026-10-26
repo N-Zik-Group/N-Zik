@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.n_zik.android.colorPalette
+import app.n_zik.android.surfaceColor
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.NavigationBarType
@@ -195,7 +196,7 @@ class HorizontalNavigationBar(
                         .padding(bottom = if (isFloating) 2.dp else 0.dp)
                         .shadow(elevation = if (isFloating) 8.dp else 0.dp, shape = roundedCornerShape)
                         .clip(roundedCornerShape)
-                        .background(if (isFloating) colorPalette().background1.copy(alpha = 0.95f) else colorPalette().background1)
+                        .background(surfaceColor(if (isFloating) colorPalette().background1.copy(alpha = 0.95f) else colorPalette().background1))
                 ) {
 
 
