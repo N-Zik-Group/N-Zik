@@ -24,7 +24,6 @@ import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.AnimatedGradient
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.PlayerBackgroundColors
 import app.it.fast4x.rimusic.enums.PlayerType
 import app.n_zik.android.components.dialog.settings.PlayerActionBarSettingsDialog
@@ -43,7 +42,6 @@ import app.n_zik.android.components.settings.common.settingsSearchDescription
 import app.n_zik.android.components.settings.common.settingsSearchTitle
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.RestartPlayerService
-import app.it.fast4x.rimusic.utils.navigationBarPositionKey
 import app.it.fast4x.rimusic.utils.playerBackgroundColorsKey
 import app.it.fast4x.rimusic.utils.playerTypeKey
 import app.it.fast4x.rimusic.utils.rememberPreference
@@ -65,10 +63,6 @@ fun AppearanceSettings(
 
     var showthumbnail by rememberPreference(showthumbnailKey, true)
     var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, true)
-    val navigationBarPosition by rememberPreference(
-        navigationBarPositionKey,
-        NavigationBarPosition.BottomFloating
-    )
     val isHistoryPaused by rememberPreference(pauseSearchHistoryKey, false)
     var playerBackgroundColors by rememberPreference(
         playerBackgroundColorsKey,
@@ -99,13 +93,7 @@ fun AppearanceSettings(
             .background(colorPalette().background0)
 
             .fillMaxHeight()
-            .fillMaxWidth(
-                if (navigationBarPosition == NavigationBarPosition.Left ||
-                    navigationBarPosition == NavigationBarPosition.Top ||
-                    navigationBarPosition == NavigationBarPosition.Bottom
-                ) 1f
-                else Dimensions.contentWidthRightBar
-            )
+            .fillMaxWidth()
             .verticalScroll(scrollState)
 
     ) {

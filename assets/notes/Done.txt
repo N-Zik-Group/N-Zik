@@ -58,6 +58,9 @@ Improved:
   - `ListenTogetherMenu` create/join failures while offline now surface the dedicated "no connection" toast instead of a generic error (offline audit menu branch)
 
 Fixed:
+- fix(settings): use full width for Player Appearance
+  - Remove obsolete 12-percent sidebar reservation from Player Appearance.
+  - Validation: Four Appearance tests pass, including measured width for floating and right navigation; assembleDebug succeeds.
 - fix(settings): remove profile storage summary from Accounts
   - Remove the requested profile storage card and its search result; retain the profiles shortcut on the profile editor.
   - Validation: Five Accounts tests and six registry/search tests pass; assembleDebug succeeds.

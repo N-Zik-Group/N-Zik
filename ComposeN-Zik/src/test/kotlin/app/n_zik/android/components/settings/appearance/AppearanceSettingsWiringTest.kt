@@ -11,12 +11,15 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onRoot
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.FontType
+import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
+import app.it.fast4x.rimusic.utils.navigationBarPositionKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.it.fast4x.rimusic.utils.showlyricsthumbnailKey
@@ -60,6 +63,24 @@ class AppearanceSettingsWiringTest {
             }
         }
         composeRule.waitForIdle()
+    }
+
+    @Test fun cardsUseAvailableWidthForFloatingAndSideNavigation() {
+        show()
+        fun assertFullWidth() {
+            val root = composeRule.onRoot().fetchSemanticsNode().boundsInRoot
+            val card = composeRule.onNodeWithTag("appearance.card.presets", useUnmergedTree = true)
+                .fetchSemanticsNode().boundsInRoot
+            assertEquals(root.left, card.left, 1f)
+            assertEquals(root.right, card.right, 1f)
+        }
+        assertFullWidth()
+        composeRule.runOnIdle {
+            context.preferences.edit()
+                .putString(navigationBarPositionKey, NavigationBarPosition.Right.name).commit()
+        }
+        composeRule.waitForIdle()
+        assertFullWidth()
     }
 
     @Test fun cardsKeepBaselineOrderAndConditionalLyricsVisibility() {
