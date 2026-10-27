@@ -84,6 +84,9 @@ Changed:
   - All five reference sites updated: `AppNavigation.kt` (the route registrations + the `egg = EasterEgg.PACMAN/SNAKE` call sites - user-approved exception 1), `CollapsingAppTitle.kt` (the 10-tap / long-press triggers), `AppTitle.kt` (dead composable still compiled - user-ratified exception 3), `AppNavBarRouteTest.kt` (the route assertions)
 
 Improved:
+- improve(theme): limit palette fade recomposition to actual appearance readers
+  - Track existing LocalAppearance reads, keep a stable provider content scope, and isolate root, video and menu surface color reads.
+  - Preserve scoped fades and public callback compatibility; verify rendered intermediate colors, retargeting, clipping, callback-driven completion and stable unrelated content.
 - improve(quickpicks): avoid redundant loads and duplicate database observers
   - Publish local picks before related-network completion, stop initial attempts once usable sections suffice, and coalesce unchanged navigation reentry.
   - Replay explicit refresh or changed request identity once with the latest page owner; preserve observer cleanup and fence stale publications.

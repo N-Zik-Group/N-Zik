@@ -69,13 +69,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.union
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -181,7 +179,6 @@ import app.n_zik.android.utils.PlayerAwareInsetsTracker
 import app.n_zik.android.utils.appNavBarPresentForRoute
 import app.n_zik.android.utils.localeListForAppLanguage
 import app.n_zik.android.utils.shouldRecreateActivity
-import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.themed.CrossfadeContainer
 import app.it.fast4x.rimusic.ui.screens.AppNavigation
@@ -208,7 +205,10 @@ import app.n_zik.android.components.player.presentMiniplayerThenExpand
 import app.n_zik.android.components.player.presentMiniplayerCollapsed
 import app.n_zik.android.components.player.MINIPLAYER_APPEAR_FADE_MS
 import app.n_zik.android.components.player.MINIPLAYER_APPEAR_FADE_SKIPPED_FRAMES
-import app.n_zik.android.components.theme.AnimatedAppearance
+import app.n_zik.android.components.theme.AppearanceMenuSheet
+import app.n_zik.android.components.theme.AppearanceVideoSheet
+import app.n_zik.android.components.theme.ProvideAnimatedAppearance
+import app.n_zik.android.components.theme.appearanceBackground
 import app.n_zik.android.components.theme.startupAppearance
 import app.n_zik.android.components.theme.withColor
 import app.it.fast4x.rimusic.ui.styling.Appearance
@@ -297,7 +297,9 @@ import app.it.fast4x.rimusic.utils.setDefaultPalette
 import app.it.fast4x.rimusic.utils.showButtonPlayerVideoKey
 import app.it.fast4x.rimusic.utils.showSearchTabKey
 import app.it.fast4x.rimusic.utils.showTotalTimeQueueKey
-import app.n_zik.android.core.coil.*
+import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.coil.resize
+import app.n_zik.android.core.coil.thumbnail
 import app.it.fast4x.rimusic.utils.thumbnailRoundnessDpKey
 import app.it.fast4x.rimusic.utils.artistThumbnailRoundnessDpKey
 import app.it.fast4x.rimusic.utils.transitionEffectKey
@@ -329,7 +331,6 @@ import app.n_zik.android.core.navigation.MiniPlayerQueueInterceptor
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.extensions.discord.DiscordUiState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CornerSize
 import androidx.navigation.NavController
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.lifecycle.Lifecycle
@@ -1834,15 +1835,15 @@ class MainActivity :
             val topBarOffsetState = scaffoldBars.topOffset
             val bottomBarOffsetState = scaffoldBars.bottomOffset
 
-            AnimatedAppearance(
+            ProvideAnimatedAppearance(
                 target = finalAppearance,
                 fadeFrom = fadeFromAppearance,
                 onFadeComplete = { fadeFromAppearance = null }
-            ) { displayedAppearance ->
+            ) {
                 BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(displayedAppearance.colorPalette.background0)
+                        .appearanceBackground()
                         .nestedScroll(nestedScrollConnection)
                 ) {
 
@@ -2509,54 +2510,19 @@ class MainActivity :
                                 }
                             }
 
-                            CustomModalBottomSheet(
+                            AppearanceVideoSheet(
                                 showSheet = isVideo && isVideoEnabled && showPlayer,
                                 onDismissRequest = { showPlayer = false },
-                                containerColor = displayedAppearance.colorPalette.background0,
-                                contentColor = displayedAppearance.colorPalette.background0,
-                                modifier = Modifier.fillMaxWidth(),
-                                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-                                dragHandle = {
-                                    Surface(
-                                        modifier = Modifier.padding(vertical = 0.dp),
-                                        color = displayedAppearance.colorPalette.background0,
-                                        shape = uiRoundnessShape()
-                                    ) {}
-                                },
-                                shape = (uiRoundnessShape() as? RoundedCornerShape)?.let {
-                                    RoundedCornerShape(
-                                        topStart = it.topStart,
-                                        topEnd = it.topEnd,
-                                        bottomStart = CornerSize(0.dp),
-                                        bottomEnd = CornerSize(0.dp)
-                                    )
-                                } ?: uiRoundnessShape()
                             ) {
                                 youtubePlayer()
                             }
 
                             val menuState = LocalMenuState.current
                             val menuSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-                            CustomModalBottomSheet(
+                            AppearanceMenuSheet(
                                 showSheet = menuState.isDisplayed,
                                 onDismissRequest = menuState::hide,
-                                containerColor = Color.Transparent,
-                                modifier = Modifier.statusBarsPadding(),
                                 sheetState = menuSheetState,
-                                dragHandle = {
-                                    Surface(
-                                        modifier = Modifier.padding(vertical = 0.dp),
-                                        color = Color.Transparent,
-                                    ) {}
-                                },
-                                shape = (uiRoundnessShape() as? RoundedCornerShape)?.let {
-                                    RoundedCornerShape(
-                                        topStart = it.topStart,
-                                        topEnd = it.topEnd,
-                                        bottomStart = CornerSize(0.dp),
-                                        bottomEnd = CornerSize(0.dp)
-                                    )
-                                } ?: uiRoundnessShape()
                             ) {
                                 AnimatedContent(
                                     targetState = menuState.contentState,

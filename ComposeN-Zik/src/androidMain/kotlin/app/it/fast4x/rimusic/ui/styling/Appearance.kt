@@ -7,7 +7,7 @@ import app.n_zik.android.ui.saveable.reportTruncatedSaveable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
-import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
@@ -112,4 +112,4 @@ data class Appearance(
     }
 }
 
-val LocalAppearance = staticCompositionLocalOf<Appearance> { error("No Appearance provided") }
+val LocalAppearance = compositionLocalOf<Appearance> { error("No Appearance provided") }

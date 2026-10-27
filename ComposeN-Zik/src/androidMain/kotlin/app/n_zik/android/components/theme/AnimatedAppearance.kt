@@ -17,13 +17,7 @@ import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.Typography
 import app.it.fast4x.rimusic.ui.styling.lerpTo
 
-/**
- * Stable appearance target for scoped fades.
- *
- * When [AnimatedAppearance] animates the global appearance, the value provided
- * through [LocalAppearance] changes every frame. Scoped fades must read this
- * stable target instead, otherwise their animation is restarted on every frame.
- */
+/** Stable target that prevents scoped fades from restarting on global animation frames. */
 val LocalPaletteFadeTarget = staticCompositionLocalOf<Appearance?> { null }
 
 /** Returns a copy of this typography with every text style recolored while preserving each style's font size and other attributes. */
@@ -40,12 +34,7 @@ fun Typography.withColor(color: Color): Typography = copy(
     xlxl = xlxl.copy(color = color),
 )
 
-/**
- * Interpolates between two appearances at [fraction].
- *
- * Shapes are taken from [target]; only the palette and typography color are
- * animated.
- */
+/** Interpolates palette and typography colors while taking shapes from [target]. */
 fun fadeAppearance(from: Appearance, target: Appearance, fraction: Float): Appearance {
     val palette = from.colorPalette.lerpTo(target.colorPalette, fraction)
     return target.copy(
@@ -66,14 +55,7 @@ fun appearanceRetarget(current: Appearance?, fadeFrom: Appearance?, target: Appe
     else -> AppearanceRetarget(displayed = target, animateFrom = current)
 }
 
-/**
- * Displays [target] globally.
- *
- * When [fadeFrom] is non-null, the transition from the currently displayed
- * appearance to [target] is animated across the whole app. When [fadeFrom] is
- * null, [target] is applied instantly. [onFadeComplete] is invoked after an
- * animated transition finishes so the caller can clear [fadeFrom].
- */
+/** Compatibility entry point for content that explicitly consumes the animated appearance. */
 @Composable
 fun AnimatedAppearance(
     target: Appearance,
@@ -81,6 +63,25 @@ fun AnimatedAppearance(
     durationMillis: Int = 350,
     onFadeComplete: () -> Unit,
     content: @Composable (Appearance) -> Unit,
+) {
+    ProvideAnimatedAppearance(target, fadeFrom, durationMillis, onFadeComplete) {
+        AnimatedAppearanceContent(content)
+    }
+}
+
+@Composable
+private fun AnimatedAppearanceContent(content: @Composable (Appearance) -> Unit) {
+    content(LocalAppearance.current)
+}
+
+/** Provides animated colors to theme readers without passing frame values through [content]. */
+@Composable
+fun ProvideAnimatedAppearance(
+    target: Appearance,
+    fadeFrom: Appearance?,
+    durationMillis: Int = 350,
+    onFadeComplete: () -> Unit,
+    content: @Composable () -> Unit,
 ) {
     var displayed by remember { mutableStateOf<Appearance?>(null) }
     val fraction = remember { Animatable(1f) }
@@ -107,6 +108,6 @@ fun AnimatedAppearance(
         LocalAppearance provides value,
         LocalPaletteFadeTarget provides target,
     ) {
-        content(value)
+        content()
     }
 }
