@@ -420,6 +420,21 @@ object ImageCacheFactory {
                 // if (validUrl != null) Timber.tag("ImageCache").d("URL: original=%s, modified=%s", validUrl, modUrl)
             }) 
         }
+
+        // A null model never resolves in Coil (the placeholder would show forever). Load the
+        // fallback box as a resource so the painter settles on a drawable instead of hanging.
+        if (currentUrl == null) {
+            return rememberAsyncImagePainter(
+                model = ImageRequest.Builder(appContext())
+                    .data(R.drawable.ic_launcher_box)
+                    .build(),
+                imageLoader = LOADER,
+                contentScale = contentScale,
+                placeholder = painterResource(placeholder ?: R.drawable.loader),
+                error = painterResource(error),
+                fallback = painterResource(fallback)
+            )
+        }
         
         
         val request = ImageRequest.Builder(appContext())
@@ -464,21 +479,13 @@ object ImageCacheFactory {
             )
             .build()
 
-        var showFallback by remember { mutableStateOf(false) }
-        if (currentUrl == null) {
-            LaunchedEffect(Unit) {
-                kotlinx.coroutines.delay(10000L)
-                showFallback = true
-            }
-        }
-
         return rememberAsyncImagePainter(
             model = request,
             imageLoader = LOADER,
             contentScale = contentScale,
             placeholder = painterResource(placeholder ?: R.drawable.loader),
-            error = painterResource(if (currentUrl == null && !showFallback) R.drawable.loader else error),
-            fallback = painterResource(if (currentUrl == null && !showFallback) R.drawable.loader else fallback),
+            error = painterResource(error),
+            fallback = painterResource(fallback),
             onLoading = onLoading,
             onSuccess = onSuccess,
             onError = { state ->
@@ -672,6 +679,59 @@ object ImageCacheFactory {
                 }
                 onError?.invoke(state)
             }
+        )
+    }
+
+    /**
+     * Renders an image from a possibly-null model (typically a local file) with the
+     * app's standard null handling: while [model] is null, the [placeholder] shows for
+     * [fallbackDelayMs], after which the [fallback] drawable replaces it instead of
+     * spinning forever. Mirrors the null branch of [AsyncImage] and [Thumbnail].
+     *
+     * [cacheKey] (when provided) is used as both the memory and disk cache key, so a
+     * content replacement behind a stable path (a re-downloaded file at the same URI)
+     * forces Coil to re-read it — a bare file:// URI is string-equal across rewrites,
+     * which would otherwise keep the previously decoded bitmap.
+     */
+    @Composable
+    fun LocalAsyncImage(
+        model: Any?,
+        contentDescription: String?,
+        contentScale: ContentScale = ContentScale.Crop,
+        modifier: Modifier = Modifier,
+        cacheKey: String? = null,
+        @DrawableRes placeholder: Int = R.drawable.loader,
+        @DrawableRes fallback: Int = R.drawable.ic_launcher_box,
+        fallbackDelayMs: Long = 4_000L
+    ) {
+        if (model == null) {
+            var showFallback by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit) {
+                kotlinx.coroutines.delay(fallbackDelayMs)
+                showFallback = true
+            }
+            Image(
+                painter = painterResource(if (showFallback) fallback else placeholder),
+                contentDescription = contentDescription,
+                modifier = modifier.fillMaxSize(),
+                contentScale = contentScale
+            )
+            return
+        }
+
+        val request = ImageRequest.Builder(appContext())
+            .data(model)
+            .apply { if (cacheKey != null) { diskCacheKey(cacheKey); memoryCacheKey(cacheKey) } }
+            .build()
+
+        AsyncImage(
+            model = request,
+            imageLoader = LOADER,
+            contentDescription = contentDescription,
+            contentScale = contentScale,
+            modifier = modifier,
+            placeholder = painterResource(placeholder),
+            error = painterResource(fallback)
         )
     }
 

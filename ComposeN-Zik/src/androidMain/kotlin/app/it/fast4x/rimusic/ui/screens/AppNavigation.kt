@@ -68,6 +68,7 @@ import app.n_zik.android.components.player.TOP_NAV_BAR_HEIGHT
 import app.it.fast4x.rimusic.enums.StatisticsType
 import app.it.fast4x.rimusic.enums.TransitionEffect
 import app.n_zik.android.components.ui.screens.easter.EasterScreen
+import app.n_zik.android.easter.EasterEgg
 import app.it.fast4x.rimusic.models.Mood
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
 import app.n_zik.android.components.musicbrainz.insights.AlbumInsightsScreen
@@ -318,12 +319,12 @@ fun AppNavigation(
             )
         }
 
-        composable(route = NavRoutes.gamePacman.name) {
-            EasterScreen(navController = navController, imageResId = app.n_zik.android.R.drawable.easter1)
+        composable(route = NavRoutes.easterOne.name) {
+            EasterScreen(navController = navController, egg = EasterEgg.PACMAN)
         }
 
-        composable(route = NavRoutes.gameSnake.name) {
-            EasterScreen(navController = navController, imageResId = app.n_zik.android.R.drawable.easter2)
+        composable(route = NavRoutes.easterTwo.name) {
+            EasterScreen(navController = navController, egg = EasterEgg.SNAKE)
         }
 
         composable(route = NavRoutes.queue.name) {

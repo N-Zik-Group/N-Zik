@@ -289,7 +289,7 @@ private fun AppLogoText(navController: NavController) {
 }
 
 // App icon easter eggs, behavior-identical to the legacy AppTitle: 10 clicks open the
-// Pacman game, 3/6/9 clicks toast progress; long click opens the Snake game.
+// first easter egg image, 3/6/9 clicks toast progress; long click opens the second one.
 private fun appIconClickAction(
     navController: NavController,
     countToReveal: MutableIntState,
@@ -301,7 +301,7 @@ private fun appIconClickAction(
         when (countToReveal.intValue) {
             10 -> {
                 countToReveal.intValue = 0
-                navController.navigate(NavRoutes.gamePacman.name)
+                navController.navigate(NavRoutes.easterOne.name)
                 ""
             }
 
@@ -319,5 +319,5 @@ private fun appIconLongClickAction(
     context: Context
 ) {
     Toaster.n(context.getString(R.string.easter_egg_last), Toast.LENGTH_LONG)
-    navController.navigate(NavRoutes.gameSnake.name)
+    navController.navigate(NavRoutes.easterTwo.name)
 }
