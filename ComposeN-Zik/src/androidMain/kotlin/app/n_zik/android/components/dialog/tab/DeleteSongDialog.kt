@@ -48,6 +48,11 @@ open class DeleteSongDialog(
 
     var song = Optional.empty<Song>()
 
+    override val confirmationTitle: String
+        @Composable get() = stringResource(R.string.dialog_delete_songs)
+    override val confirmationAction: String
+        @Composable get() = stringResource(R.string.delete)
+
     override val dialogTitle: String
         @Composable
         get() = stringResource( R.string.delete_song )

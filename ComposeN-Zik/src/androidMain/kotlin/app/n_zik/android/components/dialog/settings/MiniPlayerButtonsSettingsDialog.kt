@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
-import app.n_zik.android.components.dialog.common.Dialog
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.it.fast4x.rimusic.utils.miniPlayerButtonOrderKey
@@ -94,7 +94,7 @@ private fun buildButtonDefs(): Map<String, MiniPlayerButtonDef> = mapOf(
     "visualizer" to MiniPlayerButtonDef("visualizer", showMiniPlayerVisualizerKey, R.drawable.sound_effect, R.string.miniplayer_button_visualizer, false)
 )
 
-object MiniPlayerButtonsSettingsDialog : Dialog {
+object MiniPlayerButtonsSettingsDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
@@ -143,11 +143,11 @@ object MiniPlayerButtonsSettingsDialog : Dialog {
         buildButtonDefs().forEach { (id, def) ->
             editor.putBoolean(def.preferenceKey, toggles[id] ?: def.defaultValue)
         }
-        
+
         if (toggles["visualizer"] == true) {
             editor.putBoolean(visualizerEnabledKey, true)
         }
-        
+
         editor.apply()
     }
 
@@ -193,6 +193,8 @@ object MiniPlayerButtonsSettingsDialog : Dialog {
         }.filterNotNull()
 
         ToggleListDialog(
+            frameTitle = dialogTitle,
+            onDismiss = ::hideDialog,
             items = items,
             lazyListState = lazyListState,
             reorderableState = reorderableState,

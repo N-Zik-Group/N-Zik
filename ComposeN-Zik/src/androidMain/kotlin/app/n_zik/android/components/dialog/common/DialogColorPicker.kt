@@ -17,13 +17,11 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,8 +41,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toRect
 import app.n_zik.android.R
-import app.n_zik.android.colorPalette
-import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import android.graphics.Color as AndroidColor
@@ -57,26 +53,34 @@ fun DialogColorPicker(
     onDismiss: () -> Unit,
     onColorSelected: (Color) -> Unit
 ) {
+    val hsv = remember {
+        val hsv = floatArrayOf(0f, 0f, 0f)
+        AndroidColor.colorToHSV(Color.Blue.toArgb(), hsv)
+        mutableStateOf(
+            Triple(hsv[0], hsv[1], hsv[2])
+        )
+    }
+    val backgroundColor = remember(hsv.value) {
+        mutableStateOf(Color.hsv(hsv.value.first, hsv.value.second, hsv.value.third))
+    }
+
     DefaultDialog(
-        onDismiss = onDismiss
+            title = stringResource(R.string.dialog_choose_color),
+        onDismiss = onDismiss,
+        footer = {
+            ButtonRow(listOf(
+                DialogButton(text = stringResource(R.string.cancel), icon = R.drawable.close, onClick = onDismiss),
+                DialogButton(text = stringResource(R.string.dialog_apply), icon = R.drawable.checkmark, primary = true, onClick = {
+                    onColorSelected(backgroundColor.value)
+                    onDismiss()
+                })
+            ))
+        }
     ) {
         Column(
-            modifier = Modifier,
-                //.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-
-            val hsv = remember {
-                val hsv = floatArrayOf(0f, 0f, 0f)
-                AndroidColor.colorToHSV(Color.Blue.toArgb(), hsv)
-                mutableStateOf(
-                    Triple(hsv[0], hsv[1], hsv[2])
-                )
-            }
-            var backgroundColor = remember(hsv.value) {
-                mutableStateOf(Color.hsv(hsv.value.first, hsv.value.second, hsv.value.third))
-            }
 
             SatValPanel(hue = hsv.value.first) { sat, value ->
                 hsv.value = Triple(hsv.value.first, sat, value)
@@ -96,28 +100,7 @@ fun DialogColorPicker(
                     .background(backgroundColor.value)
             )
 
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 32.dp)
-            ) {
 
-                IconButton(
-                    onClick = onDismiss,
-                    icon = R.drawable.close,
-                    color = colorPalette().text
-                )
-
-                IconButton(
-                    onClick = {
-                        onColorSelected(backgroundColor.value)
-                        onDismiss()
-                    },
-                    icon = R.drawable.checkmark,
-                    color = colorPalette().accent
-                )
-            }
         }
     }
 }

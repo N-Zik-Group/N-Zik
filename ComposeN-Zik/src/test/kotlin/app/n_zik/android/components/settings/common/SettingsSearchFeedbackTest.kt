@@ -1,11 +1,9 @@
 package app.n_zik.android.components.settings.common
 
 import android.app.Application
-import android.os.Looper
-import org.robolectric.Shadows
-import java.time.Duration
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.test.junit4.createComposeRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -49,8 +47,29 @@ class SettingsSearchFeedbackTest {
     }
 
     private fun advanceComposeTime(milliseconds: Long) {
-        composeRule.mainClock.advanceTimeBy(milliseconds)
-        Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(milliseconds))
+        // State writes from runOnIdle are outside the test coroutine's snapshot interceptor.
+        composeRule.runOnUiThread { Snapshot.sendApplyNotifications() }
+        composeRule.mainClock.advanceTimeBy(milliseconds, ignoreFrameDuration = true)
+    }
+
+    @Test fun resultsAndClearingCancelPendingFeedback() {
+        val query = mutableStateOf("missing")
+        val noResults = mutableStateOf(true)
+        val messages = mutableListOf<String>()
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(LocalSettingsSearchMessage provides { messages += it }) {
+                SettingsSearchEmptyFeedback(query.value, noResults.value)
+            }
+        }
+        advanceComposeTime(200)
+        composeRule.runOnIdle { noResults.value = false }
+        advanceComposeTime(700)
+        composeRule.runOnIdle { assertEquals(0, messages.size); noResults.value = true }
+        advanceComposeTime(200)
+        composeRule.runOnIdle { query.value = "  " }
+        advanceComposeTime(700)
+        composeRule.runOnIdle { assertEquals(0, messages.size) }
     }
 
     @Test fun noResultToastWaitsForTypingAndDoesNotRepeatOnRecomposition() {

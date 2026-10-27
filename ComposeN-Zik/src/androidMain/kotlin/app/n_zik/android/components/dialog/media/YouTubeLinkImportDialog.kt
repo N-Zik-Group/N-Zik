@@ -1,22 +1,18 @@
 package app.n_zik.android.components.dialog.media
 
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.colorPalette
@@ -43,9 +39,30 @@ fun YouTubeLinkImportDialog(
 
     DialogFrame(
         onDismiss = onDismiss,
-        title = stringResource(R.string.import_via_youtube_link)
+        title = stringResource(R.string.import_via_youtube_link),
+        footer = {
+            ButtonRow(
+                buttons = listOf(
+                    DialogButton(
+                        text = stringResource(R.string.cancel),
+                        onClick = onDismiss,
+                        danger = true
+                    ),
+                    DialogButton(
+                        text = stringResource(R.string.import_button),
+                        onClick = {
+                            val playlistId = extractYouTubePlaylistId(youTubeUrl)
+                            if (playlistId != null) {
+                                onImport(playlistId)
+                                onDismiss()
+                            }
+                        },
+                        primary = true
+                    )
+                )
+            )
+        }
     ) {
-        Spacer(modifier = Modifier.height(20.dp))
         TextField(
             value = youTubeUrl,
             onValueChange = { youTubeUrl = it },
@@ -61,27 +78,6 @@ fun YouTubeLinkImportDialog(
             }),
             colors = InputDialog.defaultTextFieldColors(),
             modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        ButtonRow(
-            buttons = listOf(
-                DialogButton(
-                    text = stringResource(R.string.cancel),
-                    onClick = onDismiss,
-                    danger = true
-                ),
-                DialogButton(
-                    text = stringResource(R.string.confirm),
-                    onClick = {
-                        val playlistId = extractYouTubePlaylistId(youTubeUrl)
-                        if (playlistId != null) {
-                            onImport(playlistId)
-                            onDismiss()
-                        }
-                    },
-                    primary = true
-                )
-            )
         )
     }
 }

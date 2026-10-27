@@ -350,6 +350,7 @@ fun OnlineSearchGrid(
 
     CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
     ItemsGridPage(
+        searchQuery = query,
         filterContentType = filterContentType,
         tag = "searchResults/$query/${getTabName(tabIndex)}",
         itemsPageProvider = { continuation ->

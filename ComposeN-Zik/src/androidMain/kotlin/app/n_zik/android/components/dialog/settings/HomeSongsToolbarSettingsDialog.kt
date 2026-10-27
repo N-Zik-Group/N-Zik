@@ -1,38 +1,39 @@
 package app.n_zik.android.components.dialog.settings
 
+import android.content.Context
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.Text
-import app.n_zik.android.R
-import app.n_zik.android.colorPalette
-import app.n_zik.android.components.dialog.common.Dialog
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import org.json.JSONArray
+import sh.calvin.reorderable.rememberReorderableLazyListState
+import timber.log.Timber
+
+import app.it.fast4x.rimusic.enums.BuiltInPlaylist
+import app.it.fast4x.rimusic.utils.homeSongsDislikedToolbarOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsDownloadedToolbarOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsFavoritesToolbarOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsOfflineToolbarOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsOnDeviceToolbarOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsToolbarOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsTopToolbarOrderKey
+import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
-import app.it.fast4x.rimusic.enums.BuiltInPlaylist
-import app.it.fast4x.rimusic.utils.*
-import app.kreate.android.me.knighthat.utils.Toaster
-import org.json.JSONArray
-import timber.log.Timber
-import sh.calvin.reorderable.rememberReorderableLazyListState
-import androidx.compose.ui.unit.dp
-import android.content.Context
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import app.n_zik.android.R
 
-object HomeSongsToolbarSettingsDialog : Dialog {
+object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
 
     val allButtonIds = listOf(
         "sort", "position_lock", "match", "search", "sync_ytm_likes", "locator",
@@ -52,7 +53,7 @@ object HomeSongsToolbarSettingsDialog : Dialog {
         BuiltInPlaylist.Disliked to allButtonIds.filter { it != "export_cache" && it != "sync_ytm_likes" && it != "import_menu" }
     )
 
-    /** The toolbar buttons the dialog cannot switch off — the phone always keeps them. */
+    /** Toolbar buttons that must remain available. */
     val lockedIds = setOf("sort", "position_lock", "match", "sync_ytm_likes")
 
     fun getTabPrefix(tab: BuiltInPlaylist): String = when (tab) {
@@ -199,70 +200,52 @@ object HomeSongsToolbarSettingsDialog : Dialog {
             }
         }.filterNotNull()
 
-        Column {
-            ScrollableTabRow(
-                selectedTabIndex = selectedTabIndex,
-                containerColor = Color.Transparent,
-                divider = {},
-                edgePadding = 8.dp,
-                indicator = { tabPositions ->
-                    if (selectedTabIndex < tabPositions.size) {
-                        TabRowDefaults.SecondaryIndicator(
-                            modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                            color = colorPalette().accent
-                        )
-                    }
-                }
-            ) {
-                tabs.forEachIndexed { index, tab ->
-                    Tab(
-                        selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
-                        text = { Text(stringResource(tab.first.textId)) },
-                        selectedContentColor = colorPalette().accent,
-                        unselectedContentColor = colorPalette().textSecondary
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(12.dp))
+        ToggleListDialog(
+            frameTitle = dialogTitle,
+            onDismiss = ::hideDialog,
+            bodyHeader = {
+                SettingsDialogTabRow(
+                    labels = tabs.map { stringResource(it.first.textId) },
+                    selectedTabIndex = selectedTabIndex,
+                    onTabSelected = { selectedTabIndex = it },
+                )
+                Spacer(modifier = Modifier.fillMaxWidth().height(8.dp).testTag("toggleListDialogTabGap"))
+            },
+            items = items, lazyListState = lazyListState, reorderableState = reorderableState,
+            enforceMinOneChecked = false,
+            lockedCheckedIds = currentLockedIds,
+            checkedStatesOverride = items.map { currentWorkingToggles[it.id.removePrefix("${tabPrefix}_")] ?: true },
+            onCheckedChange = { index, newValue ->
+                val id = items[index].id.removePrefix("${tabPrefix}_")
+                val m = workingToggles[currentTab]?.toMutableMap() ?: return@ToggleListDialog
+                m[id] = newValue
+                workingToggles = workingToggles.toMutableMap().apply { this[currentTab] = m }
+            },
+            onReset = {
+                val available = tabAvailableIds[currentTab] ?: allButtonIds
+                val m = available.associateWith { true }.toMutableMap()
+                workingToggles = workingToggles.toMutableMap().apply { this[currentTab] = m }
+                workingOrders = workingOrders.toMutableMap().apply { this[currentTab] = available.toMutableList() }
+            },
+            onCancel = { hideDialog() },
+            onConfirm = {
+                val edit = prefs.edit()
+                tabs.forEach { (tab, key) ->
+                    val tp = getTabPrefix(tab)
+                    val order = workingOrders[tab] ?: return@forEach
+                    val toggles = workingToggles[tab] ?: return@forEach
 
-            ToggleListDialog(
-                items = items, lazyListState = lazyListState, reorderableState = reorderableState,
-                enforceMinOneChecked = false,
-                lockedCheckedIds = currentLockedIds,
-                checkedStatesOverride = items.map { currentWorkingToggles[it.id.removePrefix("${tabPrefix}_")] ?: true },
-                onCheckedChange = { index, newValue ->
-                    val id = items[index].id.removePrefix("${tabPrefix}_")
-                    val m = workingToggles[currentTab]?.toMutableMap() ?: return@ToggleListDialog
-                    m[id] = newValue
-                    workingToggles = workingToggles.toMutableMap().apply { this[currentTab] = m }
-                },
-                onReset = {
-                    val available = tabAvailableIds[currentTab] ?: allButtonIds
-                    val m = available.associateWith { true }.toMutableMap()
-                    workingToggles = workingToggles.toMutableMap().apply { this[currentTab] = m }
-                    workingOrders = workingOrders.toMutableMap().apply { this[currentTab] = available.toMutableList() }
-                },
-                onCancel = { hideDialog() },
-                onConfirm = {
-                    val edit = prefs.edit()
-                    tabs.forEach { (tab, key) ->
-                        val tp = getTabPrefix(tab)
-                        val order = workingOrders[tab] ?: return@forEach
-                        val toggles = workingToggles[tab] ?: return@forEach
-                        
-                        toggles.forEach { (id, isChecked) ->
-                            edit.putBoolean("${tp}_ts_$id", isChecked)
-                        }
-                        
-                        // Always save the full order to preserve user ordering
-                        edit.putString(key, serializeOrder(order))
+                    toggles.forEach { (id, isChecked) ->
+                        edit.putBoolean("${tp}_ts_$id", isChecked)
                     }
-                    edit.apply()
-                    Toaster.s(R.string.toast_preference_saved); hideDialog()
+
+                    // Always save the full order to preserve user ordering
+                    edit.putString(key, serializeOrder(order))
                 }
-            )
-        }
+                edit.apply()
+                Toaster.s(R.string.toast_preference_saved); hideDialog()
+            }
+        )
     }
 
     fun reset(context: Context) {

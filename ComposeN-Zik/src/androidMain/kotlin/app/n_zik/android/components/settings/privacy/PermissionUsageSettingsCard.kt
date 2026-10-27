@@ -1,15 +1,16 @@
 package app.n_zik.android.components.settings.privacy
 
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -19,20 +20,22 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.rememberPreference
+import app.it.fast4x.rimusic.utils.secondary
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
+import app.n_zik.android.components.dialog.common.DialogButtonPlacement
 import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
-import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.privacy.JournalPermission
 import app.n_zik.android.privacy.PermissionEventKind
 import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.typography
 import java.text.DateFormat
 import java.util.Date
 
@@ -73,32 +76,46 @@ private fun PermissionUsageDialog(onDismiss: () -> Unit) {
     val dateFormat = remember { DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM) }
     var confirmClear by remember { mutableStateOf(false) }
     DialogFrame(
+        bodyPadding = PaddingValues(horizontal = 24.dp),
         title = stringResource(R.string.permission_usage_journal),
         onDismiss = onDismiss,
         modifier = Modifier.testTag("permission_journal_dialog"),
+        footer = {
+            ButtonRow(buttons = listOf(
+                DialogButton(
+                    text = stringResource(R.string.clear),
+                    placement = DialogButtonPlacement.Start,
+                    onClick = { confirmClear = true },
+                    danger = true,
+                ),
+                DialogButton(text = stringResource(R.string.dialog_close), onClick = onDismiss, primary = true),
+            ))
+        }
     ) {
-        Spacer(Modifier.height(16.dp))
-        LazyColumn(Modifier.fillMaxWidth().weight(1f, fill = false).testTag("permission_journal_list")) {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth().weight(1f, fill = false).testTag("permission_journal_list"),
+            contentPadding = PaddingValues(vertical = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             if (events.isEmpty()) item {
-                SettingsDescription(stringResource(R.string.permission_journal_empty))
+                BasicText(
+                    text = stringResource(R.string.permission_journal_empty),
+                    style = typography().xxs.secondary,
+                )
             }
-            items(events) { event ->
+            itemsIndexed(events, key = { index, _ -> index }, contentType = { _, _ -> "permission_event" }) { _, event ->
                 val timestamp = dateFormat.format(Date(event.timestamp))
-                SettingsDescription(stringResource(R.string.permission_journal_event, timestamp,
-                    stringResource(featureLabel(event.feature)), stringResource(permissionLabel(event.permission)), stringResource(eventLabel(event.kind))))
+                BasicText(
+                    text = stringResource(R.string.permission_journal_event, timestamp,
+                        stringResource(featureLabel(event.feature)), stringResource(permissionLabel(event.permission)), stringResource(eventLabel(event.kind))),
+                    style = typography().xxs.secondary,
+                )
             }
         }
-        Spacer(Modifier.height(16.dp))
-        ButtonRow(buttons = listOf(
-            DialogButton(
-                text = stringResource(R.string.clear),
-                onClick = { confirmClear = true },
-                danger = true,
-            ),
-            DialogButton(text = stringResource(R.string.done), onClick = onDismiss, primary = true),
-        ))
     }
     if (confirmClear) ConfirmationDialog(
+        title = stringResource(R.string.permission_journal_clear),
+        confirmText = stringResource(R.string.clear),
         text = stringResource(R.string.permission_journal_clear_confirm),
         onDismiss = { confirmClear = false },
         onConfirm = {

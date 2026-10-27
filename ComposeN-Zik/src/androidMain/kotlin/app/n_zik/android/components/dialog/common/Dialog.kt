@@ -1,11 +1,11 @@
 package app.n_zik.android.components.dialog.common
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 
 interface Dialog {
 
@@ -56,6 +56,8 @@ interface Dialog {
         const val SPACE_BETWEEN_SECTIONS = 20
     }
 
+    val bodyPadding: PaddingValues get() = PaddingValues(24.dp)
+
     @get:Composable
     val dialogTitle: String
 
@@ -81,17 +83,12 @@ interface Dialog {
 
         DialogFrame(
             onDismiss = ::hideDialog,
-            title = dialogTitle
+            title = dialogTitle,
+            bodyPadding = bodyPadding,
+            footer = if (this@Dialog is InteractiveDialog) ({ Buttons() }) else null
         ) {
-            Spacer( Modifier.height( SPACE_BETWEEN_SECTIONS.dp ) )
-
             Box( modifier = Modifier.weight( 1f, fill = false ) ) {
                 DialogBody()
-            }
-
-            if( this@Dialog is InteractiveDialog ) {
-                Spacer( Modifier.height( SPACE_BETWEEN_SECTIONS.dp ) )
-                Buttons()
             }
         }
     }

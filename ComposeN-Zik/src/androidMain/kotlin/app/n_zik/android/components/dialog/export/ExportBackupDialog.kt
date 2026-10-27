@@ -1,5 +1,7 @@
 package app.n_zik.android.components.dialog.export
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -7,14 +9,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
@@ -22,29 +22,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
+import app.n_zik.android.components.dialog.common.DialogButton
+import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
-import app.it.fast4x.rimusic.utils.medium
-import app.it.fast4x.rimusic.utils.semiBold
-import app.n_zik.android.components.dialog.export.ExportDatabaseDialog
-import app.n_zik.android.components.dialog.export.ExportSettingsDialog
-import app.n_zik.android.components.dialog.common.Dialog
-import androidx.compose.material3.Icon
-import androidx.compose.ui.res.painterResource
-import androidx.compose.animation.AnimatedVisibility
 
-object ExportBackupDialog : Dialog {
+object ExportBackupDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
@@ -93,14 +90,43 @@ object ExportBackupDialog : Dialog {
         var includeLastfmCredentials by rememberSaveable { mutableStateOf(false) }
         var includeProxyCredentials by rememberSaveable { mutableStateOf(false) }
 
-        Column(
-            modifier = Modifier.fillMaxWidth()
+        DialogFrame(
+            onDismiss = ::hideDialog,
+            title = dialogTitle,
+            bodyPadding = PaddingValues(0.dp),
+        footer = {
+                ButtonRow(
+                    buttons = listOf(
+                        DialogButton(
+                            text = stringResource(R.string.export),
+                            primary = true,
+                            textColor = colorPalette().textSecondary,
+                            onClick = {
+                                when (selectedOption) {
+                                    0 -> exportDbDialog.export()
+                                    1 -> exportSettingsDialog.export(includeYtbCredentials, includeDiscordCredentials, includeLastfmCredentials, includeProxyCredentials)
+                                    2 -> {
+                                        exportDbDialog.export()
+                                        exportSettingsDialog.export(includeYtbCredentials, includeDiscordCredentials, includeLastfmCredentials, includeProxyCredentials)
+                                    }
+                                    3 -> exportProfileStateDialog.export()
+                                    4 -> {
+                                        // All: the three separate export sequences, like "both" plus the profile state.
+                                        exportDbDialog.export()
+                                        exportSettingsDialog.export(includeYtbCredentials, includeDiscordCredentials, includeLastfmCredentials, includeProxyCredentials)
+                                        exportProfileStateDialog.export()
+                                    }
+                                }
+                            },
+                        )
+                    )
+                )
+            }
         ) {
             Column(
                 modifier = Modifier
                     .weight(1f, fill = false)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState()).padding(24.dp)
             ) {
                 options.forEachIndexed { index, (_, title, description) ->
                     Row(
@@ -240,41 +266,6 @@ object ExportBackupDialog : Dialog {
                         }
                     }
                 }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Button(
-                onClick = {
-                    when (selectedOption) {
-                        0 -> exportDbDialog.export()
-                        1 -> exportSettingsDialog.export(includeYtbCredentials, includeDiscordCredentials, includeLastfmCredentials, includeProxyCredentials)
-                        2 -> {
-                            exportDbDialog.export()
-                            exportSettingsDialog.export(includeYtbCredentials, includeDiscordCredentials, includeLastfmCredentials, includeProxyCredentials)
-                        }
-                        3 -> exportProfileStateDialog.export()
-                        4 -> {
-                            // All: the three separate export sequences, like "both" plus the profile state.
-                            exportDbDialog.export()
-                            exportSettingsDialog.export(includeYtbCredentials, includeDiscordCredentials, includeLastfmCredentials, includeProxyCredentials)
-                            exportProfileStateDialog.export()
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorPalette().accent,
-                    contentColor = colorPalette().textSecondary
-                ),
-                shape = uiRoundnessShape()
-            ) {
-                Text(
-                    text = stringResource(R.string.export),
-                    style = typography().s.medium
-                )
             }
         }
     }

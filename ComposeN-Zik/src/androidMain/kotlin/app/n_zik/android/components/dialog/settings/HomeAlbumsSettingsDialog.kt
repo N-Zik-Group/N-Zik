@@ -9,7 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.R
-import app.n_zik.android.components.dialog.common.Dialog
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.n_zik.android.core.database.Database
@@ -25,7 +25,7 @@ import android.content.Context
 
 private val albumsDefaultOrder = listOf("all", "favorites", "disliked")
 
-object HomeAlbumsSettingsDialog : Dialog {
+object HomeAlbumsSettingsDialog : ContentFramedDialog {
     override val dialogTitle: String @Composable get() = stringResource(R.string.home_albums_settings)
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -80,6 +80,8 @@ object HomeAlbumsSettingsDialog : Dialog {
         }.filterNotNull()
 
         ToggleListDialog(
+            frameTitle = dialogTitle,
+            onDismiss = ::hideDialog,
             items = items, lazyListState = lazyListState, reorderableState = reorderableState,
             enforceMinOneChecked = true,
             lockedCheckedIds = setOf("all"),

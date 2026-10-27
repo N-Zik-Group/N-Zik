@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.backup
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,6 +43,8 @@ import app.it.fast4x.rimusic.utils.semiBold
  */
 object ImportTargetProfileDialog : InteractiveDialog {
 
+    override val bodyPadding: PaddingValues get() = PaddingValues(0.dp)
+
     override val dialogTitle: String
         @Composable
         get() = stringResource(R.string.import_target_profile_title)
@@ -77,7 +80,7 @@ object ImportTargetProfileDialog : InteractiveDialog {
     @Composable
     override fun DialogBody() {
         val activeLabel = stringResource(R.string.profile_active)
-        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+        Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(24.dp)) {
             options.forEach { option ->
                 Row(
                     modifier = Modifier

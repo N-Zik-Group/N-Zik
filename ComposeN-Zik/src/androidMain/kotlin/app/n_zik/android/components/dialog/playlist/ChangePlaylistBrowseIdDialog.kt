@@ -1,7 +1,7 @@
 package app.n_zik.android.components.dialog.playlist
 
 import androidx.compose.foundation.layout.height
-import app.n_zik.android.components.search.SearchNoResults
+import app.n_zik.android.components.search.SearchEmptyFeedback
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -89,22 +89,36 @@ class ChangePlaylistBrowseIdDialog private constructor(
         var isSearching by remember { mutableStateOf(false) }
         var results by remember { mutableStateOf<List<Innertube.PlaylistItem>?>(null) }
         val coroutineScope = rememberCoroutineScope()
+        var submittedQuery by remember { mutableStateOf("") }
+        var searchRequest by remember { mutableStateOf(0) }
 
         val performSearch = {
             if (query.isNotEmpty()) {
+                val requestQuery = query
+                val request = ++searchRequest
+                submittedQuery = requestQuery
+                results = null
                 isSearching = true
                 coroutineScope.launch {
                     val searchResult = withContext(NzikDispatchers.DATA) {
                         Innertube.searchPage<Innertube.PlaylistItem>(
-                            query = query, params = Innertube.SearchFilter.CommunityPlaylist.value,
+                            query = requestQuery, params = Innertube.SearchFilter.CommunityPlaylist.value,
                             fromMusicShelfRendererContent = { Innertube.PlaylistItem.from(it) }
                         )?.getOrNull()
                     }
-                    results = searchResult?.items
-                    isSearching = false
+                    if (request == searchRequest) {
+                        results = searchResult?.items
+                        isSearching = false
+                    }
                 }
             }
         }
+
+        SearchEmptyFeedback(
+            query = submittedQuery,
+            empty = results?.isEmpty() == true,
+            loading = isSearching || results == null || query != submittedQuery
+        )
 
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(
@@ -137,7 +151,7 @@ class ChangePlaylistBrowseIdDialog private constructor(
             if (isSearching) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally).padding(20.dp))
             } else if (results?.isEmpty() == true) {
-                SearchNoResults(Modifier.height(160.dp))
+                Spacer(Modifier.height(160.dp))
             } else if (results != null) {
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp)

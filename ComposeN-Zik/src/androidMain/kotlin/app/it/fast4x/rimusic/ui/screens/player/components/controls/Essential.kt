@@ -523,24 +523,12 @@ fun ControlsEssential(
             .bounceClick()
             .clip(uiRoundnessShape())
             .background(
-                when (colorPaletteName) {
-                    ColorPaletteName.Dynamic, ColorPaletteName.Default,
-                    ColorPaletteName.MaterialYou, ColorPaletteName.Customized, ColorPaletteName.CustomColor -> {
-                        when (playerPlayButtonType) {
-                            PlayerPlayButtonType.CircularRibbed, PlayerPlayButtonType.Disabled -> Color.Transparent
-                            else -> {
-                                if (isGradientBackgroundEnabled) colorPalette().background1
-                                else colorPalette().background2
-                            }
-                        }
-                    }
-
-                    ColorPaletteName.PureBlack, ColorPaletteName.ModernBlack ->
-                        if (playerPlayButtonType == PlayerPlayButtonType.CircularRibbed)
-                            colorPalette().background1 else
-                            if (playerPlayButtonType != PlayerPlayButtonType.Disabled)
-                                colorPalette().background4 else Color.Transparent
-                }
+                app.n_zik.android.components.player.playButtonContainerColor(
+                    type = playerPlayButtonType,
+                    paletteName = colorPaletteName,
+                    palette = colorPalette(),
+                    gradient = isGradientBackgroundEnabled,
+                )
             )
             .width(playerPlayButtonType.width.dp)
             .height(playerPlayButtonType.height.dp)

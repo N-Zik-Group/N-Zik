@@ -8,7 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
-import app.n_zik.android.components.dialog.common.Dialog
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.it.fast4x.rimusic.utils.homeTabsOrderKey
@@ -44,7 +44,7 @@ fun buildHomeTabDefs(): Map<String, HomeTabDef> = mapOf(
     "playlists" to HomeTabDef("playlists", null, R.drawable.library, R.string.playlists, true)
 )
 
-object HomeTabsSettingsDialog : Dialog {
+object HomeTabsSettingsDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
@@ -146,6 +146,8 @@ object HomeTabsSettingsDialog : Dialog {
         }.filterNotNull()
 
         ToggleListDialog(
+            frameTitle = dialogTitle,
+            onDismiss = ::hideDialog,
             items = tabItems,
             lazyListState = lazyListState,
             reorderableState = reorderableState,

@@ -27,11 +27,16 @@ class RemoveFromPlaylist private constructor(
         )
     }
 
+    override val confirmationTitle: String
+        @Composable get() = stringResource(R.string.remove_from_playlist)
+    override val confirmationAction: String
+        @Composable get() = stringResource(R.string.dialog_remove)
+
     override val messageId: Int = R.string.remove_from_playlist
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource(R.string.remove_from_playlist)
+        get() = stringResource(R.string.dialog_remove_from_playlist_question)
 
     override fun onConfirm() {
         onConfirmAction()

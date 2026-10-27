@@ -120,7 +120,7 @@ class BurgerMenuSettingsDialogComposeTest {
         content { BurgerMenuSettingsDialog.Render() }
         composeRule.onNodeWithText(app.getString(R.string.reset)).assertIsDisplayed().performTouchInput { click() }
         composeRule.waitForIdle()
-        composeRule.onNodeWithText(app.getString(R.string.ok)).assertIsDisplayed().performTouchInput { click() }
+        composeRule.onNodeWithText(app.getString(R.string.dialog_apply)).assertIsDisplayed().performTouchInput { click() }
         composeRule.waitForIdle()
         assertFalse(BurgerMenuSettingsDialog.isActive)
         assertTrue(dataStore.getBoolean(DataStoreUtils.burgerMenuToggleKey("rewind"), false))
@@ -145,7 +145,7 @@ class BurgerMenuSettingsDialogComposeTest {
             composeRule.waitForIdle()
         }
         removeButtons.assertCountEquals(1)
-        composeRule.onNodeWithText(app.getString(R.string.ok)).performClick()
+        composeRule.onNodeWithText(app.getString(R.string.dialog_apply)).performClick()
         composeRule.waitForIdle()
         assertEquals(1, storedOrder().count { it == "separator" })
         assertTrue(storedOrder().containsAll(DataStoreUtils.DEFAULT_BURGER_MENU_ORDER))
@@ -158,7 +158,7 @@ class BurgerMenuSettingsDialogComposeTest {
         composeRule.onNodeWithText(app.getString(R.string.rewind)).assertIsDisplayed()
         composeRule.onNodeWithText(app.getString(R.string.rewind)).performClick()
         composeRule.waitForIdle()
-        composeRule.onNodeWithText(app.getString(R.string.ok)).performClick()
+        composeRule.onNodeWithText(app.getString(R.string.dialog_apply)).performClick()
         composeRule.waitForIdle()
 
         assertFalse(
@@ -195,7 +195,7 @@ class BurgerMenuSettingsDialogComposeTest {
         composeRule.onNodeWithText(app.getString(R.string.add_separator)).assertIsDisplayed()
         composeRule.onNodeWithText(app.getString(R.string.add_separator)).performClick()
         composeRule.waitForIdle()
-        composeRule.onNodeWithText(app.getString(R.string.ok)).performClick()
+        composeRule.onNodeWithText(app.getString(R.string.dialog_apply)).performClick()
         composeRule.waitForIdle()
 
         // G5 renegotiated: the default instance plus the one added through the footer button
@@ -220,7 +220,7 @@ class BurgerMenuSettingsDialogComposeTest {
 
         composeRule.onNodeWithText(app.getString(R.string.reset)).performClick()
         composeRule.waitForIdle()
-        composeRule.onNodeWithText(app.getString(R.string.ok)).performClick()
+        composeRule.onNodeWithText(app.getString(R.string.dialog_apply)).performClick()
         composeRule.waitForIdle()
 
         assertEquals(DataStoreUtils.DEFAULT_BURGER_MENU_ORDER, storedOrder())

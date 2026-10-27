@@ -5,6 +5,13 @@ import app.n_zik.android.components.dialog.common.ConfirmationDialog
 
 interface ConfirmDialog: Dialog {
 
+    /** Short action heading; [dialogTitle] remains the confirmation question. */
+    @get:Composable
+    val confirmationTitle: String
+
+    @get:Composable
+    val confirmationAction: String
+
 
     /**
      * What happens when user hits "Confirm" button.
@@ -24,6 +31,8 @@ interface ConfirmDialog: Dialog {
         if( !isActive ) return
 
         ConfirmationDialog(
+            title = confirmationTitle,
+            confirmText = confirmationAction,
             text = dialogTitle,
             onDismiss = ::onDismiss,
             onConfirm = ::onConfirm

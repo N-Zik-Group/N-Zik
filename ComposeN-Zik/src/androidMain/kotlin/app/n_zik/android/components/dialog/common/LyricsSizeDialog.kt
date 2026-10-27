@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -32,10 +33,18 @@ fun LyricsSizeDialog(
     var lyricsSize by rememberPreference(lyricsSizeKey, 20f)
     var lyricsSizeL by rememberPreference(lyricsSizeLKey, 20f)
     DefaultDialog(
+        title = stringResource(R.string.lyrics_size),
         onDismiss = {
             sizeValue(lyricsSize)
             sizeValueL(lyricsSizeL)
             onDismiss()
+        },
+        footer = {
+            ButtonRow(listOf(DialogButton(stringResource(R.string.dialog_close), onClick = {
+                sizeValue(lyricsSize)
+                sizeValueL(lyricsSizeL)
+                onDismiss()
+            })))
         }
     ) {
 

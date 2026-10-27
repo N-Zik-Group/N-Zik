@@ -395,7 +395,9 @@ fun ProfileScreen(
 
     if (showRemovePopup) {
         ConfirmationDialog(
-            text = stringResource(R.string.remove_profile),
+            title = stringResource(R.string.remove_profile),
+            confirmText = stringResource(R.string.dialog_remove),
+            text = stringResource(R.string.dialog_remove_profile_question),
             onDismiss = { showRemovePopup = false },
             onConfirm = {
                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
@@ -436,31 +438,35 @@ fun ProfileScreen(
 
     if (showErrorPopup) {
         DefaultDialog(
+            title = stringResource(R.string.dialog_profile_error),
             onDismiss = { showErrorPopup = false },
-            modifier = Modifier
+            modifier = Modifier,
+            footer = {
+                ButtonRow(
+                    buttons = listOf(
+                        DialogButton(
+                            text = stringResource(R.string.dialog_close),
+                            primary = true,
+                            onClick = {
+                                showErrorPopup = false
+                            }
+                        )
+                    )
+                )
+            }
         ) {
             BasicText(
                 text = stringResource(R.string.profile_name_invalid_or_taken),
                 style = typography().xs.medium.center,
-                modifier = Modifier
-                    .padding(all = 16.dp)
             )
 
-            ButtonRow(
-                buttons = listOf(
-                    DialogButton(
-                        text = stringResource(R.string.confirm),
-                        primary = true,
-                        onClick = {
-                            showErrorPopup = false
-                        }
-                    )
-                )
-            )
+
         }
     }
     if (showChangePopup) {
         ConfirmationDialog(
+            title = stringResource(R.string.dialog_switch_profile),
+            confirmText = stringResource(R.string.dialog_switch_profile),
             text = stringResource(R.string.profile_restart_required),
             onDismiss = { showChangePopup = false },
             onConfirm = {
@@ -478,6 +484,8 @@ fun ProfileScreen(
 
     if (showImportConfirm) {
         ConfirmationDialog(
+            title = stringResource(R.string.rescue_import_profiles),
+            confirmText = stringResource(R.string.import_button),
             text = stringResource(R.string.rescue_confirm_import_accounts),
             onDismiss = { showImportConfirm = false },
             onConfirm = {
@@ -490,6 +498,8 @@ fun ProfileScreen(
     // A picked file tagged with a different profile: confirm before importing it.
     crossProfilePending?.let { (tag, proceed) ->
         ConfirmationDialog(
+            title = stringResource(R.string.dialog_import_backup),
+            confirmText = stringResource(R.string.import_button),
             text = context.getString(
                 R.string.rescue_cross_profile_confirm,
                 tag,

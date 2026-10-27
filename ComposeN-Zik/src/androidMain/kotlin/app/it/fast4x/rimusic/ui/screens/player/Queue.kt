@@ -1,6 +1,7 @@
 package app.it.fast4x.rimusic.ui.screens.player
 
-import app.n_zik.android.components.search.SearchNoResults
+import app.n_zik.android.components.search.SearchEmptyFeedback
+import app.n_zik.android.components.search.SearchEmptySpace
 
 
 
@@ -396,6 +397,7 @@ fun Queue(
                 }
             }
 
+            SearchEmptyFeedback(search.inputValue, windowsOnDisplay.isEmpty())
             CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
             LazyColumn(
                 state = lazyListState,
@@ -409,7 +411,7 @@ fun Queue(
             ) {
                 if (search.inputValue.isNotBlank() && windowsOnDisplay.isEmpty()) {
                     item(key = "search_no_results") {
-                        SearchNoResults(Modifier.fillParentMaxSize())
+                        SearchEmptySpace(Modifier.fillParentMaxSize())
                     }
                 }
                 itemsIndexed(

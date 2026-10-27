@@ -9,7 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.R
-import app.n_zik.android.components.dialog.common.Dialog
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.it.fast4x.rimusic.utils.*
@@ -18,7 +18,7 @@ import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import android.content.Context
 
-object LocalPlaylistToolbarSettingsDialog : Dialog {
+object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
 
     val allButtonIds = listOf(
         "pin", "search", "position_lock", "match", "renumber",
@@ -127,6 +127,8 @@ object LocalPlaylistToolbarSettingsDialog : Dialog {
         }.filterNotNull()
 
         ToggleListDialog(
+            frameTitle = dialogTitle,
+            onDismiss = ::hideDialog,
             items = items, lazyListState = lazyListState, reorderableState = reorderableState,
             enforceMinOneChecked = false,
             lockedCheckedIds = lockedIds,

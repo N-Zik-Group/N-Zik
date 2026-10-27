@@ -36,6 +36,11 @@ class DownloadAllSongsDialog(
         )
     }
 
+    override val confirmationTitle: String
+        @Composable get() = stringResource(R.string.dialog_download_songs)
+    override val confirmationAction: String
+        @Composable get() = stringResource(R.string.download)
+
     override val messageId: Int = R.string.info_download_all_songs
     override val iconId: Int = R.drawable.downloaded
     override val dialogTitle: String

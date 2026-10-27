@@ -9,7 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.R
-import app.n_zik.android.components.dialog.common.Dialog
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.it.fast4x.rimusic.utils.*
@@ -18,7 +18,7 @@ import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import android.content.Context
 
-object HistorySortSettingsDialog : Dialog {
+object HistorySortSettingsDialog : ContentFramedDialog {
 
     private val sortIds = listOf("DATE", "ALPHABETICAL", "ARTIST")
 
@@ -76,6 +76,8 @@ object HistorySortSettingsDialog : Dialog {
         }
 
         ToggleListDialog(
+            frameTitle = dialogTitle,
+            onDismiss = ::hideDialog,
             items = items, lazyListState = lazyListState, reorderableState = reorderableState, enforceMinOneChecked = true,
             checkedStatesOverride = items.map { workingToggles[it.id.removePrefix("hist_")] ?: true },
             onCheckedChange = { index, newValue ->

@@ -183,6 +183,11 @@ fun DeleteFromQueue(
     itemSelector: ItemSelector<Song>,
     onDeleteConfirm: ConfirmDialog.() -> Unit
 ): MenuIcon = object: MenuIcon, Descriptive, ConfirmDialog {
+    override val confirmationTitle: String
+        @Composable get() = stringResource(R.string.remove_from_queue)
+    override val confirmationAction: String
+        @Composable get() = stringResource(R.string.dialog_remove)
+
     override val iconId: Int = R.drawable.trash
     override val messageId: Int = R.string.remove_from_queue
     override val menuIconTitle: String

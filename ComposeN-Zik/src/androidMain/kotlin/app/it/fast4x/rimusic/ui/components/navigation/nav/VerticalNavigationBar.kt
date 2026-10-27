@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -50,65 +48,60 @@ class VerticalNavigationBar(
     modifier: Modifier = Modifier
 ): AbstractNavigationBar( navController, modifier ) {
 
-    @Composable
-    private fun addButton( component: @Composable () -> Unit ) =
-        super.buttonList.add( component )
-
     @OptIn(UnstableApi::class)
     @Composable
     override fun add(buttons: @Composable (@Composable (Int, String, Int) -> Unit) -> Unit ) {
-        buttonList.clear()
         val transition = updateTransition( targetState = tabIndex, label = null )
         val isLandscape: Boolean = isLandscape
 
         buttons { index, text, iconId ->
-            val textColor by transition.animateColor(label = "") {
-                if (it == index)
-                    colorPalette().text
-                else
-                    colorPalette().textDisabled
-            }
-            val dothAlpha by transition.animateFloat(label = "") {
-                if (it == index)
-                    1f
-                else
-                    0f
-            }
-
-            val textContent: @Composable () -> Unit = {
-                if ( NavigationBarType.IconAndText.isCurrent() )
-                    BasicText(
-                        text = text,
-                        style = TextStyle(
-                            fontSize = typography().xs.semiBold.fontSize,
-                            fontWeight = typography().xs.semiBold.fontWeight,
-                            color = colorPalette().text,
-                        ),
-                        modifier = Modifier.vertical( enabled = !isLandscape )
-                                           .rotate(if (isLandscape) 0f else -90f)
-                                           .padding(horizontal = 16.dp)
-                    )
-            }
-
-            val buttonModifier: Modifier =
-                if ( NavigationBarType.IconOnly.isCurrent() ) {
-                    Modifier
-                        .padding( top = 12.dp, bottom = 12.dp )
-                            .size(24.dp)
-                } else {
-                    Modifier.vertical( enabled = !isLandscape )
-                            .size( Dimensions.navigationRailIconOffset * 3 )
-                            .graphicsLayer {
-                                alpha = dothAlpha
-                                translationX = (1f - dothAlpha) * -48.dp.toPx()
-                                rotationZ = if (isLandscape) 0f else -90f
-                            }
+            buttonList.register(index) {
+                val textColor by transition.animateColor(label = "") {
+                    if (it == index)
+                        colorPalette().text
+                    else
+                        colorPalette().textDisabled
                 }
-            val button = Button( iconId, textColor, 0.dp, 0.dp, Dp.Unspecified, buttonModifier )
-            val contentModifier = Modifier.clip( uiRoundnessShape() )
-                                          .clip(uiRoundnessShape()).clickable( onClick = { onTabChanged(index) } )
-                                          .padding( vertical = 8.dp )
-            val result: @Composable () -> Unit = {
+                val dothAlpha by transition.animateFloat(label = "") {
+                    if (it == index)
+                        1f
+                    else
+                        0f
+                }
+
+                val textContent: @Composable () -> Unit = {
+                    if ( NavigationBarType.IconAndText.isCurrent() )
+                        BasicText(
+                            text = text,
+                            style = TextStyle(
+                                fontSize = typography().xs.semiBold.fontSize,
+                                fontWeight = typography().xs.semiBold.fontWeight,
+                                color = colorPalette().text,
+                            ),
+                            modifier = Modifier.vertical( enabled = !isLandscape )
+                                               .rotate(if (isLandscape) 0f else -90f)
+                                               .padding(horizontal = 16.dp)
+                        )
+                }
+
+                val buttonModifier: Modifier =
+                    if ( NavigationBarType.IconOnly.isCurrent() ) {
+                        Modifier
+                            .padding( top = 12.dp, bottom = 12.dp )
+                                .size(24.dp)
+                    } else {
+                        Modifier.vertical( enabled = !isLandscape )
+                                .size( Dimensions.navigationRailIconOffset * 3 )
+                                .graphicsLayer {
+                                    alpha = dothAlpha
+                                    translationX = (1f - dothAlpha) * -48.dp.toPx()
+                                    rotationZ = if (isLandscape) 0f else -90f
+                                }
+                    }
+                val button = Button( iconId, textColor, 0.dp, 0.dp, Dp.Unspecified, buttonModifier )
+                val contentModifier = Modifier.clip( uiRoundnessShape() )
+                                              .clip(uiRoundnessShape()).clickable( onClick = { onTabChanged(index) } )
+                                              .padding( vertical = 8.dp )
                 if( isLandscape )
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -126,8 +119,6 @@ class VerticalNavigationBar(
                         textContent()
                     }
             }
-
-            addButton( result )
         }
     }
 

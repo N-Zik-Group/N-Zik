@@ -293,3 +293,9 @@ Other:
   - `AppNavBarRouteTest` (4) updated for the `easterOne`/`easterTwo` rename
   - BMAD build workflow (spec + 3-layer review - blind-hunter, edge-case-hunter, verification-gap): every high/medium finding patched (stale-image cache key, Coil null-model, offline-gate logging, `runBlocking` justification), the low-severity items (a download size cap, an atomic-sidecar doc note, composing `EasterEgg.rawUrl` from `UpdateEndpoints`, a Compose screen test, the route-to-egg wiring test) recorded in deferred-work.md with their rationale
   - The two raw assets were pushed to `main` ahead of the code (`db06cb3251`); both raw URLs verified live (200 + ETag)
+- fix(ui): unify dialogs, settings search feedback and navigation placement
+  - Shared dialog frames keep centered short headings, separate prompt bodies, equal-width footer actions, two-tone bands and scrolling content padding; category tabs center when they fit and scroll for long labels.
+  - Search empty-result messages use the common toast path; hidden local search rows no longer accept input, and updater search results retain the build eligibility gate.
+  - Global toasts use measured navigation bounds and attached-window correction with an 8 dp minimum gap for normal and floating bars. Navigation registrations follow composition lifetime without duplicate or stale tabs.
+  - Preserve transparent ribbed player controls in black themes; record voice permission requests/results and cover the real Activity screen-protection lifecycle.
+  - Only source values/strings.xml changed; translated resources and release metadata remain untouched.

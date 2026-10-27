@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import app.n_zik.android.R
+import app.n_zik.android.components.tab.NavigationButtonSlots
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.ui.components.themed.Button
@@ -32,7 +33,7 @@ abstract class AbstractNavigationBar(
     val navController: NavController,
     val modifier: Modifier = Modifier
 ) {
-    internal val buttonList: MutableList<@Composable () -> Unit> = mutableListOf()
+    internal val buttonList = NavigationButtonSlots<@Composable () -> Unit>()
 
     @Composable
     internal open fun BackButton(): NavigationButton {

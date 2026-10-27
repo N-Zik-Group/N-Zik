@@ -9,7 +9,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,17 +18,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -40,17 +38,14 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.it.fast4x.rimusic.enums.MenuStyle
-import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.MenuState
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Menu
-import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.ui.sliders.SliderControl
-import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.setGlobalVolume
 import app.n_zik.android.isBassBoostEnabled
 import app.n_zik.android.typography
@@ -668,7 +663,6 @@ class PlaybackSettingsMenu private constructor(
         }
     }
 
-
     @Composable
     private fun SliderGridEntry(
         title: String,
@@ -738,32 +732,31 @@ class PlaybackSettingsMenu private constructor(
 
         DialogFrame(
             onDismiss = onDismiss,
-            horizontalAlignment = Alignment.Start
-        ) {
-            // Header
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                SettingIcon(icon)
-                Spacer(modifier = Modifier.size(12.dp))
-                val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
-
-                BasicText(
-                    text = title,
-                    maxLines = 1,
-                    style = typography().s.semiBold.copy(
-                        color = colorPalette().text
-                    ),
-                    modifier = Modifier
-                        .weight(1f)
-                        .conditional(!isScrollingTextDisabled) {
-                            basicMarquee(iterations = Int.MAX_VALUE)
-                        }
+            title = title,
+            horizontalAlignment = Alignment.Start,
+            footer = {
+                ButtonRow(
+                    buttons = listOf(
+                        DialogButton(
+                            text = stringResource(R.string.reset),
+                            icon = R.drawable.refresh,
+                            textColor = colorPalette().textSecondary,
+                            onClick = {
+                                onReset()
+                                onDismiss()
+                            }
+                        ),
+                        DialogButton(
+                            text = stringResource(R.string.dialog_close),
+                            icon = R.drawable.checkmark,
+                            textColor = colorPalette().accent,
+                            onClick = onDismiss
+                        )
+                    )
                 )
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
+        ) {
+            SettingIcon(icon)
 
             // Value display
             BasicText(
@@ -790,28 +783,6 @@ class PlaybackSettingsMenu private constructor(
                 defaultValue = defaultValue,
                 drawValuePoints = drawValuePoints,
                 showValue = false
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            ButtonRow(
-                buttons = listOf(
-                    DialogButton(
-                        text = "",
-                        icon = R.drawable.refresh,
-                        textColor = colorPalette().textSecondary,
-                        onClick = {
-                            onReset()
-                            onDismiss()
-                        }
-                    ),
-                    DialogButton(
-                        text = "",
-                        icon = R.drawable.checkmark,
-                        textColor = colorPalette().accent,
-                        onClick = onDismiss
-                    )
-                )
             )
         }
     }

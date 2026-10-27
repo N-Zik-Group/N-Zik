@@ -10,7 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
 import app.n_zik.android.LocalPlayerServiceBinder
-import app.n_zik.android.components.dialog.common.Dialog
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.it.fast4x.rimusic.utils.streamClientWebRemixEnabledKey
@@ -77,7 +77,7 @@ private fun buildClientDefs(): Map<String, ClientDef> = mapOf(
     "mobile" to ClientDef("mobile", streamClientMobileEnabledKey, R.drawable.musical_notes, R.string.stream_client_mobile, true, R.string.client_mobile_desc)
 )
 
-object StreamClientsSettingsDialog : Dialog {
+object StreamClientsSettingsDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
@@ -160,6 +160,8 @@ object StreamClientsSettingsDialog : Dialog {
         }
 
         ToggleListDialog(
+            frameTitle = dialogTitle,
+            onDismiss = ::hideDialog,
             items = items,
             lazyListState = lazyListState,
             reorderableState = reorderableState,

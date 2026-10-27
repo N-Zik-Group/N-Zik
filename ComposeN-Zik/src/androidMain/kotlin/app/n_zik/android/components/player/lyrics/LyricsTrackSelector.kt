@@ -222,6 +222,7 @@ fun LyricsTrackSelector(
 
     if (loading) {
         DefaultDialog(
+            title = stringResource(R.string.txt_lyrics),
             onDismiss = {
                 onDismiss()
             }

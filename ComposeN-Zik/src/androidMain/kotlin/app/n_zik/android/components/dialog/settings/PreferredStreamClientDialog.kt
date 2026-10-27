@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.settings
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,7 +36,8 @@ import app.n_zik.android.uiRoundnessShape
 import app.it.fast4x.rimusic.utils.preferredStreamClientKey
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.LocalPlayerServiceBinder
-import app.n_zik.android.components.dialog.common.Dialog
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
+import app.n_zik.android.components.dialog.common.DialogFrame
 import app.it.fast4x.rimusic.utils.streamClientRestartNeededKey
 import app.n_zik.android.playback.services.clearStreamCaches
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -44,7 +46,7 @@ import android.content.Context
 import androidx.media3.datasource.cache.Cache
 import kotlinx.coroutines.launch
 
-object PreferredStreamClientDialog : Dialog {
+object PreferredStreamClientDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
@@ -67,54 +69,8 @@ object PreferredStreamClientDialog : Dialog {
             Triple("WEB_REMIX", "Web Remix", stringResource(R.string.client_youtube_music_web_desc))
         )
 
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f, fill = false)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp)
-            ) {
-                options.forEachIndexed { index, (value, title, description) ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(uiRoundnessShape())
-                            .clickable { selectedClient = value }
-                            .padding(vertical = 8.dp, horizontal = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = selectedClient == value,
-                            onClick = { selectedClient = value },
-                            colors = RadioButtonDefaults.colors(
-                                selectedColor = colorPalette().text,
-                                unselectedColor = colorPalette().textSecondary
-                            ),
-                            modifier = Modifier.size(20.dp)
-                        )
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = title,
-                                style = typography().xs.semiBold,
-                                color = colorPalette().text
-                            )
-                            Text(
-                                text = description,
-                                style = typography().xxs,
-                                color = colorPalette().textSecondary
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
+        DialogFrame(onDismiss = ::hideDialog, title = dialogTitle, bodyPadding = PaddingValues(0.dp),
+        footer = {
             ButtonRow(
                 buttons = listOf(
                     // Reset button (grey) - only changes local state
@@ -134,7 +90,7 @@ object PreferredStreamClientDialog : Dialog {
                     ),
                     // OK button (accent filled) - saves only if changed
                     DialogButton(
-                        text = stringResource(R.string.ok),
+                        text = stringResource(R.string.dialog_apply),
                         onClick = {
                             if (selectedClient != savedPref) {
                                 prefs.edit().putString(preferredStreamClientKey, selectedClient).apply()
@@ -153,6 +109,53 @@ object PreferredStreamClientDialog : Dialog {
                     )
                 )
             )
+        }) {
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .verticalScroll(rememberScrollState()).padding(24.dp)
+                ) {
+                    options.forEachIndexed { index, (value, title, description) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(uiRoundnessShape())
+                                .clickable { selectedClient = value }
+                                .padding(vertical = 8.dp, horizontal = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedClient == value,
+                                onClick = { selectedClient = value },
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = colorPalette().text,
+                                    unselectedColor = colorPalette().textSecondary
+                                ),
+                                modifier = Modifier.size(20.dp)
+                            )
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = title,
+                                    style = typography().xs.semiBold,
+                                    color = colorPalette().text
+                                )
+                                Text(
+                                    text = description,
+                                    style = typography().xxs,
+                                    color = colorPalette().textSecondary
+                                )
+                            }
+                        }
+                    }
+                }
+
+            }
         }
     }
 

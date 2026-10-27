@@ -10,12 +10,14 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToIndex
@@ -117,12 +119,15 @@ class PermissionUsageDialogTest {
         composeRule.onNodeWithText(context.getString(R.string.clear)).performClick()
         pumpUntil("clear confirmation") { runCatching { composeRule.onNodeWithText(context.getString(R.string.permission_journal_clear_confirm)).fetchSemanticsNode() }.isSuccess }
         composeRule.onNodeWithText(context.getString(R.string.cancel)).performClick()
+        pumpUntil("cancelled confirmation dismissed") { composeRule.onAllNodes(isDialog()).fetchSemanticsNodes().size == 1 }
         assertEquals(1, PermissionUsageJournal.read(context.preferences).size)
         composeRule.onNodeWithText(context.getString(R.string.clear)).performClick()
-        pumpUntil("second clear confirmation") { runCatching { composeRule.onNodeWithText(context.getString(R.string.confirm)).fetchSemanticsNode() }.isSuccess }
-        composeRule.onNodeWithText(context.getString(R.string.confirm)).performClick()
+        val confirmation = isDialog() and hasAnyDescendant(hasText(context.getString(R.string.permission_journal_clear_confirm)))
+        pumpUntil("second clear confirmation") { runCatching { composeRule.onNode(confirmation).fetchSemanticsNode() }.isSuccess }
+        composeRule.onNode(hasText(context.getString(R.string.clear)) and hasAnyAncestor(confirmation)).performClick()
         pumpUntil("confirmed clear processed") { PermissionUsageJournal.read(context.preferences).isEmpty() }
-        composeRule.onNodeWithText(context.getString(R.string.done)).performClick()
+        pumpUntil("accepted confirmation dismissed") { composeRule.onAllNodes(isDialog()).fetchSemanticsNodes().size == 1 }
+        composeRule.onNodeWithText(context.getString(R.string.dialog_close)).performClick()
         pumpUntil("dialog dismissed") { composeRule.onAllNodes(isDialog()).fetchSemanticsNodes().isEmpty() }
         assertTrue("clear must not resume paused recording", context.preferences.getBoolean(PermissionUsageJournal.PAUSED_KEY, false))
     }
@@ -141,7 +146,7 @@ class PermissionUsageDialogTest {
         val bounds = composeRule.onNodeWithTag("permission_journal_dialog").getBoundsInRoot()
         assertTrue(bounds.bottom - bounds.top <= 512.dp)
         assertTrue(bounds.right - bounds.left <= 342.dp)
-        val done = composeRule.onNodeWithText(context.getString(R.string.done)).assertIsDisplayed().getBoundsInRoot()
+        val done = composeRule.onNodeWithText(context.getString(R.string.dialog_close)).assertIsDisplayed().getBoundsInRoot()
         val clear = composeRule.onNodeWithText(context.getString(R.string.clear)).assertIsDisplayed().getBoundsInRoot()
         assertEquals("Footer actions share one bottom row", done.top, clear.top)
         assertTrue("Clear precedes Done", clear.right <= done.left)
@@ -150,6 +155,44 @@ class PermissionUsageDialogTest {
             runCatching { composeRule.onNodeWithText(context.getString(R.string.permission_journal_clear_confirm)).assertIsDisplayed() }.isSuccess
         }
         assertFalse(context.preferences.getBoolean(PermissionUsageJournal.PAUSED_KEY, false))
+    }
+
+    @Test fun emptyJournalUsesOnlyTheFrameBodyInset() {
+        assertJournalEdges(eventCount = 0)
+    }
+
+    @Test fun populatedJournalSpacesOnlyBetweenEvents() {
+        assertJournalEdges(eventCount = 2)
+    }
+
+    private fun assertJournalEdges(eventCount: Int) {
+        seedEvents(eventCount)
+        show()
+        composeRule.onNodeWithTag("settings.target.privacy.permissions.open", useUnmergedTree = true)
+            .performSemanticsAction(SemanticsActions.OnClick) { it() }
+        val firstText = if (eventCount == 0) context.getString(R.string.permission_journal_empty) else eventText(0)
+        pumpUntil("journal contents composed") {
+            runCatching { composeRule.onNodeWithText(firstText).assertIsDisplayed() }.isSuccess
+        }
+        val body = composeRule.onNodeWithTag("dialogFrameBody").getBoundsInRoot()
+        val list = composeRule.onNodeWithTag("permission_journal_list").getBoundsInRoot()
+        val first = composeRule.onNodeWithText(firstText).getBoundsInRoot()
+        val last = if (eventCount == 0) first else composeRule.onNodeWithText(eventText(eventCount - 1)).getBoundsInRoot()
+        assertEquals("scroll content supplies top inset", 24f, (first.top - body.top).value, 1f)
+        assertEquals("scroll content supplies bottom inset", 24f, (body.bottom - last.bottom).value, 1f)
+        assertEquals("text starts at list edge", list.left.value, first.left.value, 1f)
+        assertEquals("viewport reaches upper separator", body.top.value, list.top.value, 1f)
+        assertEquals("viewport reaches lower separator", body.bottom.value, list.bottom.value, 1f)
+        assertEquals("single internal bottom inset", 24f, (list.bottom - last.bottom).value, 1f)
+        val textLayouts = mutableListOf<TextLayoutResult>()
+        composeRule.onNodeWithText(firstText).performSemanticsAction(SemanticsActions.GetTextLayoutResult) {
+            it(textLayouts)
+        }
+        val textHeight = with(composeRule.density) { textLayouts.single().size.height.toDp() }
+        assertEquals("description adds no outer vertical padding", textHeight.value, (first.bottom - first.top).value, 1f)
+        if (eventCount > 1) {
+            assertEquals("only adjacent events have a gap", 8f, (last.top - first.bottom).value, 1f)
+        }
     }
 
     private fun seedEvents(count: Int) {

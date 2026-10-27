@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
-import app.n_zik.android.components.dialog.common.Dialog
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.it.fast4x.rimusic.utils.quickPicksSectionOrderKey
@@ -130,7 +130,7 @@ private fun buildSectionDefs(): Map<String, QuickPicksSectionDef> = mapOf(
     "generic_ytm_sections" to QuickPicksSectionDef("generic_ytm_sections", showGenericYtmSectionsKey, R.drawable.trending, R.string.generic_ytm_sections, true)
 )
 
-object QuickPicksContentSettingsDialog : Dialog {
+object QuickPicksContentSettingsDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
@@ -224,6 +224,8 @@ object QuickPicksContentSettingsDialog : Dialog {
         }.filterNotNull()
 
         ToggleListDialog(
+            frameTitle = dialogTitle,
+            onDismiss = ::hideDialog,
             items = sectionItems,
             lazyListState = lazyListState,
             reorderableState = reorderableState,

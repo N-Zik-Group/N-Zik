@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -87,7 +88,11 @@ class AppearancePresetLoadingTest {
         composeRule.onNodeWithText(context.getString(R.string.appearancepresets)).performClick()
         composeRule.waitForIdle()
         assertTrue("opening the chooser loads its state", blurStrengthKey in tracked.readKeys)
-        composeRule.onAllNodes(hasAnyAncestor(isDialog()) and hasClickAction())[0].performClick()
+        assertTrue("opening the chooser must not apply a preset", context.preferences.all.isEmpty())
+        composeRule.onNode(
+            hasAnyAncestor(isDialog()) and hasClickAction() and
+                hasText(context.getString(R.string.dialog_apply))
+        ).performClick()
         composeRule.waitForIdle()
         assertEquals(50f, context.preferences.getFloat(blurStrengthKey, -1f), 0f)
         assertEquals(PlayerBackgroundColors.BlurredCoverColor.name,

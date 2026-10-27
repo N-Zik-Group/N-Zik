@@ -7,11 +7,8 @@ import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.JournalPermission
 import app.n_zik.android.privacy.PermissionEventKind
 
-import app.it.fast4x.rimusic.utils.conditional
-import androidx.compose.foundation.basicMarquee
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
@@ -28,7 +25,6 @@ import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.ui.sliders.SliderControl
-import app.n_zik.android.gridMenuShape
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.getBottomSheetDeviceIcon
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -53,81 +49,46 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animate
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.runtime.key
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Speaker
-import androidx.compose.material.icons.filled.Tv
-import androidx.compose.material.icons.filled.Usb
-import androidx.compose.material.icons.filled.VolumeOff
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.outlined.Error
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.ToggleButton
-import androidx.compose.material3.CircularWavyProgressIndicator
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import app.n_zik.android.R
@@ -138,13 +99,10 @@ import app.it.fast4x.rimusic.utils.rememberPreference
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import timber.log.Timber
-import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.enums.MenuStyle
 import androidx.compose.animation.scaleOut
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.animation.fadeOut
-import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.AnimatedVisibility
@@ -153,7 +111,6 @@ import androidx.compose.animation.animateContentSize
 import android.media.AudioDeviceCallback
 import androidx.car.app.connection.CarConnection
 import app.n_zik.android.utils.isCar
-import app.n_zik.android.utils.getAudioDeviceIcon
 import app.n_zik.android.utils.getBottomSheetDeviceIcon
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -233,7 +190,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
     val carConnection = remember { CarConnection(context) }
     val carConnectionType by carConnection.type.observeAsState(CarConnection.CONNECTION_TYPE_NOT_CONNECTED)
     val isCarProjectionActive = carConnectionType == CarConnection.CONNECTION_TYPE_PROJECTION || carConnectionType == CarConnection.CONNECTION_TYPE_NATIVE
-    
+
     val currentIsCarProjectionActive by rememberUpdatedState(isCarProjectionActive)
 
     // PC bridge (contract §8.5): the connected PC is one more output
@@ -450,7 +407,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                         AudioQualityFormat.High to stringResource(R.string.audio_quality_format_high),
                         AudioQualityFormat.Low to stringResource(R.string.audio_quality_format_low)
                     )
-                    
+
                     if (style == MenuStyle.List) {
                         ListMenu.Menu(title = stringResource(R.string.audio_devices), showDragHandle = true) {
                             SectionTitle(stringResource(R.string.audio_output_title))
@@ -537,7 +494,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                         }
                                     )
                             }
-                            
+
                             SectionTitle(stringResource(R.string.volume))
                             VolumeRow(
                                 currentVolume = currentVolume,
@@ -601,8 +558,8 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                         }
                     } else {
                         GridMenu.Menu(title = stringResource(R.string.audio_devices), showDragHandle = true) {
-                            item(span = { GridItemSpan(maxLineSpan) }) { 
-                                SectionTitle(stringResource(R.string.audio_output_title)) 
+                            item(span = { GridItemSpan(maxLineSpan) }) {
+                                SectionTitle(stringResource(R.string.audio_output_title))
                             }
                             items(
                                 count = shownDevices.size,
@@ -610,7 +567,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                             ) { index ->
                                 val dev = shownDevices[index]
                                 val isActuallyCar = dev.isCar || (dev.type != AudioDeviceType.PC && dev.isActive && isCarProjectionActive)
-                                
+
                                 GridMenu.Entry(
                                     text = dev.name,
                                     enabled = !isCarProjectionActive || dev.isActive,
@@ -691,9 +648,9 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                     }
                                 )
                             }
-                            
-                            item(span = { GridItemSpan(maxLineSpan) }) { 
-                                SectionTitle(stringResource(R.string.volume)) 
+
+                            item(span = { GridItemSpan(maxLineSpan) }) {
+                                SectionTitle(stringResource(R.string.volume))
                             }
                             item {
                                 VolumeGridEntry(
@@ -715,8 +672,8 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                 )
                             }
 
-                            item(span = { GridItemSpan(maxLineSpan) }) { 
-                                SectionTitle(stringResource(R.string.audio_quality_format)) 
+                            item(span = { GridItemSpan(maxLineSpan) }) {
+                                SectionTitle(stringResource(R.string.audio_quality_format))
                             }
                             items(
                                 count = qualityOptions.size,
@@ -836,8 +793,6 @@ private fun VolumeRow(
         )
     }
 }
-
-
 
 /**
  * Enumerates audio output devices (+ Bluetooth battery reflection). Visibility widened from
@@ -984,7 +939,7 @@ internal fun loadDevices(
                     device.type == AudioDeviceType.PHONE_SPEAKER -> context.getString(R.string.this_phone)
                     else -> device.name
                 }
-                
+
                 device.copy(
                     name = displayName,
                     isActive = isActive,
@@ -1080,8 +1035,6 @@ private fun checkBluetoothPermission(context: Context): Boolean = if (Build.VERS
     ) == PackageManager.PERMISSION_GRANTED
 } else true
 
-
-
 @Composable
 private fun VolumeGridEntry(
     currentVolume: Float,
@@ -1148,7 +1101,20 @@ private fun VolumeDialog(
 
     DialogFrame(
         onDismiss = onDismiss,
-        horizontalAlignment = Alignment.Start
+        title = stringResource(R.string.volume),
+        horizontalAlignment = Alignment.Start,
+        footer = {
+            ButtonRow(
+                buttons = listOf(
+                    DialogButton(
+                        text = stringResource(R.string.dialog_close),
+                        icon = R.drawable.close,
+                        textColor = colorPalette().textSecondary,
+                        onClick = onDismiss
+                    )
+                )
+            )
+        }
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -1170,21 +1136,6 @@ private fun VolumeDialog(
                     modifier = Modifier.size(18.dp)
                 )
             }
-            Spacer(modifier = Modifier.size(12.dp))
-            val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
-
-            BasicText(
-                text = stringResource(R.string.volume),
-                maxLines = 1,
-                style = typography().s.semiBold.copy(
-                    color = colorPalette().text
-                ),
-                modifier = Modifier
-                    .weight(1f)
-                    .conditional(!isScrollingTextDisabled) {
-                        basicMarquee(iterations = Int.MAX_VALUE)
-                    }
-            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -1210,19 +1161,6 @@ private fun VolumeDialog(
             stepSize = 0f,
             drawValuePoints = false,
             showValue = false
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        ButtonRow(
-            buttons = listOf(
-                DialogButton(
-                    text = "",
-                    icon = R.drawable.close,
-                    textColor = colorPalette().textSecondary,
-                    onClick = onDismiss
-                )
-            )
         )
     }
 }

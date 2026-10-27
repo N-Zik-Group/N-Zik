@@ -63,6 +63,22 @@ class SmartTrash private constructor(
     private val hasSelection get() = getSongs().size != itemsOnDisplay().size
     private val songCount get() = getSongs().size
 
+    override val confirmationTitle: String
+        @Composable get() = stringResource(when (builtInPlaylist()) {
+            BuiltInPlaylist.Favorites, BuiltInPlaylist.Disliked -> R.string.dialog_remove_favorites
+            BuiltInPlaylist.Offline -> R.string.dialog_clear_song_cache
+            BuiltInPlaylist.Downloaded -> R.string.dialog_clear_downloads
+            BuiltInPlaylist.Top -> R.string.dialog_reset_listening_history
+            else -> R.string.dialog_delete_songs
+        })
+    override val confirmationAction: String
+        @Composable get() = stringResource(when (builtInPlaylist()) {
+            BuiltInPlaylist.Favorites, BuiltInPlaylist.Disliked -> R.string.dialog_remove
+            BuiltInPlaylist.Offline -> R.string.clear
+            BuiltInPlaylist.Top -> R.string.reset
+            else -> R.string.delete
+        })
+
     override val dialogTitle: String
         @Composable
         get() {

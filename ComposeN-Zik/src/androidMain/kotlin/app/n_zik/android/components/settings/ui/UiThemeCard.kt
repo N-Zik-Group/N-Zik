@@ -92,6 +92,8 @@ internal fun UiThemeCard(search: Search) {
     var resetCustomDarkThemeDialog by rememberSaveable { mutableStateOf(false) }
     if (resetCustomLightThemeDialog) {
         ConfirmationDialog(
+            title = stringResource(R.string.title_reset_customized_light_colors),
+            confirmText = stringResource(R.string.reset),
             text = stringResource(R.string.do_you_really_want_to_reset_the_custom_light_theme_colors),
             onDismiss = { resetCustomLightThemeDialog = false },
             onConfirm = {
@@ -103,6 +105,8 @@ internal fun UiThemeCard(search: Search) {
 
     if (resetCustomDarkThemeDialog) {
         ConfirmationDialog(
+            title = stringResource(R.string.title_reset_customized_dark_colors),
+            confirmText = stringResource(R.string.reset),
             text = stringResource(R.string.do_you_really_want_to_reset_the_custom_dark_theme_colors),
             onDismiss = { resetCustomDarkThemeDialog = false },
             onConfirm = {

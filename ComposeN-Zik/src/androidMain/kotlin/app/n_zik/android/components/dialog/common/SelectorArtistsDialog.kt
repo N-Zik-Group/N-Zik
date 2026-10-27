@@ -3,6 +3,7 @@ package app.n_zik.android.components.dialog.common
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -10,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -29,13 +29,11 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.R
 import app.n_zik.android.artistThumbnailShape
@@ -48,13 +46,12 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.models.Info
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.utils.isLandscape
 import app.it.fast4x.rimusic.utils.medium
 import it.fast4x.innertube.YtMusic
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.player.textOutlineColor
 
-/** Full-screen pager of artist thumbnails (moved verbatim from the legacy tree — it is a dedicated full-screen selection dialog, not a framed one). */
+/** Artist thumbnail pager using the shared title and dismissal bands. */
 @Composable
 inline fun SelectorArtistsDialog(
     noinline onDismiss: () -> Unit,
@@ -62,16 +59,19 @@ inline fun SelectorArtistsDialog(
     values: List<Info>?,
     crossinline onValueSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
-    //showItemsIcon: Boolean = false
 ) {
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
-    val screenHeight = configuration.screenHeightDp.dp
-
-    Dialog(onDismissRequest = onDismiss) {
+    DialogFrame(
+        onDismiss = onDismiss,
+        title = title,
+        modifier = modifier,
+        footer = {
+            ButtonRow(listOf(DialogButton(stringResource(R.string.dialog_close), onClick = onDismiss)))
+        }
+    ) {
         Box(
-            modifier = modifier
-                .requiredSize(if (isLandscape) (screenHeight * 0.85f) else (screenWidth * 0.85f))
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
                 .clip(artistThumbnailShape())
                 .background(Color.Transparent)
         ) {
@@ -104,7 +104,8 @@ inline fun SelectorArtistsDialog(
                                 contentDescription = "",
                                 contentScale = ContentScale.Fit,
                                 modifier = Modifier
-                                    .requiredSize(if (isLandscape) (screenHeight * 0.85f) else (screenWidth * 0.85f))
+                                    .fillMaxWidth()
+                                    .aspectRatio(1f)
                                     .clip(artistThumbnailShape())
                                     .clickable(
                                         onClick = {

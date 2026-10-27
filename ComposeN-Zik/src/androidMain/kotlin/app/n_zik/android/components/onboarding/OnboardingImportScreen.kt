@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -41,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.BuildConfig
+import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.backup.ImportTargetProfileDialog
@@ -431,52 +431,28 @@ fun OnboardingImportScreen(
     // chain — the pending picks are dropped, so they cannot leak into the
     // next attempt.
     crossProfilePending?.let { (tag, targetId) ->
-        AlertDialog(
-            onDismissRequest = {
+        ConfirmationDialog(
+            title = stringResource(R.string.dialog_import_backup),
+            text = stringResource(
+                R.string.rescue_cross_profile_confirm,
+                tag,
+                resolveProfileDisplayName(
+                    targetId,
+                    context.profileDisplayName(targetId),
+                    stringResource(R.string.profile_base_name)
+                )
+            ),
+            confirmText = stringResource(R.string.import_button),
+            onDismiss = {
                 crossProfilePending = null
                 abortChain()
             },
-            text = {
-                Text(
-                    stringResource(
-                        R.string.rescue_cross_profile_confirm,
-                        tag,
-                        resolveProfileDisplayName(
-                            targetId,
-                            context.profileDisplayName(targetId),
-                            stringResource(R.string.profile_base_name)
-                        )
-                    )
-                )
+            onConfirm = {
+                crossProfilePending = null
+                startImportChain(targetId)
             },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        crossProfilePending = null
-                        startImportChain(targetId)
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorPalette().accent,
-                        contentColor = colorPalette().textSecondary
-                    )
-                ) {
-                    Text(stringResource(R.string.import_button))
-                }
-            },
-            dismissButton = {
-                Button(
-                    onClick = {
-                        crossProfilePending = null
-                        abortChain()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorPalette().background0,
-                        contentColor = colorPalette().textSecondary
-                    )
-                ) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
+            // Dismiss aborts an import chain; confirmation must only start it.
+            dismissOnConfirm = false
         )
     }
 
@@ -485,46 +461,27 @@ fun OnboardingImportScreen(
 //
     // is pending), so dismissing just drops the question.
     stateCrossProfilePending?.let { (tag, targetId, proceed) ->
-        AlertDialog(
-            onDismissRequest = { stateCrossProfilePending = null },
-            text = {
-                Text(
-                    stringResource(
-                        R.string.rescue_cross_profile_confirm,
-                        tag,
-                        resolveProfileDisplayName(
-                            targetId,
-                            context.profileDisplayName(targetId),
-                            stringResource(R.string.profile_base_name)
-                        )
-                    )
+        ConfirmationDialog(
+            title = stringResource(R.string.dialog_import_backup),
+            text = stringResource(
+                R.string.rescue_cross_profile_confirm,
+                tag,
+                resolveProfileDisplayName(
+                    targetId,
+                    context.profileDisplayName(targetId),
+                    stringResource(R.string.profile_base_name)
                 )
+            ),
+            confirmText = stringResource(R.string.import_button),
+            onDismiss = {
+                stateCrossProfilePending = null
             },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        stateCrossProfilePending = null
-                        proceed()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorPalette().accent,
-                        contentColor = colorPalette().textSecondary
-                    )
-                ) {
-                    Text(stringResource(R.string.import_button))
-                }
+            onConfirm = {
+                stateCrossProfilePending = null
+                proceed()
             },
-            dismissButton = {
-                Button(
-                    onClick = { stateCrossProfilePending = null },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorPalette().background0,
-                        contentColor = colorPalette().textSecondary
-                    )
-                ) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
+            // Dismiss aborts an import chain; confirmation must only start it.
+            dismissOnConfirm = false
         )
     }
 

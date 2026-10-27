@@ -332,6 +332,8 @@ fun PlaylistSongList(
             totalMinutesToLike = formatAsDuration(playlistNotLikedSongs.size.toLong()*1000)
         }
         ConfirmationDialog(
+            title = stringResource(R.string.dialog_like_all_songs),
+            confirmText = stringResource(R.string.dialog_like_all_songs),
             text = "$totalMinutesToLike "+stringResource(R.string.do_you_really_want_to_like_all),
             onDismiss = { showYoutubeLikeConfirmDialog = false },
             onConfirm = {
@@ -589,6 +591,8 @@ fun PlaylistSongList(
 
                             if (showConfirmDownloadAllDialog) {
                                 ConfirmationDialog(
+                                    title = stringResource(R.string.info_download_all_songs),
+                                    confirmText = stringResource(R.string.download),
                                     text = stringResource(R.string.do_you_really_want_to_download_all),
                                     onDismiss = { showConfirmDownloadAllDialog = false },
                                     onConfirm = {
@@ -620,6 +624,8 @@ fun PlaylistSongList(
 
                             if (showConfirmDeleteDownloadDialog) {
                                 ConfirmationDialog(
+                                    title = stringResource(R.string.dialog_clear_downloads),
+                                    confirmText = stringResource(R.string.delete),
                                     text = stringResource(R.string.do_you_really_want_to_delete_download),
                                     onDismiss = { showConfirmDeleteDownloadDialog = false },
                                     onConfirm = {

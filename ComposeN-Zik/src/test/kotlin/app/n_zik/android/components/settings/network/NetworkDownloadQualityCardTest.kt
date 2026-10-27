@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -92,14 +93,15 @@ class NetworkDownloadQualityCardTest {
 
     private fun currentValue(value: String) = context.getString(R.string.settings_current_value, value)
 
-    private fun settleChanges() {
-        // Recomposition also posts to Robolectric's main looper; the frozen Compose clock
-        // alone cannot drain those tasks. Keep pumping bounded for infinite dialog marquees.
-        repeat(8) {
-            Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(250))
+    private fun awaitTextCount(text: String, count: Int = 1) {
+        // Flush snapshot invalidations before driving the frozen clock and Android looper.
+        // Wait for the observable result rather than assuming a fixed frame count is enough.
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            Snapshot.sendApplyNotifications()
             composeRule.mainClock.advanceTimeBy(250)
+            Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(250))
+            composeRule.onAllNodesWithText(text).fetchSemanticsNodes().size == count
         }
-        composeRule.waitForIdle()
     }
 
     @OptIn(androidx.compose.animation.ExperimentalAnimationApi::class)
@@ -109,9 +111,8 @@ class NetworkDownloadQualityCardTest {
             NetworkSettingsContent(Search(initialVisible = false), rememberNavController(),
                 selectedCards = setOf(R.string.settings_reset))
         }
-        settleChanges()
         composeRule.onNodeWithText(context.getString(R.string.settings_restore_default_settings)).performSemanticsAction(SemanticsActions.OnClick) { it() }
-        settleChanges()
+        awaitTextCount(context.getString(R.string.restart_service))
         assertEquals(AudioQualityFormat.Auto.name, context.preferences.getString(audioQualityFormatKey, null))
         composeRule.onAllNodesWithText(context.getString(R.string.restart_service)).assertCountEquals(1)
     }
@@ -177,7 +178,7 @@ class NetworkDownloadQualityCardTest {
         val highText = currentValue(context.getString(R.string.audio_quality_auto_fmt, context.getString(R.string.network_quality_high)))
         composeRule.onAllNodesWithText(lowText).assertCountEquals(2)
         composeRule.runOnIdle { quality.value = ImageCacheFactory.NetworkQuality.HIGH }
-        settleChanges()
+        awaitTextCount(highText, count = 2)
         composeRule.onAllNodesWithText(highText).assertCountEquals(2)
         composeRule.onAllNodesWithText(lowText).assertCountEquals(0)
         assertEquals(before, context.preferences.all)
@@ -208,11 +209,11 @@ class NetworkDownloadQualityCardTest {
             context.getString(R.string.network_quality_medium)))).assertExists()
         composeRule.onNodeWithText(context.getString(R.string.download_quality_format))
             .performSemanticsAction(SemanticsActions.OnClick) { it() }
-        settleChanges()
+        awaitTextCount(context.getString(R.string.audio_quality_automatic))
         composeRule.onNodeWithText(context.getString(R.string.audio_quality_automatic)).assertExists()
         composeRule.onNodeWithText(context.getString(R.string.audio_quality_format_high))
             .performSemanticsAction(SemanticsActions.OnClick) { it() }
-        settleChanges()
+        awaitTextCount(currentValue(context.getString(R.string.audio_quality_format_high)))
         assertEquals(DownloadQualityFormat.High.name, context.preferences.getString(downloadQualityFormatKey, null))
         assertEquals(1, restartRequests)
         composeRule.onNodeWithText(currentValue(context.getString(R.string.audio_quality_format_high))).assertExists()

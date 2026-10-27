@@ -29,6 +29,8 @@ internal fun AiDataCard(search: Search) {
     val searchCtx_7 = search.inputValue.isBlank() || stringResource(R.string.tab_data).contains(search.inputValue, true) || stringResource(R.string.reset_quick_picks).contains(search.inputValue, true)
     if (clearEvents) {
         ConfirmationDialog(
+            title = stringResource(R.string.dialog_delete_playback_events),
+            confirmText = stringResource(R.string.delete),
             text = stringResource(R.string.do_you_really_want_to_delete_all_playback_events),
             onDismiss = { clearEvents = false },
             onConfirm = {

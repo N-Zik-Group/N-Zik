@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.settings
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -33,6 +34,8 @@ import app.it.fast4x.rimusic.utils.syncStatus
 object SyncStatusDialog : InteractiveDialog {
     override var isActive: Boolean by mutableStateOf(false)
 
+    override val bodyPadding: PaddingValues get() = PaddingValues(0.dp)
+
     @get:Composable
     override val dialogTitle: String
         get() = stringResource(R.string.sync_status_detail)
@@ -59,7 +62,7 @@ object SyncStatusDialog : InteractiveDialog {
         )
 
         Column(
-            modifier = Modifier.verticalScroll(rememberScrollState())
+            modifier = Modifier.verticalScroll(rememberScrollState()).padding(24.dp)
         ) {
             statusItems.forEach { (name, syncItemStatus) ->
                 val isExpanded = expandedItem == name
@@ -131,7 +134,7 @@ object SyncStatusDialog : InteractiveDialog {
     override fun Buttons() = ButtonRow(
         buttons = listOf(
             DialogButton(
-                text = stringResource(R.string.confirm),
+                text = stringResource(R.string.dialog_close),
                 onClick = { hideDialog() },
                 primary = true
             )

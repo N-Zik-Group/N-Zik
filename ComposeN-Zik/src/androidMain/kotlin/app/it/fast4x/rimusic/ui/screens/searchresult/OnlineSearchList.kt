@@ -443,6 +443,7 @@ fun OnlineSearchList(
 
     CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
     ItemsPage(
+        searchQuery = query,
         filterContentType = filterContentType,
         tag = "searchResults/$query/${getTabName(tabIndex)}",
         itemsPageProvider = { continuation ->

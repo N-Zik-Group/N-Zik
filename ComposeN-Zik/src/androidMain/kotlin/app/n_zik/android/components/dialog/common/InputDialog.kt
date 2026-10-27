@@ -1,7 +1,6 @@
 package app.n_zik.android.components.dialog.common
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
@@ -10,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
@@ -31,6 +29,9 @@ interface InputDialog: InteractiveDialog {
             )
     }
 
+    val submitText: String
+        @Composable get() = stringResource(R.string.dialog_save)
+
     val keyboardOption: KeyboardOptions
 
     var value: TextFieldValue
@@ -39,13 +40,7 @@ interface InputDialog: InteractiveDialog {
 
     fun onSet( newValue: String )
 
-    /**
-     * When [value] is empty, this component
-     * will be triggered to place a placeholder
-     * to the text box.
-     *
-     * NOTE: It is not counted as valid value.
-     */
+    /** Shows a placeholder when [value] is empty without contributing a value. */
     @Composable
     fun TextPlaceholder() {}
 
@@ -64,7 +59,7 @@ interface InputDialog: InteractiveDialog {
                 danger = true
             ),
             DialogButton(
-                text = stringResource(R.string.confirm),
+                text = submitText,
                 onClick = { onSet( value.text ) },
                 primary = true
             )
@@ -84,8 +79,7 @@ interface InputDialog: InteractiveDialog {
             keyboardOptions = keyboardOption,
             leadingIcon = { LeadingIcon() },
             trailingIcon = { TrailingIcon() },
-            modifier = Modifier.padding( vertical = 20.dp )
-                               .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             colors = defaultTextFieldColors()
         )
     }

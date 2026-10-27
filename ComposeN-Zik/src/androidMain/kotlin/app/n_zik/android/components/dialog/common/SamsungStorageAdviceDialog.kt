@@ -40,20 +40,7 @@ private const val SAMSUNG_MANUFACTURER = "samsung"
 /** Frozen summary threshold (review loop 1): the storage summary line is hidden below 512 KB of scanned storage. */
 private const val SUMMARY_MIN_BYTES = 512L * 1024L
 
-/**
- * One-time Samsung storage advice (spec-samsung-storage-advice-dialog): the OEM memory
- * management can delete N-Zik's downloads and cache files, so Samsung users are advised
- * to switch to the private (app) storage location. Shown at most once per device: the
- * shown flag is persisted when the dialog is SHOWN, even on a back-dismiss.
- *
- * The gate and the primary action consider and write the ACTIVE profile's OWN location
- * setting only (the same per-profile semantics as the settings card), never the base
- * profile's. The size scan counts the physical downloads + media cache directories
- * wherever they live, so the summary line presents the bytes without distinguishing
- * shared from separate (documented limitation, frozen decision, review loop 1: for data
- * items shared with the base profile, opt-in data sharing, those bytes sit under the
- * BASE profile's location).
- */
+/** Offers private storage once per device, using the active profile's own location setting. */
 object SamsungStorageAdviceDialog : ConfirmDialog {
 
     override val dialogTitle: String
@@ -62,41 +49,23 @@ object SamsungStorageAdviceDialog : ConfirmDialog {
 
     override var isActive: Boolean by mutableStateOf(false)
 
-    /**
-     * The scanned downloads + media cache size (bytes) of the active profile, written by
-     * [triggerSamsungStorageAdvice] before [showDialog]; below [SUMMARY_MIN_BYTES] the body
-     * hides the summary line (only title + message + buttons render).
-     */
+    /** Scanned active-profile storage size; summaries below [SUMMARY_MIN_BYTES] stay hidden. */
     internal var storageBytes: Long by mutableStateOf(0L)
 
-    /**
-     * Pure show decision (review loop 1): Samsung + never shown + the active profile's own
-     * location still System.
-     */
+    /** Shows only for Samsung devices still using system storage that have never seen the advice. */
     fun shouldShow(isSamsung: Boolean, alreadyShown: Boolean, cacheLocation: ExoPlayerCacheLocation): Boolean =
         isSamsung && !alreadyShown && cacheLocation == ExoPlayerCacheLocation.System
 
-    /**
-     * Samsung detection helper: [Build.MANUFACTURER] case-insensitive equals "samsung".
-     */
+    /** Compares [Build.MANUFACTURER] case-insensitively. */
     fun isSamsungDevice(): Boolean =
         Build.MANUFACTURER.equals(SAMSUNG_MANUFACTURER, ignoreCase = true)
 
-    /**
-     * The ACTIVE profile's OWN cache location setting (the per-profile store the settings
-     * card reads/writes, `preferences` for the base, `preferences_<id>` otherwise).
-     * Limitation (frozen): shared items physically follow the BASE profile's location
-     * setting, which this advice does not consider.
-     */
+    /** Reads the active profile's own setting; shared items still follow the base profile's location. */
     internal fun activeProfileCacheLocation(context: Context): ExoPlayerCacheLocation =
         profileDataPrefs(context, getActiveProfile(context))
             .getEnum(exoPlayerCacheLocationKey, ExoPlayerCacheLocation.System)
 
-    /**
-     * Total size (bytes) of the ACTIVE profile's downloads + media cache directories (0
-     * when a cache is Disabled or a directory is absent). A scan failure or a zero total
-     * simply hides the summary line, it never blocks showing the dialog.
-     */
+    /** Totals the active profile's physical downloads and cache directories, including shared data. */
     internal fun activeProfileStorageSize(context: Context): Long {
         val profileId = getActiveProfile(context)
         val downloads = downloadsDir(context, profileId)?.let { totalDirectorySize(it) } ?: 0L
@@ -104,15 +73,7 @@ object SamsungStorageAdviceDialog : ConfirmDialog {
         return downloads + mediaCache
     }
 
-    /**
-     * The primary action (switch in place, then dismiss): writes Private to the ACTIVE
-     * profile's own location setting (per-profile store, the settings card's semantics,
-     * no base-profile switching), restarts the player service when it is bound, then
-     * dismisses (the shown flag was already persisted at show time, so it never returns).
-     *
-     * @param binder the bound player binder, null when the service is not bound; the
-     * restart (and its log) only happens when it is non-null.
-     */
+    /** Switches the active profile to private storage, restarts the bound player, then dismisses. */
     internal fun onConfirm(binder: PlayerServiceModern.Binder?) {
         val context = appContext()
         val profileId = getActiveProfile(context)
@@ -156,33 +117,18 @@ object SamsungStorageAdviceDialog : ConfirmDialog {
         BasicText(
             text = stringResource(R.string.samsung_storage_advice_message),
             style = typography().xs.copy(color = palette.text),
-            modifier = Modifier.padding(vertical = 20.dp)
+            modifier = Modifier.padding(bottom = if (storageBytes >= SUMMARY_MIN_BYTES) 20.dp else 0.dp)
         )
         if (storageBytes >= SUMMARY_MIN_BYTES) {
             BasicText(
                 text = stringResource(R.string.samsung_storage_advice_storage, formatBytes(storageBytes)),
-                style = typography().xs.copy(color = palette.textSecondary),
-                modifier = Modifier.padding(bottom = 8.dp)
+                style = typography().xs.copy(color = palette.textSecondary)
             )
         }
     }
 }
 
-/**
- * The one-shot trigger of [SamsungStorageAdviceDialog] (review loop 1 ordering): the pure
- * Samsung check runs BEFORE any I/O (the majority of devices are not Samsung and must not
- * pay for prefs reads), the storage scan runs on [NzikDispatchers.DATA] only when the
- * decision passes, and the shown flag is persisted AFTER [SamsungStorageAdviceDialog.showDialog]
- * (the flag is written when the dialog is SHOWN, so a back-dismiss or a crash with the
- * dialog open never re-shows it).
- *
- * internal + context-taking so the flag-write timing is pinnable under Robolectric without
- * composing MainActivity (the executeProfileSwitch precedent).
- *
- * @param context any context of the process (global app_settings store + active profile settings).
- * @param samsungDetector injectable Samsung check, [SamsungStorageAdviceDialog.isSamsungDevice]
- * in production; pinned by the Robolectric tests.
- */
+/** Checks Samsung before any I/O, scans eligible storage off-main, then persists the shown flag. */
 internal suspend fun triggerSamsungStorageAdvice(
     context: Context,
     samsungDetector: () -> Boolean = SamsungStorageAdviceDialog::isSamsungDevice,

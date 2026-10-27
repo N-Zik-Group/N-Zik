@@ -151,6 +151,8 @@ fun ExtensionsSheet(
 
     if (uninstallTarget != null) {
         ConfirmationDialog(
+            title = stringResource(R.string.module_uninstall),
+            confirmText = stringResource(R.string.module_uninstall),
             text = stringResource(R.string.module_uninstall_confirm),
             onDismiss = { uninstallTarget = null },
             onConfirm = {

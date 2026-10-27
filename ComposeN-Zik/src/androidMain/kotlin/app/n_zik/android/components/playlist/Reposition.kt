@@ -40,6 +40,11 @@ class Reposition private constructor(
             )
     }
 
+    override val confirmationTitle: String
+        @Composable get() = stringResource(R.string.renumber_songs_positions)
+    override val confirmationAction: String
+        @Composable get() = stringResource(R.string.shuffle)
+
     override val messageId: Int = R.string.renumber_songs_positions
     override val iconId: Int = R.drawable.position
     override val dialogTitle: String

@@ -9,7 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.R
-import app.n_zik.android.components.dialog.common.Dialog
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.it.fast4x.rimusic.utils.*
@@ -18,7 +18,7 @@ import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import android.content.Context
 
-object LocalPlaylistSortSettingsDialog : Dialog {
+object LocalPlaylistSortSettingsDialog : ContentFramedDialog {
 
     private val sortIds = listOf(
         "Title", "Artist", "Album", "ArtistAndAlbum", "Duration",
@@ -102,6 +102,8 @@ object LocalPlaylistSortSettingsDialog : Dialog {
         }
 
         ToggleListDialog(
+            frameTitle = dialogTitle,
+            onDismiss = ::hideDialog,
             items = items, lazyListState = lazyListState, reorderableState = reorderableState, enforceMinOneChecked = true,
             checkedStatesOverride = items.map { workingToggles[it.id.removePrefix("pl_")] ?: true },
             onCheckedChange = { index, newValue ->

@@ -11,7 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
-import app.n_zik.android.components.dialog.common.Dialog
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
@@ -127,7 +127,7 @@ fun profileShortcutDefs(context: Context): Map<String, ShortcutDef> {
  * - Rescue is always enabled (locked).
  * - Preferences stored as comma-separated strings in `"preferences"`.
  */
-object AppShortcutsSettingsDialog : Dialog {
+object AppShortcutsSettingsDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
@@ -206,6 +206,8 @@ object AppShortcutsSettingsDialog : Dialog {
         }
 
         ToggleListDialog(
+            frameTitle = dialogTitle,
+            onDismiss = ::hideDialog,
             items = shortcutItems,
             lazyListState = lazyListState,
             reorderableState = reorderableState,

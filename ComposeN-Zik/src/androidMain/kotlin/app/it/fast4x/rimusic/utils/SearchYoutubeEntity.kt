@@ -82,6 +82,7 @@ fun SearchYoutubeEntity (
                 .padding(horizontal = 16.dp)
         ) {
             ItemsPage(
+                searchQuery = query,
                 tag = "searchYTEntity/$query/videos",
                 itemsPageProvider = { continuation ->
                     if (continuation == null) {

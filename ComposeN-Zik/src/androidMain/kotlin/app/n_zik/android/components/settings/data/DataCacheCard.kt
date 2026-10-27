@@ -106,6 +106,8 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
     if (cleanCacheOfflineSongs) {
         ConfirmationDialog(
+            title = stringResource(R.string.dialog_clear_song_cache),
+            confirmText = stringResource(R.string.clear),
             text = stringResource(R.string.do_you_really_want_to_delete_cache),
             onDismiss = {
                 cleanCacheOfflineSongs = false
@@ -129,6 +131,8 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
     if (cleanDownloadCache) {
         ConfirmationDialog(
+            title = stringResource(R.string.dialog_clear_downloads),
+            confirmText = stringResource(R.string.delete),
             text = stringResource(R.string.do_you_really_want_to_delete_cache),
             onDismiss = {
                 cleanDownloadCache = false
@@ -161,6 +165,8 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
     if (cleanCacheImages) {
         ConfirmationDialog(
+            title = stringResource(R.string.dialog_clear_image_cache),
+            confirmText = stringResource(R.string.clear),
             text = stringResource(R.string.do_you_really_want_to_delete_cache),
             onDismiss = {
                 cleanCacheImages = false

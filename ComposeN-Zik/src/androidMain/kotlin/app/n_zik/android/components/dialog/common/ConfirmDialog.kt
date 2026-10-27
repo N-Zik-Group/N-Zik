@@ -6,6 +6,9 @@ import app.n_zik.android.R
 
 interface ConfirmDialog: InteractiveDialog {
 
+    val confirmText: String
+        @Composable get() = stringResource(R.string.dialog_apply)
+
     fun onConfirm()
 
     @Composable
@@ -17,7 +20,7 @@ interface ConfirmDialog: InteractiveDialog {
                 danger = true
             ),
             DialogButton(
-                text = stringResource(R.string.confirm),
+                text = confirmText,
                 onClick = ::onConfirm,
                 primary = true
             )

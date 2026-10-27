@@ -1,5 +1,8 @@
 package app.it.fast4x.rimusic.ui.screens.search
 
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.PermissionUsageJournal
+
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -132,6 +135,7 @@ fun SearchScreen(
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
+        PermissionUsageJournal.result(context, PermissionFeature.VOICE_SEARCH, Manifest.permission.RECORD_AUDIO, isGranted)
         if (isGranted) {
             voiceSearchUtils.startListening()
         } else {
@@ -174,6 +178,7 @@ fun SearchScreen(
                         ) {
                             voiceSearchUtils.startListening()
                         } else {
+                            PermissionUsageJournal.request(context, PermissionFeature.VOICE_SEARCH, Manifest.permission.RECORD_AUDIO)
                             permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
                         }
                     }

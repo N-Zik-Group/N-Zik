@@ -3,7 +3,6 @@ package app.it.fast4x.rimusic.ui.components.navigation.nav
 import androidx.compose.runtime.CompositionLocalProvider
 import app.n_zik.android.uiRoundnessShape
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
@@ -21,13 +20,9 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -36,7 +31,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -51,6 +45,7 @@ import app.n_zik.android.showStatsIconInNav
 import app.it.fast4x.rimusic.ui.components.themed.Button
 import app.it.fast4x.rimusic.ui.components.themed.TextIconButton
 import app.it.fast4x.rimusic.ui.styling.Dimensions
+import app.n_zik.android.utils.toast.trackBottomNavigationForToasts
 import app.n_zik.android.topUiRoundnessShape
 
 // Shown when "Navigation bar position" is set to "top" or "bottom"
@@ -73,19 +68,6 @@ class HorizontalNavigationBar(
     }
 
     @Composable
-    private fun addButton(button: Button, modifier: Modifier = Modifier ) =
-        buttonList.add {
-            Box( modifier ) { button.Draw() }
-        }
-
-    @SuppressLint("ComposableNaming")
-    @Composable
-    private fun addButton(index: Int, button: Button, modifier: Modifier = Modifier ) =
-        buttonList.add( index ) {
-            Box( modifier ) { button.Draw() }
-        }
-
-    @Composable
     private fun bottomPadding(): Dp {
         return if ( NavigationBarPosition.BottomFloating.isCurrent() )
             Dimensions.navBarBottomPadding(true)
@@ -99,26 +81,24 @@ class HorizontalNavigationBar(
 
     @Composable
     override fun add(buttons: @Composable (@Composable (Int, String, Int) -> Unit) -> Unit) {
-        buttonList.clear()
         val transition = updateTransition(targetState = tabIndex, label = null)
         val isFloating = NavigationBarPosition.BottomFloating.isCurrent()
 
         buttons { index, text, iconId ->
+            buttonList.register(index) {
+                val color by transition.animateColor(label = "") {
+                    if (it == index) colorPalette().text else colorPalette().textDisabled
+                }
+                val button: Button =
+                    if (NavigationBarType.IconOnly.isCurrent())
+                        Button(iconId, color, 12.dp, if (isFloating) 24.dp else 20.dp)
+                    else
+                        TextIconButton(text, iconId, color, 0.dp, 20.dp, textSpacing = if (isFloating) 12.dp else 5.dp, isCompact = isFloating)
 
-            val color by transition.animateColor(label = "") {
-                if (it == index) colorPalette().text else colorPalette().textDisabled
+                Box(Modifier.clip(uiRoundnessShape()).clickable { onTabChanged(index) }) {
+                    button.Draw()
+                }
             }
-
-            val button: Button =
-                if ( NavigationBarType.IconOnly.isCurrent() )
-                    Button( iconId, color, if (isFloating) 12.dp else 12.dp, if (isFloating) 24.dp else 20.dp )
-                else
-                    TextIconButton( text, iconId, color, 0.dp, 20.dp, textSpacing = if (isFloating) 12.dp else 5.dp, isCompact = isFloating )
-
-            val contentModifier = Modifier
-                .clip(uiRoundnessShape()).clickable(onClick = { onTabChanged(index) })
-
-            addButton( button, contentModifier )
         }
     }
 
@@ -195,6 +175,7 @@ class HorizontalNavigationBar(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .trackBottomNavigationForToasts(NavigationBarPosition.current().isBottomType, Dimensions.navigationBarHeight - 10.dp)
                         .padding(bottom = if (isFloating) 2.dp else 0.dp)
                         .shadow(elevation = if (isFloating) 8.dp else 0.dp, shape = roundedCornerShape)
                         .clip(roundedCornerShape)

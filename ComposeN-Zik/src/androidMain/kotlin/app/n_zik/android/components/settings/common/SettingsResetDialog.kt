@@ -4,17 +4,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.ui.unit.dp
 import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.ButtonRow
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -56,8 +53,22 @@ internal fun SettingsResetCard(
             title = selectedScope?.let { scope ->
                 stringResource(SettingsCategories.first { it.tab == scope }.labelRes)
             } ?: stringResource(R.string.settings_reset),
+            footer = {
+                ButtonRow(buttons = buildList {
+                    if (selectedScope != null) {
+                        add(DialogButton(
+                            text = stringResource(R.string.settings_reset_scope_back),
+                            onClick = { selectedScope = null },
+                        ))
+                    }
+                    add(DialogButton(
+                        text = stringResource(R.string.cancel),
+                        onClick = { open = false },
+                        danger = true,
+                    ))
+                })
+            }
         ) {
-            Spacer(Modifier.height(16.dp))
             Column(
                 Modifier.fillMaxWidth().weight(1f, fill = false)
                     .testTag("settings.reset.dialog").verticalScroll(rememberScrollState())
@@ -78,20 +89,6 @@ internal fun SettingsResetCard(
                     resetContent(scope)
                 }
             }
-            Spacer(Modifier.height(16.dp))
-            ButtonRow(buttons = buildList {
-                if (selectedScope != null) {
-                    add(DialogButton(
-                        text = stringResource(R.string.settings_reset_scope_back),
-                        onClick = { selectedScope = null },
-                    ))
-                }
-                add(DialogButton(
-                    text = stringResource(R.string.cancel),
-                    onClick = { open = false },
-                    danger = true,
-                ))
-            })
         }
     }
 }

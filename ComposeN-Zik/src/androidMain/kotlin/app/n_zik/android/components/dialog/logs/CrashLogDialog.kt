@@ -1,18 +1,14 @@
 package app.n_zik.android.components.dialog.logs
 
+import androidx.compose.foundation.layout.PaddingValues
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,23 +17,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.utils.medium
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import timber.log.Timber
 import app.it.fast4x.rimusic.utils.textCopyToClipboard
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
-import app.n_zik.android.components.dialog.common.Dialog
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
+import app.n_zik.android.components.dialog.common.DialogButton
+import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.typography
-import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 /**
  * The Maintenance sheet's "Last crash" row viewer (the [CopyLogsDialog] pattern,
@@ -47,7 +43,7 @@ import timber.log.Timber
  * Render() is a singleton per dialog object, so a second host anywhere would stack
  * two dialogs on the same showDialog() activation.
  */
-object CrashLogDialog : Dialog {
+object CrashLogDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
@@ -87,14 +83,47 @@ object CrashLogDialog : Dialog {
             }
         }
 
-        Column(
-            modifier = Modifier.fillMaxWidth()
+        DialogFrame(
+            onDismiss = ::hideDialog,
+            title = dialogTitle,
+            bodyPadding = PaddingValues(0.dp),
+        footer = {
+                ButtonRow(
+                    buttons = listOf(
+                        DialogButton(
+                            text = stringResource(R.string.maintenance_copy),
+                            primary = true,
+                            textColor = colorPalette().textSecondary,
+                            onClick = {
+                                val text = content
+                                if (text.isNullOrBlank()) {
+                                    Toaster.w(noLogAvailable)
+                                } else {
+                                    textCopyToClipboard(text, context)
+                                }
+                            },
+                        ),
+                        DialogButton(
+                            text = stringResource(R.string.export),
+                            primary = true,
+                            textColor = colorPalette().textSecondary,
+                            onClick = {
+                                val text = content
+                                if (text.isNullOrBlank()) {
+                                    Toaster.w(noLogAvailable)
+                                } else {
+                                    launcher.launch("N-Zik_crash_log.txt")
+                                }
+                            },
+                        )
+                    )
+                )
+            }
         ) {
             Column(
                 modifier = Modifier
                     .weight(1f, fill = false)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState()).padding(24.dp)
             ) {
                 val text = content
                 if (text.isNullOrBlank()) {
@@ -108,59 +137,6 @@ object CrashLogDialog : Dialog {
                         text = text,
                         style = typography().xxs,
                         color = colorPalette().text,
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Button(
-                    onClick = {
-                        val text = content
-                        if (text.isNullOrBlank()) {
-                            Toaster.w(noLogAvailable)
-                        } else {
-                            textCopyToClipboard(text, context)
-                        }
-                    },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorPalette().accent,
-                        contentColor = colorPalette().textSecondary,
-                    ),
-                    shape = uiRoundnessShape(),
-                ) {
-                    Text(
-                        text = stringResource(R.string.maintenance_copy),
-                        style = typography().s.medium,
-                    )
-                }
-                Spacer(modifier = Modifier.padding(end = 8.dp))
-                Button(
-                    onClick = {
-                        val text = content
-                        if (text.isNullOrBlank()) {
-                            Toaster.w(noLogAvailable)
-                        } else {
-                            launcher.launch("N-Zik_crash_log.txt")
-                        }
-                    },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorPalette().accent,
-                        contentColor = colorPalette().textSecondary,
-                    ),
-                    shape = uiRoundnessShape(),
-                ) {
-                    Text(
-                        text = stringResource(R.string.export),
-                        style = typography().s.medium,
                     )
                 }
             }

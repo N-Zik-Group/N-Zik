@@ -88,7 +88,8 @@ import kotlinx.coroutines.flow.map
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.search.filterSearchHistory
-import app.n_zik.android.components.search.SearchNoResults
+import app.n_zik.android.components.search.SearchEmptyFeedback
+import app.n_zik.android.components.search.SearchEmptySpace
 import app.n_zik.android.components.search.SearchResultsViewport
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.SearchHistoryStore
@@ -183,7 +184,7 @@ fun HistoryList(
         }
     }
 
-    val events by remember(sort.sortBy, sort.sortOrder, parentalControlEnabled) {
+    val loadedEvents by remember(sort.sortBy, sort.sortOrder, parentalControlEnabled) {
         Database.eventTable
                 .allWithSong()
                 .distinctUntilChanged()
@@ -222,7 +223,8 @@ fun HistoryList(
                         }
                     }
                 }
-    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+    }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
+    val events = loadedEvents.orEmpty()
 
     val buttonsList = mutableListOf(HistoryType.History to stringResource(R.string.history))
     val syncImportHistory by rememberPreference(syncImportHistoryKey, false)
@@ -334,6 +336,15 @@ fun HistoryList(
             HistoryType.History -> isLocalLoading && events.isEmpty()
             HistoryType.YTMHistory -> isYTMLoading || (historyPage == null && isYouTubeSyncEnabled())
         }
+
+        SearchEmptyFeedback(
+            query = search.inputValue,
+            empty = noSearchResults,
+            loading = isLoading || when (historyType) {
+                HistoryType.History -> loadedEvents == null
+                HistoryType.YTMHistory -> historyPage?.isSuccess != true || historyPage?.getOrNull() == null
+            }
+        )
 
         // Wiped with a plain alpha while the bar is focused with a blank
         // query, like the settings pages; the wipe is applied per content
@@ -447,7 +458,7 @@ fun HistoryList(
 
                     if (noSearchResults) {
                         item(key = "search_no_results") {
-                            SearchNoResults(fillRemainingViewport = true)
+                            SearchEmptySpace(fillRemainingViewport = true)
                         }
                     }
                     if (historyType == HistoryType.History) {

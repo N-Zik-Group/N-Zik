@@ -1,5 +1,7 @@
 package app.n_zik.android.components.dialog.common
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,17 +12,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -57,6 +58,7 @@ fun SleepTimerDialog(
 ) {
     if (sleepTimerMillisLeft != null) {
         ConfirmationDialog(
+            title = stringResource(R.string.sleep_timer),
             text = stringResource(R.string.stop_sleep_timer),
             cancelText = stringResource(R.string.no),
             confirmText = stringResource(R.string.stop),
@@ -68,34 +70,46 @@ fun SleepTimerDialog(
         )
     } else {
         val palette = colorPalette()
+        var showCircularSlider by remember { mutableStateOf(false) }
+        var amount by remember { mutableStateOf(1) }
         DialogFrame(
             onDismiss = onDismiss,
-            title = stringResource(R.string.set_sleep_timer)
+            title = stringResource(R.string.set_sleep_timer),
+            bodyPadding = PaddingValues(0.dp),
+        footer = {
+                ButtonRow(
+                    buttons = listOf(
+                        DialogButton(
+                            text = stringResource(R.string.cancel),
+                            onClick = onDismiss,
+                            danger = true
+                        ),
+                        DialogButton(
+                            text = stringResource(R.string.set_sleep_timer),
+                            enabled = amount > 0,
+                            onClick = {
+                                onStartSleepTimer(amount * STEP_MINUTES * MINUTES_TO_MILLIS)
+                                onDismiss()
+                            },
+                            primary = true
+                        )
+                    )
+                )
+            }
         ) {
-            var showCircularSlider by remember { mutableStateOf(false) }
-            var amount by remember { mutableStateOf(1) }
-
-            // The frame body is non-scrollable and capped at 80 % of the
-            // screen height (canon): the stepper / slider area scrolls inside
-
-            // this column so the confirm / cancel pills stay reachable on
-            // short screens.
+            // Scroll the controls independently so footer actions stay reachable on short screens.
             Column(
                 modifier = Modifier
                     .weight(1f, fill = false)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberScrollState()).padding(24.dp)
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
-
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(
                         space = 16.dp,
                         alignment = Alignment.CenterHorizontally
                     ),
-                    modifier = Modifier
-                        .padding(vertical = 10.dp)
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     val sleepTimeMillis = amount * STEP_MINUTES * MINUTES_TO_MILLIS
 
@@ -160,11 +174,8 @@ fun SleepTimerDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
                 if (timeRemaining > 0) {
-                    // The legacy dialog offered this as a secondary button —
-                    // restored as a single pill in the shared button language.
+                    Spacer(modifier = Modifier.height(16.dp))
                     ButtonRow(
                         buttons = listOf(
                             DialogButton(
@@ -178,28 +189,8 @@ fun SleepTimerDialog(
                             )
                         )
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
-
-            ButtonRow(
-                buttons = listOf(
-                    DialogButton(
-                        text = stringResource(R.string.cancel),
-                        onClick = onDismiss,
-                        danger = true
-                    ),
-                    DialogButton(
-                        text = stringResource(R.string.confirm),
-                        enabled = amount > 0,
-                        onClick = {
-                            onStartSleepTimer(amount * STEP_MINUTES * MINUTES_TO_MILLIS)
-                            onDismiss()
-                        },
-                        primary = true
-                    )
-                )
-            )
         }
     }
 }

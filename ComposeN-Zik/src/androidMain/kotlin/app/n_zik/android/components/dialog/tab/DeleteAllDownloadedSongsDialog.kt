@@ -38,6 +38,11 @@ class DeleteAllDownloadedSongsDialog(
             )
     }
 
+    override val confirmationTitle: String
+        @Composable get() = stringResource(R.string.dialog_clear_downloads)
+    override val confirmationAction: String
+        @Composable get() = stringResource(R.string.delete)
+
     override val messageId: Int = R.string.info_remove_all_downloaded_songs
     override val iconId: Int = R.drawable.download
     override val dialogTitle: String

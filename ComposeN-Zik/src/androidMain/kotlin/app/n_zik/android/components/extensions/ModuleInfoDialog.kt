@@ -1,9 +1,8 @@
 package app.n_zik.android.components.extensions
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
@@ -29,33 +28,35 @@ fun ModuleInfoDialog(
     content: String,
     onDismiss: () -> Unit,
 ) {
-    DialogFrame(onDismiss = onDismiss, title = title) {
+    DialogFrame(onDismiss = onDismiss, title = title,
+        bodyPadding = PaddingValues(0.dp),
+        footer = {
+            ButtonRow(
+                buttons = listOf(
+                    DialogButton(
+                        text = stringResource(R.string.dialog_close),
+                        onClick = onDismiss,
+                        primary = true,
+                    ),
+                ),
+            )
+        }
+    ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // Scrollable content so the banner never pushes the button row out
             // of the frame (CrashLogDialog pattern)
             Column(
                 modifier = Modifier
                     .weight(1f, fill = false)
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState()).padding(24.dp),
             ) {
                 BasicText(
                     text = content,
                     style = typography().xs.copy(color = colorPalette().textSecondary),
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
+                        .fillMaxWidth(),
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            ButtonRow(
-                buttons = listOf(
-                    DialogButton(
-                        text = stringResource(R.string.ok),
-                        onClick = onDismiss,
-                        primary = true,
-                    ),
-                ),
-            )
         }
     }
 }

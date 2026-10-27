@@ -222,6 +222,7 @@ internal fun PairPcCard(running: BridgeState.Running, code: PairingCode?) {
     val payload = pendingPayload
     if (payload != null && code != null) {
         ConfirmationDialog(
+            title = stringResource(R.string.bridge_pair_title),
             text = stringResource(R.string.bridge_pair_confirm, payload.deviceName, code.display),
             confirmText = stringResource(R.string.bridge_pair_confirm_action),
             onDismiss = { pendingPayload = null },
@@ -347,6 +348,7 @@ internal fun PairedDevicesCard(ui: PairedDevicesUi) {
 
     toRevoke?.let { device ->
         ConfirmationDialog(
+            title = stringResource(R.string.dialog_revoke_device),
             text = stringResource(R.string.bridge_revoke_confirm, device.deviceName),
             confirmText = stringResource(R.string.bridge_revoke),
             onDismiss = { toRevoke = null },

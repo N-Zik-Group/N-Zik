@@ -1,38 +1,34 @@
 package app.n_zik.android.components.dialog.settings
 
+import android.content.Context
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.Text
-import app.n_zik.android.R
-import app.n_zik.android.colorPalette
-import app.n_zik.android.components.dialog.common.Dialog
-import app.n_zik.android.components.dialog.common.ToggleItem
-import app.n_zik.android.components.dialog.common.ToggleListDialog
-import app.it.fast4x.rimusic.enums.Drawable
-import app.it.fast4x.rimusic.enums.PlaylistSortBy
-import app.it.fast4x.rimusic.utils.*
-import app.kreate.android.me.knighthat.utils.Toaster
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
-import androidx.compose.ui.unit.dp
-import android.content.Context
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 
-object HomeLibrarySortSettingsDialog : Dialog {
+import app.it.fast4x.rimusic.utils.homeLibraryMonthlyPlaylistSortMenuOrderKey
+import app.it.fast4x.rimusic.utils.homeLibraryPinnedPlaylistSortMenuOrderKey
+import app.it.fast4x.rimusic.utils.homeLibraryPlaylistSortMenuOrderKey
+import app.it.fast4x.rimusic.utils.homeLibraryYTPlaylistSortMenuOrderKey
+import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
+import app.n_zik.android.components.dialog.common.ToggleItem
+import app.n_zik.android.components.dialog.common.ToggleListDialog
+import app.n_zik.android.R
+
+object HomeLibrarySortSettingsDialog : ContentFramedDialog {
 
     private val libraryPlaylistSortIds = listOf("Name", "SongCount", "ListeningTime", "PlayCount", "DateAdded", "Custom")
     private val ytPlaylistSortIds = listOf("Name", "SongCount", "DateAdded")
@@ -125,52 +121,39 @@ object HomeLibrarySortSettingsDialog : Dialog {
             ToggleItem("${prefix}_$id", getSortIcon(id), getSortLabel(id), "${prefix}_sort_${id}_visible", true)
         }
 
-        Column {
-            ScrollableTabRow(selectedTabIndex = selectedTabIndex, containerColor = Color.Transparent, divider = {}, edgePadding = 8.dp,
-                indicator = { tabPositions ->
-                    if (selectedTabIndex < tabPositions.size) {
-                        TabRowDefaults.SecondaryIndicator(
-                            modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                            color = colorPalette().accent
-                        )
-                    }
+        ToggleListDialog(
+            frameTitle = dialogTitle,
+            onDismiss = ::hideDialog,
+            bodyHeader = {
+                SettingsDialogTabRow(
+                    labels = tabs.map { stringResource(it.textId) },
+                    selectedTabIndex = selectedTabIndex,
+                    onTabSelected = { selectedTabIndex = it },
+                )
+                Spacer(modifier = Modifier.fillMaxWidth().height(8.dp).testTag("toggleListDialogTabGap"))
+            },
+            items = items, lazyListState = lazyListState, reorderableState = reorderableState, enforceMinOneChecked = true,
+            checkedStatesOverride = items.map { (workingToggles[currentTab] ?: emptyMap())[it.id.removePrefix("${prefix}_")] ?: true },
+            onCheckedChange = { index, newValue ->
+                val id = items[index].id.removePrefix("${prefix}_")
+                val m = (workingToggles[currentTab] ?: emptyMap()).toMutableMap(); m[id] = newValue
+                workingToggles = workingToggles.toMutableMap().apply { this[currentTab] = m }
+            },
+            onReset = {
+                workingToggles = workingToggles.toMutableMap().apply { this[currentTab] = currentTab.availableIds.associateWith { true }.toMutableMap() }
+                workingOrders = workingOrders.toMutableMap().apply { this[currentTab] = currentTab.availableIds.toMutableList() }
+            },
+            onCancel = { hideDialog() },
+            onConfirm = {
+                val edit = prefs.edit()
+                tabs.forEach { tab ->
+                    val p = getPrefix(tab); val key = getKey(tab)
+                    (workingToggles[tab] ?: emptyMap()).forEach { (id, isChecked) -> edit.putBoolean("${p}_sort_${id}_visible", isChecked) }
+                    edit.putString(key, serializeOrder((workingOrders[tab] ?: emptyList()).filter { id -> (workingToggles[tab] ?: emptyMap())[id] == true }))
                 }
-            ) {
-                tabs.forEachIndexed { index, tab ->
-                    Tab(
-                        selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
-                        text = { Text(stringResource(tab.textId)) },
-                        selectedContentColor = colorPalette().accent,
-                        unselectedContentColor = colorPalette().textSecondary
-                    )
-                }
+                edit.apply(); Toaster.s(R.string.toast_preference_saved); hideDialog()
             }
-            Spacer(modifier = Modifier.height(12.dp))
-            ToggleListDialog(
-                items = items, lazyListState = lazyListState, reorderableState = reorderableState, enforceMinOneChecked = true,
-                checkedStatesOverride = items.map { (workingToggles[currentTab] ?: emptyMap())[it.id.removePrefix("${prefix}_")] ?: true },
-                onCheckedChange = { index, newValue ->
-                    val id = items[index].id.removePrefix("${prefix}_")
-                    val m = (workingToggles[currentTab] ?: emptyMap()).toMutableMap(); m[id] = newValue
-                    workingToggles = workingToggles.toMutableMap().apply { this[currentTab] = m }
-                },
-                onReset = {
-                    workingToggles = workingToggles.toMutableMap().apply { this[currentTab] = currentTab.availableIds.associateWith { true }.toMutableMap() }
-                    workingOrders = workingOrders.toMutableMap().apply { this[currentTab] = currentTab.availableIds.toMutableList() }
-                },
-                onCancel = { hideDialog() },
-                onConfirm = {
-                    val edit = prefs.edit()
-                    tabs.forEach { tab ->
-                        val p = getPrefix(tab); val key = getKey(tab)
-                        (workingToggles[tab] ?: emptyMap()).forEach { (id, isChecked) -> edit.putBoolean("${p}_sort_${id}_visible", isChecked) }
-                        edit.putString(key, serializeOrder((workingOrders[tab] ?: emptyList()).filter { id -> (workingToggles[tab] ?: emptyMap())[id] == true }))
-                    }
-                    edit.apply(); Toaster.s(R.string.toast_preference_saved); hideDialog()
-                }
-            )
-        }
+        )
     }
 
     fun reset(context: Context) {

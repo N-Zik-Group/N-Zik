@@ -12,13 +12,10 @@ import androidx.appcompat.content.res.AppCompatResources
 import es.dmoral.toasty.Toasty
 import app.n_zik.android.R
 import app.n_zik.android.appContext
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import app.it.fast4x.rimusic.utils.navigationBarPositionKey
-import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.utils.toast.BottomNavigationToastPlacement
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
 import org.intellij.lang.annotations.MagicConstant
-import android.view.Gravity
 
 /**
  * This singleton handles displaying **toast** to users.
@@ -35,14 +32,6 @@ import android.view.Gravity
  * - Handles console outputs for debugging
  */
 object Toaster {
-
-    // floatingNavBarHeight (84.dp) + navBarBottomPadding (25.dp minimum)
-    private const val FLOATING_BAR_HEIGHT_DP = 109
-
-    private fun isFloatingBarActive(): Boolean {
-        val positionName = appContext().preferences.getString(navigationBarPositionKey, NavigationBarPosition.BottomFloating.name)
-        return positionName == NavigationBarPosition.BottomFloating.name
-    }
 
     enum class Type(
         @ColorInt val background: Int,
@@ -98,15 +87,7 @@ object Toaster {
             val toast = Toasty.custom(
                 appContext(), message, icon, background, foreground, duration, icon != Type.NORMAL.icon, true
             )
-            if (isFloatingBarActive()) {
-                val density = appContext().resources.displayMetrics.density
-                val offsetPx = (FLOATING_BAR_HEIGHT_DP * density).toInt()
-                toast.setGravity(
-                    Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL,
-                    0,
-                    offsetPx
-                )
-            }
+            BottomNavigationToastPlacement.applyTo(toast)
             toast.show()
         }
     }

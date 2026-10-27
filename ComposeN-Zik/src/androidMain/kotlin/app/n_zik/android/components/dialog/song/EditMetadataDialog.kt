@@ -111,6 +111,8 @@ class EditMetadataDialog private constructor(
     override val menuIconTitle: String
         @Composable
         get() = stringResource(messageId)
+    override val bodyPadding: PaddingValues get() = PaddingValues(0.dp)
+
     override val dialogTitle: String
         @Composable
         get() = stringResource(messageId)
@@ -301,7 +303,7 @@ class EditMetadataDialog private constructor(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .heightIn(max = 500.dp)
-                .verticalScroll(scrollState)
+                .verticalScroll(scrollState).padding(24.dp)
         ) {
             if (isLoading) {
                 Text(stringResource(R.string.metadata_loading), modifier = Modifier.fillMaxWidth().padding(8.dp))
@@ -420,7 +422,7 @@ class EditMetadataDialog private constructor(
                 danger = true
             ),
             DialogButton(
-                text = stringResource(R.string.confirm),
+                text = stringResource(R.string.dialog_save),
                 onClick = { saveToFile() },
                 primary = true
             )

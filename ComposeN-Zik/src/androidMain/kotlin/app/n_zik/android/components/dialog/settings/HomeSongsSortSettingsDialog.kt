@@ -1,40 +1,38 @@
 package app.n_zik.android.components.dialog.settings
 
+import android.content.Context
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.Text
-import app.n_zik.android.R
-import app.n_zik.android.colorPalette
-import app.n_zik.android.components.dialog.common.Dialog
-import app.n_zik.android.components.dialog.common.ToggleItem
-import app.n_zik.android.components.dialog.common.ToggleListDialog
-import app.it.fast4x.rimusic.enums.BuiltInPlaylist
-import app.it.fast4x.rimusic.enums.SongSortBy
-import app.it.fast4x.rimusic.enums.OnDeviceSongSortBy
-import app.it.fast4x.rimusic.enums.Drawable
-import app.it.fast4x.rimusic.utils.*
-import app.kreate.android.me.knighthat.utils.Toaster
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
-import androidx.compose.ui.unit.dp
-import android.content.Context
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 
-object HomeSongsSortSettingsDialog : Dialog {
+import app.it.fast4x.rimusic.enums.BuiltInPlaylist
+import app.it.fast4x.rimusic.utils.homeSongsAllSortMenuOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsCachedSortMenuOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsDislikedSortMenuOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsDownloadedSortMenuOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsFavoritesSortMenuOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsOnDeviceSortMenuOrderKey
+import app.it.fast4x.rimusic.utils.homeSongsTopSortMenuOrderKey
+import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
+import app.n_zik.android.components.dialog.common.ToggleItem
+import app.n_zik.android.components.dialog.common.ToggleListDialog
+import app.n_zik.android.R
+
+object HomeSongsSortSettingsDialog : ContentFramedDialog {
 
     private val songSortIds = listOf(
         "Title", "Artist", "AlbumName", "Duration", "PlayCount",
@@ -45,11 +43,7 @@ object HomeSongsSortSettingsDialog : Dialog {
 
     private val topSortIds = listOf("Today", "OneWeek", "OneMonth", "ThreeMonths", "SixMonths", "OneYear", "All")
 
-    // "Custom" is offered on every sort chip, as in the phone's own sort menu (its visibility
-    // flags default to visible, so each tab's real menu shows it);
-    //
-    // Only "Downloaded" stays out of the downloaded / cached chips (the phone hides it there
-    // on its own). Internal so the tests can pin these sets — the same ones the phone's tabs display
+    // Match each home tab's sort choices, including Custom and the cached/downloaded exclusions.
     internal val tabAvailableIds = mapOf(
         BuiltInPlaylist.All to songSortIds,
         BuiltInPlaylist.Favorites to songSortIds,
@@ -85,8 +79,7 @@ object HomeSongsSortSettingsDialog : Dialog {
     override val dialogTitle: String @Composable get() = stringResource(R.string.home_songs_settings) + " - Sort"
     override var isActive: Boolean by mutableStateOf(false)
 
-    // Internal so the tests can pin the saved-order merge: the saved visible options keep their
-    // order, the unknown ones drop, the missing ones follow in the available order
+    // Preserve saved known IDs and append newly available options.
     internal fun parseOrder(s: String, tab: BuiltInPlaylist): List<String> {
         val available = tabAvailableIds[tab] ?: songSortIds
         if (s.isBlank()) return available
@@ -215,70 +208,52 @@ object HomeSongsSortSettingsDialog : Dialog {
             ToggleItem(uid, getSortIcon(id), getSortLabel(id), pk, true)
         }
 
-        Column {
-            ScrollableTabRow(
-                selectedTabIndex = selectedTabIndex,
-                containerColor = Color.Transparent,
-                divider = {},
-                edgePadding = 8.dp,
-                indicator = { tabPositions ->
-                    if (selectedTabIndex < tabPositions.size) {
-                        TabRowDefaults.SecondaryIndicator(
-                            modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                            color = colorPalette().accent
-                        )
+        ToggleListDialog(
+            frameTitle = dialogTitle,
+            onDismiss = ::hideDialog,
+            bodyHeader = {
+                SettingsDialogTabRow(
+                    labels = tabs.map { stringResource(it.textId) },
+                    selectedTabIndex = selectedTabIndex,
+                    onTabSelected = { selectedTabIndex = it },
+                )
+                Spacer(modifier = Modifier.fillMaxWidth().height(8.dp).testTag("toggleListDialogTabGap"))
+            },
+            items = items, lazyListState = lazyListState, reorderableState = reorderableState,
+            enforceMinOneChecked = true,
+            checkedStatesOverride = items.map { currentWorkingToggles[it.id.removePrefix("${tabPrefix}_")] ?: true },
+            onCheckedChange = { index, newValue ->
+                val id = items[index].id.removePrefix("${tabPrefix}_")
+                val m = (workingToggles[currentTab] ?: emptyMap()).toMutableMap()
+                m[id] = newValue
+                workingToggles = workingToggles.toMutableMap().apply { this[currentTab] = m }
+            },
+            onReset = {
+                val available = tabAvailableIds[currentTab] ?: songSortIds
+                val m = available.associateWith { true }.toMutableMap()
+                workingToggles = workingToggles.toMutableMap().apply { this[currentTab] = m }
+                workingOrders = workingOrders.toMutableMap().apply { this[currentTab] = available.toMutableList() }
+            },
+            onCancel = { hideDialog() },
+            onConfirm = {
+                val edit = prefs.edit()
+                tabs.forEach { tab ->
+                    val tp = getTabPrefix(tab)
+                    val key = getSortOrderKey(tab)
+                    val order = workingOrders[tab] ?: emptyList()
+                    val toggles = workingToggles[tab] ?: emptyMap()
+
+                    toggles.forEach { (id, isChecked) ->
+                        edit.putBoolean("${tp}_sort_${id}_visible", isChecked)
                     }
+
+                    val finalOrder = order.filter { id -> toggles[id] == true }
+                    edit.putString(key, serializeOrder(finalOrder))
                 }
-            ) {
-                tabs.forEachIndexed { index, tab ->
-                    Tab(
-                        selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
-                        text = { Text(stringResource(tab.textId)) },
-                        selectedContentColor = colorPalette().accent,
-                        unselectedContentColor = colorPalette().textSecondary
-                    )
-                }
+                edit.apply()
+                Toaster.s(R.string.toast_preference_saved); hideDialog()
             }
-            Spacer(modifier = Modifier.height(12.dp))
-
-            ToggleListDialog(
-                items = items, lazyListState = lazyListState, reorderableState = reorderableState,
-                enforceMinOneChecked = true,
-                checkedStatesOverride = items.map { currentWorkingToggles[it.id.removePrefix("${tabPrefix}_")] ?: true },
-                onCheckedChange = { index, newValue ->
-                    val id = items[index].id.removePrefix("${tabPrefix}_")
-                    val m = (workingToggles[currentTab] ?: emptyMap()).toMutableMap()
-                    m[id] = newValue
-                    workingToggles = workingToggles.toMutableMap().apply { this[currentTab] = m }
-                },
-                onReset = {
-                    val available = tabAvailableIds[currentTab] ?: songSortIds
-                    val m = available.associateWith { true }.toMutableMap()
-                    workingToggles = workingToggles.toMutableMap().apply { this[currentTab] = m }
-                    workingOrders = workingOrders.toMutableMap().apply { this[currentTab] = available.toMutableList() }
-                },
-                onCancel = { hideDialog() },
-                onConfirm = {
-                    val edit = prefs.edit()
-                    tabs.forEach { tab ->
-                        val tp = getTabPrefix(tab)
-                        val key = getSortOrderKey(tab)
-                        val order = workingOrders[tab] ?: emptyList()
-                        val toggles = workingToggles[tab] ?: emptyMap()
-
-                        toggles.forEach { (id, isChecked) ->
-                            edit.putBoolean("${tp}_sort_${id}_visible", isChecked)
-                        }
-
-                        val finalOrder = order.filter { id -> toggles[id] == true }
-                        edit.putString(key, serializeOrder(finalOrder))
-                    }
-                    edit.apply()
-                    Toaster.s(R.string.toast_preference_saved); hideDialog()
-                }
-            )
-        }
+        )
     }
 
     fun reset(context: Context) {

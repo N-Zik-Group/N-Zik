@@ -1,6 +1,8 @@
 package app.it.fast4x.rimusic.ui.components.themed
 
-import app.n_zik.android.components.search.SearchNoResults
+import app.n_zik.android.components.search.SearchEmptyFeedback
+import app.n_zik.android.components.search.SearchEmptySpace
+import kotlinx.coroutines.flow.onEach
 
 import app.n_zik.android.core.database.*
 
@@ -198,8 +200,9 @@ fun PlaylistsItemMenu(
                 val context = LocalContext.current
                 val sortBy by rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
                 val sortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Descending)
+                var playlistsLoaded by remember { mutableStateOf(false) }
                 val playlistPreviews by remember {
-                    Database.playlistTable.sortPreviews( sortBy, sortOrder )
+                    Database.playlistTable.sortPreviews( sortBy, sortOrder ).onEach { playlistsLoaded = true }
                 }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
 
                 val pinnedPlaylists = playlistPreviews.filter {
@@ -290,10 +293,14 @@ fun PlaylistsItemMenu(
                     val filteredYoutubePlaylists = youtubePlaylists.filter { it.playlist.name.contains(search.inputValue, true) }
                     val filteredUnpinnedPlaylists = unpinnedPlaylists.filter { it.playlist.name.contains(search.inputValue, true) }
 
-                    if (search.inputValue.isNotBlank() && filteredPinnedPlaylists.isEmpty() &&
-                        filteredUnpinnedPlaylists.isEmpty() && (!isNetworkConnected(context) || filteredYoutubePlaylists.isEmpty())
-                    ) {
-                        SearchNoResults(Modifier.height(160.dp))
+                    val noPlaylistResults = filteredPinnedPlaylists.isEmpty() && filteredUnpinnedPlaylists.isEmpty() && (!isNetworkConnected(context) || filteredYoutubePlaylists.isEmpty())
+                    SearchEmptyFeedback(
+                        query = search.inputValue,
+                        empty = noPlaylistResults,
+                        loading = !playlistsLoaded
+                    )
+                    if (search.inputValue.isNotBlank() && noPlaylistResults) {
+                        SearchEmptySpace(Modifier.height(160.dp))
                     }
                     if (filteredPinnedPlaylists.isNotEmpty()) {
                         BasicText(

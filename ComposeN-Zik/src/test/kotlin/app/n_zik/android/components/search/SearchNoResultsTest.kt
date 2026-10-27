@@ -13,6 +13,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.res.stringResource
+import app.n_zik.android.R
+import org.robolectric.RuntimeEnvironment
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.enums.FontType
 import app.it.fast4x.rimusic.ui.styling.Appearance
@@ -61,4 +65,32 @@ class SearchNoResultsTest {
         composeRule.runOnIdle { header.value = 64.dp; height.value = 360.dp }
         assertCentered()
     }
+    @Test
+    fun collectionExplanationsStayInlineAndSearchSpaceHasNoText() {
+        val emptySearch = mutableStateOf(false)
+        val messageId = mutableStateOf(R.string.no_items)
+        val appearance = Appearance(
+            colorPalette = DefaultDarkColorPalette,
+            typography = typographyOf(Color.White, true, false, FontType.Rubik),
+            thumbnailShape = CircleShape,
+            uiRoundnessShape = CircleShape,
+            artistThumbnailShape = CircleShape,
+        )
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                if (emptySearch.value) SearchEmptySpace()
+                else SearchNoResults(text = stringResource(messageId.value))
+            }
+        }
+        composeRule.onNodeWithTag("search_no_results_text").assertTextEquals(
+            RuntimeEnvironment.getApplication().getString(R.string.no_items)
+        )
+        composeRule.runOnIdle { messageId.value = R.string.album_no_alternative_version }
+        composeRule.onNodeWithTag("search_no_results_text").assertTextEquals(
+            RuntimeEnvironment.getApplication().getString(R.string.album_no_alternative_version)
+        )
+        composeRule.runOnIdle { emptySearch.value = true }
+        composeRule.onNodeWithTag("search_no_results_text").assertDoesNotExist()
+    }
+
 }

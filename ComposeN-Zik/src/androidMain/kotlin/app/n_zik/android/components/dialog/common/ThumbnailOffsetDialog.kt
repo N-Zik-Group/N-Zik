@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -51,6 +52,7 @@ fun ThumbnailOffsetDialog(
     val showCoverThumbnailAnimation by rememberPreference(showCoverThumbnailAnimationKey, false)
     val expandedplayer by rememberPreference(expandedplayerKey, false)
     DefaultDialog(
+        title = stringResource(R.string.dialog_thumbnail_layout),
         onDismiss = {
             spacingValue(thumbnailSpacing)
             spacingValueL(thumbnailSpacingL)
@@ -58,6 +60,16 @@ fun ThumbnailOffsetDialog(
             fadeValueEx(thumbnailFadeEx)
             imageCoverSizeValue(imageCoverSize)
             onDismiss()
+        },
+        footer = {
+            ButtonRow(listOf(DialogButton(stringResource(R.string.dialog_close), onClick = {
+                spacingValue(thumbnailSpacing)
+                spacingValueL(thumbnailSpacingL)
+                fadeValue(thumbnailFade)
+                fadeValueEx(thumbnailFadeEx)
+                imageCoverSizeValue(imageCoverSize)
+                onDismiss()
+            })))
         }
     ) {
         if (showCoverThumbnailAnimation) {

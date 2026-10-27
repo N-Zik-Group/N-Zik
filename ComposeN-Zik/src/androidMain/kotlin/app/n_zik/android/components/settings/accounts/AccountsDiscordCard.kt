@@ -1061,13 +1061,29 @@ private fun DiscordTemplateFieldDialog(
     var text by textState
     val actions = remember { DiscordTemplateFieldActions(textState) }
     val palette = colorPalette()
-    DefaultDialog(onDismiss = onDismiss) {
-        Text(
-            text = title,
-            style = typography().m.copy(color = palette.text),
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(Modifier.height(12.dp))
+    DefaultDialog(onDismiss = onDismiss, title = title,
+        footer = {
+            ButtonRow(
+                buttons = listOf(
+                    DialogButton(
+                        text = stringResource(R.string.reset),
+                        textColor = palette.textDisabled,
+                        onClick = { actions.reset() }
+                    ),
+                    DialogButton(
+                        text = stringResource(R.string.cancel),
+                        textColor = palette.red.copy(alpha = 0.3f),
+                        onClick = onDismiss
+                    ),
+                    DialogButton(
+                        text = stringResource(R.string.ok),
+                        primary = true,
+                        onClick = { actions.confirm(onDone, onDismiss) }
+                    )
+                )
+            )
+        }
+    ) {
         // Palette-explicit colors: the dialog background is colorPalette().background1,
         // so the default Material3 scheme (dark onSurface text) made the typed text
 
@@ -1110,31 +1126,7 @@ private fun DiscordTemplateFieldDialog(
                 )
             }
         }
-        Spacer(Modifier.height(16.dp))
-        // Toolbar settings dialogs' button bar (ToggleListDialog): Reset — Cancel — OK,
-        // same look and same behavior.
 
-        // Reset clears the draft only (the dialog stays open), Cancel discards it,
-        // OK saves it and toasts the confirmation.
-        ButtonRow(
-            buttons = listOf(
-                DialogButton(
-                    text = stringResource(R.string.reset),
-                    textColor = palette.textDisabled,
-                    onClick = { actions.reset() }
-                ),
-                DialogButton(
-                    text = stringResource(R.string.cancel),
-                    textColor = palette.red.copy(alpha = 0.3f),
-                    onClick = onDismiss
-                ),
-                DialogButton(
-                    text = stringResource(R.string.ok),
-                    primary = true,
-                    onClick = { actions.confirm(onDone, onDismiss) }
-                )
-            )
-        )
     }
 }
 
@@ -1146,28 +1138,24 @@ private fun DiscordImageTooltipDialog(
     onDismiss: () -> Unit
 ) {
     val palette = colorPalette()
-    DefaultDialog(onDismiss = onDismiss) {
-        Text(
-            text = title,
-            style = typography().m.copy(color = palette.text),
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(Modifier.height(12.dp))
+    DefaultDialog(onDismiss = onDismiss, title = title,
+        footer = {
+            ButtonRow(
+                buttons = listOf(
+                    DialogButton(
+                        text = stringResource(R.string.ok),
+                        primary = true,
+                        onClick = onDismiss
+                    )
+                )
+            )
+        }
+    ) {
         Text(
             text = text,
             style = typography().s.copy(color = palette.text)
         )
-        Spacer(Modifier.height(16.dp))
-        // Same OK button as the toolbar settings dialogs (ToggleListDialog).
-        ButtonRow(
-            buttons = listOf(
-                DialogButton(
-                    text = stringResource(R.string.ok),
-                    primary = true,
-                    onClick = onDismiss
-                )
-            )
-        )
+
     }
 }
 

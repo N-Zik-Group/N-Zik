@@ -1,6 +1,7 @@
 @file:Suppress("OPT_IN_USAGE", "OPT_IN_USAGE_ERROR")
 package app.n_zik.android.components.ui.screens.home
 
+import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchNoResults
 
 import app.n_zik.android.uiRoundnessShape
@@ -320,12 +321,17 @@ fun HomeAlbums(
         filterBy = FilterBy.All
     }
 
+    var searchDataReady by remember(sort.sortBy, sort.sortOrder, albumType) { mutableStateOf(false) }
+    var completedSearchQuery by remember { mutableStateOf<String?>(null) }
     LaunchedEffect( sort.sortBy, sort.sortOrder, albumType ) {
         when ( albumType ) {
             AlbumsType.Favorites -> Database.albumTable.sortBookmarked( sort.sortBy, sort.sortOrder )
             AlbumsType.Library -> Database.albumTable.sortInLibrary( sort.sortBy, sort.sortOrder )
             AlbumsType.Disliked -> Database.albumTable.allDisliked()
-        }.collect { itemsToFilter = it }
+        }.collect {
+            itemsToFilter = it
+            searchDataReady = true
+        }
     }
     LaunchedEffect( Unit, itemsToFilter, filterBy, showDislikedAlbum ) {
         items = when(filterBy) {
@@ -345,7 +351,14 @@ fun HomeAlbums(
                     || it.year?.contains( search.inputValue, true) ?: false
                     || it.authorsText?.contains( search.inputValue, true) ?: false
         }
+        completedSearchQuery = search.inputValue
     }
+    SearchEmptyFeedback(
+        query = search.inputValue,
+        empty = itemsOnDisplay.isEmpty(),
+        loading = !searchDataReady || completedSearchQuery != search.inputValue
+    )
+
 
     LaunchedEffect( Unit ) {
         // TODO Convert to fetch from the internet
@@ -778,7 +791,7 @@ fun HomeAlbums(
                         modifier = Modifier.fillMaxSize().padding(top = with(androidx.compose.ui.platform.LocalDensity.current) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() }, bottom = Dimensions.bottomSpacer),
                         contentAlignment = Alignment.Center
                     ) {
-                        SearchNoResults(text = stringResource(if (search.inputValue.isNotBlank()) R.string.no_results_found else R.string.no_items))
+                        if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.no_items))
                     }
                 }
             }

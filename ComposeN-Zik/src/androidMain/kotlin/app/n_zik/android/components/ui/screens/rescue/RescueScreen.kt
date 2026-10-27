@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.screens.rescue
 
+import androidx.compose.foundation.layout.PaddingValues
 import android.app.Activity
 import android.net.Uri
 import android.os.Build
@@ -35,7 +36,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -45,13 +45,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -502,6 +502,8 @@ fun RescueScreen() {
     // Confirmation dialog
     confirmAction?.let { pending ->
         RescueConfirmationDialog(
+            title = stringResource(pending.titleRes),
+            confirmText = stringResource(pending.titleRes),
             text = stringResource(pending.messageRes),
             onDismiss = { confirmAction = null },
             onConfirm = {
@@ -515,6 +517,8 @@ fun RescueScreen() {
     // Cross-profile warning: the picked file was created under a different profile
     crossProfilePending?.let { pending ->
         RescueConfirmationDialog(
+            title = stringResource(R.string.dialog_import_backup),
+            confirmText = stringResource(R.string.import_button),
             text = stringResource(
                 R.string.rescue_cross_profile_confirm,
                 pending.tag,
@@ -533,7 +537,26 @@ fun RescueScreen() {
     if (showCredentialToggles) {
         DialogFrame(
             onDismiss = { showCredentialToggles = false },
-            title = stringResource(R.string.rescue_export_settings)
+            title = stringResource(R.string.rescue_export_settings),
+            footer = {
+                ButtonRow(
+                    buttons = listOf(
+                        DialogButton(
+                            text = stringResource(android.R.string.cancel),
+                            onClick = { showCredentialToggles = false },
+                            danger = true
+                        ),
+                        DialogButton(
+                            text = stringResource(R.string.export),
+                            primary = true,
+                            onClick = {
+                                showCredentialToggles = false
+                                exportSettingsLauncher.launch("${BuildConfig.APP_NAME} $date Settings.csv")
+                            }
+                        )
+                    )
+                )
+            }
         ) {
             val palette = colorPalette()
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -552,24 +575,6 @@ fun RescueScreen() {
                 Checkbox(checked = includeProxy, onCheckedChange = { includeProxy = it }, colors = palette.checkboxColors())
                 Text(stringResource(R.string.rescue_include_proxy_credentials), color = palette.text)
             }
-            Spacer(modifier = Modifier.height(24.dp))
-            ButtonRow(
-                buttons = listOf(
-                    DialogButton(
-                        text = stringResource(android.R.string.cancel),
-                        onClick = { showCredentialToggles = false },
-                        danger = true
-                    ),
-                    DialogButton(
-                        text = stringResource(android.R.string.ok),
-                        primary = true,
-                        onClick = {
-                            showCredentialToggles = false
-                            exportSettingsLauncher.launch("${BuildConfig.APP_NAME} $date Settings.csv")
-                        }
-                    )
-                )
-            )
         }
     }
 
@@ -582,7 +587,61 @@ fun RescueScreen() {
         val userProfiles = profileOptions.filter { it.id != DEFAULT_PROFILE_ID }
         DialogFrame(
             onDismiss = { deleteProfilesDialog = false },
-            title = stringResource(R.string.rescue_profiles_to_delete)
+            title = stringResource(R.string.rescue_profiles_to_delete),
+            bodyPadding = PaddingValues(0.dp),
+            footer = {
+                ButtonRow(
+                    buttons = listOf(
+                        DialogButton(
+                            text = stringResource(android.R.string.cancel),
+                            onClick = { deleteProfilesDialog = false },
+                            danger = true
+                        ),
+                        DialogButton(
+                            text = stringResource(R.string.next),
+                            primary = true,
+                            enabled = deleteSelection.isNotEmpty(),
+                            onClick = {
+                                val selected = deleteSelection
+                                deleteProfilesDialog = false
+                                deleteSelection = emptySet()
+                                guardWrite {
+                                    // The selection is the informed choice; the standard
+                                    // confirmation states the permanent consequences.
+                                    confirmAction = ConfirmAction(R.string.rescue_confirm_delete_profiles) {
+                                        scope.launch {
+                                            val activeId = getActiveProfile(context)
+                                            val result = withContext(NzikDispatchers.DATA) {
+                                                RescueFiles.deleteProfiles(context, selected.toList())
+                                            }
+                                            showResult(
+                                                result,
+                                                result.getOrNull()?.let {
+                                                    context.getString(R.string.rescue_profiles_deleted_count, it)
+                                                }
+                                            )
+                                            // Deleting the CURRENT profile switches the active slot
+                                            // to the base: the app must be relaunched to pick the
+                //
+                                            // change up (the base itself can never be deleted).
+                                            if (result.isSuccess && activeId in selected &&
+                                                activeId != DEFAULT_PROFILE_ID
+                                            ) {
+                                                Toasty.warning(
+                                                    context,
+                                                    context.getString(R.string.rescue_profiles_deleted_active_restart),
+                                                    Toast.LENGTH_LONG,
+                                                    true
+                                                ).show()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                    )
+                )
+            }
         ) {
             val palette = colorPalette()
             // The frame body is non-scrollable and capped at 80 % of the screen
@@ -592,7 +651,7 @@ fun RescueScreen() {
             Column(
                 modifier = Modifier
                     .weight(1f, fill = false)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberScrollState()).padding(24.dp)
             ) {
                 userProfiles.forEach { option ->
                     Row(
@@ -623,58 +682,6 @@ fun RescueScreen() {
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
-            ButtonRow(
-                buttons = listOf(
-                    DialogButton(
-                        text = stringResource(android.R.string.cancel),
-                        onClick = { deleteProfilesDialog = false },
-                        danger = true
-                    ),
-                    DialogButton(
-                        text = stringResource(android.R.string.ok),
-                        primary = true,
-                        enabled = deleteSelection.isNotEmpty(),
-                        onClick = {
-                            val selected = deleteSelection
-                            deleteProfilesDialog = false
-                            deleteSelection = emptySet()
-                            guardWrite {
-                                // The selection is the informed choice; the standard
-                                // confirmation states the permanent consequences.
-                                confirmAction = ConfirmAction(R.string.rescue_confirm_delete_profiles) {
-                                    scope.launch {
-                                        val activeId = getActiveProfile(context)
-                                        val result = withContext(NzikDispatchers.DATA) {
-                                            RescueFiles.deleteProfiles(context, selected.toList())
-                                        }
-                                        showResult(
-                                            result,
-                                            result.getOrNull()?.let {
-                                                context.getString(R.string.rescue_profiles_deleted_count, it)
-                                            }
-                                        )
-                                        // Deleting the CURRENT profile switches the active slot
-                                        // to the base: the app must be relaunched to pick the
-//
-                                        // change up (the base itself can never be deleted).
-                                        if (result.isSuccess && activeId in selected &&
-                                            activeId != DEFAULT_PROFILE_ID
-                                        ) {
-                                            Toasty.warning(
-                                                context,
-                                                context.getString(R.string.rescue_profiles_deleted_active_restart),
-                                                Toast.LENGTH_LONG,
-                                                true
-                                            ).show()
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    )
-                )
-            )
         }
     }
 
@@ -687,7 +694,46 @@ fun RescueScreen() {
             profileOptions.filter { it.id != DEFAULT_PROFILE_ID }
         DialogFrame(
             onDismiss = { resetProfilesDialog = false },
-            title = stringResource(R.string.rescue_profiles_to_reset)
+            title = stringResource(R.string.rescue_profiles_to_reset),
+            bodyPadding = PaddingValues(0.dp),
+            footer = {
+                ButtonRow(
+                    buttons = listOf(
+                        DialogButton(
+                            text = stringResource(android.R.string.cancel),
+                            onClick = { resetProfilesDialog = false },
+                            danger = true
+                        ),
+                        DialogButton(
+                            text = stringResource(R.string.next),
+                            primary = true,
+                            enabled = resetSelection.isNotEmpty(),
+                            onClick = {
+                                val selected = resetSelection
+                                resetProfilesDialog = false
+                                resetSelection = emptySet()
+                                guardWrite {
+                                    // The selection is the informed choice; the standard
+                                    // confirmation states the permanent consequences.
+                                    confirmAction = ConfirmAction(R.string.rescue_confirm_reset_profiles) {
+                                        scope.launch {
+                                            val result = withContext(NzikDispatchers.DATA) {
+                                                RescueFiles.resetProfiles(context, selected.toList())
+                                            }
+                                            showResult(
+                                                result,
+                                                result.getOrNull()?.let {
+                                                    context.getString(R.string.rescue_profiles_reset_count, it)
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                    )
+                )
+            }
         ) {
             val palette = colorPalette()
             // The frame body is non-scrollable and capped at 80 % of the screen
@@ -697,7 +743,7 @@ fun RescueScreen() {
             Column(
                 modifier = Modifier
                     .weight(1f, fill = false)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberScrollState()).padding(24.dp)
             ) {
                 resettableProfiles.forEach { option ->
                     Row(
@@ -735,43 +781,6 @@ fun RescueScreen() {
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
-            ButtonRow(
-                buttons = listOf(
-                    DialogButton(
-                        text = stringResource(android.R.string.cancel),
-                        onClick = { resetProfilesDialog = false },
-                        danger = true
-                    ),
-                    DialogButton(
-                        text = stringResource(android.R.string.ok),
-                        primary = true,
-                        enabled = resetSelection.isNotEmpty(),
-                        onClick = {
-                            val selected = resetSelection
-                            resetProfilesDialog = false
-                            resetSelection = emptySet()
-                            guardWrite {
-                                // The selection is the informed choice; the standard
-                                // confirmation states the permanent consequences.
-                                confirmAction = ConfirmAction(R.string.rescue_confirm_reset_profiles) {
-                                    scope.launch {
-                                        val result = withContext(NzikDispatchers.DATA) {
-                                            RescueFiles.resetProfiles(context, selected.toList())
-                                        }
-                                        showResult(
-                                            result,
-                                            result.getOrNull()?.let {
-                                                context.getString(R.string.rescue_profiles_reset_count, it)
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    )
-                )
-            )
         }
     }
 
@@ -787,7 +796,46 @@ fun RescueScreen() {
         }
         DialogFrame(
             onDismiss = { restoreProfilesDialog = false },
-            title = stringResource(R.string.rescue_profiles_to_restore)
+            title = stringResource(R.string.rescue_profiles_to_restore),
+            bodyPadding = PaddingValues(0.dp),
+            footer = {
+                ButtonRow(
+                    buttons = listOf(
+                        DialogButton(
+                            text = stringResource(android.R.string.cancel),
+                            onClick = { restoreProfilesDialog = false },
+                            danger = true
+                        ),
+                        DialogButton(
+                            text = stringResource(R.string.next),
+                            primary = true,
+                            enabled = restoreSelection.isNotEmpty(),
+                            onClick = {
+                                val selected = restoreSelection
+                                restoreProfilesDialog = false
+                                restoreSelection = emptySet()
+                                guardWrite {
+                                    // The selection is the informed choice; the standard
+                                    // confirmation states what the restore replaces.
+                                    confirmAction = ConfirmAction(R.string.rescue_confirm_restore_profiles) {
+                                        scope.launch {
+                                            val result = withContext(NzikDispatchers.DATA) {
+                                                RescueFiles.restoreProfiles(context, selected.toList())
+                                            }
+                                            showResult(
+                                                result,
+                                                result.getOrNull()?.let {
+                                                    context.getString(R.string.rescue_profiles_restored_count, it)
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                    )
+                )
+            }
         ) {
             val palette = colorPalette()
             // The frame body is non-scrollable and capped at 80 % of the screen
@@ -797,7 +845,7 @@ fun RescueScreen() {
             Column(
                 modifier = Modifier
                     .weight(1f, fill = false)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberScrollState()).padding(24.dp)
             ) {
                 restorableProfiles.forEach { option ->
                     Row(
@@ -834,43 +882,6 @@ fun RescueScreen() {
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
-            ButtonRow(
-                buttons = listOf(
-                    DialogButton(
-                        text = stringResource(android.R.string.cancel),
-                        onClick = { restoreProfilesDialog = false },
-                        danger = true
-                    ),
-                    DialogButton(
-                        text = stringResource(android.R.string.ok),
-                        primary = true,
-                        enabled = restoreSelection.isNotEmpty(),
-                        onClick = {
-                            val selected = restoreSelection
-                            restoreProfilesDialog = false
-                            restoreSelection = emptySet()
-                            guardWrite {
-                                // The selection is the informed choice; the standard
-                                // confirmation states what the restore replaces.
-                                confirmAction = ConfirmAction(R.string.rescue_confirm_restore_profiles) {
-                                    scope.launch {
-                                        val result = withContext(NzikDispatchers.DATA) {
-                                            RescueFiles.restoreProfiles(context, selected.toList())
-                                        }
-                                        showResult(
-                                            result,
-                                            result.getOrNull()?.let {
-                                                context.getString(R.string.rescue_profiles_restored_count, it)
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    )
-                )
-            )
         }
     }
 
@@ -1013,7 +1024,6 @@ fun RescueScreen() {
                                         MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 if (option.isActive) {
-                                    Spacer(modifier = Modifier.width(4.dp))
                                     Text(
                                         text = stringResource(R.string.rescue_profile_active),
                                         style = MaterialTheme.typography.labelSmall,
@@ -1644,7 +1654,29 @@ private fun RescueActionCard(
 private data class ConfirmAction(
     val messageRes: Int,
     val onConfirm: () -> Unit
-)
+) {
+    val titleRes: Int
+        get() = when (messageRes) {
+            R.string.rescue_confirm_delete_profiles -> R.string.rescue_delete_profiles
+            R.string.rescue_confirm_reset_profiles -> R.string.rescue_reset_profiles
+            R.string.rescue_confirm_restore_profiles -> R.string.rescue_restore_profiles
+            R.string.rescue_confirm_import_database -> R.string.rescue_import_database
+            R.string.rescue_confirm_reset_database,
+            R.string.rescue_confirm_reset_database_replace_backup -> R.string.rescue_reset_database
+            R.string.rescue_confirm_restore_database -> R.string.rescue_restore_database
+            R.string.rescue_confirm_import_settings -> R.string.rescue_import_settings
+            R.string.rescue_confirm_reset_settings,
+            R.string.rescue_confirm_reset_settings_replace_backup -> R.string.rescue_reset_settings
+            R.string.rescue_confirm_restore_settings -> R.string.rescue_restore_settings
+            R.string.rescue_confirm_import_accounts -> R.string.rescue_import_profiles
+            R.string.rescue_confirm_delete_logs -> R.string.rescue_delete_logs
+            R.string.rescue_confirm_clear_cache -> R.string.rescue_clear_cache
+            R.string.rescue_confirm_delete_downloads -> R.string.rescue_delete_downloads
+            R.string.rescue_confirm_delete_backups -> R.string.rescue_delete_backups
+            R.string.rescue_confirm_kill_app -> R.string.rescue_kill_app
+            else -> messageRes
+        }
+}
 
 /** A picked file whose name carries the tag of another profile: confirm before importing it. */
 private data class CrossProfilePending(
@@ -1685,9 +1717,9 @@ fun RescueHeader(title: String) {
                 .size(36.dp)
                 .clip(RoundedCornerShape(8.dp))
         )
-        
+
         Spacer(modifier = Modifier.width(8.dp))
-        
+
         BasicText(
             text = title,
             style = TextStyle(
@@ -1709,9 +1741,11 @@ fun RescueConfirmationDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
     cancelText: String = stringResource(android.R.string.cancel),
-    confirmText: String = stringResource(android.R.string.ok)
+    confirmText: String = stringResource(android.R.string.ok),
+    title: String
 ) {
     ConfirmationDialog(
+        title = title,
         text = text,
         onDismiss = onDismiss,
         onConfirm = onConfirm,

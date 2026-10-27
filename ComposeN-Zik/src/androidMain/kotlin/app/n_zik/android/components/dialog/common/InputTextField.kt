@@ -1,6 +1,5 @@
 package app.n_zik.android.components.dialog.common
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,7 +28,6 @@ import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.textCopyFromClipboard
-import app.n_zik.android.uiRoundnessShape
 
 /**
  * URL / text input content block (migrated from the legacy tree):
@@ -62,15 +60,13 @@ inline fun InputTextField(
 
     Column(
         modifier = modifier
-            .padding(all = 10.dp)
-            .background(color = surfaceColor(palette.background1), shape = uiRoundnessShape())
-            .padding(vertical = 16.dp)
+            .fillMaxWidth()
     ) {
-        BasicText(
+        if (title.isNotBlank()) BasicText(
             text = title,
             style = typography().s.semiBold,
             modifier = Modifier
-                .padding(vertical = 8.dp, horizontal = 24.dp)
+                .padding(vertical = 8.dp)
         )
 
         Row(
@@ -80,7 +76,7 @@ inline fun InputTextField(
         ) {
             TextField(
                 modifier = Modifier
-                    .fillMaxWidth(0.7f),
+                    .fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
                     focusedPlaceholderColor = palette.textDisabled,
                     unfocusedPlaceholderColor = palette.textDisabled,
@@ -105,7 +101,7 @@ inline fun InputTextField(
         ButtonRow(
             buttons = listOf(
                 DialogButton(
-                    text = stringResource(R.string.search),
+                    text = stringResource(R.string.import_button),
                     onClick = {
                         if (txtField.value.isEmpty()) {
                             txtFieldError.value = value_cannot_empty

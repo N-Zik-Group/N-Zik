@@ -34,6 +34,9 @@ class RetrySyncDialog(
             activeState.value = value
         }
 
+    override val confirmText: String
+        @Composable get() = stringResource(R.string.retry)
+
     override val dialogTitle: String
         @Composable
         get() = stringResource(R.string.sync_failed)

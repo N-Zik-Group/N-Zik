@@ -11,7 +11,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
-import app.n_zik.android.components.dialog.common.Dialog
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
@@ -29,7 +29,7 @@ import timber.log.Timber
  * one shared toggle, up to [DataStoreUtils.MAX_BURGER_MENU_SEPARATORS] instances via the
  * "Add separator" footer button).
  */
-object BurgerMenuSettingsDialog : Dialog {
+object BurgerMenuSettingsDialog : ContentFramedDialog {
 
     /** All burger entries in the default order, the separator included. */
     val allItemIds: List<String> = DataStoreUtils.DEFAULT_BURGER_MENU_ORDER
@@ -131,6 +131,8 @@ object BurgerMenuSettingsDialog : Dialog {
         }
 
         ToggleListDialog(
+            frameTitle = dialogTitle,
+            onDismiss = ::hideDialog,
             items = items,
             lazyListState = lazyListState,
             reorderableState = reorderableState,
@@ -138,7 +140,6 @@ object BurgerMenuSettingsDialog : Dialog {
             lockedCheckedIds = lockedIds,
             extraFooterButton = DialogButton(
                 text = stringResource(R.string.add_separator),
-                icon = R.drawable.horizontal_straight_line,
                 enabled = separatorCount < DataStoreUtils.MAX_BURGER_MENU_SEPARATORS,
                 onClick = {
                     // A fresh list reference: mutating in place would not invalidate the state

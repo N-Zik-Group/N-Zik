@@ -1,15 +1,12 @@
 package app.n_zik.android.components.dialog.common
 
 import android.app.Activity
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.appContext
@@ -45,7 +42,7 @@ object RestartAppDialog: ConfirmDialog {
     override fun Buttons() = ButtonRow(
         buttons = listOf(
             DialogButton(
-                text = stringResource(R.string.confirm),
+                text = stringResource(R.string.dialog_close_app),
                 onClick = ::onConfirm,
                 primary = true
             )
@@ -56,8 +53,7 @@ object RestartAppDialog: ConfirmDialog {
     override fun DialogBody() {
         BasicText(
             text = stringResource( R.string.restart_dialog_body, BuildConfig.APP_NAME ),
-            style = typography().xs.copy( color = colorPalette().text ),
-            modifier = Modifier.padding( vertical = 20.dp )
+            style = typography().xs.copy( color = colorPalette().text )
         )
     }
 }

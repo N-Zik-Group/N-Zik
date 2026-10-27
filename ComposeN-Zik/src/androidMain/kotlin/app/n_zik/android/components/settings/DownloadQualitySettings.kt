@@ -2,7 +2,6 @@ package app.n_zik.android.components.settings
 
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -16,7 +15,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
@@ -138,7 +136,10 @@ private class UpdateDownloadsDialog(
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource(R.string.update_downloads_count, count)
+        get() = stringResource(R.string.update_downloads)
+
+    override val confirmText: String
+        @Composable get() = stringResource(R.string.download)
 
     override fun onConfirm() {
         onConfirmAction()
@@ -148,9 +149,8 @@ private class UpdateDownloadsDialog(
     @Composable
     override fun DialogBody() {
         BasicText(
-            text = stringResource(R.string.update_downloads_description),
+            text = stringResource(R.string.update_downloads_count, count) + "\n\n" + stringResource(R.string.update_downloads_description),
             style = typography().xs.copy(color = colorPalette().text),
-            modifier = Modifier.padding(vertical = 20.dp)
         )
     }
 }

@@ -87,6 +87,8 @@ import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.DefaultDialog
+import app.n_zik.android.components.dialog.common.DialogButton
+import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.settings.clearAudioCache
 import app.n_zik.android.components.settings.YtSearchAccountToggle
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
@@ -458,30 +460,12 @@ internal fun AccountsYouTubeCard(search: Search) {
     val dialogCoroutineScope = rememberCoroutineScope()
     if (showClearSyncDialog) {
         DefaultDialog(
-            onDismiss = { showClearSyncDialog = false }
-        ) {
-            BasicText(
-                text = stringResource(R.string.clear_synced_data_confirm),
-                style = typography().s.copy(color = colorPalette().text)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Button(
-                    onClick = { showClearSyncDialog = false },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorPalette().background2,
-                        contentColor = colorPalette().text
-                    ),
-                    shape = uiRoundnessShape()
-                ) {
-                    Text(stringResource(R.string.cancel))
-                }
-                Button(
-                    onClick = {
+            title = stringResource(R.string.dialog_clear_synced_data),
+            onDismiss = { showClearSyncDialog = false },
+            footer = {
+                ButtonRow(listOf(
+                    DialogButton(stringResource(R.string.cancel), { showClearSyncDialog = false }, danger = true),
+                    DialogButton(stringResource(R.string.clear), primary = true, onClick = {
                         showClearSyncDialog = false
                         dialogCoroutineScope.launch(NzikDispatchers.DATA) {
                             val cleared = runCatching { clearAllSyncedData() }.getOrElse { false }
@@ -522,17 +506,15 @@ internal fun AccountsYouTubeCard(search: Search) {
                                 }
                             }
                         }
-                    },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorPalette().accent,
-                        contentColor = colorPalette().textSecondary
-                    ),
-                    shape = uiRoundnessShape()
-                ) {
-                    Text(stringResource(R.string.confirm))
-                }
+                    })
+                ))
             }
+        ) {
+            BasicText(
+                text = stringResource(R.string.clear_synced_data_confirm),
+                style = typography().s.copy(color = colorPalette().text)
+            )
+
         }
     }
 }

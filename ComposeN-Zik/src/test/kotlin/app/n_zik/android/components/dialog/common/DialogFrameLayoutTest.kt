@@ -7,12 +7,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.runner.RunWith
@@ -55,6 +58,44 @@ class DialogFrameLayoutTest {
     @Config(qualifiers = "w900dp-h500dp-land")
     @Test fun `default selector settles after state change within landscape bounds`() {
         selector(initiallyVisible = false, maxWidth = 540.dp, maxHeight = 400.dp)
+    }
+
+    @Test fun `selector without subtitle has equal body space above and below options`() {
+        selectorBodySpacing(subtitle = null)
+    }
+
+    @Test fun `selector subtitle has a real description gap while outer body padding remains balanced`() {
+        selectorBodySpacing(subtitle = "Choose the source used for playback")
+    }
+
+    private fun selectorBodySpacing(subtitle: String?) {
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                ValueSelectorDialog(
+                    onDismiss = {}, title = "Font type", titleSecondary = subtitle,
+                    selectedValue = "a", values = listOf("a", "b"), onValueSelected = {}
+                )
+            }
+        }
+        repeat(5) { composeRule.mainClock.advanceTimeByFrame() }
+        composeRule.waitForIdle()
+        val body = composeRule.onNodeWithTag("dialogFrameBody").getBoundsInRoot()
+        val list = composeRule.onNodeWithTag("valueSelectorList").getBoundsInRoot()
+        val first = composeRule.onNode(hasText("a") and hasClickAction()).getBoundsInRoot()
+        val last = composeRule.onNode(hasText("b") and hasClickAction()).getBoundsInRoot()
+        assertEquals("scroll viewport starts at body edge", body.top.value, list.top.value, 1f)
+        assertEquals("scroll viewport ends at body edge", body.bottom.value, list.bottom.value, 1f)
+        assertEquals("bottom option space", 24f, (body.bottom - last.bottom).value, 1f)
+        if (subtitle == null) {
+            composeRule.onNodeWithTag("valueSelectorSubtitle").assertDoesNotExist()
+            assertEquals("top option-list space", 24f, (first.top - body.top).value, 1f)
+            assertEquals("equal outer gaps", (first.top - body.top).value, (body.bottom - last.bottom).value, 1f)
+        } else {
+            val description = composeRule.onNodeWithTag("valueSelectorSubtitle").getBoundsInRoot()
+            assertEquals("top description space", 24f, (description.top - body.top).value, 1f)
+            assertEquals("description to list space", 16f, (first.top - description.bottom).value, 1f)
+        }
     }
 
     private fun selector(initiallyVisible: Boolean, maxWidth: Dp, maxHeight: Dp) {

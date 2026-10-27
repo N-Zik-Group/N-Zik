@@ -6,7 +6,10 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,7 +33,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -40,11 +45,11 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
+import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.ReorderableLazyListState
-import android.content.Context
 
 data class ToggleItem(
     val id: String,
@@ -79,7 +84,10 @@ fun ToggleListDialog(
     extraFooterButton: DialogButton? = null,
     onReset: (() -> Unit)? = null,
     onCancel: (() -> Unit)? = null,
-    onConfirm: (() -> Unit)? = null
+    onConfirm: (() -> Unit)? = null,
+    frameTitle: String? = null,
+    onDismiss: (() -> Unit)? = null,
+    bodyHeader: @Composable ColumnScope.() -> Unit = {}
 ) {
     val effectiveCheckedStates = checkedStatesOverride?.let { override ->
         items.mapIndexed { index, item ->
@@ -96,39 +104,64 @@ fun ToggleListDialog(
     val hasButtons =
         onReset != null || onCancel != null || onConfirm != null || extraFooterButton != null
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(contentHeight)
-    ) {
-        LazyColumn(
-            modifier = Modifier
+    val body: @Composable ColumnScope.() -> Unit = {
+        Column(
+            modifier = modifier
                 .fillMaxWidth()
-                .weight(1f),
-            state = lazyListState
+                .heightIn(max = contentHeight)
+                .clipToBounds()
+                .testTag("toggleListDialogContent")
         ) {
-            itemsIndexed(
-                items = items,
-                key = { _, item -> item.id }
-            ) { index, item ->
-                val isLocked = item.id in lockedCheckedIds
-                val isChecked = effectiveCheckedStates[index]
-                val isLastChecked = enforceMinOneChecked && isChecked && checkedCount <= 1
-                val isMaxReached = !isChecked && checkedCount >= maxChecked
-                val enabled = !isLocked && !isLastChecked && !isMaxReached
+            bodyHeader()
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, fill = false)
+                    .clipToBounds()
+                    .testTag("toggleListDialogList"),
+                contentPadding = PaddingValues(vertical = 12.dp),
+                state = lazyListState
+            ) {
+                itemsIndexed(
+                    items = items,
+                    key = { _, item -> item.id }
+                ) { index, item ->
+                    val isLocked = item.id in lockedCheckedIds
+                    val isChecked = effectiveCheckedStates[index]
+                    val isLastChecked = enforceMinOneChecked && isChecked && checkedCount <= 1
+                    val isMaxReached = !isChecked && checkedCount >= maxChecked
+                    val enabled = !isLocked && !isLastChecked && !isMaxReached
 
-                val isPinned = index < pinnedItemCount
+                    val isPinned = index < pinnedItemCount
 
-                if (reorderableState != null && !isPinned) {
-                    ReorderableItem(reorderableState, key = item.id) { isDragging ->
+                    if (reorderableState != null && !isPinned) {
+                        ReorderableItem(reorderableState, key = item.id) { isDragging ->
+                            ToggleRow(
+                                modifier = Modifier.testTag("toggleListDialogItem.$index"),
+                                icon = item.iconRes,
+                                label = item.label,
+                                isChecked = isChecked,
+                                preferenceKey = item.preferenceKey,
+                                showReorder = true,
+                                isDragging = isDragging,
+                                dragModifier = Modifier.draggableHandle(),
+                                description = item.description,
+                                enabled = enabled,
+                                useLocalState = checkedStatesOverride != null,
+                                onCheckedChange = if (onCheckedChange != null) { { onCheckedChange(index, it) } } else null,
+                                onRowAction = if (onRowAction != null && !isLocked && isRowActionEnabled(index)) { { onRowAction(index) } } else null
+                            )
+                        }
+                    } else {
                         ToggleRow(
+                            modifier = Modifier.testTag("toggleListDialogItem.$index"),
                             icon = item.iconRes,
                             label = item.label,
                             isChecked = isChecked,
                             preferenceKey = item.preferenceKey,
-                            showReorder = true,
-                            isDragging = isDragging,
-                            dragModifier = Modifier.draggableHandle(),
+                            showReorder = false,
+                            isDragging = false,
+                            dragModifier = Modifier,
                             description = item.description,
                             enabled = enabled,
                             useLocalState = checkedStatesOverride != null,
@@ -136,66 +169,63 @@ fun ToggleListDialog(
                             onRowAction = if (onRowAction != null && !isLocked && isRowActionEnabled(index)) { { onRowAction(index) } } else null
                         )
                     }
-                } else {
-                    ToggleRow(
-                        icon = item.iconRes,
-                        label = item.label,
-                        isChecked = isChecked,
-                        preferenceKey = item.preferenceKey,
-                        showReorder = false,
-                        isDragging = false,
-                        dragModifier = Modifier,
-                        description = item.description,
-                        enabled = enabled,
-                        useLocalState = checkedStatesOverride != null,
-                        onCheckedChange = if (onCheckedChange != null) { { onCheckedChange(index, it) } } else null,
-                        onRowAction = if (onRowAction != null && !isLocked && isRowActionEnabled(index)) { { onRowAction(index) } } else null
+                }
+            }
+
+
+
+        }
+    }
+    val footer: (@Composable ColumnScope.() -> Unit)? = if (hasButtons) ({
+        ButtonRow(
+            buttons = buildList {
+                extraFooterButton?.let { add(it) }
+                onReset?.let { reset ->
+                    add(
+                        DialogButton(
+                            text = stringResource(R.string.reset),
+                            onClick = reset
+                        )
+                    )
+                }
+                onCancel?.let { cancel ->
+                    add(
+                        DialogButton(
+                            text = stringResource(if (checkedStatesOverride != null || onConfirm != null) R.string.cancel else R.string.dialog_close),
+                            onClick = cancel,
+                            danger = true
+                        )
+                    )
+                }
+                onConfirm?.let { confirm ->
+                    add(
+                        DialogButton(
+                            text = stringResource(R.string.dialog_apply),
+                            onClick = confirm,
+                            primary = true
+                        )
                     )
                 }
             }
-        }
+        )
+    }) else null
 
-        if (hasButtons) {
-            Spacer(modifier = Modifier.height(8.dp))
-
-            ButtonRow(
-                buttons = buildList {
-                    // Optional dialog-specific pill (e.g. the burger dialog's "Add
-                    // separator"), rendered leftmost so the standard Reset/Cancel/OK
-                    // trio keeps its order and styling.
-                    extraFooterButton?.let { extra ->
-                        add(extra)
-                    }
-                    onReset?.let { reset ->
-                        add(
-                            DialogButton(
-                                text = stringResource(R.string.reset),
-                                onClick = reset
-                            )
-                        )
-                    }
-                    onCancel?.let { cancel ->
-                        add(
-                            DialogButton(
-                                text = stringResource(R.string.cancel),
-                                onClick = cancel,
-                                danger = true
-                            )
-                        )
-                    }
-                    onConfirm?.let { confirm ->
-                        add(
-                            DialogButton(
-                                text = stringResource(R.string.ok),
-                                onClick = confirm,
-                                primary = true
-                            )
-                        )
-                    }
-                }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
+    if (onDismiss != null) {
+        DialogFrame(
+            onDismiss = onDismiss,
+            title = frameTitle,
+            footer = footer,
+            bodyPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
+            content = body
+        )
+    } else {
+        Column(modifier = modifier.fillMaxWidth().height(contentHeight)) {
+            Box(Modifier.weight(1f, fill = false)) { Column(content = body) }
+            footer?.let {
+                Spacer(Modifier.height(8.dp))
+                it()
+                Spacer(Modifier.height(8.dp))
+            }
         }
     }
 }
@@ -213,13 +243,15 @@ private fun ToggleRow(
     enabled: Boolean = true,
     useLocalState: Boolean = false,
     onCheckedChange: ((Boolean) -> Unit)? = null,
-    onRowAction: (() -> Unit)? = null
+    onRowAction: (() -> Unit)? = null,
+    modifier: Modifier = Modifier
 ) {
     val ctx = LocalContext.current
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
+            .padding(horizontal = 16.dp)
             .heightIn(min = 35.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -236,13 +268,13 @@ private fun ToggleRow(
                             if (useLocalState) {
                                 onCheckedChange?.invoke(!isChecked)
                             } else {
-                                val prefs = ctx.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+                                val prefs = ctx.preferences
                                 prefs.edit().putBoolean(preferenceKey, !isChecked).apply()
                             }
                         }
                     }
                 )
-                .padding(horizontal = 16.dp, vertical = 6.dp),
+                .padding(vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {

@@ -1,12 +1,15 @@
 package app.n_zik.android.components.dialog.common
 
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
@@ -21,14 +24,36 @@ fun ConfirmationDialog(
     onConfirm: () -> Unit,
     modifier: Modifier = Modifier,
     cancelText: String = stringResource(R.string.cancel),
-    confirmText: String = stringResource(R.string.confirm),
-    onCancel: () -> Unit = onDismiss
+    confirmText: String,
+    onCancel: () -> Unit = onDismiss,
+    title: String,
+    dismissOnConfirm: Boolean = true
 ) {
     DialogFrame(
         onDismiss = onDismiss,
-        modifier = modifier
+        title = title,
+        modifier = modifier,
+        bodyPadding = PaddingValues(0.dp),
+        footer = {
+            ButtonRow(
+                buttons = listOf(
+                    DialogButton(
+                        text = cancelText,
+                        onClick = onCancel,
+                        danger = true
+                    ),
+                    DialogButton(
+                        text = confirmText,
+                        onClick = {
+                            onConfirm()
+                            if (dismissOnConfirm) onDismiss()
+                        },
+                        primary = true
+                    )
+                )
+            )
+        }
     ) {
-        // Message text
         BasicText(
             text = text,
             style = typography().s.copy(
@@ -36,25 +61,7 @@ fun ConfirmationDialog(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 24.dp)
-        )
-
-        ButtonRow(
-            buttons = listOf(
-                DialogButton(
-                    text = cancelText,
-                    onClick = onCancel,
-                    danger = true
-                ),
-                DialogButton(
-                    text = confirmText,
-                    onClick = {
-                        onConfirm()
-                        onDismiss()
-                    },
-                    primary = true
-                )
-            )
+                .verticalScroll(rememberScrollState()).padding(24.dp)
         )
     }
 }

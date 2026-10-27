@@ -38,6 +38,9 @@ class ImportPlaylistDialog private constructor(
             )
     }
 
+    override val submitText: String
+        @Composable get() = stringResource(R.string.import_button)
+
     override val keyboardOption: KeyboardOptions = KeyboardOptions.Default
     override val iconId: Int = R.drawable.import_outline
     override val messageId: Int = R.string.import_playlist

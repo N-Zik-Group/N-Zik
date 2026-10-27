@@ -9,7 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.R
-import app.n_zik.android.components.dialog.common.Dialog
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.it.fast4x.rimusic.utils.showFavoritesPlaylistKey
@@ -28,7 +28,7 @@ import android.content.Context
 
 private val songsDefaultOrder = listOf("all", "favorites", "disliked", "cached", "downloaded", "top", "on_device")
 
-object HomeSongsSettingsDialog : Dialog {
+object HomeSongsSettingsDialog : ContentFramedDialog {
     override val dialogTitle: String @Composable get() = stringResource(R.string.home_songs_settings)
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -43,7 +43,7 @@ object HomeSongsSettingsDialog : Dialog {
         val ctx = LocalContext.current
         val prefs = remember { ctx.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
         var workingOrder by remember { mutableStateOf(parseOrder(prefs.getString(homeSongsOrderKey, "") ?: "").toMutableList()) }
-        
+
         val prefKeys = mapOf(
             "favorites" to showFavoritesPlaylistKey,
             "cached" to showCachedPlaylistKey,
@@ -95,6 +95,8 @@ object HomeSongsSettingsDialog : Dialog {
         }.filterNotNull()
 
         ToggleListDialog(
+            frameTitle = dialogTitle,
+            onDismiss = ::hideDialog,
             items = items, lazyListState = lazyListState, reorderableState = reorderableState,
             enforceMinOneChecked = true,
             lockedCheckedIds = setOf("all"),

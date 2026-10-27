@@ -70,7 +70,7 @@ fun HomeStatistics(
         newPlaylistDialog.Render()
         /*
         TextFieldDialog(
-            hintText = stringResource(R.string.enter_the_playlist_name),
+            title = stringResource(R.string.new_playlist),            hintText = stringResource(R.string.enter_the_playlist_name),
             onDismiss = {
                 isCreatingANewPlaylist = false
             },

@@ -1,7 +1,6 @@
 package app.n_zik.android.components.dialog.common
 
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
@@ -17,8 +16,6 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.bold
-import app.it.fast4x.rimusic.utils.isLandscape
 import app.it.fast4x.rimusic.utils.semiBold
 
 /** Indeterminate / determinate progress dialog on the shared [DefaultDialog]; when [onDismiss] is provided a cancel [ButtonRow] pill is shown. */
@@ -28,24 +25,28 @@ fun InProgressDialog(
     done: Int,
     text: String,
     onDismiss: (() -> Unit)? = null,
+    message: String? = null,
 ) {
     val palette = colorPalette()
     DefaultDialog(
         onDismiss = { if (onDismiss != null) { onDismiss() } },
-        modifier = Modifier
-            .fillMaxWidth(if (isLandscape) 0.3f else 0.8f)
+        title = text,
+        footer = if (onDismiss != null) ({
+            ButtonRow(
+                buttons = listOf(
+                    DialogButton(
+                        text = stringResource(R.string.cancel),
+                        onClick = onDismiss,
+                        danger = true
+                    )
+                )
+            )
+        }) else null
     ) {
-        BasicText(
-            text = text,
-            style = TextStyle(
-                textAlign = TextAlign.Center,
-                fontSize = typography().l.bold.fontSize,
-                fontWeight = typography().l.bold.fontWeight,
-                color = palette.text
-            ),
-            overflow = TextOverflow.Ellipsis,
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+        message?.let {
+            BasicText(text = it, style = typography().s.copy(color = palette.text))
+            Spacer(Modifier.height(16.dp))
+        }
         // Bounded to the indicator's domain even if a counter overshoots total.
         val progress = (if (total > 0) done.toFloat() / total.toFloat() else 0f).coerceIn(0f, 1f)
         if (total > 0) {
@@ -63,7 +64,6 @@ fun InProgressDialog(
             )
         }
         if (total > 0) {
-            Spacer(modifier = Modifier.height(8.dp))
             BasicText(
                 text = "$done / $total",
                 style = TextStyle(
@@ -72,18 +72,6 @@ fun InProgressDialog(
                     color = palette.text
                 ),
                 overflow = TextOverflow.Ellipsis,
-            )
-        }
-        if (onDismiss != null) {
-            Spacer(modifier = Modifier.height(20.dp))
-            ButtonRow(
-                buttons = listOf(
-                    DialogButton(
-                        text = stringResource(R.string.cancel),
-                        onClick = onDismiss,
-                        danger = true
-                    )
-                )
             )
         }
     }

@@ -9,7 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.R
-import app.n_zik.android.components.dialog.common.Dialog
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.it.fast4x.rimusic.utils.showYtPlaylistsKey
@@ -23,7 +23,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 import android.content.Context
 private val playlistsDefaultOrder = listOf("all", "pinned_playlists", "rewind", "yt_playlists")
 
-object HomePlaylistsSettingsDialog : Dialog {
+object HomePlaylistsSettingsDialog : ContentFramedDialog {
     override val dialogTitle: String @Composable get() = stringResource(R.string.home_playlists_settings)
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -78,6 +78,8 @@ object HomePlaylistsSettingsDialog : Dialog {
         }.filterNotNull()
 
         ToggleListDialog(
+            frameTitle = dialogTitle,
+            onDismiss = ::hideDialog,
             items = items, lazyListState = lazyListState, reorderableState = reorderableState,
             enforceMinOneChecked = true,
             lockedCheckedIds = setOf("all"),

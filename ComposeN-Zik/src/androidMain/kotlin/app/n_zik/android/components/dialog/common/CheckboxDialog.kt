@@ -1,5 +1,8 @@
 package app.n_zik.android.components.dialog.common
 
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
@@ -40,10 +43,12 @@ abstract class CheckboxDialog(activeState: MutableState<Boolean>): ConfirmDialog
 
     override var isActive: Boolean by activeState
 
+    override val bodyPadding: PaddingValues get() = PaddingValues(0.dp)
+
     @Composable
     override fun DialogBody() {
         Column(
-            Modifier.fillMaxWidth( .8f )
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp)
         ) {
             items.forEach { it.ToolBarButton() }
         }

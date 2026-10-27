@@ -229,13 +229,11 @@ fun SettingsGlobalPage(
                 }
                 items(itemResults, key = { "item_${it.labelRes}" }, contentType = { "item" }) { item ->
                     GlobalPageCard(testTag = "settings_result_card_update") {
-                    OtherSettingsEntry(
-                        title = stringResource(item.labelRes),
-                        text = "",
-                        icon = item.iconRes,
-                        modifier = Modifier.clip(uiRoundnessShape()).testTag("settings_global_result_update"),
-                        onClick = { recordSearchQuery(); onItemSelected(item) }
-                    )
+                        UpdateRow(
+                            item = item,
+                            onItemSelected = { recordSearchQuery(); onItemSelected(it) },
+                            testTag = "settings_global_result_update",
+                        )
                     }
                 }
                 items(cardResults, key = { "card_${it.tab}_${it.titleRes}" }, contentType = { "card" }) { card ->
@@ -324,13 +322,14 @@ private fun GlobalPageItemRow(
 private fun UpdateRow(
     item: SettingsPageItem,
     onItemSelected: (SettingsPageItem) -> Unit,
+    testTag: String = "settings_global_update",
 ) {
     val autoUpdate = hasAutoUpdate()
     OtherSettingsEntry(
         title = stringResource(item.labelRes),
         text = "",
         icon = item.iconRes,
-        modifier = Modifier.testTag("settings_global_update"),
+        modifier = Modifier.testTag(testTag),
         isEnabled = autoUpdate,
         onClick = { onItemSelected(item) },
         trailingContent = {

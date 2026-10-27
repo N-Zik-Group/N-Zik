@@ -1,20 +1,17 @@
 package app.n_zik.android.components.dialog.backup
 
+import androidx.compose.foundation.layout.PaddingValues
 import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
@@ -31,31 +28,32 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.BuildConfig
-import app.n_zik.android.R
-import app.n_zik.android.colorPalette
-import app.n_zik.android.surfaceColor
-import app.n_zik.android.typography
-import app.n_zik.android.uiRoundnessShape
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import timber.log.Timber
 import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.profileDisplayName
 import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
 import app.it.fast4x.rimusic.utils.semiBold
-import app.n_zik.android.components.dialog.backup.ImportTargetProfileDialog
+import app.n_zik.android.BuildConfig
+import app.n_zik.android.components.dialog.common.ConfirmationDialog
+import app.n_zik.android.R
+import app.n_zik.android.colorPalette
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
+import app.n_zik.android.components.dialog.common.DialogButton
+import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.components.import.ImportChainRunner
 import app.n_zik.android.components.import.ImportDatabase
 import app.n_zik.android.components.import.ImportProfileState
 import app.n_zik.android.components.import.ImportSettings
 import app.n_zik.android.components.import.buildProfileTargetOptions
 import app.n_zik.android.core.rescue.RescueFiles
+import app.n_zik.android.typography
+import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import timber.log.Timber
-import app.n_zik.android.components.dialog.common.Dialog
 
-object ImportBackupDialog : Dialog {
+object ImportBackupDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
@@ -256,14 +254,51 @@ object ImportBackupDialog : Dialog {
             Triple(R.drawable.server, allLabel, allDescription)
         )
 
-        Column(
-            modifier = Modifier.fillMaxWidth()
+        DialogFrame(
+            onDismiss = ::hideDialog,
+            title = dialogTitle,
+            bodyPadding = PaddingValues(0.dp),
+        footer = {
+                ButtonRow(
+                    buttons = listOf(
+                        DialogButton(
+                            text = stringResource(R.string.import_button),
+                            primary = true,
+                            textColor = colorPalette().textSecondary,
+                            onClick = {
+                                Timber.tag("ImportBackupDialog").d("Selected option: $selectedOption")
+                                when (selectedOption) {
+                                    0 -> {
+                                        importMode = 0
+                                        importDatabase.onShortClick()
+                                    }
+                                    1 -> {
+                                        importMode = 0
+                                        importSettings.onShortClick()
+                                    }
+                                    2 -> {
+                                        importMode = 1
+                                        importDatabase.onShortClick()
+                                    }
+                                    3 -> {
+                                        // Global state only — no target-profile question, no restart
+                                        importProfileState.onShortClick()
+                                    }
+                                    4 -> {
+                                        importMode = 2
+                                        importDatabase.onShortClick()
+                                    }
+                                }
+                            },
+                        )
+                    )
+                )
+            }
         ) {
             Column(
                 modifier = Modifier
                     .weight(1f, fill = false)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState()).padding(24.dp)
             ) {
                 options.forEachIndexed { index, (_, title, description) ->
                     Row(
@@ -302,8 +337,6 @@ object ImportBackupDialog : Dialog {
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
             // Target-profile question (NZik dialog frame): where the picked per-profile
             // data lands — self-gates on its own isActive
             ImportTargetProfileDialog.Render()
@@ -314,52 +347,28 @@ object ImportBackupDialog : Dialog {
             // chain — the pending picks are dropped, so they cannot leak into the
             // next attempt.
             crossProfilePending?.let { (tag, targetId) ->
-                AlertDialog(
-                    onDismissRequest = {
+                ConfirmationDialog(
+                    title = stringResource(R.string.dialog_import_backup),
+                    text = stringResource(
+                        R.string.rescue_cross_profile_confirm,
+                        tag,
+                        resolveProfileDisplayName(
+                            targetId,
+                            context.profileDisplayName(targetId),
+                            stringResource(R.string.profile_base_name)
+                        )
+                    ),
+                    confirmText = stringResource(R.string.import_button),
+                    onDismiss = {
                         crossProfilePending = null
                         abortChain()
                     },
-                    text = {
-                        Text(
-                            stringResource(
-                                R.string.rescue_cross_profile_confirm,
-                                tag,
-                                resolveProfileDisplayName(
-                                    targetId,
-                                    context.profileDisplayName(targetId),
-                                    stringResource(R.string.profile_base_name)
-                                )
-                            )
-                        )
+                    onConfirm = {
+                        crossProfilePending = null
+                        startImportChain(targetId)
                     },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                crossProfilePending = null
-                                startImportChain(targetId)
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorPalette().accent,
-                                contentColor = colorPalette().textSecondary
-                            )
-                        ) {
-                            Text(stringResource(R.string.import_button))
-                        }
-                    },
-                    dismissButton = {
-                        Button(
-                            onClick = {
-                                crossProfilePending = null
-                                abortChain()
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = surfaceColor(colorPalette().background0),
-                                contentColor = colorPalette().textSecondary
-                            )
-                        ) {
-                            Text(stringResource(R.string.cancel))
-                        }
-                    }
+                    // Dismiss aborts an import chain; confirmation must only start it.
+                    dismissOnConfirm = false
                 )
             }
 
@@ -368,87 +377,27 @@ object ImportBackupDialog : Dialog {
 
             // (nothing is pending), so dismissing just drops the question.
             stateCrossProfilePending?.let { (tag, targetId, proceed) ->
-                AlertDialog(
-                    onDismissRequest = { stateCrossProfilePending = null },
-                    text = {
-                        Text(
-                            stringResource(
-                                R.string.rescue_cross_profile_confirm,
-                                tag,
-                                resolveProfileDisplayName(
-                                    targetId,
-                                    context.profileDisplayName(targetId),
-                                    stringResource(R.string.profile_base_name)
-                                )
-                            )
+                ConfirmationDialog(
+                    title = stringResource(R.string.dialog_import_backup),
+                    text = stringResource(
+                        R.string.rescue_cross_profile_confirm,
+                        tag,
+                        resolveProfileDisplayName(
+                            targetId,
+                            context.profileDisplayName(targetId),
+                            stringResource(R.string.profile_base_name)
                         )
+                    ),
+                    confirmText = stringResource(R.string.import_button),
+                    onDismiss = {
+                        stateCrossProfilePending = null
                     },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                stateCrossProfilePending = null
-                                proceed()
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorPalette().accent,
-                                contentColor = colorPalette().textSecondary
-                            )
-                        ) {
-                            Text(stringResource(R.string.import_button))
-                        }
+                    onConfirm = {
+                        stateCrossProfilePending = null
+                        proceed()
                     },
-                    dismissButton = {
-                        Button(
-                            onClick = { stateCrossProfilePending = null },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = surfaceColor(colorPalette().background0),
-                                contentColor = colorPalette().textSecondary
-                            )
-                        ) {
-                            Text(stringResource(R.string.cancel))
-                        }
-                    }
-                )
-            }
-
-            Button(
-                onClick = {
-                    Timber.tag("ImportBackupDialog").d("Selected option: $selectedOption")
-                    when (selectedOption) {
-                        0 -> {
-                            importMode = 0
-                            importDatabase.onShortClick()
-                        }
-                        1 -> {
-                            importMode = 0
-                            importSettings.onShortClick()
-                        }
-                        2 -> {
-                            importMode = 1
-                            importDatabase.onShortClick()
-                        }
-                        3 -> {
-                            // Global state only — no target-profile question, no restart
-                            importProfileState.onShortClick()
-                        }
-                        4 -> {
-                            importMode = 2
-                            importDatabase.onShortClick()
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorPalette().accent,
-                    contentColor = colorPalette().textSecondary
-                ),
-                shape = uiRoundnessShape()
-            ) {
-                Text(
-                    text = stringResource(R.string.import_button),
-                    style = typography().s.medium
+                    // Dismiss aborts an import chain; confirmation must only start it.
+                    dismissOnConfirm = false
                 )
             }
         }

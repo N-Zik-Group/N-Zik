@@ -5,10 +5,10 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
@@ -57,25 +58,39 @@ fun <T> ValueSelectorDialog(
     DialogFrame(
         onDismiss = onDismiss,
         modifier = modifier,
-        title = title
-    ) {
-        titleSecondary?.let {
-            BasicText(
-                text = it,
-                style = typography().s.copy(
-                    color = palette.textSecondary
+        title = title,
+        bodyPadding = PaddingValues(horizontal = 24.dp),
+        footer = {
+            ButtonRow(
+                buttons = listOf(
+                    DialogButton(
+                        text = stringResource(R.string.dialog_close),
+                        onClick = onDismiss,
+                        primary = true
+                    )
                 )
             )
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
+    ) {
 
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
-                .weight(1f, false),
+                .weight(1f, false)
+                .testTag("valueSelectorList")
+                .padding(vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+            titleSecondary?.let {
+                BasicText(
+                    text = it,
+                    modifier = Modifier.padding(bottom = 12.dp).testTag("valueSelectorSubtitle"),
+                    style = typography().s.copy(
+                        color = palette.textSecondary
+                    )
+                )
+            }
+
             values.forEach { value ->
                 val isLocked = value in lockedValues
 
@@ -129,17 +144,5 @@ fun <T> ValueSelectorDialog(
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        ButtonRow(
-            buttons = listOf(
-                DialogButton(
-                    text = stringResource(R.string.cancel),
-                    onClick = onDismiss,
-                    danger = true
-                )
-            )
-        )
     }
 }

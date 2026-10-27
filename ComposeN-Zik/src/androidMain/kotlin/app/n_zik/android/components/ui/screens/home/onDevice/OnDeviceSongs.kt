@@ -5,6 +5,7 @@ import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.JournalPermission
 import app.n_zik.android.privacy.PermissionEventKind
 
+import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchNoResults
 
 import android.Manifest
@@ -159,6 +160,9 @@ fun OnDeviceSong(
 
     val odSort = Sort( HOME_ON_DEVICE_SONGS_SORT_BY, HOME_ON_DEVICE_SONGS_SORT_ORDER, homeSongsOnDeviceSortMenuOrderKey, "dev")
 
+    var searchDataReady by remember(isPermissionGranted, odSort.sortBy, odSort.sortOrder, refreshKey) { mutableStateOf(false) }
+    var completedSearchQuery by remember { mutableStateOf<String?>(null) }
+    var completedSearchPath by remember { mutableStateOf<String?>(null) }
     LaunchedEffect( isPermissionGranted, odSort.sortBy, odSort.sortOrder, refreshKey ) {
         if( !isPermissionGranted ) return@LaunchedEffect
 
@@ -168,6 +172,7 @@ fun OnDeviceSong(
                .onEach { lazyListState.scrollToItem( 0, 0 ) }
                .collect {
                    PermissionUsageJournal.record(context, PermissionFeature.LOCAL_LIBRARY, JournalPermission.MEDIA_AUDIO, PermissionEventKind.USED)
+                   searchDataReady = true
                    songsOnDevice = it
                    currentPath = PathUtils.findCommonPath( it.values )
                }
@@ -193,9 +198,19 @@ fun OnDeviceSong(
                               androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
                                   itemsOnDisplay.clear()
                                   itemsOnDisplay.addAll( newItems )
+                                  completedSearchQuery = search.inputValue
+                                  completedSearchPath = currentPath
                               }
                           }
     }
+    val hasVisibleFolders = showFolder4LocalSongs && songsOnDevice.isNotEmpty() &&
+        PathUtils.getAvailablePaths(songsOnDevice.values, currentPath).isNotEmpty()
+    SearchEmptyFeedback(
+        query = search.inputValue,
+        empty = itemsOnDisplay.isEmpty() && !hasVisibleFolders,
+        loading = !isPermissionGranted || !searchDataReady ||
+            completedSearchQuery != search.inputValue || completedSearchPath != currentPath
+    )
     LaunchedEffect( Unit ) {
         if( !isPermissionGranted )
             try {
@@ -326,7 +341,7 @@ fun OnDeviceSong(
                     modifier = Modifier.fillParentMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    SearchNoResults(text = stringResource(if (search.inputValue.isNotBlank()) R.string.no_results_found else R.string.no_items))
+                    if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.no_items))
                 }
             }
         }

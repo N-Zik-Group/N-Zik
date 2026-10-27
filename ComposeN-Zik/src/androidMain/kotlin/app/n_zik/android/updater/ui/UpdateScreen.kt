@@ -89,6 +89,7 @@ import app.n_zik.android.components.settings.common.SettingsDescription
 import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.BuildConfig
+import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.R
 import app.kreate.android.me.knighthat.utils.Toaster
 import timber.log.Timber
@@ -102,7 +103,6 @@ import androidx.compose.ui.text.style.TextAlign
 import app.n_zik.android.core.backup.BackupManager
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.AlertDialog
 import app.it.fast4x.rimusic.utils.lastUpdateCheckKey
 import java.util.Locale
 import java.text.SimpleDateFormat
@@ -886,6 +886,7 @@ fun UpdateScreen(navController: NavController) {
         
         if (showInstallWarningDialog && apkPathToInstall != null) {
             ConfirmationDialog(
+                title = stringResource(R.string.dialog_install_update),
                 text = stringResource(R.string.install_warning),
                 onDismiss = { showInstallWarningDialog = false },
                 onConfirm = {
@@ -905,33 +906,24 @@ fun UpdateScreen(navController: NavController) {
                 isPreInstallBackupRunning = false
                 Toaster.w(R.string.download_cancelled)
             }
-            AlertDialog(
-                onDismissRequest = { isPreInstallBackupRunning = false },
-                confirmButton = {},
-                title = {
-                    BasicText(
-                        text = stringResource(R.string.pre_install_backup_running),
-                        style = typography().m.bold.copy(color = colorPalette().text)
+            DialogFrame(
+                onDismiss = { isPreInstallBackupRunning = false },
+                title = stringResource(R.string.pre_install_backup_running)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    CircularWavyProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = colorPalette().accent,
                     )
-                },
-                text = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        CircularWavyProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            color = colorPalette().accent,
-                        )
-                        BasicText(
-                            text = stringResource(R.string.pre_install_backup_running_description),
-                            style = typography().s.copy(color = colorPalette().textSecondary)
-                        )
-                    }
-                },
-                containerColor = colorPalette().background0,
-                shape = uiRoundnessShape()
-            )
+                    BasicText(
+                        text = stringResource(R.string.pre_install_backup_running_description),
+                        style = typography().s.copy(color = colorPalette().textSecondary)
+                    )
+                }
+            }
         }
     }
 }

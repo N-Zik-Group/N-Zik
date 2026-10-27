@@ -31,6 +31,11 @@ class HideSongDialog private constructor(
         )
     }
 
+    override val confirmationTitle: String
+        @Composable get() = stringResource(R.string.dialog_hide_song)
+    override val confirmationAction: String
+        @Composable get() = stringResource(R.string.hide)
+
     override val messageId: Int = R.string.hide
     override val iconId: Int = R.drawable.eye_off
     override val dialogTitle: String

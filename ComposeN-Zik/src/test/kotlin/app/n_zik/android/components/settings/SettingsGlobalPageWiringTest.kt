@@ -35,6 +35,8 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.performTextInput
@@ -416,6 +418,22 @@ class SettingsGlobalPageWiringTest {
         settle()
 
         assertEquals(NavRoutes.updater.name, selectedItem?.route)
+    }
+
+    @Test
+    fun theSearchKeepsTheUpdateResultBlockedWhenTheBuildHasNoAutoUpdate() {
+        every { hasAutoUpdate() } returns false
+        showGlobalPage()
+        composeRule.onNodeWithTag("settings_global_search").performTextInput("update")
+        settle()
+        scrollToGlobalNode("settings_global_result_update")
+
+        val result = composeRule.onNodeWithTag("settings_global_result_update")
+        result.assert(isNotEnabled())
+        result.performTouchInput { click() }
+        settle()
+        assertEquals(null, selectedItem)
+        composeRule.onNodeWithTag("settings_global_update_blocked_message", useUnmergedTree = true).assertExists()
     }
 
     @Test

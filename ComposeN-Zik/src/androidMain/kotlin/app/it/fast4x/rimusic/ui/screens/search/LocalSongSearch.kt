@@ -34,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.input.TextFieldValue
@@ -54,13 +53,15 @@ import app.it.fast4x.rimusic.ui.components.themed.Header
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.search.SearchBarBubble
 import app.n_zik.android.components.search.filterSearchHistory
-import app.n_zik.android.components.search.SearchNoResults
+import app.n_zik.android.components.search.SearchEmptyFeedback
+import app.n_zik.android.components.search.SearchEmptySpace
 import app.n_zik.android.components.search.SearchResultsViewport
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.search.UnifiedSearchBar
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
+import app.n_zik.android.components.settings.common.settingsSearchContentVisibility
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.px
 import app.it.fast4x.rimusic.utils.asMediaItem
@@ -115,6 +116,7 @@ fun LocalSongSearch(
     }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
     val items = queryResults?.takeIf { it.first == textFieldValue.text }?.second.orEmpty()
     val noSearchResults = textFieldValue.text.isNotBlank() && queryResults?.first == textFieldValue.text && items.isEmpty()
+    SearchEmptyFeedback(textFieldValue.text, noSearchResults, queryResults?.first != textFieldValue.text)
 
     // Saved searches: this tab's own store (not shared with the other
     // screens); paused by the "pause search history" setting
@@ -268,7 +270,7 @@ fun LocalSongSearch(
 
                     if (noSearchResults) {
                         item(key = "search_no_results") {
-                            SearchNoResults(fillRemainingViewport = true)
+                            SearchEmptySpace(fillRemainingViewport = true)
                         }
                     }
                     items(
@@ -278,25 +280,25 @@ fun LocalSongSearch(
                         val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
                         downloadState = getDownloadState(song.asMediaItem.mediaId)
                         val isDownloaded = if (!isLocal) isDownloadedSong(song.asMediaItem.mediaId) else true
-                        SongItem(
-                            song = song,
-                            isLiked = likeStatesMap[song.id],
-                            inPlaylist = playlistStatesMap[song.id],
-                            navController = navController,
-                            modifier = Modifier
-                                .clip(uiRoundnessShape())
-                                .graphicsLayer { alpha = searchFocus.contentAlpha }
-                                .animateItem(),
-                            onLongClick = {
-                                menuState.display {
-                                    SongItemMenu(
-                                        navController = navController,
-                                        song = song
-                                    ).MenuComponent()
-                                }
-                            },
-                            onClick = { recordSearchQuery(); binder?.startRadio( song ) }
-                        )
+                        Column(Modifier.settingsSearchContentVisibility(searchFocus.contentAlpha).animateItem()) {
+                            SongItem(
+                                song = song,
+                                isLiked = likeStatesMap[song.id],
+                                inPlaylist = playlistStatesMap[song.id],
+                                navController = navController,
+                                modifier = Modifier
+                                    .clip(uiRoundnessShape()),
+                                onLongClick = {
+                                    menuState.display {
+                                        SongItemMenu(
+                                            navController = navController,
+                                            song = song
+                                        ).MenuComponent()
+                                    }
+                                },
+                                onClick = { recordSearchQuery(); binder?.startRadio( song ) }
+                            )
+                        }
                     }
                 }
             }

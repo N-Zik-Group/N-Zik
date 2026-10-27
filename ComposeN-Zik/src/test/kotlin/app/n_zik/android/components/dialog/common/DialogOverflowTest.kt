@@ -14,6 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithTag
@@ -143,13 +146,13 @@ class DialogOverflowTest {
         val pills = listOf(
             app.getString(R.string.reset),
             app.getString(R.string.cancel),
-            app.getString(R.string.ok)
+            app.getString(R.string.dialog_apply)
         )
         val heights = pills.map { pill ->
             composeRule.onNodeWithText(pill).assertIsDisplayed()
             heightOf(composeRule.onNodeWithText(pill).getBoundsInRoot())
         }
-        val spread = heights.maxOrNull()!! - heights.minOrNull()!!
+        val spread = heights.max() - heights.min()
         assertTrue(
             "a pill wrapped to a second line (heights=$heights, spread=$spread)",
             spread <= singleLineTolerance
@@ -241,7 +244,10 @@ class DialogOverflowTest {
         // inside the card: the stepper / slider area scrolls within the frame, so the
 
         // pills are never clipped below the card (issue #896, vertical half).
-        val confirmPill = composeRule.onNodeWithText(app.getString(R.string.confirm)).getBoundsInRoot()
+        val confirmPill = composeRule.onNode(
+            hasText(app.getString(R.string.set_sleep_timer)) and
+                hasAnyAncestor(hasTestTag("dialogFrameFooter"))
+        ).getBoundsInRoot()
         val cancelPill = composeRule.onNodeWithText(app.getString(R.string.cancel)).getBoundsInRoot()
         assertTrue(
             "confirm pill clipped below the card (cardBottom=${card.bottom}, pillBottom=${confirmPill.bottom})",

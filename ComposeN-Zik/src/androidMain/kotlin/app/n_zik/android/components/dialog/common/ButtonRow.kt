@@ -1,9 +1,12 @@
 package app.n_zik.android.components.dialog.common
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,8 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -30,16 +31,9 @@ import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.uiRoundnessShape
 
-/**
- * One pill button for [ButtonRow]; neither-primary-nor-danger pills use the gray fill
- * ([ColorPalette.background2]). [primary] renders the n_zik accent pill with
- * [ColorPalette.onAccent] text, [icon] an optional fixed-size icon before the label,
- * [textColor] an explicit label color overriding the resolved one (e.g. dimmed reset).
- *
- * @param text Single-line label with marquee; may be empty for icon-only pills.
- * @param enabled Disabled pills stay visible ([ColorPalette.textDisabled] text) but do not fire [onClick].
- * @param danger Renders the filled red cancel pill (the cancel role).
- */
+enum class DialogButtonPlacement { Auto, Start, Center, End }
+
+/** Pill appearance and callback, with placement independent of its colors and localized label. */
 data class DialogButton(
     val text: String,
     val onClick: () -> Unit,
@@ -47,63 +41,100 @@ data class DialogButton(
     val danger: Boolean = false,
     val enabled: Boolean = true,
     val icon: Int? = null,
-    val textColor: Color? = null
+    val textColor: Color? = null,
+    val placement: DialogButtonPlacement = DialogButtonPlacement.Auto
 )
 
-/** Content-sized buttons wrap between rows; each pill caps its width and retains its marquee. */
-@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+/** Each row shares its width equally; the final row preserves semantic action order. */
 @Composable
 fun ButtonRow(
     buttons: List<DialogButton>,
     modifier: Modifier = Modifier
 ) {
-    val palette = colorPalette()
-    val density = LocalDensity.current
-    val textMeasurer = rememberTextMeasurer()
-    androidx.compose.foundation.layout.FlowRow(
+    val lastPrimary = buttons.indexOfLast { it.primary }
+    val placements = buttons.mapIndexed { index, button ->
+        when {
+            buttons.size == 1 -> DialogButtonPlacement.Center
+            button.placement != DialogButtonPlacement.Auto -> button.placement
+            button.primary && index == lastPrimary -> DialogButtonPlacement.End
+            button.danger -> DialogButtonPlacement.Center
+            else -> DialogButtonPlacement.Start
+        }
+    }
+    val anchored = buttons.size > 1 && placements.any {
+        it == DialogButtonPlacement.Center || it == DialogButtonPlacement.End
+    }
+    val finalIndices = if (anchored) listOf(
+        placements.indexOfLast { it == DialogButtonPlacement.Start },
+        placements.indexOfLast { it == DialogButtonPlacement.Center },
+        placements.indexOfLast { it == DialogButtonPlacement.End },
+    ) else emptyList()
+    val upperButtons = if (anchored) buttons.filterIndexed { index, _ -> index !in finalIndices } else buttons
+    BoxWithConstraints(
         modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        horizontalArrangement = if (buttons.size == 1) Arrangement.Center else Arrangement.SpaceBetween,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        buttons.forEach { button ->
-            val iconOnly = button.icon != null && button.text.isEmpty()
-            val style = (if (button.primary) typography().xs.semiBold else typography().xs.medium)
-                .copy(color = resolvedColor(button, palette), textAlign = TextAlign.Center)
-            val textWidth = with(density) {
-                textMeasurer.measure(button.text, style, softWrap = false, maxLines = 1).size.width.toDp()
+        val gap = ((maxWidth - 144.dp) / 2).coerceIn(0.dp, 8.dp)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            upperButtons.chunked(3).forEach { row ->
+                DialogButtonBand(row, gap)
             }
-            val buttonWidth = if (iconOnly) 48.dp else
-                (textWidth + 32.dp + if (button.icon != null) 22.dp else 0.dp).coerceIn(48.dp, 180.dp)
-            Row(
-                modifier = pillModifier(button, palette, buttonWidth),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                button.icon?.let { iconRes ->
-                    Icon(
-                        painter = painterResource(iconRes),
-                        contentDescription = null,
-                        tint = resolvedColor(button, palette),
-                        modifier = Modifier.size(16.dp),
-                    )
-                    if (!iconOnly) Spacer(Modifier.width(6.dp))
-                }
-                if (!iconOnly) {
-                    BasicText(
-                        text = button.text,
-                        maxLines = 1,
-                        style = style,
-                        modifier = Modifier.weight(1f).basicMarquee(iterations = Int.MAX_VALUE),
-                    )
-                }
+            if (anchored) {
+                DialogButtonBand(finalIndices.mapNotNull { buttons.getOrNull(it) }, gap)
             }
         }
     }
 }
+
+@Composable
+private fun DialogButtonBand(buttons: List<DialogButton>, gap: Dp) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(gap, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        buttons.forEach { button ->
+            DialogPill(button, Modifier.weight(1f))
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun DialogPill(button: DialogButton, modifier: Modifier) {
+    val palette = colorPalette()
+    val iconOnly = button.icon != null && button.text.isEmpty()
+    val style = (if (button.primary) typography().xs.semiBold else typography().xs.medium)
+        .copy(color = resolvedColor(button, palette), textAlign = TextAlign.Center)
+    Row(
+        modifier = pillModifier(button, palette, modifier),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        button.icon?.let { iconRes ->
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = null,
+                tint = resolvedColor(button, palette),
+                modifier = Modifier.size(16.dp),
+            )
+            if (!iconOnly) Spacer(Modifier.width(6.dp))
+        }
+        if (!iconOnly) {
+            BasicText(
+                text = button.text,
+                maxLines = 1,
+                style = style,
+                modifier = Modifier.weight(1f).basicMarquee(iterations = Int.MAX_VALUE),
+            )
+        }
+    }
+}
+
 /** The pill surface of every [DialogButton]: rounded clip, role fill, tap and padding. */
 @Composable
-private fun pillModifier(button: DialogButton, palette: ColorPalette, width: Dp) =
-    Modifier
-        .width(width)
+private fun pillModifier(button: DialogButton, palette: ColorPalette, modifier: Modifier) =
+    modifier
+        .fillMaxWidth()
         .clip(uiRoundnessShape())
         .background(
             if (button.primary) palette.accent

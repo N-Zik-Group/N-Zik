@@ -1,6 +1,7 @@
 package app.it.fast4x.rimusic.ui.screens.localplaylist
 
-import app.n_zik.android.components.search.SearchNoResults
+import app.n_zik.android.components.search.SearchEmptyFeedback
+import app.n_zik.android.components.search.SearchEmptySpace
 
 import androidx.compose.ui.draw.clip
 
@@ -207,9 +208,8 @@ import app.it.fast4x.rimusic.enums.SortOrder
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
-import app.n_zik.android.components.dialog.common.DefaultDialog
 import app.n_zik.android.components.dialog.common.InProgressDialog
-import app.n_zik.android.components.dialog.common.InputTextField
+import app.n_zik.android.components.dialog.common.RawUrlImportDialog
 import app.n_zik.android.components.dialog.search.MatchResultsDialog
 import app.n_zik.android.components.tab.ImportPlaylistsMenu
 import app.n_zik.android.components.tab.ImportSongsFromCSV
@@ -384,7 +384,8 @@ fun LocalPlaylistSongs(
         InProgressDialog(
             total = totalSongsToMatch,
             done = songsMatched,
-            text = stringResource(R.string.matching_songs),
+            text = stringResource(R.string.dialog_matching_songs),
+            message = stringResource(R.string.matching_songs),
             onDismiss = {
                 showGetAlbumVersionDialogue = false
                 cancelMatchExt = true
@@ -397,7 +398,8 @@ fun LocalPlaylistSongs(
         InProgressDialog(
             total = totalSongsToMatch,
             done = songsMatched,
-            text = stringResource(R.string.matching_songs),
+            text = stringResource(R.string.dialog_matching_songs),
+            message = stringResource(R.string.matching_songs),
             onDismiss = {
                 showGetAlbumVersionDialogueExt = false
                 cancelMatchExt = true
@@ -410,6 +412,8 @@ fun LocalPlaylistSongs(
 
     if (showConfirmMatchAllDialog) {
         ConfirmationDialog(
+            title = stringResource(R.string.dialog_match_songs),
+            confirmText = stringResource(R.string.dialog_match_songs),
             text = stringResource(R.string.match_all_confirmation, items.count { it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L) }),
             onDismiss = {
                 showConfirmMatchAllDialog = false
@@ -684,45 +688,39 @@ fun LocalPlaylistSongs(
 
     var showYouTubeLinkDialog by remember { mutableStateOf(false) }
     if (showYouTubeLinkDialog) {
-        DefaultDialog(
+        RawUrlImportDialog(
+            title = stringResource(R.string.import_via_youtube_link),
             onDismiss = { showYouTubeLinkDialog = false },
-            modifier = Modifier.fillMaxWidth(if (isLandscape) 0.3f else 0.8f)
-        ) {
-            InputTextField(
-                onDismiss = { showYouTubeLinkDialog = false },
-                title = stringResource(R.string.import_via_youtube_link),
-                value = "",
-                placeholder = "https://youtube.com/playlist?list=...",
-                setValue = { url ->
-                    showYouTubeLinkDialog = false
-                    coroutineScope.launch(NzikDispatchers.DATA) {
-                        val urlPlaylistId = listOf(
-                            "https://www.youtube.com/playlist?",
-                            "https://youtube.com/playlist?",
-                            "https://music.youtube.com/playlist?",
-                            "https://m.youtube.com/playlist?"
-                        ).find { url.startsWith(it) }?.let { url.toUri().getQueryParameter("list") }
+            placeholder = "https://youtube.com/playlist?list=...",
+            onImport = { url ->
+                showYouTubeLinkDialog = false
+                coroutineScope.launch(NzikDispatchers.DATA) {
+                    val urlPlaylistId = listOf(
+                        "https://www.youtube.com/playlist?",
+                        "https://youtube.com/playlist?",
+                        "https://music.youtube.com/playlist?",
+                        "https://m.youtube.com/playlist?"
+                    ).find { url.startsWith(it) }?.let { url.toUri().getQueryParameter("list") }
 
-                        if (urlPlaylistId != null) {
-                            val browseId = if (urlPlaylistId.startsWith("VL")) urlPlaylistId else "VL$urlPlaylistId"
-                            Innertube.playlistPage(browseId = browseId)?.getOrNull()?.let { playlistPage ->
-                                val songs = playlistPage.songsPage?.items?.map { it.asSong.copy(totalPlayTimeMs = 1L) }.orEmpty()
-                                if (songs.isNotEmpty()) {
-                                    Database.asyncTransaction {
-                                        songTable.upsert(songs)
-                                        songs.forEach { song ->
-                                            songPlaylistMapTable.map(song.id, playlistId)
-                                        }
+                    if (urlPlaylistId != null) {
+                        val browseId = if (urlPlaylistId.startsWith("VL")) urlPlaylistId else "VL$urlPlaylistId"
+                        Innertube.playlistPage(browseId = browseId)?.getOrNull()?.let { playlistPage ->
+                            val songs = playlistPage.songsPage?.items?.map { it.asSong.copy(totalPlayTimeMs = 1L) }.orEmpty()
+                            if (songs.isNotEmpty()) {
+                                Database.asyncTransaction {
+                                    songTable.upsert(songs)
+                                    songs.forEach { song ->
+                                        songPlaylistMapTable.map(song.id, playlistId)
                                     }
-                                    appContext().preferences.edit().putString("PlaylistSongsSortBy_$playlistId", PlaylistSongSortBy.Custom.name).apply()
-                                    Toaster.done()
                                 }
+                                appContext().preferences.edit().putString("PlaylistSongsSortBy_$playlistId", PlaylistSongSortBy.Custom.name).apply()
+                                Toaster.done()
                             }
                         }
                     }
                 }
-            )
-        }
+            }
+        )
     }
 
     val importMenu = remember { ImportPlaylistsMenu(
@@ -765,6 +763,8 @@ fun LocalPlaylistSongs(
                         stringResource(R.string.delete_playlist)
                     }
                     ConfirmationDialog(
+                        title = stringResource(if (hasSelection) R.string.remove_from_playlist else R.string.dialog_delete_playlist),
+                        confirmText = stringResource(if (hasSelection) R.string.dialog_remove else R.string.delete),
                         text = text,
                         onDismiss = { showDeleteConfirmDialog = false },
                         onConfirm = {
@@ -1077,6 +1077,11 @@ fun LocalPlaylistSongs(
             .let { itemsOnDisplay = it }
         filteredQuery = search.inputValue
     }
+    SearchEmptyFeedback(
+        query = search.inputValue,
+        empty = itemsOnDisplay.isEmpty(),
+        loading = loadedItems == null || filteredQuery != search.inputValue
+    )
     LaunchedEffect( playlist?.name ) {
         val thumbnailName = "thumbnail/playlist_${playlistId}"
         val presentThumbnailUrl: String? = checkFileExists(context, thumbnailName)
@@ -1418,7 +1423,7 @@ fun LocalPlaylistSongs(
                     filteredQuery == search.inputValue && itemsOnDisplay.isEmpty()
                 ) {
                     item(key = "search_no_results") {
-                        SearchNoResults(fillRemainingViewport = true)
+                        SearchEmptySpace(fillRemainingViewport = true)
                     }
                 }
             itemsIndexed(

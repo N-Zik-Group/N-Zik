@@ -10,7 +10,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -23,7 +22,6 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.medium
-import app.it.fast4x.rimusic.utils.semiBold
 
 /** Numeric input dialog on the shared [DefaultDialog]: a [TextField] (red container while invalid), the error line and a confirm / cancel [ButtonRow]. */
 @Composable
@@ -44,17 +42,33 @@ inline fun InputNumericDialog(
     val value_must_be_greater = stringResource(R.string.value_must_be_greater_than)
 
     DefaultDialog(
+        title = title,
         onDismiss = onDismiss,
         horizontalAlignment = Alignment.Start,
-        modifier = modifier
+        modifier = modifier,
+        footer = {
+            ButtonRow(
+                buttons = listOf(
+                    DialogButton(
+                        text = stringResource(R.string.dialog_apply),
+                        onClick = {
+                            when {
+                                txtField.value.isEmpty() -> txtFieldError.value = value_cannot_empty
+                                txtField.value.toInt() < valueMin.toInt() ->
+                                    txtFieldError.value = value_must_be_greater + valueMin
+                                else -> setValue(txtField.value)
+                            }
+                        }
+                    ),
+                    DialogButton(
+                        text = stringResource(R.string.cancel),
+                        onClick = onDismiss,
+                        danger = true
+                    )
+                )
+            )
+        }
     ) {
-        BasicText(
-            text = title,
-            style = typography().s.semiBold,
-            modifier = Modifier
-                .padding(vertical = 8.dp, horizontal = 24.dp)
-        )
-
         Row(
             horizontalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier
@@ -62,7 +76,7 @@ inline fun InputNumericDialog(
         ) {
             TextField(
                 modifier = Modifier
-                    .fillMaxWidth(0.7f),
+                    .fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
                     focusedPlaceholderColor = colorPalette.textDisabled,
                     unfocusedPlaceholderColor = colorPalette.textDisabled,
@@ -91,29 +105,8 @@ inline fun InputNumericDialog(
                 text = if (txtFieldError.value.isNotEmpty()) txtFieldError.value else "---",
                 style = typography().xs.medium,
                 modifier = Modifier
-                    .padding(vertical = 8.dp, horizontal = 24.dp)
+                    .padding(vertical = 8.dp)
             )
         }
-
-        ButtonRow(
-            buttons = listOf(
-                DialogButton(
-                    text = stringResource(R.string.confirm),
-                    onClick = {
-                        when {
-                            txtField.value.isEmpty() -> txtFieldError.value = value_cannot_empty
-                            txtField.value.toInt() < valueMin.toInt() ->
-                                txtFieldError.value = value_must_be_greater + valueMin
-                            else -> setValue(txtField.value)
-                        }
-                    }
-                ),
-                DialogButton(
-                    text = stringResource(R.string.cancel),
-                    onClick = onDismiss,
-                    danger = true
-                )
-            )
-        )
     }
 }

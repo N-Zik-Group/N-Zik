@@ -1,6 +1,10 @@
 package app.n_zik.android.components.dialog.common
 
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -8,27 +12,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
-/** Generic content dialog on the shared [DialogFrame]: a vertically scrolling body (no title, no built-in buttons — the content decides). */
+/** Shared dialog with a scrolling body and optional title and fixed action footer. */
 @Composable
 inline fun DefaultDialog(
     noinline onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
+    title: String? = null,
+    noinline footer: (@Composable ColumnScope.() -> Unit)? = null,
     crossinline content: @Composable ColumnScope.() -> Unit
 ) {
     DialogFrame(
         onDismiss = onDismiss,
         modifier = modifier,
-        horizontalAlignment = horizontalAlignment
+        horizontalAlignment = horizontalAlignment,
+        title = title,
+        bodyPadding = PaddingValues(0.dp),
+        footer = footer
     ) {
-        // The frame body itself stays non-scrollable (canon); tall content
-        // scrolls inside this column instead of being clipped by the frame's
-
-        // 80 % height cap (the legacy DefaultDialog was scrollable).
         Column(
             modifier = Modifier
                 .weight(1f, fill = false)
-                .verticalScroll(rememberScrollState())
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()).padding(24.dp)
         ) {
             content()
         }

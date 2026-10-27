@@ -49,6 +49,22 @@ fun SearchNoResults(
     fillRemainingViewport: Boolean = false,
     text: String = stringResource(R.string.no_results_found),
 ) {
+    SearchEmptySpace(modifier, fillRemainingViewport) {
+        BasicText(
+            text = text,
+            style = typography().xs.secondary.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Normal, textAlign = TextAlign.Center),
+            modifier = Modifier.padding(horizontal = 24.dp).testTag("search_no_results_text"),
+        )
+    }
+}
+
+/** Keeps the empty viewport stable while search feedback is announced by a toast. */
+@Composable
+fun SearchEmptySpace(
+    modifier: Modifier = Modifier,
+    fillRemainingViewport: Boolean = false,
+    content: @Composable BoxScope.() -> Unit = {}
+) {
     val viewport = LocalSearchViewport.current
     val density = LocalDensity.current
     var top by remember { mutableFloatStateOf(Float.NaN) }
@@ -64,10 +80,6 @@ fun SearchNoResults(
             .testTag("search_no_results_area"),
         contentAlignment = Alignment.Center,
     ) {
-        BasicText(
-            text = text,
-            style = typography().xs.secondary.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Normal, textAlign = TextAlign.Center),
-            modifier = Modifier.padding(horizontal = 24.dp).testTag("search_no_results_text"),
-        )
+        content()
     }
 }

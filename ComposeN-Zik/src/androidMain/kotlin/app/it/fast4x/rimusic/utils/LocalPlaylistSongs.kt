@@ -19,6 +19,11 @@ fun DeletePlaylist(
     onEvent: DeleteDialog.() -> Unit
 ): DeleteDialog = object : DeleteDialog( activeState, menuState ) {
 
+    override val confirmationTitle: String
+        @Composable get() = stringResource(R.string.dialog_delete_playlist)
+    override val confirmationAction: String
+        @Composable get() = stringResource(R.string.delete)
+
     override val dialogTitle: String
         @Composable
         get() = stringResource( R.string.delete_playlist )

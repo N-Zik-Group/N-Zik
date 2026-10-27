@@ -1,7 +1,11 @@
 package app.it.fast4x.rimusic.ui.components.themed
 
 import androidx.compose.foundation.layout.height
-import app.n_zik.android.components.search.SearchNoResults
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import app.n_zik.android.components.search.SearchEmptyFeedback
+import app.n_zik.android.components.search.SearchEmptySpace
+import kotlinx.coroutines.flow.onEach
 
 import app.n_zik.android.core.database.*
 
@@ -178,8 +182,10 @@ class PlaylistsMenu private constructor(
     @Composable
     override fun MenuComponent() {
 
+        var playlistsLoaded by remember { mutableStateOf(false) }
+
         val playlistPreviews by remember {
-            Database.playlistTable.sortPreviewsByName()
+            Database.playlistTable.sortPreviewsByName().onEach { playlistsLoaded = true }
         }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
 
         val pinnedPlaylists = playlistPreviews.filter {
@@ -230,12 +236,16 @@ class PlaylistsMenu private constructor(
                 newPlaylistButton.ToolBarButton()
             }
             search.SearchBar(this)
-            if (search.inputValue.isNotBlank() && filteredPinnedPlaylists.isEmpty() &&
-                        filteredUnpinnedPlaylists.isEmpty()
-                    ) {
-                        SearchNoResults(Modifier.height(160.dp))
-                    }
-                    if (filteredPinnedPlaylists.isNotEmpty()) {
+            val noPlaylistResults = filteredPinnedPlaylists.isEmpty() && filteredUnpinnedPlaylists.isEmpty()
+            SearchEmptyFeedback(
+                query = search.inputValue,
+                empty = noPlaylistResults,
+                loading = !playlistsLoaded
+            )
+            if (search.inputValue.isNotBlank() && noPlaylistResults) {
+                SearchEmptySpace(Modifier.height(160.dp))
+            }
+            if (filteredPinnedPlaylists.isNotEmpty()) {
                 BasicText(
                     text = stringResource(R.string.pinned_playlists),
                     style = typography().xxs.semiBold.copy(

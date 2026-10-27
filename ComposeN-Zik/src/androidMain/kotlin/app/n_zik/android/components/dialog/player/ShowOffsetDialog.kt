@@ -1,5 +1,8 @@
 package app.n_zik.android.components.dialog.player
 
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -70,6 +73,8 @@ class ShowOffsetDialog private constructor(
 
     fun onShortClick() = showDialog()
 
+    override val bodyPadding: PaddingValues get() = PaddingValues(0.dp)
+
     @Composable
     override fun DialogBody() {
         var lyricsOffsetState = rememberPreference("lyricsOffset_$mediaId", 0L)
@@ -83,13 +88,8 @@ class ShowOffsetDialog private constructor(
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp)
         ) {
-            // No header icon — like every other dialog, only the shared frame title
-            // (the 40dp sync icon made this dialog the only one with a header decoration).
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
@@ -268,7 +268,7 @@ class ShowOffsetDialog private constructor(
     override fun Buttons() = ButtonRow(
         buttons = listOf(
             DialogButton(
-                text = stringResource(R.string.confirm),
+                text = stringResource(R.string.dialog_close),
                 onClick = ::hideDialog,
                 primary = true
             )

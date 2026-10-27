@@ -24,7 +24,7 @@ import app.it.fast4x.rimusic.utils.showButtonPlayerVideoKey
 import app.it.fast4x.rimusic.utils.expandedplayertoggleKey
 import app.it.fast4x.rimusic.utils.visualizerEnabledKey
 import app.it.fast4x.rimusic.utils.playerActionBarButtonOrderKey
-import app.n_zik.android.components.dialog.common.Dialog
+import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.kreate.android.me.knighthat.utils.Toaster
@@ -63,7 +63,7 @@ private fun buildButtonDefs(): Map<String, ButtonDef> = mapOf(
     "menu" to ButtonDef("menu", showButtonPlayerMenuKey, R.drawable.ellipsis_vertical, R.string.action_bar_show_menu_button, false)
 )
 
-object PlayerActionBarSettingsDialog : Dialog {
+object PlayerActionBarSettingsDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
@@ -144,6 +144,8 @@ object PlayerActionBarSettingsDialog : Dialog {
         }
 
         ToggleListDialog(
+            frameTitle = dialogTitle,
+            onDismiss = ::hideDialog,
             items = items,
             lazyListState = lazyListState,
             reorderableState = reorderableState,

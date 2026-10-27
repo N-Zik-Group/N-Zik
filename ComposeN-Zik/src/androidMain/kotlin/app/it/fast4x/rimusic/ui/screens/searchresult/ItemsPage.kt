@@ -1,6 +1,10 @@
 package app.it.fast4x.rimusic.ui.screens.searchresult
 
+import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.components.search.SearchEmptyFeedback
+import app.n_zik.android.components.search.SearchEmptySpace
 import app.n_zik.android.components.search.SearchNoResults
+import androidx.compose.runtime.key
 import androidx.compose.animation.ExperimentalAnimationApi
 import kotlinx.coroutines.flow.first
 import androidx.compose.foundation.background
@@ -11,12 +15,10 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -24,26 +26,20 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 
-import androidx.compose.ui.unit.dp
 import app.it.fast4x.compose.persist.persist
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.utils.plus
 import app.it.fast4x.rimusic.enums.ContentType
-import app.it.fast4x.rimusic.ui.components.ShimmerHost
 import app.it.fast4x.rimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import app.it.fast4x.rimusic.ui.styling.Dimensions
-import app.it.fast4x.rimusic.utils.center
-import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.withContext
 import app.n_zik.android.colorPalette
-import app.n_zik.android.typography
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -52,11 +48,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import app.it.fast4x.rimusic.ui.items.AlbumPlaceholder
-import app.it.fast4x.rimusic.ui.items.SongItemPlaceholder
 import app.n_zik.android.components.OfflineAwareLoader
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
 import kotlinx.coroutines.delay
@@ -79,6 +72,8 @@ inline fun <T : Innertube.Item> ItemsPage(
     filterContentType: ContentType = ContentType.All,
     noinline itemsPageProvider: (suspend (String?) -> Result<Innertube.ItemsPage<T>?>?)? = null,
     loadedItemsState: androidx.compose.runtime.MutableState<List<T>>? = null,
+    searchQuery: String? = null,
+    noinline showEmptyMessage: (String) -> Unit = { Toaster.i(it) },
 ) {
     val updatedItemsPageProvider by rememberUpdatedState(itemsPageProvider)
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(LocalContext.current)
@@ -86,13 +81,12 @@ inline fun <T : Innertube.Item> ItemsPage(
     val lazyListState = rememberLazyListState()
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
-    var itemsPage by persist<Innertube.ItemsPage<T>?>(tag)
+    var itemsPage by key(tag, searchQuery) { persist<Innertube.ItemsPage<T>?>(tag) }
     var hasScrolledToTop by remember { mutableStateOf(false) }
-    var isInitialLoad by remember { mutableStateOf(true) }
 
-    var isLoadingMore by remember { mutableStateOf(false) }
+    var isLoadingMore by remember(tag, searchQuery) { mutableStateOf(false) }
 
-    LaunchedEffect(lazyListState, updatedItemsPageProvider) {
+    LaunchedEffect(tag, searchQuery, lazyListState, updatedItemsPageProvider) {
         val currentItemsPageProvider = updatedItemsPageProvider ?: return@LaunchedEffect
 
         while (true) {
@@ -133,7 +127,7 @@ inline fun <T : Innertube.Item> ItemsPage(
         }
     }
 
-    LaunchedEffect(itemsPage, updatedItemsPageProvider) {
+    LaunchedEffect(tag, searchQuery, itemsPage, updatedItemsPageProvider) {
         if (itemsPage == null && updatedItemsPageProvider != null) {
             withContext(NzikDispatchers.DATA) {
                 updatedItemsPageProvider?.invoke(null)
@@ -181,6 +175,12 @@ inline fun <T : Innertube.Item> ItemsPage(
                         }
                     }?.distinctBy { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" } ?: emptyList()
     }
+    SearchEmptyFeedback(
+        query = searchQuery.orEmpty(),
+        empty = itemsPage != null && itemsPage?.continuation == null && visibleItems.isEmpty(),
+        loading = isLoadingMore,
+        showMessage = showEmptyMessage,
+    )
     Box(
         modifier = Modifier
             .background(colorPalette().background0)
@@ -220,10 +220,14 @@ inline fun <T : Innertube.Item> ItemsPage(
 
                 if (itemsPage != null && visibleItems.isEmpty() && itemsPage?.continuation == null) {
                     item {
-                        SearchNoResults(
-                            text = emptyItemsText.ifEmpty { stringResource(R.string.no_items_found) },
-                            fillRemainingViewport = true,
-                        )
+                        if (searchQuery == null) {
+                            SearchNoResults(
+                                text = emptyItemsText.ifEmpty { stringResource(R.string.no_items_found) },
+                                fillRemainingViewport = true,
+                            )
+                        } else {
+                            SearchEmptySpace(fillRemainingViewport = true)
+                        }
                     }
                 }
 
@@ -266,17 +270,19 @@ inline fun <T : Innertube.Item> ItemsGridPage(
     noinline itemsPageProvider: (suspend (String?) -> Result<Innertube.ItemsPage<T>?>?)? = null,
     thumbnailSizeDp: Dp,
     loadedItemsState: androidx.compose.runtime.MutableState<List<T>>? = null,
+    searchQuery: String? = null,
+    noinline showEmptyMessage: (String) -> Unit = { Toaster.i(it) },
 ) {
     val updatedItemsPageProvider by rememberUpdatedState(itemsPageProvider)
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(LocalContext.current)
     val lazyGridState = rememberLazyGridState()
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
-    var itemsPage by persist<Innertube.ItemsPage<T>?>(tag)
+    var itemsPage by key(tag, searchQuery) { persist<Innertube.ItemsPage<T>?>(tag) }
     var hasScrolledToTop by remember { mutableStateOf(false) }
 
-    var isLoadingMore by remember { mutableStateOf(false) }
+    var isLoadingMore by remember(tag, searchQuery) { mutableStateOf(false) }
 
-    LaunchedEffect(lazyGridState, updatedItemsPageProvider) {
+    LaunchedEffect(tag, searchQuery, lazyGridState, updatedItemsPageProvider) {
         val currentItemsPageProvider = updatedItemsPageProvider ?: return@LaunchedEffect
 
         while (true) {
@@ -317,7 +323,7 @@ inline fun <T : Innertube.Item> ItemsGridPage(
         }
     }
 
-    LaunchedEffect(itemsPage, updatedItemsPageProvider) {
+    LaunchedEffect(tag, searchQuery, itemsPage, updatedItemsPageProvider) {
         if (itemsPage == null && updatedItemsPageProvider != null) {
             withContext(NzikDispatchers.DATA) {
                 updatedItemsPageProvider?.invoke(null)
@@ -365,6 +371,12 @@ inline fun <T : Innertube.Item> ItemsGridPage(
                         }
                     }?.distinctBy { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" } ?: emptyList()
     }
+    SearchEmptyFeedback(
+        query = searchQuery.orEmpty(),
+        empty = itemsPage != null && itemsPage?.continuation == null && visibleItems.isEmpty(),
+        loading = isLoadingMore,
+        showMessage = showEmptyMessage,
+    )
     Box(
         modifier = Modifier
             .background(colorPalette().background0)
@@ -410,10 +422,14 @@ inline fun <T : Innertube.Item> ItemsGridPage(
                     item(
                         span = { GridItemSpan(maxLineSpan) }
                     ) {
-                        SearchNoResults(
-                            text = emptyItemsText.ifEmpty { stringResource(R.string.no_items_found) },
-                            fillRemainingViewport = true,
-                        )
+                        if (searchQuery == null) {
+                            SearchNoResults(
+                                text = emptyItemsText.ifEmpty { stringResource(R.string.no_items_found) },
+                                fillRemainingViewport = true,
+                            )
+                        } else {
+                            SearchEmptySpace(fillRemainingViewport = true)
+                        }
                     }
                 }
 

@@ -1,6 +1,7 @@
 @file:Suppress("OPT_IN_USAGE", "OPT_IN_USAGE_ERROR")
 package app.n_zik.android.components.ui.screens.home
 
+import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchNoResults
 
 import androidx.compose.ui.draw.clip
@@ -384,16 +385,22 @@ fun HomeLibrary(
         }
     }
 
+    var searchDataReady by remember(sort.sortBy, sort.sortOrder) { mutableStateOf(false) }
+    var completedSearchQuery by remember { mutableStateOf<String?>(null) }
     LaunchedEffect( sort.sortBy, sort.sortOrder ) {
         Database.playlistTable
                 .sortPreviews( sort.sortBy, sort.sortOrder )
                 .distinctUntilChanged()
-                .collect { items = it }
+                .collect {
+                    items = it
+                    searchDataReady = true
+                }
     }
     LaunchedEffect( items, search.inputValue ) {
         itemsOnDisplay = items.filter {
             it.playlist.name.contains( search.inputValue, true )
         }
+        completedSearchQuery = search.inputValue
     }
 
     // START: Additional playlists
@@ -595,6 +602,11 @@ fun HomeLibrary(
                     }
                 }
                 val filteredItems = itemsOnDisplay.filter( condition )
+                SearchEmptyFeedback(
+                    query = search.inputValue,
+                    empty = filteredItems.isEmpty(),
+                    loading = !searchDataReady || completedSearchQuery != search.inputValue
+                )
 
                 val hapticFeedback = LocalHapticFeedback.current
                 val reorderableLazyGridState = sh.calvin.reorderable.rememberReorderableLazyGridState(
@@ -631,6 +643,8 @@ fun HomeLibrary(
                             stringResource(R.string.delete_playlists_confirm_all, itemsToDelete.size)
                         }
                         ConfirmationDialog(
+                            title = stringResource(R.string.dialog_delete_playlists),
+                            confirmText = stringResource(R.string.delete),
                             text = text,
                             onDismiss = { showDeleteConfirmDialog = false },
                             onConfirm = {
@@ -943,7 +957,7 @@ fun HomeLibrary(
                         modifier = Modifier.fillMaxSize().padding(top = with(androidx.compose.ui.platform.LocalDensity.current) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() }, bottom = Dimensions.bottomSpacer),
                         contentAlignment = Alignment.Center
                     ) {
-                        SearchNoResults(text = stringResource(if (search.inputValue.isNotBlank()) R.string.no_results_found else R.string.no_items))
+                        if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.no_items))
                     }
                 }
                     }

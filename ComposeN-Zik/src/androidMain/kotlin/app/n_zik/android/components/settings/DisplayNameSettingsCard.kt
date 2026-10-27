@@ -382,27 +382,29 @@ fun ProfileFaceCard(
 
             if (showErrorPopup) {
                 DefaultDialog(
+                    title = stringResource(R.string.dialog_profile_error),
                     onDismiss = { showErrorPopup = false },
-                    modifier = Modifier
+                    modifier = Modifier,
+                    footer = {
+                        ButtonRow(
+                            buttons = listOf(
+                                DialogButton(
+                                    text = stringResource(R.string.dialog_close),
+                                    primary = true,
+                                    onClick = {
+                                        showErrorPopup = false
+                                    }
+                                )
+                            )
+                        )
+                    }
                 ) {
                     BasicText(
                         text = stringResource(R.string.profile_name_invalid_or_taken),
                         style = typography().xs.medium.center,
-                        modifier = Modifier
-                            .padding(all = 16.dp)
                     )
 
-                    ButtonRow(
-                        buttons = listOf(
-                            DialogButton(
-                                text = stringResource(R.string.confirm),
-                                primary = true,
-                                onClick = {
-                                    showErrorPopup = false
-                                }
-                            )
-                        )
-                    )
+
                 }
             }
         }

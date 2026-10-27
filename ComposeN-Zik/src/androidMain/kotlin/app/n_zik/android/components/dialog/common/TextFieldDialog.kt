@@ -6,18 +6,17 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -28,7 +27,6 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
@@ -45,12 +43,13 @@ fun TextFieldDialog(
     onDone: (String) -> Unit,
     modifier: Modifier = Modifier,
     cancelText: String = stringResource(R.string.cancel),
-    doneText: String = stringResource(R.string.done),
+    doneText: String = stringResource(R.string.dialog_save),
     initialTextInput: String = "",
     singleLine: Boolean = true,
     maxLines: Int = 1,
     onCancel: () -> Unit = onDismiss,
-    isTextInputValid: (String) -> Boolean = { it.isNotEmpty() }
+    isTextInputValid: (String) -> Boolean = { it.isNotEmpty() },
+    title: String = hintText
 ) {
     val focusRequester = remember {
         FocusRequester()
@@ -66,8 +65,29 @@ fun TextFieldDialog(
     }
 
     DefaultDialog(
-        onDismiss = onDismiss,
-        modifier = modifier
+        title = title,        onDismiss = onDismiss,
+        modifier = modifier,
+        footer = {
+            ButtonRow(
+                buttons = listOf(
+                    DialogButton(
+                        text = cancelText,
+                        onClick = onCancel,
+                        danger = true
+                    ),
+                    DialogButton(
+                        text = doneText,
+                        onClick = {
+                            if (isTextInputValid(textFieldValue.text)) {
+                                onDismiss()
+                                onDone(textFieldValue.text)
+                            }
+                        },
+                        primary = true
+                    )
+                )
+            )
+        }
     ) {
         BasicTextField(
             value = textFieldValue,
@@ -97,30 +117,9 @@ fun TextFieldDialog(
                 }
             },
             modifier = Modifier
-                .padding(all = 16.dp)
                 .weight(weight = 1f, fill = false)
                 .focusRequester(focusRequester)
 
-        )
-
-        ButtonRow(
-            buttons = listOf(
-                DialogButton(
-                    text = cancelText,
-                    onClick = onCancel,
-                    danger = true
-                ),
-                DialogButton(
-                    text = doneText,
-                    onClick = {
-                        if (isTextInputValid(textFieldValue.text)) {
-                            onDismiss()
-                            onDone(textFieldValue.text)
-                        }
-                    },
-                    primary = true
-                )
-            )
         )
     }
 
@@ -130,12 +129,7 @@ fun TextFieldDialog(
     }
 }
 
-/**
- * The hint overlay of [TextFieldDialog], animated in/out with the text content.
- * Kept in its own function so the [AnimatedVisibility] call is not made from
- * inside the decoration box scope, where the dialog's column receiver would
- * shadow the plain overload.
- */
+/** Keeps [AnimatedVisibility] outside the dialog's column receiver scope. */
 @Composable
 private fun HintText(
     text: String,

@@ -64,7 +64,8 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.search.SearchBarBubble
 import app.n_zik.android.components.search.hasContent
 import app.n_zik.android.components.search.filterSearchHistory
-import app.n_zik.android.components.search.SearchNoResults
+import app.n_zik.android.components.search.SearchEmptyFeedback
+import app.n_zik.android.components.search.SearchEmptySpace
 import app.n_zik.android.components.search.SearchResultsViewport
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.SearchHistoryStore
@@ -166,6 +167,12 @@ fun OnlineSearch(
     }
     */
 
+    SearchEmptyFeedback(
+        query = textFieldValue.text,
+        empty = suggestionsResult?.getOrNull()?.hasContent() == false && historyMatches.isEmpty(),
+        loading = suggestionsResult?.isSuccess != true
+    )
+
     val rippleIndication = ripple(bounded = false)
 
     val coroutineScope = rememberCoroutineScope()
@@ -238,7 +245,7 @@ fun OnlineSearch(
             ) {
                 if (textFieldValue.text.isNotBlank() && suggestionsResult?.getOrNull()?.hasContent() == false && historyMatches.isEmpty()) {
                     item(key = "search_no_results") {
-                        SearchNoResults(fillRemainingViewport = true)
+                        SearchEmptySpace(fillRemainingViewport = true)
                     }
                 }
                 // Results display order (user preference)
