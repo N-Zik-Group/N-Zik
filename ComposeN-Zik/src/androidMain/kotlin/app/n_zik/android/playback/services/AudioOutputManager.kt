@@ -14,6 +14,7 @@ import android.media.AudioPlaybackConfiguration
 import android.media.RouteDiscoveryPreference
 import android.media.MediaRouter
 import androidx.car.app.connection.CarConnection
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import app.n_zik.android.R
 import app.n_zik.android.bridge.ActiveDevice
@@ -26,7 +27,23 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
-class AudioOutputManager(private val context: Context, private val audioManager: AudioManager) {
+class AudioOutputManager internal constructor(
+    context: Context,
+    private val audioManager: AudioManager,
+    private val carConnectionType: LiveData<Int>?,
+) {
+    private val context = context.applicationContext
+
+    constructor(context: Context, audioManager: AudioManager) : this(
+        context.applicationContext,
+        audioManager,
+        try {
+            CarConnection(context.applicationContext).type
+        } catch (e: Exception) {
+            Timber.tag("AudioOutputManager").e(e, "Failed to initialize CarConnection")
+            null
+        },
+    )
 
     data class AudioDevice(
         val id: Int,
@@ -75,8 +92,9 @@ class AudioOutputManager(private val context: Context, private val audioManager:
     private var playbackCallback: Any? = null // AudioManager.AudioPlaybackCallback
     private var mediaRouter2Callback: Any? = null // MediaRouter2.ControllerCallback
     private var carConnectionObserver: Observer<Int>? = null
+    private var registrationGeneration = 0L
     private var currentCarConnectionType: Int = try {
-        CarConnection(context).type.value ?: CarConnection.CONNECTION_TYPE_NOT_CONNECTED
+        carConnectionType?.value ?: CarConnection.CONNECTION_TYPE_NOT_CONNECTED
     } catch (_: Exception) {
         CarConnection.CONNECTION_TYPE_NOT_CONNECTED
     }
@@ -242,37 +260,41 @@ class AudioOutputManager(private val context: Context, private val audioManager:
 
     @SuppressLint("NewApi")
     fun registerDeviceChanges(callback: (List<AudioDevice>) -> Unit) {
+        unregisterDeviceChanges()
+        val generation = registrationGeneration
+        val notifyDevicesChanged = {
+            if (generation == registrationGeneration) callback(getAvailableDevices())
+        }
         deviceCallback = object : AudioDeviceCallback() {
             override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>) {
                 Timber.tag("AudioOutputManager").d("onAudioDevicesAdded - count=${addedDevices.size}")
-                callback(getAvailableDevices())
+                notifyDevicesChanged()
             }
 
             override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>) {
                 Timber.d("AudioOutputManager: onAudioDevicesRemoved - count=${removedDevices.size}")
-                callback(getAvailableDevices())
+                notifyDevicesChanged()
             }
         }
         audioManager.registerAudioDeviceCallback(deviceCallback, null) // null = main looper
 
         // PC bridge: a PC connecting, leaving or taking the output changes the list too
-        bridgeScope?.cancel()
         bridgeScope = NzikDispatchers.fireAndForget(NzikDispatchers.UI).also { scope ->
             scope.launch {
                 combine(BridgeServerController.activeDevice, BridgeServerController.audioOutput) { _, _ -> }
                     .drop(1)
-                    .collect { callback(getAvailableDevices()) }
+                    .collect { notifyDevicesChanged() }
             }
         }
 
         val observer = Observer<Int> { type ->
             Timber.tag("AudioOutputManager").d("CarConnection type changed: $type")
             currentCarConnectionType = type
-            callback(getAvailableDevices())
+            notifyDevicesChanged()
         }
         carConnectionObserver = observer
         try {
-            CarConnection(context).type.observeForever(observer)
+            carConnectionType?.observeForever(observer)
         } catch (e: Exception) {
             Timber.tag("AudioOutputManager").e(e, "Failed to observe CarConnection")
         }
@@ -281,7 +303,7 @@ class AudioOutputManager(private val context: Context, private val audioManager:
             val pbCallback = object : AudioManager.AudioPlaybackCallback() {
                 override fun onPlaybackConfigChanged(configs: MutableList<AudioPlaybackConfiguration>?) {
                     Timber.tag("AudioOutputManager").d("onPlaybackConfigChanged - configs=${configs?.size}")
-                    callback(getAvailableDevices())
+                    notifyDevicesChanged()
                 }
             }
             playbackCallback = pbCallback
@@ -292,7 +314,7 @@ class AudioOutputManager(private val context: Context, private val audioManager:
             val mr2Callback = object : MediaRouter2.ControllerCallback() {
                 override fun onControllerUpdated(controller: MediaRouter2.RoutingController) {
                     Timber.tag("AudioOutputManager").d("onControllerUpdated (MediaRouter2) - selectedRoutes=${controller.selectedRoutes.size}")
-                    callback(getAvailableDevices())
+                    notifyDevicesChanged()
                 }
             }
             mediaRouter2Callback = mr2Callback
@@ -300,9 +322,9 @@ class AudioOutputManager(private val context: Context, private val audioManager:
             mr2.registerControllerCallback(context.mainExecutor, mr2Callback)
 
             val routeCallback = object : MediaRouter2.RouteCallback() {
-                override fun onRoutesAdded(routes: MutableList<MediaRoute2Info>) { callback(getAvailableDevices()) }
-                override fun onRoutesRemoved(routes: MutableList<MediaRoute2Info>) { callback(getAvailableDevices()) }
-                override fun onRoutesChanged(routes: MutableList<MediaRoute2Info>) { callback(getAvailableDevices()) }
+                override fun onRoutesAdded(routes: MutableList<MediaRoute2Info>) { notifyDevicesChanged() }
+                override fun onRoutesRemoved(routes: MutableList<MediaRoute2Info>) { notifyDevicesChanged() }
+                override fun onRoutesChanged(routes: MutableList<MediaRoute2Info>) { notifyDevicesChanged() }
             }
             mediaRouter2RouteCallback = routeCallback
             mr2.registerRouteCallback(
@@ -317,6 +339,8 @@ class AudioOutputManager(private val context: Context, private val audioManager:
 
     @SuppressLint("NewApi")
     fun unregisterDeviceChanges() {
+        // Invalidate already queued framework events before releasing their registrations.
+        registrationGeneration++
         deviceCallback?.let { audioManager.unregisterAudioDeviceCallback(it) }
         deviceCallback = null
         bridgeScope?.cancel()
@@ -324,7 +348,7 @@ class AudioOutputManager(private val context: Context, private val audioManager:
 
         carConnectionObserver?.let {
             try {
-                CarConnection(context).type.removeObserver(it)
+                carConnectionType?.removeObserver(it)
             } catch (e: Exception) {
                 Timber.tag("AudioOutputManager").e(e, "Failed to remove CarConnection observer")
             }

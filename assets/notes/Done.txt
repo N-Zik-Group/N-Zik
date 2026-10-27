@@ -307,3 +307,6 @@ Other:
   - Clear stale Room-derived state at transitions and reject late results for previous media items.
   - Resolve download actions independently of Room rows, including removal and rapid track changes, and capture the acted-on media item.
   - Regression tests exercise actual service notification observers/builders; the reported device-specific symptom was not reproduced on a Samsung handset.
+- fix(audio): release output observers and ignore stale callbacks
+  - Retain one car LiveData instance for matching registration/removal, unregister old native listeners before replacement and invalidate queued callbacks with registration generations.
+  - Keep application context and cancel bridge scope on unregister; cover repeated registration, disposal and late events.
