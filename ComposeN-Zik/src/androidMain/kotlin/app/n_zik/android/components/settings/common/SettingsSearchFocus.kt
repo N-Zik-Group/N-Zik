@@ -17,6 +17,8 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
@@ -86,6 +88,17 @@ fun ColumnScope.settingsSearchTitle(
     }
 }
 
+/** Keeps the measured space while removing fully faded children from input and accessibility. */
+internal fun Modifier.settingsSearchContentVisibility(alpha: Float): Modifier =
+    graphicsLayer { this.alpha = alpha }
+        .then(if (alpha <= 0f) Modifier.clearAndSetSemantics { } else Modifier)
+        .layout { measurable, constraints ->
+            val placeable = measurable.measure(constraints)
+            layout(placeable.width, placeable.height) {
+                if (alpha > 0f) placeable.placeRelative(0, 0)
+            }
+        }
+
 /**
  * Content wrapper of a settings page: a plain alpha fade while the search bar
  * is focused (no layout removal, so nothing moves or collapses).
@@ -98,7 +111,7 @@ fun settingsSearchContent(
     content: @Composable () -> Unit,
 ) {
     SettingsSearchEmptyFeedback(query, !hasResults)
-    Column(modifier = Modifier.graphicsLayer { alpha = focus.contentAlpha }) {
+    Column(modifier = Modifier.settingsSearchContentVisibility(focus.contentAlpha)) {
         if (hasResults) content()
     }
 }

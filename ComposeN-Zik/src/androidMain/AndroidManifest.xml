@@ -242,6 +242,13 @@
             android:foregroundServiceType="dataSync" />
 
         <!-- PC bridge pairing: the QR scanner follows the device orientation (library default: landscape) -->
+        <activity android:name="app.n_zik.android.components.ui.screens.bridge.PairingCaptureActivity"
+            android:exported="false"
+            android:clearTaskOnLaunch="true"
+            android:screenOrientation="fullSensor"
+            android:stateNotNeeded="true"
+            android:theme="@style/zxing_CaptureTheme"
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="fullSensor"
             tools:replace="screenOrientation" />

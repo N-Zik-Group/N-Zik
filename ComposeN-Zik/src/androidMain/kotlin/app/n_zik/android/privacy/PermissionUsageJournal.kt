@@ -42,13 +42,17 @@ object PermissionUsageJournal {
         }
     }
 
-    fun record(context: Context, feature: PermissionFeature, permission: JournalPermission, kind: PermissionEventKind) {
+    /**
+     * Best-effort, nonblocking admission to the bounded DATA writer. Returns false when
+     * paused, filtered, or full; accepted events still follow the 200-event retention policy.
+     */
+    fun record(context: Context, feature: PermissionFeature, permission: JournalPermission, kind: PermissionEventKind): Boolean {
         if (kind == PermissionEventKind.USED && permission == JournalPermission.NOTIFICATIONS &&
-            Build.VERSION.SDK_INT >= 33 && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
+            Build.VERSION.SDK_INT >= 33 && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return false
         // Capture the originating profile before dispatch; switching profiles cannot reassign an event.
         val prefs = context.preferences
-        if (prefs.getBoolean(PAUSED_KEY, false)) return
-        commands.trySend(Command(prefs, PermissionUsageEvent(System.currentTimeMillis(), feature, permission, kind)))
+        if (prefs.getBoolean(PAUSED_KEY, false)) return false
+        return enqueue(Command(prefs, PermissionUsageEvent(System.currentTimeMillis(), feature, permission, kind)))
     }
 
     fun request(context: Context, feature: PermissionFeature, permission: String) {
@@ -71,9 +75,14 @@ object PermissionUsageJournal {
         else -> null
     }
 
-    fun clear(context: Context) {
-        val prefs = context.preferences
-        scope.launch { commands.send(Command(prefs, null)) }
+    /** Returns whether the clear was queued; callers must not report success on rejection. */
+    fun clear(context: Context): Boolean = enqueue(Command(context.preferences, null))
+
+    private fun enqueue(command: Command): Boolean {
+        // Both public operations enter the same FIFO directly, preserving clear/record order.
+        val accepted = commands.trySend(command).isSuccess
+        if (!accepted) Timber.tag("PermissionJournal").w("Permission metadata queue full; operation rejected")
+        return accepted
     }
 
     fun observe(prefs: SharedPreferences): Flow<List<PermissionUsageEvent>> = callbackFlow {

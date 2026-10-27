@@ -53,6 +53,8 @@ import androidx.compose.ui.unit.dp
 import timber.log.Timber
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.extensions.audiobar.VisualizerCaptureCoordinator
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.PermissionUsageJournal
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.Animatable
@@ -120,7 +122,10 @@ fun SeekBarVisualizer(
 
         val launcher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission(),
-            onResult = { hasPermission = it }
+            onResult = {
+                PermissionUsageJournal.result(context, PermissionFeature.VISUALIZER, permission, it)
+                hasPermission = it
+            }
         )
 
         val numberOfWaves = remember(maxWidth) {
@@ -140,7 +145,10 @@ fun SeekBarVisualizer(
         }
 
         if (!hasPermission) {
-            LaunchedEffect(Unit) { launcher.launch(permission) }
+            LaunchedEffect(Unit) {
+                PermissionUsageJournal.request(context, PermissionFeature.VISUALIZER, permission)
+                launcher.launch(permission)
+            }
         }
 
         if (hasPermission && audioSessionId != null && localIsPlaying) {

@@ -2,8 +2,6 @@ package app.n_zik.android.components.ui.screens.bridge
 
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
-import app.n_zik.android.privacy.JournalPermission
-import app.n_zik.android.privacy.PermissionEventKind
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -79,11 +77,7 @@ private sealed interface PairingMessage {
     data object CameraDenied : PairingMessage
 }
 
-/**
- * "Pair a PC" card (contract §4): the active code with its countdown, Regenerate, the QR
- * scan (camera permission asked at that moment only) with an explicit confirmation, and the
- * phone's address for the manual path. Closed, no code is active.
- */
+/** Pairs a PC through a confirmed QR offer or the manual code. */
 @Composable
 internal fun PairPcCard(running: BridgeState.Running, code: PairingCode?) {
     val context = LocalContext.current
@@ -94,7 +88,6 @@ internal fun PairPcCard(running: BridgeState.Running, code: PairingCode?) {
 
     val scanLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
         val contents = result.contents ?: return@rememberLauncherForActivityResult
-        PermissionUsageJournal.record(context, PermissionFeature.PC_PAIRING, JournalPermission.CAMERA, PermissionEventKind.USED)
         when (val parsed = PairingQrPayload.parse(contents)) {
             is PairingQrPayload.ParseResult.Valid -> {
                 message = null
@@ -109,6 +102,7 @@ internal fun PairPcCard(running: BridgeState.Running, code: PairingCode?) {
     val launchScan = {
         scanLauncher.launch(
             ScanOptions()
+                .setCaptureActivity(PairingCaptureActivity::class.java)
                 .setDesiredBarcodeFormats(ScanOptions.QR_CODE)
                 .setPrompt(scanPrompt)
                 .setBeepEnabled(false)

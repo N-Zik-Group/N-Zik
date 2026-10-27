@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.kreate.android.me.knighthat.utils.Toaster
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.R
@@ -100,7 +101,12 @@ private fun PermissionUsageDialog(onDismiss: () -> Unit) {
     if (confirmClear) ConfirmationDialog(
         text = stringResource(R.string.permission_journal_clear_confirm),
         onDismiss = { confirmClear = false },
-        onConfirm = { confirmClear = false; PermissionUsageJournal.clear(context) },
+        onConfirm = {
+            confirmClear = false
+            if (!PermissionUsageJournal.clear(context)) {
+                Toaster.i(context.getString(R.string.permission_journal_busy))
+            }
+        },
     )
 }
 

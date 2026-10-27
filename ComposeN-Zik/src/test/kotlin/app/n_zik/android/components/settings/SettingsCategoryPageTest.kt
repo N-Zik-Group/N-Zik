@@ -7,9 +7,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.performScrollToKey
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -86,6 +88,27 @@ class SettingsCategoryPageTest {
             runCatching { composeRule.onNodeWithTag("settings.category.about").fetchSemanticsNode() }.isSuccess
         }
         composeRule.onAllNodes(hasSetTextAction()).assertCountEquals(0)
+    }
+
+    @Test fun emptyFocusedSearchFadesLazyCardsAndTypingRestoresMatchingCards() {
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                SettingsCategoryPage(categoryId = "behavior", navController = mockk(relaxed = true))
+            }
+        }
+        val targetTag = "settings.target.card.0.app_behavior"
+        pumpUntil("category card composed") {
+            runCatching { composeRule.onNodeWithTag(targetTag, useUnmergedTree = true).assertExists() }.isSuccess
+        }
+        composeRule.onNode(hasSetTextAction()).performClick()
+        pumpUntil("focused category card hidden after fade") {
+            runCatching { composeRule.onNodeWithTag(targetTag, useUnmergedTree = true).assertIsNotDisplayed() }.isSuccess
+        }
+        composeRule.onNode(hasSetTextAction()).performTextInput(context.getString(R.string.app_behavior))
+        pumpUntil("matching category card restored") {
+            runCatching { composeRule.onNodeWithTag(targetTag, useUnmergedTree = true).assertIsDisplayed() }.isSuccess
+        }
     }
 
     @Test fun mixedSourceCategoryHasOneScrollContainerAndTargetsTheActualSetting() {

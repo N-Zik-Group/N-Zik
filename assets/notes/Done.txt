@@ -88,6 +88,10 @@ Improved:
   - `ListenTogetherMenu` create/join failures while offline now surface the dedicated "no connection" toast instead of a generic error (offline audit menu branch)
 
 Fixed:
+- fix(settings): harden permission history and focused search interactions
+  - Keep clear and record admission in one bounded FIFO, report rejected operations and show a retry message when clearing cannot be queued.
+  - Record scanner camera use from preview startup and visualizer permission request/result at the actual launcher.
+  - Preserve faded settings layout while removing hidden input and accessibility; verify public journal writer behavior and search restoration.
 - fix(theme): restore startup colors consistently and reduce cover palette work
   - Reconcile restored appearances synchronously with active-profile theme preferences; retain dynamic playback accents until the service has known artwork state.
   - Use the displayed AnimatedAppearance palette for root and sheet backgrounds, removing an independently timed background fade.

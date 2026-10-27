@@ -2,6 +2,7 @@ package app.n_zik.android.components.settings
 
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHeightIsEqualTo
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.performScrollToKey
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -168,6 +169,8 @@ class SettingsGlobalPageWiringTest {
         composeRule.onNodeWithText("Network controls").assertDoesNotExist()
         composeRule.onNodeWithTag("settings_global_search").performClick()
         settle()
+        composeRule.onNodeWithTag("settings_global_category_about", useUnmergedTree = true).assertIsNotDisplayed()
+        composeRule.onNodeWithTag("settings_global_update", useUnmergedTree = true).assertIsNotDisplayed()
         composeRule.onNodeWithText("Audio controls").assertExists()
         composeRule.onNodeWithText("Network controls").assertExists()
         composeRule.onNodeWithTag("settings_global_search").performTextInput("Audio")

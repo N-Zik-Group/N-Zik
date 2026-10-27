@@ -33,7 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -188,7 +187,7 @@ fun SettingsGlobalPage(
                 // Plain alpha fade (no layout removal): the page content disappears
                 // without moving or collapsing, the bar rise comes from the title.
                 item(key = "groups", contentType = "groups") {
-                    Column(modifier = Modifier.graphicsLayer { alpha = contentAlpha }) {
+                    Column(modifier = Modifier.settingsSearchContentVisibility(contentAlpha)) {
                         SettingsPageGroups.forEach { group ->
                             GlobalPageCard(
                                 testTag = "settings_global_group_${group.group}",

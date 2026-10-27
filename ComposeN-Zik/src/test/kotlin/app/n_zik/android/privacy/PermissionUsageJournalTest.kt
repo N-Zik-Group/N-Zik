@@ -3,6 +3,9 @@ package app.n_zik.android.privacy
 import android.Manifest
 import android.app.Application
 import android.content.Context
+import android.content.ContextWrapper
+import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
 import kotlinx.coroutines.delay
@@ -108,6 +111,98 @@ class PermissionUsageJournalTest {
                 origin.edit().clear().commit()
                 destination.edit().clear().commit()
                 setActiveProfile("default", context)
+            }
+        }
+    }
+
+    @Test fun publicClearThenRecordKeepsTheNewEvent() = withPublicProfile("clear-order") { prefs ->
+        synchronized(PermissionUsageJournal) {
+            assertTrue(PermissionUsageJournal.record(context, PermissionFeature.PLAYBACK, JournalPermission.CAMERA, PermissionEventKind.REQUESTED))
+            assertTrue(PermissionUsageJournal.clear(context))
+            assertTrue(PermissionUsageJournal.record(context, PermissionFeature.VOICE_SEARCH, JournalPermission.MICROPHONE, PermissionEventKind.REQUESTED))
+        }
+        awaitEvents(prefs) { it.firstOrNull()?.feature == PermissionFeature.VOICE_SEARCH }
+        assertEquals(listOf(PermissionFeature.VOICE_SEARCH), PermissionUsageJournal.read(prefs).map { it.feature })
+    }
+
+    @Test fun publicPauseRejectsNewEventsAndSuppressesAlreadyQueuedEvents() = withPublicProfile("pause-boundary") { prefs ->
+        synchronized(PermissionUsageJournal) {
+            assertTrue(PermissionUsageJournal.record(context, PermissionFeature.VOICE_SEARCH, JournalPermission.MICROPHONE, PermissionEventKind.REQUESTED))
+            prefs.edit().putBoolean(PermissionUsageJournal.PAUSED_KEY, true).commit()
+            assertFalse(PermissionUsageJournal.record(context, PermissionFeature.PLAYBACK, JournalPermission.CAMERA, PermissionEventKind.REQUESTED))
+        }
+        setActiveProfile("journal-pause-barrier", context)
+        val barrierPrefs = context.preferences
+        barrierPrefs.edit().clear().commit()
+        try {
+            assertTrue(PermissionUsageJournal.record(context, PermissionFeature.PC_SERVER, JournalPermission.LOCAL_NETWORK, PermissionEventKind.REQUESTED))
+            awaitEvents(barrierPrefs) { it.isNotEmpty() }
+            assertTrue(PermissionUsageJournal.read(prefs).isEmpty())
+        } finally {
+            barrierPrefs.edit().clear().commit()
+        }
+    }
+
+    @Test fun publicBurstReportsRejectionAndRetainsNewestAcceptedEvents() = withPublicProfile("burst") { prefs ->
+        val accepted = mutableListOf<PermissionFeature>()
+        var rejected = 0
+        synchronized(PermissionUsageJournal) {
+            repeat(600) { index ->
+                val feature = PermissionFeature.entries[index % PermissionFeature.entries.size]
+                if (PermissionUsageJournal.record(context, feature, JournalPermission.CAMERA, PermissionEventKind.REQUESTED)) accepted += feature
+                else rejected++
+            }
+            assertFalse(PermissionUsageJournal.clear(context))
+        }
+        assertTrue(accepted.size in 256..257)
+        assertTrue(rejected > 0)
+        // Wait for the bounded writer to drain before adding a final, distinct barrier event.
+        awaitEvents(prefs) { it.size == PermissionUsageJournal.MAX_EVENTS }
+        // JUnit is synchronous; bounded waiting lets the actual actor free an admission slot.
+        runBlocking {
+            withTimeout(5_000) {
+                while (!PermissionUsageJournal.record(context, PermissionFeature.PC_SERVER, JournalPermission.LOCAL_NETWORK, PermissionEventKind.GRANTED)) delay(10)
+            }
+        }
+        awaitEvents(prefs) { it.firstOrNull()?.permission == JournalPermission.LOCAL_NETWORK }
+        val events = PermissionUsageJournal.read(prefs)
+        assertEquals(PermissionUsageJournal.MAX_EVENTS, events.size)
+        assertEquals(accepted.takeLast(PermissionUsageJournal.MAX_EVENTS - 1).reversed(), events.drop(1).map { it.feature })
+    }
+
+    @Test fun publicNotificationUsageRequiresGrantButRequestsAndDenialsRemain() = withPublicProfile("notification-filter") { prefs ->
+        var granted = false
+        val permissionContext = object : ContextWrapper(context) {
+            override fun checkSelfPermission(permission: String): Int =
+                if (permission == Manifest.permission.POST_NOTIFICATIONS && granted) PackageManager.PERMISSION_GRANTED
+                else PackageManager.PERMISSION_DENIED
+        }
+        assertFalse(PermissionUsageJournal.record(permissionContext, PermissionFeature.PLAYBACK, JournalPermission.NOTIFICATIONS, PermissionEventKind.USED))
+        PermissionUsageJournal.request(permissionContext, PermissionFeature.PLAYBACK, Manifest.permission.POST_NOTIFICATIONS)
+        PermissionUsageJournal.result(permissionContext, PermissionFeature.PLAYBACK, Manifest.permission.POST_NOTIFICATIONS, false)
+        granted = true
+        assertTrue(PermissionUsageJournal.record(permissionContext, PermissionFeature.PLAYBACK, JournalPermission.NOTIFICATIONS, PermissionEventKind.USED))
+        awaitEvents(prefs) { it.size == 3 }
+        assertEquals(listOf(PermissionEventKind.USED, PermissionEventKind.DENIED, PermissionEventKind.REQUESTED), PermissionUsageJournal.read(prefs).map { it.kind })
+    }
+
+    private fun withPublicProfile(name: String, block: (SharedPreferences) -> Unit) {
+        setActiveProfile("journal-public-$name", context)
+        val prefs = context.preferences
+        prefs.edit().clear().commit()
+        try {
+            block(prefs)
+        } finally {
+            prefs.edit().clear().commit()
+            setActiveProfile("default", context)
+        }
+    }
+
+    private fun awaitEvents(prefs: SharedPreferences, predicate: (List<PermissionUsageEvent>) -> Boolean) {
+        // JUnit is synchronous; wait for persistence by the real DATA actor instead of bypassing it.
+        runBlocking {
+            withTimeout(5_000) {
+                while (!predicate(PermissionUsageJournal.read(prefs))) delay(10)
             }
         }
     }

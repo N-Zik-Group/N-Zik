@@ -180,21 +180,25 @@ fun SettingsCategoryPage(categoryId: String, navController: NavController, targe
                     CompositionLocalProvider(
                         LocalSettingsResetScope provides (SettingsCategories.firstOrNull { it.tab == tab }?.labelRes ?: R.string.settings_category_privacy),
                     ) {
-                        slots.getValue(tab).content[title]?.value?.invoke()
+                        Column(Modifier.settingsSearchContentVisibility(searchFocus.contentAlpha)) {
+                            slots.getValue(tab).content[title]?.value?.invoke()
+                        }
                     }
                 }
                 if (resetScopes.isNotEmpty()) {
                     item(key = "reset", contentType = "reset") {
-                        SettingsResetCard(resetScopes, target) { tab ->
-                            CompositionLocalProvider(
-                                LocalSettingsCardSlots provides null,
-                                LocalSettingsResetScope provides SettingsCategories.first { it.tab == tab }.labelRes,
-                            ) {
-                                SettingsSourceContent(
-                                    tab, contentSearch, navController, setOf(R.string.settings_reset),
-                                    { title -> Modifier.settingsSearchTarget(settingsCardTargetId(context, tab, title)) },
-                                    normalizePreferences = false,
-                                )
+                        Column(Modifier.settingsSearchContentVisibility(searchFocus.contentAlpha)) {
+                            SettingsResetCard(resetScopes, target) { tab ->
+                                CompositionLocalProvider(
+                                    LocalSettingsCardSlots provides null,
+                                    LocalSettingsResetScope provides SettingsCategories.first { it.tab == tab }.labelRes,
+                                ) {
+                                    SettingsSourceContent(
+                                        tab, contentSearch, navController, setOf(R.string.settings_reset),
+                                        { title -> Modifier.settingsSearchTarget(settingsCardTargetId(context, tab, title)) },
+                                        normalizePreferences = false,
+                                    )
+                                }
                             }
                         }
                     }

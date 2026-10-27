@@ -2527,6 +2527,7 @@
     <string name="permission_journal_clear_confirm">Delete all permission activity events for the active profile?</string>
     <string name="permission_journal_entries">Show permission activity</string>
     <string name="permission_journal_entries_description">View permission requests and uses by N-Zik feature.</string>
+    <string name="permission_journal_busy">Permission history is busy. Please try clearing it again.</string>
     <string name="permission_journal_empty">No permission events recorded yet.</string>
     <string name="permission_journal_event">%1$s · %2$s\n%3$s · %4$s</string>
     <string name="permission_feature_music_recognition">Music recognition</string>
