@@ -40,6 +40,7 @@ import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
+import app.n_zik.android.recessedSurfaceColor
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
 import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
@@ -699,7 +700,7 @@ class SongItemMenu private constructor(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(surfaceColor(colorPalette().background1))
+                .background(recessedSurfaceColor(colorPalette().background0))
         ) {
             // Song info header
             Column(

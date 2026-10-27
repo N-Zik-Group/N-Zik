@@ -24,7 +24,7 @@ import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
-import app.n_zik.android.surfaceColor
+import app.n_zik.android.recessedSurfaceColor
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.Languages
 import app.it.fast4x.rimusic.utils.otherLanguageAppLyricsKey
@@ -117,7 +117,7 @@ class LanguagesListMenu private constructor(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(surfaceColor(colorPalette().background1))
+                .background(recessedSurfaceColor(colorPalette().background0))
         ) {
             if (menuStyle == MenuStyle.List)
                 ListMenu()

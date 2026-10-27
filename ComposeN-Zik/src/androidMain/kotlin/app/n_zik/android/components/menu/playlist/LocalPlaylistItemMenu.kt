@@ -56,6 +56,7 @@ import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.recessedSurfaceColor
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.components.dialog.playlist.RenamePlaylistDialog
 import app.n_zik.android.core.database.Database
@@ -559,7 +560,7 @@ class LocalPlaylistItemMenu private constructor(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(surfaceColor(colorPalette().background1))
+                .background(recessedSurfaceColor(colorPalette().background0))
         ) {
             downloadAllDialog.Render()
             deleteAllDialog.Render()

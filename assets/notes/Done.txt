@@ -94,6 +94,9 @@ Improved:
   - `ListenTogetherMenu` create/join failures while offline now surface the dedicated "no connection" toast instead of a generic error (offline audit menu branch)
 
 Fixed:
+- fix(menus): restore separate header and content tones
+  - Restore background0 menu bodies while retaining background1 headers in normal themes; use a subtle101010 body below1A1A1A PitchBlack headers.
+  - Keep the global elevated-surface policy intact and verify shared grid/list pixels, headerless menus and rounded boundaries.
 - fix(settings): harden permission history and focused search interactions
   - Keep clear and record admission in one bounded FIFO, report rejected operations and show a retry message when clearing cannot be queued.
   - Record scanner camera use from preview startup and visualizer permission request/result at the actual launcher.

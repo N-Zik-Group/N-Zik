@@ -138,6 +138,11 @@ fun isDebugModeEnabled() = appContext().preferences.getBoolean(logDebugEnabledKe
 fun surfaceColor(base: Color): Color =
     if (isPitchBlackSurface()) Color(0xFF1A1A1A) else base
 
+/** Darker menu and dialog content within elevated PitchBlack bands. */
+@Composable
+fun recessedSurfaceColor(base: Color): Color =
+    if (isPitchBlackSurface()) Color(0xFF101010) else base
+
 /** True when the active palette renders surfaces on pure black. */
 @Composable
 fun isPitchBlackSurface(): Boolean {

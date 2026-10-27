@@ -45,6 +45,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
+import app.n_zik.android.recessedSurfaceColor
 import app.n_zik.android.surfaceColor
 import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.utils.preferences
@@ -559,7 +560,7 @@ class AlbumItemMenu private constructor(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(surfaceColor(colorPalette().background1))
+                .background(recessedSurfaceColor(colorPalette().background0))
         ) {
             downloadAll.Render()
             deleteAll.Render()

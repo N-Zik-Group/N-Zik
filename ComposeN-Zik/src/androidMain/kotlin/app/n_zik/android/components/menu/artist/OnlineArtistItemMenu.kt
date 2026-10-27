@@ -51,6 +51,7 @@ import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.recessedSurfaceColor
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.components.dialog.artist.ChangeArtistTitleDialog
 import app.n_zik.android.components.dialog.artist.ChangeArtistCoverDialog
@@ -467,7 +468,7 @@ class OnlineArtistItemMenu private constructor(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(surfaceColor(colorPalette().background1))
+                .background(recessedSurfaceColor(colorPalette().background0))
         ) {
             ArtistItemDisplay(
                 title = displayTitle,
