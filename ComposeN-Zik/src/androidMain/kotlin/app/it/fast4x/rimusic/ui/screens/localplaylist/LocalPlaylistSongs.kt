@@ -189,6 +189,9 @@ import app.n_zik.android.components.playlist.PinPlaylist
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.components.playlist.PlaylistSongsSort
+import app.n_zik.android.components.dialog.playlist.PlaylistInsertionDialog
+import app.n_zik.android.utils.playlist.supportsInsertionPosition
+import app.n_zik.android.utils.playlist.importSongsToPlaylist
 import app.n_zik.android.components.dialog.playlist.RenamePlaylistDialog
 import app.n_zik.android.components.playlist.Reposition
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
@@ -655,6 +658,8 @@ fun LocalPlaylistSongs(
         job.join()
     }
     val shuffle = SongShuffler ( ::getSongs )
+    val insertionDialog = PlaylistInsertionDialog { playlist }
+    insertionDialog.Render()
     val renameDialog = RenamePlaylistDialog { playlist }
     val exportDialog = ExportSongsToCSVDialog(
         playlistBrowseId = playlist?.browseId.orEmpty(),
@@ -694,6 +699,7 @@ fun LocalPlaylistSongs(
             placeholder = "https://youtube.com/playlist?list=...",
             onImport = { url ->
                 showYouTubeLinkDialog = false
+                val targetPlaylist = playlist ?: return@RawUrlImportDialog
                 coroutineScope.launch(NzikDispatchers.DATA) {
                     val urlPlaylistId = listOf(
                         "https://www.youtube.com/playlist?",
@@ -708,10 +714,7 @@ fun LocalPlaylistSongs(
                             val songs = playlistPage.songsPage?.items?.map { it.asSong.copy(totalPlayTimeMs = 1L) }.orEmpty()
                             if (songs.isNotEmpty()) {
                                 Database.asyncTransaction {
-                                    songTable.upsert(songs)
-                                    songs.forEach { song ->
-                                        songPlaylistMapTable.map(song.id, playlistId)
-                                    }
+                                    importSongsToPlaylist(targetPlaylist, songs)
                                 }
                                 appContext().preferences.edit().putString("PlaylistSongsSortBy_$playlistId", PlaylistSongSortBy.Custom.name).apply()
                                 Toaster.done()
@@ -1354,6 +1357,7 @@ fun LocalPlaylistSongs(
                 } catch (_: Exception) { defaultOrder }
 
                 val toolbarButtons = buildList {
+                    if (playlist?.supportsInsertionPosition() == true) add(insertionDialog)
                     order.forEach { id ->
                         // Check toggle state - if disabled, skip this button
                         val toggleKey = "pl_ts_$id"

@@ -177,6 +177,14 @@ interface SongPlaylistMapTable {
     @Query("INSERT OR IGNORE INTO SongPlaylistMap ( songId, playlistId, position ) VALUES (:songId, :playlistId, :position)")
     fun mapAtPosition( songId: String, playlistId: Long, position: Int )
 
+    /** Membership snapshot for a deduplicated batch inside its write transaction. */
+    @Query("SELECT songId FROM SongPlaylistMap WHERE playlistId = :playlistId")
+    fun songIdsInPlaylist(playlistId: Long): List<String>
+
+    /** Reserves the beginning of canonical order without changing existing relative order. */
+    @Query("UPDATE SongPlaylistMap SET position = position + :count WHERE playlistId = :playlistId")
+    fun shiftPositions(playlistId: Long, count: Int)
+
     @Query("SELECT IFNULL(MAX(position), -1) FROM SongPlaylistMap WHERE playlistId = :playlistId")
     fun getMaxPosition(playlistId: Long): Int
 

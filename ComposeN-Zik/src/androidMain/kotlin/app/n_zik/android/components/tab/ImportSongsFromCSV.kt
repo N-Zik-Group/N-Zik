@@ -1,7 +1,5 @@
 package app.n_zik.android.components.tab
 
-import app.n_zik.android.core.database.*
-
 import android.net.Uri
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -21,6 +19,8 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.utils.formatAsDuration
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.playlist.importSongsToPlaylist
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import app.n_zik.android.components.ImportFromFile
 import app.kreate.android.me.knighthat.utils.DurationUtils
@@ -136,21 +136,18 @@ class ImportSongsFromCSV(
                                             straySongs.addAll( songs )
                                     }
 
+                        val targetPlaylist = if (targetPlaylistId > 0L) {
+                            Database.playlistTable.findById(targetPlaylistId).first()
+                                ?: error("Import target playlist no longer exists")
+                        } else null
                         Database.asyncTransaction {
-                            songTable.upsert( straySongs )
-                            if (targetPlaylistId > 0L) {
-                                straySongs.forEach { song ->
-                                    songPlaylistMapTable.map(song.id, targetPlaylistId)
-                                }
-                            }
-
-                            combos.forEach { (playlist, songs) ->
-                                songTable.upsert( songs )       // Upsert first to override existing songs
-                                if (targetPlaylistId > 0L) {
-                                    songs.forEach { song ->
-                                        songPlaylistMapTable.map(song.id, targetPlaylistId)
-                                    }
-                                } else {
+                            if (targetPlaylist != null) {
+                                // One batch preserves the previous stray/group order when prepending.
+                                importSongsToPlaylist(targetPlaylist, straySongs + combos.values.flatten())
+                            } else {
+                                songTable.upsert(straySongs)
+                                combos.forEach { (playlist, songs) ->
+                                    songTable.upsert(songs)
                                     mapIgnore( playlist, *songs.toTypedArray() )
                                 }
                             }

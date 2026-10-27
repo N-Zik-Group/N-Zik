@@ -43,6 +43,19 @@ interface ImportSongTable {
     @Query("SELECT * FROM ImportSong")
     fun getAllEntries(): List<ImportSong>
 
+    /** Keeps pending matches aligned when existing playlist members move. */
+    @Query("""
+        UPDATE ImportSong SET position = (
+            SELECT position FROM SongPlaylistMap
+            WHERE songId = ImportSong.originalId AND playlistId = :playlistId
+        )
+        WHERE playlistId = :playlistId AND EXISTS (
+            SELECT 1 FROM SongPlaylistMap
+            WHERE songId = ImportSong.originalId AND playlistId = :playlistId
+        )
+    """)
+    fun alignPlaylistPositions(playlistId: Long)
+
     @Query("DELETE FROM ImportSong")
     fun clear()
 }

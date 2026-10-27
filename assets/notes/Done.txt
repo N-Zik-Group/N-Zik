@@ -299,3 +299,7 @@ Other:
   - Global toasts use measured navigation bounds and attached-window correction with an 8 dp minimum gap for normal and floating bars. Navigation registrations follow composition lifetime without duplicate or stale tabs.
   - Preserve transparent ribbed player controls in black themes; record voice permission requests/results and cover the real Activity screen-protection lifecycle.
   - Only source values/strings.xml changed; translated resources and release metadata remain untouched.
+- fix(playlists): honor per-playlist insertion order across song imports (issue https://github.com/N-Zik-Group/N-Zik/issues/901)
+  - Expose Beginning/End for editable local playlists with End as default and profile-scoped preferences.
+  - Insert ordered unique songs atomically, shift only by the actual new count, and keep pending imported-song positions aligned without a database schema change.
+  - Apply the same ordering to YouTube, native CSV and service CSV imports while preserving metadata upsert versus insert-ignore behavior and remote sync handling.

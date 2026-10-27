@@ -1,5 +1,7 @@
 package app.n_zik.android.components.menu.playlist
 
+import app.n_zik.android.components.dialog.playlist.PlaylistInsertionDialog
+import app.n_zik.android.utils.playlist.supportsInsertionPosition
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -352,6 +354,8 @@ class LocalPlaylistItemMenu private constructor(
             }
         }
         
+        val insertionDialog = PlaylistInsertionDialog { playlistPreview.playlist }
+
         val downloadAllDialog = DownloadAllSongsDialog { songs ?: emptyList() }
         val downloadAll = object : MenuIcon by downloadAllDialog, Descriptive by downloadAllDialog, Clickable {
             override fun onShortClick() {
@@ -486,6 +490,8 @@ class LocalPlaylistItemMenu private constructor(
             list.add(deleteAll)
             
 
+            if (playlistPreview.playlist.supportsInsertionPosition()) list.add(insertionDialog)
+
             if (playlistPreview.playlist.isEditable) {
                 // Spec 2: generated rewind-* playlists keep their language-neutral name — no rename
                 if (!RewindPlaylists.isRewind(playlistPreview.playlist.name)) {
@@ -562,6 +568,7 @@ class LocalPlaylistItemMenu private constructor(
                 .fillMaxWidth()
                 .background(recessedSurfaceColor(colorPalette().background0))
         ) {
+            insertionDialog.Render()
             downloadAllDialog.Render()
             deleteAllDialog.Render()
             PlaylistItemDisplay(playlistPreview, isBookmarked, onBookmarkToggle = {

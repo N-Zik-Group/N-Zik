@@ -1,50 +1,50 @@
 package app.n_zik.android.components.tab
 
 import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringResource
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import app.n_zik.android.core.database.Database
-import app.n_zik.android.R
-import app.kreate.android.me.knighthat.utils.Toaster
-import app.it.fast4x.rimusic.models.Song
+import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.models.Playlist
-import app.n_zik.android.appContext
+import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.utils.formatAsDuration
 import app.it.fast4x.rimusic.utils.splitArtistNames
-import app.n_zik.android.utils.getAlbumVersionFromVideo
-import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
-import kotlinx.coroutines.CoroutineScope
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
+import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.appContext
 import app.n_zik.android.components.ImportFromFile
-import app.it.fast4x.rimusic.EXPLICIT_PREFIX
-import app.n_zik.android.core.database.ImportSong
+import app.n_zik.android.core.database.Database
+import app.n_zik.android.R
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.playlist.importServiceSongsToPlaylist
+import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import timber.log.Timber
-import android.provider.OpenableColumns
 
 class ImportSongsFromServices private constructor(
     launcher: ManagedActivityResultLauncher<Array<String>, Uri?>
 ): ImportFromFile(launcher), Descriptive, MenuIcon {
 
     companion object {
-        private fun openFile(
+        private data class ImportedRow(val song: Song, val album: Album, val artists: List<Artist>)
+
+        internal suspend fun openFile(
             uri: Uri,
             targetPlaylistId: Long = 0L,
             source: String? = null,
             likeImported: Boolean = false,
             beforeTransaction: (Int, Map<String, String>, String?) -> Unit = { _,_,_ -> },
-            afterTransaction: ( Int, Song, Album, List<Artist> ) -> Unit = { _,_,_,_ -> }
-        ): Long {
+            afterTransaction: ( Int, Song, Album, List<Artist> ) -> Unit = { _,_,_,_ -> },
+            onImportComplete: ((Long) -> Unit)? = null,
+        ) {
             val context = appContext()
             var fileName = uri.lastPathSegment ?: context.getString(R.string.imported_playlist)
             context.applicationContext.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
@@ -55,23 +55,20 @@ class ImportSongsFromServices private constructor(
             }
             var activePlaylistId = targetPlaylistId
             var playlistCreated = false
+            var targetPlaylist = if (targetPlaylistId > 0L) {
+                Database.playlistTable.findById(targetPlaylistId).first()
+                    ?: error("Import target playlist no longer exists")
+            } else null
+            val importedRows = mutableListOf<ImportedRow>()
+            val beforeActions = mutableListOf<() -> Unit>()
 
             context.applicationContext
                 .contentResolver
                 .openInputStream(uri)
                 ?.use { inputStream ->
 
-                    var basePosition = -1
-
                     csvReader().open(inputStream) {
-                        var totalRows = 0
-                        var importedCount = 0
-                        var skippedCount = 0
-                        var spotifyCount = 0
-                        var otherCount = 0
-
                         readAllWithHeaderAsSequence().forEachIndexed { index, row: Map<String, String> ->
-                            totalRows++
                             
                             val isSpotifyFormat = row.containsKey("Track URI")
                             val isRiplayFormat = row.containsKey("AlbumId") || row.containsKey("ArtistIds")
@@ -81,35 +78,25 @@ class ImportSongsFromServices private constructor(
                                 val newPlaylist = Playlist(name = cleanName, browseId = source)
                                 // Insert playlist directly to get ID, we are already in an IO thread
                                 activePlaylistId = Database.playlistTable.insert(newPlaylist)
+                                targetPlaylist = newPlaylist.copy(id = activePlaylistId)
                             }
-                            
-                            val currentPlaylistId = activePlaylistId
 
-                            if (index == 0 && currentPlaylistId != 0L) {
-                                basePosition = Database.songPlaylistMapTable.getMaxPosition(currentPlaylistId)
-                            }
-                            
-                            val finalPosition = basePosition + 1 + index
-
-                            Database.asyncTransaction {
-                                beforeTransaction( index, row, fileName )
+                            beforeActions += { beforeTransaction(index, row, fileName) }
+                            runCatching parseRow@{
 
                                 val song: Song
                                 val album: Album
                                 val artists: List<Artist>
 
                                 if (isSpotifyFormat) {
-                                    spotifyCount++
                                     val explicitPrefix = if (row["Explicit"] == "true") EXPLICIT_PREFIX else ""
                                     val mediaId = row["Track URI"]
                                     if (mediaId == null) {
-                                        skippedCount++
-                                        return@asyncTransaction
+                                        return@parseRow
                                     }
                                     val title = row["Track Name"]
                                     if (title == null) {
-                                        skippedCount++
-                                        return@asyncTransaction
+                                        return@parseRow
                                     }
                                     val artistsText = row["Artist Name(s)"] ?: ""
                                     val durationText = formatAsDuration(row["Duration (ms)"]?.toLong() ?: 0L)
@@ -141,13 +128,12 @@ class ImportSongsFromServices private constructor(
                                     } ?: mutableListOf()
 
                                 } else {
-                                    otherCount++
                                     val explicitPrefix = if (row["Explicit"] == "true") "e:" else ""
                                     val pseudoMediaId = (row["Track Name"].orEmpty()+row["Artist Name(s)"].orEmpty()).filter { it.isLetterOrDigit() }
                                     val mediaId = row["MediaId"] ?: pseudoMediaId
-                                    if(mediaId.isEmpty()) return@asyncTransaction
+                                    if(mediaId.isEmpty()) return@parseRow
                                     
-                                    val title = row["Title"] ?: row["Track Name"] ?: return@asyncTransaction
+                                    val title = row["Title"] ?: row["Track Name"] ?: return@parseRow
                                     val artistsText = row["Artists"] ?: row["Artist Name(s)"] ?: ""
 
                                     val durationText = row["Duration"]?.takeIf { it.isNotBlank() } ?: "00:00"
@@ -184,35 +170,23 @@ class ImportSongsFromServices private constructor(
                                     artists = mutableArtists
                                 }
 
-                                // Insert the song directly here (within the active transaction)
-                                songTable.insertIgnore( song )
-                                importedCount++
-                                Timber.tag("Import").d("ADDED song '${song.title}' id='${song.id}' duration='${song.durationText}' (isRiplayFormat=$isRiplayFormat)")
-
-                                // Save import position for match system
-                                Database.importSongTable.insert(
-                                    ImportSong(
-                                        originalId = song.id,
-                                        position = finalPosition,
-                                        playlistId = currentPlaylistId.takeIf { it > 0L }
-                                    )
-                                )
-                                Timber.tag("Import").d("ImportSong entry created: originalId='${song.id}', position=$finalPosition, playlistId=${currentPlaylistId.takeIf { it > 0L }}")
-
-                                // If a target playlist is set, map immediately
-                                if (currentPlaylistId > 0L) {
-                                    songPlaylistMapTable.mapAtPosition( song.id, currentPlaylistId, finalPosition )
-                                }
-
-                                if (afterTransaction != null) {
-                                    afterTransaction( finalPosition, song, album, artists )
-                                }
-                            }
+                                importedRows += ImportedRow(song, album, artists)
+                            }.onFailure { Timber.tag("Import").w(it, "Skipping invalid service import row %d", index) }
                         }
                         
                     }
                 }
-            return activePlaylistId
+            Database.asyncTransaction {
+                syncTransaction {
+                    beforeActions.forEach { it() }
+                    importServiceSongsToPlaylist(targetPlaylist, importedRows.map { it.song }) { index, position ->
+                        val row = importedRows[index]
+                        afterTransaction(position, row.song, row.album, row.artists)
+                    }
+                }
+                onImportComplete?.invoke(activePlaylistId)
+                Toaster.done()
+            }
         }
 
         @JvmStatic
@@ -234,14 +208,8 @@ class ImportSongsFromServices private constructor(
                     if( uri == null ) return@rememberLauncherForActivityResult
                     
                     coroutineScope.launch(NzikDispatchers.DATA) {
-                        val importedSongs = mutableListOf<Song>()
-                        val finalPlaylistId = openFile( uri, playlistIdForMatch, source, likeImported, beforeTransaction ) { index, song, album, artists ->
-                            afterTransaction(index, song, album, artists)
-                            importedSongs.add(song)
-                        }
-                        
-                        onImportComplete?.invoke(finalPlaylistId)
-                        Toaster.done()
+                        openFile(uri, playlistIdForMatch, source, likeImported, beforeTransaction,
+                            afterTransaction, onImportComplete)
                     }
                 }
             )
