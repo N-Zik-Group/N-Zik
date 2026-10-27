@@ -4,9 +4,23 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Looper
+import androidx.activity.BackEventCompat
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import app.n_zik.android.core.navigation.rememberAppBackAction
+import app.n_zik.android.core.navigation.ScreenTransitions
+import app.it.fast4x.rimusic.enums.TransitionEffect
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.assertIsDisplayed
@@ -154,6 +168,12 @@ class SettingsScreenHostWiringTest {
     /** Composes the host on a frozen clock and pumps until the global page is settled. */
     private fun showHost(initialTab: Int = 0, focus: String = "") {
         composeRule.mainClock.autoAdvance = false
+        // Models the parent host callback; the nested host takes priority only above its root.
+        testActivity.onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                navController.popBackStack(NavRoutes.home.name, false)
+            }
+        })
         composeRule.setContent {
             CompositionLocalProvider(
                 LocalAppearance provides appearance,
@@ -284,6 +304,129 @@ class SettingsScreenHostWiringTest {
         }
 
         assertTrue("the tab must not stay composed after back", !categoryIsComposed())
+    }
+
+    @Test
+    fun predictiveBackPreviewsGlobalAndCancellationKeepsTheCategory() {
+        showHost()
+        composeRule.onNodeWithTag("settings_global_category_playback").performClick()
+        pumpUntil("category settled", 30_000) { categoryIsComposed() && globalPageIsGone() }
+        val dispatcher = testActivity.onBackPressedDispatcher
+        composeRule.runOnIdle {
+            dispatcher.dispatchOnBackStarted(BackEventCompat(0f, 0f, 0f, BackEventCompat.EDGE_LEFT))
+            dispatcher.dispatchOnBackProgressed(BackEventCompat(100f, 0f, 0.5f, BackEventCompat.EDGE_LEFT))
+        }
+        repeat(5) { composeRule.mainClock.advanceTimeByFrame(); composeRule.waitForIdle() }
+        assertTrue("Predictive back composes the previous page before commit", globalPageIsComposed())
+        assertTrue(categoryIsComposed())
+        composeRule.runOnIdle { dispatcher.dispatchOnBackCancelled() }
+        pumpUntil("cancel preserves category", 30_000) { categoryIsComposed() && globalPageIsGone() }
+        verify(exactly = 0) { navController.popBackStack(NavRoutes.home.name, false) }
+        composeRule.runOnIdle {
+            dispatcher.dispatchOnBackStarted(BackEventCompat(0f, 0f, 0f, BackEventCompat.EDGE_LEFT))
+            dispatcher.dispatchOnBackProgressed(BackEventCompat(150f, 0f, 0.7f, BackEventCompat.EDGE_LEFT))
+        }
+        repeat(5) { composeRule.mainClock.advanceTimeByFrame(); composeRule.waitForIdle() }
+        composeRule.runOnIdle { dispatcher.onBackPressed() }
+        pumpUntil("commit returns global", 30_000) { globalPageIsComposed() && !categoryIsComposed() }
+        verify(exactly = 0) { navController.popBackStack(NavRoutes.home.name, false) }
+    }
+
+    @Test
+    fun realParentHostPreviewsPreviousRouteAndKeepsItsStackOnCancelledRootBack() {
+        lateinit var outer: NavHostController
+        lateinit var router: SettingsBackNavigation
+        lateinit var toolbarBack: () -> Unit
+        var nestedObservedInParent = false
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            outer = rememberNavController()
+            val entry by outer.currentBackStackEntryAsState()
+            router = remember { SettingsBackNavigation { entry?.destination?.route } }
+            // Observe production state in the parent composition, as AppNavigation does.
+            nestedObservedInParent = router.hasNestedBackStack
+            val transitions = remember { ScreenTransitions(TransitionEffect.Fade) }
+            CompositionLocalProvider(
+                LocalAppearance provides appearance,
+                LocalSettingsBackNavigation provides router,
+            ) {
+                toolbarBack = rememberAppBackAction(outer)
+                NavHost(
+                    outer,
+                    startDestination = "home",
+                    enterTransition = transitions.enterTransition,
+                    exitTransition = transitions.exitTransition,
+                    popEnterTransition = transitions.popEnterTransition,
+                    popExitTransition = transitions.popExitTransition,
+                ) {
+                    composable("home") { Text("Home", Modifier.testTag("outer_home")) }
+                    composable("previous") { Text("Previous", Modifier.testTag("outer_previous")) }
+                    composable("settings") { SettingsScreen(navController = outer) }
+                }
+            }
+        }
+        pumpUntil("outer home", 30_000) { outer.currentDestination?.route == "home" }
+        composeRule.runOnIdle { outer.navigate("previous") }
+        repeat(30) { composeRule.mainClock.advanceTimeByFrame(); composeRule.waitForIdle() }
+        composeRule.runOnIdle { outer.navigate("settings") }
+        pumpUntil("Settings root settled", 30_000) {
+            globalPageIsComposed() && composeRule.onAllNodesWithTag("outer_previous").fetchSemanticsNodes().isEmpty()
+        }
+        assertTrue(!nestedObservedInParent)
+        composeRule.onNodeWithTag("settings_global_category_playback").performClick()
+        pumpUntil("parent observes nested stack", 30_000) {
+            nestedObservedInParent && categoryIsComposed() && globalPageIsGone()
+        }
+        composeRule.runOnIdle { toolbarBack() }
+        repeat(5) { composeRule.mainClock.advanceTimeByFrame(); composeRule.waitForIdle() }
+        assertTrue("Toolbar pop retains outgoing category during its inverse fade", categoryIsComposed())
+        assertTrue("Toolbar pop animates the hub back in", globalPageIsComposed())
+        pumpUntil("nested pop keeps Settings outer entry", 30_000) {
+            !nestedObservedInParent && globalPageIsComposed() && !categoryIsComposed()
+        }
+        assertTrue(outer.currentDestination?.route == "settings")
+        val dispatcher = testActivity.onBackPressedDispatcher
+        fun progressRootBack() {
+            composeRule.runOnIdle {
+                dispatcher.dispatchOnBackStarted(BackEventCompat(0f, 0f, 0f, BackEventCompat.EDGE_LEFT))
+                dispatcher.dispatchOnBackProgressed(BackEventCompat(100f, 0f, 0.5f, BackEventCompat.EDGE_LEFT))
+            }
+            repeat(5) { composeRule.mainClock.advanceTimeByFrame(); composeRule.waitForIdle() }
+        }
+        progressRootBack()
+        composeRule.onNodeWithTag("outer_previous").fetchSemanticsNode()
+        assertTrue(globalPageIsComposed())
+        assertTrue(outer.currentDestination?.route == "settings")
+        composeRule.runOnIdle { dispatcher.dispatchOnBackCancelled() }
+        pumpUntil("root cancellation preserves Settings", 30_000) {
+            globalPageIsComposed() && composeRule.onAllNodesWithTag("outer_previous").fetchSemanticsNodes().isEmpty()
+        }
+        assertTrue(outer.currentDestination?.route == "settings")
+        progressRootBack()
+        composeRule.runOnIdle { dispatcher.onBackPressed() }
+        pumpUntil("root gesture commits to actual prior route", 30_000) {
+            outer.currentDestination?.route == "previous" && globalPageIsGone()
+        }
+        composeRule.onNodeWithTag("outer_previous").fetchSemanticsNode()
+        assertTrue(!router.isActive)
+        assertTrue(!nestedObservedInParent)
+        assertTrue(outer.previousBackStackEntry?.destination?.route == "home")
+
+        composeRule.runOnIdle { outer.navigate("settings") }
+        pumpUntil("Settings settled for toolbar root back", 30_000) {
+            globalPageIsComposed() && composeRule.onAllNodesWithTag("outer_previous").fetchSemanticsNodes().isEmpty()
+        }
+        composeRule.runOnIdle { toolbarBack() }
+        repeat(5) { composeRule.mainClock.advanceTimeByFrame(); composeRule.waitForIdle() }
+        assertTrue("Toolbar root pop retains outgoing Settings during fade", globalPageIsComposed())
+        composeRule.onNodeWithTag("outer_previous").fetchSemanticsNode()
+        pumpUntil("toolbar matches Android root target", 30_000) {
+            outer.currentDestination?.route == "previous" && globalPageIsGone()
+        }
+        composeRule.runOnIdle { toolbarBack() }
+        pumpUntil("toolbar returns Home", 30_000) { outer.currentDestination?.route == "home" }
+        composeRule.runOnIdle { toolbarBack() }
+        assertTrue("Outgoing toolbar cannot exit Home on a second tap", outer.currentDestination?.route == "home")
     }
 
     @Test

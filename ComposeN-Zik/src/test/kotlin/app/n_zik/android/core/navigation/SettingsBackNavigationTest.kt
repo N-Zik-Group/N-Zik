@@ -36,4 +36,21 @@ class SettingsBackNavigationTest {
         assertTrue(router.handleBack())
         assertEquals(1, calls)
     }
+    @Test
+    fun `nested back ownership follows stack and active route and clears on dispose`() {
+        var route = "settings"
+        var nested = false
+        val router = SettingsBackNavigation { route }
+        val owner = Any()
+        router.register(owner, canNavigateBack = { nested }) { }
+        assertFalse(router.hasNestedBackStack)
+        nested = true
+        assertTrue(router.hasNestedBackStack)
+        route = "album"
+        assertFalse(router.hasNestedBackStack)
+        route = "settings"
+        assertTrue(router.hasNestedBackStack)
+        router.unregister(owner)
+        assertFalse(router.hasNestedBackStack)
+    }
 }

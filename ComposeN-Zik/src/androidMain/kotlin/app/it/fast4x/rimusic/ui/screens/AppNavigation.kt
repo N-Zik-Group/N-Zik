@@ -200,10 +200,11 @@ fun AppNavigation(
         }
     }
     
-    backCallback.isEnabled = disableBackStack && !isHome
+    val interceptBackToHome = disableBackStack && !isHome && !settingsBackNavigation.hasNestedBackStack
+    backCallback.isEnabled = interceptBackToHome
 
-    LaunchedEffect(currentEntry, disableBackStack) {
-        if (disableBackStack && !isHome) {
+    LaunchedEffect(currentEntry, interceptBackToHome) {
+        if (interceptBackToHome) {
             backCallback.remove()
             backDispatcher?.addCallback(lifecycleOwner, backCallback)
         } else {

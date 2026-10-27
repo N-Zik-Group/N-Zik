@@ -1,17 +1,15 @@
 package app.n_zik.android.components.ui.screens.home
 
 import android.app.Application
-import android.os.Looper
-import java.time.Duration
-import org.robolectric.Shadows
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
@@ -31,16 +29,24 @@ import org.robolectric.annotation.Config
 class HomeReturnCompositionTest {
     @get:Rule val composeRule = createComposeRule()
 
+    private fun applyChangesAndAdvanceFrame() {
+        // runOnIdle writes are outside the test coroutine snapshot interceptor.
+        composeRule.runOnUiThread { Snapshot.sendApplyNotifications() }
+        composeRule.mainClock.advanceTimeByFrame()
+    }
+
     @Test
     fun `returning Home restores completed entrance without another loading frame`() {
         val showHome = mutableStateOf(true)
         val renderedReadiness = mutableListOf<Boolean>()
+        lateinit var entranceAlpha: State<Float>
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
             val holder = rememberSaveableStateHolder()
             if (showHome.value) {
                 holder.SaveableStateProvider("home") {
                     val ready = rememberHomeEntranceReady("bound-service").value
+                    entranceAlpha = rememberHomeEntranceAlpha(ready, animationsEnabled = true)
                     SideEffect { renderedReadiness += ready }
                 }
             }
@@ -53,13 +59,65 @@ class HomeReturnCompositionTest {
             assertTrue(renderedReadiness.last())
             showHome.value = false
         }
-        composeRule.mainClock.advanceTimeByFrame()
+        applyChangesAndAdvanceFrame()
         composeRule.runOnIdle {
             renderedReadiness.clear()
             showHome.value = true
         }
-        composeRule.mainClock.advanceTimeByFrame()
-        composeRule.runOnIdle { assertEquals(listOf(true), renderedReadiness) }
+        applyChangesAndAdvanceFrame()
+        composeRule.runOnIdle {
+            assertEquals(listOf(true), renderedReadiness)
+            assertEquals(0f, entranceAlpha.value, 0.001f)
+        }
+        composeRule.mainClock.advanceTimeBy(160)
+        composeRule.runOnIdle { assertTrue(entranceAlpha.value > 0f && entranceAlpha.value < 1f) }
+        composeRule.mainClock.advanceTimeBy(320)
+        composeRule.runOnIdle { assertEquals(1f, entranceAlpha.value, 0.001f) }
+    }
+
+    @Test
+    fun `ordinary recomposition does not restart or advance entrance`() {
+        val unrelated = mutableStateOf(0)
+        lateinit var entranceAlpha: State<Float>
+        var compositions = 0
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            unrelated.value
+            entranceAlpha = rememberHomeEntranceAlpha(ready = true, animationsEnabled = true)
+            SideEffect { compositions++ }
+        }
+        composeRule.mainClock.advanceTimeBy(160)
+        val beforeRecomposition = entranceAlpha.value
+        composeRule.runOnIdle { unrelated.value++ }
+        applyChangesAndAdvanceFrame()
+        composeRule.runOnIdle {
+            assertTrue(entranceAlpha.value >= beforeRecomposition)
+            assertEquals(2, compositions)
+        }
+        composeRule.mainClock.advanceTimeBy(320)
+        composeRule.runOnIdle {
+            assertEquals(1f, entranceAlpha.value, 0.001f)
+            assertEquals(2, compositions)
+            unrelated.value++
+        }
+        applyChangesAndAdvanceFrame()
+        composeRule.runOnIdle { assertEquals(1f, entranceAlpha.value, 0.001f) }
+    }
+
+    @Test
+    fun `disabled animations show ready content immediately but preserve readiness gate`() {
+        val ready = mutableStateOf(false)
+        lateinit var entranceAlpha: State<Float>
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            entranceAlpha = rememberHomeEntranceAlpha(ready.value, animationsEnabled = false)
+        }
+        composeRule.runOnIdle {
+            assertEquals(0f, entranceAlpha.value, 0.001f)
+            ready.value = true
+        }
+        applyChangesAndAdvanceFrame()
+        composeRule.runOnIdle { assertEquals(1f, entranceAlpha.value, 0.001f) }
     }
 
     @Test

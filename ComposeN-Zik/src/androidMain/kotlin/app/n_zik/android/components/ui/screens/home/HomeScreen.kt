@@ -5,8 +5,6 @@ import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
@@ -26,10 +24,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.media3.common.util.UnstableApi
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.it.fast4x.rimusic.enums.HomeScreenTabs
 import app.it.fast4x.rimusic.enums.NavRoutes
+import app.it.fast4x.rimusic.enums.TransitionEffect
 import app.it.fast4x.rimusic.models.toUiMood
 import app.it.fast4x.rimusic.ui.components.Skeleton
 import app.it.fast4x.rimusic.utils.enableQuickPicksPageKey
@@ -38,6 +38,7 @@ import app.it.fast4x.rimusic.utils.homeScreenTabIndexKey
 import app.it.fast4x.rimusic.utils.indexNavigationTabKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.rememberPreference
+import app.it.fast4x.rimusic.utils.transitionEffectKey
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -305,14 +306,8 @@ fun HomeScreen(
 
     if (tabIndex >= activeTabs.size) tabIndex = 0
 
-    // The initial destination is composed without the NavHost enter
-    // transition, so fade the content in instead of letting it pop after
-    // the loader
-    val contentAlpha by animateFloatAsState(
-        targetValue = if (isReady) 1f else 0f,
-        animationSpec = tween(300),
-        label = "homeContentEntrance"
-    )
+    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Fade)
+    val contentAlpha = rememberHomeEntranceAlpha(isReady, transitionEffect != TransitionEffect.None)
 
     // Show loader while services are not ready
     if (!isReady) {
@@ -328,7 +323,7 @@ fun HomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .graphicsLayer { alpha = contentAlpha }
+            .graphicsLayer { alpha = contentAlpha.value }
     ) {
         Skeleton(
             navController,
@@ -446,17 +441,9 @@ fun HomeScreen(
     // Exit app when user uses back
     val context = LocalContext.current
     var confirmCount by remember { mutableIntStateOf( 0 ) }
-    BackHandler {
-        // Prevent this from being applied when user is not on HomeScreen
-        if( NavRoutes.home.isNotHere( navController ) )  {
-            // Structural check instead of a RESUMED lifecycle gate, so the back
-            // press is not silently swallowed right after a transition.
-            if ( navController.currentBackStackEntry != null && navController.previousBackStackEntry != null )
-                navController.popBackStack()
-
-            return@BackHandler
-        }
-
+    val currentBackEntry by navController.currentBackStackEntryAsState()
+    // Outgoing Home remains composed during transitions; it must not intercept another page's gesture.
+    BackHandler(enabled = currentBackEntry?.destination?.route?.startsWith(NavRoutes.home.name) == true) {
         if( confirmCount == 0 ) {
             Toaster.i( R.string.press_once_again_to_exit )
             confirmCount++

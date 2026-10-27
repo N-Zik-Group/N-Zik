@@ -2,10 +2,8 @@ package app.n_zik.android.components.ui.header
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -47,16 +45,10 @@ import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.core.navigation.navigationChromeTween
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
-
-/**
- * Collapse animation duration (ms) for the header title's sliding extras, in both
- * directions. Under the 300ms app animation rule; a single spec keeps the width
- * retraction and the slide/fade perfectly in sync.
- */
-private const val APP_TITLE_COLLAPSE_ANIMATION_MS = 250
 
 /** Boundary jitter tolerated before the header title collapses: without it, subpixel differences between the available and ideal widths could flip the collapsed state on and off between frames. */
 private val APP_TITLE_COLLAPSE_TOLERANCE = 2.dp
@@ -130,14 +122,14 @@ fun CollapsingAppTitle(
     // behind the logo, so the action bar slides back into its space.
     val extrasWidth by animateDpAsState(
         targetValue = if (collapsed) 0.dp else with(density) { idealExtrasPx.intValue.toDp() },
-        animationSpec = tween(APP_TITLE_COLLAPSE_ANIMATION_MS, easing = FastOutSlowInEasing),
+        animationSpec = navigationChromeTween(),
         label = "appTitleExtrasWidth"
     )
     // Slide + fade fraction (0f = fully visible, 1f = fully behind the logo). The fade is
     // quadratic so the content is nearly gone before it reaches the logo's far edge.
     val slide by animateFloatAsState(
         targetValue = if (collapsed) 1f else 0f,
-        animationSpec = tween(APP_TITLE_COLLAPSE_ANIMATION_MS, easing = FastOutSlowInEasing),
+        animationSpec = navigationChromeTween(),
         label = "appTitleSlide"
     )
 

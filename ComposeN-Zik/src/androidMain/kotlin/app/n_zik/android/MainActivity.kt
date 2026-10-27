@@ -29,7 +29,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Animatable
@@ -1712,7 +1711,10 @@ class MainActivity :
             var topBarOffset by scaffoldBars.topOffset
             var bottomBarOffset by scaffoldBars.bottomOffset
             val offsetAnimationJob = scaffoldBars.animationJob
-            app.n_zik.android.core.navigation.RevealScaffoldOnNavigation(navController, scaffoldBars::reveal)
+            val revealScaffoldOnNavigation = remember(scaffoldBars, coroutineScope) {
+                { scaffoldBars.revealOnNavigation(coroutineScope) }
+            }
+            app.n_zik.android.core.navigation.RevealScaffoldOnNavigation(navController, revealScaffoldOnNavigation)
 
             // Scroll-hide guard input: whether the full player sheet is currently on screen.
             // Declared before nestedScrollConnection (which reads it live at event time);
@@ -1756,7 +1758,8 @@ class MainActivity :
                     currentRoute?.startsWith("settings") == true ||
                     currentRoute == "listenTogether"
                     
-            LaunchedEffect(isLandscape, isLandscapeBarless, isViMusic, isScrollableRoute, density, safeDrawingInsets) {
+            // Route changes use the animated navigation callback; geometry changes reset immediately.
+            LaunchedEffect(isLandscape, isViMusic, density, safeDrawingInsets) {
                 scaffoldBars.reveal()
             }
 
@@ -1907,10 +1910,7 @@ class MainActivity :
                 // it here would recompose this whole screen on every frame of the slide.
                 val playerPadBottom = androidx.compose.animation.core.animateDpAsState(
                     targetValue = targetPlayerPadBottom,
-                    animationSpec = tween(
-                        app.it.fast4x.rimusic.utils.LANDSCAPE_BARS_ANIMATION_MS,
-                        easing = FastOutSlowInEasing
-                    ),
+                    animationSpec = app.n_zik.android.core.navigation.navigationChromeTween(),
                     label = "playerPadBottom"
                 )
 
@@ -2188,7 +2188,7 @@ class MainActivity :
                             LocalIsShowingVisualizer provides isShowingVisualizer,
                             LocalTopBarOffset provides topBarOffsetState,
                             LocalBottomBarOffset provides bottomBarOffsetState,
-                            app.n_zik.android.core.navigation.LocalRevealScaffold provides scaffoldBars::reveal
+                            app.n_zik.android.core.navigation.LocalRevealScaffold provides revealScaffoldOnNavigation
                             //LocalInternetConnected provides internetConnected
                         ) {
                             // First-launch onboarding: rendered instead of the main

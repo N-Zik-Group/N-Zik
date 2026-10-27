@@ -31,6 +31,7 @@ class AppNavBarRouteTest {
             "easterOne",
             "easterTwo",
             "updater",
+            "settings?tab={tab}&focus={focus}",
             "unknownRoute",
             // bare prefixes and declared-but-unregistered routes pin the else-branch default
             "search",
@@ -51,13 +52,30 @@ class AppNavBarRouteTest {
         val routes = listOf(
             "home",
             "artist/{id}",
-            "settings?tab={tab}&focus={focus}",
             "search?text={text}",
             "searchResults/{query}",
             "statistics",
         )
         routes.forEach { route ->
             assertTrue(appNavBarPresentForRoute(route, fullHomeTabCount), "expected bar for route=$route")
+        }
+    }
+
+    @Test
+    fun `settings destinations never reserve the absent app navigation bar`() {
+        val routes = listOf(
+            "settings",
+            "settings?tab={tab}&focus={focus}",
+            "settings?tab=0&focus=",
+            "settings?tab=1&focus=burger",
+        )
+        for (activeHomeTabCount in listOf(0, 1, 2, 5)) {
+            routes.forEach { route ->
+                assertFalse(
+                    appNavBarPresentForRoute(route, activeHomeTabCount),
+                    "expected no settings bar for route=$route and home tabs=$activeHomeTabCount",
+                )
+            }
         }
     }
 

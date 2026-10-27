@@ -1,6 +1,7 @@
 package app.it.fast4x.rimusic.ui.components.navigation.header
 
-import app.n_zik.android.core.navigation.LocalSettingsBackNavigation
+import app.n_zik.android.core.navigation.navigationChromeTween
+import app.n_zik.android.core.navigation.rememberAppBackAction
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -47,11 +48,8 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
 import app.it.fast4x.rimusic.utils.VoiceSearchState
-import app.it.fast4x.rimusic.utils.preferences
-import app.it.fast4x.rimusic.utils.disableNavigationBackStackKey
 import app.n_zik.android.LocalTopBarOffset
 import app.n_zik.android.components.ui.header.CollapsingAppTitle
-import timber.log.Timber
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -76,7 +74,7 @@ class AppHeader(
 
     @Composable
     fun Draw() {
-        val settingsBackNavigation = LocalSettingsBackNavigation.current
+        val onAppBack = rememberAppBackAction(navController)
         val context = LocalContext.current
         val currentEntry by navController.currentBackStackEntryAsState()
         val isHome = currentEntry?.destination?.route?.let { route ->
@@ -100,7 +98,7 @@ class AppHeader(
         // and the back button aligns correctly when present.
         val startPadding by animateDpAsState(
             targetValue = if (isHome) 12.dp else 4.dp,
-            animationSpec = tween(200)
+            animationSpec = navigationChromeTween()
         )
 
         val topBarOffsetState = LocalTopBarOffset.current
@@ -125,47 +123,18 @@ class AppHeader(
                 // Back button — animates in from the left, pushes title smoothly
                 AnimatedVisibility(
                     visible = !isHome,
-                    enter = fadeIn(animationSpec = tween(220)) +
-                            slideInHorizontally(animationSpec = tween(220)) { -it } +
-                            expandHorizontally(animationSpec = tween(220)),
-                    exit  = fadeOut(animationSpec = tween(180)) +
-                            slideOutHorizontally(animationSpec = tween(180)) { -it } +
-                            shrinkHorizontally(animationSpec = tween(180))
+                    enter = fadeIn(animationSpec = navigationChromeTween()) +
+                            slideInHorizontally(animationSpec = navigationChromeTween()) { -it } +
+                            expandHorizontally(animationSpec = navigationChromeTween()),
+                    exit  = fadeOut(animationSpec = navigationChromeTween()) +
+                            slideOutHorizontally(animationSpec = navigationChromeTween()) { -it } +
+                            shrinkHorizontally(animationSpec = navigationChromeTween())
                 ) {
                     Box(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(uiRoundnessShape())
-                            .clickable {
-                                if (settingsBackNavigation?.handleBack() == true) return@clickable
-                                // Structural check instead of a RESUMED lifecycle gate: the
-                                // entry can legitimately be non-RESUMED right after a transition,
-
-                                // which used to silently swallow the click.
-                                if (navController.currentBackStackEntry != null && navController.previousBackStackEntry != null) {
-                                    val disableBackStack = context.preferences.getBoolean(disableNavigationBackStackKey, false)
-                                    if (disableBackStack) {
-                                        // Jump straight to home by popping the pages above the
-                                        // existing home entry.
-
-                                        // The previous navigate + popUpTo(inclusive = true) destroyed
-                                        // the home entry and rebuilt it, wiping its saved state and forcing
-
-                                        // a full Quick Picks reload on every jump-to-home.
-                                        if (!navController.popBackStack(NavRoutes.home.name, inclusive = false)) {
-                                            navController.navigate(NavRoutes.home.name) {
-                                                popUpTo(NavRoutes.home.name) { inclusive = true }
-                                            }
-                                        }
-                                        Timber.tag("AppHeader").d("Back pressed -> home (back stack cleared)")
-                                    } else {
-                                        navController.popBackStack()
-                                        Timber.tag("AppHeader").d("Back pressed -> popBackStack")
-                                    }
-                                } else {
-                                    Timber.tag("AppHeader").d("Back pressed but no previous entry, ignored")
-                                }
-                            },
+                            .clickable(onClick = onAppBack),
                         contentAlignment = Alignment.Center
                     ) {
                         Button(

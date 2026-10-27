@@ -1,6 +1,5 @@
 package app.n_zik.android.components.ui.screens.settings
 
-import androidx.activity.compose.BackHandler
 import android.net.Uri
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.components.settings.common.SettingsCategoryPage
@@ -24,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import app.n_zik.android.core.navigation.RevealScaffoldOnNavigation
@@ -92,6 +92,7 @@ fun SettingsScreen(
     RevealScaffoldOnNavigation(innerNavController)
     val settingsBackNavigation = LocalSettingsBackNavigation.current
     val backOwner = remember { Any() }
+    val innerEntry by innerNavController.currentBackStackEntryAsState()
     val handleBack by rememberUpdatedState<() -> Unit>({
         if (!innerNavController.popBackStack(SETTINGS_GLOBAL_ROUTE, inclusive = false)) {
             if (!navController.popBackStack(NavRoutes.home.name, inclusive = false)) {
@@ -103,7 +104,12 @@ fun SettingsScreen(
         }
     })
     DisposableEffect(settingsBackNavigation, backOwner) {
-        settingsBackNavigation?.register(backOwner) { handleBack() }
+        settingsBackNavigation?.register(
+            backOwner,
+            canNavigateBack = {
+                innerEntry != null && innerEntry?.destination?.route != SETTINGS_GLOBAL_ROUTE
+            },
+        ) { handleBack() }
         onDispose { settingsBackNavigation?.unregister(backOwner) }
     }
 
@@ -208,6 +214,5 @@ fun SettingsScreen(
         }
     }
 
-    BackHandler(enabled = settingsBackNavigation?.isActive ?: true) { handleBack() }
     RestartAppDialog.Render()
 }

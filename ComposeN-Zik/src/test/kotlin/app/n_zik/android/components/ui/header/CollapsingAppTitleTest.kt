@@ -119,7 +119,7 @@ class CollapsingAppTitleTest {
         }
 
         // Let the animation settle
-        composeRule.mainClock.advanceTimeBy(300)
+        composeRule.mainClock.advanceTimeBy(400)
         composeRule.waitForIdle()
 
         // The sliding extras keep their full natural width when the header fits them
@@ -153,7 +153,7 @@ class CollapsingAppTitleTest {
             }
         }
 
-        composeRule.mainClock.advanceTimeBy(300)
+        composeRule.mainClock.advanceTimeBy(400)
         composeRule.waitForIdle()
 
         val extrasWidth = composeRule.onNodeWithTag("appTitleExtras").fetchSemanticsNode().size.width

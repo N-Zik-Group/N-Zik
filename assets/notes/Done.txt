@@ -319,3 +319,10 @@ Other:
   - Move captured HomeSongs projections and source filters to cancellable DATA work; preserve ordering, deduplication and parental-control/search updates.
   - Read collapsing-header offsets only in the empty-content branch and remove the artificial 600 ms Quick Picks loader delay while retaining entrance transitions.
   - Debug emulator checks are not a release-device performance guarantee.
+- fix(navigation): preserve inverse transitions and native Settings back gestures
+  - AppHeader uses AppBackAction and the active Android back dispatcher, preserving nested NavHost transition preparation and the configured return-to-Home handler. The outgoing arrow cannot trigger a second Home exit.
+  - SettingsScreen yields predictive preview, cancellation and commit to its nested NavHost; Home only handles exit while it is the current destination. SettingsBackNavigation exposes nested availability to the parent callback.
+  - AppNavBar no longer reserves an absent Settings navigation bar, so the visible mini-player descends using existing inset animation and rises on return.
+  - HomeEntrance separates saved service readiness from transient visual alpha, restoring the return fade without another loading frame or per-frame root recomposition; disabled animations remain immediate.
+  - Regression coverage uses real parent and nested NavHosts for intermediate inverse transitions, predictive cancellation, destination parity and double-click protection.
+  - NavigationChromeMotion shares a 350 ms eased motion for mini-player geometry, header title/back arrow and coordinated scaffold reveal; repeated reveal signals join the active animation. Route changes no longer trigger a conflicting immediate geometry reset.
