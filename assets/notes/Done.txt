@@ -94,6 +94,9 @@ Improved:
   - `ListenTogetherMenu` create/join failures while offline now surface the dedicated "no connection" toast instead of a generic error (offline audit menu branch)
 
 Fixed:
+- fix(navigation): retain floating navbar transparency in PitchBlack
+  - Resolve the gray surface before applying existing0.95floatingalpha; preserve other navigation positions and normal/light themes.
+  - Verify actual navbar pixels across9theme/position combinations and reactive preferences.
 - fix(menus): restore separate header and content tones
   - Restore background0 menu bodies while retaining background1 headers in normal themes; use a subtle101010 body below1A1A1A PitchBlack headers.
   - Keep the global elevated-surface policy intact and verify shared grid/list pixels, headerless menus and rounded boundaries.

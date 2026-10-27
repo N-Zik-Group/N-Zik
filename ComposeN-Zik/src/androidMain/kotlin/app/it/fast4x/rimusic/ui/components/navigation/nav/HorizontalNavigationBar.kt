@@ -190,13 +190,15 @@ class HorizontalNavigationBar(
                 if( UiType.ViMusic.isCurrent() && NavRoutes.home.isNotHere( navController ) )
                     BackButton().Draw()
 
+                val backgroundColor = surfaceColor(colorPalette().background1)
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = if (isFloating) 2.dp else 0.dp)
                         .shadow(elevation = if (isFloating) 8.dp else 0.dp, shape = roundedCornerShape)
                         .clip(roundedCornerShape)
-                        .background(surfaceColor(if (isFloating) colorPalette().background1.copy(alpha = 0.95f) else colorPalette().background1))
+                        .background(if (isFloating) backgroundColor.copy(alpha = 0.95f) else backgroundColor)
                 ) {
 
 
