@@ -129,14 +129,6 @@ fun HomeDiscovery(
     BoxWithConstraints {
 
         val moodItemWidthFactor = if (isLandscape && maxWidth * 0.475f >= 320.dp) 0.475f else 0.9f
-        /*
-        val snapLayoutInfoProvider = rememberSnapLayoutInfoProvider(
-            lazyGridState = lazyGridState,
-            positionInLayout = { layoutSize, itemSize ->
-                layoutSize * moodItemWidthFactor / 2f - itemSize / 2f
-            }
-        )
-         */
         val itemWidth = maxWidth * moodItemWidthFactor
 
         Column(

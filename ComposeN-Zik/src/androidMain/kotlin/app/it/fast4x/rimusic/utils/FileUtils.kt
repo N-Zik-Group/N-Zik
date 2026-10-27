@@ -153,31 +153,7 @@ fun createDirIfNotExists(context: Context, dirPath: String): Boolean {
     }
 }
 
-/*
-fun tryMoveDir() {
-    val from = File("/path/to/src")
-    val to = File("/path/to/dest")
-    val success = moveDir(from.toPath(), to.toPath())
-    if (success) {
-        Timber.d("File Moved Successfully")
-    } else {
-        Timber.e("File Moved Failed")
-    }
-}
- */
 
-/*
-fun tryCopyDir() {
-    val from = File("/var/kotlin/")
-    val to = File("/var/bak/kotlin/")
-    try {
-        copyDir(from.toPath(), to.toPath())
-        Timber.d("Copying succeeded.")
-    } catch (ex: IOException) {
-        Timber.e(ex, "FileUtils: Failed to copy directory")
-    }
-}
- */
 
 fun loadAppLog(context: Context, type: LogType): String? {
     val file = File(context.filesDir.resolve("logs"),

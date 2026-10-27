@@ -1386,47 +1386,6 @@ class MainActivity :
             }
 
             DisposableEffect(binder) {
-                /*
-            var bitmapListenerJob: Job? = null
-
-            fun setDynamicPalette(colorPaletteMode: ColorPaletteMode) {
-                val isDark =
-                    colorPaletteMode == ColorPaletteMode.Dark || (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
-                val isPicthBlack = colorPaletteMode == ColorPaletteMode.PitchBlack
-
-                binder?.setBitmapListener { bitmap: Bitmap? ->
-                    if (bitmap == null) {
-                        val colorPalette =
-                            colorPaletteOf(
-                                ColorPaletteName.Dynamic,
-                                colorPaletteMode,
-                                isSystemInDarkTheme
-                            )
-
-                        setSystemBarAppearance(colorPalette.isDark)
-
-                        appearance = appearance.copy(
-                            colorPalette = colorPalette,
-                            typography = appearance.typography.copy(colorPalette.text)
-                        )
-
-                        return@setBitmapListener
-                    }
-
-                    bitmapListenerJob = coroutineScope.launch(NzikDispatchers.DATA) {
-                        dynamicColorPaletteOf(bitmap, isDark, isPicthBlack)?.let {
-                            withContext(NzikDispatchers.UI) {
-                                setSystemBarAppearance(it.isDark)
-                            }
-                            appearance = appearance.copy(
-                                colorPalette = it,
-                                typography = appearance.typography.copy(it.text)
-                            )
-                        }
-                    }
-                }
-            }
-            */
 
                 val listener =
                     SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->

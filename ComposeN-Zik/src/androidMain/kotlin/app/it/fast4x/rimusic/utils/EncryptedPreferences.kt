@@ -78,13 +78,6 @@ inline fun <reified T : Enum<T>> EncryptedSharedPreferences.getEnum(
         }
     } ?: defaultValue
 
-/*
-inline fun <reified T : Enum<T>> SharedPreferences.Editor.putEnum(
-    key: String,
-    value: T
-): SharedPreferences.Editor =
-    putString(key, value.name)
- */
 
 
 val Context.encryptedPreferences: SharedPreferences

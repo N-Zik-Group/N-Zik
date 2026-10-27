@@ -56,39 +56,6 @@ fun Context.hasPermission(permission: String) = ContextCompat.checkSelfPermissio
     permission
 ) == PackageManager.PERMISSION_GRANTED
 
-/*
-fun launchYouTubeMusic(
-    context: Context,
-    endpoint: String,
-    tryWithoutBrowser: Boolean = true
-): Boolean {
-    return try {
-        val intent = Intent(
-            Intent.ACTION_VIEW,
-            Uri.parse("https://music.youtube.com/${endpoint.dropWhile { it == '/' }}")
-        ).apply {
-            if (tryWithoutBrowser && isAtLeastAndroid11) {
-                flags = Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER
-            }
-        }
-        intent.`package` =
-            context.applicationContext.packageManager.queryIntentActivities(intent, 0)
-                .firstOrNull {
-                    it?.activityInfo?.packageName != null &&
-                            BuildConfig.APPLICATION_ID !in it.activityInfo.packageName
-                }?.activityInfo?.packageName
-                ?: return false
-        context.startActivity(intent)
-        true
-    } catch (e: ActivityNotFoundException) {
-        if (tryWithoutBrowser) launchYouTubeMusic(
-            context = context,
-            endpoint = endpoint,
-            tryWithoutBrowser = false
-        ) else false
-    }
-}
- */
 
 @OptIn(UnstableApi::class)
 inline fun <reified T : DownloadService> Context.download(request: DownloadRequest) = runCatching {

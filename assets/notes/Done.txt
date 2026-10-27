@@ -215,6 +215,9 @@ Refactor:
   - Add stable target metadata and 14 passing preference/Compose tests covering history, filtering, dialogs, resets, restart and focus; correct General search test to target the visible editable field (5 passing tests).
 
 Removed:
+- remove(cleanup): drop 13 obsolete commented-code ranges across 9 source files
+  - Remove disabled examples and superseded implementations while preserving licenses, rationale and executable Kotlin tokens.
+  - Verify exact local backups, an independent diff review and the Debug build.
 - remove(cleanup): delete 61 confirmed unused source and resource files
   - Remove unreachable legacy screens, helpers, enums, duplicate menu wrappers and two unused Room projections; retain the active statistics route and database schema.
   - Remove obsolete game/widget images, unused standalone vectors and an unused font after checking source, XML, manifest, generated and dynamic consumers.

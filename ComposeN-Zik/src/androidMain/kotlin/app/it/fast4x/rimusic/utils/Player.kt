@@ -289,24 +289,12 @@ fun Player.enqueue(mediaItems: List<MediaItem>, context: Context? = null) {
     else mediaItems
 
     if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
-        //forcePlayFromBeginning(mediaItems)
         forcePlayFromBeginning(filteredMediaItems)
     } else {
-        //addMediaItems(mediaItemCount, mediaItems)
         addMediaItems(mediaItemCount, filteredMediaItems.map { it.cleaned })
     }
 }
 
-/*
-fun Player.findNextMediaItemById(mediaId: String): MediaItem? {
-    for (i in currentMediaItemIndex until mediaItemCount) {
-        if (getMediaItemAt(i).mediaId == mediaId) {
-            return getMediaItemAt(i)
-        }
-    }
-    return null
-}
-*/
 
 fun Player.findNextMediaItemById(mediaId: String): MediaItem? = runCatching {
     for (i in currentMediaItemIndex until mediaItemCount) {

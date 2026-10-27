@@ -115,15 +115,6 @@ fun NextVisualizer(
                     modifier = Modifier.fillMaxWidth(0.75f),
                     style = typography().xs.semiBold
                 )
-                /*
-                Spacer(modifier = Modifier.height(12.dp))
-                SecondaryTextButton(
-                    text = stringResource(R.string.grant_permission),
-                    onClick = {
-                        relaunchPermission = !relaunchPermission
-                    }
-                )
-                 */
                 Spacer(modifier = Modifier.height(20.dp))
                 SecondaryTextButton(
                     text = stringResource(R.string.open_permission_settings),
