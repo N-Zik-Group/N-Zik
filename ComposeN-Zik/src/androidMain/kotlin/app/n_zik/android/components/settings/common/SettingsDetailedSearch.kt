@@ -12,9 +12,10 @@ val AllSettingsEntryTargets: List<SettingsEntryTarget> by lazy {
 }
 
 private val combiningMarks = Regex("\\p{M}+")
+private val settingsWhitespace = Regex("\\s+")
 
 private fun normalizedSettingsText(text: String): String = Normalizer.normalize(text, Normalizer.Form.NFD)
-    .replace(combiningMarks, "").lowercase(Locale.ROOT).trim()
+    .replace(combiningMarks, "").lowercase(Locale.ROOT).trim().replace(settingsWhitespace, " ")
 
 /** Searches a configuration-specific index without resolving resources on each keystroke. */
 fun searchSettingsEntries(context: Context, query: String): List<SettingsEntryTarget> {
@@ -25,20 +26,30 @@ fun searchSettingsEntries(context: Context, query: String): List<SettingsEntryTa
 internal class SettingsEntrySearchIndex(
     entries: List<SettingsEntryTarget>,
     descriptions: Map<String, Int>,
+    choiceLabels: ((Int) -> String) -> Map<String, List<String>> = { emptyMap() },
     resolveString: (Int) -> String,
 ) {
-    private data class IndexedEntry(val target: SettingsEntryTarget, val label: String, val keywords: List<String>)
+    private data class IndexedEntry(
+        val target: SettingsEntryTarget,
+        val label: String,
+        val keywords: List<String>,
+        val choices: List<String>,
+    )
 
     private val entries: List<IndexedEntry>
 
     init {
         val strings = mutableMapOf<Int, String>()
-        fun normalizedResource(id: Int) = strings.getOrPut(id) { normalizedSettingsText(resolveString(id)) }
+        fun resource(id: Int) = strings.getOrPut(id) { resolveString(id) }
+        val normalizedStrings = mutableMapOf<Int, String>()
+        fun normalizedResource(id: Int) = normalizedStrings.getOrPut(id) { normalizedSettingsText(resource(id)) }
+        val choices = choiceLabels(::resource)
         this.entries = entries.map { entry ->
             IndexedEntry(
                 entry,
                 normalizedResource(entry.labelRes),
                 (entry.keywordRes + listOfNotNull(descriptions[entry.id])).map(::normalizedResource),
+                choices[entry.id].orEmpty().map(::normalizedSettingsText).distinct(),
             )
         }
     }
@@ -46,8 +57,9 @@ internal class SettingsEntrySearchIndex(
     fun search(query: String): List<SettingsEntryTarget> {
         val needle = normalizedSettingsText(query)
         if (needle.isEmpty()) return emptyList()
-        // Four stable buckets preserve the old score ordering without sorting every result set.
-        val matches = Array(4) { mutableListOf<SettingsEntryTarget>() }
+        val tokens = needle.split(' ')
+        // Keep the original four ranks; available choices are a lower-priority fallback.
+        val matches = Array(5) { mutableListOf<SettingsEntryTarget>() }
         entries.forEach { entry ->
             val label = entry.label
             val score = when {
@@ -55,6 +67,9 @@ internal class SettingsEntrySearchIndex(
                 label.startsWith(needle) -> 1
                 label.contains(needle) -> 2
                 entry.keywords.any { it.contains(needle) } -> 3
+                entry.choices.any { choice ->
+                    choice.contains(needle) || tokens.all { label.contains(it) || choice.contains(it) }
+                } -> 4
                 else -> return@forEach
             }
             matches[score].add(entry.target)
@@ -73,7 +88,12 @@ internal fun settingsEntrySearchIndex(resources: Resources): SettingsEntrySearch
     if (previous != null && cachedResources?.get() === resources && cachedConfiguration == resources.configuration) {
         return previous
     }
-    return SettingsEntrySearchIndex(AllSettingsEntryTargets, SettingsEntryDescriptions, resources::getString).also {
+    return SettingsEntrySearchIndex(
+        AllSettingsEntryTargets,
+        SettingsEntryDescriptions,
+        { resolve -> settingsEntryChoiceLabels(resolve, resources.configuration.locales[0]) },
+        resources::getString,
+    ).also {
         cachedResources = WeakReference(resources)
         // Resources mutates its Configuration in place when the app language changes.
         cachedConfiguration = Configuration(resources.configuration)

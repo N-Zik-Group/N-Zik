@@ -1,4 +1,7 @@
 Added:
+- feat(settings): include selectable values in detailed search
+  - Match localized choices alongside setting names without duplicating results; prioritize title matches and reject contradictory alternatives.
+  - Cache normalized choice labels and preserve locale-aware numeric labels.
 - feat(settings): add privacy controls and organize detailed preferences
   - Add active-profile screen capture protection and a bounded local permission usage journal with pause and confirmed clearing through shared dialogs.
   - Organize settings by usage, consolidate legacy reset scopes, center page descriptions and retain original preference keys, defaults and conditional restrictions.

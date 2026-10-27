@@ -42,6 +42,48 @@ class SettingsEntrySearchIndexTest {
     }
 
     @Test
+    fun `choice fallback folds whitespace accents and order without joining incompatible choices`() {
+        val target = SettingsEntryTarget("reverb", 0, 1, 1)
+        val titleMatch = SettingsEntryTarget("title", 0, 1, 2)
+        val strings = mapOf(1 to "Audio réverb", 2 to "Small room", 3 to "Small", 4 to "Large")
+        val resolved = mutableListOf<Int>()
+        var catalogCalls = 0
+        val index = SettingsEntrySearchIndex(
+            listOf(target, titleMatch, target),
+            emptyMap(),
+            choiceLabels = { resolve ->
+                catalogCalls++
+                mapOf("reverb" to listOf(resolve(3), resolve(4), "None", "Small room"))
+            },
+        ) {
+            resolved.add(it)
+            strings.getValue(it)
+        }
+        repeat(10) {
+            assertEquals(listOf(target), index.search("  REVERB   NÓNE  "))
+            assertEquals(listOf(target), index.search("none reverb"))
+            assertEquals(listOf(titleMatch, target), index.search("small room"))
+            assertEquals(emptyList<SettingsEntryTarget>(), index.search("small large"))
+            assertEquals(emptyList<SettingsEntryTarget>(), index.search("reverb small large"))
+        }
+        assertEquals(1, catalogCalls)
+        assertEquals(strings.keys.sorted(), resolved.sorted())
+    }
+
+    @Test
+    fun `choice fallback never expands description or keyword token semantics`() {
+        val target = SettingsEntryTarget("entry", 0, 1, 1, listOf(2))
+        val index = SettingsEntrySearchIndex(
+            listOf(target), mapOf("entry" to 3),
+            choiceLabels = { mapOf("entry" to listOf("small")) },
+        ) { mapOf(1 to "Audio reverb", 2 to "Depth", 3 to "Effect").getValue(it) }
+        assertEquals(emptyList<SettingsEntryTarget>(), index.search("depth small"))
+        assertEquals(emptyList<SettingsEntryTarget>(), index.search("effect reverb"))
+        assertEquals(listOf(target), index.search("depth"))
+        assertEquals(listOf(target), index.search("effect"))
+    }
+
+    @Test
     fun `cache reuses same resources and invalidates on configuration changes`() {
         val context: Context = ApplicationProvider.getApplicationContext()
         val english = context.createConfigurationContext(
