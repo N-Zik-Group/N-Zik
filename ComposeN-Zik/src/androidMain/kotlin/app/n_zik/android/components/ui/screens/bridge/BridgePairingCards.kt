@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.screens.bridge
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
 
@@ -220,7 +221,7 @@ internal fun PairPcCard(running: BridgeState.Running, code: PairingCode?) {
     )
 
     val payload = pendingPayload
-    if (payload != null && code != null) {
+    DialogPresence(target = if (payload != null && code != null) payload to code else null) { (payload, code) ->
         ConfirmationDialog(
             title = stringResource(R.string.bridge_pair_title),
             text = stringResource(R.string.bridge_pair_confirm, payload.deviceName, code.display),
@@ -346,7 +347,7 @@ internal fun PairedDevicesCard(ui: PairedDevicesUi) {
         },
     )
 
-    toRevoke?.let { device ->
+    DialogPresence(target = toRevoke) { device ->
         ConfirmationDialog(
             title = stringResource(R.string.dialog_revoke_device),
             text = stringResource(R.string.bridge_revoke_confirm, device.deviceName),

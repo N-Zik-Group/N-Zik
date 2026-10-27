@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.player
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.core.database.*
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -680,7 +681,7 @@ class PlaybackSettingsMenu private constructor(
     ) {
         var isShowingDialog by remember { mutableStateOf(false) }
 
-        if (isShowingDialog) {
+        DialogPresence(visible = isShowingDialog) {
             SliderDialog(
                 title = title,
                 icon = icon,

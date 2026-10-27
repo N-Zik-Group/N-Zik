@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ai
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import android.text.TextUtils
 import androidx.compose.runtime.Composable
@@ -61,7 +62,7 @@ internal fun AiStatisticsCard(search: Search, navController: NavController, modi
                 )
             }
 
-            if (showStatisticsDialog) {
+            DialogPresence(visible = showStatisticsDialog) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.statistics_max_number_of_items),
                     selectedValue = maxStatisticsItems,
@@ -75,7 +76,7 @@ internal fun AiStatisticsCard(search: Search, navController: NavController, modi
                 )
             }
 
-            if (showCustomStatisticsItemsDialog) {
+            DialogPresence(visible = showCustomStatisticsItemsDialog) {
                 SettingsInputDialog(
                     title = stringResource(R.string.statistics_max_number_of_items),
                     initialValue = maxStatisticsItemsCustomValue.toString(),

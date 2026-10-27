@@ -61,7 +61,8 @@ class RawUrlImportDialogTest {
                 )
             }
         }
-        repeat(5) { composeRule.mainClock.advanceTimeByFrame() }
+        composeRule.mainClock.advanceTimeBy(300)
+        composeRule.waitForIdle()
         val field = composeRule.onNode(hasSetTextAction())
         field.assertTextEquals(initial)
         val footer = composeRule.onNodeWithTag("dialogFrameFooter").getBoundsInRoot()

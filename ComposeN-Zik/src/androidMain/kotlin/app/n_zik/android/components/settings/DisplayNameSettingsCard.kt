@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -289,7 +290,7 @@ fun ProfileFaceCard(
                 }
             )
 
-            if (showNameSourceDialog) {
+            DialogPresence(visible = showNameSourceDialog) {
                 ValueSelectorDialog(
                     onDismiss = { showNameSourceDialog = false },
                     title = stringResource(R.string.face_name_source),
@@ -313,7 +314,7 @@ fun ProfileFaceCard(
                 )
             }
 
-            if (showAvatarSourceDialog) {
+            DialogPresence(visible = showAvatarSourceDialog) {
                 ValueSelectorDialog(
                     onDismiss = { showAvatarSourceDialog = false },
                     title = stringResource(R.string.face_avatar_source),
@@ -337,7 +338,7 @@ fun ProfileFaceCard(
                 )
             }
 
-            if (showRenameDialog) {
+            DialogPresence(visible = showRenameDialog) {
                 SettingsInputDialog(
                     title = stringResource(R.string.profile_rename),
                     initialValue = profileName,
@@ -380,7 +381,7 @@ fun ProfileFaceCard(
                 }
             }
 
-            if (showErrorPopup) {
+            DialogPresence(visible = showErrorPopup) {
                 DefaultDialog(
                     title = stringResource(R.string.dialog_profile_error),
                     onDismiss = { showErrorPopup = false },

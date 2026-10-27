@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.export
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.core.database.*
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.enums.lyrics.LyricsType
@@ -714,7 +715,7 @@ class ExportCacheDialog(
 
     @Composable
     override fun Render() {
-        if (!isActive) return
+        DialogPresence(visible = isActive, inherit = true) {
 
         val lyricsOptions = listOf(
             null to appContext().getString(R.string.no_lyrics),
@@ -735,6 +736,7 @@ class ExportCacheDialog(
             },
             valueText = { type -> lyricsOptions.find { it.first == type }?.second ?: "" }
         )
+        }
     }
 
     fun defaultFileName(): String =

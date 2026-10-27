@@ -132,8 +132,9 @@ private fun DialogPill(button: DialogButton, modifier: Modifier) {
 
 /** The pill surface of every [DialogButton]: rounded clip, role fill, tap and padding. */
 @Composable
-private fun pillModifier(button: DialogButton, palette: ColorPalette, modifier: Modifier) =
-    modifier
+private fun pillModifier(button: DialogButton, palette: ColorPalette, modifier: Modifier): Modifier {
+    val presentation = LocalDialogInput.current ?: LocalDialogPresentation.current
+    return modifier
         .fillMaxWidth()
         .clip(uiRoundnessShape())
         .background(
@@ -141,8 +142,11 @@ private fun pillModifier(button: DialogButton, palette: ColorPalette, modifier: 
             else if (button.danger) palette.red
             else palette.background2
         )
-        .clickable(enabled = button.enabled, onClick = button.onClick)
+        .clickable(enabled = button.enabled && dialogInputEnabled) {
+            if (presentation?.interactive != false) button.onClick()
+        }
         .padding(horizontal = 16.dp, vertical = 10.dp)
+}
 
 private fun resolvedColor(button: DialogButton, palette: ColorPalette): Color =
     button.textColor ?: when {

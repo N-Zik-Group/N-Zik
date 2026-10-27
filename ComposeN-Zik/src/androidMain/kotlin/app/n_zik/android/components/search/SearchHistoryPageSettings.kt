@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.components.dialog.common.ButtonRow
@@ -29,7 +30,9 @@ fun SearchHistoryPageSettings() {
         icon = R.drawable.history,
         onClick = { open = true },
     )
-    if (open) SearchHistoryPagesDialog(onDismiss = { open = false })
+    DialogPresence(visible = open) {
+        SearchHistoryPagesDialog(onDismiss = { open = false })
+    }
 }
 
 /** Immediate, independent choices; disabling a page preserves its stored queries. */

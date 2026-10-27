@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.accounts
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import android.webkit.CookieManager
 import android.webkit.WebStorage
@@ -458,7 +459,7 @@ internal fun AccountsYouTubeCard(search: Search) {
 
     // Clear synced data confirmation dialog
     val dialogCoroutineScope = rememberCoroutineScope()
-    if (showClearSyncDialog) {
+    DialogPresence(visible = showClearSyncDialog) {
         DefaultDialog(
             title = stringResource(R.string.dialog_clear_synced_data),
             onDismiss = { showClearSyncDialog = false },

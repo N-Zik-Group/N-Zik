@@ -55,7 +55,8 @@ class ConfirmationDialogTitleTest {
                 )
             }
         }
-        repeat(5) { composeRule.mainClock.advanceTimeByFrame() }
+        composeRule.mainClock.advanceTimeBy(300)
+        composeRule.waitForIdle()
         val header = composeRule.onNodeWithTag("dialogFrameHeader").getBoundsInRoot()
         val title = composeRule.onNodeWithText("Clear permission activity history").assertIsDisplayed().getBoundsInRoot()
         val body = composeRule.onNodeWithText("Delete all recorded permission events?").assertIsDisplayed().getBoundsInRoot()
@@ -86,7 +87,8 @@ class ConfirmationDialogTitleTest {
                 dialog.Render()
             }
         }
-        repeat(5) { composeRule.mainClock.advanceTimeByFrame() }
+        composeRule.mainClock.advanceTimeBy(300)
+        composeRule.waitForIdle()
         val header = composeRule.onNodeWithTag("dialogFrameHeader").getBoundsInRoot()
         val body = composeRule.onNodeWithTag("dialogFrameBody").getBoundsInRoot()
         val title = composeRule.onNodeWithText(context.getString(R.string.dialog_download_songs)).assertIsDisplayed().getBoundsInRoot()
@@ -116,7 +118,8 @@ class ConfirmationDialogTitleTest {
                 )
             }
         }
-        repeat(5) { composeRule.mainClock.advanceTimeByFrame() }
+        composeRule.mainClock.advanceTimeBy(300)
+        composeRule.waitForIdle()
         composeRule.onNodeWithText("Import").performClick()
         composeRule.runOnIdle {
             assertEquals(1, started)

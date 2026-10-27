@@ -106,6 +106,7 @@ import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.it.fast4x.rimusic.ui.components.themed.MultiFloatingActionsContainer
 import app.it.fast4x.rimusic.ui.components.themed.PlayNext
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.it.fast4x.rimusic.ui.items.AlbumItem
 import app.it.fast4x.rimusic.ui.items.AlbumItemPlaceholder
@@ -545,7 +546,7 @@ fun AlbumDetails(
     changeAuthors.Render()
     changeCover.Render()
 
-    if (showTranslateLanguageDialog) {
+    DialogPresence(visible = showTranslateLanguageDialog) {
         ValueSelectorDialog(
             title = stringResource(R.string.info_translation),
             selectedValue = otherLanguageApp,

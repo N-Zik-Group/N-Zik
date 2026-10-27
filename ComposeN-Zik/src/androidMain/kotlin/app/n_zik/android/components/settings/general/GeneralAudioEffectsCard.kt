@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.general
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
@@ -276,7 +277,7 @@ fun GeneralAudioEffectsCard(
                 icon = R.drawable.reverb
             )
 
-            if (showAudioReverbDialog) {
+            DialogPresence(visible = showAudioReverbDialog) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.settings_audio_reverb_info_apply_a_depth_effect_to_the_audio),
                     selectedValue = audioReverb,

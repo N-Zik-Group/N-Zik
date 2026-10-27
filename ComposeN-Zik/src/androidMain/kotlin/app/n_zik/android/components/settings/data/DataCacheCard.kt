@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.data
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import android.text.format.Formatter
 import androidx.compose.runtime.Composable
@@ -104,7 +105,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
         mutableIntStateOf(0)
     }
 
-    if (cleanCacheOfflineSongs) {
+    DialogPresence(visible = cleanCacheOfflineSongs) {
         ConfirmationDialog(
             title = stringResource(R.string.dialog_clear_song_cache),
             confirmText = stringResource(R.string.clear),
@@ -129,7 +130,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
         )
     }
 
-    if (cleanDownloadCache) {
+    DialogPresence(visible = cleanDownloadCache) {
         ConfirmationDialog(
             title = stringResource(R.string.dialog_clear_downloads),
             confirmText = stringResource(R.string.delete),
@@ -163,7 +164,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
         )
     }
 
-    if (cleanCacheImages) {
+    DialogPresence(visible = cleanCacheImages) {
         ConfirmationDialog(
             title = stringResource(R.string.dialog_clear_image_cache),
             confirmText = stringResource(R.string.clear),
@@ -210,7 +211,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
                         onTrashClick = { cleanCacheImages = true }
                     )
 
-                    if (showImageCacheDialog) {
+                    DialogPresence(visible = showImageCacheDialog) {
                         ValueSelectorDialog(
                             title = stringResource(R.string.image_cache_max_size),
                             selectedValue = coilDiskCacheMaxSize,
@@ -228,7 +229,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
                     RestartPlayerService(restartService, onRestart = { restartService = false })
 
-                    if (showCoilCustomDiskCacheDialog) {
+                    DialogPresence(visible = showCoilCustomDiskCacheDialog) {
                         InputNumericDialog(
                             title = stringResource(R.string.set_custom_cache),
                             placeholder = stringResource(R.string.enter_value_in_mb),
@@ -273,7 +274,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
                         onTrashClick = { cleanCacheOfflineSongs = true }
                     )
 
-                    if (showSongCacheDialog) {
+                    DialogPresence(visible = showSongCacheDialog) {
                         ValueSelectorDialog(
                             title = stringResource(R.string.song_cache_max_size),
                             selectedValue = exoPlayerDiskCacheMaxSize,
@@ -291,7 +292,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
                     RestartPlayerService(restartService, onRestart = { restartService = false })
 
-                    if (showExoPlayerCustomCacheDialog) {
+                    DialogPresence(visible = showExoPlayerCustomCacheDialog) {
                         InputNumericDialog(
                             title = stringResource(R.string.set_custom_cache),
                             placeholder = stringResource(R.string.enter_value_in_mb),
@@ -333,7 +334,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
                     RestartPlayerService(restartService, onRestart = { restartService = false })
 
-                    if (showDownloadCacheDialog) {
+                    DialogPresence(visible = showDownloadCacheDialog) {
                         ValueSelectorDialog(
                             title = stringResource(R.string.song_download_max_size),
                             selectedValue = exoPlayerDiskDownloadCacheMaxSize,
@@ -367,7 +368,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
             SettingsDescription(stringResource(R.string.info_private_cache_location_can_t_cleaned))
 
-            if (showCacheLocationDialog) {
+            DialogPresence(visible = showCacheLocationDialog) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.set_cache_location),
                     selectedValue = exoPlayerCacheLocation,

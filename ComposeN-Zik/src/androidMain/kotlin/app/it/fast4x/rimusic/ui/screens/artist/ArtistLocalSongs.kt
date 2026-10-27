@@ -2,6 +2,7 @@ package app.it.fast4x.rimusic.ui.screens.artist
 
 import androidx.compose.ui.draw.clip
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 
@@ -272,7 +273,7 @@ fun ArtistLocalSongs(
             }
         }
         item {
-            if (showConfirmDownloadAllDialog) {
+            DialogPresence(visible = showConfirmDownloadAllDialog) {
                 ConfirmationDialog(
                     title = stringResource(R.string.info_download_all_songs),
                     confirmText = stringResource(R.string.download),
@@ -301,7 +302,7 @@ fun ArtistLocalSongs(
                     }
                 )
             }
-            if (showConfirmDeleteDownloadDialog) {
+            DialogPresence(visible = showConfirmDeleteDownloadDialog) {
                 ConfirmationDialog(
                     title = stringResource(R.string.dialog_clear_downloads),
                     confirmText = stringResource(R.string.delete),
@@ -511,7 +512,7 @@ fun ArtistLocalSongs(
                                         }
                             )
 
-                            if (showConfirmDownloadAllDialog) {
+                            DialogPresence(visible = showConfirmDownloadAllDialog) {
                                 ConfirmationDialog(
                                     title = stringResource(R.string.info_download_all_songs),
                                     confirmText = stringResource(R.string.download),
@@ -554,7 +555,7 @@ fun ArtistLocalSongs(
                                         }
                             )
 
-                            if (showConfirmDeleteDownloadDialog) {
+                            DialogPresence(visible = showConfirmDeleteDownloadDialog) {
                                 ConfirmationDialog(
                                     title = stringResource(R.string.dialog_clear_downloads),
                                     confirmText = stringResource(R.string.delete),

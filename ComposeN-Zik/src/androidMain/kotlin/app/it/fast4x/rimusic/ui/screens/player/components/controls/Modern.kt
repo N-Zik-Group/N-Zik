@@ -3,6 +3,7 @@ package app.it.fast4x.rimusic.ui.screens.player.components.controls
 
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.CircularWavyProgressIndicator
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.uiRoundnessShape
 
@@ -292,7 +293,7 @@ fun InfoAlbumAndArtistModern(
             .fillMaxWidth()
     ) {
 
-        if (showSelectDialog)
+        DialogPresence(visible = showSelectDialog) {
             SelectorArtistsDialog(
                 title = stringResource(R.string.artists),
                 onDismiss = { showSelectDialog = false },
@@ -305,6 +306,7 @@ fun InfoAlbumAndArtistModern(
                     onCollapse()
                 }
             )
+        }
 
 
         if (playerInfoShowIcon) {

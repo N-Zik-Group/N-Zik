@@ -1,4 +1,4 @@
-﻿package app.n_zik.android.components.dialog.updater
+package app.n_zik.android.components.dialog.updater
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.ButtonRow
@@ -46,7 +47,7 @@ object CheckForUpdateDialog {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun Render() {
-        if (isCanceled || !isActive) return
+        DialogPresence(visible = isActive && !isCanceled, inherit = true) {
 
         var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Enabled)
         val checkBetaUpdates by rememberPreference(checkBetaUpdatesKey, Updater.isBetaFamily(BuildConfig.VERSION_NAME))
@@ -99,6 +100,7 @@ object CheckForUpdateDialog {
                     style = typography().xs.copy(color = colorPalette().textSecondary)
                 )
             }
+        }
         }
     }
 }

@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.other
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.ui.Modifier
 import android.content.Context
@@ -104,7 +105,7 @@ internal fun OtherProxyCard(search: Search) {
                         )
                     }
 
-                    if (showProxyModeDialog) {
+                    DialogPresence(visible = showProxyModeDialog) {
                         ValueSelectorDialog(
                             title = stringResource(R.string.proxy_mode),
                             selectedValue = proxyMode,
@@ -127,7 +128,7 @@ internal fun OtherProxyCard(search: Search) {
                         )
                     }
 
-                    if (showProxyHostDialog) {
+                    DialogPresence(visible = showProxyHostDialog) {
                         SettingsInputDialog(
                             title = stringResource(R.string.proxy_host),
                             initialValue = proxyHost,
@@ -152,7 +153,7 @@ internal fun OtherProxyCard(search: Search) {
                         )
                     }
 
-                    if (showProxyPortDialog) {
+                    DialogPresence(visible = showProxyPortDialog) {
                         SettingsInputDialog(
                             title = stringResource(R.string.proxy_port),
                             initialValue = proxyPort.toString(),
@@ -176,7 +177,7 @@ internal fun OtherProxyCard(search: Search) {
                             onClick = { showProxyUsernameDialog = true }
                         )
                     }
-                    if (showProxyUsernameDialog) {
+                    DialogPresence(visible = showProxyUsernameDialog) {
                         SettingsInputDialog(
                             title = "Proxy Username",
                             initialValue = proxyUsername,
@@ -201,7 +202,7 @@ internal fun OtherProxyCard(search: Search) {
                             onClick = { showProxyPasswordDialog = true }
                         )
                     }
-                    if (showProxyPasswordDialog) {
+                    DialogPresence(visible = showProxyPasswordDialog) {
                         SettingsInputDialog(
                             title = "Proxy Password",
                             initialValue = proxyPassword,
@@ -227,7 +228,7 @@ internal fun OtherProxyCard(search: Search) {
                             onClick = { showRegionOverrideDialog = true }
                         )
                     }
-                    if (showRegionOverrideDialog) {
+                    DialogPresence(visible = showRegionOverrideDialog) {
                         SettingsInputDialog(
                             title = "Region Override",
                             initialValue = regionOverride,

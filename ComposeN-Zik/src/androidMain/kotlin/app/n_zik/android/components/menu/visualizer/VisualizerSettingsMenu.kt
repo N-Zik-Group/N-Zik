@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.ui.toggles.Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -107,7 +108,7 @@ class VisualizerSettingsMenu private constructor(
         var visualizerCustomColor by rememberPreference(visualizerCustomColorKey, android.graphics.Color.WHITE)
         var isShowingCustomColorPicker by remember { mutableStateOf(false) }
 
-        if (isShowingCustomColorPicker) {
+        DialogPresence(visible = isShowingCustomColorPicker) {
             val customColorString = stringResource(R.string.color_custom)
             DialogColorPicker(onDismiss = { isShowingCustomColorPicker = false }) {
                 visualizerCustomColor = it.toArgb()
@@ -431,7 +432,7 @@ class VisualizerSettingsMenu private constructor(
     ) {
         var isShowingDialog by remember { mutableStateOf(false) }
 
-        if (isShowingDialog) {
+        DialogPresence(visible = isShowingDialog) {
             ValueSelectorDialog(
                 onDismiss = { isShowingDialog = false },
                 title = title,

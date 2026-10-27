@@ -6,6 +6,6 @@ import androidx.compose.runtime.Composable
 interface ContentFramedDialog : Dialog {
     @Composable
     override fun Render() {
-        if (isActive) DialogBody()
+        DialogPresence(visible = isActive, inherit = true) { DialogBody() }
     }
 }

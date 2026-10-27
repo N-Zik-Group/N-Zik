@@ -21,6 +21,7 @@ import app.kreate.android.me.knighthat.utils.Toaster
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.secondary
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
@@ -65,7 +66,9 @@ fun PermissionUsageSettingsCard(modifier: Modifier = Modifier) {
             )
         },
     )
-    if (open) PermissionUsageDialog(onDismiss = { open = false })
+    DialogPresence(visible = open) {
+        PermissionUsageDialog(onDismiss = { open = false })
+    }
 }
 
 @Composable
@@ -113,7 +116,8 @@ private fun PermissionUsageDialog(onDismiss: () -> Unit) {
             }
         }
     }
-    if (confirmClear) ConfirmationDialog(
+    DialogPresence(visible = confirmClear) {
+        ConfirmationDialog(
         title = stringResource(R.string.permission_journal_clear),
         confirmText = stringResource(R.string.clear),
         text = stringResource(R.string.permission_journal_clear_confirm),
@@ -125,6 +129,7 @@ private fun PermissionUsageDialog(onDismiss: () -> Unit) {
             }
         },
     )
+    }
 }
 
 private fun featureLabel(feature: PermissionFeature): Int = when (feature) {

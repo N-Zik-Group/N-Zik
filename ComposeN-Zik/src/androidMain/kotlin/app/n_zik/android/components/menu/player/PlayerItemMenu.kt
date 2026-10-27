@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.player
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.core.database.*
 
 import android.content.ActivityNotFoundException
@@ -790,7 +791,7 @@ class PlayerItemMenu private constructor(
             editMetadata.Render()
             exportCacheDialog.Render()
 
-            if (exportCacheDialog.isExporting.value) {
+            DialogPresence(visible = exportCacheDialog.isExporting.value) {
                 InProgressDialog(
                     total = 0,
                     done = 0,
@@ -810,7 +811,7 @@ class PlayerItemMenu private constructor(
         changeArtistId.Render()
         
 
-        if (showListenOnDialog) {
+        DialogPresence(visible = showListenOnDialog) {
              ListenOnDialog(
                 mediaId = mediaItem.mediaId,
                 onDismiss = { showListenOnDialog = false },

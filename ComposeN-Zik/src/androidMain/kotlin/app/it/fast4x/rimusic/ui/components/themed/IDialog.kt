@@ -2,6 +2,7 @@ package app.it.fast4x.rimusic.ui.components.themed
 
 import androidx.compose.runtime.Composable
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Dialog
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 
 interface IDialog: Dialog {
@@ -26,7 +27,7 @@ interface IDialog: Dialog {
 
     @Composable
     override fun Render() {
-        if( !isActive ) return
+        DialogPresence(visible = isActive, inherit = true) {
 
         SettingsInputDialog(
             title = dialogTitle,
@@ -37,6 +38,7 @@ interface IDialog: Dialog {
         ).apply {
             showDialog()
             Render()
+        }
         }
     }
 }

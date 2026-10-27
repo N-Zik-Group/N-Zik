@@ -12,6 +12,7 @@ import app.it.fast4x.rimusic.models.Playlist
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Dialog
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.utils.playlist.PlaylistInsertionPosition
@@ -36,8 +37,7 @@ class PlaylistInsertionDialog private constructor(
 
     @Composable
     override fun Render() {
-        val playlist = getPlaylist() ?: return
-        if (!isActive || !playlist.supportsInsertionPosition()) return
+        DialogPresence(target = getPlaylist()?.takeIf { isActive && it.supportsInsertionPosition() }) { playlist ->
         ValueSelectorDialog(
             onDismiss = { isActive = false },
             title = dialogTitle,
@@ -50,6 +50,7 @@ class PlaylistInsertionDialog private constructor(
                     R.string.playlist_insertion_beginning else R.string.playlist_insertion_end)
             }
         )
+        }
     }
 
     companion object {

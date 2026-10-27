@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.Composable
@@ -113,7 +114,7 @@ internal fun UiInterfaceCard(search: Search) {
                         onClick = { if (uiType != UiType.ViMusic) showNavPosDialog = true }
                     )
                 }
-                if (showNavPosDialog) {
+                DialogPresence(visible = showNavPosDialog) {
                     ValueSelectorDialog(
                         title = stringResource(R.string.navigation_bar_position),
                         selectedValue = navigationBarPosition,
@@ -135,7 +136,7 @@ internal fun UiInterfaceCard(search: Search) {
                         onClick = { showNavTypeDialog = true }
                     )
                 }
-                if (showNavTypeDialog) {
+                DialogPresence(visible = showNavTypeDialog) {
                     ValueSelectorDialog(
                         title = stringResource(R.string.navigation_bar_type),
                         selectedValue = navigationBarType,
@@ -157,7 +158,7 @@ internal fun UiInterfaceCard(search: Search) {
                         onClick = { showPlayerPosDialog = true }
                     )
                 }
-                if (showPlayerPosDialog) {
+                DialogPresence(visible = showPlayerPosDialog) {
                     ValueSelectorDialog(
                         title = stringResource(R.string.player_position),
                         selectedValue = playerPosition,
@@ -179,7 +180,7 @@ internal fun UiInterfaceCard(search: Search) {
                         onClick = { showMenuStyleDialog = true }
                     )
                 }
-                if (showMenuStyleDialog) {
+                DialogPresence(visible = showMenuStyleDialog) {
                     ValueSelectorDialog(
                         title = stringResource(R.string.menu_style),
                         selectedValue = menuStyle,
@@ -201,7 +202,7 @@ internal fun UiInterfaceCard(search: Search) {
                         onClick = { showMessageTypeDialog = true }
                     )
                 }
-                if (showMessageTypeDialog) {
+                DialogPresence(visible = showMessageTypeDialog) {
                     ValueSelectorDialog(
                         title = stringResource(R.string.message_type),
                         selectedValue = messageType,
@@ -223,7 +224,7 @@ internal fun UiInterfaceCard(search: Search) {
                         onClick = { showDefPageDialog = true }
                     )
                 }
-                if (showDefPageDialog) {
+                DialogPresence(visible = showDefPageDialog) {
                     ValueSelectorDialog(
                         title = stringResource(R.string.default_page),
                         selectedValue = indexNavigationTab,
@@ -255,7 +256,7 @@ internal fun UiInterfaceCard(search: Search) {
                         onClick = { showTransDialog = true }
                     )
                 }
-                if (showTransDialog) {
+                DialogPresence(visible = showTransDialog) {
                     ValueSelectorDialog(
                         title = stringResource(R.string.transition_effect),
                         selectedValue = transitionEffect,
@@ -293,7 +294,7 @@ internal fun UiInterfaceCard(search: Search) {
                         onClick = { showSearchOrderDialog = true }
                     )
                 }
-                if (showSearchOrderDialog) {
+                DialogPresence(visible = showSearchOrderDialog) {
                     ValueSelectorDialog(
                         title = stringResource(R.string.search_display_order),
                         selectedValue = searchDisplayOrder,

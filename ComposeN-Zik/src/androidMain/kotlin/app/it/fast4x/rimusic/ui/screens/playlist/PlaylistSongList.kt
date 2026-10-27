@@ -3,6 +3,7 @@ package app.it.fast4x.rimusic.ui.screens.playlist
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.listentogether.guestLockedAlpha
 import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.uiRoundnessShape
@@ -331,6 +332,8 @@ fun PlaylistSongList(
             }
             totalMinutesToLike = formatAsDuration(playlistNotLikedSongs.size.toLong()*1000)
         }
+    }
+    DialogPresence(visible = showYoutubeLikeConfirmDialog) {
         ConfirmationDialog(
             title = stringResource(R.string.dialog_like_all_songs),
             confirmText = stringResource(R.string.dialog_like_all_songs),
@@ -589,7 +592,7 @@ fun PlaylistSongList(
                                         }
                             )
 
-                            if (showConfirmDownloadAllDialog) {
+                            DialogPresence(visible = showConfirmDownloadAllDialog) {
                                 ConfirmationDialog(
                                     title = stringResource(R.string.info_download_all_songs),
                                     confirmText = stringResource(R.string.download),
@@ -622,7 +625,7 @@ fun PlaylistSongList(
                                         }
                             )
 
-                            if (showConfirmDeleteDownloadDialog) {
+                            DialogPresence(visible = showConfirmDeleteDownloadDialog) {
                                 ConfirmationDialog(
                                     title = stringResource(R.string.dialog_clear_downloads),
                                     confirmText = stringResource(R.string.delete),
@@ -973,7 +976,7 @@ fun PlaylistSongList(
                                         onLongClick = { showTranslateLanguageDialog = true }
                                     )
                                     
-                                    if (showTranslateLanguageDialog) {
+                                    DialogPresence(visible = showTranslateLanguageDialog) {
                                         ValueSelectorDialog(
                                             title = stringResource(R.string.info_translation),
                                             selectedValue = otherLanguageApp,

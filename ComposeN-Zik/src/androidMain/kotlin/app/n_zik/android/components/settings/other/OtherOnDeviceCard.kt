@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.other
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.ui.Modifier
 import androidx.compose.animation.AnimatedVisibility
@@ -59,7 +60,7 @@ internal fun OtherOnDeviceCard(search: Search) {
                 )
             }
 
-            if (showBlacklistDialog) {
+            DialogPresence(visible = showBlacklistDialog) {
                 StringListDialog(
                     title = stringResource(R.string.blacklisted_folders),
                     addTitle = stringResource(R.string.add_folder),
@@ -118,7 +119,7 @@ internal fun OtherOnDeviceCard(search: Search) {
                     )
                 }
 
-                if (showFolderDialog) {
+                DialogPresence(visible = showFolderDialog) {
                     SettingsInputDialog(
                         title = stringResource(R.string.folder_that_will_show_when_you_open_on_device_page),
                         initialValue = defaultFolder,

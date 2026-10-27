@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.video
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.core.database.*
 
 import android.content.Intent
@@ -578,7 +579,7 @@ class VideoItemMenu private constructor(
         changeCover.Render()
         changeAlbumId.Render()
         changeArtistId.Render()
-        if (showListenOnDialog) {
+        DialogPresence(visible = showListenOnDialog) {
             ListenOnDialog(
                 mediaId = song.id,
                 onDismiss = { showListenOnDialog = false },

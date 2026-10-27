@@ -27,6 +27,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.enums.*
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.enums.lyrics.LyricsBackground
 import app.n_zik.android.enums.lyrics.LyricsColor
@@ -207,7 +208,7 @@ fun LyricsScreen(
         val rotationAngle by animateFloatAsState(targetValue = if (isRotated) 360F else 0f, animationSpec = tween(durationMillis = 200), label = "")
         val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
 
-        if (showLyricsSizeDialog) {
+        DialogPresence(visible = showLyricsSizeDialog) {
             LyricsSizeDialog(
                 onDismiss = { showLyricsSizeDialog = false},
                 sizeValue = { lyricsSize = it },

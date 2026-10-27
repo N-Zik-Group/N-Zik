@@ -21,6 +21,8 @@ import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.components.dialog.common.InputDialog
+import app.n_zik.android.components.dialog.common.LocalDialogInput
+import app.n_zik.android.components.dialog.common.dialogInputEnabled
 import androidx.core.net.toUri
 
 /**
@@ -63,7 +65,9 @@ fun YouTubeLinkImportDialog(
             )
         }
     ) {
+        val presentation = LocalDialogInput.current
         TextField(
+            enabled = dialogInputEnabled,
             value = youTubeUrl,
             onValueChange = { youTubeUrl = it },
             placeholder = { BasicText("https://youtube.com/playlist?list=...", style = typography().xs.semiBold.copy(color = colorPalette().textDisabled)) },
@@ -71,7 +75,7 @@ fun YouTubeLinkImportDialog(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {
                 val playlistId = extractYouTubePlaylistId(youTubeUrl)
-                if (playlistId != null) {
+                if (presentation?.interactive != false && playlistId != null) {
                     onImport(playlistId)
                     onDismiss()
                 }

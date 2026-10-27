@@ -49,10 +49,6 @@ class SettingsInputDialog private constructor(
                 onDismiss,
                 onSetValue
             )
-            // if isActive becomes false because user dismissed or confirmed
-            if (!instance.isActive) {
-                onDismiss()
-            }
             return instance
         }
     }
@@ -75,6 +71,12 @@ class SettingsInputDialog private constructor(
 
     override var value: TextFieldValue by valueState
     override var isActive: Boolean by activeState
+
+    override fun hideDialog() {
+        if (!isActive) return
+        isActive = false
+        onDismiss()
+    }
 
     override fun onSet(newValue: String) {
         super.onSet(newValue)

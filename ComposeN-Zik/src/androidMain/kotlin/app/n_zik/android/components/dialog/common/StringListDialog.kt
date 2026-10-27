@@ -130,7 +130,7 @@ inline fun StringListDialog(
         }
     }
 
-    if (showStringAddDialog) {
+    DialogPresence(visible = showStringAddDialog) {
         SettingsInputDialog(
             title = addTitle,
             initialValue = "",
@@ -149,7 +149,7 @@ inline fun StringListDialog(
         }
     }
 
-    if (showStringRemoveDialog) {
+    DialogPresence(visible = showStringRemoveDialog) {
         ConfirmationDialog(
             title = stringResource(R.string.dialog_remove_item),
             confirmText = stringResource(R.string.dialog_remove),
@@ -161,7 +161,7 @@ inline fun StringListDialog(
         )
     }
 
-    if (errorDialog) {
+    DialogPresence(visible = errorDialog) {
         DefaultDialog(
             title = stringResource(R.string.dialog_name_conflict),
             onDismiss = { errorDialog = false },

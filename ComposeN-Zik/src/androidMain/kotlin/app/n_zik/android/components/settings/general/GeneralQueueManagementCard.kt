@@ -22,6 +22,7 @@ import app.it.fast4x.rimusic.utils.persistentQueueKey
 import app.it.fast4x.rimusic.utils.playlistindicatorKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.resumePlaybackOnStartKey
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
@@ -133,7 +134,7 @@ fun GeneralQueueManagementCard(
                 icon = R.drawable.music_file
             )
 
-            if (showMaxSongsDialog) {
+            DialogPresence(visible = showMaxSongsDialog) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.max_songs_in_queue),
                     selectedValue = maxSongsInQueue,
@@ -156,7 +157,7 @@ fun GeneralQueueManagementCard(
                 )
             }
 
-            if (showMaxSongsAndroidAutoDialog) {
+            DialogPresence(visible = showMaxSongsAndroidAutoDialog) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.max_songs_in_queue_android_auto),
                     selectedValue = maxSongsInQueueAndroidAuto,
@@ -206,7 +207,7 @@ fun GeneralQueueManagementCard(
                 icon = R.drawable.playing_indicator
             )
 
-            if (showNowPlayingIndicatorDialog) {
+            DialogPresence(visible = showNowPlayingIndicatorDialog) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.now_playing_indicator),
                     selectedValue = nowPlayingIndicator,

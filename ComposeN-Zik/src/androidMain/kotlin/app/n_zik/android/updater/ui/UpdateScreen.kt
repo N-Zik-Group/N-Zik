@@ -2,6 +2,7 @@
 package app.n_zik.android.updater.ui
 
 import android.content.Context
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.uiRoundnessShape
 
 import app.n_zik.android.updater.services.Updater
@@ -620,7 +621,7 @@ fun UpdateScreen(navController: NavController) {
 
                                 // The translate button has been moved to the bottom right of the What's new card
 
-                                if (showLanguageDialog) {
+                                DialogPresence(visible = showLanguageDialog) {
                                     ValueSelectorDialog(
                                         title = stringResource(R.string.info_translation),
                                         selectedValue = otherLanguageApp,
@@ -884,13 +885,13 @@ fun UpdateScreen(navController: NavController) {
             }
         }
         
-        if (showInstallWarningDialog && apkPathToInstall != null) {
+        DialogPresence(target = apkPathToInstall.takeIf { showInstallWarningDialog }) { installationPath ->
             ConfirmationDialog(
                 title = stringResource(R.string.dialog_install_update),
                 text = stringResource(R.string.install_warning),
                 onDismiss = { showInstallWarningDialog = false },
                 onConfirm = {
-                    val apkPath = apkPathToInstall
+                    val apkPath = installationPath
                     showInstallWarningDialog = false
                     if (apkPath != null) {
                         UpdateDownloadManager.installApk(context, apkPath)
@@ -906,6 +907,8 @@ fun UpdateScreen(navController: NavController) {
                 isPreInstallBackupRunning = false
                 Toaster.w(R.string.download_cancelled)
             }
+        }
+        DialogPresence(visible = isPreInstallBackupRunning) {
             DialogFrame(
                 onDismiss = { isPreInstallBackupRunning = false },
                 title = stringResource(R.string.pre_install_backup_running)

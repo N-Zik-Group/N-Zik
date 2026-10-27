@@ -2,11 +2,11 @@
 
 package app.n_zik.android.components.menu.player
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.JournalPermission
 import app.n_zik.android.privacy.PermissionEventKind
-
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -1045,7 +1045,7 @@ private fun VolumeGridEntry(
 ) {
     var isShowingDialog by remember { mutableStateOf(false) }
 
-    if (isShowingDialog && enabled) {
+    DialogPresence(visible = isShowingDialog && enabled) {
         VolumeDialog(
             currentVolume = currentVolume,
             maxVolume = maxVolume,

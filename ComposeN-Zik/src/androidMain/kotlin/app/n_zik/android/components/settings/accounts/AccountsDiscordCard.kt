@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.accounts
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import android.content.Context
 import android.content.Intent
@@ -926,7 +927,7 @@ internal fun DiscordAdvancedSection(search: Search) {
         }
     }
 
-    if (showActivityTypeDialog) {
+    DialogPresence(visible = showActivityTypeDialog) {
         ValueSelectorDialog(
             title = stringResource(R.string.discord_activity_type),
             selectedValue = activityType,
@@ -943,7 +944,7 @@ internal fun DiscordAdvancedSection(search: Search) {
             }
         )
     }
-    if (showNameDialog) {
+    DialogPresence(visible = showNameDialog) {
         DiscordTemplateFieldDialog(
             title = stringResource(R.string.discord_advanced_name),
             value = activityName,
@@ -952,7 +953,7 @@ internal fun DiscordAdvancedSection(search: Search) {
             onDismiss = { showNameDialog = false }
         )
     }
-    if (showStateDialog) {
+    DialogPresence(visible = showStateDialog) {
         DiscordTemplateFieldDialog(
             title = stringResource(R.string.discord_advanced_state),
             value = stateTemplate,
@@ -961,7 +962,7 @@ internal fun DiscordAdvancedSection(search: Search) {
             onDismiss = { showStateDialog = false }
         )
     }
-    if (showDetailsDialog) {
+    DialogPresence(visible = showDetailsDialog) {
         DiscordTemplateFieldDialog(
             title = stringResource(R.string.discord_advanced_details),
             value = detailsTemplate,
@@ -970,7 +971,7 @@ internal fun DiscordAdvancedSection(search: Search) {
             onDismiss = { showDetailsDialog = false }
         )
     }
-    if (showPauseDialog) {
+    DialogPresence(visible = showPauseDialog) {
         DiscordTemplateFieldDialog(
             title = stringResource(R.string.discord_advanced_pause),
             value = pauseTemplate,
@@ -979,7 +980,7 @@ internal fun DiscordAdvancedSection(search: Search) {
             onDismiss = { showPauseDialog = false }
         )
     }
-    if (showBtn1LabelDialog) {
+    DialogPresence(visible = showBtn1LabelDialog) {
         DiscordTemplateFieldDialog(
             title = "${stringResource(R.string.discord_advanced_button1)} — ${stringResource(R.string.discord_advanced_button_label)}",
             value = btn1Label,
@@ -988,7 +989,7 @@ internal fun DiscordAdvancedSection(search: Search) {
             onDismiss = { showBtn1LabelDialog = false }
         )
     }
-    if (showBtn1UrlDialog) {
+    DialogPresence(visible = showBtn1UrlDialog) {
         DiscordTemplateFieldDialog(
             title = "${stringResource(R.string.discord_advanced_button1)} — ${stringResource(R.string.discord_advanced_button_url)}",
             value = btn1Url,
@@ -997,7 +998,7 @@ internal fun DiscordAdvancedSection(search: Search) {
             onDismiss = { showBtn1UrlDialog = false }
         )
     }
-    if (showBtn2LabelDialog) {
+    DialogPresence(visible = showBtn2LabelDialog) {
         DiscordTemplateFieldDialog(
             title = "${stringResource(R.string.discord_advanced_button2)} — ${stringResource(R.string.discord_advanced_button_label)}",
             value = btn2Label,
@@ -1006,7 +1007,7 @@ internal fun DiscordAdvancedSection(search: Search) {
             onDismiss = { showBtn2LabelDialog = false }
         )
     }
-    if (showBtn2UrlDialog) {
+    DialogPresence(visible = showBtn2UrlDialog) {
         DiscordTemplateFieldDialog(
             title = "${stringResource(R.string.discord_advanced_button2)} — ${stringResource(R.string.discord_advanced_button_url)}",
             value = btn2Url,
@@ -1015,7 +1016,7 @@ internal fun DiscordAdvancedSection(search: Search) {
             onDismiss = { showBtn2UrlDialog = false }
         )
     }
-    if (showLargeImageTextDialog) {
+    DialogPresence(visible = showLargeImageTextDialog) {
         DiscordTemplateFieldDialog(
             title = stringResource(R.string.discord_advanced_image_text),
             value = largeImageText,
@@ -1024,7 +1025,7 @@ internal fun DiscordAdvancedSection(search: Search) {
             onDismiss = { showLargeImageTextDialog = false }
         )
     }
-    if (showSmallImageTextDialog) {
+    DialogPresence(visible = showSmallImageTextDialog) {
         DiscordTemplateFieldDialog(
             title = stringResource(R.string.discord_advanced_logo_text),
             value = smallImageText,

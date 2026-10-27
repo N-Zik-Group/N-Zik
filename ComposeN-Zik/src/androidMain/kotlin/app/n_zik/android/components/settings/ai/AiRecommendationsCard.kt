@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ai
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
@@ -42,7 +43,7 @@ internal fun AiRecommendationsCard(search: Search) {
                 )
             }
 
-            if (showRecommendationsDialog) {
+            DialogPresence(visible = showRecommendationsDialog) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.smart_recommendations_number),
                     selectedValue = recommendationsNumber,

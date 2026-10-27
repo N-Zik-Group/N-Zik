@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ai
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
@@ -64,7 +65,7 @@ internal fun AiQuickPicksCard(search: Search) {
                     onClick = { showTipsDialog = true }
                 )
             }
-            if (showTipsDialog) {
+            DialogPresence(visible = showTipsDialog) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.tips),
                     selectedValue = playEventType,
@@ -85,7 +86,7 @@ internal fun AiQuickPicksCard(search: Search) {
                     onClick = { showQuickSelectionDialog = true }
                 )
             }
-            if (showQuickSelectionDialog) {
+            DialogPresence(visible = showQuickSelectionDialog) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.quick_selection_type),
                     selectedValue = localRecommandationsNumber,

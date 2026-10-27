@@ -1,5 +1,6 @@
 package app.n_zik.android.core.backup.ui
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import android.content.Intent
 import android.net.Uri
@@ -170,7 +171,7 @@ fun AutoBackupSettingsBlock() {
         onClick = { showIntervalDialog = true }
     )
 
-    if (showIntervalDialog) {
+    DialogPresence(visible = showIntervalDialog) {
         ValueSelectorDialog(
             title = stringResource(R.string.auto_backup_interval),
             selectedValue = autoBackupInterval,
@@ -227,7 +228,7 @@ fun AutoBackupSettingsBlock() {
         }
     }
 
-    if (showCustomValueDialog) {
+    DialogPresence(visible = showCustomValueDialog) {
         ValueSelectorDialog(
             title = stringResource(R.string.auto_backup_custom_interval_value),
             selectedValue = autoBackupCustomIntervalValue,
@@ -242,7 +243,7 @@ fun AutoBackupSettingsBlock() {
         )
     }
 
-    if (showCustomUnitDialog) {
+    DialogPresence(visible = showCustomUnitDialog) {
         ValueSelectorDialog(
             title = stringResource(R.string.auto_backup_custom_interval_unit),
             selectedValue = autoBackupCustomIntervalUnit,
@@ -284,7 +285,7 @@ fun AutoBackupSettingsBlock() {
         }
     }
 
-    if (showScheduleHourDialog) {
+    DialogPresence(visible = showScheduleHourDialog) {
         ValueSelectorDialog(
             title = stringResource(R.string.auto_backup_schedule_time),
             selectedValue = autoBackupScheduleHour,
@@ -320,7 +321,7 @@ fun AutoBackupSettingsBlock() {
         }
     }
 
-    if (showScheduleDayOfWeekDialog) {
+    DialogPresence(visible = showScheduleDayOfWeekDialog) {
         ValueSelectorDialog(
             title = stringResource(R.string.auto_backup_schedule_day_of_week),
             selectedValue = autoBackupScheduleDayOfWeek,
@@ -352,7 +353,7 @@ fun AutoBackupSettingsBlock() {
         }
     }
 
-    if (showScheduleDayOfMonthDialog) {
+    DialogPresence(visible = showScheduleDayOfMonthDialog) {
         ValueSelectorDialog(
             title = stringResource(R.string.auto_backup_schedule_day_of_month),
             selectedValue = autoBackupScheduleDayOfMonth,
@@ -382,7 +383,7 @@ fun AutoBackupSettingsBlock() {
         }
     }
 
-    if (showTargetDialog) {
+    DialogPresence(visible = showTargetDialog) {
         ValueSelectorDialog(
             title = stringResource(R.string.auto_backup_target),
             selectedValue = autoBackupTarget,
@@ -413,7 +414,7 @@ fun AutoBackupSettingsBlock() {
         )
     }
 
-    if (showMaxBackupsDialog) {
+    DialogPresence(visible = showMaxBackupsDialog) {
         ValueSelectorDialog(
             title = stringResource(R.string.auto_backup_max_backups),
             selectedValue = autoBackupMaxBackups,

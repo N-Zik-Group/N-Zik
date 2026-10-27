@@ -35,6 +35,7 @@ import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.profileDisplayName
 import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
 import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.R
@@ -346,7 +347,7 @@ object ImportBackupDialog : ContentFramedDialog {
 
             // chain — the pending picks are dropped, so they cannot leak into the
             // next attempt.
-            crossProfilePending?.let { (tag, targetId) ->
+            DialogPresence(target = crossProfilePending) { (tag, targetId) ->
                 ConfirmationDialog(
                     title = stringResource(R.string.dialog_import_backup),
                     text = stringResource(
@@ -376,7 +377,7 @@ object ImportBackupDialog : ContentFramedDialog {
             // a profile other than the active one. The import runs on the confirm
 
             // (nothing is pending), so dismissing just drops the question.
-            stateCrossProfilePending?.let { (tag, targetId, proceed) ->
+            DialogPresence(target = stateCrossProfilePending) { (tag, targetId, proceed) ->
                 ConfirmationDialog(
                     title = stringResource(R.string.dialog_import_backup),
                     text = stringResource(

@@ -69,6 +69,7 @@ interface InputDialog: InteractiveDialog {
     @Composable
     override fun DialogBody() {
         TextField(
+            enabled = dialogInputEnabled,
             value = value,
             onValueChange = {
                 if( onValueChanged( it.text ) )

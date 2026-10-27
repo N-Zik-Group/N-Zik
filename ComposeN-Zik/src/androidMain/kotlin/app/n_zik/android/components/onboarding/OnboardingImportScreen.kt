@@ -39,6 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.R
@@ -430,7 +431,7 @@ fun OnboardingImportScreen(
 //
     // chain — the pending picks are dropped, so they cannot leak into the
     // next attempt.
-    crossProfilePending?.let { (tag, targetId) ->
+    DialogPresence(target = crossProfilePending) { (tag, targetId) ->
         ConfirmationDialog(
             title = stringResource(R.string.dialog_import_backup),
             text = stringResource(
@@ -460,7 +461,7 @@ fun OnboardingImportScreen(
     // profile other than the active one. The import runs on the confirm (nothing
 //
     // is pending), so dismissing just drops the question.
-    stateCrossProfilePending?.let { (tag, targetId, proceed) ->
+    DialogPresence(target = stateCrossProfilePending) { (tag, targetId, proceed) ->
         ConfirmationDialog(
             title = stringResource(R.string.dialog_import_backup),
             text = stringResource(

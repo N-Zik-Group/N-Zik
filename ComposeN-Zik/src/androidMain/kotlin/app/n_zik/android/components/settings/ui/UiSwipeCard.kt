@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
@@ -99,7 +100,7 @@ internal fun UiSwipeCard(search: Search) {
                                 onClick = { showQSLeftDialog = true }
                             )
                         }
-                        if (showQSLeftDialog) {
+                        DialogPresence(visible = showQSLeftDialog) {
                             ValueSelectorDialog(
                                 title = stringResource(R.string.queue_and_local_playlists_left_swipe),
                                 selectedValue = queueSwipeLeftAction,
@@ -121,7 +122,7 @@ internal fun UiSwipeCard(search: Search) {
                                 onClick = { showPLLeftDialog = true }
                             )
                         }
-                        if (showPLLeftDialog) {
+                        DialogPresence(visible = showPLLeftDialog) {
                             ValueSelectorDialog(
                                 title = stringResource(R.string.playlist_left_swipe),
                                 selectedValue = playlistSwipeLeftAction,
@@ -143,7 +144,7 @@ internal fun UiSwipeCard(search: Search) {
                                 onClick = { showPLRightDialog = true }
                             )
                         }
-                        if (showPLRightDialog) {
+                        DialogPresence(visible = showPLRightDialog) {
                             ValueSelectorDialog(
                                 title = stringResource(R.string.playlist_right_swipe),
                                 selectedValue = playlistSwipeRightAction,
@@ -165,7 +166,7 @@ internal fun UiSwipeCard(search: Search) {
                                 onClick = { showALeftDialog = true }
                             )
                         }
-                        if (showALeftDialog) {
+                        DialogPresence(visible = showALeftDialog) {
                             ValueSelectorDialog(
                                 title = stringResource(R.string.album_left_swipe),
                                 selectedValue = albumSwipeLeftAction,
@@ -187,7 +188,7 @@ internal fun UiSwipeCard(search: Search) {
                                 onClick = { showARightDialog = true }
                             )
                         }
-                        if (showARightDialog) {
+                        DialogPresence(visible = showARightDialog) {
                             ValueSelectorDialog(
                                 title = stringResource(R.string.album_right_swipe),
                                 selectedValue = albumSwipeRightAction,
@@ -209,7 +210,7 @@ internal fun UiSwipeCard(search: Search) {
                                 onClick = { showQSRightDialog = true }
                             )
                         }
-                        if (showQSRightDialog) {
+                        DialogPresence(visible = showQSRightDialog) {
                             ValueSelectorDialog(
                                 title = stringResource(R.string.queue_and_local_playlists_right_swipe),
                                 selectedValue = queueSwipeRightAction,

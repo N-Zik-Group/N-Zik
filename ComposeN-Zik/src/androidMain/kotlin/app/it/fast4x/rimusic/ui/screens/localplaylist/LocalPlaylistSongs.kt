@@ -1,5 +1,6 @@
 package app.it.fast4x.rimusic.ui.screens.localplaylist
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchEmptySpace
 
@@ -383,7 +384,7 @@ fun LocalPlaylistSongs(
         }
     }
 
-    if (showGetAlbumVersionDialogue){
+    DialogPresence(visible = showGetAlbumVersionDialogue) {
         InProgressDialog(
             total = totalSongsToMatch,
             done = songsMatched,
@@ -397,7 +398,7 @@ fun LocalPlaylistSongs(
         )
     }
 
-    if (showGetAlbumVersionDialogueExt){
+    DialogPresence(visible = showGetAlbumVersionDialogueExt) {
         InProgressDialog(
             total = totalSongsToMatch,
             done = songsMatched,
@@ -413,7 +414,7 @@ fun LocalPlaylistSongs(
     // Note: cancel only closes the dialog, matchRunningExt stays true so the LaunchedEffect
     // continues to completion and shows the results dialog.
 
-    if (showConfirmMatchAllDialog) {
+    DialogPresence(visible = showConfirmMatchAllDialog) {
         ConfirmationDialog(
             title = stringResource(R.string.dialog_match_songs),
             confirmText = stringResource(R.string.dialog_match_songs),
@@ -432,7 +433,7 @@ fun LocalPlaylistSongs(
         )
     }
 
-    if (showMatchResultsDialog) {
+    DialogPresence(visible = showMatchResultsDialog) {
         MatchResultsDialog(
             matched = matchResultsMatched,
             failed = matchResultsFailed,
@@ -692,7 +693,7 @@ fun LocalPlaylistSongs(
     )
 
     var showYouTubeLinkDialog by remember { mutableStateOf(false) }
-    if (showYouTubeLinkDialog) {
+    DialogPresence(visible = showYouTubeLinkDialog) {
         RawUrlImportDialog(
             title = stringResource(R.string.import_via_youtube_link),
             onDismiss = { showYouTubeLinkDialog = false },
@@ -757,7 +758,7 @@ fun LocalPlaylistSongs(
 
             @Composable
             override fun Render() {
-                if (showDeleteConfirmDialog) {
+                DialogPresence(visible = showDeleteConfirmDialog) {
                     val selectedSongs = itemSelector.toList()
                     val hasSelection = itemSelector.isActive && selectedSongs.isNotEmpty()
                     val text = if (hasSelection) {

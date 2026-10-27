@@ -65,23 +65,8 @@ fun HomeStatistics(
         onPlaylistCreated = { isCreatingANewPlaylist = false }
     )
 
-    if (isCreatingANewPlaylist) {
-        newPlaylistDialog.showDialog()
-        newPlaylistDialog.Render()
-        /*
-        TextFieldDialog(
-            title = stringResource(R.string.new_playlist),            hintText = stringResource(R.string.enter_the_playlist_name),
-            onDismiss = {
-                isCreatingANewPlaylist = false
-            },
-            onDone = { text ->
-                query {
-                    Database.insert(Playlist(name = text))
-                }
-            }
-        )
-         */
-    }
+    if (isCreatingANewPlaylist) newPlaylistDialog.showDialog()
+    newPlaylistDialog.Render()
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 

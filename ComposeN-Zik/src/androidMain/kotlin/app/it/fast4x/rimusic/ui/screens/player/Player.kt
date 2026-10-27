@@ -1,5 +1,6 @@
 package app.it.fast4x.rimusic.ui.screens.player
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.appRunningInBackground
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
@@ -601,7 +602,7 @@ fun Player(
         mutableStateOf(false)
     }
 
-    if (showThumbnailOffsetDialog) {
+    DialogPresence(visible = showThumbnailOffsetDialog) {
 
         ThumbnailOffsetDialog(
             onDismiss = { showThumbnailOffsetDialog = false},
@@ -758,7 +759,7 @@ fun Player(
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
 
-    if (isShowingSleepTimerDialog) {
+    DialogPresence(visible = isShowingSleepTimerDialog) {
         SleepTimerDialog(
             sleepTimerMillisLeft = sleepTimerMillisLeft,
             timeRemaining = timeRemaining.toLong(),

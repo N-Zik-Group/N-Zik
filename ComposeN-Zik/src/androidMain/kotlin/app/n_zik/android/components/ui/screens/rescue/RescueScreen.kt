@@ -16,6 +16,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.ui.chipsViewport
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -500,7 +501,7 @@ fun RescueScreen() {
     }
 
     // Confirmation dialog
-    confirmAction?.let { pending ->
+    DialogPresence(target = confirmAction) { pending ->
         RescueConfirmationDialog(
             title = stringResource(pending.titleRes),
             confirmText = stringResource(pending.titleRes),
@@ -515,7 +516,7 @@ fun RescueScreen() {
     }
 
     // Cross-profile warning: the picked file was created under a different profile
-    crossProfilePending?.let { pending ->
+    DialogPresence(target = crossProfilePending) { pending ->
         RescueConfirmationDialog(
             title = stringResource(R.string.dialog_import_backup),
             confirmText = stringResource(R.string.import_button),
@@ -534,7 +535,7 @@ fun RescueScreen() {
     }
 
     // Credential toggles dialog for export settings
-    if (showCredentialToggles) {
+    DialogPresence(visible = showCredentialToggles) {
         DialogFrame(
             onDismiss = { showCredentialToggles = false },
             title = stringResource(R.string.rescue_export_settings),
@@ -583,7 +584,7 @@ fun RescueScreen() {
 //
     // is disabled until a profile is checked; the actual deletion is confirmed by the
     // standard confirmation dialog (same pattern as the other destructive actions).
-    if (deleteProfilesDialog) {
+    DialogPresence(visible = deleteProfilesDialog) {
         val userProfiles = profileOptions.filter { it.id != DEFAULT_PROFILE_ID }
         DialogFrame(
             onDismiss = { deleteProfilesDialog = false },
@@ -685,7 +686,7 @@ fun RescueScreen() {
         }
     }
 
-    if (resetProfilesDialog) {
+    DialogPresence(visible = resetProfilesDialog) {
         // The base is offered like any other profile (first row, badged): the unified
         // reset covers it too, and the result message already asks for the relaunch
 //
@@ -784,7 +785,7 @@ fun RescueScreen() {
         }
     }
 
-    if (restoreProfilesDialog) {
+    DialogPresence(visible = restoreProfilesDialog) {
         // Only the profiles that carry a reset backup can be restored — the base
         // included (first row, badged) when it was reset at least once.
         val restorableProfiles = (

@@ -42,7 +42,8 @@ class PlaylistInsertionDialogTest {
 
     private fun settleComposition() {
         composeRule.runOnUiThread { androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications() }
-        repeat(5) { composeRule.mainClock.advanceTimeByFrame() }
+        composeRule.mainClock.advanceTimeBy(300)
+        composeRule.waitForIdle()
     }
 
     @After fun cleanup() {

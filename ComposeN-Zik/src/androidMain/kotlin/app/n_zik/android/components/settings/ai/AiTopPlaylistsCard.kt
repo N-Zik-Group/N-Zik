@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ai
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.ui.Modifier
 import android.text.TextUtils
@@ -49,7 +50,7 @@ internal fun AiTopPlaylistsCard(search: Search) {
                 )
             }
 
-            if (showTopPlaylistsDialog) {
+            DialogPresence(visible = showTopPlaylistsDialog) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.statistics_max_number_of_items),
                     selectedValue = maxTopPlaylistItems,
@@ -63,7 +64,7 @@ internal fun AiTopPlaylistsCard(search: Search) {
                 )
             }
 
-            if (showCustomTopPlaylistsItemsDialog) {
+            DialogPresence(visible = showCustomTopPlaylistsItemsDialog) {
                 SettingsInputDialog(
                     title = stringResource(R.string.statistics_max_number_of_items),
                     initialValue = maxTopPlaylistItemsCustomValue.toString(),

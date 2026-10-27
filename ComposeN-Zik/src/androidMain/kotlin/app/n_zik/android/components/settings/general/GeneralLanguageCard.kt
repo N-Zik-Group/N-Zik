@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.general
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
@@ -41,7 +42,7 @@ fun GeneralLanguageCard(
                 icon = R.drawable.translate
             )
 
-            if (showLanguageDialog) {
+            DialogPresence(visible = showLanguageDialog) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.app_language) + ": $systemLocale",
                     selectedValue = languageApp,

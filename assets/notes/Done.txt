@@ -326,3 +326,8 @@ Other:
   - HomeEntrance separates saved service readiness from transient visual alpha, restoring the return fade without another loading frame or per-frame root recomposition; disabled animations remain immediate.
   - Regression coverage uses real parent and nested NavHosts for intermediate inverse transitions, predictive cancellation, destination parity and double-click protection.
   - NavigationChromeMotion shares a 350 ms eased motion for mini-player geometry, header title/back arrow and coordinated scaffold reveal; repeated reveal signals join the active animation. Route changes no longer trigger a conflicting immediate geometry reset.
+- feat(dialogs): fold the center before a smooth TV opening and closing effect
+  - Retain each dialog locally for its bounded exit, reverse interrupted motion and preserve nullable presentation payloads without delaying business callbacks.
+  - Keep measured content stable; animate clipping, band translations and opacity through graphics layers, with a wide 6 dp luminous core and diffuse light extending beyond the card.
+  - Preserve nested windows, internal scrolling, action order and immediate disposal when the owner disappears or system animations are disabled.
+  - Block retiring pointer, keyboard and stale action callbacks; make Settings input dismissal event-driven and retain internal Reset list padding.

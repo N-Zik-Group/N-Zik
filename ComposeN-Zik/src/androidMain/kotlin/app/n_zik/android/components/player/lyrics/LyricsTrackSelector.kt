@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.models.Lyrics
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -220,7 +221,7 @@ fun LyricsTrackSelector(
         }
     }
 
-    if (loading) {
+    DialogPresence(visible = loading) {
         DefaultDialog(
             title = stringResource(R.string.txt_lyrics),
             onDismiss = {

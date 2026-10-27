@@ -1,4 +1,4 @@
-﻿package app.n_zik.android.components.dialog.updater
+package app.n_zik.android.components.dialog.updater
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.ButtonRow
@@ -36,7 +37,7 @@ object BuildTransitionWarningDialog {
 
     @Composable
     fun Render(onConfirm: () -> Unit) {
-        if (!isActive || transitionType == null) return
+        DialogPresence(target = transitionType.takeIf { isActive }) { transitionType ->
 
         val titleRes = if (transitionType == "${UpdaterConstants.TYPE_STABLE}-to-${UpdaterConstants.TYPE_BETA}") R.string.stable_to_beta_warning_title else R.string.beta_to_stable_warning_title
         val messageRes = if (transitionType == "${UpdaterConstants.TYPE_STABLE}-to-${UpdaterConstants.TYPE_BETA}") R.string.stable_to_beta_warning_message else R.string.beta_to_stable_warning_message
@@ -84,6 +85,7 @@ object BuildTransitionWarningDialog {
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+        }
         }
     }
 }

@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ai
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
@@ -27,7 +28,7 @@ internal fun AiDataCard(search: Search) {
     val context = LocalContext.current
     var clearEvents by remember { mutableStateOf(false) }
     val searchCtx_7 = search.inputValue.isBlank() || stringResource(R.string.tab_data).contains(search.inputValue, true) || stringResource(R.string.reset_quick_picks).contains(search.inputValue, true)
-    if (clearEvents) {
+    DialogPresence(visible = clearEvents) {
         ConfirmationDialog(
             title = stringResource(R.string.dialog_delete_playback_events),
             confirmText = stringResource(R.string.delete),

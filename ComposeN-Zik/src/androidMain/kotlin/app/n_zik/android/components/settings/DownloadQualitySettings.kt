@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 import androidx.compose.foundation.text.BasicText
@@ -50,7 +51,7 @@ fun DownloadQualityEntry(automaticQualityText: String? = null, onQualityChanged:
         onClick = { dialogVisible = true }
     )
 
-    if (dialogVisible) {
+    DialogPresence(visible = dialogVisible) {
         ValueSelectorDialog(
             title = stringResource(R.string.download_quality_format),
             values = DownloadQualityFormat.values().toList(),
@@ -103,7 +104,7 @@ fun UpdateDownloadsButton() {
         }
     )
 
-    if (dialogVisible.value) {
+    DialogPresence(visible = dialogVisible.value) {
         val dialog = remember(dialogCount.value) {
             UpdateDownloadsDialog(
                 activeState = dialogVisible,

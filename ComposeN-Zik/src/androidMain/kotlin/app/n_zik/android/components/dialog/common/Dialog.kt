@@ -79,16 +79,16 @@ interface Dialog {
 
     @Composable
     fun Render() {
-        if( !isActive ) return
-
-        DialogFrame(
-            onDismiss = ::hideDialog,
-            title = dialogTitle,
-            bodyPadding = bodyPadding,
-            footer = if (this@Dialog is InteractiveDialog) ({ Buttons() }) else null
-        ) {
-            Box( modifier = Modifier.weight( 1f, fill = false ) ) {
-                DialogBody()
+        DialogPresence(visible = isActive, inherit = true) {
+            DialogFrame(
+                onDismiss = ::hideDialog,
+                title = dialogTitle,
+                bodyPadding = bodyPadding,
+                footer = if (this@Dialog is InteractiveDialog) ({ Buttons() }) else null
+            ) {
+                Box( modifier = Modifier.weight( 1f, fill = false ) ) {
+                    DialogBody()
+                }
             }
         }
     }

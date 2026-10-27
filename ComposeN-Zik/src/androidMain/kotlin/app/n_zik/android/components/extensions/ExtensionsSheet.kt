@@ -48,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.it.fast4x.rimusic.utils.DOWNLOAD_INDICATOR_SIZE_NORMAL
@@ -135,9 +136,7 @@ fun ExtensionsSheet(
         }
     }
 
-    val infoDef = infoTarget
-    if (infoDef != null) {
-        infoText?.let { text ->
+    DialogPresence(target = infoTarget?.let { def -> infoText?.let { def to it } }) { (infoDef, text) ->
             ModuleInfoDialog(
                 title = context.getString(infoDef.displayNameRes),
                 content = text,
@@ -146,17 +145,16 @@ fun ExtensionsSheet(
                     infoText = null
                 },
             )
-        }
     }
 
-    if (uninstallTarget != null) {
+    DialogPresence(target = uninstallTarget) { uninstallPayload ->
         ConfirmationDialog(
             title = stringResource(R.string.module_uninstall),
             confirmText = stringResource(R.string.module_uninstall),
             text = stringResource(R.string.module_uninstall_confirm),
             onDismiss = { uninstallTarget = null },
             onConfirm = {
-                val def = uninstallTarget
+                val def = uninstallPayload
                 uninstallTarget = null
                 def?.let { scope.launch { manager.uninstall(it) } }
             },

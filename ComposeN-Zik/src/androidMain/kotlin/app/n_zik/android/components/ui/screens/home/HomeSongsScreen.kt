@@ -41,6 +41,7 @@ import app.it.fast4x.rimusic.ui.components.tab.TabHeader
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
 import app.it.fast4x.rimusic.ui.components.themed.*
 import app.it.fast4x.rimusic.utils.*
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.enums.FilterBy
 import app.n_zik.android.components.menu.FilterMenu
@@ -229,7 +230,7 @@ fun HomeSongsScreen(navController: NavController ) {
     val coroutineScope = rememberCoroutineScope()
 
     var showYouTubeLinkDialog by remember { mutableStateOf(false) }
-    if (showYouTubeLinkDialog) {
+    DialogPresence(visible = showYouTubeLinkDialog) {
         YouTubeLinkImportDialog(
             onImport = { urlPlaylistId ->
                 coroutineScope.launch(NzikDispatchers.DATA) {
@@ -265,7 +266,7 @@ fun HomeSongsScreen(navController: NavController ) {
         )
     }
 
-    if (showConfirmMatchAllDialog) {
+    DialogPresence(visible = showConfirmMatchAllDialog) {
         ConfirmationDialog(
             title = stringResource(R.string.dialog_match_songs),
             confirmText = stringResource(R.string.dialog_match_songs),
@@ -282,7 +283,7 @@ fun HomeSongsScreen(navController: NavController ) {
         )
     }
 
-    if (showDeleteConfirmDialog) {
+    DialogPresence(visible = showDeleteConfirmDialog) {
         ConfirmationDialog(
             title = stringResource(R.string.dialog_delete_songs),
             confirmText = stringResource(R.string.delete),
@@ -295,7 +296,7 @@ fun HomeSongsScreen(navController: NavController ) {
         )
     }
 
-    if (showMatchingProgressDialog) {
+    DialogPresence(visible = showMatchingProgressDialog) {
         InProgressDialog(
             total = totalSongsToMatch,
             done = songsMatched,
@@ -309,7 +310,7 @@ fun HomeSongsScreen(navController: NavController ) {
         )
     }
 
-    if (showMatchResultsDialog) {
+    DialogPresence(visible = showMatchResultsDialog) {
         MatchResultsDialog(
             matched = matchResultsMatched,
             failed = matchResultsFailed,
@@ -633,7 +634,7 @@ fun HomeSongsScreen(navController: NavController ) {
                     importMenu.Render()
                     exportDialog.Render()
 
-                    if (showExportCacheConfirmDialog) {
+                    DialogPresence(visible = showExportCacheConfirmDialog) {
                         val count = getSongs().size
                         ConfirmationDialog(
                             title = stringResource(R.string.export_cached),
@@ -646,7 +647,7 @@ fun HomeSongsScreen(navController: NavController ) {
                             }
                         )
                     }
-                    if (showExportCacheLyricsDialog) {
+                    DialogPresence(visible = showExportCacheLyricsDialog) {
                         val lyricsOptions = listOf(
                             null to stringResource(R.string.no_lyrics),
                             LyricsType.Synced.name to stringResource(R.string.lyrics_synced),
@@ -666,7 +667,7 @@ fun HomeSongsScreen(navController: NavController ) {
                             valueText = { type -> lyricsOptions.find { it.first == type }?.second ?: "" }
                         )
                     }
-                    if (isExportingCache) {
+                    DialogPresence(visible = isExportingCache) {
                         InProgressDialog(
                             total = exportCacheTotal,
                             done = exportCacheProgress,

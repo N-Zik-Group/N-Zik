@@ -87,6 +87,7 @@ import app.it.fast4x.rimusic.ui.components.themed.FontSizeRange
 import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
 import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.it.fast4x.rimusic.ui.components.themed.PlayNext
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.it.fast4x.rimusic.ui.items.AlbumItem
 import app.it.fast4x.rimusic.ui.items.ArtistItem
@@ -493,7 +494,7 @@ fun ArtistOverview(
     downloadAllDialog.Render()
     deleteAllDownloadsDialog.Render()
 
-    if (showTranslateLanguageDialog) {
+    DialogPresence(visible = showTranslateLanguageDialog) {
         ValueSelectorDialog(
             title = stringResource(R.string.info_translation),
             selectedValue = otherLanguageApp,

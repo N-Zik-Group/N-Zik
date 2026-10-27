@@ -309,6 +309,7 @@ class DialogOverflowTest {
                 lockedLabel = "Not logged in"
             )
         }
+        composeRule.mainClock.advanceTimeBy(300)
         composeRule.waitForIdle()
 
         // The locked row stays visible, dimmed, with its lock label.

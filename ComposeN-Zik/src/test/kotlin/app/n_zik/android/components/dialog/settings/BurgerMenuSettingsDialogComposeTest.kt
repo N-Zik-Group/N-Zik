@@ -104,6 +104,8 @@ class BurgerMenuSettingsDialogComposeTest {
                 block()
             }
         }
+        composeRule.mainClock.advanceTimeBy(300)
+        composeRule.waitForIdle()
     }
 
     private fun storedOrder(): List<String> {

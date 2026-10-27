@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -55,7 +56,7 @@ object NewUpdateAvailableDialog {
 
     @Composable
     fun Render(onNavigateToUpdater: () -> Unit = {}) {
-        if( isCancelled || !isActive ) return
+        DialogPresence(visible = isActive && !isCancelled, inherit = true) {
 
         val updateVersion = Updater.getDisplayVersion()
         val updateLabelModel = Updater.flavorLabel(updateVersion) ?: Updater.FlavorLabel(R.string.release_title)
@@ -115,6 +116,7 @@ object NewUpdateAvailableDialog {
                     )
                 }
             }
+        }
         }
     }
 }

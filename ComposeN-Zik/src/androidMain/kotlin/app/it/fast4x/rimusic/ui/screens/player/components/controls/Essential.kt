@@ -1,6 +1,7 @@
 @file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.it.fast4x.rimusic.ui.screens.player.components.controls
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.uiRoundnessShape
 
@@ -307,7 +308,7 @@ fun InfoAlbumAndArtistEssential(
             .fillMaxWidth()
     ) {
 
-        if (showSelectDialog)
+        DialogPresence(visible = showSelectDialog) {
             SelectorArtistsDialog(
                 title = stringResource(R.string.artists),
                 onDismiss = { showSelectDialog = false },
@@ -318,6 +319,7 @@ fun InfoAlbumAndArtistEssential(
                     onCollapse()
                 }
             )
+        }
 
 
         var modifierArtist = Modifier

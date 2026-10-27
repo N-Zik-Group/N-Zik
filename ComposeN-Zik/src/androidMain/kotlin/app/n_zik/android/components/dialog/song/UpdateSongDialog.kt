@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.song
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.core.database.*
 
 import androidx.compose.runtime.Composable
@@ -260,18 +261,22 @@ class UpdateSongDialog private constructor(
      */
     @Composable
     override fun Render() {
-        val progress = batchProgress
-        if( progress != null ) {
-            val ( done, total ) = progress
-            InProgressDialog(
-                total = total,
-                done = done,
-                text = stringResource( R.string.update ),
-                onDismiss = ::onCancelBatch
-            )
-            return
+        var presentedProgress by remember { mutableStateOf(batchProgress) }
+        if (isActive) presentedProgress = batchProgress
+        DialogPresence(visible = isActive, inherit = true) {
+            val progress = presentedProgress
+            if (progress != null) {
+                val (done, total) = progress
+                InProgressDialog(
+                    total = total,
+                    done = done,
+                    text = stringResource(R.string.update),
+                    onDismiss = ::onCancelBatch
+                )
+            } else {
+                super.Render()
+            }
         }
-        super.Render()
     }
 
     /** Cancels the in-flight batch between songs and leaves the progress UI. */

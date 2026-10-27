@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -116,7 +117,7 @@ internal fun AppearancePresetsCard(search: Search) {
                     icon = R.drawable.ui,
                     content = {
 
-            if (appearanceChooser){
+            DialogPresence(visible = appearanceChooser) {
                 // Preset-only preferences are needed only while the chooser is open.
                 var showthumbnail by rememberPreference(showthumbnailKey, true)
                 var transparentbar by rememberPreference(transparentbarKey, true)

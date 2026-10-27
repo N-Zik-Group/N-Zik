@@ -32,6 +32,7 @@ import app.it.fast4x.rimusic.utils.pauseOnHeadphoneDisconnectKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.resumePlaybackWhenDeviceConnectedKey
 import app.it.fast4x.rimusic.utils.skipMediaOnErrorKey
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
@@ -136,7 +137,7 @@ fun GeneralPlaybackCard(
                 icon = R.drawable.play_skip_back
             )
 
-            if (showJumpPreviousDialog) {
+            DialogPresence(visible = showJumpPreviousDialog) {
                 SettingsInputDialog(
                     title = stringResource(R.string.jump_previous_blank),
                     initialValue = jumpPrevious,
@@ -168,7 +169,7 @@ fun GeneralPlaybackCard(
                 icon = R.drawable.time
             )
 
-            if (showMinListeningTimeDialog) {
+            DialogPresence(visible = showMinListeningTimeDialog) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.is_min_list_time_for_tips_or_quick_pics),
                     selectedValue = exoPlayerMinTimeForEvent,
@@ -207,7 +208,7 @@ fun GeneralPlaybackCard(
                 icon = R.drawable.playbackduration
             )
 
-            if (showExcludeSongsDialog) {
+            DialogPresence(visible = showExcludeSongsDialog) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.exclude_songs_with_duration_limit_description),
                     selectedValue = excludeSongWithDurationLimit,
@@ -240,7 +241,7 @@ fun GeneralPlaybackCard(
                 icon = R.drawable.heart_dislike
             )
 
-            if (showDislikeSongsDialog) {
+            DialogPresence(visible = showDislikeSongsDialog) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.exclude_disliked_songs),
                     selectedValue = excludeDislikedSongs,
@@ -267,7 +268,7 @@ fun GeneralPlaybackCard(
                 icon = R.drawable.person
             )
 
-            if (showDislikeArtistsDialog) {
+            DialogPresence(visible = showDislikeArtistsDialog) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.exclude_disliked_artists),
                     selectedValue = excludeDislikedArtists,
@@ -294,7 +295,7 @@ fun GeneralPlaybackCard(
                 icon = R.drawable.album
             )
 
-            if (showDislikeAlbumsDialog) {
+            DialogPresence(visible = showDislikeAlbumsDialog) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.exclude_disliked_albums),
                     selectedValue = excludeDislikedAlbums,
@@ -331,7 +332,7 @@ fun GeneralPlaybackCard(
                 icon = R.drawable.pause
             )
 
-            if (showPauseBetweenSongsDialog) {
+            DialogPresence(visible = showPauseBetweenSongsDialog) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.pause_between_songs_description),
                     selectedValue = pauseBetweenSongs,
@@ -377,7 +378,7 @@ fun GeneralPlaybackCard(
                         icon = R.drawable.time
                     )
 
-                    if (showCrossfadeDurationDialog) {
+                    DialogPresence(visible = showCrossfadeDurationDialog) {
                         ValueSelectorDialog(
                             title = stringResource(R.string.crossfade_duration),
                             selectedValue = crossfadeDuration,

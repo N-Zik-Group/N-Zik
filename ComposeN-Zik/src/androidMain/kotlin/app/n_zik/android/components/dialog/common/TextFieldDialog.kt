@@ -51,6 +51,7 @@ fun TextFieldDialog(
     isTextInputValid: (String) -> Boolean = { it.isNotEmpty() },
     title: String = hintText
 ) {
+    val dialogInputAllowed = dialogInputEnabled
     val focusRequester = remember {
         FocusRequester()
     }
@@ -78,7 +79,7 @@ fun TextFieldDialog(
                     DialogButton(
                         text = doneText,
                         onClick = {
-                            if (isTextInputValid(textFieldValue.text)) {
+                            if (dialogInputAllowed && isTextInputValid(textFieldValue.text)) {
                                 onDismiss()
                                 onDone(textFieldValue.text)
                             }
@@ -90,6 +91,7 @@ fun TextFieldDialog(
         }
     ) {
         BasicTextField(
+            enabled = dialogInputEnabled,
             value = textFieldValue,
             onValueChange = { textFieldValue = it },
             textStyle = typography().xs.semiBold.center,
@@ -98,7 +100,7 @@ fun TextFieldDialog(
             keyboardOptions = KeyboardOptions(imeAction = if (singleLine) ImeAction.Done else ImeAction.None),
             keyboardActions = KeyboardActions(
                 onDone = {
-                    if (isTextInputValid(textFieldValue.text)) {
+                    if (dialogInputAllowed && isTextInputValid(textFieldValue.text)) {
                         onDismiss()
                         onDone(textFieldValue.text)
                     }
@@ -123,9 +125,9 @@ fun TextFieldDialog(
         )
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(dialogInputAllowed) {
         delay(300)
-        focusRequester.requestFocus()
+        if (dialogInputAllowed) focusRequester.requestFocus()
     }
 }
 

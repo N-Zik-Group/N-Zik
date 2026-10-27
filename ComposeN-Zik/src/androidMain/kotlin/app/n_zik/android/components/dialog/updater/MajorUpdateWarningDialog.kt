@@ -1,4 +1,4 @@
-﻿package app.n_zik.android.components.dialog.updater
+package app.n_zik.android.components.dialog.updater
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.ButtonRow
@@ -35,7 +36,7 @@ object MajorUpdateWarningDialog {
 
     @Composable
     fun Render(onConfirm: () -> Unit) {
-        if (!isActive) return
+        DialogPresence(visible = isActive, inherit = true) {
 
         DialogFrame(
             title = stringResource(R.string.major_update_warning_title, BuildConfig.VERSION_NAME),
@@ -80,6 +81,7 @@ object MajorUpdateWarningDialog {
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+        }
         }
     }
 }

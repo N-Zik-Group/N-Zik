@@ -12,6 +12,7 @@ import app.it.fast4x.rimusic.enums.ImageQualityFormat
 import app.it.fast4x.rimusic.utils.audioQualityFormatKey
 import app.it.fast4x.rimusic.utils.imageQualityFormatKey
 import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.DownloadQualityEntry
@@ -80,7 +81,7 @@ internal fun NetworkQualityCard(
         }
     )
 
-    if (showAudioQualityDialog) {
+    DialogPresence(visible = showAudioQualityDialog) {
         ValueSelectorDialog(
             title = stringResource(R.string.audio_quality_format),
             values = AudioQualityFormat.values().toList(),
@@ -101,7 +102,7 @@ internal fun NetworkQualityCard(
         )
     }
 
-    if (showImageQualityDialog) {
+    DialogPresence(visible = showImageQualityDialog) {
         ValueSelectorDialog(
             title = stringResource(R.string.image_quality_format),
             values = ImageQualityFormat.values().toList(),

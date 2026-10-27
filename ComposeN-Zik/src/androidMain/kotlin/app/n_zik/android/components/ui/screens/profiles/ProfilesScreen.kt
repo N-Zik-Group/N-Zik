@@ -41,6 +41,7 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.it.fast4x.rimusic.ui.components.Skeleton
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.components.dialog.common.DefaultDialog
@@ -313,7 +314,7 @@ fun ProfileScreen(
 
     }
 
-    if (showAddPopup) {
+    DialogPresence(visible = showAddPopup) {
         SettingsInputDialog(
             title = stringResource(R.string.add_profile),
             initialValue = "",
@@ -344,7 +345,7 @@ fun ProfileScreen(
     }
 
     val renameRow = state?.rows?.firstOrNull { it.id == profileToRename }
-    if (showRenamePopup && renameRow != null) {
+    DialogPresence(target = renameRow.takeIf { showRenamePopup }) { renameRow ->
         SettingsInputDialog(
             title = stringResource(R.string.profile_rename),
             initialValue = renameRow.displayName,
@@ -393,7 +394,7 @@ fun ProfileScreen(
         }
     }
 
-    if (showRemovePopup) {
+    DialogPresence(visible = showRemovePopup) {
         ConfirmationDialog(
             title = stringResource(R.string.remove_profile),
             confirmText = stringResource(R.string.dialog_remove),
@@ -436,7 +437,7 @@ fun ProfileScreen(
         )
     }
 
-    if (showErrorPopup) {
+    DialogPresence(visible = showErrorPopup) {
         DefaultDialog(
             title = stringResource(R.string.dialog_profile_error),
             onDismiss = { showErrorPopup = false },
@@ -463,7 +464,7 @@ fun ProfileScreen(
 
         }
     }
-    if (showChangePopup) {
+    DialogPresence(visible = showChangePopup) {
         ConfirmationDialog(
             title = stringResource(R.string.dialog_switch_profile),
             confirmText = stringResource(R.string.dialog_switch_profile),
@@ -482,7 +483,7 @@ fun ProfileScreen(
 
     }
 
-    if (showImportConfirm) {
+    DialogPresence(visible = showImportConfirm) {
         ConfirmationDialog(
             title = stringResource(R.string.rescue_import_profiles),
             confirmText = stringResource(R.string.import_button),
@@ -496,7 +497,7 @@ fun ProfileScreen(
     }
 
     // A picked file tagged with a different profile: confirm before importing it.
-    crossProfilePending?.let { (tag, proceed) ->
+    DialogPresence(target = crossProfilePending) { (tag, proceed) ->
         ConfirmationDialog(
             title = stringResource(R.string.dialog_import_backup),
             confirmText = stringResource(R.string.import_button),

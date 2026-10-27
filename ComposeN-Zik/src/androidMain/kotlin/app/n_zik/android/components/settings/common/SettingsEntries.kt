@@ -32,6 +32,7 @@ import app.it.fast4x.rimusic.ui.components.themed.IDialog
 import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
 import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.DialogColorPicker
@@ -78,7 +79,7 @@ inline fun StringListValueSelectorSettingsEntry(
     }
 
 
-    if (showStringListDialog) {
+    DialogPresence(visible = showStringListDialog) {
         StringListDialog(
             title = title,
             addTitle = addTitle,
@@ -145,7 +146,7 @@ fun <T> ValueSelectorSettingsEntry(
         mutableStateOf(false)
     }
 
-    if (isShowingDialog) {
+    DialogPresence(visible = isShowingDialog) {
         ValueSelectorDialog(
             onDismiss = { isShowingDialog = false },
             title = title,
@@ -359,7 +360,7 @@ fun TextDialogSettingEntry(
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
-    if (showDialog) {
+    DialogPresence(visible = showDialog) {
         SettingsInputDialog(
             title = title,
             initialValue = currentText,
@@ -412,12 +413,13 @@ fun ColorSettingEntry(
         modifier = modifier
     )
 
-    if (showColorPicker)
+    DialogPresence(visible = showColorPicker) {
         DialogColorPicker(onDismiss = { showColorPicker = false }) {
             onColorSelected(it)
             showColorPicker = false
             Toaster.n( R.string.info_color_s_applied, title )
         }
+    }
 
 }
 
@@ -645,7 +647,7 @@ inline fun <reified T : Enum<T>> OtherEnumValueSelectorSettingsEntry(
         mutableStateOf(false)
     }
 
-    if (isShowingDialog) {
+    DialogPresence(visible = isShowingDialog) {
         ValueSelectorDialog(
             onDismiss = { isShowingDialog = false },
             title = title,

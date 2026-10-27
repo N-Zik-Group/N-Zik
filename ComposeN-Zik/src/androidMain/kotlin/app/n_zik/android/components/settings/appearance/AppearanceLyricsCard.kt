@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -147,7 +148,7 @@ internal fun AppearanceLyricsCard(search: Search) {
                             }
                         )
                     }
-                    if (showColorPicker) {
+                    DialogPresence(visible = showColorPicker) {
                         DialogColorPicker(onDismiss = { showColorPicker = false }) {
                             lyricsCustomColor = it.toArgb()
                             showColorPicker = false

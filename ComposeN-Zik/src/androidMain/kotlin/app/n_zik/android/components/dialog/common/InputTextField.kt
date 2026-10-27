@@ -75,6 +75,7 @@ inline fun InputTextField(
                 .fillMaxWidth()
         ) {
             TextField(
+                enabled = dialogInputEnabled,
                 modifier = Modifier
                     .fillMaxWidth(),
                 colors = TextFieldDefaults.colors(

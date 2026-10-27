@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
@@ -90,7 +91,7 @@ internal fun UiThemeCard(search: Search) {
     var customColor by rememberPreference(customColorKey, Color.Green.hashCode())
     var resetCustomLightThemeDialog by rememberSaveable { mutableStateOf(false) }
     var resetCustomDarkThemeDialog by rememberSaveable { mutableStateOf(false) }
-    if (resetCustomLightThemeDialog) {
+    DialogPresence(visible = resetCustomLightThemeDialog) {
         ConfirmationDialog(
             title = stringResource(R.string.title_reset_customized_light_colors),
             confirmText = stringResource(R.string.reset),
@@ -103,7 +104,7 @@ internal fun UiThemeCard(search: Search) {
         )
     }
 
-    if (resetCustomDarkThemeDialog) {
+    DialogPresence(visible = resetCustomDarkThemeDialog) {
         ConfirmationDialog(
             title = stringResource(R.string.title_reset_customized_dark_colors),
             confirmText = stringResource(R.string.reset),
@@ -143,7 +144,7 @@ internal fun UiThemeCard(search: Search) {
                     )
                 }
 
-                if (showUiTypeDialog) {
+                DialogPresence(visible = showUiTypeDialog) {
                     ValueSelectorDialog(
                         title = stringResource(R.string.interface_in_use),
                         selectedValue = uiType,
@@ -169,7 +170,7 @@ internal fun UiThemeCard(search: Search) {
                     )
                 }
 
-                if (showThemeDialog) {
+                DialogPresence(visible = showThemeDialog) {
                     ValueSelectorDialog(
                         title = stringResource(R.string.theme),
                         selectedValue = colorPaletteName,
@@ -427,7 +428,7 @@ internal fun UiThemeCard(search: Search) {
                     )
                 }
 
-                if (showThemeModeDialog) {
+                DialogPresence(visible = showThemeModeDialog) {
                     ValueSelectorDialog(
                         title = stringResource(R.string.theme_mode),
                         selectedValue = colorPaletteMode,

@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.general
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
@@ -79,7 +80,7 @@ fun GeneralPipCard(
                         icon = R.drawable.logo_youtube
                     )
 
-                    if (showPipModuleDialog) {
+                    DialogPresence(visible = showPipModuleDialog) {
                         ValueSelectorDialog(
                             title = stringResource(R.string.settings_pip_module),
                             selectedValue = pipModule,

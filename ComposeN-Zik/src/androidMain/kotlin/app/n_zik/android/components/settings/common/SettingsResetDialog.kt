@@ -1,9 +1,13 @@
 package app.n_zik.android.components.settings.common
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.ButtonRow
@@ -47,9 +51,10 @@ internal fun SettingsResetCard(
             )
         },
     )
-    if (open) {
+    DialogPresence(visible = open) {
         DialogFrame(
             onDismiss = { open = false },
+            bodyPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
             title = selectedScope?.let { scope ->
                 stringResource(SettingsCategories.first { it.tab == scope }.labelRes)
             } ?: stringResource(R.string.settings_reset),
@@ -72,6 +77,7 @@ internal fun SettingsResetCard(
             Column(
                 Modifier.fillMaxWidth().weight(1f, fill = false)
                     .testTag("settings.reset.dialog").verticalScroll(rememberScrollState())
+                    .padding(vertical = 24.dp)
             ) {
                 val scope = selectedScope
                 if (scope == null) {

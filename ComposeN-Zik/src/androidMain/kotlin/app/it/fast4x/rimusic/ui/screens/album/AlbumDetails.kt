@@ -2,6 +2,7 @@ package app.it.fast4x.rimusic.ui.screens.album
 
 import androidx.compose.ui.draw.clip
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.uiRoundnessShape
 
 import app.n_zik.android.core.database.*
@@ -512,7 +513,7 @@ fun AlbumDetails(
                             Row(verticalAlignment = Alignment.Top) {
                                 translate.ToolBarButton()
                                 
-                                if (showTranslateLanguageDialog) {
+                                DialogPresence(visible = showTranslateLanguageDialog) {
                                     ValueSelectorDialog(
                                         title = stringResource(R.string.info_translation),
                                         selectedValue = otherLanguageApp,

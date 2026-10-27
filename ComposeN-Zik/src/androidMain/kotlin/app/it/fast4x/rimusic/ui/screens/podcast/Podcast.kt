@@ -3,6 +3,7 @@ package app.it.fast4x.rimusic.ui.screens.podcast
 import app.it.fast4x.rimusic.utils.asSong
 import androidx.compose.ui.draw.clip
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.LocalPlayerAwareWindowInsets
@@ -389,7 +390,7 @@ fun Podcast(
                                         }
                             )
 
-                            if (showConfirmDownloadAllDialog) {
+                            DialogPresence(visible = showConfirmDownloadAllDialog) {
                                 ConfirmationDialog(
                                     title = stringResource(R.string.info_download_all_songs),
                                     confirmText = stringResource(R.string.download),
@@ -429,7 +430,7 @@ fun Podcast(
                                         }
                             )
 
-                            if (showConfirmDeleteDownloadDialog) {
+                            DialogPresence(visible = showConfirmDeleteDownloadDialog) {
                                 ConfirmationDialog(
                                     title = stringResource(R.string.dialog_clear_downloads),
                                     confirmText = stringResource(R.string.delete),

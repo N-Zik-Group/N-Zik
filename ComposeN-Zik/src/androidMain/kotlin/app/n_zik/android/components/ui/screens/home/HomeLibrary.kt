@@ -1,6 +1,7 @@
 @file:Suppress("OPT_IN_USAGE", "OPT_IN_USAGE_ERROR")
 package app.n_zik.android.components.ui.screens.home
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchNoResults
 
@@ -301,7 +302,7 @@ fun HomeLibrary(
     var showYouTubeLinkDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     
-    if (showYouTubeLinkDialog) {
+    DialogPresence(visible = showYouTubeLinkDialog) {
         YouTubeLinkImportDialog(
             onImport = { playlistId ->
                 coroutineScope.launch(NzikDispatchers.DATA) {
@@ -633,7 +634,7 @@ fun HomeLibrary(
                             }
                     exportDialog.Render()
                     
-                    if (showDeleteConfirmDialog) {
+                    DialogPresence(visible = showDeleteConfirmDialog) {
                         val selected = itemSelector.ifEmpty { itemsOnDisplay }
                         val hasSelection = itemSelector.size > 0
                         val itemsToDelete = selected.toList()

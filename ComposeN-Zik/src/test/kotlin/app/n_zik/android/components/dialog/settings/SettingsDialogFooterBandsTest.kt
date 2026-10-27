@@ -90,7 +90,7 @@ class SettingsDialogFooterBandsTest {
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) { dialog.Render() }
         }
-        repeat(5) { composeRule.mainClock.advanceTimeByFrame() }
+        composeRule.mainClock.advanceTimeBy(300)
         composeRule.waitForIdle()
         val body = composeRule.onNodeWithTag("dialogFrameBody").getBoundsInRoot()
         val content = composeRule.onNodeWithTag("toggleListDialogContent").getBoundsInRoot()

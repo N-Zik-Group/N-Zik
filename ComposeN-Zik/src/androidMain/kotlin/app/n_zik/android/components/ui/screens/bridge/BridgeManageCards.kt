@@ -32,6 +32,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
@@ -153,7 +154,7 @@ private fun AutoStopEntry(
         icon = icon,
         onClick = { showDialog = true },
     )
-    if (showDialog) {
+    DialogPresence(visible = showDialog) {
         ValueSelectorDialog(
             title = title,
             values = AutoStopSettings.OPTIONS,

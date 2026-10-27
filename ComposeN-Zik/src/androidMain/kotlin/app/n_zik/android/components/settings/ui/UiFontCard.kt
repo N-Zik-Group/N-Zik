@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.Composable
@@ -57,7 +58,7 @@ internal fun UiFontCard(search: Search) {
                         onClick = { showFontDialog = true }
                     )
                 }
-                if (showFontDialog) {
+                DialogPresence(visible = showFontDialog) {
                     ValueSelectorDialog(
                         title = stringResource(R.string.settings_use_font_type),
                         selectedValue = fontType,

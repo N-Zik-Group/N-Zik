@@ -1,6 +1,7 @@
 package app.it.fast4x.rimusic.ui.components.tab.toolbar
 
 import androidx.compose.runtime.Composable
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 
 interface ConfirmDialog: Dialog {
@@ -28,7 +29,7 @@ interface ConfirmDialog: Dialog {
 
     @Composable
     override fun Render() {
-        if( !isActive ) return
+        DialogPresence(visible = isActive, inherit = true) {
 
         ConfirmationDialog(
             title = confirmationTitle,
@@ -37,6 +38,7 @@ interface ConfirmDialog: Dialog {
             onDismiss = ::onDismiss,
             onConfirm = ::onConfirm
         )
+        }
     }
 }
 

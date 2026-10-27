@@ -64,6 +64,7 @@ abstract class TextInputDialog(
     @Composable
     override fun DialogBody() {
         TextField(
+            enabled = dialogInputEnabled,
             value = value,
             onValueChange = {
                 if( onValueChanged( it.text ) )

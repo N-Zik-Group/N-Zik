@@ -65,6 +65,7 @@ import app.it.fast4x.rimusic.utils.showLyricsStateKey
 import app.it.fast4x.rimusic.utils.showSecondLineKey
 import app.it.fast4x.rimusic.utils.showlyricsthumbnailKey
 import app.it.fast4x.rimusic.utils.thumbnailTapEnabledKey
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.core.network.OfflineMode
@@ -1231,7 +1232,7 @@ class LyricsSettingsMenu private constructor(
     ) {
         var isShowingDialog by remember { mutableStateOf(false) }
 
-        if (isShowingDialog) {
+        DialogPresence(visible = isShowingDialog) {
             ValueSelectorDialog(
                 onDismiss = { isShowingDialog = false },
                 title = title,
