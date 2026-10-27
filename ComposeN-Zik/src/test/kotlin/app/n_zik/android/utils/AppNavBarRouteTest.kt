@@ -28,8 +28,8 @@ class AppNavBarRouteTest {
             "queue",
             "rewind?year={year}&month={month}&scope={scope}",
             "rewindHome",
-            "gamePacman",
-            "gameSnake",
+            "easterOne",
+            "easterTwo",
             "updater",
             "unknownRoute",
             // bare prefixes and declared-but-unregistered routes pin the else-branch default

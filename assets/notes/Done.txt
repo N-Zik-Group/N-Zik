@@ -52,6 +52,11 @@ Added:
   - Consumption in legacy `ActionBar.kt` (spec-approved edit): stored order intersect stored toggles intersect runtime conditions (rewind enabled, offline mode, PiP), a runtime condition always wins over a stored toggle; the order + 14 toggles are read once per menu open (`remember(expanded)`) instead of on every recomposition; new shared `BurgerMenuItem` composable (short tap + long tap, label clamped to the "Rescue Center" reference width, marquee with ellipsis fallback) - the 3 existing n_zik items keep their own composables
   - Review hardening (bmad-code-review, 11 patches applied): the menu assembly boundary, the deep-link tab/focus mapping, the focus-scroll, the master-toggle store writes and the "Open" rows are now pinned by tests (see the test entry under Other)
   - Tests: `BurgerMenuSettingsDialogTest` (19), `BurgerMenuSettingsDialogComposeTest` (6), `BurgerMenuItemTest` (5), `AccountsSettingsEmbeddingWiringTest` (5), `SettingsNewCardsWiringTest` (3), `BurgerMenuAssemblyTest` (3), `BurgerMenuFocusScrollTest` (3), `RewindMasterToggleSettingsTest` (3), `BurgerMenuDeepLinkMappingTest` (1) - 48 tests, all green
+- feat(easter): the easter egg images are served from the N-Zik repo and downloaded on view (assets `db06cb3251`)
+  - New `app.n_zik.android.easter/`: `EasterEgg` enum (`PACMAN("easter1.jpg")` / `SNAKE("easter2.jpg")`, the raw URL derived from `UpdateEndpoints.REPO` - same shape as the updater changelog URL) + `EasterAssetManager`, the view-time sync engine
+  - `EasterAssetManager.sync(egg)`: downloads from GitHub raw into `filesDir/easter/` when the file is missing, ETag-conditional revalidation (`If-None-Match`) when present; a 200 with a different/missing ETag replaces the file, a 200 carrying the stored ETag (OkHttp response-cache re-serve) or a 304 leaves it; streamed 8 KB writes to a temp file + atomic rename; the ETag persisted in a `.etag` sidecar next to each image
+  - Per-path process-wide dedup (`CompletableDeferred` in a companion `ConcurrentHashMap` keyed by the image absolute path): the transfer runs in its own `NzikDispatchers.fireAndForget(DATA)` scope, so re-entering the screen mid-download awaits the single in-flight transfer instead of starting a second one (no temp-file race), and leaving the screen cancels the awaiting coroutine but never the transfer (the file lands on completion)
+  - `EasterScreen` now takes `egg: EasterEgg` (was `imageResId: Int`): an existing local copy is shown immediately, a `LaunchedEffect(egg)` awaits the sync and flips the display to the file once it completes (no polling, no boot-time/background sync - user decision); the 503 `NetworkGate` returns while offline is the expected offline path (no misleading warning) and any existing file stays displayed
 
 Changed:
 - change(ffmpeg): FFmpeg-powered features are downloaded on first use, not build-gated
@@ -64,6 +69,9 @@ Changed:
   - Both `RewindMonthlyPlaylistWorker` and `RewindYearlyPlaylistWorker` gates now AND `KEY_REWIND_ENABLED` too (fixes existing installs where the master was off but the creation gates stayed on)
   - The 3 Rewind cards are wrapped in an internal `Column` (the focus-scroll measurement Box used to stack them) + an "Open" row -> `NavRoutes.rewindHome` (same destination as the burger item tap)
   - `rw_settings_master_description` updated to describe the whole-feature semantics
+- change(easter): the legacy routes `gamePacman`/`gameSnake` are renamed to `easterOne`/`easterTwo`
+  - `NavRoutes.kt` (legacy enum - user-approved edit, exception 2): the mini-games no longer exist, so the names now describe the easter egg images (matching `easter1.jpg`/`easter2.jpg`)
+  - All five reference sites updated: `AppNavigation.kt` (the route registrations + the `egg = EasterEgg.PACMAN/SNAKE` call sites - user-approved exception 1), `CollapsingAppTitle.kt` (the 10-tap / long-press triggers), `AppTitle.kt` (dead composable still compiled - user-ratified exception 3), `AppNavBarRouteTest.kt` (the route assertions)
 
 Improved:
 - improve(listentogether): dedicated no-connection toast in the room menu when offline
@@ -119,6 +127,12 @@ Fixed:
   - Failure messages: dedicated "download needed" wording on first use vs "download failed" on an update
 - fix(bridge): meta endpoint red on JVM tests (500 instead of 200)
   - The ABI probe is now injectable via a `featuresProvider` on `BridgeServerCore`; the meta test mounts a device that can run the module, and a new test pins the negative case (feature omitted)
+- fix(coil): a null image model no longer hangs on an eternal loader
+  - Root cause (user-reported on-device): passing a null model to Coil's `AsyncImage`/`rememberAsyncImagePainter` never resolves - the placeholder spins forever and Coil never reaches the error state, so a "fallback after a delay" wired in the error slot could never fire
+  - `ImageCacheFactory.Painter` was the one composable missing the app's standard null early-return (its `showFallback` logic was dead code): it now early-returns loading the fallback box as a resource when the URL is null, so the painter settles on a drawable instead of hanging
+  - New `ImageCacheFactory.LocalAsyncImage`: centralizes the null pattern (placeholder then the fallback after a configurable delay) and takes an optional `cacheKey`, so a content replacement behind a stable path (a re-downloaded file at the same `file://` URI) forces Coil to re-read it
+  - `EasterScreen` renders through `LocalAsyncImage` with the file's `lastModified` stamp as the cache key - fixes the stale-image-after-in-place-re-download bug (the string-equal URI kept the previously decoded bitmap, silently breaking the "the new image is displayed" acceptance); the easter screen's fallback delay is 4 s (user choice)
+  - Verified on-device by the user after the fix
 
 Removed:
 - remove(player): drop dead `isNetworkRelatedError` helper + unused `ConnectException` import
@@ -134,6 +148,10 @@ Removed:
   - `UpdaterReleaseTagTest`: removed the 4 dev/beta migration-window test blocks (getBuildSuffix beta/dev asserts, getDisplayVersion pre-rename-beta, findBestRelease dev pre-rename, extractBuild dev pre-rename) + header KDoc; the release/minified migration tests stay
   - Behavior: a dev64/dev32 or beta64/beta32 user is no longer pointed at a legacy `N-Zik-dev.apk`/`N-Zik-beta.apk`; such stale assets now resolve to "no update" instead of an undeliverable APK
   - Tests: 75 updater tests green (UpdaterReleaseTagTest 64, UpdaterFetchStateTest 3, UpdateScreenChangelogOffMainTest 3, UpdateDownloadManagerClearCacheTest 1, UpdateDownloadManagerCleanupTest 4)
+- remove(apk): the two bundled easter-egg JPEGs are gone from every build (~8.8 MiB)
+  - Deleted `src/main/res/drawable/easter1.jpg` (~5.05 MiB) + `easter2.jpg` (~3.79 MiB); byte-identical copies now live at the repo's `assets/easter/` and ship via GitHub raw
+  - No bundled fallback easter image of any size in the APK (spec): an offline first open shows the standard loader, then the launcher-box fallback
+  - Independent zip check of the debug APK: zero easter entries; repo-wide grep confirms no remaining `R.drawable.easter*` reference
 
 Other:
 - test(ui): offline + card unification — 3 BMAD review rounds (9 + 6 + 8 fixes applied), targeted suites green: 10/10 across the 5 touched classes + an isolated run of `PlaylistItemRemoteCardContractTest` (which caught a missing `Dependencies.init` — the class only passed in batch runs via sandbox leakage)
@@ -154,3 +172,8 @@ Other:
 - test(settings): bmad-code-review on the customizable burger menu - 27 findings triaged, 11 patches applied
   - 4 layers (blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor, full mode against the spec); verdicts: 11 patch (all applied), 1 decision (separator UX, resolved by the user: one row per instance), 1 defer (global-reset hook - the pre-existing untested 19-call legacy reset block, tracked in deferred-work.md), 7 rejected (5 confirmed spec-consistent behavior, 2 low not worth adding guards)
   - The new tests pin what the review proved unverified: the menu assembly boundary (stored order x toggles x runtime conditions, all 14 branch ids), the deep-link mapping (tab/focus values vs the SettingsScreen tab mapping), the focus-scroll on a representative tab, the master-toggle store writes, the "Open" rows at their 4 sites, the per-profile `fullOfflineModeKey` contract of the Offline mode card, the label clamp/marquee of `BurgerMenuItem`
+- test(easter): 17 unit tests of the view-time sync + the renamed-route assertions
+  - New `EasterAssetManagerTest` (17) against canned OkHttp responses (no network, `@TempDir`): first open online/offline, 304 revalidation, remote change, cached-200-same-ETag, 200-without-ETag (x2), download failure, the offline gate 503 (no local file / existing file), a genuinely unexpected 404, self-heal (a deleted image with a surviving sidecar forces a full download, not a 304), cross-egg concurrency (two eggs never merge into one transfer), the process-wide dedup (re-entry + leave-mid-download), and the per-egg raw-URL/file-name identity (both eggs pinned against `UpdateEndpoints.REPO`, the two file names asserted distinct)
+  - `AppNavBarRouteTest` (4) updated for the `easterOne`/`easterTwo` rename
+  - BMAD build workflow (spec + 3-layer review - blind-hunter, edge-case-hunter, verification-gap): every high/medium finding patched (stale-image cache key, Coil null-model, offline-gate logging, `runBlocking` justification), the low-severity items (a download size cap, an atomic-sidecar doc note, composing `EasterEgg.rawUrl` from `UpdateEndpoints`, a Compose screen test, the route-to-egg wiring test) recorded in deferred-work.md with their rationale
+  - The two raw assets were pushed to `main` ahead of the code (`db06cb3251`); both raw URLs verified live (200 + ETag)
